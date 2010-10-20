@@ -508,14 +508,14 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   if (this%tbsys%scf%active .and. scf_converged ) call print("TB SCF iterations converged")
 end subroutine TB_solve_diag
 
-subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
+subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args_str, &
   use_fermi_E, fermi_E, fermi_T, band_width, AF, error)
 
   type(TB_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), optional :: local_e(:)
-  real(dp), intent(out), optional :: forces(:,:)
+  real(dp), intent(out), optional :: forces(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
   logical, optional :: use_fermi_E
@@ -558,7 +558,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
     call set_type(this%tbsys%scf, args_str)
 
     if(has_atom_mask_name) then
-       RAISE_ERROR('IPModel_LJ_Calc: atom_mask_name found, but not supported', error)
+       RAISE_ERROR('TB_Calc: atom_mask_name found, but not supported', error)
     endif
   else
     this%calc_args_str = ''
@@ -570,6 +570,10 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
   endif
   call setup_atoms(this, at, noncollinear, args_str, error=error)
   PASS_ERROR(error)
+
+  if( present(local_virial) ) then
+     RAISE_ERROR("TB_Calc: local_virial calculation requested, but not implemented yet",error)
+  endif
 
   if(current_verbosity() > PRINT_NERD) then
      call write(this%at, "tb_calc_atomslog.xyz", append=.true.)

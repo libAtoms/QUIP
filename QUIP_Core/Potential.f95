@@ -456,21 +456,21 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   end subroutine potential_finalise
 
-
-  recursive subroutine potential_calc(this, at, energy, force, virial, local_energy, args_str, error)
+  recursive subroutine potential_calc(this, at, energy, force, virial, local_energy, local_virial, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: energy
     real(dp), intent(out), optional :: force(:,:)
     real(dp), intent(out), optional :: virial(3,3)
+    real(dp), intent(out), optional :: local_virial(:,:)
     real(dp), intent(out), optional :: local_energy(:)
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
 
-    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
     type(Dictionary) :: params
-    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, extra_args_str
-    character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy
+    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
+    character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
 
     INIT_ERROR(error)
 
@@ -479,6 +479,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call param_register(params, "virial", "", calc_virial)
     call param_register(params, "force", "", calc_force)
     call param_register(params, "local_energy", "", calc_local_energy)
+    call param_register(params, "local_virial", "", calc_local_virial)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
        RAISE_ERROR('Potential_Calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
@@ -538,6 +539,22 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
     endif
 
+    use_calc_local_virial = trim(calc_local_virial)
+    if (present(local_virial)) then
+       if (len_trim(calc_local_virial) == 0) then ! have local_virial optional but not args_str - add property from pointer in new property name
+	  use_calc_local_virial = "local_virial"
+	  do while (has_property(at, trim(use_calc_local_virial)))
+	    use_calc_local_virial = "T"//trim(use_calc_local_virial)
+	  end do
+	  extra_args_str = trim(extra_args_str) // " local_virial="//trim(use_calc_local_virial)
+	  call add_property_from_pointer(at, trim(use_calc_local_virial), local_virial)
+       else ! has local_virial optional _and_ args_str - add property with its own storage
+	  call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
+       endif
+    else if (len_trim(calc_local_virial) > 0) then ! no optional, have args_str - add property with its own storage
+       call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
+    endif
+
     ! do actual calculation using args_str
     if (this%is_simple) then
        call Calc(this%simple, at, trim(args_str)//" "//trim(extra_args_str), error=error)
@@ -586,6 +603,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 	call remove_property(at, trim(use_calc_local_energy))
       else
 	local_energy = at_local_energy_ptr
+      endif
+    endif
+    if (present(local_virial)) then
+      if (len_trim(calc_local_virial) == 0) then ! property should be pointer to local_virial optional
+	call remove_property(at, trim(use_calc_local_virial))
+      else
+	local_virial = at_local_virial_ptr
       endif
     endif
 

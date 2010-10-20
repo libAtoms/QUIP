@@ -63,14 +63,14 @@
     integer, intent(out), optional :: error
 
     real(dp) :: energy, virial(3,3)
-    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
 
     real(dp) :: my_e_1, my_e_2
     real(dp), allocatable :: my_local_e_1(:)
-    real(dp), allocatable :: my_f_1(:,:)
+    real(dp), allocatable :: my_f_1(:,:), my_local_virial_1(:,:)
     real(dp) :: my_virial_1(3,3)
     type(Dictionary) :: params
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial
 
     INIT_ERROR(error)
 
@@ -79,6 +79,7 @@
     call param_register(params,"force", "", calc_force)
     call param_register(params,"virial", "", calc_virial)
     call param_register(params,"local_energy", "", calc_local_energy)
+    call param_register(params,"local_virial", "", calc_local_virial)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Sum_calc args_str')) then
        RAISE_ERROR('Potential_Sum_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
@@ -98,6 +99,12 @@
        allocate(my_f_1(3, at%N))
        my_f_1 = at_force_ptr
     endif
+    if (len_trim(calc_local_virial) > 0) then
+       call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr)
+       allocate(my_local_virial_1(9, at%N))
+       my_local_virial_1 = at_local_virial_ptr
+    endif
+
 
     call calc(this%pot2, at, args_str=args_str, error=error)
     PASS_ERROR(error)
@@ -113,9 +120,12 @@
     endif
     if (len_trim(calc_local_energy) > 0) at_local_energy_ptr = my_local_e_1 + at_local_energy_ptr
     if (len_trim(calc_force) > 0) at_force_ptr = my_f_1 + at_force_ptr
+    if (len_trim(calc_local_virial) > 0) at_local_virial_ptr = my_local_virial_1 + at_local_virial_ptr
 
     if (allocated(my_local_e_1)) deallocate(my_local_e_1)
     if (allocated(my_f_1)) deallocate(my_f_1)
+    if (allocated(my_local_virial_1)) deallocate(my_local_virial_1)
+
   end subroutine Potential_Sum_Calc
 
   recursive function Potential_Sum_Cutoff(this)

@@ -137,11 +137,11 @@ end subroutine IPModel_FS_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_FS), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}. 
-  real(dp), intent(out), optional :: f(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)  !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -157,17 +157,25 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
   ! private variables for open-mp 
-  real(dp) :: private_virial(3,3), private_f(3,at%N), private_e
+  real(dp) :: private_virial(3,3), private_e, virial_i(3,3)
+  real(dp), allocatable, dimension(:,:) :: private_f
 
   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(virial)) virial = 0.0_dp
-  if (present(f)) then 
-     if(size(f,1) .ne. 3 .or. size(f,2) .ne. at%N) call system_abort('IPMOdel_FS_Calc: f is the wrong size')
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_FS_Calc', error)
+     local_e = 0.0_dp
+  endif
+  if (present(f)) then
+     call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_FS_Calc', error)
      f = 0.0_dp
   end if
+  if (present(virial)) virial = 0.0_dp
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_FS_Calc', error)
+     local_virial = 0.0_dp
+  endif
 
   atom_mask_pointer => null()
   if(present(args_str)) then
@@ -188,11 +196,14 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
      endif
   endif
 
-!$omp parallel private(i,ji,j,ti,tj,phi_tot,sqrt_phi_tot,dU,Ui,drij,rij_mag,private_virial,private_f,private_e)
+!$omp parallel private(i,ji,j,ti,tj,phi_tot,sqrt_phi_tot,dU,Ui,drij,rij_mag,private_virial, virial_i,private_f,private_e)
 
   if (present(e)) private_e = 0.0_dp
   if (present(virial)) private_virial = 0.0_dp
-  if (present(f)) private_f = 0.0_dp
+  if (present(f)) then
+    allocate(private_f(3,at%N))
+    private_f = 0.0_dp
+  endif                        
 
 !$omp do 
   do i=1, at%N
@@ -252,9 +263,9 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
           private_f(:,i) = private_f(:,i) + dU * drij(:)
           private_f(:,j) = private_f(:,j) - dU * drij(:)
         endif
-        if (present(virial)) then
-            private_virial = private_virial - dU*(drij .outer. drij)*rij_mag
-        endif
+        if (present(virial).or.present(local_virial)) virial_i = dU*(drij .outer. drij)*rij_mag
+        if (present(virial)) private_virial = private_virial - virial_i
+        if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
       endif
 
    end do
@@ -262,11 +273,12 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
   end do
 
 !$omp critical
-  if(present(e)) e = e+private_e
-  if(present(virial)) virial = virial+private_virial
-  if(present(f)) f = f+private_f
+  if(present(e)) e = e + private_e
+  if(present(virial)) virial = virial + private_virial
+  if(present(f)) f = f + private_f
 !$omp end critical
 
+  if(allocated(private_f)) deallocate(private_f)
 !$omp end parallel
 
   if (present(mpi)) then
@@ -274,6 +286,7 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial) 
+     if (present(local_virial)) call sum_in_place(mpi, local_virial) 
    endif
 
 end subroutine IPModel_FS_Calc

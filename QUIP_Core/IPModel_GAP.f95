@@ -198,11 +198,11 @@ end subroutine IPModel_GAP_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error)
+subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_GAP), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional :: args_str 
   type(MPI_Context), intent(in), optional :: mpi
@@ -251,18 +251,24 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   endif
 
   if (present(local_e)) then
-     call check_size('Local_E',local_e,(/at%N/),'IPModel_GAP_Calc')
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_GAP_Calc', error)
      local_e = 0.0_dp
   endif
 
   if (present(f)) then 
-     call check_size('Force',f,(/3,at%N/),'IPModel_GAP_Calc')
+     call check_size('Force',f,(/3,at%N/),'IPModel_GAP_Calc', error)
      f = 0.0_dp
   end if
+
   if (present(virial)) then
      virial = 0.0_dp
      virial_ewald = 0.0_dp
      virial_ewald_corr = 0.0_dp
+  endif
+
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_GAP_Calc', error)
+     local_virial = 0.0_dp
   endif
 
   if(present(e) .or. present(local_e) ) then
@@ -270,7 +276,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      local_e_in = 0.0_dp
   endif
 
-  if (present(virial)) then
+  if (present(virial) .or. present(local_virial)) then
      allocate(virial_in(3,3,at%N))
      virial_in = 0.0_dp
   endif
@@ -371,7 +377,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   case default
      allocate(vec(d,at%N))
      vec = 0.0_dp
-     if(present(f) .or. present(virial)) then
+     if(present(f) .or. present(virial) .or. present(local_virial)) then
         allocate(jack(d,3*nei_max,at%N))
         jack = 0.0_dp
      endif
@@ -381,11 +387,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
   if (trim(this%coordinates) == 'bispectrum') then
      call initialise(f_hat,this%j_max,this%z0,this%cutoff)
-     if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
+     if(present(f).or.present(virial) .or. present(local_virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
   elseif (trim(this%coordinates) == 'qw') then
      call initialise(f3_hat, this%qw_l_max, this%qw_cutoff, this%qw_cutoff_f, this%qw_cutoff_r1)
      call initialise(qw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
-     if (present(f) .or. present(virial)) then
+     if (present(f) .or. present(virial) .or. present(local_virial)) then
         call initialise(df3_hat, this%qw_l_max, this%qw_cutoff, this%qw_cutoff_f, this%qw_cutoff_r1)
         call initialise(dqw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
      endif
@@ -408,7 +414,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,i))
-        if(present(f).or.present(virial)) then
+        if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
               call fourier_transform(df_hat,at,i,n,w)
               call calc_bispectrum(dbis,f_hat,df_hat)
@@ -419,7 +425,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         call fourier_transform(f3_hat, at, i)
         call calc_qw(qw, f3_hat)
         call qw2vec(qw, vec(:,i))
-        if (present(f) .or. present(virial)) then
+        if (present(f) .or. present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at, i)
               call fourier_transform(df3_hat, at, i, n)
               call calc_qw(dqw, f3_hat, df3_hat)
@@ -484,7 +490,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
            local_e_in(i) = local_e_in(i) + this%e0
         endif
 
-        if(present(f).or.present(virial)) then
+        if(present(f).or.present(virial) .or. present(local_virial)) then
            do k = 1, 3
               f_gp = 0.0_dp
        
@@ -493,7 +499,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
        
               if( present(f) ) f(k,i) = f(k,i) - f_gp_k
-              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
+              if( present(virial) .or. present(local_virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
 
               do n = 1, atoms_n_neighbours(at,i)
                  j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
@@ -503,7 +509,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
 !$omp critical
                  if( present(f) ) f(k,j) = f(k,j) - f_gp_k
-                 if( present(virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
+                 if( present(virial) .or. present(local_virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
 !$omp end critical
               enddo
        
@@ -514,7 +520,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
   if (present(mpi)) then
      if(present(f)) call sum_in_place(mpi,f)
-     if(present(virial)) call sum_in_place(mpi,virial_in)
+     if(present(virial) .or. present(local_virial)) call sum_in_place(mpi,virial_in)
+     if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
   endif
 
   if( this%do_ewald ) then
@@ -546,12 +553,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      if(allocated(f_ewald)) deallocate(f_ewald)
   endif
 
-  if (present(mpi)) then
-     if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
-  endif
   if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
+  if(present(local_virial)) then
+     do i = 1, at%N
+        local_virial(:,i) = reshape(virial_in(:,:,i),(/9/))
+     enddo
+  endif
 
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)

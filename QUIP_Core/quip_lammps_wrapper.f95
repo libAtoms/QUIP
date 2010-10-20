@@ -33,7 +33,7 @@ module QUIP_LAMMPS_wrapper_module
       real(dp), intent(out) :: quip_e                                    ! energy
       real(dp), intent(out), dimension(nlocal+nghost) :: quip_local_e    ! atomic energies
       real(dp), intent(out), dimension(3,3) :: quip_virial               ! virial
-      real(dp), intent(out), dimension(3,3,(nlocal+nghost)) :: quip_local_virial ! atomic virials
+      real(dp), intent(out), dimension(9,(nlocal+nghost)) :: quip_local_virial ! atomic virials
       real(dp), intent(out), dimension(3,(nlocal+nghost)) :: quip_force  ! force
 
       integer :: i, j, n, nn, ni, i_n1n, j_n2n, error
@@ -108,7 +108,7 @@ module QUIP_LAMMPS_wrapper_module
       enddo
 
       ! Call the QUIP potential.
-      call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,args_str="atom_mask_name=local")
+      call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local")
 
    endsubroutine quip_lammps_wrapper
 

@@ -137,11 +137,11 @@ end subroutine IPModel_LJ_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_LJ), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -167,14 +167,20 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(virial)) virial = 0.0_dp
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_LJ_Calc', error)
+     local_e = 0.0_dp
+  endif
   if (present(f)) then 
-     if(size(f,1) .ne. 3 .or. size(f,2) .ne. at%Nbuffer) then
-        RAISE_ERROR('IPMOdel_LJ_Calc: f is the wrong size', error)
-     endif
+     call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_LJ_Calc', error)
      f = 0.0_dp
   end if
+  if (present(virial)) virial = 0.0_dp
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_LJ_Calc', error)
+     local_virial = 0.0_dp
+     RAISE_ERROR("IPModel_LJ_Calc: local_virial calculation requested but not supported yet.", error)
+  endif
 
   if (present(args_str)) then
     if (len_trim(args_str) > 0) then

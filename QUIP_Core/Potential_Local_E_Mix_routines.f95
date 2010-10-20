@@ -234,7 +234,7 @@
     character(FIELD_LENGTH) :: cc_args_str
 
     real(dp), pointer :: local_e_pot1(:), local_e_pot2(:)
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, local_energy_args_str, local_energy_name
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, local_energy_args_str, local_energy_name
 
     INIT_ERROR(error)
 
@@ -251,6 +251,7 @@
     call param_register(params, 'force', '', calc_force)
     call param_register(params, 'local_energy', '', calc_local_energy)
     call param_register(params, 'virial', '', calc_virial)
+    call param_register(params, 'local_virial', '', calc_local_virial)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix args_str') ) &
       call system_abort("Potential_Local_E_Mix failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
@@ -275,8 +276,8 @@
        call system_abort('hybrid_calc_energy_mix: atoms structure has no "weight_region1" property')
 
     if(.not. all(hybrid_mark == HYBRID_NO_MARK)) then
-      if(len_trim(calc_virial) > 0) then
-         RAISE_ERROR('hybrid_calc_energy_mix: virial yet implemented when QM region is active', error)
+      if(len_trim(calc_virial) > 0 .or. len_trim(calc_local_virial)) then
+         RAISE_ERROR('hybrid_calc_energy_mix: virial or local_virial not yet implemented when QM region is active', error)
       end if
     endif
 
