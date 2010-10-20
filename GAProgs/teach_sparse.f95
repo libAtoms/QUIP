@@ -272,8 +272,11 @@ program teach_sparse_program
   ! number of sparse points, nx and nxd are the number of bispectra and partial
   ! derivatives.
   if(main_teach_sparse%do_sparse) then
-     mem_required = 2.0_dp * real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
+     mem_required = real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
      + real(size(main_teach_sparse%xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
+#ifdef SPEEDOPT
+     mem_required = 2.0_dp * mem_required
+#endif                  
   else
      mem_required = 3.0_dp*real(size(main_teach_sparse%x,2),dp)**2 * real(dp,dp) / (1024.0_dp**3)
   endif
