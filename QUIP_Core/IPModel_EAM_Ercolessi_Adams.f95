@@ -166,11 +166,11 @@ end subroutine IPModel_EAM_ErcolAd_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_EAM_ErcolAd), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -181,7 +181,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, m
   integer :: i, ji, j, ti, tj
   real(dp) :: r_ij_mag, r_ij_hat(3)
   real(dp) :: F_n, dF_n
-  real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3)
+  real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3), virial_i(3,3)
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
@@ -190,10 +190,28 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, m
 
   INIT_ERROR(error)
 
-  if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(f)) f = 0.0_dp
-  if (present(virial)) virial = 0.0_dp
+  if (present(e)) then
+     e = 0.0_dp
+  endif
+
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_EAM_ErcolAd_Calc', error)
+     local_e = 0.0_dp
+  endif
+
+  if (present(f)) then 
+     call check_size('Force',f,(/3,at%N/),'IPModel_EAM_ErcolAd_Calc', error)
+     f = 0.0_dp
+  end if
+
+  if (present(virial)) then
+     virial = 0.0_dp
+  endif
+
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_EAM_ErcolAd_Calc', error)
+     local_virial = 0.0_dp
+  endif
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
@@ -255,27 +273,29 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, m
       if (present(local_e)) local_e(i) = local_e(i) + de
 #endif
 
-      if (present(f) .or. present(virial)) then
-	spline_rho_d_val = eam_spline_rho_d(this,tj,r_ij_mag)
-	spline_V_d_val = eam_spline_V_d(this,ti,tj,r_ij_mag)
-	spline_V_d_val = spline_V_d_val - 2.0_dp*this%V_F_shift(ti)*spline_rho_d_val
-	if (present(f)) then
-	  drho_i_dri = drho_i_dri + spline_rho_d_val*r_ij_hat
+      if (present(f) .or. present(virial) .or. present(local_virial)) then
+         spline_rho_d_val = eam_spline_rho_d(this,tj,r_ij_mag)
+         spline_V_d_val = eam_spline_V_d(this,ti,tj,r_ij_mag)
+         spline_V_d_val = spline_V_d_val - 2.0_dp*this%V_F_shift(ti)*spline_rho_d_val
+         if (present(f)) then
+            drho_i_dri = drho_i_dri + spline_rho_d_val*r_ij_hat
 #ifdef PAIR
-	  f(:,i) = f(:,i) + 0.5_dp*w_f*spline_V_d_val*r_ij_hat
-	  f(:,j) = f(:,j) - 0.5_dp*w_f*spline_V_d_val*r_ij_hat
+            f(:,i) = f(:,i) + 0.5_dp*w_f*spline_V_d_val*r_ij_hat
+            f(:,j) = f(:,j) - 0.5_dp*w_f*spline_V_d_val*r_ij_hat
 #endif
-	endif
-	if (present(virial)) then
-	  virial_factor = (r_ij_hat .outer. r_ij_hat)*r_ij_mag
-	  drho_i_drij_outer_rij = drho_i_drij_outer_rij + spline_rho_d_val*virial_factor
+         endif
+         if (present(virial) .or. present(local_virial)) then
+            virial_factor = (r_ij_hat .outer. r_ij_hat)*r_ij_mag
+            drho_i_drij_outer_rij = drho_i_drij_outer_rij + spline_rho_d_val*virial_factor
+            virial_i = 0.5_dp * w_f*spline_V_d_val*virial_factor
+         endif
 #ifdef PAIR
-	  virial(:,:) = virial(:,:) - 0.5_dp * w_f*spline_V_d_val*virial_factor
+         if (present(virial) ) virial = virial - virial_i
+         if (present(local_virial) ) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 #endif
-	endif
-      end if
+      endif
 
-    end do ! ji
+    enddo ! ji
 
     if (associated(w_e)) w_f = w_e(i)
 
@@ -288,11 +308,13 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, m
       if (present(local_e)) local_e(i) = local_e(i) + de
     endif
 
-    if (present(f) .or. present(virial)) then
+    if (present(f) .or. present(virial) .or. present(local_virial)) then
       dF_n = eam_spline_F_d(this, ti, rho_i) 
       dF_n = dF_n + this%V_F_shift(ti)
       if (present(f)) f(:,i) = f(:,i) + w_f*dF_n*drho_i_dri
-      if (present(virial)) virial = virial - w_f*dF_n*drho_i_drij_outer_rij
+      if (present(virial) .or. present(local_virial)) virial_i = w_f*dF_n*drho_i_drij_outer_rij
+      if (present(virial))  virial = virial - virial_i
+      if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
       if (present(f)) then
 	! cross terms for forces
@@ -309,13 +331,14 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, m
     endif
 #endif
 
-  end do ! i
+  enddo ! i
 
   if (present(mpi)) then
      if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
 
 end subroutine IPModel_EAM_ErcolAd_Calc

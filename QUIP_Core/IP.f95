@@ -484,11 +484,11 @@ subroutine IP_setup_atoms(this, at)
 
 end subroutine IP_setup_atoms
 
-subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, error)
+subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str, error)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at                
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
-  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional      :: args_str 
   integer, intent(out), optional :: error
@@ -503,49 +503,49 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, error)
 
   select case (this%functional_form)
     case (FF_GAP)
-      call calc(this%ip_gap, at, energy, local_e, f, virial,args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_gap, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_LJ)
-      call calc(this%ip_lj, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_lj, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
       PASS_ERROR(error)
     case (FF_Morse)
-      call calc(this%ip_morse, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_morse, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_FC)
-      call calc(this%ip_fc, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_fc, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_SW)
-      call calc(this%ip_sw, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_sw, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Tersoff)
-      call calc(this%ip_tersoff, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_tersoff, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_EAM_ErcolAd)
-      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, local_virial, virial, args_str, mpi=this%mpi_local, error=error)
     case(FF_Brenner)
-      call calc(this%ip_Brenner, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_Brenner, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case(FF_FB)
-      call calc(this%ip_FB, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_FB, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case(FF_Si_MEAM)
-      call calc(this%ip_Si_MEAM, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_Si_MEAM, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_FS)
-      call calc(this%ip_fs, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_fs, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_BOP)
-      call calc(this%ip_bop, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_bop, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Brenner_Screened)
-      call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Brenner_2002)
-      call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
 #ifdef HAVE_ASAP
     case (FF_ASAP)
-      call calc(this%ip_asap, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_asap, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
 #endif
     case (FF_ASAP2)
-      call calc(this%ip_asap2, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_asap2, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_GLUE)
-      call calc(this%ip_Glue, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_Glue, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_PartridgeSchwenke)
-      call calc(this%ip_PartridgeSchwenke, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_PartridgeSchwenke, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Einstein)
-      call calc(this%ip_Einstein, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_Einstein, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     ! add new IP here
     case (FF_Template)
-      call calc(this%ip_Template, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case default
       RAISE_ERROR("IP_Calc confused by functional_form " // this%functional_form, error)
   end select
@@ -613,11 +613,11 @@ subroutine IP_Print(this, file, error)
 
 end subroutine IP_Print
 
-subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
+subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial, args_str)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)
   character(len=STRING_LENGTH), intent(in), optional      :: args_str 
 
@@ -638,7 +638,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
     if (n_groups*pgroup_size == this%mpi_glob%n_procs) then
       call setup_parallel_groups(this, this%mpi_glob, pgroup_size)
       call system_timer("IP_parallel", do_always = .true.)
-      call calc(this, at, energy, local_e, f, virial, args_str)
+      call calc(this, at, energy, local_e, f, virial, local_virial, args_str)
       call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time)
       this_time = max(this%mpi_glob, this_time)
       call print(pgroup_size//' '//this_time, PRINT_VERBOSE)

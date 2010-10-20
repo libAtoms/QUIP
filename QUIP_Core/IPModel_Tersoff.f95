@@ -137,11 +137,11 @@ end subroutine IPModel_Tersoff_Finalise
 !% Derivatives are taken from M. Tang, Ph.D. Thesis, MIT 1995.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Tersoff), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional :: args_str 
   type(MPI_Context), intent(in), optional :: mpi
@@ -175,18 +175,35 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
   real(dp) :: dzeta_ij_dr_ij_mag, dzeta_ij_dr_ik_mag, dzeta_ij_dr_jk_mag
   real(dp) :: db_ij_dr_ij_mag, db_ij_dr_ik_mag, db_ij_dr_jk_mag
   real(dp) :: dV_ij_A_dr_ij_mag, dV_ij_A_dr_ik_mag, dV_ij_A_dr_jk_mag
+  real(dp) :: virial_i(3,3)
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
 
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(f)) f = 0.0_dp
-  if (present(virial)) virial = 0.0_dp
+
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_Tersoff_Calc', error)
+     local_e = 0.0_dp
+  endif
+
+  if (present(f)) then 
+     call check_size('Force',f,(/3,at%N/),'IPModel_Tersoff_Calc', error)
+     f = 0.0_dp
+  end if
+
+  if (present(virial)) then
+     virial = 0.0_dp
+  endif
+
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_Tersoff_Calc', error)
+     local_virial = 0.0_dp
+  endif
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
@@ -299,7 +316,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
 	endif
       endif
 
-      if (present(f) .or. present(virial)) then
+      if (present(f) .or. present(virial) .or. present(local_virial)) then
 	dr_ij_mag_dr_i = -dr_ij
 	dr_ij_mag_dr_j = dr_ij
 
@@ -309,9 +326,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
 	  f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_i(:)
 	  f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_j(:)
 	endif
-	if (present(virial)) then
-	  virial = virial - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * (dr_ij .outer. dr_ij) * dr_ij_mag
-	endif
+	if (present(virial) .or. present(local_virial)) virial_i = 0.5_dp*w_f * dV_ij_R_dr_ij_mag * (dr_ij .outer. dr_ij) * dr_ij_mag
+        if (present(virial)) virial = virial - virial_i
+        if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
 	if (z_ij(ji) .fne. 0.0_dp) then
 	  beta_i_db_ij_dz_ij = beta_i* ( -0.5_dp*chi_ij * &
@@ -374,11 +391,14 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
 	    f(:,k) = f(:,k) - w_f*( 0.5_dp*dV_ij_A_dr_ik_mag*dr_ik_mag_dr_k(:) + &
 				    0.5_dp*dV_ij_A_dr_jk_mag*dr_jk_mag_dr_k(:) )
 	  end if
-	  if (present(virial)) then
-	    virial = virial - w_f*0.5_dp*( dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag + &
-					   dV_ij_A_dr_ik_mag*(dr_ik .outer. dr_ik)*dr_ik_mag + &
-					   dV_ij_A_dr_jk_mag*(dr_jk .outer. dr_jk)*dr_jk_mag)
-	  end if
+
+	  if (present(virial) .or. present(local_virial)) virial_i = &
+	    w_f*0.5_dp*( dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag + &
+            dV_ij_A_dr_ik_mag*(dr_ik .outer. dr_ik)*dr_ik_mag + &
+            dV_ij_A_dr_jk_mag*(dr_jk .outer. dr_jk)*dr_jk_mag)
+
+          if (present(virial)) virial = virial - virial_i
+          if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
 	end do ! ki
 	dV_ij_A_dr_ij_mag = f_C_ij_d*(-b_ij*BB_ij*exp_mu_ij) + &
@@ -388,9 +408,10 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
 	  f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_i(:)
 	  f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_j(:)
 	endif
-	if (present(virial)) then
-	  virial = virial - 0.5_dp*w_f * dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag
-	endif
+	if (present(virial)) virial_i = &
+            0.5_dp*w_f * dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag
+        if (present(virial)) virial = virial - virial_i
+        if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
       endif ! present(f)
 
@@ -403,6 +424,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
   atom_mask_pointer => null()
 

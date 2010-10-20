@@ -113,7 +113,7 @@
     character(STRING_LENGTH) :: extra_calc_args
 
     character(FIELD_LENGTH) :: psf_print
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_EVB_gap
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, calc_EVB_gap
     character(STRING_LENGTH) :: use_calc_energy
     character(10240) :: new_args_str
 
@@ -135,6 +135,7 @@
     call param_register(params, 'force', '', calc_force)
     call param_register(params, 'virial', '', calc_virial)
     call param_register(params, 'local_energy', '', calc_local_energy)
+    call param_register(params, 'local_virial', '', calc_local_virial)
     call param_register(params, 'EVB_gap', '', calc_EVB_gap)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_calc args_str')) then
        RAISE_ERROR('Potential_EVB_calc failed to parse args_str="'//trim(args_str)//'"', error)
@@ -143,8 +144,8 @@
 
     !CHECK ARGUMENTS
 
-    if (len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0) then
-       RAISE_ERROR('Potential_EVB_calc: supports only energy and forces, not virial or local_energy', error)
+    if (len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0 .or. len_trim(calc_local_virial) > 0) then
+       RAISE_ERROR('Potential_EVB_calc: supports only energy and forces, not virial, local_energy or local_virial', error)
     endif
 
     if (len_trim(calc_force) > 0) then

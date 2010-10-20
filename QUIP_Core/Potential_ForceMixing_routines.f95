@@ -256,7 +256,7 @@
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
     integer :: fit_hops
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
@@ -312,6 +312,7 @@
     call param_register(params, 'force', '', calc_force)
     call param_register(params, 'virial', '', calc_virial)
     call param_register(params, 'local_energy', '', calc_local_energy)
+    call param_register(params, 'local_virial', '', calc_local_virial)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_Calc args_str') ) then
       RAISE_ERROR("Potential_FM_calc failed to parse args_str='"//trim(args_str)//"'", error)
@@ -369,9 +370,9 @@
        call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'distance_ramp')
     end if
 
-    if (len_trim(calc_energy) > 0 .or. len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0 .or. &
+    if (len_trim(calc_energy) > 0 .or. len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0 .or. len_trim(calc_local_virial) > 0 .or. &
         len_trim(calc_force) <= 0) then
-       RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial, or local_energy', error)
+       RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial, local_energy or local_virial', error)
     endif
 
     allocate(f_mm(3,at%N),f_qm(3,at%N))

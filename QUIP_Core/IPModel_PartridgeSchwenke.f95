@@ -477,11 +477,11 @@ subroutine IPModel_PartridgeSchwenke_Finalise(this)
 end subroutine IPModel_PartridgeSchwenke_Finalise
 
 
-subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_PartridgeSchwenke), intent(inout):: this
   type(Atoms), intent(inout)      :: at
   real(dp), intent(out), optional :: e, local_e(:)
-  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -507,6 +507,9 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
   if(present(virial)) then
      RAISE_ERROR('virial not implemented', error)
   end if
+  if (present(local_virial)) then
+     RAISE_ERROR("IPModel_PartridgeSchwenke_Calc: local_virial calculation requested but not supported yet.", error)
+  endif
 
   if(.not. present(e)) return ! nothing to do
 

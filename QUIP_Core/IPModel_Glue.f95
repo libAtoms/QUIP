@@ -142,11 +142,11 @@ subroutine IPModel_Glue_Finalise(this)
 end subroutine IPModel_Glue_Finalise
 
 
-subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Glue), intent(inout):: this
   type(Atoms), intent(inout)      :: at
   real(dp), intent(out), optional :: e, local_e(:)
-  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -166,14 +166,24 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
   ! For calculating forces and the virial tensor
   real(dp) :: drho_i_drij
   real(dp) :: drho_i_dri(3), potential_deriv
-  real(dp), dimension(3,3) :: drho_i_drij_outer_rij
+  real(dp), dimension(3,3) :: drho_i_drij_outer_rij, virial_i
     
   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
-  if (present(f)) f = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_Glue_Calc', error)
+     local_e = 0.0_dp
+  endif
+  if (present(f)) then
+     call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Glue_Calc', error)
+     f = 0.0_dp
+  end if
   if (present(virial)) virial = 0.0_dp
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Glue_Calc', error)
+     local_virial = 0.0_dp
+  endif
 
   atom_mask_pointer => null()
   if(present(args_str)) then
@@ -233,7 +243,9 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
     end do ! ji
     if(present(local_e)) local_e(i) = eam_spline_potential(this, ti, rho_local)
     if(present(e)) e = e + eam_spline_potential(this, ti, rho_local)
-    if(present(virial)) virial = virial - potential_deriv * drho_i_drij_outer_rij
+    if(present(virial) .or. present(local_virial)) virial_i = potential_deriv * drho_i_drij_outer_rij
+    if(present(virial))  virial = virial - virial_i
+    if(present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
   end do ! i
 end subroutine IPModel_Glue_Calc
 

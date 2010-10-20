@@ -223,7 +223,7 @@ subroutine Callbackpot_Print(this, file)
 
 end subroutine Callbackpot_Print
 
-subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str, error)
+subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, local_virial, args_str, error)
   type atoms_ptr_type
      type(atoms), pointer :: p
   end type atoms_ptr_type
@@ -231,7 +231,7 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), target, optional :: local_e(:)
-  real(dp), intent(out), optional :: forces(:,:)
+  real(dp), intent(out), optional :: forces(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
@@ -239,8 +239,8 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   type(Atoms), target :: at_copy
   type(atoms_ptr_type) :: at_ptr
   integer :: at_ptr_i(12)
-  real(dp), pointer :: local_e_ptr(:), force_ptr(:,:)
-  logical :: calc_energy, calc_local_e, calc_force, calc_virial
+  real(dp), pointer :: local_e_ptr(:), force_ptr(:,:), local_virial_ptr(:,:)
+  logical :: calc_energy, calc_local_e, calc_force, calc_virial, calc_local_virial
 
   INIT_ERROR(error)
 
@@ -248,6 +248,7 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   calc_local_e = .false.
   calc_force = .false.
   calc_virial = .false.
+  calc_local_virial = .false.
   if (present(energy)) then
      energy = 0.0_dp
      calc_energy = .true.
@@ -264,6 +265,10 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
      virial = 0.0_dp
      calc_virial = .true.
   end if
+  if (present(local_virial)) then
+     local_virial = 0.0_dp
+     calc_local_virial = .true.
+  end if
 
   if (this%callback_id < 0) then
      RAISE_ERROR('callbackpot_calc: callback_id < 0', error)
@@ -274,6 +279,7 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   call set_value(at_copy%params, 'calc_local_e', calc_local_e)
   call set_value(at_copy%params, 'calc_virial', calc_virial)
   call set_value(at_copy%params, 'calc_force', calc_force)
+  call set_value(at_copy%params, 'calc_local_virial', calc_local_virial)
   call set_value(at_copy%params, 'callback_id', this%callback_id)
   call set_value(at_copy%params, 'label', this%label)
 
@@ -309,6 +315,14 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
      end if
   end if
 
+  if (present(local_virial)) then
+     if (.not. assign_pointer(at_copy, 'local_virial', local_virial_ptr)) then
+        call print('WARNING Callbackpot_calc: "local_virial" requested but not returned by callback')
+     else
+        local_virial(:,:) = local_virial_ptr
+     end if
+  end if
+
   if (this%mpi%active) then
      ! Share results with other nodes
      if (present(energy))  call bcast(this%mpi, energy)
@@ -316,6 +330,7 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
 
      if (present(forces))  call bcast(this%mpi, forces)
      if (present(virial))  call bcast(this%mpi, virial)
+     if (present(local_virial))  call bcast(this%mpi, local_virial)
   end if
 
   call finalise(at_copy)

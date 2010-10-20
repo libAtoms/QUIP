@@ -200,7 +200,7 @@
     integer, intent(out), optional :: error
 
     real(dp) :: energy, virial(3,3)
-    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
 
     type(Atoms) :: cluster
     type(Table) :: cluster_info
@@ -209,8 +209,8 @@
 
     real(dp) :: cluster_energy_1, cluster_energy_2
     real(dp), allocatable :: cluster_local_e_1(:), cluster_local_e_2(:)
-    real(dp), pointer :: cluster_force_ptr(:,:), cluster_local_energy_ptr(:)
-    real(dp), allocatable :: cluster_force_1(:,:), cluster_force_2(:,:)
+    real(dp), pointer :: cluster_force_ptr(:,:), cluster_local_energy_ptr(:), cluster_local_virial_ptr(:,:)
+    real(dp), allocatable :: cluster_force_1(:,:), cluster_force_2(:,:), cluster_local_virial_1(:,:), cluster_local_virial_2(:,:)
     real(dp) :: cluster_virial_1(3,3), cluster_virial_2(3,3)
 
     integer, pointer :: hybrid_mark(:), index(:), termindex(:)
@@ -218,7 +218,7 @@
     logical :: dummy
     integer i
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial
 
     INIT_ERROR(error)
 
@@ -229,6 +229,7 @@
     call param_register(params, "force", "", calc_force)
     call param_register(params, "virial", "", calc_virial)
     call param_register(params, "local_energy", "", calc_local_energy)
+    call param_register(params, "local_virial", "", calc_local_virial)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Calc_ONIOM args_str')) then
       RAISE_ERROR("Calc_ONIOM failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -269,6 +270,7 @@
 
     if (len_trim(calc_force) > 0) call assign_property_pointer(at, trim(calc_force), at_force_ptr)
     if (len_trim(calc_local_energy) > 0) call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
+    if (len_trim(calc_local_virial) > 0) call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr)
 
     ! do calculation in whole system first using pot_region2
     call system_timer("calc_oniom/calc_whole_sys")
@@ -295,6 +297,7 @@
     call system_timer("calc_oniom/calc_cluster_1")
     allocate(cluster_force_1(3,cluster%N))
     allocate(cluster_local_e_1(cluster%N))
+    allocate(cluster_local_virial_1(9,cluster%N))
     call Calc(this%pot_region1, cluster, args_str=args_str)
     if (len_trim(calc_force) > 0) then
       call assign_property_pointer(cluster, trim(calc_force), cluster_force_ptr, error=error)
@@ -314,6 +317,11 @@
       RAISE_ERROR("Calc_ONIOM failed to get value for local_energy property '"//trim(calc_local_energy)//"'", ERROR)
       cluster_local_e_1 = cluster_local_energy_ptr*this%E_scale_pot1
     endif
+    if (len_trim(calc_local_virial) > 0) then
+      call assign_property_pointer(cluster, trim(calc_local_virial), cluster_local_virial_ptr, error=error)
+      PASS_ERROR_WITH_INFO("Calc_ONIOM failed to get value for local_virial property '"//trim(calc_local_virial)//"'", error)
+      cluster_local_virial_1 = cluster_local_virial_ptr*this%E_scale_pot1
+    endif
     call system_timer("calc_oniom/calc_cluster_1")
 
     ! unrescale cluster
@@ -324,11 +332,13 @@
     call system_timer("calc_oniom/calc_cluster_2")
     allocate(cluster_force_2(3,cluster%N))
     allocate(cluster_local_e_2(cluster%N))
+    allocate(cluster_local_virial_2(9,cluster%N))
     call Calc(this%pot_region2, cluster, args_str=args_str)
     if (len_trim(calc_force) > 0) cluster_force_2 = cluster_force_ptr
     if (len_trim(calc_virial) > 0) call get_param_value(cluster, trim(calc_virial), cluster_virial_2)
     if (len_trim(calc_energy) > 0) call get_param_value(cluster, trim(calc_energy), cluster_energy_2)
     if (len_trim(calc_local_energy) > 0) cluster_local_e_2 = cluster_local_energy_ptr
+    if (len_trim(calc_local_virial) > 0) cluster_local_virial_2 = cluster_local_virial_ptr
     call system_timer("calc_oniom/calc_cluster_2")
 
     call system_timer("calc_oniom/combine")
@@ -368,13 +378,20 @@
       energy = energy + cluster_energy_1 - cluster_energy_2
       call set_param_value(at, trim(calc_energy), energy)
     endif
+    if(len_trim(calc_local_virial) > 0) then
+      do i=1,cluster%N
+        at_local_virial_ptr(:,index(i)) = at_local_virial_ptr(:,index(i)) + cluster_local_local_virial_1(:,i) - cluster_local_local_virial_2(:,i)
+      end do
+    end if
     call system_timer("calc_oniom/combine")
 
     call finalise(cluster)
     deallocate(cluster_force_1)
     deallocate(cluster_local_e_1)
+    deallocate(cluster_local_virial_1)
     deallocate(cluster_force_2)
     deallocate(cluster_local_e_2)
+    deallocate(cluster_local_virial_2)
 
     call system_timer("calc_oniom")
   end subroutine calc_oniom

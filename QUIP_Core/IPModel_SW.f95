@@ -135,11 +135,11 @@ end subroutine IPModel_SW_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_SW), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -154,6 +154,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 
   real(dp) :: drij_dri(3), drij_drj(3), drik_dri(3), drik_drk(3)
   real(dp) :: dcos_ijk_dri(3), dcos_ijk_drj(3), dcos_ijk_drk(3)
+  real(dp) :: virial_i(3,3)
 
   real(dp) :: de, de_dr, de_drij, de_drik, de_dcos_ijk
   real(dp) :: cur_cutoff
@@ -163,20 +164,36 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
+  logical, dimension(:), pointer :: atom_mask_pointer
 
 #ifdef _OPENMP
   real(dp) :: private_virial(3,3), private_e
-  real(dp), allocatable :: private_f(:,:), private_local_e(:)
+  real(dp), allocatable :: private_f(:,:), private_local_e(:), private_local_virial(:,:)
 #endif
 
   INIT_ERROR(error)
 
   call print("IPModel_SW_Calc starting ", PRINT_ANAL)
   if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(f)) f = 0.0_dp
+
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_SW_Calc', error)
+     local_e = 0.0_dp
+  endif
+
+  if (present(f)) then 
+     call check_size('Force',f,(/3,at%N/),'IPModel_SW_Calc', error)
+     f = 0.0_dp
+  end if
+
   if (present(virial)) virial = 0.0_dp
 
+  if (present(local_virial)) then
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_GAP_Calc', error)
+     local_virial = 0.0_dp
+  endif
+
+  atom_mask_pointer => null()
   if (present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
@@ -186,14 +203,17 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
      endif
      call finalise(params)
      if(has_atom_mask_name) then
-        RAISE_ERROR('IPModel_SW_Calc: atom_mask_name found, but not supported', error)
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        call system_abort("IPModel_SW_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
+     else
+        atom_mask_pointer => null()
      endif
   endif
 
   if (.not.assign_pointer(at,"weight", w_e)) nullify(w_e)
 
 #ifdef _OPENMP
-!$omp parallel private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, n_neigh_i)
+!$omp parallel private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i)
 
   if (present(e)) private_e = 0.0_dp
   if (present(local_e)) then
@@ -205,6 +225,10 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
     private_f = 0.0_dp
   endif
   if (present(virial)) private_virial = 0.0_dp
+  if (present(local_virial)) then
+    allocate(private_local_virial(9,at%N))
+    private_local_virial = 0.0_dp
+  endif
 
 !$omp do
 #endif
@@ -214,6 +238,11 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
+
+    if(associated(atom_mask_pointer)) then
+       if(.not. atom_mask_pointer(i)) cycle
+    endif
+
     ti = get_type(this%type_of_atomic_num, at%Z(i))
     if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
@@ -240,11 +269,9 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	de = 0.5_dp*this%eps2(ti,tj)*f2(this, drij_mag, ti, tj)
 	if (present(local_e)) then
 #ifdef _OPENMP
-	  private_local_e(i) = private_local_e(i) + 0.5_dp*de
-	  private_local_e(j) = private_local_e(j) + 0.5_dp*de
+	  private_local_e(i) = private_local_e(i) + de
 #else
-	  local_e(i) = local_e(i) + 0.5_dp*de
-	  local_e(j) = local_e(j) + 0.5_dp*de
+	  local_e(i) = local_e(i) + de
 #endif
 	endif
 	if (present(e)) then
@@ -256,7 +283,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	endif
       endif
 
-      if (present(f) .or. present(virial)) then
+      if (present(f) .or. present(virial) .or. present(local_virial)) then
 	de_dr = 0.5_dp*this%eps2(ti,tj)*df2_dr(this, drij_mag, ti, tj)
 	if (present(f)) then
 #ifdef _OPENMP
@@ -267,13 +294,24 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	  f(:,j) = f(:,j) - de_dr*w_f*drij
 #endif
 	endif
+
+        if(present(virial) .or. present(local_virial)) virial_i = de_dr*w_f*(drij .outer. drij)*drij_mag
+
 	if (present(virial)) then
 #ifdef _OPENMP
-	  private_virial = private_virial - de_dr*w_f*(drij .outer. drij)*drij_mag
+	  private_virial = private_virial - virial_i
 #else
-	  virial = virial - de_dr*w_f*(drij .outer. drij)*drij_mag
+	  virial = virial - virial_i
 #endif
 	endif
+        if (present(local_virial)) then
+#ifdef _OPENMP
+           private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i, (/9/))
+#else
+           local_virial(:,i) = local_virial(:,i) - reshape(virial_i, (/9/))
+#endif
+        endif
+
       endif
 
       if (associated(w_e)) then
@@ -387,17 +425,25 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	    f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
 #endif
 	  end if
+
+          if( present(virial) .or. present(local_virial) ) virial_i = &
+              w_f*this%eps3(ti,tj,tk)*( &
+	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
+	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
+	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+
 	  if (present(virial)) then
 #ifdef _OPENMP
-	    private_virial = private_virial - w_f*this%eps3(ti,tj,tk)*( &
-	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
-	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
-	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+	    private_virial = private_virial - virial_i
 #else
-	    virial = virial - w_f*this%eps3(ti,tj,tk)*( &
-	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
-	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
-	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+	    virial = virial - virial_i
+#endif
+	  end if
+	  if (present(local_virial)) then
+#ifdef _OPENMP
+	    private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
+#else
+	    local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 #endif
 	  end if
 	endif
@@ -413,7 +459,12 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
   if (present(f)) f = f + private_f
   if (present(local_e)) local_e = local_e + private_local_e
   if (present(virial)) virial = virial + private_virial
+  if (present(local_virial)) local_virial = local_virial + private_local_virial
 !$omp end critical 
+
+  if(allocated(private_f)) deallocate(private_f)
+  if(allocated(private_local_e)) deallocate(private_local_e)
+  if(allocated(private_local_virial)) deallocate(private_local_virial)
 
 !$omp end parallel
 #endif
@@ -423,6 +474,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
 
 end subroutine IPModel_SW_Calc

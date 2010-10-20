@@ -117,11 +117,11 @@ subroutine IPModel_Template_Finalise(this)
 end subroutine IPModel_Template_Finalise
 
 
-subroutine IPModel_Template_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_Template_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_Template), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:)
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -131,7 +131,22 @@ subroutine IPModel_Template_Calc(this, at, e, local_e, f, virial, args_str, mpi,
 
    INIT_ERROR(error)
 
-   call system_abort('IPModel_Calc - not implemented')
+   if (present(e)) e = 0.0_dp
+   if (present(local_e)) then
+      call check_size('Local_E',local_e,(/at%N/),'IPModel_Template_Calc', error)
+      local_e = 0.0_dp
+   endif
+   if (present(f)) then
+      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Template_Calc', error)
+      f = 0.0_dp
+   end if
+   if (present(virial)) virial = 0.0_dp
+   if (present(local_virial)) then
+      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Template_Calc', error)
+      local_virial = 0.0_dp
+   endif
+
+   RAISE_ERROR('IPModel_Calc - not implemented',error)
 
 end subroutine IPModel_Template_Calc
 

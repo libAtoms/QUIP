@@ -201,12 +201,12 @@ subroutine FilePot_Print(this, file)
 
 end subroutine FilePot_Print
 
-subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, error)
+subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial, args_str, error)
   type(FilePot_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), target, optional :: local_e(:)
-  real(dp), intent(out), optional :: forces(:,:)
+  real(dp), intent(out), optional :: forces(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
@@ -227,6 +227,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   if (present(local_e)) local_e = 0.0_dp
   if (present(forces)) forces = 0.0_dp
   if (present(virial)) virial = 0.0_dp
+  if (present(local_virial)) local_virial = 0.0_dp
   my_args_str = ''
   if (present(args_str)) my_args_str = args_str
 
@@ -286,7 +287,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command
-     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, read_extra_property_list, filepot_log=FilePot_log, error=error)
+     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, read_extra_property_list, filepot_log=FilePot_log, error=error)
      PASS_ERROR_WITH_INFO("Filepot_Calc reading output", error)
   end if
 
@@ -297,19 +298,20 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
      if (present(forces))  call bcast(this%mpi, forces)
      if (present(virial))  call bcast(this%mpi, virial)
+     if (present(local_virial))  call bcast(this%mpi, local_virial)
 
      call bcast(this%mpi, my_err)
   end if
 
 end subroutine FilePot_calc
 
-subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, read_extra_property_list, filepot_log, error)
+subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, read_extra_property_list, filepot_log, error)
   character(len=*), intent(in) :: outfile
   type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), target, optional :: local_e(:)
-  real(dp), intent(out), optional :: forces(:,:)
+  real(dp), intent(out), optional :: forces(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in) :: read_extra_property_list
   logical, intent(in), optional :: filepot_log
@@ -319,7 +321,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   type(atoms) :: at_out, primitive
   integer, pointer :: Z_p(:)
   real(dp) :: virial_1d(9)
-  real(dp), pointer :: local_e_p(:), forces_p(:,:)
+  real(dp), pointer :: local_e_p(:), forces_p(:,:), local_virial_p(:,:)
   real(dp),dimension(3)          :: QM_cell
   logical :: my_filepot_log
 
@@ -386,6 +388,13 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 	RAISE_ERROR("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", error)
     endif
     forces = forces_p
+  endif
+
+  if (present(local_virial)) then
+    if (.not. assign_pointer(at_out, 'local_virial', local_virial_p)) then
+	RAISE_ERROR("filepot_read_output needed local_virial, but couldn't find local_virial in '"//trim(outfile)//"'", error)
+    endif
+    local_virial = local_virial_p
   endif
 
   if (len_trim(read_extra_property_list) > 0) then

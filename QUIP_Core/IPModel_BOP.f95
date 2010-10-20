@@ -120,11 +120,11 @@ end subroutine IPModel_BOP_Finalise
 
 
 ! nat is the number of atoms whose energy and forces have to be computed with bop library
-subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
+subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_BOP), intent(inout):: this
    type(Atoms), intent(inout)      :: at   !Active + buffer atoms
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:)
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -149,6 +149,22 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str, mpi, erro
    character(FIELD_LENGTH) :: atom_mask_name
 
    INIT_ERROR(error)
+
+   if (present(e)) e = 0.0_dp
+   if (present(local_e)) then
+      call check_size('Local_E',local_e,(/at%N/),'IPModel_BOP_Calc', error)
+      local_e = 0.0_dp
+   endif
+   if (present(f)) then
+      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_BOP_Calc', error)
+      f = 0.0_dp
+   end if
+   if (present(virial)) virial = 0.0_dp
+   if (present(local_virial)) then
+      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_BOP_Calc', error)
+      local_virial = 0.0_dp
+      RAISE_ERROR("IPModel_BOP_Calc: local_virial calculation requested but not supported yet.", error)
+   endif
 
    lpbc = .false.
    if (present(args_str)) then
