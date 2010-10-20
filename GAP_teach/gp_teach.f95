@@ -408,7 +408,11 @@ module gp_teach_module
 
          allocate( this%y(this%m), this%lf(this%mf), this%ldf(this%mdf), this%l(this%m), this%lambda(this%m), &
          & this%x_sparse(this%d,this%sr), this%k_mn(this%sr,this%m), this%k_mm(this%sr,this%sr), &
-         & this%big_raw_k_mn(this%sr,this%n), this%big_k_mn(this%sr,this%n), this%inverse_k_mm_k_mn(this%sr,this%m))
+         & this%big_k_mn(this%sr,this%n), this%inverse_k_mm_k_mn(this%sr,this%m))
+#ifdef SPEEDOPT
+         allocate(this%big_raw_k_mn(this%sr,this%n))
+         this%big_raw_k_mn = 0.0_qp
+#endif
 
          allocate(this%xz(this%nxx), this%xz_sparse(this%sr) )
          this%x     = 0.0_qp
@@ -423,7 +427,6 @@ module gp_teach_module
          this%k_mn = 0.0_qp
          this%k_mm = 0.0_qp
          this%big_k_mn = 0.0_qp
-         this%big_raw_k_mn = 0.0_qp
 
          this%xz = 0
          this%xz_sparse = 0
@@ -690,7 +693,7 @@ module gp_teach_module
          type(LA_Matrix) :: LA_k_mm
 
          integer :: i, j, lj, uj, j1, j2, id, jd, xj, xj1, xj2, k, Z_type, info
-         real(qp) :: ep
+         real(qp) :: ep, big_raw_k_mn_ij
          real(qp), dimension(:,:), allocatable :: inverse_k_mm
          real(qp), dimension(:), allocatable   :: lknnl, diff_xijt
          real(qp), dimension(:,:), allocatable   :: theta2
@@ -706,10 +709,15 @@ module gp_teach_module
 
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
-                  this%big_raw_k_mn(i,j) = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
-                  this%big_k_mn(i,j) = this%big_raw_k_mn(i,j) + this%f0(Z_type)**2 !* &
+                  big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
+#ifdef SPEEDOPT
+                  this%big_raw_k_mn(i,j) = big_raw_k_mn_ij
+#endif                  
+                  this%big_k_mn(i,j) = big_raw_k_mn_ij + this%f0(Z_type)**2 !* &
                else
+#ifdef SPEEDOPT
                   this%big_raw_k_mn(i,j) = 0.0_qp
+#endif                  
                   this%big_k_mn(i,j) = 0.0_qp
                end if
               !& dot_product(( this%x_sparse(:,i) - this%x(:,j) )*theta2,this%x_prime(:,j))
@@ -725,11 +733,16 @@ module gp_teach_module
             
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
-                  this%big_raw_k_mn(i,jd) = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
-                  this%big_k_mn(i,jd) = this%big_raw_k_mn(i,jd) * &
+                  big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
+#ifdef SPEEDOPT
+                  this%big_raw_k_mn(i,jd) = big_raw_k_mn_ij
+#endif                  
+                  this%big_k_mn(i,jd) = big_raw_k_mn_ij * &
                  & dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
               else
+#ifdef SPEEDOPT
                  this%big_raw_k_mn(i,jd) = 0.0_qp
+#endif                  
                  this%big_k_mn(i,jd) = 0.0_qp
               end if
             end do
@@ -947,7 +960,7 @@ deallocate(diff_xijt)
          type(LA_Matrix) :: LA_q_mm, LA_k_mm
 
          real(qp) :: det1, det2, det3, tr_dlambda_inverse_k, lknnl, &
-         & diff_xijt_dot_x_prime_j1, diff_xijt_dot_x_prime_j2
+         & diff_xijt_dot_x_prime_j1, diff_xijt_dot_x_prime_j2, big_raw_k_mn_ij
 
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_sq_inverse_lambda, k_mn_l_k_nm, inverse_mm, &
          & k_mn_ll_k_nm, k_mn_ll_k_nm_inverse_mm, d_big_k_mn, d_k_mn, d_k_mm, &
@@ -991,6 +1004,9 @@ deallocate(diff_xijt)
 
          inverse_lambda = 1.0_qp / this%lambda                    ! O(N)
          y_inverse_lambda = this%y/this%lambda                 ! O(N)
+
+         allocate( theta2(this%d,this%nsp) )
+         theta2 = 1.0_qp / this%theta**2
 
          call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,this%k_mn,inverse_lambda) ! O(NM)
          call matrix_product_vect_asdiagonal_sub(k_mn_sq_inverse_lambda,this%k_mn,sqrt(1.0_qp/this%lambda)) ! O(NM)
@@ -1136,11 +1152,6 @@ deallocate(diff_xijt)
             & inverse_mm_k_mn_inverse_lambda ) ! O(NM^2)
          end if
 
-         if( my_do_delta .or. my_do_theta ) then
-            allocate( theta2(this%d,this%nsp) )
-            theta2 = 1.0_qp / this%theta**2
-         end if
-
          if( my_do_delta ) then
             dl_ddelta = 0.0_qp
 
@@ -1149,12 +1160,16 @@ deallocate(diff_xijt)
             & lambda_dtheta(this%m), diff_xijt(this%d) )
 
 !$omp do private(j,xj,jd,i,k)
-                do k = 1, this%nsp
+             do k = 1, this%nsp
                 do j = 1, this%nx
                    xj = this%xf(j)
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
+#ifdef SPEEDOPT
                          d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) / this%delta(k)
+#else
+                         d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) / this%delta(k)
+#endif                  
                       else
                          d_big_k_mn(i,j) = 0.0_qp
                       end if
@@ -1365,7 +1380,11 @@ deallocate(diff_xijt)
                    xj = this%xf(j)
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
+#ifdef SPEEDOPT
                          d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) * (this%x(d,xj) - this%x_sparse(d,i))**2
+#else
+                         d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) * (this%x(d,xj) - this%x_sparse(d,i))**2
+#endif                  
                       else
                          d_big_k_mn(i,j) = 0.0_qp
                       end if
@@ -1376,8 +1395,16 @@ deallocate(diff_xijt)
                    jd = j + this%nx
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
+#ifdef SPEEDOPT
                          d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
-                         & 2.0_qp * this%big_raw_k_mn(i,jd) * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
+                         2.0_qp * this%big_raw_k_mn(i,jd) * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
+#else
+                         big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
+                         dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,k),this%x_prime(:,j))
+
+                         d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
+                         2.0_qp * big_raw_k_mn_ij * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
+#endif                  
                       else
                          d_big_k_mn(i,jd) = 0.0_qp
                       end if
@@ -1483,8 +1510,13 @@ deallocate(diff_xijt)
                    do j = 1, this%nx
                       xj = this%xf(j)
                       if( this%xz(xj) == this%xz_sparse(i) ) then
+#ifdef SPEEDOPT
                          d_big_k_mn_dx(j) = this%big_raw_k_mn(i,j) * &
                          & ( this%x(d,xj) - this%x_sparse(d,i))
+#else
+                         d_big_k_mn_dx(j) = (this%big_k_mn(i,j) - this%f0(Z_type)**2) * &
+                         & ( this%x(d,xj) - this%x_sparse(d,i))
+#endif                  
                       else
                          d_big_k_mn_dx(j) = 0.0_qp
                       endif
@@ -1494,9 +1526,18 @@ deallocate(diff_xijt)
                       jd = j + this%nx
                       xj = this%xdf(j)
                       if( this%xz(xj) == this%xz_sparse(i) ) then
+#ifdef SPEEDOPT
                          d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
-                         & ( this%x(d,xj) - this%x_sparse(d,i) ) + &
-                         & this%big_raw_k_mn(i,jd) * this%x_prime(d,j)
+                         ( this%x(d,xj) - this%x_sparse(d,i) ) + &
+                         this%big_raw_k_mn(i,jd) * this%x_prime(d,j)
+#else
+                         big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
+                         dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
+
+                         d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
+                         ( this%x(d,xj) - this%x_sparse(d,i) ) + &
+                         big_raw_k_mn_ij * this%x_prime(d,j)
+#endif                  
                       else
                          d_big_k_mn_dx(jd) = 0.0_qp
                       endif
