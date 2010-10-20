@@ -1,6 +1,7 @@
 F90DOC= ../../Tools/f90doc.py
 
 .PHONY: clean 
+.SUFFIXES: .eps .pdf
 
 all: crack.ps crack.pdf
 
@@ -16,8 +17,19 @@ crack.dvi: crack.tex
 crack.ps: crack.dvi
 	dvips crack.dvi -o crack.ps
 
-crack.pdf: crack.dvi
-	dvipdfm crack.dvi
+PDF_FIGS = flow-chart.pdf loading.pdf qm-selection-crack.pdf
+pdf_figs: ${PDF_FIGS}
+
+.eps.pdf:
+	epstopdf $<
+
+crack.pdf: crack.tex pdf_figs
+	sed -i -e 's/\[dvips\]{graphicx}/{graphicx}/' crack.tex
+	pdflatex crack.tex
+	pdflatex crack.tex
+	makeindex general
+	pdflatex crack.tex
+	sed -i -e 's/{graphicx}/[dvips]{graphicx}/' crack.tex
 
 clean: 
-	-rm crack.tex crack.ps crack.pdf crack.aux crack.dvi crack.log crack.toc general.idx general.ilg general.ind
+	-rm crack.tex crack.ps crack.pdf crack.aux crack.dvi crack.log crack.toc general.idx general.ilg general.ind ${PDF_FIGS}
