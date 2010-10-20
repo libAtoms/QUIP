@@ -11,15 +11,16 @@ install-structures:
 	    fi; \
 	  else \
 	    if [ -d ${QUIP_DIR}/structures ]; then \
-	      echo "QUIP_STRUCTURS_DIR not defined, copying structures into QUIP_DIR/structures"; \
+	      echo "QUIP_STRUCTS_DIR not defined, copying structures into QUIP_DIR/structures"; \
 	      cp *xyz ${QUIP_DIR}/structures; \
 	    else \
 	      echo "QUIP_DIR defined as ${QUIP_DIR}, but ${QUIP_DIR}/structures is not a directory"; \
 	    fi; \
 	  fi; \
 	else \
-	  if [ -d ${QUIP_STRUCTS_DIR}/structures ]; then \
+	  if [ -d ${QUIP_STRUCTS_DIR} ]; then \
 	    echo "copying structures into QUIP_STRUCTS_DIR"; \
+	    mkdir -p ${QUIP_STRUCTS_DIR}/structures; \
 	    cp *xyz ${QUIP_STRUCTS_DIR}/structures; \
 	  else \
 	    echo "QUIP_STRUCTS_DIR defined as ${QUIP_STRUCTS_DIR}, but it is not a directory"; \
