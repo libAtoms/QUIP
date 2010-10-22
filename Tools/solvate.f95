@@ -44,8 +44,8 @@ program solvate
   type(Atoms)                 :: at, wat, at2
   integer                     :: i, j, stat
   type(dictionary)            :: cli_params
-  character(len=FIELD_LENGTH) :: filename, waterfilename
-  type(inoutput)              :: xyzfile, waterfile
+  character(len=FIELD_LENGTH) :: filename, waterfilename, solvated_filename
+!  type(inoutput)              :: xyzfile, waterfile
   real(dp)                    :: xmin, xmax, ymin, ymax, zmin, zmax, exclusion, security_zone
   logical                     :: add
   integer                     :: center_around_atom
@@ -58,6 +58,7 @@ program solvate
   call initialise(cli_params)
   call param_register(cli_params,"file","stdin", filename)
   call param_register(cli_params,"waterfile","stdin", waterfilename)
+  call param_register(cli_params,"outfile","stdout", solvated_filename)
   call param_register(cli_params,"xmin",PARAM_MANDATORY, xmin)
   call param_register(cli_params,"ymin",PARAM_MANDATORY, ymin)
   call param_register(cli_params,"zmin",PARAM_MANDATORY, zmin)
@@ -74,11 +75,9 @@ program solvate
   endif
   call finalise(cli_params)
 
-  call initialise(xyzfile, filename, INPUT)
-  call initialise(waterfile, waterfilename, INPUT)
-
   !Read in the 2 files
-  call read_xyz(at, xyzfile, status=stat)
+  call print("Reading file to solvate: "//trim(filename))
+  call read(at, filename, error=stat)
   if (stat /= 0) call system_abort('Could not read file to solvate.')
   !center around given atom, if required
   if (center_around_atom > 0) then
@@ -90,7 +89,8 @@ program solvate
   endif
   call map_into_cell(at)
 
-  call read_xyz(wat, waterfile, status=stat)
+  call print("Reading waterfile: "//trim(waterfilename))
+  call read(wat, waterfilename, error=stat)
   if (stat /= 0) call system_abort('Could not read water file.')
   call map_into_cell(wat)
 
@@ -101,12 +101,13 @@ program solvate
      enddo
   enddo
 
+  call print("Starting solvation.")
   !Initialise the solvated atoms object
   call initialise(at2,0,reshape((/xmax-xmin,0._dp,0._dp,0._dp,ymax-ymin,0._dp,0._dp,0._dp,zmax-zmin/),(/3,3/)))
 
   !Add solute atoms to at2
   do i=1,at%N
-     call add_atom_single(at2,at%pos(1:3,i),at%Z(i))
+     call add_atoms(at2,at%pos(1:3,i),at%Z(i))
   enddo
 
   !Add water molecules between the given limits to at2
@@ -128,9 +129,9 @@ program solvate
         endif
      enddo
      if (add) then
-        call add_atom_single(at2,wat%pos(1:3,i  ),wat%Z(i  ))
-        call add_atom_single(at2,wat%pos(1:3,i+1),wat%Z(i+1))
-        call add_atom_single(at2,wat%pos(1:3,i+2),wat%Z(i+2))
+        call add_atoms(at2,wat%pos(1:3,i  ),wat%Z(i  ))
+        call add_atoms(at2,wat%pos(1:3,i+1),wat%Z(i+1))
+        call add_atoms(at2,wat%pos(1:3,i+2),wat%Z(i+2))
      endif
   enddo
 
@@ -142,7 +143,10 @@ program solvate
   if (.not.(assign_pointer(at2, "pos", pos_p))) call system_abort('??')
   avgpos_p(1:3,1:at2%N) = pos_p(1:3,1:at2%N)
   
-  if (stat == 0) call print_xyz(at2, mainlog, all_properties=.true.)
+  if (stat == 0) then
+     call print("Printing solvated file into "//trim(solvated_filename))
+     call write(at2, solvated_filename)
+  endif
 
   call verbosity_pop()
   call system_finalise()
