@@ -167,10 +167,7 @@
        no_coupling = .true.
     else
        if (offdiagonal_A12 < 0._dp .or. offdiagonal_mu12 < 0._dp .or. offdiagonal_mu12_square < 0._dp .or. offdiagonal_r0 < 0._dp ) then
-          RAISE_ERROR('Potential_EVB_calc offdiagonal parameters must be positive or 0 for no coupling. Got offdiagonal_A12: '//offdiagonal_A12 &
-                    //' and offdiagonal_mu12: '//offdiagonal_mu12 &
-                    //' and offdiagonal_mu12_square: '//offdiagonal_mu12_square &
-                    //' and offdiagonal_r0: '//offdiagonal_r0, error)
+          RAISE_ERROR('Potential_EVB_calc offdiagonal parameters must be positive or 0 for no coupling. Got offdiagonal_A12: '//offdiagonal_A12 //' and offdiagonal_mu12: '//offdiagonal_mu12//' and offdiagonal_mu12_square: '//offdiagonal_mu12_square//' and offdiagonal_r0: '//offdiagonal_r0, error)
        endif
        no_coupling = .false.
     endif
