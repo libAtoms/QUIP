@@ -140,7 +140,6 @@ if __name__ == '__main__':
 
    stem = sys.argv[1]
    xmlfilename = stem+'.xml'
-   ncfilename = stem+'.nc'
 
    print('Reading parameters from file '+xmlfilename)
 
@@ -148,7 +147,10 @@ if __name__ == '__main__':
    params.read_xml(xmlfile)
 
    crack_slab = makecrack(params)
-   crack_slab.write(ncfilename)
+   if params.io_netcdf:
+      crack_slab.write(stem+'.nc')
+   else:
+      crack_slab.write(stem+'.xyz')
 
 
 
