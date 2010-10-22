@@ -16,6 +16,8 @@
      real(dp) :: diagonal_dE2                      !% The energy offset to E2
      real(dp) :: offdiagonal_A12                   !% The offdiagonal pre-exponent factor of EVB Hamiltonian
      real(dp) :: offdiagonal_mu12                  !% The offdiagonal exponent factor of the EVB Hamiltonian
+     real(dp) :: offdiagonal_mu12_square           !% The offdiagonal exponent factor of the EVB Hamiltonian:  A exp(-mu12(r-r0)-mu12_square(r-r0)^2)
+     real(dp) :: offdiagonal_r0                    !% The offdiagonal exponent of the EVB Hamiltonian
 
      logical :: save_forces                        !% Whether to save forces from the 2 MM calculations in the Atoms object (needed for force on E_GAP)
      logical :: save_energies                      !% Whether to save energies from the 2 MM calculations in the Atoms object (needed for E_GAP)
