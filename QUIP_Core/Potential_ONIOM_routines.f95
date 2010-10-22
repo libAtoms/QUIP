@@ -380,7 +380,7 @@
     endif
     if(len_trim(calc_local_virial) > 0) then
       do i=1,cluster%N
-        at_local_virial_ptr(:,index(i)) = at_local_virial_ptr(:,index(i)) + cluster_local_local_virial_1(:,i) - cluster_local_local_virial_2(:,i)
+        at_local_virial_ptr(:,index(i)) = at_local_virial_ptr(:,index(i)) + cluster_local_virial_1(:,i) - cluster_local_virial_2(:,i)
       end do
     end if
     call system_timer("calc_oniom/combine")
