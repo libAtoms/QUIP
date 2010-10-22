@@ -516,6 +516,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 	  endif
        enddo
 
+      call print(at%connect)
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
       RAISE_ERROR('create_residue_labels_pos_internal: Unidentified atoms', error)
 
