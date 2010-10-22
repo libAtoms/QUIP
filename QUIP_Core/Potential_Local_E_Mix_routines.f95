@@ -276,7 +276,7 @@
        call system_abort('hybrid_calc_energy_mix: atoms structure has no "weight_region1" property')
 
     if(.not. all(hybrid_mark == HYBRID_NO_MARK)) then
-      if(len_trim(calc_virial) > 0 .or. len_trim(calc_local_virial)) then
+      if(len_trim(calc_virial) > 0 .or. len_trim(calc_local_virial) > 0) then
          RAISE_ERROR('hybrid_calc_energy_mix: virial or local_virial not yet implemented when QM region is active', error)
       end if
     endif
