@@ -30,6 +30,8 @@
     call param_register(params, 'diagonal_dE2', '0.0', this%diagonal_dE2)
     call param_register(params, 'offdiagonal_A12', '0.0', this%offdiagonal_A12)
     call param_register(params, 'offdiagonal_mu12', '0.0', this%offdiagonal_mu12)
+    call param_register(params, 'offdiagonal_mu12_square', '0.0', this%offdiagonal_mu12_square)
+    call param_register(params, 'offdiagonal_r0', '0.0', this%offdiagonal_r0)
     call param_register(params, 'save_forces', 'T', this%save_forces)
     call param_register(params, 'save_energies', 'T', this%save_energies)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_initialise args_str')) then
@@ -54,6 +56,8 @@
     this%diagonal_dE2 = 0._dp
     this%offdiagonal_A12 = 0._dp
     this%offdiagonal_mu12 = 0._dp
+    this%offdiagonal_mu12_square = 0._dp
+    this%offdiagonal_r0 = 0._dp
     this%save_forces = .false.
     this%save_energies = .false.
 
@@ -72,6 +76,8 @@
     call print('  diagonal E2(shift to E2): '//this%diagonal_dE2, file=file)
     call print('  offdiagonal A12(pre-exponent factor): '//this%offdiagonal_A12, file=file)
     call print('  offdiagonal mu12(exponent factor): '//this%offdiagonal_mu12, file=file)
+    call print('  offdiagonal mu12_square(exponent factor): '//this%offdiagonal_mu12_square, file=file)
+    call print('  offdiagonal r0(exponent): '//this%offdiagonal_r0, file=file)
     call print('  save_forces: '//this%save_forces, file=file)
     call print('  save_energies: '//this%save_energies, file=file)
     call print('', file=file)
@@ -107,7 +113,7 @@
     logical                 :: save_energies, save_forces
     real(dp)                :: my_e_1, my_e_2, e_offdiag
     real(dp), allocatable   :: my_f_1(:,:), my_f_2(:,:), de_offdiag_dr(:,:)
-    real(dp)                :: offdiagonal_A12, offdiagonal_mu12, diagonal_dE2, &
+    real(dp)                :: offdiagonal_A12, offdiagonal_r0, offdiagonal_mu12, offdiagonal_mu12_square, diagonal_dE2, &
                                rab, d_rab_dx(3)
     logical                 :: no_coupling, dummy
     character(STRING_LENGTH) :: extra_calc_args
@@ -129,6 +135,8 @@
     call param_register(params, 'diagonal_dE2', ''//this%diagonal_dE2, diagonal_dE2)
     call param_register(params, 'offdiagonal_A12', ''//this%offdiagonal_A12, offdiagonal_A12)
     call param_register(params, 'offdiagonal_mu12', ''//this%offdiagonal_mu12, offdiagonal_mu12)
+    call param_register(params, 'offdiagonal_mu12_square', ''//this%offdiagonal_mu12_square, offdiagonal_mu12_square)
+    call param_register(params, 'offdiagonal_r0', ''//this%offdiagonal_r0, offdiagonal_r0)
     call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
     call param_register(params, 'save_energies', ''//this%save_energies, save_energies)
     call param_register(params, 'energy', '', calc_energy)
@@ -158,8 +166,11 @@
        call print('WARNING! Offdiagonal A12 is set to 0. No coupling between resonance states.')
        no_coupling = .true.
     else
-       if (offdiagonal_A12 < 0._dp .or. offdiagonal_mu12 < 0._dp) then
-          RAISE_ERROR('Potential_EVB_calc offdiagonal parameters must be positive or 0 for no coupling. Got offdiagonal_A12: '//offdiagonal_A12//' and offdiagonal_mu12: '//offdiagonal_mu12, error)
+       if (offdiagonal_A12 < 0._dp .or. offdiagonal_mu12 < 0._dp .or. offdiagonal_mu12_square < 0._dp .or. offdiagonal_r0 < 0._dp ) then
+          RAISE_ERROR('Potential_EVB_calc offdiagonal parameters must be positive or 0 for no coupling. Got offdiagonal_A12: '//offdiagonal_A12 &
+                    //' and offdiagonal_mu12: '//offdiagonal_mu12 &
+                    //' and offdiagonal_mu12_square: '//offdiagonal_mu12_square &
+                    //' and offdiagonal_r0: '//offdiagonal_r0, error)
        endif
        no_coupling = .false.
     endif
@@ -308,7 +319,10 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
 
 
        if (len_trim(calc_energy) > 0 .or. len_trim(calc_force) > 0) then
-          e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
+          !original by Warshel
+          !e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
+          !Letif's modification (the original is too strong and sucks the two Cl atoms together)
+          e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * (rab - offdiagonal_r0) - offdiagonal_mu12_square * (rab - offdiagonal_r0)**2._dp)
 	  call print("EVB e_offidag " // e_offdiag, PRINT_VERBOSE)
        endif
 
@@ -331,16 +345,16 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
           de_offdiag_dr = 0._dp
           if (have_form_bond.and.have_break_bond) then !breaking and forming bonds around the same atom
              d_rab_dx = diff_min_image(at,atom1,atom3)/distance_min_image(at,atom1,atom3)
-             de_offdiag_dr(1:3,atom1) = de_offdiag_dr(1:3,atom1) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             de_offdiag_dr(1:3,atom3) = de_offdiag_dr(1:3,atom3) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,atom1) = de_offdiag_dr(1:3,atom1) + e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,atom3) = de_offdiag_dr(1:3,atom3) - e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
           elseif (have_form_bond) then !only 1 forming bond
              d_rab_dx = diff_min_image(at,form_bond(1),form_bond(2))/distance_min_image(at,form_bond(1),form_bond(2))
-             de_offdiag_dr(1:3,form_bond(1)) = de_offdiag_dr(1:3,form_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             de_offdiag_dr(1:3,form_bond(2)) = de_offdiag_dr(1:3,form_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,form_bond(1)) = de_offdiag_dr(1:3,form_bond(1)) + e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,form_bond(2)) = de_offdiag_dr(1:3,form_bond(2)) - e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
           elseif (have_break_bond) then !only 1 breaking bond
              d_rab_dx = diff_min_image(at,break_bond(1),break_bond(2))/distance_min_image(at,break_bond(1),break_bond(2))
-             de_offdiag_dr(1:3,break_bond(1)) = de_offdiag_dr(1:3,break_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             de_offdiag_dr(1:3,break_bond(2)) = de_offdiag_dr(1:3,break_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,break_bond(1)) = de_offdiag_dr(1:3,break_bond(1)) + e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,break_bond(2)) = de_offdiag_dr(1:3,break_bond(2)) - e_offdiag * ( offdiagonal_mu12 + 2._dp * offdiagonal_mu12_square * (rab-offdiagonal_r0) ) * d_rab_dx(1:3)
           endif
           !force
           at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
