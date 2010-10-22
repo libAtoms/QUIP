@@ -165,7 +165,7 @@ module constraints_module
                                                       !% For constraints $\xi - \xi_0$ it is the same as dC_dr
      real(dp)                            :: Z_coll    !% Fixman determinant of the constraint
                                                       !% $ Z_\xi = \sum_i frac{1}{m_i} \left( \frac{\partial \xi}{\partial x_i} \right)^2 $
-                                                      !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \cdot \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi$
+                                                      !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \ud \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi$
 
      real(dp)                            :: k         !% spring constant for restraint
      real(dp)                            :: E         !% restraint energy
@@ -452,6 +452,7 @@ contains
 
     call call_constraint_sub(this%func,pos,velo,mass,t,this%data,this%C,this%dC_dr,this%dC_dt,this%dcoll_dr,this%Z_coll,this%target_v)
     if (this%k >= 0.0_dp) then ! restraint
+!call print("RESTRAINT C "//this%C)
        this%E = 0.5_dp * this%k * this%C**2
        this%dE_dr = this%k * this%C * this%dC_dr
        this%dE_dcoll = this%k * this%C ! assuming that dC_dcoll = 1.0 here, i.e. C = (coll - target_v)
@@ -697,6 +698,7 @@ contains
        do n = 1, Nobj
           i = group_nth_object(g,n)
           call constraint_calculate_values_at(constraints(i),at,t+dt)
+!call print("CONSTRAINTS%C "//constraints(i)%C)
           if (abs(constraints(i)%C) > constraints(i)%tol) converged = .false.
        end do
 
@@ -711,7 +713,9 @@ contains
              m = m + (constraints(i)%dC_dr(3*nn-2:3*nn) .dot. constraints(i)%old_dC_dr(3*nn-2:3*nn)) / at%mass(j)
           end do
           constraints(i)%dlambdaR =  2.0_dp * constraints(i)%C / (m * dt * dt)
+!call print("CONSTRAINTS%dlambdaR"//constraints(i)%dlambdaR)
           constraints(i)%lambdaR = constraints(i)%lambdaR + constraints(i)%dlambdaR
+!call print("CONSTRAINTS%lambdaR"//constraints(i)%lambdaR)
        end do
 
        iterations = iterations + 1
@@ -1360,7 +1364,10 @@ contains
     comment=read_line(inoutfile,stat)
     if (stat/=0) call system_abort("GAP_ENERGY: Something wrong while reaing only_pos.out.")
     !find gap energy
-    gap_energy_index=index(comment,"gap") !find where "gap=..." starts
+    gap_energy_index=index(comment,"gap=") !find where "gap=..." starts
+    if (gap_energy_index/=0) then !not the first one
+       gap_energy_index=index(comment," gap=")+1 !find where "gap=..." starts
+    endif
     if (gap_energy_index==0) call system_abort("GAP_ENERGY: Could not find gap energy in only_pos.out comment line.")
     gap_energy_index1=index(comment(gap_energy_index:),"=") !find the position of "=" in "gap=..."
     if (gap_energy_index1/=4) call system_abort("GAP_ENERGY: Something wrong with energy value in only_pos.out.")
@@ -1379,6 +1386,7 @@ contains
     enddo
     call finalise(inoutfile)
 
+!call print("GAP_ENERGY "//E_GAP)
     C = E_GAP - data(1)
     target_v = data(1)
 
