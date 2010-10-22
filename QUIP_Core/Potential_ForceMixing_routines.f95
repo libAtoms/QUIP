@@ -171,6 +171,7 @@
     nullify(this%qmpot)
     call finalise(this%embedlist)
     call finalise(this%fitlist)
+    call finalise(this%create_hybrid_weights_params)
 
   end subroutine Potential_FM_finalise
 
