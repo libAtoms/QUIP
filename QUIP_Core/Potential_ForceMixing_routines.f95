@@ -412,6 +412,7 @@
        endif
 
        call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
+       call finalise(calc_create_hybrid_weights_params)
 
        ! reassign pointers
        

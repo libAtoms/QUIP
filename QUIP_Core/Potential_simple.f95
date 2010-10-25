@@ -329,7 +329,7 @@ contains
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), pointer, dimension(:,:) :: f_cluster
     logical :: do_carve_cluster
-    type(Table) :: cluster_info, cut_bonds
+    type(Table) :: cluster_info, cut_bonds, t
     integer, pointer :: cut_bonds_p(:,:)
     integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
@@ -508,9 +508,11 @@ contains
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
          n_non_term = count(cluster_info%int(6,1:cluster_info%n) == 0)
-         if (multiple_images(int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/)))) then
+         t = int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/))
+         if (multiple_images(t)) then
               RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
 	 endif
+         call finalise(t)
 
 	 call carve_cluster(at, new_args_str, cluster_info, cluster, error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)

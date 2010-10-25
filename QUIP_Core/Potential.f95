@@ -242,6 +242,8 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
 
   call initialise(this, args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
   PASS_ERROR(error)
+  call finalise(es)
+
 end subroutine potential_initialise_inoutput
 
 recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj, error)
