@@ -72,11 +72,11 @@ implicit none
 
   call create_hybrid_weights(at, "hysteretic_buffer hysteretic_buffer_inner_radius="//(rqm+rmm)//" hysteretic_buffer_outer_radius="//(rqm+rmm))
   cluster_info = create_cluster_info_from_hybrid_mark(at, "cluster_periodic_z")
-  cluster_mm = carve_cluster(at, "randomise_buffer=F cluster_periodic_z" , cluster_info)
+  call carve_cluster(at, "randomise_buffer=F cluster_periodic_z" , cluster_info, cluster_mm)
 
   call create_hybrid_weights(cluster_mm, "hysteretic_buffer hysteretic_buffer_inner_radius="//rqm//" hysteretic_buffer_outer_radius="//rqm)
   cluster_info = create_cluster_info_from_hybrid_mark(cluster_mm, "cluster_periodic_z")
-  cluster_qm = carve_cluster(cluster_mm, "randomise_buffer=F cluster_periodic_z" , cluster_info)
+  call carve_cluster(cluster_mm, "randomise_buffer=F cluster_periodic_z" , cluster_info, cluster_qm)
   call finalise(cluster_info)
 
   call add_property(cluster_mm, "is_in_qm", .false.)

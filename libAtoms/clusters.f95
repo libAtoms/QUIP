@@ -1044,12 +1044,12 @@ contains
     call print(cluster_info, PRINT_NERD)
   end function cluster_protect_double_bonds
 
-  function create_cluster_simple(at, args_str, mark_name, error) result(cluster)
+  subroutine create_cluster_simple(at, args_str, cluster, mark_name, error)
      type(Atoms), intent(inout) :: at
      character(len=*), intent(in) :: args_str
+     type(Atoms), intent(out) :: cluster
      character(len=*), intent(in), optional :: mark_name
      integer, intent(out), optional :: ERROR
-     type(Atoms) :: cluster
 
      type(Table) :: cluster_info
 
@@ -1058,10 +1058,11 @@ contains
      call calc_connect(at)
      cluster_info = create_cluster_info_from_mark(at, args_str, mark_name=mark_name, error=error)
      PASS_ERROR(error)
-     cluster = carve_cluster(at, args_str, cluster_info, mark_name=mark_name, error=error)
+     call carve_cluster(at, args_str, cluster_info, cluster=cluster, mark_name=mark_name, error=error)
      PASS_ERROR(error)
+     call finalise(cluster_info)
      
-  end function create_cluster_simple
+  end subroutine create_cluster_simple
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -1077,13 +1078,13 @@ contains
   !% 
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  function carve_cluster(at, args_str, cluster_info, mark_name, error) result(cluster)
+  subroutine carve_cluster(at, args_str, cluster_info, cluster, mark_name, error)
     type(Atoms), intent(in), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), intent(in) :: cluster_info
+    type(Atoms), intent(out) :: cluster
     character(len=*), optional, intent(in) :: mark_name
     integer, optional, intent(out) :: error
-    type(Atoms) :: cluster
 
     type(Dictionary) :: params
     logical :: do_rescale_r
@@ -1313,7 +1314,7 @@ contains
        call finalise(clusterfile)
     end if
 
-  end function carve_cluster
+ end subroutine carve_cluster
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
