@@ -165,7 +165,7 @@ module constraints_module
                                                       !% For constraints $\xi - \xi_0$ it is the same as dC_dr
      real(dp)                            :: Z_coll    !% Fixman determinant of the constraint
                                                       !% $ Z_\xi = \sum_i frac{1}{m_i} \left( \frac{\partial \xi}{\partial x_i} \right)^2 $
-                                                      !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \ud \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi$
+                                                      !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \mathrm{d} \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi$
 
      real(dp)                            :: k         !% spring constant for restraint
      real(dp)                            :: E         !% restraint energy
