@@ -589,6 +589,7 @@ contains
     end do
 
     call Print('Seeded embed region with '//count(changed_nn /= 0)//' atoms.')
+    call finalise(crack_tips)
 
 !    call crack_update_selection(crack_slab, params)
 
@@ -1505,6 +1506,7 @@ contains
     ! We'll follow the right-most crack tip which is last entry in list
     call set_value(at%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
     call set_value(at%params, 'CrackPosy', crack_tips%real(2,crack_tips%N))
+    call finalise(crack_tips)
 
     !quantum atoms around the dislocation
     if (dislo_seed .ne. 0) then
@@ -1520,9 +1522,10 @@ contains
     hybrid = 0
     hybrid(int_part(embedlist,1)) = 1
 
-    call system_timer('selection update')
-
+    call finalise(temptable)
     call finalise(embedlist)
+
+    call system_timer('selection update')
 
   end subroutine crack_update_selection_coordination
 

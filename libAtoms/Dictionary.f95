@@ -426,6 +426,8 @@ contains
     if (associated(this%r_a2)) deallocate(this%r_a2)
     this%r_a2 => null()
 
+    call finalise(this%s)
+
   end subroutine dictentry_finalise
 
   subroutine dictionary_get_key(this, i, key, error)
@@ -2351,6 +2353,7 @@ contains
     type(Dictionary), intent(inout) :: this
     integer, intent(in) :: entry_i
     integer, intent(out), optional :: error
+    integer i
 
     INIT_ERROR(error)
 
@@ -2358,12 +2361,13 @@ contains
        RAISE_ERROR("remove_entry: Called remove_entry with invalid entry number", error)
     end if
 
-    call finalise(this%entries(entry_i))
-
     if (entry_i < this%N) then
-       this%keys(entry_i:this%N-1) = this%keys(entry_i+1:this%N)
-       this%entries(entry_i:this%N-1) = this%entries(entry_i+1:this%N)
+       do i=entry_i,this%n-1
+          call dictionary_swap(this, string(this%keys(i)), string(this%keys(i+1)))
+       end do
     endif
+
+    call finalise(this%keys(this%n))
 
     this%N = this%N - 1
     this%cache_invalid = 1
@@ -2711,6 +2715,11 @@ contains
     this%entries(i1) = tmp_entry
     this%keys(i1)    = tmp_key
 
+    ! Avoid memory leaks by freeing Extanable_str memory
+    ! (other entry types are shallow copied).
+    call finalise(tmp_key)
+    if (tmp_entry%type == T_CHAR) call finalise(tmp_entry%s)
+
   end subroutine dictionary_swap
 
   subroutine dictionary_bcast(mpi, dict, error)
@@ -2952,6 +2961,7 @@ subroutine dictentry_assign(to, from)
    to%i = from%i
    to%r = from%r
    to%c = from%c
+
    to%s = from%s
 
    to%i_a => from%i_a
