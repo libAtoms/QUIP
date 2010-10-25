@@ -540,8 +540,11 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     debug("read_xyz: param key=%s value=%s k=%d\n", param_key, param_value, k);
 
     for (j=0; j<k; j++) {
-      for (n=0; n<strlen(fields[j]); n++)
-	if (!isblank(fields[j][n]) && !isdigit(fields[j][n])) goto NOT_INT;
+      n=0;
+      while(n < strlen(fields[j]) && isblank(fields[j][n])) n++;  // skip leading blanks
+      if (n < strlen(fields[j]) && fields[j][n] == '-') n++;        // leading minus sign is OK
+      for (; n<strlen(fields[j]); n++)
+	if (!isdigit(fields[j][n])) goto NOT_INT;
     }
 
     if (k==1) {
