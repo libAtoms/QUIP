@@ -1,10 +1,92 @@
+Index: molecule_types_new.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/molecule_types_new.F,v
+retrieving revision 1.37
+diff -u -r1.37 molecule_types_new.F
+--- molecule_types_new.F	3 Jan 2010 23:41:36 -0000	1.37
++++ molecule_types_new.F	25 Oct 2010 13:36:53 -0000
+@@ -44,6 +44,7 @@
+      TYPE(colvar_type),POINTER     :: colvar
+      TYPE(colvar_type),POINTER     :: colvar_old
+      REAL(KIND = dp)               :: lambda, sigma
++     REAL(KIND=dp)                 :: value, target_value, energy, value_gradient
+   END TYPE local_colvar_constraint_type
+ 
+ ! *****************************************************************************
+Index: restraint.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/restraint.F,v
+retrieving revision 1.31
+diff -u -r1.31 restraint.F
+--- restraint.F	3 Jan 2010 23:41:38 -0000	1.31
++++ restraint.F	25 Oct 2010 13:36:53 -0000
+@@ -104,6 +104,7 @@
+          particle_set, gci, lfixd_list)
+     CALL timeset(routineN,handle)
+     IF (.NOT. failure) THEN
++
+        CALL force_env_get(force_env=force_env, subsys=subsys, cell=cell,error=error)
+        energy_4x6  = 0.0_dp
+        energy_3x3  = 0.0_dp
+@@ -123,11 +124,11 @@
+        ALLOCATE(force(3,SIZE(particle_set)),stat=stat)
+        CPPrecondition(stat==0, cp_failure_level, routineP, error, failure)
+        force = 0.0_dp
+-       
++
+        ! Create the list of locally fixed atoms
+        CALL create_local_fixd_list(lfixd_list, nkind, molecule_kind_set, local_particles,&
+             error)
+-       
++
+        DO ifixd = 1, SIZE(lfixd_list)
+           ikind = lfixd_list(ifixd)%ikind
+           ii    = lfixd_list(ifixd)%ifixd_index
+@@ -193,7 +194,7 @@
+              ! collective variables
+              IF ( ncolv%nrestraint /= 0 ) THEN
+                 n_restraint=n_restraint+ncolv%nrestraint
+-                CALL restraint_colv_int( molecule, particle_set, cell, energy_colv, force,&
++                CALL restraint_colv_int( molecule, particle_set, cell, energy_colv, force, &
+                      error )
+              ENDIF
+           END DO
+@@ -225,7 +226,7 @@
+              ! collective variables
+              IF ( gci%ncolv%nrestraint /= 0 ) THEN
+                 n_restraint=n_restraint+gci%ncolv%nrestraint
+-                CALL restraint_colv_ext( gci, particle_set, cell, energy_colv, force,&
++                CALL restraint_colv_ext( gci, particle_set, cell, energy_colv, force, &
+                      error )
+              ENDIF
+              DO iparticle = 1, SIZE(particle_set)
+@@ -372,7 +373,7 @@
+     g3x3_list => gci%g3x3_list
+     fixd_list => gci%fixd_list
+     CALL restraint_3x3_low( ng3x3, g3x3_list, fixd_list, first_atom, particle_set,&
+-         energy, force, error )
++         energy, force, error)
+ 
+   END SUBROUTINE restraint_3x3_ext
+ 
+@@ -618,6 +619,10 @@
+           ind = lcolv(iconst) % colvar % i_atom (iatm)
+           force(:,ind) = force(:,ind)-2.0_dp*k*tab*lcolv(iconst) % colvar % dsdr(:,iatm)
+        END DO
++       lcolv(iconst)%value = tab+targ
++       lcolv(iconst)%target_value = targ
++       lcolv(iconst)%energy = k * tab**2
++       lcolv(iconst)%value_gradient = 2.0_dp * k * tab
+     END DO
+ 
+   END SUBROUTINE restraint_colv_low
 Index: md_energies.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/md_energies.F,v
-retrieving revision 1.142
-diff -u -r1.142 md_energies.F
---- md_energies.F	23 Mar 2010 13:42:39 -0000	1.142
-+++ md_energies.F	13 Aug 2010 16:15:27 -0000
+retrieving revision 1.143
+diff -u -r1.143 md_energies.F
+--- md_energies.F	30 Aug 2010 14:13:19 -0000	1.143
++++ md_energies.F	25 Oct 2010 13:36:53 -0000
 @@ -50,6 +50,8 @@
                                               section_release,&
                                               section_type,&
@@ -29,35 +111,45 @@ diff -u -r1.142 md_energies.F
                                               femtoseconds,&
                                               kelvin
    USE qmmm_types,                      ONLY: qmmm_env_qm_type
-@@ -312,6 +316,12 @@
+@@ -78,6 +82,7 @@
+   USE timings,                         ONLY: timeset,&
+                                              timestop
+   USE virial_types,                    ONLY: virial_type
++  USE molecule_types_new,              ONLY: global_constraint_type
+ #include "cp_common_uses.h"
+ 
+   IMPLICIT NONE
+@@ -312,6 +317,14 @@
      TYPE(thermostats_type), POINTER          :: thermostats
      TYPE(virial_type), POINTER               :: virial
  
-+    TYPE(section_vals_type), POINTER         :: colvar_atoms_section, print_section
++    TYPE(global_constraint_type), POINTER    :: gci
++
++    TYPE(section_vals_type), POINTER         :: print_restraints_section, print_colvar_atoms_section, print_section
 +    INTEGER, DIMENSION(:), POINTER           :: isolated_atoms, tmp_v, colvar_atoms
 +    logical :: explicit
-+    integer :: iatom, n_rep, traj_unit, stat
++    integer :: iatom, n_rep, traj_unit, stat, i_restraint, restraints_unit
 +
 +
      failure = .FALSE.
      NULLIFY(logger)
      logger => cp_error_get_logger(error)
-@@ -476,6 +486,50 @@
+@@ -476,6 +489,75 @@
         CALL write_trajectory(force_env, root_section, itimes, time*femtoseconds, dt*femtoseconds, md_ener%epot,&
              "FORCES", my_pos, my_act, middle_name="frc", extended_xmol_title=.TRUE., error=error)
  
 +       ! Print atoms given in PRINT%COLVAR_ATOMS
 +       ! get list
 +       print_section => section_vals_get_subs_vals(motion_section,"PRINT",error=error)
-+       colvar_atoms_section => section_vals_get_subs_vals(print_section,"COLVAR_ATOMS",error=error)
-+       CALL section_vals_get(colvar_atoms_section, explicit=explicit, error=error)
++       print_colvar_atoms_section => section_vals_get_subs_vals(print_section,"COLVAR_ATOMS",error=error)
++       CALL section_vals_get(print_colvar_atoms_section, explicit=explicit, error=error)
 +       nullify(colvar_atoms)
 +       ALLOCATE(colvar_atoms(0), stat=stat)
 +       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +       IF (explicit) THEN
-+          CALL section_vals_val_get(colvar_atoms_section,"LIST", n_rep_val=n_rep, error=error)
++          CALL section_vals_val_get(print_colvar_atoms_section,"LIST", n_rep_val=n_rep, error=error)
 +          DO i = 1, n_rep
-+             CALL section_vals_val_get(colvar_atoms_section,"LIST", i_vals=tmp_v, i_rep_val=i, error=error)
++             CALL section_vals_val_get(print_colvar_atoms_section,"LIST", i_vals=tmp_v, i_rep_val=i, error=error)
 +             CALL reallocate(colvar_atoms, 1, SIZE(colvar_atoms)+SIZE(tmp_v))
 +             colvar_atoms(SIZE(colvar_atoms)-SIZE(tmp_v)+1:SIZE(colvar_atoms)) = tmp_v
 +          END DO
@@ -90,17 +182,42 @@ diff -u -r1.142 md_energies.F
 +          CALL cp_print_key_finished_output(traj_unit,logger,root_section,"MOTION%PRINT%COLVAR_ATOMS",error=error)
 +       END IF
 +
++       !NB restraints
++       call cp_subsys_get(subsys=subsys, gci=gci, error=error)
++       IF (gci%nrestraint > 0) THEN
++	  print_restraints_section => section_vals_get_subs_vals(print_section,"RESTRAINTS",error=error)
++	  CALL section_vals_get(print_restraints_section, explicit=explicit, error=error)
++	  IF (explicit) THEN
++	     restraints_unit = cp_print_key_unit_nr(logger,root_section,"MOTION%PRINT%RESTRAINTS",&
++		     extension=".restraints", file_position=my_pos, file_action=my_act, is_new_file=new_file, error=error)
++	     IF (restraints_unit > 0) THEN
++	       IF (new_file) THEN
++		  WRITE (unit=restraints_unit, fmt='("#",7(2X,A))') "Step Nr.", "Time[fs]", "Restraint Nr.", &
++		     "Value[arb]", "Target[arb]", "Energy[eV]", "Force[eV/arb]"
++	       ENDIF
++	       do i_restraint=1, gci%ncolv%nrestraint
++		  write (unit=restraints_unit, fmt='(I8,X,F10.2,X,I5,4(X,F15.10))') &
++		     itimes, time*femtoseconds, i_restraint, &
++		     gci%lcolv(i_restraint)%value, gci%lcolv(i_restraint)%target_value, &
++		     gci%lcolv(i_restraint)%energy * evolt, gci%lcolv(i_restraint)%value_gradient * evolt
++	       end do
++	     ENDIF
++	     CALL cp_print_key_finished_output(restraints_unit,logger,root_section,"MOTION%PRINT%RESTRAINTS",error=error)
++	  ENDIF ! explicit
++       ENDIF ! gci%nrestraint > 0
++       !NB
++
         ! Print Simulation Cell 
         CALL write_simulation_cell(cell, motion_section, itimes, time*femtoseconds, my_pos, my_act, error)
  
 Index: input_cp2k_motion.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/input_cp2k_motion.F,v
-retrieving revision 1.223
-diff -u -r1.223 input_cp2k_motion.F
---- input_cp2k_motion.F	2 Jun 2010 13:45:15 -0000	1.223
-+++ input_cp2k_motion.F	13 Aug 2010 16:15:28 -0000
-@@ -128,6 +128,25 @@
+retrieving revision 1.226
+diff -u -r1.226 input_cp2k_motion.F
+--- input_cp2k_motion.F	12 Aug 2010 14:28:32 -0000	1.226
++++ input_cp2k_motion.F	25 Oct 2010 13:36:53 -0000
+@@ -129,6 +129,35 @@
              n_keywords=0, n_subsections=1, repeats=.TRUE., required=.FALSE.,&
              error=error)
         NULLIFY(keyword)
@@ -122,6 +239,16 @@ diff -u -r1.223 input_cp2k_motion.F
 +
 +       CALL section_add_subsection(subsection,print_key,error=error)
 +       CALL section_release(print_key,error=error)
++
++       !NB
++       CALL cp_print_key_section_create(print_key,"RESTRAINTS",&
++            description="controls the output of restraint values, energies forces, for colvar only right now",&
++            print_level=low_print_level, common_iter_levels=1,&
++            filename="",error=error)
++       CALL section_add_subsection(subsection,print_key,error=error)
++       CALL section_release(print_key,error=error)
++       !NB
++
 +
         CALL cp_print_key_section_create(print_key,"trajectory",&
              description="controls the output of the trajectory",&
