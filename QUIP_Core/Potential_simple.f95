@@ -439,7 +439,7 @@ contains
           call create_hybrid_weights(at, new_args_str)
           cluster_info = create_cluster_info_from_mark(at, new_args_str,error=error)
 	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
-	  cluster = carve_cluster(at, new_args_str, cluster_info)
+	  call carve_cluster(at, new_args_str, cluster_info, cluster)
 	  call finalise(cluster_info)
 
           ! Reassign pointers - create_cluster_info_from_mark() might have broken them
@@ -512,7 +512,7 @@ contains
               RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
 	 endif
 
-	 cluster = carve_cluster(at, new_args_str, cluster_info, error=error)
+	 call carve_cluster(at, new_args_str, cluster_info, cluster, error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
@@ -545,6 +545,7 @@ contains
 		hybrid_mark(cluster_index(i)) == HYBRID_TRANS_MARK) &
 		  at_force_ptr(:,cluster_index(i)) = f_cluster(:,i)
 	 end do
+         nullify(f_cluster)
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
