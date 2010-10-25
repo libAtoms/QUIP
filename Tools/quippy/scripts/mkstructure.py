@@ -20,7 +20,7 @@
 from quippy import *
 import optparse
 
-p = optparse.OptionParser(usage='%prog [options] <input file>...')
+p = optparse.OptionParser(usage='%prog [options]')
 
 p.add_option('-s', '--struct', action='store', help='Structure name (mandatory)')
 p.add_option('-o', '--outfile', action='store', help='Output file name (default stdout)', default='stdout')
