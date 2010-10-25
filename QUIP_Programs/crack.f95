@@ -523,7 +523,7 @@ program crack
      endif
   end if
   
-  if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz')
+  if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz with stem="'//trim(stem)//'"')
 
   call initialise(ds, crack_slab)
   call finalise(crack_slab)
