@@ -8,6 +8,7 @@ p = optparse.OptionParser(usage='%prog [option] [file1] [file2] ...')
 p.add_option('-b', '--bond_by_cutoff', action='store_true', default=False, help="""add bond_by_cutoff statement""")
 p.add_option('-t', '--type', action='store', help="""property to use for atom type""")
 p.add_option('-v', '--value', action='append', help="""property to use for values (may be repeated)""")
+p.add_option('-g', '--graph', action='append', help="""property to use for graphs (may be repeated)""")
 p.add_option('-V', '--vector', action='store', help="""property to use for vector field""")
 p.add_option('-p', '--post_config_command', action='append', help="""commands to add after each config""")
 p.add_option('-P', '--post_file_command', action='append', help="""commands to add after each input file""")
@@ -18,11 +19,19 @@ opt, args = p.parse_args()
 if (len(args) == 0):
   args = ["stdin"]
 
+if (opt.graph is not None):
+  graph_min=[1.0e38]*len(opt.graph)
+  graph_max=[-1.0e38]*len(opt.graph)
+
+first_config=True
 for file in args:
   if (file == "-"):
     file = "stdin"
 
   for at in AtomsReader(file):
+    if (first_config and opt.graph is not None):
+      print "n_graphs %d" % len(opt.graph)
+      first_config=False
     print "new_configuration"
     if (hasattr(at,'lattice')):
       print "pbc_a 1 %f %f %f" % ( at.lattice[1,1], at.lattice[2,1], at.lattice[3,1])
@@ -53,6 +62,14 @@ for file in args:
 	  if (hasattr(at,opt.vector)):
 	    print "vector %f %f %f   %f %f %f" % ( at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], 
 	      getattr(at,opt.vector)[1,i_at], getattr(at,opt.vector)[2,i_at], getattr(at,opt.vector)[3,i_at])
+    if (opt.graph is not None):
+      for ig in range(len(opt.graph)):
+	 graph_val = getattr(at, opt.graph[ig])
+	 print "graph_value %d %f" % (ig, graph_val)
+	 if (graph_val < graph_min[ig]):
+	    graph_min[ig] = graph_val
+	 if (graph_val > graph_max[ig]):
+	    graph_max[ig] = graph_val
     if opt.bond_by_cutoff:
       print "bond_by_cutoff"
     if (opt.post_config_command is not None):
@@ -66,3 +83,7 @@ for file in args:
 if (opt.end_command is not None):
   for cmd in opt.end_command:
     print cmd
+
+if (opt.graph is not None):
+  for ig in range(len(opt.graph)):
+    print "graph_range %d %f %f" % (ig, graph_min[ig], graph_max[ig])
