@@ -182,7 +182,7 @@ install-Tools:
 	done
 
 install-structures:
-	cd structures; ${MAKE} QUIP_DIR=$(QUIP_DIR) QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-structures 
+	cd structures; ${MAKE} QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-structures 
 
 doc: quip-reference-manual.pdf
 
