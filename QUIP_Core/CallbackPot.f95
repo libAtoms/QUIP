@@ -31,46 +31,8 @@
 !X
 !X Callbackpot Module
 !X
-!% Callbackpot is a potential that computes things by writing atomic config to a
-!% file, running a command, and reading its output
-!%
-!% it takes an argument string on initialization with one mandatory parameter
-!%>   command=path_to_command
-!% and two optional parameters
-!%>   property_list=prop1:T1:N1:prop2:T2:N2...
-!% which defaults to 'pos', and
-!%>   min_cutoff=cutoff
-!% which default to zero. If min_cutoff is non zero and the cell is narrower
-!% than $2*min_cutoff$ in any direction then it will be replicated before
-!% being written to the file. The forces are taken from the primitive cell
-!% and the energy is reduced by a factor of the number of repeated copies.
-!% 
-!% The command takes 2 arguments, the names of the input and the output files.
-!% command output is in extended xyz form.
-!%
-!% energy and virial (both optional) are passed via the comment, labeled as
-!%     'energy=E' and 'virial="vxx vxy vxz vyx vyy vyz vzx vzy vzz"'.
-!%
-!%  per atoms data is at least atomic type and optionally 
-!%     a local energy (labeled 'local_e:R:1') 
-!%  and 
-!%  forces (labeled 'force:R:3')
-!%
-!% right now (14/2/2008) the atoms_xyz reader requires the 1st 3 columns after
-!%   the atomic type to be the position.
-!% 
-!% If you ask for some quantity from Callbackpot_Calc and it's not in the output file, it
-!% returns an error status or crashes (if err isn't present).
-!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-! some day implement calculation queues
-! how to do this? one possibility:
-!  add args_str to Callbackpot_Calc, and indicate
-!   queued_force=i to indicate this atoms structure should be queued for the calculation
-!    of forces on atom i (or a list, or a range?)
-! or
-!   process_queue, which would process the queue and fill in all the forces
+
 #include "error.inc"
 module Callbackpot_module
 
