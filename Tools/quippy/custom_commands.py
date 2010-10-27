@@ -629,11 +629,13 @@ class test(Command):
 class interact(Command):
     description = "interact with the distribution prior to install"
 
-    user_options = [('execute=', None, "code to execute on startup")]
+    user_options = [('execute=', None, "code to execute on startup"),
+                    ('execfile=', None, "file to execute on startup")]
 
     def initialize_options(self):
         self.build_base = 'build'
         self.execute = None
+        self.execfile = None
 
     def finalize_options(self):
         build = self.get_finalized_command('build')
@@ -663,6 +665,8 @@ class interact(Command):
         from quippy import *
         if self.execute is not None:
            exec(self.execute)
+        if self.execfile is not None:
+           execfile(self.execfile)
         ipshell()
 
         # restore sys.path
