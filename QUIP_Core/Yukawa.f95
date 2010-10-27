@@ -172,8 +172,6 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
          call smooth_cutoff(r_ij, cutoff_coulomb-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
 
-         de = gamjir
-
          if (do_pseudise) then
             sigma = pseudise_sigma(ti,tj)
             erf_val = 1.0_dp
@@ -186,38 +184,25 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
          end if
 
          if (present(e) .or. present(local_e)) then
+            de = gamjir*expfactor*fc
+            if (do_pseudise) de = de*erf_val
+
             if (present(e)) then
                if (i_is_min_image .and. j_is_min_image) then
-                  if (do_pseudise) then
-                     private_e = private_e + de*expfactor*fc*erf_val
-                  else
-                     private_e = private_e + de*expfactor*fc
-                  end if
+                  private_e = private_e + de
                else
-                  if (do_pseudise) then
-                     private_e = private_e + 0.5_dp*de*expfactor*fc*erf_val
-                  else
-                     private_e = private_e + 0.5_dp*de*expfactor*fc
-                  end if
+                  private_e = private_e + 0.5_dp*de
                end if
             end if
             if (present(local_e)) then
-               if (do_pseudise) then
-                  private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc*erf_val
-                  if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc*erf_val
-               else
-                  private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
-                  if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
-               end if
+               private_local_e(i) = private_local_e(i) + 0.5_dp*de
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
             end if
          end if
 
          if (present(f) .or. present(virial) .or. present(efield)) then
-            dforce = gamjir3*expfactor*fc*r_ij + de*(yukalpha*fc - dfc_dr)*expfactor
-
-            if (do_pseudise) then
-               dforce = dforce*erf_val - de*expfactor*fc*erf_deriv
-            end if
+            dforce = gamjir3*expfactor*fc*r_ij + gamjir*(yukalpha*fc - dfc_dr)*expfactor
+            if (do_pseudise) dforce = dforce*erf_val - gamjir*expfactor*fc*erf_deriv
 
             if (present(f)) then
                private_f(:,i) = private_f(:,i) - dforce*u_ij
@@ -491,27 +476,20 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
                     -de_sr*(yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij
             end if
 
-            de = de_dd + de_qd + de_sr
+            de = (de_dd + de_qd + de_sr)*expfactor*fc
+            if (do_pseudise) de = de*erf_val
 
             if (present(e)) then
-               if (do_pseudise) then
-                  if (i_is_min_image .and. j_is_min_image) then
-                     private_e = private_e + de*expfactor*fc*erf_val
-                  else
-                     private_e = private_e + 0.5_dp*de*expfactor*fc*erf_val
-                  end if
+               if (i_is_min_image .and. j_is_min_image) then
+                  private_e = private_e + de
                else
-                  if (i_is_min_image .and. j_is_min_image) then
-                     private_e = private_e + de*expfactor*fc
-                  else
-                     private_e = private_e + 0.5_dp*de*expfactor*fc
-                  end if
+                  private_e = private_e + 0.5_dp*de
                end if
             end if
 
             if (present(local_e)) then
-               private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
-               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
+               private_local_e(i) = private_local_e(i) + 0.5_dp*de
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
             end if
 
             if (present(f) .or. present(virial)) then
@@ -530,10 +508,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
                end if
 
                dforce = dfqdip + dfdipdip + df_sr
-
-               if (do_pseudise) then
-                  dforce = dforce*erf_val + de*expfactor*fc*erf_deriv*u_ij/r_ij
-               end if
+               if (do_pseudise) dforce = dforce*erf_val + (de_dd + de_qd + de_sr)*expfactor*fc*erf_deriv*u_ij/r_ij
                
                if (present(f)) then
                   private_f(:,i) = private_f(:,i) + dforce

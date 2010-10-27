@@ -9373,6 +9373,44 @@ if hasattr(quippy, 'Potential'):
                   self.assertArrayAlmostEqual(at1.force, at2.force)
                   self.assertArrayAlmostEqual(at1.pos, at2.pos)
 
+class TestPseudise(QuippyTestCase):
+
+   def setUp(self):
+      self.xml = """<ASAP_params label="screened_LDA" betapol="0.75" cutoff="20.0 20.0 18.0 0.0" cutoff_coulomb="20.0" cutoff_ms="18.0" tolpol="1e-10" yuksmoothlength="10.0" iesr="-1 -1 -1" a_ew="1e-06" n_types="2" gcut="0.0" pred_order="2" maxipol="60" raggio="0.0" tewald="F" yukalpha="0.1">
+
+     <per_type_data atomic_num="8" pol="14.131863" z="-1.4295594" type="1" />
+     <per_type_data atomic_num="14" pol="0.0" z="2.8591188" type="2" />
+
+     <per_pair_data pseudise_sigma="1.0" C_pol="0.44302622" atnum_j="8" atnum_i="8" D_ms="0.00030700577" gamma_ms="12.165654" B_pol="1.1221903" R_ms="7.0252019" />
+     <per_pair_data pseudise_sigma="1.0" C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
+     <per_pair_data pseudise_sigma="1.0" C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
+
+     </ASAP_params>"""
+
+      self.energy_ref = -173.214019568
+      self.force_ref = farray([[  8.61080094e-03, -1.49143447e-02, -4.14564379e-15],
+                               [  8.61080094e-03,  1.49143447e-02,  4.19267327e-14],
+                               [ -1.72216019e-02, -1.54343323e-15,  3.51674061e-15],
+                               [ -1.00690873e-01,  2.46829816e-01, -1.65689273e-01],
+                               [ -1.63415455e-01, -2.10615762e-01, -1.65689273e-01],
+                               [  2.64106328e-01, -3.62140542e-02, -1.65689273e-01],
+                               [ -1.00690873e-01, -2.46829816e-01,  1.65689273e-01],
+                               [  2.64106328e-01,  3.62140542e-02,  1.65689273e-01],
+                               [ -1.63415455e-01,  2.10615762e-01,  1.65689273e-01]])
+      self.local_energy_ref = farray([-36.64386835, -36.64386835, -36.64386835, -10.54706909, -10.54706909,
+                                      -10.54706909, -10.54706909, -10.54706909, -10.54706909])
+
+   def test_pseudise_alpha_quartz(self):
+      p = Potential('IP ASAP2', param_str=self.xml)
+      a = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
+      a.set_cutoff(p.cutoff())
+      a.calc_connect()
+      p.calc(a, force=True)
+      p.calc(a, args_str="force energy local_energy calc_charge=T calc_short_range=T calc_sc_dipoles=F calc_dipoles=T pseudise=T")
+      self.assertAlmostEqual(a.energy, self.energy_ref)
+      self.assertArrayAlmostEqual(a.force, self.force_ref)
+      self.assertArrayAlmostEqual(a.local_energy, self.local_energy_ref)
+      self.assertAlmostEqual(sum(a.local_energy), a.energy)
 
 if __name__ == '__main__':
    unittest.main()

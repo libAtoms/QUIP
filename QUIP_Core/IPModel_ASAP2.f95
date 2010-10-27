@@ -900,9 +900,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "C_pol", value, status)
     if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find C_pol")
     read (value, *) parse_ip%C_pol(ti,tj)
+
     call QUIP_FoX_get_value(attributes, "pseudise_sigma", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find pseudise_sigma")
-    read (value, *) parse_ip%pseudise_sigma(ti,tj)
+    if (status == 0) then
+       read (value, *) parse_ip%pseudise_sigma(ti,tj)
+    end if
 
     if (ti /= tj) then
       parse_ip%D_ms(tj,ti) = parse_ip%D_ms(ti,tj)
