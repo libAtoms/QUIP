@@ -60,7 +60,7 @@ type IPModel_ASAP2
   integer :: maxipol, pred_order
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable, dimension(:) :: pol, z
-  real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
+  real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol, pseudise_sigma
 
   real(dp) :: cutoff_coulomb, cutoff_ms
 
@@ -133,6 +133,7 @@ subroutine IPModel_ASAP2_Finalise(this)
   if (allocated(this%R_ms)) deallocate(this%R_ms)
   if (allocated(this%B_pol)) deallocate(this%B_pol)
   if (allocated(this%C_pol)) deallocate(this%C_pol)
+  if (allocated(this%pseudise_sigma)) deallocate(this%pseudise_sigma)
   this%n_types = 0
   this%label = ''
 end subroutine IPModel_ASAP2_Finalise
@@ -566,8 +567,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    if (calc_charge) then
       if (maxval(abs(this%z)) > 0.0_dp) then
          call yukawa_charges(at, charge, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
-              e, local_e, f, virial, efield_charge, mpi, atom_mask_name, source_mask_name, pseudise, &
-              grid_size, error=error)
+              this%type_of_atomic_num, e, local_e, f, virial, efield_charge, mpi, atom_mask_name, source_mask_name, &
+              pseudise, this%pseudise_sigma, grid_size, error=error)
       end if
    end if
 
@@ -662,7 +663,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
          call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
               this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, &
               e, local_e, f, virial, efield_dipole, mpi, atom_mask_name, source_mask_name, pseudise, &
-              grid_size, error=error)
+              this%pseudise_sigma, grid_size, error=error)
          
          if (save_dipole_velo) then
             ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
@@ -716,7 +717,8 @@ subroutine IPModel_ASAP2_Print(this, file)
        call Print ("IPModel_ASAP2 : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) //&
             " " // this%atomic_num(tj), file=file)
        call Print ("IPModel_ASAP2 : pair " // this%D_ms(ti,tj) // " " // this%gamma_ms(ti,tj) // " " &
-            // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj), file=file)
+            // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj) // " " // this%pseudise_sigma(ti, tj), file=file)
+
     end do
    call verbosity_pop()
   end do
@@ -810,6 +812,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%B_pol = 0.0_dp
       allocate(parse_ip%C_pol(parse_ip%n_types,parse_ip%n_types))
       parse_ip%C_pol = 0.0_dp
+      allocate(parse_ip%pseudise_sigma(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%pseudise_sigma = 0.0_dp
 
       call QUIP_FoX_get_value(attributes, "cutoff_coulomb", value, status)
       if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find cutoff_coulomb")
@@ -896,6 +900,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "C_pol", value, status)
     if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find C_pol")
     read (value, *) parse_ip%C_pol(ti,tj)
+    call QUIP_FoX_get_value(attributes, "pseudise_sigma", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find pseudise_sigma")
+    read (value, *) parse_ip%pseudise_sigma(ti,tj)
 
     if (ti /= tj) then
       parse_ip%D_ms(tj,ti) = parse_ip%D_ms(ti,tj)
@@ -903,6 +910,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%R_ms(tj,ti) = parse_ip%R_ms(ti,tj)
       parse_ip%B_pol(tj,ti) = parse_ip%B_pol(ti,tj)
       parse_ip%C_pol(tj,ti) = parse_ip%C_pol(ti,tj)
+      parse_ip%pseudise_sigma(tj,ti) = parse_ip%pseudise_sigma(ti,tj)
     endif
 
   endif
