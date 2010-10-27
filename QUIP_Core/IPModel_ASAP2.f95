@@ -661,7 +661,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       if (maxval(abs(dipoles)) > 0.0_dp) then
          call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
               this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, &
-              e, local_e, f, virial, efield_dipole, mpi=mpi, error=error)
+              e, local_e, f, virial, efield_dipole, mpi, atom_mask_name, source_mask_name, pseudise, &
+              grid_size, error=error)
          
          if (save_dipole_velo) then
             ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)

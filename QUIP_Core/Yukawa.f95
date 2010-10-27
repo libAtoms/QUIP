@@ -41,6 +41,9 @@ private
 
 public :: yukawa_charges, yukawa_dipoles
 
+real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
+real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
+
 contains
 
 !% Charge-charge interactions, screened by Yukawa function
@@ -59,12 +62,10 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
    real(dp), optional, intent(in) :: grid_size
    integer, intent(out), optional :: error
 
-   real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
-   real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
    real(dp) :: erf_val, erf_deriv
    integer i, j, m
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
-   real(dp) :: de, dforce, expfactor
+   real(dp) :: de, dforce, expfactor, defield(3)
    logical :: i_is_min_image, j_is_min_image, do_pseudise
    real(dp) :: private_virial(3,3), private_e, pseudise_sigma
    real(dp), allocatable :: private_f(:,:), private_efield(:,:), private_local_e(:)
@@ -91,7 +92,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
       end if
    end if
 
-   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, cutoff_coulomb, yukalpha, yuksmoothlength, grid_size, do_pseudise, pseudise_sigma) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv)
+   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, cutoff_coulomb, yukalpha, yuksmoothlength, grid_size, do_pseudise) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv, pseudise_sigma)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -118,13 +119,15 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
       if (associated(atom_mask)) then
          if (.not. atom_mask(i)) cycle
+         i_is_min_image = .false.
+      else
+         if (allocated(at%connect%is_min_image)) then
+            i_is_min_image = at%connect%is_min_image(i)
+         else
+            i_is_min_image = is_min_image(at, i)
+         end if
       end if
 
-      if (allocated(at%connect%is_min_image)) then
-         i_is_min_image = at%connect%is_min_image(i)
-      else
-         i_is_min_image = is_min_image(at, i)
-      end if
       do m = 1, atoms_n_neighbours(at, i)
          
          j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(cutoff_coulomb*BOHR))
@@ -163,36 +166,48 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
          de = gamjir
 
          if (do_pseudise) then
-            pseudise_sigma = ElementCovRad(at%z(j))
+            pseudise_sigma = (ElementCovRad(at%z(i)) + ElementCovRad(at%z(j)))/(2.0_dp*BOHR)
+            erf_val = 1.0_dp
+            erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
             if (pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
-               de = de*erf(r_ij/(sqrt_2*pseudise_sigma))
+               erf_val = derf(r_ij/(sqrt_2 * pseudise_sigma))
+               erf_deriv = sqrt_2/(sqrt_pi*pseudise_sigma)*exp(-r_ij*r_ij/(2.0_dp*pseudise_sigma*pseudise_sigma))
             end if
          end if
 
          if (present(e) .or. present(local_e)) then
             if (present(e)) then
                if (i_is_min_image .and. j_is_min_image) then
-                  private_e = private_e + de*expfactor*fc
+                  if (do_pseudise) then ! .and. pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
+                     private_e = private_e + de*expfactor*fc*erf_val
+                  else
+                     private_e = private_e + de*expfactor*fc
+                  end if
                else
-                  private_e = private_e + 0.5_dp*de*expfactor*fc
+                  if (do_pseudise) then ! .and. pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
+                     private_e = private_e + 0.5_dp*de*expfactor*fc*erf_val
+                  else
+                     private_e = private_e + 0.5_dp*de*expfactor*fc
+                  end if
                end if
             end if
             if (present(local_e)) then
-               private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
-               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
+               if (do_pseudise) then ! .and. pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
+                  private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc*erf_val
+                  if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc*erf_val
+               else
+                  private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
+                  if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
+               end if
             end if
          end if
 
          if (present(f) .or. present(virial) .or. present(efield)) then
             dforce = gamjir3*expfactor*fc*r_ij + de*(yukalpha*fc - dfc_dr)*expfactor
 
-            if (do_pseudise) then
-               if (pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
-                  erf_val = erf(r_ij/(sqrt_2 * pseudise_sigma))
-                  erf_deriv = -(sqrt_2/(sqrt_pi*pseudise_sigma)) * exp(-r_ij*r_ij/(2.0_dp*pseudise_sigma*pseudise_sigma))
-                  dforce = dforce*erf_val + de*erf_deriv
-               end if
+            if (do_pseudise) then ! .and. pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
+               dforce = dforce*erf_val - de*expfactor*fc*erf_deriv
             end if
 
             if (present(f)) then
@@ -209,8 +224,10 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
             end if
 
             if (present(efield)) then
-               private_efield(:,i) = private_efield(:,i) - gamjir3*expfactor*fc*u_ij*r_ij/charge(i)
-               if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/charge(j)
+               defield = gamjir3*expfactor*fc*u_ij*r_ij
+               if (do_pseudise) defield = defield*erf_val
+               private_efield(:,i) = private_efield(:,i) - defield/charge(i)
+               if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + defield/charge(j)
             end if
          end if
 
@@ -248,7 +265,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
 subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothlength, pol, b_pol, c_pol, &
-     type_of_atomic_num, tdip_sr, e, local_e, f, virial, efield, mpi, error)
+     type_of_atomic_num, tdip_sr, e, local_e, f, virial, efield, mpi, atom_mask_name, source_mask_name, pseudise, grid_size, error)
 #ifdef _OPENMP
    use omp_lib
 #endif
@@ -263,22 +280,44 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
    type(MPI_Context), intent(in), optional :: mpi
+   character(len=*), optional, intent(in) :: atom_mask_name, source_mask_name
+   logical, optional, intent(in) :: pseudise
+   real(dp), optional, intent(in) :: grid_size
    integer, intent(out), optional :: error
 
    integer i, j, m, ti, tj, k
-   real(dp) :: r_ij, u_ij(3), gamjir3, gamjir2, fc, dfc_dr
-   real(dp) :: expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj
+   real(dp) :: r_ij, u_ij(3), gamjir3, gamjir2, fc, dfc_dr, de, pseudise_sigma, dforce(3), erf_val, erf_deriv
+   real(dp) :: expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj, defield_i(3), defield_j(3)
    real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1, dist3, dist5
    real(dp) :: const1, const2, factork, de_sr, df_sr(3), gij, dgijdrij, bij, cij
-   logical :: i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
+   logical :: i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, do_pseudise
 
-  real(dp) :: private_virial(3,3), private_e
-  real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
+   real(dp) :: private_virial(3,3), private_e
+   real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
+   logical, pointer, dimension(:) :: atom_mask, source_mask
 
-  INIT_ERROR(error)
-  call system_timer('yukawa_dipoles')
+   INIT_ERROR(error)
+   call system_timer('yukawa_dipoles')
 
-   !$omp parallel default(none) shared(mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff_coulomb, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
+   do_pseudise = optional_default(.false., pseudise)
+
+   atom_mask => null()
+   if (present(atom_mask_name)) then
+      if (trim(atom_mask_name) /= '') then
+         call assign_property_pointer(at, atom_mask_name, atom_mask, error)
+         PASS_ERROR(error)
+      end if
+   end if
+
+   source_mask => null()
+   if (present(source_mask_name)) then
+      if (trim(source_mask_name) /= '') then
+         call assign_property_pointer(at, source_mask_name, source_mask, error)
+         PASS_ERROR(error)
+      end if
+   end if
+
+   !$omp parallel default(none) shared(mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff_coulomb, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr, do_pseudise, atom_mask, source_mask) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield, pseudise_sigma)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -303,10 +342,15 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
 	 endif
       endif
 
-      if (allocated(at%connect%is_min_image)) then
-         i_is_min_image = at%connect%is_min_image(i)
+      if (associated(atom_mask)) then
+         if (.not. atom_mask(i)) cycle
+         i_is_min_image = .false.
       else
-         i_is_min_image = is_min_image(at, i)
+         if (allocated(at%connect%is_min_image)) then
+            i_is_min_image = at%connect%is_min_image(i)
+         else
+            i_is_min_image = is_min_image(at, i)
+         end if
       end if
       ti = get_type(type_of_atomic_num, at%Z(i))
 
@@ -325,7 +369,18 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
          
          j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(cutoff_coulomb*BOHR))
          if (j <= 0) cycle
-         if (r_ij .feq. 0.0_dp) cycle
+
+         if (associated(source_mask)) then
+            if (.not. source_mask(j)) cycle
+         end if
+
+         if (r_ij .feq. 0.0_dp) then
+            if (present(grid_size)) then 
+               r_ij = grid_size
+            else
+               cycle
+            end if
+         end if
 
          if (allocated(at%connect%is_min_image)) then
             j_is_min_image = at%connect%is_min_image(j)
@@ -364,10 +419,27 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
 
          prj = 0.0_dp
          if (tpolj) prj = dipj .dot. u_ij
+         
+         if (do_pseudise) then
+            pseudise_sigma = (ElementCovRad(at%z(i)) + ElementCovRad(at%z(j)))/(2.0_dp*BOHR)
+            erf_val = 1.0_dp
+            erf_deriv = 0.0_dp
+            ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
+            if (pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
+               erf_val = derf(r_ij/(sqrt_2 * pseudise_sigma))
+               erf_deriv = sqrt_2/(sqrt_pi*pseudise_sigma)*exp(-r_ij*r_ij/(2.0_dp*pseudise_sigma*pseudise_sigma))
+            end if
+         end if
 
          if (present(efield)) then
-            private_efield(:,i) = private_efield(:,i) + (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
-            if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            defield_i = (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            defield_j = (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            if (do_pseudise) then
+               defield_i = defield_i*erf_val
+               defield_j = defield_j*erf_val
+            end if
+            private_efield(:,i) = private_efield(:,i) + defield_i
+            if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + defield_j
          end if
 
          if (present(e) .or. present(local_e) .or. present(virial) .or. present(f)) then
@@ -405,17 +477,27 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
                     -de_sr*(yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij
             end if
 
+            de = de_dd + de_qd + de_sr
+
             if (present(e)) then
-               if (i_is_min_image .and. j_is_min_image) then
-                  private_e = private_e + (de_dd + de_qd + de_sr)*expfactor*fc
+               if (do_pseudise) then
+                  if (i_is_min_image .and. j_is_min_image) then
+                     private_e = private_e + de*expfactor*fc*erf_val
+                  else
+                     private_e = private_e + 0.5_dp*de*expfactor*fc*erf_val
+                  end if
                else
-                  private_e = private_e + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+                  if (i_is_min_image .and. j_is_min_image) then
+                     private_e = private_e + de*expfactor*fc
+                  else
+                     private_e = private_e + 0.5_dp*de*expfactor*fc
+                  end if
                end if
             end if
 
             if (present(local_e)) then
-               private_local_e(i) = private_local_e(i) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
-               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+               private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
             end if
 
             if (present(f) .or. present(virial)) then
@@ -433,16 +515,22 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
                        - de_dd*(yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij(:)
                end if
 
+               dforce = dfqdip + dfdipdip + df_sr
+
+               if (do_pseudise) then
+                  dforce = dforce*erf_val + de*expfactor*fc*erf_deriv*u_ij/r_ij
+               end if
+               
                if (present(f)) then
-                  private_f(:,i) = private_f(:,i) + dfqdip + dfdipdip + df_sr
-                  if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) - (dfqdip + dfdipdip + df_sr)
+                  private_f(:,i) = private_f(:,i) + dforce
+                  if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) - dforce
                end if
 
                if (present(virial)) then
                   if (i_is_min_image .and. j_is_min_image) then
-                     private_virial = private_virial - ((dfqdip+dfdipdip+df_sr) .outer. u_ij)
+                     private_virial = private_virial - (dforce .outer. u_ij)
                   else
-                     private_virial = private_virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
+                     private_virial = private_virial - 0.5_dp*(dforce .outer. u_ij)
                   end if
                end if
             end if
