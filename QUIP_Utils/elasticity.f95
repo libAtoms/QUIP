@@ -32,7 +32,6 @@ module elasticity_module
 
   use libatoms_module
 
-  use QUIP_module
   use Potential_module
   implicit none
 

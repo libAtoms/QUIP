@@ -50,7 +50,7 @@ program md
   call set_atoms(at, 6)
   allocate(f(3,at%N)) ! Allocate force array
 
-  call atoms_set_cutoff(at,3.0_dp)
+  call set_cutoff(at,3.0_dp)
   call calc_connect(at)
   call calc_dists(at)
   call initialise(ds, at)

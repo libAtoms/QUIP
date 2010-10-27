@@ -31,7 +31,7 @@
 program test_potential
 
 use libAtoms_module
-use QUIP_module
+use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module

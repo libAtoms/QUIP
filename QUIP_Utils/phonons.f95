@@ -32,7 +32,7 @@
 ! Z. Hajnal, and T. Frauenheim, Phys. Rev. B v. 55, 2549 (1997).
 module phonons_module
 use libatoms_module
-use quip_module
+use potential_module
 use libatoms_misc_utils_module
 implicit none
 private

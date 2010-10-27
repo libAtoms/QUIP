@@ -31,7 +31,6 @@
 module ts_module
 
 use libatoms_module
-use QUIP_module
 use Potential_module
 use tsParams_module
 

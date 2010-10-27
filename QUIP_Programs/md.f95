@@ -31,7 +31,7 @@
 #include "error.inc"
 module md_module
 use libatoms_module
-use quip_module
+use potential_module
 implicit none
 private
 
@@ -417,7 +417,7 @@ end module md_module
 
 program md
 use libatoms_module
-use quip_module
+use potential_module
 use md_module
 use libatoms_misc_utils_module
 use restraints_constraints_xml_module

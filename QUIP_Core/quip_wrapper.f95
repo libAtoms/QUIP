@@ -40,7 +40,7 @@
 subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
 
   use libatoms_module
-  use quip_module
+  use potential_module
 
   implicit none
 

@@ -273,7 +273,7 @@ program crack
 
 
   use libAtoms_module
-  use QUIP_module
+  use Potential_module
 
   ! Crack includes
   use CrackTools_module
