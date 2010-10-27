@@ -64,11 +64,7 @@ module system_module
   integer, parameter :: dp = 8 ! kind(1.0d0)
 #endif
 
-#ifdef NO_F2003_NEW_LINE
-  character, parameter :: quip_new_line = char(13)
-#else
-  character, parameter :: quip_new_line = new_line(' ')
-#endif
+  character :: quip_new_line
 
   integer, parameter :: INTEGER_SIZE = 4
   integer, parameter :: REAL_SIZE = dp
@@ -1787,6 +1783,13 @@ contains
 #else
     mpi_n  = 1 ! default
     mpi_myid = 0 ! default
+#endif
+
+    ! should really be in declaration, but ifort complains
+#ifdef NO_F2003_NEW_LINE
+    quip_new_line = char(13)
+#else
+    quip_new_line = new_line(' ')
 #endif
 
     call cpu_time(start_time)
