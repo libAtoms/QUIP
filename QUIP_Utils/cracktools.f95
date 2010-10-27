@@ -33,11 +33,9 @@
 module CrackTools_module
 
   use libAtoms_module
-  use QUIP_module
   use elasticity_module
   use CrackParams_module
-  use atoms_module
-  use linearalgebra_module
+  use potential_module
 
   implicit none
 

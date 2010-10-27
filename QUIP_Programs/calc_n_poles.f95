@@ -30,7 +30,7 @@
 
 program est_n_poles
 use libatoms_module
-use quip_module
+use approxfermi_module
 implicit none
 
   type(ApproxFermi) :: af

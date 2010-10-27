@@ -30,7 +30,7 @@
 
 program ts_main 
   use libAtoms_module
-  use QUIP_module 
+  use Potential_module 
   use ts_module
   use tsParams_module
 

@@ -38,12 +38,12 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QUIP_internals_module
+  use functions_module
+  use quip_common_module
+  use ewald_module
   use IPModel_lj_module
   use IPModel_sw_module
   use IPModel_tersoff_module
-  use functions_module
-  use ewald_module
-  use quip_common_module
 #ifdef HAVE_TB
   use tb_mixing_module
   use tb_common_module
@@ -56,19 +56,19 @@ end module QUIP_internals_module
 !% This is a container module. ``use" it if you want to use QUIP stuff
 !%>       use QUIP_module 
 module QUIP_module
-#ifdef HAVE_TB
-  use tbsystem_module
-  use tb_module
-  use tbmodel_module
-  use tb_kpoints_module
-  use approxfermi_module
-  use tb_greensfunctions_module
-  use tbmatrix_module
-#endif
-  use matrix_module
-  use ip_module
   use mpi_context_module
-  use rs_sparsematrix_module
   use scalapack_module
+  use matrix_module
+  use rs_sparsematrix_module
+#ifdef HAVE_TB
+  use approxfermi_module
+  use tb_kpoints_module
+  use tbmodel_module
+  use tbmatrix_module
+  use tbsystem_module
+  use tb_greensfunctions_module
+  use tb_module
+#endif
+  use ip_module
   use potential_module
 end module QUIP_module

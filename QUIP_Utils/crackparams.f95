@@ -110,8 +110,8 @@
 module CrackParams_module
 
   use libAtoms_module
-  use QUIP_module
   use QUIP_Common_module
+  use Potential_module
 
   implicit none
 

@@ -57,12 +57,9 @@ LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
 
-EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon
+EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon crack
 
 ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
-crack: % : ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 clean:	

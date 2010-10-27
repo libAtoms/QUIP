@@ -33,7 +33,8 @@
 program eval
 
 use libAtoms_module
-use QUIP_module
+use tb_module
+use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module

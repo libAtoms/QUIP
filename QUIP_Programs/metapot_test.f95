@@ -31,7 +31,7 @@
 program pot_test
 
   use libAtoms_module
-  use QUIP_Module
+  use Potential_Module
 
   implicit None
 

@@ -30,7 +30,7 @@
 
 module vacancy_map_module
 use libatoms_module
-use quip_module
+use potential_module
 use structures_module
 implicit none
 private

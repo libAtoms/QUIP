@@ -1,6 +1,6 @@
 program make_k_mesh
 use libatoms_module
-use quip_module
+use tb_kpoints_module
 implicit none
   type(KPoints) :: kp
   integer :: i

@@ -1,7 +1,7 @@
 module QUIP_LAMMPS_wrapper_module
 
    use libatoms_module
-   use quip_module
+   use potential_module
 
    implicit none
 

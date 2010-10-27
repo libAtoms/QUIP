@@ -31,8 +31,8 @@
 module tsParams_module
 
 use libAtoms_module
-use QUIP_module
 use QUIP_Common_module
+use potential_module
 
 implicit none
 
