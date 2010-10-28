@@ -50,6 +50,7 @@
 !%    \item    2nd generation Brenner Potential (interface) ({\bf IPModel_Brenner_2002})
 !%    \item    Partridge-Schwenke potential               ({\bf IPModel_PartridgeSchwenke})
 !%    \item    Einstein crystal potential ({\bf IPModel_Einstein})
+!%    \item    Coulomb potential ({\bf IPModel_Coulomb})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -76,6 +77,7 @@
 !%    \item    'IP_Brenner_2002'
 !%    \item    'IP_PartridgeSchwenke'
 !%    \item    'IP_Einstein'
+!%    \item    'IP_Coulomb'
 !%    \item    'IP_Template'
 !%   \end{itemize}
 !X
@@ -109,6 +111,7 @@ use IPModel_Glue_module
 use IPModel_PartridgeSchwenke_module
 use IPModel_Einstein_module
 ! Add new IPs here
+use IPModel_Coulomb_module
 use IPModel_Template_module
 use QUIP_Common_module
 
@@ -119,7 +122,7 @@ private
 integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
-     FF_Einstein = 19, &! Add new IPs here
+     FF_Einstein = 19, FF_Coulomb = 20, &! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -147,6 +150,7 @@ type IP_type
   type(IPModel_Glue) ip_Glue
   type(IPModel_PartridgeSchwenke) ip_PartridgeSchwenke
   type(IPModel_Einstein) ip_Einstein
+  type(IPModel_Coulomb) ip_Coulomb
      ! Add new IPs here  
   type(IPModel_Template) ip_Template
 
@@ -254,7 +258,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Template
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, is_Template
   ! Add new IPs here
 
   INIT_ERROR(error)
@@ -285,6 +289,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'Glue', 'false', is_Glue)
   call param_register(params, 'PartridgeSchwenke', 'false', is_PartridgeSchwenke)
   call param_register(params, 'Einstein', 'false', is_Einstein)
+  call param_register(params, 'Coulomb', 'false', is_Coulomb)
   ! Add new IPs here
   call param_register(params, 'Template', 'false', is_Template)
 
@@ -294,7 +299,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call finalise(params)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, &        ! add new IPs here
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &        ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -358,6 +363,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_Einstein) then
     this%functional_form = FF_Einstein
     call Initialise(this%ip_Einstein, args_str, param_str) 
+  else if (is_Coulomb) then
+    this%functional_form = FF_Coulomb
+    call Initialise(this%ip_Coulomb, args_str, param_str) 
     ! add new IPs here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -413,6 +421,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_PartridgeSchwenke)
     case (FF_Einstein)
       call Finalise(this%ip_Einstein)
+    case (FF_Coulomb)
+      call Finalise(this%ip_Coulomb)
       ! add new IP here
     case (FF_Template)
       call Finalise(this%ip_Template)
@@ -463,9 +473,11 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_Glue%cutoff
   case (FF_PartridgeSchwenke)
      IP_cutoff = this%ip_PartridgeSchwenke%cutoff
-  ! Add new IP here
   case (FF_Einstein)
      IP_cutoff = this%ip_Einstein%cutoff
+  case (FF_Coulomb)
+     IP_cutoff = this%ip_Coulomb%cutoff
+  ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
   case default
@@ -543,6 +555,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_PartridgeSchwenke, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Einstein)
       call calc(this%ip_Einstein, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+    case (FF_Coulomb)
+      call calc(this%ip_Coulomb, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     ! add new IP here
     case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -604,6 +618,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_PartridgeSchwenke, file=file)
     case (FF_Einstein)
       call Print(this%ip_Einstein, file=file)
+    case (FF_Coulomb)
+      call Print(this%ip_Coulomb, file=file)
     ! add new IP here
     case (FF_Template)
       call Print(this%ip_Template, file=file)

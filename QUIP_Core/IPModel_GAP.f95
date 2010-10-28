@@ -46,7 +46,6 @@ use libatoms_module
 
 use mpi_context_module
 use QUIP_Common_module
-use IPEwald_module
 
 #ifdef HAVE_GP_PREDICT
 use descriptors_module
@@ -73,8 +72,6 @@ type IPModel_GAP
   real(dp) :: z0 = 0.0_dp
   integer :: n_species = 0                                       !% Number of atomic types.
   integer, dimension(:), allocatable :: Z
-  logical :: do_ewald = .false.
-  logical :: do_ewald_corr = .false.
   real(dp), dimension(116) :: z_eff = 0.0_dp
   real(dp), dimension(116) :: w_Z = 1.0_dp
   real(dp) :: e0 = 0.0_dp
@@ -173,8 +170,6 @@ subroutine IPModel_GAP_Finalise(this)
   this%j_max = 0
   this%z0 = 0.0_dp
   this%n_species = 0
-  this%do_ewald = .false.
-  this%do_ewald_corr = .false.
   this%z_eff = 0.0_dp
   this%w_Z = 1.0_dp
   this%qw_l_max = 0
@@ -211,15 +206,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 #ifdef HAVE_GP_PREDICT
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy, water_dimer_energy
-  real(dp), dimension(:), allocatable   :: local_e_in, w, charge
+  real(dp), dimension(:), allocatable   :: local_e_in, w
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  real(dp), dimension(:,:), allocatable   :: vec, f_ewald, f_ewald_corr
+  real(dp), dimension(:,:), allocatable   :: vec
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer, dimension(:,:), allocatable :: water_monomer_index
   integer :: d, i, j, k, n, nei_max, jn, iAo, iBo, n_water_pair
 
-  real(dp) :: e_ewald, e_ewald_corr
-  real(dp), dimension(3,3) :: virial_ewald, virial_ewald_corr
   real(dp), dimension(:,:), allocatable :: covariance
 
   integer, dimension(3) :: shift
@@ -246,8 +239,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   if (present(e)) then
      e = 0.0_dp
-     e_ewald = 0.0_dp
-     e_ewald_corr = 0.0_dp
   endif
 
   if (present(local_e)) then
@@ -262,8 +253,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   if (present(virial)) then
      virial = 0.0_dp
-     virial_ewald = 0.0_dp
-     virial_ewald_corr = 0.0_dp
   endif
 
   if (present(local_virial)) then
@@ -524,38 +513,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
   endif
 
-  if( this%do_ewald ) then
-     allocate(charge(at%N))
-     if(present(f)) allocate(f_ewald(3,at%N))
-     do i = 1, at%N
-        charge(i) = this%z_eff(at%Z(i))
-     enddo
-     if( present(e) .and. .not.present(f) .and. .not.present(virial)) call Ewald_calc(at,e=e_ewald,charge=charge)
-     if( present(f) .and. .not.present(e) .and. .not.present(virial)) call Ewald_calc(at,f=f_ewald,charge=charge)
-     if( present(virial) .and. .not.present(e) .and. .not.present(f)) call Ewald_calc(at,virial=virial_ewald,charge=charge)
-
-     if( present(e) .and. present(f) .and. .not.present(virial)) call Ewald_calc(at,e=e_ewald,f=f_ewald,charge=charge)
-     if( present(e) .and. present(virial) .and. .not.present(f)) call Ewald_calc(at,e=e_ewald,virial=virial_ewald,charge=charge)
-     if( present(f) .and. present(virial) .and. .not.present(e)) call Ewald_calc(at,f=f_ewald,virial=virial_ewald,charge=charge)
-
-     if( present(e) .and. present(f) .and. present(virial)) call Ewald_calc(at,e=e_ewald,f=f_ewald,virial=virial_ewald,charge=charge)
-     
-     if(present(f)) f = f + f_ewald
-
-     if( this%do_ewald_corr ) then
-        allocate(f_ewald_corr(3,at%N))
-        call Ewald_corr_calc(at,e=e_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr,charge=charge,cutoff=this%cutoff)
-        if(present(f)) f = f - f_ewald_corr
-        deallocate(f_ewald_corr)
-     endif
-     
-     deallocate(charge)
-     if(allocated(f_ewald)) deallocate(f_ewald)
-  endif
-
-  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
+  if(present(e)) e = sum(local_e_in)
   if(present(local_e)) local_e = local_e_in
-  if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
+  if(present(virial)) virial = sum(virial_in,dim=3)
   if(present(local_virial)) then
      do i = 1, at%N
         local_virial(:,i) = reshape(virial_in(:,:,i),(/9/))
@@ -629,20 +589,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         read (value, *) parse_ip%n_species
      else
         call system_abort('IPModel_GAP_read_params_xml cannot find n_species')
-     endif
-
-     call QUIP_FoX_get_value(attributes, 'do_ewald', value, status)
-     if(status == 0) then
-        read (value, *) parse_ip%do_ewald
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find do_ewald')
-     endif
-
-     call QUIP_FoX_get_value(attributes, 'do_ewald_corr', value, status)
-     if(status == 0) then
-        read (value, *) parse_ip%do_ewald_corr
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find do_ewald_corr')
      endif
 
      call QUIP_FoX_get_value(attributes, 'e0', value, status)
@@ -794,13 +740,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find weight')
      endif
 
-     call QUIP_FoX_get_value(attributes, 'charge', value, status)
-     if(status == 0) then
-        read (value, *) parse_ip%z_eff(parse_ip%Z(ti))
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find charge')
-     endif
-
   elseif(parse_in_ip .and. name == 'command_line') then
       call zero(parse_cur_data)
 
@@ -893,8 +832,6 @@ subroutine IPModel_GAP_Print (this, file)
   call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
   call Print("IPModel_GAP : z0 = "//this%z0, file=file)
   call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
-  call Print("IPModel_GAP : do_ewald = "//this%do_ewald, file=file)
-  call Print("IPModel_GAP : do_ewald_corr = "//this%do_ewald_corr, file=file)
 
   do i = 1, this%n_species
      call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
