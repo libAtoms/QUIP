@@ -47,18 +47,18 @@ real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
 contains
 
 !% Charge-charge interactions, screened by Yukawa function
-subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength, type_of_atomic_num, &
-     e, local_e, f, virial, efield, mpi, atom_mask_name, source_mask_name, pseudise, pseudise_sigma, grid_size, error)
+subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength, &
+     e, local_e, f, virial, efield, mpi, atom_mask_name, source_mask_name, type_of_atomic_num, pseudise, pseudise_sigma, grid_size, error)
    type(Atoms), intent(inout)      :: at
    real(dp), dimension(:), intent(in) :: charge
    real(dp), intent(in) :: cutoff_coulomb, yukalpha, yuksmoothlength
-   integer, intent(in) :: type_of_atomic_num(:)
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
    type(MPI_Context), intent(in), optional :: mpi
    character(len=*), optional, intent(in) :: atom_mask_name, source_mask_name
+   integer, intent(in), optional :: type_of_atomic_num(:)
    logical, optional, intent(in) :: pseudise
    real(dp), optional, intent(in) :: pseudise_sigma(:,:)
    real(dp), optional, intent(in) :: grid_size
@@ -77,10 +77,9 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
    call system_timer('yukawa_charges')
 
    do_pseudise = optional_default(.false., pseudise)
-   if (do_pseudise .and. .not. present(pseudise_sigma)) then
-      RAISE_ERROR("pseudise=T but pseudise_sigma argument not present", error)
+   if (do_pseudise .and. (.not. present(pseudise_sigma) .or. .not. present(type_of_atomic_num))) then
+      RAISE_ERROR("pseudise=T but pseudise_sigma or type_of_atomic_num arguments not present", error)
    end if
-
    atom_mask => null()
    if (present(atom_mask_name)) then
       if (trim(atom_mask_name) /= '') then
@@ -133,7 +132,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
          end if
       end if
 
-      ti = get_type(type_of_atomic_num, at%Z(i))
+      if (do_pseudise) ti = get_type(type_of_atomic_num, at%Z(i))
 
       do m = 1, atoms_n_neighbours(at, i)
          
@@ -163,7 +162,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
          r_ij = r_ij/BOHR
          zv2 = charge(i)*charge(j)
 
-         tj = get_type(type_of_atomic_num, at%Z(j))
+         if (do_pseudise) tj = get_type(type_of_atomic_num, at%Z(j))
 
          gamjir = zv2/r_ij
          gamjir3 = gamjir/(r_ij**2.0_dp)
