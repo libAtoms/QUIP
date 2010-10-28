@@ -27,6 +27,7 @@
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 
 module IPEwald_module
 
@@ -39,36 +40,37 @@ implicit none
 real(dp), parameter :: reciprocal_time_by_real_time = 1.0_dp / 3.0_dp
 
 private
-public :: Ewald_calc, Ewald_corr_calc
+public :: Ewald_calc, Ewald_corr_calc, Direct_Coulomb_Calc
 
 contains
 
   ! Ewald routine
   ! input: atoms object, has to have charge property
-  ! input, optional: error (controls speed and error)
+  ! input, optional: ewald_error (controls speed and ewald_error)
   ! input, optional: use_ewald_cutoff (forces original cutoff to be used)
   ! output: energy, force, virial
 
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in,e,f,virial,error,use_ewald_cutoff,charge)
+  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, error)
 
     type(Atoms), intent(in), target    :: at_in
+    real(dp), dimension(:), intent(in) :: charge
 
     real(dp), intent(out), optional                    :: e
     real(dp), dimension(:,:), intent(out), optional    :: f
     real(dp), dimension(3,3), intent(out), optional    :: virial
-    real(dp), intent(in), optional                    :: error
-    logical, intent(in), optional                     :: use_ewald_cutoff
-    real(dp), dimension(:), intent(in), optional, target :: charge
+    real(dp), intent(in), optional                     :: ewald_error
+    logical, intent(in), optional                      :: use_ewald_cutoff
+    integer, intent(out), optional                     :: error
 
     integer  :: i, j, k, n, n1, n2, n3, not_needed !for reciprocal force
     integer, dimension(3) :: nmax !how many reciprocal vectors are to be taken
 
     logical :: my_use_ewald_cutoff
 
-    real(dp) :: r_ij, erfc_ar, arg, my_error, alpha, kmax, kmax2, prefac, infac, two_alpha_over_sqrt_pi, v, &
+    real(dp) :: r_ij, erfc_ar, arg, my_ewald_error, alpha, kmax, kmax2, prefac, infac, two_alpha_over_sqrt_pi, v, &
     & ewald_precision, ewald_cutoff, my_cutoff
 
     real(dp), dimension(3) :: force, u_ij, a, b, c, h
@@ -79,17 +81,19 @@ contains
     real(dp), dimension(:,:,:), allocatable   :: energy_factor
     real(dp), dimension(:,:,:), allocatable   :: mod2_k  !square of length of reciprocal vectors
 
-    real(dp), dimension(:), pointer :: my_charge
-
     type(Atoms), target :: my_at
     type(Atoms), pointer :: at
+
+    INIT_ERROR(error)
+
+    call check_size('charge',charge,at_in%N,'IPEwald',error)
 
     identity3x3 = 0.0_dp
     call add_identity(identity3x3)
 
     ! Set up Ewald calculation
-    my_error = optional_default(1e-06_dp,error) * 4.0_dp * PI * EPSILON_0 ! convert eV to internal units
-    my_use_ewald_cutoff = optional_default(.TRUE.,use_ewald_cutoff) ! can choose between optimal Ewald 
+    my_ewald_error = optional_default(1e-06_dp,ewald_error) * 4.0_dp * PI * EPSILON_0 ! convert eV to internal units
+    my_use_ewald_cutoff = optional_default(.true.,use_ewald_cutoff) ! can choose between optimal Ewald 
                                                                     ! cutoff and original one
 
     a = at_in%lattice(:,1); b = at_in%lattice(:,2); c = at_in%lattice(:,3)
@@ -99,7 +103,7 @@ contains
     h(2) = v / norm(c .cross. a)
     h(3) = v / norm(a .cross. b)
 
-    ewald_precision = -log(my_error)
+    ewald_precision = -log(my_ewald_error)
     ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
     & minval(sqrt( sum(at_in%lattice(:,:)**2,dim=1) )) / at_in%N**(1.0_dp/6.0_dp)
 
@@ -115,16 +119,16 @@ contains
     endif
 
     if( my_use_ewald_cutoff ) then
-        my_cutoff = ewald_cutoff
-     else
-        my_cutoff = at_in%cutoff
-     endif
+       my_cutoff = ewald_cutoff
+    else
+       my_cutoff = at_in%cutoff
+    endif
 
          
-    alpha = sqrt(ewald_precision)/at%cutoff
+    alpha = sqrt(ewald_precision) / my_cutoff 
     call print('Ewald alpha = '//alpha,PRINT_ANAL)
 
-    kmax = 2.0_dp * ewald_precision / at%cutoff
+    kmax = 2.0_dp * ewald_precision / my_cutoff
     kmax2 = kmax**2
     call print('Ewald kmax = '//kmax,PRINT_ANAL)
 
@@ -135,13 +139,6 @@ contains
 
     prefac = 4.0_dp * PI / v
     infac  = - 1.0_dp / (4.0_dp * alpha**2.0_dp) 
-
-    if( present(charge) ) then
-       call check_size('charge',charge,(/at%N/),'IPEwald')
-       my_charge => charge
-    elseif( .not. assign_pointer(at, 'charge', my_charge) ) then
-       call system_abort('Ewald_calc: no charge property is present in atoms object and no charge argument has been given')
-    endif
 
     allocate( k_vec(3,-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1)), &
             & mod2_k(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ),  &
@@ -160,7 +157,6 @@ contains
     sinkr = 0.0_dp
 
     not_needed = ( 2*nmax(3) + 1 ) * nmax(2) + nmax(3) + 1 ! lot of symmetries for k and -k so count only
-                                                           ! half of them, omit k = (0,0,0)
 
     n = 0
     do n1 = 0, nmax(1)
@@ -192,8 +188,8 @@ contains
 
                 if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
                    arg = dot_product(at%pos(:,i), k_vec(:,n3,n2,n1))
-                   coskr(n3,n2,n1,i) = cos(arg)*my_charge(i)
-                   sinkr(n3,n2,n1,i) = sin(arg)*my_charge(i)
+                   coskr(n3,n2,n1,i) = cos(arg)*charge(i)
+                   sinkr(n3,n2,n1,i) = sin(arg)*charge(i)
 
                 endif
              enddo
@@ -213,10 +209,10 @@ contains
            
           erfc_ar = erfc(r_ij*alpha)/r_ij
 
-          if( present(e) ) e = e + 0.5_dp * my_charge(i)*my_charge(j)*erfc_ar
+          if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)*erfc_ar
 
           if( present(f) .or. present(virial) ) then
-              force(:) = my_charge(i)*my_charge(j) * &
+              force(:) = charge(i)*charge(j) * &
               & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar ) / r_ij * u_ij(:)
 
               if(present(f)) then
@@ -231,7 +227,7 @@ contains
              
     ! reciprocal energy
     if(present(e)) e = e + sum((sum(coskr,dim=4)**2 + sum(sinkr,dim=4)**2)*energy_factor) * prefac &
-    & - sum(my_charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(my_charge)**2
+    & - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
 
     ! reciprocal force
     if( present(f) ) then
@@ -274,7 +270,7 @@ contains
        enddo
     endif
 
-    if(present(virial)) virial = virial - identity3x3 * sum(my_charge)**2 * PI / v / alpha**2 / 2
+    if(present(virial)) virial = virial - identity3x3 * sum(charge)**2 * PI / v / alpha**2 / 2
 
    ! if(present(e)) e = e / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV
    ! if(present(f)) f = f / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV/A
@@ -291,15 +287,16 @@ contains
 
   endsubroutine Ewald_calc
 
-  subroutine Ewald_corr_calc(at_in,e,f,virial,cutoff,charge)
+  subroutine Ewald_corr_calc(at_in,charge, e,f,virial,cutoff,error)
 
     type(Atoms), intent(in), target    :: at_in
+    real(dp), dimension(:), intent(in) :: charge
 
     real(dp), intent(out), optional                    :: e
     real(dp), dimension(:,:), intent(out), optional    :: f
     real(dp), dimension(3,3), intent(out), optional    :: virial
-    real(dp), intent(in), optional                    :: cutoff
-    real(dp), dimension(:), intent(in), optional, target :: charge
+    real(dp), intent(in), optional                     :: cutoff
+    integer, intent(out), optional                     :: error
 
     integer  :: i, j, n
 
@@ -309,7 +306,10 @@ contains
     real(dp), dimension(:), pointer :: my_charge
 
     type(Atoms), target :: my_at
-    type(Atoms), pointer :: at
+    type(Atoms), pointer :: at => null()
+
+    INIT_ERROR(error)
+    call check_size('charge',charge,(/at_in%N/),'Ewald_corr_calc',error)
 
     my_cutoff = optional_default(at_in%cutoff,cutoff)
 
@@ -322,13 +322,6 @@ contains
         at => at_in
     endif
          
-    if( present(charge) ) then
-       call check_size('charge',charge,(/at%N/),'IPEwald')
-       my_charge => charge
-    elseif( .not. assign_pointer(at, 'charge', my_charge) ) then
-       call system_abort('Ewald_calc: no charge property is present in atoms object and no charge argument has been given')
-    endif
-
     if( present(e) ) e = 0.0_dp
     if( present(f) ) f = 0.0_dp
     if( present(virial) ) virial = 0.0_dp
@@ -341,10 +334,10 @@ contains
            
           de = 0.5_dp * ( cos(r_ij*PI/my_cutoff) + 1.0_dp ) / r_ij
 
-          if( present(e) ) e = e + 0.5_dp * de * my_charge(i)*my_charge(j)
+          if( present(e) ) e = e + 0.5_dp * de * charge(i)*charge(j)
 
           if( present(f) .or. present(virial) ) then
-              force = my_charge(i)*my_charge(j) * &
+              force = charge(i)*charge(j) * &
               & ( -de - 0.5*PI*sin(r_ij*PI/my_cutoff)/my_cutoff ) / r_ij * u_ij
 
               if(present(f)) then
@@ -361,9 +354,84 @@ contains
     if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
     if(present(virial)) virial = virial * HARTREE*BOHR
 
-    my_charge => null()
-    if (associated(at,my_at)) call finalise(my_at)
+    if(associated(at,my_at)) call finalise(my_at)
+    at => null()
 
   endsubroutine Ewald_corr_calc
+
+  subroutine Direct_Coulomb_calc(at_in,charge, e,f,virial,local_e,cutoff,error)
+
+    type(Atoms), intent(in), target    :: at_in
+    real(dp), dimension(:), intent(in) :: charge
+
+    real(dp), intent(out), optional                    :: e
+    real(dp), dimension(:,:), intent(out), optional    :: f
+    real(dp), dimension(3,3), intent(out), optional    :: virial
+    real(dp), dimension(:), intent(out), optional      :: local_e
+    real(dp), intent(in), optional                     :: cutoff
+    integer, intent(out), optional                     :: error
+
+    integer  :: i, j, n
+
+    real(dp) :: my_cutoff, r_ij, de
+    real(dp), dimension(3) :: force, u_ij
+
+    real(dp), dimension(:), pointer :: my_charge
+
+    type(Atoms), target :: my_at
+    type(Atoms), pointer :: at => null()
+
+    INIT_ERROR(error)
+    call check_size('charge',charge,(/at_in%N/),'Ewald_corr_calc',error)
+
+    my_cutoff = optional_default(at_in%cutoff,cutoff)
+
+    if( present(cutoff) .and. (my_cutoff > at_in%cutoff) ) then
+        my_at = at_in
+        call set_cutoff(my_at,cutoff)
+        call calc_connect(my_at)
+        at => my_at
+    else
+        at => at_in
+    endif
+         
+    if( present(e) ) e = 0.0_dp
+    if( present(f) ) f = 0.0_dp
+    if( present(virial) ) virial = 0.0_dp
+    if( present(local_e) ) local_e = 0.0_dp
+
+    do i = 1, at%N
+       !Loop over neighbours
+       do n = 1, atoms_n_neighbours(at,i)
+          j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+          if( r_ij > my_cutoff )  cycle
+           
+          de = 0.5_dp * charge(i)*charge(j) / r_ij
+
+          if( present(e) ) e = e + de
+          if( present(local_e) ) local_e(i) = local_e(i) + de
+
+          if( present(f) .or. present(virial) ) then
+              force = - de / r_ij * u_ij
+
+              if(present(f)) then
+                 f(:,i) = f(:,i) + force
+                 f(:,j) = f(:,j) - force
+              endif
+
+              if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
+          endif
+ 
+      enddo
+    enddo
+             
+    if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
+    if(present(virial)) virial = virial * HARTREE*BOHR
+
+    if(associated(at,my_at)) call finalise(my_at)
+    at => null()
+
+  endsubroutine Direct_Coulomb_calc
 
 endmodule IPEwald_module

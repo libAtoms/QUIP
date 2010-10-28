@@ -42,7 +42,6 @@
 module IPModel_FB_module
 
 use libatoms_module
-use IPEwald_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -60,8 +59,7 @@ type IPModel_FB
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
-  real(dp), dimension(:), allocatable :: charge
-  real(dp), dimension(:,:), allocatable :: A, B, C, r_cut
+  real(dp), dimension(:,:), allocatable :: A, B, C
 
   character(len=FIELD_LENGTH) label
 
@@ -107,8 +105,6 @@ subroutine IPModel_FB_Initialise_str(this, args_str, param_str)
 
   call IPModel_FB_read_params_xml(this, param_str)
 
-  this%cutoff = maxval(this%r_cut)
-
 end subroutine IPModel_FB_Initialise_str
 
 subroutine IPModel_FB_Finalise(this)
@@ -120,10 +116,9 @@ subroutine IPModel_FB_Finalise(this)
   if (allocated(this%A)) deallocate(this%A)
   if (allocated(this%B)) deallocate(this%B)
   if (allocated(this%C)) deallocate(this%C)
-  if (allocated(this%charge)) deallocate(this%charge)
-  if (allocated(this%r_cut)) deallocate(this%r_cut)
 
   this%n_types = 0
+  this%cutoff = 0.0_dp
   this%label = ''
 end subroutine IPModel_FB_Finalise
 
@@ -148,7 +143,6 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   real(dp) :: r_ij, de, de_dr
   real(dp), dimension(3) :: u_ij
   real(dp), dimension(3,3) :: virial_i
-  real(dp), dimension(:), pointer :: charge
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
@@ -193,18 +187,6 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      endif
   endif
 
-  at_ew = at
-  call add_property(at_ew, 'charge', 0.0_dp)
-  if( .not. assign_pointer(at_ew, 'charge', charge) ) call system_abort('')
-  charge = 0.0_dp
-
-  do i = 1, at_ew%N
-    ti = get_type(this%type_of_atomic_num, at_ew%Z(i))
-    charge(i) = this%charge(ti)
-  enddo
-  call ewald_calc(at_ew,e=e,f=f,virial=virial)
-  call finalise(at_ew)
-
   do i = 1, at%N
     if (present(mpi)) then
        if (mpi%active) then
@@ -222,13 +204,13 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if (r_ij .feq. 0.0_dp) cycle
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (present(e) .or. present(local_e)) then
-	de = this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) - this%C(ti,tj) / r_ij**6
+	de = 0.5_dp * (this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) - this%C(ti,tj) / r_ij**6)
 	if (present(local_e)) local_e(i) = local_e(i) + de
 	if (present(e)) e = e + de
       endif
       if (present(f) .or. present(virial)) then
-	de_dr = -this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) / this%B(ti,tj) + &
-              & 6.0_dp * this%C(ti,tj) / r_ij**7
+	de_dr = 0.5_dp * (-this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) / this%B(ti,tj) + &
+              & 6.0_dp * this%C(ti,tj) / r_ij**7 )
 	if (present(f)) then
 	  f(:,i) = f(:,i) + de_dr*u_ij
 	  f(:,j) = f(:,j) - de_dr*u_ij
@@ -254,14 +236,26 @@ end subroutine IPModel_FB_Calc
 !% XML param reader functions.
 !% An example for XML stanza is given below.
 !%
-!%> <FB_params n_types="2" label="default">
-!%> <!-- Flikkema & Bromley  -->
-!%> <per_type_data type="1" atomic_num="8" charge="-1.2"/>
-!%> <per_type_data type="2" atomic_num="14" charge="2.4"/>
-!%> <per_pair_data atomic_num_i="8" atomic_num_j="8" A="1428.406" B="0.358" C="41.374" r_cut="6.0" />
-!%> <per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
-!%> <per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
-!%> </FB_params>
+!%> 
+!%> <FB_potential>
+!%>    <!-- Flikkema & Bromley  -->
+!%>    <Potential label="FB_Potential" init_args="Sum init_args_pot1={IP FB} init_args_pot2={IP Coulomb}"/>
+!%> 
+!%>    <Coulomb_params n_types="2" cutoff="6.0" method="ewald" label="default">
+!%>       <per_type_data type="1" atomic_num="8" charge="-1.2"/>
+!%>       <per_type_data type="2" atomic_num="14" charge="2.4"/>
+!%>    </Coulomb_params>
+!%> 
+!%>    <FB_params n_types="2" label="default">
+!%>       <per_type_data type="1" atomic_num="8"  />
+!%>       <per_type_data type="2" atomic_num="14" />
+!%>       <per_pair_data atomic_num_i="8" atomic_num_j="8" A="1428.406" B="0.358" C="41.374" r_cut="6.0" />
+!%>       <per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
+!%>       <per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
+!%>    </FB_params>
+!%> 
+!%> </FB_potential>
+!%> 
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -309,6 +303,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 	call system_abort("Can't find n_types in FB_params")
       endif
 
+      call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+      if (status == 0) then
+	read (value, *), parse_ip%cutoff
+      else
+	call system_abort("Can't find cutoff in FB_params")
+      endif
+
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       parse_ip%atomic_num = 0
       allocate(parse_ip%A(parse_ip%n_types,parse_ip%n_types))
@@ -317,10 +318,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%B = 0.0_dp
       allocate(parse_ip%C(parse_ip%n_types,parse_ip%n_types))
       parse_ip%C = 0.0_dp
-      allocate(parse_ip%charge(parse_ip%n_types))
-      parse_ip%charge = 0.0_dp
-      allocate(parse_ip%r_cut(parse_ip%n_types,parse_ip%n_types))
-      parse_ip%r_cut = 0.0_dp
     endif
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
@@ -332,10 +329,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
     if (status /= 0) call system_abort ("IPModel_FB_read_params_xml cannot find atomic_num")
     read (value, *) parse_ip%atomic_num(ti)
-
-    call QUIP_FoX_get_value(attributes, "charge", value, status)
-    if (status /= 0) call system_abort ("IPModel_FB_read_params_xml cannot find charge")
-    read (value, *) parse_ip%charge(ti)
 
     if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
     allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
@@ -370,15 +363,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_FB_read_params_xml cannot find C")
     read (value, *) parse_ip%C(parse_cur_type_i,parse_cur_type_j)
 
-    call QUIP_FoX_get_value(attributes, "r_cut", value, status)
-    if (status /= 0) call system_abort ("IPModel_FB_read_params_xml cannot find r_cut")
-    read (value, *) parse_ip%r_cut(parse_cur_type_i,parse_cur_type_j)
-
     if (parse_cur_type_i /= parse_cur_type_j) then
         parse_ip%A(parse_cur_type_j,parse_cur_type_i) = parse_ip%A(parse_cur_type_i,parse_cur_type_j)
         parse_ip%B(parse_cur_type_j,parse_cur_type_i) = parse_ip%B(parse_cur_type_i,parse_cur_type_j)
         parse_ip%C(parse_cur_type_j,parse_cur_type_i) = parse_ip%C(parse_cur_type_i,parse_cur_type_j)
-        parse_ip%r_cut(parse_cur_type_j,parse_cur_type_i) = parse_ip%r_cut(parse_cur_type_i,parse_cur_type_j)
     end if
 
   endif
@@ -439,12 +427,10 @@ subroutine IPModel_FB_Print (this, file)
   call Print("IPModel_FB : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
 
   do ti=1, this%n_types
-    call Print ("IPModel_FB : type " // ti // " atomic_num " // this%atomic_num(ti) // " charge " // this%charge(ti), file=file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_FB : interaction " // ti // " " // tj // " A " // this%A(ti,tj) // " B " // &
-      & this%B(ti,tj) // " C " // this%C(ti,tj) // &
-      & " r_cut " // this%r_cut(ti,tj), file=file)
+      & this%B(ti,tj) // " C " // this%C(ti,tj), file=file)
     end do
     call verbosity_pop()
   end do
