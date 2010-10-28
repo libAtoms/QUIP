@@ -567,7 +567,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    if (calc_charge) then
       if (maxval(abs(this%z)) > 0.0_dp) then
          call yukawa_charges(at, charge, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
-              this%type_of_atomic_num, e, local_e, f, virial, efield_charge, mpi, atom_mask_name, source_mask_name, &
+              e, local_e, f, virial, efield_charge, mpi, atom_mask_name, source_mask_name, this%type_of_atomic_num, &
               pseudise, this%pseudise_sigma, grid_size, error=error)
       end if
    end if
