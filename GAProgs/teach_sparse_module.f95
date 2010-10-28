@@ -30,7 +30,6 @@ module teach_sparse_mod
   use gp_predict_module
   use gp_teach_module
   use fox_wxml
-  use IPEwald_module
   use QUIP_module
 
   implicit none
@@ -41,7 +40,7 @@ module teach_sparse_mod
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
-     logical :: do_core = .false., do_ewald = .false. , do_ewald_corr = .false., &
+     logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse
 
@@ -50,7 +49,6 @@ module teach_sparse_mod
      type(extendable_str) :: quip_string
      type(gp) :: my_gp
 
-     real(dp), dimension(116) :: z_eff
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
      real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta
      real(dp), dimension(:,:), allocatable :: x, xd, theta
@@ -99,7 +97,6 @@ contains
 
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
-       call add_property(at,'charge',0.0_dp,n_cols=1)
 
        has_ener = get_value(at%params,this%energy_property_name,ener)
        has_force = assign_pointer(at,this%force_property_name, f)
@@ -185,10 +182,10 @@ contains
     integer :: d
     integer :: n_max, n_con
     logical :: has_ener, has_force, has_virial
-    real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
-    real(dp), dimension(3,3) :: virial, virial_ewald, virial_ewald_corr, virial_core
-    real(dp), pointer :: charge(:), f(:,:)
-    real(dp), dimension(:,:), allocatable :: f_ewald, f_ewald_corr, f_core
+    real(dp) :: ener, ener_core
+    real(dp), dimension(3,3) :: virial, virial_core
+    real(dp), pointer :: f(:,:)
+    real(dp), dimension(:,:), allocatable :: f_core
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
     integer :: shift(3)
     integer, dimension(3,1) :: water_monomer_index
@@ -253,7 +250,6 @@ contains
 
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
-       call add_property(at, 'charge',0.0_dp,n_cols=1)
 
        has_ener = get_value(at%params,this%energy_property_name,ener)
        has_force = assign_pointer(at,this%force_property_name, f)
@@ -274,27 +270,6 @@ contains
           if(has_force) f = f - f_core
           if(has_virial) virial = virial - virial_core
           deallocate(f_core)
-       endif
-
-       if( this%do_ewald ) then
-          allocate(f_ewald(3,at%N))
-          if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
-          do i = 1, at%N
-             charge(i) = this%z_eff(at%Z(i))
-          enddo
-          call Ewald_calc(at,e=ener_ewald,f=f_ewald,virial=virial_ewald)
-          if(has_ener) ener = ener - ener_ewald
-          if(has_force) f = f - f_ewald
-          if(has_virial) virial = virial - virial_ewald
-          deallocate(f_ewald)
-          if( this%do_ewald_corr ) then
-             allocate(f_ewald_corr(3,at%N))
-             call Ewald_corr_calc(at,e=ener_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr,cutoff=this%r_cut)
-             if(has_ener) ener = ener + ener_ewald_corr
-             if(has_force) f = f + f_ewald_corr
-             if(has_virial) virial = virial + virial_ewald_corr
-             deallocate(f_ewald_corr)
-          endif
        endif
 
        if(has_ener) then
@@ -486,8 +461,7 @@ contains
     integer :: n_max, n_con
     integer :: n_ener
     logical :: has_ener
-    real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
-    real(dp), pointer :: charge(:)
+    real(dp) :: ener, ener_core
     integer :: i
 
     if( this%do_core ) call Initialise(core_pot, this%ip_args, param_str=string(this%quip_string))
@@ -501,7 +475,6 @@ contains
 
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
-       call add_property(at,'charge',0.0_dp,n_cols=1)
 
        has_ener = get_value(at%params,'Energy',ener)
 
@@ -514,26 +487,11 @@ contains
              call calc(core_pot,at,energy=ener_core)
           endif
 
-          ener_ewald = 0.0_dp
-          ener_ewald_corr = 0.0_dp
-          if( this%do_ewald ) then
-             if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
-             do i = 1, at%N
-                charge(i) = this%z_eff(at%Z(i))
-             enddo
-             call Ewald_calc(at,e=ener_ewald)
-             if( this%do_ewald_corr ) then
-                call set_cutoff(at, this%r_cut)
-                call calc_connect(at)
-                call Ewald_corr_calc(at,e=ener_ewald_corr,cutoff=this%r_cut)
-             endif
-          endif
-
           select case(trim(this%coordinates))
           case('water_monomer','water_dimer')
-             this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core)
+             this%e0 = this%e0 + (ener-ener_core)
           case default
-             this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
+             this%e0 = this%e0 + (ener-ener_core) / at%N
           endselect
 
           n_ener = n_ener + 1
@@ -598,8 +556,6 @@ contains
 
      call xml_NewElement(xf,"GAP_data")
      call xml_AddAttribute(xf,"n_species",""//this%n_species)
-     call xml_AddAttribute(xf,"do_ewald",""//this%do_ewald)
-     call xml_AddAttribute(xf,"do_ewald_corr",""//this%do_ewald_corr)
      call xml_AddAttribute(xf,"do_core",""//this%do_core)
      call xml_AddAttribute(xf,"e0",""//this%e0)
      call xml_AddAttribute(xf,"f0",""//this%f0)
@@ -651,7 +607,6 @@ contains
         call xml_AddAttribute(xf,"i",""//i)
         call xml_AddAttribute(xf,"atomic_num",""//this%species_Z(i))
         call xml_AddAttribute(xf,"weight",""//this%w_Z(this%species_Z(i)))
-        call xml_AddAttribute(xf,"charge",""//this%z_eff(this%species_Z(i)))
         call xml_EndElement(xf,"per_type_data")
      enddo
      call xml_EndElement(xf,"GAP_data")

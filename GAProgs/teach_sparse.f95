@@ -46,12 +46,10 @@ program teach_sparse_program
 
   character(len=FIELD_LENGTH) :: verbosity
   character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
-  theta_file, sparse_file, z_eff_string, bispectrum_file
+  theta_file, sparse_file, bispectrum_file
   real(dp) :: mem_required, mem_total, mem_free
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
-  character(len=FIELD_LENGTH), dimension(232) :: z_eff_fields
-  integer :: num_z_eff_fields
   character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields
   character(len=SPARSE_LENGTH) :: sparse_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
@@ -91,11 +89,9 @@ program teach_sparse_program
   call param_register(params, 'do_pivot', 'F', main_teach_sparse%do_pivot)
   call param_register(params, 'min_steps', '10', main_teach_sparse%min_steps)
   call param_register(params, 'min_save', '0', main_teach_sparse%min_save)
-  call param_register(params, 'z_eff', '', z_eff_string,main_teach_sparse%do_ewald)
   call param_register(params, 'do_test_gp_gradient', 'F', main_teach_sparse%do_test_gp_gradient)
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_bispectrum_file)
   call param_register(params, 'ip_args', '', main_teach_sparse%ip_args, main_teach_sparse%do_core)
-  call param_register(params, 'do_ewald_corr', 'T', main_teach_sparse%do_ewald_corr)
   call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name)
   call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name)
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name)
@@ -108,8 +104,8 @@ program teach_sparse_program
      & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
-     & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
-     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [do_ewald_corr=F] &
+     & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
+     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [coulomb_args={}] &
      & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [do_sparse=T] [verbosity=NORMAL]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
@@ -136,17 +132,6 @@ program teach_sparse_program
   if( count( (/has_sparse_file,main_teach_sparse%do_cluster,main_teach_sparse%do_pivot/) ) > 1 ) &
   & call system_abort('There has been more than one method specified for sparsification.')
      
-  main_teach_sparse%z_eff = 0.0_dp
-  if(main_teach_sparse%do_ewald) then
-     call parse_string(z_eff_string,':',z_eff_fields,num_z_eff_fields)
-     do i = 1, num_z_eff_fields, 2
-        j = atomic_number_from_symbol(z_eff_fields(i))
-        if(j < 1 .or. j > 116) call system_abort("Invalid atomic number "//j//" parsed from "//z_eff_fields(i))
-        main_teach_sparse%z_eff(j) = string_to_real(z_eff_fields(i+1))
-     enddo
-  endif
-  main_teach_sparse%do_ewald_corr = main_teach_sparse%do_ewald .and. main_teach_sparse%do_ewald_corr
-
   main_teach_sparse%coordinates = lower_case(trim(main_teach_sparse%coordinates))
   select case(trim(main_teach_sparse%coordinates))
   case('water_monomer')
@@ -410,9 +395,6 @@ program teach_sparse_program
   call print("n_species = "//main_teach_sparse%n_species)
   call print("species_Z = "//main_teach_sparse%species_Z)
   call print("w         = "//main_teach_sparse%w_Z(main_teach_sparse%species_Z))
-  call print("z_eff     = "//main_teach_sparse%z_eff(main_teach_sparse%species_Z))
-  call print("do_ewald  = "//main_teach_sparse%do_ewald)
-  call print("do_ewald_corr  = "//main_teach_sparse%do_ewald_corr)
   call print("e0        = "//main_teach_sparse%e0)
 
   call finalise(gp_sp)
