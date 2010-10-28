@@ -204,7 +204,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    case(IPCoulomb_Method_Direct)
       call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
    case(IPCoulomb_Method_Yukawa)
-      call yukawa_charges(at, charge, this%cutoff, this%yukawa_alpha, this%yukawa_smooth_length, &
+      call yukawa_charges(at, charge, this%cutoff / BOHR, this%yukawa_alpha, this%yukawa_smooth_length, this%type_of_atomic_num, &
       e, local_e, f, virial, &
       mpi=mpi, atom_mask_name=atom_mask_name, source_mask_name=source_mask_name, pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)
    case(IPCoulomb_Method_Ewald)
@@ -226,6 +226,17 @@ subroutine IPModel_Coulomb_Print(this, file)
   integer :: ti
 
   call Print("IPModel_Coulomb : Coulomb Potential", file=file)
+  select case(this%method)
+  case(IPCoulomb_Method_Yukawa)
+     call Print("IPModel_Coulomb method: Yukawa")
+  case(IPCoulomb_Method_Direct)
+     call Print("IPModel_Coulomb method: Direct")
+  case(IPCoulomb_Method_Ewald)
+     call Print("IPModel_Coulomb method: Ewald")
+  case default
+     call system_abort ("IPModel_Coulomb: method identifier "//this%method//" unknown")
+  endselect
+
   call Print("IPModel_Coulomb : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
 
   do ti=1, this%n_types
