@@ -130,8 +130,8 @@ clean:
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
-quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
-	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
+quip.dtd: ${ALL_F95_FILES}
+	${SCRIPT_PATH}/mkdtd.pl ${addprefix ../QUIP_Core/,${ALL_F95_FILES}}  > $@
 
 LIBS = -L. -lquip_core ${GP_LIB} -latoms
 

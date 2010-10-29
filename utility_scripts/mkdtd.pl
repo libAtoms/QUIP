@@ -60,7 +60,7 @@ my %subelements_remove = (
 
 #----------------------------------------------------------------------
 
-if ($#ARGV < 1) {
+if ($#ARGV+1 <= 0) {
     die("\nUsage: mkdtd.pl [-t] IPModel*.f95 TBModel*.f95 > quip.dtd\n\nIf -t is present, document level element is included.\n\n");
 }
 

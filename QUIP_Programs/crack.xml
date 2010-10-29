@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE params SYSTEM "crack.dtd">
 
 <params>
 
@@ -8,7 +9,7 @@
     load_interp_length="20.0" strain_zone_width="50.0" vacuum_size="100.0"
     relax_loading_field="F"/>
 
-  <simulation task="md" seed="0" restart="T" classical="F" />
+  <simulation task="md" seed="0" classical="F" />
 
   <md time_step="1.0" sim_temp="300.0" avg_time="50.0"
      thermalise_tau="50.0" thermalise_wait_time="400.0" tau="500.0"
@@ -20,7 +21,7 @@
 
   <io verbosity="NORMAL" print_interval="10.0" checkpoint_interval="100.0" mpi_print_all="F"/>
 
-  <selection max_qm_atoms="200" dynamic="T" ellipse="8.0 5.0 10.0"
+  <selection max_qm_atoms="200" ellipse="8.0 5.0 10.0"
     ellipse_bias="0.5" ellipse_buffer="1.3" cutoff_plane="10.0" />
 
   <classical args="IP SW label=PRB_31_plus_H" />
