@@ -40,7 +40,7 @@ implicit none
 real(dp), parameter :: reciprocal_time_by_real_time = 1.0_dp / 3.0_dp
 
 private
-public :: Ewald_calc, Ewald_corr_calc, Direct_Coulomb_Calc
+public :: Ewald_calc, Ewald_corr_calc, Direct_Coulomb_Calc, DSF_Coulomb_calc
 
 contains
 
@@ -433,5 +433,104 @@ contains
     at => null()
 
   endsubroutine Direct_Coulomb_calc
+
+  subroutine DSF_Coulomb_calc(at_in,charge, alpha, e, f, virial, local_e, e_potential, e_field, cutoff, error)
+
+    type(Atoms), intent(in), target    :: at_in
+    real(dp), dimension(:), intent(in) :: charge
+    real(dp), intent(out)              :: alpha
+
+    real(dp), intent(out), optional                    :: e
+    real(dp), dimension(:,:), intent(out), optional    :: f
+    real(dp), dimension(3,3), intent(out), optional    :: virial
+    real(dp), dimension(:), intent(out), optional      :: local_e
+    real(dp), dimension(:), intent(out), optional      :: e_potential
+    real(dp), dimension(:,:), intent(out), optional    :: e_field
+    real(dp), intent(in), optional                     :: cutoff
+    integer, intent(out), optional                     :: error
+
+    integer  :: i, j, n
+
+    real(dp) :: my_cutoff, r_ij, phi_i, e_i, v_ij, dv_ij, v_cutoff, dv_cutoff, two_alpha_over_square_root_pi
+
+    real(dp), dimension(3) :: u_ij, dphi_i, dphi_ij
+    real(dp), dimension(3,3) :: dphi_ij_outer_r_ij
+
+    type(Atoms), target :: my_at
+    type(Atoms), pointer :: at => null()
+
+    INIT_ERROR(error)
+    call check_size('charge',charge,(/at_in%N/),'DSF_Coulomb_calc',error)
+
+    my_cutoff = optional_default(at_in%cutoff,cutoff)
+
+    two_alpha_over_square_root_pi = 2.0_dp * alpha / sqrt(pi)
+
+    v_cutoff = erfc(alpha * my_cutoff) / my_cutoff
+    dv_cutoff = ( v_cutoff + two_alpha_over_square_root_pi*exp(-(alpha*my_cutoff)**2) ) / my_cutoff
+
+    if( present(cutoff) .and. (my_cutoff > at_in%cutoff) ) then
+        my_at = at_in
+        call set_cutoff(my_at,cutoff)
+        call calc_connect(my_at)
+        at => my_at
+    else
+        at => at_in
+    endif
+         
+    if( present(e) ) e = 0.0_dp
+    if( present(f) ) f = 0.0_dp
+    if( present(virial) ) virial = 0.0_dp
+    if( present(local_e) ) local_e = 0.0_dp
+    if( present(e_potential) ) e_potential = 0.0_dp
+    if( present(e_field) ) e_field = 0.0_dp
+
+    do i = 1, at%N
+       !Loop over neighbours
+
+       phi_i = 0.0_dp
+       dphi_i = 0.0_dp
+       dphi_ij_outer_r_ij = 0.0_dp
+
+
+       do n = 1, atoms_n_neighbours(at,i)
+          j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=my_cutoff) ! nth neighbour of atom i
+           
+          v_ij = erfc(alpha*r_ij) / r_ij 
+          phi_i = phi_i + charge(j) * ( v_ij - v_cutoff + dv_cutoff * (r_ij - my_cutoff) )
+
+          if( present(f) .or. present(virial) .or. present(e_field) ) then
+             dv_ij = ( v_ij + two_alpha_over_square_root_pi * exp(-(alpha*r_ij)**2) ) / r_ij
+             dphi_ij = charge(j) * ( dv_ij - dv_cutoff ) * u_ij
+             dphi_i = dphi_i + dphi_ij
+
+             if(present(virial) ) dphi_ij_outer_r_ij = dphi_ij_outer_r_ij + ( dphi_ij .outer. u_ij ) * r_ij
+          endif
+       enddo
+       
+       if( present(e) .or. present(local_e) ) then
+          e_i = 0.5_dp * phi_i * charge(i)
+          if( present(e) ) e = e + e_i
+          if( present(local_e) ) local_e(i) = e_i
+       endif
+
+       if(present(e_potential)) e_potential(i) = phi_i
+
+       if(present(f)) f(:,i) = f(:,i) - dphi_i * charge(i)
+
+       if (present(virial)) virial = virial + 0.5_dp * charge(i) * dphi_ij_outer_r_ij
+
+       if(present(e_field)) e_field(:,i) = dphi_i
+    enddo
+             
+    if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(local_e)) local_e = local_e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
+    if(present(virial)) virial = virial * HARTREE*BOHR
+
+    if(associated(at,my_at)) call finalise(my_at)
+    at => null()
+
+  endsubroutine DSF_Coulomb_calc
 
 endmodule IPEwald_module
