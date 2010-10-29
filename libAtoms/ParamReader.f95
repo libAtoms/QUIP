@@ -81,6 +81,8 @@ module paramreader_module
 
      logical, pointer :: has_value
 
+     character(len=STRING_LENGTH) :: help_string
+
   end type ParamEntry
 
   !% Overloaded interface to register a parameter in a Dictionary object. 
@@ -108,83 +110,94 @@ module paramreader_module
   contains
 
     ! Overloaded interface for registering parameter of type single logical
-    subroutine param_register_single_logical(dict, key, value, logical_target, has_value_target)
+    subroutine param_register_single_logical(dict, key, value, logical_target, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       logical, intent(inout), target :: logical_target
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      call param_register_main(dict, key, value, 1, PARAM_LOGICAL, logical_target=logical_target, has_value_target=has_value_target)
+      call param_register_main(dict, key, value, 1, PARAM_LOGICAL, help_string=help_string, &
+	 logical_target=logical_target, has_value_target=has_value_target)
 
     end subroutine param_register_single_logical
 
     ! Overloaded interface for registering parameter of type single integer
-    subroutine param_register_single_integer(dict, key, value, int_target, has_value_target)
+    subroutine param_register_single_integer(dict, key, value, int_target, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, intent(inout), target :: int_target
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      call param_register_main(dict, key, value, 1, PARAM_INTEGER, int_target=int_target, has_value_target=has_value_target)
+      call param_register_main(dict, key, value, 1, PARAM_INTEGER, help_string=help_string, &
+	 int_target=int_target, has_value_target=has_value_target)
 
     end subroutine param_register_single_integer
 
 
     ! Overloaded interface for registering parameter of type multiple integer
-    subroutine param_register_multiple_integer(dict, key, value, int_target_array, has_value_target)
+    subroutine param_register_multiple_integer(dict, key, value, int_target_array, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, dimension(:), intent(inout), target :: int_target_array
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER, &
+      call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER, help_string=help_string, &
            int_target_array=int_target_array, has_value_target=has_value_target)
 
     end subroutine param_register_multiple_integer
 
 
     ! Overloaded interface for registering parameter of type single real
-    subroutine param_register_single_real(dict, key, value, real_target, has_value_target)
+    subroutine param_register_single_real(dict, key, value, real_target, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), intent(inout), target :: real_target
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      call param_register_main(dict, key, value, 1, PARAM_REAL, real_target=real_target, has_value_target=has_value_target)
+      call param_register_main(dict, key, value, 1, PARAM_REAL, help_string=help_string, &
+	 real_target=real_target, has_value_target=has_value_target)
 
     end subroutine param_register_single_real
 
 
     ! Overloaded interface for registering parameter of type multiple real
-    subroutine param_register_multiple_real(dict, key, value, real_target_array, has_value_target)
+    subroutine param_register_multiple_real(dict, key, value, real_target_array, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), dimension(:), intent(inout), target :: real_target_array
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, &
+      call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, help_string=help_string, &
            real_target_array=real_target_array, has_value_target=has_value_target)
 
     end subroutine param_register_multiple_real
 
 
     ! Overloaded interface for registering parameter of type single string
-    subroutine param_register_single_string(dict, key, value, char_target, has_value_target)
+    subroutine param_register_single_string(dict, key, value, char_target, help_string, has_value_target)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       character(len=*), intent(inout), target :: char_target
+      character(len=*), intent(in), optional :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       if (len(adjustr(char_target)) /= FIELD_LENGTH) &
-	call system_abort('param_register_single_string called for "'//trim(key)//'" has char_target(len='//len(adjustr(char_target))//'), must be called with char_target(len=FIELD_LENGTH)')
+	call system_abort('param_register_single_string called for "'//trim(key)// &
+	 '" has char_target(len='//len(adjustr(char_target))//'), must be called with char_target(len=FIELD_LENGTH)')
 
-      call param_register_main(dict, key, value, 1, PARAM_STRING, char_target=char_target, has_value_target=has_value_target)
+      call param_register_main(dict, key, value, 1, PARAM_STRING, help_string=help_string, &
+	 char_target=char_target, has_value_target=has_value_target)
 
     end subroutine param_register_single_string
 
@@ -193,7 +206,7 @@ module paramreader_module
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       
-      call param_register_main(dict, key, '', 0, PARAM_NO_VALUE)
+      call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
 
     end subroutine param_register_dontread
 
@@ -201,7 +214,7 @@ module paramreader_module
     ! Helper routine called by all the registration interfaces
     !%OMIT
     subroutine param_register_main(dict, key, value, N, param_type,  &
-         int_target, real_target, char_target,  &
+         help_string, int_target, real_target, char_target,  &
          logical_target, int_target_array, real_target_array, has_value_target)
       type(Dictionary), intent(inout) :: dict
 
@@ -209,6 +222,7 @@ module paramreader_module
       character(len=*), intent(in) :: value
       integer, intent(in) :: N, param_type
 
+      character(len=*), intent(in), optional :: help_string
       integer, intent(inout), optional, target :: int_target
       integer, dimension(:), intent(inout), optional, target :: int_target_array
       real(dp), intent(inout), optional, target :: real_target
@@ -226,6 +240,12 @@ module paramreader_module
       entry%value = value
       entry%N = N
       entry%param_type = param_type
+
+      if (present(help_string)) then
+	 entry%help_string=trim(help_string)
+      else
+	 entry%help_string = "NO HELP FOR YOU!  Last editor of this file is $Author$"
+      endif
 
 ! call print("parser register entry " // trim(key) // " value " // trim(value), PRINT_ALWAYS)
 
@@ -388,6 +408,11 @@ module paramreader_module
             status = .false.
             return
          end if
+
+	 if (trim(key) == "--help") then
+	    call param_print_help(dict)
+	    cycle
+	 endif
            
          ! Extract this value
          if (.not. get_value(dict, key, data, i=entry_i)) then
@@ -684,6 +709,92 @@ module paramreader_module
       deallocate(data%d)
 
     end subroutine param_print
+
+    subroutine param_print_help(dict, verbosity, out)
+      type(Dictionary), intent(in) :: dict !% Dictionary of registered key/value pairs
+      integer, intent(in), optional :: verbosity
+      type(Inoutput), intent(inout), optional :: out
+
+      type(ParamEntry) :: entry
+      integer :: i
+
+      type(DictData) :: data
+      character(len=10) type_str, param_dim_str
+      character(len=STRING_LENGTH) out_line
+
+      allocate(data%d(size(transfer(entry,data%d))))
+
+      do i=1,dict%N
+         if (.not. get_value(dict, string(dict%keys(i)), data)) &
+              call system_abort('param_print: Key '//string(dict%keys(i))//' missing')
+         entry = transfer(data%d,entry)
+
+	 out_line="parameter "//string(dict%keys(i)//" type=")
+
+	 param_dim_str = "unknown"
+	 select case(entry%param_type)
+	    case(PARAM_NO_VALUE)
+	       out_line=trim(out_line)//"NO_VALUE"
+	    case(PARAM_REAL)
+	       out_line=trim(out_line)//"REAL"
+	       if (associated(entry%real)) then
+		  out_line=trim(out_line)//" scalar"
+	       elseif (associated(entry%reals)) then
+		  out_line=trim(out_line)//" dim="//size(entry%reals)
+	       else
+		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+	       endif
+	    case(PARAM_INTEGER)
+	       out_line=trim(out_line)//"INTEGER"
+	       if (associated(entry%integer)) then
+		  out_line=trim(out_line)//" scalar"
+	       elseif (associated(entry%integers)) then
+		  out_line=trim(out_line)//" dim="//size(entry%integers)
+	       else
+		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+	       endif
+	    case(PARAM_STRING)
+	       out_line=trim(out_line)//"STRING"
+	       if (associated(entry%string)) then
+		  out_line=trim(out_line)//" scalar"
+	       else
+		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+	       endif
+	    case(PARAM_LOGICAL)
+	       out_line=trim(out_line)//"LOGICAL"
+	       if (associated(entry%logical)) then
+		  out_line=trim(out_line)//" scalar"
+	       else
+		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+	       endif
+	    case default
+	       call system_abort("Unknown param_type "//entry%param_type//" for key " //string(dict%keys(i)))
+	 end select
+
+         ! Print value in quotes if it contains any spaces
+         if (index(trim(entry%value), ' ') /= 0) then
+	    out_line=trim(out_line)//" current_value='"//trim(entry%value)//"'"
+         else
+	    out_line=trim(out_line)//" current_value="//trim(entry%value)
+         end if
+
+	 call print(trim(out_line), file=out)
+	 out_line=trim(entry%help_string)
+	 do while (len_trim(out_line) > 0)
+	    if (out_line(80:80) == " ") then
+	       call print("    "//trim(out_line(1:80)), file=out)
+	    else
+	       call print("    "//trim(out_line(1:80))//"-", file=out)
+	    endif
+	    out_line(1:80) = ""
+	    out_line=adjustl(out_line)
+	 end do
+	 call print("", file=out)
+      end do
+
+      deallocate(data%d)
+
+    end subroutine param_print_help
 
     function paramentry_write_string(key,entry) result(s)
       character(len=*) :: key

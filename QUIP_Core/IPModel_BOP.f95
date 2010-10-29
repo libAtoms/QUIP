@@ -177,7 +177,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call param_register(params, 'print_xyz', 'F', lprint_xyz)
      call param_register(params, 'crack', 'F', lcrack)
      call param_register(params, 'all_atoms', 'F', latoms)
-     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name)
      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_BOP_Calc args_str')) then
        call system_abort("IPModel_BOP_Calc failed to parse args_str='"//trim(args_str)//"'")
      endif
