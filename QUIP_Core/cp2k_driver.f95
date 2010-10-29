@@ -197,7 +197,7 @@ contains
       call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn)
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
       call param_register(cli, 'auto_centre', 'F', auto_centre)
-      call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_centre_pos)
+      call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos)
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake)
       call param_register(cli, 'form_bond', '0 0', form_bond)
       call param_register(cli, 'break_bond', '0 0', break_bond)

@@ -267,7 +267,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call finalise(this)
 
   call initialise(params)
-  call param_register(params, 'xml_label', '', this%xml_label, has_xml_label)
+  call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label)
   if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif

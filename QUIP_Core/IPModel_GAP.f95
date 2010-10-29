@@ -275,7 +275,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   atom_mask_pointer => null()
   if(present(args_str)) then
      call initialise(params)
-     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name)
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)

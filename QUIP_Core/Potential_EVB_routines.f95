@@ -367,6 +367,9 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
 
     !SAVE E,F IF NEEDED
 
+if (len_trim(calc_energy) > 0) then
+call print("DEBUG EVB E1 " // my_e_1 // " E2 " // my_e_2 // " e " // e, PRINT_ALWAYS)
+endif
     if (save_energies .and. len_trim(calc_energy) > 0) then
        call set_param_value(at,'EVB1_'//trim(calc_energy),my_e_1)
        call set_param_value(at,'EVB2_'//trim(calc_energy),my_e_2)
