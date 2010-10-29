@@ -31,7 +31,7 @@
 program eval
   
   use libAtoms_module
-  use QUIP_module
+  use potential_module
   use libatoms_misc_utils_module
   use descriptors_module
   

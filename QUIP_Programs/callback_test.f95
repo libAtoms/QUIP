@@ -42,7 +42,7 @@
 module callback_module
 
   use libAtoms_module
-  use QUIP_module
+  use Potential_module
   implicit None
 
 contains
@@ -85,7 +85,7 @@ end module callback_module
 program callback_test
 
   use libAtoms_module
-  use QUIP_module
+  use Potential_module
   use callback_module
   
   implicit none

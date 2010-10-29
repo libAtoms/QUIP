@@ -30,7 +30,7 @@ module teach_sparse_mod
   use gp_predict_module
   use gp_teach_module
   use fox_wxml
-  use QUIP_module
+  use potential_module
 
   implicit none
 

@@ -48,8 +48,7 @@
 program bulktest
 
   use libAtoms_module
-  use LOTF_module
-  use QUIP_module
+  use potential_module
 
   implicit none
 

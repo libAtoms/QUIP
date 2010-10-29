@@ -40,7 +40,7 @@
 program EVB_filepot_template
 
   use libatoms_module
-  use quip_module
+  use potential_module
 
   implicit none
 

@@ -30,7 +30,7 @@
 
 program test_CASTEP_water_chain
 use libatoms_module
-use quip_module
+use potential_module
 implicit none
   type(Atoms) :: cluster_qm, cluster_mm, bulk
   type(Inoutput) :: io

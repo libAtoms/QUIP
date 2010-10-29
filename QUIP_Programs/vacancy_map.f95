@@ -30,8 +30,7 @@
 
 program test
 use libatoms_module
-use structures_module
-use quip_module
+use potential_module
 use atoms_minimisation_module
 
 implicit none
