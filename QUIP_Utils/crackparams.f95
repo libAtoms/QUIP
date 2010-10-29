@@ -384,9 +384,10 @@ contains
   !% Initialise this CrackParams structure and set default
   !% values for all parameters. WARNING: many of these defaults are
   !% only really appropriate for diamond structure silicon fracture.
-  subroutine CrackParams_initialise(this, filename)
+  subroutine CrackParams_initialise(this, filename, validate)
     type(CrackParams), intent(inout) :: this
     character(len=*), optional, intent(in) :: filename
+    logical, optional, intent(in) :: validate
     
     ! Parameters for 'makecrack'
     this%crack_structure         = 'diamond'
@@ -562,7 +563,7 @@ contains
     this%hack_fit_on_eqm_coordination_only = .false.
 
     if (present(filename)) then
-       call read_xml(this, filename)
+       call read_xml(this, filename, validate=validate)
     end if
 
   end subroutine CrackParams_initialise
@@ -578,21 +579,23 @@ contains
   !% Read crack parameters from 'xmlfile' into this CrackParams object.
   !% First we reset to default values by calling 'initialise(this)'.
 
-  subroutine CrackParams_read_xml_filename(this, filename)
+  subroutine CrackParams_read_xml_filename(this, filename, validate)
     type(CrackParams), intent(inout), target :: this
     character(len=*), intent(in) :: filename
+    logical, optional, intent(in) :: validate
 
     type(InOutput) xml
 
     call initialise(xml, filename, INPUT)
-    call crackparams_read_xml(this, xml)
+    call crackparams_read_xml(this, xml, validate)
     call finalise(xml)
     
   end subroutine CrackParams_read_xml_filename
 
-  subroutine CrackParams_read_xml(this, xmlfile)
+  subroutine CrackParams_read_xml(this, xmlfile, validate)
     type(CrackParams), intent(inout), target :: this
     type(Inoutput),intent(in) :: xmlfile
+    logical, optional, intent(in) :: validate
 
     type (xml_t) :: fxml
     type(extendable_str) :: ss
@@ -611,13 +614,24 @@ contains
 
     call parse(fxml, &
          startElement_handler = CrackParams_startElement_handler, &
-         endElement_handler = CrackParams_endElement_handler)
+         endElement_handler = CrackParams_endElement_handler, &
+         error_handler = CrackParams_error_handler, &
+         fatalError_handler = CrackParams_error_handler, &
+         warning_handler = CrackParams_error_handler, &
+         validate=validate)
 
     call close_xml_t(fxml)
 
     call Finalise(ss)
 
   end subroutine CrackParams_read_xml
+
+  subroutine CrackParams_error_handler(msg)
+    character(len=*), intent(in) :: msg
+    
+    call system_abort(msg)
+
+  end subroutine CrackParams_error_handler
 
   !% OMIT
   subroutine CrackParams_startElement_handler(URI, localname, name, attributes)

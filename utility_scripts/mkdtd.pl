@@ -176,4 +176,4 @@ $joined = join("|", @topnames);
 print qq|<!ENTITY % QUIP_params "$joined">\n\n|;
 
 # Document level element
-print "<!ELEMENT params (%QUIP_params;)*>\n" if $print_toplevel;
+print "<!ELEMENT QUIP_params (%QUIP_params;)*>\n" if $print_toplevel;

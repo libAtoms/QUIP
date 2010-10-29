@@ -6,7 +6,7 @@ module m_sax_parser
     tokenize_to_string_list, registered_string, init_string_list, &
     add_string, tokenize_and_add_strings, destroy
   use m_common_attrs, only: init_dict, destroy_dict, reset_dict, &
-    add_item_to_dict, has_key, get_value, get_att_index_pointer, &
+    add_item_to_dict, has_key, get_key, get_value, get_att_index_pointer, &
     getLength, setIsId, setBase
   use m_common_charset, only: XML1_0, XML1_1, XML_WHITESPACE
   use m_common_element, only: element_t, existing_element, add_element, &
@@ -2348,7 +2348,7 @@ contains
       else
         if (validCheck) then
           call add_error(fx%error_stack, &
-          "Trying to use an undeclared element")
+          "Trying to use an undeclared element "//str_vs(fx%name))
           return
         endif
       endif
@@ -2592,6 +2592,9 @@ contains
 
       integer :: ind
       logical, allocatable :: attributesLeft(:)
+
+      character(len=1024) :: attr_str
+
       allocate(attributesLeft(getLength(dict)))
       attributesLeft = .true.
 
@@ -2820,9 +2823,16 @@ contains
         end select
       enddo
 
-      if (any(attributesLeft)) &
+      if (any(attributesLeft)) then
+        attr_str = ''
+        do i=1,getLength(dict)
+           if (attributesLeft(i)) then
+              attr_str = trim(attr_str)//' '//get_key(dict, i)
+           end if
+        end do
         call add_error(fx%error_stack, &
-        "Undeclared attributes forbidden")
+        "Undeclared attributes forbidden in element <"//str_vs(el%name)//'> bad attributes: '//trim(attr_str))
+      end if
 
     end subroutine checkAttributes
 

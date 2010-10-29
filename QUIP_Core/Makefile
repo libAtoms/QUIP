@@ -130,9 +130,6 @@ clean:
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
-quip.dtd: ${ALL_F95_FILES}
-	${SCRIPT_PATH}/mkdtd.pl ${addprefix ../QUIP_Core/,${ALL_F95_FILES}}  > $@
-
 LIBS = -L. -lquip_core ${GP_LIB} -latoms
 
 cp2k_filepot_old: % : %.o libatoms.a libquip_core.a

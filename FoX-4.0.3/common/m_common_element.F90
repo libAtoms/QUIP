@@ -720,7 +720,7 @@ contains
       element%model => vs_str_alloc(trim(strip_spaces(contents)))
       element%cp => top
       element%internal = internal
-      call dumpCPtree(top)
+!      call dumpCPtree(top)
     else
       if (associated(top)) call destroyCPtree(top)
     endif
@@ -768,7 +768,7 @@ contains
                   "Duplicate element names found in MIXED")
               elseif (cp%operator==OP_CHOICE) then
                 call add_error(stack, &
-                  "Duplicate element names found in CHOICE")
+                  "Duplicate element names found in CHOICE ("//str_vs(tcp%name)//")")
               endif
               return
             else
