@@ -28,14 +28,24 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X IPModel_Coulomb
 !X
-!% Coulomb module
+!% Coulomb module. Calculates electrostatic interactions between charged
+!% species. Supported methods:
+!% Direct: the $1/r$ potential
+!% Yukawa: Yukawa-screened electrostatic interactions
+!% Ewald: Ewald summation technique
+!% DSF: Damped Shifted Force Coulomb potential. The interaction is damped by the
+!% error function and the potential is force-shifted so both the potential and its
+!% derivative goes smoothly to zero at the cutoff. Reference: JCP, 124, 234104 (2006)
 !%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 #include "error.inc"
 
 module IPModel_Coulomb_module
@@ -56,6 +66,7 @@ include 'IPModel_interface.h'
 integer, parameter :: IPCoulomb_Method_Direct = 1
 integer, parameter :: IPCoulomb_Method_Yukawa = 2
 integer, parameter :: IPCoulomb_Method_Ewald  = 3
+integer, parameter :: IPCoulomb_Method_DSF    = 4
 
 public :: IPModel_Coulomb
 type IPModel_Coulomb
@@ -73,6 +84,8 @@ type IPModel_Coulomb
   logical :: yukawa_pseudise = .false.
 
   real(dp) :: ewald_error
+
+  real(dp) :: dsf_alpha = 0.0_dp
 
   character(len=FIELD_LENGTH) :: label
 
@@ -210,6 +223,8 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)
    case(IPCoulomb_Method_Ewald)
       call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., error=error)
+   case(IPCoulomb_Method_DSF)
+      call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
    case default
       RAISE_ERROR("IPModel_Coulomb_Calc: unknown method", error)
    endselect
@@ -228,12 +243,14 @@ subroutine IPModel_Coulomb_Print(this, file)
 
   call Print("IPModel_Coulomb : Coulomb Potential", file=file)
   select case(this%method)
-  case(IPCoulomb_Method_Yukawa)
-     call Print("IPModel_Coulomb method: Yukawa")
   case(IPCoulomb_Method_Direct)
      call Print("IPModel_Coulomb method: Direct")
+  case(IPCoulomb_Method_Yukawa)
+     call Print("IPModel_Coulomb method: Yukawa")
   case(IPCoulomb_Method_Ewald)
      call Print("IPModel_Coulomb method: Ewald")
+  case(IPCoulomb_Method_DSF)
+     call Print("IPModel_Coulomb method: Damped Shifted Force Coulomb")
   case default
      call system_abort ("IPModel_Coulomb: method identifier "//this%method//" unknown")
   endselect
@@ -334,12 +351,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "method", value, status)
       if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find method")
       select case(lower_case(trim(value)))
-      case("yukawa")
-         parse_ip%method = IPCoulomb_Method_Yukawa
       case("direct")
          parse_ip%method = IPCoulomb_Method_Direct
+      case("yukawa")
+         parse_ip%method = IPCoulomb_Method_Yukawa
       case("ewald")
          parse_ip%method = IPCoulomb_Method_Ewald
+      case("dsf")
+         parse_ip%method = IPCoulomb_Method_DSF
       case default
          call system_abort ("IPModel_Coulomb_read_params_xml: method "//trim(value)//" unknown")
       endselect
@@ -377,6 +396,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%ewald_error
       else
          parse_ip%ewald_error = 1.0e-6_dp
+      endif
+
+      call QUIP_FoX_get_value(attributes, "dsf_alpha", value, status)
+      if (status /= 0) then
+         if( parse_ip%method == IPCoulomb_Method_DSF ) call system_abort("IPModel_Coulomb_read_params_xml: Damped Shifted Force method requested but no dsf_alpha parameter found.")
+      else
+         read (value, *) parse_ip%dsf_alpha
       endif
 
     endif
