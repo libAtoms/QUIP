@@ -67,7 +67,7 @@ IP_F95_FILES += IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed QUIP_module quip_wrapper quip_lammps_wrapper
+POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed quip_wrapper quip_lammps_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
@@ -133,7 +133,7 @@ clean:
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
 
-LIBS = -L. -lquip_core -latoms
+LIBS = -L. -lquip_core ${GP_LIB} -latoms
 
 cp2k_filepot_old: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}

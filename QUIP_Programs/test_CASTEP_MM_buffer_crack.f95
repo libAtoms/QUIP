@@ -30,7 +30,7 @@
 
 program test_CASTEP_MM_buffer_crack
 use libatoms_module
-use quip_module
+use potential_module
 implicit none
   type(Atoms) :: at, cluster_qm, cluster_mm
   type(Inoutput) :: io

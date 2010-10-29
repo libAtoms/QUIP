@@ -55,7 +55,7 @@ program cp2k_filepot
 
   use libatoms_module
   use cp2k_driver_module
-  use quip_module
+  use potential_module
 !  use atoms_module
 !  use topology_module
 

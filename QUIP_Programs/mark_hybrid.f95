@@ -30,8 +30,7 @@
 
 program test
 use libatoms_module
-use structures_module
-use quip_module
+use potential_module
 use vacancy_map_module
 
 implicit none
