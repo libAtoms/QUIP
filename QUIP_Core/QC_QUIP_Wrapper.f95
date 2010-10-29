@@ -85,7 +85,7 @@ contains
     call Initialise(params_str)
     call read(params_str, params%unit)
 
-    call Initialise(pot, str, string(params_str))
+    call Initialise(pot, args_str=str, param_str=string(params_str))
     if (present(err)) err = 0
   end subroutine
 
@@ -112,7 +112,9 @@ contains
       weight = w
     endif
 
-    call calc(pot, at, local_e = local_e, f = f, err=err)
+    call add_property_from_pointer(at, "local_energy", local_e)
+    call add_property_from_pointer(at, "force", f)
+    call calc(pot, at, args_str="local_energy force", error=err)
 
   end subroutine
 
@@ -137,8 +139,8 @@ contains
     call initialise(params_str)
     call read(params_str, params%unit, convert_to_string=.true., mpi_comm = mpi_glob%communicator)
 
-    call initialise(pot_ip, str_ip, string(params_str))
-    call initialise(pot_qm, str_qm, string(params_str), mpi_obj = mpi_glob)
+    ! call initialise(pot_ip, str_ip, string(params_str))
+    ! call initialise(pot_qm, str_qm, string(params_str), mpi_obj = mpi_glob)
 
     call finalise(params_str)
 
@@ -153,9 +155,9 @@ call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it"
 !      bulk%pos = pos
 !      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk) 
 !      call finalise(bulk)
-call initialise(pot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
+call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_pot1="//trim(str_qm), mpi_obj=mpi_glob)
     else if (n_present == 0) then
-      call initialise(pot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
+      call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_pot1="//trim(str_qm), mpi_obj=mpi_glob)
     else
       call system_abort("QC_QUIP_initialise_hybrid called with some but not all of lat, Z, pos present")
     endif
@@ -213,13 +215,16 @@ call initialise(pot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
 
     weight = w
 
+    call add_property_from_pointer(at, "local_energy", local_e)
+    call add_property_from_pointer(at, "force", f)
+
     if (pot%is_oniom) then
-      call calc(pot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
-	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width)
+      call calc(pot, at, args_str="local_energy force calc_weights" // &
+	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width, error=err)
     else
-      call calc(pot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
+      call calc(pot, at, args_str="local_energy force calc_weights" // &
 	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width // &
-	" solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0")
+	" solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0", error=err)
     endif
 
   end subroutine QC_QUIP_calc_hybrid 
