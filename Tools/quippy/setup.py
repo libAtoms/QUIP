@@ -200,9 +200,9 @@ endif""")
 
     # Dump make database to file
     os.system('make -f Makefile.quippy -I %s -I %s -I %s -p > make.dump' %
-              (quip_root,
-               os.path.join(quip_root, 'Makefiles'),
-               os.path.join(quip_root, 'build.%s' % quip_arch)))
+              (os.path.join(quip_root, 'Makefiles'),
+               os.path.join(quip_root, 'build.%s' % quip_arch),
+               quip_root))
 
     # Parse dumped file
     makefile = parse_makefile('make.dump')
