@@ -1,6 +1,6 @@
 program do_statistics_decorrelated_err
 use libatoms_module, only : dp, system_initialise, system_finalise, system_abort, verbosity_push, verbosity_pop, verbosity_of_str, initialise, finalise, read_file, print, operator(//), param_register, param_read_args
-use libatoms_module, only : PRINT_SILENT, INPUT, STRING_LENGTH
+use libatoms_module, only : PRINT_SILENT, PRINT_ALWAYS, INPUT, STRING_LENGTH
 use libatoms_module, only : inoutput, dictionary
 use statistics_module, only : mean_var_decorrelated_err
 implicit none
@@ -15,9 +15,10 @@ implicit none
 
    call system_initialise(verbosity=PRINT_SILENT)
    call initialise(cli)
-   call param_register(cli, "verbosity", "NORMAL", verbosity_str)
-   call param_register(cli, "n_col", "1", n_col)
+   call param_register(cli, "verbosity", "NORMAL", verbosity_str, help_string="verbosity level")
+   call param_register(cli, "n_col", "1", n_col, help_string="number of columns of data to be analyzed")
    if (.not. param_read_args(cli, ignore_unknown=.false., task="mean_var_decorrelated_err CLI arguments")) then
+      call print("Usage: mean_var_decorrelated_err [ verbosity=LEVEL ] [ n_col=n(1) ]", PRINT_ALWAYS)
       call system_abort("Failed to parse command line arguments")
    end if
    call finalise(cli)
