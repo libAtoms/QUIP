@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE params SYSTEM "crack.dtd">
+<!DOCTYPE params SYSTEM "$QUIP_DTD_DIR/crack.dtd">
 
 <params>
 

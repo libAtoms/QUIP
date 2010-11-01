@@ -661,7 +661,7 @@ class interact(Command):
         sys.path.insert(0, self.build_platlib)
         if os.getcwd() in sys.path: sys.path.remove(os.getcwd())
         if '' in sys.path: sys.path.remove('')
-
+        
         from quippy import *
         if self.execute is not None:
            exec(self.execute)

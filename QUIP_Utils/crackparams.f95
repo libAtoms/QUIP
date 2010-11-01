@@ -107,6 +107,8 @@
 !% a well formed XML file. For example this could be '<params>...</params>', 
 !% but the choice of name is arbitrary.
 
+#include "error.inc"
+
 module CrackParams_module
 
   use libAtoms_module
@@ -579,35 +581,72 @@ contains
   !% Read crack parameters from 'xmlfile' into this CrackParams object.
   !% First we reset to default values by calling 'initialise(this)'.
 
-  subroutine CrackParams_read_xml_filename(this, filename, validate)
+  subroutine CrackParams_read_xml_filename(this, filename, validate, error)
     type(CrackParams), intent(inout), target :: this
     character(len=*), intent(in) :: filename
     logical, optional, intent(in) :: validate
+    integer, intent(out), optional :: error
 
     type(InOutput) xml
 
+    INIT_ERROR(error)
+
     call initialise(xml, filename, INPUT)
-    call crackparams_read_xml(this, xml, validate)
+    call crackparams_read_xml(this, xml, validate, error)
+    PASS_ERROR(error)
+
     call finalise(xml)
     
   end subroutine CrackParams_read_xml_filename
 
-  subroutine CrackParams_read_xml(this, xmlfile, validate)
+  subroutine CrackParams_read_xml(this, xmlfile, validate, error)
     type(CrackParams), intent(inout), target :: this
     type(Inoutput),intent(in) :: xmlfile
     logical, optional, intent(in) :: validate
+    integer, intent(out), optional :: error
 
     type (xml_t) :: fxml
-    type(extendable_str) :: ss
+    type(extendable_str) :: ss, ss2
+    type(Dictionary) :: env_dict
+    character(len=256) :: quip_dtd_dir
+    logical do_validate
+    integer status
+
+    INIT_ERROR(error)
+    do_validate = optional_default(.false., validate)
 
     call initialise(this) ! Reset to defaults
 
     call Initialise(ss)
-    call read(ss, xmlfile%unit, convert_to_string=.true.)
+    if (do_validate) then
+       call read(ss, xmlfile%unit, convert_to_string=.true.)
+       call initialise(env_dict)
+       call get_env_var('QUIP_DTD_DIR', quip_dtd_dir, status=status)
+       if (status /= 0) then
+          call get_env_var('QUIP_ROOT', quip_dtd_dir, status=status)
+          if (status /= 0) then
+             call get_env_var("HOME", quip_dtd_dir, status)
+             if (status /= 0) then
+                RAISE_ERROR("Could not get QUIP_DTD_DIR or QUIP_ROOT or HOME env variables", error)
+             else
+                quip_dtd_dir = trim(quip_dtd_dir)//"/share/quip_dtds"
+             end if
+          else
+             quip_dtd_dir = trim(quip_dtd_dir)//"/dtds"
+          end if
+       end if
+       call set_value(env_dict, 'QUIP_DTD_DIR', quip_dtd_dir)
+       call expand_string(env_dict, ss, ss2, error)
+       PASS_ERROR(error)
+       call finalise(ss)
+       call finalise(env_dict)
+    else
+       call read(ss2, xmlfile%unit, convert_to_string=.true.)
+    end if
 
-    if (len(trim(string(ss))) <= 0) return
+    if (len(trim(string(ss2))) <= 0) return
 
-    call open_xml_string(fxml, string(ss))
+    call open_xml_string(fxml, string(ss2))
 
     parse_cp => this
     parse_in_crack = .false.
@@ -621,8 +660,7 @@ contains
          validate=validate)
 
     call close_xml_t(fxml)
-
-    call Finalise(ss)
+    call Finalise(ss2)
 
   end subroutine CrackParams_read_xml
 
