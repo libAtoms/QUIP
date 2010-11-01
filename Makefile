@@ -39,6 +39,10 @@ else
 	BUILDDIR=crap
 endif
 
+ifeq (${QUIP_ROOT},)
+   QUIP_ROOT=${PWD}
+endif
+
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
@@ -80,7 +84,7 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 
 ${MODULES}:  ${BUILDDIR}
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
-	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_GP_PREDICT},1)
@@ -100,40 +104,40 @@ Tests: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 ifeq (${HAVE_GP_PREDICT},1)
 GAP_predict/%: libAtoms ${FOX}
 	ln -sf ${PWD}/GAP_predict/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAP_predict -I${PWD} -I${PWD}/Makefiles $${targ#GAP_predict/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP_predict -I${PWD} -I${PWD}/Makefiles $${targ#GAP_predict/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 ifeq (${HAVE_GP_TEACH},1)
 GAP_teach/%: libAtoms ${FOX} GAP_predict
 	ln -sf ${PWD}/GAP_teach/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAP_teach -I${PWD} -I${PWD}/Makefiles $${targ#GAP_teach/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP_teach -I${PWD} -I${PWD}/Makefiles $${targ#GAP_teach/}
 	rm ${BUILDDIR}/Makefile
 
 GAProgs/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/GAProgs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 QUIP_Programs/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Core/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
 libAtoms/%: libAtoms 
 	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
 Tools/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
 
@@ -144,7 +148,7 @@ ${BUILDDIR}: arch
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${PWD} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
+	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
 	done ; \
 
 deepclean: clean
@@ -190,7 +194,7 @@ quip-reference-manual.pdf:
 	./Tools/mkdoc
 
 quippy:
-	make -C Tools/quippy install QUIP_ROOT=${PWD}
+	make -C Tools/quippy install QUIP_ROOT=${QUIP_ROOT}
 
 test:
 	${MAKE} -C Tests -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}
