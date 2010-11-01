@@ -528,7 +528,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
     case (FF_Tersoff)
       call calc(this%ip_tersoff, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_EAM_ErcolAd)
-      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, local_virial, virial, args_str, mpi=this%mpi_local, error=error)
+      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case(FF_Brenner)
       call calc(this%ip_Brenner, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case(FF_FB)
