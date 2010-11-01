@@ -21,12 +21,12 @@ from quippy import FortranExtendable_str
 
 class Extendable_str(FortranExtendable_str):
 
-    def __init__(self, s=None):
+    def __init__(self, s=None, fpointer=None, finalise=True):
         # Allow an Extendable_str to be created from a Python string or another Extendable_str
         if isinstance(s, Extendable_str):
-            FortranExtendable_str.__init__(self, s)
+            FortranExtendable_str.__init__(self, s, fpointer=fpointer, finalise=finalise)
         else:
-            FortranExtendable_str.__init__(self)
+            FortranExtendable_str.__init__(self, fpointer=fpointer, finalise=finalise)
             if s is not None:
                 self.concat(str(s))
 

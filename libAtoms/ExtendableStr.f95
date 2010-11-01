@@ -35,6 +35,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module extendable_str_module
 
 use system_module
@@ -60,6 +62,11 @@ public :: string
 interface string
   module procedure extendable_str_string
 end interface string
+
+public :: substr
+interface substr
+   module procedure extendable_str_substr
+end interface substr
 
 public :: read
 interface read
@@ -260,6 +267,31 @@ function extendable_str_string(this)
 
 end function extendable_str_string
 
+function extendable_str_substr(this, start, end, error)
+  type(extendable_str), intent(in) :: this
+  integer, intent(in) :: start, end
+  integer, optional, intent(out) :: error
+  character(len=(end-start+1)) :: extendable_str_substr
+  integer i, j
+
+  INIT_ERROR(error)
+  
+  if (start < 1) then
+     RAISE_ERROR('extendable_str_substr: start('//start//') < 1', error)
+  end if
+  if (end > this%len) then
+     RAISE_ERROR('extendable_str_substr: end('//end//') > len('//this%len//')', error)
+  end if
+
+  j = 1
+  do i=start, end
+    extendable_str_substr(j:j) = this%s(i)
+    j = j + 1
+  end do
+
+end function extendable_str_substr
+
+
 subroutine extendable_str_read_file(this, file, convert_to_string, mpi_comm, keep_lf)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: file
@@ -311,7 +343,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
   integer, intent(in), optional :: mpi_comm
   logical, intent(in), optional :: keep_lf
 
-  character(len=1024) :: line
+  character(len=1024) :: line, tmp
   integer n_read
   integer stat
   logical last_was_incomplete

@@ -241,6 +241,11 @@ module dictionary_module
      module procedure dictionary_bcast
   end interface bcast
 
+  public expand_string
+  interface expand_string
+     module procedure dictionary_expand_string
+  end interface expand_string
+
   public assignment(=)
   interface assignment(=)
      module procedure dictionary_deepcopy
@@ -2874,6 +2879,70 @@ contains
     end if
 
   end subroutine dictionary_bcast
+
+  !% Copy extendable string from 'in' to 'out', expanding variables formatted
+  !% as '$KEY' or '${KEY}' using values in this Dictionary. An error
+  !% is raised a key is not found, or if 
+  subroutine dictionary_expand_string(this, in, out, error)
+    type(Dictionary), intent(in) :: this
+    type(Extendable_str), intent(inout) :: in
+    type(Extendable_str), intent(out) :: out
+    integer, intent(out), optional :: error
+
+    integer s, e, save_cur
+    character(len=1024) :: key, val
+    character(len=63), parameter :: valid_chars =  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    logical got_brace
+
+    INIT_ERROR(error)
+
+    save_cur = in%cur
+    in%cur = 1
+    call initialise(out)
+    do
+       s = index(in, '$')
+       if (s == 0) then
+          call concat(out, substr(in, in%cur, in%len))
+          exit
+       end if
+       if (s > len(in)-1) then
+          RAISE_ERROR('dictionary_expand_string: $ found at end of input string "'//in//'"', error)
+       end if
+
+       if (in%s(s+1) == '{') then
+          got_brace = .true.
+          e = index(in, '}')
+          if (e == 0) then
+             RAISE_ERROR('dictionary_expand_string: unmatched { in input string "'//in//'"', error)
+          end if
+          key = substr(in, s+2, e-1, error)
+          PASS_ERROR(error);
+       else
+          got_brace = .false.
+          e = s+1
+          do while (all(verify(in%s(e:e), valid_chars) == 0))
+             e = e + 1
+             if (e > len(in)) exit
+          end do
+          e = e - 1
+          key = substr(in, s+1, e, error)
+          PASS_ERROR(error);
+       end if
+
+       if (.not. get_value(this, key, val)) then
+          RAISE_ERROR('dictionary_expand_string: unknown key "'//trim(key)//'" or value is not of type T_CHAR', error)
+       end if
+
+       call concat(out, substr(in, in%cur, s-1, error))
+       PASS_ERROR(error);
+       call concat(out, val)
+       in%cur = e+1
+    end do
+
+    in%cur = save_cur
+
+  end subroutine dictionary_expand_string
+
 
   !% Make a deep copy of 'from' in 'this', allocating new memory for array components
   subroutine dictionary_deepcopy(this, from)

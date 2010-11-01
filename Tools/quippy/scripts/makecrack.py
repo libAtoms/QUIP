@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
    params = CrackParams()
 
-   if len(sys.argv[1:]) != 1:
+   if len(sys.argv[1:]) < 1:
       print('Usage: makecrack [-V] <stem>')
       print('Reads parameter file <stem>.xml and writes NetCDF output file <stem>.nc')
       print('If -V option is given then XML file is validated against DTD.')
