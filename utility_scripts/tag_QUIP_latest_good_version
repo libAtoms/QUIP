@@ -8,11 +8,17 @@ function check_version {
 
    rm -rf QUIP_test
    svn co -r$version $SVNROOT/trunk/QUIP QUIP_test
+   if [[ $? != 0 ]]; then
+      echo "Failed to check out version $version"
+      make_status="Checkout Failed"
+      quippy_status="Checkout Failed"
+      return
+   fi
 
    pushd QUIP_test > /dev/null
    # export QUIP_ROOT=`pwd`
 
-   status=""
+   make_status=""
    quippy_status=""
    for compiler_module in gnu/4.5.1 intel/11.1.073 gnu/4.4.4 intel/10.1.025; do
       module unload intel gnu pgi
@@ -55,9 +61,9 @@ function check_version {
 	    # try QUIP
 	    make all > ../make.out.${version}.${compiler_name}${openmp} 2>&1
 	    if [[ $? == 0 ]]; then
-	       status=${status}"${compiler_name}${openmp} OK "
+	       make_status=${make_status}"${compiler_name}${openmp} OK "
 	    else
-	       status=${status}"${compiler_name}${openmp} Failed "
+	       make_status=${make_status}"${compiler_name}${openmp} Failed "
 	    fi
 
 	    # try quippy (only gnu without openmp)
@@ -97,13 +103,13 @@ function status_all_OK {
 module load silent
 
 check_version HEAD
-status_all_OK $status; make_ok=$?
+status_all_OK $make_status; make_ok=$?
 status_all_OK $quippy_status; quippy_ok=$?
 
 cd QUIP_test; cur_rev=`svnversion -n`; cd ..
 HEAD_rev=${cur_rev}
-echo "HEAD($cur_rev) make $status quippy test $quippy_status"
-echo "HEAD($cur_rev) make $status quippy test $quippy_status" > tag_latest_good_version_report.txt
+echo "HEAD($cur_rev) make $make_status quippy test $quippy_status"
+echo "HEAD($cur_rev) make $make_status quippy test $quippy_status" > tag_latest_good_version_report.txt
 
 max_versions_back=10
 retried=0
@@ -114,9 +120,9 @@ while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; 
    cur_rev=$(( $cur_rev - 1 ))
 
    check_version ${cur_rev}
-   echo "${cur_rev} make $status quippy test $quippy_status"
-   echo "${cur_rev} make $status quippy test $quippy_status" >> tag_latest_good_version_report.txt
-   status_all_OK $status; make_ok=$?
+   echo "${cur_rev} make $make_status quippy test $quippy_status"
+   echo "${cur_rev} make $make_status quippy test $quippy_status" >> tag_latest_good_version_report.txt
+   status_all_OK $make_status; make_ok=$?
    status_all_OK $quippy_status; quippy_ok=$?
 done
 
