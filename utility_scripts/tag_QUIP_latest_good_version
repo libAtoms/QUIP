@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
+MAILS=bernstei@dave.nrl.navy.mil
+
+function check_version {
+   version=$1
+
+   rm -rf QUIP_test
+   svn co -r$version $SVNROOT/trunk/QUIP QUIP_test
+
+   pushd QUIP_test > /dev/null
+   # export QUIP_ROOT=`pwd`
+
+   status=""
+   quippy_status=""
+   for compiler_module in gnu/4.5.1 intel/11.1.073 gnu/4.4.4 intel/10.1.025; do
+      module unload intel gnu pgi
+      module load ${compiler_module} mkl openmpi > module_load.out 2>&1
+      if grep -q "Unable to locate a modulefile" module_load.out; then
+	 echo "Failed in 'module load ${compiler_module} mkl openmpi'"
+	 exit 1
+      fi
+
+      for openmp in "" _openmp; do
+	 do=1
+	 if [[ $compiler_module == "gnu/4.4.4" && ! -z $openmp ]]; then
+	    do=0 # don't even try openmp with gfortran 4.4
+	 fi
+
+	 if [[ $do == 1 ]]; then
+
+	    if echo $compiler_module | grep -q intel; then
+	       export QUIP_ARCH=linux_x86_64_ifort_gcc${openmp}
+	    else
+	       if echo $compiler_module | grep -q gnu; then
+		  export QUIP_ARCH=linux_x86_64_gfortran${openmp}
+	       else
+		  echo "Unknown compiler_module type $compiler_module"
+		  popd > /dev/null
+		  exit 1
+	       fi
+	    fi
+
+	    compiler_name=`echo $compiler_module | sed 's/\//_/g'`
+
+	    rm -rf build.${QUIP_ARCH}
+	    mkdir build.${QUIP_ARCH}
+	    cp ../Makefile.inc.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.inc
+
+	    # clean thoroughly
+	    # make deepclean >> ../autobuild.version_${version} 2>&1
+	    rm -rf FoX*/obj*
+
+	    # try QUIP
+	    make all > ../make.out.${version}.${compiler_name}${openmp} 2>&1
+	    if [[ $? == 0 ]]; then
+	       status=${status}"${compiler_name}${openmp} OK "
+	    else
+	       status=${status}"${compiler_name}${openmp} Failed "
+	    fi
+
+	    # try quippy (only gnu without openmp)
+	    if echo $compiler_module | grep -q gnu && [[ -z $openmp ]]; then
+	       pushd Tools/quippy > /dev/null
+	       make test > ../../../quippy_test.out.${version}.${compiler_name} 2>&1
+	       if [[ $? == 0 ]]; then
+		  quippy_status=${quippy_status}"$compiler_name OK "
+	       else
+		  quippy_status=${quippy_status}"$compiler_name Failed "
+	       fi
+	       popd > /dev/null
+	    fi # openmp
+	 fi # do
+      done # openmp
+   done # compiler_module
+   popd > /dev/null
+}
+
+function status_all_OK {
+   declare -a a
+   ii=1
+   for f in $*; do
+      a[$ii]=$f
+      ii=$(( $ii + 1 ))
+   done
+   is_OK=0
+   for n in `seq 2 2 $#`; do
+      if [[ ${a[$n]} != 'OK' ]]; then
+	 is_OK=1
+      fi
+   done
+   return $is_OK
+}
+
+. /share/apps/local/etc/profile.d/modules.sh
+module load silent
+
+check_version HEAD
+status_all_OK $status; make_ok=$?
+status_all_OK $quippy_status; quippy_ok=$?
+
+cd QUIP_test; cur_rev=`svnversion -n`; cd ..
+HEAD_rev=${cur_rev}
+echo "HEAD($cur_rev) make $status quippy test $quippy_status"
+echo "HEAD($cur_rev) make $status quippy test $quippy_status" > tag_latest_good_version_report.txt
+
+max_versions_back=10
+retried=0
+i=0
+while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; do
+   retried=1
+   i=$(( $i + 1 ))
+   cur_rev=$(( $cur_rev - 1 ))
+
+   check_version ${cur_rev}
+   echo "${cur_rev} make $status quippy test $quippy_status"
+   echo "${cur_rev} make $status quippy test $quippy_status" >> tag_latest_good_version_report.txt
+   status_all_OK $status; make_ok=$?
+   status_all_OK $quippy_status; quippy_ok=$?
+done
+
+if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
+   echo svn delete $SVNROOT/tags/QUIP-stable
+   echo svn copy -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable
+   ##
+   ## svn delete $SVNROOT/tags/QUIP-stable
+   ## svn copy -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable
+   ##
+   ## svn co $SVNROOT/tags/QUIP_stable_version QUIP_stable_version
+   ## echo "$cur_rev" > QUIP_stable_version/rev
+   ## svn commit -m "updated latest stable version" QUIP_stable_version
+   ## rm -rf QUIP_stable_version
+   if [[ $retried == 0 ]]; then
+      (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat tag_latest_good_version_report.txt) | \
+	 mail -s "QUIP autobuild succeeded" ${MAILS}
+      exit 0
+   else
+      (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat tag_latest_good_version_report.txt) | \
+	 mail -s "QUIP autobuild failed on HEAD, succeeded eventually" ${MAILS}
+      exit 2
+   fi
+else
+   echo "Failed to find working revision between HEAD and $cur_rev"
+   echo "Failed to find working revision between HEAD and $cur_rev" >> tag_latest_good_version_report.txt
+   (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat tag_latest_good_version_report.txt) | \
+      mail -s "QUIP autobuild failed" ${MAILS}
+   exit 3
+fi
