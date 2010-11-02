@@ -33,7 +33,9 @@
 program eval
 
 use libAtoms_module
+#ifdef HAVE_TB
 use tb_module
+#endif
 use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
