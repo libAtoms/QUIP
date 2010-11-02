@@ -1115,19 +1115,32 @@ contains
     call print('carve_cluster got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
     call initialise(params)
-    call param_register(params, 'terminate', 'T', terminate)
-    call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
-    call param_register(params, 'r_scale', '1.0', r_scale)
-    call param_register(params, 'randomise_buffer', 'T', randomise_buffer)
-    call param_register(params, 'print_clusters', 'F', print_clusters)
-    call param_register(params, 'cluster_calc_connect', 'F', do_calc_connect)
-    call param_register(params, 'cluster_same_lattice', 'F', do_same_lattice)
-    call param_register(params, 'cluster_periodic_x', 'F', do_periodic(1))
-    call param_register(params, 'cluster_periodic_y', 'F', do_periodic(2))
-    call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3))
-    call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
-    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
-    call param_register(params, 'map_into_cell', 'T', do_map_into_cell)
+    call param_register(params, 'terminate', 'T', terminate,&
+      help_string="do hydrogen termination")
+    call param_register(params, 'do_rescale_r', 'F', do_rescale_r,&
+      help_string="do rescale cluster lattice positions and lattice (for matching lattice constants of different models")
+    call param_register(params, 'r_scale', '1.0', r_scale,&
+      help_string="cluster position/lattice rescaling factor")
+    call param_register(params, 'randomise_buffer', 'T', randomise_buffer,&
+      help_string="randomly perturb positions of buffer atoms")
+    call param_register(params, 'print_clusters', 'F', print_clusters,&
+      help_string="Print out clusters into clusters.xyz file (clusters.MPI_RANK.xyz if in MPI)")
+    call param_register(params, 'cluster_calc_connect', 'F', do_calc_connect,&
+      help_string="run calc_connect before doing stuff (passivation, etc)")
+    call param_register(params, 'cluster_same_lattice', 'F', do_same_lattice,&
+      help_string="Don't modify cluster cell vectors from incoming cell vectors")
+    call param_register(params, 'cluster_periodic_x', 'F', do_periodic(1),&
+      help_string="do not add vaccum along x, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'cluster_periodic_y', 'F', do_periodic(2),&
+      help_string="do not add vaccum along x, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3),&
+      help_string="do not add vaccum along x, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum,&
+      help_string="Amount of vacuum to add around cluster (minimum - lattice vectors are rounded up to integers)")
+    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect,&
+      help_string="Use hysteretic connection object for identifying bonds")
+    call param_register(params, 'map_into_cell', 'T', do_map_into_cell,&
+      help_string="Call map_into_cell (lattice coordinates=[-0.5,0.5)) on cluster")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) then
       RAISE_ERROR("carve_cluster failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -1375,24 +1388,42 @@ contains
     call print('create_cluster_info_from_mark got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
     call initialise(params)
-    call param_register(params, 'terminate', 'T', terminate)
-    call param_register(params, 'cluster_periodic_x', 'F', periodic_x)
-    call param_register(params, 'cluster_periodic_y', 'F', periodic_y)
-    call param_register(params, 'cluster_periodic_z', 'F', periodic_z)
-    call param_register(params, 'even_electrons', 'F', even_electrons)
-    call param_register(params, 'cluster_nneighb_only', 'T', cluster_nneighb_only)
-    call param_register(params, 'cluster_allow_modification', 'T', cluster_allow_modification)
-    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
-    call param_register(params, 'cluster_same_lattice', 'F', same_lattice)
-    call param_register(params, 'fix_termination_clash','T', fix_termination_clash)
-    call param_register(params, 'keep_whole_residues','T', keep_whole_residues, has_value_target=keep_whole_residues_has_value)
-    call param_register(params, 'keep_whole_silica_tetrahedra','F', keep_whole_silica_tetrahedra)
-    call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds)
-    call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
-    call param_register(params, 'protect_double_bonds','T', protect_double_bonds, has_value_target=protect_double_bonds_has_value)
-    call param_register(params, 'keep_whole_molecules','F', keep_whole_molecules)
-    call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_value_target=has_termination_rescale)
-    call param_register(params, 'cluster_hopping', 'T', cluster_hopping)
+    call param_register(params, 'terminate', 'T', terminate, &
+      help_string="Do hydrogen termination for dangling bonds")
+    call param_register(params, 'cluster_periodic_x', 'F', periodic_x,&
+      help_string="do not add vaccum along x, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'cluster_periodic_y', 'F', periodic_y,&
+      help_string="do not add vaccum along y, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'cluster_periodic_z', 'F', periodic_z,&
+      help_string="do not add vaccum along z, so as to make cluster's cell vectors periodic")
+    call param_register(params, 'even_electrons', 'F', even_electrons,&
+      help_string="Remove passivation hydrogen to keep total number of electrons even")
+    call param_register(params, 'cluster_nneighb_only', 'T', cluster_nneighb_only,&
+      help_string="Apply is_nearest_neighbor test to bonds when deciding what's bonded.  If false, uses connectivity object as is")
+    call param_register(params, 'cluster_allow_modification', 'T', cluster_allow_modification,&
+      help_string="Allow cluster to be modified using various heuristics")
+    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect,&
+      help_string="Use hysteretic connect object to decide what's bonded.  Usually goes with cluster_nneighb_only=F.")
+    call param_register(params, 'cluster_same_lattice', 'F', same_lattice,&
+      help_string="Don't modify cluster cell vectors from incoming cell vectors")
+    call param_register(params, 'fix_termination_clash','T', fix_termination_clash,&
+      help_string="Apply termination clash (terimnation H too close together) heureistic")
+    call param_register(params, 'keep_whole_residues','T', keep_whole_residues, has_value_target=keep_whole_residues_has_value,&
+      help_string="Apply heuristic keeping identified residues whole")
+    call param_register(params, 'keep_whole_silica_tetrahedra','F', keep_whole_silica_tetrahedra,&
+      help_string="Apply heureistic keeping SiO2 tetrahedra whole")
+    call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds,&
+      help_string="Apply heuristic that adds atoms if doing so reduces number of broken bonds")
+    call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds,&
+      help_string="Apply heuristic protecting X-H bonds - no point H passivating bonds with an H")
+    call param_register(params, 'protect_double_bonds','T', protect_double_bonds, has_value_target=protect_double_bonds_has_value,&
+      help_string="Apply heuristic protecting double bonds from being cut (based one some heuristic idea of what's a double bond")
+    call param_register(params, 'keep_whole_molecules','F', keep_whole_molecules,&
+      help_string="Apply heuristic keeping identified molecules (i.e. contiguous bonded groups of atoms) whole")
+    call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_value_target=has_termination_rescale,&
+      help_string="rescale factor for X-H passivation bonds")
+    call param_register(params, 'cluster_hopping', 'T', cluster_hopping,&
+      help_string="Identify cluster region by hopping from a seed atom.  Needed so that shifts will be correct.")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_mark args_str') ) then
          RAISE_ERROR("create_cluster_info_from_mark failed to parse args_str='"//trim(args_str)//"'", error)
