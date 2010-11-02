@@ -208,7 +208,7 @@ module CrackParams_module
                                                         !% to be considered to be moving.
      real(dp) :: md_smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
      real(dp) :: md_damping_time !% Time constant for damped molecular dynamics
-
+     real(dp) :: md_max_runtime !% If >= 0, exit cleanly if elapsed runtime (in seconds) is >= this
 
      ! Minimisation parameters
      character(STRING_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
@@ -474,6 +474,7 @@ contains
     this%md_smooth_loading_arrest_time  = 400.0_dp ! fs
     this%md_smooth_loading_tip_edge_tol = 50.0_dp ! Angstrom
     this%md_damping_time = 100.0_dp ! fs
+    this%md_max_runtime = -1.0_dp ! fs
 
     
     ! Minimisation parameters
@@ -1053,6 +1054,11 @@ contains
           read (value, *) parse_cp%md_damping_time
        end if
 
+       call QUIP_FoX_get_value(attributes, "max_runtime", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_max_runtime
+       end if
+
     elseif (parse_in_crack .and. name == 'minim') then
 
        call QUIP_FoX_get_value(attributes, "method", value, status)
@@ -1548,6 +1554,7 @@ contains
     call Print('     smooth_loading_arrest_time  = '//this%md_smooth_loading_arrest_time//' fs', file=file)
     call Print('     smooth_loading_tip_edge_tol = '//this%md_smooth_loading_tip_edge_tol//' A', file=file)
     call Print('     damping_time ='//this%md_damping_time//' fs', file=file)
+    call Print('     max_runtime ='//this%md_max_runtime//' s', file=file)
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)
     call Print('     method                = '//trim(this%minim_method),file=file)

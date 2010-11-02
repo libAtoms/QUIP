@@ -778,18 +778,18 @@ module paramreader_module
 	    out_line=trim(out_line)//" current_value="//trim(entry%value)
          end if
 
-	 call print(trim(out_line), file=out)
+	 call print(trim(out_line), verbosity=PRINT_ALWAYS, file=out)
 	 out_line=trim(entry%help_string)
 	 do while (len_trim(out_line) > 0)
 	    if (out_line(80:80) == " ") then
-	       call print("    "//trim(out_line(1:80)), file=out)
+	       call print("    "//trim(out_line(1:80)), verbosity=PRINT_ALWAYS, file=out)
 	    else
-	       call print("    "//trim(out_line(1:80))//"-", file=out)
+	       call print("    "//trim(out_line(1:80))//"-", verbosity=PRINT_ALWAYS, file=out)
 	    endif
 	    out_line(1:80) = ""
 	    out_line=adjustl(out_line)
 	 end do
-	 call print("", file=out)
+	 call print("", verbosity=PRINT_ALWAYS, file=out)
       end do
 
       deallocate(data%d)
