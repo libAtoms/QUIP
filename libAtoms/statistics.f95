@@ -1,5 +1,5 @@
 module statistics_module
-use system_module, only : dp, PRINT_VERBOSE, print, operator(//)
+use system_module, only : dp, PRINT_VERBOSE, PRINT_NORMAL, print, current_verbosity, operator(//)
 implicit none
 private
 
@@ -21,6 +21,7 @@ subroutine mean_var_decorrelated_err_r1(A, m, v, decorrelated_err, decorrelation
    real(dp), allocatable :: binned_means(:)
    real(dp) :: binned_means_var
    real(dp) :: p_d_t, pp_d_t
+   logical :: found_max
 
    N = size(A)
    Nr = N
@@ -30,6 +31,7 @@ subroutine mean_var_decorrelated_err_r1(A, m, v, decorrelated_err, decorrelation
    if (present(v) .or. present(decorrelation_t) .or. present(decorrelated_err)) A_var = variance(A, A_mean)
    if (present(v)) v = A_var
 
+   found_max = .false.
    p_d_t = -HUGE(1.0_dp)
    pp_d_t = HUGE(1.0_dp)
    if (present(decorrelation_t) .or. present(decorrelated_err)) then
@@ -44,9 +46,14 @@ subroutine mean_var_decorrelated_err_r1(A, m, v, decorrelated_err, decorrelation
 	 deallocate(binned_means)
 	 A_decorrelation_t = binned_means_var*real(bin_size,dp)/A_var
 	 call print("bin_size " // bin_size // " decorrelation_t " // A_decorrelation_t, PRINT_VERBOSE)
-	 if (present(decorrelation_t)) decorrelation_t = A_decorrelation_t
-	 if (present(decorrelated_err)) decorrelated_err = sqrt(binned_means_var/real(n_bins,dp))
-	 if (A_decorrelation_t < p_d_t .and. p_d_t > pp_d_t) exit
+	 if (A_decorrelation_t < p_d_t .and. p_d_t > pp_d_t) then
+	    if (.not. found_max) then
+	       if (present(decorrelation_t)) decorrelation_t = A_decorrelation_t
+	       if (present(decorrelated_err)) decorrelated_err = sqrt(binned_means_var/real(n_bins,dp))
+	       found_max = .true.
+	    endif
+	    if (current_verbosity() <= PRINT_NORMAL) exit
+	 endif
 	 pp_d_t = p_d_t
 	 p_d_t = A_decorrelation_t
 	 if (bin_size == 1) then

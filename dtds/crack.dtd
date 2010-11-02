@@ -27,6 +27,7 @@
   thermalise_wait_time CDATA #IMPLIED
   time_step CDATA #IMPLIED
   wait_time CDATA #IMPLIED
+  max_runtime CDATA #IMPLIED
 >
 
 <!ELEMENT classical EMPTY>

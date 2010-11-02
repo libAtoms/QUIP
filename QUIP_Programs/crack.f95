@@ -322,6 +322,8 @@ program crack
   character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
   character(STRING_LENGTH) :: state_string
 
+  real(dp) :: time_elapsed, total_time_elapsed
+
 
   !** Initialisation Code **
 
@@ -654,7 +656,8 @@ program crack
     call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
   end if
 
-  call system_timer('initialisation')
+  call system_timer('initialisation', time_elapsed=time_elapsed)
+  total_time_elapsed = time_elapsed
 
   !** End of initialisation **
 
@@ -665,6 +668,8 @@ program crack
   !*                                                              *
   !****************************************************************    
   if (trim(params%simulation_task) == 'md' .or. trim(params%simulation_task) == 'damped_md') then
+
+     call system_timer('md_initialisation')
 
      call print_title('Molecular Dynamics')
 
@@ -763,6 +768,9 @@ program crack
      if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
         call calc(hybrid_pot, ds%atoms, force=f)
      end if
+
+     call system_timer('md_initialisation', time_elapsed=time_elapsed)
+     total_time_elapsed = total_time_elapsed + time_elapsed
 
      !****************************************************************
      !*  Main MD Loop                                                *
@@ -1130,7 +1138,18 @@ program crack
            exit
         endif
 
-        call system_timer('step')
+	! exit cleanly if we exceeded the max run time
+        call system_timer('step', time_elapsed=time_elapsed)
+	total_time_elapsed = total_time_elapsed + time_elapsed
+	if (params%md_max_runtime >= 0.0_dp) then
+	  call print("elapsed time="//total_time_elapsed//" max_runtime="//params%md_max_runtime)
+	  if (total_time_elapsed >= params%md_max_runtime) then
+	    call print("Exceeded max_runtime, exiting cleanly", PRINT_ALWAYS)
+	    exit
+	  endif
+	endif
+
+	call flush(mainlog%unit)
 
      end do
 
