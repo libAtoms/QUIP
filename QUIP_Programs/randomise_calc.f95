@@ -38,10 +38,10 @@ implicit none
   type(Potential) pot
   type(Atoms):: at, at2
   real(dp)::e
-  real(dp):: lat(3,3), v(3,3)
+  real(dp):: lat(3,3), v(3,3), strain(3,3)
   real(dp), allocatable::f(:,:)
-  real(dp):: pos_delta, lattice_delta
-  logical:: lattice_pull, lattice_pull1, lattice_pull2, lattice_pull3, scale_positions, dryrun
+  real(dp):: pos_delta, lattice_delta, normal_strain_delta, shear_strain_delta, strain_vector(6)
+  logical:: lattice_pull, lattice_pull1, lattice_pull2, lattice_pull3, scale_positions, dryrun, no_11, no_12, no_13, no_22, no_23, no_33
   integer :: i
   type(Dictionary) :: cli
   character(len=FIELD_LENGTH) :: infile, outfile, pot_init_args
@@ -62,6 +62,15 @@ implicit none
   call param_register(cli, "lattice_pull3", "F", lattice_pull3)
   call param_register(cli, "scale_positions", "T", scale_positions)
   call param_register(cli, "dryrun", "F", dryrun)
+  call param_register(cli, "normal_strain_delta", "0.0", normal_strain_delta)
+  call param_register(cli, "shear_strain_delta", "0.0", shear_strain_delta)
+  call param_register(cli, "strain_vector", "0.0 0.0 0.0 0.0 0.0 0.0", strain_vector)
+  call param_register(cli, "no_11", "F", no_11)
+  call param_register(cli, "no_12", "F", no_12)
+  call param_register(cli, "no_13", "F", no_13)
+  call param_register(cli, "no_22", "F", no_22)
+  call param_register(cli, "no_23", "F", no_23)
+  call param_register(cli, "no_33", "F", no_33)
 
   if (.not. param_read_args(cli, do_check=.true., ignore_unknown=.false.)) &
     call system_abort ("Failed to parse command line arguments")
@@ -69,12 +78,10 @@ implicit none
 
   if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 
-  if(.not. dryrun) then
-     call Initialise(pot, trim(pot_init_args))
-  end if
+  if(.not. dryrun) call Initialise(pot, trim(pot_init_args))
 
   call read(at2, trim(infile))
-  allocate(f(3,at2%N))
+  if(.not. dryrun) allocate(f(3,at2%N))
 
   lattice_pull = .false.
   if(lattice_pull1 .or. lattice_pull2 .or. lattice_pull3) lattice_pull = .true.
@@ -84,6 +91,7 @@ implicit none
      if(.not. lattice_pull) at=at2
 
      if(pos_delta /= 0.0_dp) call randomise(at%pos, pos_delta)
+
      if(lattice_delta /= 0.0_dp) then
         if(lattice_pull) then
            lat = at%lattice
@@ -97,6 +105,39 @@ implicit none
 
         call set_lattice(at, lat, scale_positions=scale_positions)
      end if
+
+     if ((normal_strain_delta .fne. 0.0_dp) .or. (shear_strain_delta .fne. 0.0_dp) .or. (strain_vector .fne. (/0.0_dp,0.0_dp,0.0_dp,0.0_dp,0.0_dp,0.0_dp/))) then
+        strain = 0.0_dp
+        call add_identity(strain)
+
+        if (normal_strain_delta .fne. 0.0_dp) then
+           if (.not. no_11) strain(1,1) = strain(1,1) + (ran_uniform()-0.5_dp)*normal_strain_delta
+           if (.not. no_22) strain(2,2) = strain(2,2) + (ran_uniform()-0.5_dp)*normal_strain_delta
+           if (.not. no_33) strain(3,3) = strain(3,3) + (ran_uniform()-0.5_dp)*normal_strain_delta
+        end if
+
+        if (shear_strain_delta .fne. 0.0_dp) then
+           if (.not. no_12) strain(1,2) = strain(1,2) + (ran_uniform()-0.5_dp)*shear_strain_delta
+           if (.not. no_13) strain(1,3) = strain(1,3) + (ran_uniform()-0.5_dp)*shear_strain_delta
+           if (.not. no_23) strain(2,3) = strain(2,3) + (ran_uniform()-0.5_dp)*shear_strain_delta
+        end if
+
+        if (strain_vector .fne. (/0.0_dp,0.0_dp,0.0_dp,0.0_dp,0.0_dp,0.0_dp/)) then
+           if (.not. no_11) strain(1,1) = strain(1,1) + strain_vector(1)
+           if (.not. no_22) strain(2,2) = strain(2,2) + strain_vector(2)
+           if (.not. no_33) strain(3,3) = strain(3,3) + strain_vector(3)
+           if (.not. no_12) strain(1,2) = strain(1,2) + strain_vector(4)
+           if (.not. no_13) strain(1,3) = strain(1,3) + strain_vector(5)
+           if (.not. no_23) strain(2,3) = strain(2,3) + strain_vector(6)
+        end if
+
+        call print("configuration: " // i)
+        call print("strain matrix:")
+        call print(strain)
+
+        call set_lattice(at, strain .mult. at%lattice, scale_positions = .true., remap = .true.)
+     end if
+
      if(.not. dryrun) then
         call system_timer("calc")
         call calc(pot, at, energy=e, force=f, virial=v)
@@ -109,7 +150,11 @@ implicit none
         call write(at, outfile, properties='species:pos', append=.true.)
      end if
   end do
-  deallocate(f)
+  if(.not. dryrun) deallocate(f)
+
+  call finalise(at)
+  call finalise(at2)
+  call finalise(pot)
 
   call system_finalise()
 
