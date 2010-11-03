@@ -61,13 +61,12 @@ module Potential_module
 #endif
   use adjustablepotential_module, only: adjustable_potential_init, adjustable_potential_optimise, &
        adjustable_potential_force, adjustable_potential_finalise
-!  use adjustablepotential_sw_module, only: adjustable_potential_sw_init, adjustable_potential_sw_optimise, &
-!       adjustable_potential_sw_force, adjustable_potential_sw_finalise
-
 
   implicit none
 
+#ifndef POTENTIAL_NO_DEFAULT_PRIVATE
   private
+#endif
 
   !*************************************************************************
   !*
