@@ -129,34 +129,37 @@ def makecrack(params):
          
 if __name__ == '__main__':
 
-   params = CrackParams()
+   try:
+      params = CrackParams()
 
-   if len(sys.argv[1:]) < 1:
-      print('Usage: makecrack [-V] <stem>')
-      print('Reads parameter file <stem>.xml and writes NetCDF output file <stem>.nc')
-      print('If -V option is given then XML file is validated against DTD.')
-      print('')
-      print('Available parameters and their default values are:')
-      params.print_()
+      if len(sys.argv[1:]) < 1:
+         print('Usage: makecrack [-V] <stem>')
+         print('Reads parameter file <stem>.xml and writes NetCDF output file <stem>.nc')
+         print('If -V option is given then XML file is validated against DTD.')
+         print('')
+         print('Available parameters and their default values are:')
+         params.print_()
 
-   validate = False
-   if sys.argv[1] == '-V':
-      validate = True
-      del sys.argv[1]
-      
-   stem = sys.argv[1]
-   xmlfilename = stem+'.xml'
+      validate = False
+      if sys.argv[1] == '-V':
+         validate = True
+         del sys.argv[1]
 
-   print('Reading parameters from file %s, validate=%d' % (xmlfilename, validate))
+      stem = sys.argv[1]
+      xmlfilename = stem+'.xml'
 
-   xmlfile = InOutput(xmlfilename,INPUT)
-   params.read_xml(xmlfile, validate=validate)
+      print('Reading parameters from file %s with XML validation %s.' %
+            (xmlfilename, {True:'enabled', False: 'disabled'}[validate]))
 
-   crack_slab = makecrack(params)
-   if params.io_netcdf:
-      crack_slab.write(stem+'.nc')
-   else:
-      crack_slab.write(stem+'.xyz')
+      xmlfile = InOutput(xmlfilename,INPUT)
+      params.read_xml(xmlfile, validate=validate)
 
+      crack_slab = makecrack(params)
+      if params.io_netcdf:
+         crack_slab.write(stem+'.nc')
+      else:
+         crack_slab.write(stem+'.xyz')
 
-
+   except RuntimeError, re:
+      sys.stderr.write('error: %s\n' % str(re))
+      sys.exit(1)

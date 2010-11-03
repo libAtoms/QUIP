@@ -279,7 +279,7 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   PASS_ERROR;
 
   if (*n_frame == 0) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: empty file", frame, *n_frame-1);
+    RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, "query_xyz: empty file", frame, *n_frame-1);
   }
 
   if (frame < 0 || frame >= *n_frame) {

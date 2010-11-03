@@ -21,7 +21,8 @@ from quippy import *
 from numpy import *
 import sys, optparse, itertools
 
-p = optparse.OptionParser(usage='%prog [options] <input file> [<output file>]')
+
+p = optparse.OptionParser(usage='%prog [options] <input file> <output file>')
 
 p.add_option('-r', '--range', action='store', help="""Range of frames to include. Should be either a single frame
 number or a slice [start]:[stop][:step]. If -r is omitted,
@@ -67,17 +68,15 @@ p.add_option('--real-format', action='store', help="""Format string to use when 
 
 opt, args = p.parse_args()
 
-if len(args) != 1 and len(args) != 2:
-   p.error('One input file must be specified. Output file is optional.')
+if len(args) != 2:
+   p.error('One input file and one output file must be specified (use /dev/null or NONE for no output).')
 
 exec_code_file = None
 if opt.exec_code_file is not None:
    exec_code_file = open(opt.exec_code_file, "r").read()
 
-try:
-   infile, outfile = args
-except ValueError:
-   infile, = args
+infile, outfile = args
+if outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
    outfile = None
 
 if infile == '-':  outfile = 'stdin'
@@ -216,15 +215,21 @@ def process(at, frame):
             p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
-if opt.atoms_ref is not None:
-   all_configs = AtomsList(infile, store=False, atoms_ref=opt.atoms_ref)
-else:
-   all_configs = AtomsList(infile, store=False)
+try:
+   if opt.atoms_ref is not None:
+      all_configs = AtomsList(infile, store=False, atoms_ref=opt.atoms_ref)
+   else:
+      all_configs = AtomsList(infile, store=False)
+except IOError, io:
+   p.error(str(io))
 
 stdout = False
 if outfile is not None:
    if outfile == 'stdout': stdout = True
-   outfile = AtomsWriter(outfile, format=opt.format)
+   try:
+      outfile = AtomsWriter(outfile, format=opt.format)
+   except RuntimeError, re:
+      p.error(str(re))
 
 write_args = {}
 if opt.real_format is not None:
@@ -254,7 +259,11 @@ if isinstance(opt.range, slice):
       frames = itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)
 
    for i, at in fenumerate(frames):
-      process(at, i)
+      try:
+         process(at, i)
+      except RuntimeError, re:
+         p.error(str(re))
+      
       if got_length and not opt.extract_params and not stdout:
          pb(i)
 
@@ -262,7 +271,10 @@ if isinstance(opt.range, slice):
                     
 else:
    # single frame
-   process(AtomsList(infile)[opt.range], 1)
+   try:
+      process(AtomsList(infile)[opt.range], 1)
+   except RuntimeError, re:
+      p.error(str(re))
 
 if outfile is not None:
    try:
