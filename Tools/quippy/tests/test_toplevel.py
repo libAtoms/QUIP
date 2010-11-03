@@ -34,7 +34,7 @@ if 'QUIP_ROOT' in os.environ:
         return run_script
 
     for script in glob.glob(os.path.join(os.environ['QUIP_ROOT'], 'Tests/test_*')):
-        if '.' in script: continue # skip data files
+        if '.' in script or script.endswith('~') : continue # skip data and backup files
         setattr(Test_TopLevel, os.path.basename(script), make_test(script))
 
                           
