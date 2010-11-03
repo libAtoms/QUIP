@@ -142,6 +142,7 @@ subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
   use extendable_str_module
   use system_module
 
+#ifdef __GFORTRAN__
   INTERFACE
      subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, error)
        use iso_c_binding, only: c_intptr_t
@@ -154,6 +155,7 @@ subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
        integer, intent(out), optional :: error
      end subroutine c_dictionary_query_index
   END INTERFACE
+#endif
 
   integer, intent(in) :: this(12)
   character(len=*), intent(inout) :: key
@@ -274,6 +276,7 @@ subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
 
+#ifdef __GFORTRAN__
   INTERFACE
      subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
        
@@ -293,6 +296,7 @@ subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
        
      end subroutine c_dictionary_query_key
   END INTERFACE
+#endif
 
   integer, intent(in) :: this(12)
   character(len=*), intent(inout) :: key
