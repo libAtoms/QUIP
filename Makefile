@@ -29,7 +29,7 @@
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ifneq (${QUIP_ARCH},)
-	export BUILDDIR=build.${QUIP_ARCH}
+	export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 	export QUIP_ARCH
 	include ${BUILDDIR}/Makefile.inc
 	include Makefile.rules
@@ -67,7 +67,7 @@ EXTRA_ALL_DIRS = Tools
 all: default
 	@for f in ${MODULES} ${EXTRA_ALL_DIRS}; do ${MAKE} $$f/all; done
 
-.PHONY: arch ${MODULES} doc clean install test quippy doc install-structures install-Tools install-build.QUIP_ARCH
+.PHONY: arch ${MODULES} doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH
 
 arch: 
 ifeq (${QUIP_ARCH},)
@@ -142,7 +142,7 @@ Tools/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 
 
 ${BUILDDIR}: arch
-	@if [ ! -d build.${QUIP_ARCH} ] ; then mkdir build.${QUIP_ARCH} ; fi
+	@if [ ! -d build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 
 clean: ${BUILDDIR}
@@ -165,14 +165,14 @@ install:
 	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist or isn't a directory"; \
 	  exit 1; \
 	fi
-	${MAKE} install-build.QUIP_ARCH install-Tools install-structures
+	${MAKE} install-build.QUIP_ARCH install-Tools install-structures install-dtds
 
 install-build.QUIP_ARCH:
-	@echo "installing from build.${QUIP_ARCH}"; \
-	for f in `/bin/ls build.${QUIP_ARCH} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
-	  if [ -x build.${QUIP_ARCH}/$$f ]; then \
+	@echo "installing from build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}"; \
+	for f in `/bin/ls build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
+	  if [ -x build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
 	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
-	    cp build.${QUIP_ARCH}/$$f ${QUIP_INSTDIR}; \
+	    cp build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
 	  fi; \
 	done
 
@@ -187,6 +187,9 @@ install-Tools:
 
 install-structures:
 	cd structures; ${MAKE} QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-structures 
+
+install-dtds:
+	cd dtds; ${MAKE} QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-dtds 
 
 doc: quip-reference-manual.pdf
 
