@@ -173,6 +173,10 @@ install-build.QUIP_ARCH:
 	  if [ -x build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
 	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
 	    cp build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
+	    if [ $$f == eval ]; then \
+	       rm -f ${QUIP_INSTDIR}/quip_eval; \
+	       ln -s ${QUIP_INSTDIR}/eval ${QUIP_INSTDIR}/quip_eval; \
+	    fi; \
 	  fi; \
 	done
 
