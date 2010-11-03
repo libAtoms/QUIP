@@ -372,9 +372,14 @@ class FortranDerivedType(object):
        except RuntimeError:
            try:
                exctype, value, tb = sys.exc_info()
-               raise exctype, RuntimeError('Fortran routine %s(%s):\n %s' %
-                                           (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]),
-                                            str(value).strip())), tb
+
+               if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+                   error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
+               else:
+                   # Remove Fortran traceback
+                   error_str = str(value).strip().split('\n')[-1].strip()
+
+               raise exctype, RuntimeError(error_str), tb
            
            finally:
                del tb
@@ -845,9 +850,14 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
        except RuntimeError:
            try:
                exctype, value, tb = sys.exc_info()
-               raise exctype, RuntimeError('Fortran routine %s(%s):\n %s' %
-                                           (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]),
-                                            str(value).strip())), tb
+
+               if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+                   error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
+               else:
+                   # Remove Fortran traceback
+                   error_str = str(value).strip().split('\n')[-1].strip()
+
+               raise exctype, RuntimeError(error_str), tb
 
            finally:
                del tb

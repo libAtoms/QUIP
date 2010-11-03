@@ -60,6 +60,9 @@ def AtomsReader(source, format=None, *args, **kwargs):
    if format in AtomsReaders:
       source = iter(AtomsReaders[format](source, *args, **kwargs))
 
+   if isinstance(source, str):
+      raise IOError("Don't know how to read Atoms from file '%s'" % source)
+
    for at in source:
       yield at
 
@@ -109,6 +112,8 @@ class AtomsList(object):
          self._source = AtomsReaders[format](source, *args, **kwargs)
          self._itersource = iter(self._source)
       else:
+         if isinstance(source, str):
+            raise IOError("Don't know how to read Atoms from file '%s'" % source)
          if not hasattr(source, '__iter__'):
             self._source = [source]
             self._itersource = iter(self._source)

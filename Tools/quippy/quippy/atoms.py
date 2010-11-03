@@ -235,8 +235,11 @@ class Atoms(FortranAtoms):
          source = AtomsReaders[format](source, *args, **kwargs)
          opened = True
 
+      if isinstance(source, str):
+         raise IOError("Don't know how to read Atoms from file '%s'" % source)
       if not hasattr(source, '__iter__'):
-         raise ValueError('Cannot read from source %r - not an iterator' % source)
+         raise IOError('Cannot read from source %r - not an iterator' % source)
+      
       at = iter(source).next()
       if not isinstance(at, cls):
          raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
