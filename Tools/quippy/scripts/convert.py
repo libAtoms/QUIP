@@ -65,18 +65,28 @@ p.add_option('-n', '--rename', action='append', help="""Old and new names for a 
 p.add_option('-s', '--select', action='store', help="""Output only a subset of the atoms in input file. Argument should resolve to logical mask.""")
 p.add_option('--int-format', action='store', help="""Format string to use when writing integers in XYZ format.""")
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
+p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printing of Atoms object (useful when also using -e argument).""", default=False)
 
 opt, args = p.parse_args()
 
-if len(args) != 2:
-   p.error('One input file and one output file must be specified (use /dev/null or NONE for no output).')
+if opt.no_print_at:
+   if len(args) != 1:
+       p.error('One input file must be specified')
+else:       
+   if len(args) != 2:
+      p.error('One input file and one output file must be specified (use /dev/null or NONE for no output).')
 
 exec_code_file = None
 if opt.exec_code_file is not None:
    exec_code_file = open(opt.exec_code_file, "r").read()
 
-infile, outfile = args
-if outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
+try:
+   infile, outfile = args
+except ValueError:
+   infile, = args
+   outfile = '-'
+
+if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
    outfile = None
 
 if infile == '-':  outfile = 'stdin'
