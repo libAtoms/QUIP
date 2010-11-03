@@ -134,9 +134,27 @@ subroutine c_dictionary_get_key(this, i, key, length, error)
 end subroutine c_dictionary_get_key
 
 subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
+
   use error_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
+
+  use extendable_str_module
+  use system_module
+
+  INTERFACE
+     subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, error)
+       use iso_c_binding, only: c_intptr_t
+       integer, intent(in) :: this(12)
+       integer, intent(in) :: entry_i
+       character(len=*), intent(out) :: key
+       integer, intent(out) :: type
+       integer, dimension(2), intent(out) :: dshape
+       integer(c_intptr_t), intent(out) :: dloc
+       integer, intent(out), optional :: error
+     end subroutine c_dictionary_query_index
+  END INTERFACE
+
   integer, intent(in) :: this(12)
   character(len=*), intent(inout) :: key
   integer, intent(out) :: type
@@ -255,6 +273,27 @@ subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
   use system_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
+
+  INTERFACE
+     subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
+       
+       use error_module
+       use dictionary_module
+       use iso_c_binding, only: c_intptr_t
+       
+       use extendable_str_module
+       use system_module
+       
+       integer, intent(in) :: this(12)
+       character(len=*), intent(inout) :: key
+       integer, intent(out) :: type
+       integer, dimension(2), intent(out) :: dshape
+       integer(c_intptr_t), intent(out) :: dloc
+       integer, intent(out), optional :: error
+       
+     end subroutine c_dictionary_query_key
+  END INTERFACE
+
   integer, intent(in) :: this(12)
   character(len=*), intent(inout) :: key
   integer, intent(in) :: type
