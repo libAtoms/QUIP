@@ -87,7 +87,10 @@
 
     call calc(this%pot1, at, args_str=args_str, error=error)
     PASS_ERROR(error)
-    if (len_trim(calc_energy) > 0) call get_param_value(at, trim(calc_energy), my_e_1)
+    if (len_trim(calc_energy) > 0) then
+       call get_param_value(at, trim(calc_energy), my_e_1)
+       call print("Potential_sum my_e_1 " // my_e_1, PRINT_VERBOSE)
+     endif
     if (len_trim(calc_virial) > 0) call get_param_value(at, trim(calc_virial), my_virial_1)
     if (len_trim(calc_local_energy) > 0) then
        call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
@@ -110,6 +113,7 @@
     PASS_ERROR(error)
     if (len_trim(calc_energy) > 0) then
        call get_param_value(at, trim(calc_energy), energy)
+       call print("Potential_sum my_e_2 " // energy, PRINT_VERBOSE)
        energy = my_e_1 + energy
        call set_param_value(at, trim(calc_energy), energy)
     endif

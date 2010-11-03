@@ -76,6 +76,7 @@ contains
     my_return_relaxed = optional_default(.false., return_relaxed)
 
     at_bulk = at
+    call set_cutoff(at_bulk, cutoff(this))
     call calc_connect(at_bulk)
 
     if (current_verbosity() > PRINT_VERBOSE) then
