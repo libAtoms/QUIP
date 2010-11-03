@@ -70,7 +70,7 @@ contains
 
     real(dp) :: e0, V0(3,3)
 
-    my_fd = optional_default(1.0e-3_dp, fd)
+    my_fd = optional_default(1.0e-2_dp, fd)
     my_relax_tol = optional_default(1e-8_dp, relax_tol)
     my_relax_initial = optional_default(.true., relax_initial)
     my_return_relaxed = optional_default(.false., return_relaxed)
