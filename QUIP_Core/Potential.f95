@@ -74,8 +74,6 @@ module Potential_module
   !*
   !*************************************************************************
 
-  integer :: n_iter = 0
-
   public :: Potential
   type Potential
      type(MPI_context) :: mpi
