@@ -956,10 +956,14 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine diamond2(myatoms, a, Z)
+  subroutine diamond2(myatoms, a, Z1, Z2)
     type(Atoms), intent(out)      :: myatoms
     real(dp)                      :: a
-    integer, intent(in), optional :: Z
+    integer, intent(in), optional :: Z1, Z2
+    integer :: my_Z1, my_Z2
+
+    my_Z1 = optional_default(6, Z1)
+    my_Z2 = optional_default(6, Z2)
 
     call initialise(myatoms, 2, &
          reshape((/a/2,a/2,0.0_dp,0.0_dp,a/2,a/2,a/2,0.0_dp,a/2/), (/3,3/)))
@@ -967,7 +971,7 @@ contains
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
     myatoms%pos(:,2) = a*(/0.25_dp, 0.25_dp, 0.25_dp/)
 
-    if (present(Z)) call set_atoms(myatoms,Z)
+    call set_atoms(myatoms,(/my_Z1,my_Z2/))
 
   end subroutine diamond2
 
