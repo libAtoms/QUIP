@@ -279,7 +279,8 @@ if hasattr(quippy, 'Potential'):
      </per_type_data>
      <per_pair_data type1="1" type2="1" r_cut="12.5000000000000000"
        screen_l="0.5000000000000000">
-       <abcd>  -0.0532334619024000  -0.9076427431860000  -8.8308491367399995  56.5661321469000029
+       <abcd>  -0.0532334619024000
+       -0.9076427431860000 -8.8308491367399995  56.5661321469000029
            0.3578597152650000   0.3036476931010000   7.0922290356000000 -77.4785508398999951
            10.0000000000000000   0.0000000000000000   0.0000000000000000   0.0000000000000000
          </abcd>
@@ -531,7 +532,7 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.at.pos, self.pos_ref)
 
       def testelastic_constants(self):
-         self.pot.calc_elastic_constants(self.at, c=self.c, c0=self.c0, relax_initial=True)
+         self.pot.calc_elastic_constants(self.at, fd=1e-3, c=self.c, c0=self.c0, relax_initial=True)
          self.assertArrayAlmostEqual(self.c, self.c_ref)
          self.assertArrayAlmostEqual(self.c0, self.c0_ref)
 

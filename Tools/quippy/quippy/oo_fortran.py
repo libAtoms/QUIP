@@ -204,6 +204,8 @@ def process_results(res, args, kwargs, inargs, outargs, prefix):
           elif isinstance(r, numpy.ndarray):
               # Convert to one-based FortranArray
               newres.append(r.view(FortranArray))
+          elif spec['type'] == 'logical':
+              newres.append(r == QUIPPY_TRUE)
           else:
               newres.append(r)
 
