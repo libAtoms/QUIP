@@ -397,7 +397,7 @@ contains
 
              if(has_virial) then
                 ! check if virial is symmetric
-                if( sum((virial - transpose(virial))**2) .fneq. 0.0_dp ) &
+                if( sum((virial - transpose(virial))**2) .fne. 0.0_dp ) &
                 call print_warning('virial not symmetric, now symmetrised')
 
 
