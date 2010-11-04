@@ -1,0 +1,14 @@
+<Sutton_Chen_params n_types="11" cutoff="10.0" label="default">
+   <!-- PRB 68, 134206 (2003) -->
+  <per_type_data type="1" atomic_num="4" a="3.18863" epsilon="0.0018207" c="222.34769" m="6" n="13"/>
+  <per_type_data type="2" atomic_num="13" a="4.03230" epsilon="0.0090144" c="54.97923" m="5" n="9"/>
+  <per_type_data type="3" atomic_num="28" a="3.51570" epsilon="0.0073767" c="84.74500" m="5" n="10"/>
+  <per_type_data type="4" atomic_num="29" a="3.60300" epsilon="0.0057921" c="84.84300" m="5" n="10"/>
+  <per_type_data type="5" atomic_num="45" a="3.79840" epsilon="0.0024612" c="305.49900" m="5" n="13"/>
+  <per_type_data type="6" atomic_num="46" a="3.88130" epsilon="0.0032864" c="148.20500" m="6" n="12"/>
+  <per_type_data type="7" atomic_num="47" a="4.06910" epsilon="0.0039450" c="96.52400" m="6" n="11"/>
+  <per_type_data type="8" atomic_num="77" a="3.83440" epsilon="0.0037674" c="224.81500" m="6" n="13"/>
+  <per_type_data type="9" atomic_num="78" a="3.91630" epsilon="0.0097894" c="71.33600" m="7" n="11"/>
+  <per_type_data type="10" atomic_num="79" a="4.06510" epsilon="0.0078052" c="53.58100" m="8" n="11"/>
+  <per_type_data type="11" atomic_num="82" a="4.94950" epsilon="0.0055772" c="45.88200" m="7" n="10"/>
+</Sutton_Chen_params>
