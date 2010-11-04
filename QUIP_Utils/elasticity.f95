@@ -50,7 +50,7 @@ contains
   subroutine pot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed, relax_tol)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at !% Atoms object for which to compute $C_{ij}$
-    real(dp), intent(in), optional :: fd !% Finite strain to apply. Default $10^{-3}$.
+    real(dp), intent(in), optional :: fd !% Finite strain to apply. Default $10^{-2}$.
     character(len=*), intent(in), optional :: args_str !% Optional args_str to pass to 'minim'
     real(dp), intent(out), optional :: c(6,6) !% Elastic constants (with relaxation)
     real(dp), intent(out), optional :: c0(6,6) !% Elastic constants (without relaxation)
