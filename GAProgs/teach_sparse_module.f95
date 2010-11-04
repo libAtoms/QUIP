@@ -120,9 +120,9 @@ contains
        endif
 
        if( has_virial ) then
-          this%n_virial = this%n_virial + 9
+          this%n_virial = this%n_virial + 6
           do i = 1, at%N
-             this%n = this%n + 9*(atoms_n_neighbours(at,i)+1)
+             this%n = this%n + 6*(atoms_n_neighbours(at,i)+1)
           enddo
        endif
 
@@ -396,8 +396,16 @@ contains
              enddo
 
              if(has_virial) then
+                ! check if virial is symmetric
+                if( sum((virial - transpose(virial))**2) .fneq. 0.0_dp ) &
+                call print_warning('virial not symmetric, now symmetrised')
+
+
+                ! Now symmetrise matrix
+                virial = ( virial + transpose(virial) ) / 2.0_dp
+
                 do k = 1, 3
-                   do l = 1, 3
+                   do l = k, 3
                       nn = nn+1
 
                       do i = 1, at%N

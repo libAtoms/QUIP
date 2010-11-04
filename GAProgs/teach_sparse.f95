@@ -173,7 +173,7 @@ program teach_sparse_program
 
   if( has_bispectrum_file ) then
      call initialise(bispectrum_inout,bispectrum_file,action=OUTPUT)
-     do i = 1, main_teach_sparse%nn/3
+     do i = 1, size(main_teach_sparse%x,2)
         write(bispectrum_inout%unit,"("//main_teach_sparse%d//"f16.8)") main_teach_sparse%x(:,i)
      enddo
      call finalise(bispectrum_inout)
