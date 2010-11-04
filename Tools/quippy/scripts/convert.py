@@ -76,10 +76,6 @@ else:
    if len(args) != 2:
       p.error('One input file and one output file must be specified (use /dev/null or NONE for no output).')
 
-exec_code_file = None
-if opt.exec_code_file is not None:
-   exec_code_file = open(opt.exec_code_file, "r").read()
-
 try:
    infile, outfile = args
 except ValueError:
@@ -172,8 +168,8 @@ def process(at, frame):
 
    # Execute user code
    do_print = True
-   if exec_code_file is not None:
-      exec(exec_code_file)
+   if opt.exec_code_file is not None:
+      execfile(opt.exec_code_file)
    if opt.exec_code is not None:
       exec(opt.exec_code)
 
