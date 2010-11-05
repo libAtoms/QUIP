@@ -2141,10 +2141,11 @@ contains
    !%> If optional do_always argument is true, routine will do its thing even 
    !%> if system_do_timing is false.
    !
-   subroutine system_timer(name, do_always, time_elapsed)
+   subroutine system_timer(name, do_always, time_elapsed, do_print)
      character(len=*), intent(in) :: name !% Unique identifier for this timer
      logical, optional :: do_always
      real(dp), intent(out), optional :: time_elapsed
+     logical, optional :: do_print
 
      integer, save :: stack_pos = 0
      integer, save, dimension(TIMER_STACK) :: wall_t0
@@ -2152,7 +2153,7 @@ contains
      character(len=255), save, dimension(TIMER_STACK) :: names
      character(len=50) :: out_name
 
-     logical my_do_always
+     logical my_do_always, my_do_print
 
      logical :: found_name
      integer :: count_rate, count_max, wall_t1
@@ -2164,6 +2165,7 @@ contains
 #endif
 
      my_do_always = optional_default(.false., do_always)
+     my_do_print = optional_default(.true., do_print)
 
      if (.not. my_do_always .and. .not. system_do_timing) return
 
@@ -2200,8 +2202,9 @@ contains
         out_name = name
 #ifndef _MPI
 	if (present(time_elapsed)) then
-	  time_elapsed = real(wall_t1-wall_t0(stack_pos))
-	else
+	  time_elapsed = real(wall_t1-wall_t0(stack_pos))*1.0_dp/real(count_rate, dp)
+	endif
+	if (my_do_print) then
 	  write (line, '(a,a,a,f0.3,a,f0.3,a)') 'TIMER: ', out_name, &
 	       ' done in ', cpu_t1-cpu_t0(stack_pos), ' cpu secs, ', &
 	       real(wall_t1 - wall_t0(stack_pos), dp)*1.0_dp/real(count_rate, dp), &
@@ -2210,8 +2213,9 @@ contains
 	endif
 #else
 	if (present(time_elapsed)) then
-	  time_elapsed = real(mpi_t1-mpi_t0(stack_pos))
-	else
+	  time_elapsed = real(mpi_t1-mpi_t0(stack_pos))*1.0_dp/real(count_rate, dp)
+	endif
+	if (my_do_print) then
 	  write (line, '(a,a,a,f0.3,a,f0.3,a,f0.3,a)') 'TIMER: ', out_name, &
 	       ' done in ', cpu_t1-cpu_t0(stack_pos), ' cpu secs, ', &
 	       real(wall_t1 - wall_t0(stack_pos), dp)*1.0_dp/real(count_rate, dp), &
