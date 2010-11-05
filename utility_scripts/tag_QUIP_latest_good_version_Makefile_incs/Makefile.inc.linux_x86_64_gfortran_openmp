@@ -24,6 +24,7 @@ HAVE_QC=0
 USE_MAKEDEP=1
 MAKEDEP=makedep.py
 EXTRA_LINKOPTS=
+
 OPTIM=-O3 -fPIC
 DEBUG=-g -fbacktrace
 # DEBUG=-g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check  -fbacktrace
