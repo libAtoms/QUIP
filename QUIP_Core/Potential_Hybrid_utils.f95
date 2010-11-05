@@ -55,6 +55,7 @@
 
     ! set up region1 stuff
     bulk_region1 = reference_bulk
+    call set_cutoff(bulk_region1, cutoff(region1_pot)+0.5_dp)
     call calc_connect(bulk_region1)
 !    call initialise(region1_pot, "Simple", region1_pot)
     if (minimise_bulk) then
