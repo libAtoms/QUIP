@@ -471,7 +471,39 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
     character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
 
+    integer i
+    real(dp) :: effective_cutoff
+
     INIT_ERROR(error)
+
+    if (cutoff(this) > 0.0_dp) then
+       ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
+
+       if (.not. at%connect%initialised) then
+          call print('Potential_calc: setting Atoms cutoff to Potential cutoff ('//cutoff(this)//')', PRINT_VERBOSE)
+          call set_cutoff(at, cutoff(this))
+          call calc_connect(at)
+       end if
+
+       if (at%use_uniform_cutoff) then
+          if (at%cutoff < cutoff(this)) then
+             RAISE_ERROR('IP_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
+          end if
+       else
+          ! Find effective cutoff 
+          effective_cutoff = 0.0_dp
+          do i = 1, at%N
+             if (at%Z(i) < 1 .or. at%Z(i) > 116) then
+                RAISE_ERROR('IP_calc: bad atomic number i='//i//' z='//at%z(i), error)
+             end if
+             if (ElementCovRad(at%Z(i)) > effective_cutoff) effective_cutoff = ElementCovRad(at%Z(i))
+          end do
+          effective_cutoff = (2.0_dp * effective_cutoff) * at%cutoff
+          if (effective_cutoff < cutoff(this)) then
+             RAISE_ERROR('IP_calc: effective cutoff of Atoms object ('//effective_cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
+          end if
+       end if
+    end if
 
     call initialise(params)
     call param_register(params, "energy", "", calc_energy)
