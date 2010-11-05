@@ -2126,7 +2126,9 @@ contains
 
     allocate(filtered_local_energy(count(edge_mask == 0),1), assign(count(edge_mask == 0)))
     filtered_local_energy(:,1) = pack(local_energy, edge_mask == 0)
-    call kmeans(filtered_local_energy, 2, means, assign, initialisation='random_partition')
+    means(1,1) = minval(filtered_local_energy)
+    means(2,1) = maxval(filtered_local_energy)
+    call kmeans(filtered_local_energy, 2, means, assign)
     allocate(filtered_surface(size(assign)))
     surface_cluster = maxloc(means(:,1))
     filtered_surface = assign == surface_cluster(1)
