@@ -249,6 +249,7 @@ def calc_stress(configs, pot, relax=False, relax_tol=1e-3, relax_steps=100):
    from quippy import GPA
    for at in configs:
       at2 = at.copy()
+      at2.set_cutoff(pot.cutoff())
       at2.calc_connect()
       if relax:
          pot.minim(at2, 'cg', relax_tol, relax_steps, do_pos=True, do_lat=False)

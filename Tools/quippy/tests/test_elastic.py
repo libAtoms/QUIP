@@ -115,6 +115,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())         
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'cubic')
@@ -130,6 +131,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'cubic')
@@ -146,6 +148,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'orthorhombic')
@@ -160,6 +163,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())         
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'orthorhombic')
@@ -174,6 +178,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'monoclinic')
@@ -188,6 +193,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'monoclinic')
@@ -203,6 +209,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'triclinic')
@@ -217,6 +224,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
+         at0.set_cutoff(pot.cutoff())
          pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'triclinic')
@@ -296,6 +304,7 @@ if hasattr(quippy, 'Potential') and got_scipy:
          at = transform(self.at0, strain_m)
 
          # Compute virial stress for comparison
+         at.set_cutoff(self.pot.cutoff())
          at.calc_connect()
 
          if relax:
