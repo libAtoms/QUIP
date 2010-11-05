@@ -43,7 +43,7 @@ CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
 DEFINES += -D_OPENMP
-F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -openmp -DNO_F2003_NEW_LINE
+F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -openmp
 F77FLAGS += -fpp -fixed -openmp
 CFLAGS +=  -DFORTRAN_UNDERSCORE -openmp
 CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
