@@ -37,7 +37,6 @@ CC = icc
 CPLUSPLUS = icpc
 
 OPTIM = -O3 -ip
-FOPTIM = -O3 -ip
 
 ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG} -D_MPI
 ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG} -D_MPI

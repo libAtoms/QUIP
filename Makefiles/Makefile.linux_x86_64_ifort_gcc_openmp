@@ -9,9 +9,9 @@ LINKER = ifort
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 DEFAULT_DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
-DEFAULT_OPTIM = -O3 -vec-report0
-CDEBUG = -g -DDUMP_CORE_ON_ABORT
-COPTIM = -O3
+DEFAULT_OPTIM = -O3 -vec-report0 -fPIC
+DEFAULT_CDEBUG = -g -DDUMP_CORE_ON_ABORT
+DEFAULT_COPTIM = -O3 -fPIC
 
 DEFINES += -DGETARG_F2003 -D_OPENMP
 F95FLAGS += -fpp -free -warn unused -openmp
@@ -29,7 +29,7 @@ QUIPPY_F90FLAGS = -fpp -free
 QUIPPY_OPT = -O3 -vec-report0
 QUIPPY_CPP = ifort -EP
 # QUIPPY_NO_QUIP = 1
-QUIPPY_NO_TOOLS = 1
+# QUIPPY_NO_TOOLS = 1
 QUIPPY_NO_CRACK = 1
 
 # rules
