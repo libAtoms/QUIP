@@ -59,6 +59,7 @@ if hasattr(quippy, 'Potential'):
 
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
+         self.at.set_cutoff(self.pot.cutoff())
          self.at.calc_connect()
 
          self.e, = fvar('e')
@@ -393,6 +394,7 @@ if hasattr(quippy, 'Potential'):
          self.p.set_callback(TestPotential_Callback.callback_1)
 
          self.a = diamond(5.44, 14)
+         self.a.set_cutoff(self.p.cutoff())
          self.a.calc_connect()
 
       def test_energy(self):
@@ -472,6 +474,7 @@ if hasattr(quippy, 'Potential'):
          self.pot = Potential('IP SW', param_str=xml)
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
+         self.at.set_cutoff(self.pot.cutoff())
          self.at.calc_connect()
 
          self.nsteps_ref = 6
@@ -511,7 +514,6 @@ if hasattr(quippy, 'Potential'):
          v1 = fzeros((3,3))
          v2 = fzeros((3,3))
 
-         self.at.calc_connect()
          self.pot.calc(self.at, virial=v1, args_str="energy force")
 
          cp = self.at.copy()
