@@ -533,12 +533,11 @@ if hasattr(quippy, 'Potential'):
 	 self.at.map_into_cell() # self.pos_ref is already mapped
          self.assertArrayAlmostEqual(self.at.pos, self.pos_ref)
 
-      def testelastic_constants(self):
-         self.pot.calc_elastic_constants(self.at, fd=1e-3, c=self.c, c0=self.c0, relax_initial=True)
-         self.assertArrayAlmostEqual(self.c, self.c_ref)
-         self.assertArrayAlmostEqual(self.c0, self.c0_ref)
-
-         
+      if (hasattr(quippy.Potential,'calc_elastic_constants')):
+	 def testelastic_constants(self):
+	    self.pot.calc_elastic_constants(self.at, fd=1e-3, c=self.c, c0=self.c0, relax_initial=True)
+	    self.assertArrayAlmostEqual(self.c, self.c_ref)
+	    self.assertArrayAlmostEqual(self.c0, self.c0_ref)
 
 
 if __name__ == '__main__':
