@@ -39,7 +39,7 @@ implicit none
   type(Atoms) at
   type(CInOutput) :: infile, outfile
   character(len=FIELD_LENGTH) :: infilename, outfilename
-  integer error, narg
+  integer error
 
   call system_initialise(verbosity=PRINT_SILENT)
 
@@ -65,7 +65,7 @@ implicit none
 	   HANDLE_ERROR(error)
 	endif
      endif
-     call write(at, outfile)
+     call write(at, outfilename, append=.true.)
   end do
   call system_finalise()
 end program convert
