@@ -38,8 +38,9 @@ CPLUSPLUS = openmpic++
 LINKER = openmpif90
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
-DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEFAULT_OPTIM = -O3
+SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+DEBUG = -g -DDUMP_CORE_ON_ABORT
+OPTIM = -O3
 
 DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -D_MPI -DMPI_1
 F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused

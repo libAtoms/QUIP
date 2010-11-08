@@ -38,11 +38,12 @@ CPLUSPLUS = g++
 LINKER = ifort
 FPP = ifort -E
 
-#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
-DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
-DEFAULT_OPTIM = -O3 -vec-report0 -fPIC
-DEFAULT_CDEBUG = -g -DDUMP_CORE_ON_ABORT
-DEFAULT_COPTIM = -O3 -fPIC
+# -g slows down ifort immensely
+SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
+DEBUG = -DDUMP_CORE_ON_ABORT
+OPTIM = -O3 -vec-report0 -fPIC -DPOTENTIAL_NO_DEFAULT_PRIVATE
+CDEBUG = -g -DDUMP_CORE_ON_ABORT
+COPTIM = -O3 -fPIC
 
 DEFINES += -DGETARG_F2003
 F95FLAGS += -fpp -free -warn unused

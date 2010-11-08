@@ -37,8 +37,9 @@ CC = icc
 CPLUSPLUS = icpc -Kc++
 LINKER = ifort
 
-DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
-DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP
+SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
+DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT 
+OPTIM = -O3 -vec-report0 -unroll -xP
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 

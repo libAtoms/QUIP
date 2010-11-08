@@ -30,13 +30,15 @@
 
 default: libquip_core.a 
 
-include Makefile.inc
+include Makefile.features
+include Makefile.libs
 include Makefile.rules
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
 endif
+include Makefile.override_arch
 
 ALL_TARGETS = libquip_core.a evb_filepot
 ifeq (${HAVE_CP2K},1)

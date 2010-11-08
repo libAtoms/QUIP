@@ -39,8 +39,9 @@ CPLUSPLUS = g++
 LINKER = gfortran
 FPP = gfortran -E -x f95-cpp-input
 
-DEFAULT_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
-DEFAULT_OPTIM = -O3
+SAMPLE_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
+DEBUG= -g -DDUMP_CORE_ON_ABORT
+OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused -fPIC
