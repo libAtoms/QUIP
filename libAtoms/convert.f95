@@ -65,7 +65,7 @@ implicit none
 	   HANDLE_ERROR(error)
 	endif
      endif
-     call write(at, outfilename, append=.true.)
+     call write(at, outfile)
   end do
   call system_finalise()
 end program convert
