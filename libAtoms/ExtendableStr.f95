@@ -218,8 +218,11 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
       new_len = this%len + add_len
       if (new_len > size(this%s)) then ! new length too big for current allocated array
 	 if (this%increment > 0) then
-	   new_len = size(this%s) + this%increment
-	   this%increment = this%increment*2
+           new_len = size(this%s)
+           do while(new_len < this%len + add_len)
+             new_len = new_len + this%increment
+             this%increment = this%increment*2
+           enddo
 	 endif
 	 if (this%len > 0) then ! need to save old data
 	   allocate(t(size(this%s)))
@@ -229,7 +232,14 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
 	   this%s(1:this%len) = t(1:this%len)
 	   deallocate(t)
 	 else ! don't need to save old data
-	   if (this%increment > 0) new_len = this%increment
+	   if (this%increment > 0) then
+             new_len = this%increment
+             this%increment = this%increment*2
+             do while (new_len < this%len + add_len)
+               new_len = new_len + this%increment
+               this%increment = this%increment*2
+             enddo
+           endif
 	   deallocate(this%s)
 	   allocate(this%s(new_len))
 	 endif
