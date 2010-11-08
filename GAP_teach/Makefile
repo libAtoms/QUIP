@@ -25,14 +25,15 @@
 
 all: libgap_teach.a
 
-include Makefile.inc
+include Makefile.features
+include Makefile.libs
 include Makefile.rules
-
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
 endif
+include Makefile.override_arch
 
 GP_TEACH_F95_FILES = clustering gp_teach 
 GP_TEACH_F95_SOURCES = ${addsuffix .f95, ${GP_TEACH_F95_FILES}}

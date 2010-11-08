@@ -31,10 +31,12 @@
 ifneq (${QUIP_ARCH},)
 	export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 	export QUIP_ARCH
-	include ${BUILDDIR}/Makefile.inc
+	include ${BUILDDIR}/Makefile.features
+	include ${BUILDDIR}/Makefile.libs
 	include Makefile.rules
-	include Makefile.config
 	include Makefiles/Makefile.${QUIP_ARCH}
+	include Makefile.config
+	include ${BUILDDIR}/Makefile.override_arch
 else
 	BUILDDIR=crap
 endif

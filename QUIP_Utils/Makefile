@@ -31,13 +31,15 @@
 all: libquiputils.a
 
 
-include Makefile.inc
+include Makefile.features
+include Makefile.libs
 include Makefile.rules
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
 endif
+include Makefile.override_arch
 
 
 F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
