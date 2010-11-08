@@ -178,8 +178,6 @@ implicit none
 
   call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
 
-  call print(pot)
-
   call initialise(infile, trim(at_file))
 
   if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
@@ -412,6 +410,8 @@ implicit none
 	if (do_F) call assign_property_pointer(at, "force", F0)
 	if (do_V) call get_param_value(at, "virial", V0)
 	if (do_local) call assign_property_pointer(at, "local_energy", local_E0)
+
+	call print(pot)
 
         if (do_E) then
            call print ("Energy=" // E0)

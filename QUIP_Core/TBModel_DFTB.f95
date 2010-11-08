@@ -68,7 +68,7 @@ type TBModel_DFTB
   type(spline), allocatable :: H_spline(:,:,:), S_spline(:,:,:), Vrep_spline(:,:)
 
   logical :: has_default_fermi_E = .false., has_default_fermi_T = .true., has_default_band_width = .false., has_default_k_density = .false.
-  real(dp) :: default_fermi_E, default_fermi_T = 0.0_dp, default_band_width, default_k_density
+  real(dp) :: default_fermi_E, default_fermi_T = 0.001_dp, default_band_width, default_k_density
 
 end type TBModel_DFTB
 
