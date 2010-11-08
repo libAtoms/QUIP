@@ -86,6 +86,9 @@ def fortran_equivalent_type(t):
       raise TypeError('Unknown type %s' % type(t))
           
 def type_is_compatible(spec, arg):
+    if 'optional' in spec['attributes'] and arg is None:
+        return True
+
     try:
         arg_type, dims, itemsize = fortran_equivalent_type(arg)
     except TypeError:
