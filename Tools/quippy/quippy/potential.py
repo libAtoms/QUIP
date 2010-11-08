@@ -23,10 +23,17 @@ class Potential(FortranPotential):
    __doc__ = FortranPotential.__doc__
    callback_map = {}
    
-   def __init__(self, args_str, *args, **kwargs):
+   def __init__(self, args_str, pot1=None, pot2=None, param_str=None, param_filename=None,
+                bulk_scale=None, mpi_obj=None, error=None):
+      
+      if param_filename is not None:
+         param_str = open(param_filename).read()
+
       if args_str.lower().startswith('callbackpot') and not 'label' in args_str:
          args_str = args_str + ' label=%d' % id(self)
-      FortranPotential.__init__(self, args_str, *args, **kwargs)
+
+      FortranPotential.__init__(self, args_str, pot1=pot1, pot2=pot2, param_str=param_str,
+                                bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
 
       if args_str.lower().startswith('callbackpot'):
          FortranPotential.set_callback(self, Potential.callback)
