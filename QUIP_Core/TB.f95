@@ -71,7 +71,8 @@ type TB_type
 
   type (GreensFunctions) gf
 
-  real(dp) :: fermi_E, fermi_T = 0.001_dp
+  logical :: calc_done = .false.
+  real(dp) :: fermi_E, fermi_T
   real(dp) :: fermi_E_precision = 1.0e-9_dp
   real(dp) :: homo_e, lumo_e
 
@@ -252,6 +253,8 @@ subroutine TB_Wipe(this)
   call Wipe(this%Hdm)
   call Wipe(this%gf)
 
+  this%calc_done = .false.
+
 end subroutine
 
 function TB_cutoff(this)
@@ -268,10 +271,18 @@ subroutine TB_Print(this, file)
 
   call Print('TB : ', file=file)
 
-  call print("Fermi_E " // this%Fermi_E // " Fermi_T " // this%Fermi_T)
+  if (this%calc_done) then
+    call print("Fermi_E " // this%Fermi_E //" Fermi_T " // this%Fermi_T)
+  else
+    call print("Fermi_E, Fermi_T not yet set (no calc done)")
+  endif
 
   call Print (this%tbsys, file=file)
-  call print ("homo " // this%homo_e // " lumo " // this%lumo_e // " gap " // (this%lumo_e-this%homo_e), file=file)
+  if (this%calc_done) then
+     call print ("homo " // this%homo_e // " lumo " // this%lumo_e // " gap " // (this%lumo_e-this%homo_e), file=file)
+  else
+    call print("homo, lumo, gap not yet set (no calc done)")
+  endif
   call verbosity_push_decrement()
     call print("evals", file=file)
     call Print (this%evals, file=file)
@@ -640,6 +651,8 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
 
   if (present(energy)) energy = my_energy
   call system_timer("TB_calc")
+
+  this%calc_done = .true.
 
   call copy_atoms_fields(this%at, at)
 
