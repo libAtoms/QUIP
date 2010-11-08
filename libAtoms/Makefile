@@ -28,7 +28,7 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-PROGRAMS = minimal_md xyz2pdb
+PROGRAMS = minimal_md xyz2pdb convert
 
 .PHONY: default all clean docclean
 
@@ -99,6 +99,7 @@ LIBATOMS_C_OBJS = ${addsuffix .o, ${LIBATOMS_C_FILES}}
 LIBATOMS_SOURCES = ${LIBATOMS_F77_SOURCES} ${LIBATOMS_F95_SOURCES} ${LIBATOMS_C_SOURCES}
 LIBATOMS_OBJS = ${LIBATOMS_F77_OBJS} ${LIBATOMS_F95_OBJS} ${LIBATOMS_C_OBJS}
 
+LIBS = -L. -latoms
 
 libatoms.a: ${LIBATOMS_OBJS}
 	${AR} ${AR_ADD} libatoms.a $?
@@ -113,11 +114,9 @@ allclean: clean docclean
 ${LIBATOMS_C_OBJS}  : %.o : %.c
 	${CC} ${CFLAGS} -c $< 
 
-minimal_md:  libatoms.a minimal_md.o
-	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
-xyz2pdb:  libatoms.a xyz2pdb.o
-	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
+${PROGRAMS} ${EXTRA_PROGRAMS}: % :  %.o libatoms.a
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 
 ifeq (${USE_MAKEDEP},1)
