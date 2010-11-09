@@ -157,7 +157,7 @@ Mandatory settings
 
 :makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
   Directories containing FoX libraries and header files, and required link options. 
-  Should be read automatically from QUIP's :file:`Makefile.inc`.
+  Should be read automatically from QUIP Makefiles.<
 
 Optional settings
 ^^^^^^^^^^^^^^^^^
@@ -185,42 +185,24 @@ Optional settings
 :makevar:`QUIPPY_NO_CRACK`
   If set to 1, omit compilation of crack utilities.
 
-:makevar:`QUIPPY_HAVE_ATOMEYE`
-  Set this to 1 if you want to build the AtomEye interface module.
-
-:makevar:`QUIPPY_ATOMEYE_LIBS` or :makevar:`ATOMEYE_LIBS`
-  Libraries and library paths required to compile AtomEye. As an
-  example, on my Linux system with the `gfortran` and `gcc` compilers,
-  this is set as follows::
-
-   QUIPPY_ATOMEYE_LIBS = -L/usr/lib64  -lm \
-		-lutil  -lXpm -lXext -lX11 -ljpeg -lpthread   \
-	        -lreadline  -lpng  -lncurses -lz -lnetcdf  -lhdf5_hl -lhdf5 \
-		-llapack -lf77blas -lcblas -latlas -lgfortran 
-
 :makevar:`HAVE_NETCDF`
-  Should be set to 1 to enable NetCDF support. Should be read automatically from QUIP's 
-  :file:`Makefile.inc`
+  Should be set to 1 to enable NetCDF support. Should be read automatically from QUIP.
 
 :makevar:`NETCDF4`
-  If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP's 
-  :file:`Makefile.inc`
+  If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP.
 
 :makevar:`NETCDF_LIBDIR`, :makevar:`NETCDF_INCDIR`, :makevar:`NETCDF_LIBS` and :makevar:`NETCDF4_LIBS`
   Directories containing NetCDF libraries and header files, and required link options. 
-  Should be read automatically from QUIP's :file:`Makefile.inc`.
+  Should be read automatically from QUIP.
 
 
 Compilation
 -----------
 
 It's best to compile QUIP before trying to compile quippy. This will
-compile the FoX Fortran XML library as well as generating a file
-called :file:`${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc` . Values
-in this file take precedence over those in
-:file:`Makefile.${QUIP_ARCH}`.  To compile QUIP, run `make` from the
-:envvar:`QUIP_ROOT` directory after setting :envvar:`QUIP_ARCH`
-appropriately, e.g. ::
+compile the FoX Fortran XML library as well as generating the required
+Makefiles. To compile QUIP, run `make` from the :envvar:`QUIP_ROOT`
+directory after setting :envvar:`QUIP_ARCH` appropriately, e.g. ::
 
   cd ${QUIP_ROOT}
   export QUIP_ARCH=linux_x86_64_gfortran
