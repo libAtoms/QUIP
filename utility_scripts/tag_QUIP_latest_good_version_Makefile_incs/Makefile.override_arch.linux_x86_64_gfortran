@@ -1,0 +1,3 @@
+OPTIM=-O3 -fPIC
+DEBUG=-g -fbacktrace
+# DEBUG=-g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check  -fbacktrace
