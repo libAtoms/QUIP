@@ -270,7 +270,7 @@ if isinstance(opt.range, slice):
       except RuntimeError, re:
          p.error(str(re))
       
-      if got_length and not opt.extract_params and not stdout:
+      if got_length and not opt.extract_params and not stdout and not opt.no_print_at:
          pb(i)
 
    print

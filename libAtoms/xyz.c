@@ -316,6 +316,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
       RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
     }
     linebuffer[strlen(linebuffer)-1] = '\0';
+    //debug("line = <%s>\n", linebuffer);
     return NULL;
   }
 }
@@ -388,7 +389,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
-  if (!got_index && frame != 0) {
+  if (!got_index && frame != 0 && in != stdin) {
     debug("read_xyz: skipping to frame %d\n", frame);
 
     for (i=0; i<frame-1; i++) {
@@ -859,7 +860,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     n++;
   }
-  if (!string) fclose(in);
+  if (!string && in != stdin) fclose(in);
 }
 
 #define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else fputs(line, out); }
