@@ -85,7 +85,7 @@ except ValueError:
 if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
    outfile = None
 
-if infile == '-':  outfile = 'stdin'
+if infile == '-':  infile = 'stdin'
 if outfile == '-': outfile = 'stdout'
 
 if opt.range is not None:
