@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
-# MAILS=bernstei@dave.nrl.navy.mil
+## MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
+MAILS=bernstei@dave.nrl.navy.mil
 
 function check_version {
    version=$1
@@ -52,7 +52,9 @@ function check_version {
 
 	    rm -rf build.${QUIP_ARCH}
 	    mkdir build.${QUIP_ARCH}
-	    cp ../Makefile.inc.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.inc
+	    cp ../Makefile.features.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.features
+	    cp ../Makefile.libs.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.libs
+	    cp ../Makefile.override_arch.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.override_arch
 
 	    # clean thoroughly
 	    # make deepclean >> ../autobuild.version_${version} 2>&1
