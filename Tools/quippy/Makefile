@@ -28,7 +28,7 @@ build:
 
 install:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
-	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py install
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}
 
 clean:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
