@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
-MAILS=bernstei@dave.nrl.navy.mil
+MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
+## MAILS=bernstei@dave.nrl.navy.mil
 
 function check_version {
    version=$1
@@ -28,19 +28,19 @@ function check_version {
 	 exit 1
       fi
 
-      for openmp in "" _openmp; do
+      for suffix in "" _openmp _openmpi; do
 	 do=1
-	 if [[ $compiler_module == "gnu/4.4.4" && ! -z $openmp ]]; then
+	 if [[ $compiler_module == "gnu/4.4.4" && ! -z $suffix ]]; then
 	    do=0 # don't even try openmp with gfortran 4.4
 	 fi
 
 	 if [[ $do == 1 ]]; then
 
 	    if echo $compiler_module | grep -q intel; then
-	       export QUIP_ARCH=linux_x86_64_ifort_gcc${openmp}
+	       export QUIP_ARCH=linux_x86_64_ifort_gcc${suffix}
 	    else
 	       if echo $compiler_module | grep -q gnu; then
-		  export QUIP_ARCH=linux_x86_64_gfortran${openmp}
+		  export QUIP_ARCH=linux_x86_64_gfortran${suffix}
 	       else
 		  echo "Unknown compiler_module type $compiler_module"
 		  popd > /dev/null
@@ -59,15 +59,15 @@ function check_version {
 	    rm -rf FoX*/obj*
 
 	    # try QUIP
-	    make all > ../make.out.${version}.${compiler_name}${openmp} 2>&1
+	    make all > ../make.out.${version}.${compiler_name}${suffix} 2>&1
 	    if [[ $? == 0 ]]; then
-	       make_status=${make_status}"${compiler_name}${openmp} OK "
+	       make_status=${make_status}"${compiler_name}${suffix} OK "
 	    else
-	       make_status=${make_status}"${compiler_name}${openmp} Failed "
+	       make_status=${make_status}"${compiler_name}${suffix} Failed "
 	    fi
 
-	    # try quippy (only without openmp)
-	    if [[ -z $openmp ]]; then
+	    # try quippy (only without openmp or mpi)
+	    if [[ -z $suffix ]]; then
 	       pushd Tools/quippy > /dev/null
 	       make test > ../../../quippy_test.out.${version}.${compiler_name} 2>&1
 	       if [[ $? == 0 ]]; then
@@ -76,9 +76,9 @@ function check_version {
 		  quippy_status=${quippy_status}"$compiler_name Failed "
 	       fi
 	       popd > /dev/null
-	    fi # openmp
-	 fi # do
-      done # openmp
+	    fi # -z suffix
+	 fi # do = 1
+      done # suffix
    done # compiler_module
    popd > /dev/null
 }
@@ -111,7 +111,7 @@ HEAD_rev=${cur_rev}
 echo "HEAD($cur_rev) make $make_status quippy test $quippy_status"
 echo "HEAD($cur_rev) make $make_status quippy test $quippy_status" > tag_QUIP_latest_good_version_report.txt
 
-max_versions_back=10
+max_versions_back=3
 retried=0
 i=0
 while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; do
