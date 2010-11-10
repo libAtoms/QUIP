@@ -117,7 +117,7 @@ ifeq (${HAVE_LOCAL_E_MIX},1)
 endif
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
-LINKOPTS = ${OPTIM} ${DEBUG} ${SYSLIBS}
+LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS}
 
 .f.o:
 	${F77}  ${F77FLAGS} -c $< -o $@
