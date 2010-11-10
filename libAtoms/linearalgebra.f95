@@ -3180,7 +3180,7 @@ CONTAINS
   end function angle
 
   ! x .outer. y 
-  function outer(vector1,vector2) result(outr)
+  pure function outer(vector1,vector2) result(outr)
     real(dp),intent(in), dimension(:) ::vector1,vector2
     real(dp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
@@ -3193,7 +3193,7 @@ CONTAINS
   
   end function outer
 
-  function outer_qq(vector1,vector2) result(outr)
+  pure function outer_qq(vector1,vector2) result(outr)
     real(qp),intent(in), dimension(:) ::vector1,vector2
     real(qp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
@@ -3207,7 +3207,7 @@ CONTAINS
   end function outer_qq
 
   ! x .outer. y 
-  function d_outer_zz(vector1,vector2) result(outr)
+  pure function d_outer_zz(vector1,vector2) result(outr)
     complex(dp),intent(in), dimension(:) ::vector1,vector2
     real(dp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
@@ -3221,7 +3221,7 @@ CONTAINS
   end function d_outer_zz
 
   ! x .outer. y 
-  function z_outer_zz(vector1,vector2) result(outr)
+  pure function z_outer_zz(vector1,vector2) result(outr)
     complex(dp),intent(in), dimension(:) ::vector1,vector2
     complex(dp), dimension(size(vector1),size(vector2)) :: outr
     integer::i,j
