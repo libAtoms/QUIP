@@ -38,8 +38,8 @@
 !% 
 !% Initialise a DynamicalSystem object like this:
 !%> 	call initialise(MyDS, MyAtoms)
-!% which copies MyAtoms into the internal atoms structure (and so MyAtoms is not
-!% required by MyDS after this call). 
+!% which (shallowly) copies MyAtoms into the internal atoms structure (and so 
+!% MyAtoms is not required by MyDS after this call and can be finalised).
 !%
 !% DynamicalSystem has an integrator,
 !%> 	call advance_verlet(MyDS,dt,forces)
@@ -86,12 +86,15 @@ module dynamicalsystem_module
       integer                               :: Nrestraints = 0         !% Number of restraints
       integer                               :: Ndof = 0                 !% Number of degrees of freedom
       real(dp)                              :: t = 0.0_dp               !% Time
+      real(dp)                              :: dt = 1.0_dp              !% Last time step
       real(dp)                              :: avg_temp = 0.0_dp        !% Time-averaged temperature
       real(dp)                              :: cur_temp = 0.0_dp        !% Current temperature
       real(dp)                              :: avg_time = 100.0_dp      !% Averaging time, in fs
       real(dp)                              :: dW = 0.0_dp              !% Increment of work done this time step
       real(dp)                              :: work = 0.0_dp            !% Total work done
       real(dp)                              :: Epot = 0.0_dp            !% Total potential energy
+      real(dp)                              :: Ekin = 0.0_dp            !% Current kinetic energy
+      real(dp)                              :: Wkin(3, 3) = 0.0_dp      !% Current kinetic contribution to the virial
       real(dp)                              :: ext_energy = 0.0_dp      !% Extended energy
       real(dp)                              :: thermostat_dW = 0.0_dp   !% Increment of work done by thermostat
       real(dp)                              :: thermostat_work = 0.0_dp !% Total work done by thermostat
@@ -100,10 +103,10 @@ module dynamicalsystem_module
       integer                               :: random_seed              !% RNG seed, used by 'ds_save_state' and 'ds_restore_state' only.
 
       ! Array members
-      integer,  allocatable, dimension(:)   :: group_lookup !% Stores which group atom $i$ is in
+      integer,  pointer, dimension(:)       :: group_lookup !% Stores which group atom $i$ is in
 
       ! Derived type members
-      type(Atoms)                           :: atoms
+      type(Atoms), pointer                  :: atoms => NULL()
 
       ! Derived Type array members
       type(Constraint), allocatable, dimension(:) :: constraint, restraint
@@ -146,6 +149,11 @@ module dynamicalsystem_module
      module procedure single_kinetic_energy, arrays_kinetic_energy, atoms_kinetic_energy, ds_kinetic_energy
    end interface kinetic_energy
 
+   interface kinetic_virial
+      module procedure single_kinetic_virial, arrays_kinetic_virial
+     module procedure atoms_kinetic_virial, ds_kinetic_virial
+   endinterface kinetic_virial
+
    interface angular_momentum
      module procedure arrays_angular_momentum, atoms_angular_momentum, ds_angular_momentum
    end interface angular_momentum
@@ -169,14 +177,15 @@ contains
    subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,restraints,rigidbodies,error)
    
       type(DynamicalSystem),              intent(inout) :: this
-      type(Atoms),                        intent(in)    :: atoms_in
+      type(Atoms),                        target        :: atoms_in
       real(dp), dimension(:,:), optional, intent(in)    :: velocity
       real(dp), dimension(:,:), optional, intent(in)    :: acceleration
       integer,                  optional, intent(in)    :: constraints, restraints
       integer,                  optional, intent(in)    :: rigidbodies
       integer                                           :: i,N
-      integer, intent(out), optional :: error
-      
+      integer,                  optional, intent(out)   :: error
+
+      ! ---
 
       INIT_ERROR(error)
 
@@ -193,12 +202,26 @@ contains
          end if
       end do
 
+      ! 'group_lookup' needs to be in the Atoms object in order to be
+      ! distributed properly with domain decomposition enabled.
+      ! XXX FIXME this crashes in quippy
+      !call add_property(this%atoms, 'group_lookup', 0, &
+      !     ptr=this%group_lookup, error=error)
+      !PASS_ERROR(error)
+      ! XXX FIXME this is the temporary fix
+      allocate(this%group_lookup(N))
       ! allocate local arrays
-      allocate(this%group_lookup(N),   &
-               this%group(N)) 
+      allocate(this%group(N))
 
-      ! Now copy Atoms   
-      this%atoms = atoms_in
+      ! Now point to the atoms 
+      call shallowcopy(this%atoms, atoms_in)
+
+      ! Add single valued properties to this%atoms
+      ! XXX FIXME also not quippy compatible, check
+      !call set_value(this%atoms%properties, 'time', 0.0_DP)
+      !if (.not. assign_pointer(this%atoms%properties, 'time', this%t)) then
+      !   RAISE_ERROR("Could not assign property 'time'.", error)
+      !endif
 
       ! Add properties for the dynamical variables to this%atoms if they don't
       ! already exist
@@ -306,12 +329,17 @@ contains
    end subroutine ds_initialise
 
 
-   subroutine ds_finalise(this)
+   subroutine ds_finalise(this, error)
 
-      type(DynamicalSystem), intent(inout) :: this
+      type(DynamicalSystem),           intent(inout)  :: this
+      integer,               optional, intent(out)    :: error
+
+      ! ---
+
+      INIT_ERROR(error)
 
       if (this%initialised) then      
-         call finalise(this%atoms)
+         call finalise_ptr(this%atoms)
          call finalise(this%group)
          deallocate(this%group_lookup)
          
@@ -438,10 +466,20 @@ contains
    !% memory. Only scalar members and the 'ds%atoms' object
    !% (minus 'ds%atoms%connect') are copied. The current
    !% state of the random number generator is also saved.
-   subroutine ds_save_state(to, from)
+   subroutine ds_save_state(to, from, error)
 
-      type(DynamicalSystem), intent(inout) :: to
-      type(DynamicalSystem), intent(in)    :: from
+      type(DynamicalSystem),           intent(inout)  :: to
+      type(DynamicalSystem),           intent(in)     :: from
+      integer,               optional, intent(out)    :: error
+
+      INIT_ERROR(error)
+
+      if (associated(to%atoms, from%atoms)) then
+         ! Both DynamicalSystem object point to the same Atoms object, so we
+         ! need to allocate our own buffer.
+         allocate(to%atoms)
+         to%atoms%own_this = .true.
+      endif
 
       ! Copy over scalar members
       to%N               = from%N                !1
@@ -463,7 +501,8 @@ contains
 
       to%random_seed     = system_get_random_seed()
 
-      call atoms_copy_without_connect(to%atoms, from%atoms)
+      call atoms_copy_without_connect(to%atoms, from%atoms, error=error)
+      PASS_ERROR(error)
 
     end subroutine ds_save_state
 
@@ -1031,6 +1070,53 @@ contains
      ke = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
    end function arrays_kinetic_energy
 
+   !% Return the total kinetic virial $w_ij = \sum_{k} \frac{1}{2} m v_i v_j$
+   function DS_kinetic_virial(this, mpi_obj, error) result(kv)    ! sum(0.5mv^2)
+      type(DynamicalSystem),       intent(in)   :: this
+      type(MPI_context), optional, intent(in)   :: mpi_obj
+      integer,           optional, intent(out)  :: error
+      real(dp),          dimension(3,3)         :: kv
+
+      INIT_ERROR(error)
+      kv = kinetic_virial(this%atoms, mpi_obj, error=error)
+      PASS_ERROR(error)
+    end function DS_kinetic_virial
+
+   !% Return the total kinetic virial $w_ij = \sum_{k} \frac{1}{2} m v_i v_j$
+   function atoms_kinetic_virial(this, mpi_obj, error) result(kv) ! sum(0.5mv^2)
+      type(atoms),                 intent(in)   :: this
+      type(MPI_context), optional, intent(in)   :: mpi_obj
+      integer,           optional, intent(out)  :: error
+      real(dp),          dimension(3,3)         :: kv
+
+      INIT_ERROR(error)
+      if (.not. associated(this%mass)) call system_abort("atoms_kinetic_virial called on atoms without mass property")
+      if (.not. associated(this%velo)) call system_abort("atoms_kinetic_virial called on atoms without velo property")
+      kv = kinetic_virial(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
+
+      if (present(mpi_obj)) then
+         call sum_in_place(mpi_obj, kv, error=error)
+         PASS_ERROR(error)
+      endif
+    end function atoms_kinetic_virial
+
+   !% Return the kinetic virial given a mass and a velocity
+   pure function single_kinetic_virial(mass, velo) result(kv)
+     real(dp), intent(in)      :: mass, velo(3)
+     real(dp), dimension(3,3)  :: kv
+
+     kv = 0.5_dp*mass * (velo .outer. velo)
+   end function single_kinetic_virial
+
+   !% Return the total kinetic virial given atomic masses and velocities
+   pure function arrays_kinetic_virial(mass, velo) result(kv)
+     real(dp), intent(in)      :: mass(:)
+     real(dp), intent(in)      :: velo(:,:)
+     real(dp), dimension(3,3)  :: kv
+
+     kv = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
+   end function arrays_kinetic_virial
+
    pure function torque(pos, force, origin) result(tau)
      real(dp), intent(in) :: pos(:,:), force(:,:)
      real(dp), intent(in), optional :: origin(3)
@@ -1410,6 +1496,8 @@ contains
      
      INIT_ERROR(error)
 
+     this%dt = dt
+
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
      my_do_calc_dists = optional_default(.true., do_calc_dists)
@@ -1718,6 +1806,8 @@ contains
 
      INIT_ERROR(error)
 
+     this%dt = dt
+
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
      ntherm = size(this%thermostat)-1
@@ -1904,6 +1994,10 @@ contains
         if (do_store) deallocate(mpi_constraint_force)
      end if
 #endif
+
+     this%Wkin = kinetic_virial(this, error=error)
+     PASS_ERROR(error)
+     this%Ekin = trace(this%Wkin)/2
 
    end subroutine advance_verlet2
 

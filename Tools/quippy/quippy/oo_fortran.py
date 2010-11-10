@@ -526,19 +526,30 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
                   if (len(moddoc['routines'][x]['args']) > 0 and 
                       moddoc['routines'][x]['args'][0]['type'].lower() == 'type(%s)' % lcls) ]
 
+      # Preferentially use initialise_ptr, finalise_ptr if available since this
+      # does proper reference counting.
+      constructors = \
+          [ x for x in methods if x.startswith('%s_initialise_ptr' % lcls) ] +\
+          [ x for x in methods if (x.startswith('%s_initialise' % lcls) or
+                                   x.startswith('%s_allocate' % lcls))]
 
-      constructors = [ x for x in methods if (x.startswith('%s_initialise' % lcls) or
-                                              x.startswith('%s_allocate' % lcls))]
-
-      destructors = [ x for x in methods if x.startswith('%s_finalise' % lcls)]
+      destructors = \
+          [ x for x in methods if x.startswith('%s_finalise_ptr' % lcls)]+\
+          [ x for x in methods if x.startswith('%s_finalise' % lcls)]
 
 
       if lcls in short_names:
-          constructors += [ x for x in methods if(x.startswith('%s_initialise' % short_names[lcls]) or
-                                                  x.startswith('%s_allocate' % short_names[lcls]))
-                            and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ]
+          scls = short_names[lcls]
+          constructors += \
+              [ x for x in methods if x.startswith('%s_initialise_ptr' % scls)
+                and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ] + \
+              [ x for x in methods if(x.startswith('%s_initialise' % scls) or
+                                      x.startswith('%s_allocate' % scls))
+                and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ]
 
-          destructors += [ x for x in methods if x.startswith('%s_finalise' % short_names[lcls]) ]
+          destructors += \
+              [ x for x in methods if x.startswith('%s_finalise_ptr' % scls) ] + \
+              [ x for x in methods if x.startswith('%s_finalise' % scls) ]
 
       if (len(constructors) == 0):
           logging.debug("Can't find constructor for type %s. Skipping class" % cls)
@@ -619,9 +630,12 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
 
       # only keep interfaces with more than one routine in them
       # if there's just one routine we want to copy the docstring
+      has_initialise_ptr = 'initialise_ptr' in interfaces.keys()
+
       for name,value in interfaces.iteritems():
          if name.lower() == 'finalise': continue
-         if name.lower() == 'initialise': name = '__init__'
+         if name.lower() == 'initialise' or \
+                 name.lower() == 'initialise_ptr': name = '__init__'
          if name in py_keywords: name = name + '_'
 
          if len(value) > 1: 
@@ -667,7 +681,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
 
          if 'get' in el and 'set' in el:
             if is_scalar_type(el['type']):
-               logging.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
+               logging.debug('    adding scalar property %s get=%s set=%s' % (name, el['get'], el['set']))
 
                new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']), el['type'])
                   
@@ -678,7 +692,9 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
                setattr(new_cls, name, property(fget=wrap_get(name),
                                                fset=wrap_set(name),
                                                doc=el['doc']))
-            elif not 'pointer' in el['attributes']:
+            #elif not 'pointer' in el['attributes']:
+            else:
+                logging.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
                 new_cls._subobjs[name] = (el['type'], 
                                           getattr(modobj, el['get']), 
                                           getattr(modobj, el['set']))

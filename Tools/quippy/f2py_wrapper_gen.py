@@ -52,6 +52,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    # Also skip allocatable and pointer array arguments
    # (and return type if sub is a function)
    def no_allocatables_or_pointers(sub):
+      if sub.name.endswith('initialise_ptr') or sub.name.endswith('finalise_ptr'):
+         return True
       for arg in sub.arguments:
           if not hasattr(arg, 'attributes'): continue
          
@@ -184,7 +186,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       else:
          sub.arguments = [arg for arg in sub.arguments if not hasattr(arg, 'attributes') or not 'optional' in arg.attributes or
                           (not 'pointer' in arg.attributes and not 'allocatable' in arg.attributes)]
-             
+
 
       args = sub.arguments
       old_arg_names = [x.name for x in args]
@@ -245,7 +247,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  uses.add(type_map[tname].lower())
 
                  type_lines.extend(['type %s_ptr_type' %  tname,
-                                    'type(%s), pointer :: p' % tname,
+                                    'type(%s), pointer :: p => NULL()' % tname,
                                     'end type %s_ptr_type' % tname])
                  got_types.append(tname)
                           
@@ -266,7 +268,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               if ('intent(out)' in attributes or 
                   ((sub.name.lower().find('_initialise') != -1 or sub.name.lower().find('_allocate') != -1) \
                    and len(argnames) > 0 and argnames[0] == prefix+'this' and arg.name == prefix+'this')):
-                 allocates.append(arg.name)
+                 if not 'pointer' in attributes:
+                    allocates.append(arg.name)
                  intent = 'intent(out)'
                  transfer_out.append(arg.name)
               else:
