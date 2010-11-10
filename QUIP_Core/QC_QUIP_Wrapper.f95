@@ -49,17 +49,17 @@ use libatoms_module, only : print_xyz, mainlog, optional_default
 implicit none
 private
 
-  type (Potential) pot
-  type (Atoms) at
-  type (MPI_context) mpi_glob
+  type (Potential), save :: pot
+  type (Atoms), save :: at
+  type (MPI_context), save :: mpi_glob
 
   real(dp), private :: vacuum_dist = 5.0_dp
 
   public :: verbosity_push, verbosity_pop, PRINT_SILENT
   public :: QC_QUIP_initialise, QC_QUIP_calc,MakeLine
-  type (Potential) pot_ip
+  type (Potential), save :: pot_ip
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-  type (Potential) pot_qm
+  type (Potential), save :: pot_qm
   public :: QC_QUIP_initialise_hybrid, QC_QUIP_calc_hybrid
 #endif
 
