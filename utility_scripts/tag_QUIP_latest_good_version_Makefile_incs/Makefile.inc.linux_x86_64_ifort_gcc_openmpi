@@ -1,0 +1,31 @@
+# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_ifort_gcc
+# look in /home/bernstei/src/work/QUIP/source/QUIP/Makefiles/Makefile.linux_x86_64_ifort_gcc for defaults set by arch
+# OPTIM=
+# COPTIM=
+# DEBUG=-DDUMP_CORE_ON_ABORT
+# CDEBUG=
+MATH_LINKOPTS=${LAPACK_LIBPATH} ${LAPACK_LIB_STATIC}
+FOX_LIBDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_ifort_gcc_openmpi/lib
+FOX_INCDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_ifort_gcc_openmpi/finclude
+HAVE_EXTERNAL_FOX=0
+NETCDF_LIBDIR=/share/apps/local/lib
+NETCDF4=1
+NETCDF_INCDIR=/share/apps/local/include
+HAVE_NETCDF=1
+USE_MAKEDEP=1
+MAKEDEP=makedep.py
+HAVE_MDCORE=0
+HAVE_ASAP=0
+HAVE_CP2K=1
+HAVE_VASP=1
+HAVE_TB=1
+HAVE_GP_PREDICT=1
+HAVE_GP_TEACH=1
+HAVE_QP_PREDICT=0
+HAVE_QP_TEACH=0
+HAVE_QR=1
+HAVE_LOTF=1
+HAVE_ONIOM=1
+HAVE_LOCAL_E_MIX=1
+HAVE_QC=1
+EXTRA_LINKOPTS=
