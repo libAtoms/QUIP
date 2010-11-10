@@ -45,7 +45,7 @@ module CInOutput_module
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, assignment(=)
-  use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
+  use Atoms_module, only: Atoms, initialise, is_initialised, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use MPI_Context_module, only: MPI_context
   use DomainDecomposition_module, only: DomainDecomposition, &
        allocate, communicate_domain_to_all
@@ -450,7 +450,7 @@ contains
        else
           at%Nbuffer = at%N
        endif
-       at%initialised = .true.
+       at%ref_count = 1
        call atoms_repoint(at)
 
        if (all(abs(at%lattice) < 1e-5_dp)) then
@@ -549,7 +549,7 @@ contains
     if (this%action /= OUTPUT .and. this%action /= INOUT) then
        RAISE_ERROR("cinoutput_write: cannot write to action=INPUT CInOutput object", error)
     endif
-    if (.not. at%initialised) then
+    if (.not. is_initialised(at)) then
        RAISE_ERROR("cinoutput_write: atoms object not initialised", error)
     end if
 

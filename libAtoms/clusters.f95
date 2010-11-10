@@ -1152,7 +1152,8 @@ contains
     call print('List of atoms in cluster:', PRINT_NERD)
     call print(int_part(cluster_info,1), PRINT_NERD)
 
-    call select(cluster, at, list=int_part(cluster_info,1))
+    call select(cluster, at, list=int_part(cluster_info,1), error=error)
+    PASS_ERROR(error)
     ! then reset the positions species and Z (latter two needed because termination atoms have Z=1)
     ! unfold the positions to real positions using the stored shifts, at is neede because
     ! next we might make the unit cell much smaller
@@ -2822,7 +2823,7 @@ type(inoutput), optional :: debugfile
 
     ! First time copy entire atoms structure into nn_atoms and
     ! add properties for nn, old_nn and active
-    if (reset .or. .not. nn_atoms%initialised) then
+    if (reset .or. .not. is_initialised(nn_atoms)) then
        nn_atoms = this
        call add_property(this, 'nn', 0)
        call add_property(this, 'old_nn', 0)

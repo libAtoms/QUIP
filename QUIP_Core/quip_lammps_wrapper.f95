@@ -53,7 +53,7 @@ module QUIP_LAMMPS_wrapper_module
       ! Initialise atoms object. If number of atoms does not change, keep the
       ! object. Allocate connection table, be generous with the number of
       ! neighbours.
-      if( .not. at%initialised .or. at%N /= (nlocal+nghost) ) then
+      if( .not. is_initialised(at) .or. at%N /= (nlocal+nghost) ) then
          call finalise(at)
          call initialise(at,(nlocal+nghost),lattice)
          call set_cutoff(at,cutoff(pot))

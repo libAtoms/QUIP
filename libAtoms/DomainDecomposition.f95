@@ -418,7 +418,7 @@ contains
     call print("DomainDecomposition : enable", PRINT_VERBOSE)
 
     if (present(at)) then
-       if (at%initialised) then
+       if (is_initialised(at)) then
           call allocate(this, at, error=error)
           PASS_ERROR(error)
 
@@ -628,7 +628,7 @@ contains
     call print("DomainDecomposition : verlet_shell      = " // this%verlet_shell, PRINT_VERBOSE)
     call print("DomainDecomposition : border            = " // this%border, PRINT_VERBOSE)
 
-    if (at%initialised) then
+    if (is_initialised(at)) then
 
        if (any(((at%lattice .mult. (this%upper - this%lower)) < 2*this%border) .and. this%periodic)) then
           RAISE_ERROR("Domain smaller than twice the border. This does not work (yet). border = " // this%border // ", lattice = " // at%lattice(:, 1) // ", " // at%lattice(:, 2) // ", " // at%lattice(:, 3) // ", lower = " // this%lower // ", upper = " // this%upper, error)

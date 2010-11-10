@@ -164,7 +164,10 @@ module  atoms_module
 
   type Atoms
 
-     logical                               :: initialised = .false.
+     ! Self-deallocating object
+     logical                               :: own_this = .false.  !% Do I own myself?
+     integer                               :: ref_count = 0  !% Reference counter
+
      logical                               :: fixed_size = .false. !% Can the number of atoms be changed after initialisation?
      logical                               :: domain_decomposed = .false.  !% Is this Atoms object domain decomposed?
      integer                               :: N = 0 !% The number of atoms held (including ghost particles)
@@ -248,11 +251,37 @@ module  atoms_module
      module procedure atoms_initialise, connection_initialise
   end interface initialise
 
+  !% Initialise type(Atoms), pointer objects. Shallow copies of these will
+  !% survive even if the initial declaration goes out of scope. The object will
+  !% automatically deallocate upon calling finalise_ptr when the last shallow
+  !% copy goes out of scope
+  private :: atoms_initialise_ptr
+  interface initialise_ptr
+     module procedure atoms_initialise_ptr
+  endinterface initialise_ptr
+
+  private :: atoms_is_initialised
+  interface is_initialised
+     module procedure atoms_is_initialised
+  end interface is_initialised
+
+  private :: atoms_shallowcopy
+  interface shallowcopy
+     module procedure atoms_shallowcopy
+  end interface shallowcopy
+
   !% Free up the memory associated with one or more objects.
   private :: atoms_finalise,atoms_finalise_multi, connection_finalise
   interface finalise
-     module procedure atoms_finalise,atoms_finalise_multi, connection_finalise
+     module procedure atoms_finalise, atoms_finalise_multi, connection_finalise
   end interface finalise
+
+  !% Finalise type(Atoms), pointer objects. Shallow copies of these will
+  !% The object will when ref_count == 0.
+  private :: atoms_finalise_ptr
+  interface finalise_ptr
+     module procedure atoms_finalise_ptr
+  endinterface finalise_ptr
 
   private :: connection_wipe
   interface wipe
@@ -574,8 +603,62 @@ contains
 
     call atoms_set_lattice(this, lattice, .false.)
 
-    this%initialised = .true.
+    this%ref_count = 1
+
+    call print("atoms_initialise: Initialised, " // &
+         "ref_count = " // this%ref_count, PRINT_ANAL)
+
   end subroutine atoms_initialise
+
+
+  subroutine atoms_initialise_ptr(this,N,lattice,&
+       properties,params,fixed_size,Nbuffer,error)
+    type(Atoms),      pointer,  intent(inout) :: this
+    integer,                    intent(in)    :: N
+    real(dp), dimension(3,3),   intent(in)    :: lattice
+    type(Dictionary), optional, intent(in)    :: properties, params
+    logical,          optional, intent(in)    :: fixed_size
+    integer,          optional, intent(in)    :: Nbuffer
+    integer,          optional, intent(out)   :: error
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    if (associated(this)) then
+       this%own_this = .false.
+    else
+       allocate(this)
+       this%own_this = .true.
+    endif
+
+    call initialise(this, N, lattice, properties, params, fixed_size, &
+         Nbuffer, error)
+    PASS_ERROR(error)
+
+  endsubroutine atoms_initialise_ptr
+
+
+  !% Is this atoms object initialised?
+  logical function atoms_is_initialised(this)
+    type(Atoms), intent(in)  :: this
+    atoms_is_initialised = this%ref_count > 0
+  end function atoms_is_initialised
+
+  !% Shallow copy of this Atoms object
+  subroutine atoms_shallowcopy(this, from)
+    type(Atoms), pointer, intent(out)  :: this
+    type(Atoms), target                :: from
+
+    ! ---
+
+    this => from
+    this%ref_count = this%ref_count + 1
+
+    call print("atoms_shallowcopy: Created shallow copy, " // &
+         "ref_count = " // this%ref_count, PRINT_ANAL)
+
+  end subroutine atoms_shallowcopy
 
   !% OMIT
   ! Initialise pointers for convenient access to special columns of this%properties
@@ -681,24 +764,50 @@ contains
   subroutine atoms_finalise(this)
     type(Atoms), intent(inout) :: this
 
-    call finalise(this%properties)
-    call finalise(this%params)
+    this%ref_count = this%ref_count - 1
+    ! Note: this has to be == 0, rather than <= 0. Otherwise it will fail if
+    ! finalise is called more than once
+    if (this%ref_count == 0) then
 
-    ! Nullify pointers
-    nullify(this%Z, this%travel, this%mass)
-    nullify(this%move_mask, this%thermostat_region, this%damp_mask)
-    nullify(this%pos, this%velo, this%acc, this%avgpos, this%oldpos, this%avg_ke)
+       call finalise(this%properties)
+       call finalise(this%params)
 
-    call connection_finalise(this%connect)
-    call connection_finalise(this%hysteretic_connect)
+       ! Nullify pointers
+       nullify(this%Z, this%travel, this%mass)
+       nullify(this%move_mask, this%thermostat_region, this%damp_mask)
+       nullify(this%pos, this%velo, this%acc, this%avgpos, this%oldpos, this%avg_ke)
 
-    this%N = 0
-    this%Ndomain = 0
-    this%Nbuffer = 0
+       call connection_finalise(this%connect)
+       call connection_finalise(this%hysteretic_connect)
 
-    this%initialised = .false.
+       this%N = 0
+       this%Ndomain = 0
+       this%Nbuffer = 0
+
+    else
+       if (this%ref_count > 0) then
+          call print("atoms_finalise: Not yet finalising, " // &
+               "ref_count = " // this%ref_count, PRINT_ANAL)
+       endif
+    endif
+
+    call print("atoms_finalise: ref_count = " // this%ref_count, PRINT_ANAL)
 
   end subroutine atoms_finalise
+
+
+  subroutine atoms_finalise_ptr(this)
+    type(Atoms), pointer, intent(inout) :: this
+
+    ! ---
+
+    call finalise(this)
+    if (this%own_this .and. this%ref_count == 0) then
+       deallocate(this)
+       this => NULL()
+    endif
+
+  endsubroutine atoms_finalise_ptr
 
   !Quick multiple finalisations
   subroutine atoms_finalise_multi(at1,at2,at3,at4,at5,at6,at7,at8,at9,at10)
@@ -730,8 +839,8 @@ contains
 
     ! We do not fail if from is unitialised, since overloaded operator routines
     ! are outside scope of error handling mechanism.
-    if(.not. from%initialised) then
-       to%initialised = .false.
+    if(.not. is_initialised(from)) then
+       to%ref_count = 0
        return
     end if
 
@@ -777,7 +886,7 @@ contains
     integer n_properties    
 
     INIT_ERROR(error)
-    if(.not. from%initialised) then
+    if(.not. is_initialised(from)) then
        RAISE_ERROR("atoms_copy_without_connect: 'from' object is not initialised", error)
     end if
 
@@ -797,7 +906,8 @@ contains
           PASS_ERROR(error)          
        end if
     else
-       to%properties = from%properties
+       call deepcopy(to%properties, from%properties, error=error)
+       PASS_ERROR(error)
     endif
     to%params = from%params
     to%fixed_size = from%fixed_size
@@ -808,7 +918,7 @@ contains
     to%nneightol = from%nneightol
 
     call atoms_repoint(to)
-    to%initialised = .true.
+    to%ref_count = 1
 
   end subroutine atoms_copy_without_connect
 
@@ -4358,6 +4468,7 @@ contains
          end if
       endif
 
+      call print("this%N = " // this%N // ", size(map_shift, 2) = " // size(map_shift, 2), PRINT_ALWAYS)
       do n = 1, this%N
          lat_pos = this%g .mult. this%pos(:,n)
          map_shift(:,n) = - floor(lat_pos+0.5_dp)
@@ -4907,7 +5018,7 @@ contains
       type(Inoutput), pointer :: my_out
 
       INIT_ERROR(error)
-      if(.not.this%initialised) then
+      if(.not. is_initialised(this)) then
          RAISE_ERROR('Atoms_Print: Atoms structure not initialised', error)
       end if
 
@@ -5654,7 +5765,7 @@ contains
 
        call matrix3x3_inverse(at%lattice,at%g)
        call atoms_repoint(at)
-       at%initialised = .true.
+       at%ref_count = 1
     end if
 
   end subroutine atoms_bcast

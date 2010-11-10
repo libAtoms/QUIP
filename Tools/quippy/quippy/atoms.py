@@ -183,6 +183,7 @@ class Atoms(FortranAtoms):
    the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
    image convention, all neighbours are stored up to a radius of 'cutoff', including images
    """
+   _cmp_skip_fields = ['own_this', 'ref_count']
 
    def __new__(cls, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
                 properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
