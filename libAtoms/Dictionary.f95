@@ -175,6 +175,7 @@ module dictionary_module
 
   public assign_pointer
   interface assign_pointer
+     module procedure dictionary_assign_pointer_r0
      module procedure dictionary_assign_pointer_i
      module procedure dictionary_assign_pointer_r
      module procedure dictionary_assign_pointer_c
@@ -246,9 +247,14 @@ module dictionary_module
      module procedure dictionary_expand_string
   end interface expand_string
 
+  public deepcopy
+  interface deepcopy
+     module procedure dictionary_deepcopy
+  endinterface deepcopy
+
   public assignment(=)
   interface assignment(=)
-     module procedure dictionary_deepcopy
+     module procedure dictionary_deepcopy_no_error
 #ifdef POINTER_COMPONENT_MANUAL_COPY
      module procedure dictentry_assign
      module procedure dictdata_assign
@@ -1268,6 +1274,30 @@ contains
   ! *    assign_pointer() interface
   ! * 
   ! ****************************************************************************
+
+  function dictionary_assign_pointer_r0(this, key, v, case_sensitive)
+    type(Dictionary), intent(in), target :: this
+    character(len=*) key
+    real(dp), intent(out), pointer :: v
+    logical :: dictionary_assign_pointer_r0
+    logical, optional :: case_sensitive
+
+    integer entry_i
+
+    entry_i = lookup_entry_i(this, key, case_sensitive)
+    
+    if (entry_i <= 0) then
+       dictionary_assign_pointer_r0 = .false.
+       return
+    endif
+
+    if (this%entries(entry_i)%type == T_REAL) then
+       v => this%entries(entry_i)%r
+       dictionary_assign_pointer_r0 = .true.
+    else
+       dictionary_assign_pointer_r0 = .false.
+    endif
+  end function dictionary_assign_pointer_r0
 
   function dictionary_assign_pointer_i(this, key, v, case_sensitive)
     type(Dictionary), intent(in) :: this
@@ -2342,7 +2372,7 @@ contains
     end do
 
     if (str%len > len(dictionary_write_string)) then
-       RAISE_ERROR('dictionary_write_string: string too long', error)
+       RAISE_ERROR('dictionary_write_string: string too long (' // str%len // ' > ' // len(dictionary_write_string) // ')', error)
     end if
 
     dictionary_write_string = ''//str
@@ -2572,7 +2602,7 @@ contains
   !% with only the keys in the arrays 'keys' present.
   subroutine dictionary_subset_es(this, keys, out, case_sensitive, out_no_initialise, error)
     type(Dictionary), intent(in) :: this
-    type(extendable_str), dimension(:) :: keys
+    type(extendable_str), dimension(:), intent(in) :: keys
     type(Dictionary), intent(inout) :: out
     logical, intent(in), optional :: case_sensitive, out_no_initialise
     integer, intent(out), optional :: error
@@ -2591,7 +2621,7 @@ contains
 
        i = lookup_entry_i(this, string(keys(j)), case_sensitive)
        if (i == -1) then
-          RAISE_ERROR('this: key '//string(keys(j))//' not in dictionary', error)
+          RAISE_ERROR('dictionary_subset_es: key '//string(keys(j))//' not in dictionary', error)
        end if
        if (my_out_no_initialise) then 
 	  io = lookup_entry_i(out, string(keys(j)), case_sensitive)
@@ -2945,13 +2975,26 @@ contains
 
 
   !% Make a deep copy of 'from' in 'this', allocating new memory for array components
-  subroutine dictionary_deepcopy(this, from)
+  subroutine dictionary_deepcopy(this, from, error)
+    type(Dictionary), intent(inout) :: this
+    type(Dictionary), intent(in) :: from
+    integer, optional, intent(out) :: error
+    
+    INIT_ERROR(error)
+    call subset(from, from%keys(1:from%n), this, error=error)
+    PASS_ERROR(error)
+    
+  end subroutine dictionary_deepcopy
+
+
+  !% Make a deep copy of 'from' in 'this', allocating new memory for array components; no error passing, for the assignment operator
+  subroutine dictionary_deepcopy_no_error(this, from)
     type(Dictionary), intent(inout) :: this
     type(Dictionary), intent(in) :: from
     
-    call subset(from, from%keys(1:from%n), this)
+    call deepcopy(this, from)
     
-  end subroutine dictionary_deepcopy
+  end subroutine dictionary_deepcopy_no_error
 
   subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)
     use iso_c_binding, only: c_intptr_t
