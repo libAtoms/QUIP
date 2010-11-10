@@ -189,15 +189,13 @@ def read_arch_makefiles_and_environment(quip_root, quip_arch):
 
     # Write a Makefile which simply includes Makefile.inc, Makefile.rules and Makefile.${QUIP_ARCH}
     f = open('Makefile.quippy', 'w')
-    f.write("""include Makefile.features
-include Makefile.libs
-include Makefile.rules
-ifeq (${QUIP_ARCH},)
+    f.write("""ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
-include Makefile.override_arch
-endif""")
+endif
+include Makefile.inc
+include Makefile.rules""")
     f.close()
 
     # Dump make database to file

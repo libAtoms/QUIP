@@ -30,30 +30,13 @@
 
 # declarations
 
-F77 = mpif77 #ifort
-F90 = mpif90 #ifort
-F95 = mpif90 #ifort
-CC = mpicc #icc
-CPLUSPLUS = mpiCC #icpc -Kc++
-LINKER = mpif90 #ifort
+include Makefiles/Makefile.linux_x86_64_ifort_icc
 
-SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT -DDEBUG
-DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
-OPTIM = -O3 -vec-report0 -unroll -xP
-CDEBUG = -g -DDUMP_CORE_ON_ABORT -DDEBUG
-COPTIM = -O3
+F77 = mpif77 
+F90 = mpif90 
+F95 = mpif90 
+CC = mpicc 
+CPLUSPLUS = mpiCC 
+LINKER = mpif90 
 
-F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -D_MPI -DMPI_1
-F77FLAGS += -fpp -fixed -D_MPI -DMPI_1
-CFLAGS +=  -DFORTRAN_UNDERSCORE -D_MPI -DMPI_1
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE -D_MPI -DMPI_1
-
-MAKEDEP_ARGS = -lc -suffix .mod
-AR_ADD = src
-
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+DEFINES += -D_MPI -DMPI_1

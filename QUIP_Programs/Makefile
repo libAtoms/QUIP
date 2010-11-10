@@ -28,15 +28,13 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-include Makefile.features
-include Makefile.libs
-include Makefile.rules
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
 endif
-include Makefile.override_arch
+include Makefile.inc
+include Makefile.rules
 
 OBJS = vacancy_map_mod.o
 

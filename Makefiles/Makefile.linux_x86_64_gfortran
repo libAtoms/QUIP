@@ -35,7 +35,6 @@ F90 = gfortran
 F95 = gfortran
 CC = gcc
 CPLUSPLUS = g++
-#LINKER = gfortran -L/usr/local/lib64 -Wl,-rpath,/usr/local/lib64
 LINKER = gfortran
 FPP = gfortran -E -x f95-cpp-input
 
@@ -44,12 +43,17 @@ DEBUG= -g -DDUMP_CORE_ON_ABORT
 OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused -fPIC
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -Wunused -fPIC
 F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC
-CFLAGS +=  -fPIC 
+CFLAGS += -fPIC 
+CPLUSPLUSFLAGS += -fPIC 
 
-MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
+
+ATOMEYE_LIBS = -L/usr/lib -Wl,-Bstatic  -lm \
+   -lutil -Wl,-Bdynamic -lXpm -lXext -lX11 -ljpeg -lpthread  -Wl,-Bstatic   \
+   -lreadline -lpng  -lncurses -lz -lnetcdf  -lhdf5_hl -lhdf5  \
+   -llapack -lf77blas -lcblas -latlas -Wl,-Bdynamic
 
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
@@ -59,15 +63,4 @@ QUIPPY_DEBUG = 0
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 
-# rules
-
-MAKEDEP_ARGS = -lc -suffix .mod
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS}  -c $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env RE_SKIP=GFORTRAN ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
-
-.f95.fpp:
-	${FPP} ${F95FLAGS} $< -o $@
-
+FPP_PRE_TARGET_STRING = -o

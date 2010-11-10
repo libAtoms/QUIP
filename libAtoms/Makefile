@@ -35,15 +35,13 @@ PROGRAMS = minimal_md xyz2pdb convert
 default: libatoms.a 
 all: default ${PROGRAMS}
 
-include Makefile.features
-include Makefile.libs
-include Makefile.rules
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
 endif
-include Makefile.override_arch
+include Makefile.inc
+include Makefile.rules
 
 
 LIBATOMS_F95_FILES = \

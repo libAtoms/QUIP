@@ -30,6 +30,8 @@
 
 # declarations
 
+include Makefiles/Makefile.darwin_x86_64_gfortran
+
 F77 = openmpif77
 F90 = openmpif90
 F95 = openmpif90
@@ -37,35 +39,4 @@ CC = openmpicc
 CPLUSPLUS = openmpic++
 LINKER = openmpif90
 
-#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
-SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEBUG = -g -DDUMP_CORE_ON_ABORT
-OPTIM = -O3
-
-DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -D_MPI -DMPI_1
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused
-F77FLAGS += -x f77-cpp-input -fno-second-underscore
-CFLAGS += -fPIC
-
-MAKEDEP_ARGS = -lc -suffix .mod
-AR_ADD = src
-
-export DEFAULT_MATH_LINKOPTS = -framework Accelerate
-
-NETCDF4_EXTRA_LIBS= -lmfhdf -ldf -ljpeg -lz -lsz
-
-ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
-	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
-
-QUIPPY_FCOMPILER = gnu95
-QUIPPY_F90FLAGS = -ffree-line-length-none
-QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_DEBUG = 1
-
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS}  -c $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+DEFINES += -D_MPI -DMPI_1
