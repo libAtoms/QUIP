@@ -35,28 +35,12 @@ F90 = pgf90
 F95 = pgf95
 CC = pgcc
 CPLUSPLUS = pgCC
+LINKER = pgCC -pgf90libs
 
 OPTIM = -fast -fastsse
 
-ARCH_F95FLAGS =  -Mpreprocess -Mfree ${OPTIM} ${DEBUG}
-ARCH_F77FLAGS =  -Mpreprocess ${OPTIM} ${DEBUG}
-ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
-ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
-ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
-
-MAKEDEP_ARGS = -lc -suffix .mod
+DEFINES = -DFORTRAN_UNDERSCORE
+F95FLAGS +=  -Mpreprocess -Mfree 
+F77FLAGS +=  -Mpreprocess 
 
 AR_ADD = src
-
-ARCH_LIBDIRS = 
-ARCH_LAPACK_LIBS = -lacml
-
-LINKER = pgCC -pgf90libs
-ARCH_LIBS = 
-
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $<
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

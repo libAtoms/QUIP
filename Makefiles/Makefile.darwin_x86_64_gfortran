@@ -40,7 +40,7 @@ FPP = gfortran -E -x f95-cpp-input
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEBUG = -g
+DEBUG = -g -DDUMP_CORE_ON_ABORT
 OPTIM = -O3
 
 DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN
@@ -48,7 +48,6 @@ F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-un
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
 CFLAGS += -fPIC
 
-MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
@@ -65,13 +64,4 @@ QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
 QUIPPY_DEBUG = 1
 
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS}  -c $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
-
-.f95.fpp:
-	${FPP} ${F95FLAGS} $< -o $@
-
+FPP_PRE_TARGET_STRING = -o

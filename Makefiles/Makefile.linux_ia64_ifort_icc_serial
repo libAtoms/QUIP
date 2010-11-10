@@ -43,17 +43,12 @@ OPTIM = -O3
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused
+DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE
+F95FLAGS += -fpp -free -warn unused
 F77FLAGS += -fpp -fixed
-CFLAGS +=  -DFORTRAN_UNDERSCORE
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
 
-MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
 # rules
 
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+F95_PRE_FILENAME_FLAG = -Tf

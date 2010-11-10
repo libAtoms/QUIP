@@ -35,6 +35,7 @@ F90 = ifort
 F95 = ifort
 CC = icc
 CPLUSPLUS = icpc -Kc++
+FPP = ifort -E
 LINKER = ifort
 
 SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
@@ -43,12 +44,12 @@ OPTIM = -O3 -vec-report0 -unroll -xP
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -DNO_F2003_NEW_LINE
-F77FLAGS += -fpp -fixed
-CFLAGS +=  -fPIC -DFORTRAN_UNDERSCORE
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
+DEFINES += -DGETARG_F2003 -DNO_F2003_NEW_LINE -DFORTRAN_UNDERSCORE
+F95FLAGS += -fpp -free -warn unused  -fPIC
+F77FLAGS += -fpp -fixed -fPIC
+CFLAGS += -fPIC 
+CPLUSPLUSFLAGS += -fPIC
 
-MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
 # rules
@@ -59,8 +60,4 @@ QUIPPY_F90FLAGS = -fpp -free
 QUIPPY_F77FLAGS = -fpp -fixed
 QUIPPY_CPP = ifort -EP
 
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+F95_PRE_FILENAME_FLAG = -Tf

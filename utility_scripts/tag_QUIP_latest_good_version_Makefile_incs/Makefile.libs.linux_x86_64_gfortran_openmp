@@ -1,9 +1,0 @@
-MATH_LINKOPTS=${LAPACK_LIBPATH} ${LAPACK_LIB_STATIC}
-FOX_LIBDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_gfortran_openmp/lib
-FOX_INCDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_gfortran_openmp/finclude
-HAVE_EXTERNAL_FOX=0
-NETCDF_LIBDIR=/share/apps/local/lib
-NETCDF4=1
-NETCDF_INCDIR=/share/apps/local/include
-HAVE_NETCDF=1
-EXTRA_LINKOPTS=

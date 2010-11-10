@@ -1,41 +1,41 @@
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# H0 X
+# H0 X   libAtoms+QUIP: atomistic simulation library
+# H0 X
+# H0 X   Portions of this code were written by
+# H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# H0 X
+# H0 X   Copyright 2006-2010.
+# H0 X
+# H0 X   These portions of the source code are released under the GNU General
+# H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# H0 X
+# H0 X   If you would like to license the source code under different terms,
+# H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+# H0 X
+# H0 X   Portions of this code were written by Noam Bernstein as part of
+# H0 X   his employment for the U.S. Government, and are not subject
+# H0 X   to copyright in the USA.
+# H0 X
+# H0 X
+# H0 X   When using this software, please cite the following reference:
+# H0 X
+# H0 X   http://www.libatoms.org
+# H0 X
+# H0 X  Additional contributions by
+# H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# H0 X
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 # declarations
 
-F77 = ifort
-F90 = ifort
-F95 = ifort
-CC = gcc
-CPLUSPLUS = g++
-LINKER = ifort
+include Makefiles/Makefile.linux_x86_64_ifort_gcc
 
-# -g slows down ifort immensely
-SAMPLE_DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT -check bounds
-DEBUG = -DDUMP_CORE_ON_ABORT
-OPTIM = -O3 -vec-report0 -fPIC -DPOTENTIAL_NO_DEFAULT_PRIVATE
-CDEBUG = -g -DDUMP_CORE_ON_ABORT
-COPTIM = -O3 -fPIC
-
-DEFINES += -DGETARG_F2003 -D_OPENMP
-F95FLAGS += -fpp -free -warn unused -openmp
-F77FLAGS += -fpp -fixed -openmp
-CFLAGS +=  -DFORTRAN_UNDERSCORE
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
+DEFINES += -D_OPENMP
+F95FLAGS += -openmp
+F77FLAGS += -openmp
 LINKOPTS += -openmp
 
-MAKEDEP_ARGS = -lc -suffix .mod
-AR_ADD = src
-
-QUIPPY_INSTALL_OPTS = --home=${HOME}
-QUIPPY_FCOMPILER = intelem
-QUIPPY_F90FLAGS = -fpp -free
-QUIPPY_OPT = -O3 -vec-report0
-QUIPPY_CPP = ifort -EP
-# QUIPPY_NO_QUIP = 1
-# QUIPPY_NO_TOOLS = 1
-QUIPPY_NO_CRACK = 1
-
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+QUIPPY_F90FLAGS += -openmp
+QUIPPY_CFLAGS += -openmp

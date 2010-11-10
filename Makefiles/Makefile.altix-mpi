@@ -28,39 +28,10 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# declarations
+include Makefiles/Makefile.altix
+F95FLAGS +=  -D_MPI
+F77FLAGS =  -D_MPI
+CFLAGS =  -D_MPI
+CPLUSPLUSFLAGS =  -D_MPI
 
-F77 = ifort
-F90 = ifort
-F95 = ifort
-CC = icc
-CPLUSPLUS = icpc
-
-OPTIM = -O3 -ip
-
-ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG} -D_MPI
-ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG} -D_MPI
-ARCH_CFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} -D_MPI
-ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} -D_MPI
-ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
-
-MAKEDEP_ARGS = -lc -suffix .mod
-
-AR_ADD = src
-
-ARCH_LIBDIRS = 
-ARCH_LAPACK_LIBS = -lscs
-
-ARCH_FOX_INCLUDEDIR = -I${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs/finclude
-ARCH_FOX_LIBDIR = -L${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs/lib
-ARCH_FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
-
-LINKER = ifort -nofor_main
-ARCH_LIBS = -lmpi
-
-# rules
-
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+SYSLIBS += -lmpi

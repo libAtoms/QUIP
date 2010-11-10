@@ -35,32 +35,17 @@ F90 = ifort
 F95 = ifort
 CC = icc
 CPLUSPLUS = icpc
+LINKER = ifort -nofor_main
+FPP = ifort -E
 
 OPTIM = -O3 -ip
 
-ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG}
-ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG}
-ARCH_CFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
-ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
-ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
-
-MAKEDEP_ARGS = -lc -suffix .mod
+DEFINES = -DFORTRAN_UNDERSCORE
+F95FLAGS +=  -fpp -FR 
+F77FLAGS +=  -fpp 
 
 AR_ADD = src
 
-ARCH_LIBDIRS = 
-ARCH_LAPACK_LIBS = -lscs
-
-ARCH_FOX_INCLUDEDIR = -I${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_ifort64/finclude
-ARCH_FOX_LIBDIR = -L${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_ifort64/lib
-ARCH_FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
-
-LINKER = ifort -nofor_main
-ARCH_LIBS = 
-
 # rules
 
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+F95_PRE_FILENAME_FLAG = -Tf

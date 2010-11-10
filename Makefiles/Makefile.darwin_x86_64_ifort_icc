@@ -13,19 +13,14 @@ OPTIM = -O3 -vec-report0 -unroll -xP -p
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-F95FLAGS += -fpp -free -DGETARG_F2003
+DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE -DDARWIN
+F95FLAGS += -fpp -free 
 F77FLAGS += -fixed
-CFLAGS +=  -DFORTRAN_UNDERSCORE -DDARWIN
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
 
 DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
-MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
 # rules
 
-.f95.o:
-	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+F95_PRE_FILENAME_FLAG = -Tf
