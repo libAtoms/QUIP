@@ -216,7 +216,7 @@ module system_module
   interface operator(//)
      module procedure string_cat_logical, string_cat_int, string_cat_real, string_cat_real_array
      module procedure string_cat_complex, string_cat_int_array, string_cat_logical_array
-     module procedure string_cat_complex_array
+     module procedure string_cat_complex_array, string_cat_string_array
 !     module procedure logical_cat_string, logical_cat_logical, logical_cat_int, logical_cat_real
      module procedure int_cat_string!, int_cat_logical, int_cat_int, int_cat_real
      module procedure real_cat_string!, real_cat_logical, real_cat_int, real_cat_real
@@ -1610,6 +1610,23 @@ contains
 
   end function string_cat_complex_array
 
+  function string_cat_string_array(string, values)
+    character(*),      intent(in)  :: string
+    character(*),      intent(in)  :: values(:)
+    ! we work out the exact length of the resultant string
+    character(len(string)+size(values)*len(values(1))) :: string_cat_string_array
+    character(32) :: format
+
+    if (size(values)>0) then
+       ! replaced concatenation with write... for PGI bug, NB 22/6/2007
+       write(format,'("(a",I0,",",I0,"a",I0,")")') len(string), size(values)+1, len(values(1))
+       write(string_cat_string_array, format) string, values 
+    else
+       write(string_cat_string_array, '(a)') string
+    end if
+
+  end function string_cat_string_array
+
   function real_array_cat_string(values, string)
     character(*),      intent(in)  :: string
     real(dp),          intent(in)  :: values(:)
@@ -2143,9 +2160,9 @@ contains
    !
    subroutine system_timer(name, do_always, time_elapsed, do_print)
      character(len=*), intent(in) :: name !% Unique identifier for this timer
-     logical, optional :: do_always
+     logical, intent(in), optional :: do_always
      real(dp), intent(out), optional :: time_elapsed
-     logical, optional :: do_print
+     logical, intent(in), optional :: do_print
 
      integer, save :: stack_pos = 0
      integer, save, dimension(TIMER_STACK) :: wall_t0
