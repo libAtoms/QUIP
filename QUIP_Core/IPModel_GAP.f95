@@ -85,6 +85,9 @@ type IPModel_GAP
   real(dp), allocatable :: qw_cutoff(:)
   integer, allocatable :: qw_cutoff_f(:)
   real(dp), allocatable :: qw_cutoff_r1(:)
+  real(dp), dimension(:,:), allocatable :: pca_matrix
+
+  logical :: do_pca = .false.
 
   character(len=256) :: coordinates             !% Coordinate system used in GAP database
 
@@ -99,6 +102,7 @@ type IPModel_GAP
 end type IPModel_GAP
 
 logical, private :: parse_in_ip, parse_matched_label, parse_in_ip_done
+integer, private :: parse_n_row, parse_cur_row
 
 type(IPModel_GAP), private, pointer :: parse_ip
 type(extendable_str), save :: parse_cur_data
@@ -142,7 +146,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call finalise(params)
 
   call IPModel_GAP_read_params_xml(this, param_str)
-
   !call gp_read_binary(this%my_gp, this%datafile)
   call gp_read_xml(this%my_gp, param_str,label=this%label)
 
@@ -403,11 +406,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,i))
+
+        if(this%do_pca) vec(:,i) = matmul(vec(:,i),this%pca_matrix)
+
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
               call fourier_transform(df_hat,at,i,n,w)
               call calc_bispectrum(dbis,f_hat,df_hat)
               call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
+
+              if(this%do_pca) jack(:,3*n+1:3*(n+1),i) = matmul(transpose(this%pca_matrix), jack(:,3*n+1:3*(n+1),i))
+
            enddo
         endif
      elseif (trim(this%coordinates) == 'qw') then
@@ -422,6 +431,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         endif
      endif
+
   enddo
 !$omp end do 
 
@@ -598,6 +608,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find e0')
      endif
 
+     call QUIP_FoX_get_value(attributes, 'do_pca', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%do_pca
+     else
+        parse_ip%do_pca = .false.
+     endif
+
      call QUIP_FoX_get_value(attributes, 'f0', value, status)
      if(status == 0) then
         read (value, *) parse_ip%f0
@@ -717,6 +734,27 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find cutoff_r1')
      endif
 
+  elseif(parse_in_ip .and. name == 'PCA_matrix') then
+
+     call QUIP_FoX_get_value(attributes, 'n', value, status)
+     if(status == 0) then
+        read (value, *) parse_n_row
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find n')
+     endif
+     allocate(parse_ip%pca_matrix(parse_n_row,parse_n_row))
+
+  elseif(parse_in_ip .and. name == 'row') then
+
+     call QUIP_FoX_get_value(attributes, 'i', value, status)
+     if(status == 0) then
+        read (value, *) parse_cur_row
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find i')
+     endif
+
+     call zero(parse_cur_data)
+
   elseif(parse_in_ip .and. name == 'per_type_data') then
 
      call QUIP_FoX_get_value(attributes, 'i', value, status)
@@ -752,6 +790,8 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name 
 
+  character(len=100*parse_n_row) :: val
+
   if (parse_in_ip) then
     if(name == 'GAP_params') then
        parse_in_ip = .false.
@@ -769,6 +809,11 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     elseif(name == 'radial_function') then
 
     elseif(name == 'per_type_data') then
+
+    elseif(name == 'row') then
+
+       val = string(parse_cur_data)
+       read(val,*) parse_ip%pca_matrix(:,parse_cur_row)
 
     elseif(name == 'command_line') then
        parse_ip%command_line = parse_cur_data
