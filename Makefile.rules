@@ -31,8 +31,8 @@
 .SUFFIXES: .c .h .f .f95 .fpp
 
 FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
-NETCDF_LIBS =  -lnetcdf
-NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
+NETCDF_LIBS =  -L${EXTRA_LIB} -lnetcdf
+NETCDF4_LIBS = -L${EXTRA_LIB} -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
 MDCORE_LIBS = -lmdcore
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'

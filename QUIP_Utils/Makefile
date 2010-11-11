@@ -40,7 +40,7 @@ include Makefile.inc
 include Makefile.rules
 
 
-F95_FILES =  transition_state ts_params elasticity phonons restraints_constraints_xml crackparams cracktools 
+F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
 OBJS = ${addsuffix .o, ${F95_FILES}}
 
 
