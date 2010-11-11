@@ -252,11 +252,13 @@ program teach_sparse_program
   main_teach_sparse%dlta = main_teach_sparse%dlt 
 
   if(main_teach_sparse%do_pca) then
-     allocate(main_teach_sparse%pca_matrix(main_teach_sparse%d,main_teach_sparse%d))
-     call pca(main_teach_sparse%x,main_teach_sparse%pca_matrix)
+     allocate(main_teach_sparse%pca_matrix(main_teach_sparse%d,main_teach_sparse%d), &
+     main_teach_sparse%pca_mean(main_teach_sparse%d))
+     call pca(main_teach_sparse%x,main_teach_sparse%pca_mean,main_teach_sparse%pca_matrix)
 
      do i = 1, main_teach_sparse%nn
-        main_teach_sparse%x(:,i) = matmul(main_teach_sparse%x(:,i),main_teach_sparse%pca_matrix)
+        main_teach_sparse%x(:,i) = matmul(main_teach_sparse%x(:,i)-main_teach_sparse%pca_mean, &
+        main_teach_sparse%pca_matrix)
      enddo
 
      do i = 1, main_teach_sparse%n

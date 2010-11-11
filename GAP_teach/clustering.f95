@@ -90,18 +90,19 @@ module clustering_module
      deallocate(theta,my_x)
   endsubroutine distance_matrix
 
-  subroutine pca(x,v)
+  subroutine pca(x,x_mean,v)
 
     real(dp), dimension(:,:), intent(in) :: x
+    real(dp), dimension(:), intent(out) :: x_mean
     real(dp), dimension(:,:), intent(out) :: v
 
-    real(dp), dimension(:), allocatable :: x_mean, diag_c
+    real(dp), dimension(:), allocatable :: diag_c
     real(dp), dimension(:,:), allocatable :: cov
     integer :: i, j, d, n
 
     d = size(x,1)
     n = size(x,2)
-    allocate(x_mean(d),cov(d,d),diag_c(d))
+    allocate(cov(d,d),diag_c(d))
 
     x_mean = sum(x,dim=2) / n ! empirical mean
 
@@ -113,7 +114,7 @@ module clustering_module
 
     call diagonalise(cov,diag_c, evects=v)
 
-    deallocate(x_mean,cov, diag_c)
+    deallocate(cov, diag_c)
 
   endsubroutine pca
 

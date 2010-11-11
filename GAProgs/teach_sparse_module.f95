@@ -56,7 +56,7 @@ module teach_sparse_mod
      type(gp) :: my_gp
 
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
-     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta
+     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean
      real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
      integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z
      integer, dimension(99) :: qw_cutoff_f
@@ -621,6 +621,9 @@ contains
      if(this%do_pca) then
         call xml_NewElement(xf,"PCA_matrix")
         call xml_AddAttribute(xf,"n",""//this%d)
+        call xml_NewElement(xf,"PCA_mean")
+        call xml_AddCharacters(xf, ""//this%pca_mean)
+        call xml_EndElement(xf,"PCA_mean")
         do i = 1, this%d
            call xml_NewElement(xf,"row")
            call xml_AddAttribute(xf,"i",""//i)

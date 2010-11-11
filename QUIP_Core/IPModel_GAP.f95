@@ -85,6 +85,7 @@ type IPModel_GAP
   real(dp), allocatable :: qw_cutoff(:)
   integer, allocatable :: qw_cutoff_f(:)
   real(dp), allocatable :: qw_cutoff_r1(:)
+  real(dp), dimension(:), allocatable :: pca_mean
   real(dp), dimension(:,:), allocatable :: pca_matrix
 
   logical :: do_pca = .false.
@@ -407,7 +408,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,i))
 
-        if(this%do_pca) vec(:,i) = matmul(vec(:,i),this%pca_matrix)
+        if(this%do_pca) vec(:,i) = matmul(vec(:,i)-this%pca_mean,this%pca_matrix)
 
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
@@ -743,6 +744,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find n')
      endif
      allocate(parse_ip%pca_matrix(parse_n_row,parse_n_row))
+     allocate(parse_ip%pca_mean(parse_n_row))
+
+  elseif(parse_in_ip .and. name == 'PCA_mean') then
+
+     call zero(parse_cur_data)
 
   elseif(parse_in_ip .and. name == 'row') then
 
@@ -809,6 +815,11 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     elseif(name == 'radial_function') then
 
     elseif(name == 'per_type_data') then
+
+    elseif(name == 'PCA_mean') then
+       
+       val = string(parse_cur_data)
+       read(val,*) parse_ip%pca_mean
 
     elseif(name == 'row') then
 
