@@ -1129,18 +1129,4 @@ contains
 
   end subroutine thermostat4
 
-  function kinetic_virial(this)
-     type(atoms), intent(in) :: this
-     real(dp), dimension(3,3) :: kinetic_virial
-     integer :: i
-
-     kinetic_virial = 0.0_dp
-
-     do i = 1, this%N
-        kinetic_virial = kinetic_virial + this%mass(i)*( this%velo(:,i) .outer. this%velo(:,i) )
-     enddo
-     kinetic_virial = kinetic_virial / cell_volume(this)
-
-  endfunction kinetic_virial
-
 end module thermostat_module
