@@ -1124,6 +1124,31 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
+  ! imma(myatoms, a, b, c, u, Z)
+  !
+  !% Creates a 2-atom Imma cell
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine imma(myatoms, a, b, c, u, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a, b, c, u
+    integer, intent(in), optional :: Z
+
+    call initialise(myatoms, 2, &
+         0.5_dp * reshape( (/ a,  b, -c, &
+                             -a,  b,  c, &
+                              a, -b,  c /),(/3,3/)))
+    
+    myatoms%pos(:,1) =  matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
+    myatoms%pos(:,2) = -matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine imma
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
   ! sc(myatoms, a, Z)
   !
   !% Creates a 1-atom simple cubic lattice with lattice constants of 'a'
