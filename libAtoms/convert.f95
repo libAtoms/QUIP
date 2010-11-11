@@ -65,6 +65,7 @@ implicit none
 	   HANDLE_ERROR(error)
 	endif
      endif
+     call print(at)
      call write(at, outfile)
   end do
   call system_finalise()
