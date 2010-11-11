@@ -34,6 +34,11 @@ module teach_sparse_mod
 
   implicit none
 
+  type sparse_types
+     character(len=FIELD_LENGTH) :: type
+     integer :: m
+  endtype sparse_types
+
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
      energy_property_name, force_property_name, virial_property_name, coordinates
@@ -42,7 +47,8 @@ module teach_sparse_mod
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
-     do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse
+     do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
+     has_m_sparse_in_type
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n
@@ -54,6 +60,7 @@ module teach_sparse_mod
      real(dp), dimension(:,:), allocatable :: x, xd, theta
      integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z
      integer, dimension(99) :: qw_cutoff_f
+     type(sparse_types), dimension(:), allocatable :: m_sparse_in_type
 
   endtype teach_sparse
      

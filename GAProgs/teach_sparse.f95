@@ -46,16 +46,16 @@ program teach_sparse_program
 
   character(len=FIELD_LENGTH) :: verbosity
   character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
-  theta_file, sparse_file, bispectrum_file
+  theta_file, sparse_file, bispectrum_file, m_sparse_in_type_string, tmp
   real(dp) :: mem_required, mem_total, mem_free
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
-  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields
+  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, m_sparse_in_type_fields
   character(len=SPARSE_LENGTH) :: sparse_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
-  integer :: i, j, k, l, o, dd, dt
+  integer :: i, j, k, l, o, dd, dt, m_sparse_in_type_num_fields, i_default, m_total
   character(len=FIELD_LENGTH) :: gp_file
 
   call system_initialise(verbosity=PRINT_NORMAL)
@@ -95,6 +95,7 @@ program teach_sparse_program
   call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name)
   call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name)
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name)
+  call param_register(params, 'm_sparse_in_type','',m_sparse_in_type_string,has_value_target = main_teach_sparse%has_m_sparse_in_type)
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse)
   call param_register(params, 'verbosity', 'NORMAL', verbosity)
 
@@ -105,8 +106,8 @@ program teach_sparse_program
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
-     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [coulomb_args={}] &
-     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [do_sparse=T] [verbosity=NORMAL]")
+     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] &
+     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [m_sparse_in_type={default:200:crystal:300}] [do_sparse=T] [verbosity=NORMAL]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
@@ -124,14 +125,80 @@ program teach_sparse_program
       call system_abort("confused by verbosity " // trim(verbosity))
   end select
 
-
-
   if( count( (/has_e0,has_f0/) ) > 1 ) &
   & call print('Warning - you have specified both e0 and f0 - careful!')
 
   if( count( (/has_sparse_file,main_teach_sparse%do_cluster,main_teach_sparse%do_pivot/) ) > 1 ) &
   & call system_abort('There has been more than one method specified for sparsification.')
      
+  if( main_teach_sparse%has_m_sparse_in_type ) then
+     call parse_string(m_sparse_in_type_string,':',m_sparse_in_type_fields,m_sparse_in_type_num_fields)
+
+     ! find "default" if present
+     i_default = 0
+     do i = 1, m_sparse_in_type_num_fields, 2
+        if( lower_case(trim(m_sparse_in_type_fields(i))) == "default" ) i_default = i
+     enddo
+
+
+     if( i_default > 1 ) then
+        ! default is somewhere else, swap it to the first place
+        tmp = m_sparse_in_type_fields(1)
+        m_sparse_in_type_fields(1) = m_sparse_in_type_fields(i_default)
+        m_sparse_in_type_fields(i_default) = tmp
+
+        tmp = m_sparse_in_type_fields(2)
+        m_sparse_in_type_fields(2) = m_sparse_in_type_fields(i_default+1)
+        m_sparse_in_type_fields(i_default+1) = tmp
+
+        i_default = 1
+     endif
+
+     if( i_default == 0 ) then
+        ! no default present in the string
+        allocate(main_teach_sparse%m_sparse_in_type(0 : m_sparse_in_type_num_fields/2))
+     else
+        ! default is present, it's the first
+        allocate(main_teach_sparse%m_sparse_in_type(0 : m_sparse_in_type_num_fields/2-1))
+     endif
+
+     m_total = 0
+     do i = i_default + 1, m_sparse_in_type_num_fields/2 ! don't include the default for now
+        main_teach_sparse%m_sparse_in_type(i-i_default)%type = m_sparse_in_type_fields(2*(i-1)+1)
+        main_teach_sparse%m_sparse_in_type(i-i_default)%m = string_to_int(m_sparse_in_type_fields(2*i))
+        m_total = m_total + main_teach_sparse%m_sparse_in_type(i-i_default)%m
+     enddo
+
+     main_teach_sparse%m_sparse_in_type(0)%type = 'default'
+
+     if( i_default == 0 ) then
+        if( m_total > main_teach_sparse%m ) then
+           call print_warning('Total number of sparse points for different types '//m_total//' &
+           is greater than number of sparse points '//main_teach_sparse%m//', latter is overwritten.')
+           main_teach_sparse%m_sparse_in_type(0)%m = 0
+           main_teach_sparse%m = m_total
+        else
+           main_teach_sparse%m_sparse_in_type(0)%m = main_teach_sparse%m - m_total
+        endif
+     else
+        main_teach_sparse%m_sparse_in_type(0)%m = string_to_int(m_sparse_in_type_fields(2))
+        m_total = m_total + main_teach_sparse%m_sparse_in_type(0)%m
+        if( m_total > main_teach_sparse%m ) then
+           call print_warning('Total number of sparse points for different types '//m_total//' &
+           is greater than number of sparse points '//main_teach_sparse%m//', latter is overwritten.')
+           main_teach_sparse%m = m_total
+        else
+           main_teach_sparse%m_sparse_in_type(0)%m = main_teach_sparse%m_sparse_in_type(0)%m + main_teach_sparse%m - m_total
+        endif
+     endif
+     call print('Sparse points per pre-defined types of configurations')
+     do i = lbound(main_teach_sparse%m_sparse_in_type,dim=1), ubound(main_teach_sparse%m_sparse_in_type,dim=1)
+        call print(""//trim(main_teach_sparse%m_sparse_in_type(i)%type)//"   "//main_teach_sparse%m_sparse_in_type(i)%m)
+     enddo
+  endif
+
+
+
   main_teach_sparse%coordinates = lower_case(trim(main_teach_sparse%coordinates))
   select case(trim(main_teach_sparse%coordinates))
   case('water_monomer')
