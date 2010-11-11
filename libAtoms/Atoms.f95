@@ -613,13 +613,13 @@ contains
 
   subroutine atoms_initialise_ptr(this,N,lattice,&
        properties,params,fixed_size,Nbuffer,error)
-    type(Atoms),      pointer,  intent(inout) :: this
-    integer,                    intent(in)    :: N
-    real(dp), dimension(3,3),   intent(in)    :: lattice
-    type(Dictionary), optional, intent(in)    :: properties, params
-    logical,          optional, intent(in)    :: fixed_size
-    integer,          optional, intent(in)    :: Nbuffer
-    integer,          optional, intent(out)   :: error
+    type(Atoms),      pointer                :: this
+    integer,                    intent(in)   :: N
+    real(dp), dimension(3,3),   intent(in)   :: lattice
+    type(Dictionary), optional, intent(in)   :: properties, params
+    logical,          optional, intent(in)   :: fixed_size
+    integer,          optional, intent(in)   :: Nbuffer
+    integer,          optional, intent(out)  :: error
 
     ! ---
 
@@ -797,7 +797,7 @@ contains
 
 
   subroutine atoms_finalise_ptr(this)
-    type(Atoms), pointer, intent(inout) :: this
+    type(Atoms), pointer  :: this
 
     ! ---
 
