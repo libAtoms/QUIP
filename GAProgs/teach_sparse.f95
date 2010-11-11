@@ -97,6 +97,7 @@ program teach_sparse_program
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name)
   call param_register(params, 'm_sparse_in_type','',m_sparse_in_type_string,has_value_target = main_teach_sparse%has_m_sparse_in_type)
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse)
+  call param_register(params, 'do_pca', 'F', main_teach_sparse%do_pca, help_string='PCA analysis is performed on input data')
   call param_register(params, 'verbosity', 'NORMAL', verbosity)
 
 
@@ -250,6 +251,19 @@ program teach_sparse_program
 
   main_teach_sparse%dlta = main_teach_sparse%dlt 
 
+  if(main_teach_sparse%do_pca) then
+     allocate(main_teach_sparse%pca_matrix(main_teach_sparse%d,main_teach_sparse%d))
+     call pca(main_teach_sparse%x,main_teach_sparse%pca_matrix)
+
+     do i = 1, main_teach_sparse%nn
+        main_teach_sparse%x(:,i) = matmul(main_teach_sparse%x(:,i),main_teach_sparse%pca_matrix)
+     enddo
+
+     do i = 1, main_teach_sparse%n
+        main_teach_sparse%xd(:,i) = matmul(main_teach_sparse%xd(:,i),main_teach_sparse%pca_matrix)
+     enddo
+  endif
+
   if(main_teach_sparse%do_sparse) then
      if( has_sparse_file ) then
         allocate(sparse_string_array(SPARSE_N_FIELDS))
@@ -318,7 +332,6 @@ program teach_sparse_program
         enddo
      enddo
   endif
-
   ! Stop execution if required memory is greater than the available memory. 
   ! The biggest arrays allocated are 2*sr*(nx+nxd), where sr is the
   ! number of sparse points, nx and nxd are the number of bispectra and partial
@@ -413,6 +426,7 @@ program teach_sparse_program
         call print('')
 
         call initialise(main_teach_sparse%my_gp,gp_sp)
+
         gp_file = 'gp_'//main_teach_sparse%m//'_'//k//'.xml'
 
         call teach_sparse_print_xml(main_teach_sparse,gp_file)

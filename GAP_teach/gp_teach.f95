@@ -177,7 +177,6 @@ module gp_teach_module
 
 #ifdef HAVE_QR
          allocate( k_mn_sq_inverse_lambda(m,n), factor_k_mm(m,m), a(n+m,m), y(n+m), alpha(m) )
-
          call matrix_product_vect_asdiagonal_sub(k_mn_sq_inverse_lambda,sparse%k_mn,sqrt(1.0_qp/sparse%lambda)) ! O(NM)
 
          call initialise(LA_k_mm,sparse%k_mm)

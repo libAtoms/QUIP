@@ -48,7 +48,7 @@ module teach_sparse_mod
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_m_sparse_in_type
+     has_m_sparse_in_type, do_pca
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n
@@ -57,7 +57,7 @@ module teach_sparse_mod
 
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
      real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta
-     real(dp), dimension(:,:), allocatable :: x, xd, theta
+     real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
      integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z
      integer, dimension(99) :: qw_cutoff_f
      type(sparse_types), dimension(:), allocatable :: m_sparse_in_type
@@ -574,6 +574,7 @@ contains
      call xml_AddAttribute(xf,"do_core",""//this%do_core)
      call xml_AddAttribute(xf,"e0",""//this%e0)
      call xml_AddAttribute(xf,"f0",""//this%f0)
+     call xml_AddAttribute(xf,"do_pca",""//this%do_pca)
 
      select case(trim(this%coordinates))
      case('water_monomer')
@@ -616,6 +617,18 @@ contains
      case default
         call system_abort('Unknown coordinates '//trim(this%coordinates))
      endselect
+
+     if(this%do_pca) then
+        call xml_NewElement(xf,"PCA_matrix")
+        call xml_AddAttribute(xf,"n",""//this%d)
+        do i = 1, this%d
+           call xml_NewElement(xf,"row")
+           call xml_AddAttribute(xf,"i",""//i)
+           call xml_AddCharacters(xf, ""//this%pca_matrix(:,i))
+           call xml_EndElement(xf,"row")
+        enddo
+        call xml_EndElement(xf,"PCA_matrix")
+     endif
 
      do i = 1, this%n_species
         call xml_NewElement(xf,"per_type_data")
