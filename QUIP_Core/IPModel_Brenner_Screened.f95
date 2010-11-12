@@ -110,7 +110,7 @@ subroutine IPModel_Brenner_Screened_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Brenner_Screened_Initialise_str args_str')) then
     call system_abort("IPModel_Brenner_Screened_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -181,7 +181,7 @@ subroutine IPModel_Brenner_Screened_Calc(this, at, e, local_e, f, virial, local_
 
    if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name)
+      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
 
       if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Brenner_Screened_Calc args_str')) then
          RAISE_ERROR("IPModel_Brenner_Screened_Calc failed to parse args_str='"//trim(args_str)//"'", error)

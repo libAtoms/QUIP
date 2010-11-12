@@ -48,9 +48,9 @@ implicit none
   call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
-  call param_register(cli_params, 'infile', 'stdin', infilename)
-  call param_register(cli_params, 'outfile', 'stdout', outfilename)
-  call param_register(cli_params, 'netcdf4', 'F', netcdf4)
+  call param_register(cli_params, 'infile', 'stdin', infilename, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'outfile', 'stdout', outfilename, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'netcdf4', 'F', netcdf4, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params, do_check = .true.)) then
       call print_usage()
     call system_abort('could not parse argument line')

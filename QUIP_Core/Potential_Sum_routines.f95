@@ -75,11 +75,11 @@
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params,"energy", "", calc_energy)
-    call param_register(params,"force", "", calc_force)
-    call param_register(params,"virial", "", calc_virial)
-    call param_register(params,"local_energy", "", calc_local_energy)
-    call param_register(params,"local_virial", "", calc_local_virial)
+    call param_register(params,"energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params,"force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params,"virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params,"local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params,"local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Sum_calc args_str')) then
        RAISE_ERROR('Potential_Sum_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif

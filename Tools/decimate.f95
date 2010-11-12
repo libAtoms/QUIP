@@ -43,8 +43,8 @@ implicit none
   call verbosity_push(PRINT_NORMAL)
 
   call initialise(cli_params)
-  call param_register(cli_params,"n",PARAM_MANDATORY, n)
-  call param_register(cli_params,"file","stdin", filename)
+  call param_register(cli_params,"n",PARAM_MANDATORY, n, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params,"file","stdin", filename, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params, do_check = .true.)) then
     call system_abort("Usage: decimate n=(1) [file=(stdin)]")
   endif

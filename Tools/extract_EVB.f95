@@ -72,17 +72,17 @@ program extract_EVB
 
     !INPUT
       call initialise(params_in)
-      call param_register(params_in, 'coord_file', PARAM_MANDATORY, coord_filename)
-      call param_register(params_in, 'outfile', PARAM_MANDATORY, out_filename)
-      call param_register(params_in, 'PSF_file1', PARAM_MANDATORY, PSF_file1)
-      call param_register(params_in, 'PSF_file2', PARAM_MANDATORY, PSF_file2)
-      call param_register(params_in, 'filepot_program', PARAM_MANDATORY, filepot_program)
-      call param_register(params_in, 'cp2k_program', PARAM_MANDATORY, cp2k_program)
-      !call param_register(params_in, 'Residue_Library', PARAM_MANDATORY, Residue_Library)
-      call param_register(params_in, 'last_frame', '0', last_frame)       !last frame to process
-      call param_register(params_in, 'time_step', '0.0', time_step)       !if time is not saved in the XYZ
-      call param_register(params_in, 'append_output', 'F', append_output) !useful for restarts
-      call param_register(params_in, 'restart_every', '1', restart_every) !useful if the restarts have an overlap with the previous run.
+      call param_register(params_in, 'coord_file', PARAM_MANDATORY, coord_filename, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'outfile', PARAM_MANDATORY, out_filename, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'PSF_file1', PARAM_MANDATORY, PSF_file1, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'PSF_file2', PARAM_MANDATORY, PSF_file2, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'filepot_program', PARAM_MANDATORY, filepot_program, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="No help yet.  This source file was $LastChangedBy$")
+      !call param_register(params_in, 'Residue_Library', PARAM_MANDATORY, Residue_Library, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'last_frame', '0', last_frame, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'time_step', '0.0', time_step, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'append_output', 'F', append_output, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'restart_every', '1', restart_every, help_string="No help yet.  This source file was $LastChangedBy$")
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         !call print_usage

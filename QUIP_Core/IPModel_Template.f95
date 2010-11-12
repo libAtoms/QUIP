@@ -92,7 +92,7 @@ subroutine IPModel_Template_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Template_Initialise_str args_str')) then
     call system_abort("IPModel_Template_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif

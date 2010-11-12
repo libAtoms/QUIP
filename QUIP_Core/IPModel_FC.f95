@@ -114,8 +114,8 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label = ''
-  call param_register(params, 'label', '', this%label)
-  call param_register(params, "ideal_struct_file", PARAM_MANDATORY, this%ideal_struct_file)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, "ideal_struct_file", PARAM_MANDATORY, this%ideal_struct_file, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,do_check=.true.,task='IPModel_FC_Initialise_str args_str')) then
     call system_abort("IPModel_FC_Initialise_str failed to find mandatory ideal_struct_file or parse label from args_str="//trim(args_str))
   endif
@@ -266,7 +266,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       endif ! n_extra_calcs
     endif ! len_trim(args_str)
     call initialise(params)
-    call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name)
+    call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_FC_Calc args_str')) then
        RAISE_ERROR("IPModel_FC_Calc failed to parse args_str='"//trim(args_str)//"'",error)
     endif
@@ -661,7 +661,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
 
   n_extra_calcs = 0
   call initialise(params)
-  call param_register(params, "extra_calcs", "", extra_calcs_str)
+  call param_register(params, "extra_calcs", "", extra_calcs_str, help_string="No help yet.  This source file was $LastChangedBy$")
   if (param_read_line(params, args_str, ignore_unknown=.true.,task='parse_extra_calcs')) then
     if (len_trim(extra_calcs_str) > 0) then
       call split_string_simple(extra_calcs_str, extra_calcs_list, n_extra_calcs, ":")

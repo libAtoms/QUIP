@@ -144,11 +144,11 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   this%init_args_str = args_str
 
   call initialise(params)
-  call param_register(params, 'command', PARAM_MANDATORY, command)
-  call param_register(params, 'property_list', 'species:pos', property_list)
-  call param_register(params, 'read_extra_property_list', '', read_extra_property_list)
-  call param_register(params, 'filename', 'filepot', filename)
-  call param_register(params, 'min_cutoff', '0.0', min_cutoff)
+  call param_register(params, 'command', PARAM_MANDATORY, command, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'property_list', 'species:pos', property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'filename', 'filepot', filename, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,do_check=.true.,task='filepot_initialise args_str')) then
     RAISE_ERROR("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
@@ -232,8 +232,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   if (present(args_str)) my_args_str = args_str
 
   call initialise(cli)
-  call param_register(cli, "FilePot_log", "F", FilePot_log)
-  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list)
+  call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif

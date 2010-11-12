@@ -108,7 +108,7 @@ subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Initialise_str args_str')) then
     call system_abort("IPModel_ASAP2_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -434,19 +434,19 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
    if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'efield', 'efield', efield_name)
-      call param_register(params, 'dipoles', 'dipoles', dipoles_name)
-      call param_register(params, 'save_dipole_velo', 'F', save_dipole_velo)
-      call param_register(params, 'restart', 'F', restart)
-      call param_register(params, 'applied_efield', 'F', applied_efield)
-      call param_register(params, 'calc_charge', 'T', calc_charge)
-      call param_register(params, 'calc_sc_dipoles', 'T', calc_sc_dipoles)
-      call param_register(params, 'calc_dipoles', 'T', calc_dipoles)
-      call param_register(params, 'calc_short_range', 'T', calc_short_range)
-      call param_register(params, 'atom_mask_name', '', atom_mask_name)
-      call param_register(params, 'source_mask_name', '', source_mask_name)
-      call param_register(params, 'pseudise', 'F', pseudise)
-      call param_register(params, 'grid_size', '0.0', grid_size)
+      call param_register(params, 'efield', 'efield', efield_name, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'dipoles', 'dipoles', dipoles_name, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'save_dipole_velo', 'F', save_dipole_velo, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'restart', 'F', restart, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'applied_efield', 'F', applied_efield, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'calc_charge', 'T', calc_charge, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'calc_sc_dipoles', 'T', calc_sc_dipoles, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'calc_dipoles', 'T', calc_dipoles, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'calc_short_range', 'T', calc_short_range, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'atom_mask_name', '', atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'pseudise', 'F', pseudise, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'grid_size', '0.0', grid_size, help_string="No help yet.  This source file was $LastChangedBy$")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)

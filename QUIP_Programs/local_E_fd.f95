@@ -59,13 +59,13 @@ implicit none
   init_args = ''
   calc_args = ''
   call initialise(cli_params)
-  call param_register(cli_params, 'fd_index', PARAM_MANDATORY, fd_index)
-  call param_register(cli_params, 'fd_vec', PARAM_MANDATORY, fd_vec)
-  call param_register(cli_params, 'init_args', PARAM_MANDATORY, init_args)
-  call param_register(cli_params, 'at_file', 'stdin', at_file)
-  call param_register(cli_params, 'param_file', 'quip_params.xml', param_file)
-  call param_register(cli_params, 'calc_args', '', calc_args)
-  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
+  call param_register(cli_params, 'fd_index', PARAM_MANDATORY, fd_index, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'fd_vec', PARAM_MANDATORY, fd_vec, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'init_args', PARAM_MANDATORY, init_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'at_file', 'stdin', at_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'param_file', 'quip_params.xml', param_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'calc_args', '', calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="No help yet.  This source file was $LastChangedBy$")
 
   call print("n_args " // cmd_arg_count())
 

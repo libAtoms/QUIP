@@ -75,16 +75,16 @@ program bulktest
   call initialise(movie, "movie.xyz")
 
   ! Setup parameters
-  call param_register(params, 'time_step', '1.0', time_step)
-  call param_register(params, 'seed', '0', seed)
-  call param_register(params, 'init_temp', '300.0', init_temp)
-  call param_register(params, 'sim_temp', '300.0', sim_temp)
-  call param_register(params, 'classicalpot', 'IP SW', classicalpot_args)
-  call param_register(params, 'qmpot', 'TB Bowler',  qmpot_args)
-  call param_register(params, 'xml', 'lotf.xml', xml)
-  call param_register(params, 'pot', 'LOTF buffer_hops=3 small_clusters=F', pot_args)
-  call param_register(params, 'embed_hops', '2', embed_hops)
-  call param_register(params, 'fit_hops', '3', fit_hops)
+  call param_register(params, 'time_step', '1.0', time_step, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'seed', '0', seed, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'init_temp', '300.0', init_temp, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'sim_temp', '300.0', sim_temp, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'classicalpot', 'IP SW', classicalpot_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'qmpot', 'TB Bowler',  qmpot_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'xml', 'lotf.xml', xml, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'pot', 'LOTF buffer_hops=3 small_clusters=F', pot_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'embed_hops', '2', embed_hops, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'fit_hops', '3', fit_hops, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_args(params, (/ (i, i=1,cmd_arg_count()) /), .true.)) &
        call system_abort('Error reading command line arguemnts')

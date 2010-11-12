@@ -49,14 +49,14 @@ implicit none
 
   call initialise(cli)
   infile = ""
-  call param_register(cli, "infile", "stdin", infile)
+  call param_register(cli, "infile", "stdin", infile, help_string="No help yet.  This source file was $LastChangedBy$")
   init_args = ""
-  call param_register(cli, "init_args", param_mandatory, init_args)
+  call param_register(cli, "init_args", param_mandatory, init_args, help_string="No help yet.  This source file was $LastChangedBy$")
   calc_args = ""
-  call param_register(cli, "calc_args", "", calc_args)
-  call param_register(cli, "rqm", param_mandatory, rqm)
-  call param_register(cli, "rmm", "0.0", rmm)
-  call param_register(cli, "g_width", "0.25", rmm)
+  call param_register(cli, "calc_args", "", calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "rqm", param_mandatory, rqm, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "rmm", "0.0", rmm, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "g_width", "0.25", rmm, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli, ignore_unknown=.false.)) &
     call system_abort("Failed to parse CLI parameters")
 

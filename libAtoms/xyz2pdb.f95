@@ -96,15 +96,15 @@ program xyz2pdb
 
    ! reading in run parameters
     call initialise(params_in)
-    call param_register(params_in, 'File', PARAM_MANDATORY, xyz_file)
-    call param_register(params_in, 'Residue_Library', 'protein_res.CHARMM.lib',Library)
-    call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance)
-    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
-    call param_register(params_in, 'Print_XSC', 'F', print_xsc)
-    call param_register(params_in, 'Center_atom', '0', center_atom)
-    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
-    call param_register(params_in, 'use_avgpos', 'T', use_avgpos)
-    call param_register(params_in, 'sort', 'F', do_sort)
+    call param_register(params_in, 'File', PARAM_MANDATORY, xyz_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Residue_Library', 'protein_res.CHARMM.lib',Library, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Print_XSC', 'F', print_xsc, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Center_atom', '0', center_atom, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'sort', 'F', do_sort, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_args(params_in, do_check = .true.)) then
       call print_usage
       call system_abort('could not parse argument line')

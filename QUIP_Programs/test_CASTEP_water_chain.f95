@@ -48,14 +48,14 @@ implicit none
 
   call initialise(cli)
   init_args = ""
-  call param_register(cli, "init_args", param_mandatory, init_args)
+  call param_register(cli, "init_args", param_mandatory, init_args, help_string="No help yet.  This source file was $LastChangedBy$")
   calc_args = ""
-  call param_register(cli, "calc_args", "", calc_args)
-  call param_register(cli, "n_qm", param_mandatory, n_qm)
-  call param_register(cli, "spacing", "2.0", spacing)
-  call param_register(cli, "charge_scale", "1.0", charge_scale)
-  call param_register(cli, "g_width", "0.25", g_width)
-  call param_register(cli, "vacuum", "15.0", vacuum)
+  call param_register(cli, "calc_args", "", calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "n_qm", param_mandatory, n_qm, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "spacing", "2.0", spacing, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "charge_scale", "1.0", charge_scale, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "g_width", "0.25", g_width, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "vacuum", "15.0", vacuum, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli, ignore_unknown=.false., do_check=.true.)) &
     call system_abort("Failed to parse CLI parameters")
 

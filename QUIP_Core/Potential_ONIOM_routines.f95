@@ -50,26 +50,26 @@
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "r_scale", "1.0", this%r_scale_pot1)
-    call param_register(params, "E_scale", "1.0", this%E_scale_pot1)
-    call param_register(params, "terminate", "T", this%terminate)
-    call param_register(params, "minimise_bulk", "F", minimise_bulk)
+    call param_register(params, "r_scale", "1.0", this%r_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "E_scale", "1.0", this%E_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "terminate", "T", this%terminate, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "minimise_bulk", "F", minimise_bulk, help_string="No help yet.  This source file was $LastChangedBy$")
 
-    call param_register(params, "do_rescale_r", "F", do_rescale_r)
-    call param_register(params, "do_rescale_E", "F", do_rescale_E)
-    call param_register(params, "do_tb_defaults", "F", do_tb_defaults)
+    call param_register(params, "do_rescale_r", "F", do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "do_rescale_E", "F", do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "do_tb_defaults", "F", do_tb_defaults, help_string="No help yet.  This source file was $LastChangedBy$")
 
-    call param_register(params, "minimise_mm", "F", this%minimise_mm)
-    call param_register(params, "minim_mm_method", "cg", this%minim_mm_method)
-    call param_register(params, 'minim_mm_tol', '1e-6', this%minim_mm_tol)
-    call param_register(params, 'minim_mm_eps_guess', '1e-4', this%minim_mm_eps_guess)
-    call param_register(params, 'minim_mm_max_steps', '500', this%minim_mm_max_steps)
-    call param_register(params, 'minim_mm_linminroutine', 'FAST_LINMIN', this%minim_mm_linminroutine)
-    call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos)
-    call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat)
-    call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print)
-    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
-    call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
+    call param_register(params, "minimise_mm", "F", this%minimise_mm, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "minim_mm_method", "cg", this%minim_mm_method, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_tol', '1e-6', this%minim_mm_tol, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_eps_guess', '1e-4', this%minim_mm_eps_guess, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_max_steps', '500', this%minim_mm_max_steps, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_linminroutine', 'FAST_LINMIN', this%minim_mm_linminroutine, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_initialise args_str') ) then
       RAISE_ERROR("Potential_ONIOM_initialise failed to parse args_str='"//trim(args_str)//"'",error)
@@ -157,8 +157,8 @@
     endif
 
     call initialise(params)
-    call param_register(params, "calc_weights", "F", calc_weights)
-    call param_register(params, "core_hops", "0", core_hops)
+    call param_register(params, "calc_weights", "F", calc_weights, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "core_hops", "0", core_hops, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_Calc args_str') ) then
       RAISE_ERROR("Potential_ONIOM_calc_energy failed to parse args_str='"//trim(args_str)//"'",error)
     endif
@@ -225,11 +225,11 @@
     call system_timer("calc_oniom")
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy)
-    call param_register(params, "force", "", calc_force)
-    call param_register(params, "virial", "", calc_virial)
-    call param_register(params, "local_energy", "", calc_local_energy)
-    call param_register(params, "local_virial", "", calc_local_virial)
+    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Calc_ONIOM args_str')) then
       RAISE_ERROR("Calc_ONIOM failed to parse args_str='"//trim(args_str)//"'", error)
     endif
