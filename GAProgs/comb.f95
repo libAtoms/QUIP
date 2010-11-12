@@ -15,9 +15,9 @@ program comb
   call system_initialise(verbosity=PRINT_SILENT)
 
   call initialise(params)
-  call param_register(params, 'in_file', PARAM_MANDATORY, in_file)
-  call param_register(params, 'out_file', 'stdout', out_file)
-  call param_register(params, 'n', '20', n)
+  call param_register(params, 'in_file', PARAM_MANDATORY, in_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'out_file', 'stdout', out_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'n', '20', n, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_args(params, do_check = .true.)) then
      call verbosity_push(PRINT_NORMAL)

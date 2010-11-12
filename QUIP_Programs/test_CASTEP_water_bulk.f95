@@ -49,17 +49,17 @@ implicit none
 
   call initialise(cli)
   init_args = ""
-  call param_register(cli, "init_args", param_mandatory, init_args)
+  call param_register(cli, "init_args", param_mandatory, init_args, help_string="No help yet.  This source file was $LastChangedBy$")
   calc_args = ""
-  call param_register(cli, "calc_args", "", calc_args)
+  call param_register(cli, "calc_args", "", calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
   infile = ""
-  call param_register(cli, "infile", "stdin", infile)
-  call param_register(cli, "qm_center_i", param_mandatory, qm_center_i)
-  call param_register(cli, "r_qm", param_mandatory, r_qm)
-  call param_register(cli, "charge_scale", "1.0", charge_scale)
-  call param_register(cli, "g_width_O", ""//(1.2_dp/sqrt(2.0_dp)), g_width_O)
-  call param_register(cli, "g_width_H", ""//(0.44_dp/sqrt(2.0_dp)), g_width_H)
-  call param_register(cli, "vacuum", "15.0", vacuum)
+  call param_register(cli, "infile", "stdin", infile, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "qm_center_i", param_mandatory, qm_center_i, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "r_qm", param_mandatory, r_qm, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "charge_scale", "1.0", charge_scale, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "g_width_O", ""//(1.2_dp/sqrt(2.0_dp)), g_width_O, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "g_width_H", ""//(0.44_dp/sqrt(2.0_dp)), g_width_H, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "vacuum", "15.0", vacuum, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli, ignore_unknown=.false., do_check=.true.)) &
     call system_abort("Failed to parse CLI parameters")
 

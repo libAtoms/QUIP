@@ -115,7 +115,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       logical, intent(inout), target :: logical_target
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       call param_register_main(dict, key, value, 1, PARAM_LOGICAL, help_string=help_string, &
@@ -129,7 +129,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, intent(inout), target :: int_target
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       call param_register_main(dict, key, value, 1, PARAM_INTEGER, help_string=help_string, &
@@ -144,7 +144,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, dimension(:), intent(inout), target :: int_target_array
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER, help_string=help_string, &
@@ -159,7 +159,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), intent(inout), target :: real_target
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       call param_register_main(dict, key, value, 1, PARAM_REAL, help_string=help_string, &
@@ -174,7 +174,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), dimension(:), intent(inout), target :: real_target_array
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, help_string=help_string, &
@@ -189,7 +189,7 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       character(len=*), intent(inout), target :: char_target
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
       if (len(adjustr(char_target)) /= FIELD_LENGTH) &
@@ -222,7 +222,7 @@ module paramreader_module
       character(len=*), intent(in) :: value
       integer, intent(in) :: N, param_type
 
-      character(len=*), intent(in), optional :: help_string
+      character(len=*), intent(in) :: help_string
       integer, intent(inout), optional, target :: int_target
       integer, dimension(:), intent(inout), optional, target :: int_target_array
       real(dp), intent(inout), optional, target :: real_target
@@ -241,11 +241,7 @@ module paramreader_module
       entry%N = N
       entry%param_type = param_type
 
-      if (present(help_string)) then
-	 entry%help_string=trim(help_string)
-      else
-	 entry%help_string = "NO HELP FOR YOU!  Last editor of this file is $Author$"
-      endif
+      entry%help_string=trim(help_string)
 
 ! call print("parser register entry " // trim(key) // " value " // trim(value), PRINT_ALWAYS)
 

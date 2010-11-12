@@ -60,11 +60,11 @@ implicit none
   call initialise(cli_params)
   in_file=''
   hybrid_args_str=''
-  call param_register(cli_params, 'restart', 'F', doing_restart)
-  call param_register(cli_params, 'use_n_minim', 'F', use_n_minim)
-  call param_register(cli_params, 'in_file', 'stdin', in_file)
-  call param_register(cli_params, 'vac_i', '0', vac_i)
-  call param_register(cli_params, 'hybrid_args_str', '', hybrid_args_str)
+  call param_register(cli_params, 'restart', 'F', doing_restart, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'use_n_minim', 'F', use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'in_file', 'stdin', in_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'vac_i', '0', vac_i, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'hybrid_args_str', '', hybrid_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_args(cli_params, do_check=.true.)) then
     call system_abort("Usage: vacancy_map_hybrid_relax [ restart ] [ vac_i ] [ in_file=filename ] [ hybrid_args_str=args ]")
@@ -96,8 +96,8 @@ implicit none
   if (vac_i < 0 .or. vac_i > at%N) call system_abort("vac_i " // vac_i // " out of range : 0 or 1 .. N=" // at%N)
 
   call initialise(comment_params)
-  call param_register(comment_params,"hybrid_center_i", "0", hybrid_center_i)
-  call param_register(comment_params,"hybrid_center", "1e38 1e38 1e38", hybrid_center)
+  call param_register(comment_params,"hybrid_center_i", "0", hybrid_center_i, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(comment_params,"hybrid_center", "1e38 1e38 1e38", hybrid_center, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(comment_params, comment, ignore_unknown=.true.)) then
     call print("Failed to parse hybrid_center_i and hybrid_center from comment line '"//trim(comment)//"'")
   endif

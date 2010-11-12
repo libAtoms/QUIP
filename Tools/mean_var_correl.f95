@@ -90,8 +90,8 @@ implicit none
   endif
 
   call initialise(data_params)
-  call param_register(data_params, "n_bins", param_mandatory, n_bins)
-  call param_register(data_params, "n_data", param_mandatory, n_data)
+  call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(data_params, "n_data", param_mandatory, n_data, help_string="No help yet.  This source file was $LastChangedBy$")
 
   call initialise(infile, infile_name, INPUT)
   myline=read_line(infile) ! comment

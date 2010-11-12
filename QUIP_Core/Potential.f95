@@ -264,7 +264,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call finalise(this)
 
   call initialise(params)
-  call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label)
+  call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="No help yet.  This source file was $LastChangedBy$")
   if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
@@ -278,16 +278,16 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   endif
 
   call initialise(params)
-  call param_register(params, 'init_args_pot1', '', this%init_args_pot1)
-  call param_register(params, 'init_args_pot2', '', this%init_args_pot2)
-  call param_register(params, 'Sum', 'false', this%is_sum)
-  call param_register(params, 'ForceMixing', 'false', this%is_forcemixing)
-  call param_register(params, 'EVB', 'false', this%is_evb)
+  call param_register(params, 'init_args_pot1', '', this%init_args_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'init_args_pot2', '', this%init_args_pot2, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'Sum', 'false', this%is_sum, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'ForceMixing', 'false', this%is_forcemixing, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'EVB', 'false', this%is_evb, help_string="No help yet.  This source file was $LastChangedBy$")
 #ifdef HAVE_LOCAL_E_MIX
-  call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix)
+  call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix, help_string="No help yet.  This source file was $LastChangedBy$")
 #endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
-  call param_register(params, 'ONIOM', 'false', this%is_oniom)
+  call param_register(params, 'ONIOM', 'false', this%is_oniom, help_string="No help yet.  This source file was $LastChangedBy$")
 #endif /* HAVE_ONIOM */
 
   if(.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
@@ -506,11 +506,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     end if
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy)
-    call param_register(params, "virial", "", calc_virial)
-    call param_register(params, "force", "", calc_force)
-    call param_register(params, "local_energy", "", calc_local_energy)
-    call param_register(params, "local_virial", "", calc_local_virial)
+    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
        RAISE_ERROR('Potential_Calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif

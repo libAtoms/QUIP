@@ -64,16 +64,18 @@ function check_version {
 	       make_status=${make_status}"${compiler_name}${suffix} OK "
 	    else
 	       make_status=${make_status}"${compiler_name}${suffix} Failed "
+	       failed_list=${failed_list}"make.out.${version}.${compiler_name}${suffix} "
 	    fi
 
 	    # try quippy (only without openmp or mpi)
 	    if [[ -z $suffix ]]; then
 	       pushd Tools/quippy > /dev/null
-	       make test > ../../../quippy_test.out.${version}.${compiler_name} 2>&1
+	       make test > ../../../quippy_test.out.${version}.${compiler_name}${suffix} 2>&1
 	       if [[ $? == 0 ]]; then
 		  quippy_status=${quippy_status}"$compiler_name OK "
 	       else
 		  quippy_status=${quippy_status}"$compiler_name Failed "
+		  failed_list=${failed_list}"quippy_test.out.${version}.${compiler_name}${suffix} "
 	       fi
 	       popd > /dev/null
 	    fi # -z suffix
@@ -133,17 +135,17 @@ if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
    svn copy -m "Update QUIP-stable tag" -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable
    if [[ $retried == 0 ]]; then
       (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat tag_QUIP_latest_good_version_report.txt) | \
-	 mail -s "QUIP autobuild succeeded" ${MAILS}
+	 mutt -s "QUIP autobuild succeeded" ${MAILS}
       exit 0
    else
       (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat tag_QUIP_latest_good_version_report.txt) | \
-	 mail -s "QUIP autobuild failed on HEAD, succeeded eventually" ${MAILS}
+	 mutt -s "QUIP autobuild failed on HEAD, succeeded eventually" `for f in $failed_list; do echo "-a $f "; done` ${MAILS}
       exit 2
    fi
 else
    echo "Failed to find working revision between HEAD and $cur_rev"
    echo "Failed to find working revision between HEAD and $cur_rev" >> tag_QUIP_latest_good_version_report.txt
    (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat tag_QUIP_latest_good_version_report.txt) | \
-      mail -s "QUIP autobuild failed" ${MAILS}
+      mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` ${MAILS}
    exit 3
 fi

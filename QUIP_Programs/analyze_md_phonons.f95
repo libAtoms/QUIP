@@ -70,9 +70,9 @@ implicit none
   call system_initialise()
 
   call initialise(cli_params)
-    call param_register(cli_params, "phonons_file", "phonons.xyz", phonons_file)
-    call param_register(cli_params, "fix_rotation", "F", fix_rotation)
-    call param_register(cli_params, "regular_eigenproblem", "F", regular_eigenproblem)
+    call param_register(cli_params, "phonons_file", "phonons.xyz", phonons_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(cli_params, "fix_rotation", "F", fix_rotation, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(cli_params, "regular_eigenproblem", "F", regular_eigenproblem, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_args(cli_params)) then
       call print("Usage: analyze_md_phonons [phonons_file=file(phonons.xyz)] [fix_rotation=T/F(F)]", PRINT_ALWAYS)
       call print("       [regular_eigenproblem=T/F(F)]", PRINT_ALWAYS)

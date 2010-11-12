@@ -98,7 +98,7 @@ subroutine IPModel_BOP_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_BOP_Initialise_str args_str')) then
     call system_abort("IPModel_BOP_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -169,15 +169,15 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    lpbc = .false.
    if (present(args_str)) then
      call initialise(params)  
-     call param_register(params, 'nat', '0', nat)
-     call param_register(params, 'pbc', '.false.', lpbc)
-     call param_register(params, 'replicate_x', '1', nreplicate_x)
-     call param_register(params, 'replicate_y', '1', nreplicate_y)
-     call param_register(params, 'replicate_z', '1', nreplicate_z)
-     call param_register(params, 'print_xyz', 'F', lprint_xyz)
-     call param_register(params, 'crack', 'F', lcrack)
-     call param_register(params, 'all_atoms', 'F', latoms)
-     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name)
+     call param_register(params, 'nat', '0', nat, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'pbc', '.false.', lpbc, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'replicate_x', '1', nreplicate_x, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'replicate_y', '1', nreplicate_y, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'replicate_z', '1', nreplicate_z, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'print_xyz', 'F', lprint_xyz, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'crack', 'F', lcrack, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'all_atoms', 'F', latoms, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_BOP_Calc args_str')) then
        call system_abort("IPModel_BOP_Calc failed to parse args_str='"//trim(args_str)//"'")
      endif

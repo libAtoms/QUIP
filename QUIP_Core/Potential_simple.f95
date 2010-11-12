@@ -196,12 +196,12 @@ contains
     call Finalise(this)
 
     call initialise(params)
-    call param_register(params, 'TB', 'false', is_TB)
-    call param_register(params, 'IP', 'false', is_IP)
-    call param_register(params, 'FilePot', 'false', is_FilePot)
-    call param_register(params, 'wrapper', 'false', is_wrapper)
-    call param_register(params, 'CallbackPot', 'false', is_CallbackPot)
-    call param_register(params, 'little_clusters', 'false', this%little_clusters)
+    call param_register(params, 'TB', 'false', is_TB, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'IP', 'false', is_IP, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'FilePot', 'false', is_FilePot, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'wrapper', 'false', is_wrapper, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_Initialise_str args_str')) then
       call system_abort("Potential_Simple_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     endif
@@ -357,20 +357,20 @@ contains
     endif
 
     call initialise(params)
-    call param_register(params, 'single_cluster', 'F', single_cluster)
+    call param_register(params, 'single_cluster', 'F', single_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
     cluster_mark_postfix=""
-    call param_register(params, 'cluster_mark_postfix', '', cluster_mark_postfix)
-    call param_register(params, 'carve_cluster', 'T', do_carve_cluster)
-    call param_register(params, 'little_clusters', 'F', little_clusters)
-    call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
-    call param_register(params, 'r_scale', '1.0', r_scale)
-    call param_register(params, 'force_using_fd', 'F', force_using_fd)
+    call param_register(params, 'cluster_mark_postfix', '', cluster_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'carve_cluster', 'T', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'little_clusters', 'F', little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'r_scale', '1.0', r_scale, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'force_using_fd', 'F', force_using_fd, help_string="No help yet.  This source file was $LastChangedBy$")
 
-    call param_register(params, 'energy', '', calc_energy)
-    call param_register(params, 'force', '', calc_force)
-    call param_register(params, 'local_energy', '', calc_local_energy)
-    call param_register(params, 'virial', '', calc_virial)
-    call param_register(params, 'local_virial', '', calc_local_virial)
+    call param_register(params, 'energy', '', calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'force', '', calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'local_energy', '', calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'virial', '', calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'local_virial', '', calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) then
       RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -1087,8 +1087,8 @@ contains
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy)
-    call param_register(params, "force", "", calc_force)
+    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
        RAISE_ERROR("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'", error)
     endif

@@ -21,8 +21,8 @@ program convert
   call system_initialise(verbosity=PRINT_SILENT)
 
   call initialise(params)
-  call param_register(params, 'binary_file', 'gp.dat', binary_file)
-  call param_register(params, 'xml_file', 'gp.xml', xml_file, has_xml_file)
+  call param_register(params, 'binary_file', 'gp.dat', binary_file, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'xml_file', 'gp.xml', xml_file, has_xml_file, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_args(params, do_check = .true.) ) then
      call verbosity_push(PRINT_NORMAL)

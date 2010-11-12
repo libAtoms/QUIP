@@ -96,20 +96,20 @@ integer :: i
     cell_file=''
     dft_file=''
     global_file=''
-    call param_register(params_in, 'Run_Type', 'MM', Run_Type)
-    call param_register(params_in, 'PSF_Print', 'NO_PSF', Print_PSF)
-    call param_register(params_in, 'coord_file', 'filepot.0.xyz',coord_file) 
-    call param_register(params_in, 'new_coord_file', 'filepot.0.out',new_coord_file) 
-    call param_register(params_in, 'cp2k_program', 'cp2k_serial',cp2k_program) 
-    call param_register(params_in, 'root', '', fileroot_str)
-    call param_register(params_in, 'basis_set_file', '', basis_set_file)
-    call param_register(params_in, 'potential_file', '', potential_file)
-    call param_register(params_in, 'dft_file', '', dft_file)
-    call param_register(params_in, 'global_file', '', global_file)
-    call param_register(params_in, 'cell_file', '', cell_file)
-    call param_register(params_in, 'clean_up_files', 'T', clean_up_files)
-    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
-!    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
+    call param_register(params_in, 'Run_Type', 'MM', Run_Type, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'PSF_Print', 'NO_PSF', Print_PSF, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'coord_file', 'filepot.0.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'new_coord_file', 'filepot.0.out',new_coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'cp2k_program', 'cp2k_serial',cp2k_program, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'root', '', fileroot_str, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'basis_set_file', '', basis_set_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'potential_file', '', potential_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'dft_file', '', dft_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'global_file', '', global_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'cell_file', '', cell_file, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'clean_up_files', 'T', clean_up_files, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
+!    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot args_str')) then
       call system_abort('could not parse argument line')

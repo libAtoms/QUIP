@@ -123,7 +123,7 @@ subroutine Callbackpot_Initialise(this, args_str, mpi, error)
   call finalise(this)
 
   call initialise(params)
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='CallbackPot_initialise')) then
        RAISE_ERROR('CallbackPot_Initialise failed to parse args_str="'//trim(args_str)//"'", error)
   endif

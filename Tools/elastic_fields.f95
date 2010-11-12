@@ -47,12 +47,12 @@ program elastic
 
   call initialise(params)
 
-  call param_register(params, 'a', PARAM_MANDATORY, a)
-  call param_register(params, 'C11', PARAM_MANDATORY, C11)
-  call param_register(params, 'C12', PARAM_MANDATORY, C12)
-  call param_register(params, 'C44', PARAM_MANDATORY, C44)
-  call param_register(params, 'cutoff', '5.0', cutoff)
-  call param_register(params, 'nneightol', '1.2', nneightol)
+  call param_register(params, 'a', PARAM_MANDATORY, a, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'C11', PARAM_MANDATORY, C11, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'C12', PARAM_MANDATORY, C12, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'C44', PARAM_MANDATORY, C44, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'cutoff', '5.0', cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'nneightol', '1.2', nneightol, help_string="No help yet.  This source file was $LastChangedBy$")
 
   nargs = cmd_arg_count()
 

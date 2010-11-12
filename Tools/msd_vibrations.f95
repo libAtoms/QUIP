@@ -43,7 +43,7 @@ use libatoms_module
   call system_initialise()
 
   call initialise(cli_params)
-  call param_register(cli_params, 'infile', PARAM_MANDATORY, infile_name)
+  call param_register(cli_params, 'infile', PARAM_MANDATORY, infile_name, help_string="No help yet.  This source file was $LastChangedBy$")
 
   call print("n_args " // cmd_arg_count())
 

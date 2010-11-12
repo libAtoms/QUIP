@@ -99,7 +99,7 @@ implicit none
   call system_initialise()
 
   call initialise(cli_params)
-  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
+  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
     call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
   end if

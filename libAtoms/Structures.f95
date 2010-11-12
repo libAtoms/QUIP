@@ -1691,9 +1691,9 @@ contains
       if (len_trim(Z_values_str) > 0) then
 	call initialise(Z_values_params)
 	if (n_types == 1) then
-	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values_i)
+	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values_i, help_string="No help yet.  This source file was $LastChangedBy$")
 	else
-	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values)
+	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values, help_string="No help yet.  This source file was $LastChangedBy$")
 	endif
 	if (.not. param_read_line(Z_values_params, 'Z_values="'//trim(Z_values_str)//'"', do_check=.true., ignore_unknown=.true.)) then
 	  call system_abort("Z_values '"//trim(Z_values_str)//"' specified on command line, but can't be parsed to find "//n_types//" Z values")

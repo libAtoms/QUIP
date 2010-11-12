@@ -76,16 +76,16 @@ program extract_cv
 
     !INPUT
       call initialise(params_in)
-      call param_register(params_in, 'coord_file'         , PARAM_MANDATORY, coord_filename      )
-      call param_register(params_in, 'velo_file'          , PARAM_MANDATORY, velo_filename       )
-      call param_register(params_in, 'force_file'         , PARAM_MANDATORY, force_filename      )
-      call param_register(params_in, 'atomlist_file'      , PARAM_MANDATORY, colvar_filename     )
-      call param_register(params_in, 'outfile'            , PARAM_MANDATORY, out_filename        )
-      call param_register(params_in, 'last_frame'         , '0'            , last_frame          )
-      call param_register(params_in, 'time_step'          , '0.0'          , time_step           )
-      call param_register(params_in, 'restart_every'      , '1'            , restart_every       )
-      call param_register(params_in, 'append_output'      , 'F'            , append_output       )
-      call param_register(params_in, 'input_in_cp2k_units', 'F'            , input_in_cp2k_units )
+      call param_register(params_in, 'coord_file'         , PARAM_MANDATORY, coord_filename      , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'velo_file'          , PARAM_MANDATORY, velo_filename       , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'force_file'         , PARAM_MANDATORY, force_filename      , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'atomlist_file'      , PARAM_MANDATORY, colvar_filename     , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'outfile'            , PARAM_MANDATORY, out_filename        , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'last_frame'         , '0'            , last_frame          , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'time_step'          , '0.0'          , time_step           , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'restart_every'      , '1'            , restart_every       , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'append_output'      , 'F'            , append_output       , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'input_in_cp2k_units', 'F'            , input_in_cp2k_units , help_string="No help yet.  This source file was $LastChangedBy$")
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call print_usage

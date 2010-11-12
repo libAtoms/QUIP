@@ -171,14 +171,14 @@ subroutine TBModel_Initialise_str(this, args_str, param_str)
   logical, target :: has_str_fermi_e, has_str_fermi_T, has_str_band_width, has_str_k_density
 
   call Initialise(params)
-  call param_register(params, 'NRL-TB', 'false', is_nrl_tb)
-  call param_register(params, 'Bowler', 'false', is_bowler)
-  call param_register(params, 'DFTB', 'false', is_dftb)
-  call param_register(params, 'GSP', 'false', is_gsp)
-  call param_register(params, 'fermi_e', '0.0', str_fermi_e, has_value_target=has_str_fermi_e)
-  call param_register(params, 'fermi_T', '0.0', str_fermi_T, has_value_target=has_str_fermi_T)
-  call param_register(params, 'band_width', '0.0', str_band_width, has_value_target=has_str_band_width)
-  call param_register(params, 'k_density', '0.0', str_k_density, has_value_target=has_str_k_density)
+  call param_register(params, 'NRL-TB', 'false', is_nrl_tb, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'Bowler', 'false', is_bowler, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'DFTB', 'false', is_dftb, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'GSP', 'false', is_gsp, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'fermi_e', '0.0', str_fermi_e, has_value_target=has_str_fermi_e, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'fermi_T', '0.0', str_fermi_T, has_value_target=has_str_fermi_T, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'band_width', '0.0', str_band_width, has_value_target=has_str_band_width, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'k_density', '0.0', str_k_density, has_value_target=has_str_k_density, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_Initialise_str args_str')) then
     call system_abort("TBModel_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
@@ -561,7 +561,7 @@ function TBModel_has_Fermi_E(out_Fermi_E, this, Fermi_E, args_str)
     endif
     if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'fermi_e', ''//out_fermi_E, out_fermi_E, has_value_target=has_str_fermi_e)
+      call param_register(params, 'fermi_e', ''//out_fermi_E, out_fermi_E, has_value_target=has_str_fermi_e, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_E args_str')) then
 	call system_abort("TBModel_has_fermi_e failed to parse args_str='"//trim(args_str)//"'")
       endif
@@ -593,7 +593,7 @@ function TBModel_has_Fermi_T(out_Fermi_T, this, Fermi_T, args_str)
     endif
     if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'fermi_T', ''//out_fermi_T, out_fermi_T, has_value_target=has_str_fermi_T)
+      call param_register(params, 'fermi_T', ''//out_fermi_T, out_fermi_T, has_value_target=has_str_fermi_T, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_T args_str')) then
 	call system_abort("TBModel_has_fermi_T failed to parse args_str='"//trim(args_str)//"'")
       endif
@@ -625,7 +625,7 @@ function TBModel_has_band_width(out_band_width, this, band_width, args_str)
     endif
     if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'band_width', ''//out_band_width, out_band_width, has_value_target=has_str_band_width)
+      call param_register(params, 'band_width', ''//out_band_width, out_band_width, has_value_target=has_str_band_width, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_band_width args_str')) then
 	call system_abort("TBModel_has_band_width failed to parse args_str='"//trim(args_str)//"'")
       endif
@@ -657,7 +657,7 @@ function TBModel_has_k_density(out_k_density, this, k_density, args_str)
     endif
     if (present(args_str)) then
       call initialise(params)
-      call param_register(params, 'k_density', ''//out_k_density, out_k_density, has_value_target=has_str_k_density)
+      call param_register(params, 'k_density', ''//out_k_density, out_k_density, has_value_target=has_str_k_density, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_k_density args_str')) then
 	call system_abort("TBModel_has_k_density failed to parse args_str='"//trim(args_str)//"'")
       endif

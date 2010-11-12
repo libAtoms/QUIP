@@ -96,7 +96,7 @@ subroutine IPModel_Einstein_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label)
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Einstein_Initialise_str args_str')) then
     call system_abort("IPModel_Einstein_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -165,7 +165,7 @@ subroutine IPModel_Einstein_Calc(this, at, e, local_e, f, virial, local_virial, 
    atom_mask_pointer => null()
    if(present(args_str)) then
       call initialise(params)
-      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name)
+      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Einstein_Calc args_str')) &
       call system_abort("IPModel_Einstein_Calc failed to parse args_str='"//trim(args_str)//"'")
       call finalise(params)
