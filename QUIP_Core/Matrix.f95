@@ -38,6 +38,9 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#include "error.inc"
+
 module matrix_module
 
 use System_module
@@ -513,14 +516,16 @@ subroutine MatrixZ_add_block(this, block, block_nr, block_nc, first_row, first_c
   endif
 end subroutine
 
-subroutine MatrixD_diagonalise(this, evals, evecs, err)
+subroutine MatrixD_diagonalise(this, evals, evecs, error)
   type(MatrixD), intent(in), target :: this
   real(dp), intent(inout) :: evals(:)    !% Eigenvalues
   type(MatrixD), intent(inout), target, optional :: evecs  !% Eigenvectors
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: u_evecs(:,:)
   type(Matrix_ScaLAPACK_Info), pointer :: evecs_ScaLAPACK_Info
+
+  INIT_ERROR(error)
 
   if (present(evecs)) then
     u_evecs => evecs%data
@@ -532,9 +537,9 @@ subroutine MatrixD_diagonalise(this, evals, evecs, err)
   endif
 
   if (this%ScaLAPACK_Info_obj%active) then
-    call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, err)
+    call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, error = error)
   else
-    call diagonalise(this%data, evals, u_evecs, err = err)
+    call diagonalise(this%data, evals, u_evecs, error = error)
   endif
 
   if (.not.present(evecs)) then
@@ -542,25 +547,21 @@ subroutine MatrixD_diagonalise(this, evals, evecs, err)
     deallocate(u_evecs)
   endif
 
-  if (present(err)) then
-    if (err /= 0) then
-      mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixD_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
-      mainlog%mpi_all_inoutput_flag=.false.
-    endif
-  endif
+  PASS_ERROR(error)
 
 end subroutine MatrixD_diagonalise
 
-subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, err)
+subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, error)
   type(MatrixD), intent(in), target :: this
   type(MatrixD), intent(in) :: overlap
   real(dp), intent(inout) :: evals(:)
   type(MatrixD), intent(inout), target, optional :: evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: u_evecs(:,:)
   type(Matrix_ScaLAPACK_Info), pointer :: evecs_ScaLAPACK_Info
+
+  INIT_ERROR(error)
 
   if (present(evecs)) then
     u_evecs => evecs%data
@@ -573,9 +574,9 @@ subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, err)
 
   if (this%ScaLAPACK_Info_obj%active) then
     call diagonalise(this%ScaLAPACK_Info_obj, this%data, overlap%ScaLAPACK_Info_obj, &
-      overlap%data, evals, evecs_ScaLAPACK_Info, u_evecs, err)
+      overlap%data, evals, evecs_ScaLAPACK_Info, u_evecs, error)
   else
-    call diagonalise(this%data, overlap%data, evals, u_evecs, err = err)
+    call diagonalise(this%data, overlap%data, evals, u_evecs, error = error)
   endif
 
   if (.not.present(evecs)) then
@@ -583,24 +584,20 @@ subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, err)
     deallocate(u_evecs)
   endif
 
-  if (present(err)) then
-    if (err /= 0) then
-      mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixD_diagonalise_gen got err " // err // " from diagonalise", PRINT_ALWAYS)
-      mainlog%mpi_all_inoutput_flag=.false.
-    endif
-  endif
+  PASS_ERROR(error)
 
 end subroutine MatrixD_diagonalise_gen
 
-subroutine MatrixZ_diagonalise(this, evals, evecs, err)
+subroutine MatrixZ_diagonalise(this, evals, evecs, error)
   type(MatrixZ), intent(in), target :: this
   real(dp), intent(inout) :: evals(:)
   type(MatrixZ), intent(inout), target, optional :: evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   complex(dp), pointer :: u_evecs(:,:)
   type(Matrix_ScaLAPACK_Info), pointer :: evecs_ScaLAPACK_Info
+
+  INIT_ERROR(error)
 
   if (present(evecs)) then
     u_evecs => evecs%data
@@ -612,9 +609,9 @@ subroutine MatrixZ_diagonalise(this, evals, evecs, err)
   endif
 
   if (this%ScaLAPACK_Info_obj%active) then
-    call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, err)
+    call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, error)
   else
-    call diagonalise(this%data, evals, u_evecs, err = err)
+    call diagonalise(this%data, evals, u_evecs, error = error)
   endif
 
   if (.not.present(evecs)) then
@@ -622,24 +619,21 @@ subroutine MatrixZ_diagonalise(this, evals, evecs, err)
     deallocate(u_evecs)
   endif
 
-  if (present(err)) then
-    if (err /= 0) then
-      mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixZ_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
-      mainlog%mpi_all_inoutput_flag=.false.
-    endif
-  endif
+  PASS_ERROR(error)
+
 end subroutine MatrixZ_diagonalise
 
-subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, err)
+subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, error)
   type(MatrixZ), intent(in), target :: this
   type(MatrixZ), intent(in) :: overlap
   real(dp), intent(inout) :: evals(:)
   type(MatrixZ), intent(inout), target, optional :: evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   complex(dp), pointer :: u_evecs(:,:)
   type(Matrix_ScaLAPACK_Info), pointer :: evecs_ScaLAPACK_Info
+
+  INIT_ERROR(error)
 
   if (present(evecs)) then
     u_evecs => evecs%data
@@ -652,22 +646,18 @@ subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, err)
 
   if (this%ScaLAPACK_Info_obj%active) then
     call diagonalise(this%ScaLAPACK_Info_obj, this%data, overlap%ScaLAPACK_Info_obj, &
-      overlap%data, evals, evecs_ScaLAPACK_Info, u_evecs, err)
+      overlap%data, evals, evecs_ScaLAPACK_Info, u_evecs, error)
   else
-    call diagonalise(this%data, overlap%data, evals, u_evecs, err = err)
+    call diagonalise(this%data, overlap%data, evals, u_evecs, error = error)
   endif
 
   if (.not.present(evecs)) then
     call DEALLOC_TRACE("MatrixZ_diagonalise_gen u_evecs", size(u_evecs)*COMPLEX_SIZE)
     deallocate(u_evecs)
   endif
-  if (present(err)) then
-    if (err /= 0) then
-      mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixZ_diagonalise_gen got err " // err // " from diagonalise", PRINT_ALWAYS)
-      mainlog%mpi_all_inoutput_flag=.false.
-    endif
-  endif
+
+  PASS_ERROR(error)
+
 end subroutine MatrixZ_diagonalise_gen
 
 !subroutine MatrixDD_accum_col_outer_product(this, mati, i, f)

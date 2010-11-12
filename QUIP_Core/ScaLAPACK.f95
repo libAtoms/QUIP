@@ -35,6 +35,9 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#include "error.inc"
+
 module ScaLAPACK_module
 
 use System_module
@@ -529,13 +532,13 @@ subroutine ScaLAPACK_inverse_c(this, data, inv_scalapack_info, inv_data, positiv
 #endif
 end subroutine ScaLAPACK_inverse_c
 
-subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs_data, err)
+subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs_data, error)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   real(dp), intent(in) :: data(:,:)
   real(dp), intent(out) :: evals(:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: evecs_ScaLAPACK_obj
   real(dp), intent(out) :: evecs_data(:,:)
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer liwork, lwork
   real(dp), allocatable :: data_copy(:,:)
@@ -548,11 +551,10 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
   integer M, NZ, i
   real(dp) :: orfac = 1.0e-4_dp
 
+  INIT_ERROR(error)
+
   evals = 0.0_dp
   evecs_data = 0.0_dp
-  if (present(err)) then
-    err = 0
-  endif
 
 #ifdef SCALAPACK
   allocate(icluster(2*this%ScaLAPACK_obj%n_proc_rows*this%ScaLAPACK_obj%n_proc_cols))
@@ -621,24 +623,19 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
   deallocate (data_copy)
 
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
-    if (present(err)) then
-      err = info
-      call print("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, PRINT_ALWAYS)
-    else
-      call system_abort("ScaLAPACK_diagonalise_r: Failed to diagonalise")
-    endif
+    RAISE_ERROR("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, error)
   endif
 #endif
 
 end subroutine ScaLAPACK_diagonalise_r
 
-subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs_data, err)
+subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs_data, error)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   complex(dp), intent(in) :: data(:,:)
   real(dp), intent(out) :: evals(:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: evecs_ScaLAPACK_obj
   complex(dp), intent(out) :: evecs_data(:,:)
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer liwork, lrwork, lcwork
   integer, allocatable :: iwork(:)
@@ -653,11 +650,10 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
   integer M, NZ, i
   real(dp) :: orfac = 1.0e-4_dp
 
+  INIT_ERROR(error)
+
   evals = 0.0_dp
   evecs_data = 0.0_dp
-  if (present(err)) then
-    err = 0
-  endif
 
 #ifdef SCALAPACK
   allocate(icluster(2*this%ScaLAPACK_obj%n_proc_rows*this%ScaLAPACK_obj%n_proc_cols))
@@ -733,19 +729,14 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
   deallocate (data_copy)
 
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
-    if (present(err)) then
-      err = info
-      call print("ScaLAPACK_diagonalise_c: Failed to diagonalise info="//info, PRINT_ALWAYS)
-    else
-      call system_abort("ScaLAPACK_diagonalise_c: Failed to diagonalise")
-    endif
+    RAISE_ERROR("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, error)
   endif
 #endif
 
 end subroutine ScaLAPACK_diagonalise_c
 
 subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overlap_data, &
-  evals, evecs_ScaLAPACK_obj, evecs_data, err)
+  evals, evecs_ScaLAPACK_obj, evecs_data, error)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   real(dp), intent(in) :: data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: overlap_ScaLAPACK_obj
@@ -753,7 +744,7 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   real(dp), intent(out) :: evals(:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: evecs_ScaLAPACK_obj
   real(dp), intent(out) :: evecs_data(:,:)
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer :: liwork, lwork
   integer, allocatable :: iwork(:)
@@ -767,11 +758,10 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   integer M, NZ, i
   real(dp) :: orfac = 1.0e-4_dp
 
+  INIT_ERROR(error)
+
   evals = 0.0_dp
   evecs_data = 0.0_dp
-  if (present(err)) then
-    err = 0
-  endif
 
 #ifdef SCALAPACK
   allocate(icluster(2*this%ScaLAPACK_obj%n_proc_rows*this%ScaLAPACK_obj%n_proc_cols))
@@ -854,19 +844,14 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   deallocate (data_copy, overlap_data_copy)
 
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
-    if (present(err)) then
-      err = info
-      call print("ScaLAPACK_diagonalise_gen_r: Failed to diagonalise info="//info, PRINT_ALWAYS)
-    else
-      call system_abort("ScaLAPACK_diagonalise_gen_r: Failed to diagonalise")
-    endif
+    RAISE_ERROR("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, error)
   endif
 #endif
 
 end subroutine ScaLAPACK_diagonalise_gen_r
 
 subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overlap_data, &
-  evals, evecs_ScaLAPACK_obj, evecs_data, err)
+  evals, evecs_ScaLAPACK_obj, evecs_data, error)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   complex(dp), intent(in) :: data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: overlap_ScaLAPACK_obj
@@ -874,7 +859,7 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   real(dp), intent(out) :: evals(:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: evecs_ScaLAPACK_obj
   complex(dp), intent(out) :: evecs_data(:,:)
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer liwork, lrwork, lcwork
   integer, allocatable :: iwork(:)
@@ -889,11 +874,11 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   integer M, NZ, i
   real(dp) :: orfac = 1.0e-4_dp
 
+  INIT_ERROR(error)
+
   evals = 0.0_dp
   evecs_data = 0.0_dp
-  if (present(err)) then
-    err = 0
-  endif
+
 #ifdef SCALAPACK
   allocate(icluster(2*this%ScaLAPACK_obj%n_proc_rows*this%ScaLAPACK_obj%n_proc_cols))
   allocate(gap(this%ScaLAPACK_obj%n_proc_rows*this%ScaLAPACK_obj%n_proc_cols))
@@ -974,12 +959,7 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   deallocate (data_copy, overlap_data_copy)
 
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
-    if (present(err)) then
-      err = info
-      call print("ScaLAPACK_diagonalise_gen_c: Failed to diagonalise info="//info, PRINT_ALWAYS)
-    else
-      call system_abort("ScaLAPACK_diagonalise_gen_c: Failed to diagonalise")
-    endif
+    RAISE_ERROR("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, error)
   endif
 #endif
 
