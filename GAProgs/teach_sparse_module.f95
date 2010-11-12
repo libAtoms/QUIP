@@ -233,6 +233,10 @@ contains
     endselect
     d = this%d
 
+    call print("Number of target energies (property name: "//trim(this%energy_property_name)//") found: "//this%n_ener)
+    call print("Number of target forces (property name: "//trim(this%force_property_name)//") found: "//this%n_force)
+    call print("Number of target virials (property name: "//trim(this%virial_property_name)//") found: "//this%n_virial)
+
     allocate(this%x(d,this%nn),this%xd(d,this%n), &
     this%yf(this%n_ener), this%ydf(this%n_force+this%n_virial), &
     this%lf(this%n_ener),this%ldf(this%n_force+this%n_virial), &
