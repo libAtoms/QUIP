@@ -366,7 +366,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   real(dp), pointer :: local_N(:), local_mom(:,:)
   logical do_evecs
 
-  integer diag_err
+  integer diag_error
   integer :: max_iter = 1
   integer iter
   logical scf_converged
@@ -456,23 +456,23 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (this%tbsys%tbmodel%is_orthogonal) then
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%evals, this%evecs, err = diag_err)
+	call diagonalise(this%tbsys%H, this%evals, this%evecs, error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%evals, err = diag_err)
+	call diagonalise(this%tbsys%H, this%evals, error = diag_error)
       end if
     else
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, err = diag_err)
+	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, err = diag_err)
+	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, error = diag_error)
       endif
     endif
 
-    if (diag_err /= 0) then
+    if (diag_error /= 0) then
       if (this%mpi%my_proc == 0) then
 	call write(this%at, "atom_dump_bad_diagonalise."//mpi_id()//".xyz")
       endif
-      RAISE_ERROR("TB_solve_diag got error " // diag_err // " from diagonalise", error)
+      RAISE_ERROR_WITH_KIND(diag_error, "TB_solve_diag got error " // diag_error // " from diagonalise", error)
     endif
 
     if (this%tbsys%scf%active) then

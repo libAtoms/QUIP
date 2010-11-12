@@ -224,11 +224,11 @@ module linearalgebra_module
   !% Both diagonalisation and solution of the generalised eigenproblem
   !% are supported, but only for real positive definite symmetric or
   !% complex hermitian postive definite matrices.
-  private :: matrix_diagonalise, matrix_general_diagonalise
-  private :: matrix_z_diagonalise, matrix_z_general_diagonalise
+  private :: matrix_diagonalise, matrix_diagonalise_generalised
+  private :: matrix_z_diagonalise, matrix_z_diagonalise_generalised
   interface diagonalise
-     module procedure matrix_diagonalise, matrix_general_diagonalise
-     module procedure matrix_z_diagonalise, matrix_z_general_diagonalise
+     module procedure matrix_diagonalise, matrix_diagonalise_generalised
+     module procedure matrix_z_diagonalise, matrix_z_diagonalise_generalised
   end interface
 
   !% Calculate the inverse of a matrix in-place. Uses \textsc{lapack} to compute the inverse.
@@ -1371,14 +1371,17 @@ CONTAINS
   
   ! the following stuff only with lapack        
   ! diagonalise matrix, only symmetric case
-  subroutine matrix_diagonalise(this,evals,evects, err)
+  subroutine matrix_diagonalise(this,evals,evects, error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     real(dp),intent(inout), target, optional, dimension(:,:) :: evects
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
+
     real(8),allocatable::WORK(:), r8_evals(:)
     real(8), pointer :: r8_evects(:,:)
     integer::N,INFO,LWORK
+
+    INIT_ERROR(error)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_Diagonalise')
@@ -1405,43 +1408,38 @@ CONTAINS
 	 call DSYEV('N','U',N,r8_evects,N,r8_evals,WORK,LWORK,INFO)
 	endif
 
-       if (present(err)) err = INFO
-
-       if (INFO.NE.0) then
-	  if (present(err)) then
-	    mainlog%mpi_all_inoutput_flag=.true.
-	    call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
-	    mainlog%mpi_all_inoutput_flag=.false.
-	  else
-	    call system_abort ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')')
-	  endif
-       endif
-
        if (present(evects) .and. dp /= 8) evects = r8_evects
        evals = r8_evals
 
        deallocate(WORK)
        deallocate(r8_evals)
        if (.not. (present(evects) .and. dp == 8)) deallocate(r8_evects)
+
+       if (INFO /= 0) then
+	  mainlog%mpi_all_inoutput_flag=.true.
+	  call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
+	  if (INFO < 0) then
+	     call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+	  else if (INFO <= N) then
+	     call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+	  endif
+	  mainlog%mpi_all_inoutput_flag=.false.
+	  RAISE_ERROR ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', error)
+       endif
     else
-       if (present(err)) then
-	 call print('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',PRINT_ALWAYS) 
-	 err = -1
-       else
-	 call system_abort('Matrix_diagonalise: Non symmetric diagonalisation is not permitted') 
-       ! Why not print a warning then call general_diagonalise?
-	endif
+       ! Why not print a warning then call more general diagonalise?
+       RAISE_ERROR('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',error) 
     end if
  
   end subroutine matrix_diagonalise
 
   ! the following stuff only with lapack        
   ! diagonalise complex matrix, only hermitian positive definite case
-  subroutine matrix_z_diagonalise(this,evals,evects,err)
+  subroutine matrix_z_diagonalise(this,evals,evects,error)
     complex(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     complex(dp),intent(inout), optional, target, dimension(:,:) :: evects
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
     integer::N,INFO,LWORK
     integer NB
     integer, external :: ILAENV
@@ -1449,6 +1447,8 @@ CONTAINS
     complex(8), pointer :: z8_evects(:,:)
     real(8), allocatable :: r8_evals(:), RWORK(:)
     complex(8), pointer :: WORK(:)
+
+    INIT_ERROR(error)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_z_Diagonalise')
@@ -1477,18 +1477,6 @@ CONTAINS
 	 call ZHEEV('N','U',N,z8_evects,N,r8_evals,WORK,LWORK,RWORK,INFO)
        endif
 
-       if (present(err)) err = INFO
-
-       if (INFO.NE.0) then
-	  if (present(err)) then
-	    mainlog%mpi_all_inoutput_flag=.true.
-	    call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
-	    mainlog%mpi_all_inoutput_flag=.false.
-	  else
-	    call system_abort ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')')
-	  endif
-       endif
-
        if (present(evects) .and. dp /= 8) evects = z8_evects
        evals = r8_evals
 
@@ -1496,26 +1484,33 @@ CONTAINS
        deallocate(RWORK)
        deallocate(r8_evals)
        if (.not.(present(evects) .and. dp == 8)) deallocate(z8_evects)
+
+       if (INFO /= 0) then
+	  mainlog%mpi_all_inoutput_flag=.true.
+	  call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
+	  if (INFO < 0) then
+	     call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+	  else if (INFO <= N) then
+	     call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+	  endif
+	  mainlog%mpi_all_inoutput_flag=.false.
+	  RAISE_ERROR ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', error)
+       endif
     else
-       if (present(err)) then
-	 call print('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted', PRINT_ALWAYS) 
-	 err=-1
-       else
-	 call system_abort('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted') 
-	 ! Why not print a warning then call general_diagonalise?
-	endif
+       ! why not print a warning and call more general diagonalise instead?
+       RAISE_ERROR ('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted', error)
     end if
  
   end subroutine matrix_z_diagonalise
 
-  ! general eigenproblem
+  ! generalised eigenproblem
   ! just works for symmetric systems 
-  subroutine  matrix_general_diagonalise(this,other,evals,evects,err)
+  subroutine  matrix_diagonalise_generalised(this,other,evals,evects,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(in), dimension(:,:) :: other
     real(dp),intent(inout), dimension(:) :: evals
     real(dp),intent(inout), dimension(:,:) :: evects
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
 
     real(dp), allocatable :: other_copy(:,:)
     real(dp), allocatable :: WORK(:)
@@ -1523,7 +1518,9 @@ CONTAINS
     integer, external :: ILAENV
     integer NB
 
-    if (dp /= 8) call system_abort("matrix_general_diagonalise: no workaround for LAPACK assuming 8 byte double, but dp(="//dp//") /= 8")
+    INIT_ERROR(error)
+
+    if (dp /= 8) call system_abort("matrix_diagonalise_generalised: no workaround for LAPACK assuming 8 byte double, but dp(="//dp//") /= 8")
 
     NB = ILAENV(1, "DSYTRD", "U", N, N, N, N)
     N=size(this,1)
@@ -1531,39 +1528,41 @@ CONTAINS
     allocate(WORK(LWORK))
     allocate(other_copy(N,N))
 
-    call check_size('Eigenvalue vector',evals,N,'Matrix_General_Diagonalise')
-    call check_size('Eigenvector Array',evects,shape(this),'Matrix_General_Diagonalise')
+    call check_size('Eigenvalue vector',evals,N,'Matrix_Diagonalise_Generalised')
+    call check_size('Eigenvector Array',evects,shape(this),'Matrix_Diagonalise_Generalised')
 
     evects = this
     other_copy = other
 
     call DSYGV(1,'V','U',N,evects,N,other_copy,N,evals,WORK,LWORK,INFO)
 
-    if (present(err)) err = INFO
-
-    if (INFO.NE.0) then
-       if (present(err)) then
-	 mainlog%mpi_all_inoutput_flag=.true.
-	 call print ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')', PRINT_ALWAYS)
-	 mainlog%mpi_all_inoutput_flag=.false.
-	else
-	 call system_abort ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')')
-	endif
-    endif
-
     deallocate(WORK)
     deallocate(other_copy)
 
-  end subroutine matrix_general_diagonalise
+    if (INFO /= 0) then
+       mainlog%mpi_all_inoutput_flag=.true.
+       call print ('Matrix_diagonalise_generalised: Error in calling DSYGV! (info = '//INFO//')', PRINT_ALWAYS)
+       if (INFO < 0) then
+	  call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+       else if (INFO <= N) then
+	  call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+       else
+	  call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
+       endif
+       mainlog%mpi_all_inoutput_flag=.false.
+       RAISE_ERROR ('Matrix_diagonalise_generalised: Error in calling DSYGV! (info = '//INFO//')', error)
+    endif
+
+  end subroutine matrix_diagonalise_generalised
 
   ! general eigenproblem
   ! just works for hermitian systems 
-  subroutine  matrix_z_general_diagonalise(this,other,evals,evects, err )
+  subroutine  matrix_z_diagonalise_generalised(this,other,evals,evects, error )
     complex(dp),intent(in), dimension(:,:) :: this
     complex(dp),intent(in), dimension(:,:) :: other
     real(dp),intent(inout), dimension(:) :: evals
     complex(dp),intent(inout), dimension(:,:) :: evects
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
 
     complex(dp), allocatable::WORK(:)
     real(dp), allocatable::RWORK(:)
@@ -1573,7 +1572,9 @@ CONTAINS
 
     integer NB
 
-    if (dp /= 8) call system_abort("matrix_z_general_diagonalise: no workaround for LAPACK assuming 8 byte double, but dp(="//dp//") /= 8")
+    INIT_ERROR(error)
+
+    if (dp /= 8) call system_abort("matrix_z_diagonalise_generalised: no workaround for LAPACK assuming 8 byte double, but dp(="//dp//") /= 8")
   
     N=size(this,2)
     NB = ILAENV(1, "ZHETRD", "U", N, N, N, N)
@@ -1582,30 +1583,33 @@ CONTAINS
     allocate(RWORK(3*N-2))
     allocate(other_copy(N,N))
 
-    call check_size('Eigenvalue vector',evals,N,'Matrix_z_General_Diagonalise')
-    call check_size('Eigenvector Array',evects,shape(this),'Matrix_z_General_Diagonalise')
+    call check_size('Eigenvalue vector',evals,N,'Matrix_z_Diagonalise_Generalised')
+    call check_size('Eigenvector Array',evects,shape(this),'Matrix_z_Diagonalise_Generalised')
 
     evects = this
     other_copy = other
 
     call ZHEGV(1,'V','U',N,evects,N,other_copy,N,evals,WORK,LWORK,RWORK,INFO)
 
-    if (present(err)) err = INFO
-
-    if (INFO.NE.0) then
-       if (present(err)) then
-	 mainlog%mpi_all_inoutput_flag=.true.
-	 call print ('Matrix_z_general_diagonalise: Error in calling ZHEGV! (info = '//INFO//')', PRINT_ALWAYS)
-	 mainlog%mpi_all_inoutput_flag=.false.
-       else
-	 call system_abort ('Matrix_z_general_diagonalise: Error in calling ZHEGV! (info = '//INFO//')')
-	endif
-    endif
     deallocate(WORK)
     deallocate(RWORK)
     deallocate(other_copy)
 
-  end subroutine matrix_z_general_diagonalise
+    if (INFO /= 0) then
+       mainlog%mpi_all_inoutput_flag=.true.
+       call print ('Matrix_z_diagonalise_generalised: Error in calling ZHEGV! (info = '//INFO//')', PRINT_ALWAYS)
+       if (INFO < 0) then
+	  call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+       else if (INFO <= N) then
+	  call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+       else
+	  call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
+       endif
+       mainlog%mpi_all_inoutput_flag=.false.
+       RAISE_ERROR ('Matrix_z_diagonalise_generalised: Error in calling ZHEGV! (info = '//INFO//')', error)
+    endif
+
+  end subroutine matrix_z_diagonalise_generalised
 
   subroutine matrix_nonsymmetric_diagonalise(this,eval)
      real(dp), dimension(:,:), intent(in) :: this

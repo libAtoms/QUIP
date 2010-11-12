@@ -36,6 +36,8 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module TBMatrix_module
 
 use libatoms_module
@@ -550,75 +552,73 @@ subroutine TBMatrix_add_block_z(this, im, block, block_nr, block_nc, first_row, 
 
 end subroutine TBMatrix_add_block_z
 
-subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, err)
+subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
   type(TBMatrix), intent(in) :: this
   type(TBMatrix), intent(in) :: overlap
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer i
 
-  if (This%is_sparse) then
-    call System_abort ("can't diagonalize_gen sparse matrix")
+  INIT_ERROR(error)
+
+  if (this%is_sparse) then
+    RAISE_ERROR("can't diagonalize_gen sparse matrix", error)
   endif
 
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), err = err)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
       else
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), err = err)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), err = err)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
       else
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), err = err)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), error = error)
       endif
     end do
   endif
-
-  if (present(err)) then
-    if (err /= 0) then
-      mainlog%mpi_all_inoutput_flag=.true.
-      call print("TBMatrix_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
-      mainlog%mpi_all_inoutput_flag=.false.
-    endif
-  endif
+  PASS_ERROR(error)
 end subroutine TBMatrix_diagonalise_gen
 
-subroutine TBMatrix_diagonalise(this, evals, evecs, err)
+subroutine TBMatrix_diagonalise(this, evals, evecs, error)
   type(TBMatrix), intent(in) :: this
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer i
 
-  if (This%is_sparse) then
-    call System_abort ("can't diagonalize sparse matrix")
+  INIT_ERROR(error)
+
+  if (this%is_sparse) then
+    RAISE_ERROR("can't diagonalize sparse matrix", error)
   endif
 
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), err = err)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
       else
-	call diagonalise(this%data_z(i), evals%data_d(:,i), err = err)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), err = err)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
       else
-	call diagonalise(this%data_d(i), evals%data_d(:,i), err = err)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), error = error)
       endif
     end do
   endif
+  PASS_ERROR(error)
 end subroutine TBMatrix_diagonalise
 
 function TBVector_dotproduct(this, that)
