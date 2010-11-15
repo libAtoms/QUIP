@@ -71,7 +71,9 @@ program EVB_filepot_template
     integer                 :: form_bond(2), break_bond(2)
     real(dp)                :: diagonal_dE2, &
                                offdiagonal_A12, &
-                               offdiagonal_mu12
+                               offdiagonal_mu12, &
+                               offdiagonal_mu12_square, &
+                               offdiagonal_r0
     logical                 :: save_forces, &
                                save_energy
     type(Inoutput)          :: evb_params_file
@@ -125,6 +127,8 @@ program EVB_filepot_template
        call param_register(params, 'diagonal_dE2', '0.0', diagonal_dE2, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'offdiagonal_A12', '0.0', offdiagonal_A12, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'offdiagonal_mu12', '0.0', offdiagonal_mu12, help_string="No help yet.  This source file was $LastChangedBy$")
+       call param_register(params, 'offdiagonal_mu12_square', '0.0', offdiagonal_mu12_square, help_string="No help yet.  This source file was $LastChangedBy$")
+       call param_register(params, 'offdiagonal_r0', '0.0', offdiagonal_r0, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'save_forces', "T", save_forces, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'save_energy', 'T', save_energy, help_string="No help yet.  This source file was $LastChangedBy$")
        if (.not. param_read_line(params, evb_params_line, ignore_unknown=.true.,task='EVB_filepot_template args_str')) then
@@ -195,6 +199,10 @@ program EVB_filepot_template
        args_str=trim(args_str)//" offdiagonal_A12="//offdiagonal_A12
     if (.not.(offdiagonal_mu12.feq.0.0_dp)) &
        args_str=trim(args_str)//" offdiagonal_mu12="//offdiagonal_mu12
+    if (.not.(offdiagonal_mu12_square.feq.0.0_dp)) &
+       args_str=trim(args_str)//" offdiagonal_mu12_square="//offdiagonal_mu12_square
+    if (.not.(offdiagonal_r0.feq.0.0_dp)) &
+       args_str=trim(args_str)//" offdiagonal_r0="//offdiagonal_r0
     args_str=trim(args_str)//" save_forces="//save_forces
     args_str=trim(args_str)//" save_energy="//save_energy
 
