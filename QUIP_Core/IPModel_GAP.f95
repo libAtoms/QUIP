@@ -589,9 +589,17 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_in_ip = .true.
      endif
 
-    if(parse_in_ip) then
-       if(parse_ip%initialised) call finalise(parse_ip)
-    endif
+     if(parse_in_ip) then
+        if(parse_ip%initialised) call finalise(parse_ip)
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'svn_version', value, status)
+     if( (status == 0) .and. (string_to_int(value) > current_version()) ) then
+        call print_warning('Database was created with a different version of the code.')
+        call print_warning('Version of code used to generate the database is '//trim(value))
+        call print_warning('Version of current code is '//current_version())
+        call system_abort('Please update your code.')
+     endif
 
   elseif(parse_in_ip .and. name == 'GAP_data') then
 

@@ -572,6 +572,7 @@ contains
 
      call xml_NewElement(xf,"GAP_params")
      call xml_AddAttribute(xf,"label",trim(gp_label))
+     call xml_AddAttribute(xf,"svn_version",""//current_version())
 
      call xml_NewElement(xf,"GAP_data")
      call xml_AddAttribute(xf,"n_species",""//this%n_species)

@@ -2819,5 +2819,17 @@ end function pad
 
   end function make_run_directory
 
+  function current_version()
+    integer :: current_version
+    character(len=1024) :: current_version_string
+
+#ifdef SVN_VERSION    
+    current_version_string = SVN_VERSION
+#else    
+    current_version_string = "0"
+#endif
+    current_version = string_to_int(current_version_string(1:scan(current_version_string,'0123456789',back=.true.)))
+
+  endfunction current_version
 
 end module system_module
