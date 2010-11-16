@@ -185,6 +185,8 @@ contains
       integer                                           :: i,N
       integer,                  optional, intent(out)   :: error
 
+      logical :: added_avgpos, added_avgke
+
       ! ---
 
       INIT_ERROR(error)
@@ -237,12 +239,14 @@ contains
       call add_property(this%atoms, 'thermostat_region', 1, error=error)
       PASS_ERROR(error)
 
+      added_avgke = .not. has_property(this%atoms, 'avgke')
       call add_property(this%atoms, 'avg_ke', 0.0_dp, error=error)
       PASS_ERROR(error)
       call add_property(this%atoms, 'velo', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
       call add_property(this%atoms, 'acc', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
+      added_avgpos = .not. has_property(this%atoms, 'avgpos')
       call add_property(this%atoms, 'avgpos', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
       call add_property(this%atoms, 'oldpos', 0.0_dp, n_cols=3, error=error)
@@ -270,13 +274,13 @@ contains
       end if
 
       ! Initialize oldpos and avgpos
-      if (.not. associated(atoms_in%avgpos)) then
+      if (added_avgpos) then
 	do i = 1, this%N
 	   this%atoms%avgpos(:,i) = realpos(this%atoms,i)
 	end do
       endif
       this%atoms%oldpos = this%atoms%avgpos
-      if (.not. associated(atoms_in%avg_ke)) then
+      if (added_avgke) then
 	do i=1, this%atoms%N
 	  this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
 	end do
