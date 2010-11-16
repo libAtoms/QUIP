@@ -1703,6 +1703,11 @@ contains
        ti = find_in_array(params%crack_z, at%z(i))
        eqm_coord(i) = params%md_eqm_coordination(ti)
     end do
+
+    if (count(nn < eqm_coord .and. edge_mask /= 1) == 0) then
+       call system_abort('crack_find_tip_coordination: no under-coordinated atoms found')
+    end if
+
     call select(surface, at, nn < eqm_coord .and. edge_mask /= 1)
     deallocate(eqm_coord)
 
