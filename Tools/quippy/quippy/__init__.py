@@ -167,13 +167,15 @@ mainlog = InOutput(fpointer=mainlog_ptr, finalise=False)
 errorlog = InOutput(fpointer=errorlog_ptr, finalise=False)
 del mainlog_ptr, errorlog_ptr
 
-# Redirect Python stdout to Fortran mainlog so that prefix, verbosity, etc. work.
-sys.stdout = QuippyWriter(mainlog)
-
 import farray;      from farray import *
 import atomslist;   from atomslist import *
 import periodic;    from periodic import *
 import util;        from util import *
+
+# Redirect Python stdout to Fortran mainlog so that prefix, verbosity, etc. work.
+if not is_interactive_shell():
+   sys.stdout = QuippyWriter(mainlog)
+
 
 import sio2, povray, cube, xyz, netcdf
 
