@@ -4,7 +4,6 @@
 from quippy import *
 from quippy.surface import *
 from quippy.elastic import *
-
 import optparse
 
 p = optparse.OptionParser(usage='%prog [options]')
@@ -55,12 +54,14 @@ try:
     at.calc_connect()
 
     if opt.relax_lattice:
+        mainlog.prefix = 'LATTICE'        
         pot.minim(at, 'cg', 1e-6, 100, do_pos=False, do_lat=True)
         print 'Relaxed lattice / A'
         print at.lattice.round(3)
         print
 
     if opt.cij_virial:
+        mainlog.prefix = 'CIJ_VIRIAL'
         c = fzeros((6,6))
         c0 = fzeros((6,6))
         pot.calc_elastic_constants(at, c=c, c0=c0)
@@ -71,6 +72,7 @@ try:
         print
         
     if opt.cij_fit:
+        mainlog.prefix = 'CIJ_FIT'        
         c = elastic_constants(p, at, opt.cij_symmetry, relax=True)
         c0 = elastic_constants(p, at, opt.cij_symmmetry, relax=False)
         print 'C_ij (fitted) / GPa ='
@@ -80,6 +82,7 @@ try:
         print
         
     if opt.surface_energy:
+        mainlog.prefix = 'SURFACE_ENERGY'        
 
         if opt.surface:
             axes = crack_parse_name(opt.surface)
@@ -103,6 +106,9 @@ try:
         surface.set_cutoff(pot.cutoff())
         surface.calc_connect()
 
+        bulk.write('bulk.xyz')
+        surface.write('surface.xyz')
+
         pot.calc(bulk, energy=True)
 
         if opt.relax_surface:
@@ -110,7 +116,7 @@ try:
 
         pot.calc(surface, energy=True)
         gamma = (surface.energy - bulk.energy)/(2.0*surface.lattice[1,1]*surface.lattice[3,3])*J_PER_M2
-        print 'Surface energy: gamma = ', gamma, 'J/m^2'
+        print 'Surface energy: gamma = ', gamma, ' J/m^2'
 
 except RuntimeError, re:
     p.error(str(re))

@@ -1860,6 +1860,20 @@ contains
 
   end subroutine system_initialise
 
+  subroutine get_mainlog_errorlog_ptr(mainlog_ptr, errorlog_ptr)
+    type inoutput_ptr
+       type(inoutput), pointer :: p
+    end type inoutput_ptr
+    integer, intent(out), dimension(12) :: mainlog_ptr, errorlog_ptr
+    type(inoutput_ptr) :: mainlog_p, errorlog_p
+
+    mainlog_p%p => mainlog
+    mainlog_ptr = transfer(mainlog_p, mainlog_ptr)
+    errorlog_p%p => errorlog
+    errorlog_ptr = transfer(errorlog_p, errorlog_ptr)
+
+  end subroutine get_mainlog_errorlog_ptr
+
   function cmd_arg_count()
     integer :: cmd_arg_count
 
