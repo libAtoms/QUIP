@@ -31,8 +31,7 @@ def makecrack(params):
 
    print("Initialising classical potential with args " + params.classical_args.strip() +
          " from file " + xmlfilename)
-   xmlfile.rewind()
-   classicalpot = Potential(params.classical_args, xmlfile)
+   classicalpot = Potential(params.classical_args, param_filename=xmlfilename)
    classicalpot.print_()
 
    mpi_glob = MPI_context()
