@@ -18,7 +18,7 @@
 
 """Utility functions which will be imported into top-level quippy namespace"""
 
-import os, xml.dom.minidom
+import sys, os, xml.dom.minidom
 
 def args_str(D):
    """Construct args string from file, string or mapping object"""
@@ -106,3 +106,14 @@ def quip_xml_parameters(name, label=None):
    else:
       # Return entire contents of file
       return str(xml_string)
+
+def is_interactive_shell():
+   """Return True if we're running in an interactive shell (including IPython)"""
+   if hasattr(sys, 'ps1'):
+      return True
+   try:
+      __IPYTHON__
+   except NameError:
+      return False
+   else:
+      return True

@@ -23,7 +23,7 @@ import arraydata
 from farray import *
 import numpy
 from types import MethodType
-from util import args_str
+from util import args_str, is_interactive_shell
 from dictmixin import PuPyDictionary
 
 major, minor = sys.version_info[0:2]
@@ -378,7 +378,7 @@ class FortranDerivedType(object):
            try:
                exctype, value, tb = sys.exc_info()
 
-               if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+               if is_interactive_shell():
                    error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
                else:
                    # Remove Fortran traceback
@@ -872,7 +872,7 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
            try:
                exctype, value, tb = sys.exc_info()
 
-               if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+               if is_interactive_shell():
                    error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
                else:
                    # Remove Fortran traceback

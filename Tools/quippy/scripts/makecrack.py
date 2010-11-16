@@ -23,7 +23,7 @@ import sys
 
 def makecrack(params):
    """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
-   
+
    print_title('Initialisation')
 
    verbosity_push(params.io_verbosity)
@@ -152,6 +152,7 @@ if __name__ == '__main__':
 
       xmlfile = InOutput(xmlfilename,INPUT)
       params.read_xml(xmlfile, validate=validate)
+      xmlfile.close()
 
       crack_slab = makecrack(params)
       if params.io_netcdf:
@@ -160,5 +161,8 @@ if __name__ == '__main__':
          crack_slab.write(stem+'.xyz')
 
    except RuntimeError, re:
-      sys.stderr.write('error: %s\n' % str(re))
-      sys.exit(1)
+      if is_interactive_shell():
+         raise
+      else:
+         sys.stderr.write('error: %s\n' % str(re))
+         sys.exit(1)
