@@ -1242,7 +1242,7 @@ contains
        allocate(stored_pos(3,at%N))
        stored_pos = 0.0_dp
        first_time = .true.
-       nn_atoms = at  ! First time we copy entire atoms structure
+       call atoms_copy_without_connect(nn_atoms, at) ! First time we copy entire atoms structure
     end if
 
     if (.not. first_time) then
