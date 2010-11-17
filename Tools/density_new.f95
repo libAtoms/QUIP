@@ -77,7 +77,7 @@ implicit none
     mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
     radial_histo, radial_center, random_samples, n_samples, &
     sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
       call print_usage()
     call system_abort('could not parse argument line')
   end if

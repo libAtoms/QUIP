@@ -72,7 +72,7 @@ implicit none
   call param_register(cli, "no_23", "F", no_23, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "no_33", "F", no_33, help_string="No help yet.  This source file was $LastChangedBy$")
 
-  if (.not. param_read_args(cli, do_check=.true., ignore_unknown=.false.)) &
+  if (.not. param_read_args(cli, ignore_unknown=.false.)) &
     call system_abort ("Failed to parse command line arguments")
   call finalise(cli)
 

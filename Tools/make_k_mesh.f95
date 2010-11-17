@@ -16,7 +16,7 @@ implicit none
   call param_register(cli_params, "outfile", "stdout", outfile, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "mesh", "1 1 1", mesh, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "monkhorst_pack", "F", monkhorst_pack, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check=.true., ignore_unknown=.false.)) then
+  if (.not. param_read_args(cli_params, ignore_unknown=.false.)) then
     call print("Usage: make_k_mesh outfile=filename(stdout) mesh='n1 n2 n3'(1 1 1 ) monkhorst_pack=L(F)", PRINT_ALWAYS)
     call system_abort("Failed to parse command line arguments")
   endif

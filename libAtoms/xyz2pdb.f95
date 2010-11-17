@@ -105,7 +105,7 @@ program xyz2pdb
     call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'sort', 'F', do_sort, help_string="No help yet.  This source file was $LastChangedBy$")
-    if (.not. param_read_args(params_in, do_check = .true.)) then
+    if (.not. param_read_args(params_in)) then
       call print_usage
       call system_abort('could not parse argument line')
     end if

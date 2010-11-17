@@ -63,7 +63,7 @@ use libatoms_module
     call param_register(params_in, 'to', '0', to, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'one_atom', '0', one_atom, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'IO_Rate', '1', IO_Rate, help_string="No help yet.  This source file was $LastChangedBy$")
-    if (.not. param_read_args(params_in, do_check = .true.)) then
+    if (.not. param_read_args(params_in)) then
        call print('diffusion xyzfile datafile [from=1] [to=0] [one_atom] [IO_Rate]')
        call system_abort('could not parse argument line')
     end if

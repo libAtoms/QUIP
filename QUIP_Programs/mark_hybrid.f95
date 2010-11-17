@@ -56,7 +56,7 @@ implicit none
   call param_register(cli_params, "cyl_qm_center", "0 0 0", cyl_qm_center, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "cyl_qm_vec", "0 0 1", cyl_qm_vec, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "cyl_qm_rad", "0", cyl_qm_rad, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: vacancy_map_hybrid_generate [buffer_hops=i(1)] [transition_hops=i(1)]", PRINT_ALWAYS)
     call print("   [qm_hops=i(1)] sphere_qm_center={x y z}(0 0 0) sphere_qm_rad=r(1)", PRINT_ALWAYS)
     call print("   cyl_qm_center={x y z}(0 0 0) cyl_qm_vec={x y z}(0 0 0) cyl_qm_rad=r(1)", PRINT_ALWAYS)

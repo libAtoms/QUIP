@@ -404,7 +404,7 @@ subroutine analysis_read(this, prev, args_str)
     if (.not. param_read_line(params, trim(args_str), ignore_unknown=.false.)) &
       call system_abort("analysis_read failed to parse string '"//trim(args_str)//"'")
   else
-    if (.not. param_read_args(params, do_check=.true.)) &
+    if (.not. param_read_args(params)) &
       call system_abort("analysis_read failed to parse command line arguments")
   endif
 

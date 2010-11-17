@@ -96,7 +96,7 @@ program EVB_filepot_template
     call param_register(cli_params,"filepot_program","", filepot_program, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(cli_params,"cp2k_calc_args","", cp2k_calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(cli_params,"param_file","evb_params.dat", evb_params_filename, help_string="No help yet.  This source file was $LastChangedBy$")
-    if (.not. param_read_args(cli_params, do_check = .true.)) then
+    if (.not. param_read_args(cli_params)) then
       !call print("Usage: pos xyz_template out only_GAP param_file",PRINT_ALWAYS)
       call system_abort('EVB_filepot: could not parse argument line')
     endif

@@ -66,7 +66,7 @@ implicit none
   call param_register(cli_params, "histogram_n_bins", "10", histogram_n_bins, help_string="number of bins for histogram calculation")
   call param_register(cli_params, "over_bins", "F", over_bins, help_string="do mean/variance/correlation over bins")
   call param_register(cli_params, "over_time", "F", over_time, help_string="do mean/variance/correlation over time")
-  if (.not.param_read_args(cli_params, do_check=.true.)) then
+  if (.not.param_read_args(cli_params)) then
     call print("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F effective_N=F", PRINT_ALWAYS)
     call print("        correlation_max_lag=1000 correlation_effective_N_long_lag=1001 over_bins=F over_time=T", PRINT_ALWAYS)
     call system_abort("Unable to parse command line")

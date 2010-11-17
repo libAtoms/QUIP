@@ -58,7 +58,7 @@ program rings
 
   call initialise(cli_params)
   call param_register(cli_params, 'infile', 'stdin', infilename, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call system_abort('could not parse argument line')
   end if
   call finalise(cli_params)

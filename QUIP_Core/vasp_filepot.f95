@@ -91,7 +91,7 @@ subroutine do_vasp_calc(at, args_str, error)
    call param_register(cli, "no_use_WAVECAR", "F", no_use_WAVECAR, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(cli, "force_constant_basis", "F", force_constant_basis, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(cli, "run_suffix", "run", run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
-   if (.not. param_read_line(cli, args_str, do_check=.true., ignore_unknown=.true.,task='do_vasp_calc args_str')) then
+   if (.not. param_read_line(cli, args_str, ignore_unknown=.true.,task='do_vasp_calc args_str')) then
       call print("Args:  verbosity INCAR_template kpoints_file potcar_files vasp energy force", PRINT_ALWAYS)
       call print("       virial local_energy clean_up_files ignore_convergence no_use_WAVECAR", PRINT_ALWAYS)
       call print("       force_constant_basis run_suffix", PRINT_ALWAYS)

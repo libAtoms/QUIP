@@ -56,7 +56,7 @@ implicit none
   call param_register(cli, "charge_scale", "1.0", charge_scale, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "g_width", "0.25", g_width, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "vacuum", "15.0", vacuum, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli, ignore_unknown=.false., do_check=.true.)) &
+  if (.not. param_read_args(cli, ignore_unknown=.false.)) &
     call system_abort("Failed to parse CLI parameters")
 
   call print("n_qm " // n_qm)

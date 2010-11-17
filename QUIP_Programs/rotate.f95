@@ -43,7 +43,7 @@ implicit none
   call param_register(cli_params, "axis", PARAM_MANDATORY, axis, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "angle", PARAM_MANDATORY, theta, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "origin", "0 0 0", origin, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check=.true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print('Usage: rotate axis="x y z" angle=theta [ origin="0 0 0" ]', PRINT_ALWAYS)
     call system_abort("Failed to parse cli args")
   endif

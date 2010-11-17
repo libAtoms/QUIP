@@ -66,7 +66,7 @@ implicit none
   call param_register(cli_params, 'vac_i', '0', vac_i, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'hybrid_args_str', '', hybrid_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
-  if (.not. param_read_args(cli_params, do_check=.true.)) then
+  if (.not. param_read_args(cli_params)) then
     call system_abort("Usage: vacancy_map_hybrid_relax [ restart ] [ vac_i ] [ in_file=filename ] [ hybrid_args_str=args ]")
     call system_abort("Confused by CLI argument")
   endif

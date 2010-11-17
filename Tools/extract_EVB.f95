@@ -84,7 +84,7 @@ program extract_EVB
       call param_register(params_in, 'append_output', 'F', append_output, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'restart_every', '1', restart_every, help_string="No help yet.  This source file was $LastChangedBy$")
 
-      if (.not. param_read_args(params_in, do_check = .true.)) then
+      if (.not. param_read_args(params_in)) then
         !call print_usage
         call print("extract_EVB coord_file outfile PSF_file1 PSF_file2 filepot_program cp2k_program [last_frame] [time_step] [append_output] [restart_every]",PRINT_ALWAYS)
         call system_abort('could not parse argument line')

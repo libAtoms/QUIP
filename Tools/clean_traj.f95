@@ -65,7 +65,7 @@ implicit none
   call param_register(cli_params, 'scale_pos', '1.0', scale_pos, help_string="No help yet.  This source file was $LastChangedBy$")
   properties = ""
   call param_register(cli_params, 'properties', 'species:pos:Z', properties, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
       call print_usage()
     call system_abort('could not parse argument line')
   end if
