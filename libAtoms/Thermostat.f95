@@ -115,6 +115,10 @@ module thermostat_module
      module procedure thermostats_add_thermostat
   end interface add_thermostat
 
+  interface update_thermostat
+     module procedure thermostats_update_thermostat
+  end interface update_thermostat
+
   interface set_degrees_of_freedom
      module procedure set_degrees_of_freedom_int, set_degrees_of_freedom_real
   end interface set_degrees_of_freedom
@@ -213,36 +217,36 @@ contains
        
     case(LANGEVIN_PR)
        
-       if (.not.present(gamma) .or. .not.present(p) .or. .not.present(W_p) ) &
+       if (.not.present(gamma) .or. .not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
        & call system_abort('initialise: p, gamma, W_p are required for Langevin Parrinello-Rahman baro-thermostat')
        this%T = T
        this%gamma = gamma
        this%Q = 0.0_dp
        this%p = p
-       this%gamma_p = 0.0_dp
+       this%gamma_p = gamma_p
        this%W_p = W_p
        
     case(NPH_ANDERSEN)
        
-       if (.not.present(W_p) .or. .not.present(p) .or. .not.present(volume_0) ) &
+       if (.not.present(W_p) .or. .not.present(p) .or. .not.present(volume_0) .or. .not.present(gamma_p) ) &
        & call system_abort('thermostat initialise: p, W_p and volume_0 are required for Andersen NPH barostat')
        this%T = 0.0_dp
        this%gamma = 0.0_dp
        this%Q = 0.0_dp
        this%p = p
-       this%gamma_p = 0.0_dp
+       this%gamma_p = gamma_p
        this%W_p = W_p
        this%volume_0 = volume_0
        
     case(NPH_PR)
        
-       if (.not.present(p) .or. .not.present(W_p) ) &
+       if (.not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
        & call system_abort('initialise: p and W_p are required for NPH Parrinello-Rahman barostat')
        this%T = 0.0_dp
        this%gamma = 0.0_dp
        this%Q = 0.0_dp
        this%p = p
-       this%gamma_p = 0.0_dp
+       this%gamma_p = gamma_p
        this%W_p = W_p
        
     end select
@@ -377,6 +381,19 @@ contains
     call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
 
   end subroutine thermostats_add_thermostat
+
+  subroutine thermostats_update_thermostat(this,T,p,w_p)
+
+    type(thermostat),   intent(inout) :: this
+    real(dp), optional, intent(in)    :: T
+    real(dp), optional, intent(in)    :: p
+    real(dp), optional, intent(in)    :: w_p
+
+    if( present(T) ) this%T = T
+    if( present(p) ) this%p = p
+    if( present(w_p) ) this%w_p = w_p
+
+  endsubroutine thermostats_update_thermostat
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
@@ -706,13 +723,11 @@ contains
           at%pos(:,i) = at%pos(:,i) + matmul(this%lattice_v,at%pos(:,i))*dt
        end do
        !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
-
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
        !X NPH, Andersen barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
     case(NPH_ANDERSEN)
               
        if( .not. present(virial) ) call system_abort('thermostat1: NPH &
@@ -846,7 +861,7 @@ contains
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat3: cannot find property '//property)
     end if
-    
+
     select case(this%type)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

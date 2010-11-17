@@ -166,6 +166,10 @@ module dynamicalsystem_module
       module procedure ds_add_thermostat
    end interface add_thermostat
 
+   interface update_thermostat
+      module procedure ds_update_thermostat
+   end interface update_thermostat
+
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -838,10 +842,47 @@ contains
         endselect
         volume_0 = cell_volume(this%atoms)
      endif
-
      call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0)
      
    end subroutine ds_add_thermostat
+
+   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   !X 
+   !X Updating a thermostat
+   !X
+   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+   subroutine ds_update_thermostat(this,T,p,i)
+
+     type(dynamicalsystem), intent(inout) :: this
+     real(dp), optional,    intent(in)    :: T
+     real(dp), optional,    intent(in)    :: p
+     integer,  optional,    intent(in)    :: i
+
+     real(dp) :: w_p, mass1, mass2, my_T
+     integer :: my_i
+
+     my_i = optional_default(1,i)
+
+     if(present(p)) then
+        
+        my_T = optional_default(this%thermostat(my_i)%T,T)
+        
+        select case(this%thermostat(my_i)%type)
+        case(LANGEVIN_NPT,NPH_ANDERSEN)
+           mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
+           mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
+           w_p = max(mass1,mass2)
+        case(LANGEVIN_PR,NPH_PR)
+           w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)/3.0_dp
+        case default
+           call print_warning('Pressure passed but thermostat does not have barostat.')
+        endselect
+     endif
+
+     call update_thermostat(this%thermostat(my_i),T=T,p=p,w_p=w_p)
+     
+   end subroutine ds_update_thermostat
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X 
@@ -1237,6 +1278,8 @@ contains
       r = sqrt((Ekin+heat)/Ekin)
 
       this%atoms%velo = this%atoms%velo * r
+      this%Wkin = kinetic_virial(this)
+      this%Ekin = trace(this%Wkin)/2
 
    end subroutine add_heat
 
@@ -1273,6 +1316,9 @@ contains
 
       r = sqrt(temp/currTemp)
       this%atoms%velo = this%atoms%velo * r
+
+      this%Wkin = kinetic_virial(this)
+      this%Ekin = trace(this%Wkin)/2
    end subroutine rescale_velo
 
    !% Reinitialise the atomic velocities to temperature 'temp'.
@@ -2052,7 +2098,7 @@ contains
      type(MPI_context), optional, intent(in)   :: mpi_obj
      integer,           optional, intent(out)  :: error
 
-     character(2)                              :: string
+     character(len=1023) :: string
      logical, save :: firstcall = .true.
      real(dp) :: temp, my_epot, my_ekin
      real(dp) :: region_temps(size(this%thermostat))
@@ -2060,7 +2106,7 @@ contains
 
      INIT_ERROR(error)
 
-     string = " "
+     string = ""
      if(present(label)) string = label
 
      if(firstcall) then
@@ -2093,12 +2139,12 @@ contains
      PASS_ERROR(error)
 
      if(present(epot)) then
-        write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') string, this%t, &
+        write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') trim(string), this%t, &
              temp, this%avg_temp, norm(momentum(this)),&
              this%work, this%thermostat_work, my_ekin, &
              my_epot+my_ekin,my_epot+my_ekin+this%ext_energy
      else
-        write(line, '(a,f12.2,2f12.4,e12.2,2e20.8)') string, this%t, &
+        write(line, '(a,f12.2,2f12.4,e12.2,2e20.8)') trim(string), this%t, &
              temp, this%avg_temp, norm(momentum(this)), &
              this%work, this%thermostat_work
 
