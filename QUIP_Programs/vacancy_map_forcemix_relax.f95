@@ -73,7 +73,7 @@ implicit none
   call param_register(cli_params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'lotf_args_str', '', lotf_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
-  if (.not. param_read_args(cli_params, do_check=.true.)) then
+  if (.not. param_read_args(cli_params)) then
     call system_abort("Usage: vacancy_map_forcemix_relax [ restart=L(F) ] [ use_n_minim=L(F) ] [ vac_i=n(0) ] [ in_file=filename(stdin) ] [ buffer_hops=n(3) ] [ lotf_args_str=args ]")
     call system_abort("Confused by CLI argument")
   endif

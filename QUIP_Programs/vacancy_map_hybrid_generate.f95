@@ -73,7 +73,7 @@ implicit none
   call param_register(cli_params, "imin", "0", imin, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "imax", "0", imax, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "dmax", "1.0e38", dmax, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: vacancy_map_hybrid_generate [buffer_hops=i(1)]", PRINT_ALWAYS)
     call print("  [core_qm=l(T)] [core_qm_x=r(10.0)] core_qm_z=r(5.0)]", PRINT_ALWAYS)
     call print("  [vac_qm=l(F)] vac_qm_hops=i(1)] [n_supercell=i(4)]", PRINT_ALWAYS)

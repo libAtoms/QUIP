@@ -19,7 +19,7 @@ program comb
   call param_register(params, 'out_file', 'stdout', out_file, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'n', '20', n, help_string="No help yet.  This source file was $LastChangedBy$")
 
-  if (.not. param_read_args(params, do_check = .true.)) then
+  if (.not. param_read_args(params)) then
      call verbosity_push(PRINT_NORMAL)
      call print("Usage: comb [in_file=file] [out_file=stdout] [n=20]")
      call system_abort('Exit: Mandatory argument(s) missing...')

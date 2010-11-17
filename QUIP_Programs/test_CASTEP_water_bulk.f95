@@ -60,7 +60,7 @@ implicit none
   call param_register(cli, "g_width_O", ""//(1.2_dp/sqrt(2.0_dp)), g_width_O, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "g_width_H", ""//(0.44_dp/sqrt(2.0_dp)), g_width_H, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "vacuum", "15.0", vacuum, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli, ignore_unknown=.false., do_check=.true.)) &
+  if (.not. param_read_args(cli, ignore_unknown=.false.)) &
     call system_abort("Failed to parse CLI parameters")
 
   call print("qm_center_i " // qm_center_i)

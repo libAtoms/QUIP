@@ -47,7 +47,7 @@ use libatoms_module
 
   call print("n_args " // cmd_arg_count())
 
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print('Usage: msd infile=filename.xyz')
     call system_abort("Bad CLI parameter")
   endif

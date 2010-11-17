@@ -111,7 +111,7 @@ program density_KDE
     call param_register(params_in, 'Gaussian', 'F', Gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'sigma', '0.0', Gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'fortran_io', 'F', fortran_io, help_string="No help yet.  This source file was $LastChangedBy$")
-    if (.not. param_read_args(params_in, do_check = .true.)) then
+    if (.not. param_read_args(params_in)) then
        if (EXEC_NAME == '<UNKNOWN>') then
           call print_usage
        else

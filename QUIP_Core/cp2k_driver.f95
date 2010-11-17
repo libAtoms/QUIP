@@ -204,7 +204,7 @@ contains
       call param_register(cli, 'qm_charges', '', calc_qm_charges, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i, help_string="No help yet.  This source file was $LastChangedBy$")
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
-      if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
+      if (.not.param_read_line(cli, args_str,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('cp2k_driver could not parse argument line')
     call finalise(cli)
 

@@ -52,7 +52,7 @@ implicit none
   call param_register(cli_params, "shift_vec", PARAM_MANDATORY, shift_vec, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "cutoff", "5.0", cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "dist_tol", "0.3", dist_tol, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: move_displacement_field config_filename=file ref_config_filename=file shift_vec={x y z}", PRINT_ALWAYS)
     call print("       cutoff=r(5.0) dist_tol=t(0.3)", PRINT_ALWAYS)
     call system_abort("confused by command line arguments")

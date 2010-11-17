@@ -69,7 +69,7 @@ implicit none
 
   call print("n_args " // cmd_arg_count())
 
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: eval fd_index=i fd_vec='x y z'", PRINT_ALWAYS)
     call print("  init_args='str' [at_file=file(stdin)] [param_file=file(quip_parms.xml)]",PRINT_ALWAYS)
     call print("  [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)]", PRINT_ALWAYS)

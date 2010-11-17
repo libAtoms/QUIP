@@ -339,12 +339,12 @@ module paramreader_module
     !% Read and parse line and update the key/value pairs stored by
     !% in a Dictionary object. Returns false if an error is encountered parsing
     !% the line.
-    function param_read_line(dict, myline, ignore_unknown, do_check, task) result(status)
+    function param_read_line(dict, myline, ignore_unknown, check_mandatory, task) result(status)
 
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       character(len=*), intent(in) :: myline  !% Line to parse
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
-      logical, intent(in), optional :: do_check !% If true, check for missing mandatory parameters
+      logical, intent(in), optional :: check_mandatory !% If true, check for missing mandatory parameters
       character(len=*), intent(in), optional :: task
       logical :: status
 
@@ -358,8 +358,10 @@ module paramreader_module
       logical :: my_ignore_unknown
       integer :: entry_i
       logical, allocatable :: my_has_value(:)
+      logical :: my_check_mandatory
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
+      my_check_mandatory=optional_default(.true., check_mandatory)
 
       call split_string(myline," ,","''"//'""'//'{}', final_fields, num_pairs, matching=.true.)
 
@@ -453,27 +455,28 @@ module paramreader_module
       if (allocated(data%d)) deallocate(data%d)
       status = .true. ! signal success to caller
 
-      if (present(do_check)) then
-         if (do_check) status = param_check(dict)
-      end if
+      if (my_check_mandatory) status = param_check(dict)
       
     end function param_read_line
     
 
     !% Read lines from Inoutput object 'file', in format 'key = value' and set
     !% entries in the Dictionary 'dict'.  Skips lines starting with a '#'. If
-    !% 'do_check' is true then finish by checking if all mandatory values have
+    !% 'check_mandatory' is true then finish by checking if all mandatory values have
     !% been specified. Returns false if there was a problem reading the file, or
     !% if the check for mandatory parameters fails.
-    function param_read_file(dict, file, do_check,task) result(status)
+    function param_read_file(dict, file, check_mandatory,task) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       type(Inoutput), intent(in) :: file !% File to read from
-      logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      logical, intent(in), optional :: check_mandatory !% Should we check if all mandatory parameters have been given
       character(len=*), intent(in), optional :: task
       logical :: status
 
       integer :: file_status
       character(1024) :: myline
+      logical :: my_check_mandatory
+
+      my_check_mandatory=optional_default(.true., check_mandatory)
 
       do
          myline = read_line(file, file_status)
@@ -490,9 +493,7 @@ module paramreader_module
       
       status = .true.
       ! Should we check if all mandatory params have been specified?
-      if (present(do_check)) then
-         if (do_check) status = param_check(dict)
-      end if
+      if (my_check_mandatory) status = param_check(dict)
 
     end function param_read_file
 
@@ -502,10 +503,10 @@ module paramreader_module
     !% arguments that we should look at, in order, if it's not given we look
     !% at all arguments.  Returns false if fails, or if optional check that
     !% all mandatory values have been specified fails.
-    function param_read_args(dict, args, do_check,ignore_unknown,task,command_line) result(status)
+    function param_read_args(dict, args, check_mandatory,ignore_unknown,task,command_line) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       integer, dimension(:), intent(in), optional :: args !% Argument indices to use
-      logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      logical, intent(in), optional :: check_mandatory !% Should we check if all mandatory parameters have been given
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       character(len=*), intent(in), optional :: task
       character(len=*), intent(out), optional :: command_line
@@ -517,8 +518,10 @@ module paramreader_module
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
       integer :: eq_loc, this_len
+      logical :: my_check_mandatory
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
+      my_check_mandatory=optional_default(.true., check_mandatory)
 
       nargs = cmd_arg_count()
 
@@ -568,9 +571,7 @@ module paramreader_module
 
       status = .true.
       ! Should we check if all mandatory params have been specified?
-      if (present(do_check)) then
-         if (do_check) status = param_check(dict)
-      end if
+      if (my_check_mandatory) status = param_check(dict)
 
       if(present(command_line)) command_line = trim(my_command_line)
 
@@ -581,11 +582,11 @@ module paramreader_module
     !% parsing their values into 'dict'. Non option arguments
     !% are returned in the array non_opt_args. Optionally check that
     !% all mandatory parameters have been specified.
-    function process_arguments(dict, non_opt_args, n_non_opt_args, do_check, task) result(status)
+    function process_arguments(dict, non_opt_args, n_non_opt_args, check_mandatory, task) result(status)
       type(Dictionary) :: dict !% Dictionary of registered key/value pairs
       character(len=*), dimension(:), intent(out) :: non_opt_args !% On exit, contains non option arguments
       integer, intent(out) :: n_non_opt_args !% On exit, number of non option arguments
-      logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      logical, intent(in), optional :: check_mandatory !% Should we check if all mandatory parameters have been given
       character(len=*), intent(in), optional :: task
       logical :: status
 
@@ -593,9 +594,12 @@ module paramreader_module
       character(len=1000) :: options
       type(Table) :: opt_inds
       integer :: start, end, i, j, eqpos, n_args
+      logical :: my_check_mandatory
 
       n_args = cmd_arg_count()
       if (n_args > size(args)) call system_abort('Too many command line arguments')
+
+      my_check_mandatory=optional_default(.true., check_mandatory)
 
       ! Read command line args into array args
       do i=1,n_args
@@ -655,9 +659,7 @@ module paramreader_module
 
       status = .true.
       ! Should we check if all mandatory params have been specified?
-      if (present(do_check)) then
-         if (do_check) status = Param_Check(dict)
-      end if
+      if (my_check_mandatory) status = param_check(dict)
 
       ! Find and return the non-option arguments
       n_non_opt_args = 0

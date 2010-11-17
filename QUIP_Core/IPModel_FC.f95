@@ -116,7 +116,7 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
   this%label = ''
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, "ideal_struct_file", PARAM_MANDATORY, this%ideal_struct_file, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,do_check=.true.,task='IPModel_FC_Initialise_str args_str')) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_FC_Initialise_str args_str')) then
     call system_abort("IPModel_FC_Initialise_str failed to find mandatory ideal_struct_file or parse label from args_str="//trim(args_str))
   endif
   call finalise(params)

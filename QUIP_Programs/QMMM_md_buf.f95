@@ -232,7 +232,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'nH_extra_heat_r', '0.0 -1.0', nH_extra_heat_r, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor, help_string="No help yet.  This source file was $LastChangedBy$")
 
-      if (.not. param_read_args(params_in, do_check = .true.)) then
+      if (.not. param_read_args(params_in)) then
         call system_abort('could not parse argument line')
       end if
 

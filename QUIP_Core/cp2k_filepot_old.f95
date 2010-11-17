@@ -111,7 +111,7 @@ integer :: i
     call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
 !    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="No help yet.  This source file was $LastChangedBy$")
 
-    if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot args_str')) then
+    if (.not.param_read_args(params_in,ignore_unknown=.true.,task='cp2k_filepot args_str')) then
       call system_abort('could not parse argument line')
     end if
 

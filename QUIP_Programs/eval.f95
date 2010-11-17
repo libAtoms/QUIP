@@ -156,7 +156,7 @@ implicit none
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
   call param_register(cli_params, 'override_pot_cutoff', '-1.0', override_pot_cutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
 
-  if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
+  if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
     call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)

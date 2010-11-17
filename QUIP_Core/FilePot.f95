@@ -149,7 +149,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'filename', 'filepot', filename, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,do_check=.true.,task='filepot_initialise args_str')) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
     RAISE_ERROR("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)

@@ -101,7 +101,7 @@ program teach_sparse_program
   call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="No help yet.  This source file was $LastChangedBy$")
 
 
-  if (.not. param_read_args(params, do_check = .true., command_line=main_teach_sparse%command_line)) then
+  if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &

@@ -18,7 +18,7 @@ implicit none
   call param_register(cli_params,"vol_per_unit_cell", "-1.0", vol_per_unit_cell, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"repeat", "1 1 1", repeat, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"Z_values", "", Z_values_str, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check=.true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: make_bulk_supercell struct=[struct_name] outfile=[filename](stdout)", PRINT_ALWAYS)
     call print("       [ vol_per_atom=volume | vol_per_unit_cell=volume ] [ repeat='n1 n2 n3'(1 1 1) ]", PRINT_ALWAYS)
     call print("       [ Z_values='Z1 Z2 ...' ]", PRINT_ALWAYS)

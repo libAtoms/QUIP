@@ -82,7 +82,7 @@ program solvate_silica
   call param_register(cli_params,"rotation1_sign",'1', rotation_sign1, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"rotation2_sign",'1', rotation_sign2, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"rotation2_pluspi",'F', rotation2_pluspi, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     !call system_abort("Usage: decimate [file=(stdin)] [waterfile=(stdin)] silica_atoms atom1_point atom2_vector atom3_plane atom1_pos atom12_vector atom123_plane_point exclusion rotation1_sign rotation2_sign2 rotation2_pluspi")
     call verbosity_push(PRINT_NORMAL)
     call print_usage
