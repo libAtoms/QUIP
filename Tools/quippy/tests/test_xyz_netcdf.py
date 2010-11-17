@@ -22,6 +22,12 @@ from quippy.netcdf import *
 import unittest, itertools, sys, quippy
 from quippytest import *
 
+have_netcdf = True
+try:
+   diamond(5.44, 14).write('test.nc')
+   os.remove('test.nc')
+except RuntimeError:
+   have_netcdf = False
 
 class TestCInOutput(QuippyTestCase):
 
@@ -145,10 +151,11 @@ class TestCInOutput(QuippyTestCase):
       at = Atoms('test.xyz')
       self.assertEqual(type(at.bad_neg), type(''))
 
-   def testsinglenc(self):
-      self.at.write('test.nc')
-      at = Atoms('test.nc')
-      self.assertEqual(self.at, at)
+   if have_netcdf:
+      def testsinglenc(self):
+         self.at.write('test.nc')
+         at = Atoms('test.nc')
+         self.assertEqual(self.at, at)
 
    def testmultixyz(self):
       self.al.write('test.xyz')
@@ -162,10 +169,11 @@ class TestCInOutput(QuippyTestCase):
       lines = open('test.xyz').readlines()
       self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
 
-   def testmultinc(self):
-      self.al.write('test.nc')
-      al = AtomsList('test.nc')
-      self.assertEqual(list(self.al), list(al))      
+   if have_netcdf:
+      def testmultinc(self):
+         self.al.write('test.nc')
+         al = AtomsList('test.nc')
+         self.assertEqual(list(self.al), list(al))      
 
    def testxyzlowlevel(self):
       cio = CInOutput("test.xyz", OUTPUT, append=False)
@@ -255,15 +263,16 @@ class TestCInOutput(QuippyTestCase):
       xyz_params  = get_lattice_params(aq2.lattice)
       self.assertArrayAlmostEqual(orig_params, xyz_params)
 
-   def test_non_orthorhombic_nc(self):
-      from quippy.sio2 import quartz_params
-      aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
-      aq1.map_into_cell()
-      aq1.write('quartz.nc', netcdf4=False)
-      aq2 = Atoms('quartz.nc')
-      orig_params = get_lattice_params(aq1.lattice)
-      nc_params   = get_lattice_params(aq2.lattice)
-      self.assertArrayAlmostEqual(orig_params, nc_params)
+   if have_netcdf:
+      def test_non_orthorhombic_nc(self):
+         from quippy.sio2 import quartz_params
+         aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
+         aq1.map_into_cell()
+         aq1.write('quartz.nc', netcdf4=False)
+         aq2 = Atoms('quartz.nc')
+         orig_params = get_lattice_params(aq1.lattice)
+         nc_params   = get_lattice_params(aq2.lattice)
+         self.assertArrayAlmostEqual(orig_params, nc_params)
 
    def test_read_string(self):
       s = ''.join(self.xyz_ref)
@@ -309,16 +318,17 @@ class TestCInOutput(QuippyTestCase):
       sub = self.at.select(list=frange(1,32), orig_index=False)
       self.assertEqual(at, sub)
 
-   def test_read_nc_range_all(self):
-      self.at.write('test.nc')
-      at = Atoms('test.nc', range=[1,64])
-      self.assertEqual(at, self.at)
+   if have_netcdf:
+      def test_read_nc_range_all(self):
+         self.at.write('test.nc')
+         at = Atoms('test.nc', range=[1,64])
+         self.assertEqual(at, self.at)
 
-   def test_read_nc_range_subset(self):
-      self.at.write('test.nc')
-      at = Atoms('test.nc', range=[1,32])
-      sub = self.at.select(list=frange(1,32), orig_index=False)
-      self.assertEqual(at, sub)
+      def test_read_nc_range_subset(self):
+         self.at.write('test.nc')
+         at = Atoms('test.nc', range=[1,32])
+         sub = self.at.select(list=frange(1,32), orig_index=False)
+         self.assertEqual(at, sub)
 
    def test_write_ext_string(self):
       es = Extendable_str()
