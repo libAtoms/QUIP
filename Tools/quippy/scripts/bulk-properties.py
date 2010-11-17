@@ -74,7 +74,7 @@ try:
     if opt.cij_fit:
         mainlog.prefix = 'CIJ_FIT'        
         c = elastic_constants(pot, at, opt.cij_symmetry, relax=True)
-        c0 = elastic_constants(pot, at, opt.cij_symmmetry, relax=False)
+        c0 = elastic_constants(pot, at, opt.cij_symmetry, relax=False)
         print 'C_ij (fitted) / GPa ='
         print c.round(2)
         print 'C_ij^0 (fitted) / GPa ='
@@ -106,13 +106,11 @@ try:
         surface.set_cutoff(pot.cutoff())
         surface.calc_connect()
 
-        bulk.write('bulk.xyz')
-        surface.write('surface.xyz')
-
         pot.calc(bulk, energy=True)
 
         if opt.relax_surface:
             pot.minim(surface, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
+            surface.write('relaxed-surface.xyz')
 
         pot.calc(surface, energy=True)
         gamma = (surface.energy - bulk.energy)/(2.0*surface.lattice[1,1]*surface.lattice[3,3])*J_PER_M2
