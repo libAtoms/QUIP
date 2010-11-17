@@ -1460,7 +1460,7 @@ CONTAINS
     
     if(norm2grad_f .LT. convergence_tol)then  
        call print("Minimization is already converged!")
-       call print(method//" iter = "// 0 //" df^2 = " // norm2grad_f // " f = " // f &
+       call print(trim(method)//" iter = "// 0 //" df^2 = " // norm2grad_f // " f = " // f &
             &// " "//lsteps//" linmin steps eps = "//eps,PRINT_VERBOSE)
        exit_flag = 1
     end if
