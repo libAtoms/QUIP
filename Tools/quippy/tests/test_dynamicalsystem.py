@@ -31,9 +31,6 @@ class TestDynamicalSystem(QuippyTestCase):
    def test_atoms(self):
        self.assertEqual(self.ds.atoms, self.at)
 
-   def test_atoms_pointer(self):
-       self.assert_(all(self.ds.atoms._fpointer == self.at._fpointer))
-
    def test_avgpos(self):
        self.assertArrayAlmostEqual(self.ds.atoms.avgpos, self.ds.atoms.pos)
 
