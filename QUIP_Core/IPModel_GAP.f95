@@ -217,7 +217,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   integer, dimension(:,:), allocatable :: water_monomer_index
   integer :: d, i, j, k, n, nei_max, jn, iAo, iBo, n_water_pair
 
-  real(dp), dimension(:,:), allocatable :: covariance
+  real(dp), dimension(:,:), allocatable :: covariance, pca_matrix
 
   integer, dimension(3) :: shift
   type(Dictionary) :: params
@@ -408,7 +408,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,i))
 
-        if(this%do_pca) vec(:,i) = matmul(vec(:,i)-this%pca_mean,this%pca_matrix)
 
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
@@ -416,7 +415,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               call calc_bispectrum(dbis,f_hat,df_hat)
               call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
 
-              if(this%do_pca) jack(:,3*n+1:3*(n+1),i) = matmul(transpose(this%pca_matrix), jack(:,3*n+1:3*(n+1),i))
 
            enddo
         endif
@@ -451,6 +449,26 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 !$omp end parallel
 
+  if(this%do_pca) then
+     allocate(pca_matrix(d,d))
+     pca_matrix = transpose(this%pca_matrix)
+
+     if(allocated(vec)) then
+!$omp do
+        do i = 1, size(vec,2)
+           vec(:,i) = matmul(pca_matrix,vec(:,i)-this%pca_mean)
+        enddo
+!$omp end do 
+     endif
+     if(allocated(jack)) then
+!$omp do
+        do i = 1, at%N
+           jack(:,1:3*(atoms_n_neighbours(at, i)+1),i) = matmul(pca_matrix, jack(:,1:3*(atoms_n_neighbours(at, i)+1),i))
+        enddo
+!$omp end do 
+     endif
+     deallocate(pca_matrix)
+  endif
 
   select case(trim(this%coordinates))
   case('water_monomer','water_dimer')
