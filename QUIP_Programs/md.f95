@@ -60,6 +60,11 @@ private
 
 public :: get_params, print_params, print_usage, do_prints, initialise_md_thermostat, update_thermostat
 
+interface update_thermostat
+  module procedure md_update_thermostat
+endinterface update_thermostat
+
+
 contains
 
 subroutine get_params(params, mpi_glob)
@@ -395,7 +400,7 @@ subroutine initialise_md_thermostat(ds, params, do_rescale)
 
 end subroutine initialise_md_thermostat
 
-subroutine update_thermostat(ds, params, do_rescale)
+subroutine md_update_thermostat(ds, params, do_rescale)
   type(md_params), intent(inout) :: params
   type(DynamicalSystem), intent(inout) :: ds
   logical, optional :: do_rescale
@@ -411,7 +416,7 @@ subroutine update_thermostat(ds, params, do_rescale)
   elseif(params%rescale_velocity) then
     call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
   endif
-end subroutine update_thermostat
+end subroutine md_update_thermostat
 
 end module md_module
 
