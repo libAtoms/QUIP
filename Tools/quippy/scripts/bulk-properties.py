@@ -73,8 +73,8 @@ try:
         
     if opt.cij_fit:
         mainlog.prefix = 'CIJ_FIT'        
-        c = elastic_constants(p, at, opt.cij_symmetry, relax=True)
-        c0 = elastic_constants(p, at, opt.cij_symmmetry, relax=False)
+        c = elastic_constants(pot, at, opt.cij_symmetry, relax=True)
+        c0 = elastic_constants(pot, at, opt.cij_symmmetry, relax=False)
         print 'C_ij (fitted) / GPa ='
         print c.round(2)
         print 'C_ij^0 (fitted) / GPa ='
