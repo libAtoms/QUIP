@@ -505,12 +505,13 @@ contains
   !% atoms to be too close together. If so, include the OUT nearest neighbour
   !% in the cluster
   !% returns true if cluster was changed
-  function cluster_fix_termination_clash(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+  function cluster_fix_termination_clash(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, termination_clash_factor) result(cluster_changed)
     type(Atoms), intent(in) :: this !% atoms structure 
     type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
     logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
     type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
     logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    real(dp), intent(in) :: termination_clash_factor
     logical :: cluster_changed
 
     integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
@@ -590,7 +591,7 @@ contains
 	  ! If i and k are nearest neighbours, or the terminating hydrogens would be very close, then
 	  ! include j in the cluster. The H--H checking is conservative, hence the extra factor of 1.2
 	  if ((norm(diff_ik) < bond_length(this%Z(i),this%Z(k))*this%nneightol) .or. &
-	      (norm(H1-H2) < bond_length(1,1)*this%nneightol*1.2_dp) ) then
+	      (norm(H1-H2) < bond_length(1,1)*this%nneightol*termination_clash_factor) ) then
 
 	    call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
 	    cluster_changed = .true.
@@ -1360,7 +1361,7 @@ contains
          fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
          protect_X_H_bonds, protect_double_bonds, keep_whole_molecules, has_termination_rescale
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
-    real(dp) :: r, r_min, centre(3), termination_rescale
+    real(dp) :: r, r_min, centre(3), termination_rescale, termination_clash_factor
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
     integer :: i, j, jj, first_active, old_n, n_cluster
     integer, pointer :: hybrid_mark(:), modified_hybrid_mark(:)
@@ -1423,6 +1424,8 @@ contains
       help_string="Apply heuristic keeping identified molecules (i.e. contiguous bonded groups of atoms) whole")
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_value_target=has_termination_rescale,&
       help_string="rescale factor for X-H passivation bonds")
+    call param_register(params, 'termination_clash_factor', '1.2', termination_clash_factor, &
+      help_string="Factor to multiply H-H bond-length by when deciding if two Hs are too close. Default 1.2")
     call param_register(params, 'cluster_hopping', 'T', cluster_hopping,&
       help_string="Identify cluster region by hopping from a seed atom.  Needed so that shifts will be correct.")
 
@@ -1653,7 +1656,7 @@ contains
              cluster_changed = cluster_changed .or. cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)
           endif
           if (terminate .or. fix_termination_clash) then
-             cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+             cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, termination_clash_factor)
           endif
           if (keep_whole_molecules) then
              cluster_changed = cluster_changed .or. cluster_keep_whole_molecules(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
