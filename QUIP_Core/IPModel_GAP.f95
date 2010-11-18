@@ -222,9 +222,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   integer, dimension(3) :: shift
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  logical :: has_atom_mask_name
+  logical :: has_atom_mask_name, do_atom_mask_lookup
   character(FIELD_LENGTH) :: atom_mask_name
 
+  integer :: n_atoms_eff, ii
+  integer, allocatable, dimension(:) :: atom_mask_lookup
 
   type(fourier_so4), save :: f_hat
   type(grad_fourier_so4), save :: df_hat
@@ -293,7 +295,25 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
-  allocate(w(at%N))
+  do_atom_mask_lookup = associated(atom_mask_pointer) .and. &
+       (trim(this%coordinates) == 'bispectrum' .or. trim(this%coordinates) == 'qw')
+
+  if (do_atom_mask_lookup) then
+     n_atoms_eff = count(atom_mask_pointer)
+     allocate(atom_mask_lookup(at%n))
+     atom_mask_lookup = 0
+     j = 1
+     do i=1,at%N
+        if (atom_mask_pointer(i)) then
+           atom_mask_lookup(i) = j
+           j = j + 1
+        end if
+     end do
+  else
+     n_atoms_eff = at%n
+  end if
+
+  allocate(w(at%n))
   select case(trim(this%coordinates))
   case('water_monomer','water_dimer')
      w = 1.0_dp
@@ -322,6 +342,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   nei_max = 0
   do i = 1, at%N
+     if (associated(atom_mask_pointer)) then
+        if (.not. atom_mask_pointer(i)) cycle
+     end if
      if( nei_max < (atoms_n_neighbours(at,i)+1) ) nei_max = atoms_n_neighbours(at,i)+1
   enddo
 
@@ -368,10 +391,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         enddo
      enddo
   case default
-     allocate(vec(d,at%N))
+     allocate(vec(d,n_atoms_eff))
      vec = 0.0_dp
      if(present(f) .or. present(virial) .or. present(local_virial)) then
-        allocate(jack(d,3*nei_max,at%N))
+        allocate(jack(d,3*nei_max,n_atoms_eff))
         jack = 0.0_dp
      endif
   endselect
@@ -402,31 +425,30 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
+     ii = i
+     if (do_atom_mask_lookup) ii = atom_mask_lookup(i)
 
      if (trim(this%coordinates) == 'bispectrum') then
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
-        call bispectrum2vec(bis,vec(:,i))
-
-
+        call bispectrum2vec(bis,vec(:,ii))
+        
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
               call fourier_transform(df_hat,at,i,n,w)
               call calc_bispectrum(dbis,f_hat,df_hat)
-              call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
-
-
+              call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),ii))
            enddo
         endif
      elseif (trim(this%coordinates) == 'qw') then
         call fourier_transform(f3_hat, at, i)
         call calc_qw(qw, f3_hat)
-        call qw2vec(qw, vec(:,i))
+        call qw2vec(qw, vec(:,ii))
         if (present(f) .or. present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at, i)
               call fourier_transform(df3_hat, at, i, n)
               call calc_qw(dqw, f3_hat, df3_hat)
-              call qw2vec(dqw, jack(:,3*n+1:3*(n+1),i))
+              call qw2vec(dqw, jack(:,3*n+1:3*(n+1),ii))
            enddo
         endif
      endif
@@ -463,7 +485,15 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(allocated(jack)) then
 !$omp do
         do i = 1, at%N
-           jack(:,1:3*(atoms_n_neighbours(at, i)+1),i) = matmul(pca_matrix, jack(:,1:3*(atoms_n_neighbours(at, i)+1),i))
+
+           if(associated(atom_mask_pointer)) then
+              if(.not. atom_mask_pointer(i)) cycle
+           endif
+           
+           ii = i
+           if (do_atom_mask_lookup) ii = atom_mask_lookup(i)
+           
+           jack(:,1:3*(atoms_n_neighbours(at, i)+1),ii) = matmul(pca_matrix, jack(:,1:3*(atoms_n_neighbours(at, i)+1),ii))
         enddo
 !$omp end do 
      endif
@@ -474,8 +504,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case('water_monomer','water_dimer')
 
   case default
-     allocate(covariance(this%my_gp%n,at%N))
-     call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
+     allocate(covariance(this%my_gp%n,n_atoms_eff))
+     if (do_atom_mask_lookup) then
+        call gp_precompute_covariance(this%my_gp,vec,covariance,pack(at%Z, atom_mask_pointer),mpi)
+     else
+        call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
+     end if
   endselect
 
     
@@ -501,9 +535,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            if(.not. atom_mask_pointer(i)) cycle
         endif
 
+        ii = i
+        if (do_atom_mask_lookup) ii = atom_mask_lookup(i)
+
         if(present(e) .or. present(local_e)) then
 
-           call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i),c_in=covariance(:,i))
+           call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,ii),Z=at%Z(i),c_in=covariance(:,ii))
 
            local_e_in(i) = local_e_in(i) + this%e0
         endif
@@ -513,7 +550,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               f_gp = 0.0_dp
        
 
-              call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i),c_in=covariance(:,i))
+              call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,k,ii),Z=at%Z(i),c_in=covariance(:,ii))
 
        
               if( present(f) ) f(k,i) = f(k,i) - f_gp_k
@@ -523,7 +560,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
 
-                 call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,n*3+k,i),Z=at%Z(i),c_in=covariance(:,i))
+                 call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,n*3+k,ii),Z=at%Z(i),c_in=covariance(:,ii))
 
 !$omp critical
                  if( present(f) ) f(k,j) = f(k,j) - f_gp_k
@@ -559,6 +596,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(allocated(jack)) deallocate(jack)
   if(allocated(water_monomer_index)) deallocate(water_monomer_index)
   atom_mask_pointer => null()
+  if (allocated(atom_mask_lookup)) deallocate(atom_mask_lookup)
 
 #endif
 
