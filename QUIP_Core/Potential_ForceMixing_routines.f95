@@ -482,6 +482,12 @@
        call set_value(params, 'do_rescale_r', .true.)
        call set_value(params, 'r_scale', this%r_scale_pot1)
 
+       if (has_key(params, 'atom_mask_name')) then
+          call add_property(at, 'hybrid_mask', hybrid /= HYBRID_NO_MARK)
+          call print('Potential_FM_Calc: using atom_mask with '//count(hybrid /= HYBRID_NO_MARK)//' marked atoms.')
+          call set_value(params, 'atom_mask_name', 'hybrid_mask')
+       end if
+
        qm_args_str = write_string(params)
        call finalise(params)
 
