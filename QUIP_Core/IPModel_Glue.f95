@@ -352,7 +352,7 @@ subroutine IPModel_Glue_Print(this, file)
 
   integer :: ti, tj
 
-  call Print("IPModel_Glue : Template Potential", file=file)
+  call Print("IPModel_Glue : Glue Potential", file=file)
   call Print("IPModel_Glue : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
 
   do ti=1, this%n_types
