@@ -436,8 +436,8 @@ program crack
      call set_value(pot_params, 'mm_args_str', params%classical_args_str)
 
      call set_value(pot_params, 'qm_args_str', &
-!         ' little_clusters='//params%qm_little_clusters// &
-!         '  single_cluster='//(.not. params%qm_little_clusters)// &
+          ' little_clusters='//params%qm_little_clusters// &
+          '  single_cluster='//(.not. params%qm_little_clusters)// &
           '  terminate='//params%qm_terminate// &
           '  even_electrons='//params%qm_even_electrons// &
           '  cluster_vacuum='//params%qm_vacuum_size// &
