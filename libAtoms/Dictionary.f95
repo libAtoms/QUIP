@@ -2418,9 +2418,9 @@ contains
 
     integer entry_i
 
-    if (this%N == 0 .or. this%N >= size(this%entries)) then
-       call extend_entries(this, n_entry_block)
-    endif
+    ! must test separately because size(this%entries) is undefined if allocated(this%entries) is false
+    if (.not. allocated(this%entries)) call extend_entries(this, n_entry_block)
+    if (this%N >= size(this%entries)) call extend_entries(this, n_entry_block)
 
     entry_i = lookup_entry_i(this, key)
     if (present(array_alloc)) array_alloc = .true.
