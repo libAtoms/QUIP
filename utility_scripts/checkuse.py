@@ -14,6 +14,7 @@ def parse_use_statements(fn):
     l = f.readline()
     start_parse = False
     stop_parse = False
+    in_interface = False
     module_name = None
     use_statements = [ ]
     while l and not stop_parse:
@@ -23,7 +24,11 @@ def parse_use_statements(fn):
                 start_parse = True
                 module_name = s[1]
             elif start_parse:
-                if s[0] == 'use':
+                if s[0] == 'interface':
+                    in_interface = True
+                elif s[0] == 'endinterface' or ( s[0] == 'end' and s[1] == 'interface' ):
+                    in_interface = False
+                if s[0] == 'use' and not in_interface:
                     use_statements += [ s[1] ]
                 elif s[0] == 'contains':
                     stop_parse = True
