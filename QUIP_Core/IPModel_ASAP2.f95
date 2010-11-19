@@ -208,7 +208,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
   endif
 
   !$omp critical
-  dip_sr = dip_sr + private_dip_sr
+  dip_sr = dip_sr + private_dip_sr*BOHR
   !$omp end critical
 
   deallocate(private_dip_sr)
@@ -354,10 +354,10 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
    end if
 
    !$omp critical
-   if (present(e)) e = e + private_e
-   if (present(f)) f = f + private_f
-   if (present(local_e)) local_e = local_e + private_local_e
-   if (present(virial)) virial = virial + private_virial
+   if (present(e)) e = e + private_e*HARTREE
+   if (present(f)) f = f + private_f*(HARTREE/BOHR)
+   if (present(local_e)) local_e = local_e + private_local_e*HARTREE
+   if (present(virial)) virial = virial + private_virial*HARTREE
    !$omp end critical 
 
    if (allocated(private_f)) deallocate(private_f)
@@ -566,9 +566,9 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    efield_charge = 0.0_dp
    if (calc_charge) then
       if (maxval(abs(this%z)) > 0.0_dp) then
-         call yukawa_charges(at, charge, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
+         call yukawa_charges(at, charge, this%cutoff_coulomb*BOHR, this%yukalpha/BOHR, this%yuksmoothlength*BOHR, &
               e, local_e, f, virial, efield_charge, mpi, atom_mask_name, source_mask_name, this%type_of_atomic_num, &
-              pseudise, this%pseudise_sigma, grid_size, error=error)
+              pseudise, this%pseudise_sigma*BOHR, grid_size, error=error)
       end if
    end if
 
@@ -609,21 +609,21 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
                if (fixdip(i)) cycle
                ti = get_type(this%type_of_atomic_num, at%Z(i))
                if (abs(this%pol(ti)) > 0.0_dp) then
-                  dipoles(:,i) = efield(:,i)*this%pol(ti) + dip_sr(:,i)
+                  dipoles(:,i) = efield(:,i)*((BOHR**2/HARTREE)*this%pol(ti)) + dip_sr(:,i)
                end if
             end do
 
             ! Calculate new efield and measure of convergence
             efield_int_old = efield_dipole
             efield_dipole = 0.0_dp
-            call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
-                 this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, efield=efield_dipole, &
+            call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb*BOHR, this%yukalpha/BOHR, this%yuksmoothlength*BOHR, &
+                 (BOHR**2/HARTREE)*this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, efield=efield_dipole, &
                  mpi=mpi, error=error)
 
             diff = 0.0_dp
             do i=1,at%n
                ti = get_type(this%type_of_atomic_num, at%Z(i))
-               diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))*&
+               diff = diff + (BOHR/HARTREE)**2*((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))*&
                     this%pol(ti)*this%pol(ti)
             end do
             diff = sqrt(diff/at%n)
@@ -660,10 +660,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    if (calc_dipoles) then
       ! Compute final energy, local energies, forces, virial and electric efield
       if (maxval(abs(dipoles)) > 0.0_dp) then
-         call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb, this%yukalpha, this%yuksmoothlength, &
-              this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, &
+         call yukawa_dipoles(at, charge, dipoles, this%cutoff_coulomb*BOHR, this%yukalpha/BOHR, this%yuksmoothlength*BOHR, &
+              (BOHR**2/HARTREE)*this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, &
               e, local_e, f, virial, efield_dipole, mpi, atom_mask_name, source_mask_name, pseudise, &
-              this%pseudise_sigma, grid_size, error=error)
+              this%pseudise_sigma*BOHR, grid_size, error=error)
          
          if (save_dipole_velo) then
             ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
@@ -680,12 +680,6 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    if (calc_short_range) then
       call asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
    end if
-
-   ! Unit conversion
-   if (present(e)) e = e*HARTREE
-   if (present(local_e)) local_e = local_e*HARTREE
-   if (present(f)) f = f*(HARTREE/BOHR)
-   if (present(virial)) virial = virial*HARTREE
 
    if (allocated(efield_charge)) deallocate(efield_charge)
    if (allocated(efield_dipole)) deallocate(efield_dipole)

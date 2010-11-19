@@ -62,13 +62,8 @@ if hasattr(quippy, 'Potential'):
             at2.set_cutoff(self.cutoff)
             at2.calc_connect()
 
-            if df:
-               self.p1.calc(at1, energy=e1, force=f1, virial=v1, calc_dipoles=True)
-               self.p2.calc(at2, energy=e2, force=f2, virial=v2, local_energy=local_e2)
-            else:
-               self.p1.calc(at1, energy=e1, force=f1, virial=v1, calc_dipoles=True)
-               self.p2.calc(at2, energy=e2, force=f2, virial=v2, local_energy=local_e2)
-
+            self.p1.calc(at1, energy=e1, force=f1, virial=v1, calc_dipoles=True)
+            self.p2.calc(at2, energy=e2, force=f2, virial=v2, local_energy=local_e2)
 
             if debug:
                print 'e1 = ', e1
@@ -86,12 +81,8 @@ if hasattr(quippy, 'Potential'):
             self.assertAlmostEqual(e2, sum(local_e2))
             self.assertArrayAlmostEqual(f1, f2, tol=1e-6)
             self.assertArrayAlmostEqual(v1, v2, tol=1e-6)
-            if df:
-               self.assertArrayAlmostEqual(df1, df2)
-               self.assertArrayAlmostEqual(f1, df1, tol=1e-5)
-               self.assertArrayAlmostEqual(f2, df2, tol=1e-5)
             if hasattr(at1, 'dipoles') and hasattr(at2, 'dipoles'):
-               self.assertArrayAlmostEqual(at1.dipoles, at2.dipoles, tol=1e-6)
+               self.assertArrayAlmostEqual(at1.dipoles, at2.dipoles/BOHR, tol=1e-6)
 
             return e2, f2.T, v2, local_e2, at2.dipoles
 
@@ -112,7 +103,7 @@ if hasattr(quippy, 'Potential'):
             self.assertArrayAlmostEqual(local_e, local_e_ref, tol=1e-5)
             self.assertArrayAlmostEqual(f, f_ref, tol=1e-5)
             self.assertArrayAlmostEqual(v, v_ref, tol=1e-5)
-            self.assertArrayAlmostEqual(at.dipoles, dip_ref, tol=1e-5)
+            self.assertArrayAlmostEqual(at.dipoles, dip_ref*BOHR, tol=1e-5)
 
          def test_dimer(self):
             dimer = Atoms(n=2, lattice=100.0*fidentity(3))
@@ -1040,7 +1031,7 @@ if hasattr(quippy, 'Potential'):
             am = Atoms(am_xyz, format='string')
             am.set_cutoff(self.cutoff)         
             if do_compare_p1_p2:
-               set_printoptions(threshold=1e6)
+               numpy.set_printoptions(threshold=1e6)
                print self.compare_p1_p2(am, debug=self.debug)
             else:
                self.compare_ref(am, self.am_ref)
@@ -9311,8 +9302,8 @@ if hasattr(quippy, 'Potential'):
 
             def test_md_1step(self):
 
-               self.p1.calc(self.ds1.atoms, calc_force=True)
-               self.p2.calc(self.ds2.atoms, calc_force=True)
+               self.p1.calc(self.ds1.atoms, args_str="force")
+               self.p2.calc(self.ds2.atoms, args_str="force")
 
                self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
@@ -9321,8 +9312,8 @@ if hasattr(quippy, 'Potential'):
 
                self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
 
-               self.p1.calc(self.ds1.atoms, calc_force=True)
-               self.p2.calc(self.ds2.atoms, calc_force=True)
+               self.p1.calc(self.ds1.atoms, args_str="force")
+               self.p2.calc(self.ds2.atoms, args_str="force")
 
                self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
@@ -9337,8 +9328,8 @@ if hasattr(quippy, 'Potential'):
 
             def test_md_2step(self):
 
-               self.p1.calc(self.ds1.atoms, calc_force=True)
-               self.p2.calc(self.ds2.atoms, calc_force=True)
+               self.p1.calc(self.ds1.atoms, args_str="force")
+               self.p2.calc(self.ds2.atoms, args_str="force")
 
                self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
@@ -9348,8 +9339,8 @@ if hasattr(quippy, 'Potential'):
 
                   self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
 
-                  self.p1.calc(self.ds1.atoms, calc_force=True)
-                  self.p2.calc(self.ds2.atoms, calc_force=True)
+                  self.p1.calc(self.ds1.atoms, args_str="force")
+                  self.p2.calc(self.ds2.atoms, args_str="force")
 
                   self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
