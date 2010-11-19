@@ -483,8 +483,10 @@
        call set_value(params, 'r_scale', this%r_scale_pot1)
 
        if (has_key(params, 'atom_mask_name')) then
-          call add_property(at, 'hybrid_mask', hybrid /= HYBRID_NO_MARK)
-          call print('Potential_FM_Calc: using atom_mask with '//count(hybrid /= HYBRID_NO_MARK)//' marked atoms.')
+          ! Mark both the active and buffer atoms -- GAP atom_mask implementation requires all atoms within 
+          ! Potential cutoff to be marked to give accurate forces on the active (core) atoms
+          call add_property(at, 'hybrid_mask', hybrid_mark /= HYBRID_NO_MARK, overwrite=.true.)
+          call print('Potential_FM_Calc: using atom_mask with '//count(hybrid_mark /= HYBRID_NO_MARK)//' marked atoms.')
           call set_value(params, 'atom_mask_name', 'hybrid_mask')
        end if
 
