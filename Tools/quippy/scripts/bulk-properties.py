@@ -54,36 +54,38 @@ try:
     at.calc_connect()
 
     if opt.relax_lattice:
-        mainlog.prefix = 'LATTICE'        
         pot.minim(at, 'cg', 1e-6, 100, do_pos=False, do_lat=True)
+        mainlog.prefix = 'LATTICE'        
         print 'Relaxed lattice / A'
         print at.lattice.round(3)
         print
+        mainlog.prefix = ''
 
     if opt.cij_virial:
-        mainlog.prefix = 'CIJ_VIRIAL'
         c = fzeros((6,6))
         c0 = fzeros((6,6))
         pot.calc_elastic_constants(at, c=c, c0=c0)
-        print 'C_ij (virial) / GPa ='
+        mainlog.prefix = 'CIJ_VIRIAL_C'
         print c.round(2)*GPA
+        mainlog.prefix = 'CIJ_VIRIAL_C0'        
         print 'C_ij^0 (virial) / GPa ='
         print c0.round(2)*GPA
         print
+        mainlog.prefix = ''
+
         
     if opt.cij_fit:
-        mainlog.prefix = 'CIJ_FIT'        
         c = elastic_constants(pot, at, opt.cij_symmetry, relax=True)
         c0 = elastic_constants(pot, at, opt.cij_symmetry, relax=False)
-        print 'C_ij (fitted) / GPa ='
+        mainlog.prefix = 'CIJ_FIT_C'        
         print c.round(2)
-        print 'C_ij^0 (fitted) / GPa ='
+        mainlog.prefix = 'CIJ_FIT_C0'
         print c0.round(2)
         print
+        mainlog.prefix = '' 
+
         
     if opt.surface_energy:
-        mainlog.prefix = 'SURFACE_ENERGY'        
-
         if opt.surface:
             axes = crack_parse_name(opt.surface)
             m = crack_rotation_matrix(at, axes[:,2], axes[:,3])
@@ -114,7 +116,9 @@ try:
 
         pot.calc(surface, energy=True)
         gamma = (surface.energy - bulk.energy)/(2.0*surface.lattice[1,1]*surface.lattice[3,3])*J_PER_M2
+        mainlog.prefix = 'SURFACE_ENERGY'        
         print 'Surface energy: gamma = ', gamma, ' J/m^2'
+        mainlog.prefix = ''
 
 except RuntimeError, re:
     p.error(str(re))

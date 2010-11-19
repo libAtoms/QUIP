@@ -69,6 +69,9 @@ p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printi
 
 opt, args = p.parse_args()
 
+if opt.extract_params:
+   opt.no_print_at = True
+
 if opt.no_print_at:
    if len(args) != 1:
        p.error('One input file must be specified')
@@ -197,7 +200,8 @@ def process(at, frame):
          if opt.extract_format:
             print(opt.extract_format % at.params[k]),
          else:
-            print("%16.8g" % at.params[k]),
+            print at.params[k],
+               
       print
    elif do_print and outfile is not None:
       if opt.properties is None:
