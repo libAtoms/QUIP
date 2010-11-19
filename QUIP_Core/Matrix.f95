@@ -208,6 +208,9 @@ subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixD_Initialise "//this%l_N//" "//this%l_M, size(this%data)*REAL_SIZE)
+  else
+    allocate(this%data(1,1))
+    call ALLOC_TRACE("MatrixD_Initialise "//1//" "//1, size(this%data)*REAL_SIZE)
   endif
 
 end subroutine MatrixD_Initialise
@@ -227,6 +230,9 @@ subroutine MatrixD_Initialise_mat(this, from)
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixD_Initialise_mat "//this%l_N//" "//this%l_M,size(this%data)*REAL_SIZE)
+  else
+    allocate(this%data(1,1))
+    call ALLOC_TRACE("MatrixD_Initialise_mat "//1//" "//1, size(this%data)*REAL_SIZE)
   endif
 
 end subroutine MatrixD_Initialise_mat
@@ -244,6 +250,9 @@ subroutine MatrixZ_Initialise(this, N, M, NB, MB, scalapack_obj)
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixZ_Initialise "//this%l_N//" "//this%l_M, size(this%data)*COMPLEX_SIZE)
+  else
+    allocate(this%data(1,1))
+    call ALLOC_TRACE("MatrixZ_Initialise "//1//" "//1, size(this%data)*REAL_SIZE)
   endif
 
 end subroutine MatrixZ_Initialise
@@ -263,6 +272,9 @@ subroutine MatrixZ_Initialise_mat(this, from)
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixZ_Initialise_mat "//this%l_N//" "//this%l_M, size(this%data)*COMPLEX_SIZE)
+  else
+    allocate(this%data(1,1))
+    call ALLOC_TRACE("MatrixZ_Initialise_mat "//1//" "//1, size(this%data)*REAL_SIZE)
   endif
 
 end subroutine MatrixZ_Initialise_mat
