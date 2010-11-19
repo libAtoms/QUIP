@@ -17,14 +17,14 @@ def parse_use_statements(fn):
     module_name = None
     use_statements = [ ]
     while l and not stop_parse:
-        s = map(string.strip, l.split())
+        s = map(string.lower, map(string.strip, l.split()))
         if len(s) > 0:
             if s[0] == 'module' and not start_parse:
                 start_parse = True
-                module_name = s[1].lower()
+                module_name = s[1]
             elif start_parse:
                 if s[0] == 'use':
-                    use_statements += [ s[1].lower() ]
+                    use_statements += [ s[1] ]
                 elif s[0] == 'contains':
                     stop_parse = True
         l = f.readline()
