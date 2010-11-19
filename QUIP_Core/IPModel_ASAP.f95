@@ -275,14 +275,14 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
   use minimiser
 
 #endif
-   use libAtoms_module, only : Atoms, Dictionary, BOHR, HARTREE, &
+   use libAtoms_module, only : myAtoms => Atoms, Dictionary, BOHR, HARTREE, &
         ElementMass, massconvert, initialise, param_read_line, finalise, &
         ElementName, print, operator(//), cell_volume, has_property, &
         assign_pointer, add_property, system_abort, fit_box_in_cell, &
-        param_register
+        param_register, check_size
 	
    type(IPModel_ASAP), intent(inout):: this
-   type(Atoms), intent(inout)      :: at
+   type(myAtoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)

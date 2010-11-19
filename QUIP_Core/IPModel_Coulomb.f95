@@ -217,7 +217,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    case(IPCoulomb_Method_Direct)
       call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
    case(IPCoulomb_Method_Yukawa)
-      call yukawa_charges(at, charge, this%cutoff / BOHR, this%yukawa_alpha, this%yukawa_smooth_length, &
+      call yukawa_charges(at, charge, this%cutoff, this%yukawa_alpha, this%yukawa_smooth_length, &
       e, local_e, f, virial, &
       mpi=mpi, atom_mask_name=atom_mask_name, source_mask_name=source_mask_name, type_of_atomic_num=this%type_of_atomic_num, &
       pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)

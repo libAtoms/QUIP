@@ -47,11 +47,13 @@ real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
 contains
 
 !% Charge-charge interactions, screened by Yukawa function
-subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength, &
+subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
      e, local_e, f, virial, efield, mpi, atom_mask_name, source_mask_name, type_of_atomic_num, pseudise, pseudise_sigma, grid_size, error)
    type(Atoms), intent(inout)      :: at
-   real(dp), dimension(:), intent(in) :: charge
-   real(dp), intent(in) :: cutoff_coulomb, yukalpha, yuksmoothlength
+   real(dp), dimension(:), intent(in) :: charge !% charges, in units of the electronic charge
+   real(dp), intent(in) :: cutoff  !% cutoff distance in A
+   real(dp), intent(in) :: alpha  !% inverse screening length, in A^-1
+   real(dp), intent(in) :: smoothlength !% distance over which potential is smoothly turned off, in A
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
@@ -72,9 +74,16 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
    real(dp) :: private_virial(3,3), private_e, sigma
    real(dp), allocatable :: private_f(:,:), private_efield(:,:), private_local_e(:)
    logical, pointer, dimension(:) :: atom_mask, source_mask
+   real(dp) :: yukcutoff, yukalpha, yuksmoothlength
 
    INIT_ERROR(error)
    call system_timer('yukawa_charges')
+
+   ! Unit conversion of arguments from eV/A/fs to atomic units
+   ! (charges are not affected)
+   yukcutoff = cutoff/BOHR
+   yukalpha = alpha*BOHR
+   yuksmoothlength = smoothlength/BOHR
 
    do_pseudise = optional_default(.false., pseudise)
    if (do_pseudise .and. (.not. present(pseudise_sigma) .or. .not. present(type_of_atomic_num))) then
@@ -96,7 +105,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
       end if
    end if
 
-   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, cutoff_coulomb, yukalpha, yuksmoothlength, grid_size, do_pseudise, pseudise_sigma, type_of_atomic_num) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv, sigma, defield, ti, tj)
+   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, cutoff, yukalpha, yuksmoothlength, grid_size, do_pseudise, pseudise_sigma, type_of_atomic_num) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv, sigma, defield, ti, tj)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -136,7 +145,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
       do m = 1, atoms_n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(cutoff_coulomb*BOHR))
+         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
          
          if (associated(source_mask)) then
@@ -145,7 +154,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
          if (r_ij .feq. 0.0_dp) then
             if (present(grid_size)) then 
-               r_ij = grid_size
+               r_ij = grid_size/BOHR
             else
                cycle
             end if
@@ -169,10 +178,10 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
          gamjir2 = zv2/(r_ij**2.0_dp)
          expfactor = exp(-yukalpha*r_ij)
 
-         call smooth_cutoff(r_ij, cutoff_coulomb-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
+         call smooth_cutoff(r_ij, yukcutoff-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
 
          if (do_pseudise) then
-            sigma = pseudise_sigma(ti,tj)
+            sigma = pseudise_sigma(ti,tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
@@ -237,12 +246,13 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
       end if
    end if
 
+   ! Unit conversion of output to eV/A/fs
    !$omp critical
-   if (present(e)) e = e + private_e
-   if (present(local_e)) local_e = local_e + private_local_e
-   if (present(f)) f = f + private_f
-   if (present(virial)) virial = virial + private_virial
-   if (present(efield)) efield = efield + private_efield
+   if (present(e)) e = e + private_e*HARTREE
+   if (present(local_e)) local_e = local_e + private_local_e*HARTREE
+   if (present(f)) f = f + private_f*(HARTREE/BOHR)
+   if (present(virial)) virial = virial + private_virial*HARTREE
+   if (present(efield)) efield = efield + private_efield*(HARTREE/BOHR)
    !$omp end critical 
 
    if (allocated(private_f)) deallocate(private_f)
@@ -257,7 +267,7 @@ subroutine yukawa_charges(at, charge, cutoff_coulomb, yukalpha, yuksmoothlength,
 
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
-subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothlength, pol, b_pol, c_pol, &
+subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_pol, c_pol, &
      type_of_atomic_num, tdip_sr, e, local_e, f, virial, efield, mpi, atom_mask_name, source_mask_name, pseudise, &
      pseudise_sigma, grid_size, error)
 #ifdef _OPENMP
@@ -265,8 +275,13 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
 #endif
 
    type(Atoms), intent(inout)      :: at
-   real(dp), intent(in)            :: charge(:), dip(:,:)
-   real(dp), intent(in) :: cutoff_coulomb, yukalpha, yuksmoothlength, pol(:), b_pol(:,:), c_pol(:,:)
+   real(dp), intent(in)            :: charge(:) !% charges, in units of the electronic charge
+   real(dp), intent(in) :: dip(:,:) !% (3,N) array of dipoles moments in units of (electron charge)*A
+   real(dp), intent(in) :: cutoff  !% cutoff distance in A
+   real(dp), intent(in) :: alpha  !% inverse screening length, in A^-1
+   real(dp), intent(in) :: smoothlength !% distance over which potential is smoothly turned off, in A
+   real(dp), intent(in) :: pol(:) !% polarisabilities of each species, ordered by type_num
+   real(dp), intent(in) :: b_pol(:,:), c_pol(:,:) !% parameters for Madden short-range dipole moments
    integer, intent(in) :: type_of_atomic_num(:)
    logical, intent(in) :: tdip_sr
    real(dp), intent(out), optional :: e, local_e(:)
@@ -291,8 +306,16 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
    real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
    logical, pointer, dimension(:) :: atom_mask, source_mask
 
+   real(dp) :: yukcutoff, yukalpha, yuksmoothlength, yukpol(size(pol))
+
    INIT_ERROR(error)
    call system_timer('yukawa_dipoles')
+
+   ! Unit conversion of arguments from eV/A/fs to atomic units
+   yukcutoff = cutoff/BOHR
+   yukalpha = alpha*BOHR
+   yuksmoothlength = smoothlength/BOHR
+   yukpol = pol/(BOHR**2/HARTREE)
 
    do_pseudise = optional_default(.false., pseudise)
    if (do_pseudise .and. .not. present(pseudise_sigma)) then
@@ -315,7 +338,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
       end if
    end if
 
-   !$omp parallel default(none) shared(mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff_coulomb, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr, do_pseudise, atom_mask, source_mask, grid_size, pseudise_sigma) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield, sigma, erf_val, erf_deriv, de, defield_i, defield_j, dforce)
+   !$omp parallel default(none) shared(mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr, do_pseudise, atom_mask, source_mask, grid_size, pseudise_sigma) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield, sigma, erf_val, erf_deriv, de, defield_i, defield_j, dforce)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -353,19 +376,19 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
       ti = get_type(type_of_atomic_num, at%Z(i))
 
       qi = charge(i)
-      dipi = dip(:,i)
-      tpoli = abs(pol(ti)) > 0.0_dp
+      dipi = dip(:,i)/BOHR
+      tpoli = abs(yukpol(ti)) > 0.0_dp
 
       ! Induced contribution to energy
       if ((present(e) .or. present(local_e)) .and. tpoli) then
-         de_ind = 0.5_dp*(dipi .dot. dipi)/pol(ti)
+         de_ind = 0.5_dp*(dipi .dot. dipi)/yukpol(ti)
          if (present(e))       private_e = private_e + de_ind
          if (present(local_e)) private_local_e(i) = private_local_e(i) + de_ind
       end if
 
       do m = 1, atoms_n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(cutoff_coulomb*BOHR))
+         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
 
          if (associated(source_mask)) then
@@ -374,7 +397,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
 
          if (r_ij .feq. 0.0_dp) then
             if (present(grid_size)) then 
-               r_ij = grid_size
+               r_ij = grid_size/BOHR
             else
                cycle
             end if
@@ -393,8 +416,8 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
          tj = get_type(type_of_atomic_num, at%Z(j))
 
          qj = charge(j)
-         dipj = dip(:,j)
-         tpolj = abs(pol(tj)) > 0.0_dp
+         dipj = dip(:,j)/BOHR
+         tpolj = abs(yukpol(tj)) > 0.0_dp
 
          qipj = (abs(qi) > 0.0_dp) .and. tpolj
          qjpi = (abs(qj) > 0.0_dp) .and. tpoli
@@ -408,7 +431,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
 
          expfactor = exp(-yukalpha*r_ij)
 
-         call smooth_cutoff(r_ij, cutoff_coulomb-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
+         call smooth_cutoff(r_ij, yukcutoff-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
 
          pp = 0.0_dp
          if (pipj)  pp  = dipi .dot. dipj
@@ -419,7 +442,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
          if (tpolj) prj = dipj .dot. u_ij
          
          if (do_pseudise) then
-            sigma = pseudise_sigma(ti, tj)
+            sigma = pseudise_sigma(ti, tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
@@ -539,11 +562,11 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff_coulomb, yukalpha, yuksmoothle
    end if
 
    !$omp critical
-   if (present(e)) e = e + private_e
-   if (present(f)) f = f + private_f
-   if (present(local_e)) local_e = local_e + private_local_e
-   if (present(virial)) virial = virial + private_virial
-   if (present(efield)) efield = efield + private_efield
+   if (present(e)) e = e + private_e*HARTREE
+   if (present(local_e)) local_e = local_e + private_local_e*HARTREE
+   if (present(f)) f = f + private_f*(HARTREE/BOHR)
+   if (present(virial)) virial = virial + private_virial*HARTREE
+   if (present(efield)) efield = efield + private_efield*(HARTREE/BOHR)
    !$omp end critical 
    
    if (allocated(private_f)) deallocate(private_f)
