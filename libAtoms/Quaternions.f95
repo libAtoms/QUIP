@@ -60,9 +60,9 @@ module quaternions_module
      module procedure quaternion_norm
   end interface norm
 
-  interface norm2
-     module procedure quaternion_norm2
-  end interface norm2
+  interface normsq
+     module procedure quaternion_normsq
+  end interface normsq
 
   interface operator(+)
      module procedure quat_plus_quat, quat_plus_vect
@@ -284,7 +284,7 @@ contains
     real(dp)                     :: q2n
 
     q2c = .conj. q2
-    q2n = norm2(q2)
+    q2n = normsq(q2)
 
     res = (q1 * q2c) / q2n
 
@@ -363,24 +363,24 @@ contains
   !X Norms
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function quaternion_norm2(this) result(norm2)
+  function quaternion_normsq(this) result(normsq)
 
     type(Quaternion), intent(in) :: this
-    real(dp)                     :: norm2
+    real(dp)                     :: normsq
 
-    norm2 =   this%a*this%a &
+    normsq =   this%a*this%a &
             + this%b*this%b &
             + this%c*this%c &
             + this%d*this%d
 
-  end function quaternion_norm2
+  end function quaternion_normsq
 
   function quaternion_norm(this) result(norm)
 
     type(Quaternion), intent(in) :: this
     real(dp)                     :: norm
 
-    norm = sqrt(quaternion_norm2(this))
+    norm = sqrt(quaternion_normsq(this))
 
   end function quaternion_norm
 
@@ -643,10 +643,10 @@ contains
 
     !Norms
     call Print('Testing norms...')
-    call Print('norm2(q1):')
-    call Print(norm2(q1))
-    call Print('norm2(q2):')
-    call Print(norm2(q2))
+    call Print('normsq(q1):')
+    call Print(normsq(q1))
+    call Print('normsq(q2):')
+    call Print(normsq(q2))
     call Print('norm(q1):')
     call Print(norm(q1))
     call Print('norm(q2):')

@@ -105,7 +105,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
       end if
    end if
 
-   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, cutoff, yukalpha, yuksmoothlength, grid_size, do_pseudise, pseudise_sigma, type_of_atomic_num) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv, sigma, defield, ti, tj)
+   !$omp parallel default(none) shared(mpi, charge, at, e, local_e, f, virial, efield, atom_mask, source_mask, yukcutoff, cutoff, yukalpha, yuksmoothlength, grid_size, do_pseudise, pseudise_sigma, type_of_atomic_num) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield, erf_val, erf_deriv, sigma, defield, ti, tj)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -338,7 +338,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
       end if
    end if
 
-   !$omp parallel default(none) shared(mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr, do_pseudise, atom_mask, source_mask, grid_size, pseudise_sigma) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield, sigma, erf_val, erf_deriv, de, defield_i, defield_j, dforce)
+   !$omp parallel default(none) shared(yukcutoff, yukpol, mpi, at, charge, dip, e, local_e, f, virial, efield, type_of_atomic_num, cutoff, yukalpha, yuksmoothlength, pol, b_pol, c_pol, tdip_sr, do_pseudise, atom_mask, source_mask, grid_size, pseudise_sigma) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield, sigma, erf_val, erf_deriv, de, defield_i, defield_j, dforce)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then

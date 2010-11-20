@@ -809,7 +809,7 @@ contains
   !X
   !X adjustable_potential_force_error(params)
   !X
-  !X norm2() of difference between target and adjustable force 
+  !X normsq() of difference between target and adjustable force 
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -827,7 +827,7 @@ contains
        call print(params, PRINT_NERD)
     end if
 
-    error = norm2(target_force - (forcematrix .mult. params))
+    error = normsq(target_force - (forcematrix .mult. params))
 
   end function adjustable_potential_force_error
 
@@ -1044,7 +1044,7 @@ contains
 
     call print('Optimising '//nparamtot//' adjustable parameters')
     call print("RMS force component error before optimisation : "// &
-         sqrt(norm2(target_force)/(real(atomlist%N,dp)*3.0_dp)))
+         sqrt(normsq(target_force)/(real(atomlist%N,dp)*3.0_dp)))
     call print("Max force component error before optimisation : "//&
          maxval(abs(target_force)))
 
@@ -1133,7 +1133,7 @@ contains
 !!$    call print('')
     
     do i=1,atomlist%N
-       write (line, '(i4,f12.6)') i, sqrt(norm2(ferr(:,i)))
+       write (line, '(i4,f12.6)') i, sqrt(normsq(ferr(:,i)))
        call print(line, PRINT_NERD)
     end do
     call Print('', PRINT_NERD)

@@ -655,7 +655,7 @@ module gp_teach_module
          allocate(xixjtheta(size(xi)))
          xixjtheta = (xi-xj)/theta
 
-         covSEard_dp = delta**2 * exp( - 0.5_dp * norm2(xixjtheta) ) 
+         covSEard_dp = delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) 
          if(present(dxj)) covSEard_dp = covSEard_dp * dot_product(xixjtheta,dxj/theta)
 
          deallocate(xixjtheta)
@@ -674,7 +674,7 @@ module gp_teach_module
          allocate(xixjtheta(size(xi)))
          xixjtheta = (xi-xj)/theta
 
-         covSEard_qp = delta**2 * exp( - 0.5_qp * norm2(xixjtheta) ) 
+         covSEard_qp = delta**2 * exp( - 0.5_qp * normsq(xixjtheta) ) 
          if(present(dxj)) covSEard_qp = covSEard_qp * dot_product(xixjtheta,dxj/theta)
          deallocate(xixjtheta)
       end function covSEard_qp
@@ -971,7 +971,7 @@ deallocate(diff_xijt)
          & y_l_k_nm_inverse_mm, y_inverse_k, lambda_dtheta, &
          & d_big_k_mn_dx, dk_mn_dx, y_inverse_c, y_inverse_c_k_nm_inverse_k_mm, y_l_k_nm_inverse_k_mm, &
          & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n, y, &
-         & norm2_y_inverse_c, trace_inverse_c
+         & normsq_y_inverse_c, trace_inverse_c
          integer :: i, j, d, j1, j2, lj, uj, info, xj, xj1, xj2, jd, id, num_threads, k, Z_type
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_x, my_do_f0
@@ -1078,19 +1078,19 @@ deallocate(diff_xijt)
              !lambda_dtheta = (this%lambda - this%theta(1)**2) / this%theta(2) ! O(N)
          if( my_do_sigma .or. my_do_delta ) then
             allocate(diag_il_k_nm_inverse_mm_k_mn_il(this%m))
-            allocate(norm2_y_inverse_c(this%n_target_type),trace_inverse_c(this%n_target_type))
+            allocate(normsq_y_inverse_c(this%n_target_type),trace_inverse_c(this%n_target_type))
             !allocate(k_mn_ll_k_nm(this%sr,this%sr),k_mn_ll_k_nm_inverse_mm(this%sr,this%sr))
             !call matrix_product_sub(k_mn_ll_k_nm, k_mn_inverse_lambda, k_mn_inverse_lambda, m2_transpose = .true. ) ! O(NM^2)
             !call Matrix_Solve(LA_mm,k_mn_ll_k_nm,k_mn_ll_k_nm_inverse_mm)
             !trace_inverse_c = sum(inverse_lambda) - trace( k_mn_ll_k_nm_inverse_mm ) ! O(N) + O(M^2)
             diag_il_k_nm_inverse_mm_k_mn_il = sum( inverse_mm_k_mn_inverse_lambda*k_mn_inverse_lambda, dim = 1 )
             do i = 1, this%n_target_type
-               norm2_y_inverse_c(i) = sum( y_inverse_c**2, mask = (this%target_type==i) )
+               normsq_y_inverse_c(i) = sum( y_inverse_c**2, mask = (this%target_type==i) )
                trace_inverse_c(i) = sum(inverse_lambda, mask = (this%target_type==i) ) - sum(diag_il_k_nm_inverse_mm_k_mn_il, mask = (this%target_type==i) )
             enddo
                
-            !norm2_y_inverse_c1 = norm2(y_inverse_c(:this%mf))      ! O(N)
-            !norm2_y_inverse_c2 = norm2(y_inverse_c(this%mf+1:))      ! O(N)
+            !normsq_y_inverse_c1 = normsq(y_inverse_c(:this%mf))      ! O(N)
+            !normsq_y_inverse_c2 = normsq(y_inverse_c(this%mf+1:))      ! O(N)
 
             !trace_inverse_c1 = sum(inverse_lambda(:this%mf)) &
             !& - sum(diag_il_k_nm_inverse_mm_k_mn_il(:this%mf))
@@ -1133,7 +1133,7 @@ deallocate(diff_xijt)
          end if
 
          if( my_do_sigma ) then
-            dl_dsigma = this%sigma * ( norm2_y_inverse_c - trace_inverse_c )
+            dl_dsigma = this%sigma * ( normsq_y_inverse_c - trace_inverse_c )
          end if
 
          if( my_do_delta .or. my_do_f0 .or. my_do_theta .or. my_do_x ) then
@@ -1637,7 +1637,7 @@ deallocate(diff_xijt)
          if(allocated(R_q_mm)) deallocate(R_q_mm)
          if(allocated(Q_q_mm_sq_inverse_lambda)) deallocate(Q_q_mm_sq_inverse_lambda)
          if(allocated(inverse_k_mm_k_mn_sq_inverse_lambda)) deallocate(inverse_k_mm_k_mn_sq_inverse_lambda)
-         if(allocated(norm2_y_inverse_c)) deallocate(norm2_y_inverse_c)
+         if(allocated(normsq_y_inverse_c)) deallocate(normsq_y_inverse_c)
          if(allocated(trace_inverse_c)) deallocate(trace_inverse_c)
 
       end subroutine likelihood

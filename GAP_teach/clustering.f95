@@ -81,7 +81,7 @@ module clustering_module
 
      do i = 1, n
         do j = i, n
-           dm(j,i) = norm2( (my_x(:,j) - my_x(:,i)) ) + cluster_jitter*ran_uniform()
+           dm(j,i) = normsq( (my_x(:,j) - my_x(:,i)) ) + cluster_jitter*ran_uniform()
            dm(i,j) = dm(j,i)
         enddo
         dm(i,i) = 0.0_dp

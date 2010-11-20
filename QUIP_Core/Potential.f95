@@ -1078,7 +1078,7 @@ end subroutine undo_travel
       call set_value(am%minim_at%params, 'E', E)
       if (am%minim_do_pos) then
          call set_value(am%minim_at%params, 'MaxForce', maxval(norm(f,1)))
-         call set_value(am%minim_at%params, 'df2', norm2(reshape(f,(/3*am%minim_at%N/))))
+         call set_value(am%minim_at%params, 'df2', normsq(reshape(f,(/3*am%minim_at%N/))))
 
 
          if (am%minim_pot%is_forcemixing) then
@@ -1088,7 +1088,7 @@ end subroutine undo_travel
                        maxval(abs(f(:,find(hybrid_mark == HYBRID_ACTIVE_MARK)))))
             
                   call set_value(am%minim_at%params, 'QM_df2', &
-                       norm2(reshape(f(:,find(hybrid_mark == HYBRID_ACTIVE_MARK)),&
+                       normsq(reshape(f(:,find(hybrid_mark == HYBRID_ACTIVE_MARK)),&
                        (/3*count(hybrid_mark == HYBRID_ACTIVE_MARK)/))))
 
                end if

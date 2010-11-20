@@ -159,7 +159,7 @@ contains
 
     integer :: n_i, keep_row(4), in_i, min_image
     integer, allocatable, dimension(:) :: repeats
-    real(dp), allocatable, dimension(:) :: norm2shift
+    real(dp), allocatable, dimension(:) :: normsqshift
     type(Connection), pointer :: use_connect
 
     INIT_ERROR(error)
@@ -230,7 +230,7 @@ contains
     if (do_min_images_only) then
 
        ! If there are repeats of any atomic index, 
-       ! we want to keep the one with smallest norm2(shift)
+       ! we want to keep the one with smallest normsq(shift)
 
        ! must check input and output
 
@@ -253,7 +253,7 @@ contains
           ! we want to keep the one with the smallest shift, bearing
           ! in mind that it could well be the one in the input list
 
-          allocate(repeats(n_i), norm2shift(n_i))
+          allocate(repeats(n_i), normsqshift(n_i))
 
           ! Get indices of repeats of this atomic index
           repeats = pack((/ (j, j=1,output%N) /), &
@@ -263,9 +263,9 @@ contains
              ! atom is in input list, remove all new occurances
              call delete_multiple(output, repeats)
           else
-             ! Find row with minimum norm2(shift)
-             norm2shift = norm2(real(output%int(2:4,repeats),dp),1)
-             min_image = repeats(minloc(norm2shift,dim=1))
+             ! Find row with minimum normsq(shift)
+             normsqshift = normsq(real(output%int(2:4,repeats),dp),1)
+             min_image = repeats(minloc(normsqshift,dim=1))
              keep_row = output%int(:,min_image)
 
              ! keep the minimum image
@@ -276,7 +276,7 @@ contains
           ! don't increment n, since delete_multiple copies items from
           ! end of list over deleted items, so we need to retest
 
-          deallocate(repeats, norm2shift)
+          deallocate(repeats, normsqshift)
 
        end do
 
@@ -316,7 +316,7 @@ contains
 
     integer :: n, n_i, j, min_image, keep_row(4)
     integer, allocatable, dimension(:) :: repeats
-    real(dp), allocatable, dimension(:) :: norm2shift
+    real(dp), allocatable, dimension(:) :: normsqshift
 
     n = 1
     do while (n <= list%N)
@@ -333,15 +333,15 @@ contains
        ! otherwise, things are more complicated...
        ! we want to keep the one with the smallest shift
 
-       allocate(repeats(n_i), norm2shift(n_i))
+       allocate(repeats(n_i), normsqshift(n_i))
 
        ! Get indices of repeats of this atomic index
        repeats = pack((/ (j, j=1,list%N) /), &
             int_part(list,1) == list%int(1,n))
 
-       ! Find row with minimum norm2(shift)
-       norm2shift = norm2(real(list%int(2:4,repeats),dp),1)
-       min_image = repeats(minloc(norm2shift,dim=1))
+       ! Find row with minimum normsq(shift)
+       normsqshift = normsq(real(list%int(2:4,repeats),dp),1)
+       min_image = repeats(minloc(normsqshift,dim=1))
        keep_row = list%int(:,min_image)
 
        ! keep the minimum image
@@ -351,7 +351,7 @@ contains
        ! don't increment n, since delete_multiple copies items from
        ! end of list over deleted items, so we need to retest
 
-       deallocate(repeats, norm2shift)
+       deallocate(repeats, normsqshift)
 
     end do
 

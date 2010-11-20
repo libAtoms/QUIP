@@ -1395,19 +1395,19 @@ module descriptors_module
        type(qw_so3), intent(inout) :: this
        type(fourier_so3), intent(in) :: f
 
-       real(dp) :: m_norm2_sum
+       real(dp) :: m_normsq_sum
        complex(dp) :: wc
        integer :: l, n, m1, m2, m3
 
        do n = 1, this%f_n
           do l = 2, this%l_max, 2
-             m_norm2_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
+             m_normsq_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
 
              if (this%do_q) then
-                if (abs(m_norm2_sum) < QW_FP_ZERO) then
+                if (abs(m_normsq_sum) < QW_FP_ZERO) then
                    this%q(l / 2,n) = 0.0_dp
                 else
-                   this%q(l / 2,n) = sqrt(4.0_dp * PI * m_norm2_sum / ((2.0_dp * l) + 1.0_dp))
+                   this%q(l / 2,n) = sqrt(4.0_dp * PI * m_normsq_sum / ((2.0_dp * l) + 1.0_dp))
                 endif
              endif
 
@@ -1427,10 +1427,10 @@ module descriptors_module
                    enddo
                 enddo
 
-                if (abs(m_norm2_sum) < QW_FP_ZERO) then
+                if (abs(m_normsq_sum) < QW_FP_ZERO) then
                    wc = CPLX_ZERO
                 else
-                   wc = wc / (m_norm2_sum**1.5_dp)
+                   wc = wc / (m_normsq_sum**1.5_dp)
                 endif
 
                 this%w(l / 2,n) = real(wc, dp)
@@ -1445,24 +1445,24 @@ module descriptors_module
        type(fourier_so3), intent(in) :: f
        type(grad_fourier_so3), intent(in) :: df
 
-       real(dp) :: m_norm2_sum, dm_norm2_sum(3)
+       real(dp) :: m_normsq_sum, dm_normsq_sum(3)
        complex(dp) :: wc, dwc(3)
        integer :: l, n, k, m1, m2, m3
 
        do n = 1, this%f_n
           do l = 2, this%l_max, 2
-             m_norm2_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
+             m_normsq_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
 
              do k = 1, 3
-                dm_norm2_sum(k) = sum(real((f%Y_times_R(l / 2,n)%m * conjg(df%Y_times_R(l / 2,n)%m(k,:))) + &
+                dm_normsq_sum(k) = sum(real((f%Y_times_R(l / 2,n)%m * conjg(df%Y_times_R(l / 2,n)%m(k,:))) + &
                                            (df%Y_times_R(l / 2,n)%m(k,:) * conjg(f%Y_times_R(l / 2,n)%m)), dp))
              end do
 
              if (this%do_q) then
-                if (abs(m_norm2_sum) < QW_FP_ZERO) then
+                if (abs(m_normsq_sum) < QW_FP_ZERO) then
                    this%q(l / 2,n)%x = 0.0_dp
                 else
-                   this%q(l / 2,n)%x = 2.0_dp * PI * dm_norm2_sum / sqrt(4.0_dp * PI * m_norm2_sum * ((2.0_dp * l) + 1.0_dp))
+                   this%q(l / 2,n)%x = 2.0_dp * PI * dm_normsq_sum / sqrt(4.0_dp * PI * m_normsq_sum * ((2.0_dp * l) + 1.0_dp))
                 endif
              endif
 
@@ -1488,12 +1488,12 @@ module descriptors_module
                    enddo
                 enddo
 
-                if (abs(m_norm2_sum) < QW_FP_ZERO) then
+                if (abs(m_normsq_sum) < QW_FP_ZERO) then
                    wc = CPLX_ZERO
                    dwc = CPLX_ZERO
                 else
-                   wc = wc / (m_norm2_sum**1.5_dp)
-                   dwc = (dwc / (m_norm2_sum**1.5_dp)) - (1.5_dp * wc * dm_norm2_sum / m_norm2_sum)
+                   wc = wc / (m_normsq_sum**1.5_dp)
+                   dwc = (dwc / (m_normsq_sum**1.5_dp)) - (1.5_dp * wc * dm_normsq_sum / m_normsq_sum)
                 endif
 
                 this%w(l / 2,n)%x = real(dwc, dp)
@@ -1892,7 +1892,7 @@ module descriptors_module
               do k2 = -f_hat%k(2), f_hat%k(2)
                  do k1 = -f_hat%k(1), f_hat%k(1)
                     k = k1 * at%g(1,:) + k2 * at%g(2,:) + k3 * at%g(3,:)
-                    f_hat%f(k1,k2,k3) = f_hat%f(k1,k2,k3) + exp(-0.5_dp * norm2(k) * f_hat%sig**2) * &
+                    f_hat%f(k1,k2,k3) = f_hat%f(k1,k2,k3) + exp(-0.5_dp * normsq(k) * f_hat%sig**2) * &
                     & exp( TWO_PI_I * dot_product( (/k1,k2,k3/), frac(:,i) ) ) * f_hat%w(at%Z(i))
                     !f_hat%f(k1,k2,k3) = f_hat%f(k1,k2,k3) + &
                     !& exp( TWO_PI_I * dot_product( (/k1,k2,k3/), frac(:,i) ) ) * f_hat%w(at%Z(i))
@@ -3649,8 +3649,8 @@ module descriptors_module
        r2 = norm(v2)
 
        ! descriptors
-       !vec(1) = norm2(v1+v2)
-       !vec(2) = norm2(v1-v2)
+       !vec(1) = normsq(v1+v2)
+       !vec(2) = normsq(v1-v2)
        !vec(3) = ((v1+v2).dot.(v1-v2))**2
        vec(1) = r1 + r2
        vec(2) = (r1 - r2)**2
@@ -3747,11 +3747,11 @@ module descriptors_module
        !sB = (vB1+vB2)
        !dB = (vB1-vB2)
        !! descriptors
-       !!vec(1) = norm2(sA)
-       !!vec(2) = norm2(dA)
+       !!vec(1) = normsq(sA)
+       !!vec(2) = normsq(dA)
        !!vec(3) = (sA .dot. dA)**2
-       !!vec(4) = norm2(sB)
-       !!vec(5) = norm2(dB)
+       !!vec(4) = normsq(sB)
+       !!vec(5) = normsq(dB)
        !!vec(6) = (sB .dot. dB)**2
        !v(1) = rA1+rA2
        !v(2) = (rA1-rA2)**2
@@ -4205,7 +4205,7 @@ module descriptors_module
       real(dp), intent(in) :: x(3)
 
       SphericalYCartesian = SolidRCartesian(l, m, x) * sqrt(((2.0_dp * l) + 1) / (4.0_dp * PI)) &
-                                                     * (norm2(x)**(-0.5_dp * l))
+                                                     * (normsq(x)**(-0.5_dp * l))
 
     end function SphericalYCartesian
 
@@ -4269,10 +4269,10 @@ module descriptors_module
 
       GradSphericalYCartesian = GradSphericalYCartesian &
                               * sqrt(factorial(l + m) * factorial(l - m) * ((2.0_dp * l) + 1) / (4.0_dp * PI)) &
-                              * (norm2(x)**(-0.5_dp * l))
+                              * (normsq(x)**(-0.5_dp * l))
 
       GradSphericalYCartesian = GradSphericalYCartesian &
-                              - (l * x * SphericalYCartesian(l, m, x) / norm2(x))
+                              - (l * x * SphericalYCartesian(l, m, x) / normsq(x))
 
     end function GradSphericalYCartesian
 

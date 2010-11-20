@@ -120,7 +120,7 @@ subroutine tsParams_initialise(this)
 
    this%minim_end               = .false.
    this%minim_end_method            = 'cg'
-   this%minim_end_tol               = 1e-3_dp  ! norm2(force) eV/A
+   this%minim_end_tol               = 1e-3_dp  ! normsq(force) eV/A
    this%minim_end_eps_guess         = 0.01_dp  ! Angstrom
    this%minim_end_max_steps         = 1000     ! number
 

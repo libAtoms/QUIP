@@ -319,11 +319,11 @@ module linearalgebra_module
 
   !% Euclidean norm$^2$ of a vector or a of a list of vectors. Result is equal
   !% to 'x .dot. x' for a single vector 'x'.
-  private :: vector_norm2, array_norm2
-  interface norm2
-     module procedure vector_norm2, array_norm2
+  private :: vector_normsq, array_normsq
+  interface normsq
+     module procedure vector_normsq, array_normsq
 #ifdef HAVE_QP  
-    module procedure vector_norm2_q
+    module procedure vector_normsq_q
 #endif
   end interface
 
@@ -3118,25 +3118,25 @@ CONTAINS
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  ! norm2()
+  ! normsq()
   ! returns (X.dot.X)
-  pure function vector_norm2(vector) result(norm2) 
+  pure function vector_normsq(vector) result(normsq) 
 
     real(dp), intent(in), dimension(:) :: vector
-    real(dp)             :: norm2
+    real(dp)             :: normsq
    
-    norm2 = dot_product(vector,vector)
+    normsq = dot_product(vector,vector)
 
-  end function vector_norm2
+  end function vector_normsq
 
-  pure function vector_norm2_q(vector) result(norm2) 
+  pure function vector_normsq_q(vector) result(normsq) 
 
     real(qp), intent(in), dimension(:) :: vector
-    real(qp)             :: norm2
+    real(qp)             :: normsq
    
-    norm2 = dot_product(vector,vector)
+    normsq = dot_product(vector,vector)
 
-  end function vector_norm2_q
+  end function vector_normsq_q
 
   ! norm()
   ! returns SQRT((X.dot.X))
@@ -3517,25 +3517,25 @@ CONTAINS
   end function array_dotprod
 
 
-  ! norm2 of each vector
-  function array_norm2(this, dir)
+  ! normsq of each vector
+  function array_normsq(this, dir)
     real(dp), dimension(:,:) ::this
     integer, intent(in)::dir
-    real(dp)::array_norm2(size(this,3-dir))
+    real(dp)::array_normsq(size(this,3-dir))
     integer::i
 
     if(dir==1) then
        do i=1,size(this,2)
-          array_norm2(i)=dot_product(this(:,i),this(:,i))
+          array_normsq(i)=dot_product(this(:,i),this(:,i))
        end do
     else if(dir==2) then
        do i=1,size(this,1)
-          array_norm2(i)=dot_product(this(i,:),this(i,:))
+          array_normsq(i)=dot_product(this(i,:),this(i,:))
        end do
     else
-       call system_abort('array_norm2: dir must be 1 or 2')
+       call system_abort('array_normsq: dir must be 1 or 2')
     end if 
-  end function array_norm2
+  end function array_normsq
 
   ! norm for each vector
   function array_norm(this, dir) result(sqvalue)
@@ -3924,7 +3924,7 @@ CONTAINS
     vector=1
     write(line,*)'a ten elements vector of 1s';call print(line)
     call print(vector)
-    write(line,*)'norm And norm2:',vector_norm2(vector),vector_norm(vector)
+    write(line,*)'norm And normsq:',normsq(vector),vector_norm(vector)
     call print(line)
     write(line,*)'Assign it to another vector';call print(line)
     allocate(vector1(10))

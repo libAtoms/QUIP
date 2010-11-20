@@ -212,7 +212,7 @@ module gp_predict_module
                !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
                !xixjtheta = real((real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp),dp)
 
-               !k(i) = gp_data%delta**2 * exp( - 0.5_dp * norm2(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
+               !k(i) = gp_data%delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
                !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
             end do
          else
@@ -241,7 +241,7 @@ module gp_predict_module
 #endif
  !        if( present(variance) ) then
  !           if( present(x_prime_star) ) then
- !              kappa = gp_data%sigma(2)**2 + gp_data%delta**2 * norm2(x_prime_star*gp_data%theta)
+ !              kappa = gp_data%sigma(2)**2 + gp_data%delta**2 * normsq(x_prime_star*gp_data%theta)
  !           else
  !              kappa = gp_data%sigma(1)**2 + gp_data%delta**2
  !           end if

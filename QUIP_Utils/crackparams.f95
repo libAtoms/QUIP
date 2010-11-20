@@ -479,14 +479,14 @@ contains
     
     ! Minimisation parameters
     this%minim_method            = 'cg'
-    this%minim_tol               = 1e-3_dp  ! norm2(force) eV/A
+    this%minim_tol               = 1e-3_dp  ! normsq(force) eV/A
     this%minim_eps_guess         = 0.01_dp  ! Angstrom
     this%minim_max_steps         = 1000     ! number
     this%minim_print_output      = 10       ! number
     this%minim_linminroutine     = 'LINMIN_DERIV'
     this%minim_minimise_mm       = .false.
     this%minim_mm_method         = 'cg'
-    this%minim_mm_tol            = 1e-6_dp  ! norm2(force) eV/A
+    this%minim_mm_tol            = 1e-6_dp  ! normsq(force) eV/A
     this%minim_mm_eps_guess      = 0.001_dp ! Angstrom
     this%minim_mm_max_steps      = 1000     ! number
     this%minim_mm_linminroutine  = 'FAST_LINMIN'
