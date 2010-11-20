@@ -167,7 +167,7 @@ contains
 
               if( n>not_needed ) then
                   k_vec(:,n3,n2,n1) = ( at%g(1,:)*n1 + at%g(2,:)*n2 + at%g(3,:)*n3 ) * 2.0_dp * PI
-                  mod2_k(n3,n2,n1)  = norm2( k_vec(:,n3,n2,n1) )
+                  mod2_k(n3,n2,n1)  = normsq( k_vec(:,n3,n2,n1) )
 
                   force_factor(n3,n2,n1,:) = 1.0_dp/mod2_k(n3,n2,n1) * &
                   & exp(mod2_k(n3,n2,n1)*infac) * k_vec(:,n3,n2,n1)

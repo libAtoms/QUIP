@@ -824,7 +824,7 @@ contains
           m = 0.0_dp
           do nn = 1, constraints(i)%N       !Loop over each particle in the constraint
              j = constraints(i)%atom(nn)
-             m = m + norm2(constraints(i)%dC_dr(3*nn-2:3*nn)) / at%mass(j)
+             m = m + normsq(constraints(i)%dC_dr(3*nn-2:3*nn)) / at%mass(j)
           end do
           constraints(i)%dlambdaV =  2.0_dp * constraints(i)%dC_dt / (m * dt)
           constraints(i)%lambdaV = constraints(i)%lambdaV + constraints(i)%dlambdaV
@@ -913,7 +913,7 @@ contains
     dcoll_dr(1:9) = dC_dr(1:9)
     Z_coll = 0._dp
     do i=1,3
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine BONDANGLECOS
@@ -961,7 +961,7 @@ contains
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
     do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine BONDLENGTH
@@ -1019,7 +1019,7 @@ contains
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
     do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine RELAX_BONDLENGTH
@@ -1056,7 +1056,7 @@ contains
 
     d = pos(1:3)-pos(4:6)
 
-    C = norm2(d) - data(1)*data(1)
+    C = normsq(d) - data(1)*data(1)
     target_v = data(1)*data(1)
 
     dC_dr(1:3) = 2.0_dp * d
@@ -1067,7 +1067,7 @@ contains
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
     do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine BONDLENGTH_SQ
@@ -1114,7 +1114,7 @@ contains
     efact = exp(-(t-data(3))/data(4))
     d = data(2) + diff * efact
 
-    C = norm2(r) - d*d
+    C = normsq(r) - d*d
     target_v = d*d
     dC_dr(1:3) = 2.0_dp * r
     dC_dr(4:6) = -2.0_dp * r
@@ -1123,7 +1123,7 @@ contains
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
     do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine RELAX_BONDLENGTH_SQ
@@ -1183,7 +1183,7 @@ contains
     l = data(1)*x3 + data(2)*x2 + data(3)*x + data(4)
     dl_dt = 3.0_dp*data(1)*x2 + 2.0_dp*data(2)*x + data(3)
 
-    C = norm2(r) - l*l
+    C = normsq(r) - l*l
     target_v = l*l
     dC_dr(1:3) = 2.0_dp * r
     dC_dr(4:6) = -2.0_dp * r
@@ -1192,7 +1192,7 @@ contains
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
     do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine CUBIC_BONDLENGTH_SQ
@@ -1238,7 +1238,7 @@ contains
     
     dcoll_dr(1:3) = dC_dr(1:3)
     Z_coll = 0._dp
-    Z_coll = 1/mass(1) * norm2(dcoll_dr(1:3))
+    Z_coll = 1/mass(1) * normsq(dcoll_dr(1:3))
 
   end subroutine PLANE
 
@@ -1291,7 +1291,7 @@ contains
     dcoll_dr(1:9) = dC_dr(1:9)
     Z_coll = 0._dp
     do i=1,3
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
   end subroutine BONDLENGTH_DIFF
@@ -1397,7 +1397,7 @@ contains
     dcoll_dr(1:size(pos)) = dC_dr(1:size(pos))
     Z_coll = 0._dp
     do i=1,(size(pos)/3)
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
     call finalise(dummy)

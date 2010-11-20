@@ -156,7 +156,7 @@ subroutine SPHERE(pos, velo, t, data, C, dC_dr, dC_dt)
   d = pos - data(1:3)
   radius2 = data(4)*data(4)
   
-  C = norm2(d) - radius2
+  C = normsq(d) - radius2
   dC_dr = 2.0_dp * d
   dC_dt = dC_dr .dot. velo
 

@@ -601,7 +601,7 @@ contains
 !       ntherm = 0
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
-          K = K + at%mass(i)*norm2(at%velo(:,i))
+          K = K + at%mass(i)*normsq(at%velo(:,i))
 !	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
 !	  ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
@@ -644,7 +644,7 @@ contains
 
        do i = 1, at%N
           if(prop_ptr(i) /= value) cycle
-          K = K + at%mass(i)*norm2(at%velo(:,i))
+          K = K + at%mass(i)*normsq(at%velo(:,i))
           at%velo(:,i) = at%velo(:,i)*decay
        end do
 
@@ -980,14 +980,14 @@ contains
 !	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
 !	  ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
-          K = K + at%mass(i)*norm2(at%velo(:,i))
+          K = K + at%mass(i)*normsq(at%velo(:,i))
        end do
 !       call print("Thermostat " // value //" thermostat4 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Calculate new f_eta...
        this%f_eta = 0.0_dp
        do i = 1, at%N
-          if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
+          if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*normsq(at%velo(:,i))
        end do
        this%f_eta = this%f_eta - this%Ndof*BOLTZMANN_K*this%T
 
@@ -1017,7 +1017,7 @@ contains
        do i = 1, at%N
           if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
-          K = K + at%mass(i)*norm2(at%velo(:,i))
+          K = K + at%mass(i)*normsq(at%velo(:,i))
        end do
 
        !Propagate work
@@ -1029,7 +1029,7 @@ contains
        this%f_eta = 0.0_dp
        !Deterministic part:
         do i = 1, at%N
-           if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
+           if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*normsq(at%velo(:,i))
         end do
        this%f_eta = this%f_eta - this%Ndof*BOLTZMANN_K*this%T
        !Stochastic part: 

@@ -234,10 +234,10 @@ subroutine phonons(pot, at, dx, evals, evecs, effective_masses, calc_args, IR_in
       endif
 
       call print("dynamical matrix energy check (Em-E0) " // (Em-E0) // " (Ep-E0) " // (Ep-E0), PRINT_NERD)
-      call print("dynamical matrix magnitude check |fp-f0| " // sqrt(sum(norm2(fp-f0,2))) // " |fm-f0| " // sqrt(sum(norm2(fm-f0,2))) // &
-	" |fp-f0|-|fm-f0| " // (sqrt(sum(norm2(fp-f0,2)))-sqrt(sum(norm2(fm-f0,2)))), PRINT_NERD)
+      call print("dynamical matrix magnitude check |fp-f0| " // sqrt(sum(normsq(fp-f0,2))) // " |fm-f0| " // sqrt(sum(normsq(fm-f0,2))) // &
+	" |fp-f0|-|fm-f0| " // (sqrt(sum(normsq(fp-f0,2)))-sqrt(sum(normsq(fm-f0,2)))), PRINT_NERD)
       call print("dynamical matrix harmonicity check (|fp+fm|/2 - f0)/(0.5*(|fp-f0|+|fm-f0|)) "// &
-	(sqrt(sum(norm2(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(norm2(fp-f0,2)))+sqrt(sum(norm2(fm-f0,2)))))) , PRINT_NERD)
+	(sqrt(sum(normsq(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(normsq(fp-f0,2)))+sqrt(sum(normsq(fm-f0,2)))))) , PRINT_NERD)
 
       dmu_dr(alpha, i, :) = (mu_p-mu_m)/(2.0_dp*dx)
 

@@ -3123,7 +3123,7 @@ contains
           do i=init_val(1), init_val(1)+1
 
              !construct the shifted vector
-             tmp = norm2(dvw + this%lattice(:,1)*i +this%lattice(:,2)*j + this%lattice(:,3)*k)
+             tmp = normsq(dvw + this%lattice(:,1)*i +this%lattice(:,2)*j + this%lattice(:,3)*k)
              !test if it is the smallest so far and store the shift if necessary
              if (tmp < dist2) then
                 dist2 = tmp
@@ -4994,7 +4994,7 @@ contains
         RAISE_ERROR('CosAngle_To_Line: Test atom '//test_atom//' out of range ('//this%N//')', error)
      end if
 
-     if (norm2(dir) .feq. 0.0_dp) then
+     if (normsq(dir) .feq. 0.0_dp) then
         RAISE_ERROR('CosAngle_To_Line: A non-zero direction is required', error)
      end if
 

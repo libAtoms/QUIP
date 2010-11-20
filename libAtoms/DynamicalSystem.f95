@@ -286,7 +286,7 @@ contains
       this%atoms%oldpos = this%atoms%avgpos
       if (added_avgke) then
 	do i=1, this%atoms%N
-	  this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
+	  this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
 	end do
       endif
 
@@ -1038,7 +1038,7 @@ contains
        dr = (this%pos(:,i)-my_origin)
        dr_proj = (dr.dot.axis_hat)*axis_hat
        dr_normal = dr - dr_proj
-       MoI = MoI + this%mass(i)*norm2(dr_normal)
+       MoI = MoI + this%mass(i)*normsq(dr_normal)
      end do
    end function moment_of_inertia
 
@@ -1061,7 +1061,7 @@ contains
        endif
        do ii=1,3
        do jj=1,3
-	 if (ii == jj) MoI(ii,jj) = MoI(ii,jj) + m*norm2(dr)
+	 if (ii == jj) MoI(ii,jj) = MoI(ii,jj) + m*normsq(dr)
 	 MoI(ii,jj) = MoI(ii,jj) - m*dr(ii)*dr(jj)
        end do
        end do
@@ -1103,7 +1103,7 @@ contains
      real(dp), intent(in) :: mass, velo(3)
      real(dp) :: ke
 
-     ke = 0.5_dp*mass * norm2(velo)
+     ke = 0.5_dp*mass * normsq(velo)
    end function single_kinetic_energy
 
    !% Return the total kinetic energy given atomic masses and velocities
@@ -1237,13 +1237,13 @@ contains
 	do i = 1,this%atoms%Ndomain
 	   if (associated(property_p)) then
 	      if (property_p(i) == value .and. this%atoms%move_mask(i) == 1) then
-		 temperature = temperature + this%atoms%mass(i) * norm2(this%atoms%velo(:,i))
+		 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
 		 N = N + 1
 		 Ndof = Ndof + degrees_of_freedom(this,i)
 	      end if
 	   else
 	      if (my_include_all .or. (this%atoms%move_mask(i) == 1)) then
-		 temperature = temperature + this%atoms%mass(i) * norm2(this%atoms%velo(:,i))
+		 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
 		 N = N + 1
 		 Ndof = Ndof + degrees_of_freedom(this,i)
 	      end if
@@ -2034,7 +2034,7 @@ contains
         call update_exponential_average(this%avg_temp,decay,this%cur_temp)
         do i = 1, this%atoms%Ndomain
            call update_exponential_average(this%atoms%avgpos(:,i),decay,realpos(this%atoms,i))
-           call update_exponential_average(this%atoms%avg_ke(i),decay,0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i)))
+           call update_exponential_average(this%atoms%avg_ke(i),decay,0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i)))
         end do
      end if
 
@@ -2607,11 +2607,11 @@ contains
 !     select case(this%group(g)%type)
 !        
 !     case(TYPE_ATOM)
-!        ek = eK + 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
+!        ek = eK + 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
 !        Ndof = Ndof + 3.0_dp
 !        
 !     case(TYPE_CONSTRAINED)
-!        ek = ek + 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
+!        ek = ek + 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
 !        Ndof = Ndof + 3.0_dp - (real(group_n_objects(this%group(g)),dp) / real(group_n_atoms(this%group(g)),dp))
 !        
 !     case default

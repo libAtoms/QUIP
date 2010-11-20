@@ -1246,7 +1246,7 @@ contains
     end if
 
     if (.not. first_time) then
-       max_disp = maxval(norm2(stored_pos - at%pos, 1))
+       max_disp = maxval(normsq(stored_pos - at%pos, 1))
        call print('Maximum atomic displacement since last calc_connect is '//max_disp)
     end if
 

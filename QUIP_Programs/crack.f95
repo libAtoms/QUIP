@@ -1009,7 +1009,7 @@ program crack
                  if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(f, f_fm)//' '//maxval(abs(f_fm-f)))
 
                  if (trim(params%simulation_task) == 'damped_md') &
-                      call print('Damped MD: norm2(force) = '//norm2(reshape(f,(/3*ds%N/)))//&
+                      call print('Damped MD: normsq(force) = '//normsq(reshape(f,(/3*ds%N/)))//&
                       ' max(abs(force)) = '//maxval(abs(f)))
 
                  if (state == STATE_MD_LOADING) then
@@ -1062,7 +1062,7 @@ program crack
            call ds_print_status(ds, 'D')
 
            if (trim(params%simulation_task) == 'damped_md') &
-                call print('Damped MD: norm2(force) = '//norm2(reshape(f,(/3*ds%N/)))//&
+                call print('Damped MD: normsq(force) = '//normsq(reshape(f,(/3*ds%N/)))//&
                 ' max(abs(force)) = '//maxval(abs(f)))
 
            if (state == STATE_MD_LOADING) then

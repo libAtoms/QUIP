@@ -112,11 +112,11 @@ use libatoms_module
           one_r2 = 0._dp
           ave_r2 = 0._dp
           do i = 1, structure%N
-             ave_r2 = ave_r2 + norm2(realpos(reference,i) - realpos(structure,i))
+             ave_r2 = ave_r2 + normsq(realpos(reference,i) - realpos(structure,i))
           enddo
           ave_r2 = ave_r2 / structure%N
           if (one_atom.ne.0) then
-             one_r2 = norm2(realpos(reference,one_atom) - realpos(structure,one_atom))
+             one_r2 = normsq(realpos(reference,one_atom) - realpos(structure,one_atom))
           endif
      
           if (mod(frame_count-1,IO_Rate).eq.0) then

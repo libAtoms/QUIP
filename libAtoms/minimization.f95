@@ -1156,7 +1156,7 @@ CONTAINS
        end function dfunc
     END INTERFACE
     real(dp)::damp !% Velocity damping factor
-    real(dp)::tol  !% Minimisation is taken to be converged when 'norm2(force) < tol'
+    real(dp)::tol  !% Minimisation is taken to be converged when 'normsq(force) < tol'
     real(dp)::max_change !% Maximum position change per time step
     integer:: max_steps  !% Maximum number of MD steps
     character(len=1),optional::data(:)
@@ -1189,7 +1189,7 @@ CONTAINS
        call verbosity_push_decrement()
        force(:)= -dfunc(X,data)
        call verbosity_pop()
-       df2=norm2(force)
+       df2=normsq(force)
        if(df2 .LT. tol) then
           write(line,*) I," force^2 =",df2 ; call print(line)
           write(line,*)"Converged in ",i," steps!!" ; call print(line)
@@ -1306,7 +1306,7 @@ CONTAINS
     real(dp) :: my_eps_guess
     real(dp):: f, f_new
     real(dp):: gg, dgg, hdirgrad_before, hdirgrad_after
-    real(dp):: dcosine, gdirlen, gdirlen_old, norm2grad_f, norm2grad_f_old
+    real(dp):: dcosine, gdirlen, gdirlen_old, normsqgrad_f, normsqgrad_f_old
     real(dp):: obj, obj_new
     logical:: do_sd, do_cg, do_pcg, do_lbfgs
     integer:: fast_linmin_switchback
@@ -1430,9 +1430,9 @@ CONTAINS
     gdir = (-1.0_dp)*grad_f
     hdir = gdir
     gdir_old = gdir
-    norm2grad_f = norm2(grad_f)
-    norm2grad_f_old = norm2grad_f
-    gdirlen =  sqrt(norm2grad_f)
+    normsqgrad_f = normsq(grad_f)
+    normsqgrad_f_old = normsqgrad_f
+    gdirlen =  sqrt(normsqgrad_f)
     gdirlen_old = gdirlen
     ! quality monitors
     dcosine = 0.0_dp
@@ -1458,9 +1458,9 @@ CONTAINS
     !**********************************************************************
     
     
-    if(norm2grad_f .LT. convergence_tol)then  
+    if(normsqgrad_f .LT. convergence_tol)then  
        call print("Minimization is already converged!")
-       call print(trim(method)//" iter = "// 0 //" df^2 = " // norm2grad_f // " f = " // f &
+       call print(trim(method)//" iter = "// 0 //" df^2 = " // normsqgrad_f // " f = " // f &
             &// " "//lsteps//" linmin steps eps = "//eps,PRINT_VERBOSE)
        exit_flag = 1
     end if
@@ -1486,7 +1486,7 @@ CONTAINS
 
 
        if (my_hook_print_interval == 1 .or. mod(main_counter,my_hook_print_interval) == 1) call verbosity_push_increment()
-       call print(trim(method)//" iter = "//main_counter//" df^2 = "//norm2grad_f//" f = "//f// &
+       call print(trim(method)//" iter = "//main_counter//" df^2 = "//normsqgrad_f//" f = "//f// &
             ' max(abs(df)) = '//maxval(abs(grad_f)),PRINT_VERBOSE)
        if(.not. do_lbfgs) &
             call print(" dcos = "//dcosine//" q = " //linmin_quality,PRINT_VERBOSE)
@@ -1510,7 +1510,7 @@ CONTAINS
        !*
        !**********************************************************************/
        ! 
-       if(norm2grad_f < convergence_tol) then
+       if(normsqgrad_f < convergence_tol) then
           convergence_counter = convergence_counter + 1
           !call print("Convergence counter = "//convergence_counter)
        else
@@ -1518,7 +1518,7 @@ CONTAINS
        end if
        if(convergence_counter == convergence_window) then
           call print("Converged after step " // main_counter)
-          call print(method // "iter= " // main_counter // " df^2= " // norm2grad_f // " f= " // f)
+          call print(method // "iter= " // main_counter // " df^2= " // normsqgrad_f // " f= " // f)
           exit_flag = 1 ! while loop will quit
           cycle !continue
        end if
@@ -1739,8 +1739,8 @@ CONTAINS
           endif
        end if
 
-       norm2grad_f_old = norm2grad_f
-       norm2grad_f = norm2(grad_f)
+       normsqgrad_f_old = normsqgrad_f
+       normsqgrad_f = normsq(grad_f)
           
 
        !**********************************************************************
@@ -1766,7 +1766,7 @@ CONTAINS
              gdirlen = 0.0
              dcosine = 0.0
              
-             gg = norm2(gdir)
+             gg = normsq(gdir)
              
              if(.NOT.do_pcg) then ! no preconditioning
                 dgg = max(0.0_dp, (gdir + grad_f).DOT.grad_f) ! Polak-Ribiere formula
@@ -2182,7 +2182,7 @@ CONTAINS
        velo = velo + (0.5_dp*dt)*acc
        force = -dfunc(x,data)
 
-       df2 = norm2(force)
+       df2 = normsq(force)
 
        if (df2 < tol) then
           write (line, '(i4,a,e10.2)')  i, ' force^2 = ', df2
@@ -2321,7 +2321,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     p0_dot = neg_gradient .dot. search_dir
 
     t_projected = search_dir*p0_dot
-    if (norm2(t_projected) .lt. accuracy) then
+    if (normsq(t_projected) .lt. accuracy) then
 	call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
     endif
 
@@ -2339,7 +2339,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     endif
 
     call print("cg_n " // p0_pos // " " // p0_e // " " // p0_dot // " " // &
-	       norm2(p0_ng) // " " // N_evals // " bracket starting", PRINT_VERBOSE)
+	       normsq(p0_ng) // " " // N_evals // " bracket starting", PRINT_VERBOSE)
 
     est_step_size = 4.0_dp*maxval(abs(p0_ng))**2/p0_dot
     if (max_step_size .gt. 0.0_dp .and. est_step_size .gt. max_step_size) then
@@ -2370,7 +2370,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     p1_dot = p1_ng .dot. search_dir
 
     call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-	       norm2(p1_ng) // " " // N_evals // " bracket first step", PRINT_VERBOSE)
+	       normsq(p1_ng) // " " // N_evals // " bracket first step", PRINT_VERBOSE)
 
     t_projected = search_dir*p1_dot
 !     if (object_norm(t_projected,norm_type) .lt. accuracy) then
@@ -2435,7 +2435,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 !	end if
 
       call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-		 norm2(p1_ng) // " " // N_evals // " bracket loop", PRINT_VERBOSE)
+		 normsq(p1_ng) // " " // N_evals // " bracket loop", PRINT_VERBOSE)
     end do
     
     call print ("bracketed by" // p0_pos // " " // p1_pos, PRINT_NERD)
@@ -2443,7 +2443,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     done = .false.
     t_projected = 2.0_dp*sqrt(accuracy)
     !new_p_dot = accuracy*2.0_dp
-    do while (norm2(t_projected) .ge. accuracy .and. (.not. done))
+    do while (normsq(t_projected) .ge. accuracy .and. (.not. done))
         call print ("n_linmin starting true minimization loop", PRINT_NERD)
 
 	use_cubic = .false.
@@ -2494,7 +2494,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	new_p_dot = new_p_ng .dot. search_dir
 
 	call print("cg_n " // new_p_pos // " " // new_p_E // " " // new_p_dot // " " // &
-		   norm2(new_p_ng) // " " // N_evals // " during line search", PRINT_VERBOSE)
+		   normsq(new_p_ng) // " " // N_evals // " during line search", PRINT_VERBOSE)
 
 	if (new_p_dot .gt. 0) then
 	    p0 = new_p
@@ -2621,9 +2621,9 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
                            "            -grad.dir" // &
                            "                |grad|^2" // "   n_evals")
     call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.g_i) // " " // &
-	       norm2(g_i) // " " // N_evals // " INITIAL_VAL")
+	       normsq(g_i) // " " // N_evals // " INITIAL_VAL")
 
-    if (norm2(g_i) .lt. accuracy) then
+    if (normsq(g_i) .lt. accuracy) then
 	call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, PRINT_VERBOSE)
 	final_E = initial_E
 	return
@@ -2643,7 +2643,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	! if (i_am_master_node) print *, "max_step_size ", max_step_size
 
 	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
-		  norm2(g_i) // " " // N_evals // " n_minim pre linmin")
+		  normsq(g_i) // " " // N_evals // " n_minim pre linmin")
 	l_error = ERROR_NONE
 	call n_linmin(x_i, bothfunc, g_i, E_i, h_i, &
 		      x_ip1, g_ip1, E_ip1, &
@@ -2660,9 +2660,9 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	endif
 
 	call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &
-		    norm2(g_ip1) // " " // N_evals // " n_minim post linmin")
+		    normsq(g_ip1) // " " // N_evals // " n_minim post linmin")
 
-	if (norm2(g_ip1) .lt. accuracy) then
+	if (normsq(g_ip1) .lt. accuracy) then
 	    call print("n_minim is converged", PRINT_VERBOSE)
 	    E_i = E_ip1
 	    x_i = x_ip1
@@ -2704,7 +2704,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	endif
 
 	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
-		    norm2(g_i) // " " // N_evals // " n_minim with new dir")
+		    normsq(g_i) // " " // N_evals // " n_minim with new dir")
 
 	call print("n_minim loop end, N_evals " // N_evals // " max_N_evals " // max_N_evals // &
 	  " done " // done, PRINT_VERBOSE)

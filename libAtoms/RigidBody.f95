@@ -809,7 +809,7 @@ end module RigidBody_module
 !         call system_abort(line)
 !      end if
 !      
-!      Etrans = 0.5_dp*this%rigidbody(i)%model%Mtot * norm2(centre_of_mass_velo(this,this%rigidbody(i)%indices))
+!      Etrans = 0.5_dp*this%rigidbody(i)%model%Mtot * normsq(centre_of_mass_velo(this,this%rigidbody(i)%indices))
 !      
 !    end function rigidbody_translational_energy
 !
