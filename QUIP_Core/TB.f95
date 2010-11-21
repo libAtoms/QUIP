@@ -437,6 +437,8 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
     call realloc_match_tbsys(this%tbsys, this%evecs)
   endif
 
+  nullify(scf_orbital_n)
+  nullify(scf_orbital_m)
   if (this%tbsys%scf%active) then
     allocate(scf_orbital_n(this%tbsys%N))
     if (this%tbsys%noncollinear) then
