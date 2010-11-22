@@ -222,10 +222,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   integer, dimension(3) :: shift
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  logical :: has_atom_mask_name, do_atom_mask_lookup
+  logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps
   character(FIELD_LENGTH) :: atom_mask_name
 
-  integer :: n_atoms_eff, ii
+  integer :: n_atoms_eff, ii, ji, jj
   integer, allocatable, dimension(:) :: atom_mask_lookup
 
   type(fourier_so4), save :: f_hat
@@ -279,9 +279,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
   atom_mask_pointer => null()
+
+  do_lammps = .false.
   if(present(args_str)) then
      call initialise(params)
-     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, &
+     help_string="Name of a logical property in the atoms object. For atoms where this property is true, energies, forces, virials etc. are calculated. &
+     Cross-terms are attributed to atoms depending on the >>lammps<< flag.")
+     call param_register(params, 'lammps', 'false', do_lammps, help_string="The way forces on local/ghost atoms are calculated. &
+     By default, cross terms are accumulated on the central atom. If >>lammps<< is set, cross-terms are accumulated on the neighbours.")
+
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)
@@ -293,22 +301,62 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      else
         atom_mask_pointer => null()
      endif
+
   endif
 
   do_atom_mask_lookup = associated(atom_mask_pointer) .and. &
        (trim(this%coordinates) == 'bispectrum' .or. trim(this%coordinates) == 'qw')
 
+  ! Two ways of computing derivatives.
+  ! Number one is do_lammps = FALSE :
+  ! loop over i
+  !   loop over j (neighbours of i)
+  !     f_i += dE_j/dx_i
+  !
+  ! We need:
+  ! * bispectrum of local atoms
+  ! * bispectrum of neighbours
+  ! * derivative of bispectrum of neighbours wro local atoms
+  !
+  ! We obtain:
+  ! * exact forces on local atoms
+  ! * zero on ghost atoms
+
+  ! Number two is do_lammps = TRUE :
+  ! loop over i
+  !   loop over j (neighbours of i)
+  !     f_j += dE_i/dx_j
+  !
+  ! We need:
+  ! * bispectrum of local atoms
+  ! * derivative of bispectrum of local atoms wro neighbour atoms
+  !
+  ! We obtain:
+  ! * force components on local and ghost atoms. These have to be summed over regions to get sensible forces.
+  ! Forces of local atoms whose neighbours are also local are exact.
+
   if (do_atom_mask_lookup) then
-     n_atoms_eff = count(atom_mask_pointer)
      allocate(atom_mask_lookup(at%n))
      atom_mask_lookup = 0
      j = 1
-     do i=1,at%N
+     do i = 1, at%N
         if (atom_mask_pointer(i)) then
            atom_mask_lookup(i) = j
            j = j + 1
+
+           if(.not. do_lammps) then ! Method(1): as well as local atoms, all neighbours are included in the lookup list even if they are not local.
+              do n = 1, atoms_n_neighbours(at,i)
+                 ji = atoms_neighbour(at,i,n)
+                 if( .not. atom_mask_pointer(ji) .and. atom_mask_lookup(ji) == 0 ) then
+                    atom_mask_lookup(ji) = j
+                    j = j + 1
+                 endif
+              enddo
+           endif
+
         end if
      end do
+     n_atoms_eff = count(atom_mask_lookup /= 0)
   else
      n_atoms_eff = at%n
   end if
@@ -342,8 +390,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   nei_max = 0
   do i = 1, at%N
-     if (associated(atom_mask_pointer)) then
-        if (.not. atom_mask_pointer(i)) cycle
+     if (do_atom_mask_lookup) then
+        if( atom_mask_lookup(i)==0 ) cycle
      end if
      if( nei_max < (atoms_n_neighbours(at,i)+1) ) nei_max = atoms_n_neighbours(at,i)+1
   enddo
@@ -398,6 +446,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         jack = 0.0_dp
      endif
   endselect
+  ! Method(1):
+  ! * vec will contain the bispectrum of all local atoms and their neighbours
+  ! * jack will contain the derivative of bispectrum of neighbours of local atoms wro local atoms
+  ! Method(2)
+  ! * vec will contain the bispectrum of all local atoms
+  ! * jack will contain the derivative of bispectrum of local atoms wro neighbours
 
 !$omp parallel 
 
@@ -415,26 +469,36 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 !$omp do private(n,ii)
   do i = 1, at%N
-     if (present(mpi)) then
-	if (mpi%active) then
-	  if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	endif
-      endif
-
-     if(associated(atom_mask_pointer)) then
-        if(.not. atom_mask_pointer(i)) cycle
+     if(do_atom_mask_lookup) then
+        if( atom_mask_lookup(i) == 0 ) cycle
      endif
 
      ii = i
      if (do_atom_mask_lookup) ii = atom_mask_lookup(i)
 
+     if (present(mpi)) then
+	if (mpi%active) then
+	  if (mod(ii-1, mpi%n_procs) /= mpi%my_proc) cycle
+	endif
+     endif
+
      if (trim(this%coordinates) == 'bispectrum') then
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,ii))
+        ! method(1): this does the local and the non-local but neighbour atoms as well.
+        ! method(2): this does the local atoms only (as only these are in the lookup list).
         
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
+              ! method(1) we cycle over those neighbours which are not local! not interested in derivatives wro non-local atoms.
+              ! method(2) we need the derivatives wro all neighbours regardsless they are local or not.
+
+              if (do_atom_mask_lookup .and. (.not. do_lammps)) then
+                 j = atoms_neighbour(at,i,n)
+                 if( .not. atom_mask_pointer(j) ) cycle
+              endif
+
               call fourier_transform(df_hat,at,i,n,w)
               call calc_bispectrum(dbis,f_hat,df_hat)
               call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),ii))
@@ -444,8 +508,19 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call fourier_transform(f3_hat, at, i)
         call calc_qw(qw, f3_hat)
         call qw2vec(qw, vec(:,ii))
+        ! method(1): this does the local and the non-local but neighbour atoms as well.
+        ! method(2): this does the local atoms only (as only these are in the lookup list).
+        
         if (present(f) .or. present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at, i)
+              ! method(1) we loop over those neighbours which are not local! not interested in derivatives wro non-local atoms.
+              ! method(2) we need the derivatives wro all neighbours regardsless they are local or not.
+
+              if (do_atom_mask_lookup .and. (.not. do_lammps)) then
+                 j = atoms_neighbour(at,i,n)
+                 if( .not. atom_mask_pointer(j) ) cycle
+              endif
+
               call fourier_transform(df3_hat, at, i, n)
               call calc_qw(dqw, f3_hat, df3_hat)
               call qw2vec(dqw, jack(:,3*n+1:3*(n+1),ii))
@@ -456,6 +531,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   enddo
 !$omp end do 
 
+  ! method(1): we need to communicate everything because the forces of the local atoms are calculated
+  ! method(2): we have only what we need in place anyway.
+
+  if (present(mpi) .and. (.not.do_lammps)) then
+     if(allocated(vec)) call sum_in_place(mpi,vec)
+     if(allocated(jack)) call sum_in_place(mpi,jack)
+  endif
 
   if (trim(this%coordinates) == 'bispectrum') then
      call finalise(f_hat)
@@ -486,8 +568,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp do private(ii)
         do i = 1, at%N
 
-           if(associated(atom_mask_pointer)) then
-              if(.not. atom_mask_pointer(i)) cycle
+           if(do_atom_mask_lookup) then
+              if( atom_mask_lookup(i) == 0 ) cycle
            endif
            
            ii = i
@@ -506,7 +588,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case default
      allocate(covariance(this%my_gp%n,n_atoms_eff))
      if (do_atom_mask_lookup) then
-        call gp_precompute_covariance(this%my_gp,vec,covariance,pack(at%Z, atom_mask_pointer),mpi)
+        call gp_precompute_covariance(this%my_gp,vec,covariance,pack(at%Z, mask = atom_mask_lookup /= 0),mpi)
      else
         call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
      end if
@@ -525,18 +607,18 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case default
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift,ii)
      do i = 1, at%N
-        if (present(mpi)) then
-           if (mpi%active) then
-              if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-           endif
-        endif
-
         if(associated(atom_mask_pointer)) then
            if(.not. atom_mask_pointer(i)) cycle
         endif
 
         ii = i
         if (do_atom_mask_lookup) ii = atom_mask_lookup(i)
+
+        if (present(mpi)) then
+           if (mpi%active) then
+              if (mod(ii-1, mpi%n_procs) /= mpi%my_proc) cycle
+           endif
+        endif
 
         if(present(e) .or. present(local_e)) then
 
@@ -560,12 +642,19 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
 
-                 call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,n*3+k,ii),Z=at%Z(i),c_in=covariance(:,ii))
-
+                 if(do_lammps) then
+                    call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,n*3+k,ii),Z=at%Z(i),c_in=covariance(:,ii))
 !$omp critical
-                 if( present(f) ) f(k,j) = f(k,j) - f_gp_k
-                 if( present(virial) .or. present(local_virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
+                    if( present(f) ) f(k,j) = f(k,j) - f_gp_k
+                    if( present(virial) .or. present(local_virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
 !$omp end critical
+                 else
+                    jj = j
+                    if (do_atom_mask_lookup) jj = atom_mask_lookup(j)
+                    call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,jj),x_prime_star=jack(:,jn*3+k,jj),Z=at%Z(j),c_in=covariance(:,jj))
+                    if( present(f) ) f(k,i) = f(k,i) - f_gp_k
+                    if( present(virial) .or. present(local_virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
+                 endif
               enddo
        
            enddo
