@@ -837,10 +837,10 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	break;
 
       case(T_LOGICAL_A):
-	if (sscanf(fields[k+j], "%c", &tmp_logical) != 1)  {
+	if (sscanf(fields[k], "%c", &tmp_logical) != 1)  {
 	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert logical value %s\n", fields[k+j]);
 	}
-	if (tmp_logical == 'T')
+	if (tmp_logical == 'T' || tmp_logical == '1')
 	  LOGICAL_A(property_data[i],n) = 1;
 	else
 	  LOGICAL_A(property_data[i],n) = 0;
