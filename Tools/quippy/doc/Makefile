@@ -105,5 +105,5 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in _build/doctest/output.txt."
 
-upload:
+upload: html
 	scp -r _build/html/* sphinx:~/www.jrk33.co.uk_html/quippy
