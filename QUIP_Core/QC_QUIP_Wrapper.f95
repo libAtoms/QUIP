@@ -36,15 +36,15 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QC_QUIP_Wrapper_module
-use libatoms_module, only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
-    atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
-use potential_module, only : potential, initialise, finalise
-use potential_module, only : potential, initialise, calc
-use mpi_context_module, only : mpi_context
+use libatoms_module !! , only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
+    !! atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
+use potential_module !! , only : potential, initialise, finalise
+use potential_module !! , only : potential, initialise, calc
+use mpi_context_module !! , only : mpi_context
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-use libatoms_module, only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
-use potential_module, only : print
-use libatoms_module, only : print_xyz, mainlog, optional_default
+use libatoms_module !! , only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
+use potential_module !! , only : print
+use libatoms_module !! , only : print_xyz, mainlog, optional_default
 #endif
 implicit none
 private
@@ -104,7 +104,7 @@ contains
       call system_abort("Mismatched array sizes in QC_QUIP_calc")
     endif
 
-    call setup_atoms(at, N, Lz, pos, Z)
+    call qc_setup_atoms(at, N, Lz, pos, Z)
 
     if (.not. assign_pointer(at, "weight", weight)) then
       call add_property(at, "weight", 0.0_dp)
@@ -191,7 +191,7 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
       call system_abort("Don't do buffer_region_width = " // buffer_region_width // &
 			 " > 0 with ONIOM")
 
-    call setup_atoms(at, N, Lz, pos, Z)
+    call qc_setup_atoms(at, N, Lz, pos, Z)
 
     call add_property(at, "weight", 0.0_dp)
     call add_property(at, "hybrid", 0)
@@ -270,7 +270,7 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
 
   end function matching_array_sizes
 
-  subroutine setup_atoms(at, N, Lz, pos, Z)
+  subroutine qc_setup_atoms(at, N, Lz, pos, Z)
     type(atoms), intent(inout) :: at
     integer, intent(in) :: N
     real(dp), intent(in) :: Lz
@@ -292,6 +292,6 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     at%Z = Z
 
     call calc_connect(at)
-  end subroutine setup_atoms
+  end subroutine qc_setup_atoms
 
 end module QC_QUIP_Wrapper_module
