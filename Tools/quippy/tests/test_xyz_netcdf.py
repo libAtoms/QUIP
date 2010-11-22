@@ -34,6 +34,7 @@ class TestCInOutput(QuippyTestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44,14), 2,2,2)
       self.at.add_property('log', False)
+      self.at.log[1] = True
       self.at.params['real'] = 1.0
       self.at.params['int'] = 2
       self.at.params['neg_int'] = -3
@@ -51,7 +52,7 @@ class TestCInOutput(QuippyTestCase):
          at.params.update(self.at.params)
 
       self.xyz_ref =  ['64\n', 'real=1.00000000 int=2 neg_int=-3 bad_neg=3-4 int_a="1       2       3" real_a="1.00000000      2.00000000      3.00000000" int_a2="1        4        7        2        5        8        3        6        9" real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" log_param=T log_a="T T F" string=string string2="string with spaces" Lattice="10.88000000       0.00000000       0.00000000       0.00000000      10.88000000       0.00000000       0.00000000       0.00000000      10.88000000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
-                       'Si              0.00000000      0.00000000      0.00000000      14    F\n',
+                       'Si              0.00000000      0.00000000      0.00000000      14    T\n',
                        'Si              1.36000000      1.36000000      1.36000000      14    F\n',
                        'Si              2.72000000      2.72000000      0.00000000      14    F\n',
                        'Si              4.08000000      4.08000000      1.36000000      14    F\n',
