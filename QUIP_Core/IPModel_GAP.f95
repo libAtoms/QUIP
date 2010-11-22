@@ -360,6 +360,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   else
      n_atoms_eff = at%n
   end if
+  call print('IPModel_GAP_Calc: n_atoms_eff = '//n_atoms_eff)
 
   allocate(w(at%n))
   select case(trim(this%coordinates))
@@ -370,7 +371,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         w(i) = this%w_Z(at%Z(i))
      enddo
   endselect
-
 
   select case(trim(this%coordinates))
   case('water_monomer')
@@ -386,7 +386,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case default
      call system_abort('IPModel_GAP_Calc: coordinates = '//trim(this%coordinates)//' unknown')
   endselect
-
 
   nei_max = 0
   do i = 1, at%N
@@ -467,6 +466,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
+  call system_timer('IPModel_GAP_Calc bispectrum')
 !$omp do private(n,ii)
   do i = 1, at%N
      if(do_atom_mask_lookup) then
@@ -494,7 +494,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               ! method(1) we cycle over those neighbours which are not local! not interested in derivatives wro non-local atoms.
               ! method(2) we need the derivatives wro all neighbours regardsless they are local or not.
 
-              if (do_atom_mask_lookup .and. (.not. do_lammps)) then
+              if (n /= 0 .and. do_atom_mask_lookup .and. (.not. do_lammps)) then
                  j = atoms_neighbour(at,i,n)
                  if( .not. atom_mask_pointer(j) ) cycle
               endif
@@ -516,7 +516,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               ! method(1) we loop over those neighbours which are not local! not interested in derivatives wro non-local atoms.
               ! method(2) we need the derivatives wro all neighbours regardsless they are local or not.
 
-              if (do_atom_mask_lookup .and. (.not. do_lammps)) then
+              if (n /= 0 .and. do_atom_mask_lookup .and. (.not. do_lammps)) then
                  j = atoms_neighbour(at,i,n)
                  if( .not. atom_mask_pointer(j) ) cycle
               endif
@@ -529,7 +529,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
 
   enddo
-!$omp end do 
+!$omp end do
+  call system_timer('IPModel_GAP_Calc bispectrum')
 
   ! method(1): we need to communicate everything because the forces of the local atoms are calculated
   ! method(2): we have only what we need in place anyway.
@@ -593,8 +594,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
      end if
   endselect
-
     
+  call system_timer('IPModel_GAP_Calc gp_predict')
   select case(trim(this%coordinates))
   case('water_monomer','water_dimer')
      do i = 1, size(vec,2)
@@ -661,6 +662,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
      enddo
   endselect
+  call system_timer('IPModel_GAP_Calc gp_predict')
 
   if (present(mpi)) then
      if(present(f)) call sum_in_place(mpi,f)

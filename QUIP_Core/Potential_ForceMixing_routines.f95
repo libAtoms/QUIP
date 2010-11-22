@@ -248,10 +248,11 @@
     integer, pointer, dimension(:) :: hybrid, hybrid_mark
     integer :: i
     type(Dictionary) :: params, calc_create_hybrid_weights_params
+    type(Connection) :: saved_connect
     logical :: dummy
     logical  :: minimise_mm, calc_weights, save_forces, lotf_do_init, &
          lotf_do_map, lotf_do_fit, lotf_do_interp, lotf_do_qm, lotf_interp_space, &
-         randomise_buffer, lotf_nneighb_only
+         randomise_buffer, lotf_nneighb_only, atom_mask
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
          AP_method, lotf_interp_order
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
@@ -482,23 +483,52 @@
        call set_value(params, 'do_rescale_r', .true.)
        call set_value(params, 'r_scale', this%r_scale_pot1)
 
-       if (has_key(params, 'atom_mask_name')) then
-          ! Mark both the active and buffer atoms -- GAP atom_mask implementation requires all atoms within 
-          ! Potential cutoff to be marked to give accurate forces on the active (core) atoms
-          call add_property(at, 'hybrid_mask', hybrid_mark /= HYBRID_NO_MARK, overwrite=.true.)
-          call print('Potential_FM_Calc: using atom_mask with '//count(hybrid_mark /= HYBRID_NO_MARK)//' marked atoms.')
-          call set_value(params, 'atom_mask_name', 'hybrid_mask')
+       atom_mask = .false.
+       if (has_key(params, 'atom_mask')) then
+          if (.not. get_value(params, 'atom_mask', atom_mask)) then
+             RAISE_ERROR('Potential_FM_Calc: atom_mask present in qm_args_str, but not of type logical', error)             
+          end if
        end if
 
-       qm_args_str = write_string(params)
+       if (atom_mask) then
+          ! Mark the active atoms
+          call add_property(at, 'hybrid_mask', hybrid_mark == HYBRID_ACTIVE_MARK, overwrite=.true.)
+          call print('Potential_FM_Calc: got atom_mask with '//count(hybrid_mark == HYBRID_ACTIVE_MARK)//' marked atoms.', PRINT_VERBOSE)
+          call set_value(params, 'atom_mask_name', 'hybrid_mask')
+
+          if (this%r_scale_pot1 .fne. 1.0_dp) then
+             call system_timer('rescale')
+             call print('Potential_FM_Calc: rescaling system by factor '//this%r_scale_pot1)
+             ! Rescale entire system. We'll put it back after QM calc()
+             saved_connect = at%connect
+             call set_lattice(at, this%r_scale_pot1*at%lattice, scale_positions=.true.)
+             call calc_dists(at)
+             call system_timer('rescale')
+          end if
+
+       end if
+
+       qm_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
 
-       ! Do the QM. If qm_args_str contatins 'small_cluster' or 'little_clusters' options
+       ! Do the QM. If qm_args_str contatins 'single_cluster' or 'little_clusters' options
        ! then potential calc() will do cluster carving. 
-       ! We pass along our mpi context object to allow little clusters to be split over
-       ! nodes.
        call calc(this%qmpot, at, args_str=qm_args_str, error=error)
        f_qm = at_force_ptr
+
+       if (atom_mask .and. (this%r_scale_pot1 .fne. 1.0_dp)) then
+
+          call system_timer('Undoing rescale')
+          ! Restore system to original scale
+          call set_lattice(at, at%lattice/this%r_scale_pot1, scale_positions=.true.)
+          at%connect = saved_connect
+          call finalise(saved_connect)
+
+          ! Scale forces
+          f_qm = f_qm*this%r_scale_pot1
+          call system_timer('Undoing rescale')
+       end if
+
     end if
 
     !Fitlist construction has been moved here.

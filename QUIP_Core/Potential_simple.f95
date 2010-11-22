@@ -400,7 +400,7 @@ contains
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'little_clusters')
-       new_args_str = write_string(params)
+       new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
  
        if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
@@ -495,7 +495,7 @@ contains
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'single_cluster')
-       new_args_str = write_string(params)
+       new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
 
        ! call ourselves on a cluster formed from marked atoms
@@ -1003,7 +1003,7 @@ contains
           call remove_value(params, trim(calc_local_energy))
           call remove_value(params, trim(calc_virial))
 	  call set_value(params, "energy", "fd_energy")
-          new_args_str = write_string(params)
+          new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
 
 
