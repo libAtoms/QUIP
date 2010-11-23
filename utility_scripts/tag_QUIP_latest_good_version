@@ -22,9 +22,14 @@ function check_version {
 
    make_status=""
    quippy_status=""
-   for compiler_module in gnu/4.5.1 intel/11.1.073 gnu/4.4.4 intel/10.1.025; do
-      module unload intel gnu pgi
-      module load ${compiler_module} mkl openmpi > module_load.out 2>&1
+   for compiler_module in gnu/4.5.1 intel/11.1.073 gnu/4.4.4 intel/10.1.025 intel/12.0.084; do
+      module unload intel gnu pgi mkl openmpi
+      if [[ $compiler_module == "intel/12.0.084" ]]; then
+	 mkl_module="mkl/10.3.0.084"
+      else
+	 mkl_module="mkl"
+      fi
+      module load ${compiler_module} ${mkl_module} openmpi > module_load.out 2>&1
       if grep -q "Unable to locate a modulefile" module_load.out; then
 	 echo "Failed in 'module load ${compiler_module} mkl openmpi'"
 	 exit 1
@@ -32,8 +37,11 @@ function check_version {
 
       for suffix in "" _openmp _openmpi; do
 	 do=1
-	 if [[ $compiler_module == "gnu/4.4.4" && ! -z $suffix ]]; then
+	 if [[ $compiler_module == "gnu/4.4.4" && $suffix == "_openmp" ]]; then
 	    do=0 # don't even try openmp with gfortran 4.4
+	 fi
+	 if [[ $compiler_module == "intel/12.0.084" && $suffix == "_openmp" ]]; then
+	    do=0 # don't even try openmp with ifort 12 either (weird use iso_c_binding and '!$ use omp' conflict)
 	 fi
 
 	 if [[ $do == 1 ]]; then
