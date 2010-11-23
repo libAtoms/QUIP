@@ -246,7 +246,8 @@
     real(dp), pointer, dimension(:,:) :: force_ptr
     real(dp), pointer, dimension(:) :: weight_region1, conserve_momentum_weight
     integer, pointer, dimension(:) :: hybrid, hybrid_mark
-    integer :: i
+    logical, pointer, dimension(:) :: hybrid_mask
+    integer :: i, k
     type(Dictionary) :: params, calc_create_hybrid_weights_params
     type(Connection) :: saved_connect
     logical :: dummy
@@ -255,7 +256,7 @@
          randomise_buffer, lotf_nneighb_only, atom_mask
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
          AP_method, lotf_interp_order
-    real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
+    real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
     character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial
@@ -384,6 +385,8 @@
 
     if (calc_weights) then 
 
+       call system_timer('calc_weights')
+
        if (.not. has_property(at, 'hybrid_mark')) &
             call add_property(at, 'hybrid_mark', HYBRID_NO_MARK)
 
@@ -424,6 +427,8 @@
        if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
             RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
        endif
+
+       call system_timer('calc_weights')
 
     end if
 
@@ -492,17 +497,30 @@
 
        if (atom_mask) then
           ! Mark the active atoms
-          call add_property(at, 'hybrid_mask', hybrid_mark == HYBRID_ACTIVE_MARK, overwrite=.true.)
+          call add_property(at, 'hybrid_mask', hybrid_mark == HYBRID_ACTIVE_MARK, overwrite=.true., ptr=hybrid_mask)
           call print('Potential_FM_Calc: got atom_mask with '//count(hybrid_mark == HYBRID_ACTIVE_MARK)//' marked atoms.', PRINT_VERBOSE)
           call set_value(params, 'atom_mask_name', 'hybrid_mask')
 
           if (this%r_scale_pot1 .fne. 1.0_dp) then
              call system_timer('rescale')
              call print('Potential_FM_Calc: rescaling system by factor '//this%r_scale_pot1)
+
              ! Rescale entire system. We'll put it back after QM calc()
              saved_connect = at%connect
              call set_lattice(at, this%r_scale_pot1*at%lattice, scale_positions=.true.)
-             call calc_dists(at)
+             
+             !! recompute connectivity only in region of marked atoms
+
+             call estimate_origin_extent(at, hybrid_mask, 2.0_dp*cutoff(this%qmpot), origin, extent)
+
+             !call finalise(at%connect)
+             !call system_timer('calc_connect_hysteretic')
+             !call calc_connect_hysteretic(at, origin=origin, extent=extent)
+             !call system_timer('calc_connect_hysteretic')
+             call system_timer('calc_connect')
+             call calc_connect(at)
+             call system_timer('calc_connect')
+
              call system_timer('rescale')
           end if
 
