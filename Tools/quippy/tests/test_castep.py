@@ -1726,8 +1726,8 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
       self.assertEqual(len(self.al), 3)
       self.assertEqual(self.al[1].n, 28)
       self.assertEqual(self.al[3].n, 28)
-      self.assertAlmostEqual(self.al[1].energy, -2998.58809358)
-      self.assertAlmostEqual(self.al[3].energy, -2999.13124570)
+      self.assertAlmostEqual(self.al[1].energy, -2998.9492624099998)
+      self.assertAlmostEqual(self.al[3].energy, -2999.4890144460001)
       self.assertEqual(self.al[1].force.shape, (3,28))
       self.assertEqual(self.al[3].force.shape, (3,28))
 

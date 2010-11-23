@@ -26,7 +26,7 @@
 import sys, string, os, operator, itertools, logging, glob, re
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_from_symbol
+from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.atoms import make_lattice, get_lattice_params
 from math import pi
@@ -515,16 +515,30 @@ def CastepGeomMDReader(source, atoms_ref=None):
 
       params = Dictionary()
 
-      # First line is the time/step
-      params['time'] = float(lines[0])
+      # First line is the time/step in a.u - we convert to fs
+      params['time'] = float(lines[0])*AU_FS
 
-      # Then the energy, in Hartree
+      # Then the energy, in Hartree - we convert to eV
       energy_lines = filter(lambda s: s.endswith('<-- E'), lines)
       if len(energy_lines) != 1:
-         raise ValueError('Number of energy lines should be exactly one.')
+         raise ValueError('Number of energy lines should be exactly one. Got %r' % energy_lines)
 
       params['energy'], params['hamiltonian'] = \
                              [float(x)*HARTREE for x in energy_lines[0].split()[0:2]]
+
+      # Temperature, in atomic units - we convert to Kelvin
+      temperature_lines = filter(lambda s: s.endswith('<-- T'), lines)
+      if temperature_lines != []:
+         if len(temperature_lines) != 1:
+            raise ValueError('Number of temperature lines should be exactly one. Got %r' % temperature_lines)
+         params['temperature'] = float(temperature_lines[0].split()[0])*HARTREE/BOLTZMANN_K
+         
+      # Pressure, in atomic units - we convert to ev/A**3
+      pressure_lines = filter(lambda s: s.endswith('<-- P'), lines)
+      if pressure_lines != []:
+         if len(pressure_lines) != 1:
+            raise ValueError('Number of pressure lines should be exactly one. Got %r' % pressure_lines)
+         params['pressure'] = float(pressure_lines[0].split()[0])*HARTREE/BOHR**3
 
       # Lattice is next, in units of Bohr
       lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
@@ -537,8 +551,8 @@ def CastepGeomMDReader(source, atoms_ref=None):
          else:
             lattice = atoms_ref.lattice[:]
 
-      # Then optionally virial tensor - convert stress tensor to libAtoms units, then
-      # divide by cell volume
+      # Then optionally virial tensor - convert stress tensor to eV/A**3
+      # then multiply by cell volume to get virial in eV
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
       if stress_lines:
          virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
@@ -595,7 +609,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
       else:
          at.pos[:] = numpy.dot(at.lattice, at.frac_pos)
          
-      # Velocities, if this is an MD file, from atomic units
+      # Velocities, if this is an MD file, from atomic units to A/fs
       if velolines != []:
          at.add_property('velo', 0.0, n_cols=3)
          for i, line in fenumerate(velolines):
@@ -603,7 +617,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
             num = int(num)
             at.velo[:,lookup[(el,num)]] = [ float(f)*BOHR/AU_FS for f in (vx, vy, vz) ]
                 
-      # And finally the forces, which are in units of hartree/bohr
+      # And finally the forces, which are in units of Hartree/Bohr
       if forcelines != []:
          at.add_property('force', 0.0, n_cols=3)
          for i, line in fenumerate(forcelines):
@@ -611,7 +625,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
             num = int(num)
             at.force[:,lookup[(el,num)]] = [ float(f)*HARTREE/BOHR for f in (fx, fy, fz) ]
 
-      if stress_lines:
+      if stress_lines != []:
          at.params['virial'] = -virial*at.cell_volume()
 
       if atoms_ref is None:
@@ -771,6 +785,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
 
       energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
 
+      # If we're using smearing, correct energy is 'free energy'
+      energy_lines.extend(filter(lambda s: s.startswith('Final free energy (E-TS)'), castep_output))
+
       if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() != 'none':
          energy_lines.extend(filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), castep_output))
 
@@ -823,27 +840,26 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
 
       # Have we calculated stress?
       got_virial = False
-      if 'calculate_stress' in param and param['calculate_stress']:
-         try:
-            for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
-               stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
-               if stress_start_lines != []: break
+      try:
+         for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
+            stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
+            if stress_start_lines != []: break
 
-            if stress_start_lines == []:
-               raise ValueError
+         if stress_start_lines == []:
+            raise ValueError
 
-            stress_start = stress_start_lines[-1]
-            stress_lines = castep_output[stress_start+6:stress_start+9]
-            virial = fzeros((3,3),float)
-            for i, line in fenumerate(stress_lines):
-               star1, label, vx, vy, vz, star2 = line.split()
-               virial[:,i] = [-float(v) for v in (vx,vy,vz) ]
+         stress_start = stress_start_lines[-1]
+         stress_lines = castep_output[stress_start+6:stress_start+9]
+         virial = fzeros((3,3),float)
+         for i, line in fenumerate(stress_lines):
+            star1, label, vx, vy, vz, star2 = line.split()
+            virial[:,i] = [-float(v) for v in (vx,vy,vz) ]
 
-            got_virial = True
+         got_virial = True
 
-         except ValueError:
-            if abort:
-               raise ValueError('No stress tensor found in .castep file')
+      except ValueError:
+         if abort:
+            raise ValueError('No stress tensor found in .castep file')
 
       spin_polarised = 'spin_polarised' in param and param['spin_polarised']
 
