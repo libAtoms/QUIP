@@ -578,6 +578,13 @@ def CastepGeomMDReader(source, atoms_ref=None):
          # CASTEP (element, number) to original atom index
          assert n_atoms == atoms_ref.n
          at = atoms_ref.copy()
+         
+         # remove things which shouldn't be inherited from atoms_ref
+         for p in ['energy', 'hamiltonian', 'temperature', 'pressure', 'virial']:
+            if p in at.params: del at.params[p]
+         for p in ['force', 'velo']:
+            if p in at.properties: del at.properties[p]
+         
          at.set_lattice(lattice, scale_positions=False)
          at.params.update(params)
          species_count = {}
@@ -748,6 +755,13 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          # CASTEP (element, number) to original atom index
          assert n_atoms == atoms_ref.n, 'Number of atoms must match atoms_ref'
          atoms = atoms_ref.copy()
+
+         # remove things which shouldn't be inherited from atoms_ref
+         for p in ['energy', 'enthalpy', 'virial']:
+            if p in atoms.params: del atoms.params[p]
+         for p in ['force', 'popn_s', 'popn_p', 'popn_d', 'popn_f', 'popn_total', 'popn_charge', 'popn_spin']:
+            if p in atoms.properties: del atoms.properties[p]
+         
          atoms.set_lattice(lattice, scale_positions=False)
          species_count = {}
          lookup = {}
