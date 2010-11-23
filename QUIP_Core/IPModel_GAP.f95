@@ -360,7 +360,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   else
      n_atoms_eff = at%n
   end if
-  call print('IPModel_GAP_Calc: n_atoms_eff = '//n_atoms_eff)
 
   allocate(w(at%n))
   select case(trim(this%coordinates))
