@@ -190,3 +190,4 @@ except ImportError:
 
 if 'atomeye' in available_modules:
    import atomeye
+   import atomeyewriter
