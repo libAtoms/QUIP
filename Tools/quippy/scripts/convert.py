@@ -67,6 +67,16 @@ p.add_option('--int-format', action='store', help="""Format string to use when w
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
 p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printing of Atoms object (useful when also using -e argument).""", default=False)
 
+# Options related to rendering of imagees with AtomEye
+p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
+p.add_option('--property', action='store', help="""Property to use to colour atoms (default none)""")
+p.add_option('--arrows', action='store', help="""Property to use to draw arrows (default none)""")
+p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
+p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
+p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
+p.add_option('-c', '--centre', action='store', help="Atom index or position on which to centre view")
+
+
 opt, args = p.parse_args()
 
 if opt.extract_params:
@@ -176,6 +186,9 @@ def process(at, frame):
    if opt.exec_code is not None:
       exec(opt.exec_code)
 
+   if opt.centre is not None:
+      write_args['centre'] = eval(opt.centre)
+
    # Rename properties and parameters
    if opt.rename is not None:
       for (old, new) in opt.rename:
@@ -204,6 +217,10 @@ def process(at, frame):
                
       print
    elif do_print and outfile is not None:
+
+      if opt.format in ('eps', 'png', 'jpg') and isinstance(opt.range, slice):
+         write_args['frame'] = frame
+      
       if opt.properties is None:
          outfile.write(at, **write_args)
       else:
@@ -233,21 +250,31 @@ try:
 except IOError, io:
    p.error(str(io))
 
+# Build dictionaries of arguments for AtomsWriter constructor
+# and for write() method
+init_arg_rename = {'view': 'script'}
+init_args = {}
+for arg in ('width', 'height', 'aspect', 'view'):
+   if getattr(opt, arg) is not None:
+      initarg = init_arg_rename.get(arg, arg)
+      init_args[initarg] = getattr(opt, arg)
+write_arg_rename = {}
+write_args = {}
+for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
+   if getattr(opt, arg) is not None:
+      writearg = write_arg_rename.get(arg, arg)
+      write_args[writearg] = getattr(opt, arg)
+
+if opt.format is None:
+   opt.format = os.path.splitext(outfile)[1][1:]
+
 stdout = False
 if outfile is not None:
    if outfile == 'stdout': stdout = True
    try:
-      outfile = AtomsWriter(outfile, format=opt.format)
+      outfile = AtomsWriter(outfile, format=opt.format, **init_args)
    except RuntimeError, re:
       p.error(str(re))
-
-write_args = {}
-if opt.real_format is not None:
-   write_args['real_format'] = opt.real_format
-   write_args['int_format'] = opt.int_format
-
-if opt.properties is not None:
-   write_args['properties'] = opt.properties
 
 try:
    if len(all_configs) == 1:
