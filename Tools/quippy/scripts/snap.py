@@ -26,7 +26,7 @@ p = optparse.OptionParser(usage='%prog [options] <input file>...')
 
 p.add_option('-f', '--frame', action='store', help='Frame number', type='int', default=-1)
 p.add_option('-o', '--outfile', action='store', help='Output file', default='snap.png')
-p.add_option('-n', '--nowindow', action='store_true', help='Disable AtomEye viewer window', default=False)
+p.add_option('-w', '--window', action='store_true', help='Show AtomEye viewer window', default=False)
 p.add_option('-l', '--load-view', action='store', help='Load view from AtomEye command script')
 p.add_option('-p', '--property', action='store', help="""Property to use to colour atoms (default none)""")
 p.add_option('-a', '--arrows', action='store', help="""Property to use to draw arrows (default none)""")
@@ -52,12 +52,9 @@ if opt.centre is not None:
 
 if opt.shift is None:
     opt.shift = [.5, .5, .5]
+else:
+    opt.shift = eval(opt.shift)
 
 at.write(opt.outfile, width=opt.width, height=opt.height, aspect=opt.aspect,
          script=opt.load_view, centre=opt.centre, shift=opt.shift, property=opt.property,
-         arrows=opt.arrows, nowindow=opt.nowindow)
-
-raw_input()
-
-
-
+         arrows=opt.arrows, nowindow=not opt.window)
