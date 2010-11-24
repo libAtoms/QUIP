@@ -802,8 +802,8 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       # If we're using smearing, correct energy is 'free energy'
       energy_lines.extend(filter(lambda s: s.startswith('Final free energy (E-TS)'), castep_output))
 
-      if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() != 'none':
-         energy_lines.extend(filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), castep_output))
+      # Are we doing finite basis correction?
+      energy_lines.extend(filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), castep_output))
 
       if (len(energy_lines) == 0):
          if abort:
