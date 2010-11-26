@@ -33,9 +33,9 @@
 module CrackTools_module
 
   use libAtoms_module
+  use potential_module
   use elasticity_module
   use CrackParams_module
-  use potential_module
 
   implicit none
 
