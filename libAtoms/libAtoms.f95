@@ -38,31 +38,33 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module libAtoms_module
-  use system_module
   use error_module
-  !use MPI_context_module
+  use system_module
+  use MPI_context_module
   use units_module
   use linearalgebra_module
   use minimization_module
+  use extendable_str_module
+  use dictionary_module
   use table_module
   use spline_module
   use sparse_module
   use periodictable_module
+  use cinoutput_module
   use paramreader_module
-  use rigidbody_module
-  use quaternions_module
-  use extendable_str_module
-  use dictionary_module
-  use constraints_module
+  use atoms_types_module
+  use connection_module
   use atoms_module
+  use quaternions_module
+  use rigidbody_module
+  use constraints_module
   use thermostat_module
   use dynamicalsystem_module
+  use clusters_module
   use structures_module
   use frametools_module
   use nye_tensor_module
-  use clusters_module
   use Topology_module
-  use cinoutput_module
   use atoms_ll_module
   use ringstat_module
   use domaindecomposition_module

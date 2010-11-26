@@ -460,6 +460,33 @@ class FortranDerivedType(object):
        raise TypeError('No matching routine found in interface %s' % name)
 
 
+def nested_dict_update(mod, w):
+    if type(mod) == list:
+        if type(w) == list:
+            mod += w
+        else:
+            raise RuntimeError('First argument is list, but second is not.')
+    elif type(mod) == str:
+        mod += '\n' + w
+    else:
+
+        for key, value in w.iteritems():
+            if key in mod:
+                nested_dict_update(mod[key], value)
+            else:
+                mod[key] = value
+
+
+def flatten_list_of_dicts(dictlist):
+    if type(dictlist) == dict:
+        return dictlist
+
+    modout = { }
+    for d in dictlist:
+        nested_dict_update(modout, d)
+    return modout
+
+
 def wrap_all(fobj, spec, mods, short_names, prefix):
    all_classes = []
    leftover_routines = []
@@ -468,11 +495,20 @@ def wrap_all(fobj, spec, mods, short_names, prefix):
 
    for mod in mods:
        logging.debug('Module %s' % mod)
-       classes, routines, params = wrapmod(fobj, spec[mod],
+       if type(mod) == list:
+           curspec = flatten_list_of_dicts([spec[x] for x in mod])
+       else:
+           curspec = spec[mod]
+
+       classes, routines, params = wrapmod(fobj, curspec,
                                            short_names=short_names,
                                            params=params, prefix=prefix)
        all_classes.extend(classes)
-       leftover_routines.append((spec[mod], routines))
+       leftover_routines.append((curspec, routines))
+   #specs = flatten_list_of_dict([ spec[mod] for mod in mods ])
+   #all_classes, routines, params = wrapmod(
+   #    fobj, specs, short_names=short_names, params=params, prefix=prefix)
+   #leftover_routines.append((specs, routines))
 
    # Now try to add orphaned routines to classes where possible
    for modspec, routines in leftover_routines:
