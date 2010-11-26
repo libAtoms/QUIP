@@ -42,9 +42,8 @@ module TBMatrix_module
 
 use libatoms_module
 
-use MPI_context_module
-use Matrix_module
 use ScaLAPACK_module
+use Matrix_module
 use RS_SparseMatrix_module
 use TBModel_module
 

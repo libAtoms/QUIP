@@ -41,18 +41,17 @@ module TB_module
 
 use libatoms_module
 
-use MPI_context_module
-use TBSystem_module
-use RS_SparseMatrix_module
-use TB_GreensFunctions_module
-use Extendable_Str_module
-use ApproxFermi_module
-use Functions_module
-use TBMatrix_module
-use TBModel_module
-use Matrix_module
-use TB_KPoints_module
 use QUIP_common_module
+
+use Functions_module
+use ApproxFermi_module
+use Matrix_module
+use RS_SparseMatrix_module
+use TB_KPoints_module
+use TBModel_module
+use TBMatrix_module
+use TBSystem_module
+use TB_GreensFunctions_module
 
 implicit none
 private

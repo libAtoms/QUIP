@@ -54,11 +54,11 @@ module Potential_module
 
   use libAtoms_module
   use QUIP_Common_module
-  use MPI_context_module
-  use Potential_simple_module
 #ifdef HAVE_TB
   use TB_module
 #endif
+  use Potential_simple_module
+
   use adjustablepotential_module, only: adjustable_potential_init, adjustable_potential_optimise, &
        adjustable_potential_force, adjustable_potential_finalise
 

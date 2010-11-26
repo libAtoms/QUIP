@@ -39,10 +39,10 @@
 module RS_SparseMatrix_module
 
 use System_module
-use Atoms_module
 use MPI_Context_module
-use Matrix_module
+use Atoms_module
 use ScaLAPACK_module
+use Matrix_module
 implicit none
 private
 
