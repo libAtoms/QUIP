@@ -78,6 +78,11 @@ module Connection_module
      module procedure connection_assignment
   end interface assignment(=)
 
+  public :: deepcopy
+  interface deepcopy
+     module procedure connection_assignment
+  endinterface deepcopy
+
   public :: calc_connect
   interface calc_connect
      module procedure connection_calc_connect
