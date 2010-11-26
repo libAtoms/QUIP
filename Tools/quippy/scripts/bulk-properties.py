@@ -41,6 +41,11 @@ if opt.repeat is not None:
     except ValueError:
         p.error('Cannot parse repeat argument %s' % opt.repeat)
 
+if opt.init_args is None:
+   import xml.dom.minidom
+   xml = xml.dom.minidom.parse(opt.param_file)
+   opt.init_args = 'xml_label=%s' % str(xml.documentElement.tagName)
+
 try:
 
     if opt.at_file is not None:
