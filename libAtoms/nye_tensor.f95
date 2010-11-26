@@ -31,8 +31,8 @@
 ! Nye Tensor calculations from C. S. Hartley and Y. Mishin, Acta Mat. v. 53, p. 1313 (2005)
 
 module nye_tensor_module
-use atoms_module
-use linearalgebra_module
+  use linearalgebra_module
+  use atoms_module
 implicit none
 
 contains

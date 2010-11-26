@@ -43,8 +43,8 @@
 #include "error.inc"
 
 module linearalgebra_module
-  use system_module
   use error_module
+  use system_module
   use units_module
   implicit none
   SAVE

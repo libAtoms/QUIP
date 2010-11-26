@@ -38,8 +38,8 @@ module rigidbody_module
 
   use system_module
   use periodictable_module
-  use atoms_module
   use linearalgebra_module
+  use atoms_module
   use quaternions_module
 
   implicit none

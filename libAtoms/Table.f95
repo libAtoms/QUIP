@@ -53,11 +53,11 @@
 #include "error.inc"
 
 module table_module
+  use error_module
   use system_module
   use linearalgebra_module
-  use dictionary_module
   use mpi_context_module
-  use error_module
+  use dictionary_module
   implicit none
 
   integer, parameter, private :: DEFAULT_TABLE_LENGTH = 100

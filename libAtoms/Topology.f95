@@ -32,16 +32,16 @@
 
 module topology_module
 
-  use units_module           
-  use atoms_module           
-  use extendable_str_module  
-  use clusters_module        
-  use dictionary_module      
-  use linearalgebra_module   
-  use periodictable_module   
-  use structures_module      
   use system_module          
+  use units_module           
+  use extendable_str_module  
+  use linearalgebra_module   
+  use dictionary_module      
   use table_module           
+  use periodictable_module   
+  use atoms_module           
+  use clusters_module        
+  use structures_module      
 
 
   implicit none

@@ -53,13 +53,13 @@
 
 module dynamicalsystem_module
  
-   use system_module
-   use units_module
    use error_module
+   use system_module
+   use mpi_context_module
+   use units_module
    use linearalgebra_module
    use table_module
    use periodictable_module
-   use mpi_context_module
    use atoms_module
    use rigidbody_module
    use group_module
