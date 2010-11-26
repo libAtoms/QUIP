@@ -41,8 +41,8 @@
 #include "error.inc"
 
 module ringstat_module
-  use atoms_module
   use error_module
+  use atoms_module
 
   implicit none
 

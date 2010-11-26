@@ -31,11 +31,11 @@
 #include "error.inc"
 
 module DomainDecomposition_module
-  use atoms_module
   use error_module
-  use linearalgebra_module
   use MPI_context_module
+  use linearalgebra_module
   use table_module
+  use atoms_module
 
   implicit none
 

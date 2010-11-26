@@ -35,8 +35,8 @@
 #include "error.inc"
 
 module Atoms_ll_module
-use system_module
 use error_module
+use system_module
 use atoms_module
 use cinoutput_module
 implicit none

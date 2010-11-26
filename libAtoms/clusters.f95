@@ -30,14 +30,14 @@
 
 #include "error.inc"
 module clusters_module
-  use Atoms_module
-  use Table_module
-  use ParamReader_module
   use system_module
+  use Table_module
+  use periodictable_module
+  use Atoms_types_module
+  use Atoms_module
+  use ParamReader_module
   use atoms_module
   use dynamicalsystem_module
-  use table_module
-  use periodictable_module
   use cinoutput_module
 
 implicit none

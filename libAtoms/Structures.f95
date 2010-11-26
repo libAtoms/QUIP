@@ -41,9 +41,9 @@ module  structures_module
   use system_module
   use linearalgebra_module
   use atoms_module
-  use clusters_module
-  use paramreader_module
   use cinoutput_module
+  use paramreader_module
+  use clusters_module
   implicit none
   public
 

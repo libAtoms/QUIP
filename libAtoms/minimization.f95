@@ -40,9 +40,9 @@
 #include "error.inc"
 module minimization_module
 
+  use error_module
   use system_module
   use linearalgebra_module
-  use error_module
   implicit none
   SAVE
 
