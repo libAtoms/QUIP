@@ -73,7 +73,7 @@ p.add_option('--property', action='store', help="""Property to use to colour ato
 p.add_option('--arrows', action='store', help="""Property to use to draw arrows (default none)""")
 p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
 p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
-p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
+p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", type='float')
 p.add_option('-c', '--centre', action='store', help="Atom index or position on which to centre view")
 
 
@@ -267,6 +267,9 @@ for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
 
 if opt.format is None:
    opt.format = os.path.splitext(outfile)[1][1:]
+
+if opt.aspect is None:
+   opt.aspect = 0.75
 
 stdout = False
 if outfile is not None:
