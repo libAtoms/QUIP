@@ -44,18 +44,17 @@ module TBSystem_module
 
 use libatoms_module
 
-use TB_Common_module
-use TBMatrix_module
-use TB_KPoints_module
-use MPI_context_module
+use Functions_module 
 use QUIP_Common_module
 use ScaLAPACK_module
+use TB_Common_module
 use TBModel_module
 use Matrix_module
 use TBMatrix_module
+use TB_KPoints_module
+use TBMatrix_module
 use TB_mixing_module
 use ewald_module
-use Functions_module 
 
 
 implicit none

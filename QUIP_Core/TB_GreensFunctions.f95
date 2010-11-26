@@ -41,13 +41,12 @@ module TB_GreensFunctions_module
 
 use libatoms_module
 
-use MPI_context_module
-use TBSystem_module
 use Functions_module
 use ApproxFermi_module
-use TBMatrix_module
 use Matrix_module
+use TBMatrix_module
 use TB_Kpoints_module
+use TBSystem_module
 
 implicit none
 private

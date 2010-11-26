@@ -90,7 +90,7 @@ module IP_module
 
 use libatoms_module
 
-use MPI_context_module
+use QUIP_Common_module
 use IPModel_GAP_module
 use IPModel_LJ_module
 use IPModel_Morse_module
@@ -116,7 +116,6 @@ use IPModel_Einstein_module
 use IPModel_Coulomb_module
 use IPModel_Sutton_Chen_module
 use IPModel_Template_module
-use QUIP_Common_module
 
 implicit none
 
