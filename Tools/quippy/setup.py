@@ -72,11 +72,11 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
                 tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(src))
                 if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
                 command = "%s %s %s | grep -v '^#' > %s" % (' '.join(cpp), cpp_opt, src, tmp_file)
-                print 'Exectuting command %s' % command
+                print 'Executing command %s' % command
                 os.system(command)
                 if os.path.exists(src[:-4]+'.s'): os.remove(src[:-4]+'.s')
                 tmp_wrap_sources.append(tmp_file)
-                
+
             programs, modules, functs, subts = f90doc.read_files(tmp_wrap_sources)
             cPickle.dump((programs, modules, functs, subts), open(f90doc_file, 'w'))
         else:
@@ -233,7 +233,7 @@ def find_wrap_sources(makefile, quip_root):
     libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
     wrap_sources += [os.path.join(libatoms_dir, s) for s in
                      ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
-                     'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
+                     'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
                      'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95',
 		     'frametools.f95']]
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection',
@@ -361,7 +361,7 @@ default_options= {
 
 got_gfortran45 = False
 if makefile['QUIPPY_FCOMPILER'] == 'gnu95':
-    version = os.popen("gfortran --version | head -1 | awk '{print $4}'").read()
+    version = os.popen("gfortran --version | head -1 | sed 's/(.*)//' | awk '{ print $3 }'").read()
     print version
     version = [int(s) for s in version.split('.')[0:2]]
     got_gfortran45 = version[0] == 4 and version[1] == 5
@@ -407,7 +407,7 @@ quippy_ext = Extension(name='quippy._quippy',
                                                    targets=quip_targets,
                                                    dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                    'dictionary_t':'FoX_sax'}], 
-                                                   kindlines=['use system_module, only: dp, qp',
+                                                   kindlines=['use libatoms_module',
                                                               'use iso_c_binding, only: c_intptr_t'],
                                                    short_names={'dynamicalsystem':'ds',
                                                                 'potential': 'pot'},
