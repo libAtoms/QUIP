@@ -144,6 +144,11 @@ class Atom(dict):
    def __repr__(self):
       return 'Atom(%s)' % ', '.join(['%s=%r' % (k,v) for (k, v) in self.iteritems()])
 
+   def __str__(self):
+      title = 'Atom %d' % self['i']
+      title = title + '\n' + '-'*len(title)+'\n\n'
+      return title+'\n'.join(['%-15s =  %s' % (k,self[k]) for k in sorted(self.keys()) if k != 'i'])
+
    def __eq__(self, other):
       self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
       other_ = dict([(k.lower(),v) for (k,v) in other.iteritems() if k != 'i'])
