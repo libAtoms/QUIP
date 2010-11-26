@@ -616,8 +616,8 @@ contains
     to%cutoff_break      = from%cutoff_break
     to%nneightol   = from%nneightol
 
-    to%connect     = from%connect
-    to%hysteretic_connect     = from%hysteretic_connect
+    call deepcopy(to%connect, from%connect)
+    call deepcopy(to%hysteretic_connect, from%hysteretic_connect)
 
     to%domain_decomposed = from%domain_decomposed
 
