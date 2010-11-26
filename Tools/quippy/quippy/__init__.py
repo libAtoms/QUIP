@@ -106,7 +106,14 @@ _quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 from spec import spec
-classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'], prefix='qp_')
+wrap_modules = spec['wrap_modules']
+# Jointly wrap atoms_types, atoms and connection into the respective classes
+del wrap_modules[wrap_modules.index('atoms_types')]
+del wrap_modules[wrap_modules.index('atoms')]
+del wrap_modules[wrap_modules.index('connection')]
+wrap_modules += [ [ 'atoms_types', 'atoms', 'connection' ] ]
+###
+classes, routines, params = wrap_all(_quippy, spec, wrap_modules, spec['short_names'], prefix='qp_')
 
 QUIP_ROOT = spec['quip_root']
 QUIP_ARCH = spec['quip_arch']

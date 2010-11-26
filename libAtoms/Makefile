@@ -56,6 +56,8 @@ LIBATOMS_F95_FILES = \
   Table \
   PeriodicTable \
   minimization \
+  Atoms_types \
+  Connection \
   Atoms \
   Quaternions \
   RigidBody \
