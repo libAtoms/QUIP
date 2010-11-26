@@ -45,8 +45,8 @@ module IPModel_ASAP2_module
 
 use libatoms_module
 use functions_module
-use Yukawa_module
 use QUIP_Common_module
+use Yukawa_module
 
 implicit none
 private
