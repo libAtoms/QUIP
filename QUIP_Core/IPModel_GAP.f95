@@ -451,6 +451,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   ! * vec will contain the bispectrum of all local atoms
   ! * jack will contain the derivative of bispectrum of local atoms wro neighbours
 
+  call system_timer('IPModel_GAP_Calc bispectrum')
 !$omp parallel 
 
   if (trim(this%coordinates) == 'bispectrum') then
@@ -465,7 +466,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
-  call system_timer('IPModel_GAP_Calc bispectrum')
 !$omp do private(n,ii)
   do i = 1, at%N
      if(do_atom_mask_lookup) then
@@ -529,7 +529,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   enddo
 !$omp end do
-  call system_timer('IPModel_GAP_Calc bispectrum')
 
   ! method(1): we need to communicate everything because the forces of the local atoms are calculated
   ! method(2): we have only what we need in place anyway.
@@ -552,6 +551,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
 !$omp end parallel
+  call system_timer('IPModel_GAP_Calc bispectrum')
 
   if(this%do_pca) then
      allocate(pca_matrix(d,d))
