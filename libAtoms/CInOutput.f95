@@ -56,25 +56,29 @@ module CInOutput_module
 
   interface
 
-     subroutine read_netcdf(filename, params, properties, selected_properties, lattice, n_atom, frame, zero, range, irep, rrep, error) bind(c)
+     subroutine read_netcdf(filename, params, properties, selected_properties, lattice, cell_lengths, cell_angles, cell_rotated, &
+          n_atom, frame, zero, range, irep, rrep, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
-       integer(kind=C_INT), intent(out) :: n_atom
+       real(kind=C_DOUBLE), dimension(3), intent(out) :: cell_lengths, cell_angles
+       integer(kind=C_INT), intent(out) :: cell_rotated, n_atom
        integer(kind=C_INT), intent(in), value :: frame, zero, irep
        integer(kind=C_INT), intent(in) :: range(2)
        real(kind=C_DOUBLE), intent(in), value :: rrep
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_netcdf
 
-     subroutine write_netcdf(filename, params, properties, selected_properties, lattice, n_atom, n_label, n_string, frame, netcdf4, append, &
+     subroutine write_netcdf(filename, params, properties, selected_properties, lattice, cell_lengths, cell_angles, cell_rotated, &
+          n_atom, n_label, n_string, frame, netcdf4, append, &
           shuffle, deflate, deflate_level, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
-       integer(kind=C_INT), intent(in), value :: n_atom, n_label, n_string, frame, netcdf4, append, shuffle, deflate, deflate_level
+       real(kind=C_DOUBLE), dimension(3), intent(in) :: cell_lengths(3), cell_angles(3)
+       integer(kind=C_INT), intent(in), value :: cell_rotated, n_atom, n_label, n_string, frame, netcdf4, append, shuffle, deflate, deflate_level
        integer(kind=C_INT), intent(out) :: error
      end subroutine write_netcdf
 
@@ -120,6 +124,7 @@ module CInOutput_module
 
   integer, parameter :: XYZ_FORMAT = 1
   integer, parameter :: NETCDF_FORMAT = 2
+  real(dp), parameter :: LATTICE_TOL = 1.0e-8_dp
 
   type CInOutput
      logical :: initialised = .false.
@@ -298,9 +303,9 @@ contains
     type(Dictionary) :: empty_dictionary
     type(Dictionary), target :: selected_properties, tmp_params
     integer :: i, j, k, n_properties
-    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2)
+    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2), cell_rotated
     real(C_DOUBLE) :: r_rep
-    real(dp) :: lattice(3,3), maxlen(3), sep(3)
+    real(dp) :: lattice(3,3), maxlen(3), sep(3), cell_lengths(3), cell_angles(3), orig_lattice(3,3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
@@ -406,7 +411,7 @@ contains
           i_rep = 0
           r_rep = 0.0_dp
           call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-               at%lattice, n_atom, do_frame, do_zero, do_range, i_rep, r_rep, error)
+               orig_lattice, cell_lengths, cell_angles, cell_rotated, n_atom, do_frame, do_zero, do_range, i_rep, r_rep, error)
        else
           do_compute_index = 1
           if (.not. this%got_index) do_compute_index = 0
@@ -453,25 +458,39 @@ contains
        at%ref_count = 1
        call atoms_repoint(at)
 
-       if (all(abs(at%lattice) < 1e-5_dp)) then
+       if (this%format == XYZ_FORMAT) then
           ! read_xyz() sets all lattice components to 0.0 if no lattice was present
-          at%lattice(:,:) = 0.0_dp
 
-          maxlen = 0.0_dp
-          do i=1,at%N
-             do j=1,at%N
-                sep = at%pos(:,i)-at%pos(:,j)
-                do k=1,3
-                   if (abs(sep(k)) > maxlen(k)) maxlen(k) = abs(sep(k))
+          if (all(abs(at%lattice) < 1e-5_dp)) then
+             at%lattice(:,:) = 0.0_dp
+
+             maxlen = 0.0_dp
+             do i=1,at%N
+                do j=1,at%N
+                   sep = at%pos(:,i)-at%pos(:,j)
+                   do k=1,3
+                      if (abs(sep(k)) > maxlen(k)) maxlen(k) = abs(sep(k))
+                   end do
                 end do
              end do
-          end do
+          
+             do k=1,3
+                at%lattice(k,k) = maxlen(k) + vacuum
+             end do
+          end if
+          call set_lattice(at, at%lattice, scale_positions=.false.)
+       else
+          ! NetCDF format. We may have to undo rotation of positions and lattice
 
-          do k=1,3
-             at%lattice(k,k) = maxlen(k) + vacuum
-          end do
+          ! First construct lattice from cell_lengths and cell_angles
+          ! By construction, this lattice will have cell vector a parallel to x axis
+          ! and cell vector b in x-y plane
+          call lattice_abc_to_xyz(cell_lengths, cell_angles, lattice)
+          call set_lattice(at, lattice, scale_positions=.false.)
+
+          ! If a rotation was applied, now revert to original stored lattice, rotating positions
+          if (cell_rotated == 1) call set_lattice(at, orig_lattice, scale_positions=.true.)
        end if
-       call set_lattice(at, at%lattice, scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
           call print ("at%properties keys", PRINT_ALWAYS)
@@ -517,7 +536,7 @@ contains
        type(Extendable_str), pointer :: p
     end type c_extendable_str_ptr_type
     type(CInOutput), intent(inout) :: this
-    type(Atoms), target, intent(in) :: at
+    type(Atoms), target, intent(inout) :: at
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     character(*), intent(in), optional :: prefix
@@ -539,7 +558,8 @@ contains
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i, estr_ptr_i
     type(c_extendable_str_ptr_type) :: estr_ptr
-
+    real(dp) :: cell_lengths(3), cell_angles(3), orig_lattice(3,3), new_lattice(3,3)
+    integer :: cell_rotated
 
     INIT_ERROR(error)
 
@@ -579,6 +599,23 @@ contains
        RAISE_ERROR('cinoutput_write: "properties" and "properties_array" cannot both be present.', error)
     end if
 
+    if (this%format == NETCDF_FORMAT) then
+       ! Since lattice is stored in NetCDF file as cell lengths and angles,
+       ! we may need to rotate atomic positions to align cell vector a
+       ! with x axis and cell vector b lies in x-y plane.
+       ! This transformation preserves the fractional coordinates.
+       
+       orig_lattice = at%lattice
+       call lattice_xyz_to_abc(at%lattice, cell_lengths, cell_angles)
+       call lattice_abc_to_xyz(cell_lengths, cell_angles, new_lattice)
+
+       cell_rotated = 0
+       if (maxval(abs(orig_lattice - new_lattice)) > LATTICE_TOL) then 
+          cell_rotated = 1
+          call set_lattice(at, new_lattice, scale_positions=.true.)
+       end if
+    end if
+
     call initialise(selected_properties)
     if (.not. present(properties) .and. .not. present(properties_array)) then
        do i=1,at%properties%N
@@ -598,8 +635,7 @@ contains
        end if
     end if
 
-    tmp_params = at%params
-    !call subset(at%params, at%params%keys(1:at%params%n), tmp_params)  ! Make a copy since write_xyz() adds "Lattice" and "Properties" keys
+    tmp_params = at%params  ! Make a copy since write_xyz() adds "Lattice" and "Properties" keys
     params_ptr%p => tmp_params
     properties_ptr%p => at%properties
     selected_properties_ptr%p => selected_properties
@@ -615,10 +651,17 @@ contains
     n_string = 1024
 
     if (this%format == NETCDF_FORMAT) then
+
        call write_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-            at%lattice, at%n, n_label, n_string, do_frame, &
+            orig_lattice, cell_lengths, cell_angles, cell_rotated, at%n, n_label, n_string, do_frame, &
             do_netcdf4, append, do_shuffle, do_deflate, do_deflate_level, error)
        PASS_ERROR(error)
+
+       if (cell_rotated == 1) then
+          ! Revert to original lattice and positions
+          call set_lattice(at, orig_lattice, scale_positions=.true.)
+       end if
+       
     else
        ! Put "species" in first column and "pos" in second
        if (has_key(selected_properties, 'species')) &
@@ -696,7 +739,7 @@ contains
   subroutine atoms_write(this, filename, append, properties, properties_array, prefix, int_format, real_format, estr, error)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
     use iso_fortran_env
-    type(Atoms), intent(in) :: this
+    type(Atoms), intent(inout) :: this
     character(len=*), intent(in), optional :: filename
     logical, optional, intent(in) :: append
     character(*), intent(in), optional :: properties
@@ -719,7 +762,7 @@ contains
     INIT_ERROR(error)
     call initialise(cio, filename, OUTPUT, append, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
-    call write(cio, this, properties, properties_array, prefix, int_format, real_format, error=error)
+    call write(cio, this, properties, properties_array, prefix, int_format, real_format, estr=estr, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
     call finalise(cio)
 

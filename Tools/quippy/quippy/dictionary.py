@@ -159,17 +159,26 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
       return ParamReaderMixin.__repr__(self)
 
    def __eq__(self, other):
-      if sorted(self.keys()) != sorted(other.keys()): return False
+      import logging
+      if sorted(self.keys()) != sorted(other.keys()):
+         logging.debug('keys mismatch: %s != %s' % (sorted(self.keys()), sorted(other.keys())))
+         return False
 
       for key in self:
          v1, v2 = self[key], other[key]
          if isinstance(v1, FortranArray) and isinstance(v2, FortranArray):
             if v1.dtype.kind != 'f':
-               if (v1 != v2).any(): return False
+               if (v1 != v2).any():
+                  logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))
+                  return False
             else:
-               if abs(v1 - v2).max() > self._cmp_tol: return False
+               if abs(v1 - v2).max() > self._cmp_tol:
+                  logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))                  
+                  return False
          else:
-            if v1 != v2: return False
+            if v1 != v2:
+               logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))
+               return False
       return True
          
    def __ne__(self, other):

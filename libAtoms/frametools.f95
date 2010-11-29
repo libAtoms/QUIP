@@ -41,7 +41,11 @@ public :: atoms_mark
 
 public :: mark_cylinder, mark_sphere
 
-public :: ft_rotate
+private :: ft_rotate
+public :: rotate
+interface rotate
+   module procedure ft_rotate
+end interface rotate
 
 contains
 
