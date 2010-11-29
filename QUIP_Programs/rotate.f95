@@ -49,13 +49,13 @@ implicit none
   endif
   call finalise(cli_params)
 
-  call read_xyz(at, "stdin", status=stat)
-  do while (stat == 0) 
+  call read(at, "stdin", error=stat)
+  do while (stat == ERROR_NONE) 
     call rotate(at%pos, axis, theta, origin)
     call verbosity_push(PRINT_NORMAL)
-    call print_xyz(at, mainlog, all_properties=.true., real_format="f15.10")
+    call write(at, 'stdout')
     call verbosity_pop()
-    call read_xyz(at, "stdin", status=stat)
+    call read(at, "stdin", error=stat)
   end do
 
   call system_finalise()
