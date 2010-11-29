@@ -260,20 +260,15 @@ class TestCInOutput(QuippyTestCase):
       aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
       aq1.write('quartz.xyz')
       aq2 = Atoms('quartz.xyz')
-      orig_params = get_lattice_params(aq1.lattice)
-      xyz_params  = get_lattice_params(aq2.lattice)
-      self.assertArrayAlmostEqual(orig_params, xyz_params)
+      self.assertEqual(aq1, aq2)
 
    if have_netcdf:
       def test_non_orthorhombic_nc(self):
          from quippy.sio2 import quartz_params
          aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
-         aq1.map_into_cell()
          aq1.write('quartz.nc', netcdf4=False)
          aq2 = Atoms('quartz.nc')
-         orig_params = get_lattice_params(aq1.lattice)
-         nc_params   = get_lattice_params(aq2.lattice)
-         self.assertArrayAlmostEqual(orig_params, nc_params)
+         self.assertEqual(aq1, aq2)
 
    def test_read_string(self):
       s = ''.join(self.xyz_ref)

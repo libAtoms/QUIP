@@ -56,7 +56,9 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
    remap_names = {'coordinates': 'pos',
                   'velocities': 'velo',
                   'cell_lengths': None,
-                  'cell_angles': None}
+                  'cell_angles': None,
+                  'cell_lattice': None,
+                  'cell_rotated': None}
 
    prop_type_to_value = {PROPERTY_INT: 0,
                          PROPERTY_REAL: 0.0,
@@ -101,6 +103,12 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
                   at.params[name] = ''.join(var[frame]).strip()
                else:
                   at.params[name] = var[frame].T
+
+      if 'cell_rotated' in source.variables:
+         cell_rotated = source.variables['cell_rotated'][frame]
+         orig_lattice = source.variables['cell_lattice'][frame]
+         #if cell_rotated == 1:
+         at.set_lattice(orig_lattice, True)
 
       yield at
 

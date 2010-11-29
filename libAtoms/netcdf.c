@@ -337,12 +337,12 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
 
 
 void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], 
+		  double cell_lengths[3], double cell_angles[3], int *cell_rotated,
 		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   int nc_id, i, n_selected;
   int retval, nvars, at_start, at_end;
   size_t start[3], count[3];
-  double cell_lengths[3], cell_angles[3];
   char varname[NC_MAX_NAME+1];
   nc_type vartype, type_type;
   int ndims, dimids[NC_MAX_VAR_DIMS], natts, shape[2], type, type_att;
@@ -419,6 +419,9 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 
   n_selected = 0;
   if (selected_properties != NULL) dictionary_get_n(selected_properties, &n_selected);
+
+  // By default, assume cell is not rotated
+  *cell_rotated = 0;
   
   // Loop over all variables in file
   NETCDF_CHECK(nc_inq_nvars(nc_id, &nvars));
@@ -436,6 +439,20 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       start[0] = frame;   start[1] = 0;
       count[0] = 1;       count[1] = 3;
       NETCDF_CHECK(nc_get_vara_double(nc_id, i, start, count, cell_angles));
+      continue;
+    }
+
+    if (strcmp(varname, "cell_rotated") == 0) {
+      start[0] = frame;
+      count[0] = 1;
+      NETCDF_CHECK(nc_get_vara_int(nc_id, i, start, count, cell_rotated));
+      continue;
+    }
+
+    if (strcmp(varname, "cell_lattice") == 0) {
+      start[0] = frame;   start[1] = 0;   start[2] = 0;
+      count[0] = 1;       count[2] = 3;   count[3] = 3;
+      NETCDF_CHECK(nc_get_vara_double(nc_id, i, start, count, &(lattice[0][0])));
       continue;
     }
     
@@ -568,7 +585,6 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   debug("read_netcdf: cell_angles = [%f %f %f]\n", cell_angles[0], cell_angles[1], cell_angles[2]);
   for (i=0; i<3; i++)
     cell_angles[i] *= DEG_TO_RAD;
-  lattice_abc_to_xyz_(cell_lengths, cell_angles, lattice);
 
   if (zero) {
     replace_fill_values(params, properties, irep, rrep, error);
@@ -579,6 +595,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 } 
 
 void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
+		   double cell_lengths[3], double cell_angles[3], int cell_rotated, 
 		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
 		   int shuffle, int deflate, int deflate_level, int *error)
 {
@@ -587,19 +604,21 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   size_t start[3], count[3], tmp_sizet;
   int dims[NC_MAX_VAR_DIMS], check_dims[NC_MAX_VAR_DIMS];
   int ndims, check_ndims;
-  double cell_lengths[3], cell_angles[3];
   char varname[NC_MAX_NAME+1];
   nc_type vartype, check_vartype;
   int natts, newfile;
   int nvars, ngatts, unlimdimid, newvar;
   int frame_dim_id, spatial_dim_id, atom_dim_id, cell_spatial_dim_id,
     cell_angular_dim_id, label_dim_id, string_dim_id;
-  int spatial_var_id, cell_spatial_var_id, cell_angular_var_id, cell_lengths_var_id, cell_angles_var_id;
+  int spatial_var_id, cell_spatial_var_id, cell_angular_var_id, cell_lengths_var_id, cell_angles_var_id, 
+    cell_rotated_var_id, cell_lattice_var_id;
   int n_spatial, n_frame;
   int n, type, type_att, shape[2], var_id, tmp_type, tmp_shape[2], tmp_error;
   char key[C_KEY_LEN];
   void *data, *tmp_data;
   fortran_t *dictionaries[2];
+  int add_cell_rotated, add_cell_lattice, rotate;
+  double new_lattice[3][3];
 
   INIT_ERROR;
   dictionaries[0] = params;
@@ -667,6 +686,9 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     dims[1] = spatial_dim_id;
     NETCDF_CHECK(nc_def_var(nc_id, "cell_lengths", NC_DOUBLE, 2, dims, &cell_lengths_var_id));
     NETCDF_CHECK(nc_def_var(nc_id, "cell_angles", NC_DOUBLE, 2, dims, &cell_angles_var_id));
+
+    add_cell_rotated = 1;
+    add_cell_lattice = 1;
     
 #ifdef NETCDF4
     if (netcdf4) {
@@ -747,9 +769,43 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_angles\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
+
+    add_cell_rotated = 0;
+    if (nc_inq_varid(nc_id, "cell_rotated", &cell_rotated_var_id))
+      add_cell_rotated = 1;
+    else { 
+      NETCDF_CHECK(nc_inq_var(nc_id, cell_rotated_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
+      if (check_ndims != 1 || check_dims[0] != frame_dim_id) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_rotated\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+			      ndims, check_dims[0], check_dims[1], check_dims[2]);
+      }
+    }
+
+    add_cell_lattice = 0;
+    if (nc_inq_varid(nc_id, "cell_lattice", &cell_lattice_var_id))
+      add_cell_lattice = 1;
+    else { 
+      NETCDF_CHECK(nc_inq_var(nc_id, cell_lattice_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
+      if (check_ndims != 3 || check_dims[0] != frame_dim_id || check_dims[1] != spatial_dim_id || check_dims[2] != spatial_dim_id) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_lattice\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+			      ndims, check_dims[0], check_dims[1], check_dims[2]);      
+      }
+    }
   }
 
   nc_redef(nc_id);
+
+  // Add variables cell_rotated and cell_lattice to describe orientation of cell
+  // For backwards compatibility, it's not an error if these variables don't exist
+  dims[0] = frame_dim_id;
+  dims[1] = spatial_dim_id;
+  dims[2] = spatial_dim_id;
+  if (add_cell_rotated) NETCDF_CHECK(nc_def_var(nc_id, "cell_rotated", NC_INT, 1, dims, &cell_rotated_var_id));
+  if (add_cell_lattice) NETCDF_CHECK(nc_def_var(nc_id, "cell_lattice", NC_DOUBLE, 3, dims, &cell_lattice_var_id));
+  if (netcdf4) {
+    if (add_cell_rotated) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_rotated_var_id, shuffle, deflate, deflate_level));
+    if (add_cell_lattice) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_lattice_var_id, shuffle, deflate, deflate_level));
+  }
   
   // Define variables for parameters (d=0) and properties (d=1)
   for (d=0; d<2; d++) {
@@ -866,8 +922,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_put_vara_text(nc_id, cell_angular_var_id, start, count, "gamma"));
   }
 
-  // Put lattice
-  lattice_xyz_to_abc_(lattice, cell_lengths, cell_angles);
+  // Put cell_lengths and cell_angles
   for (i=0; i<3; i++)
     cell_angles[i] *= RAD_TO_DEG;
   start[0] = frame;
@@ -876,6 +931,16 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   count[1] = 3;
   NETCDF_CHECK(nc_put_vara_double(nc_id, cell_lengths_var_id, start, count, cell_lengths));
   NETCDF_CHECK(nc_put_vara_double(nc_id, cell_angles_var_id, start, count, cell_angles));
+
+  // Have atomic positions been rotated to align cell vector a with x axis?
+  start[0] = frame;
+  count[0] = 1;
+  NETCDF_CHECK(nc_put_vara_int(nc_id, cell_rotated_var_id, start, count, &cell_rotated));
+  
+  // Also save original lattice so rotation can be undone when file is read
+  start[2] = 0;
+  count[2] = 3;
+  NETCDF_CHECK(nc_put_vara_double(nc_id, cell_lattice_var_id, start, count, &(lattice[0][0])));
 
   // Put variables for parameters (d=0) and properties (d=1)
   for (d=0; d<2; d++) {
