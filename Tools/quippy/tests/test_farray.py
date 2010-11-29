@@ -28,7 +28,7 @@ class TestFortranArray(QuippyTestCase):
       self.z1 = fzeros(1)
       self.z2 = fzeros((2,2))
       self.f = farray((1,2,3))
-      self.f2 = farray(((1,2,3),(4,5,6)))
+      self.f2 = farray(((1,2,3),(4,5,6))).T
       self.na =  numpy.array(self.f2)
       self.s = farray(('s1','s2','s3'))
 
@@ -263,7 +263,7 @@ class TestFortranArray(QuippyTestCase):
       self.assertEqual(list(col1), [1,2,3])
 
    def test2dfromseq(self):
-      fa = FortranArray(((1,2,3),(4,5,6),(7,8,9)))
+      fa = FortranArray(((1,2,3),(4,5,6),(7,8,9))).T
       self.assert_(isinstance(fa, FortranArray))
       self.assertEqual(list(fa[1]), [1,2,3])
       self.assertEqual(list(fa[2]), [4,5,6])
@@ -384,17 +384,10 @@ class TestFortranArray(QuippyTestCase):
  [2 5]
  [3 6]]""")
 
-      self.f2.transpose_on_print = True
-      self.assertEqual(repr(self.f2),"FortranArray([[1, 2, 3],\n              [4, 5, 6]])")
-      self.assertEqual(str(self.f2),"[[1 2 3]\n [4 5 6]]")
-
       self.assertEqual(str(self.s), "['s1' 's2' 's3']")
-      self.s.transpose_on_print = True
-      self.assertEqual(str(self.s), "['s1' 's2' 's3']")
-
       self.assertEqual(str(farray('s')), 's')
 
-      s2 = farray((('s','1'), ('s','2')))
+      s2 = farray((('s','1'), ('s','2'))).T
       self.assertEqual([str(x) for x in s2], ["['s' '1']", "['s' '2']"])
       
    def testnorm(self):

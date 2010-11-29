@@ -78,12 +78,7 @@ class QuippyTestCase(unittest.TestCase):
             print b
             print
             print 'Absolute difference'
-            if hasattr(a, 'transpose_on_print') and a.transpose_on_print:
-               print absdiff.T
-            else:
-               print absdiff
-            print
-
+            print absdiff
             self.fail('Maximum abs difference between array elements is %e at location %r' % (absdiff.max(), loc))
    
 

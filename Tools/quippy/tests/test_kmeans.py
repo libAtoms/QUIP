@@ -56,7 +56,7 @@ class TestKMeans(QuippyTestCase):
         err = farray(0.0)
         
         kmeans(data,k,means,assign,err)
-        self.assertArrayAlmostEqual(means, [[4.575, 1.1, 0.0]])
+        self.assertArrayAlmostEqual(means.T, [[4.575, 1.1, 0.0]])
         self.assertEqual(list(assign), [2,2,2,1,1,1,1])
         self.assertAlmostEqual(err, 0.96589272460937403)
 

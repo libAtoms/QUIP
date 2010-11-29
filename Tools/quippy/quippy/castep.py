@@ -287,7 +287,7 @@ class CastepCell(OrderedDict):
          else:
             unit = 'ang'
         
-         lattice = farray([ [float(x) for x in row] for row in map(string.split, block) ])*castep_units[unit]
+         lattice = farray([ [float(x) for x in row] for row in map(string.split, block) ]).T*castep_units[unit]
       else:
          block = self['LATTICE_ABC']
          if len(block) == 3:
@@ -321,7 +321,7 @@ class CastepCell(OrderedDict):
       # Set the element and pos data
       atoms.set_atoms(elements)
       atoms.pos[:,:] = farray([ [float(x)*castep_units[unit] for x in row] \
-                                for row in [field[1:4] for field in field_list]])
+                                for row in [field[1:4] for field in field_list]]).T
 
       # Convert from fractional to real positions
       if self.has_key('POSITIONS_FRAC'):
@@ -544,7 +544,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
       lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
       if lattice_lines != []:
          lattice = farray([ [float(x)* BOHR for x in row[0:3]]
-                            for row in map(string.split, lattice_lines) ])
+                            for row in map(string.split, lattice_lines) ]).T
       else:
          if atoms_ref is None:
             raise ValueError('No lattice in .geom file and atoms_ref not present')
@@ -556,7 +556,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
       if stress_lines:
          virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
-                           for row in map(string.split, stress_lines) ])
+                           for row in map(string.split, stress_lines) ]).T
 
       # Find positions and forces
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)

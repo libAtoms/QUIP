@@ -113,7 +113,7 @@ else:
 if opt.lattice is not None:
    opt.lattice = [ float(x) for x in opt.lattice.split() ]
    if len(opt.lattice) == 9:
-      opt.lattice = farray(opt.lattice).reshape((3,3),order='F')
+      opt.lattice = farray(opt.lattice).reshape((3,3),order='F').T
    elif len(opt.lattice) == 3:
       opt.lattice = farray(diag(opt.lattice))
    elif len(opt.lattice) == 1:
