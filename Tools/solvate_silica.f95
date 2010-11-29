@@ -31,7 +31,7 @@
 ! solvate a molecule. Needs a solute and a solvent XYZ input file.
 ! shifts and rotates the solvent file so that
 !   atom1_point has position atom1_pos
-!   atom1_point -> atom2_vector is aligned with atom12_vector
+!   atom1_point -> atom2_vector is` aligned with atom12_vector
 !   atom3 is in the atom1_pos - atom1_pos+atom12_vector - atom123_plane plane.
 ! don't include water molecules closer to the solute than exclusion
 ! rotation_sign to play around with
@@ -45,7 +45,6 @@ program solvate_silica
   type(Atoms)                 :: at, wat, at2
   type(dictionary)            :: cli_params
   character(len=FIELD_LENGTH) :: filename, waterfilename
-  type(inoutput)              :: xyzfile, waterfile
   integer                     :: i, j, stat
 
   !solvation of solvent
@@ -93,14 +92,11 @@ program solvate_silica
   if (abs(rotation_sign1) /= 1) call system_abort("rotation1_sign must be +/-1")
   if (abs(rotation_sign2) /= 1) call system_abort("rotation2_sign must be +/-1")
 
-  call initialise(xyzfile, filename, INPUT)
-  call initialise(waterfile, waterfilename, INPUT)
-
   !Read in the 2 files
-  call read_xyz(at, xyzfile, status=stat)
+  call read(at, filename, error=stat)
   if (stat /= 0) call system_abort('Could not read file to solvate.')
   call map_into_cell(at)
-  call read_xyz(wat, waterfile, status=stat)
+  call read(wat, waterfilename, error=stat)
   if (stat /= 0) call system_abort('Could not read water file.')
   call map_into_cell(wat)
 
@@ -143,10 +139,10 @@ program solvate_silica
        origin(1:3) = 0._dp
      
        !rotate only the 2nd config
-       call ft_rotate(at%pos, real(rotation_sign1,dp)*axis, theta, origin)
+       call rotate(at%pos, real(rotation_sign1,dp)*axis, theta, origin)
 
 call print('atom1--atom2 vector should be all right:')
-call print_xyz(at, mainlog, all_properties=.true.)
+call write(at, 'stdout')
 
     !rotate solvent around atom12_vector axis to move atom3_plane into the plane that is defined by
     !    - origin(1:3) = (/0.,0.,0./),
@@ -189,11 +185,11 @@ call print("Projection of atom3 to atom12 vector: "//projection_of_atom3_on_atom
      
        !rotate only the 2nd config
        if (rotation2_pluspi) theta = theta + PI
-       call ft_rotate(at%pos, (real(rotation_sign2,dp)) * axis, theta, origin)
+       call rotate(at%pos, (real(rotation_sign2,dp)) * axis, theta, origin)
 
 call print('atom3 should be in plane with vector12 and atom3_plane_point:')
 call print('v13 x v12 . v1planepoint = '//(diff_min_image(at, atom1_point, atom3_plane) .cross. atom12_vector(1:3) .dot. atom123_plane_point(1:3)))
-call print_xyz(at, mainlog, all_properties=.true.)
+call write(at, 'stdout')
 
   !shifting it to the required position
      do i=1,at%N
@@ -202,12 +198,12 @@ call print_xyz(at, mainlog, all_properties=.true.)
 
   !Add atoms to solvate to at2
   do i=1,at%N
-     call add_atom_single(at2,at%pos(1:3,i),at%Z(i))
+     call add_atoms(at2,at%pos(1:3,i),at%Z(i))
   enddo
 
   !add silica
   do i=1,silica_atoms
-     call add_atom_single(at2,wat%pos(1:3,i  ),wat%Z(i  ))
+     call add_atoms(at2,wat%pos(1:3,i  ),wat%Z(i  ))
   enddo
   !Add water molecules between the given limits to at2
   do i=silica_atoms+1,wat%N,3
@@ -220,15 +216,15 @@ call print_xyz(at, mainlog, all_properties=.true.)
         endif
      enddo
      if (add) then
-        call add_atom_single(at2,wat%pos(1:3,i  ),wat%Z(i  ))
-        call add_atom_single(at2,wat%pos(1:3,i+1),wat%Z(i+1))
-        call add_atom_single(at2,wat%pos(1:3,i+2),wat%Z(i+2))
+        call add_atoms(at2,wat%pos(1:3,i  ),wat%Z(i  ))
+        call add_atoms(at2,wat%pos(1:3,i+1),wat%Z(i+1))
+        call add_atoms(at2,wat%pos(1:3,i+2),wat%Z(i+2))
      endif
   enddo
 
   call map_into_cell(at2)
   call verbosity_push(PRINT_NORMAL)
-  if (stat == 0) call print_xyz(at2, mainlog, all_properties=.true.)
+  if (stat == 0) call write(at2, 'stdout')
 
   call verbosity_pop()
   call system_finalise()
