@@ -41,7 +41,7 @@ module teach_sparse_mod
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_property_name, force_property_name, virial_property_name, coordinates
+     energy_property_name, force_property_name, virial_property_name, coordinates, input_type_property_name
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
@@ -58,7 +58,7 @@ module teach_sparse_mod
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
      real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean
      real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
-     integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z
+     integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, input_type
      integer, dimension(99) :: qw_cutoff_f
      type(sparse_types), dimension(:), allocatable :: m_sparse_in_type
 
@@ -188,7 +188,7 @@ contains
     
     integer :: d
     integer :: n_max, n_con
-    logical :: has_ener, has_force, has_virial
+    logical :: has_ener, has_force, has_virial, has_input_type
     real(dp) :: ener, ener_core
     real(dp), dimension(3,3) :: virial, virial_core
     real(dp), pointer :: f(:,:)
@@ -202,6 +202,9 @@ contains
     integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
+
+    integer :: it, n_input_type
+    character(len=FIELD_LENGTH) :: input_type
 
     select case(trim(this%coordinates))
     case('qw')
@@ -242,7 +245,7 @@ contains
     this%lf(this%n_ener),this%ldf(this%n_force+this%n_virial), &
     this%xf(this%ne),this%xdf(this%n))
     allocate(this%xz(this%nn))
-    allocate(this%target_type(this%n_ener+this%n_force+this%n_virial))
+    allocate(this%target_type(this%n_ener+this%n_force+this%n_virial),this%input_type(this%nn))
 
     if( this%do_core ) call Initialise(core_pot, args_str=this%ip_args, param_str=string(this%quip_string))
 
@@ -265,6 +268,19 @@ contains
        has_ener = get_value(at%params,this%energy_property_name,ener)
        has_force = assign_pointer(at,this%force_property_name, f)
        has_virial = get_value(at%params,this%virial_property_name,virial)
+       has_input_type = get_value(at%params,this%input_type_property_name,input_type)
+
+       if( has_input_type ) then
+          input_type = lower_case(trim(input_type))
+       else
+          input_type = "default"
+       endif
+
+       if( .not. allocated(this%m_sparse_in_type) ) call system_abort('m_sparse_in_type not allocated')
+       n_input_type = 0
+       do it = lbound(this%m_sparse_in_type,dim=1), ubound(this%m_sparse_in_type,dim=1)
+          if( trim(this%m_sparse_in_type(it)%type) == trim(input_type) ) n_input_type = it
+       enddo
 
        if( this%do_core ) then
           allocate(f_core(3,at%N))
@@ -376,6 +392,7 @@ contains
              do i = 1, at%N
                 ix = i_con + i
                 this%x(:,ix) = vec(:,i)
+                this%input_type(ix) = n_input_type
                 this%xz(ix) = at%Z(i)
 
                 if( has_ener ) then

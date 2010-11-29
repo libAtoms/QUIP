@@ -55,50 +55,52 @@ program teach_sparse_program
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
-  integer :: i, j, k, l, o, dd, dt, m_sparse_in_type_num_fields, i_default, m_total
+  integer :: i, j, k, l, o, dd, dt, m_sparse_in_type_num_fields, i_default, m_total, li, ui
+  integer, dimension(:), allocatable :: type_indices, sparse_points
   character(len=FIELD_LENGTH) :: gp_file
 
   call system_initialise(verbosity=PRINT_NORMAL)
   call initialise(params)
-  call param_register(params, 'at_file', PARAM_MANDATORY, main_teach_sparse%at_file, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'm', '50', main_teach_sparse%m, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'r_cut', '2.75', main_teach_sparse%r_cut, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'j_max', '4', main_teach_sparse%j_max, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'z0', '0.0', main_teach_sparse%z0, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'l_max', '6', main_teach_sparse%qw_l_max, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'cutoff', '', qw_cutoff_string, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'cutoff_f', '', qw_cutoff_f_string, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'cutoff_r1', '', qw_cutoff_r1_string, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'no_q', 'F', main_teach_sparse%qw_no_q, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'no_w', 'F', main_teach_sparse%qw_no_w, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'e0', '0.0', main_teach_sparse%e0, has_value_target = has_e0, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'f0', '0.0', main_teach_sparse%f0, has_value_target = has_f0, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'sgm', '0.1 0.1 0.1', main_teach_sparse%sgm, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'dlt', '1.0', main_teach_sparse%dlt, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'theta_file', '', theta_file, has_value_target = has_theta_file, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'sparse_file', '', sparse_file, has_value_target = has_sparse_file, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'theta_fac', '1.5', main_teach_sparse%theta_fac, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_sigma', 'F', main_teach_sparse%do_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_delta', 'F', main_teach_sparse%do_delta, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_theta', 'F', main_teach_sparse%do_theta, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_sparx', 'F', main_teach_sparse%do_sparx, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_f0', 'F', main_teach_sparse%do_f0, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_theta_fac', 'F', main_teach_sparse%do_theta_fac, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_cluster', 'F', main_teach_sparse%do_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_pivot', 'F', main_teach_sparse%do_pivot, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'min_steps', '10', main_teach_sparse%min_steps, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'min_save', '0', main_teach_sparse%min_save, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_test_gp_gradient', 'F', main_teach_sparse%do_test_gp_gradient, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'bispectrum_file', '', bispectrum_file, has_value_target = has_bispectrum_file, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'ip_args', '', main_teach_sparse%ip_args, has_value_target = main_teach_sparse%do_core, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'm_sparse_in_type','',m_sparse_in_type_string,has_value_target = main_teach_sparse%has_m_sparse_in_type, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'at_file', PARAM_MANDATORY, main_teach_sparse%at_file, help_string="XYZ file with teaching configurations")
+  call param_register(params, 'm', '50', main_teach_sparse%m, help_string="Number of sparse environments")
+  call param_register(params, 'r_cut', '2.75', main_teach_sparse%r_cut, help_string="Cutoff for GAP environment")
+  call param_register(params, 'j_max', '4', main_teach_sparse%j_max, help_string="Max of expansion of bispectrum, i.e. resulution")
+  call param_register(params, 'z0', '0.0', main_teach_sparse%z0, help_string="Developer option. Radius of 4D projection sphere.")
+  call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates, help_string="{bispectrum,qw,water_monomer,water_dimer} representation to use")
+  call param_register(params, 'l_max', '6', main_teach_sparse%qw_l_max, help_string="Maximum sphearical harmonic expansion")
+  call param_register(params, 'cutoff', '', qw_cutoff_string, help_string="Cutoffs for the radial basis functions")
+  call param_register(params, 'cutoff_f', '', qw_cutoff_f_string, help_string="Types of the radial basis functions: 1 - Fermi, 2 - Gaussian, 3 - Skewed Gaussian")
+  call param_register(params, 'cutoff_r1', '', qw_cutoff_r1_string, help_string="Characteristic width of the cutoff function")
+  call param_register(params, 'no_q', 'F', main_teach_sparse%qw_no_q, help_string="Turn off Qs")
+  call param_register(params, 'no_w', 'F', main_teach_sparse%qw_no_w, help_string="Turn off Ws")
+  call param_register(params, 'e0', '0.0', main_teach_sparse%e0, has_value_target = has_e0, help_string="Value to be subtracted from energies before fittint (and added back on after prediction)")
+  call param_register(params, 'f0', '0.0', main_teach_sparse%f0, has_value_target = has_f0, help_string="Mean of the gp predictor, defaults to data mean. another useful value is 0.0")
+  call param_register(params, 'sgm', '0.1 0.1 0.1', main_teach_sparse%sgm, help_string="error in [energies forces virials]")
+  call param_register(params, 'dlt', '1.0', main_teach_sparse%dlt, help_string="Range of GP")
+  call param_register(params, 'theta_file', '', theta_file, has_value_target = has_theta_file, help_string="Width of Gaussians from a file. There should be as many real numbers as the number of descriptors, in a single line")
+  call param_register(params, 'sparse_file', '', sparse_file, has_value_target = has_sparse_file, help_string="Sparse environments from a file. Integers, in single line")
+  call param_register(params, 'theta_fac', '1.5', main_teach_sparse%theta_fac, help_string="Width of Gaussians, determined from multiplying the range of each descriptor by theta_fac")
+  call param_register(params, 'do_sigma', 'F', main_teach_sparse%do_sigma, help_string="Likelihood optimization with respect of sigma")
+  call param_register(params, 'do_delta', 'F', main_teach_sparse%do_delta, help_string="Likelihood optimization with respect of delta")
+  call param_register(params, 'do_theta', 'F', main_teach_sparse%do_theta, help_string="Likelihood optimization with respect of theta")
+  call param_register(params, 'do_sparx', 'F', main_teach_sparse%do_sparx, help_string="Likelihood optimization with respect of sparse points")
+  call param_register(params, 'do_f0', 'F', main_teach_sparse%do_f0, help_string="Likelihood optimization with respect of f0 (offset)")
+  call param_register(params, 'do_theta_fac', 'F', main_teach_sparse%do_theta_fac, help_string="Likelihood optimization with respect of theta_fac")
+  call param_register(params, 'do_cluster', 'F', main_teach_sparse%do_cluster, help_string="Do k-means clustering of data points to initialise the sparsifier")
+  call param_register(params, 'do_pivot', 'F', main_teach_sparse%do_pivot, help_string="Initialise the sparsifier by looking at the covariance matrix")
+  call param_register(params, 'min_steps', '10', main_teach_sparse%min_steps, help_string="How many iteration steps in the likelihood optimization")
+  call param_register(params, 'min_save', '0', main_teach_sparse%min_save, help_string="How often print out a GAP xml file during the optimization")
+  call param_register(params, 'do_test_gp_gradient', 'F', main_teach_sparse%do_test_gp_gradient, help_string="Developer option. Test likelihood gradient")
+  call param_register(params, 'bispectrum_file', '', bispectrum_file, has_value_target = has_bispectrum_file, help_string="Developer option. Print out descriptors of each atom in a text file.")
+  call param_register(params, 'ip_args', '', main_teach_sparse%ip_args, has_value_target = main_teach_sparse%do_core, help_string=" QUIP init string for a potential to subtract from data (and added back after prediction)")
+  call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name, help_string="Name of energy property in the at_file that describe the data")
+  call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name, help_string="Name of force property in the at_file that describe the data")
+  call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name, help_string="Name of virial property in the at_file that describe the data")
+  call param_register(params, 'input_type_property_name', 'input_type', main_teach_sparse%input_type_property_name, help_string="Identifier of property determining the type of input data in the at_file")
+  call param_register(params, 'm_sparse_in_type','',m_sparse_in_type_string,has_value_target = main_teach_sparse%has_m_sparse_in_type, help_string="How many sparse points to choose for each type of data. E.g. {default:200:crystal:300} will select 300 sparse points from crystal type data and 200 from the rest")
+  call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse, help_string="Do sparsification or regular GP. Latter: no derivative information is used")
   call param_register(params, 'do_pca', 'F', main_teach_sparse%do_pca, help_string='PCA analysis is performed on input data')
-  call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="Verbosity control")
 
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
@@ -196,6 +198,10 @@ program teach_sparse_program
      do i = lbound(main_teach_sparse%m_sparse_in_type,dim=1), ubound(main_teach_sparse%m_sparse_in_type,dim=1)
         call print(""//trim(main_teach_sparse%m_sparse_in_type(i)%type)//"   "//main_teach_sparse%m_sparse_in_type(i)%m)
      enddo
+  else
+     allocate(main_teach_sparse%m_sparse_in_type(0:0))
+     main_teach_sparse%m_sparse_in_type(0)%type = "default"
+     main_teach_sparse%m_sparse_in_type(0)%m = main_teach_sparse%m
   endif
 
 
@@ -239,14 +245,6 @@ program teach_sparse_program
 
   call teach_data_from_xyz(main_teach_sparse)
 
-  if( has_bispectrum_file ) then
-     call initialise(bispectrum_inout,bispectrum_file,action=OUTPUT)
-     do i = 1, size(main_teach_sparse%x,2)
-        write(bispectrum_inout%unit,"("//main_teach_sparse%d//"f16.8)") main_teach_sparse%x(:,i)
-     enddo
-     call finalise(bispectrum_inout)
-  endif
-
   allocate(main_teach_sparse%dlta(main_teach_sparse%n_species))
 
   main_teach_sparse%dlta = main_teach_sparse%dlt 
@@ -266,6 +264,14 @@ program teach_sparse_program
      enddo
   endif
 
+  if( has_bispectrum_file ) then
+     call initialise(bispectrum_inout,bispectrum_file,action=OUTPUT)
+     do i = 1, size(main_teach_sparse%x,2)
+        write(bispectrum_inout%unit,"("//main_teach_sparse%d//"f16.8)") main_teach_sparse%x(:,i)
+     enddo
+     call finalise(bispectrum_inout)
+  endif
+
   if(main_teach_sparse%do_sparse) then
      if( has_sparse_file ) then
         allocate(sparse_string_array(SPARSE_N_FIELDS))
@@ -278,16 +284,32 @@ program teach_sparse_program
         enddo
         deallocate(sparse_string_array)
         call finalise(sparse_inout)
-     elseif(main_teach_sparse%do_cluster) then
-        allocate(main_teach_sparse%r(main_teach_sparse%m))
-        call bisect_kmedoids(main_teach_sparse%x,main_teach_sparse%m,med=main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
-     elseif(main_teach_sparse%do_pivot) then
-        allocate(main_teach_sparse%r(main_teach_sparse%m))
-        call pivot(main_teach_sparse%x, main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
      else
+
         allocate(main_teach_sparse%r(main_teach_sparse%m))
-        call fill_random_integer(main_teach_sparse%r,size(main_teach_sparse%x,2))
+        li = 0
+        ui = 0
+        do i = lbound(main_teach_sparse%m_sparse_in_type,dim=1), ubound(main_teach_sparse%m_sparse_in_type,dim=1)
+           allocate( type_indices(count(main_teach_sparse%input_type == i)), sparse_points(main_teach_sparse%m_sparse_in_type(i)%m) )
+           type_indices = find(main_teach_sparse%input_type == i)
+
+           if(main_teach_sparse%do_cluster) then
+              call bisect_kmedoids(main_teach_sparse%x(:,type_indices), main_teach_sparse%m_sparse_in_type(i)%m, med=sparse_points, theta_fac=main_teach_sparse%theta_fac)
+           elseif(main_teach_sparse%do_pivot) then
+              call pivot(main_teach_sparse%x(:,type_indices), sparse_points,theta_fac=main_teach_sparse%theta_fac)
+           else
+              call fill_random_integer(sparse_points,size(type_indices))
+           endif
+
+           li = ui + 1
+           ui = ui + main_teach_sparse%m_sparse_in_type(i)%m
+           main_teach_sparse%r(li:ui) = type_indices(sparse_points)
+
+           deallocate(type_indices, sparse_points)
+        enddo
+
      endif
+
      call sort_array(main_teach_sparse%r)
 
      call print('')
