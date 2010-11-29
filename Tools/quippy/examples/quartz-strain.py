@@ -31,8 +31,8 @@ def bonds_angles(aq):
 
       nn = aq.neighbours[i]
       r = [n.distance for n in nn]
-      diff = farray([n.diff for n in nn])
-      cosine = farray([n.cosines for n in nn])
+      diff = farray([n.diff for n in nn]).T
+      cosine = farray([n.cosines for n in nn]).T
 
       print i, aq.z[i], r
       lengths.extend(r)
@@ -54,7 +54,7 @@ def tetrahedron(at, i):
    nn = at.neighbours[i]
    if len(nn) != 4: return
 
-   ndiff = farray([n.diff for n in nn])
+   ndiff = farray([n.diff for n in nn]).T
 
    n1 = ndiff[:,2] - ndiff[:,1]
    n2 = ndiff[:,3] - ndiff[:,1]

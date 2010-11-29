@@ -207,27 +207,27 @@ class TestAtoms_LowLevel(QuippyTestCase):
 
    def test_add_atom_3(self):
       self.at.add_atoms(farray([[1.0, 1.0, 1.0],
-                                [2.0, 2.0, 2.0]]), [6, 6])
+                                [2.0, 2.0, 2.0]]).T, [6, 6])
       self.assertEqual(list(self.at.z), [14]*10 + [6]*2)
       
    def test_add_atom_4(self):
       self.at.add_atoms(farray([[1.0, 1.0, 1.0],
-                                [2.0, 2.0, 2.0]]), [6, 6])
-      self.assertArrayAlmostEqual(self.at.pos[:,-2:], [[1.0, 1.0, 1.0],
-                                                       [2.0, 2.0, 2.0]])
+                                [2.0, 2.0, 2.0]]).T, [6, 6])
+      self.assertArrayAlmostEqual(self.at.pos[:,-2:].T, [[1.0, 1.0, 1.0],
+                                                         [2.0, 2.0, 2.0]])
    def test_add_atom_5(self):
       self.at.add_atoms(farray([[1.0, 1.0, 1.0],
-                                [2.0, 2.0, 2.0]]), [6, 6], mass=[10.0, 10.0])
-      self.assertArrayAlmostEqual(self.at.pos[:,-2:], [[1.0, 1.0, 1.0],
-                                                       [2.0, 2.0, 2.0]])
+                                [2.0, 2.0, 2.0]]).T, [6, 6], mass=[10.0, 10.0])
+      self.assertArrayAlmostEqual(self.at.pos[:,-2:].T, [[1.0, 1.0, 1.0],
+                                                         [2.0, 2.0, 2.0]])
    def test_add_atom_6(self):
       self.at.add_atoms(farray([[1.0, 1.0, 1.0],
-                                [2.0, 2.0, 2.0]]), [6, 6], mass=[10.0, 10.0])
+                                [2.0, 2.0, 2.0]]).T, [6, 6], mass=[10.0, 10.0])
       self.assertArrayAlmostEqual([self.at.z[-2], self.at.z[-1]], [6, 6])
 
    def test_add_atom_7(self):
       self.at.add_atoms(farray([[1.0, 1.0, 1.0],
-                                [2.0, 2.0, 2.0]]), [6, 6], mass=[10.0, 10.0])
+                                [2.0, 2.0, 2.0]]).T, [6, 6], mass=[10.0, 10.0])
       self.assertArrayAlmostEqual([self.at.mass[-2], self.at.mass[-1]], [10.0, 10.0])
 
    def test_remove_atoms_1(self):
@@ -536,12 +536,12 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_add_property_int2d_from_scalar(self):
       self.at.add_property('int2d', 0, n_cols=2)
       self.check_property('int2d', T_INTEGER_A2, 2)
-      self.assertArrayAlmostEqual(self.at.int2d, [[0,0]]*8)
+      self.assertArrayAlmostEqual(self.at.int2d, [[0]*8]*2)
 
    def test_add_property_int2d_from_list(self):
       self.at.add_property('int2d', [[0]*8]*2)
       self.check_property('int2d', T_INTEGER_A2, 2)
-      self.assertArrayAlmostEqual(list(self.at.int2d), [[0,0]]*8)
+      self.assertArrayAlmostEqual(self.at.int2d, [[0]*8]*2)
    
    def test_add_property_int2d_from_list_bad_length(self):
       p0 = self.at.properties.copy()
@@ -582,12 +582,12 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_add_property_real2d_from_scalar(self):
       self.at.add_property('real2d', 0.0, n_cols=2)
       self.check_property('real2d', T_REAL_A2, 2)
-      self.assertArrayAlmostEqual(self.at.real2d, [[0.,0.]]*8)
+      self.assertArrayAlmostEqual(self.at.real2d, [[0.]*8]*2)
 
    def test_add_property_real2d_from_list(self):
       self.at.add_property('real2d', [[0.]*8]*2)
       self.check_property('real2d', T_REAL_A2, 2)
-      self.assertArrayAlmostEqual(list(self.at.real2d), [[0.,0.]]*8)
+      self.assertArrayAlmostEqual(self.at.real2d, [[0.]*8]*2)
    
    def test_add_property_real2d_from_list_bad_length(self):
       p0 = self.at.properties.copy()
@@ -911,7 +911,7 @@ class TestGeometry(QuippyTestCase):
       dia = diamond(5.44, 14)
       dia.add_property('mass', [ElementMass[z] for z in dia.z])
       self.assertArrayAlmostEqual(dia.centre_of_mass(),
-                                  farray([dia.diff_min_image(1,i) for i in frange(dia.n)]).mean(axis=2))
+                                  farray([dia.diff_min_image(1,i) for i in frange(dia.n)]).T.mean(axis=2))
       
 
 if __name__ == '__main__':

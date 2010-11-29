@@ -190,7 +190,7 @@ Si   -0.474452  -0.474452   0.000000
                                                        [-0.25859137, -1.78477709, -2.50626608],
                                                        [ 1.17981723, -2.04350348,  3.64141462],
                                                        [ 1.17981723,  2.04350348,  1.82070458],
-                                                       [-2.35963445,  0.        ,  0.        ]]))
+                                                       [-2.35963445,  0.        ,  0.        ]]).T)
       c2 = castep.CastepCell()
       c2.update_from_atoms(a, frac_pos=True)
       self.assertEqual([x.split() for x in c['POSITIONS_FRAC']], [x.split() for x in c2['POSITIONS_FRAC']])
@@ -227,7 +227,7 @@ Si  -4.45906255   0.           0.
                                                        [-0.25859137, -1.78477709, -2.50626608],
                                                        [ 1.17981723, -2.04350348,  3.64141462],
                                                        [ 1.17981723,  2.04350348,  1.82070458],
-                                                       [-2.35963445,  0.        ,  0.        ]]))
+                                                       [-2.35963445,  0.        ,  0.        ]]).T)
 
 
    def testupdate_from_atoms(self):
@@ -803,7 +803,7 @@ class TestReadMD(QuippyTestCase):
       self.at = Atoms(self.md_lines, format='md')
 
    def test_pos(self):
-      self.assertArrayAlmostEqual(self.at.pos, [[ 0.82415757,  0.15801177,  1.57830446],
+      self.assertArrayAlmostEqual(self.at.pos.T, [[ 0.82415757,  0.15801177,  1.57830446],
                                                 [ 2.53076898, -0.93897975, -5.04657556],
                                                 [-1.86434147, -2.83961172, -3.4922821 ],
                                                 [-1.97972729, -4.06147144,  0.05925173],
@@ -877,7 +877,7 @@ class TestReadMD(QuippyTestCase):
                                                 [-3.03693244, -2.07131968, -4.20340801]])
 
    def test_vel(self):
-      self.assertArrayAlmostEqual(self.at.velo, [[  2.18686555e-03,   4.35533564e-03,  -5.57118597e-03],
+      self.assertArrayAlmostEqual(self.at.velo.T, [[  2.18686555e-03,   4.35533564e-03,  -5.57118597e-03],
                                                  [ -4.77449331e-04,   3.19042935e-03,  -4.97809786e-04],
                                                  [ -4.37103491e-03,   2.68725257e-03,  -5.43763245e-03],
                                                  [  2.37453419e-03,  -9.75044217e-04,   2.89668061e-03],
@@ -951,7 +951,7 @@ class TestReadMD(QuippyTestCase):
                                                  [ -2.35406025e-03,   4.38037441e-03,  -3.42282077e-03]])
 
    def test_force(self):
-      self.assertArrayAlmostEqual(self.at.force, [[  3.39025894e-01,   2.82725740e-01,  -4.19079393e-01],
+      self.assertArrayAlmostEqual(self.at.force.T, [[  3.39025894e-01,   2.82725740e-01,  -4.19079393e-01],
                                                   [  2.18514501e-01,  -1.81572503e-01,  -2.94385317e-01],
                                                   [  2.50708323e-01,   1.31137662e-01,  -1.87007313e-01],
                                                   [ -4.32671101e-01,  -5.53770708e-01,   6.46612048e-02],

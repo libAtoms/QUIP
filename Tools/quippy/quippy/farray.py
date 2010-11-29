@@ -64,8 +64,6 @@ def farray(seq, dtype=None):
 
     A copy of the data in seq will be made if necessary."""
     na = numpy.array(seq,order='F', dtype=dtype)
-    if isinstance(seq,tuple) or isinstance(seq,list):
-        na = na.transpose()
     return FortranArray(na)
 
 def fidentity(n):
@@ -116,12 +114,11 @@ class FortranArray(numpy.ndarray):
     def __array_finalize__(self, obj):
         self.cols = self.col_iter()
         self.rows = self.row_iter()
-        self.transpose_on_print = getattr(obj, 'transpose_on_print', False)
 
     def __array_wrap__(self, out, context=None):
         return out.view(FortranArray)
 
-    def __new__(cls, input_array=None, doc=None, transpose_on_print=False):
+    def __new__(cls, input_array=None, doc=None):
         """Construct a FortanArray from input_array
 
         a = FortranArray(input_array=None, doc=None)
@@ -129,11 +126,6 @@ class FortranArray(numpy.ndarray):
         If doc is not None, docstring of new array is set to doc."""
 
 	self = numpy.asarray(input_array)
-
-        if isinstance(input_array,tuple) or isinstance(input_array,list):
-            self = self.transpose()
-            transpose_on_print = True
-
         self = self.view(FortranArray)
         
         if doc is not None:
@@ -141,7 +133,6 @@ class FortranArray(numpy.ndarray):
 
         self.cols = self.col_iter()
         self.rows = self.row_iter()
-        self.transpose_on_print = transpose_on_print
 	return self
 
     def __eq__(self, other):
@@ -356,21 +347,14 @@ class FortranArray(numpy.ndarray):
 				 values, mode)
 				 
     def __repr__(self):
-        if self.transpose_on_print:
-            s = repr(numpy.asarray(self.T).view(numpy.ndarray))
-        else:
-            s = repr(numpy.asarray(self).view(numpy.ndarray))
-            
+        s = repr(numpy.asarray(self).view(numpy.ndarray))
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
         return s
         
 
     def __str__(self):
-        if self.transpose_on_print:
-            return str(numpy.asarray(self.T).view(numpy.ndarray))
-        else:
-            return str(numpy.asarray(self).view(numpy.ndarray))
+        return str(numpy.asarray(self).view(numpy.ndarray))
 
     def __iter__(self):
         """Iterate over this :class:`FortranArray` treating first dimension as fastest varying.

@@ -82,8 +82,8 @@ class TestTable(QuippyTestCase):
       t.append(realpart=[1.0,2.0,3.0],logicalpart=[False,True,False])
       t.append(realpart_2d=numpy.reshape([4.0,5.0,6.0, 7.0,8.0,9.0],[3,2],order='F'),
                logicalpart_2d=numpy.reshape([False,False,False,True,True,True],[3,2],order='F'))
-      self.assertArrayAlmostEqual(t.real, farray([[1.0,2.0,3.0],[4.0,5.0,6.0],[7.0,8.0,9.0]]))
-      self.assertArrayAlmostEqual(t.logical, farray([[False,True,False],[False,False,False],[True,True,True]]))
+      self.assertArrayAlmostEqual(t.real, farray([[1.0,2.0,3.0],[4.0,5.0,6.0],[7.0,8.0,9.0]]).T)
+      self.assertArrayAlmostEqual(t.logical, farray([[False,True,False],[False,False,False],[True,True,True]]).T)
 
    def testtableappend(self):
       t1 = Table(2,1,0,0)

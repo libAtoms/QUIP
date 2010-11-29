@@ -83,7 +83,7 @@ def oxygenate(at, edge_only=False):
 
    if len(add_pos) > 0:
       add_z = [8]*len(add_pos)
-      add_pos = farray(add_pos)
+      add_pos = farray(add_pos).T
 
       nat = at.n
       at.add_atoms(add_pos, add_z)
