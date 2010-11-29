@@ -290,6 +290,7 @@ program teach_sparse_program
         li = 0
         ui = 0
         do i = lbound(main_teach_sparse%m_sparse_in_type,dim=1), ubound(main_teach_sparse%m_sparse_in_type,dim=1)
+           if( main_teach_sparse%m_sparse_in_type(i)%m == 0 ) cycle
            allocate( type_indices(count(main_teach_sparse%input_type == i)), sparse_points(main_teach_sparse%m_sparse_in_type(i)%m) )
            type_indices = find(main_teach_sparse%input_type == i)
 
