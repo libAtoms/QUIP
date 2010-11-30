@@ -481,8 +481,8 @@ program teach_sparse_program
      gp_file = 'gp_'//main_teach_sparse%my_gp%n//'.xml'
 
      call teach_sparse_print_xml(main_teach_sparse,gp_file)
-     call system_command('ln -fs '//trim(gp_file)//' gp.xml')
      call finalise(main_teach_sparse%my_gp)
+     call system_command('ln -fs '//trim(gp_file)//' gp.xml')
   endif
 
 
