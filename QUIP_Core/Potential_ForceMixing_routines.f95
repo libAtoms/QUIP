@@ -46,7 +46,7 @@
     integer, intent(out), optional :: error
 
     type(Dictionary) :: params
-    logical :: minimise_bulk, do_tb_defaults, do_rescale_r
+    logical :: minimise_bulk, do_tb_defaults, do_rescale_r, do_rescale_E
     real(dp) :: dummy_E
 
     INIT_ERROR(error)
@@ -90,6 +90,7 @@
     call param_register(params, "minimise_bulk", "F", minimise_bulk, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "do_tb_defaults", "F", do_tb_defaults, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'do_rescale_E', 'F', do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_initialise args_str')) then
        RAISE_ERROR('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"', error)
@@ -117,6 +118,7 @@
     call remove_value(this%create_hybrid_weights_params, 'lotf_interp_space')
     call remove_value(this%create_hybrid_weights_params, 'lotf_nneighb_only')
     call remove_value(this%create_hybrid_weights_params, 'do_rescale_r')
+    call remove_value(this%create_hybrid_weights_params, 'do_rescale_E')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_method')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_tol')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_eps_guess')
@@ -131,7 +133,12 @@
     call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
 
     this%r_scale_pot1 = 1.0_dp
-    if (do_rescale_r) then
+    if (do_rescale_r .or. do_rescale_E) then
+
+!!$       if (do_rescale_E .and. .not. do_rescale_r) then
+!!$            RAISE_ERROR("potential_forcemixing_initialise got do_rescale_E=T but do_rescale_r=F. This does not work!", error)
+!!$       end if
+
        if (.not. present(reference_bulk)) then
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
        endif
@@ -140,11 +147,13 @@
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given", error)
        endif
 
-       call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, .true., .false., &
-            this%r_scale_pot1, dummy_E, do_tb_defaults)
+       call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
+            this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
       
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
-       call print ("Rescaling positions in region1 potential by " // this%r_scale_pot1 // " to match lattice constants")
+       if (this%E_scale_pot1 <= 0.0_dp) this%E_scale_pot1 = 1.0_dp
+       if (do_rescale_r) call print ("Rescaling positions in region1 potential by " // this%r_scale_pot1 // " to match lattice constants")
+       if (do_rescale_E) call print ("Rescaling energies in region1 potential by " // this%E_scale_pot1 // " to match lattice constants")
     end if
 
     this%qmpot => qmpot
@@ -201,6 +210,7 @@
     call Print(' lotf_interp_space='//this%lotf_interp_space, file=file)
     call Print(' lotf_nneighb_only='//this%lotf_nneighb_only, file=file)
     call Print(' r_scale_pot1='//this%r_scale_pot1, file=file)
+    call Print(' E_scale_pot1='//this%E_scale_pot1, file=file)
     call Print('',file=file)
     call Print(' minim_mm_method='//this%minim_mm_method,file=file)
     call Print(' minim_mm_tol='//this%minim_mm_tol,file=file)
@@ -488,6 +498,10 @@
        call set_value(params, 'do_rescale_r', .true.)
        call set_value(params, 'r_scale', this%r_scale_pot1)
 
+       ! same for energy rescaling
+       call set_value(params, 'do_rescale_E', .true.)
+       call set_value(params, 'E_scale', this%E_scale_pot1)
+       
        atom_mask = .false.
        if (has_key(params, 'atom_mask')) then
           if (.not. get_value(params, 'atom_mask', atom_mask)) then
@@ -543,7 +557,7 @@
           call finalise(saved_connect)
 
           ! Scale forces
-          f_qm = f_qm*this%r_scale_pot1
+          f_qm = f_qm*this%E_scale_pot1*this%r_scale_pot1
           call system_timer('Undoing rescale')
        end if
 
