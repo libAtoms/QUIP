@@ -93,10 +93,10 @@ program teach_sparse_program
   call param_register(params, 'do_test_gp_gradient', 'F', main_teach_sparse%do_test_gp_gradient, help_string="Developer option. Test likelihood gradient")
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_value_target = has_bispectrum_file, help_string="Developer option. Print out descriptors of each atom in a text file.")
   call param_register(params, 'ip_args', '', main_teach_sparse%ip_args, has_value_target = main_teach_sparse%do_core, help_string=" QUIP init string for a potential to subtract from data (and added back after prediction)")
-  call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name, help_string="Name of energy property in the at_file that describe the data")
-  call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name, help_string="Name of force property in the at_file that describe the data")
-  call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name, help_string="Name of virial property in the at_file that describe the data")
-  call param_register(params, 'config_type_property_name', 'config_type', main_teach_sparse%config_type_property_name, help_string="Identifier of property determining the type of input data in the at_file")
+  call param_register(params, 'energy_parameter_name', 'energy', main_teach_sparse%energy_parameter_name, help_string="Name of energy property in the at_file that describe the data")
+  call param_register(params, 'force_parameter_name', 'force', main_teach_sparse%force_parameter_name, help_string="Name of force property in the at_file that describe the data")
+  call param_register(params, 'virial_parameter_name', 'virial', main_teach_sparse%virial_parameter_name, help_string="Name of virial property in the at_file that describe the data")
+  call param_register(params, 'config_type_parameter_name', 'config_type', main_teach_sparse%config_type_parameter_name, help_string="Identifier of property determining the type of input data in the at_file")
   call param_register(params, 'config_type_hypers','',config_type_hypers_string,has_value_target = main_teach_sparse%has_config_type_hypers, help_string="How many sparse points to choose for each type of data and what sigma parameters to associate with the type. E.g. {liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001} will select 300 sparse points from crystal type data and 200 from liquid")
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse, help_string="Do sparsification or regular GP. Latter: no derivative information is used")
   call param_register(params, 'do_pca', 'F', main_teach_sparse%do_pca, help_string='PCA analysis is performed on input data')
@@ -110,7 +110,7 @@ program teach_sparse_program
      [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
      [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] &
-     [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] &
+     [energy_parameter_name=energy] [force_parameter_name=force] [virial_parameter_name=virial] &
      [config_type_hypers={liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001}] [do_sparse=T] [verbosity=NORMAL]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif

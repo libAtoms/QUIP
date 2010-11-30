@@ -42,7 +42,7 @@ module teach_sparse_mod
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_property_name, force_property_name, virial_property_name, coordinates, config_type_property_name
+     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
@@ -106,9 +106,9 @@ contains
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
-       has_ener = get_value(at%params,this%energy_property_name,ener)
-       has_force = assign_pointer(at,this%force_property_name, f)
-       has_virial = get_value(at%params,this%virial_property_name,virial)
+       has_ener = get_value(at%params,this%energy_parameter_name,ener)
+       has_force = assign_pointer(at,this%force_parameter_name, f)
+       has_virial = get_value(at%params,this%virial_parameter_name,virial)
 
        if( has_ener .or. has_force .or. has_virial ) then
           call set_cutoff(at,this%r_cut)
@@ -237,9 +237,9 @@ contains
     endselect
     d = this%d
 
-    call print("Number of target energies (property name: "//trim(this%energy_property_name)//") found: "//this%n_ener)
-    call print("Number of target forces (property name: "//trim(this%force_property_name)//") found: "//this%n_force)
-    call print("Number of target virials (property name: "//trim(this%virial_property_name)//") found: "//this%n_virial)
+    call print("Number of target energies (property name: "//trim(this%energy_parameter_name)//") found: "//this%n_ener)
+    call print("Number of target forces (property name: "//trim(this%force_parameter_name)//") found: "//this%n_force)
+    call print("Number of target virials (property name: "//trim(this%virial_parameter_name)//") found: "//this%n_virial)
 
     allocate(this%x(d,this%nn),this%xd(d,this%n), &
     this%yf(this%n_ener), this%ydf(this%n_force+this%n_virial), &
@@ -266,10 +266,10 @@ contains
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
-       has_ener = get_value(at%params,this%energy_property_name,ener)
-       has_force = assign_pointer(at,this%force_property_name, f)
-       has_virial = get_value(at%params,this%virial_property_name,virial)
-       has_config_type = get_value(at%params,this%config_type_property_name,config_type)
+       has_ener = get_value(at%params,this%energy_parameter_name,ener)
+       has_force = assign_pointer(at,this%force_parameter_name, f)
+       has_virial = get_value(at%params,this%virial_parameter_name,virial)
+       has_config_type = get_value(at%params,this%config_type_parameter_name,config_type)
 
        if( has_config_type ) then
           config_type = lower_case(trim(config_type))
