@@ -37,18 +37,19 @@ module teach_sparse_mod
   type sparse_types
      character(len=FIELD_LENGTH) :: type
      integer :: m
+     real(dp), dimension(3) :: sgm
   endtype sparse_types
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_property_name, force_property_name, virial_property_name, coordinates, input_type_property_name
+     energy_property_name, force_property_name, virial_property_name, coordinates, config_type_property_name
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_m_sparse_in_type, do_pca
+     has_settings_in_type, do_pca
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n
@@ -56,11 +57,11 @@ module teach_sparse_mod
      type(gp) :: my_gp
 
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
-     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean
+     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean, sigma
      real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
-     integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, input_type
+     integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, config_type
      integer, dimension(99) :: qw_cutoff_f
-     type(sparse_types), dimension(:), allocatable :: m_sparse_in_type
+     type(sparse_types), dimension(:), allocatable :: settings_in_type
 
   endtype teach_sparse
      
@@ -188,7 +189,7 @@ contains
     
     integer :: d
     integer :: n_max, n_con
-    logical :: has_ener, has_force, has_virial, has_input_type
+    logical :: has_ener, has_force, has_virial, has_config_type
     real(dp) :: ener, ener_core
     real(dp), dimension(3,3) :: virial, virial_core
     real(dp), pointer :: f(:,:)
@@ -203,8 +204,8 @@ contains
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
 
-    integer :: it, n_input_type
-    character(len=FIELD_LENGTH) :: input_type
+    integer :: it, n_config_type
+    character(len=FIELD_LENGTH) :: config_type
 
     select case(trim(this%coordinates))
     case('qw')
@@ -245,7 +246,7 @@ contains
     this%lf(this%n_ener),this%ldf(this%n_force+this%n_virial), &
     this%xf(this%ne),this%xdf(this%n))
     allocate(this%xz(this%nn))
-    allocate(this%target_type(this%n_ener+this%n_force+this%n_virial),this%input_type(this%nn))
+    allocate(this%target_type(this%n_ener+this%n_force+this%n_virial),this%config_type(this%nn))
 
     if( this%do_core ) call Initialise(core_pot, args_str=this%ip_args, param_str=string(this%quip_string))
 
@@ -268,18 +269,18 @@ contains
        has_ener = get_value(at%params,this%energy_property_name,ener)
        has_force = assign_pointer(at,this%force_property_name, f)
        has_virial = get_value(at%params,this%virial_property_name,virial)
-       has_input_type = get_value(at%params,this%input_type_property_name,input_type)
+       has_config_type = get_value(at%params,this%config_type_property_name,config_type)
 
-       if( has_input_type ) then
-          input_type = lower_case(trim(input_type))
+       if( has_config_type ) then
+          config_type = lower_case(trim(config_type))
        else
-          input_type = "default"
+          config_type = "default"
        endif
 
-       if( .not. allocated(this%m_sparse_in_type) ) call system_abort('m_sparse_in_type not allocated')
-       n_input_type = 0
-       do it = lbound(this%m_sparse_in_type,dim=1), ubound(this%m_sparse_in_type,dim=1)
-          if( trim(this%m_sparse_in_type(it)%type) == trim(input_type) ) n_input_type = it
+       if( .not. allocated(this%settings_in_type) ) call system_abort('settings_in_type not allocated')
+       n_config_type = 0
+       do it = lbound(this%settings_in_type,dim=1), ubound(this%settings_in_type,dim=1)
+          if( trim(this%settings_in_type(it)%type) == trim(config_type) ) n_config_type = it
        enddo
 
        if( this%do_core ) then
@@ -392,7 +393,7 @@ contains
              do i = 1, at%N
                 ix = i_con + i
                 this%x(:,ix) = vec(:,i)
-                this%input_type(ix) = n_input_type
+                this%config_type(ix) = n_config_type
                 this%xz(ix) = at%Z(i)
 
                 if( has_ener ) then
@@ -418,7 +419,7 @@ contains
                       this%ydf(nn) = -f(k,i)
                       this%ldf(nn) = ui
                       !sigma(nn+n_ener) = sgm(2)
-                      this%target_type(nn+this%n_ener) = 2
+                      this%target_type(nn+this%n_ener) = 3*n_config_type + 2
                    enddo
                 endif
              enddo
@@ -455,7 +456,7 @@ contains
                       this%ydf(nn) = -virial(l,k) 
                       this%ldf(nn) = ui
                       !sigma(nn+n_ener) = sgm(3)
-                      this%target_type(nn+this%n_ener) = 3
+                      this%target_type(nn+this%n_ener) = 3*n_config_type + 3
                    enddo
                 enddo
              endif
@@ -467,7 +468,7 @@ contains
                 this%yf(i_ener) = ener
                 this%lf(i_ener) = ie
                 !sigma(i_ener) = sgm(1)
-                this%target_type(i_ener) = 1
+                this%target_type(i_ener) = 3*n_config_type + 1
              endif
           endselect
        endif
