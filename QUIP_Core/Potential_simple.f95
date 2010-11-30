@@ -318,10 +318,10 @@ contains
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
 
     integer:: i,k,n, zero_loc(1)
-    real(dp):: e_plus, e_minus, pos_save, r_scale
+    real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale
     real(dp), parameter::delta = 1.0e-4_dp
     type(Dictionary) :: params
-    logical :: single_cluster, little_clusters, dummy, do_rescale_r
+    logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
     character(len=10240) :: my_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
     real(dp), pointer, dimension(:) :: weight_region1
@@ -364,6 +364,8 @@ contains
     call param_register(params, 'little_clusters', 'F', little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'r_scale', '1.0', r_scale, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'do_rescale_E', 'F', do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'E_scale', '1.0', E_scale, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'force_using_fd', 'F', force_using_fd, help_string="No help yet.  This source file was $LastChangedBy$")
 
     call param_register(params, 'energy', '', calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -460,6 +462,7 @@ contains
 	  endif
 
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
+          if (do_rescale_E)  f_cluster = f_cluster*E_scale
           at_force_ptr(:,i) = f_cluster(:,1)
 	   call finalise(cluster)
        end do
@@ -534,6 +537,7 @@ contains
 	 call assign_property_pointer(cluster, trim(calc_force), f_cluster, error=error)
 	 PASS_ERROR_WITH_INFO('Potential_Simple_calc: single_cluster failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
+         if (do_rescale_E)  f_cluster = f_cluster*E_scale
 
          ! Reassign pointers - create_cluster_info_from_mark() might have broken them
          if (has_property(at, 'hybrid_mark')) &
@@ -634,6 +638,7 @@ contains
 	 call calc(this, at, args_str=new_args_str, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
 	 if (do_rescale_r)  at_force_ptr = at_force_ptr*r_scale
+	 if (do_rescale_E)  at_force_ptr = at_force_ptr*E_scale
        endif ! do_carve_cluster
     else ! little_clusters and single_cluster are false..
 

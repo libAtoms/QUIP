@@ -80,7 +80,8 @@
      character(FIELD_LENGTH) :: lotf_interp_order !% Interpolation order: should be one of 'linear', 'quadratic', or 'cubic'. Default is 'linear'.
      logical :: lotf_interp_space !% Do spatial rather than temporal interpolation of adj pot parameters. Default is false.
      logical :: lotf_nneighb_only !% If true (which is the default), uses nearest neigbour hopping to determine fit atoms
-     real(dp) :: r_scale_pot1 !% Rescale positions in QM region by this factor
+     real(dp) :: r_scale_pot1 !% Rescale positions in QM region by this factro
+     real(dp) :: E_scale_pot1 !% Rescale energy in QM region by this factor
 
      character(FIELD_LENGTH) :: minim_mm_method 
      real(dp)      :: minim_mm_tol, minim_mm_eps_guess

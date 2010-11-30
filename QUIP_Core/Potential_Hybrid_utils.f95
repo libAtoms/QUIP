@@ -35,6 +35,60 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+  
+ subroutine linear_square(x,afunc)
+
+    use libAtoms_module
+
+    real(dp) :: x, afunc(:)
+
+    afunc(1) = x*x
+    afunc(2) = x
+    afunc(3) = 1
+  
+ end subroutine linear_square
+
+
+
+  subroutine bulk_modulus(pot, at0, minimise_bulk, B_region)
+
+    use libAtoms_module
+
+    real(dp), parameter :: eps = 2.0e-3 
+    logical, intent(in) :: minimise_bulk
+    integer  :: i,j, steps 
+    real(dp) :: E(11), V(11), a(3), chisq, B_region
+    type(Atoms) :: at1, at0
+    type(Potential) :: pot
+
+   do i = 1, 11 
+   at1 = at0
+   call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*eps), scale_positions=.true.)  
+   V(i) = cell_volume(at1)
+   call set_cutoff (at1, cutoff(pot))
+   call calc_connect(at1)
+
+   if (minimise_bulk) then
+      call verbosity_push(PRINT_SILENT)
+      steps = minim(pot, at1, 'cg', 1e-6_dp, 100, &
+           'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false.)
+      call verbosity_pop()
+   end if
+
+   call calc(pot, at1, energy=E(i))
+   end do
+
+   call least_squares(V, E, (/ ( 1.0_dp, j=1,11) /), &
+            a, chisq, linear_square)
+ 
+   B_region = -1.0*a(2)*GPA
+
+   call print('V0 = '//-a(2)/(2.0_dp*a(1)))
+
+  end subroutine bulk_modulus
+ 
+
+
   subroutine do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
 			       r_scale_pot1, E_scale_pot1, do_tb_defaults)
     type(Atoms), intent(inout) :: reference_bulk
@@ -42,10 +96,9 @@
     logical, intent(in) :: minimise_bulk, do_rescale_r, do_rescale_E, do_tb_defaults
     real(dp), intent(inout) :: r_scale_pot1, E_scale_pot1
 
-    real(dp) :: e_bulk !, B_region2, B_region1
+    real(dp) :: e_bulk, B_region2, B_region1
 
     type(Atoms) :: bulk_region1, bulk_region2
-!    type(Potential) :: region1_pot, region2_pot
     integer :: it
 
     call verbosity_push_decrement(PRINT_NERD)
@@ -118,10 +171,13 @@
     endif
 
     if (do_rescale_E) then
-      call system_abort("do_reference_bulk: no energy rescaling implemented yet")
-      ! B_region2 = bulk_modulus(region2_pot, bulk_region2)
-      ! B_region1 = bulk_modulus(region1_pot, bulk_region1, r_scale_pot1)
-      ! E_scale_pot1 = B_region2/B_region1
+      call bulk_modulus(region2_pot, bulk_region2, minimise_bulk, B_region2)
+      call bulk_modulus(region1_pot, bulk_region1, minimise_bulk, B_region1)
+
+      call print('Bulk modulus in region 1 = '//B_region1//' GPa')
+      call print('Bulk modulus in region 2 = '//B_region2//' GPa')
+
+       E_scale_pot1 = (B_region2/B_region1)*(r_scale_pot1)**3
     end if
 
     call finalise(bulk_region1)
