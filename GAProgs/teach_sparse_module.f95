@@ -49,7 +49,7 @@ module teach_sparse_mod
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_settings_in_type, do_pca
+     has_config_type_hypers, do_pca
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n
@@ -61,7 +61,7 @@ module teach_sparse_mod
      real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
      integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, config_type
      integer, dimension(99) :: qw_cutoff_f
-     type(sparse_types), dimension(:), allocatable :: settings_in_type
+     type(sparse_types), dimension(:), allocatable :: config_type_hypers
 
   endtype teach_sparse
      
@@ -277,10 +277,10 @@ contains
           config_type = "default"
        endif
 
-       if( .not. allocated(this%settings_in_type) ) call system_abort('settings_in_type not allocated')
+       if( .not. allocated(this%config_type_hypers) ) call system_abort('config_type_hypers not allocated')
        n_config_type = 0
-       do it = lbound(this%settings_in_type,dim=1), ubound(this%settings_in_type,dim=1)
-          if( trim(this%settings_in_type(it)%type) == trim(config_type) ) n_config_type = it
+       do it = lbound(this%config_type_hypers,dim=1), ubound(this%config_type_hypers,dim=1)
+          if( trim(this%config_type_hypers(it)%type) == trim(config_type) ) n_config_type = it
        enddo
 
        if( this%do_core ) then

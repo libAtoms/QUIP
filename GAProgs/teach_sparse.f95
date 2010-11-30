@@ -46,16 +46,16 @@ program teach_sparse_program
 
   character(len=FIELD_LENGTH) :: verbosity
   character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
-  theta_file, sparse_file, bispectrum_file, settings_in_type_string, tmp
+  theta_file, sparse_file, bispectrum_file, config_type_hypers_string, tmp
   real(dp) :: mem_required, mem_total, mem_free
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
-  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, settings_in_type_fields
+  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, config_type_hypers_fields
   character(len=SPARSE_LENGTH) :: sparse_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
-  integer :: i, j, k, l, o, dd, dt, settings_in_type_num_fields, i_default, m_total, li, ui
+  integer :: i, j, k, l, o, dd, dt, config_type_hypers_num_fields, i_default, m_total, li, ui
   integer, dimension(:), allocatable :: type_indices, sparse_points
   character(len=FIELD_LENGTH) :: gp_file
 
@@ -97,7 +97,7 @@ program teach_sparse_program
   call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name, help_string="Name of force property in the at_file that describe the data")
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name, help_string="Name of virial property in the at_file that describe the data")
   call param_register(params, 'config_type_property_name', 'config_type', main_teach_sparse%config_type_property_name, help_string="Identifier of property determining the type of input data in the at_file")
-  call param_register(params, 'settings_in_type','',settings_in_type_string,has_value_target = main_teach_sparse%has_settings_in_type, help_string="How many sparse points to choose for each type of data and what sigma parameters to associate with the type. E.g. {liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001} will select 300 sparse points from crystal type data and 200 from liquid")
+  call param_register(params, 'config_type_hypers','',config_type_hypers_string,has_value_target = main_teach_sparse%has_config_type_hypers, help_string="How many sparse points to choose for each type of data and what sigma parameters to associate with the type. E.g. {liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001} will select 300 sparse points from crystal type data and 200 from liquid")
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse, help_string="Do sparsification or regular GP. Latter: no derivative information is used")
   call param_register(params, 'do_pca', 'F', main_teach_sparse%do_pca, help_string='PCA analysis is performed on input data')
   call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="Verbosity control")
@@ -105,12 +105,13 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
-     & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
-     & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
-     & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
-     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] &
-     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [settings_in_type={default:200:crystal:300}] [do_sparse=T] [verbosity=NORMAL]")
+     [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
+     [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
+     [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
+     [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] &
+     [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] &
+     [config_type_hypers={liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001}] [do_sparse=T] [verbosity=NORMAL]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
@@ -134,13 +135,13 @@ program teach_sparse_program
   if( count( (/has_sparse_file,main_teach_sparse%do_cluster,main_teach_sparse%do_pivot/) ) > 1 ) &
   & call system_abort('There has been more than one method specified for sparsification.')
      
-  if( main_teach_sparse%has_settings_in_type ) then
-     call parse_string(settings_in_type_string,':',settings_in_type_fields,settings_in_type_num_fields)
+  if( main_teach_sparse%has_config_type_hypers ) then
+     call parse_string(config_type_hypers_string,':',config_type_hypers_fields,config_type_hypers_num_fields)
 
      ! find "default" if present
      i_default = 0
-     do i = 1, settings_in_type_num_fields, 5
-        if( lower_case(trim(settings_in_type_fields(i))) == "default" ) i_default = i
+     do i = 1, config_type_hypers_num_fields, 5
+        if( lower_case(trim(config_type_hypers_fields(i))) == "default" ) i_default = i
      enddo
 
 
@@ -148,9 +149,9 @@ program teach_sparse_program
         ! default is somewhere else, swap it to the first place
 
         do i = 1, 5
-           tmp = settings_in_type_fields(i)
-           settings_in_type_fields(i) = settings_in_type_fields(i_default+i-1)
-           settings_in_type_fields(i_default+i-1) = tmp
+           tmp = config_type_hypers_fields(i)
+           config_type_hypers_fields(i) = config_type_hypers_fields(i_default+i-1)
+           config_type_hypers_fields(i_default+i-1) = tmp
         enddo
 
         i_default = 1
@@ -158,62 +159,62 @@ program teach_sparse_program
 
      if( i_default == 0 ) then
         ! no default present in the string
-        allocate(main_teach_sparse%settings_in_type(0 : settings_in_type_num_fields/5))
+        allocate(main_teach_sparse%config_type_hypers(0 : config_type_hypers_num_fields/5))
      else
         ! default is present, it's the first
-        allocate(main_teach_sparse%settings_in_type(0 : settings_in_type_num_fields/5-1))
+        allocate(main_teach_sparse%config_type_hypers(0 : config_type_hypers_num_fields/5-1))
      endif
 
      m_total = 0
-     do i = i_default + 1, settings_in_type_num_fields/5 ! don't include the default for now
-        main_teach_sparse%settings_in_type(i-i_default)%type = settings_in_type_fields(5*(i-1)+1)
-        main_teach_sparse%settings_in_type(i-i_default)%m = string_to_int(settings_in_type_fields(5*(i-1)+2))
-        main_teach_sparse%settings_in_type(i-i_default)%sgm(1) = string_to_real(settings_in_type_fields(5*(i-1)+3))
-        main_teach_sparse%settings_in_type(i-i_default)%sgm(2) = string_to_real(settings_in_type_fields(5*(i-1)+4))
-        main_teach_sparse%settings_in_type(i-i_default)%sgm(3) = string_to_real(settings_in_type_fields(5*(i-1)+5))
-        m_total = m_total + main_teach_sparse%settings_in_type(i-i_default)%m
+     do i = i_default + 1, config_type_hypers_num_fields/5 ! don't include the default for now
+        main_teach_sparse%config_type_hypers(i-i_default)%type = config_type_hypers_fields(5*(i-1)+1)
+        main_teach_sparse%config_type_hypers(i-i_default)%m = string_to_int(config_type_hypers_fields(5*(i-1)+2))
+        main_teach_sparse%config_type_hypers(i-i_default)%sgm(1) = string_to_real(config_type_hypers_fields(5*(i-1)+3))
+        main_teach_sparse%config_type_hypers(i-i_default)%sgm(2) = string_to_real(config_type_hypers_fields(5*(i-1)+4))
+        main_teach_sparse%config_type_hypers(i-i_default)%sgm(3) = string_to_real(config_type_hypers_fields(5*(i-1)+5))
+        m_total = m_total + main_teach_sparse%config_type_hypers(i-i_default)%m
      enddo
 
-     main_teach_sparse%settings_in_type(0)%type = 'default'
-     main_teach_sparse%settings_in_type(0)%sgm = main_teach_sparse%sgm
+     main_teach_sparse%config_type_hypers(0)%type = 'default'
+     main_teach_sparse%config_type_hypers(0)%sgm = main_teach_sparse%sgm
 
      if( i_default == 0 ) then
         if( m_total > main_teach_sparse%m ) then
            call print_warning('Total number of sparse points for different types '//m_total//' &
            is greater than number of sparse points '//main_teach_sparse%m//', latter is overwritten.')
-           main_teach_sparse%settings_in_type(0)%m = 0
+           main_teach_sparse%config_type_hypers(0)%m = 0
            main_teach_sparse%m = m_total
         else
-           main_teach_sparse%settings_in_type(0)%m = main_teach_sparse%m - m_total
+           main_teach_sparse%config_type_hypers(0)%m = main_teach_sparse%m - m_total
         endif
      else
-        main_teach_sparse%settings_in_type(0)%m = string_to_int(settings_in_type_fields(2))
-        m_total = m_total + main_teach_sparse%settings_in_type(0)%m
+        main_teach_sparse%config_type_hypers(0)%m = string_to_int(config_type_hypers_fields(2))
+        m_total = m_total + main_teach_sparse%config_type_hypers(0)%m
         if( m_total > main_teach_sparse%m ) then
            call print_warning('Total number of sparse points for different types '//m_total//' &
            is greater than number of sparse points '//main_teach_sparse%m//', latter is overwritten.')
            main_teach_sparse%m = m_total
         else
-           main_teach_sparse%settings_in_type(0)%m = main_teach_sparse%settings_in_type(0)%m + main_teach_sparse%m - m_total
+           main_teach_sparse%config_type_hypers(0)%m = main_teach_sparse%config_type_hypers(0)%m + main_teach_sparse%m - m_total
         endif
      endif
      call print('Sparse points and target errors per pre-defined types of configurations')
-     do i = lbound(main_teach_sparse%settings_in_type,dim=1), ubound(main_teach_sparse%settings_in_type,dim=1)
-        call print(""//trim(main_teach_sparse%settings_in_type(i)%type)//"   "//main_teach_sparse%settings_in_type(i)%m//"  "//main_teach_sparse%settings_in_type(i)%sgm)
+     do i = lbound(main_teach_sparse%config_type_hypers,dim=1), ubound(main_teach_sparse%config_type_hypers,dim=1)
+        call print(""//trim(main_teach_sparse%config_type_hypers(i)%type)//"   "//main_teach_sparse%config_type_hypers(i)%m//"  "//main_teach_sparse%config_type_hypers(i)%sgm)
      enddo
   else
-     allocate(main_teach_sparse%settings_in_type(0:0))
-     main_teach_sparse%settings_in_type(0)%type = "default"
-     main_teach_sparse%settings_in_type(0)%m = main_teach_sparse%m
-     main_teach_sparse%settings_in_type(0)%sgm = main_teach_sparse%sgm
+     allocate(main_teach_sparse%config_type_hypers(0:0))
+     main_teach_sparse%config_type_hypers(0)%type = "default"
+     main_teach_sparse%config_type_hypers(0)%m = main_teach_sparse%m
+     main_teach_sparse%config_type_hypers(0)%sgm = main_teach_sparse%sgm
   endif
 
-  allocate(main_teach_sparse%sigma(3*size(main_teach_sparse%settings_in_type)))
+  allocate(main_teach_sparse%sigma(3*size(main_teach_sparse%config_type_hypers)))
   k = 0
-  do i = lbound(main_teach_sparse%settings_in_type,dim=1), ubound(main_teach_sparse%settings_in_type,dim=1)
+  do i = lbound(main_teach_sparse%config_type_hypers,dim=1), ubound(main_teach_sparse%config_type_hypers,dim=1)
      do j = 1, 3
         k = k+1
-        main_teach_sparse%sigma(k) = main_teach_sparse%settings_in_type(i)%sgm(j)
+        main_teach_sparse%sigma(k) = main_teach_sparse%config_type_hypers(i)%sgm(j)
      enddo
   enddo
 
@@ -300,16 +301,16 @@ program teach_sparse_program
         allocate(main_teach_sparse%r(main_teach_sparse%m))
         li = 0
         ui = 0
-        do i = lbound(main_teach_sparse%settings_in_type,dim=1), ubound(main_teach_sparse%settings_in_type,dim=1)
-           if( main_teach_sparse%settings_in_type(i)%m == 0 ) cycle
-           allocate( type_indices(count(main_teach_sparse%config_type == i)), sparse_points(main_teach_sparse%settings_in_type(i)%m) )
+        do i = lbound(main_teach_sparse%config_type_hypers,dim=1), ubound(main_teach_sparse%config_type_hypers,dim=1)
+           if( main_teach_sparse%config_type_hypers(i)%m == 0 ) cycle
+           allocate( type_indices(count(main_teach_sparse%config_type == i)), sparse_points(main_teach_sparse%config_type_hypers(i)%m) )
            type_indices = find(main_teach_sparse%config_type == i)
 
-           call print("Choosing "//main_teach_sparse%settings_in_type(i)%m//" sparse points for "//&
-           trim(main_teach_sparse%settings_in_type(i)%type)//" type configurations of "//size(type_indices)//" atomic environments")
+           call print("Choosing "//main_teach_sparse%config_type_hypers(i)%m//" sparse points for "//&
+           trim(main_teach_sparse%config_type_hypers(i)%type)//" type configurations of "//size(type_indices)//" atomic environments")
 
            if(main_teach_sparse%do_cluster) then
-              call bisect_kmedoids(main_teach_sparse%x(:,type_indices), main_teach_sparse%settings_in_type(i)%m, med=sparse_points, theta_fac=main_teach_sparse%theta_fac)
+              call bisect_kmedoids(main_teach_sparse%x(:,type_indices), main_teach_sparse%config_type_hypers(i)%m, med=sparse_points, theta_fac=main_teach_sparse%theta_fac)
            elseif(main_teach_sparse%do_pivot) then
               call pivot(main_teach_sparse%x(:,type_indices), sparse_points,theta_fac=main_teach_sparse%theta_fac)
            else
@@ -317,7 +318,7 @@ program teach_sparse_program
            endif
 
            li = ui + 1
-           ui = ui + main_teach_sparse%settings_in_type(i)%m
+           ui = ui + main_teach_sparse%config_type_hypers(i)%m
            main_teach_sparse%r(li:ui) = type_indices(sparse_points)
 
            deallocate(type_indices, sparse_points)
