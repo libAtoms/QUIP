@@ -91,6 +91,8 @@
     call param_register(params, "do_tb_defaults", "F", do_tb_defaults, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_E', 'F', do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "r_scale", "1.0", this%r_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "E_scale", "1.0", this%E_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_initialise args_str')) then
        RAISE_ERROR('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"', error)
@@ -132,7 +134,6 @@
     call remove_value(this%create_hybrid_weights_params, 'minimise_bulk')
     call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
 
-    this%r_scale_pot1 = 1.0_dp
     if (do_rescale_r .or. do_rescale_E) then
 
 !!$       if (do_rescale_E .and. .not. do_rescale_r) then
@@ -153,7 +154,7 @@
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
        if (this%E_scale_pot1 <= 0.0_dp) this%E_scale_pot1 = 1.0_dp
        if (do_rescale_r) call print ("Rescaling positions in region1 potential by " // this%r_scale_pot1 // " to match lattice constants")
-       if (do_rescale_E) call print ("Rescaling energies in region1 potential by " // this%E_scale_pot1 // " to match lattice constants")
+       if (do_rescale_E) call print ("Rescaling energies in region1 potential by " // this%E_scale_pot1 // " to match bulk modului")
     end if
 
     this%qmpot => qmpot
