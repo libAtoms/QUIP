@@ -268,10 +268,10 @@ class AtomsList(object):
             else:
                print i
 
-   def show(self, property=None, frame=1, arrows=None, *arrowargs, **arrowkwargs):
+   def show(self, *args, **kwargs):
       try:
          import atomeye
-         atomeye.show(self, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
+         atomeye.show(self, *args, **kwargs)
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
