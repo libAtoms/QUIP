@@ -411,7 +411,48 @@ class TestAtoms_LowLevel(QuippyTestCase):
       L2.append([2,4,6])
       L3 = difference(L1, L2)
       self.assertEqual(list(L3.int[1,:]), list(set(L1.int[1,:]).difference(L2.int[1,:])))
-      
+
+
+class TestAtoms_Rotate(QuippyTestCase):
+
+   def setUp(self):
+      self.a = diamond(5.44, 14)
+      self.a.add_property('force', 0., n_cols=3)
+      self.a.force[:]  = numpy.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
+      self.a.add_property('not_a_vector', 0., n_cols=3)
+      self.a.not_a_vector[:]  = numpy.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
+      self.a.params['virial'] = numpy.random.uniform(-0.1,0.1,9).reshape(3,3)
+      self.c = self.a.copy()
+
+      theta = pi/3.
+      self.c.rotate([1., 0, 0], theta)
+      self.R = farray([[1.,   0.,          0.,        ],
+                       [0.,   cos(theta), -sin(theta) ],
+                       [0.,   sin(theta),  cos(theta) ]])
+
+   def test_lattice(self):
+      # Lattice transformed
+      self.assertArrayAlmostEqual(dot(self.R, self.a.lattice), self.c.lattice)
+
+   def test_pos(self):
+      # Vector properties transformed
+      self.assertArrayAlmostEqual(dot(self.R, self.a.pos), self.c.pos)
+
+   def test_force(self):
+      self.assertArrayAlmostEqual(dot(self.R, self.a.force), self.c.force)
+
+   def test_non_vector(self):
+      # Non-vector properties shouldn't be changed
+      self.assertArrayAlmostEqual(self.a.not_a_vector, self.c.not_a_vector)
+
+   def test_frac(self):
+      # Fractional coordinates should match
+      self.assertArrayAlmostEqual(dot(self.a.g, self.a.pos), dot(self.c.g, self.c.pos))
+
+   def test_virial(self):
+      # Trace should be preserved
+      self.assertAlmostEqual(self.a.virial.trace(), self.c.virial.trace())
+   
    
 
 class TestAtoms_Extras(QuippyTestCase):

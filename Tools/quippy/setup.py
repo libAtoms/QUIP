@@ -232,11 +232,11 @@ def find_wrap_sources(makefile, quip_root):
 
     libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
     wrap_sources += [os.path.join(libatoms_dir, s) for s in
-                     ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
+                     ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95', 
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
                      'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95',
 		     'frametools.f95']]
-    wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection',
+    wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'quaternion',
                    'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str']
     source_dirs.append(libatoms_dir)
     libraries.append('atoms')

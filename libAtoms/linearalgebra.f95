@@ -275,6 +275,12 @@ module linearalgebra_module
      module procedure matrix_square, matrix_z_square, int_matrix_square
   end interface
 
+  !% Test is matrix is unitary i.e. if $M M^{-1} = I$
+  private :: matrix_is_orthogonal
+  interface is_orthogonal
+     module procedure matrix_is_orthogonal
+  end interface is_orthogonal
+
   !% Symmetrise a matrix: $$A \to \frac{A + A^T}{2}$$
   private :: matrix_symmetrise
   interface symmetrise
@@ -2876,6 +2882,20 @@ CONTAINS
 
   end function matrix_z_is_hermitian
 
+  function matrix_is_orthogonal(matrix)
+    real(dp),intent(in), dimension(:,:):: matrix
+    logical :: matrix_is_orthogonal
+    real(dp) :: t(size(matrix,1), size(matrix,2)), identity(size(matrix,1),size(matrix,2))
+    
+    if (.not.Is_Square(matrix)) &
+         call system_abort('Matrix_Is_Symmetric: Matrix is not square')
+
+    t = matrix .mult. transpose(matrix)
+    identity = 0.0_dp
+    call add_identity(identity)
+    matrix_is_orthogonal = maxval(abs(t - identity)) < maxval(matrix)*NUMERICAL_ZERO
+    
+  end function matrix_is_orthogonal
 
   ! print(matrix)
   ! printing
@@ -5214,8 +5234,8 @@ CONTAINS
     call print('R:', PRINT_ANAL); call print(R, PRINT_ANAL)
 
   end subroutine polar_decomposition
-  
-  !% Returns the volume of intersection of two spheres, radius $r_1$ and $r_2$, whose
+
+    !% Returns the volume of intersection of two spheres, radius $r_1$ and $r_2$, whose
   !% centres are a distance $d$ apart
   function sphere_intersection_vol(r1,r2,d) result(V)
 
