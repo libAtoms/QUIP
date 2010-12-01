@@ -61,6 +61,7 @@ module  atoms_module
   use Atoms_types_module
   use Connection_module
   use minimization_module
+  use Quaternions_module
 
   implicit none
 
@@ -249,6 +250,16 @@ module  atoms_module
   interface copy_entry
      module procedure atoms_copy_entry
   endinterface copy_entry
+
+  private :: atoms_transform_basis
+  interface transform_basis
+     module procedure atoms_transform_basis
+  end interface transform_basis
+
+  private :: atoms_rotate
+  interface rotate
+     module procedure atoms_rotate
+  end interface rotate
 
   private :: atoms_index_to_z_index
   interface index_to_z_index
@@ -3339,6 +3350,120 @@ contains
        endif
     end do
   end subroutine atoms_sort
+
+  !% Basis transformation of rank 0, 1 and 2 tensors real values in Atoms object.
+  !% This routine transforms rank 1 and rank 2 tensors in this%params and
+  !% this%properties. Tensors are identified by having the correct type
+  !% (real arrays) and shape (i.e. 3, (3, 3), (3, this%N) (9, this%N) for
+  !% vector paramters, tensor parameters, vector properties and tensor
+  !% properties respectively), and by having a name which is included in
+  !% the relevant list. Extra names can be added to the lists with the
+  !% rank1 and rank2 arguments.
+  subroutine atoms_transform_basis(this, L, rank1, rank2, error)
+    type(Atoms), intent(inout) :: this
+    real(dp), dimension(3,3) :: L
+    character(len=*), optional, intent(in) :: rank1, rank2
+    integer, optional, intent(out) :: error
+
+    character(len=*), parameter :: default_rank1 = "pos:velo:acc:avgpos:oldpos:force:efield:dipoles"
+    character(len=*), parameter :: default_rank2 = "virial:local_virial"
+
+    character(len=2048) :: all_rank1, all_rank2
+    character(len=128) :: fields(100)
+    integer i, j, n_fields
+    type(Dictionary) :: rank1_d, rank2_d
+    real(dp), pointer :: v(:), v2(:,:)
+
+    INIT_ERROR(error)
+
+    if (.not. is_orthogonal(L)) then
+       call print('L=')
+       call print(L)
+       RAISE_ERROR("atoms_transform_basis: transformation matrix L is not orthogonal", error)
+    end if
+
+    all_rank1 = default_rank1
+    if (present(rank1)) all_rank1 = trim(all_rank1)//':'//rank1
+    call split_string_simple(all_rank1, fields, n_fields, ':', error)
+    PASS_ERROR(error)
+    call initialise(rank1_d)
+    do i=1,n_fields
+       call set_value(rank1_d, fields(i), .true.)
+    end do
+
+    all_rank2 = default_rank2
+    if (present(rank2)) all_rank2 = trim(all_rank2)//':'//rank2
+    call split_string_simple(all_rank2, fields, n_fields, ':', error)
+    PASS_ERROR(error)
+    call initialise(rank2_d)
+    do i=1,n_fields
+       call set_value(rank2_d, fields(i), .true.)
+    end do
+
+    ! Special case: transform lattice as 3 separate rank 1 tensors
+    call set_lattice(this,(L .mult. this%lattice), scale_positions=.false.)
+
+    ! First we consider entries in at%params
+    do i=1, this%params%n
+       ! Is it a real 3-vector?
+       if (assign_pointer(this%params, string(this%params%keys(i)), v)) then
+          if (has_key(rank1_d, string(this%params%keys(i))) .and. size(v) == 3) then
+             call print('atoms_transform_basis: transforming '//this%params%keys(i)//' as a rank 1 tensor', PRINT_VERBOSE)
+             v = L .mult. v
+          end if
+       end if
+
+       ! Is it a real 3x3 matrix?
+       if (assign_pointer(this%params, string(this%params%keys(i)), v2)) then
+          if (has_key(rank2_d, string(this%params%keys(i))) .and. all(shape(v2) == (/3,3/))) then
+             call print('atoms_transform_basis: transforming '//this%params%keys(i)//' as a rank 2 tensor', PRINT_VERBOSE)
+             v2 = L .mult. v2 .mult. transpose(L)
+          end if
+       end if
+    end do
+
+    ! Now for the atomic properties in at%properties
+    do i=1, this%properties%n
+       ! Is it a per-atom 3-vector
+       if (assign_pointer(this%properties, string(this%properties%keys(i)), v2)) then
+          if (has_key(rank1_d, string(this%properties%keys(i))) .and. size(v2,1) == 3) then
+             call print('atoms_transform_basis: transforming '//this%properties%keys(i)//' as a rank 1 tensor', PRINT_VERBOSE)
+             do j=1,this%n
+                v2(:,j) = L .mult. v2(:,j)
+             end do
+          end if
+       end if
+       
+       ! Is it a per-atom 3x3 matrix, arranged as a 9 column property?
+       if (assign_pointer(this%properties, string(this%properties%keys(i)), v2)) then
+          if (has_key(rank2_d, string(this%properties%keys(i))) .and. size(v2, 1) == 9) then
+             call print('atoms_transform_basis: transforming '//this%properties%keys(i)//' as a rank 2 tensor', PRINT_VERBOSE)
+             do j=1,this%n
+                v2(:,j) = reshape(L .mult. reshape(v2(:,j),(/3,3/)) .mult. transpose(L), (/9/))
+             end do
+          end if
+       end if
+    end do
+
+    call finalise(rank1_d)
+    call finalise(rank2_d)
+
+  end subroutine atoms_transform_basis
+
+  !% Rotate this Atoms object, transforming all rank 1 and rank 2 tensors parameters and properties
+  subroutine atoms_rotate(this, axis, angle, rank1, rank2)
+    type(Atoms), intent(inout) :: this
+    real(dp), intent(in) :: axis(3), angle
+    character(len=*), optional, intent(in) :: rank1, rank2
+
+    type(Quaternion) :: q
+    real(dp) :: R(3,3)
+
+    q = rotation(axis, angle)
+    R = rotation_matrix(q)
+    call transform_basis(this, R, rank1, rank2)
+    
+  end subroutine atoms_rotate
 
   !% Convert from a single index in range 1..this%N to a CASTEP-style (element, index) pair
   function atoms_index_to_z_index(this, index) result(z_index)

@@ -56,6 +56,14 @@ module quaternions_module
 
   end type Quaternion
 
+  interface initialise
+     module procedure quaternion_initialise
+  end interface initialise
+
+  interface finalise
+     module procedure quaternion_finalise
+  end interface finalise
+
   interface norm
      module procedure quaternion_norm
   end interface norm
@@ -109,6 +117,24 @@ module quaternions_module
   end interface print
 
 contains
+
+  subroutine quaternion_initialise(this, a, b, c, d)
+    type(Quaternion), intent(out) :: this
+    real(dp), intent(in), optional :: a, b, c, d
+    
+    this%a = optional_default(0.0_dp, a)
+    this%b = optional_default(0.0_dp, b)
+    this%c = optional_default(0.0_dp, c)
+    this%d = optional_default(0.0_dp, d)
+
+  end subroutine quaternion_initialise
+
+  subroutine quaternion_finalise(this)
+    type(Quaternion), intent(in) :: this
+
+    ! do nothing
+    
+  end subroutine quaternion_finalise
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X Assignment

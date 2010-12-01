@@ -51,6 +51,7 @@ LIBATOMS_F95_FILES = \
   MPI_context \
   Units \
   linearalgebra \
+  Quaternions \
   statistics \
   Dictionary \
   Table \
@@ -59,7 +60,6 @@ LIBATOMS_F95_FILES = \
   Atoms_types \
   Connection \
   Atoms \
-  Quaternions \
   RigidBody \
   Group \
   Constraints \

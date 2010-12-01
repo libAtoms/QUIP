@@ -36,7 +36,7 @@ module CInOutput_module
 
   use iso_c_binding
   use error_module
-  use linearalgebra_module, only: print
+  use linearalgebra_module, only: print, operator(.mult.)
   use Extendable_str_module, only: Extendable_str, operator(//), string
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
        PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
@@ -45,7 +45,7 @@ module CInOutput_module
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, assignment(=)
-  use Atoms_module, only: Atoms, initialise, is_initialised, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
+  use Atoms_module, only: Atoms, initialise, is_initialised, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint, transform_basis
   use MPI_Context_module, only: MPI_context
   use DomainDecomposition_module, only: DomainDecomposition, &
        allocate, communicate_domain_to_all
@@ -489,7 +489,9 @@ contains
           call set_lattice(at, lattice, scale_positions=.false.)
 
           ! If a rotation was applied, now revert to original stored lattice, rotating positions
-          if (cell_rotated == 1) call set_lattice(at, orig_lattice, scale_positions=.true.)
+          if (cell_rotated == 1) then
+             call transform_basis(at, orig_lattice .mult. at%g)
+          end if
        end if
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
@@ -612,7 +614,7 @@ contains
        cell_rotated = 0
        if (maxval(abs(orig_lattice - new_lattice)) > LATTICE_TOL) then 
           cell_rotated = 1
-          call set_lattice(at, new_lattice, scale_positions=.true.)
+          call transform_basis(at, new_lattice .mult. at%g)
        end if
     end if
 
@@ -658,8 +660,8 @@ contains
        PASS_ERROR(error)
 
        if (cell_rotated == 1) then
-          ! Revert to original lattice and positions
-          call set_lattice(at, orig_lattice, scale_positions=.true.)
+          ! Revert to original basis
+          call transform_basis(at, orig_lattice .mult. at%g)
        end if
        
     else
