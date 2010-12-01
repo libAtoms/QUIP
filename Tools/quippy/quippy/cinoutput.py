@@ -17,8 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import FortranCInOutput, INPUT, OUTPUT, INOUT, AtomsReaders, AtomsWriters, atoms_reader
-from farray import padded_str_array
-
+from farray import farray, padded_str_array
 from quippy import netcdf_file
 
 class CInOutput(FortranCInOutput):
