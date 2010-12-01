@@ -287,11 +287,11 @@ class Atoms(FortranAtoms):
       return res
 
 
-   def show(self, property=None, highlight=None, arrows=None, *arrowargs, **arrowkwargs):
+   def show(self, *args, **kwargs):
       """Show this Atoms object in AtomEye."""
       try:
          import atomeye
-         atomeye.show(self,property=property, highlight=highlight, arrows=arrows, *arrowargs, **arrowkwargs)
+         atomeye.show(self, *args, **kwargs)
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
