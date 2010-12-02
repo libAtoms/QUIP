@@ -1697,9 +1697,6 @@ end subroutine pack_pos_dg
 #include "Potential_Hybrid_utils.f95"
 
   subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str, error)
-    type atoms_ptr_type
-       type(atoms), pointer :: p
-    end type atoms_ptr_type
     type(DynamicalSystem), intent(inout), target :: this
     type(Potential), intent(inout) :: pot
     real(dp), intent(in) :: dt

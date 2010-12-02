@@ -130,9 +130,12 @@ contains
   end subroutine quaternion_initialise
 
   subroutine quaternion_finalise(this)
-    type(Quaternion), intent(in) :: this
+    type(Quaternion), intent(inout) :: this
 
-    ! do nothing
+    this%a = 0.0_dp
+    this%b = 0.0_dp
+    this%c = 0.0_dp    
+    this%d = 0.0_dp
     
   end subroutine quaternion_finalise
 
