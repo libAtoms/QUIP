@@ -461,7 +461,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
          if hasattr(sub, 'ret_val'):
              argfilt = [ name for name,arg in zip(argnames,args) if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
              if sub.ret_val.type.startswith('type'):
-                println('%s_ptr%%p = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))                          
+                println('%s_ptr%%p = %s(%s)' % (sub.ret_val.name, subname, join_and_split_lines(argfilt)))                          
              else:
                 println('%s = %s(%s)' % (sub.ret_val.name, subname, join_and_split_lines(argfilt)))
          else:

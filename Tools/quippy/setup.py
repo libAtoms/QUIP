@@ -148,9 +148,10 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
         fortran_spec['quip_makefile'] = makefile
         cPickle.dump(fortran_spec, open(os.path.join(build_dir, '../../%s.spec' % modname), 'w'))
 
+        import pprint
         spec_py_name = '%s/spec.py' % build_dir
         spec_py = open(spec_py_name, 'w')
-        spec_py.write('spec = %r\n' % fortran_spec)
+        spec_py.write('spec = %s\n' % pprint.pformat(fortran_spec))
         spec_py.close()
         res.append(spec_py_name)
 

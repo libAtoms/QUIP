@@ -56,62 +56,77 @@ module quaternions_module
 
   end type Quaternion
 
+  private :: quaternion_initialise
   interface initialise
      module procedure quaternion_initialise
   end interface initialise
 
+  private :: quaternion_finalise
   interface finalise
      module procedure quaternion_finalise
   end interface finalise
 
+  private :: quaternion_norm
   interface norm
      module procedure quaternion_norm
   end interface norm
 
+  private :: quaternion_normsq
   interface normsq
      module procedure quaternion_normsq
   end interface normsq
 
+  private :: quat_plus_quat, quat_plus_vect
   interface operator(+)
      module procedure quat_plus_quat, quat_plus_vect
   end interface
 
+  private :: quat_minus_quat, quat_minus_vect
   interface operator(-)
      module procedure quat_minus_quat, quat_minus_vect
   end interface
 
+  private :: quat_mult_real, quat_mult_quat, real_mult_quat
   interface operator(*)
      module procedure quat_mult_real, quat_mult_quat, real_mult_quat
   end interface
 
+  private :: quat_divide_real, quat_divide_quat
   interface operator(/)
      module procedure quat_divide_real, quat_divide_quat
   end interface
 
+  private :: quat_assign_vect, vect_assign_quat, quat_assign_real
   interface assignment(=)
      module procedure quat_assign_vect, vect_assign_quat, quat_assign_real
   end interface
 
+  private :: quaternion_conjugate
   interface operator(.conj.)
      module procedure quaternion_conjugate
   end interface
-  
+
+  private :: quat_eq_quat, quat_eq_vect
   interface operator(.feq.)
      module procedure quat_eq_quat, quat_eq_vect
   end interface
 
+  private :: quat_ne_quat, quat_ne_vect
   interface operator(.fne.)
      module procedure quat_ne_quat, quat_ne_vect
   end interface
 
+  private :: quat_dot_quat
   interface operator(.dot.)
      module procedure quat_dot_quat
   end interface
 
+  private :: rotate_vect, rotate_quat
   interface rotate
      module procedure rotate_vect, rotate_quat
   end interface rotate
 
+  private :: quaternion_print
   interface print
      module procedure quaternion_print
   end interface print
