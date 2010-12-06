@@ -144,7 +144,7 @@
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given", error)
        endif
 
-       call do_reference_bulk(reference_bulk, qmpot, mmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
+       call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
             this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
       
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
