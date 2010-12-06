@@ -180,6 +180,11 @@ module Potential_module
      module procedure dynamicalsystem_run
   end interface run
 
+  public :: bulk_modulus
+  interface bulk_modulus
+     module procedure potential_bulk_modulus
+  end interface bulk_modulus
+
 #include "Potential_Sum_header.f95"
 #include "Potential_ForceMixing_header.f95"
 #include "Potential_EVB_header.f95"

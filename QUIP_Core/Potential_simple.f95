@@ -402,6 +402,11 @@ contains
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'little_clusters')
+       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
+       call remove_value(params, 'do_rescale_r')
+       call remove_value(params, 'r_scale')
+       call remove_value(params, 'do_rescale_E')
+       call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
  
@@ -498,6 +503,11 @@ contains
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'single_cluster')
+       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
+       call remove_value(params, 'do_rescale_r')
+       call remove_value(params, 'r_scale')
+       call remove_value(params, 'do_rescale_E')
+       call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
 
