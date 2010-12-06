@@ -31,8 +31,8 @@
    but works okay for small deviations from the equilibrium volume
    """
 
-from quippy import *
 from pylab import *
+from quippy import *
 from scipy.optimize import leastsq
 
 do_higher_order = False
@@ -78,12 +78,12 @@ def sample_input():
    </SW_params>
    """
 
-   pot = Potential('IP SW', xml)
+   pot = Potential('IP SW', param_str=xml)
   
    for i in frange(-5,5):
       at = at0.copy()
-      at.lattice *= 1.0 + eps*i
-      at.pos *= 1.0 + eps*i
+      at.set_lattice(at.lattice*(1.0 + eps*i), True)
+      at.set_cutoff(pot.cutoff()+1.0)
       at.calc_connect()
       pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
       pot.calc(at, energy=True, virial=True)
