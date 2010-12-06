@@ -182,6 +182,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
 
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
+
   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
@@ -211,6 +214,10 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'do_rescale_r', 'F',do_rescale_r, help_string="If true, rescale distances by factor r_scale.")
+     call param_register(params, 'r_scale', '1.0',r_scale, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'do_rescale_E', 'F',do_rescale_E, help_string="If true, rescale energy by factor r_scale.")
+     call param_register(params, 'E_scale', '1.0',E_scale, help_string="Recaling factor for energy. Default 1.0.")
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Tersoff_Calc args_str')) &
      call system_abort("IPModel_Tersoff_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)
@@ -223,6 +230,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
         atom_mask_pointer => null()
      endif
   endif
+
+  if (do_rescale_r) call print('rescaling distances by factor '//r_scale)
+  if (do_rescale_E) call print('rescaling energy by factor '//E_scale)
 
   do i=1, at%N
     if (present(mpi)) then
@@ -243,6 +253,8 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
       j = atoms_neighbour(at, i, ji, dr_ij_mag, cosines = dr_ij)
       if (dr_ij_mag .feq. 0.0_dp) cycle
 
+      if (do_rescale_r) dr_ij_mag = dr_ij_mag*r_scale
+
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       S_ij = sqrt(this%S(ti)*this%S(tj))
@@ -261,6 +273,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 	if (ki == ji) cycle
 	k = atoms_neighbour(at, i, ki, dr_ik_mag, cosines = dr_ik)
 	if (dr_ik_mag .feq. 0.0_dp) cycle
+        if (do_rescale_r) dr_ik_mag = dr_ik_mag*r_scale
 
 	tk = get_type(this%type_of_atomic_num, at%Z(k))
 
@@ -276,6 +289,11 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
     do ji=1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, ji, dr_ij_mag, dr_ij_diff, dr_ij)
       if (dr_ij_mag .feq. 0.0_dp) cycle
+
+      if (do_rescale_r) then
+         dr_ij_mag = dr_ij_mag * r_scale
+         dr_ij_diff = dr_ij_diff * r_scale
+      end if
 
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -342,6 +360,11 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 	  if (ki == ji) cycle
 	  k = atoms_neighbour(at, i, ki, dr_ik_mag, dr_ik_diff, dr_ik)
 	  if (dr_ik_mag .feq. 0.0_dp) cycle
+
+          if (do_rescale_r) then
+             dr_ik_mag = dr_ik_mag * r_scale
+             dr_ik_diff = dr_ik_diff * r_scale
+          end if
 
 	  tk = get_type(this%type_of_atomic_num, at%Z(k))
 
@@ -426,6 +449,18 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
      if (present(virial)) call sum_in_place(mpi, virial)
      if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
+
+  if (do_rescale_r) then
+     if (present(f)) f = f*r_scale
+  end if
+
+  if (do_rescale_E) then
+     if (present(e)) e = e*E_scale
+     if (present(f)) f = f*E_scale
+     if (present(virial)) virial=virial*E_scale
+     if (present(local_virial)) virial=virial*E_scale
+  end if
+
   atom_mask_pointer => null()
 
 end subroutine IPModel_Tersoff_Calc

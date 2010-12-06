@@ -136,10 +136,6 @@
 
     if (do_rescale_r .or. do_rescale_E) then
 
-!!$       if (do_rescale_E .and. .not. do_rescale_r) then
-!!$            RAISE_ERROR("potential_forcemixing_initialise got do_rescale_E=T but do_rescale_r=F. This does not work!", error)
-!!$       end if
-
        if (.not. present(reference_bulk)) then
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
        endif
@@ -148,13 +144,13 @@
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given", error)
        endif
 
-       call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
+       call do_reference_bulk(reference_bulk, qmpot, mmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
             this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
       
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
        if (this%E_scale_pot1 <= 0.0_dp) this%E_scale_pot1 = 1.0_dp
-       if (do_rescale_r) call print ("Rescaling positions in region1 potential by " // this%r_scale_pot1 // " to match lattice constants")
-       if (do_rescale_E) call print ("Rescaling energies in region1 potential by " // this%E_scale_pot1 // " to match bulk modului")
+       if (do_rescale_r) call print ("Rescaling positions in QM potential by " // this%r_scale_pot1 // " to match lattice constants")
+       if (do_rescale_E) call print ("Rescaling energies in QM potential by " // this%E_scale_pot1 // " to match bulk moduli")
     end if
 
     this%qmpot => qmpot

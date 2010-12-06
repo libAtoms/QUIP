@@ -37,58 +37,64 @@
 
   
  subroutine linear_square(x,afunc)
-
-    use libAtoms_module
-
     real(dp) :: x, afunc(:)
 
     afunc(1) = x*x
     afunc(2) = x
     afunc(3) = 1
   
- end subroutine linear_square
+  end subroutine linear_square
 
+  function potential_bulk_modulus(pot, at, minimise_bulk, eps, args_str) result(B)
+    type(Potential), intent(inout) :: pot
+    type(Atoms), intent(in) :: at
+    logical, intent(in), optional :: minimise_bulk
+    real(dp), intent(in), optional :: eps
+    character(len=*), intent(in), optional :: args_str
+    real(dp) :: B
 
-
-  subroutine bulk_modulus(pot, at0, minimise_bulk, B_region)
-
-    use libAtoms_module
-
-    real(dp), parameter :: eps = 2.0e-3 
-    logical, intent(in) :: minimise_bulk
     integer  :: i,j, steps 
-    real(dp) :: E(11), V(11), a(3), chisq, B_region
-    type(Atoms) :: at1, at0
-    type(Potential) :: pot
+    real(dp) :: E(11), V(11), a(3), chisq, use_eps
+    type(Atoms) :: at0, at1
+    logical :: do_minimise_bulk
 
-   do i = 1, 11 
-   at1 = at0
-   call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*eps), scale_positions=.true.)  
-   V(i) = cell_volume(at1)
-   call set_cutoff (at1, cutoff(pot))
-   call calc_connect(at1)
+    do_minimise_bulk = optional_default(.true., minimise_bulk)
+    use_eps = optional_default(2.0e-3_dp, eps)
 
-   if (minimise_bulk) then
-      call verbosity_push(PRINT_SILENT)
-      steps = minim(pot, at1, 'cg', 1e-6_dp, 100, &
-           'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false.)
-      call verbosity_pop()
-   end if
+    at0 = at
+    if (do_minimise_bulk) then
+       ! Minimise initial cell
+       call verbosity_push_decrement()
+       steps = minim(pot, at0, 'cg', 1e-6_dp, 100, &
+            'FAST_LINMIN', do_pos=.false.,do_lat=.true., do_print=.false., args_str=args_str)
+       call verbosity_pop()
+    end if
 
-   call calc(pot, at1, energy=E(i))
-   end do
+    do i = 1, 11 
+       at1 = at0
+       call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*use_eps), scale_positions=.true.)  
+       V(i) = cell_volume(at1)
+       call set_cutoff (at1, cutoff(pot))
+       call calc_connect(at1)
 
-   call least_squares(V, E, (/ ( 1.0_dp, j=1,11) /), &
-            a, chisq, linear_square)
+       if (do_minimise_bulk) then
+          ! Minimise positions with lattice fixed
+          call verbosity_push_decrement()
+          steps = minim(pot, at1, 'cg', 1e-6_dp, 100, &
+               'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false., args_str=args_str)
+          call verbosity_pop()
+       end if
+
+       call calc(pot, at1, energy=E(i), args_str=args_str)
+    end do
+
+    call least_squares(V, E, (/ ( 1.0_dp, j=1,11) /), &
+         a, chisq, linear_square)
  
-   B_region = -1.0*a(2)*GPA
+    B = -1.0*a(2)*GPA
 
-   call print('V0 = '//-a(2)/(2.0_dp*a(1)))
-
-  end subroutine bulk_modulus
+  end function potential_bulk_modulus
  
-
-
   subroutine do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
 			       r_scale_pot1, E_scale_pot1, do_tb_defaults)
     type(Atoms), intent(inout) :: reference_bulk
@@ -165,14 +171,16 @@
       region2_pot%simple%tb%tbsys%scf%conv_tol = 1e-8_dp
     endif
 #endif
+    r_scale_pot1 = 1.0_dp
     if (do_rescale_r) then
       ! compute scale, assuming that lattices are only off by a uniform scale
       r_scale_pot1 = maxval(abs(bulk_region2%lattice(:,1)))/maxval(abs(bulk_region1%lattice(:,1)))
     endif
 
+    E_scale_pot1 = 1.0_dp
     if (do_rescale_E) then
-      call bulk_modulus(region2_pot, bulk_region2, minimise_bulk, B_region2)
-      call bulk_modulus(region1_pot, bulk_region1, minimise_bulk, B_region1)
+      B_region2 = bulk_modulus(region2_pot, bulk_region2, minimise_bulk)
+      B_region1 = bulk_modulus(region1_pot, bulk_region1, minimise_bulk)
 
       call print('Bulk modulus in region 1 = '//B_region1//' GPa')
       call print('Bulk modulus in region 2 = '//B_region2//' GPa')
