@@ -32,27 +32,27 @@
 !X
 !X Error handling, see error.f95 for the functions called in these macros.
 !X
-!% Error passing works as follows:
-!% - *error* needs to be intent(out) and optional
-!% - all functions that receive *error* as an argument must call INIT_ERROR(error)
-!% - RAISE_ERROR is used whenever an error occurs. If *error* is not present,
-!%   the program execution will be terminated immediately. If *error* is
-!%   present it will be set to some value not equal ERROR_NONE and the execution
-!%   of the subroutine will be stopped.
-!% - PASS_ERROR is used after a function or subroutine that returns error, i.e.
-!%     call sub(..., error=error)
-!%     PASS_ERROR(error)
-!%   If no error occurs (i.e. error==ERROR_NONE), execution will proceed as
-!%   usual. If an error occured, the current function will be terminated after
-!%   the location of the error is passed to the error module.
-!%   If the calling routine handles the error itself, rather than passing
-!%   it up with PASS_ERROR(), CLEAR_ERROR() should be used to clear the error
-!%   info stack
-!% - PASS_ERROR_WITH_INFO is like PASS_ERROR, just an additional string can be
-!%   provided describing the error, or parameters.
-!% - HANDLE_ERROR will print the error history and stop execution of the program
-!%   after an error occured.
-!%
+!X Error passing works as follows:
+!X - *error* needs to be intent(out) and optional
+!X - all functions that receive *error* as an argument must call INIT_ERROR(error)
+!X - RAISE_ERROR is used whenever an error occurs. If *error* is not present,
+!X   the program execution will be terminated immediately. If *error* is
+!X   present it will be set to some value not equal ERROR_NONE and the execution
+!X   of the subroutine will be stopped.
+!X - PASS_ERROR is used after a function or subroutine that returns error, i.e.
+!X     call sub(..., error=error)
+!X     PASS_ERROR(error)
+!X   If no error occurs (i.e. error==ERROR_NONE), execution will proceed as
+!X   usual. If an error occured, the current function will be terminated after
+!X   the location of the error is passed to the error module.
+!X   If the calling routine handles the error itself, rather than passing
+!X   it up with PASS_ERROR(), CLEAR_ERROR() should be used to clear the error
+!X   info stack
+!X - PASS_ERROR_WITH_INFO is like PASS_ERROR, just an additional string can be
+!X   provided describing the error, or parameters.
+!X - HANDLE_ERROR will print the error history and stop execution of the program
+!X   after an error occured.
+!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #define INIT_ERROR(error)  if (present(error)) then ; error = ERROR_NONE ; endif
@@ -85,14 +85,14 @@
 !X
 !X MPI BCAST errors
 !X
-!% Extension of error handling macros to MPI cases where processes
-!% peform different tasks. If an error occurs on one process it will
-!% be broadcast to all others before the error is propagated
-!% upwards. Replace RAISE_ERROR with BCAST_RAISE_ERROR and PASS_ERROR
-!% with BCAST_PASS_ERROR. Additionally, BCAST_CHECK_ERROR must be
-!% called on the processes in which no error has occured.  See
-!% CInOutput read() for an example usage of these macros.
-!%
+!X Extension of error handling macros to MPI cases where processes
+!X peform different tasks. If an error occurs on one process it will
+!X be broadcast to all others before the error is propagated
+!X upwards. Replace RAISE_ERROR with BCAST_RAISE_ERROR and PASS_ERROR
+!X with BCAST_PASS_ERROR. Additionally, BCAST_CHECK_ERROR must be
+!X called on the processes in which no error has occured.  See
+!X CInOutput read() for an example usage of these macros.
+!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #define BCAST_RAISE_ERROR(info, error, mpi) if (present(error)) call bcast(mpi, error); RAISE_ERROR(info, error)
@@ -108,12 +108,12 @@
 !X
 !X Delayed errors - for OpenMP loops
 !X
-!% A subroutine currently in an OpenMP section cannot be quit using
-!% the *return* statement. Hence, the error flag is set using
-!% RAISE_DELAYED_ERROR and TRACE_DELAYED_ERROR. After the OpenMP section
-!% has finished, INVOKE_DELAYED_ERROR will raise the error and exit
-!% the current subroutine if an error occured in the OpenMP section.
-!%
+!X A subroutine currently in an OpenMP section cannot be quit using
+!X the *return* statement. Hence, the error flag is set using
+!X RAISE_DELAYED_ERROR and TRACE_DELAYED_ERROR. After the OpenMP section
+!X has finished, INVOKE_DELAYED_ERROR will raise the error and exit
+!X the current subroutine if an error occured in the OpenMP section.
+!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #define RAISE_DELAYED_ERROR(info, error_loc)   if (error_loc == ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; error_loc = ERROR_UNSPECIFIED ; endif
