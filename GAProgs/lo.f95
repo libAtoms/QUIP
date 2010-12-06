@@ -39,7 +39,7 @@ program eval
   
   type(Atoms) at
   type(CInOutput) infile
-  real(dp) :: v(15), rOH(8), rHH(6)
+  real(dp) :: rOH(8), rHH(6)
   integer error
 
   call system_initialise()
@@ -55,7 +55,7 @@ program eval
         endif
      endif
      
-     v =  water_dimer(at, (/1,2,3/), (/4,5,6/), 10.0_dp, rOH, rHH)
+     call water_dimer(at, (/1,2,3/), (/4,5,6/), 10.0_dp, rOHout = rOH, rHHout = rHH)
      call add_array(at%params, 'rOH', rOH, 8)
      call add_array(at%params, 'rHH', rHH, 6)
      call write(at,'stdout', prefix='AT')

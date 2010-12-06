@@ -212,10 +212,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy, water_dimer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w
   real(dp), dimension(:,:,:), allocatable   :: virial_in
+  real(dp), dimension(:,:,:,:), allocatable   :: dvec
   real(dp), dimension(:,:), allocatable   :: vec
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer, dimension(:,:), allocatable :: water_monomer_index
-  integer :: d, i, j, k, n, nei_max, jn, iAo, iBo, n_water_pair
+  integer :: d, i, j, k, l, m, n, nei_max, jn, iAo, iBo, n_water_pair
 
   real(dp), dimension(:,:), allocatable :: covariance, pca_matrix
 
@@ -420,7 +421,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      n_water_pair = n_water_pair / 2 ! Water dimers were double counted
 
-     allocate(vec(d,n_water_pair),water_monomer_index(3,at%N/3))
+     allocate(vec(d,n_water_pair),dvec(3,6,d,n_water_pair),water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index)
      k = 0
      do i = 1, at%N/3
@@ -431,7 +432,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               j = find_in_array(water_monomer_index(1,:),iBo)
               if( i < j ) then
                  k = k + 1
-                 vec(:,k) = water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j),this%cutoff)
+                 call water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j),this%cutoff, vec=vec(:,k),dvec=dvec(:,:,:,k))
               endif
            endif
         enddo
@@ -564,6 +565,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         enddo
 !$omp end do 
      endif
+     if(allocated(dvec)) then
+!$omp do private(j,k)
+        do i = 1, size(dvec,4)
+           do j = 1, 6
+              do k = 1, 3
+                 dvec(k,j,:,i) = matmul(pca_matrix,dvec(k,j,:,i))
+              enddo
+           enddo
+        enddo
+!$omp end do 
+     endif
      if(allocated(jack)) then
 !$omp do private(ii)
         do i = 1, at%N
@@ -603,6 +615,34 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            local_e_in(1) = local_e_in(1) + water_monomer_energy + this%e0
         endif
      enddo
+
+     if(present(f)) then
+        k = 0
+        do i = 1, at%N/3
+           iAo = water_monomer_index(1,i)
+           do n = 1, atoms_n_neighbours(at,iAo)
+              iBo = atoms_neighbour(at,iAo,n)
+              if(at%Z(iBo) == 8) then
+                 j = find_in_array(water_monomer_index(1,:),iBo)
+                 if( i < j ) then
+                    k = k + 1
+                    do l = 1, 3
+                       do m = 1, 3
+                          call gp_predict(gp_data=this%my_gp,mean=f_gp,x_star=vec(:,k),x_prime_star=dvec(m,l,:,k))
+                          f(m,water_monomer_index(l,i)) = f(m,water_monomer_index(l,i)) - f_gp
+                       enddo
+                    enddo
+                    do l = 1, 3
+                       do m = 1, 3
+                          call gp_predict(gp_data=this%my_gp,mean=f_gp,x_star=vec(:,k),x_prime_star=dvec(m,l+3,:,k))
+                          f(m,water_monomer_index(l,j)) = f(m,water_monomer_index(l,j)) - f_gp
+                       enddo
+                    enddo
+                 endif
+              endif
+           enddo
+        enddo
+     endif
 
   case default
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift,ii)
@@ -682,6 +722,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(allocated(virial_in)) deallocate(virial_in)
   if(allocated(w)) deallocate(w)
   if(allocated(covariance)) deallocate(covariance)
+  if(allocated(dvec)) deallocate(dvec)
   if(allocated(vec)) deallocate(vec)
   if(allocated(jack)) deallocate(jack)
   if(allocated(water_monomer_index)) deallocate(water_monomer_index)

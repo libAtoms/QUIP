@@ -305,7 +305,6 @@ program teach_sparse_program
            if( main_teach_sparse%config_type_hypers(i)%m == 0 ) cycle
            allocate( type_indices(count(main_teach_sparse%config_type == i)), sparse_points(main_teach_sparse%config_type_hypers(i)%m) )
            type_indices = find(main_teach_sparse%config_type == i)
-
            call print("Choosing "//main_teach_sparse%config_type_hypers(i)%m//" sparse points for "//&
            trim(main_teach_sparse%config_type_hypers(i)%type)//" type configurations of "//size(type_indices)//" atomic environments")
 

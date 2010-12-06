@@ -160,9 +160,10 @@ contains
        this%n_species = 1
        allocate(this%species_Z(this%n_species))
        this%species_Z = 8
-       if(6*this%n_ener /= this%nn) call system_abort('coordinates type water_dimer, but 6*n_ener /= ne')
-       this%nn = this%n_ener
+       this%nn = this%nn / 6
        this%ne = this%n_ener
+
+       this%n = this%n_force
     case default
        allocate(this%species_Z(this%n_species))
        this%species_Z = species_present(1:this%n_species)
@@ -195,6 +196,7 @@ contains
     real(dp), pointer :: f(:,:)
     real(dp), dimension(:,:), allocatable :: f_core
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
+    real(dp) ::  dvec(3,6,WATER_DIMER_D,1)
     integer :: shift(3)
     integer, dimension(3,1) :: water_monomer_index
     integer, dimension(3,2) :: water_dimer_index
@@ -345,16 +347,33 @@ contains
 
           case('water_dimer')
              if( at%N /= 6 ) call system_abort('Number of atoms is '//at%N//', not two water molecules')
+
              call find_water_monomer(at,water_dimer_index)
-             water_dimer_v = water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2),this%r_cut)
+             call water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2),this%r_cut, vec = water_dimer_v,dvec=dvec)
 
              w_con = w_con + 1
+
+             if(has_ener) then
+                ie = ie + 1
+                this%xf(ie) = w_con
+                this%yf(ie) = ener
+                this%lf(ie) = ie
+                this%target_type(ie) = 1
+             endif
+
+             if(has_force) then
+                li = ui + 1
+                ui = ui + 18
+                this%xd(:,li:ui) = transpose(reshape(dvec(:,:,:,1), (/18,d/)))
+                this%ydf(li:ui) = -reshape(f(:,(/water_dimer_index(:,1),water_dimer_index(:,2)/)),(/18/))
+                this%xdf(li:ui) = w_con
+                this%ldf(li:ui) = (/(i, i=li,ui)/)
+                this%target_type(this%n_ener+li:this%n_ener+ui) = 2
+             endif
+
              this%x(:,w_con) = water_dimer_v
              this%xz(w_con) = 8
-             this%xf(w_con) = w_con
-             this%yf(w_con) = ener
-             this%lf(w_con) = w_con
-             this%target_type(w_con) = 1
+             this%config_type(w_con) = n_config_type
 
           case('qw')
              do i = 1, at%N

@@ -3658,28 +3658,34 @@ module descriptors_module
 
      end function water_monomer
 
-     function water_dimer(at,w1,w2,cutoff, rOHout, rHHout) result(vec)
+     subroutine water_dimer(at,w1,w2,cutoff, vec, dvec, rOHout, rHHout)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
+       real(dp), dimension(WATER_DIMER_D), intent(out), optional     :: vec !, v
+       real(dp), dimension(3,6,WATER_DIMER_D), intent(out), optional :: dvec !, v
        real(dp), intent(out), optional :: rOHout(8), rHHout(6)
        real(dp), intent(in) :: cutoff
-       real(dp), dimension(WATER_DIMER_D) :: vec !, v
-       real(dp) :: rOH(8), rHH(6), fOH(8), fHH(6)
+       real(dp) :: rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6), &
+       fOH(8), fHH(6), dfOH(3,6,8), dfHH(3,6,6), &
+       arg, arg_r
+       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
+
        !real(dp) :: rA1, rA2, rB1, rB2
        !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
-       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j
 
        ! Descriptors based on the interatomic distances. In theory, a
        ! configuration can be regenerated based on the interatomic distances. In
        ! this approach we take these and make them permutationally invariant.
 
+       if( count( (/present(vec), present(dvec), present(rOHout), present(rHHout)/) ) == 0 ) return ! nothing to do
+
        ! Atomic indices
-       iAo = w1(1)
-       iAh1 = w1(2)
-       iAh2 = w1(3)
-       iBo = w2(1)
-       iBh1 = w2(2)
-       iBh2 = w2(3)
+       iAo = w1(1)    ! 1
+       iAh1 = w1(2)   ! 2
+       iAh2 = w1(3)   ! 3
+       iBo = w2(1)    ! 4
+       iBh1 = w2(2)   ! 5
+       iBh2 = w2(3)   ! 6
 
        ! All H-O distances
        rOH(1) = distance_min_image(at, iAo, iAh1)
@@ -3707,27 +3713,105 @@ module descriptors_module
           rHHout = rHH
        end if
        
+       if(present(dvec)) then
+          drOH = 0.0_dp
+          drHH = 0.0_dp
+
+          drOH(:,1,1) = - diff_min_image(at, iAo, iAh1) / rOH(1) ! d r_{OH_1} / d r_1
+          drOH(:,2,1) = - drOH(:,1,1)                            ! d r_{OH_1} / d r_2
+
+          drOH(:,1,2) = - diff_min_image(at, iAo, iAh2) / rOH(2) ! d r_{OH_2} / d r_1
+          drOH(:,3,2) = - drOH(:,1,2)                            ! d r_{OH_2} / d r_3
+
+          drOH(:,1,3) = - diff_min_image(at, iAo, iBh1) / rOH(3) ! d r_{OH_3} / d r_1
+          drOH(:,5,3) = - drOH(:,1,3)                            ! d r_{OH_3} / d r_5
+
+          drOH(:,1,4) = - diff_min_image(at, iAo, iBh2) / rOH(4) ! d r_{OH_4} / d r_1
+          drOH(:,6,4) = - drOH(:,1,4)                            ! d r_{OH_4} / d r_6
+
+          drOH(:,4,5) = - diff_min_image(at, iBo, iAh1) / rOH(5) ! d r_{OH_5} / d r_4
+          drOH(:,2,5) = - drOH(:,4,5)                            ! d r_{OH_5} / d r_2
+
+          drOH(:,4,6) = - diff_min_image(at, iBo, iAh2) / rOH(6) ! d r_{OH_6} / d r_4
+          drOH(:,3,6) = - drOH(:,4,6)                            ! d r_{OH_6} / d r_3
+
+          drOH(:,4,7) = - diff_min_image(at, iBo, iBh1) / rOH(7) ! d r_{OH_7} / d r_4
+          drOH(:,5,7) = - drOH(:,4,7)                            ! d r_{OH_7} / d r_5
+
+          drOH(:,4,8) = - diff_min_image(at, iBo, iBh2) / rOH(8) ! d r_{OH_8} / d r_4
+          drOH(:,6,8) = - drOH(:,4,8)                            ! d r_{OH_8} / d r_6
+
+
+          drHH(:,2,1) = - diff_min_image(at, iAh1, iAh2) / rHH(1) ! d r_{HH_1} / d r_2
+          drHH(:,3,1) = - drHH(:,2,1)                             ! d r_{HH_1} / d r_3
+
+          drHH(:,2,2) = - diff_min_image(at, iAh1, iBh1) / rHH(2) ! d r_{HH_2} / d r_2
+          drHH(:,5,2) = - drHH(:,2,2)                             ! d r_{HH_2} / d r_5
+
+          drHH(:,2,3) = - diff_min_image(at, iAh1, iBh2) / rHH(3) ! d r_{HH_3} / d r_2
+          drHH(:,6,3) = - drHH(:,2,3)                             ! d r_{HH_3} / d r_6
+
+          drHH(:,3,4) = - diff_min_image(at, iAh2, iBh1) / rHH(4) ! d r_{HH_4} / d r_3
+          drHH(:,5,4) = - drHH(:,3,4)                             ! d r_{HH_4} / d r_5
+
+          drHH(:,3,5) = - diff_min_image(at, iAh2, iBh2) / rHH(5) ! d r_{HH_5} / d r_3
+          drHH(:,6,5) = - drHH(:,3,5)                             ! d r_{HH_5} / d r_6
+
+          drHH(:,5,6) = - diff_min_image(at, iBh1, iBh2) / rHH(6) ! d r_{HH_6} / d r_5
+          drHH(:,6,6) = - drHH(:,5,6)                             ! d r_{HH_6} / d r_6
+       endif
+
 
        ! "Fourier Transform" distances. This should be completely reversible,
        ! i.e. we can reconstruct all the distances up to permutations.
 
-       fOH = 0.0_dp
-       do i = 1, 8
-          do j = 1, 8
-             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / cutoff )
+       if(present(vec) .or. present(dvec)) then
+          fOH = 0.0_dp
+          dfOH = 0.0_dp
+          do i = 1, 8
+             arg = PI*i/cutoff
+             do j = 1, 8
+                arg_r = arg * rOH(j)
+                if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
+                if(present(dvec)) then
+                   do k = 1, 6
+                      dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j)
+                   enddo
+                endif
+             enddo
           enddo
-       enddo
 
-       fHH = 0.0_dp
-       do i = 1, 6
-          do j = 1, 6
-             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / cutoff )
+          fHH = 0.0_dp
+          dfHH = 0.0_dp
+          do i = 1, 6
+             arg = PI*i/cutoff
+             do j = 1, 6
+                arg_r = arg * rHH(j)
+                if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
+                if(present(dvec)) then
+                   do k = 1, 6
+                      dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j)
+                   enddo
+                endif
+             enddo
           enddo
-       enddo
+       endif
 
-       vec(1) = distance_min_image(at, iAo, iBo)
-       vec(2:9) = fOH
-       vec(10:15) = fHH
+       if (present(vec)) then
+          vec(1) = distance_min_image(at, iAo, iBo)
+          vec(2:9) = fOH
+          vec(10:15) = fHH
+       endif
+
+       if (present(dvec)) then
+          dvec = 0.0_dp
+
+          dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / distance_min_image(at, iAo, iBo)
+          dvec(:,4,1) = - dvec(:,1,1)
+
+          dvec(:,:,2:9)   = dfOH
+          dvec(:,:,10:15) = dfHH
+       endif
 
        !! O--H vectors
        !vA1 = diff_min_image(at,iAo,iAh1)
@@ -3780,7 +3864,7 @@ module descriptors_module
        !vec(11) = (vAB .dot. dB)**2 + (vAB .dot. dA)**2
 
        !vec(12) = distance_min_image(at, iAo, iBo)
-     end function water_dimer
+    end subroutine water_dimer
 
     !#################################################################################
     !#
