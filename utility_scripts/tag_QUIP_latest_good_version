@@ -1,9 +1,10 @@
-v!/bin/bash
+#!/bin/bash
 
 MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
 ## MAILS=bernstei@dave.nrl.navy.mil
 
 REPORT_FILE=tag_QUIP_latest_good_version_report.txt
+GOOD_REPORT_FILE=latest_good_version_report.txt
 
 function check_version {
    version=$1
@@ -149,6 +150,16 @@ while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; 
 done
 
 if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
+   (head -1 ${REPORT_FILE} | awk '{print "revision "$1}'; \
+    echo ""; \
+    echo "tested compilers (Makefile.inc used are in QUIP_ROOT/utility_scripts/tag_QUIP_latest_good_version_Makefile_incs/)"; \
+    echo ""; \
+    echo "QUIP"; \
+    head -1 ${REPORT_FILE} | sed -e 's/^[^ ]* //' -e 's/[ ]*quippy test.*//' -e 's/[ ]*OK[ ]*/\n/'g | egrep -v '^[ ]*$'; \
+    echo ""; \
+    echo "quippy"; \
+    head -1 ${REPORT_FILE} | sed -e 's/^[^ ]* //' -e 's/.*quippy test[ ]*//' -e 's/[ ]*OK[ ]*/\n/'g | egrep -v '^[ ]*$' ) > ${GOOD_REPORT_FILE}
+
    echo svn delete -m "Get rid of old QUIP-stable tag in preparation for a new one" $SVNROOT/tags/QUIP-stable >> ${REPORT_FILE}
    echo svn copy -m "Update QUIP-stable tag to revision ${cur_rev} (current HEAD rev is ${HEAD_rev})" -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable >> ${REPORT_FILE}
    svn delete -m "Get rid of old QUIP-stable tag in preparation for a new one" $SVNROOT/tags/QUIP-stable
