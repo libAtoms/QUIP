@@ -48,7 +48,7 @@ implicit none
 
   call initialise(cli_params)
   call param_register(cli_params, 'cutoff_factor', '1.0', cutoff_factor, help_string="cutoff factor for nearest-neighbors to figure out what's a single molecule")
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params)) then
     call print("Usage: align [cutoff_factor=1.0]", PRINT_ALWAYS)
     call system_abort("Confused by CLI parameters")
   endif
@@ -103,8 +103,8 @@ implicit none
   at%lattice(2,2) = (maxval(at%pos(2,:)) - minval(at%pos(2,:)))*2.0_dp+5.0_dp
   at%lattice(3,3) = (maxval(at%pos(3,:)) - minval(at%pos(3,:)))*2.0_dp+5.0_dp
 
-  call print("props" // trim(props))
-!!  call print_xyz(at, "stdout", properties=trim(props), prefix="ALIGNED")
+  ! call print("props" // trim(props))
+  call write(at, "stdout", properties=trim(props), prefix="ALIGNED")
 
   call system_finalise()
 end program
