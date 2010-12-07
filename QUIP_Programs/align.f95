@@ -47,8 +47,8 @@ implicit none
   call system_initialise()
 
   call initialise(cli_params)
-  call param_register(cli_params, 'cutoff_factor', '1.0', cutoff_factor, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_args(cli_params)) then
+  call param_register(cli_params, 'cutoff_factor', '1.0', cutoff_factor, help_string="cutoff factor for nearest-neighbors to figure out what's a single molecule")
+  if (.not. param_read_args(cli_params, do_check = .true.)) then
     call print("Usage: align [cutoff_factor=1.0]", PRINT_ALWAYS)
     call system_abort("Confused by CLI parameters")
   endif
@@ -58,7 +58,7 @@ implicit none
   props = prop_names_string(at)
 
   if (.not.(assign_pointer(at,'mass', mass))) then
-    call add_property(at,'mass',ElementMass(at%Z))
+    call add_property(at,'mass',0.0_dp)
     if (.not.(assign_pointer(at,'mass', mass))) &
       call system_abort("ERROR: Impossible failure to add mass property to atoms")
     mass = 1.0_dp
@@ -67,6 +67,8 @@ implicit none
     orig_mass = mass
     mass = 1.0_dp
   endif
+
+  call atoms_repoint(at)
 
   call set_cutoff_factor(at, cutoff_factor)
   call calc_connect(at)

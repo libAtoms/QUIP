@@ -109,6 +109,7 @@ contains
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
     logical :: clean_up_files, save_output_files, save_output_wfn_files
+    integer :: clean_up_keep_n
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
@@ -171,7 +172,7 @@ contains
     type(Inoutput) :: rev_sort_index_io
     logical :: sorted
 
-    integer :: run_dir_i, force_run_dir_i
+    integer :: run_dir_i, force_run_dir_i, delete_dir_i
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
@@ -182,29 +183,30 @@ contains
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
-      call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, "qmmm_link_template_file", "", link_template_file, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'PSF_print', 'NO_PSF', psf_print, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, "topology_suffix", "", topology_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'clean_up_files', 'T', clean_up_files, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'save_output_files', 'T', save_output_files, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'save_output_wfn_files', 'F', save_output_wfn_files, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'max_n_tries', '2', max_n_tries, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'max_force_warning', '2.0', max_force_warning, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'auto_centre', 'F', auto_centre, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'form_bond', '0 0', form_bond, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'break_bond', '0 0', break_bond, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'qm_charges', '', calc_qm_charges, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, QMMM_CORE, QMMM_EXTENDED")
+      call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="filename for cp2k input template")
+      call param_register(cli, "qmmm_link_template_file", "", link_template_file, help_string="filename for cp2k link atoms template file")
+      call param_register(cli, 'PSF_print', 'NO_PSF', psf_print, help_string="when to print PSF file: NO_PSF, DRIVER_PRINT_AND_SAVE, USE_EXISTING_PSF")
+      call param_register(cli, "topology_suffix", "", topology_suffix, help_string="suffix to append to file containing topology info (for runs that do multiple topologies not to accidentally reuse PSF file")
+      call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="path to cp2k executable")
+      call param_register(cli, 'clean_up_files', 'T', clean_up_files, help_string="if true, clean up run directory files")
+      call param_register(cli, 'clean_up_keep_n', '1', clean_up_keep_n, help_string="number of old run directories to keep if cleaning up")
+      call param_register(cli, 'save_output_files', 'T', save_output_files, help_string="if true, save the output files")
+      call param_register(cli, 'save_output_wfn_files', 'F', save_output_wfn_files, help_string="if true, save output wavefunction files")
+      call param_register(cli, 'max_n_tries', '2', max_n_tries, help_string="max number of times to run cp2k on failure")
+      call param_register(cli, 'max_force_warning', '2.0', max_force_warning, help_string="generate warning if any force is larger than this")
+      call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum, help_string="amount of vacuum to add to size of qm region in hybrid (and nonperiodic?) runs")
+      call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn, help_string="if true, try to reuse previous wavefunction file")
+      call param_register(cli, 'have_silica_potential', 'F', have_silica_potential, help_string="if true, use 2.8A SILICA_CUTOFF for the connectivities")
+      call param_register(cli, 'auto_centre', 'F', auto_centre, help_string="if true, automatically center configuration.  May cause energy/force fluctuations.  Mutually exclusive with centre_pos")
+      call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos, help_string="position to center around, mutually exclusive with auto_centre")
+      call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake, help_string="if true, do fake cp2k runs that just read from old output files")
+      call param_register(cli, 'form_bond', '0 0', form_bond, help_string="extra bond to form (for EVB)")
+      call param_register(cli, 'break_bond', '0 0', break_bond, help_string="bond to break (for EVB)")
+      call param_register(cli, 'qm_charges', '', calc_qm_charges, help_string="if not blank, name of property to put QM charges in")
+      call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i, help_string="if > 0, force to run in this # run directory")
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
-      if (.not.param_read_line(cli, args_str,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
+      if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('cp2k_driver could not parse argument line')
     call finalise(cli)
 
@@ -681,7 +683,14 @@ contains
 
     ! clean up
 
-    if (clean_up_files) call system_command('rm -rf '//trim(run_dir))
+    if (clean_up_files) then
+       if (clean_up_keep_n <= 0) then ! never keep any old directories around
+	  call system_command('rm -rf '//trim(run_dir))
+       else ! keep some (>= 1) old directories around
+	  delete_dir_i = mod(run_dir_i, clean_up_keep_n+1)+1
+	  call system_command('rm -rf cp2k_run_'//delete_dir_i)
+       endif
+    endif
 
     call system_timer('do_cp2k_calc')
 
