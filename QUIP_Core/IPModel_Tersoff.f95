@@ -458,7 +458,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
      if (present(e)) e = e*E_scale
      if (present(f)) f = f*E_scale
      if (present(virial)) virial=virial*E_scale
-     if (present(local_virial)) virial=virial*E_scale
+     if (present(local_virial)) local_virial=local_virial*E_scale
   end if
 
   atom_mask_pointer => null()
