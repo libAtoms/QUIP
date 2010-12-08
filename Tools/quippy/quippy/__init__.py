@@ -181,8 +181,8 @@ import periodic;    from periodic import *
 import util;        from util import *
 
 # Redirect Python stdout to Fortran mainlog so that prefix, verbosity, etc. work.
-if not is_interactive_shell():
-   sys.stdout = QuippyWriter(mainlog)
+##if not is_interactive_shell():
+##   sys.stdout = QuippyWriter(mainlog)
 
 
 import sio2, povray, cube, xyz, netcdf
