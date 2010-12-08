@@ -1328,7 +1328,7 @@ CONTAINS
       my_hook_print_interval = optional_default(1, hook_print_interval)
     else if (current_verbosity() >= PRINT_NORMAL) then
       my_hook_print_interval = optional_default(10, hook_print_interval)
-    else if (current_verbosity() >= PRINT_SILENT) then
+    else
       my_hook_print_interval = optional_default(100000, hook_print_interval)
     endif
 
