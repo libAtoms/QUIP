@@ -74,6 +74,10 @@ module Potential_module
   !*
   !*************************************************************************
 
+  integer :: hack_restraint_i(2)
+  real(dp) :: hack_restraint_r, hack_restraint_k
+  public :: hack_restraint_i, hack_restraint_r, hack_restraint_k
+
   public :: Potential
   type Potential
      type(MPI_context) :: mpi
@@ -216,7 +220,7 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
 
   INIT_ERROR(error)
 
-  call initialise(io, param_filename, INPUT, master_only=.true.)
+  if (len_trim(param_filename) > 0) call initialise(io, param_filename, INPUT, master_only=.true.)
   call initialise(this, args_str, io, bulk_scale, mpi_obj, error=error)
   PASS_ERROR(error)
   call finalise(io)
@@ -236,10 +240,14 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
   INIT_ERROR(error)
 
   call initialise(es)
-  if (present(mpi_obj)) then
-    call read(es, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+  if (io_obj%initialised) then
+     if (present(mpi_obj)) then
+       call read(es, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+     else
+       call read(es, io_obj%unit, convert_to_string=.true.)
+     endif
   else
-    call read(es, io_obj%unit, convert_to_string=.true.)
+     call initialise(es)
   endif
 
   call initialise(this, args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
@@ -1401,6 +1409,8 @@ max_atom_rij_change = 1.038_dp
 
     type(potential_minimise) :: am
 
+    real(dp) :: hack_restraint_E, hack_restraint_F(3), dr
+
     INIT_ERROR(error)
 
     call system_timer("both_func")
@@ -1451,6 +1461,18 @@ max_atom_rij_change = 1.038_dp
     else
       call calc(am%minim_pot, am%minim_at, energy = val, virial = virial, args_str = am%minim_args_str)
     endif
+
+if (am%minim_do_pos) then
+   call print("hack_restraint i "//hack_restraint_i// " k " // hack_restraint_k // " r " // hack_restraint_r, PRINT_ALWAYS)
+   if (all(hack_restraint_i > 0) .and. all(hack_restraint_i <= am%minim_at%n)) then
+      dr = distance_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2)) 
+      hack_restraint_E = 0.5_dp * hack_restraint_k*(dr - hack_restraint_r)**2
+      val = val + hack_restraint_E
+      hack_restraint_F = hack_restraint_k*(dr - hack_restraint_r)*diff_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2))/dr
+      f(:,hack_restraint_i(1)) = f(:,hack_restraint_i(1)) + hack_restraint_F
+      f(:,hack_restraint_i(2)) = f(:,hack_restraint_i(2)) - hack_restraint_F
+   endif
+endif
 
     call print ("both_func got f", PRINT_NERD)
     call print(f, PRINT_NERD)

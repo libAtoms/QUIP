@@ -92,6 +92,7 @@ module system_module
      logical::mpi_all_inoutput_flag = .false.
      logical::mpi_print_id = .false.
      type(Stack) :: verbosity_stack, verbosity_cascade_stack
+     logical::initialised = .false.
   end type InOutput
 
   type allocatable_array_pointers
@@ -435,6 +436,9 @@ contains
     if ((.not. my_master_only) .or. mpi_myid == 0) then
       call activate(this)  ! now it is active
     endif
+
+    this%initialised = .true.
+
   end subroutine inoutput_initialise
 
 
@@ -471,6 +475,7 @@ contains
     call finalise(this%verbosity_stack)
     call finalise(this%verbosity_cascade_stack)
     call deactivate(this)
+    this%initialised = .false.
   end subroutine inoutput_finalise
 
   !% Close file but don't finalise this Inoutput
