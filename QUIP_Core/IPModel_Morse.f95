@@ -160,6 +160,8 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, local_virial, arg
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
 
    INIT_ERROR(error)
 
@@ -202,6 +204,8 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, local_virial, arg
     endif ! len_trim(args_str)
     call initialise(params)
     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+    call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
     if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Morse_Calc args_str')) then
        RAISE_ERROR("IPModel_Morse_Calc failed to parse args_str='"//trim(args_str)//"'",error)
@@ -210,6 +214,10 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, local_virial, arg
     if(has_atom_mask_name) then
        RAISE_ERROR('IPModel_Morse_Calc: atom_mask_name found, but not supported', error)
     endif
+    if (do_rescale_r .or. do_rescale_E) then
+       RAISE_ERROR("IPModel_Morse_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+    end if
+
   endif ! present(args_str)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)

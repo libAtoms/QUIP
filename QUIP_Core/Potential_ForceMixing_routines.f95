@@ -91,8 +91,6 @@
     call param_register(params, "do_tb_defaults", "F", do_tb_defaults, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_rescale_E', 'F', do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "r_scale", "1.0", this%r_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "E_scale", "1.0", this%E_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_initialise args_str')) then
        RAISE_ERROR('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"', error)
@@ -134,7 +132,15 @@
     call remove_value(this%create_hybrid_weights_params, 'minimise_bulk')
     call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
 
+    this%do_rescale_r = .false.
+    this%do_rescale_E = .false.
+    this%r_scale_pot1 = 1.0_dp
+    this%E_scale_pot1 = 1.0_dp
+
     if (do_rescale_r .or. do_rescale_E) then
+
+       this%do_rescale_r = do_rescale_r
+       this%do_rescale_E = do_rescale_E
 
        if (.not. present(reference_bulk)) then
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
@@ -144,7 +150,7 @@
             RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given", error)
        endif
 
-       call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
+       call do_reference_bulk(reference_bulk, qmpot, mmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
             this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
       
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
@@ -491,13 +497,8 @@
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
 
-       ! it never hurts to rescale r, as long as the default scale is 1.0
-       call set_value(params, 'do_rescale_r', .true.)
-       call set_value(params, 'r_scale', this%r_scale_pot1)
-
-       ! same for energy rescaling
-       call set_value(params, 'do_rescale_E', .true.)
-       call set_value(params, 'E_scale', this%E_scale_pot1)
+       if (this%do_rescale_r) call set_value(params, 'r_scale', this%r_scale_pot1)
+       if (this%do_rescale_E) call set_value(params, 'E_scale', this%E_scale_pot1)
        
        atom_mask = .false.
        if (has_key(params, 'atom_mask')) then
@@ -511,52 +512,16 @@
           call add_property(at, 'hybrid_mask', hybrid_mark == HYBRID_ACTIVE_MARK, overwrite=.true., ptr=hybrid_mask)
           call print('Potential_FM_Calc: got atom_mask with '//count(hybrid_mark == HYBRID_ACTIVE_MARK)//' marked atoms.', PRINT_VERBOSE)
           call set_value(params, 'atom_mask_name', 'hybrid_mask')
-
-          if (this%r_scale_pot1 .fne. 1.0_dp) then
-             call system_timer('rescale')
-             call print('Potential_FM_Calc: rescaling system by factor '//this%r_scale_pot1)
-
-             ! Rescale entire system. We'll put it back after QM calc()
-             saved_connect = at%connect
-             call set_lattice(at, this%r_scale_pot1*at%lattice, scale_positions=.true.)
-             
-             !! recompute connectivity only in region of marked atoms
-
-             call estimate_origin_extent(at, hybrid_mask, 2.0_dp*cutoff(this%qmpot), origin, extent)
-
-             !call finalise(at%connect)
-             !call system_timer('calc_connect_hysteretic')
-             !call calc_connect_hysteretic(at, origin=origin, extent=extent)
-             !call system_timer('calc_connect_hysteretic')
-             call system_timer('calc_connect')
-             call calc_connect(at)
-             call system_timer('calc_connect')
-
-             call system_timer('rescale')
-          end if
-
        end if
 
        qm_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
 
        ! Do the QM. If qm_args_str contatins 'single_cluster' or 'little_clusters' options
-       ! then potential calc() will do cluster carving. 
+       ! then potential calc() will do cluster carving. If it contains 'atom_mask_name' we 
+       ! don't make a cluster, but only compute forces on marked atoms.
        call calc(this%qmpot, at, args_str=qm_args_str, error=error)
        f_qm = at_force_ptr
-
-       if (atom_mask .and. (this%r_scale_pot1 .fne. 1.0_dp)) then
-
-          call system_timer('Undoing rescale')
-          ! Restore system to original scale
-          call set_lattice(at, at%lattice/this%r_scale_pot1, scale_positions=.true.)
-          at%connect = saved_connect
-          call finalise(saved_connect)
-
-          ! Scale forces
-          f_qm = f_qm*this%E_scale_pot1*this%r_scale_pot1
-          call system_timer('Undoing rescale')
-       end if
 
     end if
 

@@ -138,6 +138,8 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   type(Dictionary) ::  params
   character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, filename
   real(dp) :: min_cutoff
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
 
   INIT_ERROR(error)
 
@@ -149,10 +151,16 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'filename', 'filepot', filename, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+  call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
     RAISE_ERROR("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)
+  if (do_rescale_r .or. do_rescale_E) then
+     RAISE_ERROR("IPModel_SW_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+  end if
 
   this%command = command
   this%property_list = property_list

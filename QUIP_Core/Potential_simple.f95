@@ -362,10 +362,8 @@ contains
     call param_register(params, 'cluster_mark_postfix', '', cluster_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'carve_cluster', 'T', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'little_clusters', 'F', little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'do_rescale_r', 'F', do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'r_scale', '1.0', r_scale, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'do_rescale_E', 'F', do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'E_scale', '1.0', E_scale, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'force_using_fd', 'F', force_using_fd, help_string="No help yet.  This source file was $LastChangedBy$")
 
     call param_register(params, 'energy', '', calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -403,9 +401,7 @@ contains
        call read_string(params, my_args_str)
        call remove_value(params, 'little_clusters')
        ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
-       call remove_value(params, 'do_rescale_r')
        call remove_value(params, 'r_scale')
-       call remove_value(params, 'do_rescale_E')
        call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
@@ -504,9 +500,7 @@ contains
        call read_string(params, my_args_str)
        call remove_value(params, 'single_cluster')
        ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
-       call remove_value(params, 'do_rescale_r')
        call remove_value(params, 'r_scale')
-       call remove_value(params, 'do_rescale_E')
        call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)

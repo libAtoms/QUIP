@@ -156,6 +156,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
   ! private variables for open-mp 
   real(dp) :: private_virial(3,3), private_e, virial_i(3,3)
   real(dp), allocatable, dimension(:,:) :: private_f
@@ -181,11 +183,13 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_FS_Calc args_str')) then
         RAISE_ERROR("IPModel_FS_Calc failed to parse args_str='"//trim(args_str)//"'", error)
      endif
      call finalise(params)
-
 
      if( has_atom_mask_name ) then
         if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
@@ -194,6 +198,9 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      else
         atom_mask_pointer => null()
      endif
+     if (do_rescale_r .or. do_rescale_E) then
+        RAISE_ERROR("IPModel_FS_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+     end if
   endif
 
 !$omp parallel private(i,ji,j,ti,tj,phi_tot,sqrt_phi_tot,dU,Ui,drij,rij_mag,private_virial, virial_i,private_f,private_e)

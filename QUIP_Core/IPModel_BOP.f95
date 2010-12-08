@@ -147,6 +147,8 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
    logical :: has_atom_mask_name
    character(FIELD_LENGTH) :: atom_mask_name
+   real(dp) :: r_scale, E_scale
+   logical :: do_rescale_r, do_rescale_E
 
    INIT_ERROR(error)
 
@@ -178,6 +180,9 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call param_register(params, 'crack', 'F', lcrack, help_string="No help yet.  This source file was $LastChangedBy$")
      call param_register(params, 'all_atoms', 'F', latoms, help_string="No help yet.  This source file was $LastChangedBy$")
      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+
      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_BOP_Calc args_str')) then
        call system_abort("IPModel_BOP_Calc failed to parse args_str='"//trim(args_str)//"'")
      endif
@@ -186,6 +191,10 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(has_atom_mask_name) then
         RAISE_ERROR('IPModel_BOP_Calc: atom_mask_name found, but not supported', error)
      endif
+     if (do_rescale_r .or. do_rescale_E) then
+        RAISE_ERROR("IPModel_BOP_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+     end if
+
    else
      nat = 1 
    endif

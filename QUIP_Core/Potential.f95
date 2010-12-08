@@ -107,6 +107,10 @@ module Potential_module
      logical :: is_oniom = .false.
      type(Potential_ONIOM), pointer :: oniom => null()
 #endif
+
+     logical :: do_rescale_r, do_rescale_E
+     real(dp) :: r_scale, E_scale
+
   end type Potential
 
   public :: Initialise, Potential_Filename_Initialise
@@ -184,11 +188,6 @@ module Potential_module
      module procedure dynamicalsystem_run
   end interface run
 
-  public :: bulk_modulus
-  interface bulk_modulus
-     module procedure potential_bulk_modulus
-  end interface bulk_modulus
-
 #include "Potential_Sum_header.f95"
 #include "Potential_ForceMixing_header.f95"
 #include "Potential_EVB_header.f95"
@@ -199,6 +198,13 @@ module Potential_module
 #ifdef HAVE_ONIOM
 #include "Potential_ONIOM_header.f95"
 #endif
+
+  ! Public interfaces from Potential_Hybrid_utils.f95
+
+  public :: bulk_modulus
+  interface bulk_modulus
+     module procedure potential_bulk_modulus
+  end interface bulk_modulus
 
   contains
 
@@ -269,8 +275,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   type(Potential), pointer :: u_pot1, u_pot2
   type(Dictionary) :: params
 
-  logical :: has_xml_label
+  logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
+  real(dp) :: target_vol, target_B, r_scale, E_scale, vol, B
   character(len=FIELD_LENGTH) :: my_args_str
+  type(Atoms) :: bulk
+  integer :: it
 
   INIT_ERROR(error)
 
@@ -302,6 +311,15 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
   call param_register(params, 'ONIOM', 'false', this%is_oniom, help_string="No help yet.  This source file was $LastChangedBy$")
 #endif /* HAVE_ONIOM */
+  call param_register(params, 'do_rescale_r', 'F', this%do_rescale_r, help_string="If true, rescale distances by factor r_scale.")
+  call param_register(params, 'r_scale', '1.0', this%r_scale, has_value_target=has_r_scale, help_string="Recaling factor for distances. Default 1.0.")
+  call param_register(params, 'do_rescale_E', 'F', this%do_rescale_E, help_string="If true, rescale energy by factor E_scale.")
+  call param_register(params, 'E_scale', '1.0', this%E_scale, has_value_target=has_E_scale, help_string="Recaling factor for energy. Default 1.0.")
+  call param_register(params, "minimise_bulk", "F", minimise_bulk, help_string="If true, minimise bulk_scale when measuring eqm. volume and bulk modulus")
+  call param_register(params, "target_vol", "0.0", target_vol, has_value_target=has_target_vol, &
+       help_string="Target volume per cell used if do_rescale_r=T Unit is A^3.")
+  call param_register(params, "target_B", "0.0", target_B, has_value_target=has_target_B, &
+       help_string="Target bulk modulus used if do_rescale_E=T. Unit is GPa.")
 
   if(.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -359,7 +377,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   end if
 
   if (this%is_simple) then
-    if (present(bulk_scale)) call print("Potential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
+    if (present(bulk_scale) .and. .not. has_target_vol .and. .not. has_target_B) call print("Potential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
 
     call initialise(this%simple, my_args_str, param_str, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing pot", error)
@@ -417,6 +435,55 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call initialise(this%oniom, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing oniom", error)
 #endif /* HAVE_ONIOM */
+  end if
+
+  if (this%do_rescale_r .or. this%do_rescale_E) then
+     if (this%do_rescale_r) then
+        if (.not. has_r_scale .and. .not. has_target_vol) then
+           RAISE_ERROR("potential_initialise: do_rescale_r=T and but neither r_scale nor target_vol present", error)
+        end if
+     end if
+     if (this%do_rescale_E) then
+        if (.not. has_E_scale .and. .not. has_target_B) then
+           RAISE_ERROR("potential_initialise: do_rescale_E=T and but neither E_scale nor target_B present", error)
+        end if
+     end if
+     
+     ! Automatic calculation of rescaling factors r_scale and E_scale to match target_vol and/or target_B
+     if (has_target_vol .or. has_target_B) then
+        if (.not. present(bulk_scale)) then
+           RAISE_ERROR("potential_initialise: target_vol or target_B present but no bulk_scale provided", error)
+        end if
+        
+        bulk = bulk_scale
+        call set_cutoff(bulk, cutoff(this)+1.0_dp)
+        call calc_connect(bulk)
+        if (minimise_bulk) then
+           call print("MINIMISING bulk in potential", PRINT_VERBOSE)
+           call verbosity_push_decrement()
+           it = minim(this, at=bulk, method='cg', convergence_tol=1e-6_dp, max_steps=100, linminroutine='NR_LINMIN', &
+                do_print = .false., do_lat = .true., args_str=args_str)
+           call verbosity_pop()
+        endif
+
+        r_scale = 1.0_dp
+        if (this%do_rescale_r) then
+           vol = cell_volume(bulk)
+           r_scale = (vol/target_vol)**(1.0_dp/3.0_dp)
+           call print("do_rescale_r: original cell volume (from minim) is "//vol//" A^3")
+           call print("do_rescale_r: setting potential r_scale to "//r_scale//" to match target cell volume of "//target_vol//" A^3")
+        end if
+
+        if (this%do_rescale_E) then
+           call bulk_modulus(this, bulk, B, vol, minimise_bulk, args_str=args_str)
+           this%E_scale = target_B/(B*r_scale**3)
+           call print("do_rescale_E: original cell volume (from quadratic fit) is "//vol//" A^3")
+           call print("do_rescale_E: original bulk modulus (from quadratic fit) is "//B//" GPa")
+           call print("do_rescale_E: setting potential E_scale to "//E_scale//" to match target bulk modulus of "//target_B//" GPa")
+        end if
+
+        if (this%do_rescale_r) this%r_scale = r_scale
+     end if
   end if
 
   end subroutine potential_initialise
@@ -483,7 +550,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     type(Dictionary) :: params
     character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
     character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
-
+    real(dp) :: r_scale, E_scale
+    logical :: has_r_scale, has_E_scale
     integer i
     real(dp) :: effective_cutoff
 
@@ -524,6 +592,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "r_scale", "0.0", r_scale, has_value_target=has_r_scale, help_string="Distance rescale factor. Overrides r_scale init arg")
+    call param_register(params, "E_scale", "0.0", E_scale, has_value_target=has_E_scale, help_string="Energy rescale factor. Overrides E_scale init arg")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
        RAISE_ERROR('Potential_Calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
@@ -598,6 +668,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (len_trim(calc_local_virial) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
     endif
+
+    ! Set r_scale, E_scale in extra_args_str if not present in args_str
+    if (this%do_rescale_r .and. .not. has_r_scale) extra_args_str = trim(extra_args_str)//" r_scale="//this%r_scale
+    if (this%do_rescale_E .and. .not. has_E_scale) extra_args_str = trim(extra_args_str)//" E_scale="//this%E_scale
 
     ! do actual calculation using args_str
     if (this%is_simple) then
@@ -1675,6 +1749,7 @@ end subroutine pack_pos_dg
         else
            call system_abort("Potential_startElement_handler: no init_args attribute found")
         endif
+        
      endif
 
   endsubroutine Potential_startElement_handler
