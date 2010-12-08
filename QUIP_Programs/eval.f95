@@ -99,7 +99,7 @@ implicit none
   call system_initialise()
 
   call initialise(cli_params)
-  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level")
   if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
     call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
   end if
@@ -155,6 +155,10 @@ implicit none
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
   call param_register(cli_params, 'override_pot_cutoff', '-1.0', override_pot_cutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
+
+  call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
+  call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
+  call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
