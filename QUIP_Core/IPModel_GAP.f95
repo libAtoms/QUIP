@@ -225,6 +225,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps
   character(FIELD_LENGTH) :: atom_mask_name
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
 
   integer :: n_atoms_eff, ii, ji, jj
   integer, allocatable, dimension(:) :: atom_mask_lookup
@@ -290,6 +292,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      Cross-terms are attributed to atoms depending on the >>lammps<< flag.")
      call param_register(params, 'lammps', 'false', do_lammps, help_string="The way forces on local/ghost atoms are calculated. &
      By default, cross terms are accumulated on the central atom. If >>lammps<< is set, cross-terms are accumulated on the neighbours.")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
@@ -302,8 +306,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      else
         atom_mask_pointer => null()
      endif
+     if (do_rescale_r .or. do_rescale_E) then
+        RAISE_ERROR("IPModel_GAP_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+     end if
 
   endif
+
 
   do_atom_mask_lookup = associated(atom_mask_pointer) .and. &
        (trim(this%coordinates) == 'bispectrum' .or. trim(this%coordinates) == 'qw')

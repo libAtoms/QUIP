@@ -45,13 +45,13 @@
   
   end subroutine linear_square
 
-  function potential_bulk_modulus(pot, at, minimise_bulk, eps, args_str) result(B)
+  subroutine potential_bulk_modulus(pot, at, B, V0, minimise_bulk, eps, args_str)
     type(Potential), intent(inout) :: pot
     type(Atoms), intent(in) :: at
+    real(dp), intent(out) :: V0, B
     logical, intent(in), optional :: minimise_bulk
     real(dp), intent(in), optional :: eps
     character(len=*), intent(in), optional :: args_str
-    real(dp) :: B
 
     integer  :: i,j, steps 
     real(dp) :: E(11), V(11), a(3), chisq, use_eps
@@ -66,7 +66,7 @@
        ! Minimise initial cell
        call verbosity_push_decrement()
        steps = minim(pot, at0, 'cg', 1e-6_dp, 100, &
-            'FAST_LINMIN', do_pos=.false.,do_lat=.true., do_print=.false., args_str=args_str)
+            'FAST_LINMIN', do_pos=.true.,do_lat=.true., do_print=.false., args_str=args_str)
        call verbosity_pop()
     end if
 
@@ -74,7 +74,7 @@
        at1 = at0
        call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*use_eps), scale_positions=.true.)  
        V(i) = cell_volume(at1)
-       call set_cutoff (at1, cutoff(pot))
+       call set_cutoff (at1, cutoff(pot)+1.0_dp)
        call calc_connect(at1)
 
        if (do_minimise_bulk) then
@@ -86,15 +86,53 @@
        end if
 
        call calc(pot, at1, energy=E(i), args_str=args_str)
+       call print('bulk_modulus V='//V(i)//' E='//E(i), PRINT_NERD)
     end do
 
     call least_squares(V, E, (/ ( 1.0_dp, j=1,11) /), &
          a, chisq, linear_square)
  
+    V0 = -a(2)/(2*a(1))
     B = -1.0*a(2)*GPA
 
-  end function potential_bulk_modulus
+  end subroutine potential_bulk_modulus
  
+!% We define a potential energy function $E(r)$, and then a scaled function
+!% \[
+!% E'(r) = \beta E(\alpha r)
+!% \]
+!% The corresponding force in the original coordinate system is
+!% \[
+!% F'(r) = -\frac{\partial E'}{\partial r} = -\beta \alpha \frac{\partial E'}{\partial r} = \beta \alpha\, F
+!% \]
+!% The equilibrium lattice constant changes from $a_0$ to $a_0'$ and the equilbrium cell volume changes from $V_0$ to $V_0'$ according to
+!% \begin{eqnarray*}
+!% a_0' & = & \frac{a_0}{\alpha} \\
+!% V_0' & = & \frac{V_0}{\alpha^3}
+!% \end{eqnarray*}
+!% The scaled bulk modulus is 
+!% \begin{eqnarray*}
+!% B' & = & V \frac{\partial^2 E'}{\partial V^2} \\
+!%    & = & \beta \alpha^3 V \frac{\partial^2E}{\partial V^2}  \\
+!%    & = & \beta \alpha^3 B
+!% \end{eqnarray*}
+!% Thus if we want to match a target volume $V_0'$ and bulk modulus $B'$ we should use
+!% \begin{eqnarray*}
+!%   \alpha & = & \left( \frac{V_0}{V_0'} \right)^\frac{1}{3} = \frac{a_0}{a_0'}\\
+!%   \beta  & = & \frac{B'}{B \alpha^3}
+!% \end{eqnarray*}
+!% where $a_0$ and $a_0'$ are the lattice constants before and after rescaling.
+!% 
+!% For QM/MM force mixing, where we label the QM potential as region 1 and the classical (MM) potential 
+!% as region 2, the aim is to rescale the QM potential to match the MM lattice constant $a_2$ and bulk 
+!% modulus $B_2$, so we have
+!% \begin{eqnarray*}
+!%   \alpha & = & \frac{a_1}{a_2}\\
+!%   \beta  & = & \frac{B_2}{B_1 \alpha^3} 
+!% \end{eqnarray*}
+!% where $a_1$ and $B_1$ are the unmodified QM lattice constant and bulk modulus, respectively.
+!% Note that this is equivalent to rescaling the MM \emph{positions} to match the QM lattice constant.
+
   subroutine do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
 			       r_scale_pot1, E_scale_pot1, do_tb_defaults)
     type(Atoms), intent(inout) :: reference_bulk
@@ -102,7 +140,7 @@
     logical, intent(in) :: minimise_bulk, do_rescale_r, do_rescale_E, do_tb_defaults
     real(dp), intent(inout) :: r_scale_pot1, E_scale_pot1
 
-    real(dp) :: e_bulk, B_region2, B_region1
+    real(dp) :: e_bulk, B_region2, B_region1, vol
 
     type(Atoms) :: bulk_region1, bulk_region2
     integer :: it
@@ -174,18 +212,18 @@
     r_scale_pot1 = 1.0_dp
     if (do_rescale_r) then
       ! compute scale, assuming that lattices are only off by a uniform scale
-      r_scale_pot1 = maxval(abs(bulk_region2%lattice(:,1)))/maxval(abs(bulk_region1%lattice(:,1)))
+      r_scale_pot1 = maxval(abs(bulk_region1%lattice(:,1)))/maxval(abs(bulk_region2%lattice(:,1)))
     endif
 
     E_scale_pot1 = 1.0_dp
     if (do_rescale_E) then
-      B_region2 = bulk_modulus(region2_pot, bulk_region2, minimise_bulk)
-      B_region1 = bulk_modulus(region1_pot, bulk_region1, minimise_bulk)
+      call bulk_modulus(region2_pot, bulk_region2, B_region2, vol, minimise_bulk)
+      call bulk_modulus(region1_pot, bulk_region1, B_region1, vol, minimise_bulk)
 
       call print('Bulk modulus in region 1 = '//B_region1//' GPa')
       call print('Bulk modulus in region 2 = '//B_region2//' GPa')
 
-       E_scale_pot1 = (B_region2/B_region1)*(r_scale_pot1)**3
+      E_scale_pot1 = B_region2/(B_region1*r_scale_pot1**3)
     end if
 
     call finalise(bulk_region1)

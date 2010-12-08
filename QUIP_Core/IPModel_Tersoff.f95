@@ -214,10 +214,8 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
-     call param_register(params, 'do_rescale_r', 'F',do_rescale_r, help_string="If true, rescale distances by factor r_scale.")
-     call param_register(params, 'r_scale', '1.0',r_scale, help_string="Recaling factor for distances. Default 1.0.")
-     call param_register(params, 'do_rescale_E', 'F',do_rescale_E, help_string="If true, rescale energy by factor r_scale.")
-     call param_register(params, 'E_scale', '1.0',E_scale, help_string="Recaling factor for energy. Default 1.0.")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Tersoff_Calc args_str')) &
      call system_abort("IPModel_Tersoff_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)
@@ -231,8 +229,8 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
      endif
   endif
 
-  if (do_rescale_r) call print('rescaling distances by factor '//r_scale)
-  if (do_rescale_E) call print('rescaling energy by factor '//E_scale)
+  if (do_rescale_r) call print('IPModel_Tersoff_Calc: rescaling distances by factor '//r_scale, PRINT_VERBOSE)
+  if (do_rescale_E) call print('IPModel_Tersoff_Calc: rescaling energy by factor '//E_scale, PRINT_VERBOSE)
 
   do i=1, at%N
     if (present(mpi)) then
@@ -456,6 +454,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 
   if (do_rescale_E) then
      if (present(e)) e = e*E_scale
+     if (present(local_e)) local_e = local_e*E_scale
      if (present(f)) f = f*E_scale
      if (present(virial)) virial=virial*E_scale
      if (present(local_virial)) local_virial=local_virial*E_scale

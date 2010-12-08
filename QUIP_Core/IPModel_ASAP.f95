@@ -314,6 +314,8 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
 
    logical :: has_atom_mask_name
    character(FIELD_LENGTH) :: atom_mask_name
+   real(dp) :: r_scale, E_scale
+   logical :: do_rescale_r, do_rescale_E
 
 #ifdef HAVE_ASAP
 
@@ -342,6 +344,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    call param_register(params, 'restart', 'F', do_restart, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(params, 'calc_dipoles', 'F', calc_dipoles, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+   call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP_Calc args_str')) then
       call system_abort("IPModel_ASAP_Initialise_str failed to parse args_str="//trim(args_str))
    endif
@@ -350,6 +355,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    if(has_atom_mask_name) then
       RAISE_ERROR('IPModel_ASAP_Calc: atom_mask_name found, but not supported', error)
    endif
+   if (do_rescale_r .or. do_rescale_E) then
+      RAISE_ERROR("IPModel_ASAP_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+   end if
 
    if (.not. asap_initialised .or. this%n_atoms /= at%n) then
       

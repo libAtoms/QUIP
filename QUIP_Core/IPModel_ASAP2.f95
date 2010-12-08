@@ -424,6 +424,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
    character(len=STRING_LENGTH) :: efield_name, dipoles_name, atom_mask_name, source_mask_name
    logical :: pseudise
    real(dp) :: grid_size
+   real(dp) :: r_scale, E_scale
+   logical :: do_rescale_r, do_rescale_E
 
    real, parameter :: difftol = 500.0_dp
 
@@ -447,10 +449,15 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'pseudise', 'F', pseudise, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'grid_size', '0.0', grid_size, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
       endif
+      if (do_rescale_r .or. do_rescale_E) then
+         RAISE_ERROR("IPModel_ASAP2_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+      end if
       call finalise(params)
    else
       save_dipole_velo = .false.
@@ -470,6 +477,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       call check_size('Local_E',local_e,(/at%N/),'IPModel_ASAP2_Calc', error)
       local_e = 0.0_dp
    endif
+
    if (present(f)) then
       call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_ASAP2_Calc', error)
       f = 0.0_dp
@@ -485,11 +493,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
    ! Assign pointers
    if (.not. assign_pointer(at, efield_name, efield)) then
-      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield" property', error)
+      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(efield_name)//'" property', error)
    endif
 
    if (.not. assign_pointer(at, dipoles_name, dipoles)) then
-      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "dipoles" property', error)
+      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(dipoles_name)//'" property', error)
    endif
 
    if (save_dipole_velo .and. maxval(abs(dipoles)) > 0.0_dp) then
@@ -674,7 +682,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       end if
    end if
 
-   efield = efield_charge + efield_dipole
+   efield(:,1:at%n) = efield_charge + efield_dipole
    
    ! Finally, add the short-range contribution
    if (calc_short_range) then

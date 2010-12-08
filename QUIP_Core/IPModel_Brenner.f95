@@ -164,6 +164,8 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
+  real(dp) :: r_scale, E_scale
+  logical :: do_rescale_r, do_rescale_E
 
   INIT_ERROR(error)
 
@@ -197,6 +199,9 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Brenner_Calc args_str')) then
         RAISE_ERROR("IPModel_Brenner_Calc failed to parse args_str='"//trim(args_str)//"'", error)
      endif
@@ -208,6 +213,10 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
      else
         atom_mask_pointer => null()
      endif
+     if (do_rescale_r .or. do_rescale_E) then
+        RAISE_ERROR("IPModel_Brenner_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+     end if
+
   endif
 
   ! Find maximum number of neighbours and allocate

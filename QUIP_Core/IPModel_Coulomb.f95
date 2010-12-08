@@ -163,6 +163,8 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    type(Dictionary) :: params
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
+   real(dp) :: r_scale, E_scale
+   logical :: do_rescale_r, do_rescale_E
 
    integer :: i
 
@@ -190,14 +192,20 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       call param_register(params, 'charge_property_name', 'charge', charge_property_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'atom_mask_name', '', atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
       endif
       call finalise(params)
+      if (do_rescale_r .or. do_rescale_E) then
+         RAISE_ERROR("IPModel_Coulomb_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+      end if
    else
       charge_property_name = 'charge'
    endif
+
 
    if(has_property(at,charge_property_name)) then
       if(.not. assign_pointer(at, charge_property_name, charge)) then
