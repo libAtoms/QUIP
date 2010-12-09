@@ -45,11 +45,12 @@ module topology_module
 
 
   implicit none
+  private
 
-  private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
-  private :: create_angle_list, create_dihedral_list
-  private :: create_improper_list
-  private :: create_pos_dep_charges, calc_fc
+  !! private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
+  !! private :: create_angle_list, create_dihedral_list
+  !! private :: create_improper_list
+  !! private :: create_pos_dep_charges, calc_fc
 
   public  :: delete_metal_connects, &
              write_brookhaven_pdb_file, &
