@@ -759,8 +759,8 @@ program crack
         state = STATE_MICROCANONICAL
         call disable_damping(ds)
 
-     else if (state_string(1:10) == 'MD_CONSTANT') then
-        state = STATE_MD_LOADING
+     else if (state_string(1:11) == 'MD_CONSTANT') then
+        state = STATE_MD_CONSTANT
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
 
