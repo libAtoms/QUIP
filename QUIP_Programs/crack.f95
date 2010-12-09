@@ -288,8 +288,9 @@ program crack
   integer, parameter :: STATE_MD_CRACKING = 4
   integer, parameter :: STATE_DAMPED_MD = 5
   integer, parameter :: STATE_MICROCANONICAL = 6
-  character(len=14), dimension(6), parameter :: STATE_NAMES = &
-       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL"/)
+  integer, parameter :: STATE_MD_CONSTANT = 7
+  character(len=14), dimension(7), parameter :: STATE_NAMES = &
+       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL", "MD_CONSTANT   "/)
 
   ! Objects
   type(InOutput) :: xmlfile
@@ -721,6 +722,9 @@ program crack
         state_string = 'DAMPED_MD'
      end if
 
+     ! Allow initial state to be overridden in XML file
+     if (trim(params%simulation_initial_state) /= '') state_string = params%simulation_initial_state
+
      if (trim(state_string) == "MD" .and. (params%md_smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
      if (state_string(1:10) == 'THERMALISE') then
@@ -754,6 +758,11 @@ program crack
      else if (state_string(1:14) == 'MICROCANONICAL') then
         state = STATE_MICROCANONICAL
         call disable_damping(ds)
+
+     else if (state_string(1:10) == 'MD_CONSTANT') then
+        state = STATE_MD_LOADING
+        call disable_damping(ds)
+        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
 
      else  
         call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
@@ -882,6 +891,8 @@ program crack
               last_state_change_time = ds%t
               old_crack_tips = crack_tips
            end if
+
+        case(STATE_MD_CONSTANT)
 
         case default
            call system_abort('Unknown molecular dynamics state!')

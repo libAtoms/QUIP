@@ -185,6 +185,7 @@ module CrackParams_module
      integer  :: simulation_seed          !% Random number seed. Use zero for a random seed, or a particular value to repeat a previous run.
      logical  :: simulation_classical     !% Perform a purely classical simulation
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
+     character(STRING_LENGTH) :: simulation_initial_state !% Initial state. Overrides value read from input atoms structure
 
      ! Molecular dynamics parameters
      real(dp) :: md_time_step             !% Molecular Dynamics time-step, in fs.
@@ -451,6 +452,7 @@ contains
     this%simulation_seed         = 0
     this%simulation_classical    = .false.
     this%simulation_force_initial_load_step = .false.
+    this%simulation_initial_state = ''
 
     ! Molecular dynamics parameters
     this%md_time_step            = 1.0_dp   ! fs
@@ -950,6 +952,12 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%simulation_force_initial_load_step
        end if
+
+       call QUIP_FoX_get_value(attributes, "initial_state", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%simulation_initial_state
+       end if
+
 
     elseif (parse_in_crack .and. name == 'md') then
 
@@ -1532,6 +1540,7 @@ contains
     call Print('     seed                  = '//this%simulation_seed,file=file)
     call Print('     classical             = '//this%simulation_classical,file=file)
     call Print('     force_initial_load_step = '//this%simulation_force_initial_load_step,file=file)
+    call Print('     initial_state           = '//this%simulation_initial_state,file=file)
     call Print('',file=file)
     call Print('  MD parameters:',file=file)
     call Print('     time_step             = '//this%md_time_step//' fs',file=file)
