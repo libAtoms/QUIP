@@ -118,9 +118,11 @@ class TestRescale_Space(QuippyTestCase):
         self.assertArrayAlmostEqual(bulk1.pos/self.r_scale, bulk2.pos, tol=1e-4)
 
     def test_bulk_modulus(self):
+        verbosity_push(PRINT_NERD)
         b1, v1 = self.p1.bulk_modulus(self.bulk, minimise_bulk=True)
         b2, v2 = self.p2.bulk_modulus(self.bulk, minimise_bulk=True)
         self.assertArrayAlmostEqual([b2, v2], [b1*self.r_scale**3, v1/self.r_scale**3], tol=1e-4)
+        verbosity_pop()
 
 
 class TestRescale_Space_and_Energy(QuippyTestCase):
@@ -171,9 +173,11 @@ class TestRescale_Space_and_Energy(QuippyTestCase):
         self.assertArrayAlmostEqual(bulk1.pos/self.r_scale, bulk2.pos, tol=1e-4)
 
     def test_bulk_modulus(self):
+        verbosity_push(PRINT_NERD)
         b1, v1 = self.p1.bulk_modulus(self.bulk, minimise_bulk=True)
         b2, v2 = self.p2.bulk_modulus(self.bulk, minimise_bulk=True)
         self.assertArrayAlmostEqual([b2, v2], [b1*self.E_scale*self.r_scale**3, v1/self.r_scale**3], tol=1e-4)
+        verbosity_pop()
 
 class TestRescale_Automatic_Factors(QuippyTestCase):
     
