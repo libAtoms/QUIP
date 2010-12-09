@@ -29,15 +29,15 @@ if test_electrostatic_embed:
        self.pot.calc_electrostatic_potential(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
                                              real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
        self.at.write('dimer.cube', data=pot)
-       write_electrostatic_potential(self.at, 'dimer.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
+       write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
 
        make_periodic_potential(self.at, real_grid, self.ngrid, [False, False, True], 4.0, 1.0, 'hybrid_mark', pot)
-       write_electrostatic_potential(self.at, 'dimer.periodic.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
+       write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.periodic.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
 
     def test_calc_esp_no_pseudise(self):
        real_grid = fzeros((3,self.ngrid[0]*self.ngrid[1]*self.ngrid[2]))
        pot = fzeros(self.ngrid)
-       self.pot.calc_electrostatic_potential(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
+       self.pot.calc_electrostatic_potential_grid(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
                                              real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=F")
        self.at.write('dimer.cube', data=pot)
        write_electrostatic_potential(self.at, 'dimer.no-pseudise.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
@@ -131,8 +131,8 @@ if test_electrostatic_embed:
        ngrid = [50, 50, 10]
        real_grid = fzeros((3,ngrid[0]*ngrid[1]*ngrid[2]))
        pot = fzeros(ngrid)
-       self.pot.calc_electrostatic_potential(at, "es_mark", ngrid, origin, numpy.diag(cluster.lattice),
-                                             real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
+       self.pot.calc_electrostatic_potential_grid(at, "es_mark", ngrid, origin, numpy.diag(cluster.lattice),
+                                                  real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
 
        write_electrostatic_potential(cluster, 'cluster.esp', ngrid, numpy.diag(cluster.lattice), pot)
        make_periodic_potential(cluster, real_grid, ngrid, [False, False, True], 4.0, 1.0, 'hybrid_mark', pot)
