@@ -44,8 +44,7 @@ module ElectrostaticEmbed_module
 
   integer, private, parameter :: nspins = 2
 
-  public :: calc_electrostatic_potential, write_electrostatic_potential, &
-       calc_electric_field, write_electric_field, make_periodic_potential
+  public :: calc_electrostatic_potential, write_electrostatic_potential, make_periodic_potential
 
 contains
 
@@ -90,58 +89,45 @@ contains
 
   end subroutine assign_grid_coordinates
 
-  function gaussian_charge_pot_func(r, s, grid_size) result(V)
-    real(dp) :: r, s, grid_size(3)
-    real(dp) :: V
-
-    real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
-
-    ! Truncate r so smallest value is one grid point
-    r = max(r, maxval(grid_size))
-
-    ! point charge part
-    V = 1.0_dp/r
-    if (s > 0.0_dp .and. r < 9.0_dp*s) then ! screening if width > 0, correction for r >= 9s is < 1e-16
-       V = V * erf(r/(sqrt_2*s))
-    endif
-  end function gaussian_charge_pot_func
-
-  function gaussian_charge_pot_force_func(r, rsq, s, grid_size) result(Vf)
-    real(dp) :: r(3), rsq, s, grid_size(3)
-    real(dp) :: Vf(3)
-
-    real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
-    real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
-    real(dp) :: r_mag, V_pt, erf_val, erf_deriv(3)
-    integer :: i
-
-    ! V = 1/r erf(r/(sqrt_2 s))
-    ! derf(x)/dx = (2/sqrt(pi)) exp(-x^2)
-
-    do i=1,3
-       r(i) = max(r(i), grid_size(i))
-    end do
-    rsq = max(r(1)*r(1)+r(2)*r(2)+r(3)*r(3), rsq)
-
-    ! point charge part
-    Vf = 1.0_dp/(rsq*sqrt(rsq)) * r
-    if (s > 0.0_dp .and. rsq < 81.0_dp*s*s) then ! screening if width > 0, correction for r >= 9s is <= 1e-16
-       r_mag = sqrt(rsq)
-       V_pt = 1.0_dp/r_mag
-       erf_val = erf(r_mag/(sqrt_2 * s))
-       erf_deriv = -(sqrt_2/(sqrt_pi*s)) * exp(-rsq/(2.0*s*s)) * r/r_mag
-       Vf = Vf * erf_val + V_pt * erf_deriv
-    endif
-  end function gaussian_charge_pot_force_func
-
-  subroutine write_electrostatic_header(out, lattice, ngrid)
-    type(InOutput), intent(inout) :: out
-    real(dp), intent(in) :: lattice(3,3)
+  subroutine write_electrostatic_potential(at, mark_name, filename, ngrid, extent, pot, error)
+    type(Atoms), intent(inout) :: at
+    character(len=*), intent(in) :: mark_name
+    character(len=*), intent(in) :: filename
     integer, intent(in) :: ngrid(3)
-    real(dp) :: a, b, c, alpha, beta, gamma
+    real(dp), intent(in) :: extent(3)
+    real(dp), dimension(:,:,:), intent(in) :: pot
+    integer, optional, intent(out) :: error
 
+    type(InOutput) :: out
+    integer igrid, spin, i, j, k
+    real(dp) :: lattice(3,3)
+    real(dp) :: a, b, c, alpha, beta, gamma
+    integer, pointer, dimension(:) :: mark
+    real(dp), pointer, dimension(:) :: charge, es_pot
+    real(dp), pointer, dimension(:,:) :: es_efield
+    integer, dimension(size(ElementMass)) :: nsp
+
+    INIT_ERROR(error)
+
+    call assign_property_pointer(at, mark_name, mark, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'charge', charge, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'es_pot', es_pot, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'es_efield', es_efield, error)
+    PASS_ERROR(error)
+
+    lattice(:,:) = 0.0_dp
+    lattice(1,1) = extent(1)
+    lattice(2,2) = extent(2)
+    lattice(3,3) = extent(3)
     call get_lattice_params(lattice, a, b, c, alpha, beta, gamma)
 
+    call initialise(out, filename, OUTPUT)
     call print('BEGIN header', file=out)
     call print('', file=out)
     call print('           Real Lattice(A)               Lattice parameters(A)    Cell Angles', file=out)
@@ -150,61 +136,29 @@ contains
     write (out%unit, '(3f12.7,5x,"c =",f12.6,2x,"gamma =",f12.6)') lattice(:,3), c, gamma
     call print('', file=out)
     write(out%unit,'(i4,T30,a)') nspins,'   ! nspins'
-    write(out%unit,'(3(i4,2x),T30,a)') ngrid, '   ! fine FFT grid along <a,b,c>'
 
-  end subroutine write_electrostatic_header
-
-  subroutine write_electric_field(at, charge, filename, ngrid, extent, efield, atom_mask_name)
-    type(Atoms), intent(inout) :: at
-    real(dp), intent(in) :: charge(:)
-    character(len=*), intent(in) :: filename, atom_mask_name
-    integer, intent(in) :: ngrid(3)
-    real(dp), intent(in) :: extent(3)
-    real(dp), dimension(:,:), intent(in) :: efield
-
-    logical, dimension(:), pointer :: atom_mask
-    type(InOutput) :: out
-    integer i
-    real(dp) :: lattice(3,3)
-
-    lattice(:,:) = 0.0_dp
-    lattice(1,1) = extent(1)
-    lattice(2,2) = extent(2)
-    lattice(3,3) = extent(3)
-
-    call assign_property_pointer(at, atom_mask_name, atom_mask)
-
-    ! Write electric field to file
-    call initialise(out, filename, OUTPUT)
-    call write_electrostatic_header(out, lattice, ngrid)
-    call print('END header: data is "sp nsp charge efield_x efield_y efield_z"', file=out)
-    do i=1,at%N
-       if (.not. atom_mask(i)) cycle
-       write (out%unit,'(a6,i6,4f12.6)'), a2s(at%species(:,i)), index_to_z_index(at, i), charge(i), efield(:,i)
+    nsp(:) = 0
+    do i=1,at%n
+       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
+       nsp(at%z(i)) = nsp(at%z(i)) + 1
     end do
-    call finalise(out)
 
-  end subroutine write_electric_field
+    write(out%unit,'(i4,T30,a)') count(nsp /= 0),'   ! nsp '
+    do i=1,count(nsp /= 0)
+       write(out%unit,'(i4,T30,a,i0,a)') nsp(i),'    ! num_ions_in_species(', i, ')'
+    end do
+    write(out%unit,'(3(i4,2x),T30,a)') ngrid, '   ! fine FFT grid along <a,b,c>'
+    call print('! data is 1 line per atom with species, index, charge, potential, efield,', file=out)
+    call print('! followed by one line per grid point with grid_i, grid_j, grid_k, potential', file=out)
+    call print('END header', file=out)  
 
-  subroutine write_electrostatic_potential(at, filename, ngrid, extent, pot)
-    type(Atoms), intent(inout) :: at
-    character(len=*), intent(in) :: filename
-    integer, intent(in) :: ngrid(3)
-    real(dp), intent(in) :: extent(3)
-    real(dp), dimension(:,:,:), intent(in) :: pot
+    nsp(:) = 0
+    do i=1,at%N
+       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
+       nsp(at%z(i)) = nsp(at%z(i)) + 1
+       write (out%unit,'(a6,i6,5f12.6)'), a2s(at%species(:,i)), nsp(at%z(i)), charge(i), es_pot(i), es_efield(:,i)
+    end do
 
-    type(InOutput) :: out
-    integer igrid, spin, i, j, k
-    real(dp) :: lattice(3,3)
-
-    lattice(:,:) = 0.0_dp
-    lattice(1,1) = extent(1)
-    lattice(2,2) = extent(2)
-    lattice(3,3) = extent(3)
-
-    call initialise(out, filename, OUTPUT)
-    call write_electrostatic_header(out, lattice, ngrid)
-    call print('END header: data is "i j k pot"', file=out)  
     do spin=1,nspins
        igrid = 0
        do k=1,ngrid(3)
@@ -232,7 +186,7 @@ contains
 
     integer i,j,k,a,igrid, nsurface, cell_image_na, cell_image_nb, cell_image_nc
     logical save_is_periodic(3), dir_mask(3)
-    real(dp) :: cutoff, surface_avg, f, d(3), fc, dfc, masked_d
+    real(dp) :: cutoff, surface_avg, d(3), fc, dfc, masked_d
     logical, dimension(:), allocatable :: atom_mask
     integer, pointer, dimension(:) :: mark
 
@@ -306,8 +260,8 @@ contains
 
   end subroutine make_periodic_potential
 
-  !% Evaluate electric field on real atoms, i.e. those not marked with HYBRID_ELECTROSTATIC_MARK
-  subroutine calc_electric_field(this, at, mark_name, args_str, error)
+  !% Evaluate electrostatic potential and electric field on atoms not marked with HYBRID_ELECTROSTATIC_MARK
+  subroutine calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: args_str, mark_name
@@ -315,30 +269,42 @@ contains
 
     integer, dimension(:), pointer :: mark
     logical, dimension(:), pointer :: atom_mask, source_mask
+    real(dp), dimension(:), pointer :: at_charge, es_pot
 
     INIT_ERROR(error)
 
     call assign_property_pointer(at, mark_name, mark, error)
     PASS_ERROR(error)
 
+    call assign_property_pointer(at, 'charge', at_charge)
+    PASS_ERROR(error)
+
     call add_property(at, 'atom_mask', .false., overwrite=.true., ptr=atom_mask, error=error)
     PASS_ERROR(error)
-    atom_mask = mark /= HYBRID_ELECTROSTATIC_MARK
+    atom_mask = mark /= HYBRID_ELECTROSTATIC_MARK .and. mark /= HYBRID_NO_MARK
 
     call add_property(at, 'source_mask', .false., overwrite=.true., ptr=source_mask, error=error)
     PASS_ERROR(error)
     source_mask = mark == HYBRID_ELECTROSTATIC_MARK
 
-    call add_property(at, 'es_efield', 0.0_dp, overwrite=.true., error=error)
+    call add_property(at, 'es_efield', 0.0_dp, n_cols=3, overwrite=.true., error=error)
     PASS_ERROR(error)
 
-    call calc(this, at, args_str=trim(args_str)//' efield=es_efield atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
+    call add_property(at, 'es_pot', 0.0_dp, overwrite=.true., ptr=es_pot, error=error)
     PASS_ERROR(error)
 
-  end subroutine calc_electric_field
+    call calc(this, at, args_str=trim(args_str)//' efield=es_efield local_energy=es_pot atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
+    PASS_ERROR(error)
+
+    ! Electrostatic potential at ion positions is 2*local_energy/charge
+    where (es_pot /= 0.0_dp) 
+       es_pot = 2.0_dp*es_pot/at_charge
+    end where
+
+  end subroutine calc_electrostatic_potential_ions
 
   !% Evaluate electrostatic potential on a grid by adding test atoms at grid points
-  subroutine calc_electrostatic_potential(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+  subroutine calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: args_str, mark_name
@@ -348,8 +314,7 @@ contains
     integer, optional, intent(out) :: error
 
     type(Atoms) :: at_copy
-    type(Table) :: remove_list
-    real(dp) :: r, charge, sigma, grid_size(3)
+    real(dp) :: grid_size(3)
     real(dp), pointer :: at_charge(:)
     real(dp), allocatable :: local_e(:)
     integer, pointer, dimension(:) :: mark
@@ -359,7 +324,7 @@ contains
     integer i, j, k, n, igrid, offset, stride, npoint
 
     INIT_ERROR(error)
-    call system_timer('calc_electrostatic_potential')
+    call system_timer('calc_electrostatic_potential_grid')
 
     call assign_grid_coordinates(ngrid, origin, extent, grid_size, real_grid)
 
@@ -410,7 +375,7 @@ contains
 
     call print('source_mask='//source_mask)
 
-    call print('calc_electrostatic_potential: evaluating electrostatic potential due to '//count(source_mask)//' sources')
+    call print('calc_electrostatic_potential_grid: evaluating electrostatic potential due to '//count(source_mask)//' sources')
 
     ! Construct mapping from igrid to (i,j,k)
     igrid = 0
@@ -429,9 +394,6 @@ contains
        at_copy%n = at%n + npoint
        at_copy%nbuffer = at%nbuffer + npoint
        at_copy%pos(:,at%n+1:at_copy%n) = real_grid(:,offset:size(real_grid,2):stride)
-
-       !call write(at_copy, 'embed.'//offset//'.xyz')
-
        call calc_connect(at_copy, skip_zero_zero_bonds=.true.)
 
        local_e = 0.0_dp
@@ -447,8 +409,29 @@ contains
     deallocate(lookup)
     call finalise(at_copy)
     deallocate(local_e, z)
-    call system_timer('calc_electrostatic_potential')
+    call system_timer('calc_electrostatic_potential_grid')
+
+  end subroutine calc_electrostatic_potential_grid
+
+
+  subroutine calc_electrostatic_potential(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+    type(Potential), intent(inout) :: this
+    type(Atoms), intent(inout) :: at
+    character(len=*), intent(in) :: args_str, mark_name
+    integer, intent(in) :: ngrid(3)
+    real(dp), intent(in) :: origin(3), extent(3)
+    real(dp), intent(inout) :: real_grid(:,:), pot(:,:,:)
+    integer, optional, intent(out) :: error
+
+    INIT_ERROR(error)
+
+    call calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
+    PASS_ERROR(error)
+
+    call calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+    PASS_ERROR(error)
 
   end subroutine calc_electrostatic_potential
+
 
 end module ElectrostaticEmbed_module
