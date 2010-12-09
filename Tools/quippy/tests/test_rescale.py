@@ -195,7 +195,7 @@ class TestRescale_Automatic_Factors(QuippyTestCase):
         verbosity_push_decrement()
         self.p.minim(self.bulk, 'cg', 1e-6, 100, do_lat=True, do_pos=True)
         verbosity_pop()
-        self.assertAlmostEqual(self.bulk.cell_volume(), self.target_vol)
+        self.assertArrayAlmostEqual([self.bulk.cell_volume()], [self.target_vol], tol=1e-4)
 
     def test_bulk_modulus(self):
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
