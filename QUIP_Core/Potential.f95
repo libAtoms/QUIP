@@ -437,7 +437,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #endif /* HAVE_ONIOM */
   end if
 
-  if (this%do_rescale_r .or. this%do_rescale_E) then
+  if (this%is_simple .and. (this%do_rescale_r .or. this%do_rescale_E)) then
      if (this%do_rescale_r) then
         if (.not. has_r_scale .and. .not. has_target_vol) then
            RAISE_ERROR("potential_initialise: do_rescale_r=T and but neither r_scale nor target_vol present", error)
