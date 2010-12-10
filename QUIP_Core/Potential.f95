@@ -276,7 +276,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   type(Dictionary) :: params
 
   logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
-  real(dp) :: target_vol, target_B, r_scale, E_scale, vol, B
+  real(dp) :: target_vol, target_B, r_scale, vol, B
   character(len=FIELD_LENGTH) :: my_args_str
   type(Atoms) :: bulk
   integer :: it
@@ -479,7 +479,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
            this%E_scale = target_B/(B*r_scale**3)
            call print("do_rescale_E: original cell volume (from quadratic fit) is "//vol//" A^3")
            call print("do_rescale_E: original bulk modulus (from quadratic fit) is "//B//" GPa")
-           call print("do_rescale_E: setting potential E_scale to "//E_scale//" to match target bulk modulus of "//target_B//" GPa")
+           call print("do_rescale_E: setting potential E_scale to "//this%E_scale//" to match target bulk modulus of "//target_B//" GPa")
         end if
 
         if (this%do_rescale_r) this%r_scale = r_scale
