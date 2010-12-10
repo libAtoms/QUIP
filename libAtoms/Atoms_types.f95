@@ -237,6 +237,7 @@ module Atoms_types_module
 
   end type Atoms
 
+  public :: atoms_repoint
 
   !% Add a per-atom property to this atoms object, as extra entry with columns of 
   !% integers, reals, logical, or strings in the 'properties' dictionary. For example, 
@@ -309,6 +310,106 @@ module Atoms_types_module
 
 contains
   
+  !% OMIT
+  ! Initialise pointers for convenient access to special columns of this%properties
+  subroutine atoms_repoint(this)
+    type(Atoms), target, intent(inout) :: this
+    integer :: i
+
+    if(this%N == 0) return
+
+    nullify(this%Z, this%travel, this%pos, this%move_mask, this%damp_mask, &
+         this%thermostat_region, this%pos, this%velo, this%acc, this%avgpos, &
+         this%oldpos)
+
+    ! Loop over all properties looking for those with special names
+    ! which we have pointers for
+    do i = 1,this%properties%N
+
+       ! If this%N is zero then point at zero length arrays
+       if (this%N == 0) then
+
+          select case(trim(lower_case(string(this%properties%keys(i)))))
+
+          ! Integer properties
+          case('z')
+             this%Z               => this%properties%entries(i)%i_a(:)
+          case('travel')
+             this%travel          => this%properties%entries(i)%i_a2(:,:)
+          case('move_mask')
+             this%move_mask       => this%properties%entries(i)%i_a(:)
+          case('damp_mask')
+             this%damp_mask       => this%properties%entries(i)%i_a(:)
+          case('thermostat_region')
+             this%thermostat_region => this%properties%entries(i)%i_a(:)
+
+          ! Real properties
+          case('mass')
+             this%mass            => this%properties%entries(i)%r_a(:)
+          case('pos')
+             this%pos             => this%properties%entries(i)%r_a2(:,:)
+          case('velo')
+             this%velo            => this%properties%entries(i)%r_a2(:,:)
+          case('acc')
+             this%acc             => this%properties%entries(i)%r_a2(:,:)
+          case('avgpos')
+             this%avgpos          => this%properties%entries(i)%r_a2(:,:)
+          case('oldpos')
+             this%oldpos          => this%properties%entries(i)%r_a2(:,:)
+          case('avg_ke')
+             this%avg_ke          => this%properties%entries(i)%r_a(:)
+
+          ! String properties
+          case('species')
+             this%species         => this%properties%entries(i)%s_a(:,:)
+
+          end select
+
+
+       else
+
+          select case(trim(lower_case(string(this%properties%keys(i)))))
+
+          ! Integer properties
+          case('z')
+             this%Z               => this%properties%entries(i)%i_a(1:this%n)
+          case('travel')
+             this%travel          => this%properties%entries(i)%i_a2(:,1:this%n)
+          case('move_mask')
+             this%move_mask       => this%properties%entries(i)%i_a(1:this%n)
+          case('damp_mask')
+             this%damp_mask       => this%properties%entries(i)%i_a(1:this%n)
+          case('thermostat_region')
+             this%thermostat_region => this%properties%entries(i)%i_a(1:this%n)
+
+          ! Real properties
+          case('mass')
+             this%mass            => this%properties%entries(i)%r_a(1:this%n)
+          case('pos')
+             this%pos             => this%properties%entries(i)%r_a2(:,1:this%N)
+          case('velo')
+             this%velo            => this%properties%entries(i)%r_a2(:,1:this%N)
+          case('acc')
+             this%acc             => this%properties%entries(i)%r_a2(:,1:this%N)
+          case('avgpos')
+             this%avgpos          => this%properties%entries(i)%r_a2(:,1:this%N)
+          case('oldpos')
+             this%oldpos          => this%properties%entries(i)%r_a2(:,1:this%N)
+          case('avg_ke')
+             this%avg_ke          => this%properties%entries(i)%r_a(1:this%n)
+
+          ! String properties
+          case('species')
+             this%species         => this%properties%entries(i)%s_a(:,1:this%N)
+
+          end select
+
+       end if
+
+    end do
+
+  end subroutine atoms_repoint
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   ! Add new properties
@@ -335,6 +436,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_int
 
   subroutine atoms_add_property_p_int_a(this, name, ptr, error)
@@ -360,6 +462,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_int_a
 
   subroutine atoms_add_property_p_real(this, name, ptr, error)
@@ -382,6 +485,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_real
 
   subroutine atoms_add_property_p_real_a(this, name, ptr, error)
@@ -407,6 +511,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_real_a
 
 
@@ -430,6 +535,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_logical
 
   subroutine atoms_add_property_p_str(this, name, ptr, error)
@@ -452,6 +558,7 @@ contains
        end if
     end if
     call set_value_pointer(this%properties, name, ptr)
+    call atoms_repoint(this)
   end subroutine atoms_add_property_p_str
 
   subroutine atoms_add_property_int(this, name, value, n_cols, ptr, ptr2, overwrite, error)
@@ -487,6 +594,7 @@ contains
        call add_array(this%properties, name, value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
     end if
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_int
 
   subroutine atoms_add_property_int_a(this, name, value, n_cols, ptr, ptr2, overwrite, error)
@@ -532,6 +640,7 @@ contains
        deallocate(tmp_value)
     end if
    
+    call atoms_repoint(this)
   end subroutine atoms_add_property_int_a
 
 
@@ -568,6 +677,7 @@ contains
        call add_array(this%properties, name, value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
     end if
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_real
 
 
@@ -614,6 +724,7 @@ contains
        deallocate(tmp_value)
     end if
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_real_a
 
   subroutine atoms_add_property_int_2Da(this, name, value, ptr, overwrite, error)
@@ -650,6 +761,7 @@ contains
 
     call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_int_2Da
 
 
@@ -687,6 +799,7 @@ contains
 
     call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_real_2Da
 
 
@@ -716,6 +829,7 @@ contains
     end if
     call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_str
 
 
@@ -750,6 +864,7 @@ contains
 
     call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_str_2da
 
   subroutine atoms_add_property_str_a(this, name, value, ptr, overwrite, error)
@@ -791,6 +906,7 @@ contains
     call add_array(this%properties, name, tmp_value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
     deallocate(tmp_value)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_str_a
 
   subroutine atoms_add_property_logical(this, name, value, ptr, overwrite, error)
@@ -815,6 +931,7 @@ contains
     
     call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     
+    call atoms_repoint(this)
   end subroutine atoms_add_property_logical
 
 
@@ -844,6 +961,7 @@ contains
     
     call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
 
+    call atoms_repoint(this)
   end subroutine atoms_add_property_logical_a
 
 
