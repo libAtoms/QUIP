@@ -85,7 +85,6 @@ class TestRescale_Space(QuippyTestCase):
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
         self.d2.set_lattice(self.d2.lattice/self.r_scale, True)
-
         self.p2 = Potential('IP Tersoff do_rescale_r r_scale=%f' % self.r_scale,
                             param_str=quip_xml_parameters('Tersoff'))
 
@@ -118,11 +117,9 @@ class TestRescale_Space(QuippyTestCase):
         self.assertArrayAlmostEqual(bulk1.pos/self.r_scale, bulk2.pos, tol=1e-4)
 
     def test_bulk_modulus(self):
-        verbosity_push(PRINT_NERD)
         b1, v1 = self.p1.bulk_modulus(self.bulk, minimise_bulk=True)
         b2, v2 = self.p2.bulk_modulus(self.bulk, minimise_bulk=True)
-        self.assertArrayAlmostEqual([b2, v2], [b1*self.r_scale**3, v1/self.r_scale**3], tol=1e-4)
-        verbosity_pop()
+        self.assertArrayAlmostEqual([b2, v2], [b1*self.r_scale**3, v1/self.r_scale**3], tol=1e-3)
 
 
 class TestRescale_Space_and_Energy(QuippyTestCase):
@@ -173,11 +170,9 @@ class TestRescale_Space_and_Energy(QuippyTestCase):
         self.assertArrayAlmostEqual(bulk1.pos/self.r_scale, bulk2.pos, tol=1e-4)
 
     def test_bulk_modulus(self):
-        verbosity_push(PRINT_NERD)
         b1, v1 = self.p1.bulk_modulus(self.bulk, minimise_bulk=True)
         b2, v2 = self.p2.bulk_modulus(self.bulk, minimise_bulk=True)
-        self.assertArrayAlmostEqual([b2, v2], [b1*self.E_scale*self.r_scale**3, v1/self.r_scale**3], tol=1e-4)
-        verbosity_pop()
+        self.assertArrayAlmostEqual([b2, v2], [b1*self.E_scale*self.r_scale**3, v1/self.r_scale**3], tol=1e-3)
 
 class TestRescale_Automatic_Factors(QuippyTestCase):
     
@@ -203,7 +198,7 @@ class TestRescale_Automatic_Factors(QuippyTestCase):
 
     def test_bulk_modulus(self):
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
-        self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-4)
+        self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-3)
 
 
 if __name__ == '__main__':
