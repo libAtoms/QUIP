@@ -143,7 +143,7 @@ module gp_predict_module
          deallocate(my_Z)
       endsubroutine gp_precompute_covariance
 
-      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in)
+      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in, xixjtheta_in, new_x_star)
 
          type(gp), intent(in)               :: gp_data                !% GP
          real(dp), intent(out), optional    :: mean, variance         !% output, predicted value and variance at test point
@@ -151,23 +151,42 @@ module gp_predict_module
          real(dp), dimension(:), intent(in), optional :: x_prime_star !% test point, dimension(d)
          integer, intent(in), optional :: Z
          real(dp), dimension(:), intent(in), optional :: c_in 
+#ifdef GP_PREDICT_QP
+         real(qp), dimension(:,:), intent(inout), target, optional :: xixjtheta_in
+#else
+         real(dp), dimension(:,:), intent(inout), target, optional :: xixjtheta_in
+#endif
+         logical, intent(in), optional :: new_x_star
 
 #ifdef GP_PREDICT_QP
          real(qp), dimension(:), allocatable :: k, c
-         real(qp), dimension(:,:), allocatable :: xixjtheta !, tmp
+         real(qp), dimension(:,:), pointer :: xixjtheta !, tmp
 	 real(qp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #else
          real(dp), dimension(:), allocatable :: k, c
-         real(dp), dimension(:,:), allocatable :: xixjtheta !, tmp
+         real(dp), dimension(:,:), pointer :: xixjtheta !, tmp
 	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #endif
          real(dp) :: kappa
 
+	 logical :: my_new_x_star
          integer :: i, do_Z, Z_type
 
-         allocate(k(gp_data%n), c(gp_data%n))
-         allocate(xixjtheta(gp_data%d,gp_data%n))
+	 allocate(k(gp_data%n))
+	 allocate(c(gp_data%n))
+	 if (present(xixjtheta_in)) then
+	    if (size(xixjtheta_in,1) /= gp_data%d) call system_abort("BAD")
+	    if (size(xixjtheta_in,2) /= gp_data%n) call system_abort("BAD")
+	    xixjtheta => xixjtheta_in
+	 else
+	    allocate(xixjtheta(gp_data%d, gp_data%n))
+	 endif
 
+#ifdef FAST_GAP
+	 my_new_x_star = optional_default(.true., new_x_star)
+#else
+	 my_new_x_star = .true.
+#endif
 
          !if( .not. gp_data%initialised ) &
          !& call system_abort('gp_predict: not initialised, call gp_initialise first')
@@ -179,11 +198,13 @@ module gp_predict_module
          do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; end do
 	 x_star_div_theta = x_star / gp_data%theta(:,Z_type)
          
+#ifndef FAST_GAP
          xixjtheta = 0.0_dp
+#endif
          c = 0.0_dp
          do i = 1, gp_data%n
             if( do_Z == gp_data%xz(i) ) then
-               xixjtheta(:,i) = gp_data%x_div_theta(:,i)-x_star_div_theta
+               if (my_new_x_star) xixjtheta(:,i) = gp_data%x_div_theta(:,i)-x_star_div_theta
                if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
             endif
          enddo
@@ -251,7 +272,8 @@ module gp_predict_module
 
 !         deallocate( k )
 
-         deallocate(k, c, xixjtheta)
+         deallocate(k, c)
+         if (.not. present(xixjtheta_in)) deallocate(xixjtheta)
       end subroutine gp_predict
 
       subroutine gp_print_xml(this,xf,label)
