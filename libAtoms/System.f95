@@ -2164,6 +2164,19 @@ contains
 
    end function ran_string
 
+   subroutine current_times(cpu_t, wall_t, mpi_t)
+      real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
+      integer wall_t_count, count_rate, max_count
+
+      if (present(cpu_t)) call cpu_time(cpu_t)
+      if (present(wall_t)) then
+	 call system_clock(wall_t_count, count_rate, max_count)
+	 wall_t = real(wall_t_count,dp) * 1.0_dp/count_rate
+      endif
+#ifdef _MPI
+      if (present(mpi_t)) mpi_t = MPI_Wtime()
+#endif
+   end subroutine current_times
 
    !% Measure elapsed CPU and wall clock time between pairs of calls with 
    !% matching 'name' parameter. Calls to 'system_timer' must be properly 
@@ -2184,16 +2197,14 @@ contains
      logical, intent(in), optional :: do_print
 
      integer, save :: stack_pos = 0
-     integer, save, dimension(TIMER_STACK) :: wall_t0
-     real(dp), save, dimension(TIMER_STACK) :: cpu_t0
+     real(dp), save, dimension(TIMER_STACK) :: wall_t0, cpu_t0
      character(len=255), save, dimension(TIMER_STACK) :: names
      character(len=50) :: out_name
 
      logical my_do_always, my_do_print
 
      logical :: found_name
-     integer :: count_rate, count_max, wall_t1
-     real(dp) :: cpu_t1
+     real(dp) :: cpu_t1, wall_t1
 #ifdef _MPI
      include "mpif.h"
      real(dp), save ::  mpi_t0(TIMER_STACK)
@@ -2218,45 +2229,35 @@ contains
 
         names(stack_pos) = trim(name)
 
-        call cpu_time(cpu_t0(stack_pos))
-        call system_clock(wall_t0(stack_pos), count_rate, count_max)
 #ifdef _MPI
-        mpi_t0(stack_pos) = MPI_Wtime()
-#endif       
+	call current_times(cpu_t0(stack_pos), wall_t0(stack_pos), mpi_t0(stack_pos))
+#else
+	call current_times(cpu_t0(stack_pos), wall_t0(stack_pos))
+#endif
 
 	if (present(time_elapsed)) time_elapsed = 0.0_dp
 
      else
         ! Stop the most recently started timer
-        call cpu_time(cpu_t1)
-        call system_clock(wall_t1, count_rate, count_max)
 #ifdef _MPI
-        mpi_t1 = MPI_Wtime()
+	call current_times(cpu_t1, wall_t1, mpi_t1)
+#else
+	call current_times(cpu_t1, wall_t1)
 #endif
-
 
         out_name = name
 #ifndef _MPI
-	if (present(time_elapsed)) then
-	  time_elapsed = real(wall_t1-wall_t0(stack_pos))*1.0_dp/real(count_rate, dp)
-	endif
+	if (present(time_elapsed)) time_elapsed = wall_t1-wall_t0(stack_pos)
 	if (my_do_print) then
-	  write (line, '(a,a,a,f0.3,a,f0.3,a)') 'TIMER: ', out_name, &
-	       ' done in ', cpu_t1-cpu_t0(stack_pos), ' cpu secs, ', &
-	       real(wall_t1 - wall_t0(stack_pos), dp)*1.0_dp/real(count_rate, dp), &
-	       ' wall clock secs.'
-	  call Print(line)
+	  call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
+	     " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs.")
 	endif
 #else
-	if (present(time_elapsed)) then
-	  time_elapsed = real(mpi_t1-mpi_t0(stack_pos))*1.0_dp/real(count_rate, dp)
-	endif
+	if (present(time_elapsed)) time_elapsed = mpi_t1-mpi_t0(stack_pos)
 	if (my_do_print) then
-	  write (line, '(a,a,a,f0.3,a,f0.3,a,f0.3,a)') 'TIMER: ', out_name, &
-	       ' done in ', cpu_t1-cpu_t0(stack_pos), ' cpu secs, ', &
-	       real(wall_t1 - wall_t0(stack_pos), dp)*1.0_dp/real(count_rate, dp), &
-	       ' wall clock secs, ', real(mpi_t1 - mpi_t0(stack_pos)), ' mpi wall secs.'
-	  call Print(line)
+	  call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
+	     " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs, " // &
+	     (mpi_t1-mpi_t0(stack_pos)) // " mpi wall secs.")
 	endif
 #endif
 
