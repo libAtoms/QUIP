@@ -309,6 +309,7 @@ module gp_predict_module
 	    this%x(i,:) = this%x(i,perm(:))
 	 end do
 
+	 if (allocated(this%Z_index)) deallocate(this%Z_index) ! don't fail on repeated calls
 	 ! find beginning and end indices of each xz value
 	 allocate(this%Z_index(2,maxval(this%xz)))
 	 this%Z_index = 0
