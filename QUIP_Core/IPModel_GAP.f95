@@ -718,12 +718,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                     if( present(f) ) f(k,i) = f(k,i) - f_gp_k
                     if( present(virial) .or. present(local_virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
                  endif
-              enddo
+              enddo ! n
        
-           enddo
-        endif
+           enddo ! k
+        endif ! present(f,virial,local_virial)
 	deallocate(xixjtheta)
-     enddo
+     enddo ! i
   endselect
   call system_timer('IPModel_GAP_Calc gp_predict')
 
