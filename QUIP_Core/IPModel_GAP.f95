@@ -660,7 +660,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case default
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift,ii,xixjtheta)
      do i = 1, at%N
-	allocate(xixjtheta(this%my_gp%d, this%my_gp%n))
         if(associated(atom_mask_pointer)) then
            if(.not. atom_mask_pointer(i)) cycle
         endif
@@ -673,6 +672,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               if (mod(ii-1, mpi%n_procs) /= mpi%my_proc) cycle
            endif
         endif
+
+	allocate(xixjtheta(this%my_gp%d, this%my_gp%n))
 
         if(present(e) .or. present(local_e)) then
 
