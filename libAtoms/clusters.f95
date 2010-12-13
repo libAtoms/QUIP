@@ -3349,6 +3349,7 @@ type(inoutput), optional :: debugfile
   !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
   !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
   !% the centre of the QM region (a position in space or a list of atoms).
+  !% optionally correct selected region with heuristics (as coded in create_cluster_info())
   !
   subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
 	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, error)
@@ -3364,7 +3365,7 @@ type(inoutput), optional :: debugfile
     integer, optional, intent(out) :: error
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
-    type(Table) :: core, old_core, ext_qmlist
+    type(Table) :: core, old_core, old_all_but_term
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
     character(len=1024) :: my_create_cluster_info_args
     integer, pointer :: hybrid_region_core_tmp_p(:)
@@ -3378,17 +3379,18 @@ type(inoutput), optional :: debugfile
 
     call map_into_cell(my_atoms)
 
+    ! save various subsets of atoms based on old hybrid marks
     call allocate(core,4,0,0,0,0)
     call allocate(old_core,4,0,0,0,0)
-    call allocate(ext_qmlist,4,0,0,0,0)
+    call allocate(old_all_but_term,4,0,0,0,0)
     call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark', error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting old core", error)
     call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark', error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting core", error)
-    call get_hybrid_list(my_atoms,ext_qmlist, all_but_term=.true., int_property='hybrid_mark', error=error)
+    call get_hybrid_list(my_atoms,old_all_but_term, all_but_term=.true., int_property='hybrid_mark', error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting all but term", error)
 
-   !Build the hysteretic QM core:
+   ! Build the new hysteretic QM core based on distances from point/list
    if (present(atomlist)) then
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
@@ -3402,7 +3404,8 @@ type(inoutput), optional :: debugfile
    endif
    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
 
-    if (use_create_cluster_info) then
+   ! call create_cluster_info_from_mark, if requested, for various chemical intuition fixes to core
+   if (use_create_cluster_info) then
       call add_property(my_atoms, "hybrid_region_core_tmp", HYBRID_NO_MARK, ptr=hybrid_region_core_tmp_p)
       hybrid_region_core_tmp_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
       my_create_cluster_info_args = optional_default("terminate=F cluster_nneighb_only cluster_allow_modification", create_cluster_info_args)
@@ -3412,7 +3415,7 @@ type(inoutput), optional :: debugfile
       call append(core, blank_rows=padded_cluster_info%N)
       core%int(1:4,1:padded_cluster_info%N) = padded_cluster_info%int(1:4,1:padded_cluster_info%N)
       call remove_property(my_atoms,"hybrid_region_core_tmp")
-    endif
+   endif
 
 !TO BE OPTIMIZED : add avgpos to add_cut_hydrogen
    ! add cut hydrogens, according to avgpos
@@ -3427,7 +3430,7 @@ type(inoutput), optional :: debugfile
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
     call finalise(atoms_for_add_cut_hydrogens)
 
-   ! check changes in QM list and set the new QM list
+    ! check changes in QM list and set the new QM list
     if (present(list_changed)) then
        list_changed = check_list_change(old_list=old_core,new_list=core)
        if (list_changed)  call print('QM list around the origin  has changed')
@@ -3439,8 +3442,8 @@ type(inoutput), optional :: debugfile
     endif
     ! default to NO_MARK
     hybrid_mark_p(1:my_atoms%N) = HYBRID_NO_MARK
-    ! anything which was marked before is now BUFFER (so hysteretic buffer, later, has correct previous values)
-    hybrid_mark_p(int_part(ext_qmlist,1)) = HYBRID_BUFFER_MARK
+    ! anything which was marked before (except termination) is now BUFFER (so hysteretic buffer, later, has correct previous values)
+    hybrid_mark_p(int_part(old_all_but_term,1)) = HYBRID_BUFFER_MARK
     ! anything returned in the core list is now ACTIVE
     hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
 
@@ -3453,7 +3456,7 @@ type(inoutput), optional :: debugfile
 
     call finalise(core)
     call finalise(old_core)
-    call finalise(ext_qmlist)
+    call finalise(old_all_but_term)
 
   end subroutine create_pos_or_list_centred_hybrid_region
 
