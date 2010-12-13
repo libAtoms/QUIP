@@ -2167,14 +2167,19 @@ contains
    subroutine current_times(cpu_t, wall_t, mpi_t)
       real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
       integer wall_t_count, count_rate, max_count
+#ifdef _MPI
+     include "mpif.h"
+#endif
 
       if (present(cpu_t)) call cpu_time(cpu_t)
       if (present(wall_t)) then
 	 call system_clock(wall_t_count, count_rate, max_count)
-	 wall_t = real(wall_t_count,dp) * 1.0_dp/count_rate
+	 wall_t = real(wall_t_count,dp) * 1.0_dp/real(count_rate,dp)
       endif
 #ifdef _MPI
       if (present(mpi_t)) mpi_t = MPI_Wtime()
+#else
+      if (present(mpi_t)) mpi_t = 0.0_dp
 #endif
    end subroutine current_times
 
@@ -2206,7 +2211,6 @@ contains
      logical :: found_name
      real(dp) :: cpu_t1, wall_t1
 #ifdef _MPI
-     include "mpif.h"
      real(dp), save ::  mpi_t0(TIMER_STACK)
      real(dp) :: mpi_t1
 #endif
