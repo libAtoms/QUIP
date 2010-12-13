@@ -25,6 +25,8 @@ module gp_predict_module
 
       integer, dimension(:), allocatable :: xz, sp
 
+      integer, dimension(:,:), allocatable :: Z_index
+
       !% Vector sizes.
       !% d: dimensionality of input space
       !% n: number of teaching points
@@ -53,7 +55,7 @@ module gp_predict_module
    endinterface gp_read_xml
 
    public :: gp, finalise, gp_predict, gp_precompute_covariance, &
-      gp_print_xml, gp_read_xml, setup_x_div_theta
+      gp_print_xml, gp_read_xml, setup_x_div_theta, GP_sort_data_by_Z
 
    contains
 
@@ -73,6 +75,8 @@ module gp_predict_module
          if(allocated(this%xz)) deallocate(this%xz)
          if(allocated(this%sp)) deallocate(this%sp)
          if(allocated(this%f0)) deallocate(this%f0)
+
+         if(allocated(this%Z_index)) deallocate(this%Z_index)
 
          call finalise(this%LA_C_nn)
             
@@ -143,7 +147,7 @@ module gp_predict_module
          deallocate(my_Z)
       endsubroutine gp_precompute_covariance
 
-      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in, xixjtheta_in, new_x_star)
+      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in, xixjtheta_in, new_x_star, use_dgemv)
 
          type(gp), intent(in)               :: gp_data                !% GP
          real(dp), intent(out), optional    :: mean, variance         !% output, predicted value and variance at test point
@@ -156,7 +160,7 @@ module gp_predict_module
 #else
          real(dp), dimension(:,:), intent(inout), target, optional :: xixjtheta_in
 #endif
-         logical, intent(in), optional :: new_x_star
+         logical, intent(in), optional :: new_x_star, use_dgemv
 
 #ifdef GP_PREDICT_QP
          real(qp), dimension(:), allocatable :: k, c
@@ -169,7 +173,7 @@ module gp_predict_module
 #endif
          real(dp) :: kappa
 
-	 logical :: my_new_x_star
+	 logical :: my_new_x_star, my_use_dgemv
          integer :: i, do_Z, Z_type
 
 	 allocate(k(gp_data%n))
@@ -182,11 +186,8 @@ module gp_predict_module
 	    allocate(xixjtheta(gp_data%d, gp_data%n))
 	 endif
 
-#ifdef FAST_GAP
 	 my_new_x_star = optional_default(.true., new_x_star)
-#else
-	 my_new_x_star = .true.
-#endif
+	 my_use_dgemv = optional_default(.false., use_dgemv)
 
          !if( .not. gp_data%initialised ) &
          !& call system_abort('gp_predict: not initialised, call gp_initialise first')
@@ -198,9 +199,8 @@ module gp_predict_module
          do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; end do
 	 x_star_div_theta = x_star / gp_data%theta(:,Z_type)
          
-#ifndef FAST_GAP
-         xixjtheta = 0.0_dp
-#endif
+	 ! not needed - all values to be used will be set before they're used
+         ! xixjtheta = 0.0_dp 
          c = 0.0_dp
          do i = 1, gp_data%n
             if( do_Z == gp_data%xz(i) ) then
@@ -212,30 +212,38 @@ module gp_predict_module
 
          if(present(x_prime_star)) then
 	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
-            do i = 1, gp_data%n
-               !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
-               if( do_Z == gp_data%xz(i) ) then
+	    if (my_use_dgemv) then
+	       k = 0.0_dp
+	       call dgemv('T',gp_data%d,gp_data%Z_index(2,do_Z)-gp_data%Z_index(1,do_Z)+1,1.0_dp, &
+		  xixjtheta(1,gp_data%Z_index(1,do_Z)), gp_data%d, x_prime_star_div_theta, 1, 0.0_dp, k(gp_data%Z_index(1,do_Z)), 1)
+	       k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) = k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) * &
+								    c(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z))
+	    else
+	       do i = 1, gp_data%n
+		  !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
+		  if( do_Z == gp_data%xz(i) ) then
 #ifdef GP_PREDICT_QP
-                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-                  !dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
+		     !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+		     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+		     !dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
 #else
-                  !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
-                  !& dot_product(xixjtheta,x_prime_star_div_theta)
+		     !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
+		     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
+		     !& dot_product(xixjtheta,x_prime_star_div_theta)
 #endif
-                  k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
-               else
-                  k(i) = 0.0_dp
-               end if
-               
-               !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-               !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
-               !xixjtheta = real((real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp),dp)
+		     k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
+		  else
+		     k(i) = 0.0_dp
+		  end if
+		  
+		  !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+		  !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
+		  !xixjtheta = real((real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp),dp)
 
-               !k(i) = gp_data%delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
-               !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
-            end do
+		  !k(i) = gp_data%delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
+		  !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
+	       end do
+	    endif ! use_dgemv
          else
             do i = 1, gp_data%n
 !               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
@@ -275,6 +283,51 @@ module gp_predict_module
          deallocate(k, c)
          if (.not. present(xixjtheta_in)) deallocate(xixjtheta)
       end subroutine gp_predict
+
+      subroutine GP_sort_data_by_Z(this)
+	 type(gp), intent(inout) :: this
+
+	 integer :: i
+	 integer, allocatable :: perm(:)
+	 real(dp), allocatable :: xz(:)
+
+	 allocate(perm(this%n))
+	 allocate(xz(this%n))
+
+	 do i=1, this%n
+	    perm(i) = i
+	 end do
+
+	 ! do sort
+	 xz = this%xz
+	 call sort_array(xz, perm)
+
+	 ! apply permutation to get sorted arrays
+	 this%xz(:) = this%xz(perm(:))
+	 this%alpha(:) = this%alpha(perm(:))
+	 do i=1, this%d
+	    this%x(i,:) = this%x(i,perm(:))
+	 end do
+
+	 ! find beginning and end indices of each xz value
+	 allocate(this%Z_index(2,maxval(this%xz)))
+	 this%Z_index = 0
+	 this%Z_index(1, this%xz(1)) = 1
+	 do i=2, this%n
+	    if (this%xz(i) < this%xz(i-1)) then ! improperly sorted - error
+	       call system_abort("GP_sort_data_by_Z got unsorted xz array for indexing")
+	    endif
+	    if (this%xz(i) > this%xz(i-1)) then ! sorted, new Z
+	       this%Z_index(2,this%xz(i-1)) = i-1 ! last Z ended on last i
+	       this%Z_index(1,this%xz(i)) = i ! this Z starts on this i
+	    endif
+	 end do
+	 this%Z_index(2,this%xz(this%n)) = this%n
+
+	 deallocate(perm)
+	 deallocate(xz)
+
+      end subroutine GP_sort_data_by_Z
 
       subroutine gp_print_xml(this,xf,label)
 
