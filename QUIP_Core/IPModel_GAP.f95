@@ -223,7 +223,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   integer, dimension(3) :: shift
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps, do_fast_gap, do_fast_gap_dgemv, force_calc_new_x_star
+  logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps, do_fast_gap, do_fast_gap_dgemv, force_calc_new_x_star, new_x_star
   character(FIELD_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
@@ -684,10 +684,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 	allocate(xixjtheta(this%my_gp%d, this%my_gp%n))
 
+        new_x_star = .true.
         if(present(e) .or. present(local_e)) then
-
            call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=.true., use_dgemv=do_fast_gap_dgemv)
-
+           new_x_star = force_calc_new_x_star
            local_e_in(i) = local_e_in(i) + this%e0
         endif
 
@@ -696,7 +696,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               f_gp = 0.0_dp
        
 
-              call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,k,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=force_calc_new_x_star, use_dgemv=do_fast_gap_dgemv)
+              call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,k,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=new_x_star, use_dgemv=do_fast_gap_dgemv)
+              new_x_star = force_calc_new_x_star
        
               if( present(f) ) f(k,i) = f(k,i) - f_gp_k
               if( present(virial) .or. present(local_virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
@@ -706,7 +707,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
        
 
                  if(do_lammps) then
-                    call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,n*3+k,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=force_calc_new_x_star, use_dgemv=do_fast_gap_dgemv)
+                    call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,n*3+k,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=new_x_star, use_dgemv=do_fast_gap_dgemv)
 !$omp critical
                     if( present(f) ) f(k,j) = f(k,j) - f_gp_k
                     if( present(virial) .or. present(local_virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
