@@ -260,15 +260,15 @@
     real(dp), pointer, dimension(:) :: weight_region1, conserve_momentum_weight
     integer, pointer, dimension(:) :: hybrid, hybrid_mark
     logical, pointer, dimension(:) :: hybrid_mask
-    integer :: i, k
+    integer :: i, j, k, n
     type(Dictionary) :: params, calc_create_hybrid_weights_params
     type(Connection) :: saved_connect
     logical :: dummy
     logical  :: minimise_mm, calc_weights, save_forces, lotf_do_init, &
          lotf_do_map, lotf_do_fit, lotf_do_interp, lotf_do_qm, lotf_interp_space, &
-         randomise_buffer, lotf_nneighb_only, atom_mask
+         randomise_buffer, lotf_nneighb_only
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
-         AP_method, lotf_interp_order
+         AP_method, lotf_interp_order, atom_mask
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
@@ -427,19 +427,9 @@
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) then
             RAISE_ERROR('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified', error)
        endif
-
+       
        call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
        call finalise(calc_create_hybrid_weights_params)
-
-       ! reassign pointers
-       
-       if (.not. assign_pointer(at, "hybrid", hybrid)) then
-            RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified", error)
-       endif
-
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
-            RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
-       endif
 
        call system_timer('calc_weights')
 
@@ -499,17 +489,33 @@
 
        if (this%do_rescale_r) call set_value(params, 'r_scale', this%r_scale_pot1)
        if (this%do_rescale_E) call set_value(params, 'E_scale', this%E_scale_pot1)
-       
-       atom_mask = .false.
+
        if (has_key(params, 'atom_mask')) then
           if (.not. get_value(params, 'atom_mask', atom_mask)) then
-             RAISE_ERROR('Potential_FM_Calc: atom_mask present in qm_args_str, but not of type logical', error)             
+             RAISE_ERROR('Potential_FM_Calc: atom_mask present in qm_args_str, but not of type logical', error)
           end if
-       end if
-
-       if (atom_mask) then
-          ! Mark the active atoms
-          call add_property(at, 'hybrid_mask', hybrid_mark == HYBRID_ACTIVE_MARK, overwrite=.true., ptr=hybrid_mask)
+          call add_property(at, 'hybrid_mask', .false., overwrite=.true., ptr=hybrid_mask)
+          if (trim(atom_mask) == "active") then
+             ! Mark the active atoms
+             hybrid_mask = hybrid_mark == HYBRID_ACTIVE_MARK
+          else if (trim(atom_mask) == "active_plus_buffer") then
+             ! Mark active and buffer atoms
+             hybrid_mask = hybrid_mark /= HYBRID_NO_MARK
+          else if (trim(atom_mask) == "active_plus_cutoff") then
+             ! Mark active atom and their neighbours (within QM pot cutoff) 
+             hybrid_mask = hybrid_mark == HYBRID_ACTIVE_MARK
+             do i=1,at%n
+                if (hybrid_mark(i) == HYBRID_ACTIVE_MARK) then
+                   do n=1,atoms_n_neighbours(at, i)
+                      j = atoms_neighbour(at, i, n, max_dist=cutoff(this%qmpot))
+                      if (j == 0) cycle
+                      hybrid_mask(j) = .true.
+                   end do
+                end if
+             end do
+          else
+             RAISE_ERROR('Potential_FM_Calc: unexpected atom_mask value "'//trim(atom_mask)//'"', error)
+          end if
           call print('Potential_FM_Calc: got atom_mask with '//count(hybrid_mark == HYBRID_ACTIVE_MARK)//' marked atoms.', PRINT_VERBOSE)
           call set_value(params, 'atom_mask_name', 'hybrid_mask')
        end if
