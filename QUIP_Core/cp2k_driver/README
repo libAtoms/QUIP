@@ -1,14 +1,20 @@
 Patches tested against CP2K cvs version 21 April 2010 (NB).
 
 Most robust forms for applying the changes are in
-  topology_pdb.F.patch (OUTDATED, don't use if you enable exyz reading, which is more accurate and only supported way right now)
-  motion_utils.F.patch (fixes output for parsing by cp2k_driver)
+  cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
   cp2k_exyz.patch (enables CP2K reading of our extended xyz format, needed for current version of cp2k_driver)
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
+  cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs)
+
+  cp2k_silica.patch (CV: Silica potential)
+
+  cp2k_topology_pdb.F.patch.OUTDATED (OUTDATED, don't use if you enable exyz reading, which is more accurate and only supported way right now)
 Use them by going to the CP2K cp2k/src directory, and running
-  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
-  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/cp2k_speed.patch
+  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/cp2k_motion_utils.F.patch
   patch -l -F 4 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch 
+  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/cp2k_speed.patch
+  patch -l -F 4 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_colvar_restraint_constraint_print.patch
+
 You will need to tell the compiler to add
   -Ipath_to_your_QUIP/build.QUIP_ARCH
 at compile time (add to FCFLAGS and FCFLAGS2 in the relevant file in the arch/ CP2K directory).

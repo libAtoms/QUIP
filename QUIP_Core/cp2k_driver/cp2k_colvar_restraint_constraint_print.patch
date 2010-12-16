@@ -20,55 +20,6 @@ retrieving revision 1.31
 diff -u -r1.31 restraint.F
 --- restraint.F	3 Jan 2010 23:41:38 -0000	1.31
 +++ restraint.F	25 Oct 2010 13:36:53 -0000
-@@ -104,6 +104,7 @@
-          particle_set, gci, lfixd_list)
-     CALL timeset(routineN,handle)
-     IF (.NOT. failure) THEN
-+
-        CALL force_env_get(force_env=force_env, subsys=subsys, cell=cell,error=error)
-        energy_4x6  = 0.0_dp
-        energy_3x3  = 0.0_dp
-@@ -123,11 +124,11 @@
-        ALLOCATE(force(3,SIZE(particle_set)),stat=stat)
-        CPPrecondition(stat==0, cp_failure_level, routineP, error, failure)
-        force = 0.0_dp
--       
-+
-        ! Create the list of locally fixed atoms
-        CALL create_local_fixd_list(lfixd_list, nkind, molecule_kind_set, local_particles,&
-             error)
--       
-+
-        DO ifixd = 1, SIZE(lfixd_list)
-           ikind = lfixd_list(ifixd)%ikind
-           ii    = lfixd_list(ifixd)%ifixd_index
-@@ -193,7 +194,7 @@
-              ! collective variables
-              IF ( ncolv%nrestraint /= 0 ) THEN
-                 n_restraint=n_restraint+ncolv%nrestraint
--                CALL restraint_colv_int( molecule, particle_set, cell, energy_colv, force,&
-+                CALL restraint_colv_int( molecule, particle_set, cell, energy_colv, force, &
-                      error )
-              ENDIF
-           END DO
-@@ -225,7 +226,7 @@
-              ! collective variables
-              IF ( gci%ncolv%nrestraint /= 0 ) THEN
-                 n_restraint=n_restraint+gci%ncolv%nrestraint
--                CALL restraint_colv_ext( gci, particle_set, cell, energy_colv, force,&
-+                CALL restraint_colv_ext( gci, particle_set, cell, energy_colv, force, &
-                      error )
-              ENDIF
-              DO iparticle = 1, SIZE(particle_set)
-@@ -372,7 +373,7 @@
-     g3x3_list => gci%g3x3_list
-     fixd_list => gci%fixd_list
-     CALL restraint_3x3_low( ng3x3, g3x3_list, fixd_list, first_atom, particle_set,&
--         energy, force, error )
-+         energy, force, error)
- 
-   END SUBROUTINE restraint_3x3_ext
- 
 @@ -618,6 +619,10 @@
            ind = lcolv(iconst) % colvar % i_atom (iatm)
            force(:,ind) = force(:,ind)-2.0_dp*k*tab*lcolv(iconst) % colvar % dsdr(:,iatm)
