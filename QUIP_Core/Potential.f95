@@ -440,12 +440,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   if (this%is_simple .and. (this%do_rescale_r .or. this%do_rescale_E)) then
      if (this%do_rescale_r) then
         if (.not. has_r_scale .and. .not. has_target_vol) then
-           RAISE_ERROR("potential_initialise: do_rescale_r=T and but neither r_scale nor target_vol present", error)
+           RAISE_ERROR("potential_initialise: do_rescale_r=T but neither r_scale nor target_vol present", error)
         end if
      end if
      if (this%do_rescale_E) then
         if (.not. has_E_scale .and. .not. has_target_B) then
-           RAISE_ERROR("potential_initialise: do_rescale_E=T and but neither E_scale nor target_B present", error)
+           RAISE_ERROR("potential_initialise: do_rescale_E=T but neither E_scale nor target_B present", error)
         end if
      end if
      
@@ -1537,8 +1537,8 @@ max_atom_rij_change = 1.038_dp
     endif
 
 if (am%minim_do_pos) then
-   call print("hack_restraint i "//hack_restraint_i// " k " // hack_restraint_k // " r " // hack_restraint_r, PRINT_ALWAYS)
    if (all(hack_restraint_i > 0) .and. all(hack_restraint_i <= am%minim_at%n)) then
+      call print("hack_restraint i "//hack_restraint_i// " k " // hack_restraint_k // " r " // hack_restraint_r, PRINT_ALWAYS)
       dr = distance_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2)) 
       hack_restraint_E = 0.5_dp * hack_restraint_k*(dr - hack_restraint_r)**2
       val = val + hack_restraint_E
