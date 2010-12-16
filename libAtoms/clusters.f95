@@ -1901,6 +1901,16 @@ contains
        RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark" property', error)
     endif
 
+    ! Fast implementation of trivial case where buffer_hops=0 and transition_hops=0
+    if (buffer_hops == 0 .and. transition_hops == 0) then
+       weight_region1 = 0.0_dp
+       where (hybrid_mark /= HYBRID_NO_MARK)
+          weight_region1 = 1.0_dp
+       end where
+
+       return
+    end if
+
     ! Add first marked atom to activelist. shifts will be relative to this atom
     first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK)
 
