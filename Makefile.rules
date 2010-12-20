@@ -83,6 +83,11 @@ ifeq (${HAVE_ASAP},1)
   INCLUDES += -I${ASAP_LIBDIR}
   DEFINES += -DHAVE_ASAP
 endif
+ifeq (${HAVE_KIM},1)
+  SYSLIBS += ${KIM_API_PATH}/KIMservice.o ${KIM_API_PATH}/KIMserviceC.o ${KIM_API_PATH}/KIMserviceF.o $(addprefix ${KIM_MODEL_PATH}/,${KIM_MODEL_OBJS})
+  INCLUDES += -I${KIM_API_PATH} -fcray-pointer
+  DEFINES += -DHAVE_KIM
+endif
 ifeq (${HAVE_GP_TEACH},1)
   DEFINES += -DHAVE_GP_TEACH
   HAVE_GP_PREDICT = 1
