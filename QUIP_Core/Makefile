@@ -63,6 +63,9 @@ IP_F95_FILES = IPEwald Yukawa IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IP
 ifeq (${HAVE_ASAP},1)
   IP_F95_FILES += IPModel_ASAP
 endif
+ifeq (${HAVE_KIM},1)
+  IP_F95_FILES += IPModel_KIM
+endif
 IP_F95_FILES += IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
