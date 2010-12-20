@@ -437,20 +437,20 @@ program crack
      call set_value(pot_params, 'mm_args_str', params%classical_args_str)
 
      call set_value(pot_params, 'qm_args_str', &
-          ' little_clusters='//params%qm_little_clusters// &
-          '  single_cluster='//(.not. params%qm_little_clusters)// &
-          '  terminate='//params%qm_terminate// &
-          '  even_electrons='//params%qm_even_electrons// &
-          '  cluster_vacuum='//params%qm_vacuum_size// &
-          '  cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
-          '  cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
-          '  buffer_hops='//params%qm_buffer_hops//&
-          '  transition_hops='//params%qm_transition_hops//&
-          '  randomise_buffer='//params%qm_randomise_buffer//&
-          '  hysteretic_connect='//params%qm_hysteretic_connect//&
-          '  nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-          '  cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-	  '  ' //trim(params%qm_args_str) )
+          ' little_clusters='//(params%qm_clusters .and. params%qm_little_clusters)// &
+          ' single_cluster='//(params%qm_clusters .and. .not. params%qm_little_clusters)// &
+          ' terminate='//params%qm_terminate// &
+          ' even_electrons='//params%qm_even_electrons// &
+          ' cluster_vacuum='//params%qm_vacuum_size// &
+          ' cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
+          ' cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
+          ' buffer_hops='//params%qm_buffer_hops//&
+          ' transition_hops='//params%qm_transition_hops//&
+          ' randomise_buffer='//params%qm_randomise_buffer//&
+          ' hysteretic_connect='//params%qm_hysteretic_connect//&
+          ' nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+          ' cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+	  ' '//trim(params%qm_args_str))
 
      if (params%qm_rescale_r) then
         call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')

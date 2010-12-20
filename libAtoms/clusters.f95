@@ -1903,8 +1903,13 @@ contains
 
     ! Fast implementation of trivial case where buffer_hops=0 and transition_hops=0
     if (buffer_hops == 0 .and. transition_hops == 0) then
+
+       where (hybrid_mark /= HYBRID_ACTIVE_MARK)
+          hybrid_mark = HYBRID_NO_MARK
+       end where
+
        weight_region1 = 0.0_dp
-       where (hybrid_mark /= HYBRID_NO_MARK)
+       where (hybrid_mark == HYBRID_ACTIVE_MARK)
           weight_region1 = 1.0_dp
        end where
 
