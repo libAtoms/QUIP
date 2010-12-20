@@ -3,6 +3,7 @@ Patches tested against CP2K cvs version 21 April 2010 (NB).
 Most robust forms for applying the changes are in
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
   cp2k_exyz.patch (enables CP2K reading of our extended xyz format, needed for current version of cp2k_driver)
+    verified to be compatible with cp2k data structures as of 15 Dec 2010.
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
   cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs)
 
