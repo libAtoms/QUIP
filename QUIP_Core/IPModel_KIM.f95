@@ -117,8 +117,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   this%kim_is_initialised = .true.
 
   ! this will not be hardwired some day - kim_api_init(this%pkim,"QUIP_Model_SW_v0_f") for example
-  ! call sample_01_lj_quip_cpp_init(this%pkim)
-  call QUIP_Model_SW_v0_f_init(this%pkim)
+  call KIM_generic_init(this%pkim)
 
   if(kim_api_set_data_f(this%pkim,"neighIterator",int(1,8),loc(quip_neighbour_iterator)).ne.1) then
     call system_abort("IPModel_KIM_Initialise_str failed to register quip_neighbour_iterator in kim")
@@ -149,8 +148,6 @@ subroutine quip_neighbour_iterator(pneigh_obj, pneighbours, n_neighbours, restar
 
   integer :: cur_n_neighbours, i, ji
 
-print *, "quip_neighbour_iterator got pneigh_obj ", pneigh_obj, c_loc(pneigh_obj)
-
   ppneigh_obj = c_loc(pneigh_obj)
   call c_f_pointer(ppneigh_obj, ki)
 
@@ -158,8 +155,8 @@ print *, "quip_neighbour_iterator got pneigh_obj ", pneigh_obj, c_loc(pneigh_obj
   ! atoms_neighbours(at, i, ji, rij)
 
   if (restart == 1) then
-    ki%current_i = 1
-    return 1
+    ki%current_i = 0
+    return
   else
     ki%current_i = ki%current_i + 1
   endif
@@ -177,7 +174,8 @@ print *, "quip_neighbour_iterator got pneigh_obj ", pneigh_obj, c_loc(pneigh_obj
   do ji=1, cur_n_neighbours
     neighbours(ji+2) = atoms_neighbour(ki%at, i, ji, diff=rij(1:3,ji)) -1
   end do
-  return 
+  rij(1:3,1:cur_n_neighbours) = -rij(1:3,1:cur_n_neighbours)
+
 end subroutine quip_neighbour_iterator
 
 subroutine IPModel_KIM_Finalise(this)
@@ -228,7 +226,8 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
         ZofType(i) = i
   end do
   if (kim_api_set_data_f(this%pkim, "ZofType", int(maxval(at%Z),8), loc(ZofType(1))) /= 1) then
-    RAISE_ERROR("Failed to create coordinates field in pkim", error)
+    call print("WARNING: IPModel_KIM_Calc failed to register ZofType in pkim, hope that's OK", PRINT_ALWAYS)
+    ! RAISE_ERROR("Failed to create ZofType field in pkim", error)
   endif
   if (kim_api_set_data_f(this%pkim, "atomTypes", int(at%N,8), loc(at%Z(1))) /= 1) then
     RAISE_ERROR("Failed to create coordinates field in pkim", error)
@@ -284,12 +283,10 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
   ki%at => at
-print *, "IPModel_KIM_Calc registering ki in neighObject ", loc(ki)
   if (kim_api_set_data_f(this%pkim, "neighObject", int(1,8), loc(ki)) /= 1) then
     RAISE_ERROR("Failed to create forces field in pkim", error)
   endif
 
-print *, "IPModel_KIM_Calc calling kim_api_model_compute"
   call kim_api_model_compute(this%pkim)
 
   deallocate(ZofType)
