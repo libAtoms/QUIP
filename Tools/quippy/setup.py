@@ -306,6 +306,9 @@ library_dirs  = [s[2:] for s in fields if s[:2] == '-L']
 # everything else in SYSLIBS is an extra link argument
 extra_link_args = [s for s in fields if not s[2:] in libraries and not s in libraries and not s[2:] in library_dirs and not s[2:] in include_dirs]
 
+if 'QUIPPY_LDFLAGS' in makefile:
+    extra_link_args.extend(makefile['QUIPPY_LDFLAGS'].split())
+
 # Preprocessor macros
 macros = [('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
 for defn in makefile['DEFINES'].split():

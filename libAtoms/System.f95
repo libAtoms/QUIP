@@ -2714,7 +2714,11 @@ contains
     use omp_lib
     integer :: system_omp_get_num_threads
 
+!$omp parallel
+!$omp master
     system_omp_get_num_threads = omp_get_num_threads()
+!$omp end master
+!$omp end parallel
   end function system_omp_get_num_threads
 
   subroutine system_omp_set_num_threads(threads)
