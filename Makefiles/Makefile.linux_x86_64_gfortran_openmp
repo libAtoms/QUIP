@@ -40,5 +40,6 @@ LINKOPTS += -fopenmp
 
 QUIPPY_F90FLAGS += -fopenmp
 QUIPPY_CFLAGS += -fopenmp
+QUIPPY_LDFLAGS += -fopenmp
 
 # rules

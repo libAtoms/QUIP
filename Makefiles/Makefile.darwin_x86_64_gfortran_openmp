@@ -30,15 +30,16 @@
 
 # declarations
 
-include Makefiles/Makefile.linux_x86_64_ifort_icc
+include Makefiles/Makefile.darwin_x86_64_gfortran
 
 DEFINES += -D_OPENMP
-F95FLAGS += -openmp
-F77FLAGS += -openmp
-CFLAGS += -openmp
-CPLUSPLUSFLAGS += -openmp
-LINKOPTS += -openmp
+F95FLAGS += -fopenmp
+F77FLAGS += -fopenmp
+CFLAGS += -fopenmp
+LINKOPTS += -fopenmp -static-libgcc
 
-QUIPPY_F90FLAGS += -openmp
-QUIPPY_CFLAGS += -openmp
+QUIPPY_F90FLAGS += -fopenmp
+QUIPPY_CFLAGS += -fopenmp
 QUIPPY_LDFLAGS += -fopenmp
+
+# rules
