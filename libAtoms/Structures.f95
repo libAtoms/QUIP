@@ -1604,6 +1604,7 @@ contains
 
   end function make_structure
 
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% create a supercell of a structure, read from a file, with chosen
@@ -2417,5 +2418,261 @@ contains
 
   end function atoms_compatible
 
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !% find supercells of two lattices that are compatible (i.e. 
+  !% equal or parallel vectors to some tolerance)
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine find_compatible_supercells(l1, l2, match_tol, n1, n2, fix_l2, max_m, error) 
+    real(dp), intent(in) :: l1(3,3), l2(3,3) !% lattices of 1st and second structures
+    real(dp), intent(in) :: match_tol(3) !% tolerange for good enough match of each vector.  if negative, only directions need to match
+    integer, intent(out) :: n1(3,3), n2(3,3) !% output supercells of 1st and 2nd structures that match well enough (new lattices lattice . n[12] )
+    logical, intent(in), optional :: fix_l2 !% if true, only check against primitive cells of l2
+    integer, intent(in), optional :: max_m !% max range of supercells to check (bigger is slower.  much).
+    integer, intent(out), optional :: error !% if present, error status return
+
+    integer :: i1(3,3), i2(3,3)
+    integer :: i1_1_1, i1_1_2, i1_1_3
+    integer :: i1_2_1, i1_2_2, i1_2_3
+    integer :: i1_3_1, i1_3_2, i1_3_3
+    integer :: i2_1_1, i2_1_2, i2_1_3
+    integer :: i2_2_1, i2_2_2, i2_2_3
+    integer :: i2_3_1, i2_3_2, i2_3_3
+    integer :: m1, m2
+    real(dp) :: sc_l1(3,3), sc_l2(3,3), best_l1(3,3), best_l2(3,3)
+    logical :: my_fix_l2
+    integer :: my_max_m
+
+    integer :: m1_min, m1_max
+    integer :: m2_min, m2_max
+
+    integer :: cur_match
+    real(dp) :: dev(3), dev_normsq, best_dev_normsq, vol, best_vol
+    logical :: better
+
+    INIT_ERROR(error)
+
+    my_fix_l2 = optional_default(.false., fix_l2)
+    my_max_m = optional_default(3, max_m)
+    
+    m1_min = 1
+    m1_max = my_max_m
+    if (my_fix_l2) then
+      m2_min = 1
+      m2_max = 1
+    else
+      m2_min = 1
+      m2_max = my_max_m
+    endif
+
+    n1 = 0
+    n2 = 0
+
+    cur_match = 0
+    ! loop over maxima
+    do m2=m2_min, m2_max
+    do m1=m1_min, m1_max
+call print("m1 m2 " // m1 // " " // m2)
+      ! loop over supercells of l1
+      do i1_1_1=-m1, m1
+      do i1_2_1=-m1, m1
+      do i1_3_1=-m1, m1
+      i1(1,1) = i1_1_1
+      i1(2,1) = i1_2_1
+      i1(3,1) = i1_3_1
+      sc_l1(:,1) = matmul(l1(:,:), real(i1(:,1),dp))
+      if (all(i1(:,1) == 0)) cycle
+      do i1_1_2=-m1, m1
+      do i1_2_2=-m1, m1
+      do i1_3_2=-m1, m1
+      i1(1,2) = i1_1_2
+      i1(2,2) = i1_2_2
+      i1(3,2) = i1_3_2
+      sc_l1(:,2) = matmul(l1(:,:), real(i1(:,2),dp))
+      if (all(i1(:,2) == 0)) cycle
+      if (abs(dot_product(sc_l1(:,1),sc_l1(:,2))) .feq. norm(sc_l1(:,1))*norm(sc_l1(:,2))) cycle
+      do i1_1_3=-m1, m1
+      do i1_2_3=-m1, m1
+      do i1_3_3=-m1, m1
+      i1(1,3) = i1_1_3
+      i1(2,3) = i1_2_3
+      i1(3,3) = i1_3_3
+      sc_l1(:,3) = matmul(l1(:,:), real(i1(:,3),dp))
+      if (all(i1(:,3) == 0)) cycle
+      if (maxval(abs(i1)) /= m1) cycle
+      if (abs(dot_product(sc_l1(:,1),sc_l1(:,3))) .feq. norm(sc_l1(:,1))*norm(sc_l1(:,3))) cycle
+      if (abs(dot_product(sc_l1(:,3),sc_l1(:,2))) .feq. norm(sc_l1(:,3))*norm(sc_l1(:,2))) cycle
+!! if (i1(1,1) /= -1 .or. i1(2,1) /= -1 .or. i1(3,1) /= 0 .or. i1(1,2) /= -1 .or. i1(2,2) /= 1 .or. i1(3,2) /= 0 .or. i1(1,3) /= 1 .or. i1(2,3) /= 1 .or. i1(3,3) /= -3) cycle
+
+	 ! loop over supercells of l2
+	 do i2_1_1=-m2, m2
+	 do i2_2_1=-m2, m2
+	 do i2_3_1=-m2, m2
+	 if (my_fix_l2 .and. (i2_1_1 /= 1 .or. i2_2_1 /= 0 .or. i2_3_1 /= 0)) cycle
+	 i2(1,1) = i2_1_1
+	 i2(2,1) = i2_2_1
+	 i2(3,1) = i2_3_1
+	 sc_l2(:,1) = matmul(l2(:,:), real(i2(:,1),dp))
+	 if (all(i2(:,1) == 0)) cycle
+	 do i2_1_2=-m2, m2
+	 do i2_2_2=-m2, m2
+	 do i2_3_2=-m2, m2
+	 if (my_fix_l2 .and. (i2_1_2 /= 0 .or. i2_2_2 /= 1 .or. i2_3_2 /= 0)) cycle
+	 i2(1,2) = i2_1_2
+	 i2(2,2) = i2_2_2
+	 i2(3,2) = i2_3_2
+	 sc_l2(:,2) = matmul(l2(:,:), real(i2(:,2),dp))
+	 if (abs(dot_product(sc_l2(:,1),sc_l2(:,2))) .feq. norm(sc_l2(:,1))*norm(sc_l2(:,2))) cycle
+	 if (all(i2(:,2) == 0)) cycle
+	 do i2_1_3=-m2, m2
+	 do i2_2_3=-m2, m2
+	 do i2_3_3=-m2, m2
+	 if (my_fix_l2 .and. (i2_1_3 /= 0 .or. i2_2_3 /= 0 .or. i2_3_3 /= 1)) cycle
+	 i2(1,3) = i2_1_3
+	 i2(2,3) = i2_2_3
+	 i2(3,3) = i2_3_3
+	 sc_l2(:,3) = matmul(l2(:,:), real(i2(:,3),dp))
+	 if (all(i2(:,3) == 0)) cycle
+	 if (maxval(abs(i2)) /= m2) cycle
+	 if (abs(dot_product(sc_l2(:,1),sc_l2(:,3))) .feq. norm(sc_l2(:,1))*norm(sc_l2(:,3))) cycle
+	 if (abs(dot_product(sc_l2(:,3),sc_l2(:,2))) .feq. norm(sc_l2(:,3))*norm(sc_l2(:,2))) cycle
+
+	    dev(1) = vectors_match(sc_l1(:,1), sc_l2(:,1), match_tol(1) < 0.0_dp)
+	    if (dev(1) < abs(match_tol(1))) then
+	       dev(2) = vectors_match(sc_l1(:,2), sc_l2(:,2), match_tol(2) < 0.0_dp)
+	       if (dev(2) < abs(match_tol(2))) then
+		  dev(3) = vectors_match(sc_l1(:,3), sc_l2(:,3), match_tol(3) < 0.0_dp)
+		  if (dev(3) < abs(match_tol(3))) then ! possible match
+		     cur_match = cur_match + 1
+		     vol = cell_volume(sc_l1) + cell_volume(sc_l2)
+		     dev_normsq = normsq(dev)
+		     if (cur_match > 1) then ! check to make sure that this one is better than previous
+			! this could use better heuristics
+			better = .false.
+			if (dev_normsq < best_dev_normsq) better = .true.
+			if ((dev_normsq .feq. best_dev_normsq) .and. (vol < best_vol)) better = .true.
+
+			if (.not. better) cycle
+		     endif
+		     best_vol = vol
+		     best_dev_normsq = dev_normsq
+		     n1 = i1
+		     n2 = i2
+		     best_l1 = sc_l1
+		     best_l2 = sc_l2
+		  endif
+	       endif
+	    endif ! vectors_match()
+	 end do 
+	 end do
+	 end do 
+	 end do 
+	 end do
+	 end do 
+	 end do 
+	 end do
+	 end do ! i2, j2, k2
+      end do 
+      end do
+      end do 
+      end do 
+      end do
+      end do 
+      end do
+      end do
+      end do ! i1, j1, k1
+   end do
+   end do ! m1, m2
+
+   if (cur_match == 0) then
+      RAISE_ERROR("Failed to find sufficiently good match", error)
+   endif
+
+  end subroutine find_compatible_supercells
+
+  !% OMIT
+  ! used by find_compatible_supercells
+  function vectors_match(v1, v2, hat_vecs)
+     real(dp), intent(in) :: v1(3), v2(3)
+     logical, intent(in ) :: hat_vecs
+     real(dp) :: vectors_match
+
+     real(dp) :: ndv
+
+     if (hat_vecs) then ! match angle only
+       vectors_match = 1.0_dp - dot_product(v1,v2)/(norm(v1)*norm(v2))
+     else ! match total deviation
+       ndv = norm(v1-v2)
+       vectors_match = max(ndv/norm(v1), ndv/norm(v2))
+     endif
+  end function vectors_match
+
+  !% construct an arbitrary supercell from a primitive structure and a set of supercell vectors
+  subroutine arbitrary_supercell(a_out, a_in, i1, error)
+    type(Atoms), intent(out)::a_out  !% Output (big) cell
+    type(Atoms), intent(in)::a_in    !% Input (small) cell
+    integer, intent(in):: i1(3,3) !% combination of primitive lattice vectors to create supercell (a_out%lattice = a_in%lattice . i1).  column i specifies output pbc vector i.
+    integer, intent(out), optional :: error !% if present, returned error status
+
+    integer :: dup_n1, dup_n2, dup_n3
+    integer :: max_n1, max_n2, max_n3
+    integer :: min_n1, min_n2, min_n3
+    type(Atoms) :: a_dup
+    real(dp) :: new_lat(3,3), t_p(3)
+    integer :: f1, f2, f3
+    logical, allocatable :: is_good(:)
+
+    real(dp) :: r
+    integer :: i, ji, j
+
+    INIT_ERROR(error)
+
+    ! calculate how big a simple supercell we need to encompass new arbitrary supercell
+    new_lat = matmul(a_in%lattice, real(i1,dp))
+    dup_n1 = 0; dup_n2 = 0; dup_n3 = 0
+    do f1=0,1
+    do f2=0,1
+    do f3=0,1
+       t_p = matmul(a_in%g,f1*new_lat(:,1)+f2*new_lat(:,2)+f3*new_lat(:,3))
+       max_n1 = max(max_n1, int(t_p(1)+1.0))
+       max_n2 = max(max_n2, int(t_p(2)+1.0))
+       max_n3 = max(max_n3, int(t_p(3)+1.0))
+       min_n1 = min(min_n1, int(t_p(1)+1.0))
+       min_n2 = min(min_n2, int(t_p(2)+1.0))
+       min_n3 = min(min_n3, int(t_p(3)+1.0))
+    end do
+    end do
+    end do
+    dup_n1 = max_n1 - min_n1 + 2
+    dup_n2 = max_n2 - min_n2 + 2
+    dup_n3 = max_n3 - min_n3 + 2
+    call supercell(a_dup, a_in, dup_n1, dup_n2, dup_n3, error)
+
+    ! set the new lattice and map to [-0.5, 0.5)
+    call set_lattice(a_dup, matmul(a_in%lattice, real(i1,dp)), .false.)
+    call map_into_cell(a_dup)
+
+    ! look for close atoms
+    call set_cutoff(a_dup, 2.0_dp)
+    call calc_connect(a_dup)
+    allocate(is_good(a_dup%N))
+    is_good = .true.
+    do i=1, a_dup%N
+      if (is_good(i)) then
+	 do ji=1, atoms_n_neighbours(a_dup, i)
+	    j = atoms_neighbour(a_dup, i, ji, max_dist=0.01_dp)
+	    if (j > i) is_good(j) = .false.
+	 end do
+      endif
+    end do
+
+    call print("count(is_good) " // count(is_good))
+
+    ! select good atoms
+    call select(a_out, a_dup, is_good)
+
+  end subroutine arbitrary_supercell
 
 end module structures_module
