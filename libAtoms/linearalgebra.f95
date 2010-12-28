@@ -2927,7 +2927,7 @@ CONTAINS
     integer :: i,N,M,w
     character(20) :: format
     
-    w = int(log10(real(maxval(abs(this))+1,dp)))+2 ! leave at least one space between entries
+    w = int(log10(real(maxval(abs(this))+1,dp)))+3 ! leave at least one space between entries, including room for neg. sign
     N = size(this,1)
     M = size(this,2)
     write(format,'(2(a,i0),a)')'(',M,'i',w,')'
