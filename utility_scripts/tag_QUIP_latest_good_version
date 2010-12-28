@@ -6,6 +6,8 @@ MAILS=bernstei@dave.nrl.navy.mil,gc121@cam.ac.uk,james.kermode@gmail.com
 REPORT_FILE=tag_QUIP_latest_good_version_report.txt
 GOOD_REPORT_FILE=latest_good_version_report.txt
 
+LOCKFILE=tag.lock
+
 function check_version {
    version=$1
 
@@ -33,6 +35,7 @@ function check_version {
       module load ${compiler_module} ${mkl_module} openmpi > module_load.out 2>&1
       if grep -q "Unable to locate a modulefile" module_load.out; then
 	 echo "Failed in 'module load ${compiler_module} mkl openmpi'"
+	 rm -f $LOCKFILE
 	 exit 1
       fi
 
@@ -55,6 +58,7 @@ function check_version {
 	       else
 		  echo "Unknown compiler_module type $compiler_module"
 		  popd > /dev/null
+		  rm -f $LOCKFILE
 		  exit 1
 	       fi
 	    fi
@@ -112,6 +116,14 @@ function status_all_OK {
    return $is_OK
 }
 
+if [ -f $LOCKFILE ]; then
+   echo "Found lockfile"
+   cat $LOCKFILE
+   exit 0
+fi
+
+date > $LOCKFILE
+
 . /share/apps/local/etc/profile.d/modules.sh
 module load silent
 
@@ -167,10 +179,12 @@ if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
    if [[ $retried == 0 ]]; then
       (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
 	 mutt -s "QUIP autobuild succeeded" ${MAILS}
+      rm -f $LOCKFILE
       exit 0
    else
       (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
 	 mutt -s "QUIP autobuild failed on HEAD, succeeded eventually" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS}
+      rm -f $LOCKFILE
       exit 2
    fi
 else
@@ -178,5 +192,10 @@ else
    echo "Failed to find working revision between HEAD and $cur_rev" >> ${REPORT_FILE}
    (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
       mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS}
+   rm -f $LOCKFILE
    exit 3
 fi
+
+echo "How did we get here?"
+rm -f $LOCKFILE
+exit 0
