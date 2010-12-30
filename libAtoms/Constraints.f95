@@ -1001,7 +1001,7 @@ contains
     if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
     if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
     if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
-    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH: "data" must contain exactly four value')
+    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH: "data" must contain exactly four values')
 
     r = pos(1:3)-pos(4:6)
     diff = data(1) - data(2)
@@ -1014,7 +1014,7 @@ contains
     dC_dr(1:3) = r/norm(r)
     dC_dr(4:6) = -r/norm(r)
 
-    dC_dt = dC_dr .dot. velo + diff * efact / data(4)
+    dC_dt = (dC_dr .dot. velo) + diff * efact / data(4)
 
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
@@ -1074,6 +1074,58 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
+  !X BONDLENGTH_DEV_POW:
+  !X
+  !% Constrain an arbitrary power of the difference between a bond length and some target value.
+  !% \begin{itemize}
+  !% \item data(1) = bond length
+  !% \item data(2) = exponent
+  !% \end{itemize}
+  !% The minimum image convention is used.
+  !%
+  !% The function used is $C = (|\mathbf{r}_1 - \mathbf{r}_2| - d)^p$
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine BONDLENGTH_DEV_POW(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+
+    !local variables                             
+    real(dp)                       :: dr(3), norm_dr
+    integer                         :: i
+
+    if(size(pos) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom positions must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom velocities must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom velocities must be specified')
+    if(size(data) /= 2) call system_abort('BONDLENGTH_DEV_POW: "data" must contain exactly two values')
+
+    dr = pos(1:3)-pos(4:6)
+    norm_dr = norm(dr)
+
+    C = (norm_dr-data(1))**data(2)
+    target_v = data(1)
+
+    dC_dr(1:3) = data(2)*(norm_dr-data(1))**(data(2)-1.0_dp)*dr/norm_dr
+    dC_dr(4:6) = -data(2)*(norm_dr-data(1))**(data(2)-1.0_dp)*dr/norm_dr
+
+    dC_dt = dC_dr .dot. velo
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
+    enddo
+
+  end subroutine BONDLENGTH_DEV_POW
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
   !X RELAX_BONDLENGTH_SQ:
   !X
   !% Exponentially decay a bond length towards a final value.
@@ -1107,7 +1159,7 @@ contains
     if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
     if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
     if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
-    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH_SQ: "data" must contain exactly four value')
+    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH_SQ: "data" must contain exactly four values')
 
     r = pos(1:3)-pos(4:6)
     diff = data(1) - data(2)
@@ -1118,7 +1170,7 @@ contains
     target_v = d*d
     dC_dr(1:3) = 2.0_dp * r
     dC_dr(4:6) = -2.0_dp * r
-    dC_dt = dC_dr .dot. velo + 2.0_dp * d * diff * efact / data(4)
+    dC_dt = (dC_dr .dot. velo) + 2.0_dp * d * diff * efact / data(4)
 
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
@@ -1127,6 +1179,71 @@ contains
     enddo
 
   end subroutine RELAX_BONDLENGTH_SQ
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
+  !X RELAX_BONDLENGTH_DEV_POW:
+  !X
+  !% Exponentially decay an arbitrary power of the deviation of a bond length towards a final value.
+  !%
+  !% \begin{itemize}
+  !% \item data(1) = initial bond length
+  !% \item data(2) = final bond length
+  !% \item data(3) = exponent
+  !% \item data(4) = initial time
+  !% \item data(5) = relaxation time
+  !% \end{itemize}
+  !%
+  !% Constraint function is $C = (|\mathbf{r}_1 - \mathbf{r}_2| - d)^p$, where
+  !% \begin{displaymath}
+  !% d = d_{final} + (d_{init} - d_{final})\exp\left(-\frac{t-t_{init}}{t_{relax}}\right)
+  !% \end{displaymath}
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine RELAX_BONDLENGTH_DEV_POW(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    real(dp) :: ri, rf, p, t0, tau
+    real(dp)                                    :: dr(3), cur_d, diff, efact, norm_dr
+    integer                         :: i
+
+    if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(data) /= 5) call system_abort('RELAX_BONDLENGTH_DEV_POW: "data" must contain exactly five values')
+
+    ri = data(1)
+    rf = data(2)
+    p = data(3)
+    t0 = data(4)
+    tau = data(5)
+
+    dr = pos(1:3)-pos(4:6)
+    diff = ri - rf
+    efact = exp(-(t-t0)/tau)
+    cur_d = rf + diff * efact
+
+    norm_dr = norm(dr)
+    C = (norm_dr-cur_d)**p
+    target_v = cur_d
+    dC_dr(1:3) = p*(norm_dr-cur_d)**(p-1.0_dp)*dr/norm_dr
+    dC_dr(4:6) = -p*(norm_dr-cur_d)**(p-1.0_dp)*dr/norm_dr
+    dC_dt = (dC_dr .dot. velo) + p * (norm_dr-cur_d)**(p-1.0_dp) * diff * efact / tau
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
+    enddo
+
+  end subroutine RELAX_BONDLENGTH_DEV_POW
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
@@ -1187,7 +1304,11 @@ contains
     target_v = l*l
     dC_dr(1:3) = 2.0_dp * r
     dC_dr(4:6) = -2.0_dp * r
-    dC_dt = dC_dr .dot. velo - 2.0_dp * l * dl_dt
+    if (t >= data(5) .and. t <= data(6)) then
+      dC_dt = (dC_dr .dot. velo) - 2.0_dp * l * dl_dt
+    else
+      dC_dt = dC_dr .dot. velo
+    endif
 
     dcoll_dr(1:6) = dC_dr(1:6)
     Z_coll = 0._dp
