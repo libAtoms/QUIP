@@ -178,6 +178,12 @@ contains
     integer :: form_bond(2), break_bond(2)
     integer :: form_bond_sorted(2), break_bond_sorted(2)
 
+    character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
+    character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
+    logical :: truncate_parent_dir
+    character(len=1024) :: dir, tmp_run_dir
+    integer :: tmp_run_dir_i, exists, stat
+
     INIT_ERROR(error)
 
     call system_timer('do_cp2k_calc')
@@ -205,6 +211,10 @@ contains
       call param_register(cli, 'break_bond', '0 0', break_bond, help_string="bond to break (for EVB)")
       call param_register(cli, 'qm_charges', '', calc_qm_charges, help_string="if not blank, name of property to put QM charges in")
       call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i, help_string="if > 0, force to run in this # run directory")
+      call param_register(cli, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
+      call param_register(cli, 'MM_param_file', '', MM_param_filename, help_string="If tmp_run_dir>0, where to find MM parameter file to copy it to the cp2k run dir on /tmp.") !charmm.pot
+      call param_register(cli, 'QM_potential_file', '', QM_pot_filename, help_string="If tmp_run_dir>0, where to find QM POTENTIAL file to copy it to the cp2k run dir on /tmp.") !POTENTIAL
+      call param_register(cli, 'QM_basis_file', '', QM_basis_filename, help_string="If tmp_run_dir>0, where to find QM BASIS_SET file to copy it to the cp2k run dir on /tmp.") !BASIS_SET
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('cp2k_driver could not parse argument line')
@@ -232,12 +242,79 @@ contains
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
     call print('  calc_qm_charges '//trim(calc_qm_charges))
+    call print('  tmp_run_dir_i '//tmp_run_dir_i)
+    call print('  MM_param_file '//trim(MM_param_filename))
+    call print('  QM_potential_file '//trim(QM_pot_filename))
+    call print('  QM_basis_file '//trim(QM_basis_filename))
 
     if (auto_centre .and. has_centre_pos) &
       call system_abort("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin")
 
+    if (tmp_run_dir_i>0 .and. clean_up_keep_n > 0) then
+      call system_abort("do_cp2k_calc got both tmp_run_dir_i(only write on /tmp) and clean_up_keep_n (save in home).")
+    endif
+
+    !create run directory now, because it is needed if running on /tmp
+    if (tmp_run_dir_i>0) then
+      tmp_run_dir = "/tmp/cp2k_run_"//tmp_run_dir_i
+      run_dir = link_run_directory(trim(tmp_run_dir), basename="cp2k_run", run_dir_i=run_dir_i)
+      !and copy necessary files for access on /tmp if not yet present
+      if (len_trim(MM_param_filename)>0) then
+         tmp_MM_param_filename = trim(MM_param_filename)
+         truncate_parent_dir=.true.
+         do while(truncate_parent_dir)
+            if (tmp_MM_param_filename(1:3)=="../") then
+               tmp_MM_param_filename=trim(tmp_MM_param_filename(4:))
+            else
+               truncate_parent_dir=.false.
+            endif
+         enddo
+         if (len_trim(tmp_MM_param_filename)==0) call system_abort("Empty tmp_MM_param_filename string")
+         call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_MM_param_filename)//" ] ; then echo 'copy charmm.pot' ; cp "//trim(MM_param_filename)//" "//trim(tmp_run_dir)//"/ ; else echo 'reuse charmm.pot' ; fi")
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_MM_param_filename)//" ] ; then echo 'copy charmm.pot' ; cp "//trim(MM_param_filename)//" "//trim(tmp_run_dir)//"/ ; fi",status=stat)
+         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(MM_param_filename)//" into the tmp dir "//trim(tmp_run_dir))
+      endif
+      if (len_trim(QM_pot_filename)>0) then
+         tmp_QM_pot_filename = trim(QM_pot_filename)
+         truncate_parent_dir=.true.
+         do while(truncate_parent_dir)
+            if (tmp_QM_pot_filename(1:3)=="../") then
+               tmp_QM_pot_filename=trim(tmp_QM_pot_filename(4:))
+            else
+               truncate_parent_dir=.false.
+            endif
+         enddo
+         call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(QM_pot_filename)//" ] ; then cp "//trim(QM_pot_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_QM_pot_filename)//" ] ; then echo 'copy QM potential' ; cp "//trim(QM_pot_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
+         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(QM_pot_filename)//" into the tmp dir "//trim(tmp_run_dir))
+      endif
+      if (len_trim(QM_basis_filename)>0) then
+         tmp_QM_basis_filename = trim(QM_basis_filename)
+         truncate_parent_dir=.true.
+         do while(truncate_parent_dir)
+            if (tmp_QM_basis_filename(1:3)=="../") then
+               tmp_QM_basis_filename=trim(tmp_QM_basis_filename(4:))
+            else
+               truncate_parent_dir=.false.
+            endif
+         enddo
+         call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(QM_basis_filename)//" ] ; then cp "//trim(QM_basis_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_QM_basis_filename)//" ] ; then echo 'copy QM basis' ; cp "//trim(QM_basis_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
+         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(QM_basis_filename)//" into the tmp dir "//trim(tmp_run_dir))
+      endif
+    else
+      run_dir = make_run_directory("cp2k_run", force_run_dir_i, run_dir_i)
+    endif
+
     ! read template file
-    call initialise(template_io, trim(cp2k_template_file), INPUT)
+    if (tmp_run_dir_i>0) then
+       call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
+       call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
+       if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(cp2k_template_file)//" into the tmp dir "//trim(tmp_run_dir))
+       call initialise(template_io, trim(tmp_run_dir)//"/"//trim(cp2k_template_file), INPUT)
+    else
+       call initialise(template_io, trim(cp2k_template_file), INPUT)
+    endif
     call read_file(template_io, cp2k_template_a, template_n_lines)
     call finalise(template_io)
 
@@ -316,7 +393,13 @@ contains
        call add_property(at, 'saved_rev_sort_index', 0, n_cols=1, ptr=saved_rev_sort_index_p, error=error)
        PASS_ERROR_WITH_INFO("Failed to add saved_rev_sort_index property", error)
        ! read it from file
-       call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       if (tmp_run_dir_i>0) then
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)//" ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
+         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)//" into the tmp dir "//trim(tmp_run_dir))
+         call initialise(rev_sort_index_io, trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       else
+         call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       endif
        call read_ascii(rev_sort_index_io, saved_rev_sort_index_p)
        call finalise(rev_sort_index_io)
        ! sort by it
@@ -619,7 +702,13 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORD_FILE_NAME quip_cp2k.xyz", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE EXYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
-      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME ../quip_cp2k"//trim(topology_suffix)//".psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      if (tmp_run_dir_i>0) then
+        call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_cp2k"//trim(topology_suffix)//".psf ] ; then cp quip_cp2k"//trim(topology_suffix)//".psf /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
+        if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy quip_cp2k"//trim(topology_suffix)//".psf into the tmp dir "//trim(tmp_run_dir))
+        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME quip_cp2k"//trim(topology_suffix)//".psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      else
+        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME ../quip_cp2k"//trim(topology_suffix)//".psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      endif
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_FORMAT PSF", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     endif
 
@@ -635,8 +724,6 @@ contains
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION", "&MD")
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-
-    run_dir = make_run_directory("cp2k_run", force_run_dir_i, run_dir_i)
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
@@ -683,7 +770,27 @@ contains
 
     ! clean up
 
-    if (clean_up_files) then
+    if (tmp_run_dir_i>0) then
+      if (clean_up_files) then
+         !only delete files that need recreating, keep basis, potentials, psf
+         call system_command('rm -f '//trim(tmp_run_dir)//"/quip-* "//trim(tmp_run_dir)//"/cp2k_input.inp "//trim(tmp_run_dir)//"/cp2k_output.out "//trim(run_dir))
+      else !save dir
+         exists = .true.
+         i = 0
+         do while (exists)
+           i = i + 1
+           dir = "cp2k_run_saved_"//i
+           call system_command("bash -c '[ -e "//trim(dir)//" ]'", status=stat)
+           exists = (stat == 0)
+         end do
+         call system_command("cp -r "//trim(run_dir)//" "//trim(dir), status=stat)
+         if (stat /= 0) then
+            RAISE_ERROR("Failed to copy "//trim(run_dir)//" to "//trim(dir)//" status " // stat, error)
+         endif
+         call system_command('rm -f '//trim(tmp_run_dir)//"/* "//trim(run_dir))
+      endif
+    else
+      if (clean_up_files) call system_command('rm -rf '//trim(run_dir))
        if (clean_up_keep_n <= 0) then ! never keep any old directories around
 	  call system_command('rm -rf '//trim(run_dir))
        else ! keep some (>= 1) old directories around
