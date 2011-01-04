@@ -96,15 +96,15 @@ program xyz2pdb
 
    ! reading in run parameters
     call initialise(params_in)
-    call param_register(params_in, 'File', PARAM_MANDATORY, xyz_file, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Residue_Library', 'protein_res.CHARMM.lib',Library, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Print_XSC', 'F', print_xsc, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Center_atom', '0', center_atom, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'sort', 'F', do_sort, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'File', PARAM_MANDATORY, xyz_file, help_string="Input XYZ file containing species:pos or species:avgpos")
+    call param_register(params_in, 'Residue_Library', PARAM_MANDATORY, Library, help_string="Residue library for pattern matching, e.g. $QUIP_DIR/libAtoms/protein_res.CHARMM.lib")
+    call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance, help_string="Bond criterion tolerance factor.  Two atoms are bonded if d(a1,a2)<[CovRad(a1)+CovRad(a2)]*Neighbour_Tolerance.  This should normally not need changing.")
+    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="Whether not to take into account bonds of non(C,H,O,N,P) elements.")
+    call param_register(params_in, 'Print_XSC', 'F', print_xsc, help_string="Whether to output XSC (NAMD cell file).")
+    call param_register(params_in, 'Center_atom', '0', center_atom, help_string="Which atom should the system be centered around.  0 means no centering.  This is important for programs that can only treat nonperiodic systems not to cut the molecule in half.")
+    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential in CP2K.")
+    call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="Whether to use the average positions (avgpos) for the pattern matching rather than the instantaneous positions (pos).")
+    call param_register(params_in, 'sort', 'F', do_sort, help_string="Whether to sort atoms by molecule and/or residue.")
     if (.not. param_read_args(params_in)) then
       call print_usage
       call system_abort('could not parse argument line')
