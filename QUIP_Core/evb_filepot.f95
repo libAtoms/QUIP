@@ -78,6 +78,8 @@ program EVB_filepot_template
                                save_energy
     type(Inoutput)          :: evb_params_file
     logical                 :: exists
+    character(len=1024) :: filename
+    integer                        :: tmp_run_dir_i
 
 
     call system_initialise(verbosity=PRINT_SILENT,enable_timing=.true.)
@@ -131,6 +133,7 @@ program EVB_filepot_template
        call param_register(params, 'offdiagonal_r0', '0.0', offdiagonal_r0, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'save_forces', "T", save_forces, help_string="No help yet.  This source file was $LastChangedBy$")
        call param_register(params, 'save_energy', 'T', save_energy, help_string="No help yet.  This source file was $LastChangedBy$")
+       call param_register(params, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="No help yet.  This source file was $LastChangedBy$")
        if (.not. param_read_line(params, evb_params_line, ignore_unknown=.true.,task='EVB_filepot_template args_str')) then
           call system_abort('EVB_filepot_template failed to parse args_str="'//trim(evb_params_line)//'"')
        endif
@@ -167,9 +170,16 @@ program EVB_filepot_template
 
     at2_pos(1:3,1:at2%N) = at1_pos(1:3,1:at2%N)
 
+    !possible i/o on /tmp
+    if (tmp_run_dir_i>0) then
+       filename="/tmp/cp2k_run_"//tmp_run_dir_i//"/filepot"
+    else
+       filename="filepot"
+    endif
+
     !call print("Writing filepot.0.xyz")
     !!call write(at2,"filepot.0.xyz", properties="species:pos:mol_id:atom_res_number",real_format='f17.10',error=error)
-    call write(at2,"filepot.0.xyz", properties="species:pos",real_format='%17.10f',error=error)
+    !call write(at2,trim(filename)//".0.xyz", properties="species:pos",real_format='%17.10f',error=error)
          !HANDLE_ERROR(error)
     call finalise(at1)
 
@@ -178,7 +188,7 @@ program EVB_filepot_template
     !setup EVB potential (pot and args_str)
     if (len_trim(filepot_program)==0) call system_abort("EVB_filepot_template: Filepot not given.")
     !!call initialise(cp2k_fast_pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
-    call initialise(cp2k_fast_pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos min_cutoff=0.0')
+    call initialise(cp2k_fast_pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos min_cutoff=0.0')
 
     args_str=""
     !if (len_trim(cp2k_calc_args)==0) call print("WARNING: EVB_filepot_template: cp2k_calc_args not given.",PRINT_ALWAYS)
