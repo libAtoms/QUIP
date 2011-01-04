@@ -1450,6 +1450,8 @@ contains
     integer                        :: num_fields
     character(len=1023)            :: comment, fields(3)
     logical                        :: exists
+    integer                        :: jobid
+    character(len=30)              :: jobid_str
 
     !check if required properties are present
     if (mod(size(pos),3)/=0) call system_abort("GAP_ENERGY: pos must have 3N coordinates")
@@ -1459,8 +1461,19 @@ contains
     posmax=maxval(pos)
     posmin=minval(pos)
     !CInoutPut is on a higher level, cannot call print_xyz and read_xyz
-    call system_command("mv only_pos.xyz only_pos.xyz.bak",stat)
-    call initialise(inoutfile,filename="only_pos.xyz",action=OUTPUT)
+
+    !get $JOBID if running i/o on /tmp
+    jobid=0
+    call get_env_var("JOBID", jobid_str, stat)
+    if (stat==0) read (jobid_str,*) jobid
+
+    if (jobid>0) then
+       call system_command("mv /tmp/cp2k_run_"//jobid//"/only_pos.xyz /tmp/cp2k_run_"//jobid//"/only_pos.xyz.bak",stat)
+       call initialise(inoutfile,filename="/tmp/cp2k_run_"//jobid//"/only_pos.xyz",action=OUTPUT)
+    else
+       call system_command("mv only_pos.xyz only_pos.xyz.bak",stat)
+       call initialise(inoutfile,filename="only_pos.xyz",action=OUTPUT)
+    endif
     call print((size(pos)/3),file=inoutfile)
     call print('Lattice="'//(posmax-posmin)//' 0. 0. 0. '//(posmax-posmin)//' 0. 0. 0. '//(posmax-posmin)//'" Properties=species:S:1:pos:R:3',file=inoutfile)
     do i=1,size(pos),3
@@ -1469,13 +1482,23 @@ contains
     call finalise(inoutfile)
 
     !calc evb from an external filepot
-    call system_command("~/bin/egap_from_pos pos=only_pos.xyz only_GAP=T out=only_pos.out", status=stat)
+    if (jobid>0) then
+       call system_command("~/bin/egap_from_pos_tmp pos=/tmp/cp2k_run_"//jobid//"/only_pos.xyz only_GAP=T out=/tmp/cp2k_run_"//jobid//"/only_pos.out", status=stat)
+    else
+       call system_command("~/bin/egap_from_pos pos=only_pos.xyz only_GAP=T out=only_pos.out", status=stat)
+    endif
 
     !read evb forces and energies
     !CInoutPut is on a higher level, cannot call print_xyz or read_xyz
-    inquire(file="only_pos.out", exist=exists)
-    if (.not.exists) call system_abort("No only_pos.out file found. EVB filepot probably aborted.")
-    call initialise(inoutfile,filename="only_pos.out",action=INPUT)
+    if (jobid>0) then
+       inquire(file="/tmp/cp2k_run_"//jobid//"/only_pos.out", exist=exists)
+       if (.not.exists) call system_abort("No /tmp/cp2k_run_"//jobid//"/only_pos.out file found. EVB filepot probably aborted.")
+       call initialise(inoutfile,filename="/tmp/cp2k_run_"//jobid//"/only_pos.out",action=INPUT)
+    else
+       inquire(file="only_pos.out", exist=exists)
+       if (.not.exists) call system_abort("No only_pos.out file found. EVB filepot probably aborted.")
+       call initialise(inoutfile,filename="only_pos.out",action=INPUT)
+    endif
     !Natoms
     call parse_line(inoutfile," ",fields,num_fields,stat)
     if (stat/=0) call system_abort("GAP_ENERGY: Something wrong while reaing only_pos.out number of atoms.")
