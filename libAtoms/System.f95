@@ -2847,6 +2847,40 @@ end function pad
 
   end function make_run_directory
 
+  function link_run_directory(sourcename, basename, run_dir_i, error) result(dir)
+    character(len=*), intent(in) :: sourcename
+    character(len=*), optional :: basename
+    integer, intent(out), optional :: run_dir_i
+    integer, intent(out), optional :: error
+    character(len=1024) :: dir
+
+    integer i
+    character(len=1024) :: use_basename
+   
+    logical :: exists
+    integer stat
+
+    INIT_ERROR(error)
+
+    use_basename = optional_default("run", basename)
+   
+    exists = .true.
+    i = 0
+    do while (exists)
+      i = i + 1
+      dir = trim(use_basename)//"_"//i
+      call system_command("bash -c '[ -e "//trim(dir)//" ]'", status=stat)
+      exists = (stat == 0)
+    end do
+    call system_command("ln -s "//trim(sourcename)//" "//trim(dir), status=stat)
+    if (stat /= 0) then
+       RAISE_ERROR("Failed to link "//trim(dir)//" status " // stat, error)
+    endif
+
+    if (present(run_dir_i)) run_dir_i = i
+
+  end function link_run_directory
+
   function current_version()
     integer :: current_version
     character(len=1024) :: string
