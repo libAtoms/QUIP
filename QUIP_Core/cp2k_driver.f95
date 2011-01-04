@@ -182,7 +182,8 @@ contains
     character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
     character(len=1024) :: dir, tmp_run_dir
-    integer :: tmp_run_dir_i, exists, stat
+    integer :: tmp_run_dir_i, stat
+    logical :: exists
 
     INIT_ERROR(error)
 
