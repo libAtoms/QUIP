@@ -158,6 +158,7 @@ logical :: have_silica_potential
 
   real(dp), allocatable :: restraint_stuff(:,:)
   real(dp) :: r
+  integer :: tmp_run_dir_i
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
@@ -167,21 +168,21 @@ logical :: have_silica_potential
 
     !INPUT
       call initialise(params_in)
-      call param_register(params_in, 'Run_Type1', 'MM', Run_Type1, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Run_Type2', 'NONE', Run_Type2, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'IO_Rate', '1', IO_Rate, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Run_Type1', 'MM', Run_Type1, help_string="Type of run1 (or only run if Run_Type2=NONE) QS, MM, QMMM_CORE, QMMM_EXTENDED")
+      call param_register(params_in, 'Run_Type2', 'NONE', Run_Type2, help_string="Type of run1 (or only run if Run_Type2=NONE) QS, MM, QMMM_CORE, QMMM_EXTENDED")
+      call param_register(params_in, 'IO_Rate', '1', IO_Rate, help_string="Frequency of output printing (every IO_Rate steps).")
       call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Thermostat_7_rs', '0.0 0.0', Thermostat_7_rs, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Time_Step', '0.5', Time_Step, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Run_Time', '0.5', Run_Time, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Inner_Buffer_Radius', '0.0', Inner_Buffer_Radius, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Outer_Buffer_Radius', '0.0', Outer_Buffer_Radius, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Inner_QM_Region_Radius', '0.0', Inner_QM_Region_Radius, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Outer_QM_Region_Radius', '0.0', Outer_QM_Region_Radius, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print, help_string="when to print PSF file: NO_PSF, EVERY_#, DRIVER_PRINT_AT_0")
+      call param_register(params_in, 'Time_Step', '0.5', Time_Step, help_string="Time step in fs.")
+      call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time, help_string="Equilibration time in fs.")
+      call param_register(params_in, 'Run_Time', '0.5', Run_Time, help_string="Run time in fs.")
+      call param_register(params_in, 'Inner_Buffer_Radius', '0.0', Inner_Buffer_Radius, help_string="The inner radius of the hysteretic buffer of the QM region.")
+      call param_register(params_in, 'Outer_Buffer_Radius', '0.0', Outer_Buffer_Radius, help_string="The outer radius of the hysteretic buffer of the QM region.")
+      call param_register(params_in, 'Inner_QM_Region_Radius', '0.0', Inner_QM_Region_Radius, help_string="The inner radius of the QM region (around an atom list or a point in space).")
+      call param_register(params_in, 'Outer_QM_Region_Radius', '0.0', Outer_QM_Region_Radius, help_string="The outer radius of the QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Connect_Cutoff', '0.0', Connect_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature, help_string="Simulation temperature in K.")
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'traj_file', 'movie.xyz',traj_file, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -200,37 +201,38 @@ logical :: have_silica_potential
       call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'print_prop', 'all', print_prop, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'print_forces', 'T', print_forces, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'print_forces_at0', 'F', print_forces_at0, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'nneightol', '1.2', nneightol, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'spline_from', '0.0', spline_from, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'spline_to', '0.0', spline_to, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'spline_dpot', '0.0', spline_dpot, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'use_spline', 'F', use_spline, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'print_forces', 'T', print_forces, help_string="whether to print forces at time>0 on the mainlog")
+      call param_register(params_in, 'print_forces_at0', 'T', print_forces_at0, help_string="whether to print forces at time=0 on the mainlog")
+      call param_register(params_in, 'nneightol', '1.2', nneightol, help_string="Nearest neighbour tolerance factor.  Two atoms are bonded if d(a1,a2)<[CovRad(a1)+CovRad(a2)]*Neighbour_Tolerance.")
+      call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections, help_string="Whether not to take into account bonds of non(C,H,O,N,P) elements.")
+      call param_register(params_in, 'spline_from', '0.0', spline_from, help_string="inner radius of the external spline potential")
+      call param_register(params_in, 'spline_to', '0.0', spline_to, help_string="outer radius of the external spline potential")
+      call param_register(params_in, 'spline_dpot', '0.0', spline_dpot, help_string="depth of the external spline potential")
+      call param_register(params_in, 'use_spline', 'F', use_spline, help_string="whether to use an external spline potential within a spherical shell around (/0. 0. 0./).")
       call param_register(params_in, 'max_n_steps', '-1', max_n_steps, help_string="No help yet.  This source file was $LastChangedBy$")
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
       evb_args_str=''
       call param_register(params_in, 'evb_args_str', '', evb_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="Filepot program.")
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr, help_string="Centre of the QM region in space.")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'EVB', 'F', EVB, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
+      call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
 
       call param_register(params_in, 'distance_ramp', 'F', distance_ramp, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'distance_ramp_outer_radius', '4.0', distance_ramp_outer_radius, help_string="No help yet.  This source file was $LastChangedBy$")
 
-      call param_register(params_in, 'H_extra_heat_ctr', '0.0 0.0 0.0', H_extra_heat_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'H_extra_heat_r', '0.0 -1.0', H_extra_heat_r, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'H_extra_heat_velo_factor', '1.0', H_extra_heat_velo_factor, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'nH_extra_heat_ctr', '0.0 0.0 0.0', nH_extra_heat_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'nH_extra_heat_r', '0.0 -1.0', nH_extra_heat_r, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'H_extra_heat_ctr', '0.0 0.0 0.0', H_extra_heat_ctr, help_string="spherical centre of the spherical shell where extra heating is introduced on hydrogen atoms")
+      call param_register(params_in, 'H_extra_heat_r', '0.0 -1.0', H_extra_heat_r, help_string="inner and outer radii of the spherical shell where extra heating is introduced on hydrogen atoms")
+      call param_register(params_in, 'H_extra_heat_velo_factor', '1.0', H_extra_heat_velo_factor, help_string="velocities of hydrogen atoms will be multiplied by this every time step")
+      call param_register(params_in, 'nH_extra_heat_ctr', '0.0 0.0 0.0', nH_extra_heat_ctr, help_string="spherical centre of the spherical shell where extra heating is introduced on nonhydrogen atoms")
+      call param_register(params_in, 'nH_extra_heat_r', '0.0 -1.0', nH_extra_heat_r, help_string="inner and outer radii of the spherical shell where extra heating is introduced on nonhydrogen atoms")
+      call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor, help_string="velocities of nonhydrogen atoms will be multiplied by this every time step")
+      call param_register(params_in, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
 
       if (.not. param_read_args(params_in)) then
         call system_abort('could not parse argument line')
@@ -377,6 +379,7 @@ logical :: have_silica_potential
       call print('  evb_args_str '//trim(evb_args_str))
       call print('  cp2k_calc_args '//trim(cp2k_calc_args))
       call print('  filepot_program '//trim(filepot_program))
+      call print('  tmp_run_dir_i '//tmp_run_dir_i)
       call print('---------------------------------------')
       call print('')
 
@@ -566,43 +569,43 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
     ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
-          call setup_pot(evbsub_pot, Run_Type1, filepot_program)
+          call setup_pot(evbsub_pot, Run_Type1, filepot_program, tmp_run_dir_i)
           call initialise(pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_pot)
        else
-          call setup_pot(pot, Run_Type1, filepot_program)
+          call setup_pot(pot, Run_Type1, filepot_program, tmp_run_dir_i)
        endif
        ! set up mm only pot, in case we need it for empty QM core
        if (EVB) then
-          call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program)
+          call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
           call initialise(empty_qm_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_empty_qm_pot)
        else
-          call setup_pot(empty_qm_pot, 'MM', filepot_program)
+          call setup_pot(empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
        endif
     else ! doing force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
           call print("WARNING: Force Mixing with MM as the slow potential!")
-          call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program)
+          call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
           call initialise(cp2k_slow_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_slow_pot)
        else
-          call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
+          call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
        endif
        if (EVB.and.trim(Run_Type2)=='MM') then
-          call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program)
+          call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
           call initialise(cp2k_fast_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_fast_pot)
        else
-          call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
+          call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
        endif
        if (distance_ramp) then
 	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
@@ -626,13 +629,13 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
           if (EVB) then
-             call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program)
+             call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
              call initialise(empty_qm_pot,args_str='EVB=T',  &
                 !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
                 !' form_bond={1 2} break_bond={2 6} ', &
                 pot1=evbsub_empty_qm_pot)
           else
-             call setup_pot(empty_qm_pot, Run_Type2, filepot_program)
+             call setup_pot(empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
           endif
        endif
     endif
@@ -1355,7 +1358,13 @@ contains
             args_str = trim(args_str) // ' cluster_mark_postfix=_core'
           endif
 	endif
-	call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
+	if (Run_Type1(1:4) == 'QMMM' .and. do_carve_cluster) then
+          !potential simple will not calculate energy with cluster carving
+	  call calc(pot,at,force=f1,args_str=trim(args_str))
+          energy=0.0_dp
+	else
+	  call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
+        endif
      else ! do force mixing
 
        if (EVB_MM .and. trim(Run_Type1)=="MM") then
@@ -1419,17 +1428,25 @@ contains
 
   end subroutine do_calc_call
 
-  subroutine setup_pot(pot, Run_Type, filepot_program)
+  subroutine setup_pot(pot, Run_Type, filepot_program, tmp_run_dir_i)
     type(Potential), intent(inout) :: pot
     character(len=*), intent(in) :: Run_Type, filepot_program
+    integer, intent(in) :: tmp_run_dir_i
+    character(len=1024) :: filename
+
+    if (tmp_run_dir_i > 0) then
+       filename="/tmp/cp2k_run_"//tmp_run_dir_i//"/filepot"
+    else
+       filename="filepot"
+    endif
     if (trim(Run_Type) == 'QS') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos min_cutoff=0.0')
     else if (trim(Run_Type) == 'MM') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
