@@ -22,7 +22,7 @@ import sys
 
 class CubeWriter(object):
 
-   def __init__(self, f, comment=None, data=None, origin=None, comment2=None):
+   def __init__(self, f, comment=None, data=None, origin=None, pad=True, comment2=None):
       if type(f) == type(''):
          if f == 'stdout':
             self.f = sys.stdout
@@ -38,6 +38,7 @@ class CubeWriter(object):
       self.comment2 = comment2
       self.data = data
       self.origin = origin
+      self.pad = pad
 
    def write(self, at):
        data = self.data
@@ -69,11 +70,20 @@ class CubeWriter(object):
 
        for i in (1,2,3):
            n = data.shape[i-1]
+           if self.pad: n += 1
            voxel_x, voxel_y, voxel_z = at.lattice[:,i]/BOHR/n
            self.f.write('%d %f %f %f\n' % (n, voxel_x, voxel_y, voxel_z))
 
        for i in frange(at.n):
            self.f.write('%d 0.0 %f %f %f\n' % (at.z[i], at.pos[1,i]/BOHR, at.pos[2,i]/BOHR, at.pos[3,i]/BOHR))
+
+       if self.pad:
+          padded_data = numpy.zeros([s+1 for s in data.shape])
+          padded_data[:-1,:-1,:-1] = data
+          padded_data[-1,:,:] = padded_data[0,:,:]
+          padded_data[:,-1,:] = padded_data[:,0,:]
+          padded_data[:,:,-1] = padded_data[:,:,0]
+          data = padded_data
 
        for d in data.flat:
            self.f.write('%f\n' % d)
@@ -82,7 +92,7 @@ class CubeWriter(object):
        if self.opened:  self.f.close()
 
 
-def CubeReader(f):
+def CubeReader(f, pad=True, property_name='charge'):
 
    def convert_line(line, *fmts):
       return (f(s) for f,s in zip(fmts, line.split()))
@@ -108,20 +118,27 @@ def CubeReader(f):
    at.params['comment1'] = comment1
    at.params['comment2'] = comment2
    at.params['origin'] = (origin_x, origin_y, origin_z)
+   at.add_property(property_name, 0.0)
+   prop_array = getattr(at, property_name)
 
    # Now there's one line per atom
    for i in frange(at.n):
-      at.z[i], unknown, at.pos[1,i], at.pos[2,i], at.pos[3,i] = convert_line(f.readline(), int, float, float, float, float)
+      at.z[i], prop_array[i], at.pos[1,i], at.pos[2,i], at.pos[3,i] = convert_line(f.readline(), int, float, float, float, float)
       at.pos[:,i] *= BOHR
    at.set_atoms(at.z)
 
-   # Rest of file is data, with one data point per line
-   data = numpy.loadtxt(f)
+   # Rest of file is volumetric data
+   data = numpy.fromiter((float(x) for x in f.read().split()),float,count=-1)
    if data.size != shape[0]*shape[1]*shape[2]:
       raise IOError("Bad array length - expected shape %r, but got size %d" % (shape, data.size))
 
    # Save volumetric data in at.data
-   at.data = farray(data.reshape(shape))
+   data = farray(data.reshape(shape))
+
+   # Discard periodic repeat
+   if pad: data = data[:-1,:-1,:-1]
+
+   at.data = data
 
    if opened:
       f.close()
