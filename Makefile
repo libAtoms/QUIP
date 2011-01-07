@@ -45,7 +45,7 @@ endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
-MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
+MODULES = ThirdParty libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 GP = 
 
 ifeq (${HAVE_GP_PREDICT},1)
@@ -58,7 +58,7 @@ MODULES += GAP_teach GAProgs
 GP += GAP_teach
 endif
 
-FOX = FoX-4.0.3
+FOX = ThirdParty/FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
 default: ${MODULES}
@@ -125,7 +125,7 @@ QUIP_Programs/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
-QUIP_Core/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
+QUIP_Core/%: ThirdParty libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
