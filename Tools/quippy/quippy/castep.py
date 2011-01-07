@@ -1209,19 +1209,48 @@ def read_formatted_potential(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
 
+   # Read header lines
+   header = []
    fh = open(filename)
    if fh.readline().startswith('BEGIN header'):
-      while not fh.readline().startswith('END header'):
-         pass
+      line = fh.readline()
+      while not line.startswith('END header'):
+         header.append(line)
+         line = fh.readline()
    else:
       fh.seek(0)
+
+   nsp_lines = [line for line in header if line.strip().endswith('! nsp') ]
+   if len(nsp_lines) != 1:
+      raise IOError('Badly formatted potential file - missing "nsp" header line')
+   nsp = int(nsp_lines[0].split()[0])
+
+   num_ions_in_species_lines = [line for line in header if line.find('num_ions_in_species') != -1 ]
+   if len(num_ions_in_species_lines) != nsp:
+      raise IOError('Badly formatted potential file - len(num_ions_in_species_lines) %d != nsp %d' % (len(num_ions_in_species_lines), nsp))
+   num_ions_in_species = [ int(line.split()[0]) for line in num_ions_in_species_lines ]
+
+   # One line per ion with charge, potential at ion and efield at ion
+   pot_ions = []
+   efield_ions = []
+   for sp in range(nsp):
+      for i in range(num_ions_in_species[sp]):
+         line = fh.readline()
+         species, index, charge, potential, efield1, efield2, efield3 = line.split()
+         pot_ions.append(float(potential))
+         efield_ions.append([float(efield1), float(efield2), float(efield3)])
+
+   pot_ions = farray(pot_ions)
+   efield_ions = farray(efield_ions).T
+
+   # Rest of file is potential data grid
    pot = numpy.loadtxt(fh)
-      
    nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
    data = fzeros((nx,ny,nz))
    for (i,j,k,value) in pot:
       data[int(i),int(j),int(k)] = value
-   return data
+
+   return pot_ions, efield_ions, data
    
 def read_formatted_density(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
