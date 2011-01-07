@@ -10,7 +10,7 @@ p.add_option('-t', '--test', action='store')
 opt, arg = p.parse_args()
 
 if (opt.test is None) + (opt.execute is None) != 1:
-    p.error('Exactl one of -c or -t must be present.')
+    p.error('Exactly one of -e and -t must be present.')
 
 sys.argv[1:] = []
 
