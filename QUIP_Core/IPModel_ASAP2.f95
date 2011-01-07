@@ -59,8 +59,8 @@ type IPModel_ASAP2
   real(dp) :: betapol, tolpol, yukalpha, yuksmoothlength
   integer :: maxipol, pred_order
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
-  real(dp), allocatable, dimension(:) :: pol, z
-  real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol, pseudise_sigma
+  real(dp), allocatable, dimension(:) :: pol, z, pseudise_sigma
+  real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
 
   real(dp) :: cutoff_coulomb, cutoff_ms
 
@@ -714,12 +714,13 @@ subroutine IPModel_ASAP2_Print(this, file)
     call Print ("IPModel_ASAP2 : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
     call Print ("IPModel_ASAP2 : pol = "//this%pol(ti), file=file)
     call Print ("IPModel_ASAP2 : z   = "//this%z(ti), file=file)
+    call Print ("IPModel_ASAP2 : pseudise_sigma = "//this%pseudise_sigma(ti), file=file)
    call verbosity_push_decrement()
     do tj =1,this%n_types
        call Print ("IPModel_ASAP2 : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) //&
             " " // this%atomic_num(tj), file=file)
        call Print ("IPModel_ASAP2 : pair " // this%D_ms(ti,tj) // " " // this%gamma_ms(ti,tj) // " " &
-            // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj) // " " // this%pseudise_sigma(ti, tj), file=file)
+            // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj), file=file)
 
     end do
    call verbosity_pop()
@@ -731,6 +732,7 @@ subroutine IPModel_ASAP2_read_params_xml(this, param_str)
   type(IPModel_ASAP2), intent(inout), target :: this
   character(len=*), intent(in) :: param_str
 
+  integer :: ti
   type(xml_t) :: fxml
 
   if (len(trim(param_str)) <= 0) return
@@ -748,6 +750,13 @@ subroutine IPModel_ASAP2_read_params_xml(this, param_str)
   if (this%n_types == 0) then
     call system_abort("IPModel_ASAP2_read_params_xml parsed file, but n_types = 0")
   endif
+
+  ! pseudise_sigma defaults to covalent radii
+  do ti=1,this%n_types
+     if (this%pseudise_sigma(ti) .feq. 0.0_dp) then
+        this%pseudise_sigma(ti) = ElementCovRad(this%atomic_num(ti))
+     end if
+  end do
 
 end subroutine IPModel_ASAP2_read_params_xml
 
@@ -803,6 +812,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%pol(parse_ip%n_types))
       parse_ip%pol = 0.0_dp
       allocate(parse_ip%z(parse_ip%n_types))
+      allocate(parse_ip%pseudise_sigma(parse_ip%n_types))
+      parse_ip%pseudise_sigma = 0.0_dp
 
       allocate(parse_ip%D_ms(parse_ip%n_types,parse_ip%n_types))
       parse_ip%D_ms = 0.0_dp
@@ -814,8 +825,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%B_pol = 0.0_dp
       allocate(parse_ip%C_pol(parse_ip%n_types,parse_ip%n_types))
       parse_ip%C_pol = 0.0_dp
-      allocate(parse_ip%pseudise_sigma(parse_ip%n_types,parse_ip%n_types))
-      parse_ip%pseudise_sigma = 0.0_dp
 
       call QUIP_FoX_get_value(attributes, "cutoff_coulomb", value, status)
       if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find cutoff_coulomb")
@@ -867,6 +876,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find z")
     read (value, *) parse_ip%z(ti)
 
+    call QUIP_FoX_get_value(attributes, "pseudise_sigma", value, status)
+    if (status == 0) then
+       read (value, *) parse_ip%pseudise_sigma(ti)
+    end if
+
     if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
     allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
     parse_ip%type_of_atomic_num = 0
@@ -903,18 +917,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find C_pol")
     read (value, *) parse_ip%C_pol(ti,tj)
 
-    call QUIP_FoX_get_value(attributes, "pseudise_sigma", value, status)
-    if (status == 0) then
-       read (value, *) parse_ip%pseudise_sigma(ti,tj)
-    end if
-
     if (ti /= tj) then
       parse_ip%D_ms(tj,ti) = parse_ip%D_ms(ti,tj)
       parse_ip%gamma_ms(tj,ti) = parse_ip%gamma_ms(ti,tj)
       parse_ip%R_ms(tj,ti) = parse_ip%R_ms(ti,tj)
       parse_ip%B_pol(tj,ti) = parse_ip%B_pol(ti,tj)
       parse_ip%C_pol(tj,ti) = parse_ip%C_pol(ti,tj)
-      parse_ip%pseudise_sigma(tj,ti) = parse_ip%pseudise_sigma(ti,tj)
     endif
 
   endif
