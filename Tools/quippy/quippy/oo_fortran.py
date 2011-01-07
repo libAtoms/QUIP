@@ -909,7 +909,7 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
                exctype, value, tb = sys.exc_info()
 
                if is_interactive_shell():
-                   error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join(list('%r' % a for a in args) + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
+                   error_str = 'Fortran routine %s(%s):\n %s' % (name, ', '.join([repr(a) for a in args] + ['%s=%r' % (k,v) for (k,v) in kwargs.iteritems()]), str(value).strip())
                else:
                    # Remove Fortran traceback
                    error_str = str(value).strip().split('\n')[-1].strip()
