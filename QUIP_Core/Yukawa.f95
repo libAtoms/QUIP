@@ -62,7 +62,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
    character(len=*), optional, intent(in) :: atom_mask_name, source_mask_name
    integer, intent(in), optional :: type_of_atomic_num(:)
    logical, optional, intent(in) :: pseudise
-   real(dp), optional, intent(in) :: pseudise_sigma(:,:)
+   real(dp), optional, intent(in) :: pseudise_sigma(:)
    real(dp), optional, intent(in) :: grid_size
    integer, intent(out), optional :: error
 
@@ -141,7 +141,8 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
          end if
       end if
 
-      if (do_pseudise) ti = get_type(type_of_atomic_num, at%Z(i))
+      ti = 0
+      if (do_pseudise .and. at%Z(i) /= 0) ti = get_type(type_of_atomic_num, at%Z(i))
 
       do m = 1, atoms_n_neighbours(at, i)
          
@@ -171,7 +172,8 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
          r_ij = r_ij/BOHR
          zv2 = charge(i)*charge(j)
 
-         if (do_pseudise) tj = get_type(type_of_atomic_num, at%Z(j))
+         tj = 0
+         if (do_pseudise .and. at%Z(j) /= 0) tj = get_type(type_of_atomic_num, at%Z(j))
 
          gamjir = zv2/r_ij
          gamjir3 = gamjir/(r_ij**2.0_dp)
@@ -181,7 +183,9 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
          call smooth_cutoff(r_ij, yukcutoff-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
 
          if (do_pseudise) then
-            sigma = pseudise_sigma(ti,tj)/BOHR
+            sigma = 0.0_dp
+            if (ti /= 0) sigma = sigma + pseudise_sigma(ti)/BOHR
+            if (tj /= 0) sigma = sigma + pseudise_sigma(tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
@@ -291,7 +295,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
    type(MPI_Context), intent(in), optional :: mpi
    character(len=*), optional, intent(in) :: atom_mask_name, source_mask_name
    logical, optional, intent(in) :: pseudise
-   real(dp), optional, intent(in) :: pseudise_sigma(:,:)
+   real(dp), optional, intent(in) :: pseudise_sigma(:)
    real(dp), optional, intent(in) :: grid_size
    integer, intent(out), optional :: error
 
@@ -373,7 +377,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
             i_is_min_image = is_min_image(at, i)
          end if
       end if
-      ti = get_type(type_of_atomic_num, at%Z(i))
+      if (at%Z(i) /= 0) ti = get_type(type_of_atomic_num, at%Z(i))
 
       qi = charge(i)
       dipi = dip(:,i)/BOHR
@@ -413,7 +417,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
          r_ij = r_ij/BOHR
          u_ij = u_ij/BOHR
-         tj = get_type(type_of_atomic_num, at%Z(j))
+         if (at%Z(j) /= 0) tj = get_type(type_of_atomic_num, at%Z(j))
 
          qj = charge(j)
          dipj = dip(:,j)/BOHR
@@ -442,7 +446,9 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
          if (tpolj) prj = dipj .dot. u_ij
          
          if (do_pseudise) then
-            sigma = pseudise_sigma(ti, tj)/BOHR
+            sigma = 0.0_dp
+            if (ti /= 0) sigma = pseudise_sigma(ti)/BOHR
+            if (tj /= 0) sigma = pseudise_sigma(tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16

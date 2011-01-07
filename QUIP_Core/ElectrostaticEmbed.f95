@@ -144,8 +144,11 @@ contains
     end do
 
     write(out%unit,'(i4,T30,a)') count(nsp /= 0),'   ! nsp '
-    do i=1,count(nsp /= 0)
-       write(out%unit,'(i4,T30,a,i0,a)') nsp(i),'    ! num_ions_in_species(', i, ')'
+    j = 0
+    do i=1,size(nsp)
+       if (nsp(i) == 0) cycle
+       j = j + 1
+       write(out%unit,'(i4,T30,a,i0,a)') ,nsp(i), '   ! num_ions_in_species(', j, ')'
     end do
     write(out%unit,'(3(i4,2x),T30,a)') ngrid, '   ! fine FFT grid along <a,b,c>'
     call print('! data is 1 line per atom with species, index, charge, potential, efield,', file=out)
