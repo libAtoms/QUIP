@@ -38,13 +38,14 @@ module ElectrostaticEmbed_module
   use QUIP_Common_module
   use Functions_module
   use Potential_module
+  use cube_tools
 
   implicit none
   private
 
   integer, private, parameter :: nspins = 2
 
-  public :: calc_electrostatic_potential, write_electrostatic_potential, make_periodic_potential
+  public :: calc_electrostatic_potential, write_electrostatic_potential, write_electrostatic_potential_cube, make_periodic_potential
 
 contains
 
@@ -177,6 +178,101 @@ contains
 
   end subroutine write_electrostatic_potential
 
+  subroutine write_electrostatic_potential_cube(at, mark_name, filename, ngrid, origin, extent, pot, error)
+    type(Atoms), intent(inout) :: at
+    character(len=*), intent(in) :: mark_name
+    character(len=*), intent(in) :: filename
+    integer, intent(in) :: ngrid(3)
+    real(dp), intent(in) :: origin(3), extent(3)
+    real(dp), dimension(:,:,:), intent(in) :: pot
+    integer, optional, intent(out) :: error
+
+    type(InOutput) :: out
+    type(cube_type) :: cube
+    integer i, j, n, z!, na, nb, nc
+    integer, pointer, dimension(:) :: mark
+    real(dp), pointer, dimension(:) :: charge, es_pot
+    real(dp), pointer, dimension(:,:) :: es_efield
+    integer, dimension(size(ElementMass)) :: nsp
+
+    INIT_ERROR(error)
+
+    call assign_property_pointer(at, mark_name, mark, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'charge', charge, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'es_pot', es_pot, error)
+    PASS_ERROR(error)
+
+    call assign_property_pointer(at, 'es_efield', es_efield, error)
+    PASS_ERROR(error)
+
+    call cube_clear(cube)
+    cube%comment1 = trim(filename)
+    cube%N = count(mark /= HYBRID_ELECTROSTATIC_MARK .and. mark /= HYBRID_NO_MARK)
+    cube%r0 = real(origin)
+    cube%na = ngrid(1)+1
+    cube%nb = ngrid(2)+1
+    cube%nc = ngrid(3)+1
+    
+    ! Size of voxels
+    cube%da = 0.0_dp; cube%da(1) = real(extent(1)/ngrid(1)/BOHR)
+    cube%db = 0.0_dp; cube%db(2) = real(extent(2)/ngrid(2)/BOHR)
+    cube%dc = 0.0_dp; cube%dc(3) = real(extent(3)/ngrid(3)/BOHR)
+    
+    ! Count number of each species
+    nsp(:) = 0
+    do i=1,at%n
+       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
+       nsp(at%z(i)) = nsp(at%z(i)) + 1
+    end do
+
+    ! Fill in atomic information
+    allocate(cube%atoms(cube%n))
+    n = 0
+    do z = 1,size(nsp)
+       if (nsp(z) == 0) cycle
+
+       do j=1,at%n
+          if (at%z(j) /= z) cycle
+          if (mark(j) == HYBRID_NO_MARK .or. mark(j) == HYBRID_ELECTROSTATIC_MARK) cycle
+
+          n = n + 1
+          cube%atoms(n)%number = at%z(j)
+          cube%atoms(n)%unknown = real(charge(j))
+          cube%atoms(n)%r(:) = real(at%pos(:,j))/BOHR
+       end do
+    end do
+
+    ! Fill in volumetric information - note conversion to single precision and that 
+    ! n[a,b,c]=1 entries are repeated at n[a,b,c]=cube%n[a,b,c]
+    cube%NMOs=1
+    allocate(cube%voxels(cube%na,cube%nb,cube%nc,cube%NMOs))
+!!$    cube%voxels = 0.0
+!!$    do na=0,cube%na-1
+!!$       do nb=0,cube%nb-1
+!!$          do nc=0,cube%nc-1
+!!$             cube%voxels(na+1,nb+1,nc+1,cube%NMOs) = real(pot(1+mod(na,cube%na-1), 1+mod(nb,cube%nb-1), 1+mod(nc,cube%nc-1))) 
+!!$          end do
+!!$       end do
+!!$    end do
+    cube%voxels(1:cube%na-1,1:cube%nb-1,1:cube%nc-1,1) = real(pot)
+    cube%voxels(cube%na,:,:,1) = real(cube%voxels(1,:,:,1))
+    cube%voxels(:,cube%nb,:,1) = real(cube%voxels(:,1,:,1))
+    cube%voxels(:,:,cube%nc,1) = real(cube%voxels(:,:,1,1))
+
+    call initialise(out, filename, OUTPUT)
+    call cube_write(cube, out%unit, error)
+    PASS_ERROR(error)
+    call finalise(out)
+    deallocate(cube%atoms)
+    deallocate(cube%voxels)
+
+  end subroutine write_electrostatic_potential_cube
+
+
   subroutine make_periodic_potential(at, real_grid, ngrid, is_periodic, cutoff_radius, cutoff_width, mark_name, pot, error)
     type(Atoms), intent(inout) :: at
     real(dp), dimension(:,:), intent(in) :: real_grid
@@ -299,9 +395,12 @@ contains
     call calc(this, at, args_str=trim(args_str)//' efield=es_efield local_energy=es_pot atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
     PASS_ERROR(error)
 
+    call print('atom_mask='//atom_mask)
+    call print('source_mask='//source_mask)
+
     ! Electrostatic potential at ion positions is 2*local_energy/charge
     where (es_pot /= 0.0_dp) 
-       es_pot = 2.0_dp*es_pot/at_charge
+       es_pot = 2.0_dp*es_pot/at_charge/HARTREE
     end where
 
   end subroutine calc_electrostatic_potential_ions
@@ -428,10 +527,10 @@ contains
 
     INIT_ERROR(error)
 
-    call calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
+    call calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
     PASS_ERROR(error)
 
-    call calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+    call calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
     PASS_ERROR(error)
 
   end subroutine calc_electrostatic_potential

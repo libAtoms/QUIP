@@ -10,6 +10,7 @@ if test_electrostatic_embed:
 
     def setUp(self):
        self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
+       self.pot.print_()
        self.at = Atoms(n=2, lattice=numpy.diag([10.0, 10.0, 5.0]))
        half_cell = numpy.diag(self.at.lattice)/2.0
        self.at.pos[1] = [0.0,0.0,0.0] + half_cell
@@ -28,19 +29,18 @@ if test_electrostatic_embed:
        pot = fzeros(self.ngrid)
        self.pot.calc_electrostatic_potential(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
                                              real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
-       self.at.write('dimer.cube', data=pot)
-       write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
+       self.at.write('dimer.full.cube', data=pot)
+       write_electrostatic_potential_cube(self.at, 'hybrid_mark', 'dimer.cube', self.ngrid, (0., 0., 0.), numpy.diag(self.at.lattice), pot)
 
-       make_periodic_potential(self.at, real_grid, self.ngrid, [False, False, True], 4.0, 1.0, 'hybrid_mark', pot)
-       write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.periodic.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
+       #make_periodic_potential(self.at, real_grid, self.ngrid, [False, False, True], 4.0, 1.0, 'hybrid_mark', pot)
+       #write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.periodic.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
 
     def test_calc_esp_no_pseudise(self):
        real_grid = fzeros((3,self.ngrid[0]*self.ngrid[1]*self.ngrid[2]))
        pot = fzeros(self.ngrid)
-       self.pot.calc_electrostatic_potential_grid(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
+       self.pot.calc_electrostatic_potential(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
                                              real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=F")
-       self.at.write('dimer.cube', data=pot)
-       write_electrostatic_potential(self.at, 'dimer.no-pseudise.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
+       write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.no-pseudise.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
 
 
   class TestCluster(QuippyTestCase):
@@ -131,7 +131,7 @@ if test_electrostatic_embed:
        ngrid = [50, 50, 10]
        real_grid = fzeros((3,ngrid[0]*ngrid[1]*ngrid[2]))
        pot = fzeros(ngrid)
-       self.pot.calc_electrostatic_potential_grid(at, "es_mark", ngrid, origin, numpy.diag(cluster.lattice),
+       self.pot.calc_electrostatic_potential(at, "es_mark", ngrid, origin, numpy.diag(cluster.lattice),
                                                   real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
 
        write_electrostatic_potential(cluster, 'cluster.esp', ngrid, numpy.diag(cluster.lattice), pot)
@@ -148,7 +148,6 @@ if test_electrostatic_embed:
        # Put fractional coordinate (.5,.5,.5) at centre of cell
        cluster.pos[:] = cluster.pos + numpy.tile(numpy.diag(cluster.lattice)/2.0, [cluster.n, 1]).T
 
-       cluster.write('cluster.cube', data=pot)
 
   
 if __name__ == '__main__':

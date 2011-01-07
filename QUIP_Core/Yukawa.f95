@@ -183,9 +183,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
          call smooth_cutoff(r_ij, yukcutoff-yuksmoothlength, yuksmoothlength, fc, dfc_dr)
 
          if (do_pseudise) then
-            sigma = 0.0_dp
-            if (ti /= 0) sigma = sigma + pseudise_sigma(ti)/BOHR
-            if (tj /= 0) sigma = sigma + pseudise_sigma(tj)/BOHR
+            sigma = pseudise_sigma(tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
@@ -446,9 +444,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
          if (tpolj) prj = dipj .dot. u_ij
          
          if (do_pseudise) then
-            sigma = 0.0_dp
-            if (ti /= 0) sigma = pseudise_sigma(ti)/BOHR
-            if (tj /= 0) sigma = pseudise_sigma(tj)/BOHR
+            sigma = pseudise_sigma(tj)/BOHR
             erf_val = 1.0_dp
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
