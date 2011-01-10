@@ -802,10 +802,12 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   dims[2] = spatial_dim_id;
   if (add_cell_rotated) NETCDF_CHECK(nc_def_var(nc_id, "cell_rotated", NC_INT, 1, dims, &cell_rotated_var_id));
   if (add_cell_lattice) NETCDF_CHECK(nc_def_var(nc_id, "cell_lattice", NC_DOUBLE, 3, dims, &cell_lattice_var_id));
+#ifdef NETCDF4
   if (netcdf4) {
     if (add_cell_rotated) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_rotated_var_id, shuffle, deflate, deflate_level));
     if (add_cell_lattice) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_lattice_var_id, shuffle, deflate, deflate_level));
   }
+#endif
   
   // Define variables for parameters (d=0) and properties (d=1)
   for (d=0; d<2; d++) {
