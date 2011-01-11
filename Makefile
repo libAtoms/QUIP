@@ -28,6 +28,11 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+ifeq (${QUIP_ROOT},)
+   QUIP_ROOT=${PWD}
+endif
+export QUIP_ROOT
+
 ifneq (${QUIP_ARCH},)
 	export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 	export QUIP_ARCH
@@ -37,10 +42,6 @@ ifneq (${QUIP_ARCH},)
 	include Makefile.rules
 else
 	BUILDDIR=crap
-endif
-
-ifeq (${QUIP_ROOT},)
-   QUIP_ROOT=${PWD}
 endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
