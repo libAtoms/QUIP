@@ -71,7 +71,7 @@ function check_version {
 
 	    # clean thoroughly
 	    # make deepclean >> ../autobuild.version_${version} 2>&1
-	    rm -rf FoX*/obj*
+	    rm -rf ThirdParty/FoX*/obj*
 
 	    # try QUIP
 	    make all > ../make.out.${version}.${compiler_name}${suffix} 2>&1
