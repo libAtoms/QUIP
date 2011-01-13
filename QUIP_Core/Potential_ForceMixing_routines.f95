@@ -56,6 +56,7 @@
     this%init_args_str = args_str
 
     call initialise(params)
+    call param_register(params, 'hybrid_mark_postfix', '', this%hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minimise_mm', 'F', this%minimise_mm, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'calc_weights', 'T', this%calc_weights, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'method', 'conserve_momentum', this%method, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -100,6 +101,7 @@
 
     call initialise(this%create_hybrid_weights_params)
     call read_string(this%create_hybrid_weights_params, args_str)
+    call remove_value(this%create_hybrid_weights_params, 'hybrid_mark_postfix')
     call remove_value(this%create_hybrid_weights_params, 'minimise_mm')
     call remove_value(this%create_hybrid_weights_params, 'calc_weights')
     call remove_value(this%create_hybrid_weights_params, 'method')
@@ -272,7 +274,7 @@
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
@@ -285,6 +287,7 @@
 
     ! Override parameters with those given in args_str
     call initialise(params)
+    call param_register(params, "hybrid_mark_postfix", ''//this%hybrid_mark_postfix, hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "minimise_mm", ''//this%minimise_mm, minimise_mm, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "calc_weights", ''//this%calc_weights, calc_weights, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "method", this%method, method, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -400,14 +403,14 @@
 
        call system_timer('calc_weights')
 
-       if (.not. has_property(at, 'hybrid_mark')) &
-            call add_property(at, 'hybrid_mark', HYBRID_NO_MARK)
+       if (.not. has_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix))) &
+            call add_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
 
-       if (.not. assign_pointer(at, "hybrid", hybrid)) then
+       if (.not. assign_pointer(at, "hybrid"//trim(hybrid_mark_postfix), hybrid)) then
             RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified", error)
        endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
             RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
        endif
 
@@ -435,7 +438,7 @@
 
     end if
 
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+    if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
          RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
     endif
 
@@ -457,7 +460,7 @@
     end if
 
     !Potential calc could have added properties e.g. old_cluster_mark
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+    if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
          RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
     endif
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
@@ -542,13 +545,13 @@
                 RAISE_ERROR('use_buffer_for_fitting=T only works for method=conserve_momentum', error)
 	     endif
              !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
-             call create_embed_and_fit_lists_from_cluster_mark(at,this%embedlist,this%fitlist)
+             call create_embed_and_fit_lists_from_cluster_mark(at,this%embedlist,this%fitlist, mark_name='hybrid_mark'//trim(hybrid_mark_postfix))
 !             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
 !                  call add_cut_hydrogens(at,this%fitlist)
 !             endif
           else
              call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
-                  nneighb_only=lotf_nneighb_only, min_images_only=.true.)
+                  nneighb_only=lotf_nneighb_only, min_images_only=.true., mark_name='hybrid_mark'//trim(hybrid_mark_postfix))
              if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
                   call add_cut_hydrogens(at,this%fitlist)
              endif
@@ -666,7 +669,7 @@
 
        allocate(df(3,at%N),df_fit(3,this%fitlist%N))
 
-       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) then
+       if (.not. assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)) then
             RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
        endif
 
@@ -711,7 +714,7 @@
        
     else if (method(1:12) == 'force_mixing') then
 
-       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) then
+       if (.not. assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)) then
             RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
        endif
 

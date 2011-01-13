@@ -108,7 +108,7 @@ contains
 
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
-    logical :: clean_up_files, save_output_files, save_output_wfn_files
+    logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer
     integer :: clean_up_keep_n
     integer :: max_n_tries
     real(dp) :: max_force_warning
@@ -130,8 +130,6 @@ contains
 
     character(len=1024) :: run_dir
 
-    integer :: run_type_i
-
     type(Table) :: qm_list
     type(Table) :: cut_bonds
     integer, pointer :: cut_bonds_p(:,:)
@@ -146,7 +144,7 @@ contains
     logical :: do_lsd
 
     logical :: can_reuse_wfn, qm_list_changed
-    character(len=20) :: qm_name_postfix
+    character(len=STRING_LENGTH) :: qm_name_postfix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -191,6 +189,8 @@ contains
 
     call initialise(cli)
       call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, QMMM_CORE, QMMM_EXTENDED")
+      call param_register(cli, 'use_buffer', 'T', use_buffer, help_string="If true, use buffer as specified in relevant hybrid_mark")
+      call param_register(cli, 'qm_name_postfix', '', qm_name_postfix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="filename for cp2k input template")
       call param_register(cli, "qmmm_link_template_file", "", link_template_file, help_string="filename for cp2k link atoms template file")
       call param_register(cli, 'PSF_print', 'NO_PSF', psf_print, help_string="when to print PSF file: NO_PSF, DRIVER_PRINT_AND_SAVE, USE_EXISTING_PSF")
@@ -229,6 +229,8 @@ contains
 
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
+    call print("  use_buffer " // use_buffer)
+    call print("  qm_name_postfix " // qm_name_postfix)
     call print("  cp2k_template_file " // cp2k_template_file)
     call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
@@ -334,26 +336,14 @@ contains
       case("QS")
 	use_QM=.true.
 	method="QS"
-	run_type_i = QS_RUN
-        qm_name_postfix=""
       case("MM")
 	use_MM=.true.
 	method="Fist"
-	run_type_i = MM_RUN
-      case("QMMM_CORE")
-	use_QM=.true.
-	use_MM=.true.
-	use_QMMM=.true.
+      case("QMMM")
+	use_QM = .true.
+	use_MM = .true.
+	use_QMMM = .true.
 	method="QMMM"
-	run_type_i = QMMM_RUN_CORE
-        qm_name_postfix="_core"
-      case("QMMM_EXTENDED")
-	use_QM=.true.
-	use_MM=.true.
-	use_QMMM=.true.
-	method="QMMM"
-	run_type_i = QMMM_RUN_EXTENDED
-        qm_name_postfix="_extended"
       case default
 	call system_abort("Unknown run_type "//trim(run_type))
     end select
@@ -479,15 +469,11 @@ contains
 
     ! get qm_list and link_list
     if (use_QMMM) then
-      select case (run_type_i)
-	case(QMMM_RUN_CORE)
-	  call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
-	case(QMMM_RUN_EXTENDED)
-	  call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
-	case default
-	  call system_abort("use_QMMM is true, but run_type_i="//run_type_i //" is neither QMMM_RUN_CORE="//QMMM_RUN_CORE// &
-	    " QMMM_RUN_EXTENDED="//QMMM_RUN_EXTENDED)
-      end select
+      if (use_buffer) then
+	call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
+      else
+	call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
+      endif
       allocate(qm_list_a(qm_list%N))
       if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
       !get link list
@@ -564,14 +550,6 @@ contains
 
     ! put in things needed for QMMM
     if (use_QMMM) then
-
-      if (trim(run_type) == "QMMM_CORE") then
-	run_type_i = QMMM_RUN_CORE
-      else if (trim(run_type) == "QMMM_EXTENDED") then
-	run_type_i = QMMM_RUN_EXTENDED
-      else
-	call system_abort("Unknown run_type '"//trim(run_type)//"' with use_QMMM true")
-      endif
 
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &

@@ -337,9 +337,8 @@ contains
     logical :: do_calc_force, do_calc_energy, do_calc_local_energy, do_calc_virial, do_calc_local_virial
 
     integer, pointer :: cluster_mark_p(:)
-    integer, pointer :: cluster_mark_p_postfix(:)
     integer, pointer :: old_cluster_mark_p(:)
-    character(len=FIELD_LENGTH) :: cluster_mark_postfix 
+    character(len=FIELD_LENGTH) :: hybrid_mark_postfix
     logical :: force_using_fd
 
     INIT_ERROR(error)
@@ -357,20 +356,30 @@ contains
     endif
 
     call initialise(params)
-    call param_register(params, 'single_cluster', 'F', single_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
-    cluster_mark_postfix=""
-    call param_register(params, 'cluster_mark_postfix', '', cluster_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'carve_cluster', 'T', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'little_clusters', 'F', little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'force_using_fd', 'F', force_using_fd, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    call param_register(params, 'energy', '', calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'force', '', calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'local_energy', '', calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'virial', '', calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'local_virial', '', calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'single_cluster', 'F', single_cluster, &
+      help_string="If true, calculate all active/transition atoms with a single big cluster")
+    call param_register(params, 'hybrid_mark_postfix', '', hybrid_mark_postfix, &
+      help_string="suffix to append to hybrid_mark field used")
+    call param_register(params, 'carve_cluster', 'T', do_carve_cluster, &
+      help_string="If true, calculate active region atoms by carving out a cluster")
+    call param_register(params, 'little_clusters', 'F', little_clusters, &
+      help_string="If true, calculate forces (only) by doing each atom separately surrounded by a little buffer cluster")
+    call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, &
+      help_string="rescale calculated positions (and correspondingly forces) by this factor")
+    call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, &
+      help_string="rescale calculate energies (and correspondingly forces) by this factor")
+    call param_register(params, 'force_using_fd', 'F', force_using_fd, &
+      help_string="If true, calculate forces using finite difference")
+    call param_register(params, 'energy', '', calc_energy, &
+      help_string="If present, calculate energy and put it in field with this string as name")
+    call param_register(params, 'force', '', calc_force, &
+      help_string="If present, calculate force and put it in field with this string as name")
+    call param_register(params, 'local_energy', '', calc_local_energy, &
+      help_string="If present, calculate local_energy and put it in field with this string as name")
+    call param_register(params, 'virial', '', calc_virial, &
+      help_string="If present, calculate virial and put it in field with this string as name")
+    call param_register(params, 'local_virial', '', calc_local_virial, &
+      help_string="If present, calculate local_virial and put it in field with this string as name")
 
     if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) then
       RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -406,7 +415,7 @@ contains
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
  
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
             RAISE_ERROR('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ', error)
        endif
 
@@ -419,12 +428,12 @@ contains
        allocate(hybrid_mark_saved(at%N))
        hybrid_mark_saved = hybrid_mark
 
-       if (has_property(at, 'weight_region1')) then
-          dummy = assign_pointer(at, 'weight_region1', weight_region1)
+       if (has_property(at, 'weight_region1'//trim(hybrid_mark_postfix))) then
+          dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
           allocate(weight_region1_saved(at%N))
           weight_region1_saved = weight_region1
        end if
-       
+
        ! call ourselves once for each active or transition atom 
        at_force_ptr = 0.0_dp
        n = 0
@@ -440,16 +449,16 @@ contains
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, new_args_str)
-          cluster_info = create_cluster_info_from_mark(at, new_args_str,error=error)
+          cluster_info = create_cluster_info_from_mark(at, new_args_str,mark_name='hybrid_mark'//trim(hybrid_mark_postfix),error=error)
 	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
 	  call carve_cluster(at, new_args_str, cluster_info, cluster)
 	  call finalise(cluster_info)
 
           ! Reassign pointers - create_cluster_info_from_mark() might have broken them
-          if (has_property(at, 'hybrid_mark')) &
-               dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
-          if (has_property(at, 'weight_region1')) &
-               dummy = assign_pointer(at, 'weight_region1', weight_region1)
+          if (has_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix))) &
+               dummy = assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)
+          if (has_property(at, 'weight_region1'//trim(hybrid_mark_postfix))) &
+               dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
 
 	  if (current_verbosity() >= PRINT_NERD) then
 	    call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
@@ -486,7 +495,7 @@ contains
           RAISE_ERROR('Potential_Simple_calc: single_cluster option only supports calculation of forces, not energies, local energies or virials', error)
        endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
             RAISE_ERROR('Potential_Simple_calc: single_cluster cannot assign pointer to hybrid_mark property ', error)
        endif
 
@@ -510,7 +519,7 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, new_args_str, error=error)
+	 cluster_info = create_cluster_info_from_mark(at, new_args_str, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
@@ -544,8 +553,8 @@ contains
          if (do_rescale_E)  f_cluster = f_cluster*E_scale
 
          ! Reassign pointers - create_cluster_info_from_mark() might have broken them
-         if (has_property(at, 'hybrid_mark')) &
-              dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
+         if (has_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix))) &
+              dummy = assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)
 
 	 ! copy forces for all active and transition atoms
 	 at_force_ptr = 0.0_dp
@@ -559,58 +568,24 @@ contains
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, error=error)
+	 cluster_info = create_cluster_info_from_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
-         !save cluster in cluster_mark property and optionally cluster_mark_postfix property
-         call add_property(at,'cluster_mark',HYBRID_NO_MARK)
-         if (trim(cluster_mark_postfix)/="") then
-           call print('Add cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-           call add_property(at,'cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
-         else
-           call print('NOT Add cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-         endif
-         !save the previous cluster_mark[_postfix] into old_cluster_mark[_postfix]
-         call add_property(at,'old_cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
-	 call print('Add old_cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer", error)
+	 call add_property(at, 'cluster_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
+	 call add_property(at, 'old_cluster_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
+	 if (.not. assign_pointer(at, 'cluster_mark'//trim(hybrid_mark_postfix), cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(hybrid_mark_postfix)//" pointer", error)
 	 endif
-         if (trim(cluster_mark_postfix)/="") then
-	   if (.not. assign_pointer(at, 'cluster_mark'//trim(cluster_mark_postfix), cluster_mark_p_postfix)) then
-	     RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark pointer", error)
-	   endif
-           call print('Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-         else
-           call print('NOT Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-         endif
-	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(cluster_mark_postfix), old_cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark pointer", error)
+	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(hybrid_mark_postfix), old_cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark"//trim(hybrid_mark_postfix)//" pointer", error)
 	 endif
-
-         !save old from cluster_mark_postfix
-         if (trim(cluster_mark_postfix)/="") then
-           old_cluster_mark_p = cluster_mark_p_postfix
-         else
-           old_cluster_mark_p = cluster_mark_p
-         endif
-
-         !zero cluster_mark_[postfix]
-         cluster_mark_p = HYBRID_NO_MARK
-         if (trim(cluster_mark_postfix)/="") cluster_mark_p_postfix = HYBRID_NO_MARK
-
-         !save modified_hybrid_mark into cluster_mark[_postfix]
-	 if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) then
+	 old_cluster_mark_p = cluster_mark_p
+	 cluster_mark_p = HYBRID_NO_MARK
+	 if (.not. assign_pointer(at, 'modified_hybrid_mark'//trim(hybrid_mark_postfix), modified_hybrid_mark)) then
 	   cluster_mark_p = hybrid_mark
 	 else
 	   cluster_mark_p = modified_hybrid_mark
 	 endif
-         if (trim(cluster_mark_postfix)/="") then
-           call print('set value cluster_mark'//trim(cluster_mark_postfix))
-           cluster_mark_p_postfix = cluster_mark_p
-         else
-           call print('NOT set value cluster_mark'//trim(cluster_mark_postfix))
-         endif
 
          !save cut bonds in cut_bonds property
 	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)

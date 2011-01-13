@@ -45,6 +45,7 @@
 
      type(Potential) :: relax_pot
 
+     character(FIELD_LENGTH) :: hybrid_mark_postfix
      logical       :: minimise_mm 
      character(FIELD_LENGTH) :: minim_mm_method 
      real(dp)      :: minim_mm_tol, minim_mm_eps_guess
