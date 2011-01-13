@@ -1808,7 +1808,7 @@ contains
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
-    character(FIELD_LENGTH) :: weight_interpolation
+    character(FIELD_LENGTH) :: weight_interpolation, hybrid_mark_postfix
     logical :: construct_buffer_use_only_heavy_atoms
 
     integer, pointer :: hybrid_mark(:)
@@ -1836,6 +1836,7 @@ contains
 
 ! only one set of defaults now, not one in args_str and one in arg list 
     call initialise(params)
+    call param_register(params, 'hybrid_mark_postfix', '', hybrid_mark_postfix, help_string="string to append to hyrbid_mark for proper mark property name")
     call param_register(params, 'transition_hops', '0', transition_hops, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'weight_interpolation', 'hop_ramp', weight_interpolation, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -1889,16 +1890,16 @@ contains
     call print('  hysteretic_connect_inner_factor='//hysteretic_connect_inner_factor //' hysteretic_connect_outer_factor='//hysteretic_connect_outer_factor, PRINT_VERBOSE)
 
     ! check to see if atoms has a 'weight_region1' property already, if so, check that it is compatible, if not present, add it
-    if(assign_pointer(at, 'weight_region1', weight_region1)) then
+    if(assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)) then
        weight_region1 = 0.0_dp
     else
-       call add_property(at, 'weight_region1', 0.0_dp)
-       dummy = assign_pointer(at, 'weight_region1', weight_region1)
+       call add_property(at, 'weight_region1'//trim(hybrid_mark_postfix), 0.0_dp)
+       dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
     end if
 
     ! check for a compatible hybrid_mark property. it must be present
-    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
-       RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark" property', error)
+    if(.not.assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
+       RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)//'" property', error)
     endif
 
     ! Fast implementation of trivial case where buffer_hops=0 and transition_hops=0
@@ -2285,18 +2286,20 @@ contains
 
   end subroutine estimate_origin_extent
 
-  !% Given an Atoms structure with an active region marked in the 'hybrid_mark'
+  !% Given an Atoms structure with an active region marked in the mark_name (default 'hybrid_mark')
   !% property using 'HYBRID_ACTIVE_MARK', grow the embed region by 'fit_hops'
   !% bond hops to form a fit region. Returns the embedlist and fitlist with correct
   !% periodic shifts.
-  subroutine create_embed_and_fit_lists(at, fit_hops, embedlist, fitlist, nneighb_only, min_images_only, error)
+  subroutine create_embed_and_fit_lists(at, fit_hops, embedlist, fitlist, nneighb_only, min_images_only, mark_name, error)
 
     type(Atoms), intent(inout) :: at
     integer :: fit_hops
     type(Table), intent(out) :: embedlist, fitlist
     logical, intent(in), optional :: nneighb_only, min_images_only
+    character(len=*), intent(in), optional :: mark_name
     integer, optional, intent(out) :: error
 
+    character(len=255)                :: my_mark_name
     integer, pointer :: hybrid_mark(:)
     integer :: n_region1, n_region2 !, n_term
     integer :: i, j, jj, first_active, shift(3)
@@ -2310,13 +2313,15 @@ contains
 
     INIT_ERROR(error)
 
+    my_mark_name = optional_default('hybrid_mark', mark_name)
+
     call print('Entered create_embed_and_fit_lists.',PRINT_VERBOSE)
     do_nneighb_only = optional_default(.false., nneighb_only)
     do_min_images_only = optional_default(.true., min_images_only)
 
     ! check for a compatible hybrid_mark property. it must be present
-    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
-       RAISE_ERROR('create_fit_region: atoms structure has no "hybrid_mark" property', error)
+    if(.not.assign_pointer(at, trim(my_mark_name), hybrid_mark)) then
+       RAISE_ERROR('create_fit_region: atoms structure has no "'//trim(my_mark_name)//'"', error)
     endif
 
     call wipe(embedlist)
@@ -2434,19 +2439,23 @@ contains
 
   end subroutine create_embed_and_fit_lists
 
-  !% Given an Atoms structure with an active region marked in the 'hybrid_mark'
+  !% Given an Atoms structure with an active region marked in the mark_name (default 'cluster_mark')
   !% property using 'HYBRID_ACTIVE_MARK', and buffer region marked using 'HYBRID_BUFFER_MARK',
   !% 'HYBRID_TRANS_MARK' or 'HYBRID_BUFFER_OUTER_LAYER_MARK', simply returns the embedlist and fitlist
-  !% according to 'hybrid_mark'. It does not take into account periodic shifts.
-  subroutine create_embed_and_fit_lists_from_cluster_mark(at,embedlist,fitlist, error)
+  !% according to 'cluster_mark'. It does not take into account periodic shifts.
+  subroutine create_embed_and_fit_lists_from_cluster_mark(at,embedlist,fitlist, mark_name, error)
 
     type(Atoms), intent(in)  :: at
     type(Table), intent(out) :: embedlist, fitlist
+    character(len=*), intent(in), optional :: mark_name
     integer, optional, intent(out) :: error
 
+    character(len=255) :: my_mark_name
     type(Table)              :: tmpfitlist
 
     INIT_ERROR(error)
+
+    my_mark_name = optional_default('cluster_mark', mark_name)
 
     call print('Entered create_embed_and_fit_lists_from_cluster_mark.',PRINT_VERBOSE)
     call wipe(embedlist)
@@ -2454,18 +2463,14 @@ contains
     call wipe(tmpfitlist)
 
     !build embed list from ACTIVE atoms
-    !call list_matching_prop(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
-    call list_matching_prop(at,embedlist,'cluster_mark',HYBRID_ACTIVE_MARK)
+    call list_matching_prop(at,embedlist,trim(my_mark_name),HYBRID_ACTIVE_MARK)
 
     !build fitlist from BUFFER and TRANS atoms
-    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
-    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_BUFFER_MARK)
+    call list_matching_prop(at,tmpfitlist,trim(my_mark_name),HYBRID_BUFFER_MARK)
     call append(fitlist,tmpfitlist)
-    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
-    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_TRANS_MARK)
+    call list_matching_prop(at,tmpfitlist,trim(my_mark_name),HYBRID_TRANS_MARK)
     call append(fitlist,tmpfitlist)
-    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
-    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
+    call list_matching_prop(at,tmpfitlist,trim(my_mark_name),HYBRID_BUFFER_OUTER_LAYER_MARK)
     call append(fitlist,tmpfitlist)
 
     call wipe(tmpfitlist)
@@ -3367,7 +3372,7 @@ type(inoutput), optional :: debugfile
   !% optionally correct selected region with heuristics (as coded in create_cluster_info())
   !
   subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
-	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, error)
+	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, mark_postfix, error)
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
@@ -3377,20 +3382,26 @@ type(inoutput), optional :: debugfile
     logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only, use_create_cluster_info
     character(len=*), optional, intent(in) :: create_cluster_info_args
     logical,  optional, intent(out)   :: list_changed
+    character(len=*),  optional, intent(in)   :: mark_postfix
     integer, optional, intent(out) :: error
 
+    logical :: my_use_create_cluster_info
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, old_all_but_term
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
-    character(len=1024) :: my_create_cluster_info_args
+    character(len=1024) :: my_create_cluster_info_args, my_mark_postfix
     integer, pointer :: hybrid_region_core_tmp_p(:)
     type(Table) :: padded_cluster_info
 
     INIT_ERROR(error)
 
+    my_use_create_cluster_info = optional_default(.false., use_create_cluster_info)
+
     if (count((/present(origin),present(atomlist)/))/=1) then
       RAISE_ERROR('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.', error)
     endif
+
+    my_mark_postfix = optional_default("", trim(mark_postfix))
 
     call map_into_cell(my_atoms)
 
@@ -3398,11 +3409,11 @@ type(inoutput), optional :: debugfile
     call allocate(core,4,0,0,0,0)
     call allocate(old_core,4,0,0,0,0)
     call allocate(old_all_but_term,4,0,0,0,0)
-    call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark', error=error)
+    call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark'//trim(my_mark_postfix), error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting old core", error)
-    call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark', error=error)
+    call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark'//trim(my_mark_postfix), error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting core", error)
-    call get_hybrid_list(my_atoms,old_all_but_term, all_but_term=.true., int_property='hybrid_mark', error=error)
+    call get_hybrid_list(my_atoms,old_all_but_term, all_but_term=.true., int_property='hybrid_mark'//trim(my_mark_postfix), error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting all but term", error)
 
    ! Build the new hysteretic QM core based on distances from point/list
@@ -3420,7 +3431,7 @@ type(inoutput), optional :: debugfile
    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
 
    ! call create_cluster_info_from_mark, if requested, for various chemical intuition fixes to core
-   if (use_create_cluster_info) then
+   if (my_use_create_cluster_info) then
       call add_property(my_atoms, "hybrid_region_core_tmp", HYBRID_NO_MARK, ptr=hybrid_region_core_tmp_p)
       hybrid_region_core_tmp_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
       my_create_cluster_info_args = optional_default("terminate=F cluster_nneighb_only cluster_allow_modification", create_cluster_info_args)
@@ -3452,8 +3463,8 @@ type(inoutput), optional :: debugfile
     endif
 
     ! update QM_flag of my_atoms
-    if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) then
-      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark property", error)
+    if (.not. assign_pointer(my_atoms,'hybrid_mark'//trim(my_mark_postfix),hybrid_mark_p)) then
+      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark"//trim(my_mark_postfix)//" property", error)
     endif
     ! default to NO_MARK
     hybrid_mark_p(1:my_atoms%N) = HYBRID_NO_MARK
@@ -3463,8 +3474,8 @@ type(inoutput), optional :: debugfile
     hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
 
    ! update hybrid property of my_atoms
-    if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) then
-      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid property", error)
+    if (.not. assign_pointer(my_atoms,'hybrid'//trim(my_mark_postfix),hybrid_p)) then
+      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid"//trim(my_mark_postfix)//" property", error)
     endif
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(core,1)) = 1

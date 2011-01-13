@@ -103,14 +103,14 @@ program qmmm_md
   real(dp)                    :: Run_Time
   real(dp)                    :: Inner_Buffer_Radius         !for hysteretic quantum
   real(dp)                    :: Outer_Buffer_Radius         !          region selection
-  real(dp)                    :: Inner_QM_Region_Radius
-  real(dp)                    :: Outer_QM_Region_Radius
+  real(dp)                    :: Inner_QM_Region_Radius, Inner_QM_Core_Region_Radius
+  real(dp)                    :: Outer_QM_Region_Radius, Outer_QM_Core_Region_Radius
   real(dp)                    :: Connect_Cutoff
   real(dp)                    :: Simulation_Temperature
   character(len=FIELD_LENGTH) :: coord_file
   character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
   character(len=FIELD_LENGTH) :: traj_file          !output XYZ file
-  character(len=FIELD_LENGTH) :: qm_list_filename        !QM list file with a strange format
+  character(len=FIELD_LENGTH) :: qm_list_filename, qm_core_list_filename        !QM list file with a strange format
   type(Table)                 :: qm_seed
   character(len=FIELD_LENGTH) :: Residue_Library
   character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
@@ -122,8 +122,8 @@ program qmmm_md
   logical                     :: reinitialise_qm_region
   real(dp)                    :: avg_time
   integer                     :: Seed
-  logical                     :: qm_region_pt_ctr
-  integer                     :: qm_region_atom_ctr
+  logical                     :: qm_region_pt_ctr, qm_core_region_pt_ctr
+  integer                     :: qm_region_atom_ctr, qm_core_region_atom_ctr
   character(len=FIELD_LENGTH) :: print_prop
   logical                     :: print_forces
   logical                     :: print_forces_at0
@@ -139,7 +139,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
-  real(dp) :: qm_region_ctr(3)
+  real(dp) :: qm_region_ctr(3), qm_core_region_ctr(3)
   real(dp) :: use_cutoff
   real(dp) :: H_extra_heat_ctr(3), H_extra_heat_r(2), H_extra_heat_velo_factor
   real(dp) :: nH_extra_heat_ctr(3), nH_extra_heat_r(2), nH_extra_heat_velo_factor
@@ -153,6 +153,8 @@ program qmmm_md
   real(dp) :: calc_connect_buffer
 logical :: have_silica_potential
   integer :: stat
+
+  logical have_QMMM_core, have_QMMM_extended
 
   integer :: error=ERROR_NONE
 
@@ -181,13 +183,13 @@ logical :: have_silica_potential
       call param_register(params_in, 'Outer_Buffer_Radius', '0.0', Outer_Buffer_Radius, help_string="The outer radius of the hysteretic buffer of the QM region.")
       call param_register(params_in, 'Inner_QM_Region_Radius', '0.0', Inner_QM_Region_Radius, help_string="The inner radius of the QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Outer_QM_Region_Radius', '0.0', Outer_QM_Region_Radius, help_string="The outer radius of the QM region (around an atom list or a point in space).")
+      call param_register(params_in, 'Inner_QM_Core_Region_Radius', '0.0', Inner_QM_Core_Region_Radius, help_string="The inner radius of the core QM region (around an atom list or a point in space).")
+      call param_register(params_in, 'Outer_QM_Core_Region_Radius', '0.0', Outer_QM_Core_Region_Radius, help_string="The outer radius of the core QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Connect_Cutoff', '0.0', Connect_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature, help_string="Simulation temperature in K.")
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'traj_file', 'movie.xyz',traj_file, help_string="No help yet.  This source file was $LastChangedBy$")
-      qm_list_filename=''
-      call param_register(params_in, 'qm_list_filename', '', qm_list_filename, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'restraint_constraint_xml_file', '', restraint_constraint_xml_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Charge', '0', Charge, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -198,8 +200,22 @@ logical :: have_silica_potential
       call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'avg_time', '100.0', avg_time, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Seed', '-1', Seed, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr, help_string="No help yet.  This source file was $LastChangedBy$")
+
+      call param_register(params_in, 'qm_list_filename', '', qm_list_filename,  &
+	help_string="Filename containing list of atoms for (extended) QM region (in funny format).  Mutually exclusive with qm_region_pt_ctr and qm_region_atom_ctr")
+      call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr, &
+	help_string="Use Cartesian point to center (extended) QM region.  Mutually exclusive with qm_list_filename and qm_region_atom_ctr")
+      call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr, help_string="Centre of the (extended) QM region in space.")
+      call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr, help_string="Atom to center (extended) QM region about.  Mutually exclusive with qm_region_pt_ctr and qm_list_filename")
+
+      call param_register(params_in, 'qm_core_list_filename', '', qm_core_list_filename, &
+	help_string="Filename containing list of atoms for core QM region (in funny format).  Mutually exclusive with qm_core_region_pt_ctr and qm_core_region_atom_ctr")
+      call param_register(params_in, 'qm_core_region_pt_ctr', 'F', qm_core_region_pt_ctr, &
+	help_string="Use Cartesian point to center core QM region.  Mutually exclusive with qm_core_list_filename and qm_core_region_atom_ctr")
+      call param_register(params_in, 'qm_core_region_ctr', '(/0.0 0.0 0.0/)', qm_core_region_ctr, help_string="Centre of the QM core region in space.")
+      call param_register(params_in, 'qm_core_region_atom_ctr', '0', qm_core_region_atom_ctr, &
+	help_string="Atom to center core QM region about.  Mutually exclusive with qm_core_region_pt_ctr and qm_core_list_filename")
+
       call param_register(params_in, 'print_prop', 'all', print_prop, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'print_forces', 'T', print_forces, help_string="whether to print forces at time>0 on the mainlog")
       call param_register(params_in, 'print_forces_at0', 'T', print_forces_at0, help_string="whether to print forces at time=0 on the mainlog")
@@ -217,7 +233,6 @@ logical :: have_silica_potential
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="Filepot program.")
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr, help_string="Centre of the QM region in space.")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
@@ -238,11 +253,18 @@ logical :: have_silica_potential
         call system_abort('could not parse argument line')
       end if
 
-      if (Run_Type1(1:4) == 'QMMM' .or. Run_Type2(1:4) == 'QMMM') then
+      if (Run_Type1(1:13) == 'QMMM_EXTENDED' .or. Run_Type2(1:13) == 'QMMM_EXTENDED') then
 	if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
 	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
 			      ", need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr// &
 			      "/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
+	endif
+      endif
+      if (Run_Type1(1:9) == 'QMMM_CORE' .or. Run_Type2(1:9) == 'QMMM_CORE') then
+	if (count((/qm_core_region_pt_ctr, qm_core_region_atom_ctr /= 0, len_trim(qm_core_list_filename) /= 0 /)) /= 1) then
+	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
+			      ", need exactly one of qm_core_region_pt_ctr, qm_core_region_atom_ctr="//qm_core_region_atom_ctr// &
+			      "/=0, len_trim(qm_core_list_filename='"//trim(qm_core_list_filename)//"') /= 0")
 	endif
       endif
 
@@ -345,9 +367,9 @@ logical :: have_silica_potential
          call print('  qm_list_filename '//trim(qm_list_filename))
       else if (qm_region_pt_ctr .or. qm_region_atom_ctr /= 0) then
 	 if (qm_region_pt_ctr) then
-	   call print('  QM core is centred around qm_region_ctr= '//qm_region_ctr)
+	   call print('  QM extended region is centred around qm_region_ctr= '//qm_region_ctr)
 	 else
-	   call print('  QM core is centred around atom '//qm_region_atom_ctr)
+	   call print('  QM extended region is centred around atom '//qm_region_atom_ctr)
 	   qm_region_pt_ctr = .true.
 	 endif
          call print('  Inner_QM_Region_Radius '//round(Inner_QM_Region_Radius,3))
@@ -362,6 +384,18 @@ logical :: have_silica_potential
             my_spline%to = spline_to
             my_spline%dpot = spline_dpot
          endif
+      endif
+      if (len_trim(qm_core_list_filename) /= 0) then
+         call print('  qm_core_list_filename '//trim(qm_core_list_filename))
+      else if (qm_core_region_pt_ctr .or. qm_core_region_atom_ctr /= 0) then
+	 if (qm_core_region_pt_ctr) then
+	   call print('  QM core is centred around qm_core_region_ctr= '//qm_core_region_ctr)
+	 else
+	   call print('  QM core is centred around atom '//qm_core_region_atom_ctr)
+	   qm_core_region_pt_ctr = .true.
+	 endif
+         call print('  Inner_QM_Core_Region_Radius '//round(Inner_QM_Core_Region_Radius,3))
+         call print('  Outer_QM_Core_Region_Radius '//round(Outer_QM_Core_Region_Radius,3))
       endif
       call print('  Residue_Library '//Residue_Library) 
       call print('  restraint_constraint_xml_file '//restraint_constraint_xml_file) 
@@ -478,69 +512,6 @@ logical :: have_silica_potential
 !       endif
     do_general=Buffer_general
 
-   !QM CORE
-    if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
-        (trim(Run_Type1).eq.'QMMM_EXTENDED')) then
-       if (reinitialise_qm_region .or. .not. Continue_it) then
-	  call add_property(ds%atoms,'hybrid',HYBRID_NO_MARK)
-	  call add_property(ds%atoms,'hybrid_mark',HYBRID_NO_MARK)
-	  call add_property(ds%atoms,'old_hybrid_mark',HYBRID_NO_MARK)
-	  call add_property(ds%atoms,'cluster_mark',HYBRID_NO_MARK)
-	  call add_property(ds%atoms,'old_cluster_mark',HYBRID_NO_MARK)
-	  call add_property(ds%atoms,'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
-          if (qm_region_pt_ctr) then
-             call map_into_cell(ds%atoms)
-             call calc_dists(ds%atoms)
-	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius, &
-	       origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
-if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
-!!!!!!!!!
-!call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
-!call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
-!call finalise(csilla_out)
-!!!!!!!!!
-!stop
-
-             if (list_changed1) then
-                call print('Core has changed')
-                ! do nothing: both core and buffer belong to the QM of QM/MM
-!               call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
-             endif
-          else ! not qm_region_pt_ctr
-             call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed)
-	     if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
-	     if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
-	     call print('hybrid_mark'//count(hybrid_mark_p.eq.1))
-	     cluster_mark_p = hybrid_mark_p
-	     call print('cluster_mark'//count(cluster_mark_p.eq.1))
-
-             !save the qm list into qm_seed property, too
-             !in case we want to change the seed in time
-             !call add_property(my_atoms,'qm_seed',0)
-	     !if (.not.(assign_pointer(ds%atoms, "qm_seed", qm_seed_p))) call system_abort('??')
-	     !if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
-	     !qm_seed_p = hybrid_mark_p
-
-             !extend QM core around seed atoms
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
-!             call construct_hysteretic_region(region=core,at=ds%atoms,core=seed,loop_atoms_no_connectivity=.false., &
-!                  inner_radius=Inner_QM_Region_Radius,outer_radius=Outer_QM_Region_Radius, use_avgpos=.false., add_only_heavy_atoms=(.not.buffer_general), &
-!                  nneighb_only=.false., min_images_only=.true.)
-          endif ! qm_region_pt_ctr
-          call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
-       endif ! .not. Continue_it
-       !even if continue, we need the QM seed.
-       if (Continue_it .and. len_trim(qm_list_filename)/=0) then
-             call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed)
-       endif
-
-    endif
-    call map_into_cell(ds%atoms)
-    call calc_dists(ds%atoms)
-
-  !TOPOLOGY
-
    ! topology calculation
     if (trim(Run_Type1).ne.'QS') then
 !       if (.not.Continue_it) then
@@ -555,13 +526,38 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 !       endif
     endif
 
+   !QM CORE
+    have_QMMM_core=.false.
+    if (trim(Run_Type1) == 'QMMM_CORE' .or. trim(Run_Type2) == 'QMMM_CORE') have_QMMM_core =.true.
+    have_QMMM_extended=.false.
+    if (trim(Run_Type1) == 'QMMM_EXTENDED' .or. trim(Run_Type2) == 'QMMM_EXTENDED') have_QMMM_extended =.true.
+
+    if (have_QMMM_core .or. have_QMMM_extended) then
+       if (reinitialise_qm_region .or. .not. Continue_it) then
+	  if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
+	    qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true.)
+	  if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
+	    qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true.)
+
+          call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
+       endif ! .not. Continue_it
+       !even if continue, we need the QM seed.
+       if (Continue_it .and. len_trim(qm_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed, mark_postfix='_extended')
+       if (Continue_it .and. len_trim(qm_core_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed, mark_postfix='_core')
+
+    endif ! have_QMMM_core || have_QMMM_extended
+    call map_into_cell(ds%atoms)
+    call calc_dists(ds%atoms)
+
+  !TOPOLOGY
+
   !CHARGE
 
     if (trim(Run_Type1).eq.'QS') then
        call set_value(ds%atoms%params,'Charge',Charge)
     endif
 
-  !INIT. potENTIAL
+  !INIT. POTENTIAL
 
     !only QMMM_EXTENDED for the moment **************
     !if (trim(Run_Type1).ne.'QMMM_EXTENDED') call system_abort('ONLY QMMM_EXTENDED')
@@ -654,8 +650,8 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (topology_print_rate >= 0) driver_PSF_Print='DRIVER_PRINT_AND_SAVE'
 call print("MAIN CALL CALC EVB")
 call print(pot)
-     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, qm_core_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
 call print("MAIN CALLED CALC EVB")
      if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
@@ -784,20 +780,11 @@ call print("MAIN CALLED CALC EVB")
 
   !QM CORE + BUFFER UPDATE + THERMOSTAT REASSIGNMENT
 
-     if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
-        if (qm_region_pt_ctr) then
-	   if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-           call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
-           if (list_changed1) then
-              call print('Core has changed')
-!             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
-              ! do nothing: both core and buffer belong to the QM of QM/MM
-           endif
-        else !qm_region_pt_ctr
-           !extend QM core around seed atoms
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
-        endif
-     endif
+     !NB should we really recalculate residue labels, so heuristics that keep residues together function here?  probably
+     if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
+       qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false.)
+     if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
+       qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false.)
 
   !FORCE
 
@@ -808,8 +795,8 @@ call print("MAIN CALLED CALC EVB")
            driver_PSF_Print = 'USE_EXISTING_PSF'
         endif
      endif
-     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, qm_core_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
 
     !SPLINE force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
@@ -1035,39 +1022,35 @@ contains
     type(Atoms), intent(in)      :: my_atoms
   
     integer                                 :: i, N
-    logical                                 :: do_mm
-    integer,                        pointer :: qm_flag_p(:)
+    logical                                 :: is_bad_H
+    integer,                        pointer :: qm_flag_p(:), qm_core_flag_p(:)
     character(len=1), pointer :: atom_res_name_p(:,:)
 
-    do_mm = .false.
 
-    if (.not.(assign_pointer(my_atoms, "hybrid_mark", qm_flag_p))) then ! MM RUN
-       do_mm = .true.
-    end if
+    if (.not.(assign_pointer(my_atoms, "hybrid_mark_extended", qm_flag_p))) nullify(qm_flag_p)
+    if (.not.(assign_pointer(my_atoms, "hybrid_mark_core", qm_core_flag_p))) nullify(qm_core_flag_p)
 
     if (.not.(assign_pointer(my_atoms, "atom_res_name", atom_res_name_p))) &
        call system_abort("couldn't find atom_res_name property")
 
-    if (do_mm) then
-       do i=1, my_atoms%N
-          if ( ('H3O'.eq.trim(a2s(atom_res_name_p(:,i)))) .or. &
-               ('HYD'.eq.trim(a2s(atom_res_name_p(:,i)))) .or. &
-               ('HWP'.eq.trim(a2s(atom_res_name_p(:,i)))) ) then
-             call system_abort('wrong topology calculated')
-          endif
-       enddo
-    else
-       N = 0
-       do i=1,my_atoms%N
-          if ( .not.(qm_flag_p(i).eq.1) .and. &
-!          if ( .not.any((qm_flag_p(i).eq.(/1,2/))) .and. &
-               any((/'H3O','HYD','HWP'/).eq.trim(a2s(atom_res_name_p(:,i))))) then
-            N = N + 1
-            call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
-          endif
-       enddo
-       if (N.gt.0) call system_abort('wrong topology calculated')
-    endif
+     N = 0
+     do i=1,my_atoms%N
+	is_bad_H = .false.
+	if (any((/'H3O','HYD','HWP'/).eq.trim(a2s(atom_res_name_p(:,i))))) then
+	  if (associated(qm_flag_p)) then
+	    if (qm_flag_p(i) /= 1) is_bad_H = .true.
+	  endif
+	  if (associated(qm_core_flag_p)) then
+	    if (qm_core_flag_p(i) /= 1) is_bad_H = .true.
+	  endif
+	  if (.not. associated(qm_flag_p) .and. .not. associated(qm_core_flag_p)) is_bad_H = .true.
+	endif
+	if (is_bad_H) then
+	  is_bad_H = .true.
+	  call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
+	endif
+     enddo
+     if (N > 0) call system_abort('Wrong topology calculated: found H3O, HYD, or HWP in MM or buffer atom.')
 
   end subroutine check_topology
 
@@ -1110,9 +1093,7 @@ contains
     real(dp) :: sumF(3), sum_weight
     integer, pointer :: qm_flag_p(:)
 
-!    if (.not. assign_pointer(at, 'hybrid_mark', qm_flag_p)) &
-    if (.not. assign_pointer(at, 'cluster_mark', qm_flag_p)) &
-!         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+    if (.not. assign_pointer(at, 'cluster_mark_extended', qm_flag_p)) &
          call system_abort('Potential_FM_Calc: cluster_mark property missing')
     if ( .not. any(qm_flag_p(:).eq.(/1,2/)) ) then !no buffer or core: maybe empty_qm_core?
         force0 = sum0(force,at)
@@ -1189,11 +1170,12 @@ contains
   !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
   !% marking the QM atoms with 1, otherwise 0.
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,mark_postfix,verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
     type(Table), optional, intent(out) :: qmlist
+    character(len=*),  intent(in)    :: mark_postfix
     logical, optional, intent(in)    :: verbose
 
     type(table)                      :: qm_list
@@ -1252,14 +1234,14 @@ contains
     if ((size(int_part(qm_list,1)).gt.my_atoms%N).or.(size(int_part(qm_list,1)).lt.1)) &
        call system_abort("read_qmlist: QM atoms' number is <1 or >"//my_atoms%N)
 
-    call add_property(my_atoms,'hybrid',0)
-    if (.not. assign_pointer(my_atoms, 'hybrid', hybrid_p)) &
+    call add_property(my_atoms,'hybrid'//trim(mark_postfix),0)
+    if (.not. assign_pointer(my_atoms, 'hybrid'//trim(mark_postfix), hybrid_p)) &
       call system_abort("read_qmlist couldn't assign pointer for hybrid_p")
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(qm_list,1)) = 1
 
-    call add_property(my_atoms,'hybrid_mark',0)
-    if (.not. assign_pointer(my_atoms, 'hybrid_mark', hybrid_mark_p)) &
+    call add_property(my_atoms,'hybrid_mark'//trim(mark_postfix),0)
+    if (.not. assign_pointer(my_atoms, 'hybrid_mark'//trim(mark_postfix), hybrid_mark_p)) &
       call system_abort("read_qmlist couldn't assign pointer for hybrid_mark_p")
     hybrid_mark_p(1:my_atoms%N) = 0
     hybrid_mark_p(int_part(qm_list,1)) = HYBRID_ACTIVE_MARK
@@ -1286,7 +1268,7 @@ contains
     integer, pointer :: cluster_mark_p(:)
     type(Atoms) :: cluster
 
-    if (.not.(assign_pointer(at, "cluster_mark", cluster_mark_p))) &
+    if (.not.(assign_pointer(at, "cluster_mark_extended", cluster_mark_p))) &
       call system_abort("print_qm_region couldn't find cluster_mark property")
 
     call select(cluster, at, mask=(cluster_mark_p /= 0))
@@ -1297,39 +1279,45 @@ contains
     end if
   end subroutine print_qm_region
 
-  subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, EVB_MM, qm_region_pt_ctr, &
-			  distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+  subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, &
+			  distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
      type(Potential), intent(inout) :: pot, empty_qm_pot
      type(Atoms), intent(inout) :: at
-     logical, intent(in) :: EVB_MM, qm_region_pt_ctr, distance_ramp, do_carve_cluster
-     real(dp), intent(in) :: qm_region_ctr(3)
+     logical, intent(in) :: EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, distance_ramp, do_carve_cluster
+     real(dp), intent(in) :: qm_region_ctr(3), qm_core_region_ctr(3)
      character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, evb_args_str, driver_PSF_Print
      real(dp), intent(inout) :: f1(:,:)
      real(dp), intent(out) :: energy
 
      integer, pointer :: qm_flag_p(:)
      character(len=STRING_LENGTH)        :: slow_args_str, fast_args_str, args_str
-     logical :: empty_QM_core
+     logical :: empty_QM_core, empty_QM_extended
      real(dp), pointer :: force_p(:,:)
 
      empty_QM_core = .false.
-     if (qm_region_pt_ctr) then
-        if (.not.(assign_pointer(at, "hybrid_mark", qm_flag_p))) &
-           call system_abort("couldn't find hybrid_mark property")
+     if (qm_core_region_pt_ctr) then
+        if (.not.(assign_pointer(at, "hybrid_mark_core", qm_flag_p))) &
+           call system_abort("couldn't find hybrid_mark_core property")
         if (.not.any(qm_flag_p(1:at%N).eq.HYBRID_ACTIVE_MARK)) empty_QM_core = .true.
 	if (empty_QM_core .and. trim(Run_Type2) == 'QMMM_CORE') &
 	  call system_abort("Can't handle Run_Type2=QMMM_CORE but QM core appears empty")
+     endif
+     empty_QM_extended = .false.
+     if (qm_region_pt_ctr) then
+        if (.not.(assign_pointer(at, "hybrid_mark_extended", qm_flag_p))) &
+           call system_abort("couldn't find hybrid_mark_extended property")
+        if (.not.any(qm_flag_p(1:at%N).eq.HYBRID_ACTIVE_MARK)) empty_QM_extended = .true.
      endif
      if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
         call print_qm_region(at)
      endif
 
-     if (trim(Run_Type2) == 'NONE' .or. (qm_region_pt_ctr .and. empty_QM_core)) then ! no force mixing
+     if (trim(Run_Type2) == 'NONE' .or. (qm_region_pt_ctr .and. empty_QM_extended)) then ! no force mixing
         call print(trim(Run_Type1)//' run will be performed with simple potential.')
         if (EVB_MM .and. &
            !only instead of MM
            ((trim(Run_Type1) == "MM" .and. trim(Run_Type2) == 'NONE') .or. &
-            (Run_Type1(1:4) == 'QMMM' .and. (qm_region_pt_ctr .and. empty_QM_core) .and. trim(Run_Type2)=="MM"))) then
+            (Run_Type1(1:4) == 'QMMM' .and. (qm_region_pt_ctr .and. empty_QM_extended) .and. trim(Run_Type2)=="MM"))) then
            !Add args_str into mm_args_str of EVB pot
            args_str=trim(evb_args_str)//' mm_args_str="'// &
              trim(cp2k_calc_args) // &
@@ -1337,15 +1325,17 @@ contains
              ' PSF_Print='//trim(driver_PSF_Print)//'"'
         else
            args_str=trim(cp2k_calc_args) // &
-             ' Run_Type='//trim(Run_Type1)// &
+	     ' '//trim(cp2k_driver_run_type_args(Run_Type1))// &
              ' PSF_Print='//trim(driver_PSF_Print) !// &
 !	     ' clean_up_files=F'
         endif
         call print('ARGS_STR | '//trim(args_str))
 	if (Run_Type1(1:4) == 'QMMM') then
-	  if ( qm_region_pt_ctr .and. empty_QM_core) then
-	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
+	  if ( qm_region_pt_ctr .and. empty_QM_extended) then
+	    call print('WARNING: Empty QM extended region. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
 	    call calc(empty_qm_pot,at,energy=energy,force=f1,args_str=trim(args_str))
+	    if (assign_pointer(at, 'force', force_p)) force_p = f1
+	    return
 	  else
 	    args_str = trim(args_str) // &
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
@@ -1353,9 +1343,9 @@ contains
 	  endif
           !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-            args_str = trim(args_str) // ' cluster_mark_postfix=_extended'
+            args_str = trim(args_str) // ' hybrid_mark_postfix=_extended'
           elseif (trim(Run_Type1) == 'QMMM_CORE') then
-            args_str = trim(args_str) // ' cluster_mark_postfix=_core'
+            args_str = trim(args_str) // ' hybrid_mark_postfix=_core'
           endif
 	endif
 	if (Run_Type1(1:4) == 'QMMM' .and. do_carve_cluster) then
@@ -1371,9 +1361,9 @@ contains
           call print("WARNING: Force Mixing with MM as the slow potential!")
           !Add slow_args_str into mm_args_str of EVB pot
           slow_args_str=trim(evb_args_str)//' mm_args_str="'// &
-             trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print)//'"'
+             trim(cp2k_calc_args) // ' ' // trim(cp2k_driver_run_type_args(Run_Type1)) // ' PSF_Print='//trim(driver_PSF_print)//'"'
        else
-          slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+          slow_args_str=trim(cp2k_calc_args) // ' '//trim(cp2k_driver_run_type_args(Run_Type1)) //' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        endif
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
@@ -1381,9 +1371,9 @@ contains
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_extended'
+           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_extended hybrid_mark_postfix=_extended'
          elseif (trim(Run_Type1) == 'QMMM_CORE') then
-           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_core'
+           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_core hybrid_mark_postfix=_core'
          endif
        endif
 
@@ -1394,7 +1384,7 @@ contains
              ' Run_Type=MM'// & !only MM
              ' PSF_Print='//trim(driver_PSF_Print)//'"'
        else
-          fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+          fast_args_str=trim(cp2k_calc_args) // ' '// trim(cp2k_driver_run_type_args(Run_Type2))//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        endif
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
@@ -1402,31 +1392,50 @@ contains
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
-           fast_args_str = trim(fast_args_str) // ' cluster_mark_postfix=_extended'
+           fast_args_str = trim(fast_args_str) // ' hybrid_mark_postfix=_extended'
          elseif (trim(Run_Type2) == 'QMMM_CORE') then
-           fast_args_str = trim(fast_args_str) // ' cluster_mark_postfix=_core'
+           fast_args_str = trim(fast_args_str) // ' hybrid_mark_postfix=_core'
          endif
        endif
 
-       args_str='qm_args_str={'//trim(slow_args_str)//'} mm_args_str={'//trim(fast_args_str)//'}'
+       args_str='qm_args_str={'//trim(slow_args_str)//'} mm_args_str={'//trim(fast_args_str)//'} hybrid_mark_postfix=_extended'
        if (distance_ramp) then
 	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
        endif
        call print('ARGS_STR | '//trim(args_str))
-       if (qm_region_pt_ctr .and. empty_QM_core) then
-	 if (trim(Run_Type2) /= 'MM') &
-	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
-	 call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
+       if (qm_region_pt_ctr .and. empty_QM_extended) then
+	 call system_abort("Got to end of force mixing part of do_calc_call, but (qm_region_ptr_ctr .and. empty_QM_extended) is true.  Should never happen!")
+!	 if (trim(Run_Type2) /= 'MM') &
+!	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
+!	 call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
        else
 	 call calc(pot,at,force=f1,args_str=trim(args_str))
        endif
        energy=0._dp !no energy
-     endif
+     endif ! do force mixing
 
      ! save forces if force property is there
      if (assign_pointer(at, 'force', force_p)) force_p = f1
 
   end subroutine do_calc_call
+
+  function cp2k_driver_run_type_args(run_type)
+    character(len=*), intent(in) :: run_type
+    character(len=300) :: cp2k_driver_run_type_args
+
+    if (run_type(1:2) == 'MM') then
+      cp2k_driver_run_type_args = "Run_Type=MM"
+    else if (run_type(1:2) == 'QS') then
+      cp2k_driver_run_type_args = "Run_Type=QS"
+    else ! QMMM
+      cp2k_driver_run_type_args = "Run_Type=QMMM"
+      if (run_type(1:9) == 'QMMM_CORE') then
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F qm_name_postfix=_core'
+      else
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_postfix=_extended'
+      endif
+    endif
+  end function cp2k_driver_run_type_args
 
   subroutine setup_pot(pot, Run_Type, filepot_program, tmp_run_dir_i)
     type(Potential), intent(inout) :: pot
@@ -1534,7 +1543,7 @@ contains
       call print("Thermostat_type == 7, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
 	Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
     else
-      if (.not. assign_pointer(at, "cluster_mark", cluster_mark_p)) then
+      if (.not. assign_pointer(at, "cluster_mark_extended", cluster_mark_p)) then
 	QM_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius + Outer_QM_Region_Radius)/2.0_dp)**3
 	Buffer_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius+Inner_Buffer_Radius + Outer_QM_Region_Radius+Outer_Buffer_Radius)/2.0_dp)**3 - QM_vol
 	cell_vol = cell_volume(at)
@@ -1546,7 +1555,7 @@ contains
 	Ndof_Buffer_heavy = 3*int(Buffer_vol * n_heavy/cell_vol)
 	Ndof_MM_H = 3*n_H - ndof_QM_H - ndof_Buffer_H
 	Ndof_MM_heavy = 3*n_heavy - ndof_QM_heavy - ndof_Buffer_heavy
-	call print("no cluster_mark, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
+	call print("no cluster_mark_extended, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
 	  Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
       else
 	Ndof_QM_H = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK .and. at%Z == 1)
@@ -1613,8 +1622,8 @@ contains
 	    at%thermostat_region(i) = i
 	  end do
       case (5)
-	if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
-	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
+	if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
+	  call system_abort("set_thermostat_region failed to find cluster_mark_extended for thermostat_type="//thermostat_type)
 	at%thermostat_region = 3 ! MM
 	where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z /= 1) ! QM+Buffer heave
 	  at%thermostat_region = 1
@@ -1623,7 +1632,7 @@ contains
 	  at%thermostat_region = 2
 	end where
       case(6)
-	if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
+	if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
 	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
 	where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z /= 1) ! QM heavy
 	  at%thermostat_region = 1
@@ -1699,5 +1708,56 @@ contains
         restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
      end do
    end subroutine get_restraint_stuff
+
+  subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, first_time)
+    type(Atoms), intent(inout) :: ds_atoms
+    character(len=*), intent(in) :: mark_postfix
+    logical, intent(in) :: qm_region_pt_ctr
+    real(dp), intent(inout) :: qm_region_ctr(3)
+    integer, intent(in) :: qm_region_atom_ctr
+    character(len=*), intent(in) :: qm_list_filename
+    real(dp), intent(in) :: inner_radius, outer_radius
+    logical, intent(in) :: buffer_general, use_create_cluster_info_for_core
+    logical, intent(in) :: first_time
+
+    logical :: list_changed1
+
+    if (first_time) then
+      call add_property(ds_atoms,'hybrid'//trim(mark_postfix),HYBRID_NO_MARK)
+      call add_property(ds_atoms,'hybrid_mark'//trim(mark_postfix),HYBRID_NO_MARK)
+      call add_property(ds_atoms,'old_hybrid_mark'//trim(mark_postfix),HYBRID_NO_MARK)
+      call add_property(ds_atoms,'cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
+      call add_property(ds_atoms,'old_cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
+      call add_property(ds_atoms,'cut_bonds'//trim(mark_postfix), 0, n_cols=4) !MAX_CUT_BONDS)
+    endif
+    if (qm_region_pt_ctr) then
+       if (first_time) then
+	 call map_into_cell(ds_atoms)
+	 call calc_dists(ds_atoms)
+       endif
+       if (qm_region_atom_ctr /= 0) qm_region_ctr = ds_atoms%pos(:,qm_region_atom_ctr)
+       call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
+	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
+	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+       if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
+       if (list_changed1) then
+	  call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
+       endif
+    else ! not qm_region_pt_ctr
+       if (first_time) then
+	 call read_qmlist(ds_atoms,qm_list_filename,qmlist=qm_seed, mark_postfix=trim(mark_postfix))
+	 if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
+	 if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
+	 call print('hybrid_mark '//count(hybrid_mark_p.eq.1))
+	 cluster_mark_p = hybrid_mark_p
+	 call print('cluster_mark '//count(cluster_mark_p.eq.1))
+       endif
+
+       !extend QM region around seed atoms
+       call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
+	 add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true., &
+	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+    endif ! qm_region_pt_ctr
+  end subroutine update_QM_region
 
 end program qmmm_md
