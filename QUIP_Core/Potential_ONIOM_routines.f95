@@ -246,7 +246,7 @@
 
     ! Check for a compatible hybrid_mark property. It must be present.
     if (.not.assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-       RAISE_ERROR('calc_oniom: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)'" property', error)
+       RAISE_ERROR('calc_oniom: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)//'" property', error)
     endif
 
     ! if hybrid is active, carve cluster and do minimisation if necessary
