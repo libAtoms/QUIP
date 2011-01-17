@@ -530,7 +530,7 @@ contains
 	 endif
          call finalise(t)
 
-	 call carve_cluster(at, new_args_str, cluster_info, cluster, error=error)
+	 call carve_cluster(at, new_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
