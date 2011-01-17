@@ -67,6 +67,7 @@ program extract_cv
   integer                       :: restart_every
   logical                       :: append_output
   logical                       :: input_in_cp2k_units
+  logical                       :: skip_extra_firsts
 
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
@@ -76,16 +77,17 @@ program extract_cv
 
     !INPUT
       call initialise(params_in)
-      call param_register(params_in, 'coord_file'         , PARAM_MANDATORY, coord_filename      , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'velo_file'          , PARAM_MANDATORY, velo_filename       , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'force_file'         , PARAM_MANDATORY, force_filename      , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'atomlist_file'      , PARAM_MANDATORY, colvar_filename     , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'outfile'            , PARAM_MANDATORY, out_filename        , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'last_frame'         , '0'            , last_frame          , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'time_step'          , '0.0'          , time_step           , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'restart_every'      , '1'            , restart_every       , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'append_output'      , 'F'            , append_output       , help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'input_in_cp2k_units', 'F'            , input_in_cp2k_units , help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'coord_file'         , PARAM_MANDATORY, coord_filename      , help_string="input file containing positions")
+      call param_register(params_in, 'velo_file'          , PARAM_MANDATORY, velo_filename       , help_string="input file containing velocities")
+      call param_register(params_in, 'force_file'         , PARAM_MANDATORY, force_filename      , help_string="input file containing forces")
+      call param_register(params_in, 'atomlist_file'      , PARAM_MANDATORY, colvar_filename     , help_string="file with atomlist whose pos/velo/frc should be extracted")
+      call param_register(params_in, 'outfile'            , PARAM_MANDATORY, out_filename        , help_string="output filename")
+      call param_register(params_in, 'last_frame'         , '0'            , last_frame          , help_string="last frame to be processed")
+      call param_register(params_in, 'time_step'          , '0.0'          , time_step           , help_string="time step in case there is no Time param in the input posfile")
+      call param_register(params_in, 'restart_every'      , '1'            , restart_every       , help_string="restart frequency")
+      call param_register(params_in, 'append_output'      , 'F'            , append_output       , help_string="whether to append to output file")
+      call param_register(params_in, 'input_in_cp2k_units', 'F'            , input_in_cp2k_units , help_string="whether units are in CP2K units or in A, A/fs, eV/A")
+      call param_register(params_in, 'skip_extra_firsts'  ,'F'             , skip_extra_firsts   , help_string="whether to skip the extra printed first config (for QUIP outputs)")
 
       if (.not. param_read_args(params_in)) then
         call print_usage
@@ -112,6 +114,7 @@ program extract_cv
          call print("    Will overwrite out_file!!")
       endif
       call print('  input_in_cp2k_units '//input_in_cp2k_units)
+      call print('  skip_extra_firsts   '//skip_extra_firsts//" ONLY FOR cp2k_units=F !")
       call print('---------------------------------------')
       call print('')
 
@@ -163,6 +166,11 @@ program extract_cv
        if (iframe==0) then !check colvar atoms
           if (any(colvar_atoms%int(1,1:colvar_atoms%N).gt.at%N)) &
              call system_abort("Constraint atom(s) is >"//at%N)
+
+          if ((.not.input_in_cp2k_units) .and. skip_extra_firsts) cycle !skip very first without force information
+       endif
+       if (iframe==1) then
+          if ((.not.input_in_cp2k_units) .and. skip_extra_firsts .and. append_output) cycle !skip the overlapping second for the restarts
        endif
 
        !get Step_nr and Time
@@ -170,14 +178,18 @@ program extract_cv
           step_nr = step_nr + 1
        endif
        if (.not.get_value(at%params,"time",time_passed)) then
-          time_passed = step_nr * time_step
+          if (.not.get_value(at%params,"Time",time_passed)) then
+             time_passed = step_nr * time_step
+          endif
        endif
 
        !get velocity and force in a.u.
        nullify(v)
        if (.not. assign_pointer(at_velo, 'velo', v)) call system_abort("Could not find velo property.")
        nullify(f)
-       if (.not. assign_pointer(at_force, 'frc', f)) call system_abort("Could not find frc property.")
+       if (.not. assign_pointer(at_force, 'frc', f)) then
+          if (.not. assign_pointer(at_force, 'force', f)) call system_abort("Could not find frc or force property.")
+       endif
 
        !printing into buffer
        do i=1,colvar_atoms%N
@@ -199,9 +211,9 @@ program extract_cv
 
        !printing buffer into file
        if (lines_used == restart_every*colvar_atoms%N) then
-          if (mod((iframe+1),restart_every)/=0) call system_abort("lines_used "//lines_used// &
-             " == restart_every "//restart_every//" * colvar_atoms%N "//colvar_atoms%N// &
-             ", but not frame "//(iframe+1)//" mod restart_every "//restart_every//" =0")
+          !if (mod((iframe+1),restart_every)/=0) call system_abort("lines_used "//lines_used// &
+          !   " == restart_every "//restart_every//" * colvar_atoms%N "//colvar_atoms%N// &
+          !   ", but not frame "//(iframe+1)//" mod restart_every "//restart_every//" =0")
           do i=1,lines_used
              call print(output_lines(i),file=out_file)
              output_lines(i) = ""
