@@ -160,7 +160,7 @@ logical :: have_silica_potential
 
   real(dp), allocatable :: restraint_stuff(:,:)
   real(dp) :: r
-  integer :: tmp_run_dir_i
+  integer :: tmp_run_dir_i, copy_latest_every, copy
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
@@ -248,6 +248,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'nH_extra_heat_r', '0.0 -1.0', nH_extra_heat_r, help_string="inner and outer radii of the spherical shell where extra heating is introduced on nonhydrogen atoms")
       call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor, help_string="velocities of nonhydrogen atoms will be multiplied by this every time step")
       call param_register(params_in, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
+      call param_register(params_in, 'copy_latest_every', '-1', copy_latest_every, help_string="if >0, the copy the latest.xyz and the wfn files from the run directory /tmp/cp2k_run_$tmp_run_dir_i$ back to the home at this frequency -- only active when $tmp_run_dir_i$>0")
 
       if (.not. param_read_args(params_in)) then
         call system_abort('could not parse argument line')
@@ -414,6 +415,7 @@ logical :: have_silica_potential
       call print('  cp2k_calc_args '//trim(cp2k_calc_args))
       call print('  filepot_program '//trim(filepot_program))
       call print('  tmp_run_dir_i '//tmp_run_dir_i)
+      call print('  copy_latest_every '//copy_latest_every)
       call print('---------------------------------------')
       call print('')
 
@@ -753,6 +755,13 @@ call print("MAIN CALLED CALC EVB")
      call finalise(latest_xyz)
      call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
 
+     !save latest.xyz and wfn files at every $copy_latest_every$ step, starting now
+     if (tmp_run_dir_i>0 .and. copy_latest_every>0) then
+        copy=1
+     !   call system("cp "//trim(latest_coord_file)//" .")
+     !   call system("for i in /tmp/cp2k_run_"//tmp_run_dir_i//"/wfn.restart.wfn* ; do cp ${i} . ; done")
+     endif
+
     call system_timer('step')
 
 !LOOP - force calc, then VV-2, VV-1
@@ -891,6 +900,16 @@ call print("MAIN CALLED CALC EVB")
         call finalise(latest_xyz)
         call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
+
+     !save latest.xyz and wfn files from /tmp at every $copy_latest_every$ step
+     if (tmp_run_dir_i>0 .and. copy_latest_every>0) then
+       if (copy==copy_latest_every) then
+         copy=0
+         call system("cp "//trim(latest_coord_file)//" .")
+         call system("for i in /tmp/cp2k_run_"//tmp_run_dir_i//"/wfn.restart.wfn* ; do cp ${i} . ; done")
+       endif
+       copy=copy+1
+     endif
 
      if (H_extra_heat_r(2) >= H_extra_heat_r(1)) then
        do i=1, ds%atoms%N
