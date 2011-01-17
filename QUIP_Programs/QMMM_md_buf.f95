@@ -543,7 +543,7 @@ logical :: have_silica_potential
        endif ! .not. Continue_it
        !even if continue, we need the QM seed.
        if (Continue_it .and. len_trim(qm_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed, mark_postfix='_extended')
-       if (Continue_it .and. len_trim(qm_core_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed, mark_postfix='_core')
+       if (Continue_it .and. len_trim(qm_core_list_filename)/=0) call read_qmlist(ds%atoms,qm_core_list_filename,qmlist=qm_seed, mark_postfix='_core')
 
     endif ! have_QMMM_core || have_QMMM_extended
     call map_into_cell(ds%atoms)
@@ -1046,7 +1046,7 @@ contains
 	  if (.not. associated(qm_flag_p) .and. .not. associated(qm_core_flag_p)) is_bad_H = .true.
 	endif
 	if (is_bad_H) then
-	  is_bad_H = .true.
+	  N = N + 1
 	  call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
 	endif
      enddo
@@ -1348,8 +1348,8 @@ contains
             args_str = trim(args_str) // ' hybrid_mark_postfix=_core'
           endif
 	endif
-	if (Run_Type1(1:4) == 'QMMM' .and. do_carve_cluster) then
-          !potential simple will not calculate energy with cluster carving
+	if (Run_Type1(1:4) == 'QMMM' .and. trim(Run_Type2)=="NONE") then
+          !potential simple will not calculate energy with single_cluster=T
 	  call calc(pot,at,force=f1,args_str=trim(args_str))
           energy=0.0_dp
 	else
@@ -1453,9 +1453,9 @@ contains
     else if (trim(Run_Type) == 'MM') then
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
-       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds_core min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds min_cutoff=0.0')
+       call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds_extended min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
