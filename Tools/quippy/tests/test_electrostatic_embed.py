@@ -2,7 +2,7 @@ from quippy import *
 import unittest, quippy
 from quippytest import *
 
-test_electrostatic_embed = False
+test_electrostatic_embed = True
 
 if test_electrostatic_embed:
 
@@ -29,8 +29,9 @@ if test_electrostatic_embed:
        pot = fzeros(self.ngrid)
        self.pot.calc_electrostatic_potential(self.at, "hybrid_mark", self.ngrid, self.at.pos[:,1], numpy.diag(self.at.lattice),
                                              real_grid, pot, args_str="calc_short_range=F calc_sc_dipoles=F calc_dipoles=F pseudise=T")
-       self.at.write('dimer.full.cube', data=pot)
-       write_electrostatic_potential_cube(self.at, 'hybrid_mark', 'dimer.cube', self.ngrid, (0., 0., 0.), numpy.diag(self.at.lattice), pot)
+       self.at.write('dimer.full.cube', data=pot/HARTREE)
+       write_electrostatic_potential_cube(self.at, 'hybrid_mark', 'dimer.pos.cube', self.ngrid, (0., 0., 0.), numpy.diag(self.at.lattice), pot, write_efield=False)
+       write_electrostatic_potential_cube(self.at, 'hybrid_mark', 'dimer.efield.cube', self.ngrid, (0., 0., 0.), numpy.diag(self.at.lattice), pot, write_efield=True)
 
        #make_periodic_potential(self.at, real_grid, self.ngrid, [False, False, True], 4.0, 1.0, 'hybrid_mark', pot)
        #write_electrostatic_potential(self.at, 'hybrid_mark', 'dimer.periodic.esp', self.ngrid, numpy.diag(self.at.lattice), pot)
