@@ -45,7 +45,7 @@ module ElectrostaticEmbed_module
 
   integer, private, parameter :: nspins = 2
 
-  public :: calc_electrostatic_potential, write_electrostatic_potential, write_electrostatic_potential_cube, make_periodic_potential
+  public :: calc_electrostatic_potential, write_electrostatic_potential_cube, make_periodic_potential
 
 contains
 
@@ -90,124 +90,45 @@ contains
 
   end subroutine assign_grid_coordinates
 
-  subroutine write_electrostatic_potential(at, mark_name, filename, ngrid, extent, pot, error)
-    type(Atoms), intent(inout) :: at
-    character(len=*), intent(in) :: mark_name
-    character(len=*), intent(in) :: filename
-    integer, intent(in) :: ngrid(3)
-    real(dp), intent(in) :: extent(3)
-    real(dp), dimension(:,:,:), intent(in) :: pot
-    integer, optional, intent(out) :: error
-
-    type(InOutput) :: out
-    integer igrid, spin, i, j, k
-    real(dp) :: lattice(3,3)
-    real(dp) :: a, b, c, alpha, beta, gamma
-    integer, pointer, dimension(:) :: mark
-    real(dp), pointer, dimension(:) :: charge, es_pot
-    real(dp), pointer, dimension(:,:) :: es_efield
-    integer, dimension(size(ElementMass)) :: nsp
-
-    INIT_ERROR(error)
-
-    call assign_property_pointer(at, mark_name, mark, error)
-    PASS_ERROR(error)
-
-    call assign_property_pointer(at, 'charge', charge, error)
-    PASS_ERROR(error)
-
-    call assign_property_pointer(at, 'es_pot', es_pot, error)
-    PASS_ERROR(error)
-
-    call assign_property_pointer(at, 'es_efield', es_efield, error)
-    PASS_ERROR(error)
-
-    lattice(:,:) = 0.0_dp
-    lattice(1,1) = extent(1)
-    lattice(2,2) = extent(2)
-    lattice(3,3) = extent(3)
-    call get_lattice_params(lattice, a, b, c, alpha, beta, gamma)
-
-    call initialise(out, filename, OUTPUT)
-    call print('BEGIN header', file=out)
-    call print('', file=out)
-    call print('           Real Lattice(A)               Lattice parameters(A)    Cell Angles', file=out)
-    write (out%unit, '(3f12.7,5x,"a =",f12.6,2x,"alpha =",f12.6)') lattice(:,1), a, alpha
-    write (out%unit, '(3f12.7,5x,"b =",f12.6,2x,"beta  =",f12.6)') lattice(:,2), b, beta
-    write (out%unit, '(3f12.7,5x,"c =",f12.6,2x,"gamma =",f12.6)') lattice(:,3), c, gamma
-    call print('', file=out)
-    write(out%unit,'(i4,T30,a)') nspins,'   ! nspins'
-
-    nsp(:) = 0
-    do i=1,at%n
-       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
-       nsp(at%z(i)) = nsp(at%z(i)) + 1
-    end do
-
-    write(out%unit,'(i4,T30,a)') count(nsp /= 0),'   ! nsp '
-    j = 0
-    do i=1,size(nsp)
-       if (nsp(i) == 0) cycle
-       j = j + 1
-       write(out%unit,'(i4,T30,a,i0,a)') ,nsp(i), '   ! num_ions_in_species(', j, ')'
-    end do
-    write(out%unit,'(3(i4,2x),T30,a)') ngrid, '   ! fine FFT grid along <a,b,c>'
-    call print('! data is 1 line per atom with species, index, charge, potential, efield,', file=out)
-    call print('! followed by one line per grid point with grid_i, grid_j, grid_k, potential', file=out)
-    call print('END header', file=out)  
-
-    nsp(:) = 0
-    do i=1,at%N
-       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
-       nsp(at%z(i)) = nsp(at%z(i)) + 1
-       write (out%unit,'(a6,i6,5f12.6)'), a2s(at%species(:,i)), nsp(at%z(i)), charge(i), es_pot(i), es_efield(:,i)
-    end do
-
-    do spin=1,nspins
-       igrid = 0
-       do k=1,ngrid(3)
-          do j=1,ngrid(2)
-             do i=1,ngrid(1)
-                igrid = igrid + 1
-                write (out%unit,'(3i6,2f20.6)') i, j, k, pot(i,j,k)
-             end do
-          end do
-       end do
-    end do
-    call finalise(out)
-
-  end subroutine write_electrostatic_potential
-
-  subroutine write_electrostatic_potential_cube(at, mark_name, filename, ngrid, origin, extent, pot, error)
+  subroutine write_electrostatic_potential_cube(at, mark_name, filename, ngrid, origin, extent, pot, &
+       write_efield, convert_to_atomic_units, error)
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: mark_name
     character(len=*), intent(in) :: filename
     integer, intent(in) :: ngrid(3)
     real(dp), intent(in) :: origin(3), extent(3)
     real(dp), dimension(:,:,:), intent(in) :: pot
+    logical, optional, intent(in) :: write_efield, convert_to_atomic_units
     integer, optional, intent(out) :: error
 
     type(InOutput) :: out
     type(cube_type) :: cube
+    type(Dictionary) :: metadata
     integer i, j, n, z!, na, nb, nc
     integer, pointer, dimension(:) :: mark
     real(dp), pointer, dimension(:) :: charge, es_pot
     real(dp), pointer, dimension(:,:) :: es_efield
     integer, dimension(size(ElementMass)) :: nsp
+    logical do_efield, do_atomic_units
 
     INIT_ERROR(error)
+
+    do_efield = optional_default(.true., write_efield)
+    do_atomic_units = optional_default(.true., convert_to_atomic_units)
 
     call assign_property_pointer(at, mark_name, mark, error)
     PASS_ERROR(error)
 
-    call assign_property_pointer(at, 'charge', charge, error)
-    PASS_ERROR(error)
+    if (do_efield) then
+       call assign_property_pointer(at, 'es_pot', es_pot, error)
+       PASS_ERROR(error)
 
-    call assign_property_pointer(at, 'es_pot', es_pot, error)
-    PASS_ERROR(error)
-
-    call assign_property_pointer(at, 'es_efield', es_efield, error)
-    PASS_ERROR(error)
+       call assign_property_pointer(at, 'es_efield', es_efield, error)
+       PASS_ERROR(error)
+    else
+       call assign_property_pointer(at, 'charge', charge, error)
+       PASS_ERROR(error)
+    end if
 
     call cube_clear(cube)
     cube%comment1 = trim(filename)
@@ -241,27 +162,61 @@ contains
 
           n = n + 1
           cube%atoms(n)%number = at%z(j)
-          cube%atoms(n)%unknown = real(charge(j))
-          cube%atoms(n)%r(:) = real(at%pos(:,j))/BOHR
+          if (do_efield) then
+             ! Potential on ions and electric field
+             cube%atoms(n)%unknown = real(es_pot(j))
+             cube%atoms(n)%r(:) = real(es_efield(:,j))
+          else
+             ! Charge and position of ions
+             cube%atoms(n)%unknown = real(charge(j))
+             cube%atoms(n)%r(:) = real(at%pos(:,j))
+          end if
        end do
     end do
 
-    ! Fill in volumetric information - note conversion to single precision and that 
-    ! n[a,b,c]=1 entries are repeated at n[a,b,c]=cube%n[a,b,c]
+    ! Fill in volumetric information - note conversion to single precision
     cube%NMOs=1
     allocate(cube%voxels(cube%na,cube%nb,cube%nc,cube%NMOs))
-!!$    cube%voxels = 0.0
-!!$    do na=0,cube%na-1
-!!$       do nb=0,cube%nb-1
-!!$          do nc=0,cube%nc-1
-!!$             cube%voxels(na+1,nb+1,nc+1,cube%NMOs) = real(pot(1+mod(na,cube%na-1), 1+mod(nb,cube%nb-1), 1+mod(nc,cube%nc-1))) 
-!!$          end do
-!!$       end do
-!!$    end do
     cube%voxels(1:cube%na-1,1:cube%nb-1,1:cube%nc-1,1) = real(pot)
+
+    ! periodic boundary conditions: in cube file format, values of
+    ! n{a,b,c}=1 entries are repeated at n{a,b,c} = cube%n{a,b,c}
     cube%voxels(cube%na,:,:,1) = real(cube%voxels(1,:,:,1))
     cube%voxels(:,cube%nb,:,1) = real(cube%voxels(:,1,:,1))
     cube%voxels(:,:,cube%nc,1) = real(cube%voxels(:,:,1,1))
+
+    if (do_atomic_units) then
+       cube%voxels = cube%voxels/HARTREE ! convert potential to Hartree
+       if (do_efield) then
+          ! convert potential and electric field to atomic units
+          do n=1,cube%n
+             cube%atoms(n)%unknown = cube%atoms(n)%unknown/HARTREE
+             cube%atoms(n)%r(:) = cube%atoms(n)%r(:)/(HARTREE/BOHR)
+          end do
+       else
+          ! convert positions to bohr
+          do n=1,cube%n
+             cube%atoms(n)%r = cube%atoms(n)%r/BOHR
+          end do
+       end if
+    end if
+
+    ! Write  meta-data into second line of .cube file
+    call initialise(metadata)
+    metadata = at%params
+    call set_value(metadata, 'volumetric_data', 'electrostatic_potential')
+    if (do_atomic_units) then
+       call set_value(metadata, 'units', 'atomic')
+    else
+       call set_value(metadata, 'units', 'eV_A_fs')
+    end if
+    if (do_efield) then
+       call set_value(metadata, 'atom_data', 'z:pot:efield')
+    else
+       call set_value(metadata, 'atom_data', 'z:charge:pos')
+    end if
+    cube%comment2 = write_string(metadata)
+    call finalise(metadata)
 
     call initialise(out, filename, OUTPUT)
     call cube_write(cube, out%unit, error)
@@ -395,12 +350,9 @@ contains
     call calc(this, at, args_str=trim(args_str)//' efield=es_efield local_energy=es_pot atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
     PASS_ERROR(error)
 
-    call print('atom_mask='//atom_mask)
-    call print('source_mask='//source_mask)
-
     ! Electrostatic potential at ion positions is 2*local_energy/charge
     where (es_pot /= 0.0_dp) 
-       es_pot = 2.0_dp*es_pot/at_charge/HARTREE
+       es_pot = 2.0_dp*es_pot/at_charge
     end where
 
   end subroutine calc_electrostatic_potential_ions
@@ -467,15 +419,11 @@ contains
     atom_mask = .false. 
     atom_mask(at%n+1:at_copy%n) = .true.
 
-    call print('atom_mask='//atom_mask)
-
     ! source_mask is true for atoms which should act as electrostatic sources
     call add_property(at_copy, 'source_mask', .false., overwrite=.true., ptr=source_mask, error=error)
     PASS_ERROR(error)
     source_mask(1:at%n) = mark(1:at%n) == HYBRID_ELECTROSTATIC_MARK
     source_mask(at%n+1:at_copy%n) = .false.
-
-    call print('source_mask='//source_mask)
 
     call print('calc_electrostatic_potential_grid: evaluating electrostatic potential due to '//count(source_mask)//' sources')
 
@@ -504,7 +452,7 @@ contains
        
        do n=1,npoint
           igrid = (n-1)*stride + offset
-          pot(lookup(1,igrid),lookup(2,igrid),lookup(3,igrid)) = 2.0_dp*local_e(at%n+n)/at_charge(at%n+n)/HARTREE
+          pot(lookup(1,igrid),lookup(2,igrid),lookup(3,igrid)) = 2.0_dp*local_e(at%n+n)/at_charge(at%n+n)
        end do
     end do
 
