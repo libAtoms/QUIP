@@ -45,7 +45,8 @@ module ElectrostaticEmbed_module
 
   integer, private, parameter :: nspins = 2
 
-  public :: calc_electrostatic_potential, write_electrostatic_potential_cube, make_periodic_potential
+  public :: assign_grid_coordinates, calc_electrostatic_potential, &
+       write_electrostatic_potential_cube, make_periodic_potential
 
 contains
 
@@ -139,9 +140,9 @@ contains
     cube%nc = ngrid(3)+1
     
     ! Size of voxels
-    cube%da = 0.0_dp; cube%da(1) = real(extent(1)/ngrid(1)/BOHR)
-    cube%db = 0.0_dp; cube%db(2) = real(extent(2)/ngrid(2)/BOHR)
-    cube%dc = 0.0_dp; cube%dc(3) = real(extent(3)/ngrid(3)/BOHR)
+    cube%da = 0.0_dp; cube%da(1) = real(extent(1)/ngrid(1))
+    cube%db = 0.0_dp; cube%db(2) = real(extent(2)/ngrid(2))
+    cube%dc = 0.0_dp; cube%dc(3) = real(extent(3)/ngrid(3))
     
     ! Count number of each species
     nsp(:) = 0
@@ -186,6 +187,10 @@ contains
     cube%voxels(:,:,cube%nc,1) = real(cube%voxels(:,:,1,1))
 
     if (do_atomic_units) then
+       cube%da = cube%da/BOHR
+       cube%db = cube%db/BOHR
+       cube%dc = cube%dc/BOHR
+       cube%r0 = cube%r0/BOHR
        cube%voxels = cube%voxels/HARTREE ! convert potential to Hartree
        if (do_efield) then
           ! convert potential and electric field to atomic units
