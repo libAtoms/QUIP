@@ -502,10 +502,11 @@ contains
     this%io_print_interval       = 10.0_dp  ! fs
     this%io_print_all_properties = .false.
     if (allocated(this%io_print_properties)) deallocate(this%io_print_properties)
-    allocate(this%io_print_properties(3))
+    allocate(this%io_print_properties(4))
     ! arrays of strings must all have the same length, really
     this%io_print_properties     = (/"species          ", &
 				     "pos              ", &
+	                             "changed_nn       ", &
 				     "hybrid_mark      "/)
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
