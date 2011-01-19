@@ -74,17 +74,6 @@ def atoms_from_ase(at):
 
    return qat
 
-from quippy import Atoms
-class ASECompatibleAtoms(Atoms):
-   """Subclass of quippy.Atoms which is compatible with the ASE Atoms class."""
-
-   def __init__(self, *args, **kwargs):
-      try:
-         from ase import Atoms as ase_Atoms
-         Atoms.__init__(atoms_from_ase(ase_Atoms(*args, **kwargs)))
-      except ImportError:
-         raise ImportError('ASE not installed.')
-   
 
 class CalculatorMixin(object):
    def update(self, atoms):
@@ -151,22 +140,20 @@ except ImportError:
 
 
 from ase import Atoms as aseAtoms
-from quippy import (Atoms as quippyAtoms,
-                    PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL)
+from quippy import Atoms as quippyAtoms, Dictionary
 import numpy as np
 
-class MixedAtoms(aseAtoms, quippyAtoms):
+class Atoms(aseAtoms, quippyAtoms):
 
    def __new__(cls, symbols=None,
-                 positions=None, numbers=None,
-                 tags=None, momenta=None, masses=None,
-                 magmoms=None, charges=None,
-                 scaled_positions=None,
-                 cell=None, pbc=None,
-                 constraint=None,
-                 calculator=None):
-      return aseAtoms.__new__(cls, symbols, positions, numbers, tags, momenta, masses,
-                        magmoms, charges, scaled_positions, cell, pbc, constraint, calculator)
+               positions=None, numbers=None,
+               tags=None, momenta=None, masses=None,
+               magmoms=None, charges=None,
+               scaled_positions=None,
+               cell=None, pbc=None,
+               constraint=None,
+               calculator=None):
+       return aseAtoms.__new__(cls)
 
    def __init__(self, symbols=None,
                  positions=None, numbers=None,
@@ -177,32 +164,27 @@ class MixedAtoms(aseAtoms, quippyAtoms):
                  constraint=None,
                  calculator=None):
 
-      if cell is None:
-         lattice = np.eye(3)
-      else:
-         lattice = cell.T
-      quippyAtoms.__init__(self, n=len(symbols), lattice=lattice)
+      quippyAtoms.__init__(self, lattice=np.eye(3), properties=Dictionary())
       aseAtoms.__init__(self, symbols, positions, numbers, tags, momenta, masses,
                         magmoms, charges, scaled_positions, cell, pbc,
                         constraint, calculator)
+      self.add_property('species', ' '*10)
       self.set_atoms(self.z) # initialise species from z
+
+   def __repr__(self):
+      return '<quippy.aseinterface.Atoms instance at %x>' % id(self)
 
    def new_array(self, name, a, dtype=None, shape=None):
       """Add new array.
 
       If *shape* is not *None*, the shape of *a* will be checked.
-      Overridden to store the data in the Table `self.data`.
+      Overridden to store the data as a quippy Atoms property.
       """
 
-      type_map = {'i': PROPERTY_INT,
-                  'f': PROPERTY_REAL,
-                  'S': PROPERTY_STR,
-                  'b': PROPERTY_LOGICAL}
-
       name_map = {'positions': 'pos',
-                  'masses': 'mass',
-                  'numbers': 'z'}
-            
+                  'masses'   : 'mass',
+                  'numbers'  : 'z' }
+
       a = np.array(a, dtype=dtype)
 
       if name not in name_map and name in self.arrays:
@@ -219,15 +201,22 @@ class MixedAtoms(aseAtoms, quippyAtoms):
                           (a.shape, (a.shape[0:1] + shape)))
 
       quippy_name = name_map.get(name, name)
+      #print 'new_array', name, quippy_name, a
 
-      self.add_property(quippy_name, a.T, property_type=type_map[a.dtype.kind])
+      if self.n == 0:
+         self.n = len(a)
+         self.ndomain = len(a)
+         self.nbuffer = len(a)
+      
+      self.add_property(quippy_name, a.T, overwrite=True)
+      self.arrays[name] = self.properties[quippy_name].view(np.ndarray).T
 
    def get_cell(self):
       return self.lattice.view(np.ndarray).T.copy()
 
-   def set_cell(self, cell, scale_positions=False, fix=None):
-      quippyAtoms.set_lattice(self, cell.T, scale_positions)
-      aseAtoms.set_cell(self, cell, scale_positions, fix)
+   def set_cell(self, cell, scale_positions=False):
+      aseAtoms.set_cell(self, cell)
+      quippyAtoms.set_lattice(self, self._cell.T, scale_positions)
 
    def _getcell(self):
       return self.lattice.view(np.ndarray).T
@@ -239,17 +228,6 @@ class MixedAtoms(aseAtoms, quippyAtoms):
          quippyAtoms.write(self, filename, format=format, properties=properties, *args, **kwargs)
       except ValueError:
          aseAtoms.write(self, filename, format=format)
-
-
-   def _update_hook(self):
-      quippyAtoms._update_hook(self)
-      self.arrays = {}     
-      for name in self._props:
-         name_map = {'pos': 'positions',
-                     'mass': 'masses',
-                     'z': 'numbers'}
-         ase_name = name_map.get(name, name)
-         self.arrays[ase_name] = getattr(self, name).view(np.ndarray).T
 
    
 
