@@ -69,6 +69,7 @@ real(dp), parameter :: DEGREES_PER_RADIAN = 180.0_dp / PI
 real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
 real(dp), parameter :: GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
 real(dp), parameter :: EPSILON_0 = 8.854187817e-12_dp / ELEM_CHARGE * 1.0e-10_dp !% epsilon_0 in e / V Angstrom
+real(dp), parameter :: DEBYE = 1.0e-21_dp/299792458.0_dp/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
 
 complex(dp), parameter :: CPLX_ZERO = (0.0_dp,0.0_dp)
 complex(dp), parameter :: CPLX_IMAG = (0.0_dp,1.0_dp)

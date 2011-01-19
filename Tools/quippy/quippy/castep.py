@@ -26,7 +26,7 @@
 import sys, string, os, operator, itertools, logging, glob, re
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, atomic_number_from_symbol
+from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.atoms import make_lattice, get_lattice_params
 from math import pi
@@ -920,6 +920,21 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
 
       mod_param = param.copy()
 
+      # check for calculation of dipole moment - one vector per spin component
+      if ' calculate electric dipole moment of system     : on\n' in castep_output:
+         dipole_magnitudes = [s for s in castep_output if s.startswith('  +  Magnitude of Dipole')]
+         dipole_directions = [s for s in castep_output if s.startswith('  +  Direction of Dipole')]
+
+         dipoles = []
+         for mag_line, dir_line in zip(dipole_magnitudes, dipole_directions):
+            magnitude = float(mag_line.split()[5])*DEBYE
+            direction = farray([float(x) for x in dir_line.split()[5:8]])
+            dipoles.append(magnitude*direction)
+
+         for i,dipole in fenumerate(dipoles):
+            mod_param['dipole%d' % i] = dipole
+            
+
       # append K-point information
       try:
          kpoint_start = castep_output.index('                              k-Points For BZ Sampling\n')
@@ -938,10 +953,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       if got_virial:
          mod_param['virial'] = virial*atoms.cell_volume()/GPA
 
-      atoms.params.update(mod_param)
-
       if atoms_ref is None:
          atoms_ref = atoms.copy()
+
+      atoms.params.update(mod_param)
          
       yield atoms
 
