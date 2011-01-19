@@ -2,7 +2,7 @@ from quippy import *
 import unittest, quippy
 from quippytest import *
 
-test_electrostatic_embed = True
+test_electrostatic_embed = False
 
 if test_electrostatic_embed:
 
