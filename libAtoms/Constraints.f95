@@ -143,6 +143,12 @@ module constraints_module
   real(dp), parameter :: DEFAULT_CONSTRAINT_TOLERANCE = 1.0E-10_dp !% Default tolerance of constraints
   real(dp), parameter :: CONSTRAINT_WARNING_TOLERANCE = 1.0E-3_dp !% Warn if a constraint is added which is not obeyed
                                                                   !% to within this tolerance
+
+  integer, parameter :: UPPER_BOUND = 1                 !% Restraint should only act if the instantaneous value is larger than the equilibrium restraint value
+  integer, parameter :: LOWER_BOUND = -1                !% Restraint should only act if the instantaneous value is larger than the equilibrium restraint value
+  integer, parameter :: BOTH_UPPER_AND_LOWER_BOUNDS = 0  !% Restraint acts independently from the instantaneous value of the restraint
+  character(len=32), parameter :: BOUND_STRING(-1:1) = (/"UPPER_BOUND           ","LOWER_BOUND           ","UPPER_AND_LOWER_BOUNDS"/)
+
   type Constraint
 
      integer                             :: N = 0     !% Number of atoms in the constraint
@@ -168,6 +174,7 @@ module constraints_module
                                                       !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \mathrm{d} \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi$
 
      real(dp)                            :: k         !% spring constant for restraint
+     integer                             :: bound     !% for onesided restraint (upper/lower)
      real(dp)                            :: E         !% restraint energy
      real(dp), allocatable, dimension(:) :: dE_dr     !% restraint force (on atoms)
      real(dp)                            :: dE_dcoll  !% derivative of restraint energy w.r.t. collective coordinate, for Umbrella Integration w.r.t. pos
@@ -239,13 +246,15 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine constraint_initialise(this,indices,func,data,k,tol)
+  subroutine constraint_initialise(this,indices,func,data,k,bound,tol)
 
     type(Constraint),       intent(inout) :: this
     integer,  dimension(:), intent(in)    :: indices
     integer,                intent(in)    :: func
     real(dp), dimension(:), intent(in)    :: data
     real(dp), optional, intent(in)        :: k, tol
+    integer,  optional, intent(in)        :: bound
+
 
     if (this%initialised) call constraint_finalise(this)
     
@@ -285,6 +294,7 @@ contains
 
     if (present(k)) then
        this%k = k
+       this%bound = optional_default(BOTH_UPPER_AND_LOWER_BOUNDS,bound)
        this%E = 0.0_dp
        this%dE_dcoll = 0.0_dp
        this%dE_dk = 0.0_dp
@@ -325,6 +335,7 @@ contains
     if (allocated(this%dcoll_dr)) deallocate(this%dcoll_dr)
     this%Z_coll = 0.0_dp
     this%k = -1.0_dp
+    this%k = 0
     this%E = 0.0_dp
     this%dE_dcoll = 0.0_dp
     this%dE_dk = 0.0_dp
@@ -354,12 +365,13 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine constraint_amend(this,func,data,k)
+  subroutine constraint_amend(this,func,data,k,bound)
     
     type(Constraint),                 intent(inout) :: this
     integer,                optional, intent(in)    :: func
     real(dp), dimension(:), optional, intent(in)    :: data
-    real(dp), optional, intent(in)    :: k
+    real(dp),               optional, intent(in)    :: k
+    integer,                optional, intent(in)    :: bound
 
     if (present(data)) then
        call reallocate(this%data,size(data))
@@ -376,6 +388,7 @@ contains
     end if
 
     if (present(k)) this%k = k
+    if (present(bound)) this%bound = bound
 
   end subroutine constraint_amend
 
@@ -417,6 +430,7 @@ contains
        to%Z_coll      = from%Z_coll
        to%tol         = from%tol
        to%k           = from%k
+       to%bound       = from%bound
        to%E           = from%E
        to%dE_dcoll    = from%dE_dcoll
        to%dE_dk       = from%dE_dk
@@ -453,10 +467,19 @@ contains
     call call_constraint_sub(this%func,pos,velo,mass,t,this%data,this%C,this%dC_dr,this%dC_dt,this%dcoll_dr,this%Z_coll,this%target_v)
     if (this%k >= 0.0_dp) then ! restraint
 !call print("RESTRAINT C "//this%C)
-       this%E = 0.5_dp * this%k * this%C**2
-       this%dE_dr = this%k * this%C * this%dC_dr
-       this%dE_dcoll = this%k * this%C ! assuming that dC_dcoll = 1.0 here, i.e. C = (coll - target_v)
-       this%dE_dk = 0.5_dp * this%C**2
+       if ( (this%bound==BOTH_UPPER_AND_LOWER_BOUNDS) .or. &            !apply anyway
+            (this%bound==UPPER_BOUND .and. this%C>this%target_v) .or. & !apply when exceeding the target value
+            (this%bound==LOWER_BOUND .and. this%C<this%target_v) ) then !apply when going under the target value
+          this%E = 0.5_dp * this%k * this%C**2
+          this%dE_dr = this%k * this%C * this%dC_dr
+          this%dE_dcoll = this%k * this%C ! assuming that dC_dcoll = 1.0 here, i.e. C = (coll - target_v)
+          this%dE_dk = 0.5_dp * this%C**2
+       else !do not keep the old values
+          this%E = 0._dp
+          this%dE_dr = 0._dp
+          this%dE_dcoll = 0._dp
+          this%dE_dk = 0._dp
+       endif
     endif
 
   end subroutine constraint_calculate_values
@@ -583,6 +606,7 @@ contains
        call print('Lagrange multiplier(R) = '// this%lambdaR, verbosity, file)
        call print('Lagrange multiplier(V) = '// this%lambdaV, verbosity, file)
        call print('spring constant(k) = '// this%k, verbosity, file)
+       call print('spring acts as (bound) = '// trim(BOUND_STRING(this%bound)), verbosity, file)
        call print('Fixman determinant(Z_xi) = '// this%Z_coll, verbosity, file)
        call print('  gradients of collective coordinate:')
        do i = 1, this%N
