@@ -2214,11 +2214,12 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the bond angle cosine between atoms i, j, and k
-   subroutine constrain_bondanglecos(this,i,j,k,c,restraint_k,tol)
+   subroutine constrain_bondanglecos(this,i,j,k,c,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
-     real(dp), intent(in), optional       :: c, restraint_k, tol
+     real(dp), optional,    intent(in)    :: c, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BONDANGLECOS_FUNC
@@ -2251,16 +2252,17 @@ contains
         r_jk = diff_min_image(this%atoms,j,k)
 	use_c = (r_ji .dot. r_jk)/(norm(r_ji)*norm(r_jk))
      endif
-     call ds_add_constraint(this,(/i,j,k/),BONDANGLECOS_FUNC,(/use_c/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j,k/),BONDANGLECOS_FUNC,(/use_c/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_bondanglecos
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bondlength(this,i,j,d,restraint_k,tol)
+   subroutine constrain_bondlength(this,i,j,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), intent(in), optional       :: d, restraint_k, tol
+     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
@@ -2286,17 +2288,18 @@ contains
 
      !Add the constraint
      use_d = optional_default(distance_min_image(this%atoms,i,j), d)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_bondlength
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_relax_bondlength(this,i,j,t0,tau,df,di,restraint_k,tol)
+   subroutine constrain_relax_bondlength(this,i,j,t0,tau,df,di,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), intent(in)                 :: t0, tau, df
-     real(dp), intent(in), optional       :: di, restraint_k, tol
+     real(dp),              intent(in)    :: t0, tau, df
+     real(dp), optional,    intent(in)    :: di, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
@@ -2322,17 +2325,18 @@ contains
 
      !Add the constraint
      use_di = optional_default(distance_min_image(this%atoms,i,j), di)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,t0,tau/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_relax_bondlength
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_relax_bondlength_dev_pow(this,i,j,t0,tau,p,df,di,restraint_k,tol)
+   subroutine constrain_relax_bondlength_dev_pow(this,i,j,t0,tau,p,df,di,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), intent(in)                 :: t0, tau, p, df
-     real(dp), intent(in), optional       :: di, restraint_k, tol
+     real(dp),              intent(in)    :: t0, tau, p, df
+     real(dp), optional,    intent(in)    :: di, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
@@ -2358,16 +2362,17 @@ contains
 
      !Add the constraint
      use_di = optional_default(distance_min_image(this%atoms,i,j), di)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,p,t0,tau/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,p,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_relax_bondlength_dev_pow
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bondlength_sq(this,i,j,d,restraint_k,tol)
+   subroutine constrain_bondlength_sq(this,i,j,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), intent(in), optional       :: d, restraint_k, tol
+     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
@@ -2393,17 +2398,18 @@ contains
 
      !Add the constraint
      use_d = optional_default(distance_min_image(this%atoms,i,j), d)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_bondlength_sq
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bondlength_dev_pow(this,i,j,p,d,restraint_k,tol)
+   subroutine constrain_bondlength_dev_pow(this,i,j,p,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), intent(in)        :: p
-     real(dp), intent(in), optional       :: d, restraint_k, tol
+     real(dp),              intent(in)    :: p
+     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
@@ -2429,7 +2435,7 @@ contains
 
      !Add the constraint
      use_d = optional_default(distance_min_image(this%atoms,i,j), d)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d, p/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d, p/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_bondlength_dev_pow
 
@@ -2437,12 +2443,13 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the difference of bond length between atoms i--j and j--k
-   subroutine constrain_bondlength_diff(this,i,j,k,d,restraint_k,tol)
+   subroutine constrain_bondlength_diff(this,i,j,k,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
-     real(dp), intent(in), optional       :: d
-     real(dp), intent(in), optional       :: restraint_k, tol
+     real(dp), optional,    intent(in)    :: d
+     real(dp), optional,    intent(in)    :: restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_DIFF_FUNC
@@ -2469,7 +2476,7 @@ contains
      
      !Add the constraint
      use_d = optional_default(abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k)),d)
-     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/use_d/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/use_d/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_bondlength_diff
 
@@ -2477,11 +2484,12 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the energy gap of two resonance structures
-   subroutine constrain_gap_energy(this,d,restraint_k,tol)
+   subroutine constrain_gap_energy(this,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
-     real(dp), intent(in)                 :: d
-     real(dp), intent(in), optional       :: restraint_k, tol
+     real(dp),              intent(in)    :: d
+     real(dp), optional,    intent(in)    :: restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: GAP_ENERGY_FUNC
@@ -2500,18 +2508,19 @@ contains
      do i=1,this%atoms%N
         all_atoms(i) = i
      enddo
-     call ds_add_constraint(this,all_atoms,GAP_ENERGY_FUNC,(/d/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,all_atoms,GAP_ENERGY_FUNC,(/d/), restraint_k=restraint_k,bound=bound, tol=tol)
      deallocate(all_atoms)
 
    end subroutine constrain_gap_energy
 
    !% Constrain an atom to lie in a particluar plane
-   subroutine constrain_atom_plane(this,i,plane_n,d,restraint_k,tol)
+   subroutine constrain_atom_plane(this,i,plane_n,d,restraint_k,bound,tol)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i
-     real(dp), intent(in)                 :: plane_n(3)
-     real(dp), intent(in), optional       :: d, restraint_k, tol
+     real(dp),              intent(in)    :: plane_n(3)
+     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
 
      logical, save                        :: first_call = .true.
      integer, save                        :: PLANE_FUNC
@@ -2533,17 +2542,18 @@ contains
      use_d = optional_default((this%atoms%pos(:,i) .dot. plane_n_hat),d)
 
      !Add the constraint
-     call ds_add_constraint(this,(/i/),PLANE_FUNC,(/plane_n,use_d/), restraint_k=restraint_k, tol=tol)
+     call ds_add_constraint(this,(/i/),PLANE_FUNC,(/plane_n,use_d/), restraint_k=restraint_k, bound=bound, tol=tol)
 
    end subroutine constrain_atom_plane
 
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
-   subroutine ds_add_constraint(this,atoms,func,data,update_Ndof, restraint_k, tol)
+   subroutine ds_add_constraint(this,atoms,func,data,update_Ndof, restraint_k, bound, tol)
 
      type(DynamicalSystem),  intent(inout) :: this
      integer,  dimension(:), intent(in)    :: atoms
      integer,                intent(in)    :: func
+     integer,  optional,     intent(in)    :: bound
      real(dp), dimension(:), intent(in)    :: data
      logical,  optional,     intent(in)    :: update_Ndof
      real(dp), optional,      intent(in)    :: restraint_k, tol
@@ -2565,7 +2575,7 @@ contains
 	new_constraint = this%Nrestraints
 	if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Constraint array full')
         if (present(tol)) call print("ds_add_constraint: Restraints will ignore the explicitly given constraint tolerance.",PRINT_ALWAYS)
-	call initialise(this%restraint(new_constraint),atoms,func,data,restraint_k)
+        call initialise(this%restraint(new_constraint),atoms,func,data,restraint_k,bound=bound)
 	call constraint_calculate_values_at(this%restraint(new_constraint),this%atoms,this%t)
 
      else ! constraint
