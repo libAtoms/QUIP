@@ -265,8 +265,11 @@ for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
       writearg = write_arg_rename.get(arg, arg)
       write_args[writearg] = getattr(opt, arg)
 
-if opt.format is None and outfile is not None:
-   opt.format = os.path.splitext(outfile)[1][1:]
+if opt.format is None and  outfile is not None:
+      opt.format = os.path.splitext(outfile)[1][1:]
+
+if opt.format is None or opt.format == '':
+   opt.format = 'xyz'
 
 if opt.aspect is None:
    opt.aspect = 0.75
