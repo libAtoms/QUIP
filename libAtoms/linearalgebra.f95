@@ -341,9 +341,9 @@ module linearalgebra_module
   end interface
 
   !% Search an array by element or by row.
-  private :: find_in_array_element, find_in_array_row
+  private :: find_in_array_element_i, find_in_array_element_s, find_in_array_row
   interface find_in_array
-     module procedure find_in_array_element, find_in_array_row
+     module procedure find_in_array_element_i, find_in_array_element_s, find_in_array_row
   end interface
 
   !% Root-mean-square difference calculation for components of two vectors or arrays.
@@ -4504,7 +4504,7 @@ CONTAINS
 
    end function is_in_array
 
-   pure function find_in_array_element(this, val) result(n)
+   pure function find_in_array_element_i(this, val) result(n)
      integer, intent(in) :: val
      integer, intent(in), dimension(:) :: this
      integer            ::i, n
@@ -4521,7 +4521,26 @@ CONTAINS
      ! not found
      n = 0
 
-   end function find_in_array_element
+   end function find_in_array_element_i
+
+   pure function find_in_array_element_s(this, val) result(n)
+     character(len=*), intent(in) :: val
+     character(len=*), intent(in), dimension(:) :: this
+     integer            ::i, n
+
+     ! Optimised to avoid overhead of function call to find_in_array_row (jrk33)
+
+     do i = 1,size(this)
+        if (this(i) == val) then
+           n = i
+           return
+        end if
+     end do
+
+     ! not found
+     n = 0
+
+   end function find_in_array_element_s
 
    function find_in_array_row(this, val, mask) result(n)
      integer, intent(in), dimension(:,:) :: this

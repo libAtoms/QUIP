@@ -286,6 +286,11 @@ module  atoms_module
      module procedure atoms_is_min_image
   endinterface
 
+  private :: atoms_set_Zs
+  interface set_Zs
+     module procedure atoms_set_Zs
+  endinterface
+
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -3495,5 +3500,23 @@ contains
     endif
 
   end subroutine atoms_calc_connect
+
+  !% set Zs from species
+  subroutine atoms_set_Zs(this, error)
+   type(Atoms), intent(inout) :: this
+   integer, intent(out), optional :: ERROR
+
+   integer i, ii
+
+   INIT_ERROR(error)
+
+   do i=1, this%N
+      ii = find_in_array(ElementName, a2s(this%species(:,i)))
+      if (ii < 1) then
+	 RAISE_ERROR("failed to match name of atom "//i//" '"//a2s(this%species(:,i))//"'", error)
+      endif
+      this%Z(i) = ii-1
+   end do
+  end subroutine atoms_set_Zs
 
 end module atoms_module

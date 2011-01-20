@@ -81,6 +81,7 @@ type analysis
 
   ! rdfd stuff
   real(dp) :: rdfd_zone_center(3)
+  integer :: rdfd_zone_atom_center
   character(FIELD_LENGTH) :: rdfd_center_mask_str, rdfd_neighbour_mask_str
   real(dp) :: rdfd_zone_width, rdfd_bin_width
   integer :: rdfd_n_zones, rdfd_n_bins
@@ -223,15 +224,16 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'KE_density_radial_sigma', '1.0', this%KE_density_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
 
     ! rdfd
-    call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_zone_width', '-1.0', this%rdfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_n_zones', '1', this%rdfd_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_bin_width', '-1', this%rdfd_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_n_bins', '-1', this%rdfd_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_center_mask', '', this%rdfd_center_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_neighbour_mask', '', this%rdfd_neighbour_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_gaussian', 'F', this%rdfd_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_sigma', '0.1', this%rdfd_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center, help_string="Cartesian position to center zones for rdfd (ignored in rdfd_zone_center is usable)")
+    call param_register(params, 'rdfd_zone_atom_center', '0', this%rdfd_zone_atom_center, help_string="If > 0, atom to center zones for rdfd")
+    call param_register(params, 'rdfd_zone_width', '-1.0', this%rdfd_zone_width, help_string="Width of zones for rdfd")
+    call param_register(params, 'rdfd_n_zones', '1', this%rdfd_n_zones, help_string="Number of zones for rdfd")
+    call param_register(params, 'rdfd_bin_width', '-1', this%rdfd_bin_width, help_string="Width of bin (or distance between sample points) in each rdfd")
+    call param_register(params, 'rdfd_n_bins', '-1', this%rdfd_n_bins, help_string="Number of bins (or sample points) in each rdfd")
+    call param_register(params, 'rdfd_center_mask', '', this%rdfd_center_mask_str, help_string="Mask for atoms that are considered for rdfd centers")
+    call param_register(params, 'rdfd_neighbour_mask', '', this%rdfd_neighbour_mask_str, help_string="Mask for atoms that are considered for rdfd neighbours")
+    call param_register(params, 'rdfd_gaussian', 'F', this%rdfd_gaussian_smoothing, help_string="If true, use Gaussians to smear mass distributions being integrated for rdfd")
+    call param_register(params, 'rdfd_sigma', '0.1', this%rdfd_gaussian_sigma, help_string="Width of Gaussians used to smear mass distributions for rdfd")
 
     ! adfd
     call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -327,6 +329,7 @@ subroutine analysis_read(this, prev, args_str)
 
     ! rdfd
     call param_register(params, 'rdfd_zone_center', ''//prev%rdfd_zone_center, this%rdfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'rdfd_zone_atom_center', ''//prev%rdfd_zone_atom_center, this%rdfd_zone_atom_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'rdfd_zone_width', ''//prev%rdfd_zone_width, this%rdfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'rdfd_n_zones', ''//prev%rdfd_n_zones, this%rdfd_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'rdfd_bin_width', ''//prev%rdfd_bin_width, this%rdfd_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -590,12 +593,12 @@ subroutine do_analyses(a, time, frame, at)
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%rdfd_bin_pos(a(i_a)%rdfd_n_bins))
           allocate(a(i_a)%rdfd_zone_pos(a(i_a)%rdfd_n_zones))
-          call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
+          call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_zone_atom_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str, &
             a(i_a)%rdfd_bin_pos, a(i_a)%rdfd_zone_pos)
         else
-          call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
+          call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_zone_atom_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
         endif
@@ -1122,11 +1125,12 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 
 end subroutine density_sample_radial_mesh_Gaussians
 
-subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zones, gaussian_smoothing, gaussian_sigma, &
+subroutine rdfd_calc(rdfd, at, zone_center, zone_atom_center, bin_width, n_bins, zone_width, n_zones, gaussian_smoothing, gaussian_sigma, &
                      center_mask_str, neighbour_mask_str, bin_pos, zone_pos)
   real(dp), intent(inout) :: rdfd(:,:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: zone_center(3), bin_width, zone_width
+  integer :: zone_atom_center
   integer, intent(in) :: n_bins, n_zones
   logical, intent(in) :: gaussian_smoothing
   real(dp), intent(in) :: gaussian_sigma
@@ -1136,7 +1140,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   logical, allocatable :: center_mask_a(:), neighbour_mask_a(:)
   integer :: i_at, j_at, i_bin, i_zone
   integer, allocatable :: n_in_zone(:)
-  real(dp) :: r, bin_inner_rad, bin_outer_rad
+  real(dp) :: r, bin_inner_rad, bin_outer_rad, my_zone_center(3)
 
   allocate(center_mask_a(at%N))
   allocate(neighbour_mask_a(at%N))
@@ -1176,7 +1180,16 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
 
     !calc which zone the atom is in
     if (zone_width > 0.0_dp) then
-      r = distance_min_image(at, zone_center, at%pos(:,i_at))
+      if (zone_atom_center > 0) then
+	 if (zone_atom_center <= at%N) then
+	    my_zone_center = at%pos(:,zone_atom_center)
+	 else
+	    call system_abort("rdfd_calc got zone_atom_center="//zone_atom_center//" out of range (1.."//at%N//")")
+	 endif
+      else
+	 my_zone_center = zone_center
+      endif
+      r = distance_min_image(at, my_zone_center, at%pos(:,i_at))
       i_zone = int(r/zone_width)+1
       if (i_zone > n_zones) cycle
     else
