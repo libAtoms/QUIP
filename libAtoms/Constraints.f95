@@ -603,10 +603,14 @@ contains
 	  call print(this%dC_dr(3*i-2:3*i), verbosity, file)
        end do
        call print('Time Derivative     = '// this%dC_dt, verbosity, file)
-       call print('Lagrange multiplier(R) = '// this%lambdaR, verbosity, file)
-       call print('Lagrange multiplier(V) = '// this%lambdaV, verbosity, file)
-       call print('spring constant(k) = '// this%k, verbosity, file)
-       call print('spring acts as (bound) = '// trim(BOUND_STRING(this%bound)), verbosity, file)
+       if (this%k >= 0.0) then ! restraint
+	 call print('restraint spring constant(k) = '// this%k, verbosity, file)
+	 call print('spring acts as (bound) = '// trim(BOUND_STRING(this%bound)), verbosity, file)
+       else ! constraint
+	 call print('Constraint - k value not used')
+	 call print('Lagrange multiplier(R) = '// this%lambdaR, verbosity, file)
+	 call print('Lagrange multiplier(V) = '// this%lambdaV, verbosity, file)
+       endif
        call print('Fixman determinant(Z_xi) = '// this%Z_coll, verbosity, file)
        call print('  gradients of collective coordinate:')
        do i = 1, this%N
