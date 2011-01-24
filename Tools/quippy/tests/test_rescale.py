@@ -201,5 +201,75 @@ class TestRescale_Automatic_Factors(QuippyTestCase):
         self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-3)
 
 
+class TestRescale_ForceMixing(QuippyTestCase):
+
+      def setUp(self):
+         dia = diamond(5.44, 14)
+         xml = '<quip_params>%s</quip_params>' % (quip_xml_parameters('SW') + quip_xml_parameters('Tersoff'))
+
+         verbosity_push(PRINT_SILENT)
+         self.pot = Potential('ForceMixing init_args_pot1={IP SW} init_args_pot2={IP Tersoff}', param_str=xml)
+         self.pot_r = Potential('ForceMixing init_args_pot1={IP SW} init_args_pot2={IP Tersoff} do_rescale_r minimise_bulk', param_str=xml, bulk_scale=dia)
+         verbosity_pop()
+
+         self.at = supercell(dia, 4, 4, 4)
+         matrix_randomise(self.at.pos, 0.1)
+         self.at.set_cutoff(self.pot.cutoff()+1.0)
+         self.at.calc_connect()
+
+         self.at.add_property('hybrid', 0)
+
+         self.embedlist = Table(4,0,0,0)
+         self.embedlist.append((1,0,0,0))
+         self.at.bfs_grow_list(self.embedlist, 2, nneighb_only=True)
+         self.at.hybrid[self.embedlist.int[1,:]] = 1
+
+         self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
+         self.at.hybrid_mark[self.at.hybrid != 0] = HYBRID_ACTIVE_MARK
+
+         # Ratio of Tersoff to SW lattice constants
+         self.r_scale = 5.4320052041/5.4309497787
+
+      def tearDown(self):
+         if os.path.exists('clusters.xyz'): os.unlink('clusters.xyz')
+         if os.path.exists('clusters.xyz.idx'): os.unlink('clusters.xyz.idx')
+
+      def test_cluster(self):
+         f = fzeros((3,self.at.n))
+         self.pot.calc(self.at, force=f, args_str="qm_args_str={single_cluster cluster_calc_connect print_clusters terminate=F randomise_buffer=F}")
+         self.pot_r.calc(self.at, force=f, args_str="qm_args_str={single_cluster cluster_calc_connect print_clusters terminate=F randomise_buffer=F}")
+
+         # Load both clusters
+         cluster, cluster_r = AtomsList('clusters.xyz')
+
+         # Check non-zero lattice components and positions
+         mask = cluster.lattice != 0.0
+         lattice_ratio = cluster_r.lattice[mask]/cluster.lattice[mask]
+
+         mask = cluster.pos != 0.0
+         pos_ratio = cluster_r.pos[mask]/cluster.pos[mask]
+
+         self.assert_(abs(lattice_ratio - self.r_scale).max() < 1.0e-5 and 
+                      abs(pos_ratio - self.r_scale).max() < 1.0e-5)
+
+      def test_force_cluster_atom_mask_no_rescale(self):
+          cluster_force = fzeros((3,self.at.n))
+          atom_mask_force = fzeros((3,self.at.n))
+
+          self.pot.calc(self.at, force=cluster_force, args_str="qm_args_str={single_cluster cluster_calc_connect terminate=F randomise_buffer=F}")
+          self.pot.calc(self.at, force=atom_mask_force, args_str="qm_args_str={atom_mask=active_plus_cutoff}")
+
+          self.assertArrayAlmostEqual(cluster_force, atom_mask_force)
+
+      def test_force_cluster_atom_mask_rescale(self):
+          cluster_force = fzeros((3,self.at.n))
+          atom_mask_force = fzeros((3,self.at.n))
+
+          self.pot_r.calc(self.at, force=cluster_force, args_str="qm_args_str={single_cluster cluster_calc_connect terminate=F randomise_buffer=F}")
+          self.pot_r.calc(self.at, force=atom_mask_force, args_str="qm_args_str={atom_mask=active_plus_cutoff}")
+
+          self.assertArrayAlmostEqual(cluster_force, atom_mask_force)
+
+
 if __name__ == '__main__':
    unittest.main()
