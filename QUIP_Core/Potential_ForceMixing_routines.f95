@@ -495,7 +495,7 @@
 
        if (has_key(params, 'atom_mask')) then
           if (.not. get_value(params, 'atom_mask', atom_mask)) then
-             RAISE_ERROR('Potential_FM_Calc: atom_mask present in qm_args_str, but not of type logical', error)
+             RAISE_ERROR('Potential_FM_Calc: atom_mask present in qm_args_str, but not of type string', error)
           end if
           call add_property(at, 'hybrid_mask', .false., overwrite=.true., ptr=hybrid_mask)
           if (trim(atom_mask) == "active") then
