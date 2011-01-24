@@ -241,20 +241,20 @@ def find_wrap_sources(makefile, quip_root):
                    'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str']
     source_dirs.append(libatoms_dir)
     libraries.append('atoms')
-    targets.append((quip_root, 'libAtoms'))
+    targets.append((quip_root, 'libAtoms/libatoms.a'))
 
     if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
         gp_dir = os.path.join(quip_root, 'GAP_predict')
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
-        targets.extend([(quip_root, 'GAP_predict')])
+        targets.extend([(quip_root, 'GAP_predict/libgap_predict.a')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
     wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95', 'ElectrostaticEmbed.f95']]
     wrap_types += ['potential']
     libraries = ['quip_core'] + libraries
-    targets.append((quip_root, 'QUIP_Core'))
+    targets.append((quip_root, 'QUIP_Core/libquip_core.a'))
 
     do_tools = not 'QUIPPY_NO_TOOLS' in makefile or ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))
     do_crack = not 'QUIPPY_NO_CRACK' in makefile or ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))
