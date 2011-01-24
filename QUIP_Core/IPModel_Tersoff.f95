@@ -227,6 +227,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
      else
         atom_mask_pointer => null()
      endif
+  else
+     do_rescale_r = .false.
+     do_rescale_E = .false.
   endif
 
   if (do_rescale_r) call print('IPModel_Tersoff_Calc: rescaling distances by factor '//r_scale, PRINT_VERBOSE)
