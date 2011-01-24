@@ -322,7 +322,7 @@ contains
     real(dp), parameter::delta = 1.0e-4_dp
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
-    character(len=10240) :: my_args_str, new_args_str
+    character(len=10240) :: my_args_str, cluster_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
     real(dp), pointer, dimension(:) :: weight_region1
     integer, allocatable, dimension(:) :: hybrid_mark_saved
@@ -405,11 +405,19 @@ contains
           RAISE_ERROR('Potential_Simple_calc: little_clusters option only supports calculation of forces, not energies, local energies or virials', error)
        endif
 
+       ! modified args_str options for create_cluster_info() and carve_cluster()
+       call initialise(params)
+       call read_string(params, my_args_str)
+       if (do_rescale_r) call set_value(params, 'do_rescale_r', .true.)
+       cluster_args_str = write_string(params, real_format='f16.8')
+       call finalise(params)
+
+       ! modified args_str options for potential calc() on clusters
        ! must remove "little_clusters" from args_str so that recursion terminates
+       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'little_clusters')
-       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call remove_value(params, 'r_scale')
        call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
@@ -448,10 +456,10 @@ contains
           call print('Potential_Simple_calc: constructing little_cluster around atom '//i, PRINT_VERBOSE)
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
-          call create_hybrid_weights(at, new_args_str)
-          cluster_info = create_cluster_info_from_mark(at, new_args_str,mark_name='hybrid_mark'//trim(hybrid_mark_postfix),error=error)
+          call create_hybrid_weights(at, cluster_args_str)
+          cluster_info = create_cluster_info_from_mark(at, cluster_args_str,mark_name='hybrid_mark'//trim(hybrid_mark_postfix),error=error)
 	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
-	  call carve_cluster(at, new_args_str, cluster_info, cluster)
+	  call carve_cluster(at, cluster_args_str, cluster_info, cluster)
 	  call finalise(cluster_info)
 
           ! Reassign pointers - create_cluster_info_from_mark() might have broken them
@@ -463,7 +471,7 @@ contains
 	  if (current_verbosity() >= PRINT_NERD) then
 	    call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
 	  endif
-          call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
+          call print('ARGS0 | '//cluster_args_str,PRINT_VERBOSE)
 
           ! Disable MPI for duration of calc() call, since we're doing parallelisation at level of clusters
           call calc(this, cluster, args_str=new_args_str)
@@ -504,11 +512,19 @@ contains
           return
        end if
 
+       ! modified args_str options for create_cluster_info() and carve_cluster()
+       call initialise(params)
+       call read_string(params, my_args_str)
+       if (do_rescale_r) call set_value(params, 'do_rescale_r', .true.)
+       cluster_args_str = write_string(params, real_format='f16.8')
+       call finalise(params)
+
+       ! modified args_str options for potential calc() on clusters
        ! must remove "single_cluster" from args_str so that recursion terminates
+       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call initialise(params)
        call read_string(params, my_args_str)
        call remove_value(params, 'single_cluster')
-       ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call remove_value(params, 'r_scale')
        call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
@@ -519,7 +535,7 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, new_args_str, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 cluster_info = create_cluster_info_from_mark(at, cluster_args_str, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
@@ -530,7 +546,7 @@ contains
 	 endif
          call finalise(t)
 
-	 call carve_cluster(at, new_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
@@ -542,7 +558,7 @@ contains
 	 if (.not. assign_pointer(cluster, 'termindex', termindex)) then
 	      RAISE_ERROR('Potential_Simple_calc: cluster is missing termindex property', error)
 	 endif
-         call print('ARGS1 | '//new_args_str,PRINT_VERBOSE)
+         call print('ARGS1 | '//cluster_args_str,PRINT_VERBOSE)
 
 	 call calc(this, cluster, args_str=new_args_str, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc after calc in carve_cluster', error)
@@ -568,7 +584,7 @@ contains
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 cluster_info = create_cluster_info_from_mark(at, trim(cluster_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
 	 call add_property(at, 'cluster_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
@@ -614,7 +630,7 @@ contains
 	   ! prefix should be "UNCARVED_CLUSTER"
 	   call write(at, 'stdout')
 	 endif
-	 call calc(this, at, args_str=new_args_str, error=error)
+	 call calc(this, at, args_str=cluster_args_str, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
 	 if (do_rescale_r)  at_force_ptr = at_force_ptr*r_scale
 	 if (do_rescale_E)  at_force_ptr = at_force_ptr*E_scale
