@@ -55,7 +55,7 @@ program teach_sparse_program
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
-  integer :: i, j, k, l, o, dd, dt, config_type_hypers_num_fields, i_default, m_total, li, ui
+  integer :: i, j, k, l, o, dd, dt, config_type_hypers_num_fields, i_default, m_total, li, ui, gp_teach_memory
   integer, dimension(:), allocatable :: type_indices, sparse_points
   character(len=FIELD_LENGTH) :: gp_file
 
@@ -371,34 +371,22 @@ program teach_sparse_program
         enddo
      enddo
   endif
-  ! Stop execution if required memory is greater than the available memory. 
-  ! The biggest arrays allocated are 2*sr*(nx+nxd), where sr is the
-  ! number of sparse points, nx and nxd are the number of bispectra and partial
-  ! derivatives.
-  if(main_teach_sparse%do_sparse) then
-     mem_required = real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
-     + real(size(main_teach_sparse%xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
-#ifdef SPEEDOPT
-     mem_required = 2.0_dp * mem_required
-#endif                  
-  else
-     mem_required = 3.0_dp*real(size(main_teach_sparse%x,2),dp)**2 * real(dp,dp) / (1024.0_dp**3)
-  endif
-
-  call mem_info(mem_total,mem_free)
-  mem_total = mem_total / (1024.0_dp**3)
-  mem_free = mem_free / (1024.0_dp**3)
-
-  call print('Memory required (approx.): '//mem_required//' GB')
-  if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_total//' GB).')
 
   if(main_teach_sparse%do_sparse) then
+
+     if( any( (/main_teach_sparse%do_sigma, main_teach_sparse%do_delta, main_teach_sparse%do_theta, &
+     main_teach_sparse%do_sparx, main_teach_sparse%do_f0, main_teach_sparse%do_theta_fac /) ) ) then
+        gp_teach_memory = 2
+     else
+        gp_teach_memory = 0
+     endif
+
      call gp_sparsify(gp_sp,main_teach_sparse%r,&
      main_teach_sparse%sigma,main_teach_sparse%dlta,main_teach_sparse%theta,&
      main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
      main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
      main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
-     main_teach_sparse%target_type)
+     main_teach_sparse%target_type, gp_teach_memory_in=gp_teach_memory)
 
      call print('')
      call print('theta')

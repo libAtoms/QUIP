@@ -42,6 +42,11 @@ module gp_teach_module
    use gp_predict_module
 
    implicit none
+
+   integer, parameter :: GP_TEACH_MEMORY_0 = 0
+   integer, parameter :: GP_TEACH_MEMORY_1 = 1
+   integer, parameter :: GP_TEACH_MEMORY_2 = 2
+
    private
 
    real(qp), parameter :: gp_jitter  = 1.0e-6_qp
@@ -72,6 +77,8 @@ module gp_teach_module
       !% m: number of teaching function values
       !% p: number of hyperparameters
       integer :: d, n, m, sr, nx, nxx, nxd, mf, mdf, nsp, n_target_type
+
+      integer :: gp_teach_memory = GP_TEACH_MEMORY_0
 
       logical :: initialised = .false.
 
@@ -237,6 +244,8 @@ module gp_teach_module
          real(dp), dimension(:), intent(in)             :: y_in        !% function (or derivative) value at teaching points, dimension(m)
          real(dp), dimension(:,:), intent(in)           :: x_in        !% teaching points, dimension(d,n)
 
+         real(dp) :: mem_required, mem_total, mem_free
+
          if(this%initialised) call finalise(this)
 
          this%d = size(x_in,1)
@@ -247,6 +256,14 @@ module gp_teach_module
 
          call check_size('theta_in',theta_in,(/this%d,1/),'gp_simple_initialise')
          call check_size('y_in',y_in,(/this%n/),'gp_simple_initialise')
+
+         mem_required = 3.0_dp*real(this%n,dp)**2 * real(dp,dp) / (1024.0_dp**3)
+         call mem_info(mem_total,mem_free)
+         mem_total = mem_total / (1024.0_dp**3)
+         mem_free = mem_free / (1024.0_dp**3)
+
+         call print('Memory required (approx.): '//mem_required//' GB')
+         if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_total//' GB).')
 
          allocate(this%x(this%d,this%n), this%alpha(this%n), this%y(this%n), this%x_div_theta(this%d,this%n), &
          this%c(this%n,this%n), this%theta(this%d,1), this%delta(1), this%f0(1), this%xz(this%n), this%sp(1))
@@ -267,7 +284,7 @@ module gp_teach_module
 
       endsubroutine gp_simple_initialise
 
-      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in)
+      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in, gp_teach_memory_in)
          type(gp_sparse), intent(inout)                 :: this        !% gp to initialise
          !integer, intent(in)                            :: sr
          integer, dimension(:), intent(in)              :: r
@@ -286,6 +303,7 @@ module gp_teach_module
          integer, dimension(:), intent(in), optional    :: sp_in        !% how the sum is formed from teaching point(m)
          real(dp), dimension(:), intent(in), optional   :: f0_in    !% hyperparameters, dimension(p)
          integer, dimension(:), intent(in), optional    :: target_type_in        !% what type of target is the function value
+         integer, intent(in), optional                  :: gp_teach_memory_in
 
          integer :: i, lmf, nsp
          integer, dimension(:), allocatable :: my_target_type
@@ -335,6 +353,12 @@ module gp_teach_module
             & call system_abort('GP_initialise: the dimensionality of sigma_in is '//this%n_target_type//', less than 2, cannot associate sigmas to different target function values')
             my_target_type(:this%mf) = 1
             my_target_type(this%mf+1:) = 2
+         endif
+
+         if(present(gp_teach_memory_in)) then
+            this%gp_teach_memory = gp_teach_memory_in
+         else
+            this%gp_teach_memory = GP_TEACH_MEMORY_0
          endif
 
          call gp_allocate(this)
@@ -398,7 +422,25 @@ module gp_teach_module
       subroutine gp_allocate(this)
          type(gp_sparse), intent(inout)       :: this
 
+         real(dp) :: mem_required, mem_total, mem_free
+
          call gp_deallocate(this)
+
+         if(this%gp_teach_memory == GP_TEACH_MEMORY_0) &
+            mem_required = 0.0_dp
+
+         if(this%gp_teach_memory == GP_TEACH_MEMORY_1) &
+            mem_required = real(this%sr,dp) * real(this%n,dp) * real(dp,dp) / (1024.0_dp**3)
+
+         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) &
+            mem_required = 2.0_dp * real(this%sr,dp) * real(this%n,dp) * real(dp,dp) / (1024.0_dp**3)
+
+         call mem_info(mem_total,mem_free)
+         mem_total = mem_total / (1024.0_dp**3)
+         mem_free = mem_free / (1024.0_dp**3)
+
+         call print('Memory required (approx.): '//mem_required//' GB')
+         if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_total//' GB).')
 
 
          allocate( this%sigma(this%n_target_type), this%theta(this%d,this%nsp), this%delta(this%nsp), this%f0(this%nsp), this%sp(this%nsp), this%target_type(this%m) )
@@ -406,12 +448,17 @@ module gp_teach_module
          allocate( this%x(this%d,this%nxx), this%x_prime(this%d,this%nxd), this%xf(this%nx), this%xdf(this%nxd) )
 
          allocate( this%y(this%m), this%lf(this%mf), this%ldf(this%mdf), this%l(this%m), this%lambda(this%m), &
-         & this%x_sparse(this%d,this%sr), this%k_mn(this%sr,this%m), this%k_mm(this%sr,this%sr), &
-         & this%big_k_mn(this%sr,this%n), this%inverse_k_mm_k_mn(this%sr,this%m))
-#ifdef SPEEDOPT
-         allocate(this%big_raw_k_mn(this%sr,this%n))
-         this%big_raw_k_mn = 0.0_qp
-#endif
+         this%x_sparse(this%d,this%sr), this%k_mn(this%sr,this%m), this%k_mm(this%sr,this%sr), this%inverse_k_mm_k_mn(this%sr,this%m))
+
+         if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) then
+            allocate(this%big_k_mn(this%sr,this%n))
+            this%big_k_mn = 0.0_qp
+         endif
+
+         if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) then
+            allocate(this%big_raw_k_mn(this%sr,this%n))
+            this%big_raw_k_mn = 0.0_qp
+         endif
 
          allocate(this%xz(this%nxx), this%xz_sparse(this%sr) )
          this%x     = 0.0_qp
@@ -425,7 +472,6 @@ module gp_teach_module
          this%x_sparse = 0.0_qp
          this%k_mn = 0.0_qp
          this%k_mm = 0.0_qp
-         this%big_k_mn = 0.0_qp
 
          this%xz = 0
          this%xz_sparse = 0
@@ -692,7 +738,7 @@ module gp_teach_module
          type(LA_Matrix) :: LA_k_mm
 
          integer :: i, j, lj, uj, j1, j2, id, jd, xj, xj1, xj2, k, Z_type, info
-         real(qp) :: ep, big_raw_k_mn_ij
+         real(qp) :: ep, big_raw_k_mn_ij, big_k_mn_ij
          real(qp), dimension(:,:), allocatable :: inverse_k_mm
          real(qp), dimension(:), allocatable   :: lknnl, diff_xijt
          real(qp), dimension(:,:), allocatable   :: theta2
@@ -700,49 +746,56 @@ module gp_teach_module
          allocate(lknnl(this%m), inverse_k_mm(this%sr,this%sr), theta2(this%d,this%nsp)) ! , diff_xijt(this%d) )
          
          theta2 = 1.0_qp / this%theta**2
-!$omp parallel do private(xj,k,Z_type)
+         this%k_mn = 0.0_qp
+
+!$omp parallel do private(xj,k,Z_type.lj)
          do j = 1, this%nx
             xj = this%xf(j)
+            lj = count(j > this%l) + 1
             
             do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
 
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
                   big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
-#ifdef SPEEDOPT
-                  this%big_raw_k_mn(i,j) = big_raw_k_mn_ij
-#endif                  
-                  this%big_k_mn(i,j) = big_raw_k_mn_ij + this%f0(Z_type)**2 !* &
+                  big_k_mn_ij = big_raw_k_mn_ij + this%f0(Z_type)**2 
+
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = big_raw_k_mn_ij
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = big_k_mn_ij
+                  if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
                else
-#ifdef SPEEDOPT
-                  this%big_raw_k_mn(i,j) = 0.0_qp
-#endif                  
-                  this%big_k_mn(i,j) = 0.0_qp
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = 0.0_qp
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = 0.0_qp
                end if
               !& dot_product(( this%x_sparse(:,i) - this%x(:,j) )*theta2,this%x_prime(:,j))
+
+
             end do
          end do
 
-!$omp parallel do private(jd,xj,k,Z_type)
+!$omp parallel do private(jd,xj,k,Z_type,lj)
          do j = 1, this%nxd
             jd = j + this%nx
             xj = this%xdf(j)
+            lj = count(jd > this%l) + 1
             
             do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
             
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
                   big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(:,i) )
-#ifdef SPEEDOPT
-                  this%big_raw_k_mn(i,jd) = big_raw_k_mn_ij
-#endif                  
-                  this%big_k_mn(i,jd) = big_raw_k_mn_ij * &
-                 & dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
+                  big_k_mn_ij = big_raw_k_mn_ij * &
+                  dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
+
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,jd) = big_raw_k_mn_ij
+                  if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,jd) = big_k_mn_ij
+                  if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
+
               else
-#ifdef SPEEDOPT
-                 this%big_raw_k_mn(i,jd) = 0.0_qp
-#endif                  
-                 this%big_k_mn(i,jd) = 0.0_qp
+
+                 if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,jd) = 0.0_qp
+                 if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,jd) = 0.0_qp
+
               end if
             end do
          end do
@@ -821,7 +874,7 @@ allocate(diff_xijt(this%d))
 deallocate(diff_xijt)
 !$omp end parallel
 
-         call apply_l(this%big_k_mn,this%l,this%k_mn)
+         if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) call apply_l(this%big_k_mn,this%l,this%k_mn)
          !call inverse(this%k_mm,inverse_k_mm)
          !inverse_k_mm = this%k_mm
          call initialise(LA_k_mm,this%k_mm)
@@ -975,6 +1028,9 @@ deallocate(diff_xijt)
          integer :: i, j, d, j1, j2, lj, uj, info, xj, xj1, xj2, jd, id, num_threads, k, Z_type
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_x, my_do_f0
+
+         if(this%gp_teach_memory == GP_TEACH_MEMORY_0) call system_abort('gp_teach_memory = '//this%gp_teach_memory// &
+         '. You need to use at least '//GP_TEACH_MEMORY_1//' for likelihood optimization.')
 
          use_intrinsic_blas = .false.
 
@@ -1164,11 +1220,11 @@ deallocate(diff_xijt)
                    xj = this%xf(j)
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
-#ifdef SPEEDOPT
-                         d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) / this%delta(k)
-#else
-                         d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) / this%delta(k)
-#endif                  
+                         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) then
+                            d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) / this%delta(k)
+                         elseif(this%gp_teach_memory == GP_TEACH_MEMORY_1) then
+                            d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) / this%delta(k)
+                         endif
                       else
                          d_big_k_mn(i,j) = 0.0_qp
                       end if
@@ -1379,11 +1435,11 @@ deallocate(diff_xijt)
                    xj = this%xf(j)
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
-#ifdef SPEEDOPT
-                         d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) * (this%x(d,xj) - this%x_sparse(d,i))**2
-#else
-                         d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) * (this%x(d,xj) - this%x_sparse(d,i))**2
-#endif                  
+                         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) then
+                            d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) * (this%x(d,xj) - this%x_sparse(d,i))**2
+                         elseif(this%gp_teach_memory == GP_TEACH_MEMORY_1) then
+                            d_big_k_mn(i,j) = (this%big_k_mn(i,j) - this%f0(k)) * (this%x(d,xj) - this%x_sparse(d,i))**2
+                         endif
                       else
                          d_big_k_mn(i,j) = 0.0_qp
                       end if
@@ -1394,16 +1450,16 @@ deallocate(diff_xijt)
                    jd = j + this%nx
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz(xj)) .and. (this%xz(xj) == this%xz_sparse(i)) ) then
-#ifdef SPEEDOPT
-                         d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
-                         2.0_qp * this%big_raw_k_mn(i,jd) * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
-#else
-                         big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
-                         dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,k),this%x_prime(:,j))
+                         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) then
+                            d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
+                            2.0_qp * this%big_raw_k_mn(i,jd) * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
+                         elseif(this%gp_teach_memory == GP_TEACH_MEMORY_1) then
+                            big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
+                            dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,k),this%x_prime(:,j))
 
-                         d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
-                         2.0_qp * big_raw_k_mn_ij * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
-#endif                  
+                            d_big_k_mn(i,jd) = this%big_k_mn(i,jd) * (this%x(d,xj) - this%x_sparse(d,i))**2 - &
+                            2.0_qp * big_raw_k_mn_ij * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
+                         endif
                       else
                          d_big_k_mn(i,jd) = 0.0_qp
                       end if
@@ -1509,13 +1565,13 @@ deallocate(diff_xijt)
                    do j = 1, this%nx
                       xj = this%xf(j)
                       if( this%xz(xj) == this%xz_sparse(i) ) then
-#ifdef SPEEDOPT
-                         d_big_k_mn_dx(j) = this%big_raw_k_mn(i,j) * &
-                         & ( this%x(d,xj) - this%x_sparse(d,i))
-#else
-                         d_big_k_mn_dx(j) = (this%big_k_mn(i,j) - this%f0(Z_type)**2) * &
-                         & ( this%x(d,xj) - this%x_sparse(d,i))
-#endif                  
+                         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) then
+                            d_big_k_mn_dx(j) = this%big_raw_k_mn(i,j) * &
+                            ( this%x(d,xj) - this%x_sparse(d,i))
+                         elseif(this%gp_teach_memory == GP_TEACH_MEMORY_1) then 
+                            d_big_k_mn_dx(j) = (this%big_k_mn(i,j) - this%f0(Z_type)**2) * &
+                            ( this%x(d,xj) - this%x_sparse(d,i))
+                         endif
                       else
                          d_big_k_mn_dx(j) = 0.0_qp
                       endif
@@ -1525,18 +1581,18 @@ deallocate(diff_xijt)
                       jd = j + this%nx
                       xj = this%xdf(j)
                       if( this%xz(xj) == this%xz_sparse(i) ) then
-#ifdef SPEEDOPT
-                         d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
-                         ( this%x(d,xj) - this%x_sparse(d,i) ) + &
-                         this%big_raw_k_mn(i,jd) * this%x_prime(d,j)
-#else
-                         big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
-                         dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
+                         if(this%gp_teach_memory == GP_TEACH_MEMORY_2) then
+                            d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
+                            ( this%x(d,xj) - this%x_sparse(d,i) ) + &
+                            this%big_raw_k_mn(i,jd) * this%x_prime(d,j)
+                         elseif(this%gp_teach_memory == GP_TEACH_MEMORY_1) then
+                            big_raw_k_mn_ij = this%big_k_mn(i,jd) / &
+                            dot_product(( this%x_sparse(:,i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
 
-                         d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
-                         ( this%x(d,xj) - this%x_sparse(d,i) ) + &
-                         big_raw_k_mn_ij * this%x_prime(d,j)
-#endif                  
+                            d_big_k_mn_dx(jd) = this%big_k_mn(i,jd) * &
+                            ( this%x(d,xj) - this%x_sparse(d,i) ) + &
+                            big_raw_k_mn_ij * this%x_prime(d,j)
+                         endif
                       else
                          d_big_k_mn_dx(jd) = 0.0_qp
                       endif
