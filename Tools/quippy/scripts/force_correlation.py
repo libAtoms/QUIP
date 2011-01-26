@@ -4,8 +4,6 @@ from pylab import *
 from quippy import *
 import optparse
 
-#verbosity_push(PRINT_VERBOSE)
-
 p = optparse.OptionParser(usage='%prog [options] <input file>')
 
 p.add_option('-c', '--calc', action='store_true', help="""If true, calculate forces for each config using potential.""")
@@ -26,10 +24,15 @@ if len(args) < 1:
     p.error('At least one input file expected.')
 
 if opt.calc:
-    if opt.init_args is None:
-        p.error('--init-args (-i) argument mandatory when calculating forces.')
     if opt.param_file is not None:
         param_str = param_str=open(opt.param_file).read()
+    if opt.init_args is None:
+        if opt.param_file is not None:
+            import xml.dom.minidom
+            xml = xml.dom.minidom.parse(opt.param_file)
+            opt.init_args = 'xml_label=%s' % str(xml.documentElement.tagName)
+        else:
+            p.error('--init-args (-i) argument mandatory when --param-file (-p) not present')
     else:
         param_str = quip_xml_parameters(opt.init_args)
     p = Potential(opt.init_args, param_str=param_str)
