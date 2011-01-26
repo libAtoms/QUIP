@@ -60,9 +60,13 @@ try:
 
     if opt.relax_lattice:
         pot.minim(at, 'cg', 1e-6, 100, do_pos=False, do_lat=True)
+
+        # Remove near-zero elements
+        at.set_lattice(numpy.where(abs(at.lattice) > 1e-6, at.lattice, 0), True)
+        
         mainlog.prefix = 'LATTICE'        
         print 'Relaxed lattice / A'
-        print at.lattice.round(3)
+        print at.lattice
         print
         mainlog.prefix = ''
 
@@ -114,12 +118,19 @@ try:
         surface.calc_connect()
 
         pot.calc(bulk, energy=True)
+        mainlog.prefix = 'BULK'
+        bulk.write('stdout')
+        mainlog.prefix = ''
 
         if opt.relax_surface:
             pot.minim(surface, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
             surface.write('relaxed-surface.xyz')
 
         pot.calc(surface, energy=True)
+        mainlog.prefix = 'SURFACE'
+        surface.write('stdout')
+        mainlog.prefix = ''
+
         gamma = (surface.energy - bulk.energy)/(2.0*surface.lattice[1,1]*surface.lattice[3,3])*J_PER_M2
         mainlog.prefix = 'SURFACE_ENERGY'        
         print 'Surface energy: gamma = ', gamma, ' J/m^2'
