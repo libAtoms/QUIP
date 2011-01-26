@@ -748,7 +748,7 @@ module gp_teach_module
          theta2 = 1.0_qp / this%theta**2
          this%k_mn = 0.0_qp
 
-!$omp parallel do private(xj,k,Z_type,lj)
+!$omp parallel do private(xj,k,Z_type,lj,i,big_raw_k_mn_ij,big_k_mn_ij)
          do j = 1, this%nx
             xj = this%xf(j)
             lj = count(j > this%l) + 1
@@ -762,7 +762,9 @@ module gp_teach_module
 
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = big_raw_k_mn_ij
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = big_k_mn_ij
+!$omp critical                  
                   if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
+!$omp end critical                  
                else
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = 0.0_qp
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = 0.0_qp
@@ -773,7 +775,7 @@ module gp_teach_module
             end do
          end do
 
-!$omp parallel do private(jd,xj,k,Z_type,lj)
+!$omp parallel do private(jd,xj,k,Z_type,lj,i,big_raw_k_mn_ij,big_k_mn_ij)
          do j = 1, this%nxd
             jd = j + this%nx
             xj = this%xdf(j)
@@ -789,7 +791,9 @@ module gp_teach_module
 
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,jd) = big_raw_k_mn_ij
                   if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,jd) = big_k_mn_ij
+!$omp critical                  
                   if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
+!$omp end critical                  
 
               else
 
@@ -800,7 +804,7 @@ module gp_teach_module
             end do
          end do
 
-!$omp parallel do private(k,Z_type)
+!$omp parallel do private(k,Z_type,i)
          do j = 1, this%sr
          
             do k = 1, this%nsp; if( this%sp(k) == this%xz_sparse(j) ) Z_type = k; end do
@@ -845,7 +849,7 @@ module gp_teach_module
 
 !$omp parallel private(diff_xijt)
 allocate(diff_xijt(this%d))
-!$omp do private(i,id,lj,uj,j1,j2,xj1,xj2,Z_type)
+!$omp do private(i,id,lj,uj,j1,j2,xj1,xj2,k,Z_type)
          do i = 1, this%mdf
             id = i + this%mf
             if(i==1) then 
