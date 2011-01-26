@@ -4,7 +4,7 @@ from pylab import *
 from quippy import *
 import optparse
 
-verbosity_push(PRINT_VERBOSE)
+#verbosity_push(PRINT_VERBOSE)
 
 p = optparse.OptionParser(usage='%prog [options] <input file>')
 
@@ -17,6 +17,8 @@ p.add_option('-a', '--atomic-units', action='store_true', help="""Convert refere
 p.add_option('-o', '--output', action='store', help="""Output file name for plot.""")
 p.add_option('-y', '--ymax', action='store', type='float', help="""Maximum limit for y-axis""")
 p.add_option('-t', '--title', action='append', help="""Title for plot. If multiple input files, option should be given multiple times.""")
+p.add_option('-H', '--strip-hydrogen', action='store_true', help="""Remove hydrogen atoms from input files""")
+p.add_option('-m', '--mask', action='store', help="""Only include atoms which sastisfy mask, e.g. hybrid_mark == HYBRID_ACTIVE_MARK""")
 
 opt, args = p.parse_args()
 
@@ -40,9 +42,11 @@ for i,arg in enumerate(args):
 
     for at in AtomsList(arg):
         if opt.calc:
+            if opt.strip_hydrogen:
+                at = at.select(at.z != 1)
             at.set_cutoff(p.cutoff())
             at.calc_connect()
-            p.calc(at, args_str="force=%s" % opt.pot_force)
+            p.calc(at, args_str="force=%s" % opt.pot_force)            
 
         dft_force = getattr(at, opt.dft_force)
 
@@ -50,9 +54,14 @@ for i,arg in enumerate(args):
             dft_force = dft_force*(HARTREE/BOHR)
 
         pot_force = getattr(at, opt.pot_force)
+
+        if opt.mask is not None:
+            dft_force = dft_force[:,eval(opt.mask)]
+            pot_force = pot_force[:,eval(opt.mask)]
+            
         force_error = abs(dft_force - pot_force)
-        dft_forces.extend(list(dft_force.reshape([3*at.n])))
-        force_errors.extend(list(force_error.reshape([3*at.n])))
+        dft_forces.extend(list(dft_force.reshape([3*dft_force.shape[1]])))
+        force_errors.extend(list(force_error.reshape([3*dft_force.shape[1]])))
 
 
     dft_forces = array(dft_forces)
