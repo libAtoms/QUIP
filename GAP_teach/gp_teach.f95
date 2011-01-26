@@ -748,7 +748,7 @@ module gp_teach_module
          theta2 = 1.0_qp / this%theta**2
          this%k_mn = 0.0_qp
 
-!$omp parallel do private(xj,k,Z_type.lj)
+!$omp parallel do private(xj,k,Z_type,lj)
          do j = 1, this%nx
             xj = this%xf(j)
             lj = count(j > this%l) + 1
