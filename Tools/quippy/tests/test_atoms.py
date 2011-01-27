@@ -244,7 +244,13 @@ class TestAtoms_LowLevel(QuippyTestCase):
    def test_remove_atoms_3(self):
       cp1 = self.dia.copy()
       cp1.remove_atoms([1,5])
-      cp2 = self.dia.select(list=[8,2,3,4,7,6],orig_index=False)
+      cp2 = self.dia.select(list=[7,2,3,4,8,6],orig_index=False)
+      self.assertEqual(cp1, cp2)
+
+   def test_remove_atoms_4(self):
+      cp1 = self.dia.copy()
+      cp1.remove_atoms([True,False,False,False,True,False,False,False])
+      cp2 = self.dia.select(list=[7,2,3,4,8,6],orig_index=False)
       self.assertEqual(cp1, cp2)
 
    def test_add_atoms_fixed_size(self):
