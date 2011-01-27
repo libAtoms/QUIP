@@ -139,6 +139,8 @@ module Atoms_types_module
      integer                                    :: cellsNa !% no. of cells in the lattice directions
      integer                                    :: cellsNb, cellsNc
 
+     integer                                    :: N = -1  !% no. of atoms at last calc_connect
+
      type(table_pointer), allocatable, dimension(:)     :: neighbour1 !% Neighbour information for pairs $i <= j$. 
                                                               !% Contains full details of $j$, $r_{ij}$ and shift.
      type(table_pointer), allocatable, dimension(:)     :: neighbour2 !% Neighbour information for pairs $i > j$.
