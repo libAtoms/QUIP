@@ -1538,20 +1538,25 @@ contains
     end do
 
     copysrc = this%N
-    do i=1,size(uniqed)
-       do while(is_in_array(uniqed,copysrc))
-          copysrc = copysrc - 1
-       end do
+    do i = size(uniqed), 1, -1
+       if (uniqed(i) < copysrc) then
+          new_indices(uniqed(i)) = new_indices(copysrc)
+       else if (uniqed(i) > copysrc) then
+          RAISE_ERROR("remove_atom_multiple: Fatal internal error: uniqed(i) > copysrc, should not happen", error)
+       endif
 
-       if (uniqed(i) > copysrc) exit
-       new_indices(uniqed(i)) = new_indices(copysrc)
        copysrc = copysrc - 1
     end do
 
     ! update N
-    this%N = this%N - size(atom_indices)
+    this%N = this%N - size(uniqed)
     this%Ndomain = this%N
     this%Nbuffer = this%N
+
+    if (this%N /= copysrc) then
+       RAISE_ERROR("remove_atom_multiple: Fatal internal error: this%N /= copysrc, should not happen", error)
+    endif
+
 
     include_list => new_indices(1:this%N)
     
