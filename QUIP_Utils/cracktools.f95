@@ -49,10 +49,10 @@ module CrackTools_module
 contains
 
   subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark) 
+       old_nn, hybrid, hybrid_mark, force) 
 
     type(Atoms), intent(inout) :: crack_slab
-    real(dp), pointer, dimension(:,:) :: load 
+    real(dp), pointer, dimension(:,:) :: load, force
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
@@ -105,6 +105,11 @@ contains
          call add_property(crack_slab, 'hybrid_mark', 0)
     if (.not. assign_pointer(crack_slab, 'hybrid_mark', hybrid_mark)) &
          call system_abort('hybrid_mark pointer assignment failed')
+
+    if (.not. has_property(crack_slab, 'force')) &
+         call add_property(crack_slab, 'force', 0)
+    if (.not. assign_pointer(crack_slab, 'force', force)) &
+         call system_abort('force pointer assignment failed')
 
   end subroutine crack_fix_pointers
 
@@ -540,12 +545,12 @@ contains
     integer :: i
 
     ! Pointers into Atoms data structure
-    real(dp), pointer, dimension(:,:) :: load!, k_disp, u_disp
+    real(dp), pointer, dimension(:,:) :: load, force
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
+         old_nn, hybrid, hybrid_mark, force)
 
     ! Setup edge_mask to allow easy exclusion of edge atoms
     do i=1,crack_slab%N
@@ -573,7 +578,7 @@ contains
     call set_value(crack_slab%params, 'CrackPosy', crack_tips%real(2,crack_tips%N))
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
+         old_nn, hybrid, hybrid_mark, force)
 
     ! clear changed_nn, hybrid and hybrid_mark 
     hybrid(:) = 0
@@ -602,7 +607,7 @@ contains
     type(MPI_Context), intent(in) :: mpi
 
     type(Atoms) :: crack_slab1, bulk
-    real(dp), pointer, dimension(:,:) :: load
+    real(dp), pointer, dimension(:,:) :: load, force
     real(dp), allocatable, dimension(:,:) :: k_disp, u_disp
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
@@ -642,7 +647,7 @@ contains
        call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
 
        call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark)  
+            old_nn, hybrid, hybrid_mark, force)  
 
        if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
           if (params%io_netcdf) then
@@ -849,7 +854,7 @@ contains
        end if
     
        call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark)  
+            old_nn, hybrid, hybrid_mark, force)  
  
        ! work out displacement field, using relaxed positions
        do i=1,crack_slab%N
@@ -883,14 +888,14 @@ contains
     type(CrackParams), intent(in) :: params
 
     real(dp), allocatable, dimension(:,:):: k_disp, u_disp 
-    real(dp), pointer, dimension(:,:) :: load
+    real(dp), pointer, dimension(:,:) :: load, force
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain
     integer :: i, k
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark) 
+         old_nn, hybrid, hybrid_mark, force) 
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_make_seed: "OrigHeight" parameter missing')

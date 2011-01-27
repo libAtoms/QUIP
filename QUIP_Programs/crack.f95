@@ -305,13 +305,13 @@ program crack
   type(Table) :: crack_tips, old_crack_tips
 
   ! Pointers into Atoms data table
-  real(dp), pointer, dimension(:,:) :: load
+  real(dp), pointer, dimension(:,:) :: load, force
   integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark
 
   ! Big arrays
-  real(dp), allocatable, dimension(:,:) :: f, f_fm, dr
-  real(dp), pointer :: dr_prop(:,:), f_prop(:,:)
+  real(dp), allocatable, dimension(:,:) :: f_fm, dr
+  real(dp), pointer :: dr_prop(:,:)
 
   ! Scalars
   integer :: movie_n, nargs, i, state, steps, iunit, k
@@ -533,12 +533,8 @@ program crack
 
   call print('Initialised dynamical system with '//ds%N//' atoms')
 
-  call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
-  call add_property(ds%atoms, 'qm_force', 0.0_dp, n_cols=3)
-  call add_property(ds%atoms, 'mm_force', 0.0_dp, n_cols=3)
-
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark)
+       old_nn, hybrid, hybrid_mark, force)
 
   ds%atoms%damp_mask = 1
   ds%atoms%thermostat_region = 1
@@ -591,10 +587,6 @@ program crack
 !!$  call table_allocate(embedlist, 4, 0, 0, 0) 
 !!$  call table_allocate(fitlist, 4, 0, 0, 0)   
 
-  ! Allocate some force arrays
-  allocate(f(3,ds%atoms%N))
-  f  = 0.0_dp
-
   if (params%qm_calc_force_error) allocate(f_fm(3,ds%atoms%N))
 
   ! Allocate various flags 
@@ -639,7 +631,7 @@ program crack
   call setup_parallel(classicalpot, ds%atoms, args_str=params%classical_args_str//" energy force")
 
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark)
+       old_nn, hybrid, hybrid_mark, force)
 
   if (all(abs(load) < 1.0e-7_dp)) then
      call print_title('Applying Initial Load')
@@ -647,7 +639,7 @@ program crack
           .true., mpi_glob)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-          old_nn, hybrid, hybrid_mark)
+          old_nn, hybrid, hybrid_mark, force)
   end if
 
   if (params%simulation_force_initial_load_step) then
@@ -775,7 +767,7 @@ program crack
 
      ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
      if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
-        call calc(hybrid_pot, ds%atoms, force=f)
+        call calc(hybrid_pot, ds%atoms, args_str="force=force")
      end if
 
      call system_timer('md_initialisation', time_elapsed=time_elapsed)
@@ -788,7 +780,7 @@ program crack
      do
         call system_timer('step')
         call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-             old_nn, hybrid, hybrid_mark)
+             old_nn, hybrid, hybrid_mark, force)
 
 
         select case(state)
@@ -925,32 +917,32 @@ program crack
            do i = 1, params%md_extrapolate_steps
 
               if (params%simulation_classical) then
-                 call calc(classicalpot, ds%atoms, force=f, args_str=params%classical_args_str)
+                 call calc(classicalpot, ds%atoms, args_str=trim(params%classical_args_str)//' force=force')
               else
                  if (i== 1) then
-                    call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
+                    call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
                  else
-                    call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=F")
+                    call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F")
                  end if
                  if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
-                    f(3,find(hybrid == 1)) = 0.0_dp 
+                    force(3,find(hybrid == 1)) = 0.0_dp 
                     if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
                  end if
               end if
 
               ! advance the dynamics
               call system_timer('advance_verlet')
-              call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
+              call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
               call system_timer('advance_verlet')
               if (params%simulation_classical) then
                  call ds_print_status(ds, 'E', epot=energy)
               else
                  call ds_print_status(ds, 'E')
               end if
-              if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(f, f_fm)//' '//maxval(abs(f_fm-f)))
+              if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
 
               if (state == STATE_MD_LOADING) then
                  ! increment the load
@@ -987,7 +979,7 @@ program crack
 
               call print_title('Computation of forces')
               call system_timer('force computation')
-              call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
+              call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
               call system_timer('force computation')
 
 
@@ -1003,25 +995,25 @@ program crack
 
               do i = 1, params%md_extrapolate_steps
 
-                 call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
                       //(real(i-1,dp)/real(params%md_extrapolate_steps,dp)))
 
                  if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
-                    f(3,find(hybrid == 1)) = 0.0_dp 
+                    force(3,find(hybrid == 1)) = 0.0_dp 
                     if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
                  end if
 
                  ! advance the dynamics
-                 call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
+                 call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
                  call ds_print_status(ds, 'I')
-                 if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(f, f_fm)//' '//maxval(abs(f_fm-f)))
+                 if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
 
                  if (trim(params%simulation_task) == 'damped_md') &
-                      call print('Damped MD: normsq(force) = '//normsq(reshape(f,(/3*ds%N/)))//&
-                      ' max(abs(force)) = '//maxval(abs(f)))
+                      call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
+                      ' max(abs(force)) = '//maxval(abs(force)))
 
                  if (state == STATE_MD_LOADING) then
                     ! increment the load
@@ -1057,24 +1049,24 @@ program crack
            call print_title('Force Computation')
            call system_timer('force computation/optimisation')
            if (params%simulation_classical) then
-              call calc(classicalpot, ds%atoms, energy=energy, force=f, args_str=params%classical_args_str)
+              call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
            else
-              call calc(hybrid_pot, ds%atoms, force=f)
+              call calc(hybrid_pot, ds%atoms, args_str="force=force")
            end if
            call system_timer('force computation/optimisation')
 
            if (params%hack_qm_zero_z_force) then
               ! Zero z forces in embed region
-              f(3,find(hybrid == 1)) = 0.0_dp 
+              force(3,find(hybrid == 1)) = 0.0_dp 
            end if
 
            call print_title('Advance Verlet')
-           call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
+           call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
            call ds_print_status(ds, 'D')
 
            if (trim(params%simulation_task) == 'damped_md') &
-                call print('Damped MD: normsq(force) = '//normsq(reshape(f,(/3*ds%N/)))//&
-                ' max(abs(force)) = '//maxval(abs(f)))
+                call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
+                ' max(abs(force)) = '//maxval(abs(force)))
 
            if (state == STATE_MD_LOADING) then
               ! increment the load
@@ -1188,10 +1180,6 @@ program crack
           call system_abort("failed to add dr property to ds%atoms in force_integration task")
      dr_prop = (fd_end%pos - fd_start%pos)
 
-     call add_property(ds%atoms, 'forces', 0.0_dp, 3)
-     if (.not. assign_pointer(ds%atoms, 'forces', f_prop)) &
-          call system_abort("failed to add forces property to ds%atoms in force_integration task")
-
      integral = 0.0_dp
 
      call print('Force.dr integration')
@@ -1204,15 +1192,13 @@ program crack
         call calc_connect(ds%atoms, store_is_min_image=.true.)
 
         if (params%simulation_classical) then
-           call calc(classicalpot, ds%atoms, force=f, energy=energy, args_str=params%classical_args_str)
+           call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
            if (i == 0) fd_e0 = energy
         else
-           call calc(hybrid_pot, ds%atoms, force=f)
+           call calc(hybrid_pot, ds%atoms, args_str='force=force')
         end if
 
-	f_prop = f
-
-        f_dr = f .dot. dr
+        f_dr = force .dot. dr
 
         ! Simpson's rule
         if (i == 0 .or. i == params%force_integration_n_steps) then
@@ -1341,7 +1327,6 @@ program crack
   call finalise(classicalpot)
   call finalise(qmpot)
 
-  if (allocated(f))    deallocate(f)
   if (allocated(f_fm)) deallocate(f_fm)
 
   call system_finalise()
