@@ -4612,86 +4612,201 @@ CONTAINS
 
    end subroutine uniq
 
-   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
-   !% r_data is an accompanying array of reals on which the same reordering is performed
+
+   !% Sort an array of integers into ascending order.
+   !% The function uses heapsort, which always scales as N log N.
+   !% r_data is an accompanying array of reals on which the same reordering is
+   !% performed
+   !% (Initial implementation by Andreas Wonisch)
    subroutine sort_array_i(array, r_data)
+     integer,            dimension(:), intent(inout)  :: array
+     real(dp), optional, dimension(:), intent(inout)  :: r_data
 
-      integer, dimension(:), intent(inout) :: array
-      real(dp), dimension(:), intent(inout), optional :: r_data
-      integer                              :: i,j,minpos
-      integer :: min, tmp
-      real(dp) :: r_tmp
+     ! ---
+
+     integer   :: N, i, j, root, tmpi
+     real(DP)  :: tmpr
+
+     ! ---
+
+     N = size(array)
+
+     do i = N/2, 1, -1
+
+        j = i
+        call siftdown(j, N)
+
+     enddo
+
+     do i = N, 2, -1
+        
+        ! Swap
+        tmpi       = array(1)
+        array(1)   = array(i)
+        array(i)   = tmpi
+        if (present(r_data)) then
+           tmpr       = r_data(1)
+           r_data(1)  = r_data(i)
+           r_data(i)  = tmpr
+        endif
+
+        root = 1
+        j = i -1
+        call siftdown(root, j)
+    
+     enddo
+
+   contains
+
+     subroutine siftdown(root, bottom)
+       integer, intent(inout)  :: root
+       integer, intent(in)     :: bottom
+
+       ! ---
+
+       logical  :: done
+       integer  :: maxchild, temp2
+
+       ! ---
+
+       done = .false.
+
+       do while ((root*2 <= bottom) .and. .not. done)
+
+          if (root*2 == bottom) then
+             maxchild = root * 2
+          else if (array(root*2) > array(root*2+1)) then
+             maxchild = root * 2
+          else
+             maxchild = root*2 + 1
+          endif
+
+          if (array(root) < array(maxchild)) then
+
+             ! Swap
+             tmpi              = array(root)
+             array(root)       = array(maxchild)
+             array(maxchild)   = tmpi
+             if (present(r_data)) then
+                tmpr              = r_data(root)
+                r_data(root)      = r_data(maxchild)
+                r_data(maxchild)  = tmpr
+             endif
+
+             root = maxchild
+          else
+             done = .true.
+          endif
+
+       enddo
+
+     endsubroutine siftdown
+
+   endsubroutine sort_array_i
 
 
-      do i = 1, (size(array) - 1)
+   !% Sort an array of integers into ascending order.
+   !% The function uses heapsort, which always scales as N log N.
+   !% i_data and r_data are a accompanying arrays of integers and reals
+   !% on which the same reordering is performed
+   !% (Initial implementation by Andreas Wonisch)
+   subroutine sort_array_r(array, i_data, r_data)
+     real(dp),           dimension(:), intent(inout)  :: array
+     integer,  optional, dimension(:), intent(inout)  :: i_data
+     real(dp), optional, dimension(:), intent(inout)  :: r_data
 
-         min = huge(0)
+     ! ---
 
-         do j = i,size(array)
+     integer   :: N, i, j, root, tmpi
+     real(DP)  :: tmpr
 
-            if (array(j) < min) then
-               min = array(j)
-               minpos = j
-            end if
+     ! ---
 
-         end do
+     N = size(array)
 
-         tmp = array(i)
-         array(i) = array(minpos)
-         array(minpos) = tmp
-	 if (present(r_data)) then
-	   r_tmp = r_data(i)
-	   r_data(i) = r_data(minpos)
-	   r_data(minpos) = r_tmp
-	 endif
+     do i = N/2, 1, -1
 
-      end do
+        j = i
+        call siftdown(j, N)
 
-   end subroutine sort_array_i
+     enddo
 
-   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
-   !% i_data is an accompanying array of integers on which the same reordering is performed
-   subroutine sort_array_r(array, i_data,r_data)
+     do i = N, 2, -1
+        
+        ! Swap
+        tmpr       = array(1)
+        array(1)   = array(i)
+        array(i)   = tmpr
+        if (present(i_data)) then
+           tmpi       = i_data(1)
+           i_data(1)  = i_data(i)
+           i_data(i)  = tmpi
+        endif
+        if (present(r_data)) then
+           tmpr       = r_data(1)
+           r_data(1)  = r_data(i)
+           r_data(i)  = tmpr
+        endif
 
-      real(dp), dimension(:), intent(inout) :: array
-      integer, dimension(:), intent(inout), optional :: i_data
-      real(dp), dimension(:), intent(inout), optional :: r_data
-      integer                              :: i,j, minpos
-      real(dp) :: tmp, min
-      integer :: i_tmp
-      real(dp) :: r_tmp
+        root = 1
+        j = i -1
+        call siftdown(root, j)
+    
+     enddo
 
+   contains
 
-      do i = 1, (size(array) - 1)
+     subroutine siftdown(root, bottom)
+       integer, intent(inout)  :: root
+       integer, intent(in)     :: bottom
 
-         min = huge(0.0_dp)
+       ! ---
 
-         do j = i,size(array)
+       logical  :: done
+       integer  :: maxchild, temp2
 
-            if (array(j) < min) then
-               min = array(j)
-               minpos = j
-            end if
+       ! ---
 
-         end do
+       done = .false.
 
-         tmp = array(i)
-         array(i) = array(minpos)
-         array(minpos) = tmp
-	 if (present(i_data)) then
-	   i_tmp = i_data(i)
-	   i_data(i) = i_data(minpos)
-	   i_data(minpos) = i_tmp
-	 endif
-	 if (present(r_data)) then
-	   r_tmp = r_data(i)
-	   r_data(i) = r_data(minpos)
-	   r_data(minpos) = r_tmp
-	 endif
+       do while ((root*2 <= bottom) .and. .not. done)
 
-      end do
+          if (root*2 == bottom) then
+             maxchild = root * 2
+          else if (array(root*2) > array(root*2+1)) then
+             maxchild = root * 2
+          else
+             maxchild = root*2 + 1
+          endif
 
-   end subroutine sort_array_r
+          if (array(root) < array(maxchild)) then
+
+             ! Swap
+             tmpr             = array(root)
+             array(root)      = array(maxchild)
+             array(maxchild)  = tmpr
+             if (present(i_data)) then
+                tmpi              = i_data(root)
+                i_data(root)      = i_data(maxchild)
+                i_data(maxchild)  = tmpi
+             endif
+             if (present(r_data)) then
+                tmpr              = r_data(root)
+                r_data(root)      = r_data(maxchild)
+                r_data(maxchild)  = tmpr
+             endif
+
+             root = maxchild
+          else
+             done = .true.
+          endif
+
+       enddo
+
+     endsubroutine siftdown
+
+   endsubroutine sort_array_r
+
 
    !% Do an in place insertion sort on 'this', in ascending order.
    !% If 'idx' is present  then on exit it will contain the list 
