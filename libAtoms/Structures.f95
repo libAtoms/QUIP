@@ -310,6 +310,24 @@ contains
   end subroutine fcc_z111
 
 
+  !% Make an FCC 100 surface, such that the repeating squares of the
+  !% surface are aligned with the cell boundaries
+  subroutine fcc_z100(at, a0)
+    type(Atoms), intent(out)  :: at
+    real(DP),    intent(in)   :: a0 ! cubic lattice constant
+
+    real(DP)  :: lat(3, 3)
+
+    lat(:, 1) = (/  a0/sqrt(2.0),  0.0_DP,           0.0_DP  /)
+    lat(:, 2) = (/  0.0_DP,        a0/sqrt(2.0_DP),  0.0_DP  /)
+    lat(:, 3) = (/  0.0_DP,        0.0_DP,           a0      /)
+
+    call initialise(at, 2, lat)
+    at%pos(:, 1) = lat .mult. (/  0.0_DP,  0.0_DP,  0.0_DP  /)
+    at%pos(:, 2) = lat .mult. (/  0.5_DP,  0.5_DP,  0.5_DP  /)
+  endsubroutine fcc_z100
+
+
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  ! 
  ! Make a slab of diamond structure, facing in any direction. Axes is 3x3
