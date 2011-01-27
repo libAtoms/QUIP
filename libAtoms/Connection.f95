@@ -98,6 +98,11 @@ module Connection_module
      module procedure connection_n_neighbours, connection_n_neighbours_with_dist
   end interface
 
+  public :: n_neighbours_total
+  interface n_neighbours_total
+     module procedure connection_n_neighbours_total
+  endinterface
+
   public :: is_min_image
   interface is_min_image
      module procedure connection_is_min_image
@@ -105,7 +110,7 @@ module Connection_module
 
   public :: neighbour
   interface neighbour
-     module procedure connection_neighbour
+     module procedure connection_neighbour, connection_neighbour_minimal
   endinterface
 
   public :: neighbour_index
@@ -734,6 +739,8 @@ contains
 
     INIT_ERROR(error)
 
+    this%N = at%N
+
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
 
@@ -985,6 +992,8 @@ contains
     integer, pointer :: map_shift(:,:)
 
     INIT_ERROR(error)
+
+    this%N = at%N
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
@@ -1554,6 +1563,33 @@ contains
     n = this%neighbour1(i)%t%N + this%neighbour2(i)%t%N
 
   end function connection_n_neighbours
+
+
+  !% Return the total number of neighbour, i.e. the number of bonds in the system
+  function connection_n_neighbours_total(this, error) result(n)
+    type(Connection),   intent(in)   :: this
+    integer,  optional, intent(out)  :: error     
+    
+    integer :: i, n
+
+    INIT_ERROR(error)
+
+    if (.not. this%initialised) then
+       RAISE_ERROR('connection_n_neighbours: Connection structure has no connectivity data. Call calc_connect first.', error)
+    end if
+
+    if (.not. associated(this%neighbour1(i)%t)) then
+      n = 0
+      return
+    endif
+
+    ! All neighbours
+    n = 0
+    do i = 1, this%N
+       n = n + this%neighbour1(i)%t%N + this%neighbour2(i)%t%N
+    enddo
+
+  end function connection_n_neighbours_total
 
 
   !% Return the number of neighbour that atom $i$ has.
