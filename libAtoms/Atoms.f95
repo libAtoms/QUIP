@@ -143,15 +143,16 @@ module  atoms_module
   end interface
 
   !% Add one or more atoms to an Atoms object.
-  private :: add_atom_single, add_atom_multiple
+  private :: add_atom_single, add_atom_multiple, atoms_join
   interface add_atoms
-     module procedure add_atom_single, add_atom_multiple
+     module procedure add_atom_single, add_atom_multiple, atoms_join
   end interface add_atoms
 
   !% Remove one or more atoms from an Atoms object.
   private :: remove_atom_single, remove_atom_multiple
   interface remove_atoms
      module procedure remove_atom_single, remove_atom_multiple
+     module procedure remove_atom_multiple_mask
   end interface remove_atoms
 
   !% get a (per-configuration) value from the atoms%params dictionary
@@ -1274,6 +1275,8 @@ contains
     logical, allocatable, dimension(:) :: tmp_logical
     character, allocatable, dimension(:,:) :: tmp_char
 
+    logical :: has_mass, has_velo, has_acc, has_travel
+
     INIT_ERROR(error)    
 
     if (this%fixed_size) then
@@ -1288,24 +1291,44 @@ contains
     call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom',error)
     PASS_ERROR(error)
 
+    ! If we pass a NULL() pointer as an optional argument, the argument
+    ! shows up as present but has size == 0.
+
+    has_mass = .false.
+    has_travel = .false.
+    has_velo = .false.
+    has_acc = .false.
+
     if (present(mass)) then
-       call check_size('Mass',mass,size(Z), 'Add_Atom', error)
-       PASS_ERROR(error)
+       if (size(mass) > 0) then
+          has_mass = .true.
+          call check_size('Mass',mass,size(Z), 'Add_Atom', error)
+          PASS_ERROR(error)
+       endif
     end if
 
     if (present(travel)) then
-       call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom', error)
-       PASS_ERROR(error)
+       if (size(travel, 2) > 0) then
+          has_travel = .true.
+          call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom', error)
+          PASS_ERROR(error)
+       endif
     end if
 
     if (present(velo)) then
-       call check_size('Velo', velo, (/3,size(Z)/), 'Add_Atom', error)
-       PASS_ERROR(error)
+       if (size(velo, 2) > 0) then
+          has_velo = .true.
+          call check_size('Velo', velo, (/3,size(Z)/), 'Add_Atom', error)
+          PASS_ERROR(error)
+       endif
     end if
 
     if (present(acc)) then
-       call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom', error)
-       PASS_ERROR(error)
+       if (size(acc, 2) > 0) then
+          has_acc = .true.
+          call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom', error)
+          PASS_ERROR(error)
+       endif
     end if
 
     ! Only resize if the actual number of particles is now larger than the
@@ -1386,7 +1409,7 @@ contains
        this%species(1:3,oldN+i) = s2a(ElementName(Z(i)))
     end do
 
-    if (present(travel)) then
+    if (has_travel) then
        if (.not. has_key(this%properties, 'travel')) then
           RAISE_ERROR('Atoms_Add: this atoms has no travel property', error)
        end if
@@ -1407,12 +1430,12 @@ contains
     
     ! ... and now the real properties
     if (has_key(this%properties, 'mass')) then
-       if (present(mass)) then
+       if (has_mass) then
           this%mass(oldN+1:this%N) = mass
        else
           this%mass(oldN+1:this%N) = ElementMass(Z)
        end if
-    else if (present(mass)) then
+    else if (has_mass) then
        ! mass specified but property doesn't yet exist, so create it...
        call add_property(this, 'mass', ElementMass(this%Z), ptr=this%mass, error=error)
        PASS_ERROR(error)
@@ -1425,15 +1448,34 @@ contains
     end if
     this%pos(:,oldN+1:this%N) = pos
     
-    if (present(velo) .and. has_key(this%properties, 'velo')) &
+    if (has_velo .and. has_key(this%properties, 'velo')) &
          this%velo(:,oldN+1:this%N) = velo
 
-    if (present(acc) .and. has_key(this%properties, 'acc')) &
+    if (has_acc .and. has_key(this%properties, 'acc')) &
          this%acc(:,oldN+1:this%N) = acc
 
     call finalise(this%connect)
 
   end subroutine add_atom_multiple
+
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine atoms_join(this, from, error)
+    type(Atoms),       intent(inout)  :: this
+    type(Atoms),       intent(inout)  :: from
+    integer, optional, intent(out)    :: error
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    call atoms_repoint(from)
+
+    call add_atom_multiple(this, from%pos, from%Z, from%mass, from%velo, from%acc, from%travel, error)
+    PASS_ERROR(error)
+
+  endsubroutine atoms_join
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1568,6 +1610,39 @@ contains
 
   end subroutine remove_atom_multiple
 
+
+  subroutine remove_atom_multiple_mask(this, mask, error)
+
+    type(Atoms),                intent(inout)  :: this
+    logical, dimension(this%N), intent(in)     :: mask
+    integer, optional,          intent(out)    :: error
+
+    ! ---
+
+    integer               :: n, i
+    integer, allocatable  :: atom_indices(:)
+    
+    ! ---
+
+    INIT_ERROR(error)
+
+    n = 0
+    do i = 1, this%N
+       if (mask(i))  n = n + 1
+    enddo
+    allocate(atom_indices(n))
+    n = 0
+    do i = 1, this%N
+       if (mask(i)) then
+          n = n + 1
+          atom_indices(n) = i
+       endif
+    enddo
+    call remove_atom_multiple(this, atom_indices, error)
+    PASS_ERROR(error)
+    deallocate(atom_indices)
+
+  endsubroutine remove_atom_multiple_mask
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2999,7 +3074,9 @@ contains
     type(Atoms), intent(inout) :: at
     integer, optional, intent(out) :: error
 
+#ifdef __GFORTRAN__
     character, allocatable, dimension(:) :: char_array
+#endif
     integer, parameter :: SIZEOF_ATOMS = 1760
 
     INIT_ERROR(error)
