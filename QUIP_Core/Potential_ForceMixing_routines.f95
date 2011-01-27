@@ -729,8 +729,8 @@
        
     ! Save QM and MM forces if requested to be saved
     if (save_forces) then
-      call add_property(at, 'FM_QM_'//trim(calc_force), f_qm)
-      call add_property(at, 'FM_MM_'//trim(calc_force), f_mm)
+      call add_property(at, 'FM_QM_'//trim(calc_force), f_qm, overwrite=.true.)
+      call add_property(at, 'FM_MM_'//trim(calc_force), f_mm, overwrite=.true.)
     end if
 
     deallocate(f_mm,f_qm)
