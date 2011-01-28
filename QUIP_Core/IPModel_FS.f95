@@ -198,10 +198,13 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      else
         atom_mask_pointer => null()
      endif
-     if (do_rescale_r .or. do_rescale_E) then
-        RAISE_ERROR("IPModel_FS_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
-     end if
+  else
+     do_rescale_r = .false.
+     do_rescale_E = .false.
   endif
+
+  if (do_rescale_r) call print('IPModel_Tersoff_Calc: rescaling distances by factor '//r_scale, PRINT_VERBOSE)
+  if (do_rescale_E) call print('IPModel_Tersoff_Calc: rescaling energy by factor '//E_scale, PRINT_VERBOSE)
 
 !$omp parallel private(i,ji,j,ti,tj,phi_tot,sqrt_phi_tot,dU,Ui,drij,rij_mag,private_virial, virial_i,private_f,private_e)
 
@@ -229,6 +232,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     do ji=1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, ji, rij_mag)
       if (rij_mag .feq. 0.0_dp) cycle
+
+      if (do_rescale_r) rij_mag = rij_mag*r_scale
  
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -248,6 +253,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     do ji=1, atoms_n_neighbours(at, i)
        j = atoms_neighbour(at, i, ji, rij_mag, cosines = drij)
        if (rij_mag .feq. 0.0_dp) cycle
+
+       if (do_rescale_r) rij_mag = rij_mag*r_scale
 
        ti = get_type(this%type_of_atomic_num, at%Z(i))
        tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -294,7 +301,19 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial) 
      if (present(local_virial)) call sum_in_place(mpi, local_virial) 
-   endif
+  endif
+
+  if (do_rescale_r) then
+     if (present(f)) f = f*r_scale
+  end if
+
+  if (do_rescale_E) then
+     if (present(e)) e = e*E_scale
+     if (present(local_e)) local_e = local_e*E_scale
+     if (present(f)) f = f*E_scale
+     if (present(virial)) virial=virial*E_scale
+     if (present(local_virial)) local_virial=local_virial*E_scale
+  end if
 
 end subroutine IPModel_FS_Calc
 
