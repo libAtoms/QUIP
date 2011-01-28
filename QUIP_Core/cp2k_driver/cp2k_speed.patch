@@ -4,7 +4,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_forces.F,v
 retrieving revision 1.32
 diff -u -r1.32 cp_ddapc_forces.F
 --- cp_ddapc_forces.F	3 Jan 2010 23:41:26 -0000	1.32
-+++ cp_ddapc_forces.F	27 Jan 2011 20:19:29 -0000
++++ cp_ddapc_forces.F	28 Jan 2011 22:17:13 -0000
 @@ -38,6 +38,8 @@
                                               legendre
    USE timings,                         ONLY: timeset,&
@@ -36,6 +36,24 @@ diff -u -r1.32 cp_ddapc_forces.F
         M => qs_env%cp_ddapc_env%Md
         IF (apply_qmmm_periodic) M => qs_env%cp_ddapc_env%Mr
         CALL cp_decpl_ddapc_forces(qs_env, M, charges, dq, d_el, particle_set, error)
+@@ -275,6 +281,8 @@
+              chf(j,k) =  DOT_PRODUCT(uv,dq(:,k,j))
+           END DO
+        END DO
++       !18
++       CALL mp_sum(chf, qs_env%para_env%group)
+        DO iatom=1,natom
+           ikind = kind_of(iatom)
+           i = atom_of_kind(iatom)
+@@ -455,6 +463,8 @@
+              chf(j,k) =  DOT_PRODUCT(uv,dq(:,k,j))
+           END DO
+        END DO
++       !18
++       CALL mp_sum(chf, qs_env%para_env%group)
+        DO iatom=1,natom
+           ikind = kind_of(iatom)
+           i = atom_of_kind(iatom)
 Index: cp_ddapc_types.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_types.F,v
@@ -145,7 +163,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_util.F,v
 retrieving revision 1.23
 diff -u -r1.23 cp_ddapc_util.F
 --- cp_ddapc_util.F	3 Jan 2010 23:41:26 -0000	1.23
-+++ cp_ddapc_util.F	27 Jan 2011 20:19:30 -0000
++++ cp_ddapc_util.F	28 Jan 2011 23:07:42 -0000
 @@ -19,6 +19,8 @@
    USE cp_ddapc_methods,                ONLY: build_A_matrix,&
                                               build_b_vector,&
@@ -178,19 +196,21 @@ diff -u -r1.23 cp_ddapc_util.F
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: dbv
      REAL(KIND=dp), ALLOCATABLE, &
-@@ -238,6 +242,11 @@
+@@ -238,6 +242,13 @@
      TYPE(pw_type), POINTER                   :: rho_tot_g
      TYPE(qs_charges_type), POINTER           :: qs_charges
      TYPE(qs_rho_type), POINTER               :: rho
 +    !!NB speed
-+    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj, dAmj_qv, AmI_bv, tv
++    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj, dAmj_qv, AmI_bv
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
++    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: tv
++    INTEGER :: pmin, pmax
 +    external dgemv, dgemm
 +    !!
  
      CALL timeset(routineN,handle)
      failure         = .FALSE.
-@@ -388,6 +397,7 @@
+@@ -388,6 +399,7 @@
         !
         IF (need_f) THEN 
            CALL timeset(routineN//"-forces",handle3)
@@ -198,7 +218,7 @@ diff -u -r1.23 cp_ddapc_util.F
            IF (iw>0) THEN
               WRITE(iw,'(T3,A)')" Evaluating DDAPC atomic derivatives .."
            END IF
-@@ -395,41 +405,73 @@
+@@ -395,41 +407,95 @@
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            ALLOCATE(dbv(ndim,3), stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -211,7 +231,7 @@ diff -u -r1.23 cp_ddapc_util.F
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +	  ALLOCATE(cvT_AmI_dAmj(ndim), stat=stat)
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+	  ALLOCATE(tv(ndim), stat=stat)
++	  ALLOCATE(tv(ndim,SIZE(particle_set),3), stat=stat)
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +	  ALLOCATE(AmI_cv(ndim), stat=stat)
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -266,12 +286,29 @@ diff -u -r1.23 cp_ddapc_util.F
 -                     c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
 -             END DO
 -          END DO
-+		! dAmj is actually pretty sparse - surely we can use this?
-+		call dgemv('T', size(dAm,2), size(dAm,1), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), cvT_AmI, 1, 0.0_dp, cvT_AmI_dAmj, 1)
-+		call dgemv('N', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), qv, 1, 0.0_dp, dAmj_qv, 1)
++		!!! dAmj is actually pretty sparse - one block of cols + one block of rows - surely we can use this?
++		!18 call dgemv('T', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), cvT_AmI, 1, 0.0_dp, cvT_AmI_dAmj, 1)
++		!18 call dgemv('N', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), qv, 1, 0.0_dp, dAmj_qv, 1)
++		!18
++		pmin = (iparticle-1)*size(radii)+1
++		pmax = iparticle*size(radii)
++		if (pmin > 1) then
++		  dAmj_qv(1:pmin-1) = matmul(dAm(1:pmin-1,pmin:pmax,j),qv(pmin:pmax))
++		  cvT_AmI_dAmj(1:pmin-1) = matmul(cvT_AmI(pmin:pmax),dAm(pmin:pmax,1:pmin-1,j))
++		endif
++		dAmj_qv(pmin:pmax) = matmul(dAm(pmin:pmax,:,j),qv(:))
++		cvT_AmI_dAmj(pmin:pmax) = matmul(cvT_AmI(:),dAm(:,pmin:pmax,j))
++		if (pmax < size(particle_set)*size(radii)) then
++		  dAmj_qv(pmax+1:) = matmul(dAm(pmax+1:,pmin:pmax,j),qv(pmin:pmax))
++		  cvT_AmI_dAmj(pmax+1:) = matmul(cvT_AmI(pmin:pmax),dAm(pmin:pmax,pmax+1:,j))
++		endif
++		dAmj_qv = dAmj_qv / (Vol*Vol)
++		cvT_AmI_dAmj = cvT_AmI_dAmj / (Vol*Vol)
++		!18
 +		c3 = DOT_PRODUCT(cvT_AmI_dAmj,AmI_bv) - DOT_PRODUCT(cvT_AmI, dbv(:,j)) - c1*DOT_PRODUCT(cvT_AmI_dAmj,AmI_cv)
-+		tv = -(dAmj_qv + dbv(:,j) + c3/cp_ddapc_env%c0*cv)
-+		call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI(:,:), size(cp_ddapc_env%AmI,1), tv, 1, 0.0_dp, dqv(:,iparticle,j), 1)
++		tv(:,iparticle,j) = -(dAmj_qv + dbv(:,j) + c3/cp_ddapc_env%c0*cv)
++		!!! transform many dgemv to one dgemm by moving this out of loop by keeping matrix tv(:,iparticle,j), and doing single dgemm outside of loop dqv = AmI . tv
++		!18 call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI(:,:), size(cp_ddapc_env%AmI,1), tv, 1, 0.0_dp, dqv(:,iparticle,j), 1)
 +             END DO ! j
 +	     !8
 +	     dAm((iparticle-1)*size(radii)+1:iparticle*size(radii),:,:) = 0.0_dp
@@ -279,16 +316,21 @@ diff -u -r1.23 cp_ddapc_util.F
 +	     !8
 +CALL timestop(handlet)
 +          END DO ! iparticle
-+	  call cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
-+CALL timeset(routineN//"-for-4",handlet)
-+	  !! NB parallelization
-+          CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
-+	  !!
++CALL timeset(routineN//"-for-3.5",handlet)
++	  !18
++	  call dgemm('N','N',size(dqv,1),size(dqv,2)*size(dqv,3),size(cp_ddapc_env%AmI,2),1.0_dp,cp_ddapc_env%AmI,size(cp_ddapc_env%AmI,1),tv,size(tv,1),0.0_dp,dqv,size(dqv,1))
 +CALL timestop(handlet)
++	  call cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
++!18 moved reduction out to where dqv is used to compute a force contribution (smaller array to reduce, just size(particle_set) x 3)
++!18 CALL timeset(routineN//"-for-4",handlet)
++!18 	  !! NB parallelization
++!18           CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
++!18 	  !!
++!18 CALL timestop(handlet)
            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
            IF (.NOT.ASSOCIATED(dq_out)) THEN
               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
-@@ -447,12 +489,22 @@
+@@ -447,12 +513,22 @@
            END IF
            DEALLOCATE(dqv, stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -313,7 +355,7 @@ diff -u -r1.23 cp_ddapc_util.F
            CALL timestop(handle3)
         END IF
         !
-@@ -745,6 +797,7 @@
+@@ -745,6 +821,7 @@
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: Am1, Am2, ddAm
      TYPE(cp_ddapc_type), POINTER             :: cp_ddapc_env
@@ -321,7 +363,7 @@ diff -u -r1.23 cp_ddapc_util.F
  
      failure = .FALSE.
      NULLIFY(cp_ddapc_env)
-@@ -760,16 +813,19 @@
+@@ -760,16 +837,19 @@
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
         rvec = particle_set(iparticle)%r                
         cp_ddapc_env => qs_env%cp_ddapc_env
@@ -343,7 +385,7 @@ diff -u -r1.23 cp_ddapc_util.F
            CALL mp_sum(Am2,rho_tot_g%pw_grid%para%group)
            ddAm = (Am1 - Am2)/(2.0_dp*dx)
            DO kk = 1, SIZE(ddAm,1)
-@@ -787,6 +843,7 @@
+@@ -787,6 +867,7 @@
            END DO
            particle_set(iparticle)%r = rvec
         END DO
