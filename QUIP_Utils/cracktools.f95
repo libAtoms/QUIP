@@ -107,7 +107,7 @@ contains
          call system_abort('hybrid_mark pointer assignment failed')
 
     if (.not. has_property(crack_slab, 'force')) &
-         call add_property(crack_slab, 'force', 0)
+         call add_property(crack_slab, 'force', 0.0_dp, n_cols=3)
     if (.not. assign_pointer(crack_slab, 'force', force)) &
          call system_abort('force pointer assignment failed')
 
