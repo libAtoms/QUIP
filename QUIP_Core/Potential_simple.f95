@@ -630,7 +630,7 @@ contains
 	   ! prefix should be "UNCARVED_CLUSTER"
 	   call write(at, 'stdout')
 	 endif
-	 call calc(this, at, args_str=cluster_args_str, error=error)
+	 call calc(this, at, args_str=new_args_str, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
 	 if (do_rescale_r)  at_force_ptr = at_force_ptr*r_scale
 	 if (do_rescale_E)  at_force_ptr = at_force_ptr*E_scale
