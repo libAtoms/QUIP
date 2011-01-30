@@ -3369,6 +3369,7 @@ type(inoutput), optional :: debugfile
   !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
   !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
   !% the centre of the QM region (a position in space or a list of atoms).
+  !% Also saves the old $hybrid_mark$ property in $old_hybrid_mark$ property.
   !% optionally correct selected region with heuristics (as coded in create_cluster_info())
   !
   subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
@@ -3388,7 +3389,7 @@ type(inoutput), optional :: debugfile
     logical :: my_use_create_cluster_info
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, old_all_but_term
-    integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
+    integer, pointer :: hybrid_p(:), hybrid_mark_p(:), old_hybrid_mark_p(:)
     character(len=1024) :: my_create_cluster_info_args, my_mark_postfix
     integer, pointer :: hybrid_region_core_tmp_p(:)
     type(Table) :: padded_cluster_info
@@ -3462,10 +3463,17 @@ type(inoutput), optional :: debugfile
        if (list_changed)  call print('QM list around the origin  has changed')
     endif
 
+    ! sadd old hybrid_mark property
+    call add_property(my_atoms,'old_hybrid_mark'//trim(my_mark_postfix),HYBRID_NO_MARK)
+    if (.not. assign_pointer(my_atoms,'old_hybrid_mark'//trim(my_mark_postfix),old_hybrid_mark_p)) then
+      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get old_hybrid_mark"//trim(my_mark_postfix)//" property", error)
+    endif
     ! update QM_flag of my_atoms
     if (.not. assign_pointer(my_atoms,'hybrid_mark'//trim(my_mark_postfix),hybrid_mark_p)) then
       RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark"//trim(my_mark_postfix)//" property", error)
     endif
+    ! save old_hybrid_mark
+    old_hybrid_mark_p(1:my_atoms%N) = hybrid_mark_p(1:my_atoms%N)
     ! default to NO_MARK
     hybrid_mark_p(1:my_atoms%N) = HYBRID_NO_MARK
     ! anything which was marked before (except termination) is now BUFFER (so hysteretic buffer, later, has correct previous values)
