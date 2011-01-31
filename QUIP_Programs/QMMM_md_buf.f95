@@ -59,9 +59,9 @@ program qmmm_md
   real(dp), dimension(:,:), allocatable :: f,f0,f1, add_force
 
   !QM list generation
-  logical                             :: list_changed1
-  integer, pointer                    :: hybrid_mark_p(:)
-  integer, pointer                    :: cluster_mark_p(:)
+  !logical                             :: list_changed1
+  !integer, pointer                    :: hybrid_mark_p(:)
+  !integer, pointer                    :: cluster_mark_p(:)
 
   !Thermostat
   real(dp)                            :: temp
@@ -111,7 +111,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
   character(len=FIELD_LENGTH) :: traj_file          !output XYZ file
   character(len=FIELD_LENGTH) :: qm_list_filename, qm_core_list_filename        !QM list file with a strange format
-  type(Table)                 :: qm_seed
+  type(Table)                 :: qm_seed_extended, qm_seed_core
   character(len=FIELD_LENGTH) :: Residue_Library
   character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
   type(Extendable_Str)        :: restraint_constraint_xml_es
@@ -535,17 +535,20 @@ logical :: have_silica_potential
     if (trim(Run_Type1) == 'QMMM_EXTENDED' .or. trim(Run_Type2) == 'QMMM_EXTENDED') have_QMMM_extended =.true.
 
     if (have_QMMM_core .or. have_QMMM_extended) then
+
+       !even if continue, we need the QM seed. -- no marks overwritten!
+       if (Continue_it .and. len_trim(qm_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qm_seed_extended)
+       if (Continue_it .and. len_trim(qm_core_list_filename)/=0) call read_qmlist(ds%atoms,qm_core_list_filename,qm_seed_core)
+
+       !(re)initialise QM region -- marks overwritten!
        if (reinitialise_qm_region .or. .not. Continue_it) then
 	  if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
-	    qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true.)
+	    qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true., qm_seed_extended)
 	  if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
-	    qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true.)
+	    qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true., qm_seed_core)
 
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
-       !even if continue, we need the QM seed.
-       if (Continue_it .and. len_trim(qm_list_filename)/=0) call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed, mark_postfix='_extended')
-       if (Continue_it .and. len_trim(qm_core_list_filename)/=0) call read_qmlist(ds%atoms,qm_core_list_filename,qmlist=qm_seed, mark_postfix='_core')
 
     endif ! have_QMMM_core || have_QMMM_extended
     call map_into_cell(ds%atoms)
@@ -791,9 +794,9 @@ call print("MAIN CALLED CALC EVB")
 
      !NB should we really recalculate residue labels, so heuristics that keep residues together function here?  probably
      if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
-       qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false.)
+       qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false., qm_seed_extended)
      if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
-       qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false.)
+       qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false., qm_seed_core)
 
   !FORCE
 
@@ -938,7 +941,8 @@ call print("MAIN CALLED CALC EVB")
 
   deallocate(f,f0,f1)
 
-  call finalise(qm_seed)
+  call finalise(qm_seed_extended)
+  call finalise(qm_seed_core)
   call finalise(ds)
   call finalise(traj_xyz)
 
@@ -1186,25 +1190,22 @@ contains
 
   end function spline_force
 
-  !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
-  !% marking the QM atoms with 1, otherwise 0.
+  !% Reads the QM list from a file
+  !% Will not overwrite properties!
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,mark_postfix,verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,qm_list,verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
-    type(Table), optional, intent(out) :: qmlist
-    character(len=*),  intent(in)    :: mark_postfix
+    type(Table),       intent(out)   :: qm_list
     logical, optional, intent(in)    :: verbose
 
-    type(table)                      :: qm_list
     type(Inoutput)                   :: qmlistfile
     integer                          :: n,num_qm_atoms,qmatom,status
     character(80)                    :: title,testline
     logical                          :: my_verbose
     character(20), dimension(10)     :: fields
     integer                          :: num_fields
-    integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
 
 
     my_verbose = optional_default(.false., verbose)
@@ -1253,27 +1254,7 @@ contains
     if ((size(int_part(qm_list,1)).gt.my_atoms%N).or.(size(int_part(qm_list,1)).lt.1)) &
        call system_abort("read_qmlist: QM atoms' number is <1 or >"//my_atoms%N)
 
-    call add_property(my_atoms,'hybrid'//trim(mark_postfix),0)
-    if (.not. assign_pointer(my_atoms, 'hybrid'//trim(mark_postfix), hybrid_p)) &
-      call system_abort("read_qmlist couldn't assign pointer for hybrid_p")
-    hybrid_p(1:my_atoms%N) = 0
-    hybrid_p(int_part(qm_list,1)) = 1
-
-    call add_property(my_atoms,'hybrid_mark'//trim(mark_postfix),0)
-    if (.not. assign_pointer(my_atoms, 'hybrid_mark'//trim(mark_postfix), hybrid_mark_p)) &
-      call system_abort("read_qmlist couldn't assign pointer for hybrid_mark_p")
-    hybrid_mark_p(1:my_atoms%N) = 0
-    hybrid_mark_p(int_part(qm_list,1)) = HYBRID_ACTIVE_MARK
-
     if (my_verbose) call print('Finished. '//qm_list%N//' QM atoms have been read successfully.')
-
-    !output the list in a table if needed
-    if (present(qmlist)) then
-       call allocate(qmlist,4,0,0,0,num_qm_atoms)
-       call append(qmlist,qm_list)
-    endif
-
-    call finalise(qm_list)
 
   end subroutine read_qmlist
 
@@ -1728,7 +1709,7 @@ contains
      end do
    end subroutine get_restraint_stuff
 
-  subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, first_time)
+  subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, first_time, qm_seed)
     type(Atoms), intent(inout) :: ds_atoms
     character(len=*), intent(in) :: mark_postfix
     logical, intent(in) :: qm_region_pt_ctr
@@ -1738,6 +1719,8 @@ contains
     real(dp), intent(in) :: inner_radius, outer_radius
     logical, intent(in) :: buffer_general, use_create_cluster_info_for_core
     logical, intent(in) :: first_time
+    type(table), intent(inout) :: qm_seed
+    integer, pointer :: hybrid_p(:), hybrid_mark_p(:), cluster_mark_p(:)
 
     logical :: list_changed1
 
@@ -1749,12 +1732,14 @@ contains
       call add_property(ds_atoms,'old_cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
       call add_property(ds_atoms,'cut_bonds'//trim(mark_postfix), 0, n_cols=4) !MAX_CUT_BONDS)
     endif
+
     if (qm_region_pt_ctr) then
        if (first_time) then
 	 call map_into_cell(ds_atoms)
 	 call calc_dists(ds_atoms)
        endif
        if (qm_region_atom_ctr /= 0) qm_region_ctr = ds_atoms%pos(:,qm_region_atom_ctr)
+       !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
 	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
 	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
@@ -1763,19 +1748,55 @@ contains
 	  call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
        endif
     else ! not qm_region_pt_ctr
-       if (first_time) then
-	 call read_qmlist(ds_atoms,qm_list_filename,qmlist=qm_seed, mark_postfix=trim(mark_postfix))
+       !QM region centred around an atom list
+
+       if (first_time) then !reinitialise QM region
+
+         !read QM seed
+	 call read_qmlist(ds_atoms,qm_list_filename,qm_seed)
+
+         if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
 	 if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
 	 if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
+
+          !call print("MARKSX0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
+          !call print("MARKSX0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
+          !call print("MARKSX0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+
+         !(re)initialise the hysteretic qm region with (re)initialising hybrid_*, hybrid_mark_* and cluster_mark_*
+         hybrid_p(1:ds_atoms%N) = HYBRID_NO_MARK
+         hybrid_p(int_part(qm_seed,1)) = HYBRID_ACTIVE_MARK
+         hybrid_mark_p(1:ds_atoms%n) = hybrid_p(1:ds_atoms%n)
 	 call print('hybrid_mark '//count(hybrid_mark_p.eq.1))
-	 cluster_mark_p = hybrid_mark_p
+	 cluster_mark_p(1:ds_atoms%N) = hybrid_mark_p(1:ds_atoms%N)
 	 call print('cluster_mark '//count(cluster_mark_p.eq.1))
+
+          !call print("MARKSX1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
+          !call print("MARKSX1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
+          !call print("MARKSX1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+
        endif
 
+        !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
+        !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
+        !if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
+        !call print("MARKS0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
+        !call print("MARKS0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
+        !call print("MARKS0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+
        !extend QM region around seed atoms
+       !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
 	 add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+
+        !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
+        !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
+        !if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
+        !call print("MARKS1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
+        !call print("MARKS1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
+        !call print("MARKS1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+
     endif ! qm_region_pt_ctr
   end subroutine update_QM_region
 
