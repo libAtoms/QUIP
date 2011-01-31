@@ -1,0 +1,128 @@
+*>>>>> CHARMM22 All-Hydrogen Parameter File for Proteins <<<<<<<<
+*>>>>> Includes phi, psi cross term map (CMAP) correction <<<<<<<
+*>>>>>>>>>>>>>>>>>>>>>> December, 2003 <<<<<<<<<<<<<<<<<<<<<<<<<<
+* All comments to ADM jr. via the CHARMM web site: www.charmm.org
+*               parameter set discussion forum
+*
+
+! references
+!
+!PROTEINS
+!
+!MacKerell, A.D., Jr,. Feig, M., Brooks, C.L., III, Extending the
+!treatment of backbone energetics in protein force fields: limitations
+!of gas-phase quantum mechanics in reproducing protein conformational
+!distributions in molecular dynamics simulations, Journal of
+!Computational Chemistry, 25: 1400-1415, 2004.
+!
+!MacKerell, Jr., A. D.; Bashford, D.; Bellott, M.; Dunbrack Jr., R.L.;
+!Evanseck, J.D.; Field, M.J.; Fischer, S.; Gao, J.; Guo, H.; Ha, S.;
+!Joseph-McCarthy, D.; Kuchnir, L.; Kuczera, K.; Lau, F.T.K.; Mattos,
+!C.; Michnick, S.; Ngo, T.; Nguyen, D.T.; Prodhom, B.; Reiher, III,
+!W.E.; Roux, B.; Schlenkrich, M.; Smith, J.C.; Stote, R.; Straub, J.;
+!Watanabe, M.; Wiorkiewicz-Kuczera, J.; Yin, D.; Karplus, M.  All-atom
+!empirical potential for molecular modeling and dynamics Studies of
+!proteins.  Journal of Physical Chemistry B, 1998, 102, 3586-3616.
+!
+!IONS (see lipid and nucleic acid topology and parameter files for
+!additional ions
+!
+!ZINC
+!
+!Roland H. Stote and Martin Karplus, Zinc Binding in Proteins and
+!Solution: A Simple but Accurate Nonbonded Representation, PROTEINS:
+!Structure, Function, and Genetics 23:12-31 (1995)
+!
+
+BONDS
+!
+!V(bond) = Kb(b - b0)**2
+!
+!Kb: kcal/mole/A**2
+!b0: A
+!
+!atom type Kb          b0
+!
+HT   HT      0.000     1.5139 ! ALLOW WAT
+                ! FROM TIPS3P GEOMETRY (FOR SHAKE/W PARAM)
+OT   HT    450.000     0.9572 ! ALLOW   WAT
+                ! FROM TIPS3P GEOM
+!AMBER parameters for methyl chloride
+!CL   CCL   279.000     1.786       ! from AMBER
+CL   CCL     0.000     0.000       ! zeroed, use Morse instead
+CCL  HCL   340.400     1.090       ! from AMBER
+
+ANGLES
+!
+!V(angle) = Ktheta(Theta - Theta0)**2
+!
+!V(Urey-Bradley) = Kub(S - S0)**2
+!
+!Ktheta: kcal/mole/rad**2
+!Theta0: degrees
+!Kub: kcal/mole/A**2 (Urey-Bradley)
+!S0: A
+!
+!atom types     Ktheta    Theta0   Kub     S0
+!
+HT   OT   HT     55.000   104.5200 ! ALLOW WAT
+                ! TIP3P GEOMETRY, ADM JR.
+!AMBER parameters for methyl chloride
+CL   CCL  HCL    40.200   105.50000    !from AMBER 
+HCL  CCL  HCL    39.300   109.44000    !from AMBER
+CL   CCL  CL      0.000     0.0    !for cp2k not to complain
+
+DIHEDRALS
+!
+!V(dihedral) = Kchi(1 + cos(n(chi) - delta))
+!
+!Kchi: kcal/mole
+!n: multiplicity
+!delta: degrees
+!
+!atom types             Kchi    n   delta
+!
+X    NPH  CPA  X        0.0000  2     0.00 ! ALLOW HEM
+                ! Heme (6-liganded): dummy for "auto dihe" (KK 05/13/91)
+
+IMPROPER
+!
+!V(improper) = Kpsi(psi - psi0)**2
+!
+!Kpsi: kcal/mole/rad**2
+!psi0: degrees
+!note that the second column of numbers (0) is ignored
+!
+!atom types           Kpsi                   psi0
+!
+CPB  CPA  NPH  CPA    20.8000         0      0.0000 ! ALLOW HEM
+                ! Heme (6-liganded): porphyrin macrocycle (KK 05/13/91)
+
+
+NONBONDED nbxmod  5 atom cdiel shift vatom vdistance vswitch -
+cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac 1.0 wmin 1.5 
+                !adm jr., 5/08/91, suggested cutoff scheme
+!
+!V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+!
+!epsilon: kcal/mole, Eps,i,j = sqrt(eps,i * eps,j)
+!Rmin/2: A, Rmin,i,j = Rmin/2,i + Rmin/2,j
+!
+!atom  ignored    epsilon      Rmin/2   ignored   eps,1-4       Rmin/2,1-4
+!
+HT     0.000000  -0.046000     0.224500 ! ALLOW WAT
+                !TIP3P HYDROGEN PARAMETERS, adm jr., NBFIX obsolete
+OT     0.000000  -0.152100     1.768200 ! ALLOW   WAT
+                !TIP3P OXYGEN PARAMETERS, adm jr., NBFIX obsolete
+!AMBER GAFF parameters for methyl chloride
+CCL    0.000000  -0.109400     1.908000
+HCL    0.000000  -0.015700     1.387000 
+!averaged AMBER parameters for the chlorine and chloride
+CL     0.000000  -0.265000     1.948000
+CLA    0.000000  -0.265000     1.948000
+
+HBOND CUTHB 0.5  ! If you want to do hbond analysis (only), then use
+                 ! READ PARAM APPEND CARD
+                 ! to append hbond parameters from the file: par_hbond.inp
+
+END
