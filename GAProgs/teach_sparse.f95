@@ -100,6 +100,7 @@ program teach_sparse_program
   call param_register(params, 'config_type_hypers','',config_type_hypers_string,has_value_target = main_teach_sparse%has_config_type_hypers, help_string="How many sparse points to choose for each type of data and what sigma parameters to associate with the type. E.g. {liquid:200:0.01:0.2:0.02:crystal:300:0.001:0.1:0.001} will select 300 sparse points from crystal type data and 200 from liquid")
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse, help_string="Do sparsification or regular GP. Latter: no derivative information is used")
   call param_register(params, 'do_pca', 'F', main_teach_sparse%do_pca, help_string='PCA analysis is performed on input data')
+  call param_register(params, 'mark_sparse_atoms', '', main_teach_sparse%mark_sparse_atoms, has_value_target = main_teach_sparse%do_mark_sparse_atoms, help_string="Reprints the original xyz file after sparsification process. sparse propery added, true for atoms associated with a sparse point.")
   call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="Verbosity control")
 
 
@@ -335,6 +336,8 @@ program teach_sparse_program
      allocate(main_teach_sparse%r(main_teach_sparse%nn))
      main_teach_sparse%r = (/ (i,i=1,main_teach_sparse%nn) /)
   endif
+
+  call print_sparse(main_teach_sparse)
 
   allocate(main_teach_sparse%theta(main_teach_sparse%d,main_teach_sparse%n_species))
 

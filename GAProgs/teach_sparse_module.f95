@@ -42,14 +42,14 @@ module teach_sparse_mod
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name
+     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name, mark_sparse_atoms = ''
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_config_type_hypers, do_pca
+     has_config_type_hypers, do_pca, do_mark_sparse_atoms
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n
@@ -74,6 +74,7 @@ module teach_sparse_mod
   public :: teach_sparse
   public :: teach_sparse_print_xml
   public :: file_print_xml
+  public :: print_sparse
 
 contains
 
@@ -757,5 +758,45 @@ contains
      call finalise(atfile)
 
   endsubroutine file_print_xml
+
+  subroutine print_sparse(this)
+    type(teach_sparse), intent(in) :: this
+    type(cinoutput) :: xyzfile, xyzfile_out
+    type(atoms) :: at, at_out
+
+    integer :: li, ui, n_con
+    logical, dimension(:), allocatable :: x
+    logical, dimension(:), pointer :: sparse
+
+    if(this%do_mark_sparse_atoms) then
+
+       allocate(x(this%nn))
+       x = .false.
+       x(this%r) = .true.
+
+       call initialise(xyzfile,this%at_file)
+       call initialise(xyzfile_out,this%mark_sparse_atoms,action=OUTPUT)
+
+       li = 0
+       ui = 0
+       do n_con = 1, xyzfile%n_frame
+          call read(xyzfile,at,frame=n_con-1)
+          at_out = at
+
+          call add_property(at_out,'sparse',.false.,ptr=sparse)
+
+          li = ui + 1
+          ui = ui + at%N
+          if(any( x(li:ui) )) sparse(find_indices(x(li:ui))) = .true.
+
+          call write(at_out,xyzfile_out,properties="species:pos:sparse")
+       enddo
+       call finalise(xyzfile)
+       call finalise(xyzfile_out)
+       deallocate(x)
+
+    endif
+
+  endsubroutine print_sparse
 
 end module teach_sparse_mod
