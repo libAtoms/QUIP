@@ -145,7 +145,7 @@ implicit none
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N
   integer :: histogram_n_bins
-  real(dp) :: histogram_min_v, histogram_max_v, histogram_extra_width, histogram_bin_width
+  real(dp) :: histogram_min_v, histogram_max_v, histogram_cur_min_v, histogram_cur_max_v, histogram_extra_width, histogram_bin_width
   logical :: do_histogram_effective_N, do_histogram_correl
   character(len=FIELD_LENGTH) :: infile_name, outfile_name
   character(len=102400) :: myline
@@ -171,9 +171,11 @@ implicit none
     correlation_effective_N_long_lag, help_string="lag after which autocorrelation is assumed to be in long time regime (for effective_N calculation)")
   call param_register(cli_params, "histogram", "F", do_histogram, help_string="compute histogram")
   call param_register(cli_params, "histogram_n_bins", "10", histogram_n_bins, help_string="number of bins for histogram calculation")
-  call param_register(cli_params, "histogram_extra_width", "0.1", histogram_extra_width, help_string="extra range to do histogram over, in fractions of max_val-min_val")
+  call param_register(cli_params, "histogram_extra_width", "0.1", histogram_extra_width, help_string="extra range to do histogram over, in fractions of max_val-min_val (ignored if histogram_min,max_v are used)")
   call param_register(cli_params, "histogram_effective_N", "F", do_histogram_effective_N, help_string="if true calculate effective N for bins based on autocorrelation")
   call param_register(cli_params, "histogram_correl", "F", do_histogram_correl, help_string="if true calculate autocorrelation for histogram bins")
+  call param_register(cli_params, "histogram_min_v", "0.0", histogram_min_v, help_string="minimum value to use for histogram range (if not specified, automatic)")
+  call param_register(cli_params, "histogram_max_v", "-1.0", histogram_max_v, help_string="maximum value to use for histogram range (if not specified, automatic)")
   call param_register(cli_params, "over_bins", "F", over_bins, help_string="do mean/variance/correlation over bins")
   call param_register(cli_params, "over_time", "F", over_time, help_string="do mean/variance/correlation over time")
   call param_register(cli_params, "verbosity", "NORMAL", verbosity_str, help_string="verbosity level")
@@ -304,28 +306,31 @@ implicit none
     endif
     data_histogram = 0.0_dp
     do i=1, sz
-      if (over_bins) then
-	histogram_min_v = minval(data(:,i))
-	histogram_max_v = maxval(data(:,i))
+      if (histogram_max_v > histogram_min_v) then
+	 histogram_cur_min_v = histogram_min_v
+	 histogram_cur_max_v = histogram_max_v
       else
-	histogram_min_v = minval(data(i,:))
-	histogram_max_v = maxval(data(i,:))
+	 if (over_bins) then
+	   histogram_cur_min_v = minval(data(:,i))
+	   histogram_cur_max_v = maxval(data(:,i))
+	 else
+	   histogram_cur_min_v = minval(data(i,:))
+	   histogram_cur_max_v = maxval(data(i,:))
+	 endif
+	 histogram_extra_width = (histogram_cur_max_v-histogram_cur_min_v)*histogram_extra_width
+	 histogram_cur_min_v = histogram_cur_min_v - histogram_extra_width
+	 histogram_cur_max_v = histogram_cur_max_v + histogram_extra_width
       endif
-      histogram_extra_width = (histogram_max_v-histogram_min_v)*histogram_extra_width
-      print *, histogram_min_v, histogram_max_v
-      histogram_min_v = histogram_min_v - histogram_extra_width
-      histogram_max_v = histogram_max_v + histogram_extra_width
-      print *, histogram_min_v, histogram_max_v
-      histogram_bin_width = (histogram_max_v-histogram_min_v)/histogram_n_bins
+      histogram_bin_width = (histogram_cur_max_v-histogram_cur_min_v)/histogram_n_bins
       if (histogram_bin_width == 0.0_dp) histogram_bin_width = 1.0e-8_dp
       do bin_i=1, histogram_n_bins
-	data_histogram(1, bin_i, i) = histogram_min_v+(real(bin_i,dp)-0.5_dp)*histogram_bin_width
+	data_histogram(1, bin_i, i) = histogram_cur_min_v+(real(bin_i,dp)-0.5_dp)*histogram_bin_width
       end do
       do j=1, r_sz
 	if (over_bins) then
-	  bin_i = (data(j,i) - histogram_min_v)/histogram_bin_width+1
+	  bin_i = (data(j,i) - histogram_cur_min_v)/histogram_bin_width+1
 	else
-	  bin_i = (data(i,j) - histogram_min_v)/histogram_bin_width+1
+	  bin_i = (data(i,j) - histogram_cur_min_v)/histogram_bin_width+1
 	endif
 	if (bin_i >= 1 .and. bin_i <= histogram_n_bins) then
 	  data_histogram(2,bin_i,i) = data_histogram(2,bin_i,i) + 1.0_dp
