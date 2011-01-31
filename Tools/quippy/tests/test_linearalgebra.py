@@ -21,7 +21,7 @@ from numpy import dtype, int32
 import unittest
 from quippytest import *
 
-from quippy import sort_array_i, sort_array_r
+from quippy import sort_array_i, sort_array_r, heap_sort_i, heap_sort_r
 
 class TestLinearAlgebra(QuippyTestCase):
 
@@ -37,6 +37,22 @@ class TestLinearAlgebra(QuippyTestCase):
       i = farray([1,  2,  3,  4,   5,    6,    7,   8 ], dtype=int32)
       r = farray([1., 2., 3., 4.,  5., 6.6,    7.,  8.])
       sort_array_r(a, i_data=i, r_data=r)
+      self.assertArrayAlmostEqual(a, [-10., -5., 1.,  3., 4., 7., 9., 11.])
+      self.assertArrayAlmostEqual(i, [  7.,  5., 1.,  6., 2., 4., 3.,  8.])
+      self.assertArrayAlmostEqual(r, [  7.,  5., 1., 6.6, 2., 4., 3.,  8.])
+
+   def test_heap_sort_i(self):
+      a = farray([1,  4,  9,  7, -5,    3, -10, 11], dtype=int32)
+      r = farray([1., 2., 3., 4., 5., 6.6, 7., 8.])
+      heap_sort_i(a, r_data=r)
+      self.assertArrayAlmostEqual(a, [-10, -5,  1,   3,  4,  7,  9, 11])
+      self.assertArrayAlmostEqual(r, [ 7., 5., 1., 6.6, 2., 4., 3., 8.])
+
+   def test_heap_sort_r(self):
+      a = farray([1., 4., 9., 7., -5.,   3., -10., 11.])
+      i = farray([1,  2,  3,  4,   5,    6,    7,   8 ], dtype=int32)
+      r = farray([1., 2., 3., 4.,  5., 6.6,    7.,  8.])
+      heap_sort_r(a, i_data=i, r_data=r)
       self.assertArrayAlmostEqual(a, [-10., -5., 1.,  3., 4., 7., 9., 11.])
       self.assertArrayAlmostEqual(i, [  7.,  5., 1.,  6., 2., 4., 3.,  8.])
       self.assertArrayAlmostEqual(r, [  7.,  5., 1., 6.6, 2., 4., 3.,  8.])
