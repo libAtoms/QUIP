@@ -68,7 +68,7 @@ for src in argv:
         mod_uses[src].extend([u.lower() for u in mod.uses])
 
     mod_includes[src] = []
-    include_files = [line.split()[2].replace('"','') for line in open(fpp).readlines() if line.startswith('# ')]
+    include_files = [line.split()[2].replace('"','') for line in open(fpp).readlines() if line.startswith('# ') and len(line.split()) > 2 ]
     for inc in include_files:
         if os.path.isfile(inc) and os.path.basename(inc) != base+ext and inc not in mod_includes[src]:
             mod_includes[src].append(inc)
