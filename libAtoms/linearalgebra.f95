@@ -364,6 +364,11 @@ module linearalgebra_module
     module procedure sort_array_i, sort_array_r
   end interface sort_array
 
+  private :: heap_sort_i, heap_sort_r
+  interface heap_sort
+    module procedure heap_sort_i, heap_sort_r
+  end interface heap_sort
+
   private :: insertion_sort_i, insertion_sort_r
   interface insertion_sort
     module procedure insertion_sort_i, insertion_sort_r
@@ -4613,12 +4618,95 @@ CONTAINS
    end subroutine uniq
 
 
+   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
+   !% r_data is an accompanying array of reals on which the same reordering is performed
+   subroutine sort_array_i(array, r_data)
+
+      integer, dimension(:), intent(inout) :: array
+      real(dp), dimension(:), intent(inout), optional :: r_data
+      integer                              :: i,j,minpos
+      integer :: min, tmp
+      real(dp) :: r_tmp
+
+
+      do i = 1, (size(array) - 1)
+
+         min = huge(0)
+
+         do j = i,size(array)
+
+            if (array(j) < min) then
+               min = array(j)
+               minpos = j
+            end if
+
+         end do
+
+         tmp = array(i)
+         array(i) = array(minpos)
+         array(minpos) = tmp
+	 if (present(r_data)) then
+	   r_tmp = r_data(i)
+	   r_data(i) = r_data(minpos)
+	   r_data(minpos) = r_tmp
+	 endif
+
+      end do
+
+   end subroutine sort_array_i
+
+
+   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
+   !% i_data is an accompanying array of integers on which the same reordering is performed
+   subroutine sort_array_r(array, i_data,r_data)
+
+      real(dp), dimension(:), intent(inout) :: array
+      integer, dimension(:), intent(inout), optional :: i_data
+      real(dp), dimension(:), intent(inout), optional :: r_data
+      integer                              :: i,j, minpos
+      real(dp) :: tmp, min
+      integer :: i_tmp
+      real(dp) :: r_tmp
+
+
+      do i = 1, (size(array) - 1)
+
+         min = huge(0.0_dp)
+
+         do j = i,size(array)
+
+            if (array(j) < min) then
+               min = array(j)
+               minpos = j
+            end if
+
+         end do
+
+         tmp = array(i)
+         array(i) = array(minpos)
+         array(minpos) = tmp
+	 if (present(i_data)) then
+	   i_tmp = i_data(i)
+	   i_data(i) = i_data(minpos)
+	   i_data(minpos) = i_tmp
+	 endif
+	 if (present(r_data)) then
+	   r_tmp = r_data(i)
+	   r_data(i) = r_data(minpos)
+	   r_data(minpos) = r_tmp
+	 endif
+
+      end do
+
+   end subroutine sort_array_r
+
+
    !% Sort an array of integers into ascending order.
    !% The function uses heapsort, which always scales as N log N.
    !% r_data is an accompanying array of reals on which the same reordering is
    !% performed
    !% (Initial implementation by Andreas Wonisch)
-   subroutine sort_array_i(array, r_data)
+   subroutine heap_sort_i(array, r_data)
      integer,            dimension(:), intent(inout)  :: array
      real(dp), optional, dimension(:), intent(inout)  :: r_data
 
@@ -4702,7 +4790,7 @@ CONTAINS
 
      endsubroutine siftdown
 
-   endsubroutine sort_array_i
+   endsubroutine heap_sort_i
 
 
    !% Sort an array of integers into ascending order.
@@ -4710,7 +4798,7 @@ CONTAINS
    !% i_data and r_data are a accompanying arrays of integers and reals
    !% on which the same reordering is performed
    !% (Initial implementation by Andreas Wonisch)
-   subroutine sort_array_r(array, i_data, r_data)
+   subroutine heap_sort_r(array, i_data, r_data)
      real(dp),           dimension(:), intent(inout)  :: array
      integer,  optional, dimension(:), intent(inout)  :: i_data
      real(dp), optional, dimension(:), intent(inout)  :: r_data
@@ -4805,7 +4893,7 @@ CONTAINS
 
      endsubroutine siftdown
 
-   endsubroutine sort_array_r
+   endsubroutine heap_sort_r
 
 
    !% Do an in place insertion sort on 'this', in ascending order.
