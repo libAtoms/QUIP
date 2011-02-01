@@ -1,0 +1,78 @@
+#!/bin/csh
+#PBS -o benchmark.qmmm_small.stdout
+#PBS -e benchmark.qmmm_small.stderr
+#PBS -l select=4:mpiprocs=8:ncpus=8
+#PBS -l place=scatter
+#PBS -l walltime=00:05:00
+#PBS -r n
+#PBS -q debug
+#PBS -N MC_bench
+#PBS -A NRLDC04253428
+#PBS -V
+#PBS -m abe
+#PBS -M noam.bernstein@nrl.navy.mil
+
+setenv JOBDIR $PBS_JOBID
+setenv WORK_DIR $WORKDIR/$JOBDIR
+if (! -d $WORK_DIR) then
+    mkdir -p $WORK_DIR
+endif
+
+echo "running in $WORK_DIR"
+
+set startdir = $PBS_O_WORKDIR
+cd $startdir
+
+setenv EXECUTABLE cp2k.popt
+
+cd $WORK_DIR
+
+cp $startdir/$EXECUTABLE .
+
+set RSUFFIX=".bench"
+set ISUFFIX=""
+set OSUFFIX="${ISUFFIX}${RSUFFIX}"
+set INFILE=cp2k_input.inp${ISUFFIX}
+
+
+# stage in files to master
+set input_files = "\
+../BASIS_SET \
+../charmm.pot \
+${INFILE} \
+../POTENTIAL \
+quip_cp2k.psf \
+quip_cp2k.xyz \
+quip.wfn \
+"
+
+# do 16 p
+
+foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
+  rm -rf $file
+  echo $file | egrep -q '/$'
+  if ($?) then
+      cp $startdir/$file .
+  else
+      cp -r $startdir/$file .
+  endif
+end
+
+mpirun -np 16 cp2k.popt ${INFILE} > $startdir/out${OSUFFIX}.16p
+cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.16p
+
+# do 32 p
+
+foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
+  rm -rf $file
+  echo $file | egrep -q '/$'
+  if ($?) then
+      cp $startdir/$file .
+  else
+      cp -r $startdir/$file .
+  endif
+end
+
+mpirun -np 32 cp2k.popt ${INFILE} > $startdir/out${OSUFFIX}.32p
+cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.32p
+
