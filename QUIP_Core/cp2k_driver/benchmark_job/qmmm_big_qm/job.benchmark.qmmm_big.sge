@@ -3,7 +3,7 @@
 #PBS -e benchmark.qmmm_big.stderr
 #PBS -l select=4:mpiprocs=8:ncpus=8
 #PBS -l place=scatter
-#PBS -l walltime=00:05:00
+#PBS -l walltime=00:10:00
 #PBS -r n
 #PBS -q debug
 #PBS -N MC_bench
@@ -23,15 +23,13 @@ echo "running in $WORK_DIR"
 set startdir = $PBS_O_WORKDIR
 cd $startdir
 
-setenv EXECUTABLE cp2k.popt
-
 cd $WORK_DIR
 
-cp $startdir/$EXECUTABLE .
+cp $startdir/cp2k.popt.gfortran .
+cp $startdir/cp2k.popt.intel .
 
-set RSUFFIX=".bench"
+set RSUFFIX=".bench_mana"
 set ISUFFIX=""
-set OSUFFIX="${ISUFFIX}${RSUFFIX}"
 set INFILE=cp2k_input.inp${ISUFFIX}
 
 
@@ -46,7 +44,8 @@ quip_cp2k.xyz \
 quip.wfn \
 "
 
-# do 16 p
+set OSUFFIX="${ISUFFIX}${RSUFFIX}.gfortran"
+# do 16 p gnu
 
 foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
   rm -rf $file
@@ -58,10 +57,10 @@ foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
   endif
 end
 
-mpirun -np 16 cp2k.popt ${INFILE} > $startdir/out${OSUFFIX}.16p
+mpirun -np 16 cp2k.popt.gfortran ${INFILE} > $startdir/out${OSUFFIX}.16p
 cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.16p
 
-# do 32 p
+# do 32 p gnu
 
 foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
   rm -rf $file
@@ -73,6 +72,38 @@ foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
   endif
 end
 
-mpirun -np 32 cp2k.popt ${INFILE} > $startdir/out${OSUFFIX}.32p
+mpirun -np 32 cp2k.popt.gfortran ${INFILE} > $startdir/out${OSUFFIX}.32p
+cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.32p
+
+
+set OSUFFIX="${ISUFFIX}${RSUFFIX}.intel"
+# do 16 p gnu
+
+foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
+  rm -rf $file
+  echo $file | egrep -q '/$'
+  if ($?) then
+      cp $startdir/$file .
+  else
+      cp -r $startdir/$file .
+  endif
+end
+
+mpirun -np 16 cp2k.popt.intel ${INFILE} > $startdir/out${OSUFFIX}.16p
+cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.16p
+
+# do 32 p gnu
+
+foreach file (`echo $input_files | sed 's/ [ ]*/ /g'`)
+  rm -rf $file
+  echo $file | egrep -q '/$'
+  if ($?) then
+      cp $startdir/$file .
+  else
+      cp -r $startdir/$file .
+  endif
+end
+
+mpirun -np 32 cp2k.popt.intel ${INFILE} > $startdir/out${OSUFFIX}.32p
 cp quip-frc-1.xyz $startdir/quip-frc-1.xyz${OSUFFIX}.32p
 
