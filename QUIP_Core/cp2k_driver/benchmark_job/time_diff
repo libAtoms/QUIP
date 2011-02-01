@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [[ $# != 2 ]]; then
+  echo "Usage: $0 file1 file2" 1>&2
+  exit -1
+fi
+
+if [ ! -f $1 ]; then
+  echo "$1 missing" 1>&2
+  exit 1
+fi
+if [ ! -f $2 ]; then
+  echo "$2 missing" 1>&2
+  exit 1
+fi
+
+n1=`fgrep -n 'T I M I N G' $1 | sed 's/:.*//'`
+n2=`fgrep -n 'PROGRAM ENDED' $1 | sed 's/:.*//'`
+head -$(( $n2 - 3 )) $1 | tail -$(( $n2 - $n1 - 7 )) > t.1
+
+n1=`fgrep -n 'T I M I N G' $2 | sed 's/:.*//'`
+n2=`fgrep -n 'PROGRAM ENDED' $2 | sed 's/:.*//'`
+head -$(( $n2 - 3 )) $2 | tail -$(( $n2 - $n1 - 7 )) > t.2
+
+
+( for f in `cat t.1 t.2 | awk '{print $1}' | sort | uniq`; do
+    t1=`egrep "^ $f " t.1 | awk '{print $4}'`
+    t2=`egrep "^ $f " t.2 | awk '{print $4}'`
+# echo # BOB $f $t1 $t2 
+    if [[ -z $t1 ]]; then
+      have_t1=0
+    else
+      have_t1=1
+      echo $t1 | egrep -q '^0\.0*$'
+      zero_t1=$?
+    fi
+    if [[ -z $t2 ]]; then
+      have_t2=0
+    else
+      have_t2=1
+      echo $t2 | egrep -q '^0\.0*$'
+      zero_t2=$?
+    fi
+# echo JOE $have_t1 $have_t2
+    if [[ $have_t1 == 1 && $have_t2 == 1 ]]; then
+      if [[ $zero_t1 == 1 ]]; then
+	printf "%40s %f %f %f" $f $t1 $t2 `echo "($t2/$t1)" | bc -l`
+      else
+	printf "%40s %f %f %s" $f $t1 $t2 "N/A"
+      fi
+    else
+      if [[ $have_t1 == 1 ]]; then
+	printf "%40s %f N/A N/A" $f $t1 
+      fi
+      if [[ $have_t2 == 1 ]]; then
+	printf "%40s N/A %f N/A" $f $t2 
+      fi
+    fi
+#    if [[ $have_t1 == 1 && $have_t2 == 0 ]]; then
+#      printf "%40s %f N/A N/A" $f $t1
+#    fi
+#    if [[ $have_t1 == 0 && $have_t2 == 1 ]]; then
+#      printf "%40s N/A %f N/A" $f $t2
+#    fi
+  echo ""
+done ) | sort -k3n
+
+echo -n "$1 "; fgrep CP2K t.1
+echo -n "sum of times "; fgrep -v CP2K t.1 | sum.pl 4
+
+echo -n "$2 "; fgrep CP2K t.2
+echo -n "sum of times "; fgrep -v CP2K t.2 | sum.pl 4
