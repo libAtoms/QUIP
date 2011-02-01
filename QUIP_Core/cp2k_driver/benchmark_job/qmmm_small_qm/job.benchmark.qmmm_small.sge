@@ -37,10 +37,10 @@ set INFILE=cp2k_input.inp${ISUFFIX}
 
 # stage in files to master
 set input_files = "\
-../BASIS_SET \
-../charmm.pot \
+BASIS_SET \
+charmm.pot \
 ${INFILE} \
-../POTENTIAL \
+POTENTIAL \
 quip_cp2k.psf \
 quip_cp2k.xyz \
 quip.wfn \
