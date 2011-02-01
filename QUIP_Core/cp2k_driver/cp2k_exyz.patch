@@ -109,7 +109,7 @@ diff -u -r1.537 OBJECTDEFS
 diff --new-file -u -r1.41 topology_exyz.F 
 --- topology_exyz.F	1969-12-31 19:00:00.000000000 -0500
 +++ topology_exyz.F	2010-08-12 17:12:19.000000000 -0400
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,241 @@
 +MODULE topology_exyz
 +  USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
 +                                             cp_print_key_unit_nr
@@ -138,8 +138,9 @@ diff --new-file -u -r1.41 topology_exyz.F
 +                                             zero,&
 +                                             concat,&
 +                                             assign_pointer,&
-+                                             initialise,&
-+                                             read,a2s
++                                             initialise,finalise,&
++                                             read,a2s,&
++					     system_initialise,system_finalise,PRINT_SILENT
 +#include "cp_common_uses.h"
 +
 +  IMPLICIT NONE
@@ -189,6 +190,7 @@ diff --new-file -u -r1.41 topology_exyz.F
 +    CALL parser_create(parser,topology%coord_file_name, para_env=para_env, &
 +                       parse_white_lines=.TRUE.,error=error)
 +
++    call system_initialise(verbosity=PRINT_SILENT)
 +    call initialise(es)
 +
 +    natom = 0
@@ -336,6 +338,9 @@ diff --new-file -u -r1.41 topology_exyz.F
 +
 +    END DO Frames
 +    CALL parser_release(parser,error=error)
++
++    call finalise(es)
++    call system_finalise()
 +
 +    topology%natoms            = natom
 +    topology%molname_generated = .TRUE.
