@@ -1,6 +1,6 @@
 #!/bin/csh
-#PBS -o benchmark.MULTIPOLE_RCUT_35.stdout
-#PBS -e benchmark.MULTIPOLE_RCUT_35.stderr
+#PBS -o benchmark.qmmm_big.stdout
+#PBS -e benchmark.qmmm_big.stderr
 #PBS -l select=4:mpiprocs=8:ncpus=8
 #PBS -l place=scatter
 #PBS -l walltime=00:05:00
@@ -29,8 +29,8 @@ cd $WORK_DIR
 
 cp $startdir/$EXECUTABLE .
 
-set RSUFFIX=".more_timing.19"
-set ISUFFIX=".MULTIPOLE_RCUT_35"
+set RSUFFIX=".bench"
+set ISUFFIX=""
 set OSUFFIX="${ISUFFIX}${RSUFFIX}"
 set INFILE=cp2k_input.inp${ISUFFIX}
 
