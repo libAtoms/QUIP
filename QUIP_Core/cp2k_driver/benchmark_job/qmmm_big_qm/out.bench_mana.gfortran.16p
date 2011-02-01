@@ -1,0 +1,533 @@
+
+  **** **** ******  **  PROGRAM STARTED AT               2011-02-01 08:14:23.990
+ ***** ** ***  *** **   PROGRAM STARTED ON                            m0001.mana
+ **    ****   ******    PROGRAM STARTED BY                              bernstei
+ ***** **    ** ** **   PROGRAM PROCESS ID                                 24248
+  **** **  *******  **  PROGRAM STARTED IN /mnt/cfs/scratch/bernstei/356132.madm
+                                           2
+
+ CP2K| version string:                CP2K version 2.2.120 (Development Version)
+ CP2K| is freely available from                          http://cp2k.berlios.de/
+ CP2K| Program compiled at                          Tue Feb  1 06:49:25 HST 2011
+ CP2K| Program compiled on                                          mlogin1.mana
+ CP2K| Program compiled for                           Linux-x86-64-gfortran-mana
+ CP2K| Last CVS entry                  topology.F/1.147/Tue Feb  1 16:39:41 2011
+ CP2K| Input file name                                            cp2k_input.inp
+
+ GLOBAL| Force Environment number                                              1
+ GLOBAL| Basis set file name                                           BASIS_SET
+ GLOBAL| Geminal file name                                         BASIS_GEMINAL
+ GLOBAL| Potential file name                                           POTENTIAL
+ GLOBAL| MM Potential file name                                     MM_POTENTIAL
+ GLOBAL| Coordinate file name                                      quip_cp2k.xyz
+ GLOBAL| Method name                                                        CP2K
+ GLOBAL| Project name                                                       quip
+ GLOBAL| Preferred FFT library                                             FFTW3
+ GLOBAL| Run type                                                             MD
+ GLOBAL| All-to-all communication in single precision                          F
+ GLOBAL| FFTs using library dependent lengths                                  F
+ GLOBAL| Global print level                                                  LOW
+ GLOBAL| Total number of message passing processes                            16
+ GLOBAL| Number of threads for this process                                    1
+ GLOBAL| This output is from process                                           0
+
+ MEMORY| system memory details [Kb]
+ MEMORY|                        rank 0           min           max       average
+ MEMORY| MemTotal             24675552      24675552      24675552      24675552
+ MEMORY| MemFree              22711728      22126032      22711792      22418877
+ MEMORY| Buffers                 99836         99836        427208        263522
+ MEMORY| Cached                 994016        994016       1207220       1100618
+ MEMORY| Slab                   258876        258876        316488        287682
+ MEMORY| SReclaimable                0             0             0             0
+ MEMORY| MemLikelyFree        23805580      23760460      23805644      23783017
+
+
+
+                      ************* ******** ***********   
+                     ************* **********************  
+                     ****     **** ****      ***********   
+                     ******** ****  *******     ****       
+                     *******  ****   *******   ****        
+                     ****     ****       ****  ****        
+                     ****     **** **********  ****        
+                      ****     **** ********    ****       
+                     FRONTIERS IN SIMULATION TECHNOLOGY    
+                                                           
+                        C.J. Mundy, S. Balasubramanian,    
+                     Ken Bagchi, J. Hutter, Ari Seitsonen  
+                      IFW Kuo, T. Laino, J. VandeVondele   
+                                 Version 1.0               
+
+                                                           
+
+
+ EWALD| Summation is done by:                                               SPME
+ EWALD| Alpha parameter [       ANGSTROM^-1]                              0.3500
+ EWALD| Real Space Cutoff [          ANGSTROM]                            9.6398
+ EWALD| G-space max. Miller index                         41        41        41
+ EWALD| Spline interpolation order                                             6
+
+ *** 08:14:28 WARNING in force_fields_all:force_field_pack_bond Multiple    ***
+ *** Bond declarations: ( CCL , CL ) overwriting!                           ***
+ *** /mnt/home/bernstei/src/work/CP2K/cp2k_cvs/cp2k/makefiles/../src/force_ ***
+ *** ields_all.F line   3368                                                ***
+
+
+ FORCEFIELD| WARNING: A non Critical ForceField parameter is missing! CP2K GOES!
+ FORCEFIELD| Non critical parameters are:Urey-Bradley,Torsions,Impropers, Opbends and 1-4
+ FORCEFIELD| All missing parameters will not contribute to the potential energy!
+ FORCEFIELD| Activate the print key FF_INFO to have a list of missing parameters
+
+ CHARGE_INFO| Total Charge of the Classical System:                     0.000000
+ SPLINE_INFO| Generating: 36 splines due to 8 different atomic kinds
+ ...3
+ ...6
+ ...9
+ ...12
+ ...15
+ ...18
+ ...21
+ ...24
+ ...27
+ ...30
+ ...33
+ ...36
+
+ SPLINE_INFO| Number of unique splines computed:     10
+ SPLINE_INFO| Done
+
+ *** 08:14:28 WARNING in force_fields_all:force_field_pack_nonbond          ***
+ *** Multiple NONBONDED declaration: CLA and CCL OVERWRITING!               ***
+ *** /mnt/home/bernstei/src/work/CP2K/cp2k_cvs/cp2k/makefiles/../src/force_ ***
+ *** ields_all.F line   3052                                                ***
+
+
+ *** 08:14:28 WARNING in force_fields_all:force_field_pack_nonbond          ***
+ *** Multiple NONBONDED declaration: CCL and CL OVERWRITING!                ***
+ *** /mnt/home/bernstei/src/work/CP2K/cp2k_cvs/cp2k/makefiles/../src/force_ ***
+ *** ields_all.F line   3052                                                ***
+
+ SPLINE_INFO| Generating: 36 splines due to 8 different atomic kinds
+ ...3
+ ...6
+ ...9
+ ...12
+ ...15
+ ...18
+ ...21
+ ...24
+ ...27
+ ...30
+ ...33
+ ...36
+
+ SPLINE_INFO| Number of unique splines computed:     10
+ SPLINE_INFO| Done
+ GENERATE|  Preliminary Number of Bends generated:                             0
+ GENERATE|  Number of Bends generated:                                         0
+ GENERATE|  Number of UB generated:                                            0
+ GENERATE|  Preliminary Number of Torsions generated:                          0
+ GENERATE|  Number of Torsions generated:                                      0
+ GENERATE|  Number of Impropers generated:                                     0
+ GENERATE|  Number of 1-4 interactions generated:                              0
+
+ *******************************************************************************
+ *******************************************************************************
+ **                                                                           **
+ **     #####                         ##              ##                      **
+ **    ##   ##            ##          ##              ##                      **
+ **   ##     ##                       ##            ######                    **
+ **   ##     ##  ##   ##  ##   #####  ##  ##   ####   ##    #####    #####    **
+ **   ##     ##  ##   ##  ##  ##      ## ##   ##      ##   ##   ##  ##   ##   **
+ **   ##  ## ##  ##   ##  ##  ##      ####     ###    ##   ######   ######    **
+ **    ##  ###   ##   ##  ##  ##      ## ##      ##   ##   ##       ##        **
+ **     #######   #####   ##   #####  ##  ##  ####    ##    #####   ##        **
+ **           ##                                                    ##        **
+ **                                                                           **
+ **                                                ... make the atoms dance   **
+ **                                                                           **
+ **            Copyright (C) by CP2K Developers Group (2000 - 2011)           **
+ **                                                                           **
+ *******************************************************************************
+
+
+ SCF PARAMETERS         Density guess:                                   RESTART
+                        --------------------------------------------------------
+                        max_scf:                                             200
+                        max_scf_history:                                       0
+                        max_diis:                                              4
+                        --------------------------------------------------------
+                        eps_scf:                                        1.00E-06
+                        eps_scf_history:                                0.00E+00
+                        eps_diis:                                       1.00E-01
+                        eps_eigval:                                     1.00E-05
+                        --------------------------------------------------------
+                        level_shift [a.u.]:                                 0.00
+                        --------------------------------------------------------
+                        Outer loop SCF in use 
+                        No variables optimised in outer loop
+                        eps_scf                                         1.00E-06
+                        max_scf                                              200
+                        No outer loop optimization
+                        step_size                                       5.00E-01
+
+ *******************************************************************************
+ *******************************************************************************
+ **                                                                           **
+ **             #######  ##     ## ##     ## ##     ##                        **
+ **            ##     ## ###   ### ###   ### ###   ###                        **
+ **            ##     ## #### #### #### #### #### ####                        **
+ **            ##     ## ## ### ## ## ### ## ## ### ##                        **
+ **            ##  ## ## ##     ## ##     ## ##     ##                        **
+ **            ##    ##  ##     ## ##     ## ##     ##  T.Laino and F.Mohamed **
+ **             ##### ## ##     ## ##     ## ##     ##  2005-2011             **
+ **                                                                           **
+ **                                                     Calculation Started.. **
+ *******************************************************************************
+ *******************************************************************************
+
+ MD| Molecular Dynamics Protocol 
+ MD| Ensemble Type                                                           NVE
+ MD| Number of Time Steps                                                      0
+ MD| Time Step [fs]                                                         0.50
+ MD| Temperature [K]                                                      300.00
+ MD| Temperature tolerance [K]                                              0.00
+ MD| Print MD information every                                        1 step(s)
+ MD| File type     Print frequency[steps]                             File names
+ MD| Coordinates            1                                     quip-pos-1.xyz
+ MD| Velocities             1                                     quip-vel-1.xyz
+ MD| Energies               1                                        quip-1.ener
+ MD| Dump                  20                                     quip-1.restart
+
+ ROT| Rotational Analysis Info 
+ ROT| Principal axes and moments of inertia in atomic units:
+ ROT|                                  1              2              3
+ ROT| EIGENVALUES               ************   ************   ************
+ ROT|      X                       -0.996810      -0.018219      -0.077710
+ ROT|      Y                        0.043191      -0.941863      -0.333210
+ ROT|      Z                        0.067122       0.335503      -0.939645
+ ROT| Numer of Rotovibrational vectors:     6
+
+ Calculation of degrees of freedom
+                                                      Number of atoms:      5100
+                                 Number of Intramolecular constraints:         0
+                                 Number of Intermolecular constraints:         0
+                                  Invariants(translation + rotations):         3
+                                                   Degrees of freedom:     15297
+
+
+ Restraints Information
+                                  Number of Intramolecular restraints:         0
+                                  Number of Intermolecular restraints:         0
+ ************************** Velocities initialization **************************
+ Initial Temperature                                                    300.00 K
+ COM velocity:            0.000000000000      0.000000000000     -0.000000000000
+ *******************************************************************************
+
+
+  Translating the system in order to center the QM fragment in the QM box.
+
+ ENERGY| Total FORCE_EVAL ( FIST ) energy (a.u.):            -23.869860966208734
+
+
+ Number of electrons:                                                        982
+ Number of occupied orbitals:                                                491
+ Number of molecular orbitals:                                               491
+
+ Number of orbital functions:                                               2814
+ Number of independent orbital functions:                                   2814
+
+ Extrapolation method: initial_guess
+
+
+ SCF WAVEFUNCTION OPTIMIZATION
+
+  ----------------------------------- OT ---------------------------------------
+
+  Allowing for rotations:  F
+  Optimizing orbital energies:  F
+  Minimizer      : CG                  : conjugate gradient
+  Preconditioner : FULL_ALL            : diagonalization, state selective
+  Precond_solver : DEFAULT
+  Line search    : 2PNT                : 2 energies, one gradient
+  stepsize       :    0.15000000
+  energy_gap     :    0.20000000
+
+  eps_taylor     :   0.10000E-15
+  max_taylor     :             4
+
+  mixed_precision    : F
+
+  ----------------------------------- OT ---------------------------------------
+
+  Step     Update method      Time    Convergence         Total energy    Change
+  ------------------------------------------------------------------------------
+  Decoupling Energy:                                              -0.0072507829
+  Recoupling Energy:                                              -0.0101102641
+     1 OT CG       0.15E+00    7.5     0.00022784     -2088.1085110323 -2.09E+03
+  Decoupling Energy:                                              -0.0072535070
+  Recoupling Energy:                                              -0.0101061283
+     2 OT LS       0.18E+00    2.1                    -2088.1147707265
+  Decoupling Energy:                                              -0.0072541115
+  Recoupling Energy:                                              -0.0101052954
+     3 OT CG       0.18E+00    4.1     0.00012051     -2088.1149426296 -6.43E-03
+  Decoupling Energy:                                              -0.0072778220
+  Recoupling Energy:                                              -0.0101086780
+     4 OT LS       0.11E+00    2.1                    -2088.1156767117
+  Decoupling Energy:                                              -0.0072689992
+  Recoupling Energy:                                              -0.0101074286
+     5 OT CG       0.11E+00    4.1     0.00001737     -2088.1160725642 -1.13E-03
+  Decoupling Energy:                                              -0.0072700657
+  Recoupling Energy:                                              -0.0101067278
+     6 OT LS       0.14E+00    2.1                    -2088.1161000120
+  Decoupling Energy:                                              -0.0072702822
+  Recoupling Energy:                                              -0.0101065854
+     7 OT CG       0.14E+00    4.1     0.00000645     -2088.1161008180 -2.83E-05
+  Decoupling Energy:                                              -0.0072673444
+  Recoupling Energy:                                              -0.0101064275
+     8 OT LS       0.11E+00    2.1                    -2088.1161038011
+  Decoupling Energy:                                              -0.0072679020
+  Recoupling Energy:                                              -0.0101064575
+     9 OT CG       0.11E+00    4.1     0.00000129     -2088.1161039742 -3.16E-06
+  Decoupling Energy:                                              -0.0072679017
+  Recoupling Energy:                                              -0.0101064880
+    10 OT LS       0.15E+00    2.1                    -2088.1161041367
+  Decoupling Energy:                                              -0.0072679015
+  Recoupling Energy:                                              -0.0101065003
+    11 OT CG       0.15E+00    4.1     0.00000053     -2088.1161041513 -1.77E-07
+
+  *** SCF run converged in    11 steps ***
+
+
+  Electronic density on regular grids:       -982.0000000742       -0.0000000742
+  Core density on regular grids:              980.9999999973       -0.0000000027
+  Total charge density on r-space grids:       -1.0000000769
+  Total charge density g-space grids:          -1.0000000769
+
+  Overlap energy of the core charge distribution:               0.00000598862962
+  Self energy of the core charge distribution:              -5429.88389224356160
+  Core Hamiltonian energy:                                   1580.07340489196508
+  Hartree energy:                                            2263.19742693199487
+  Exchange-correlation energy:                               -511.58811799254147
+  QM/MM Electrostatic energy:                                      10.0850682722
+
+  Total energy:                                             -2088.11610415134010
+
+  outer SCF iter =    1 RMS gradient =   0.53E-06 energy =      -2088.1161041513
+  outer SCF loop converged in   1 iterations or   11 steps
+
+  Decoupling Energy:                                              -0.0072678382
+  Recoupling Energy:                                              -0.0101066108
+
+ ENERGY| Total FORCE_EVAL ( QS ) energy (a.u.):            -2088.116104168627771
+
+
+ ENERGY| Total FORCE_EVAL ( QMMM ) energy (a.u.):          -2123.874311377089725
+
+
+ MD_ENERGIES| Initialization proceeding
+
+
+ ******************************** GO CP2K GO! **********************************
+ INITIAL POTENTIAL ENERGY[hartree]     =                     -0.212387431138E+04
+ TOTAL INITIAL KINETIC ENERGY[hartree] =                      0.726641614594E+01
+ QM INITIAL KINETIC ENERGY[hartree]    =                      0.500261025560E+00
+ TOTAL INITIAL TEMPERATURE[K]          =                                 300.000
+ QM INITIAL TEMPERATURE[K]             =                                 287.741
+ INITIAL VOLUME[bohr^3]                =                      0.332768560298E+06
+ INITIAL CELL LNTHS[bohr]   =      0.7486906E+02   0.6683394E+02   0.6650324E+02
+ INITIAL CELL ANGLS[deg]    =      0.9000000E+02   0.9000000E+02   0.9000000E+02
+ ******************************** GO CP2K GO! **********************************
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                         MESSAGE PASSING PERFORMANCE                         -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+
+ ROUTINE             CALLS  TOT TIME [s]  AVE VOLUME [Bytes]  PERFORMANCE [MB/s]
+ MP_Group                7         0.000
+ MP_Bcast              777         0.300            1985741.             5143.07
+ MP_Allreduce          338         3.688             946631.               86.76
+ MP_Gather               4         0.000                320.                0.00
+ MP_Sync                 8         0.000
+ MP_Alltoall           136         2.197           22889494.             1416.92
+ MP_SendRecv           152         1.070             589824.               83.79
+ MP_ISendRecv          570         0.003              82944.            15759.36
+ MP_Wait              1583         1.201
+ MP_comm_split           2         0.001
+ MP_ISend              881         0.110             963753.             7718.78
+ MP_IRecv              880         0.032             964993.            26537.30
+ MP_Recv                15         0.003             720384.             3601.92
+ -------------------------------------------------------------------------------
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                           R E F E R E N C E S                               -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ 
+ CP2K version 2.2.120 (Development Version), the CP2K developers group (2011).
+ CP2K is freely available from http://cp2k.berlios.de/ .
+
+ Laino, T; Mohamed, F; Laio, A; Parrinello, M. 
+ JOURNAL OF CHEMICAL THEORY AND COMPUTATION, 2 (5), 1370-1378 (2006). 
+ An efficient linear-scaling electrostatic coupling for treating
+ periodic boundary conditions in QM/MM simulations.
+ http://dx.doi.org/10.1021/ct6001169
+
+
+ Laino, T; Mohamed, F; Laio, A; Parrinello, M. 
+ JOURNAL OF CHEMICAL THEORY AND COMPUTATION, 1 (6), 1176-1184 (2005). 
+ An efficient real space multigrid OM/MM electrostatic coupling.
+ http://dx.doi.org/10.1021/ct050123f
+
+
+ Krack, M. 
+ THEORETICAL CHEMISTRY ACCOUNTS, 114 (1-3), 145-152 (2005). 
+ Pseudopotentials for H to Kr optimized for gradient-corrected
+ exchange-correlation functionals.
+ http://dx.doi.org/10.1007/s00214-005-0655-y
+
+
+ VandeVondele, J; Krack, M; Mohamed, F; Parrinello, M; Chassaing, T;
+ Hutter, J. COMPUTER PHYSICS COMMUNICATIONS, 167 (2), 103-128 (2005). 
+ QUICKSTEP: Fast and accurate density functional calculations using a
+ mixed Gaussian and plane waves approach.
+ http://dx.doi.org/10.1016/j.cpc.2004.12.014
+
+
+ Frigo, M; Johnson, SG. 
+ PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
+ The design and implementation of FFTW3.
+ http://dx.doi.org/10.1109/JPROC.2004.840301
+
+
+ VandeVondele, J; Hutter, J. 
+ JOURNAL OF CHEMICAL PHYSICS, 118 (10), 4365-4369 (2003). 
+ An efficient orbital transformation method for electronic structure
+ calculations.
+ http://dx.doi.org/10.1063/1.1543154
+
+
+ Hartwigsen, C; Goedecker, S; Hutter, J. 
+ PHYSICAL REVIEW B, 58 (7), 3641-3662 (1998). 
+ Relativistic separable dual-space Gaussian pseudopotentials from H to Rn.
+ http://dx.doi.org/10.1103/PhysRevB.58.3641
+
+
+ Lippert, G; Hutter, J; Parrinello, M. 
+ MOLECULAR PHYSICS, 92 (3), 477-487 (1997). 
+ A hybrid Gaussian and plane wave density functional scheme.
+ http://dx.doi.org/10.1080/002689797170220
+
+
+ Goedecker, S; Teter, M; Hutter, J. 
+ PHYSICAL REVIEW B, 54 (3), 1703-1710 (1996). 
+ Separable dual-space Gaussian pseudopotentials.
+ http://dx.doi.org/10.1103/PhysRevB.54.1703
+
+
+ ESSMANN, U; PERERA, L; BERKOWITZ, ML; DARDEN, T; LEE, H; PEDERSEN, LG. 
+ JOURNAL OF CHEMICAL PHYSICS, 103 (19), 8577-8593 (1995). 
+ A SMOOTH PARTICLE MESH EWALD METHOD.
+ http://dx.doi.org/10.1063/1.470117
+
+
+ BLOCHL, PE. 
+ JOURNAL OF CHEMICAL PHYSICS, 103 (17), 7422-7428 (1995). 
+ ELECTROSTATIC DECOUPLING OF PERIODIC IMAGES OF PLANE-WAVE-EXPANDED
+ DENSITIES AND DERIVED ATOMIC POINT CHARGES.
+ http://dx.doi.org/10.1063/1.470314
+
+
+ BECKE, AD. PHYSICAL REVIEW A, 38 (6), 3098-3100 (1988). 
+ DENSITY-FUNCTIONAL EXCHANGE-ENERGY APPROXIMATION WITH CORRECT
+ ASYMPTOTIC-BEHAVIOR.
+ http://dx.doi.org/10.1103/PhysRevA.38.3098
+
+
+ LEE, CT; YANG, WT; PARR, RG. 
+ PHYSICAL REVIEW B, 37 (2), 785-789 (1988). 
+ DEVELOPMENT OF THE COLLE-SALVETTI CORRELATION-ENERGY FORMULA INTO A
+ FUNCTIONAL OF THE ELECTRON-DENSITY.
+ http://dx.doi.org/10.1103/PhysRevB.37.785
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                                T I M I N G                                  -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ SUBROUTINE                       CALLS  ASD         SELF TIME        TOTAL TIME
+                                              AVERAGE  MAXIMUM  AVERAGE  MAXIMUM
+ CP2K                                 1  1.0    0.122    0.131  104.924  104.930
+ qs_mol_dyn_low                       1  2.0    0.030    0.035  102.105  102.164
+ qs_forces                            1  3.0    0.010    0.013   62.440   62.440
+ qs_energies_scf                      1  4.0    0.004    0.005   46.576   46.578
+ scf_env_do_scf                       1  5.0    0.000    0.001   39.810   39.811
+ qs_ks_build_kohn_sham_matrix        12  7.8    0.054    0.058   33.204   33.225
+ scf_env_do_scf_inner_loop           11  6.0    0.001    0.003   33.092   33.108
+ qmmm_forces                          1  3.0    0.101    0.218   22.465   22.466
+ qmmm_forces_with_gaussian            1  4.0    0.646    0.649   22.121   22.207
+ qs_ks_update_qs_env                 12  7.0    0.000    0.001   17.587   17.607
+ qs_ks_ddapc                         12  8.8    0.003    0.003   16.788   16.795
+ qmmm_el_coupling                     1  3.0    0.000    0.001   16.560   16.695
+ qmmm_elec_with_gaussian              1  4.0    0.803    0.904   16.557   16.690
+ qmmm_force_with_gaussian_low         1  5.0    0.000    0.000   16.034   16.073
+ qs_ks_update_qs_env_forces           1  4.0    0.000    0.000   15.622   15.626
+ cp_ddapc_apply_CD                   12  9.8    0.963    1.250   15.106   15.108
+ calculate_rho_elec                  12  8.0    3.362    5.920   13.509   13.519
+ qs_rho_update_rho                   12  7.0    0.000    0.001   13.509   13.519
+ get_ddapc                           12 10.8    0.004    0.007   12.619   13.275
+ qmmm_forces_gaussian_low_G           1  6.0   13.107   13.147   13.107   13.147
+ get_ddapc-forces                     1  9.0    0.039    0.041   11.933   12.590
+ get_ddapc-for-2                    366 10.0    0.003    0.007   11.574   12.227
+ build_der_A_matrix                 366 11.0   11.511   12.161   11.511   12.161
+ qmmm_elec_with_gaussian_low          1  5.0    0.000    0.000   11.232   11.341
+ density_rs2pw                       12  9.0    0.022    0.027    9.793   11.341
+ qmmm_elec_gaussian_low_G             1  6.0    9.716    9.822    9.716    9.822
+ fft_wrap_pw1pw2                    101  9.8    0.002    0.005    9.520    9.529
+ fft_wrap_pw1pw2_140                 40 10.8    0.689    0.698    9.001    9.016
+ fft3d_ps                           101 11.8    4.199    4.256    7.551    7.566
+ cp_dbcsr_multiply_d                191 10.8    0.001    0.002    7.150    7.188
+ qs_vxc_create                       12  8.8    0.001    0.002    7.131    7.132
+ integrate_v_rspace                   7  8.6    2.412    4.265    7.049    7.055
+ init_scf_loop                        1  6.0    0.001    0.002    6.695    6.696
+ rs_pw_transfer                      82  9.9    0.002    0.003    5.029    6.571
+ xc_rho_set_and_dset_create          12 10.8    0.795    0.872    5.014    5.603
+ qs_scf_loop_do_ot                   11  7.0    0.000    0.000    5.421    5.459
+ pw_restrict_s3                       3  5.0    4.204    4.249    5.370    5.426
+ rs_pw_transfer_RS2PW_140            13 10.8    3.445    4.985    3.445    4.985
+ xc_vxc_pw_create                     7  9.6    0.198    0.203    4.720    4.721
+ ot_scf_mini                         11  8.0    0.002    0.003    4.670    4.692
+ qmmm_elec_with_gaussian:spline3      1  5.0    0.001    0.001    4.451    4.583
+ pw_prolongate_s3                     3  6.0    3.444    3.503    4.450    4.582
+ pw_nn_compose_r                    108  9.1    3.879    4.465    3.879    4.465
+ make_preconditioner                  1  7.0    0.000    0.001    3.913    3.914
+ cp_dbcsr_mult_NS_NR                 31 10.7    3.679    3.746    3.679    3.746
+ make_full_all                        1  8.0    0.003    0.005    3.611    3.616
+ init_scf_run                         1  5.0    0.000    0.000    3.333    3.334
+ scf_env_initial_rho_setup            1  6.0    0.002    0.002    3.328    3.328
+ qs_env_update_s_mstruct              1  5.0    0.000    0.001    3.181    3.182
+ distribute_matrix                   20  9.1    2.044    3.119    2.081    3.138
+ qmmm_forces_gaussian_low_R           1  6.0    0.000    0.000    2.927    2.934
+ qmmm_forces_with_gaussian_LG         1  7.0    2.927    2.934    2.927    2.934
+ cp_ddapc_init                        1  6.0    0.001    0.001    2.748    2.750
+ cp_ddapc_create                      1  7.0    0.009    0.011    2.747    2.749
+ potential_pw2rs                      7  9.6    0.003    0.005    2.698    2.705
+ qmmm_create_force_env                1  2.0    0.059    0.064    2.672    2.676
+ ot_mini                             11  9.0    0.004    0.005    2.507    2.531
+ xc_exc_calc                          5 10.0    0.289    0.747    2.409    2.410
+ ddapc_eval_AmI                       1  8.0    0.570    0.603    2.303    2.307
+ xc_functional_eval                  24 11.8    0.001    0.003    1.719    2.230
+ calculate_first_density_matrix       1  7.0    0.273    1.797    2.185    2.187
+ -------------------------------------------------------------------------------
+
+  **** **** ******  **  PROGRAM ENDED AT                 2011-02-01 08:16:12.335
+ ***** ** ***  *** **   PROGRAM RAN ON                                m0001.mana
+ **    ****   ******    PROGRAM RAN BY                                  bernstei
+ ***** **    ** ** **   PROGRAM PROCESS ID                                 24248
+  **** **  *******  **  PROGRAM STOPPED IN /mnt/cfs/scratch/bernstei/356132.madm
+                                           2
