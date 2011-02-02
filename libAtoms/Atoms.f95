@@ -1400,8 +1400,12 @@ contains
 
           end select
        end do
-       call atoms_repoint(this)
     endif
+
+    ! We need to repoint even if the buffers are not reallocated. Otherwise
+    ! ifort will complain the array sizes are too small if compiled with
+    ! -check bounds
+    call atoms_repoint(this)
 
     this%Nbuffer = max(this%N, this%Nbuffer)
 
