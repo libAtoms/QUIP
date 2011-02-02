@@ -694,6 +694,9 @@ call print("MAIN CALLED CALC EVB")
      call ds_print_status(ds, 'E',energy)
      if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'E')
      call print(ds%thermostat)
+
+    call set_value(ds%atoms%params,'Time',ds%t)
+
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
         do i=1,ds%Nconstraints
@@ -712,11 +715,11 @@ call print("MAIN CALLED CALC EVB")
 	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
 	   endif
         enddo
+        call print_cv(ds,Time_Step,.true.)
      endif
 
   !PRINTING
      !----------------------------------------------------
-    call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
         call write(ds%atoms,traj_xyz,real_format='%17.10f', error=error)
 	HANDLE_ERROR(error)
@@ -884,6 +887,7 @@ call print("MAIN CALLED CALC EVB")
 	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
 	   endif
         enddo
+        call print_cv(ds,Time_Step,.false.)
      endif
 
      !XYZ
@@ -1710,6 +1714,33 @@ contains
         restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
      end do
    end subroutine get_restraint_stuff
+
+   !% print coord, velo and force of constraint atoms in a cv file
+   subroutine print_cv(ds,time_step,first)
+     type(dynamicalsystem), intent(in) :: ds
+     real(dp), intent(in) :: time_step
+     logical, intent(in) :: first
+     real(dp), pointer :: v(:,:),f(:,:)
+     character(len=FIELD_LENGTH) :: output_line
+     integer :: i,j
+     nullify(v)
+     if (.not. assign_pointer(ds%atoms, 'velo', v)) call system_abort("Could not find velo property.")
+     nullify(f)
+     if (.not. assign_pointer(ds%atoms, 'frc', f)) then
+        if (.not. assign_pointer(ds%atoms, 'force', f)) call system_abort("Could not find frc or force property.")
+     endif
+     do j=1,ds%Nconstraints
+        if (first) call print("CV"//j//"| "//"# Step Nr.   Time[fs]  Atom Nr.  Pos_x[A]     Pos_y[A]     Pos_z[A]    Vel_x[A/fs]  Vel_y[A/fs]  Vel_z[A/fs]  Frc_x[eV/A]  Frc_y[eV/A]  Frc_z[eV/A]")
+        do i=1,ds%constraint(j)%N
+           write (output_line,FMT="(I8,F13.3,I8,9F13.8)") &
+               nint(ds%t/time_step), ds%t, ds%constraint(j)%atom(i), &
+               ds%atoms%pos(1:3,ds%constraint(j)%atom(i)), &
+               (v(1:3,ds%constraint(j)%atom(i))), &
+               (f(1:3,ds%constraint(j)%atom(i)))
+           call print("CV"//j//"| "//trim(output_line))
+        enddo
+     enddo
+   end subroutine print_cv
 
   subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, first_time, qm_seed)
     type(Atoms), intent(inout) :: ds_atoms
