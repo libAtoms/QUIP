@@ -1,15 +1,15 @@
 Index: cp_ddapc_forces.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_forces.F,v
-retrieving revision 1.32
-diff -u -r1.32 cp_ddapc_forces.F
---- cp_ddapc_forces.F	3 Jan 2010 23:41:26 -0000	1.32
-+++ cp_ddapc_forces.F	28 Jan 2011 22:17:13 -0000
+retrieving revision 1.33
+diff -u -r1.33 cp_ddapc_forces.F
+--- cp_ddapc_forces.F	31 Dec 2010 16:03:49 -0000	1.33
++++ cp_ddapc_forces.F	2 Feb 2011 18:29:52 -0000
 @@ -38,6 +38,8 @@
                                               legendre
    USE timings,                         ONLY: timeset,&
                                               timestop
-+  !! NB parallelization
++  !NB for reducing results of calculations that use dq, which is now spread over nodes
 +  USE message_passing,                 ONLY: mp_sum
  #include "cp_common_uses.h"
  
@@ -18,7 +18,7 @@ diff -u -r1.32 cp_ddapc_forces.F
         fvec   = twopi / (/cell%hmat(1,1),cell%hmat(2,2),cell%hmat(3,3)/)
         !
         DO iparticle1 = 1, SIZE(particle_set)
-+	  !! NB parallelization
++	  !NB parallelization
 +	  if (mod(iparticle1, qs_env%para_env%num_pe) /= qs_env%para_env%mepos) cycle
            ip1 = (iparticle1-1)*SIZE(radii)
            q1t   = SUM(charges(ip1+1:ip1+SIZE(radii)))
@@ -31,7 +31,7 @@ diff -u -r1.32 cp_ddapc_forces.F
 -       END DO
 +          END DO ! iparticle2
 +       END DO ! iparticle1
-+       !! NB parallelization
++       !NB parallelization
 +       call mp_sum(d_el, qs_env%para_env%group)
         M => qs_env%cp_ddapc_env%Md
         IF (apply_qmmm_periodic) M => qs_env%cp_ddapc_env%Mr
@@ -40,7 +40,7 @@ diff -u -r1.32 cp_ddapc_forces.F
               chf(j,k) =  DOT_PRODUCT(uv,dq(:,k,j))
            END DO
         END DO
-+       !18
++       !NB now that get_ddapc returns dq that's spread over nodes, must reduce chf here
 +       CALL mp_sum(chf, qs_env%para_env%group)
         DO iatom=1,natom
            ikind = kind_of(iatom)
@@ -49,7 +49,7 @@ diff -u -r1.32 cp_ddapc_forces.F
               chf(j,k) =  DOT_PRODUCT(uv,dq(:,k,j))
            END DO
         END DO
-+       !18
++       !NB now that get_ddapc returns dq that's spread over nodes, must reduce chf here
 +       CALL mp_sum(chf, qs_env%para_env%group)
         DO iatom=1,natom
            ikind = kind_of(iatom)
@@ -57,15 +57,16 @@ diff -u -r1.32 cp_ddapc_forces.F
 Index: cp_ddapc_types.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_types.F,v
-retrieving revision 1.35
-diff -u -r1.35 cp_ddapc_types.F
---- cp_ddapc_types.F	3 Jan 2010 23:41:26 -0000	1.35
-+++ cp_ddapc_types.F	27 Jan 2011 20:19:29 -0000
-@@ -79,9 +79,10 @@
+retrieving revision 1.36
+diff -u -r1.36 cp_ddapc_types.F
+--- cp_ddapc_types.F	31 Dec 2010 16:03:49 -0000	1.36
++++ cp_ddapc_types.F	2 Feb 2011 18:29:52 -0000
+@@ -79,9 +79,11 @@
  ! *****************************************************************************
  !> \author Tedoro Laino
  ! *****************************************************************************
 -  SUBROUTINE cp_ddapc_create(cp_ddapc_env, cp_ddapc_ewald, &
++  !NB receive cp_para_env to pass down to parallelized ewald_ddapc_pot()
 +  SUBROUTINE cp_ddapc_create(cp_para_env, cp_ddapc_env, cp_ddapc_ewald, &
         particle_set, radii, cell, super_cell, rho_tot_g, gcut, iw2, Vol,  &
         force_env_section, error)
@@ -73,20 +74,22 @@ diff -u -r1.35 cp_ddapc_types.F
      TYPE(cp_ddapc_type), POINTER             :: cp_ddapc_env
      TYPE(cp_ddapc_ewald_type), POINTER       :: cp_ddapc_ewald
      TYPE(particle_type), DIMENSION(:), &
-@@ -136,7 +137,7 @@
+@@ -136,7 +138,8 @@
            ! Evaluate the matrix for the Classical contribution to the coupling/decoupling scheme
            !
            param_section => cp_ddapc_ewald%ewald_section
 -          CALL ewald_ddapc_pot(cp_ddapc_ewald%coeff_qm,&
++	  !NB parallelized ewald_ddapc_pot() needs cp_para_env
 +          CALL ewald_ddapc_pot(cp_para_env, cp_ddapc_ewald%coeff_qm,&
                                 1.0_dp,&
                                 cell,&
                                 param_section,&
-@@ -151,7 +152,7 @@
+@@ -151,7 +154,8 @@
                  cp_ddapc_env%Mt = cp_ddapc_env%Md
               ELSE
                  ! QMMM periodic calculation
 -                CALL ewald_ddapc_pot(cp_ddapc_ewald%coeff_mm,-1.0_dp, super_cell, param_section,&
++		!NB parallelized ewald_ddapc_pot() needs cp_para_env
 +                CALL ewald_ddapc_pot(cp_para_env, cp_ddapc_ewald%coeff_mm,-1.0_dp, super_cell, param_section,&
                       particle_set, cp_ddapc_env%Mr, radii, error)
                  cp_ddapc_env%Mt = cp_ddapc_env%Md + cp_ddapc_env%Mr
@@ -94,10 +97,10 @@ diff -u -r1.35 cp_ddapc_types.F
 Index: kahan_sum.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/kahan_sum.F,v
-retrieving revision 1.10
-diff -u -r1.10 kahan_sum.F
---- kahan_sum.F	3 Jan 2010 23:41:35 -0000	1.10
-+++ kahan_sum.F	27 Jan 2011 20:19:29 -0000
+retrieving revision 1.11
+diff -u -r1.11 kahan_sum.F
+--- kahan_sum.F	31 Dec 2010 16:03:55 -0000	1.11
++++ kahan_sum.F	2 Feb 2011 18:29:52 -0000
 @@ -44,7 +44,7 @@
  
    IMPLICIT NONE
@@ -160,11 +163,15 @@ diff -u -r1.10 kahan_sum.F
 Index: cp_ddapc_util.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_util.F,v
-retrieving revision 1.23
-diff -u -r1.23 cp_ddapc_util.F
---- cp_ddapc_util.F	3 Jan 2010 23:41:26 -0000	1.23
-+++ cp_ddapc_util.F	29 Jan 2011 02:14:32 -0000
-@@ -19,6 +19,8 @@
+retrieving revision 1.24
+diff -u -r1.24 cp_ddapc_util.F
+--- cp_ddapc_util.F	31 Dec 2010 16:03:49 -0000	1.24
++++ cp_ddapc_util.F	2 Feb 2011 18:29:52 -0000
+@@ -16,9 +16,12 @@
+   USE cp_control_types,                ONLY: ddapc_restraint_type,&
+                                              dft_control_type
+   USE cp_ddapc_forces,                 ONLY: evaluate_restraint_functional
++  !NB routines to precompute sin(g . r) and cos(g.r), so it doesn't have to be done for each r_i-r_j pair in build_der_A_matrix()
    USE cp_ddapc_methods,                ONLY: build_A_matrix,&
                                               build_b_vector,&
                                               build_der_A_matrix,&
@@ -173,52 +180,41 @@ diff -u -r1.23 cp_ddapc_util.F
                                               build_der_b_vector
    USE cp_ddapc_types,                  ONLY: cp_ddapc_create,&
                                               cp_ddapc_type
-@@ -165,7 +167,8 @@
+@@ -165,7 +168,9 @@
         iw2=cp_print_key_unit_nr(logger,density_fit_section,&
              "PROGRAM_RUN_INFO/CONDITION_NUMBER",".FitCharge",error=error)
         ! Initialization of the cp_ddapc_env and of the cp_ddapc_ewald environment
 -       CALL cp_ddapc_create(qs_env%cp_ddapc_env,&
++       !NB pass qs_env%para_env for parallelization of ewald_ddapc_pot()
 +       CALL cp_ddapc_create(qs_env%para_env,&
 +                            qs_env%cp_ddapc_env,&
                              qs_env%cp_ddapc_ewald,&
                              particle_set,&
                              radii,&
-@@ -217,10 +220,11 @@
-                                                 ii, iparticle, ispin, iw, j, &
-                                                 myid, n_rep_val, ndim, &
-                                                 num_gauss, stat
-+INTEGER :: handlet, handlet2
+@@ -220,7 +225,8 @@
      LOGICAL                                  :: failure, need_f
      REAL(KIND=dp)                            :: c1, c3, c4, ch_dens, gcut, &
                                                  pfact, rcmin, Vol
 -    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: bv, cv, dqv0, qtot, qv
++    !NB refactor math in inner loop - no need for dqv0
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: bv, cv, qtot, qv
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: dbv
      REAL(KIND=dp), ALLOCATABLE, &
-@@ -238,6 +242,13 @@
+@@ -238,6 +244,12 @@
      TYPE(pw_type), POINTER                   :: rho_tot_g
      TYPE(qs_charges_type), POINTER           :: qs_charges
      TYPE(qs_rho_type), POINTER               :: rho
-+    !!NB speed
++    !!NB refactor math in inner loop - new temporaries
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj, dAmj_qv, AmI_bv
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: tv
-+    INTEGER :: pmin, pmax
-+    external dgemv, dgemm
-+    !!
++    INTEGER                                  :: pmin, pmax
++    EXTERNAL dgemv, dgemm
  
      CALL timeset(routineN,handle)
      failure         = .FALSE.
-@@ -388,6 +399,7 @@
-        !
-        IF (need_f) THEN 
-           CALL timeset(routineN//"-forces",handle3)
-+CALL timeset(routineN//"-for-1",handlet)
-           IF (iw>0) THEN
-              WRITE(iw,'(T3,A)')" Evaluating DDAPC atomic derivatives .."
-           END IF
-@@ -395,41 +407,98 @@
+@@ -395,41 +407,78 @@
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            ALLOCATE(dbv(ndim,3), stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -226,7 +222,8 @@ diff -u -r1.23 cp_ddapc_util.F
 -          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
-+	  !!NB speed
+-          !
++	  !NB refactor math in inner loop - no more dqv0, but new temporaries instead
 +	  ALLOCATE(cvT_AmI(ndim), stat=stat)
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +	  ALLOCATE(cvT_AmI_dAmj(ndim), stat=stat)
@@ -242,19 +239,15 @@ diff -u -r1.23 cp_ddapc_util.F
 +	  ALLOCATE(AmI_bv(ndim), stat=stat)
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +	  AmI_bv = MATMUL(cp_ddapc_env%AmI,bv)
-+CALL timestop(handlet)
-+	  !!
-           !
++
++	  !NB call routine to precompute sin(g.r) and cos(g.r), so it doesn't have to be done for each r_i-r_j pair in build_der_A_matrix()
 +	  call prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
            DO iparticle = 1, SIZE(particle_set)
 -             dAm = 0.0_dp
-+CALL timeset(routineN//"-for-2",handlet)
-+             !8 dAm = 0.0_dp
               dbv = 0.0_dp
               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
 -             CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
-+!! NB parallelization            CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
               IF (debug_this_module) THEN
                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
                       gcut, iparticle, Vol, qs_env, error)
@@ -264,17 +257,17 @@ diff -u -r1.23 cp_ddapc_util.F
 -                  particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
 -             CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
 +                  particle_set, radii, rho_tot_g, gcut, iparticle, g_dot_rvec_sin, g_dot_rvec_cos, error); 
-+!8 CALL timeset(routineN//"-for-2.1",handlet2)
-+!8		  dAm = dAm /(Vol*Vol)
-+!8 CALL timestop(handlet2)
-+!! NB parallelization            CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
++	     !NB no more reduction of dbv and dAm - instead we go through with each node's contribution
++	     !NB and reduce resulting charges/forces once, at the end.  Intermediate speedup can be
++	     !NB had by reducing dqv after the inner loop, and then other routines don't need to know
++	     !NB that contributions to dqv are distributed over the nodes.
++	     !NB also get rid of zeroing of dAm and division by Vol**2 - it's slow, and can be done 
++	     !NB more quickly later, to a scalar or vector rather than a matrix
               IF (debug_this_module) THEN
                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
                       gcut, iparticle, Vol, qs_env, error)
                  cp_ddapc_env => qs_env%cp_ddapc_env 
               END IF
-+CALL timestop(handlet)
-+CALL timeset(routineN//"-for-3",handlet)
               DO j = 1, 3
 -                dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
 -                c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
@@ -286,13 +279,7 @@ diff -u -r1.23 cp_ddapc_util.F
 -                     c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
 -             END DO
 -          END DO
-+		!!! dAmj is actually pretty sparse - one block of cols + one block of rows - surely we can use this?
-+		!18 call dgemv('T', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), cvT_AmI, 1, 0.0_dp, cvT_AmI_dAmj, 1)
-+		!!!
-+		!!! call dgemv('N', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), cvT_AmI, 1, 0.0_dp, cvT_AmI_dAmj, 1)
-+		!!!
-+		!18 call dgemv('N', size(dAm,1), size(dAm,2), 1.0_dp/(Vol*Vol), dAm(:,:,j), size(dAm,1), qv, 1, 0.0_dp, dAmj_qv, 1)
-+		!18
++		!NB dAmj is actually pretty sparse - one block of cols + one block of rows - use this here:
 +		pmin = (iparticle-1)*size(radii)+1
 +		pmax = iparticle*size(radii)
 +		if (pmin > 1) then
@@ -307,33 +294,23 @@ diff -u -r1.23 cp_ddapc_util.F
 +		endif
 +		dAmj_qv      = dAmj_qv / (Vol*Vol)
 +		cvT_AmI_dAmj = cvT_AmI_dAmj / (Vol*Vol)
-+		!18
 +		c3 = DOT_PRODUCT(cvT_AmI_dAmj,AmI_bv) - DOT_PRODUCT(cvT_AmI, dbv(:,j)) - c1*DOT_PRODUCT(cvT_AmI_dAmj,AmI_cv)
 +		tv(:,iparticle,j) = -(dAmj_qv + dbv(:,j) + c3/cp_ddapc_env%c0*cv)
-+		!!! transform many dgemv to one dgemm by moving this out of loop by keeping matrix tv(:,iparticle,j), and doing single dgemm outside of loop dqv = AmI . tv
-+		!18 call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI(:,:), size(cp_ddapc_env%AmI,1), tv, 1, 0.0_dp, dqv(:,iparticle,j), 1)
 +             END DO ! j
-+	     !8
++	     !NB zero relevant parts of dAm here
 +	     dAm((iparticle-1)*size(radii)+1:iparticle*size(radii),:,:) = 0.0_dp
 +	     dAm(:,(iparticle-1)*size(radii)+1:iparticle*size(radii),:) = 0.0_dp
-+	     !8
-+CALL timestop(handlet)
 +          END DO ! iparticle
-+CALL timeset(routineN//"-for-3.5",handlet)
-+	  !18
++	  !NB final part of refactoring of math - one dgemm is faster than many dgemv 
 +	  call dgemm('N','N',size(dqv,1),size(dqv,2)*size(dqv,3),size(cp_ddapc_env%AmI,2),1.0_dp,cp_ddapc_env%AmI,size(cp_ddapc_env%AmI,1),tv,size(tv,1),0.0_dp,dqv,size(dqv,1))
-+CALL timestop(handlet)
++	  !NB deallocate g_dot_rvec_sin and g_dot_rvec_cos
 +	  call cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
-+!18 moved reduction out to where dqv is used to compute a force contribution (smaller array to reduce, just size(particle_set) x 3)
-+!18 CALL timeset(routineN//"-for-4",handlet)
-+!18 	  !! NB parallelization
-+!18           CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
-+!18 	  !!
-+!18 CALL timestop(handlet)
++	  !NB moved reduction out to where dqv is used to compute a force contribution (smaller array to reduce, just size(particle_set) x 3)
++	  !NB namely ewald_ddapc_force(), cp_decl_ddapc_forces(), restraint_functional_force()
            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
            IF (.NOT.ASSOCIATED(dq_out)) THEN
               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
-@@ -447,12 +516,22 @@
+@@ -447,12 +496,23 @@
            END IF
            DEALLOCATE(dqv, stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -343,6 +320,7 @@ diff -u -r1.23 cp_ddapc_util.F
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            DEALLOCATE(dbv, stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  !NB deallocate new temporaries
 +          DEALLOCATE(cvT_AmI, stat=stat)
 +          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +          DEALLOCATE(cvT_AmI_dAmj, stat=stat)
@@ -358,15 +336,16 @@ diff -u -r1.23 cp_ddapc_util.F
            CALL timestop(handle3)
         END IF
         !
-@@ -745,6 +824,7 @@
+@@ -745,6 +805,8 @@
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: Am1, Am2, ddAm
      TYPE(cp_ddapc_type), POINTER             :: cp_ddapc_env
++    !NB new temporaries sin(g.r) and cos(g.r), as used in get_ddapc, to speed up build_der_A_matrix()
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
  
      failure = .FALSE.
      NULLIFY(cp_ddapc_env)
-@@ -760,16 +840,19 @@
+@@ -760,16 +822,19 @@
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
         rvec = particle_set(iparticle)%r                
         cp_ddapc_env => qs_env%cp_ddapc_env
@@ -388,7 +367,7 @@ diff -u -r1.23 cp_ddapc_util.F
            CALL mp_sum(Am2,rho_tot_g%pw_grid%para%group)
            ddAm = (Am1 - Am2)/(2.0_dp*dx)
            DO kk = 1, SIZE(ddAm,1)
-@@ -787,6 +870,7 @@
+@@ -787,6 +852,7 @@
            END DO
            particle_set(iparticle)%r = rvec
         END DO
@@ -399,15 +378,15 @@ diff -u -r1.23 cp_ddapc_util.F
 Index: cp_ddapc_methods.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
-retrieving revision 1.41
-diff -u -r1.41 cp_ddapc_methods.F
---- cp_ddapc_methods.F	8 Apr 2010 19:18:04 -0000	1.41
-+++ cp_ddapc_methods.F	27 Jan 2011 20:19:30 -0000
+retrieving revision 1.42
+diff -u -r1.42 cp_ddapc_methods.F
+--- cp_ddapc_methods.F	31 Dec 2010 16:03:49 -0000	1.42
++++ cp_ddapc_methods.F	2 Feb 2011 18:29:53 -0000
 @@ -24,6 +24,8 @@
                                               twopi
    USE mathlib,                         ONLY: diamat_all,&
                                               invert_matrix
-+  !! NB paralelizaion
++  !NB for paralelizaion of ewald_ddapc_pot()
 +  USE cp_para_types,                   ONLY: cp_para_env_type
    USE message_passing,                 ONLY: mp_sum
    USE particle_types,                  ONLY: particle_type
@@ -421,16 +400,17 @@ diff -u -r1.41 cp_ddapc_methods.F
              ddapc_eval_AmI,&
              ewald_ddapc_pot,&
              solvation_ddapc_pot
-@@ -175,7 +179,7 @@
+@@ -175,7 +179,8 @@
  !>      08.2005 created [tlaino]
  !> \author Teodoro Laino
  ! *****************************************************************************
 -  SUBROUTINE build_A_matrix(Am, gfunc, w, particle_set, radii, rho_tot_g, gcut, error)
++  !NB accept g_dot_rvec_* arrays
 +  SUBROUTINE build_A_matrix(Am, gfunc, w, particle_set, radii, rho_tot_g, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
      REAL(KIND=dp), DIMENSION(:, :), &
        INTENT(INOUT)                          :: Am
      REAL(KIND=dp), DIMENSION(:, :), POINTER  :: gfunc
-@@ -185,6 +189,7 @@
+@@ -185,6 +190,7 @@
      REAL(KIND=dp), DIMENSION(:), POINTER     :: radii
      TYPE(pw_type), POINTER                   :: rho_tot_g
      REAL(KIND=dp), INTENT(IN)                :: gcut
@@ -438,53 +418,44 @@ diff -u -r1.41 cp_ddapc_methods.F
      TYPE(cp_error_type), INTENT(inout)       :: error
  
      CHARACTER(len=*), PARAMETER :: routineN = 'build_A_matrix', &
-@@ -197,6 +202,7 @@
-                                                 rvec1(3), rvec2(3), &
-                                                 rvec_diff(3), tmp
-     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
-+!T integer :: handlet
- 
-     failure = .FALSE.
- 
-@@ -220,11 +226,15 @@
-           DO iparticle2 = iparticle1, SIZE(particle_set)
+@@ -221,9 +227,9 @@
               rvec2=particle_set(iparticle2)%r
               rvec_diff=rvec1-rvec2
-+!T CALL timeset(routineN//"-2",handlet)
               DO ig = s_dim, igmax
 -                gvec   = rho_tot_g % pw_grid % g (:,ig)
 -                arg    = DOT_PRODUCT(gvec,rvec_diff)
 -                my_Am (ig) = w(ig) * COS(arg)
-+                !12 gvec   = rho_tot_g % pw_grid % g (:,ig)
-+                !12 arg    = DOT_PRODUCT(gvec,rvec_diff)
-+                !12 my_Am (ig) = w(ig) * COS(arg)
++		!NB replace explicit dot product and cosine with cos(A+B) formula - much faster
 +		my_Am(ig) = w(ig)*(g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
 +		                   g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
               END DO
-+!T CALL timestop(handlet)
               DO igauss1 = 1, SIZE(radii)
                  idim1 = (iparticle1-1)*SIZE(radii)+igauss1
-                 istart_g = 1
-@@ -234,7 +244,8 @@
+@@ -234,7 +240,12 @@
                     DO ig = s_dim, igmax
                        my_Amw(ig) = my_Am(ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
                     END DO
--                   tmp = accurate_sum(my_Amw)
-+                   !12 tmp = accurate_sum(my_Amw)
++!NB no loss of accuracy in my test cases
++#ifdef MORE_ACCURATE_SUMS
+                    tmp = accurate_sum(my_Amw)
++#else
 +                   tmp = sum(my_Amw)
++#endif
                     Am (idim2,idim1) = tmp
                     Am (idim1,idim2) = tmp
                  END DO
-@@ -339,7 +350,7 @@
+@@ -338,8 +349,9 @@
+ !>      08.2005 created [tlaino]
  !> \author Teodoro Laino
  ! *****************************************************************************
++  !NB accept g_dot_rvec_* arrays
    SUBROUTINE build_der_A_matrix(dAm, gfunc, w, particle_set, radii,&
 -       rho_tot_g, gcut, iparticle0, error)
 +       rho_tot_g, gcut, iparticle0, g_dot_rvec_sin, g_dot_rvec_cos, error)
      REAL(KIND=dp), DIMENSION(:, :, :), &
        INTENT(INOUT)                          :: dAm
      REAL(KIND=dp), DIMENSION(:, :), POINTER  :: gfunc
-@@ -350,6 +361,7 @@
+@@ -350,6 +362,7 @@
      TYPE(pw_type), POINTER                   :: rho_tot_g
      REAL(KIND=dp), INTENT(IN)                :: gcut
      INTEGER, INTENT(IN)                      :: iparticle0
@@ -492,118 +463,75 @@ diff -u -r1.41 cp_ddapc_methods.F
      TYPE(cp_error_type), INTENT(inout)       :: error
  
      CHARACTER(len=*), PARAMETER :: routineN = 'build_der_A_matrix', &
-@@ -360,13 +372,18 @@
+@@ -360,6 +373,8 @@
      LOGICAL                                  :: failure
      REAL(KIND=dp)                            :: arg1, factor, g2, gcut2, tmp
      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Amw
-+    !!! REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v, arg1_v_sin
++    !NB temporary for precomputing expensive sin()
 +    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: my_Am
      REAL(KIND=dp), DIMENSION(3)              :: gvec, rvec1, rvec2, rvec_diff
-+!T INTEGER :: handlet, handlet2
-+!!! external dgemv
- 
-     failure = .FALSE.
-     CALL timeset(routineN,handle)
-     IF (.NOT. failure) THEN
-+!T CALL timeset(routineN//"-0.2",handlet)
-        gcut2 = gcut * gcut
-        s_dim = rho_tot_g % pw_grid % first_gne0
-        e_dim = rho_tot_g % pw_grid % ngpts_cut_local
-@@ -380,12 +397,18 @@
+@@ -380,6 +395,8 @@
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+       !!! ALLOCATE(arg1_v(s_dim:igmax),stat=stat)
-+       !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +       ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
 +       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+!T CALL timestop(handlet)
  
         DO iparticle1 = 1, SIZE(particle_set)
            rvec1 =  particle_set(iparticle1)%r
-           DO iparticle2 = iparticle1, SIZE(particle_set)
-              rvec2 =  particle_set(iparticle2)%r
-              IF ((iparticle1 /= iparticle0).AND.(iparticle2 /= iparticle0)) CYCLE
-+!T CALL timeset(routineN//"-0.3",handlet)
-              IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
-                    factor=2.0_dp
-              ELSEIF (iparticle1 == iparticle0) THEN
-@@ -394,34 +417,66 @@
-                    factor=-1.0_dp
+@@ -395,10 +412,11 @@
               END IF
               rvec_diff=rvec2-rvec1
-+!T CALL timestop(handlet)
-+
  
-+!T CALL timeset(routineN//"-0.4",handlet)
-+	     ! arg1_v(s_dim:igmax) = matmul(rvec_diff(1:3), rho_tot_g % pw_grid % g (1:3,s_dim:igmax))
-+	     !!! call dgemv('T', 3, igmax-s_dim+1, 1.0_dp, rho_tot_g % pw_grid % g(1:3,s_dim:igmax), 3, rvec_diff(1:3), 1, 0.0_dp, arg1_v(s_dim:igmax), 1)
-+	     !!! arg1_v_sin(s_dim:igmax) = SIN(arg1_v(s_dim:igmax))
-+	     ! sin(a+b) = sin(a)cos(b) + cos(a)sin(b) faster, but we'll need 3*nparticles*ng storage of sin(v) and cos(v), which is too much?
-+	     !! arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(s_dim:igmax, iparticle2)*g_dot_rvec_cos(s_dim:igmax, iparticle1) - &
-+				       !! g_dot_rvec_cos(s_dim:igmax, iparticle2)*g_dot_rvec_sin(s_dim:igmax, iparticle1)
++	     !NB precompute sin(g.(r1-r2)) with sin(A+B) formula - perhaps just move this into the loop?
 +	     arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_cos(1:igmax-s_dim+1, iparticle1) - &
 +				       g_dot_rvec_cos(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_sin(1:igmax-s_dim+1, iparticle1)
-+!T CALL timestop(handlet)
-+!T CALL timeset(routineN//"-0.41",handlet)
               DO ig = s_dim, igmax
 -                gvec   = rho_tot_g % pw_grid % g (:,ig)
 -                arg1 = DOT_PRODUCT(gvec,rvec_diff)
 -                my_Am(1:3,ig) = factor * w(ig) * SIN(arg1) * gvec
-+		!slow
-+                ! gvec   = rho_tot_g % pw_grid % g (:,ig)
-+                ! arg1 = DOT_PRODUCT(gvec,rvec_diff)
-+                ! my_Am(1:3,ig) = factor * w(ig) * SIN(arg1) * gvec
-+                !! my_Am(1:3,ig) = factor * w(ig) * SIN(arg1_v(ig)) * rho_tot_g%pw_grid%g(:,ig)
 +                my_Am(1:3,ig) = factor * w(ig) * arg1_v_sin(ig) * rho_tot_g%pw_grid%g(:,ig)
               END DO
-+!T CALL timestop(handlet)
               DO igauss1 = 1, SIZE(radii)
                  idim1 = (iparticle1-1)*SIZE(radii)+igauss1
-                 istart_g = 1
-                 IF (iparticle2==iparticle1) istart_g = igauss1
-                 DO igauss2 = istart_g, SIZE(radii)
-                    idim2 = (iparticle2-1)*SIZE(radii)+igauss2
-+!T CALL timeset(routineN//"-0.5",handlet)
+@@ -409,19 +427,34 @@
                     DO ig = s_dim, igmax
                        my_Amw(ig) =  my_Am(1,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
                     END DO
--                   tmp = accurate_sum(my_Amw)
-+!T CALL timestop(handlet)
-+!T CALL timeset(routineN//"-1",handlet)
-+                   !! tmp = accurate_sum(my_Amw)
++!NB no loss of accuracy in my test cases
++#ifdef MORE_ACCURATE_SUMS
+                    tmp = accurate_sum(my_Amw)
++#else
 +                   tmp = sum(my_Amw)
-+!T CALL timestop(handlet)
++#endif
                     dAm (idim1,idim2,1) = tmp
                     dAm (idim2,idim1,1) = tmp
-+!T CALL timeset(routineN//"-1.5",handlet)
                     DO ig = s_dim, igmax
                        my_Amw(ig) =  my_Am(2,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
                     END DO
--                   tmp = accurate_sum(my_Amw)
-+!T CALL timestop(handlet)
-+!T CALL timeset(routineN//"-2",handlet)
-+                   !! tmp = accurate_sum(my_Amw)
++!NB no loss of accuracy in my test cases
++#ifdef MORE_ACCURATE_SUMS
+                    tmp = accurate_sum(my_Amw)
++#else
 +                   tmp = sum(my_Amw)
-+!T CALL timestop(handlet)
++#endif
                     dAm (idim1,idim2,2) = tmp
                     dAm (idim2,idim1,2) = tmp
-+!T CALL timeset(routineN//"-2.5",handlet)
                     DO ig = s_dim, igmax
                        my_Amw(ig) =  my_Am(3,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
                     END DO
--                   tmp = accurate_sum(my_Amw)
-+!T CALL timestop(handlet)
-+!T CALL timeset(routineN//"-3",handlet)
-+                   !! tmp = accurate_sum(my_Amw)
++!NB no loss of accuracy in my test cases
++#ifdef MORE_ACCURATE_SUMS
+                    tmp = accurate_sum(my_Amw)
++#else
 +                   tmp = sum(my_Amw)
-+!T CALL timestop(handlet)
++#endif
                     dAm (idim1,idim2,3) = tmp
                     dAm (idim2,idim1,3) = tmp
                  END DO
-@@ -432,10 +487,72 @@
+@@ -432,10 +465,74 @@
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
         DEALLOCATE(my_Am,stat=stat)
         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -615,125 +543,135 @@ diff -u -r1.41 cp_ddapc_methods.F
      CALL timestop(handle)
    END SUBROUTINE build_der_A_matrix
  
-+subroutine cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
-+   REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
-+   TYPE(cp_error_type), INTENT(inout)       :: error
++  !NB deallocate g_dot_rvec_* arrays
++  SUBROUTINE cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
++     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
++     TYPE(cp_error_type), INTENT(inout)       :: error
 +
-+   CHARACTER(len=*), PARAMETER :: routineN = 'cleanup_g_dot_rvec_sin_cos', &
-+      routineP = moduleN//':'//routineN
-+   integer :: stat
-+   logical :: failure
++     CHARACTER(len=*), PARAMETER :: routineN = 'cleanup_g_dot_rvec_sin_cos', &
++	routineP = moduleN//':'//routineN
++     integer :: stat
++     logical :: failure
 +
-+   DEALLOCATE(g_dot_rvec_sin,stat=stat)
-+   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+   DEALLOCATE(g_dot_rvec_cos,stat=stat)
-+   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+end subroutine cleanup_g_dot_rvec_sin_cos
++     DEALLOCATE(g_dot_rvec_sin,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(g_dot_rvec_cos,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++  END SUBROUTINE cleanup_g_dot_rvec_sin_cos
 +
-+subroutine prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
-+   TYPE(pw_type), POINTER                   :: rho_tot_g
-+   TYPE(particle_type), DIMENSION(:), &
-+      POINTER                                :: particle_set
-+   REAL(KIND=dp), INTENT(IN)                :: gcut
-+   REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
-+   TYPE(cp_error_type), INTENT(inout)       :: error
++  !NB precompute sin(g.r) and cos(g.r) for quicker evaluations of sin(g.(r1-r2)) and cos(g.(r1-r2))
++  SUBROUTINE prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
++     TYPE(pw_type), POINTER                   :: rho_tot_g
++     TYPE(particle_type), DIMENSION(:), &
++	POINTER                                :: particle_set
++     REAL(KIND=dp), INTENT(IN)                :: gcut
++     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:) :: g_dot_rvec_sin, g_dot_rvec_cos
++     TYPE(cp_error_type), INTENT(inout)       :: error
 +
-+   CHARACTER(len=*), PARAMETER :: routineN = 'prep_g_dot_rvec_sin_cos', &
-+      routineP = moduleN//':'//routineN
-+   integer :: stat
-+   logical :: failure
++     CHARACTER(len=*), PARAMETER :: routineN = 'prep_g_dot_rvec_sin_cos', &
++	routineP = moduleN//':'//routineN
++     integer :: stat
++     logical :: failure
 +
-+   integer ig, iparticle, s_dim, e_dim, igmax
-+   REAL(KIND=dp) :: g2, gcut2
-+   REAL(KIND=dp) :: rvec(3), g_dot_rvec
++     integer ig, iparticle, s_dim, e_dim, igmax
++     REAL(KIND=dp) :: g2, gcut2
++     REAL(KIND=dp) :: rvec(3), g_dot_rvec
 +
-+   gcut2 = gcut * gcut
-+   s_dim = rho_tot_g % pw_grid % first_gne0
-+   e_dim = rho_tot_g % pw_grid % ngpts_cut_local
-+   igmax = 0
-+   DO ig = s_dim, e_dim
-+      g2 = rho_tot_g % pw_grid % gsq ( ig )
-+      IF (g2 > gcut2) EXIT
-+      igmax  = ig
-+   ENDDO
++     gcut2 = gcut * gcut
++     s_dim = rho_tot_g % pw_grid % first_gne0
++     e_dim = rho_tot_g % pw_grid % ngpts_cut_local
++     igmax = 0
++     DO ig = s_dim, e_dim
++	g2 = rho_tot_g % pw_grid % gsq ( ig )
++	IF (g2 > gcut2) EXIT
++	igmax  = ig
++     ENDDO
 +
-+   ALLOCATE(g_dot_rvec_sin(1:igmax-s_dim+1,size(particle_set)),stat=stat)
-+   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+   ALLOCATE(g_dot_rvec_cos(1:igmax-s_dim+1,size(particle_set)),stat=stat)
-+   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     ALLOCATE(g_dot_rvec_sin(1:igmax-s_dim+1,size(particle_set)),stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     ALLOCATE(g_dot_rvec_cos(1:igmax-s_dim+1,size(particle_set)),stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +
-+   do iparticle=1, size(particle_set)
-+      rvec = particle_set(iparticle)%r
-+      do ig=s_dim, igmax
-+	 g_dot_rvec = dot_product(rho_tot_g%pw_grid%g(:,ig),rvec)
-+	 g_dot_rvec_sin(ig-s_dim+1,iparticle) = sin(g_dot_rvec)
-+	 g_dot_rvec_cos(ig-s_dim+1,iparticle) = cos(g_dot_rvec)
-+      end do
-+   end do
++     do iparticle=1, size(particle_set)
++	rvec = particle_set(iparticle)%r
++	do ig=s_dim, igmax
++	   g_dot_rvec = dot_product(rho_tot_g%pw_grid%g(:,ig),rvec)
++	   g_dot_rvec_sin(ig-s_dim+1,iparticle) = sin(g_dot_rvec)
++	   g_dot_rvec_cos(ig-s_dim+1,iparticle) = cos(g_dot_rvec)
++	end do
++     end do
 +
-+end subroutine prep_g_dot_rvec_sin_cos
++  end subroutine prep_g_dot_rvec_sin_cos
 +
  ! *****************************************************************************
  !> \brief Computes the inverse AmI of the Am matrix 
  !> \par History
-@@ -466,6 +583,8 @@
+@@ -466,6 +563,9 @@
      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: AmE, cv
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: Am, AmI, Amw
++    !NB for precomputation of sin(g.r) and cos(g.r)
 +    REAL(KIND=dp), ALLOCATABLE, &
 +      DIMENSION(:,:)                         :: g_dot_rvec_sin, g_dot_rvec_cos
  
      failure = .FALSE.
      CALL timeset(routineN,handle)
-@@ -482,7 +601,9 @@
+@@ -482,7 +582,10 @@
         Am  = 0.0_dp
         AmI = 0.0_dp
         cv  = 1.0_dp/Vol
 -       CALL build_A_matrix(Am, gfunc, w, particle_set, radii, rho_tot_g, gcut, error)
++       !NB precompute sin(g.r) and cos(g.r) for faster evaluation of cos(g.(r1-r2)) in build_A_matrix()
 +       CALL prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
 +       CALL build_A_matrix(Am, gfunc, w, particle_set, radii, rho_tot_g, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
 +       CALL cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
         Am = Am / (Vol*Vol)
         CALL mp_sum(Am,rho_tot_g%pw_grid%para%group)
         IF (iw>0) THEN
-@@ -506,7 +627,8 @@
+@@ -506,7 +609,12 @@
            DEALLOCATE(AmE, stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
         END IF
--       CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
-+       !!NB speedup
++       !NB no effect on accuracy for my test cases
++#ifdef ALWAYS_IMPROVE_INVERSE
+        CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
++#else
 +       CALL invert_matrix(Am, AmI, inv_error, "N",error=error, improve=.false.)
++#endif
         IF (iw>0) THEN
            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
         END IF
-@@ -529,8 +651,9 @@
+@@ -529,8 +637,10 @@
  !>      08.2005 created [tlaino]
  !> \author Teodoro Laino
  ! *****************************************************************************
 -  RECURSIVE SUBROUTINE ewald_ddapc_pot(coeff, factor, cell, multipole_section,&
++  !NB receive cp_para_env for parallelization
 +  RECURSIVE SUBROUTINE ewald_ddapc_pot(cp_para_env, coeff, factor, cell, multipole_section,&
         particle_set, M, radii, error)
 +    TYPE(cp_para_env_type), POINTER          :: cp_para_env
      TYPE(pw_type), POINTER                   :: coeff
      REAL(KIND=dp), INTENT(IN)                :: factor
      TYPE(cell_type), POINTER                 :: cell
-@@ -597,6 +720,7 @@
+@@ -597,6 +707,8 @@
         M = 0.0_dp
         !
         idim = 0
++       !NB zero EwM so mp_sum(EwM) will give right answer
 +       EwM = 0.0_dp
         DO iparticle1 = 1, SIZE(particle_set)
            ip1 = (iparticle1-1)*SIZE(radii)          
            DO iparticle2 = 1, iparticle1
-@@ -605,6 +729,7 @@
+@@ -605,6 +717,8 @@
  
               ip2 = (iparticle2-1)*SIZE(radii)
               idim = idim + 1
++	     !NB parallelization, done here so indexing is right
 +	     if (mod(iparticle1, cp_para_env%num_pe) /= cp_para_env%mepos) cycle
               !
               ! Real-Space Contribution
               !
-@@ -674,8 +799,9 @@
+@@ -674,8 +788,10 @@
                  my_val = sfact / r
               END IF
               EwM(idim) = my_val - sfact * g_ewald
@@ -741,11 +679,12 @@ diff -u -r1.41 cp_ddapc_methods.F
 -       END DO
 +          END DO ! iparticle2
 +       END DO ! iparticle1
++       !NB sum over parallelized contributions of different nodes
 +       call mp_sum(EwM, cp_para_env%group)
         idim = 0
         DO iparticle2 = 1, SIZE(particle_set)
            ip2 = (iparticle2-1)*SIZE(radii)
-@@ -698,8 +824,8 @@
+@@ -698,8 +814,8 @@
                     M(idim2,idim1) = M(idim1,idim2)
                  END DO
               END DO
@@ -759,41 +698,38 @@ diff -u -r1.41 cp_ddapc_methods.F
 Index: ewald_spline_util.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
-retrieving revision 1.26
-diff -u -r1.26 ewald_spline_util.F
---- ewald_spline_util.F	3 Jan 2010 23:41:27 -0000	1.26
-+++ ewald_spline_util.F	13 Aug 2010 16:15:21 -0000
-@@ -41,6 +41,9 @@
+retrieving revision 1.27
+diff -u -r1.27 ewald_spline_util.F
+--- ewald_spline_util.F	31 Dec 2010 16:03:51 -0000	1.27
++++ ewald_spline_util.F	2 Feb 2011 18:29:53 -0000
+@@ -41,6 +41,8 @@
                                               pw_type
    USE timings,                         ONLY: timeset,&
                                               timestop
-+  !! NB parallelization
++  !NB parallelization
 +  USE message_passing,                 ONLY: mp_sum
-+  !!
  #include "cp_common_uses.h"
  
    IMPLICIT NONE
-@@ -150,6 +153,9 @@
+@@ -150,6 +152,8 @@
                                                  Term, xs1, xs2, xs3
      TYPE(pw_spline_precond_type), POINTER    :: precond
      TYPE(section_vals_type), POINTER         :: interp_section
-+    !! NB parallelization
++    !NB parallelization
 +    integer :: iii
-+    !!
  
      CALL timeset(routineN,handle)
      n1  = grid%pw_grid%npts(1)
-@@ -171,6 +177,9 @@
+@@ -171,6 +175,8 @@
      CALL pw_zero(grid, error=error)
  
      ! Used the full symmetry to reduce the evaluation to 1/64th
-+    !! NB parallelization
++    !NB parallelization
 +    iii = 0
-+    !!
      LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
         my_k  = k-gbo(1,3)
         xs3   = REAL(my_k,dp)*dr3
-@@ -181,17 +190,25 @@
+@@ -181,17 +187,23 @@
            xs1   = 0.0_dp
            DO i  =  gbo(1,1), gbo(2,1)
               IF (i > nxlim ) CYCLE
@@ -803,7 +739,7 @@ diff -u -r1.26 ewald_spline_util.F
 -                Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
 -             END DO
 -             grid%cr3d(i,j,k) = Term
-+	     !! NB parallelization
++	     !NB parallelization
 +	     iii = iii + 1
 +	     IF (mod(iii,grid%pw_grid%para%group_size) == grid%pw_grid%para%my_pos) THEN
 +	       Term  = 0.0_dp
@@ -813,35 +749,34 @@ diff -u -r1.26 ewald_spline_util.F
 +	       END DO
 +	       grid%cr3d(i,j,k) = Term
 +	     ENDIF
-+	     !!
               xs1 = xs1 + dr1
            END DO
            xs2 = xs2 + dr2
         END DO
      END DO LoopOnGrid
-+    !! NB parallelization
++    !NB parallelization
 +    call mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
-+    !!
  
      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
         my_k = k
 Index: mathlib.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/mathlib.F,v
-retrieving revision 1.45
-diff -u -r1.45 mathlib.F
---- mathlib.F	3 Jan 2010 23:41:36 -0000	1.45
-+++ mathlib.F	13 Aug 2010 16:15:21 -0000
-@@ -466,7 +466,7 @@
+retrieving revision 1.47
+diff -u -r1.47 mathlib.F
+--- mathlib.F	31 Dec 2010 16:03:56 -0000	1.47
++++ mathlib.F	2 Feb 2011 18:29:53 -0000
+@@ -466,7 +466,8 @@
  !>       -            "T" => invert transpose(a)
  !> \version 1.0
  ! *****************************************************************************
 -  SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error)
++!NB add improve argument, used to disable call to dgerfs
 +  SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error,improve)
      REAL(KIND=dp), DIMENSION(:, :), &
        INTENT(IN)                             :: a
      REAL(KIND=dp), DIMENSION(:, :), &
-@@ -474,6 +474,7 @@
+@@ -474,6 +475,7 @@
      REAL(KIND=dp), INTENT(OUT)               :: eval_error
      CHARACTER(LEN=1), INTENT(IN), OPTIONAL   :: option
      TYPE(cp_error_type), INTENT(inout)       :: error
@@ -849,7 +784,7 @@ diff -u -r1.45 mathlib.F
  
      CHARACTER(LEN=*), PARAMETER :: routineN = 'invert_matrix_d', &
        routineP = moduleN//':'//routineN
-@@ -488,6 +489,7 @@
+@@ -488,6 +490,7 @@
      REAL(KIND=dp), ALLOCATABLE, &
        DIMENSION(:, :)                        :: a_lu, b
      REAL(KIND=dp), EXTERNAL                  :: dlange
@@ -857,7 +792,7 @@ diff -u -r1.45 mathlib.F
  
      EXTERNAL dgecon,dgerfs,dgetrf,dgetrs
  
-@@ -500,6 +502,12 @@
+@@ -500,6 +503,12 @@
        trans = "N"
      END IF
  
@@ -870,7 +805,7 @@ diff -u -r1.45 mathlib.F
      ! Get the dimension of matrix a
      n = SIZE(a,1)
  
-@@ -596,22 +604,24 @@
+@@ -596,22 +605,24 @@
  
      eval_error = 0.0_dp
  
@@ -909,11 +844,11 @@ diff -u -r1.45 mathlib.F
 Index: pw_grids.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/pw_grids.F,v
-retrieving revision 1.111
-diff -u -r1.111 pw_grids.F
---- pw_grids.F	3 Jan 2010 23:41:36 -0000	1.111
-+++ pw_grids.F	13 Aug 2010 16:15:22 -0000
-@@ -806,7 +806,7 @@
+retrieving revision 1.115
+diff -u -r1.115 pw_grids.F
+--- pw_grids.F	31 Dec 2010 16:03:59 -0000	1.115
++++ pw_grids.F	2 Feb 2011 18:29:53 -0000
+@@ -807,7 +807,7 @@
         CASE DEFAULT
            CPPrecondition(.FALSE.,cp_failure_level,routineP,error,failure)
         END SELECT
@@ -922,142 +857,29 @@ diff -u -r1.111 pw_grids.F
         !..create group for real space distribution
         CALL mp_cart_create ( pw_grid % para % group, 2, &
              pw_grid % para % rs_dims, &
-@@ -876,7 +876,7 @@
-           i2 = SIZE ( yz_mask, 2 )
-           ALLOCATE ( yz_index(2,i1*i2), STAT = ierr )
-           CPPrecondition(ierr == 0,cp_failure_level,routineP,error,failure)
--          CALL order_mask ( yz_mask, yz_index, error )
-+          CALL order_mask ( yz_mask, yz_index, error , pw_grid%para%my_pos)
-           DO i = 1, i1*i2
-              lo(1) = yz_index(1,i)
-              lo(2) = yz_index(2,i)
-@@ -1097,11 +1097,12 @@
-   !------------------------------------------------------------------------------
- 
- ! *****************************************************************************
--  SUBROUTINE order_mask ( yz_mask, yz_index, error )
-+  SUBROUTINE order_mask ( yz_mask, yz_index, error , my_pos)
- 
-     INTEGER, DIMENSION(:, :), INTENT(IN)     :: yz_mask
-     INTEGER, DIMENSION(:, :), INTENT(OUT)    :: yz_index
-     TYPE(cp_error_type), INTENT(inout)       :: error
-+integer, intent(in) :: my_pos
- 
-     CHARACTER(len=*), PARAMETER :: routineN = 'order_mask', &
-       routineP = moduleN//':'//routineN
-@@ -1110,9 +1111,13 @@
+@@ -1111,9 +1111,14 @@
                                                  j1, j2
      INTEGER, ALLOCATABLE, DIMENSION(:)       :: cindex, icol, irow, rindex
      LOGICAL                                  :: failure
 +!NB load balance
-+integer :: im, ic, jc, ii, jj, iit, jjt, ii_lb, ii_ub, jj_lb, jj_ub
++    INTEGER                                  :: im, ic, jc, ii, jj
  
  !------------------------------------------------------------------------------
  
-+
 +#ifdef ORIGINAL_RAY_DISTRIBUTION
++!NB original distribution, can have bad load balance in cp_ddapc_apply_CD which
++!NB uses spherical cutoff even though overall grid is full and block distributed
      failure = .FALSE.
  
      i1 = SIZE ( yz_mask, 1 )
-@@ -1153,6 +1158,164 @@
+@@ -1154,6 +1159,72 @@
      DEALLOCATE ( irow, rindex, icol, cindex, STAT = ierr )
      CPPrecondition(ierr == 0,cp_failure_level,routineP,error,failure)
  
 +#else
-+
-+#ifdef RAY_SPIRAL_DISTRIBUTION_SLOW
-+
-+   icount = 1
-+   ic=i1/2
-+   jc=i2/2
-+   ii=1
-+   jj=1
-+   if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+      if (yz_mask(ii,jj) /= 0) then
-+	 yz_index(1,icount) = ii
-+	 yz_index(2,icount) = jj
-+	 icount = icount + 1
-+      endif
-+   endif
-+   do im=1, max(ic,jc)
-+
-+      if (mod(i1,2) == 0) then
-+	 ii_lb = max(1-im,1-ic+1)
-+      else
-+	 ii_lb = max(1-im,1-ic)
-+      endif
-+      ii_ub = min(1+im,1+ic)
-+
-+      if (mod(i2,2) == 0) then
-+	 jj_lb = max(1-im,1-jc+1)
-+      else
-+	 jj_lb = max(1-im,1-jc)
-+      endif
-+      jj_ub = min(1+im,1+jc)
-+
-+      if (im < ic .or. (im == ic .and. mod(i1,2) /= 0)) then
-+	 ii = 1-im+i1
-+	 do jj=jj_lb, jj_ub
-+	    jjt = jj
-+	    if (jjt <= 0) jjt = jjt + i2
-+	    if (ii > 0 .and. ii <= i1 .and. jjt > 0 .and. jjt <= i2) then
-+	       if (yz_mask(ii,jjt) /= 0) then
-+		  yz_index(1,icount) = ii
-+		  yz_index(2,icount) = jjt
-+		  icount = icount + 1
-+	       endif
-+	    endif
-+	 end do
-+      endif
-+
-+      if (im <= ic) then
-+	 ii = 1+im
-+	 do jj=jj_lb, jj_ub
-+	    jjt = jj
-+	    if (jjt <= 0) jjt = jjt + i2
-+	    if (ii > 0 .and. ii <= i1 .and. jjt > 0 .and. jjt <= i2) then
-+	       if (yz_mask(ii,jjt) /= 0) then
-+		  yz_index(1,icount) = ii
-+		  yz_index(2,icount) = jjt
-+		  icount = icount + 1
-+	       endif
-+	    endif
-+	 end do
-+      endif
-+
-+      if (im < jc .or. (im == jc .and. mod(i2,2) /= 0)) then
-+	 jj = 1-im+i2
-+	 do ii=1-im+1,1+im-1
-+	    iit = ii
-+	    if (iit <= 0) iit = iit + i1
-+	    if (iit > 0 .and. iit <= i1 .and. jj > 0 .and. jj <= i2) then
-+	       if (yz_mask(iit,jj) /= 0) then
-+		  yz_index(1,icount) = iit
-+		  yz_index(2,icount) = jj
-+		  icount = icount + 1
-+	       endif
-+	    endif
-+	 end do
-+      endif
-+
-+      if (im <= jc) then
-+	 jj = 1+im
-+	 do ii=1-im+1,1+im-1
-+	    iit = ii
-+	    if (iit <= 0) iit = iit + i1
-+	    if (iit > 0 .and. iit <= i1 .and. jj > 0 .and. jj <= i2) then
-+	       if (yz_mask(iit,jj) /= 0) then
-+		  yz_index(1,icount) = iit
-+		  yz_index(2,icount) = jj
-+		  icount = icount + 1
-+	       endif
-+	    endif
-+	 end do
-+      endif
-+
-+   end do
-+
-+#else
++!NB spiral out from origin, so that even if overall grid is full and
++!NB block distributed, spherical cutoff still leads to good load
++!NB balance in cp_ddapc_apply_CD
 +
 +    i1 = SIZE ( yz_mask, 1 )
 +    i2 = SIZE ( yz_mask, 2 )
@@ -1118,7 +940,6 @@ diff -u -r1.111 pw_grids.F
 +      end do
 +   end do
 +
-+#endif
 +#endif
 +
    END SUBROUTINE order_mask
