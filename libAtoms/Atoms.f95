@@ -293,6 +293,16 @@ module  atoms_module
      module procedure atoms_set_Zs
   endinterface
 
+  private :: atoms_sort_by_rindex
+  interface sort
+     module procedure atoms_sort, atoms_sort_by_rindex
+  endinterface
+
+  private :: atoms_shuffle
+  interface shuffle
+     module procedure atoms_shuffle
+  endinterface
+
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1496,21 +1506,87 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine remove_atom_multiple(this, atom_indices, error)
+  !% Reshuffle the order of the atomic indices to new_indices.
+  subroutine atoms_shuffle(this, new_indices, error)
+    type(Atoms),                intent(inout)  :: this
+    integer, dimension(this%N), intent(in)     :: new_indices
+    integer, optional,          intent(out)    :: error
 
-    type(Atoms), intent(inout)                 :: this
-    integer,     intent(in), dimension(:)      :: atom_indices
-    integer, intent(out), optional :: error
+    ! ---
+
+    integer, allocatable, dimension(:)      :: tmp_int
+    integer, allocatable, dimension(:,:)    :: tmp_int2
+    real(dp), allocatable, dimension(:)     :: tmp_real
+    real(dp), allocatable, dimension(:,:)   :: tmp_real2
+    logical, allocatable, dimension(:)      :: tmp_logical
+    character, allocatable, dimension(:,:)  :: tmp_char
+
+    integer  :: i
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    ! Resize property data arrays, copying old data.
+    ! this will break any existing pointers so we call atoms_repoint() 
+    ! immediately after (note that user-held pointers will stay broken, there
+    ! is no way to fix this since Fortran does not allow pointer-to-pointer
+    ! types)
+    do i=1,this%properties%N
+       select case (this%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+          allocate(tmp_int(this%n))
+          tmp_int(:) = this%properties%entries(i)%i_a(new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
+          deallocate(tmp_int)
+
+       case(T_REAL_A)
+          allocate(tmp_real(this%n))
+          tmp_real(:) = this%properties%entries(i)%r_a(new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
+          deallocate(tmp_real)
+
+       case(T_LOGICAL_A)
+          allocate(tmp_logical(this%n))
+          tmp_logical(:) = this%properties%entries(i)%l_a(new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
+          deallocate(tmp_logical)
+
+       case(T_INTEGER_A2)
+          allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
+          tmp_int2(:,:) = this%properties%entries(i)%i_a2(:,new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
+          deallocate(tmp_int2)
+
+       case(T_REAL_A2)
+          allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
+          tmp_real2(:,:) = this%properties%entries(i)%r_a2(:,new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
+          deallocate(tmp_real2)
+
+       case(T_CHAR_A)
+          allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
+          tmp_char(:,:) = this%properties%entries(i)%s_a(:,new_indices)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
+          deallocate(tmp_char)
+
+       case default
+          RAISE_ERROR('remove_atom_multiple: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+       end select
+    end do
+    call atoms_repoint(this)
+
+  endsubroutine atoms_shuffle
+
+
+  subroutine remove_atom_multiple(this, atom_indices, error)
+    type(Atoms), intent(inout)             :: this
+    integer,     intent(in), dimension(:)  :: atom_indices
+    integer,     intent(out), optional     :: error
 
     integer i, copysrc
-    integer, allocatable, dimension(:), target :: new_indices
-    integer, pointer, dimension(:) :: include_list
-    integer, allocatable, dimension(:) :: tmp_int
-    integer, allocatable, dimension(:,:) :: tmp_int2
-    real(dp), allocatable, dimension(:) :: tmp_real
-    real(dp), allocatable, dimension(:,:) :: tmp_real2
-    logical, allocatable, dimension(:) :: tmp_logical
-    character, allocatable, dimension(:,:) :: tmp_char
+    integer, allocatable, dimension(:) :: new_indices
     integer, dimension(size(atom_indices)) :: sorted
     integer, dimension(:), allocatable :: uniqed
 
@@ -1530,7 +1606,7 @@ contains
     !  and swap them. Repeat until all atoms to be removed are at the end.)
 
     sorted = atom_indices     ! Get our own copy of the  indices so we can sort them
-    call sort_array(sorted)
+    call heap_sort(sorted)
     call uniq(sorted, uniqed) ! remove duplicates from sorted indices
 
     allocate(new_indices(this%N))
@@ -1558,59 +1634,9 @@ contains
        RAISE_ERROR("remove_atom_multiple: Fatal internal error: this%N /= copysrc, should not happen", error)
     endif
 
-
-    include_list => new_indices(1:this%N)
-    
-    ! Resize property data arrays, copying old data.
-    ! this will break any existing pointers so we call atoms_repoint() immediately after
-    ! (note that user-held pointers will stay broken, there is no way to fix this
-    ! since Fortran does not allow pointer-to-pointer types)
-    do i=1,this%properties%N
-       select case (this%properties%entries(i)%type)
-
-       case(T_INTEGER_A)
-          allocate(tmp_int(this%n))
-          tmp_int(:) = this%properties%entries(i)%i_a(include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
-          deallocate(tmp_int)
-
-       case(T_REAL_A)
-          allocate(tmp_real(this%n))
-          tmp_real(:) = this%properties%entries(i)%r_a(include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
-          deallocate(tmp_real)
-
-       case(T_LOGICAL_A)
-          allocate(tmp_logical(this%n))
-          tmp_logical(:) = this%properties%entries(i)%l_a(include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
-          deallocate(tmp_logical)
-
-       case(T_INTEGER_A2)
-          allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
-          tmp_int2(:,:) = this%properties%entries(i)%i_a2(:,include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
-          deallocate(tmp_int2)
-
-       case(T_REAL_A2)
-          allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
-          tmp_real2(:,:) = this%properties%entries(i)%r_a2(:,include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
-          deallocate(tmp_real2)
-
-       case(T_CHAR_A)
-          allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
-          tmp_char(:,:) = this%properties%entries(i)%s_a(:,include_list)
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
-          deallocate(tmp_char)
-
-       case default
-          deallocate(include_list)
-          RAISE_ERROR('remove_atom_multiple: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
-
-       end select
-    end do
-    call atoms_repoint(this)
+    ! This will reallocate all buffer to the new size (i.e. this%N)
+    call shuffle(this, new_indices(1:this%N), error=error)
+    PASS_ERROR(error)
 
     deallocate(uniqed, new_indices)
 
@@ -3289,6 +3315,7 @@ contains
 
   endsubroutine atoms_copy_entry
 
+
   !% sort atoms by one or more (max 2 now) integer or real properties
   subroutine atoms_sort(this, prop1, prop2, prop3, error)
     type(Atoms), intent(inout) :: this
@@ -3338,6 +3365,41 @@ contains
        endif
     end do
   end subroutine atoms_sort
+
+
+  !% sort atoms according to an externally provided field
+  subroutine atoms_sort_by_rindex(this, sort_index, error)
+    type(Atoms),                 intent(inout)  :: this
+    real(DP), dimension(this%N), intent(in)     :: sort_index
+    integer,  optional,          intent(out)    :: error
+
+    ! ---
+
+    real(DP), allocatable  :: my_sort_index(:)
+    integer, allocatable   :: atom_index(:)
+
+    integer  :: i
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    allocate(my_sort_index(this%N), atom_index(this%N))
+
+    do i = 1, this%N
+       my_sort_index(i) = sort_index(i)
+       atom_index(i) = i
+    enddo
+
+    call heap_sort(my_sort_index, i_data=atom_index)
+
+    call shuffle(this, atom_index, error=error)
+    PASS_ERROR(error)
+
+    deallocate(my_sort_index, atom_index)
+
+  endsubroutine atoms_sort_by_rindex
+
 
   !% Basis transformation of rank 0, 1 and 2 tensors real values in Atoms object.
   !% This routine transforms rank 1 and rank 2 tensors in this%params and
