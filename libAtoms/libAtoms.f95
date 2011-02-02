@@ -67,5 +67,6 @@ module libAtoms_module
   use Topology_module
   use atoms_ll_module
   use ringstat_module
+  use histogram1d_module
   use domaindecomposition_module
 end module libAtoms_module

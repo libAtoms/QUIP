@@ -1,19 +1,67 @@
-!**********************************************************************
-! Histogram helper functions
-!**********************************************************************
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#include "macros.inc"
+!X
+!X Histogram helper functions in 1D
+!X
+!X Computes periodic and non-periodic histograms within certain bounds.
+!X Interpolation can be chosen from
+!X   INTERP_LINEAR:  Linear interpolation between neigboring grid
+!X                   points
+!X   INTERP_LUCY:    Lucy function interpolation between neighboring
+!X                   grid points
+!X TODO:
+!X   INTERP_NONE:    No interpolation, simply sort into bins
+!X
+!X Provides routine for MPI communication.
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-module histogram_module
-  use libAtoms_module
+#include "error.inc"
 
-  use io
-  use logging
+#define ASSERT(x)
 
+module histogram1d_module
+  use Error_module
+  use System_module
+  use Units_module
+  use MPI_context_module
+
+  private
+
+  public :: INTERP_LINEAR, INTERP_LUCY
   integer, parameter  :: INTERP_LINEAR  = 0
   integer, parameter  :: INTERP_LUCY    = 1
 
-  type histogram_t
+  public :: Histogram1D
+  type Histogram1D
 
      !
      ! General stuff
@@ -52,92 +100,111 @@ module histogram_module
      integer                :: ng
      real(DP), pointer      :: smoothing_func(:)
    
-  endtype histogram_t
+  endtype Histogram1D
 
   !
   ! Interface definition
   !
 
-  interface init
-     module procedure histogram_init, histogram_init_from_histogram
+  public :: initialise
+  interface initialise
+     module procedure histogram1d_initialise, histogram1d_initialise_from_histogram
   endinterface
 
-  interface del
-     module procedure histogram_del
+  public :: finalise
+  interface finalise
+     module procedure histogram1d_finalise
   endinterface
 
+  public :: clear
   interface clear
-     module procedure histogram_clear
+     module procedure histogram1d_clear
   endinterface
 
+  public :: set_bounds
   interface set_bounds
-     module procedure histogram_set_bounds
+     module procedure histogram1d_set_bounds
   endinterface
 
+  public :: write
   interface write
-     module procedure histogram_write, histogram_write_mult
-     module procedure histogram_write_character_fn, histogram_write_mult_character_fn
+     module procedure histogram1d_write, histogram1d_write_mult
+     module procedure histogram1d_write_character_fn, histogram1d_write_mult_character_fn
   endinterface
 
+  public :: add
   interface add
-     module procedure histogram_add, histogram_add_vals, histogram_add_vals_norms
-     module procedure histogram_add_vals_mask, histogram_add_vals_norm_mask, histogram_add_vals_norms_mask
-     module procedure histogram_add_histogram
+     module procedure histogram1d_add, histogram1d_add_vals, histogram1d_add_vals_norms
+     module procedure histogram1d_add_vals_mask, histogram1d_add_vals_norm_mask, histogram1d_add_vals_norms_mask
+     module procedure histogram1d_add_histogram
   endinterface
 
+  public :: add_range
   interface add_range
-     module procedure histogram_add_range, histogram_add_range_vals, histogram_add_range_vals_norms
+     module procedure histogram1d_add_range, histogram1d_add_range_vals, histogram1d_add_range_vals_norms
   endinterface
 
+  public :: average
   interface average
-     module procedure histogram_average
+     module procedure histogram1d_average
   endinterface
 
+  public :: entropy
   interface entropy
-     module procedure histogram_entropy
+     module procedure histogram1d_entropy
   endinterface
 
+  public :: expectation_value
   interface expectation_value
-     module procedure histogram_expectation_value
+     module procedure histogram1d_expectation_value
   endinterface
 
+  public :: mul
   interface mul
-     module procedure histogram_mul, histograms_mul, histograms2_mul, histogram_mul_vals
+     module procedure histogram1d_mul, histograms_mul, histograms2_mul, histogram1d_mul_vals
   endinterface
 
+  public :: div
   interface div
-     module procedure histogram_div, histograms_div, histograms2_div, histogram_div_vals
+     module procedure histogram1d_div, histograms_div, histograms2_div, histogram1d_div_vals
   endinterface
 
+  public :: normalize
   interface normalize
-     module procedure histogram_normalize
+     module procedure histogram1d_normalize
   endinterface
 
+  public :: reduce
   interface reduce
-     module procedure histogram_reduce
+     module procedure histogram1d_reduce
   endinterface
 
+  public :: smooth
   interface smooth
-     module procedure histogram_smooth
+     module procedure histogram1d_smooth
   endinterface
 
+  public :: sum_in_place
   interface sum_in_place
-     module procedure histogram_sum_in_place
+     module procedure histogram1d_sum_in_place
   endinterface
 
+! Memory estimation not yet implemented in libAtoms
+#if 0
   interface log_memory_estimate
      module procedure log_memory_estimate_histogram, log_memory_estimate_histogram2, log_memory_estimate_histogram3
   endinterface
+#endif
 
 contains
 
-  !**********************************************************************
-  ! Initialize the histogram
-  !**********************************************************************
-  elemental subroutine histogram_init(this, n, min_b, max_b, sigma, periodic)
+  !% Initialize the histogram
+  !% Default is linear interpolation, non-periodic
+  elemental subroutine histogram1d_initialise(this, n, min_b, max_b, sigma, &
+       periodic)
     implicit none
 
-    type(histogram_t), intent(out)  :: this
+    type(Histogram1D), intent(out)  :: this
     integer, intent(in)             :: n
     real(DP), intent(in)            :: min_b
     real(DP), intent(in)            :: max_b
@@ -146,7 +213,7 @@ contains
 
     ! ---
 
-    call del(this)
+    call finalise(this)
 
     this%n  = n
 
@@ -182,25 +249,23 @@ contains
     this%min_b = min_b - 1.0_DP
     this%max_b = max_b - 1.0_DP
 
-    call histogram_set_bounds(this, min_b, max_b)
+    call histogram1d_set_bounds(this, min_b, max_b)
 
-    call histogram_clear(this)
+    call histogram1d_clear(this)
 
-  endsubroutine histogram_init
+  endsubroutine histogram1d_initialise
 
 
-  !**********************************************************************
-  ! Initialize the histogram
-  !**********************************************************************
-  elemental subroutine histogram_init_from_histogram(this, that)
+  !% Initialize the histogram
+  elemental subroutine histogram1d_initialise_from_histogram(this, that)
     implicit none
 
-    type(histogram_t), intent(out)  :: this
-    type(histogram_t), intent(in )  :: that
+    type(Histogram1D), intent(out)  :: this
+    type(Histogram1D), intent(in )  :: that
 
     ! ---
 
-    call del(this)
+    call finalise(this)
 
     this%n         = that%n
 
@@ -223,20 +288,18 @@ contains
     this%min_b  = that%min_b - 1.0_DP
     this%max_b  = that%max_b - 1.0_DP
 
-    call histogram_set_bounds(this, that%min_b, that%max_b)
+    call histogram1d_set_bounds(this, that%min_b, that%max_b)
 
-    call histogram_clear(this)
+    call histogram1d_clear(this)
+    
+  endsubroutine histogram1d_initialise_from_histogram
 
-  endsubroutine histogram_init_from_histogram
 
-
-  !**********************************************************************
-  ! Clear histogram
-  !**********************************************************************
-  elemental subroutine histogram_clear(this)
+  !% Clear histogram
+  elemental subroutine histogram1d_clear(this)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
 
     ! ---
 
@@ -244,16 +307,14 @@ contains
     this%h     = 0.0_DP
     this%h_sq  = 0.0_DP
 
-  endsubroutine histogram_clear
+  endsubroutine histogram1d_clear
 
 
-  !**********************************************************************
-  ! Initialize the histogram
-  !**********************************************************************
-  elemental subroutine histogram_set_bounds(this, min_b, max_b)
+  !% Set histogram bounds
+  elemental subroutine histogram1d_set_bounds(this, min_b, max_b)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: min_b
     real(DP), intent(in)              :: max_b
 
@@ -305,16 +366,14 @@ contains
 
     endif
 
-  endsubroutine histogram_set_bounds
+  endsubroutine histogram1d_set_bounds
 
 
-  !**********************************************************************
-  ! Delete a histogram table
-  !**********************************************************************
-  elemental subroutine histogram_del(this)
+  !% Delete a histogram table
+  elemental subroutine histogram1d_finalise(this)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
 
     ! ---
 
@@ -335,20 +394,18 @@ contains
        deallocate(this%smoothing_func)
     endif
 
-  endsubroutine histogram_del
+  endsubroutine histogram1d_finalise
 
 
-  !**********************************************************************
-  ! Output the histogram table to a file (by file unit)
-  !**********************************************************************
-  subroutine histogram_write_mult(this, un, xvalues, header, ierror)
+  !% Output the histogram table to a file (by file unit)
+  subroutine histogram1d_write_mult(this, file, xvalues, header, error)
     implicit none
 
-    type(histogram_t), intent(in)       :: this(:)
-    integer, intent(in)                 :: un
+    type(Histogram1D), intent(in)       :: this(:)
+    type(InOutput), intent(in)          :: file
     logical, intent(in), optional       :: xvalues
     character(*), intent(in), optional  :: header(lbound(this, 1):ubound(this, 1))
-    integer, intent(inout), optional    :: ierror
+    integer, intent(out), optional      :: error
 
     ! ---
 
@@ -361,6 +418,8 @@ contains
     
     ! ---
 
+    INIT_ERROR(error)
+
     n      = this(lbound(this, 1))%n
     min_b  = this(lbound(this, 1))%min_b
     max_b  = this(lbound(this, 1))%max_b
@@ -368,15 +427,15 @@ contains
 
     do i = lbound(this, 1)+1, ubound(this, 1)
        if (this(i)%n /= n) then
-          RAISE_ERROR("Number of histogram bins do not match.", ierror)
+          RAISE_ERROR("Number of histogram bins do not match.", error)
        endif
 
        if (this(i)%min_b /= min_b) then
-          RAISE_ERROR("*min_b*s do not match.", ierror)
+          RAISE_ERROR("*min_b*s do not match.", error)
        endif
 
        if (this(i)%max_b /= max_b) then
-          RAISE_ERROR("*max_b*s do not match.", ierror)
+          RAISE_ERROR("*max_b*s do not match.", error)
        endif
     enddo
 
@@ -388,12 +447,12 @@ contains
        enddo
 
        write (fmt, '(A,I4.4,A)')  "(A5,5X,A20,", ubound(this, 1)-lbound(this, 1)+1, "A20)"
-       write (un, fmt)  "#01:i", "02:x", ext_header
+       write (file%unit, fmt)  "#01:i", "02:x", ext_header
     endif
 
     if (present(xvalues) .and. .not. xvalues) then
        write (fmt, '(A,I4.4,A)')  "(A,", n, "ES20.10)"
-       write (un, trim(fmt))  "# ", this(lbound(this, 1))%x
+       write (file%unit, trim(fmt))  "# ", this(lbound(this, 1))%x
        write (fmt, '(A,I4.4,A)')  "(I10,", ubound(this, 1)-lbound(this, 1)+1, "ES20.10)"
     else
        write (fmt, '(A,I4.4,A)')  "(I10,", ubound(this, 1)-lbound(this, 1)+2, "ES20.10)"
@@ -405,99 +464,97 @@ contains
        enddo
 
        if (present(xvalues) .and. .not. xvalues) then
-          write (un, trim(fmt))  i, y
+          write (file%unit, trim(fmt))  i, y
        else
-          write (un, trim(fmt))  i, this(lbound(this, 1))%x(i), y
+          write (file%unit, trim(fmt))  i, this(lbound(this, 1))%x(i), y
        endif
     enddo
 
-  endsubroutine histogram_write_mult
+  endsubroutine histogram1d_write_mult
 
 
-  !**********************************************************************
-  ! Output the histogram table to a file (by file name)
-  !**********************************************************************
-  subroutine histogram_write_mult_character_fn(this, fn, xvalues, header, ierror)
+  !% Output the histogram table to a file (by file name)
+  subroutine histogram1d_write_mult_character_fn(this, fn, xvalues, header, error)
     implicit none
 
-    type(histogram_t), intent(in)       :: this(:)
+    type(Histogram1D), intent(in)       :: this(:)
     character(*), intent(in)            :: fn
     logical, intent(in), optional       :: xvalues
     character(*), intent(in), optional  :: header(lbound(this, 1):ubound(this, 1))
-    integer, intent(inout), optional    :: ierror
+    integer, intent(out), optional      :: error
 
     ! ---
 
-    integer  :: un
+    type(InOutput)  :: file
 
     ! ---
 
-    un = fopen(fn, F_WRITE)
-    call histogram_write_mult(this, un, xvalues, header, ierror=ierror)
-    call fclose(un)
+    INIT_ERROR(error)
 
-    PASS_ERROR(ierror)
+    call initialise(file, fn, action=OUTPUT, error=error)
+    PASS_ERROR(error)
+    call histogram1d_write_mult(this, file, xvalues, header, error=error)
+    call finalise(file)
+    PASS_ERROR(error)
 
-  endsubroutine histogram_write_mult_character_fn
+  endsubroutine histogram1d_write_mult_character_fn
 
 
-  !**********************************************************************
-  ! Output the histogram table to a file (by file unit)
-  !**********************************************************************
-  subroutine histogram_write(this, un, xvalues, header, ierror)
+  !% Output the histogram table to a file (by file unit)
+  subroutine histogram1d_write(this, file, xvalues, header, error)
     implicit none
 
-    type(histogram_t), intent(in)       :: this
-    integer, intent(in)                 :: un
+    type(Histogram1D), intent(in)       :: this
+    type(InOutput), intent(in)          :: file
     logical, intent(in), optional       :: xvalues
     character(*), intent(in), optional  :: header
-    integer, intent(inout), optional    :: ierror
+    integer, intent(out), optional      :: error
 
     ! ---
 
+    INIT_ERROR(error)
+
     if (present(header)) then
-       call histogram_write_mult((/ this /), un, xvalues, (/ header /), ierror=ierror)
-       PASS_ERROR(ierror)
+       call histogram1d_write_mult((/ this /), file, xvalues, (/ header /), error=error)
+       PASS_ERROR(error)
     else
-       call histogram_write_mult((/ this /), un, xvalues, ierror=ierror)
-       PASS_ERROR(ierror)
+       call histogram1d_write_mult((/ this /), file, xvalues, error=error)
+       PASS_ERROR(error)
     endif
 
-  endsubroutine histogram_write
+  endsubroutine histogram1d_write
 
 
-  !**********************************************************************
-  ! Output the histogram table to a file (by file name)
-  !**********************************************************************
-  subroutine histogram_write_character_fn(this, fn, xvalues, header, ierror)
+  !% Output the histogram table to a file (by file name)
+  subroutine histogram1d_write_character_fn(this, fn, xvalues, header, error)
     implicit none
 
-    type(histogram_t), intent(in)       :: this
+    type(Histogram1D), intent(in)       :: this
     character(*), intent(in)            :: fn
     logical, intent(in), optional       :: xvalues
     character(*), intent(in), optional  :: header
-    integer, intent(inout), optional    :: ierror
+    integer, intent(out), optional      :: error
 
     ! ---
 
+    INIT_ERROR(error)
+
     if (present(header)) then
-       call histogram_write_mult_character_fn((/ this /), fn, xvalues, (/ header /), ierror=ierror)
-       PASS_ERROR(ierror)
+       call histogram1d_write_mult_character_fn((/ this /), fn, xvalues, (/ header /), error=error)
+       PASS_ERROR(error)
     else
-       call histogram_write_mult_character_fn((/ this /), fn, xvalues, ierror=ierror)
-       PASS_ERROR(ierror)
+       call histogram1d_write_mult_character_fn((/ this /), fn, xvalues, error=error)
+       PASS_ERROR(error)
     endif
 
-  endsubroutine histogram_write_character_fn
+  endsubroutine histogram1d_write_character_fn
 
 
-  !**********************************************************************
-  ! Add a value to the histogram with linear interpolation
-  !**********************************************************************
-  subroutine histogram_add_linear(this, val, norm)
+  !% Add a value to the histogram with linear interpolation
+  subroutine histogram1d_add_linear(this, val, norm)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: val
     real(DP), intent(in)              :: norm
 
@@ -546,16 +603,14 @@ contains
        this%h_sq(i2)  = this%h_sq(i2) + d2*norm**2
     endif
 
-  endsubroutine histogram_add_linear
+  endsubroutine histogram1d_add_linear
 
 
-  !**********************************************************************
-  ! Add multiple values to the histogram with linear interpolation
-  !**********************************************************************
-  subroutine histogram_add_linear_vals(this, vals, norm)
+  !% Add multiple values to the histogram with linear interpolation
+  subroutine histogram1d_add_linear_vals(this, vals, norm)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norm
 
@@ -619,16 +674,14 @@ contains
 
     endif
 
-  endsubroutine histogram_add_linear_vals
+  endsubroutine histogram1d_add_linear_vals
 
 
-  !**********************************************************************
-  ! Add multiple values to the histogram with linear interpolation
-  !**********************************************************************
-  subroutine histogram_add_linear_vals_norms(this, vals, norms)
+  !% Add multiple values to the histogram with linear interpolation
+  subroutine histogram1d_add_linear_vals_norms(this, vals, norms)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norms(:)
 
@@ -701,17 +754,15 @@ contains
 
     endif
 
-  endsubroutine histogram_add_linear_vals_norms
+  endsubroutine histogram1d_add_linear_vals_norms
 
 
-  !**********************************************************************
-  ! Add multiple values to the histogram with linear interpolation
-  ! and an additional mask
-  !**********************************************************************
-  subroutine histogram_add_linear_vals_norm_mask(this, vals, norm, mask)
+  !% Add multiple values to the histogram with linear interpolation
+  !% and an additional mask
+  subroutine histogram1d_add_linear_vals_norm_mask(this, vals, norm, mask)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norm
     logical, intent(in)               :: mask(:)
@@ -789,17 +840,15 @@ contains
 
     endif
 
-  endsubroutine histogram_add_linear_vals_norm_mask
+  endsubroutine histogram1d_add_linear_vals_norm_mask
 
 
-  !**********************************************************************
-  ! Add multiple values to the histogram with linear interpolation
-  ! and an additional mask
-  !**********************************************************************
-  subroutine histogram_add_linear_vals_norms_mask(this, vals, norms, mask)
+  !% Add multiple values to the histogram with linear interpolation
+  !% and an additional mask
+  subroutine histogram1d_add_linear_vals_norms_mask(this, vals, norms, mask)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norms(:)
     logical, intent(in)               :: mask(:)
@@ -877,16 +926,14 @@ contains
 
     endif
 
-  endsubroutine histogram_add_linear_vals_norms_mask
+  endsubroutine histogram1d_add_linear_vals_norms_mask
 
 
-  !**********************************************************************
-  ! Add a value which is broadened by a smoothing function to the histogram
-  !**********************************************************************
-  subroutine histogram_add_smoothed(this, val, norm)
+  !% Add a value which is broadened by a smoothing function to the histogram
+  subroutine histogram1d_add_smoothed(this, val, norm)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: val
     real(DP), intent(in)              :: norm
 
@@ -932,16 +979,16 @@ contains
     this%h(i1:i2)     = this%h(i1:i2)    + expvals(g1:g2)*norm
     this%h_sq(i1:i2)  = this%h_sq(i1:i2) + expvals(g1:g2)*norm**2
 
-  endsubroutine histogram_add_smoothed
+  endsubroutine histogram1d_add_smoothed
 
 
   !**********************************************************************
   ! Add a value
   !**********************************************************************
-  subroutine histogram_add(this, val, norm)
+  subroutine histogram1d_add(this, val, norm)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: val
     real(DP), intent(in), optional    :: norm
 
@@ -958,21 +1005,19 @@ contains
     endif
 
     if (this%interp == INTERP_LINEAR) then
-       call histogram_add_linear(this, val, n)
+       call histogram1d_add_linear(this, val, n)
     else
-       call histogram_add_smoothed(this, val, n)
+       call histogram1d_add_smoothed(this, val, n)
     endif
 
-  endsubroutine histogram_add
+  endsubroutine histogram1d_add
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_vals(this, vals, norm)
+  !% Add a list of values to the histogram
+  subroutine histogram1d_add_vals(this, vals, norm)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in), optional    :: norm
 
@@ -991,26 +1036,24 @@ contains
 
     if (this%interp == INTERP_LINEAR) then
 
-       call histogram_add_linear_vals(this, vals,  n)
+       call histogram1d_add_linear_vals(this, vals,  n)
 
     else
     
        do i = lbound(vals, 1), ubound(vals, 1)
-          call histogram_add_smoothed(this, vals(i), n)
+          call histogram1d_add_smoothed(this, vals(i), n)
        enddo
 
     endif
 
-  endsubroutine histogram_add_vals
+  endsubroutine histogram1d_add_vals
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_vals_mask(this, vals, mask)
+  !% Add a list of values to the histogram
+  subroutine histogram1d_add_vals_mask(this, vals, mask)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     logical, intent(in)               :: mask(:)
 
@@ -1024,7 +1067,7 @@ contains
 
        do i = lbound(vals, 1), ubound(vals, 1)
           if (mask(i)) then
-             call histogram_add_linear(this, vals(i), 1.0_DP)
+             call histogram1d_add_linear(this, vals(i), 1.0_DP)
           endif
        enddo
 
@@ -1032,22 +1075,20 @@ contains
     
        do i = lbound(vals, 1), ubound(vals, 1)
           if (mask(i)) then
-             call histogram_add_smoothed(this, vals(i), 1.0_DP)
+             call histogram1d_add_smoothed(this, vals(i), 1.0_DP)
           endif
        enddo
 
     endif
 
-  endsubroutine histogram_add_vals_mask
+  endsubroutine histogram1d_add_vals_mask
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_vals_norms(this, vals, norms)
+  !% Add a list of values to the histogram
+  subroutine histogram1d_add_vals_norms(this, vals, norms)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norms(:)
 
@@ -1059,26 +1100,24 @@ contains
 
     if (this%interp == INTERP_LINEAR) then
 
-       call histogram_add_linear_vals_norms(this, vals, norms)
+       call histogram1d_add_linear_vals_norms(this, vals, norms)
 
     else
     
        do i = lbound(vals, 1), ubound(vals, 1)
-          call histogram_add_smoothed(this, vals(i), norms(i))
+          call histogram1d_add_smoothed(this, vals(i), norms(i))
        enddo
 
     endif
 
-  endsubroutine histogram_add_vals_norms
+  endsubroutine histogram1d_add_vals_norms
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_vals_norm_mask(this, vals, norm, mask)
+  !% Add a list of values to the histogram
+  subroutine histogram1d_add_vals_norm_mask(this, vals, norm, mask)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norm
     logical, intent(in)               :: mask(:)
@@ -1091,28 +1130,26 @@ contains
 
     if (this%interp == INTERP_LINEAR) then
 
-       call histogram_add_linear_vals_norm_mask(this, vals, norm, mask)
+       call histogram1d_add_linear_vals_norm_mask(this, vals, norm, mask)
 
     else
     
        do i = lbound(vals, 1), ubound(vals, 1)
           if (mask(i)) then
-             call histogram_add_smoothed(this, vals(i), norm)
+             call histogram1d_add_smoothed(this, vals(i), norm)
           endif
        enddo
 
     endif
 
-  endsubroutine histogram_add_vals_norm_mask
+  endsubroutine histogram1d_add_vals_norm_mask
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_vals_norms_mask(this, vals, norms, mask)
+  !% Add a list of values to the histogram
+  subroutine histogram1d_add_vals_norms_mask(this, vals, norms, mask)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(:)
     real(DP), intent(in)              :: norms(:)
     logical, intent(in)               :: mask(:)
@@ -1125,32 +1162,30 @@ contains
 
     if (this%interp == INTERP_LINEAR) then
 
-       call histogram_add_linear_vals_norms_mask(this, vals, norms, mask)
+       call histogram1d_add_linear_vals_norms_mask(this, vals, norms, mask)
 
     else
     
        do i = lbound(vals, 1), ubound(vals, 1)
           if (mask(i)) then
-             call histogram_add_smoothed(this, vals(i), norms(i))
+             call histogram1d_add_smoothed(this, vals(i), norms(i))
           endif
        enddo
 
     endif
 
-  endsubroutine histogram_add_vals_norms_mask
+  endsubroutine histogram1d_add_vals_norms_mask
 
 
-  !**********************************************************************
-  ! Add a range of values to the histogram (linear interpolation only)
-  !**********************************************************************
-  subroutine histogram_add_range(this, vala, valb, norm, ierror)
+  !% Add a range of values to the histogram (linear interpolation only)
+  subroutine histogram1d_add_range(this, vala, valb, norm, error)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vala
     real(DP), intent(in)              :: valb
     real(DP), intent(in), optional    :: norm
-    integer, intent(inout), optional  :: ierror
+    integer, intent(out), optional    :: error
 
     ! ---
 
@@ -1160,8 +1195,10 @@ contains
 
     ! ---
 
+    INIT_ERROR(error)
+
     if (this%interp /= INTERP_LINEAR) then
-       RAISE_ERROR("*histogram_add_range* can only be used with linear interpolation.", ierror)
+       RAISE_ERROR("*histogram1d_add_range* can only be used with linear interpolation.", error)
     endif
 
     n  = 1.0_DP
@@ -1255,21 +1292,19 @@ contains
 
     endif
 
-  endsubroutine histogram_add_range
+  endsubroutine histogram1d_add_range
 
 
-  !**********************************************************************
-  ! Add a range of values to the histogram (linear interpolation only)
-  !**********************************************************************
-  subroutine histogram_add_range_vals(this, valsa, valsb, norm, mask, ierror)
+  !% Add a range of values to the histogram (linear interpolation only)
+  subroutine histogram1d_add_range_vals(this, valsa, valsb, norm, mask, error)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: valsa(:)
     real(DP), intent(in)              :: valsb(:)
     real(DP), intent(in), optional    :: norm
     logical, intent(in), optional     :: mask(:)
-    integer, intent(inout), optional  :: ierror
+    integer, intent(out), optional    :: error
 
     ! ---
 
@@ -1285,8 +1320,10 @@ contains
 
     ! ---
 
+    INIT_ERROR(error)
+
     if (this%interp /= INTERP_LINEAR) then
-       RAISE_ERROR("*histogram_add_range* can only be used with linear interpolation.", ierror)
+       RAISE_ERROR("*histogram1d_add_range* can only be used with linear interpolation.", error)
     endif
 
     n  = 1.0_DP
@@ -1397,21 +1434,19 @@ contains
 
     enddo
 
-  endsubroutine histogram_add_range_vals
+  endsubroutine histogram1d_add_range_vals
 
 
-  !**********************************************************************
-  ! Add a range of values to the histogram (linear interpolation only)
-  !**********************************************************************
-  subroutine histogram_add_range_vals_norms(this, valsa, valsb, norms, mask, ierror)
+  !% Add a range of values to the histogram (linear interpolation only)
+  subroutine histogram1d_add_range_vals_norms(this, valsa, valsb, norms, mask, error)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: valsa(:)
     real(DP), intent(in)              :: valsb(:)
     real(DP), intent(in)              :: norms(:)
     logical, intent(in), optional     :: mask(:)
-    integer, intent(inout), optional  :: ierror
+    integer, intent(out), optional    :: error
 
     ! ---
 
@@ -1426,8 +1461,10 @@ contains
 
     ! ---
 
+    INIT_ERROR(error)
+
     if (this%interp /= INTERP_LINEAR) then
-       RAISE_ERROR("*histogram_add_range* can only be used with linear interpolation.", ierror)
+       RAISE_ERROR("*histogram1d_add_range* can only be used with linear interpolation.", error)
     endif
 
     where (valsa > valsb)
@@ -1532,17 +1569,15 @@ contains
 
     enddo
 
-  endsubroutine histogram_add_range_vals_norms
+  endsubroutine histogram1d_add_range_vals_norms
 
 
-  !**********************************************************************
-  ! Add a list of values to the histogram
-  !**********************************************************************
-  subroutine histogram_add_histogram(this, that, fac)
+  !% Add two histograms
+  subroutine histogram1d_add_histogram(this, that, fac)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
-    type(histogram_t), intent(in)     :: that
+    type(Histogram1D), intent(inout)  :: this
+    type(Histogram1D), intent(in)     :: that
     real(DP), intent(in), optional    :: fac
 
     ! ---
@@ -1554,17 +1589,15 @@ contains
        this%h   = this%h + that%h
     endif
 
-  endsubroutine histogram_add_histogram
+  endsubroutine histogram1d_add_histogram
 
 
-  !**********************************************************************
-  ! Compute average value in each bin (does only makes sense if
-  ! norm != 1 was used in the add functions)
-  !**********************************************************************
-  subroutine histogram_average(this, mpi)
+  !% Compute average value in each bin (does only makes sense if
+  !% norm != 1 was used in the add functions)
+  subroutine histogram1d_average(this, mpi)
     implicit none
 
-    type(histogram_t),           intent(inout)  :: this
+    type(Histogram1D),           intent(inout)  :: this
     type(MPI_context), optional, intent(in)     :: mpi
 
     ! ---
@@ -1582,17 +1615,15 @@ contains
     this%h     = this%h / this%h1
     this%h_sq  = this%h_sq / this%h1
 
-  endsubroutine histogram_average
+  endsubroutine histogram1d_average
 
 
-  !**********************************************************************
-  ! Compute Shannon entropy of this histogram. Needs to be called
-  ! after normalize.
-  !**********************************************************************
-  elemental function histogram_entropy(this) result(val)
+  !% Compute Shannon entropy of this histogram. Needs to be called
+  !% after normalize.
+  elemental function histogram1d_entropy(this) result(val)
     implicit none
 
-    type(histogram_t), intent(in)  :: this
+    type(Histogram1D), intent(in)  :: this
     real(DP)                       :: val
 
     ! ---
@@ -1611,16 +1642,14 @@ contains
 
     val  = S*this%dbin
 
-  endfunction histogram_entropy
+  endfunction histogram1d_entropy
 
 
-  !**********************************************************************
-  ! Compute expectation value
-  !**********************************************************************
-  elemental function histogram_expectation_value(this) result(val)
+  !% Compute expectation value
+  elemental function histogram1d_expectation_value(this) result(val)
     implicit none
 
-    type(histogram_t), intent(in)  :: this
+    type(Histogram1D), intent(in)  :: this
     real(DP)                       :: val
 
     ! ---
@@ -1637,32 +1666,28 @@ contains
        val  = sum(this%x * this%h / n)
     endif
 
-  endfunction histogram_expectation_value
+  endfunction histogram1d_expectation_value
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
-  subroutine histogram_mul(this, val)
+  !% Multiply the histogram by a value - for normalization
+  subroutine histogram1d_mul(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: val
 
     ! ---
 
     this%h  = this%h * val
 
-  endsubroutine histogram_mul
+  endsubroutine histogram1d_mul
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
+  !% Multiply multiple histograms by a value - for normalization
   subroutine histograms_mul(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this(:)
+    type(Histogram1D), intent(inout)  :: this(:)
     real(DP), intent(in)              :: val
 
     ! ---
@@ -1678,13 +1703,11 @@ contains
   endsubroutine histograms_mul
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
+  !% Multiply multiple histograms by a value - for normalization
   subroutine histograms2_mul(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this(:, :)
+    type(Histogram1D), intent(inout)  :: this(:, :)
     real(DP), intent(in)              :: val
 
     ! ---
@@ -1702,45 +1725,39 @@ contains
   endsubroutine histograms2_mul
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
-  subroutine histogram_mul_vals(this, vals)
+  !% Multiply the histogram by multiple value - for normalization
+  subroutine histogram1d_mul_vals(this, vals)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(this%n)
 
     ! ---
 
     this%h  = this%h * vals
     
-  endsubroutine histogram_mul_vals
+  endsubroutine histogram1d_mul_vals
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
-  subroutine histogram_div(this, val)
+  !% Divide histogram by a value
+  subroutine histogram1d_div(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: val
 
     ! ---
 
     this%h  = this%h / val
 
-  endsubroutine histogram_div
+  endsubroutine histogram1d_div
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
+  !% Divide multiple histograms by a value
   subroutine histograms_div(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this(:)
+    type(Histogram1D), intent(inout)  :: this(:)
     real(DP), intent(in)              :: val
 
     ! ---
@@ -1756,13 +1773,11 @@ contains
   endsubroutine histograms_div
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
+  !% Divide multiple histograms by a value
   subroutine histograms2_div(this, val)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this(:, :)
+    type(Histogram1D), intent(inout)  :: this(:, :)
     real(DP), intent(in)              :: val
 
     ! ---
@@ -1780,29 +1795,25 @@ contains
   endsubroutine histograms2_div
 
 
-  !**********************************************************************
-  ! Multiply the histogram by a value - for normalization
-  !**********************************************************************
-  subroutine histogram_div_vals(this, vals)
+  !% Divide histogram by multiple values
+  subroutine histogram1d_div_vals(this, vals)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: vals(this%n)
 
     ! ---
 
     this%h  = this%h / vals
     
-  endsubroutine histogram_div_vals
+  endsubroutine histogram1d_div_vals
 
 
-  !**********************************************************************
-  ! Normalize histogram
-  !**********************************************************************
-  elemental subroutine histogram_normalize(this)
+  !% Normalize histogram
+  elemental subroutine histogram1d_normalize(this)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
 
     ! ---
 
@@ -1816,23 +1827,21 @@ contains
        this%h  = this%h / n
     endif
 
-  endsubroutine histogram_normalize
+  endsubroutine histogram1d_normalize
 
 
-  !**********************************************************************
-  ! OpenMP reduction - *thpriv* is a threadprivate histogram,
-  ! this needs to be called within an *omp parallel* construct.
-  !**********************************************************************
-  elemental subroutine histogram_reduce(this, thpriv)
+  !% OpenMP reduction - *thpriv* is a threadprivate histogram,
+  !% this needs to be called within an *omp parallel* construct.
+  elemental subroutine histogram1d_reduce(this, thpriv)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
-    type(histogram_t), intent(in)     :: thpriv
+    type(Histogram1D), intent(inout)  :: this
+    type(Histogram1D), intent(in)     :: thpriv
 
     ! ---
 
     !$omp single
-    call init(this, thpriv)
+    call initialise(this, thpriv)
     !$omp end single
 
     !$omp critical
@@ -1841,16 +1850,14 @@ contains
     this%h1    = this%h1   + thpriv%h1
     !$omp end critical
 
-  endsubroutine histogram_reduce
+  endsubroutine histogram1d_reduce
 
 
-  !**********************************************************************
-  ! Smooth histogram by convolution with a Gaussian
-  !**********************************************************************
-  subroutine histogram_smooth(this, sigma)
+  !% Smooth histogram by convolution with a Gaussian
+  subroutine histogram1d_smooth(this, sigma)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
+    type(Histogram1D), intent(inout)  :: this
     real(DP), intent(in)              :: sigma
 
     ! ---
@@ -1871,17 +1878,15 @@ contains
 
     this%h  = h
 
-  endsubroutine histogram_smooth
+  endsubroutine histogram1d_smooth
 
 
-  !**********************************************************************
-  ! Sum histogram from different processors onto root
-  !**********************************************************************
-  subroutine histogram_sum_in_place(this, mpi)
+  !% Sum histogram from different processors onto root
+  subroutine histogram1d_sum_in_place(mpi, this)
     implicit none
 
-    type(histogram_t), intent(inout)  :: this
     type(MPI_context), intent(in)     :: mpi
+    type(Histogram1D), intent(inout)  :: this
 
     ! ---
 
@@ -1889,16 +1894,17 @@ contains
     call sum_in_place(mpi, this%h_sq)
     call sum_in_place(mpi, this%h1)
 
-  endsubroutine histogram_sum_in_place
+  endsubroutine histogram1d_sum_in_place
 
 
+#if 0
   !**********************************************************************
   ! Memory estimate logging
   !**********************************************************************
   subroutine log_memory_estimate_histogram(this)
     implicit none
 
-    type(histogram_t), intent(in)  :: this
+    type(Histogram1D), intent(in)  :: this
 
     ! ---
 
@@ -1916,7 +1922,7 @@ contains
   subroutine log_memory_estimate_histogram2(this)
     implicit none
 
-    type(histogram_t), intent(in)  :: this(:)
+    type(Histogram1D), intent(in)  :: this(:)
 
     ! ---
 
@@ -1937,7 +1943,7 @@ contains
   subroutine log_memory_estimate_histogram3(this)
     implicit none
 
-    type(histogram_t), intent(in)  :: this(:, :)
+    type(Histogram1D), intent(in)  :: this(:, :)
 
     ! ---
 
@@ -1952,5 +1958,6 @@ contains
     enddo
 
   endsubroutine log_memory_estimate_histogram3
+#endif
 
-endmodule histogram_module
+endmodule histogram1d_module
