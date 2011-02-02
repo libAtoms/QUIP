@@ -47,7 +47,7 @@ program EVB_filepot_template
     type(Atoms)                   :: at1,at2
     real(dp), pointer             :: at1_pos(:,:), at2_pos(:,:)
     type(Potential)               :: cp2k_fast_pot, pot
-    character(FIELD_LENGTH)       :: args_str
+    character(STRING_LENGTH)       :: args_str
     integer                       :: stat, error
     real(dp)                      :: energy
     real(dp), dimension(:,:), allocatable :: f1
@@ -55,7 +55,7 @@ program EVB_filepot_template
     !ARGS_STR INPUT PARAMETERS
     type(Dictionary)        :: cli_params
     type(Dictionary)        :: params
-    character(FIELD_LENGTH) :: evb_params_line
+    character(STRING_LENGTH) :: evb_params_line
     character(FIELD_LENGTH) :: posfilename
     character(FIELD_LENGTH) :: xyz_template_filename
     character(FIELD_LENGTH) :: outfilename
@@ -78,7 +78,7 @@ program EVB_filepot_template
                                save_energy
     type(Inoutput)          :: evb_params_file
     logical                 :: exists
-    character(len=1024) :: filename
+    character(len=FIELD_LENGTH) :: filename
     integer                        :: tmp_run_dir_i
 
 

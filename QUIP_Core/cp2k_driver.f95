@@ -43,6 +43,7 @@ use topology_module
 implicit none
 
 private
+integer, parameter, private :: CP2K_LINE_LENGTH = 1024 !Max line length to be printed into the CP2K input files
 
 public :: do_cp2k_calc
 
@@ -56,7 +57,7 @@ contains
 
     type(inoutput) :: last_run_io
     type(cinoutput) :: force_cio
-    character(len=1024) :: last_run_s
+    character(len=FIELD_LENGTH) :: last_run_s
     integer :: this_run_i
     integer :: stat
     type(Atoms) :: for
@@ -122,13 +123,13 @@ contains
 
     type(Inoutput) :: template_io
     integer :: template_n_lines
-    character(len=1024), allocatable :: cp2k_template_a(:)
+    character(len=FIELD_LENGTH), allocatable :: cp2k_template_a(:)
     type(Inoutput) :: link_template_io
     integer :: link_template_n_lines
-    character(len=1024), allocatable :: link_template_a(:)
+    character(len=FIELD_LENGTH), allocatable :: link_template_a(:)
     integer :: i_line
 
-    character(len=1024) :: run_dir
+    character(len=FIELD_LENGTH) :: run_dir
 
     type(Table) :: qm_list
     type(Table) :: cut_bonds
@@ -144,7 +145,7 @@ contains
     logical :: do_lsd
 
     logical :: can_reuse_wfn, qm_list_changed
-    character(len=STRING_LENGTH) :: qm_name_postfix
+    character(len=FIELD_LENGTH) :: qm_name_postfix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -179,7 +180,7 @@ contains
     character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
     character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
-    character(len=1024) :: dir, tmp_run_dir
+    character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
     logical :: exists
 
@@ -789,7 +790,7 @@ contains
     integer :: line_n
 
     integer :: i, pamp, pspc
-    character(len=1024) :: sec, word, arg, base_sec_root, base_sec_tail, new_sec_end
+    character(len=FIELD_LENGTH) :: sec, word, arg, base_sec_root, base_sec_tail, new_sec_end
 
     line_n = 0
 
@@ -862,7 +863,7 @@ contains
     integer :: m
     integer :: i, ti
     type(inoutput) :: qm_charges_io
-    character(len=1024) :: species, qm_charges_l
+    character(len=FIELD_LENGTH) :: species, qm_charges_l
 
     INIT_ERROR(error)
 
@@ -999,7 +1000,7 @@ contains
 
     integer :: n_tries
     logical :: converged
-    character(len=1024) :: cp2k_run_command
+    character(len=FIELD_LENGTH) :: cp2k_run_command
     integer :: stat, error_stat
 
     n_tries = 0
@@ -1144,7 +1145,7 @@ contains
     character(len=*), intent(inout) :: l_a(:)
 
     integer :: pamp
-    character(len=1024) :: section_str, new_section_str
+    character(len=CP2K_LINE_LENGTH) :: section_str, new_section_str
     integer :: i, j, comment_i
 
     section_str = ""

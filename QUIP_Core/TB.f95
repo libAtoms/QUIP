@@ -538,7 +538,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
   real(dp) :: my_energy
   logical :: my_use_Fermi_E
   real(dp) :: my_Fermi_E, my_Fermi_T, my_band_width
-  character(len=STRING_LENGTH) :: solver_arg
+  character(len=FIELD_LENGTH) :: solver_arg
   logical :: noncollinear, use_prev_charge, do_evecs
   type(ApproxFermi) :: my_AF
   logical :: do_at_local_N

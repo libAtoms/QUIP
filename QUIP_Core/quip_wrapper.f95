@@ -47,7 +47,7 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
   integer, intent(in) :: N
   real(dp), dimension(3,3), intent(in) :: lattice
   character(len=3), dimension(N), intent(in) :: symbol
-  character(len=FIELD_LENGTH) :: args_str
+  character(len=STRING_LENGTH) :: args_str
   real(dp), dimension(3,N), intent(in) :: coord
   real(dp), intent(out) :: energy
   real(dp), dimension(3,N), intent(out) :: force

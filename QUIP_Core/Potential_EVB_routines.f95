@@ -119,9 +119,9 @@
     character(STRING_LENGTH) :: extra_calc_args
 
     character(FIELD_LENGTH) :: psf_print
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, calc_EVB_gap
-    character(STRING_LENGTH) :: use_calc_energy
-    character(10240) :: new_args_str
+    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, calc_EVB_gap
+    character(FIELD_LENGTH) :: use_calc_energy
+    character(STRING_LENGTH) :: new_args_str
 
     INIT_ERROR(error)
 

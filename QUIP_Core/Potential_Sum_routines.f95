@@ -70,7 +70,7 @@
     real(dp), allocatable :: my_f_1(:,:), my_local_virial_1(:,:)
     real(dp) :: my_virial_1(3,3)
     type(Dictionary) :: params
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial
+    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial
 
     INIT_ERROR(error)
 

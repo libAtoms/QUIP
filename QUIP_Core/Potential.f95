@@ -168,7 +168,7 @@ module Potential_module
      real(dp) :: minim_pos_lat_preconditioner = 1.0_dp
 
      real(dp) :: minim_save_lat(3,3)
-     character(len=1024) :: minim_args_str
+     character(len=STRING_LENGTH) :: minim_args_str
      logical :: minim_do_pos, minim_do_lat
      integer :: minim_n_eval_e, minim_n_eval_f, minim_n_eval_ef
      real(dp) :: pos_lat_preconditioner_factor
@@ -277,7 +277,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
   real(dp) :: target_vol, target_B, r_scale, vol, B
-  character(len=FIELD_LENGTH) :: my_args_str
+  character(len=STRING_LENGTH) :: my_args_str
   type(Atoms) :: bulk
   integer :: it
 
@@ -548,8 +548,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
     type(Dictionary) :: params
-    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
-    character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
+    character(len=FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
+    character(len=FIELD_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale
     integer i
@@ -1817,7 +1817,7 @@ end subroutine pack_pos_dg
     integer :: n, my_hook_interval, my_write_interval, my_connect_interval
     real(dp) :: e
     real(dp), pointer, dimension(:,:) :: f
-    character(len=1024) :: my_args_str
+    character(len=STRING_LENGTH) :: my_args_str
     type(Dictionary) :: params
 
     INIT_ERROR(error)

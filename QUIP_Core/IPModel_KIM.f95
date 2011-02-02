@@ -204,7 +204,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-  character(len=STRING_LENGTH) :: extra_calcs_list(10)
+  character(len=FIELD_LENGTH) :: extra_calcs_list(10)
   integer :: n_extra_calcs
   type(KIM_iterator_data) :: ki
   integer*8 :: ppos, pf, pe, pN, pNlocal
