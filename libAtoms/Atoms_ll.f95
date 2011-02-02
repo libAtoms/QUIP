@@ -237,7 +237,7 @@ contains
     logical :: do_sort_Time, do_no_Time_dups, do_quiet, do_no_compute_index
     type(Atoms_ll_entry), pointer :: entry
     logical :: is_a_dup, do_all_properties
-    character(len=1024) :: my_properties
+    character(len=STRING_LENGTH) :: my_properties
     integer :: initial_frame_count
     integer :: l_error
 

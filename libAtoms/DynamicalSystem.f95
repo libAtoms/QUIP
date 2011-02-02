@@ -60,6 +60,7 @@ module dynamicalsystem_module
    use linearalgebra_module
    use table_module
    use periodictable_module
+   use paramreader_module, only: STRING_LENGTH
    use atoms_module
    use rigidbody_module
    use group_module
@@ -2098,7 +2099,7 @@ contains
      type(MPI_context), optional, intent(in)   :: mpi_obj
      integer,           optional, intent(out)  :: error
 
-     character(len=1023) :: string
+     character(len=STRING_LENGTH) :: string
      logical, save :: firstcall = .true.
      real(dp) :: temp, my_epot, my_ekin
      real(dp) :: region_temps(size(this%thermostat))

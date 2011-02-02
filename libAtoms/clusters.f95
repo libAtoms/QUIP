@@ -3390,7 +3390,8 @@ type(inoutput), optional :: debugfile
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, old_all_but_term
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:), old_hybrid_mark_p(:)
-    character(len=1024) :: my_create_cluster_info_args, my_mark_postfix
+    character(len=STRING_LENGTH) :: my_create_cluster_info_args
+    character(len=FIELD_LENGTH)  :: my_mark_postfix
     integer, pointer :: hybrid_region_core_tmp_p(:)
     type(Table) :: padded_cluster_info
 

@@ -55,6 +55,7 @@ LIBATOMS_F95_FILES = \
   statistics \
   Dictionary \
   Table \
+  ParamReader \
   PeriodicTable \
   minimization \
   Atoms_types \
@@ -65,7 +66,6 @@ LIBATOMS_F95_FILES = \
   Constraints \
   Thermostat \
   DynamicalSystem \
-  ParamReader \
   Spline \
   Sparse \
   DomainDecomposition \
