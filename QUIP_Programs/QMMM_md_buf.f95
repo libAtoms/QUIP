@@ -254,6 +254,10 @@ logical :: have_silica_potential
         call system_abort('could not parse argument line')
       end if
 
+      call finalise(params_in)
+
+    !CHECK INPUT PARAMETERS
+
       if (Run_Type1(1:13) == 'QMMM_EXTENDED' .or. Run_Type2(1:13) == 'QMMM_EXTENDED') then
 	if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
 	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
@@ -311,8 +315,6 @@ logical :: have_silica_potential
       else
 	 call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
       endif
-
-      call finalise(params_in)
 
     !PRINT INPUT PARAMETERS
       call print('Run parameters:')
@@ -1441,7 +1443,7 @@ contains
     type(Potential), intent(inout) :: pot
     character(len=*), intent(in) :: Run_Type, filepot_program
     integer, intent(in) :: tmp_run_dir_i
-    character(len=1024) :: filename
+    character(len=FIELD_LENGTH) :: filename
 
     if (tmp_run_dir_i > 0) then
        filename="/tmp/cp2k_run_"//tmp_run_dir_i//"/filepot"
