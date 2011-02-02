@@ -198,7 +198,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'Buffer_general', 'F', Buffer_general, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Continue', 'F', Continue_it, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'avg_time', '100.0', avg_time, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'avg_time', '10.0', avg_time, help_string="Averaging time for the calculation of averaged coordinates to smooth out bond vibrations for the topology calculation")
       call param_register(params_in, 'Seed', '-1', Seed, help_string="No help yet.  This source file was $LastChangedBy$")
 
       call param_register(params_in, 'qm_list_filename', '', qm_list_filename,  &
