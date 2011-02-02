@@ -151,7 +151,7 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
-    character(len=STRING_LENGTH) :: hybrid_mark_postfix
+    character(len=FIELD_LENGTH) :: hybrid_mark_postfix
 
     INIT_ERROR(error)
 
@@ -209,7 +209,7 @@
     type(Atoms) :: cluster
     type(Table) :: cluster_info
     type(Dictionary) :: params
-    character(FIELD_LENGTH) :: cc_args_str
+    character(STRING_LENGTH) :: cc_args_str
 
     real(dp) :: cluster_energy_1, cluster_energy_2
     real(dp), allocatable :: cluster_local_e_1(:), cluster_local_e_2(:)
@@ -222,7 +222,7 @@
     logical :: dummy
     integer i
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
+    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
 
     INIT_ERROR(error)
 

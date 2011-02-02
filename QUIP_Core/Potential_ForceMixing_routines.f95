@@ -274,7 +274,7 @@
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
+    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5

@@ -47,7 +47,7 @@ integer :: n_callbacks = 0
 
 public :: Callbackpot_type
 type CallbackPot_type
-   character(len=1024) :: init_args_str
+   character(len=STRING_LENGTH) :: init_args_str
    character(len=FIELD_LENGTH) :: label
    integer :: callback_id
    type(MPI_context) :: mpi

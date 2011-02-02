@@ -85,13 +85,13 @@ private
 
 public :: FilePot_type
 type FilePot_type
-  character(len=1024) :: command
-  character(len=1024) :: property_list
-  character(len=1024) :: read_extra_property_list
-  character(len=1024) :: filename
+  character(len=FIELD_LENGTH) :: command
+  character(len=FIELD_LENGTH) :: property_list
+  character(len=FIELD_LENGTH) :: read_extra_property_list
+  character(len=FIELD_LENGTH) :: filename
   real(dp)            :: min_cutoff
 
-  character(len=1024) :: init_args_str
+  character(len=STRING_LENGTH) :: init_args_str
   type(MPI_context) :: mpi
 
 end type FilePot_type
@@ -136,7 +136,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   integer, intent(out), optional :: error
 
   type(Dictionary) ::  params
-  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, filename
+  character(len=FIELD_LENGTH) :: command, property_list, read_extra_property_list, filename
   real(dp) :: min_cutoff
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
@@ -219,13 +219,14 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
 
-  character(len=1024) :: xyzfile, outfile, my_args_str
+  character(len=FIELD_LENGTH)  :: xyzfile, outfile
+  character(len=STRING_LENGTH) :: my_args_str
   integer :: nx, ny, nz
   type(Atoms) :: sup
   integer :: my_err
   integer :: status
 
-  character(len=STRING_LENGTH) :: read_extra_property_list
+  character(len=FIELD_LENGTH) :: read_extra_property_list
   type(Dictionary) :: cli
   logical :: FilePot_log
   

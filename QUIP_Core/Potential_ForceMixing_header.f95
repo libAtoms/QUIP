@@ -42,7 +42,7 @@
      type(Potential), pointer :: qmpot => null() 
      type(MPI_context) :: mpi
 
-     character(1024) :: init_args_str
+     character(STRING_LENGTH) :: init_args_str
 
      logical  :: minimise_mm      !% Should classical degrees of freedom be minimised in each calc?
      logical  :: calc_weights     !% Should weights be recalculated on each call to 'calc()'

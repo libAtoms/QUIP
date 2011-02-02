@@ -168,7 +168,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
 
    integer :: i
 
-   character(len=STRING_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
+   character(len=FIELD_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
 
    INIT_ERROR(error)
 
