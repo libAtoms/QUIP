@@ -50,9 +50,9 @@ module paramreader_module
 
   implicit none
 
-  integer, parameter :: VALUE_LENGTH = 1023  !% Length of parameter value strings
-  integer, parameter :: FIELD_LENGTH = 1023  !% Maximum field width during parsing
-  integer, parameter :: STRING_LENGTH = 1023 !% Maximum length of string parameters
+  integer, parameter :: VALUE_LENGTH = 1024  !% Length of parameter value strings
+  integer, parameter :: FIELD_LENGTH = 1024  !% Maximum field width during parsing
+  integer, parameter :: STRING_LENGTH = 10240 !% Maximum length of string parameters
   integer, parameter, private :: MAX_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   integer, parameter :: PARAM_NO_VALUE = 0 !% Special parameter type that doesn't get parsed
@@ -74,14 +74,14 @@ module paramreader_module
      real(dp), pointer :: real => null()
      integer, pointer :: integer => null()
      logical, pointer :: logical => null()
-     character(len=STRING_LENGTH), pointer :: string => null()
+     character(len=FIELD_LENGTH), pointer :: string => null()
 
      real(dp), dimension(:), pointer :: reals => null()
      integer, dimension(:), pointer :: integers => null()
 
      logical, pointer :: has_value
 
-     character(len=STRING_LENGTH) :: help_string
+     character(len=FIELD_LENGTH) :: help_string
 
   end type ParamEntry
 
@@ -473,7 +473,7 @@ module paramreader_module
       logical :: status
 
       integer :: file_status
-      character(1024) :: myline
+      character(STRING_LENGTH) :: myline
       logical :: my_check_mandatory
 
       my_check_mandatory=optional_default(.true., check_mandatory)
@@ -513,8 +513,8 @@ module paramreader_module
       logical :: status
 
       integer :: i, nargs
-      character(len=1024) :: this_arg
-      character(len=10240) :: my_command_line
+      character(len=FIELD_LENGTH) :: this_arg
+      character(len=STRING_LENGTH) :: my_command_line
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
       integer :: eq_loc, this_len
@@ -797,7 +797,7 @@ module paramreader_module
     function paramentry_write_string(key,entry) result(s)
       character(len=*) :: key
       type(ParamEntry), intent(in) :: entry
-      character(len=2048) :: s
+      character(len=STRING_LENGTH) :: s
 
       ! Print value in brackets if it contains any spaces
       if (index(trim(entry%value), ' ') /= 0) then
@@ -818,7 +818,7 @@ module paramreader_module
     !% 'key1=value1 key2=value2 quotedkey="quoted value"'
     function param_write_string(dict) result(s)
       type(Dictionary), intent(in) :: dict !% Dictionary of registered key/value pairs
-      character(2048) :: s
+      character(STRING_LENGTH) :: s
 
       type(ParamEntry) :: entry
       integer :: i

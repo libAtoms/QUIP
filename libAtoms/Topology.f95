@@ -689,7 +689,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(4)                 :: tmp_at_names(MAX_ATOMS_PER_RES), tmp_at_names_PDB(MAX_ATOMS_PER_RES)
     real(dp)                     :: tmp_at_charges(MAX_ATOMS_PER_RES),check_charge
     logical                      :: my_do_charmm
-    character(len=1024)          :: line
+    character(len=STRING_LENGTH) :: line
    ! for improper generation
     integer                      :: imp_fields, tmp_imp_atoms(4,MAX_IMPROPERS_PER_RES)
 
@@ -802,10 +802,10 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(103)           :: sor !Brookhaven only uses 88
     integer                  :: mm
     character(4)             :: QM_prefix_atom_mol_name
-    character, dimension(:,:), pointer   :: atom_type, atom_res_name, atom_mol_name
-    integer, dimension(:), pointer       :: atom_res_number
-    real(dp), dimension(:), pointer      :: atom_charge
-    character(len=1024)      :: my_run_type_string
+    character, dimension(:,:), pointer :: atom_type, atom_res_name, atom_mol_name
+    integer,   dimension(:),   pointer :: atom_res_number
+    real(dp),  dimension(:),   pointer :: atom_charge
+    character(len=STRING_LENGTH)       :: my_run_type_string
     real(dp)                 :: cell_lengths(3), cell_angles(3)
 
     external :: lattice_xyz_to_abc
@@ -1045,7 +1045,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     type(Table)             :: bonds
     type(Table)             :: angles
     type(Table)             :: dihedrals, impropers
-    character(len=1024)     :: my_run_type_string
+    character(len=STRING_LENGTH) :: my_run_type_string
     !integer                 :: run_type
     logical                 :: do_add_silica_23body
 

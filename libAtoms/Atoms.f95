@@ -57,6 +57,7 @@ module  atoms_module
   use extendable_str_module
   use dictionary_module
   use table_module
+  use paramreader_module
   use periodictable_module
   use Atoms_types_module
   use Connection_module
@@ -2547,7 +2548,7 @@ contains
      type(Atoms), intent(in) :: this
      logical, optional, intent(in) :: with_types
      integer, intent(out), optional :: error
-     character(len=2048) :: prop_names_string
+     character(len=STRING_LENGTH) :: prop_names_string
 
      INIT_ERROR(error)
      prop_names_string=dict_prop_names_string(this%properties, with_types)
@@ -2559,10 +2560,10 @@ contains
      type(Dictionary), intent(in) :: this
      logical, intent(in), optional :: with_types
      integer, intent(out), optional :: error
-     character(len=2048) :: dict_prop_names_string
+     character(len=STRING_LENGTH) :: dict_prop_names_string
 
      character(len=1) :: prop_type
-     character(len=1024) :: tmp
+     character(len=STRING_LENGTH) :: tmp
      integer :: i, n_cols, type
      logical :: my_with_types
 
@@ -3355,8 +3356,8 @@ contains
     character(len=*), parameter :: default_rank1 = "pos:velo:acc:avgpos:oldpos:force:efield:dipoles"
     character(len=*), parameter :: default_rank2 = "virial:local_virial"
 
-    character(len=2048) :: all_rank1, all_rank2
-    character(len=128) :: fields(100)
+    character(len=STRING_LENGTH) :: all_rank1, all_rank2
+    character(len=C_KEY_LEN) :: fields(100)
     integer i, j, n_fields
     type(Dictionary) :: rank1_d, rank2_d
     real(dp), pointer :: v(:), v2(:,:)

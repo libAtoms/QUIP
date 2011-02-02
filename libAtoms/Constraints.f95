@@ -1476,7 +1476,8 @@ contains
     real(dp)                       :: posmax, posmin
     integer                        :: gap_energy_index, gap_energy_index1, gap_energy_index2
     integer                        :: num_fields
-    character(len=1023)            :: comment, fields(3)
+    character(len=STRING_LENGTH)   :: comment
+    character(len=FIELD_LENGTH)    :: fields(3)
     logical                        :: exists
     integer                        :: jobid
     character(len=30)              :: jobid_str

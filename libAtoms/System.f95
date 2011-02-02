@@ -105,6 +105,8 @@ module system_module
   public   !standard setting for the module
   integer,private                  :: mpi_n, mpi_myid    ! Number of processes and local process ID
   real(dp),private                 :: start_time         ! Initial time
+  integer, parameter, private      :: SYSTEM_STRING_LENGTH = 1024 !max line length read
+  integer, parameter, private      :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
   character(10240)                 :: line               ! 'line' is global and is used by other modules
   character(10240),private         :: local_line         ! 'local_line' is private and System should use this instead         
   type(inoutput),target,save      :: mainlog            !% main output, connected to 'stdout' by default
@@ -712,7 +714,7 @@ contains
 
     type(Inoutput), intent(in)     :: this
     integer, optional, intent(out) :: status
-    character(102400)                :: inoutput_read_line
+    character(SYSTEM_STRING_LENGTH_LONG) :: inoutput_read_line
     integer                        :: my_status
 
     if (this%action == OUTPUT) call system_abort('read_line: Cannot read from an output file ('//trim(adjustl(this%filename))//')')
@@ -2564,7 +2566,7 @@ contains
   function optional_default_c(def, opt_val)
     character(len=*), intent(in) :: def
     character(len=*), intent(in), optional :: opt_val
-    character(1024) :: optional_default_c
+    character(SYSTEM_STRING_LENGTH) :: optional_default_c
 
     if (present(opt_val)) then
       optional_default_c = opt_val
@@ -2807,10 +2809,10 @@ end function pad
     integer, intent(in), optional :: force_run_dir_i
     integer, intent(out), optional :: run_dir_i
     integer, intent(out), optional :: error
-    character(len=1024) :: dir
+    character(len=SYSTEM_STRING_LENGTH) :: dir
 
     integer i
-    character(len=1024) :: use_basename
+    character(len=SYSTEM_STRING_LENGTH) :: use_basename
     integer :: use_force_run_dir_i
    
     logical :: exists
@@ -2852,10 +2854,10 @@ end function pad
     character(len=*), optional :: basename
     integer, intent(out), optional :: run_dir_i
     integer, intent(out), optional :: error
-    character(len=1024) :: dir
+    character(len=SYSTEM_STRING_LENGTH) :: dir
 
     integer i
-    character(len=1024) :: use_basename
+    character(len=SYSTEM_STRING_LENGTH) :: use_basename
    
     logical :: exists
     integer stat
@@ -2883,7 +2885,7 @@ end function pad
 
   function current_version()
     integer :: current_version
-    character(len=1024) :: string
+    character(len=SYSTEM_STRING_LENGTH) :: string
 
 #ifdef SVN_VERSION    
     string = SVN_VERSION

@@ -44,11 +44,14 @@ use system_module
 implicit none
 private
 
+integer, parameter :: EXTENDABLE_STRING_LENGTH_INCREMENT = 10240 !% Increment of extendable string
+integer, parameter :: extendable_string_reading_buffer = 1024 !% Read ext_string by chunks of this size
+
 public :: extendable_str
 type extendable_str
   character(len=1), allocatable :: s(:)
   integer :: len = 0
-  integer :: increment = 10240
+  integer :: increment = EXTENDABLE_STRING_LENGTH_INCREMENT
   integer :: cur = 0
 end type extendable_str
 
@@ -353,7 +356,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
   integer, intent(in), optional :: mpi_comm
   logical, intent(in), optional :: keep_lf
 
-  character(len=1024) :: line, tmp
+  character(len=EXTENDABLE_STRING_READING_BUFFER) :: line
   integer n_read
   integer stat
   logical last_was_incomplete
@@ -496,7 +499,7 @@ subroutine extendable_str_parse_line(this, delimiters, fields, num_fields, statu
   integer, optional,          intent(out)   :: status
 
   integer my_status
-  character(len=10240) :: local_line
+  character(len=EXTENDABLE_STRING_LENGTH_INCREMENT) :: local_line
 
   local_line = read_line(this, my_status)
   if (present(status)) status = my_status

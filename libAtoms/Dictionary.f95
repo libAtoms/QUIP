@@ -38,6 +38,7 @@
 module dictionary_module
 
   use system_module
+  use system_module, only: string_to_real
   use linearalgebra_module
   use mpi_context_module
   use extendable_str_module
@@ -60,10 +61,11 @@ module dictionary_module
   integer, parameter :: &
        PROPERTY_INT = 1, PROPERTY_REAL = 2, PROPERTY_STR = 3, PROPERTY_LOGICAL = 4
 
-  public :: C_KEY_LEN, dict_field_length, dict_n_fields
+  public :: C_KEY_LEN, DICT_FIELD_LENGTH, DICT_N_FIELDS
   integer, parameter :: C_KEY_LEN = 256
-  integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
-  integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
+  integer, parameter :: DICT_FIELD_LENGTH = 1024  !% Maximum field width during parsing
+  integer, parameter :: DICT_STRING_LENGTH = 20480  !% Maximum string width during parsing, should be greater than the paramreader's string_length
+  integer, parameter :: DICT_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   public :: dictdata
   type DictData
@@ -444,7 +446,7 @@ contains
   subroutine dictionary_get_key(this, i, key, error)
     type(Dictionary), intent(in) :: this
     integer, intent(in) :: i
-    character(len=256), intent(out) :: key
+    character(len=C_KEY_LEN), intent(out) :: key
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
@@ -2020,10 +2022,11 @@ contains
     integer, intent(out), optional :: error
 
     logical :: do_append
-    character(len=dict_field_length) :: field
+    character(len=DICT_FIELD_LENGTH) :: field
     integer equal_pos
-    character(len=dict_field_length), dimension(dict_n_fields) :: final_fields
-    character(len=dict_field_length) :: key, value
+    character(len=DICT_FIELD_LENGTH), dimension(dict_n_fields) :: final_fields
+    character(len=C_KEY_LEN) :: key
+    character(len=DICT_FIELD_LENGTH) :: value
     integer :: i, num_pairs
 
     INIT_ERROR(error);
@@ -2068,7 +2071,7 @@ contains
     character(1), optional, intent(in) :: char_a_sep
     logical :: status
 
-    character(len=dict_field_length), dimension(dict_n_fields) :: fields
+    character(len=DICT_FIELD_LENGTH), dimension(dict_n_fields) :: fields
     character(len=len(strvalue)) :: datastr, shapestr, myvalue
     integer :: num_fields, i, j
     real(dp) :: r
@@ -2282,7 +2285,7 @@ contains
     character(1), optional, intent(in) :: entry_sep !% Entry seperator, default is single space
     character(1), optional, intent(in) :: char_a_sep !% Output separator for character arrays, default is ','
     type(extendable_str) :: str
-    character(len=2048) :: dictionary_write_string
+    character(len=DICT_STRING_LENGTH) :: dictionary_write_string
     integer, intent(out), optional :: error
 
     integer :: i, j, k
@@ -2920,7 +2923,8 @@ contains
     integer, intent(out), optional :: error
 
     integer s, e, save_cur
-    character(len=1024) :: key, val
+    character(len=C_KEY_LEN) :: key
+    character(len=DICT_FIELD_LENGTH) :: val
     character(len=63), parameter :: valid_chars =  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
     logical got_brace
 
