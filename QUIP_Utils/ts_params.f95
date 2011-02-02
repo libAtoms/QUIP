@@ -42,21 +42,21 @@ public :: tsParams
 
 type tsParams
 
-   character(STRING_LENGTH) :: classical_args !% Arguments used to initialise classical potential
-   character(STRING_LENGTH) :: classical_args_str !% Arguments used by Calc Potential
+   character(FIELD_LENGTH) :: classical_args !% Arguments used to initialise classical potential
+   character(FIELD_LENGTH) :: classical_args_str !% Arguments used by Calc Potential
    real(dp)                 :: classical_force_reweight = 1.0_dp   ! Fraction
 
-   character(STRING_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
-   character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
+   character(FIELD_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
+   character(FIELD_LENGTH) :: qm_args_str  !% Arguments used by QM potential
 
    logical  :: minim_end 
-   character(STRING_LENGTH) :: minim_end_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
+   character(FIELD_LENGTH) :: minim_end_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
                                             !% See 'minim()' in 'libAtoms/minimisation.f95' for details.
    real(dp) :: minim_end_tol                !% Target force tolerance - geometry optimisation is considered to be 
                                         !% converged when $|\mathbf{f}|^2 <$ 'tol'
    real(dp) :: minim_end_eps_guess          !% Initial guess for line search step size $\epsilon$.
    integer  :: minim_end_max_steps          !% Maximum number of minimisation steps.
-   character(STRING_LENGTH) :: minim_end_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
+   character(FIELD_LENGTH) :: minim_end_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
                                                    !% 'LINMIN_DERIV' when doing a LOTF hybrid simulation and only forces are available.
    
    real(dp) :: minim_gfac 
@@ -69,7 +69,7 @@ type tsParams
                                        
    logical  :: simulation_hybrid
    logical  :: simulation_restart 
-   character(STRING_LENGTH) :: simulation_method 
+   character(FIELD_LENGTH) :: simulation_method 
    logical  :: simulation_climbing 
    logical  :: simulation_newtangent
    integer  :: simulation_climbing_steps 
@@ -80,8 +80,8 @@ type tsParams
    integer  :: chain_nimages 
    logical  :: chain_mobile_last 
    logical  :: chain_mobile_first
-   character(STRING_LENGTH) :: chain_first_conf 
-   character(STRING_LENGTH) :: chain_last_conf 
+   character(FIELD_LENGTH) :: chain_first_conf 
+   character(FIELD_LENGTH) :: chain_last_conf 
   
 end type tsparams
 
