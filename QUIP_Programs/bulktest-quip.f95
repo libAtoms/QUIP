@@ -56,8 +56,8 @@ program bulktest
  
   real(dp) :: time_step, init_temp, sim_temp
   integer :: seed, fit_hops, embed_hops
-  character(string_length) :: classicalpot_args, qmpot_args
-  character(string_length) :: xml, pot_args
+  character(FIELD_LENGTH) :: classicalpot_args, qmpot_args
+  character(FIELD_LENGTH) :: xml, pot_args
 
   type(DynamicalSystem) :: ds
   type(Atoms) :: at, dia
