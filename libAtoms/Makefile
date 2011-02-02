@@ -77,10 +77,10 @@ LIBATOMS_F95_FILES = \
   Topology \
   Atoms_ll \
   ringstat \
+  histogram1d \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_utils_no_module \
-  ringstat
+  libAtoms_utils_no_module
 
 LIBATOMS_F77_FILES= \
    lbfgs	
