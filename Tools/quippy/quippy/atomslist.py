@@ -129,7 +129,7 @@ class AtomsList(object):
          if lazy:
             if self._randomaccess:
    #            print 'len(self._source) = %d' % len(self._source)
-               self._list = [ None for a in frange(len(self._source)) ]
+               self._list = [ None for a in range(len(self._source)) ]
             else:
                self._list = []
          else:
@@ -154,15 +154,13 @@ class AtomsList(object):
 
    def __delitem__(self, frame):
       if not self._store: raise ValueError('cannot delete items from AtomsList where self._store is False')
-      if frame == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
-      if frame > 0: frame -= 1
       a = self._list[frame]
       self._list[frame] = None
       del a
 
    def iteratoms(self):
       if self._store:
-         for frame in frange(len(self._list)):
+         for frame in range(len(self._list)):
             yield self[frame]
          if not self._randomaccess:
             for at in self._itersource:
@@ -183,7 +181,7 @@ class AtomsList(object):
       if not self._store: raise ValueError('cannot reverse AtomsList where self._store is False')
       if not self._randomaccess:
          raise ValueError('Cannot reverse AtomsList with generator source. Call loadall() then try again')
-      for frame in reversed(frange(len(self._list))):
+      for frame in reversed(range(len(self._list))):
          yield self[frame]
 
    def __getslice__(self, first, last):
@@ -191,19 +189,13 @@ class AtomsList(object):
 
    def __getitem__(self, frame):
       if isinstance(frame, int):
-
-         if frame == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
-         if frame > 0: frame -= 1
          if frame < 0: frame = frame + len(self)
 
          if self._store:
             if not self._randomaccess and frame >= len(self._list):
                self._list.extend(list(itertools.islice(self._itersource, frame-len(self._list)+1)))
             if self._list[frame] is None:
-               if isinstance(self._source, AtomsList):
-                  self._list[frame] = self._source[frame+1]
-               else:
-                  self._list[frame] = self._source[frame]
+               self._list[frame] = self._source[frame]
             return self._list[frame]
          else:
             if not self._randomaccess:
@@ -212,9 +204,6 @@ class AtomsList(object):
                return self._source[frame]
 
       elif isinstance(frame, slice):
-
-         if frame.start == 0: raise ValueError('invalid slice index 0 -- AtomsList indices are one-based')
-         if frame.start is not None and frame.start > 0:  frame = slice(frame.start - 1, frame.stop, frame.step)
 
          if self._store:
             if not self._randomaccess and frame.stop >= len(self._list):
@@ -241,14 +230,10 @@ class AtomsList(object):
 
    def __setslice__(self, i, j, value):
       if not self._store: raise ValueError('cannot set slice when self._store is False')
-      if i == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
-      if i > 0: i -= 1
       self._list[i:j] = value
 
    def __setitem__(self, i, value):
       if not self._store: raise ValueError('cannot set item when self._store is False')
-      if i == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
-      if i > 0: i -= 1
       self._list[i] = value
 
    def loadall(self, progress=False, progress_width=80, update_interval=None, show_value=True):
@@ -261,7 +246,7 @@ class AtomsList(object):
          else:
             update_interval = update_interval or 100
       
-      for i, a in fenumerate(self.iteratoms()):
+      for i, a in enumerate(self.iteratoms()):
          if progress and i % update_interval == 0:
             if self._randomaccess:
                pb(i)
@@ -305,7 +290,7 @@ class AtomsList(object):
          raise ValueError("Don't know how to write to destination \"%s\" in format \"%s\"" % (dest, format))
 
       res = []
-      for i, a in fenumerate(self.iteratoms()):
+      for i, a in enumerate(self.iteratoms()):
          write_kwargs = {}
          if properties is not None: write_kwargs['properties'] = properties
          if prefix is not None: write_kwargs['prefix'] = prefix

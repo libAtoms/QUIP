@@ -37,13 +37,8 @@
 
    You can access the component objects by indexing and slicing,
    e.g. ``al[i]`` is the ith Atoms object within ``al`` and
-   ``al[i:j]`` returns objects i to j inclusive.
-
-   .. warning:: 
-      :class:`AtomsList` indices start from one and run up to ``len(al)``,
-      like the :class:`FortranArray` objects used to represent atomic
-      properties. This is not compatible with standard Python lists which
-      are always indexed from zero up to ``len(L)-1``.
+   ``al[i:j]`` returns objects i to j inclusive. Like ordinary Python
+   lists, indices start from 0 and run up to ``len(al)-1``.
 
    AtomsList objects support iteration, so you can loop over the
    contents using a :keyword:`for` loop::
@@ -81,13 +76,14 @@
 
    AtomsLists provide access to the attributes of their components as
    a single array, with the last array index (slowest varying)
-   corresponding to the frame number. For example the following
+   corresponding to the frame number (plus one, since this is now a
+   fortran array). For example the following
    equalities all hold. ::
 
      al.energy == farray([at.energy for at in al])
-     al.energy[1] == al[1].energy         # energy of first frame
-     al.velo[1] == al[1].velo             # velocities of all atoms in first frame
-     al.velo[:,-1,1] == al[1].velo[:,-1]  # velocity of last atom in first frame
+     al.energy[0] == al[0].energy         # energy of first frame
+     al.velo[0] == al[0].velo             # velocities of all atoms in first frame
+     al.velo[:,-1,1] == al[0].velo[:,-1]  # velocity of last atom in first frame
 
    Methods and attributes:
 
@@ -138,7 +134,7 @@ Utility functions
 .. function:: find_files(filepat[, top])
 
    Generator which yields a sequence of filenames which match the
-   pattern `filepat`, similar to the unix ``find(1)`` commanda. If
+   pattern `filepat`, similar to the unix ``find(1)`` command. If
    `top` is absent it defaults to the current working directory.
 
 
@@ -155,7 +151,7 @@ Utility functions
    This function can be usefully combined with :func:`find_files`::
 
       filenames = find_files('cluster*.castep')
-      source    = open_files(filenames, abort=False)
+      source    = read_files(filenames, abort=False)
       al = AtomsList(source)
       al.loadall()
 

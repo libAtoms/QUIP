@@ -372,22 +372,15 @@ An :class:`AtomsList` is essentially nothing more than a list of
 :class:`Atoms` objects. You can access the component objects by
 indexing, e.g. ``al[i]`` is the ith Atoms object within ``al``.
 
-.. warning:: 
-
-  :class:`AtomsList` indices start from one and run up to ``len(al)``,
-  like the :class:`FortranArray` objects used to represent atomic
-  properties. This is not compatible with standard Python lists which
-  are always indexed from zero up to ``len(L)-1``.
-
 Let's check the conservation of the total energy in this simulation.
 The first frame in the data we've loaded has the following properties
 and parameters::
 
-   >>> print al[1].properties.keys()
+   >>> print al[0].properties.keys()
    ['species', 'pos', 'Z', 'travel', 'mass', 'move_mask', 'damp_mask', 
     'thermostat_region', 'avg_ke', 'velo', 'acc', 'avgpos', 'oldpos', 'force']
 
-   >>> print al[1].params.keys()
+   >>> print al[0].params.keys()
    ['energy', 'time']
 
 The ``energy`` is the total potential energy of each configuration,
@@ -413,7 +406,7 @@ to the frame within the file (length 100 here). ::
 
    >>> print al.velo.shape
    (3, 216, 100)
-   >>> print all(al.velo[1] == al[1].velo)
+   >>> print all(al.velo[1] == al[0].velo)
    True
 
 To plot the potential energy as a function of time (assuming
@@ -505,7 +498,7 @@ element in a 3 x `N` matrix as an array of length `N`. The agreement
 is not that good as we don't have enough data. Let's average over the
 last 50 snapshots to improve the sampling::
 
-   >>> hist(hstack([at.velo.norm() for at in al[50:]]), normed=True, bins=20, alpha=0.5)
+   >>> hist(hstack([at.velo.norm() for at in al[-50:]]), normed=True, bins=20, alpha=0.5)
 
 `hstack()
 <http://docs.scipy.org/doc/numpy/reference/generated/numpy.hstack.html>`_

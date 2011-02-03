@@ -26,8 +26,7 @@ p = optparse.OptionParser(usage='%prog [options] <input file> <output file>')
 
 p.add_option('-r', '--range', action='store', help="""Range of frames to include. Should be either a single frame
 number or a slice [start]:[stop][:step]. If -r is omitted,
-default is all frames. We use Fortran indexing, so slices include the
-"stop" frame. Negative indices count backwards from the end of the file,
+default is all frames. Frames start from zero. Negative indices count backwards from the end of the file,
 with -1 being the last frame.""")
 p.add_option('-L', '--lattice', action='store', help="""Override lattice with LATTICE, given in
 Fortran ordering as "R11 R21 R31 R12 R22 R32 R13 R23 R33". If
@@ -108,7 +107,7 @@ if opt.range is not None:
       p.error('Cannot parse slice "%s" - should be in format [start]:[stop][:step]')
 else:
    # Default is all frames
-   opt.range = slice(1, None, None)
+   opt.range = slice(0, None, None)
 
 if opt.lattice is not None:
    opt.lattice = [ float(x) for x in opt.lattice.split() ]
@@ -294,14 +293,14 @@ if isinstance(opt.range, slice):
 
    if got_length:
       from quippy.progbar import ProgressBar
-      pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
+      pb = ProgressBar(0,len(range(*opt.range.indices(len(all_configs)))),80,showValue=True)
 
    if opt.range.step is None:
-      frames = itertools.islice(all_configs, opt.range.start-1, opt.range.stop)
+      frames = itertools.islice(all_configs, opt.range.start, opt.range.stop)
    else:
-      frames = itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)
+      frames = itertools.islice(all_configs, opt.range.start, opt.range.stop, opt.range.step)
 
-   for i, at in fenumerate(frames):
+   for i, at in enumerate(frames):
       try:
          process(at, i)
       except RuntimeError, re:
