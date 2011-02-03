@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #!/usr/bin/env python
 
 from quippy import *
@@ -59,9 +58,11 @@ try:
     at.calc_connect()
 
     if opt.relax_lattice:
+        at0 = at.copy()
         pot.minim(at, 'cg', 1e-6, 100, do_pos=False, do_lat=True)
 
-        # Remove near-zero elements
+        # Remove near-zero elements, and exactly restore original symmetries
+        at = at0
         at.set_lattice(numpy.where(abs(at.lattice) > 1e-6, at.lattice, 0), True)
         
         mainlog.prefix = 'LATTICE'        
@@ -98,7 +99,7 @@ try:
         if opt.surface:
             axes = crack_parse_name(opt.surface)
             m = crack_rotation_matrix(at, axes[:,2], axes[:,3])
-            bulk = orthorhombic_slab(at, rot=m, verbose=False)
+            bulk = orthorhombic_slab(at, rot=m, verbose=True)
 
             surface = bulk.copy()
             surface.lattice[2,2] = surface.lattice[2,2] + 10.0
