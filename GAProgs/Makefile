@@ -37,7 +37,7 @@ OBJS = teach_sparse_module.o
 
 PROGRAMS = teach_sparse test_qw_gradient convert_binary2xml lo
 
-LIBS = -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
+LIBS = -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean
