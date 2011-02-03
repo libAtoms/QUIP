@@ -29,7 +29,7 @@ p.add_option('-O', '--overwrite', action='store_true', help="""If given, overwri
                                                                 Default is off, so first property or parameter found takes precedence in name collisions
                                                                 (unless --prefixes argument is given).""")
 p.add_option('-p', '--prefixes', action='append', help="Prefixes to prepend to properties and parameters. One argument per input file.")
-p.add_option('-x', '--exclude', action='append', help="Property or parameter names to exclude. Filtering is done after addition of prefixes.")
+p.add_option('-x', '--exclude', action='append', help="Property or parameter names to exclude. Filtering is done after addition of prefixes.", default=[])
 p.add_option('-P', '--prefix-names', action='append', help="Names of properties and parameters to add prefixes to. Default is [force, energy, virial].")
 
 
