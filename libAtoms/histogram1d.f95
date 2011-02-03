@@ -174,10 +174,12 @@ module histogram1d_module
      module procedure histogram1d_normalize
   endinterface
 
+#if 0
   public :: reduce
   interface reduce
      module procedure histogram1d_reduce
   endinterface
+#endif
 
   public :: smooth
   interface smooth
@@ -1830,6 +1832,7 @@ contains
   endsubroutine histogram1d_normalize
 
 
+#if 0
   !% OpenMP reduction - *thpriv* is a threadprivate histogram,
   !% this needs to be called within an *omp parallel* construct.
   elemental subroutine histogram1d_reduce(this, thpriv)
@@ -1851,6 +1854,7 @@ contains
     !$omp end critical
 
   endsubroutine histogram1d_reduce
+#endif
 
 
   !% Smooth histogram by convolution with a Gaussian
