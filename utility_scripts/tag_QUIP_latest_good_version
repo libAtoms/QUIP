@@ -155,7 +155,7 @@ while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; 
    status_all_OK $make_status; make_ok=$?
    status_all_OK $quippy_status; quippy_ok=$?
    if [[ $make_ok != 0 || $quippy_ok != 0 ]]; then
-      author=`svn log -rHEAD QUIP_test/ | head -2 | tail -1 | awk '{print $3}'`
+      author=`svn log -r${cur_rev} QUIP_test/ | head -2 | tail -1 | awk '{print $3}'`
       failed_mails="$failed_mails"`egrep "^${author} " AUTHORS | awk '{print $2}'`" "
       echo "Version ${cur_rev} was checked in by ${author}" >> ${REPORT_FILE}
    fi
@@ -177,21 +177,24 @@ if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
    svn delete -m "Get rid of old QUIP-stable tag in preparation for a new one" $SVNROOT/tags/QUIP-stable
    svn copy -m "Update QUIP-stable tag to revision ${cur_rev} (current HEAD rev is ${HEAD_rev})" -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable
    if [[ $retried == 0 ]]; then
-      (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
-	 mutt -s "QUIP autobuild succeeded" ${MAILS}
+      rm -f mail_msg.txt
+      (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+      mutt -s "QUIP autobuild succeeded" ${MAILS} < mail_msg.txt
       rm -f $LOCKFILE
       exit 0
    else
-      (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
-	 mutt -s "QUIP autobuild failed on HEAD, succeeded eventually" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS}
+      rm -f mail_msg.txt
+      (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+      mutt -s "QUIP autobuild failed on HEAD, succeeded eventually" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS} < mail_msg.txt
       rm -f $LOCKFILE
       exit 2
    fi
 else
    echo "Failed to find working revision between HEAD and $cur_rev"
    echo "Failed to find working revision between HEAD and $cur_rev" >> ${REPORT_FILE}
-   (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) | \
-      mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS}
+   rm -f mail_msg.txt
+   (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+   mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS} < mail_msg.txt
    rm -f $LOCKFILE
    exit 3
 fi
