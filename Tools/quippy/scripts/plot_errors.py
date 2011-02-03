@@ -48,8 +48,8 @@ p.add_option('-o', '--output', action='store', help="""Output file name for plot
 
 opt, args = p.parse_args()
 
-if len(args) < 2:
-    p.error('At least two input files expected.')
+if len(args) < 1:
+    p.error('At least one input file expected.')
 
 if opt.ref_file is not None:
     ref_configs = AtomsList(opt.ref_file)
