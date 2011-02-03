@@ -30,20 +30,20 @@ class TestAtomsList(QuippyTestCase):
       self.genal = AtomsList(self.gensrc)
       
    def testgetitem(self):
-      a1 = self.listal[1]
-      a5 = self.listal[5]
+      a1 = self.listal[0]
+      a5 = self.listal[4]
       self.assertEqual(a1, diamond(5.44,14))
       self.assertEqual(a5, diamond(5.44+0.04,14))
 
    def testlazygetitem(self):
       # before items are accessed, AtomsList._list = None
-      self.assert_(self.listal._list[1] is None)
-      a0 = self.listal[1]
+      self.assert_(self.listal._list[0] is None)
+      a0 = self.listal[0]
       self.assertEqual(self.listal._list[0], a0)
       self.assert_(self.listal._list[0] is a0)
 
    def testgetslice(self):
-      sl = self.listal[2:]
+      sl = self.listal[1:]
       self.assert_(isinstance(sl, AtomsList))
       self.assertEqual(list(sl), list(self.listal)[1:])
 
@@ -53,9 +53,9 @@ class TestAtomsList(QuippyTestCase):
 
    def testdelitem(self):
       self.listal.loadall()
-      del self.listal[1]
+      del self.listal[0]
       self.assert_(self.listal._list[0] is None)
-      self.assertEqual(self.listal[1], diamond(5.44, 14))
+      self.assertEqual(self.listal[0], diamond(5.44, 14))
       
    def testgetitemoutofrange(self):
       self.assertRaises(IndexError, self.listal.__getitem__, 6)
@@ -73,7 +73,7 @@ class TestAtomsList(QuippyTestCase):
       L1 = list(self.listal)
       L2 = list(self.listal)
       self.assertEqual(L1, L2)
-      self.assert_(L1[1] is L2[1])
+      self.assert_(L1[0] is L2[0])
       self.assert_(L1 is not L2)
 
    def testreversed(self):
@@ -81,9 +81,9 @@ class TestAtomsList(QuippyTestCase):
 
    def testgen(self):
       self.assertEqual(len(self.genal), 0)
-      a0 = self.genal[1]
+      a0 = self.genal[0]
       self.assertEqual(len(self.genal), 1)
-      a1 = self.genal[2]
+      a1 = self.genal[1]
       self.assertEqual(len(self.genal), 2)
       i = iter(self.genal)
       self.assert_(a0 is i.next())
@@ -106,18 +106,18 @@ class TestAtomsList(QuippyTestCase):
       self.assertEqual(list(self.genal), self.genal._list)
 
    def testgengetitem(self):
-      a1 = self.genal[1]
-      a5 = self.genal[5]
+      a1 = self.genal[0]
+      a5 = self.genal[4]
       self.assertEqual(a1, diamond(5.44,14))
       self.assertEqual(a5, diamond(5.44+0.04,14))
 
    def testgengetslice(self):
-      sl = self.genal[1:2]
+      sl = self.genal[0:2]
       self.assert_(isinstance(sl, AtomsList))
       self.assertEqual(list(sl), list(self.genal)[0:2])
 
    def testgengetsliceopen(self):
-      sl = self.genal[1:]
+      sl = self.genal[0:]
       self.assert_(isinstance(sl, AtomsList))
       self.assertEqual(list(sl), list(self.genal)[0:])
 
@@ -161,8 +161,8 @@ class TestAtomsList(QuippyTestCase):
       self.assertRaises(ValueError, self.listal.write, g, properties=['pos'])
 
    def testfrom_at(self):
-      nl = AtomsList(self.listal[1])
-      self.assertEqual(list(nl), [self.listal[1]])
+      nl = AtomsList(self.listal[0])
+      self.assertEqual(list(nl), [self.listal[0]])
 
    def testatomsreader_list(self):
       ar = AtomsReader(self.listal)

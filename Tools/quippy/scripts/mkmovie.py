@@ -84,7 +84,7 @@ if opt.range is not None:
       p.error('Cannot parse slice "%s" - should be in format [start]:[stop][:step]')
 else:
    # Default is all frames
-   opt.range = slice(1, None, None)
+   opt.range = slice(0, None, None)
 
 if opt.outfile is None:
    opt.outfile = os.path.splitext(args[0])[0] + '.mp4'
@@ -121,7 +121,7 @@ else:
 
 # Build a chain of iterators over all input files, skipping frames as appropriate
 atomseq = itertools.islice(itertools.chain.from_iterable(sources),
-                           opt.range.start-1, opt.range.stop, opt.range.step)
+                           opt.range.start, opt.range.stop, opt.range.step)
 
 if opt.skip_bad_times:
    atomseq = skip_bad_times(atomseq)
@@ -137,7 +137,7 @@ if opt.merge is not None:
    else:
       opt.merge_properties = merge_config.properties.keys()
 
-a0 = Atoms(args[0])
+a0 = Atoms(args[0], frame=opt.range.start)
 
 if opt.merge is not None:
    for k in opt.merge_properties:
@@ -183,7 +183,7 @@ if opt.graph is not None:
    
    postprocess = add_plot
    if opt.xdata == 'frame':
-      xdata = farray(frange(nframes))
+      xdata = farray(range(nframes))
    else:
       xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
    ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
