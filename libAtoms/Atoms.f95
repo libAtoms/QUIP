@@ -3112,8 +3112,8 @@ contains
 
 #ifdef __GFORTRAN__
     character, allocatable, dimension(:) :: char_array
+    integer, parameter :: SIZEOF_ATOMS = 1776
 #endif
-    integer, parameter :: SIZEOF_ATOMS = 1760
 
     INIT_ERROR(error)
 
