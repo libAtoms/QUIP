@@ -133,7 +133,7 @@ clean:
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
-LIBS = -L. -lquip_core ${GP_LIB} -latoms
+LIBS = -L. -lquip_core ${GP_LIB} -latoms -lthirdparty
 
 cp2k_filepot_old: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}

@@ -253,7 +253,7 @@ def find_wrap_sources(makefile, quip_root):
     source_dirs.append(quip_core_dir)
     wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95', 'ElectrostaticEmbed.f95']]
     wrap_types += ['potential']
-    libraries = ['quip_core'] + libraries
+    libraries = ['quip_core', 'thirdparty'] + libraries
     targets.append((quip_root, 'QUIP_Core/libquip_core.a'))
 
     do_tools = not 'QUIPPY_NO_TOOLS' in makefile or ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))
