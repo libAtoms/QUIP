@@ -332,10 +332,13 @@ class AtomsList(object):
          if type(s) in numeric_types:
             return farray(seq)
          elif type(s) in array_types and s.dtype.kind in numeric_dtype_kinds:
-            if len(s.shape) == 2:
-               return farray(numpy.dstack(seq))
+            if all(ss.shape == s.shape for ss in seq):
+               if len(s.shape) >= 2:
+                  return farray(numpy.dstack(seq))
+               else:
+                  return farray(seq)
             else:
-               return farray(seq)
+               return farray(numpy.hstack(seq))
          else:
             return seq
 
