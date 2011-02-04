@@ -604,8 +604,8 @@ contains
 	 endif
 
          !save cut bonds in cut_bonds property
-	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) then
+	 call add_property(at, 'cut_bonds'//trim(hybrid_mark_postfix), 0, n_cols=MAX_CUT_BONDS)
+	 if (.not. assign_pointer(at, 'cut_bonds'//trim(hybrid_mark_postfix), cut_bonds_p)) then
 	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
 	 endif
          !zero it

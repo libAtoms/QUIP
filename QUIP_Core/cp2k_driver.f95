@@ -480,7 +480,7 @@ contains
       if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
       !get link list
 
-       if (assign_pointer(at,'cut_bonds',cut_bonds_p)) then
+       if (assign_pointer(at,'cut_bonds'//trim(qm_name_postfix),cut_bonds_p)) then
           call initialise(cut_bonds,2,0,0,0,0)
           do i_inner=1,at%N
              do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
