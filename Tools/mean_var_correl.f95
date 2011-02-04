@@ -154,7 +154,7 @@ implicit none
   integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_effective_N_long_lag
   logical :: over_bins, over_time
   real(dp), allocatable :: effective_N(:), histogram_effective_N(:,:)
-  character(len=STRING_LENGTH) :: verbosity_str
+  character(len=FIELD_LENGTH) :: verbosity_str
 
   call system_initialise()
 
