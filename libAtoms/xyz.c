@@ -79,12 +79,12 @@ char *stristr(const char *String, const char *Pattern)
 {
       char *pptr, *sptr, *start;
 
-      for (start = (char *)String; *start != NULL; start++)
+      for (start = (char *)String; *start != '\0'; start++)
       {
             /* find start of pattern in string */
-            for ( ; ((*start!=NULL) && (toupper(*start) != toupper(*Pattern))); start++)
+            for ( ; ((*start!='\0') && (toupper(*start) != toupper(*Pattern))); start++)
                   ;
-            if (NULL == *start)
+            if ('\0' == *start)
                   return NULL;
 
             pptr = (char *)Pattern;
@@ -97,7 +97,7 @@ char *stristr(const char *String, const char *Pattern)
 
                   /* if end of pattern then pattern was found */
 
-                  if (NULL == *pptr)
+                  if ('\0' == *pptr)
                         return (start);
             }
       }
