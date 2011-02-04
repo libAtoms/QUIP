@@ -101,12 +101,12 @@ module CInOutput_module
      end subroutine read_xyz
 
      subroutine write_xyz(filename, params, properties, selected_properties, lattice, n_atom, append, prefix, &
-       int_format, real_format, str_format, logical_format, string, estr, error) bind(c)
+       int_format, real_format, str_format, logical_format, string, estr, update_index, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties, estr
        real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
-       integer(kind=C_INT), intent(in), value :: n_atom, append
+       integer(kind=C_INT), intent(in), value :: n_atom, append, update_index
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix, int_format, real_format, str_format, logical_format
        integer(kind=C_INT), intent(in), value :: string
        integer(kind=C_INT), intent(out) :: error
@@ -533,7 +533,7 @@ contains
 
 
   subroutine cinoutput_write(this, at, properties, properties_array, prefix, int_format, real_format, frame, &
-       shuffle, deflate, deflate_level, estr, error)
+       shuffle, deflate, deflate_level, estr, update_index, error)
     type c_extendable_str_ptr_type
        type(Extendable_str), pointer :: p
     end type c_extendable_str_ptr_type
@@ -544,14 +544,14 @@ contains
     character(*), intent(in), optional :: prefix
     character(*), intent(in), optional :: int_format, real_format
     integer, intent(in), optional :: frame
-    logical, intent(in), optional :: shuffle, deflate
+    logical, intent(in), optional :: shuffle, deflate, update_index
     integer, intent(in), optional :: deflate_level
     type(Extendable_Str), intent(inout), optional, target :: estr
     integer, intent(out), optional :: error
 
     logical :: file_exists
     integer :: i
-    integer(C_INT) :: do_frame, n_label, n_string, do_netcdf4
+    integer(C_INT) :: do_frame, n_label, n_string, do_netcdf4, do_update_index
     type(Dictionary), target :: selected_properties, tmp_params
     character(len=100) :: do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format
     integer(C_INT) :: do_shuffle, do_deflate, do_deflate_level, append
@@ -589,6 +589,7 @@ contains
     do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
     do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
+    do_update_index = transfer(optional_default(.true., update_index), do_update_index)
 
     append = 0
     inquire(file=this%filename, exist=file_exists)
@@ -596,6 +597,7 @@ contains
 
     do_netcdf4 = 0
     if (this%netcdf4) do_netcdf4 = 1
+
 
     if (present(properties) .and. present(properties_array)) then
        RAISE_ERROR('cinoutput_write: "properties" and "properties_array" cannot both be present.', error)
@@ -673,10 +675,11 @@ contains
 
        if (present(estr)) then
           call write_xyz(''//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 1, estr_ptr_i, error)
+               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 1, estr_ptr_i, 0, error)
        else
           call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 0, estr_ptr_i, error)
+               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 0, estr_ptr_i, &
+               do_update_index, error)
        end if
        PASS_ERROR(error)
     end if

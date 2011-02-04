@@ -165,18 +165,13 @@ void realloc_frames(long **frames, int **atoms, int *frames_array_size, int new_
   }
 }
 
-int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_size, int *error) {
-  FILE *in, *index;
-  char *bname;
-  char indexname[LINESIZE], linebuffer[LINESIZE], buf1[LINESIZE], buf2[LINESIZE];
-  int natoms, i, nframes;
-  int from_scratch, do_update;
+int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
+  char buf1[LINESIZE], buf2[LINESIZE], *bname;
   struct stat xyz_stat, idx_stat;
+  int idx_exists;
 
   INIT_ERROR;
 
-  natoms = 0;
-  nframes = 0;
   strncpy(indexname, fname, LINESIZE);
   strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
@@ -184,9 +179,9 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz file %s\n", fname);
   }
 
-  from_scratch = stat(indexname, &idx_stat) != 0;
+  idx_exists = stat(indexname, &idx_stat) == 0;
 
-  if (from_scratch) {
+  if (!idx_exists) {
     // Try to read from current dir instead
     strncpy(buf1, indexname, LINESIZE);
     bname = basename(buf1);
@@ -196,110 +191,163 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
       if (stat(buf2, &idx_stat) == 0) {
 	fprintf(stderr,"Found index %s\n",buf2);
 	strncpy(indexname,buf2, LINESIZE);
-	from_scratch = 0;
+	idx_exists = 0;
       }
     }
   }
 
-  do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
+  *do_update = 1;
+  if (idx_exists) *do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
 
-  if (!from_scratch) {
-    debug("xyz_find_frames: reading XYZ index from file %s\n", indexname);
-    index = fopen(indexname, "r");
-    if (index == NULL) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s cannot be opened\n", indexname);
-    }
+  return idx_exists;
+}
+
+int xyz_read_index(char *indexname, long **frames, int **atoms, int *frames_array_size, int *error) {
+  FILE *index;
+  char linebuffer[LINESIZE];
+  int nframes, i;
+  
+  INIT_ERROR;
+
+  debug("xyz_read_index: reading XYZ index from file %s\n", indexname);
+  index = fopen(indexname, "r");
+  if (index == NULL) {
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s cannot be opened\n", indexname);
+  }
+  if (!fgets(linebuffer,LINESIZE,index)) {
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s is empty\n",indexname);
+  }
+  sscanf(linebuffer, "%d", &nframes);
+  realloc_frames(frames, atoms, frames_array_size, nframes+2);
+  for (i=0; i<=nframes; i++) {
     if (!fgets(linebuffer,LINESIZE,index)) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s is empty\n",indexname);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Premature end of indexfile %s\n",indexname);
     }
-    sscanf(linebuffer, "%d", &nframes);
-    realloc_frames(frames, atoms, frames_array_size, nframes+2);
-    for (i=0; i<=nframes; i++) {
-      if (!fgets(linebuffer,LINESIZE,index)) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Premature end of indexfile %s\n",indexname);
-      }
-      sscanf(linebuffer, "%ld %d", &(*frames)[i], &(*atoms)[i]);
-    }
-    fclose(index);
+    sscanf(linebuffer, "%ld %d", &(*frames)[i], &(*atoms)[i]);
+    debug("index %ld %d\n", (*frames)[i], (*atoms)[i]);
+  }
+  fclose(index);
+
+  return nframes;
+}
+
+int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, int *frames_array_size, int nframes, int *error) {
+  char linebuffer[LINESIZE];
+  int natoms, i;
+  FILE *in;
+
+  in = fopen(fname, "r");
+  if (in == NULL) {
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_update_index: cannot open %s for reading", fname);
   }
 
-  if (from_scratch || do_update) {
-    debug("xyz_find_frames: writing XYZ index to file %s\n", indexname);
-    in = fopen(fname, "r");
-    if (in == NULL) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: cannot open %s for reading", fname);
-    }
-    if (from_scratch)
+  if (nframes != 0) {
+    debug("xyz_update_index: trying to update XYZ index... \n");
+
+    // Try to seek past last frame, and check this looks
+    // like the start of a new frame
+    if (fseek(in,(*frames)[nframes],SEEK_SET) != 0 ||
+	!fgets(linebuffer,LINESIZE,in) ||
+	sscanf(linebuffer, "%d", &natoms) != 1 ||
+	natoms != (*atoms)[nframes]) {
+      // Seek failed, we'll have to rebuild index from start
+      fseek(in,0,SEEK_SET);
       nframes = 0;
+      debug(" failed, rebuilding from scratch.\n");
+    }
     else {
-      debug("xyz_find_frames: trying to update XYZ index... \n");
+      // Rewind to start of frame
+      fseek(in,(*frames)[nframes],SEEK_SET);
+    }
+    
+    // TODO - improve check - fails if number of atoms has changed
+  }
+  
+  debug("xyz_update_index: starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
 
-      // Try to seek past last frame, and check this looks
-      // like the start of a new frame
-      if (fseek(in,(*frames)[nframes],SEEK_SET) != 0 ||
-	  !fgets(linebuffer,LINESIZE,in) ||
-	  sscanf(linebuffer, "%d", &natoms) != 1 ||
-	  natoms != (*atoms)[nframes]) {
-	// Seek failed, we'll have to rebuild index from start
-	fseek(in,0,SEEK_SET);
-	nframes = 0;
-	debug(" failed, rebuilding from scratch.\n");
-      }
-      else {
-	// Rewind to start of frame
-	fseek(in,(*frames)[nframes],SEEK_SET);
-      }
-
-      // TODO - improve check - fails if number of atoms has changed
+  while (fgets(linebuffer,LINESIZE,in)) {
+    realloc_frames(frames, atoms, frames_array_size, nframes+2);
+    (*frames)[nframes] = ftell(in)-strlen(linebuffer);
+    if (sscanf(linebuffer, "%d", &natoms) != 1) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
     }
 
-    debug("xyz_find_frames: starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
-
-    while (fgets(linebuffer,LINESIZE,in)) {
-      realloc_frames(frames, atoms, frames_array_size, nframes+2);
-      (*frames)[nframes] = ftell(in)-strlen(linebuffer);
-      if (sscanf(linebuffer, "%d", &natoms) != 1) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
-      }
-
-      (*atoms)[nframes] = natoms;
-      nframes++;
-
-      // Skip the whole frame, as quickly as possible
-      for (i=0; i<natoms+1; i++)
-	if (!fgets(linebuffer,LINESIZE,in)) {
-	  fseek(in, (*frames)[nframes], SEEK_SET); // return file pointer to beginning of frame
-	  nframes--; // incomplete last frame
-	  goto XYZ_END;
-	}
-    }
-  XYZ_END:
-    if (nframes == 0) return 0;
-
-    (*frames)[nframes] = ftell(in); // end of last frame in file
     (*atoms)[nframes] = natoms;
-    index = fopen(indexname, "w");
+    debug("update %ld %d\n", (*frames)[i], (*atoms)[i]);
+    nframes++;
+
+    // Skip the whole frame, as quickly as possible
+    for (i=0; i<natoms+1; i++)
+      if (!fgets(linebuffer,LINESIZE,in)) {
+	fseek(in, (*frames)[nframes], SEEK_SET); // return file pointer to beginning of frame
+	nframes--; // incomplete last frame
+	goto XYZ_END;
+      }
+  }
+ XYZ_END:
+  if (nframes == 0) return 0;
+
+  (*frames)[nframes] = ftell(in); // end of last frame in file
+  (*atoms)[nframes] = natoms;
+   fclose(in);
+  return nframes;
+}
+
+void xyz_write_index(char *indexname, long **frames, int **atoms, int *frames_array_size, int nframes, int *error) {
+  FILE *index;
+  char buf1[LINESIZE], buf2[LINESIZE], *bname;
+  int i;
+
+  INIT_ERROR;
+  
+  index = fopen(indexname, "w");
+  if (index == NULL) {
+    // Try to write in current dir instead
+    strncpy(buf1, indexname, LINESIZE);
+    bname = basename(buf1);
+    if (getcwd(buf2, LINESIZE) != NULL) {
+      strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
+      strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
+      index = fopen(buf2, "w");
+      debug("xyz_write_index: writing index to %s\n", buf2);
+    }
     if (index == NULL) {
-      // Try to write in current dir instead
-      strncpy(buf1, indexname, LINESIZE);
-      bname = basename(buf1);
-      if (getcwd(buf2, LINESIZE) != NULL) {
-	strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
-	strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
-	index = fopen(buf2, "w");
-	debug("xyz_find_frames: writing index to %s\n", buf2);
-      }
-      if (index == NULL) {
-	fclose(in);
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot write index file.\n");
-      }
-    } else
-      debug("xyz_find_frames: writing index to %s\n", indexname);
-    fprintf(index, "%d\n", nframes);
-    for (i=0; i<=nframes; i++)
-      fprintf(index, "%ld %d\n", (*frames)[i], (*atoms)[i]);
-    fclose(in);
-    fclose(index);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot write index file.\n");
+    }
+  } else
+    debug("xyz_write_index: writing index to %s\n", indexname);
+
+  fprintf(index, "%d\n", nframes);
+  for (i=0; i<=nframes; i++) {
+    fprintf(index, "%ld %d\n", (*frames)[i], (*atoms)[i]);
+    debug("write index %ld %d\n", (*frames)[i], (*atoms)[i]);
+  }
+  fclose(index);
+}
+
+int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_size, int *error) {
+  FILE *in;
+  char indexname[LINESIZE];
+  int natoms, i, nframes;
+  int got_index, do_update;
+
+  INIT_ERROR;
+
+  got_index = xyz_find_index(fname, indexname, &do_update, error);
+  PASS_ERROR;
+
+  nframes = 0;
+  if (got_index) {
+    nframes = xyz_read_index(indexname, frames, atoms, frames_array_size, error);
+    PASS_ERROR;
+  } 
+
+  if (!got_index || do_update) {
+    nframes = xyz_update_index(fname, indexname, frames, atoms, frames_array_size, nframes, error);
+    PASS_ERROR;
+
+    xyz_write_index(indexname, frames, atoms, frames_array_size, nframes, error);
+    PASS_ERROR;
   }
 
   debug("xyz_find_frames: %s: found %d complete frames\n", fname, nframes);
@@ -333,7 +381,7 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   }
 
   if (frame < 0 || frame >= *n_frame) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame-1);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame);
   }
   *n_atom = atoms[frame];
 
@@ -917,9 +965,9 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
 		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
-		int string, fortran_t *estr, int *error) {
+		int string, fortran_t *estr, int update_index, int *error) {
   FILE *out;
-  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN];
+  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN], indexname[LINESIZE];
   int i, j, m, n, type, shape[2], tmp_type, tmp_shape[2];
   char *trimmed;
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], n_property, ncols;
@@ -927,6 +975,9 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
   char property_code;
   void *data, *tmp_data;
   int tmp_zero = 0, tmp_one = 1;
+  long *frames, start_idx, end_idx;
+  int *atoms, nframes;
+  int frames_array_size, got_index, do_update;
 
   INIT_ERROR;
 
@@ -946,6 +997,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       if (out == NULL) {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open %s for writing", filename);
       }
+      start_idx = ftell(out);
     }
   } else
     out = NULL;
@@ -1184,9 +1236,37 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
   }
 
   if (!string) {
-    if (out != stdout) 
+    if (out != stdout) {
+      end_idx = ftell(out);
       fclose(out);
-    else
+
+      if (update_index) {   	/* read and update .xyz.idx index file */
+	frames_array_size = 0;
+	got_index = xyz_find_index(filename, indexname, &do_update, error);
+	PASS_ERROR;
+
+	nframes = 0;
+	if (got_index) {
+	  nframes = xyz_read_index(indexname, &frames, &atoms, &frames_array_size, error);
+	  PASS_ERROR;
+	} 
+	if (start_idx == 0) nframes = 0; // we're overwriting existing output file
+
+	if (nframes == 0 || frames[nframes] == start_idx) {
+	  nframes++;
+	  realloc_frames(&frames, &atoms, &frames_array_size, nframes+1);
+
+	  frames[nframes-1] = start_idx;  atoms[nframes-1] = n_atom;
+	  frames[nframes] = end_idx;	  atoms[nframes] = n_atom;
+
+	  xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
+	  PASS_ERROR;
+	}  else {
+	  // found index file, but does not match current file contents so let's remove it
+	  if (got_index) unlink(indexname);
+	}
+      }
+    } else
       fflush(out);
   }
 }
