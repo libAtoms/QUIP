@@ -236,6 +236,7 @@ contains
     call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
     call print("  clean_up_files " // clean_up_files)
+    call print("  clean_up_keep_n " // clean_up_keep_n)
     call print("  save_output_files " // save_output_files)
     call print("  save_output_wfn_files " // save_output_wfn_files)
     call print("  max_n_tries " // max_n_tries)
@@ -770,12 +771,13 @@ contains
          call system_command('rm -f '//trim(tmp_run_dir)//"/* "//trim(run_dir))
       endif
     else
-      if (clean_up_files) call system_command('rm -rf '//trim(run_dir))
-       if (clean_up_keep_n <= 0) then ! never keep any old directories around
-	  call system_command('rm -rf '//trim(run_dir))
-       else ! keep some (>= 1) old directories around
-	  delete_dir_i = mod(run_dir_i, clean_up_keep_n+1)+1
-	  call system_command('rm -rf cp2k_run_'//delete_dir_i)
+       if (clean_up_files) then
+	 if (clean_up_keep_n <= 0) then ! never keep any old directories around
+	    call system_command('rm -rf '//trim(run_dir))
+	 else ! keep some (>= 1) old directories around
+	    delete_dir_i = mod(run_dir_i, clean_up_keep_n+1)+1
+	    call system_command('rm -rf cp2k_run_'//delete_dir_i)
+	 endif
        endif
     endif
 
