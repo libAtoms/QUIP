@@ -300,6 +300,7 @@ contains
 #else
     write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
 #endif
+    call flush(error_unit)
 
 #ifdef _MPI
     call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
