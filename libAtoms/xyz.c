@@ -54,6 +54,56 @@
 #define PROPERTY_STRING_LENGTH 10
 #define PARAM_STRING_LENGTH 1024
 
+/*
+** Designation:  StriStr
+**
+** Call syntax:  char *stristr(char *String, char *Pattern)
+**
+** Description:  This function is an ANSI version of strstr() with
+**               case insensitivity.
+**
+** Return item:  char *pointer if Pattern is found in String, else
+**               pointer to 0
+**
+** Rev History:  16/07/97  Greg Thayer  Optimized
+**               07/04/95  Bob Stout    ANSI-fy
+**               02/03/94  Fred Cole    Original
+**               09/01/03  Bob Stout    Bug fix (lines 40-41) per Fred Bulback
+**
+** Hereby donated to public domain.
+*/
+
+typedef unsigned int uint;
+
+char *stristr(const char *String, const char *Pattern)
+{
+      char *pptr, *sptr, *start;
+
+      for (start = (char *)String; *start != NULL; start++)
+      {
+            /* find start of pattern in string */
+            for ( ; ((*start!=NULL) && (toupper(*start) != toupper(*Pattern))); start++)
+                  ;
+            if (NULL == *start)
+                  return NULL;
+
+            pptr = (char *)Pattern;
+            sptr = (char *)start;
+
+            while (toupper(*sptr) == toupper(*pptr))
+            {
+                  sptr++;
+                  pptr++;
+
+                  /* if end of pattern then pattern was found */
+
+                  if (NULL == *pptr)
+                        return (start);
+            }
+      }
+      return NULL;
+}
+
 /* xyz_find_frames() 
  *
  * Find starting positions of xyz frames within a file
@@ -441,7 +491,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
   GET_LINE("premature end - expecting comment line");
 
-  if (!strstr(linebuffer, "Lattice") && !strstr(linebuffer, "lattice")) {
+  if (!stristr(linebuffer, "lattice")) {
     // It's not an extended XYZ file. Try to guess what's going on.
     // If comment line contains nine or more fields, assume last nine are
     // lattice in cartesian coordinates.
@@ -478,7 +528,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
-  if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
+  if (!stristr(linebuffer, "properties")) {
     // No Properties key. Add a default one.
     if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
     strncat(linebuffer, "Properties=species:S:1:pos:R:3",LINESIZE-strlen(linebuffer)-1);
