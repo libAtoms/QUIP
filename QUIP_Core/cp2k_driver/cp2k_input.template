@@ -45,11 +45,11 @@
       SCF_GUESS restart
 #USER EPS_SCF: convergence tolerance for self-consistency cycle, 1e-6 seems decent (set same in &SCF nd &OUTER_SCF)
       EPS_SCF 1.0E-6
-      MAX_SCF 200
+      MAX_SCF 20
       &OUTER_SCF
 #USER EPS_SCF: convergence tolerance for self-consistency cycle, 1e-6 seems decent (set same in &SCF nd &OUTER_SCF)
          EPS_SCF 1.0E-6
-         MAX_SCF 200
+         MAX_SCF 100
       &END
       &OT
          MINIMIZER CG
