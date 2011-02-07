@@ -657,6 +657,7 @@ class TestCluster_SplitQM(QuippyTestCase):
 
    def tearDown(self):
       os.remove('create_cluster_abort.xyz')
+      os.remove('create_cluster_abort.xyz.idx')
 
    def test_split_qm_raises_runtime_error(self):
       # Split QM region by marking another atom
