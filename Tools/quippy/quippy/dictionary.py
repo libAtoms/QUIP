@@ -169,15 +169,15 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          if isinstance(v1, FortranArray) and isinstance(v2, FortranArray):
             if v1.dtype.kind != 'f':
                if (v1 != v2).any():
-                  logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))
+                  logging.debug('mismatch key=%s v1=%s v2=%s' % (key, v1, v2))
                   return False
             else:
                if abs(v1 - v2).max() > self._cmp_tol:
-                  logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))                  
+                  logging.debug('mismatch key=%s v1=%s v2=%s' % (key, v1, v2))                  
                   return False
          else:
             if v1 != v2:
-               logging.debug('mismatch key=%s v1=%s v2=%2' % (key, v1, v2))
+               logging.debug('mismatch key=%s v1=%s v2=%s' % (key, v1, v2))
                return False
       return True
          
