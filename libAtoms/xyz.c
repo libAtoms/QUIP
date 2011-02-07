@@ -346,6 +346,10 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     nframes = xyz_update_index(fname, indexname, frames, atoms, frames_array_size, nframes, error);
     PASS_ERROR;
 
+    if (nframes == 0) {
+      RAISE_ERROR("xyz_find_frames: empty file!");
+    }
+
     xyz_write_index(indexname, frames, atoms, frames_array_size, nframes, error);
     PASS_ERROR;
   }
@@ -375,10 +379,6 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   frames_array_size = 0;
   *n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
   PASS_ERROR;
-
-  if (*n_frame == 0) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, "query_xyz: empty file", frame, *n_frame-1);
-  }
 
   if (frame < 0 || frame >= *n_frame) {
     RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame);
