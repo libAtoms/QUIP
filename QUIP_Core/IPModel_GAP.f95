@@ -241,10 +241,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(qw_so3), save :: qw
   type(grad_qw_so3), save :: dqw
 
-  real(dp), allocatable :: xixjtheta(:,:)
+  real(dp), allocatable, save :: xixjtheta(:,:)
 
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
   !$omp threadprivate(f3_hat,df3_hat,qw,dqw)  
+  !$omp threadprivate(xixjtheta)
 
   INIT_ERROR(error)
 
@@ -363,8 +364,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      ! atom_mask_reverse_lookup:  reverse mapping, from atom indices to (/1..n_atoms_eff/)  (only allocated for Method(1) do_lammps=FALSE)
 
      n_atoms_eff = count(atom_mask_pointer)
-     call print('n_atoms_eff before adding neighbours = '//n_atoms_eff)
-
      if (.not. do_lammps) then
         allocate(atom_mask_reverse_lookup(at%n))
         atom_mask_reverse_lookup = 0
@@ -383,7 +382,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         end do
      end if
      
-     call print('n_atoms_eff after adding neighbours = '//n_atoms_eff)
      allocate(atom_mask_lookup(n_atoms_eff))
      j = 1
      do i = 1, at%N
@@ -399,9 +397,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if (.not. do_lammps) atom_mask_reverse_lookup(i) = j
         j = j + 1
      end do
-
-     call print('count(atom_mask_lookup /= 0) = '//count(atom_mask_lookup /= 0))
-     if (.not. do_lammps) call print('count(atom_mask_reverse_lookup /= 0) = '//count(atom_mask_reverse_lookup /= 0))
   else
      n_atoms_eff = at%n
   end if
@@ -678,7 +673,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
 
   case default
-!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps,new_x_star,e,covariance,do_fast_gap_dgemv,local_e,local_e_in,force_calc_new_x_star,virial_in,atom_mask_reverse_lookup) private(k,f_gp,f_gp_k,n,j,jn,jj,shift,i,xixjtheta)
+!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps,new_x_star,e,covariance,do_fast_gap_dgemv,local_e,local_e_in,force_calc_new_x_star,virial_in,atom_mask_reverse_lookup) private(k,f_gp,f_gp_k,n,j,jn,jj,shift,i)
 
      allocate(xixjtheta(this%my_gp%d, this%my_gp%n))
 
@@ -740,7 +735,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      
      deallocate(xixjtheta)
  
-     !$omp end parallel
+     !$omp end parallel	
 
   endselect
   call system_timer('IPModel_GAP_Calc gp_predict')
