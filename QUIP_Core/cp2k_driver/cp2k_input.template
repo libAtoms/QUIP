@@ -100,7 +100,8 @@
 #    MM_POTENTIAL_FILE_NAME ../MM_POTENTIAL
 #from Laino 2005 using Blochl 1995, Gaussian expansion of the electrostatic potential
     ECOUPL GAUSS
-    USE_GEEP_LIB 15
+    # 10 seems accurate enough and faster according to CV e-mail 9 Feb 2011
+    USE_GEEP_LIB 10
 #from Laino 2006 using Blochl 1995, periodic electrostatic QM-MM coupling
     &PERIODIC
 #GMAX is calculated from a different formmula, using the system size. 1.0 works fine.
