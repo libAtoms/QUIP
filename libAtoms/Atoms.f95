@@ -2292,13 +2292,14 @@ contains
    !%
    !% Note: Because the origin can be specified separately it need not be one of the atoms in the 
    !% calculation.
-   function centre_of_mass(at,index_list,origin,error) result(CoM)
+   function centre_of_mass(at,index_list,mask,origin,error) result(CoM)
 
-     type(atoms),                      intent(in) :: at
-     integer,                optional, intent(in) :: origin
-     integer,  dimension(:), optional, intent(in) :: index_list
-     real(dp), dimension(3)                       :: CoM
-     integer, intent(out), optional :: error
+     type(atoms),                      intent(in)  :: at
+     integer,                optional, intent(in)  :: origin
+     integer,  dimension(:), optional, intent(in)  :: index_list
+     logical,  dimension(:), optional, intent(in)  :: mask
+     integer,                optional, intent(out) :: error
+     real(dp), dimension(3)                        :: CoM
 
      !local variables
      integer                                      :: i, my_origin
@@ -2308,6 +2309,10 @@ contains
      if (.not. has_property(at, 'mass')) then
         RAISE_ERROR('center_of_mass: Atoms has no mass property', error)
      end if
+
+     if (present(index_list) .and. present(mask)) then
+        RAISE_ERROR('centre_of_mass: Cannot take both index_list and mask arguments', error)
+     endif
 
      if (present(origin)) then
         if (origin > at%N .or. origin < 1) then
@@ -2320,6 +2325,19 @@ contains
         else
            my_origin = 1
         end if
+
+        if (present(mask)) then
+           i = 1
+           do while (.not. mask(i) .and. i < at%N)
+              i = i+1
+           enddo
+           if (i >= at%N) then
+              RAISE_ERROR('centre_of_mass: No atoms specified in mask.', error)
+           endif
+           my_origin = i
+        else
+           my_origin = 1
+        endif
      end if
 
      CoM = 0.0_dp
@@ -2333,6 +2351,15 @@ contains
            end if
            CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
            M_Tot = M_Tot + at%mass(index_list(i))
+        end do
+
+     else if (present(mask)) then
+
+        do i = 1, at%N
+           if (mask(i)) then
+              CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+              M_Tot = M_Tot + at%mass(i)
+           endif
         end do
 
      else
