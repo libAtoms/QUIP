@@ -33,12 +33,14 @@
 include Makefiles/Makefile.linux_x86_64_ifort_icc
 
 DEFINES += -D_OPENMP
-F95FLAGS += -openmp
-F77FLAGS += -openmp
-CFLAGS += -openmp
-CPLUSPLUSFLAGS += -openmp
+F95FLAGS += -openmp -fPIC
+F77FLAGS += -openmp -fPIC
+CFLAGS += -openmp -fPIC
+CPLUSPLUSFLAGS += -openmp -fPIC
 LINKOPTS += -openmp
 
-QUIPPY_F90FLAGS += -openmp
-QUIPPY_CFLAGS += -openmp
-QUIPPY_LDFLAGS += -fopenmp
+QUIPPY_FCOMPILER = intelem
+QUIPPY_DEFINES = -DGETARG_F2003
+QUIPPY_F90FLAGS = -fpp -free
+QUIPPY_F77FLAGS = -fpp -fixed
+QUIPPY_CPP = ifort -EP
