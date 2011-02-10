@@ -50,6 +50,8 @@ module Connection_module
 
   private
 
+  public :: Connection
+
   public :: initialise
   interface initialise
      module procedure connection_initialise

@@ -60,6 +60,7 @@ LIBATOMS_F95_FILES = \
   minimization \
   Atoms_types \
   Connection \
+  DomainDecomposition \
   Atoms \
   RigidBody \
   Group \
@@ -68,7 +69,6 @@ LIBATOMS_F95_FILES = \
   DynamicalSystem \
   Spline \
   Sparse \
-  DomainDecomposition \
   CInOutput \
   clusters \
   Structures \

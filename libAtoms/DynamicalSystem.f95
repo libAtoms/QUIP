@@ -234,26 +234,42 @@ contains
       ! already exist
       call add_property(this%atoms, 'mass', 0.0_DP, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'mass', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'travel', 0, n_cols=3, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'travel', &
+           comm_atoms=.true.)
 
       call add_property(this%atoms, 'move_mask', 1, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'mass', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'damp_mask', 1, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'damp_mask', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'thermostat_region', 1, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'thermostat_region', &
+           comm_atoms=.true.)
 
       added_avgke = .not. has_property(this%atoms, 'avgke')
       call add_property(this%atoms, 'avg_ke', 0.0_dp, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'avg_ke', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'velo', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'velo', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'acc', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
       added_avgpos = .not. has_property(this%atoms, 'avgpos')
       call add_property(this%atoms, 'avgpos', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
+      call set_comm_property(this%atoms, 'avgpos', &
+           comm_atoms=.true.)
       call add_property(this%atoms, 'oldpos', 0.0_dp, n_cols=3, error=error)
       PASS_ERROR(error)
 

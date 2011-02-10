@@ -45,10 +45,9 @@ module CInOutput_module
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, assignment(=)
-  use Atoms_module, only: Atoms, initialise, is_initialised, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint, transform_basis
+  use Atoms_module, only: Atoms, initialise, is_initialised, is_domain_decomposed, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint, transform_basis
   use MPI_Context_module, only: MPI_context
-  use DomainDecomposition_module, only: DomainDecomposition, &
-       allocate, communicate_domain_to_all
+  use DomainDecomposition_module, only: allocate, comm_atoms_to_all
 
   implicit none
 
@@ -286,7 +285,7 @@ contains
   end subroutine cinoutput_finalise
 
 
-  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, domain, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
@@ -297,7 +296,6 @@ contains
     integer, optional, intent(in) :: range(2)
     character(*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
-    type(DomainDecomposition), optional, intent(inout) :: domain
     integer, intent(out), optional :: error
 
     type(Dictionary) :: empty_dictionary
@@ -327,14 +325,8 @@ contains
        RAISE_ERROR('CInOutput_read: only one of "str" and "estr" may be present, not both', error)
     end if
 
-    if (present(range) .and. present(domain)) then
-       RAISE_ERROR("atoms_read_cinoutput: Please provide either *range* or *domain*.", error)
-    endif
-
-    if (present(domain)) then
-       if (.not. domain%domain_decomposed) then
-          RAISE_ERROR("atoms_read_cinoutput: *domain* is present, but domain decomposition is not enabled.", error)
-       endif
+    if (present(range) .and. is_domain_decomposed(at)) then
+       RAISE_ERROR("atoms_read_cinoutput: Please provide either *range* only if the system is not domain decomposed.", error)
     endif
 
     call finalise(at)
@@ -361,12 +353,11 @@ contains
 
        do_range(:) = 0
        if (present(range)) do_range = range
-       if (present(domain)) then
-          at%domain_decomposed = .true.
+       if (is_domain_decomposed(at)) then
           ! Only read part of the files...
           do_range = (/ &
-               domain%mpi%my_proc * this%n_atom / domain%mpi%n_procs + 1, &
-               ( domain%mpi%my_proc + 1 ) * this%n_atom / domain%mpi%n_procs &
+               at%domain%mpi%my_proc*this%n_atom/at%domain%mpi%n_procs+1, &
+               (at%domain%mpi%my_proc+1)*this%n_atom/at%domain%mpi%n_procs &
                /)
           n_atom = this%n_atom
        endif
@@ -449,7 +440,7 @@ contains
 
        at%N = n_atom
        at%Ndomain = at%N
-       if (present(domain)) then
+       if (is_domain_decomposed(at)) then
           ! XXX FIXME For now: Buffer size it total number of atoms
           at%Nbuffer = this%n_atom
        else
@@ -521,11 +512,11 @@ contains
        call bcast(this%mpi, at)
     end if
 
-    if (present(domain)) then
-       call allocate(domain, at, range=do_range, error=error)
+    if (is_domain_decomposed(at)) then
+       call allocate(at%domain, at, range=do_range, error=error)
        PASS_ERROR(error)
        ! Set global indices
-       call communicate_domain_to_all(domain, at, error=error)
+       call comm_atoms_to_all(at%domain, at, error=error)
        PASS_ERROR(error)
     endif
 
@@ -690,7 +681,7 @@ contains
 
   end subroutine cinoutput_write
 
-  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, range, str, estr, no_compute_index, mpi, domain, error)
+  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, range, str, estr, no_compute_index, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in), optional :: filename
@@ -703,26 +694,25 @@ contains
     type(extendable_str), intent(in), optional :: estr
     logical, optional, intent(in) :: no_compute_index
     type(MPI_context), optional, intent(inout) :: mpi
-    type(DomainDecomposition), optional, intent(inout) :: domain
     integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
 
     INIT_ERROR(error)
 
-    if (present(mpi) .and. present(domain)) then
-       RAISE_ERROR("atoms_read: Please provide either *mpi* or *domain*.", error)
+    if (present(mpi) .and. is_domain_decomposed(this)) then
+       RAISE_ERROR("atoms_read: Please provide *mpi* only if the Atoms object is not domain decomposed.", error)
     endif
 
     call initialise(cio, filename, INPUT, no_compute_index=no_compute_index, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
-    call read(cio, this, properties, properties_array, frame, zero, range, str, estr, domain, error=error)
+    call read(cio, this, properties, properties_array, frame, zero, range, str, estr, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call finalise(cio)
 
   end subroutine atoms_read
 
-  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, range, str, estr, domain, error)
+  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, range, str, estr, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties
@@ -732,11 +722,10 @@ contains
     integer, optional, intent(in) :: range(2)
     character(len=*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
-    type(DomainDecomposition), optional, intent(inout) :: domain
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_read(cio, this, properties, properties_array, frame, zero, range, str, estr, domain, error=error)
+    call cinoutput_read(cio, this, properties, properties_array, frame, zero, range, str, estr, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_read_cinoutput
