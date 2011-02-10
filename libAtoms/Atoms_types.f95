@@ -35,7 +35,7 @@
 !%    Atoms
 !%    Connection
 !%    DomainDecomposition
-!% plus methods for manipulation properties.
+!% plus methods for manipulating properties.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -57,6 +57,13 @@ module Atoms_types_module
 
   public :: DEFAULT_NNEIGHTOL
   real(dp), parameter :: DEFAULT_NNEIGHTOL = 1.2_dp    !% Default value for 'atoms%nneightol'
+
+  public :: DD_WRAP_TO_CELL, DD_WRAP_TO_DOMAIN
+  !% All particles, including ghosts, are wrapped into the cell
+  integer, parameter  :: DD_WRAP_TO_CELL    = 1
+  !% Particles are wrapped into the domain, ghost particles are located
+  !% next to the domain.
+  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2
 
   public :: Table_pointer
   type Table_pointer
@@ -154,6 +161,71 @@ module Atoms_types_module
   end type Connection
 
 
+  public :: DomainDecomposition
+  type DomainDecomposition
+
+     integer                    :: Ntotal                = 0        !% Number of total particles in this simulation
+     integer, pointer           :: local_to_global(:)   => NULL()   !% Local index to global index
+     integer, allocatable       :: global_to_local(:)               !% Global index to local index
+
+     integer                    :: decomposition(3)      = (/ 1, 1, 1 /)   !% Type of decomposition
+
+     integer                    :: mode                  = DD_WRAP_TO_CELL
+
+     logical                    :: decomposed            = .false.   !% True if domain decomposition is active
+
+     real(dp)                   :: requested_border      = 0.0_DP
+     real(dp)                   :: border(3)             = 0.0_DP
+     real(dp)                   :: verlet_shell          = 0.0_DP
+
+     logical                    :: communicate_forces    = .false.
+
+     real(dp)                   :: lower(3)              = 0.0_DP   !% Lower domain boundary, in fraction of the total cell
+     real(dp)                   :: upper(3)              = 0.0_DP   !% Upper domain boundary, in fraction of the total cell
+     real(dp)                   :: center(3)             = 0.0_DP   !% Center of the domain
+     real(dp)                   :: lower_with_border(3)  = 0.0_DP   !% Lower domain boundary, including border
+     real(dp)                   :: upper_with_border(3)  = 0.0_DP   !% Upper domain boundary, including border
+
+     type(MPI_context)          :: mpi                              !% MPI communicator
+     logical                    :: periodic(3)           = .true.   !% Periodicity for domain decomposition
+     integer                    :: l(3)                  = 0        !% Ranks of left domains in x-, y- and z-direction
+     integer                    :: r(3)                  = 0        !% Ranks of right domains in x-, y- and z-direction
+     real(dp)                   :: off_l(3)              = 0.0_DP   !% Distance vector to left domain
+     real(dp)                   :: off_r(3)              = 0.0_DP   !% Distance vector to right domain
+
+     type(Dictionary)           :: atoms_properties     !% Fields to communicate if for particles
+     type(Dictionary)           :: ghost_properties     !% Fields to communicate for ghosts
+     type(Dictionary)           :: reverse_properties   !% Back-communication after force computations     
+
+     logical, allocatable       :: atoms_mask(:)
+     logical, allocatable       :: ghost_mask(:)
+     logical, allocatable       :: reverse_mask(:)
+
+     integer                    :: atoms_buffer_size    = 0
+     integer                    :: ghost_buffer_size    = 0
+     integer                    :: reverse_buffer_size  = 0
+
+     character(1), allocatable  :: send_l(:)   !% buffer for sending to the left
+     character(1), allocatable  :: send_r(:)   !% buffer for sending to the right
+     character(1), allocatable  :: recv_l(:)   !% buffer for receiving from the left
+     character(1), allocatable  :: recv_r(:)   !% buffer for receiving from the right
+
+     integer                    :: n_ghosts_r(3)  = 0   !% length of the ghost particle lists (right)
+     integer                    :: n_ghosts_l(3)  = 0   !% length of the ghost particle lists (left)
+
+     integer, allocatable       :: ghosts_r(:)   !% particles send to the right (where they become ghosts)
+     integer, allocatable       :: ghosts_l(:)   !% particles send to the left (where they become ghosts)
+
+     integer                    :: n_send_p_tot   !% Statistics: Number of total particles send
+     integer                    :: n_recv_p_tot   !% Statistics: Number of total particles received
+     integer                    :: n_send_g_tot   !% Statistics: Number of total ghosts send
+     integer                    :: n_recv_g_tot   !% Statistics: Number of total ghosts received
+     integer                    :: nit_p          !% Statistics: Number of particle send events
+     integer                    :: nit_g          !% Statistics: Number of ghost send events
+     
+  endtype DomainDecomposition
+
+
   public :: Atoms
   type Atoms
 
@@ -162,7 +234,6 @@ module Atoms_types_module
      integer                               :: ref_count = 0  !% Reference counter
 
      logical                               :: fixed_size = .false. !% Can the number of atoms be changed after initialisation?
-     logical                               :: domain_decomposed = .false.  !% Is this Atoms object domain decomposed?
      integer                               :: N = 0 !% The number of atoms held (including ghost particles)
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
      integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
@@ -233,13 +304,15 @@ module Atoms_types_module
      real(dp), pointer, dimension(:,:) :: acc    => null()  !% $(3,N)$ array  of accelerations in \AA/fs$^2$
      real(dp), pointer, dimension(:,:) :: avgpos => null()  !% $(3,N)$ array  of time-averaged atomic positions.
      real(dp), pointer, dimension(:,:) :: oldpos => null()  !% $(3,N)$ array  of positions of atoms at previous time step.
-     real(dp), pointer, dimension(:) :: avg_ke => null()    !% Time-averaged atomic kinetic energy
-     type(Connection)                      :: connect       !% Connectivity object (see above)
-     type(Connection)                      :: hysteretic_connect       !% Hysteretic connectivity object (see above)
+     real(dp), pointer, dimension(:)   :: avg_ke => null()    !% Time-averaged atomic kinetic energy
+
+     type(Connection)                  :: connect             !% Connectivity object (see above)
+     type(Connection)                  :: hysteretic_connect  !% Hysteretic connectivity object (see above)
+
+     type(DomainDecomposition)         :: domain              !% Domain decomposition object (see above)
 
   end type Atoms
 
-  public :: atoms_repoint
 
   !% Add a per-atom property to this atoms object, as extra entry with columns of 
   !% integers, reals, logical, or strings in the 'properties' dictionary. For example, 
@@ -295,6 +368,13 @@ module Atoms_types_module
      module procedure atoms_assign_prop_ptr_logical
   end interface
 
+  
+  !% Copy an atom to a different index
+  public :: copy_entry
+  interface copy_entry
+     module procedure atoms_copy_entry
+  endinterface copy_entry
+
 
   ! Note: These are Atoms unrelated, and could be easily move somewhere else
   ! (linearalgebra?)
@@ -308,7 +388,7 @@ module Atoms_types_module
     module procedure lattice_cell_volume
   end interface
 
-  public :: bond_length
+  public :: atoms_repoint, atoms_sort, bond_length
 
 contains
   
@@ -1123,6 +1203,167 @@ contains
       RAISE_ERROR("atoms_assign_prop_ptr_logical failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_logical
+
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! Copying individual atoms and sorting
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  !% Move a single atom from one location to another one.
+  !% The destination will be overriden.
+  subroutine atoms_copy_entry(this, src, dst, swap, error)
+
+    type(Atoms), intent(inout)  :: this
+    integer, intent(in)         :: src
+    integer, intent(in)         :: dst
+    logical, intent(in), optional :: swap
+    integer, optional, intent(out) :: error
+
+    integer i
+
+    logical :: my_swap
+    integer :: t_i
+    integer, allocatable :: t_i_a(:)
+    real(dp) :: t_r
+    real(dp), allocatable :: t_r_a(:)
+    logical :: t_l
+    character(len=1), allocatable :: t_c(:)
+
+    ! ---
+
+    INIT_ERROR(error)
+    my_swap = optional_default(.false., swap)
+
+    if (src < 1 .or. src > this%N) then
+       RAISE_ERROR('atoms_copy_entry: src='//src//' out of range 1 <= src <= '//this%n, error)
+    end if
+    if (dst < 1 .or. dst > this%N) then
+       RAISE_ERROR('atoms_copy_entry: dst='//dst//' out of range 1 <= dst <= '//this%n, error)
+    end if
+
+    do i=1,this%properties%N
+       select case (this%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+	  if (my_swap) then
+	     t_i = this%properties%entries(i)%i_a(dst)
+	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+	     this%properties%entries(i)%i_a(src) = t_i
+	  else
+	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+	  endif
+
+       case(T_REAL_A)
+	  if (my_swap) then
+	     t_r = this%properties%entries(i)%r_a(dst)
+	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+	     this%properties%entries(i)%r_a(src) = t_r
+	  else
+	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+	  endif
+
+       case(T_LOGICAL_A)
+	  if (my_swap) then
+	     t_l = this%properties%entries(i)%l_a(dst)
+	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+	     this%properties%entries(i)%l_a(src) = t_l
+	  else
+	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+	  endif
+
+       case(T_INTEGER_A2)
+	  if (my_swap) then
+	     allocate(t_i_a(size(this%properties%entries(i)%i_a2,1)))
+	     t_i_a = this%properties%entries(i)%i_a2(:,dst)
+	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+	     this%properties%entries(i)%i_a2(:,src) = t_i_a
+	     deallocate(t_i_a)
+	  else
+	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+	  endif
+
+       case(T_REAL_A2)
+	  if (my_swap) then
+	     allocate(t_r_a(size(this%properties%entries(i)%r_a2,1)))
+	     t_r_a = this%properties%entries(i)%r_a2(:,dst)
+	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+	     this%properties%entries(i)%r_a2(:,src) = t_r_a
+	     deallocate(t_r_a)
+	  else
+	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+	  endif
+
+       case(T_CHAR_A)
+	  if (my_swap) then
+	     allocate(t_c(size(this%properties%entries(i)%s_a,1)))
+	     t_c = this%properties%entries(i)%s_a(:,dst)
+	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+	     this%properties%entries(i)%s_a(:,src) = t_c
+	     deallocate(t_c)
+	  else
+	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+	  endif
+
+       case default
+          RAISE_ERROR('atoms_copy_entry: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+
+       end select
+    end do
+
+  endsubroutine atoms_copy_entry
+
+
+  !% sort atoms by one or more (max 2 now) integer or real properties
+  subroutine atoms_sort(this, prop1, prop2, prop3, error)
+    type(Atoms), intent(inout) :: this
+    character(len=*), intent(in) :: prop1
+    character(len=*), intent(in), optional :: prop2, prop3
+    integer, intent(out), optional :: error
+
+    integer, pointer :: i_p1(:) => null(), i_p2(:) => null(), i_p3(:) => null()
+    real(dp), pointer :: r_p1(:) => null(), r_p2(:) => null(), r_p3(:) => null()
+    integer :: cur_place, i_a, smallest_i_a
+    logical :: is_lt
+
+    INIT_ERROR(error)
+
+    if (.not. assign_pointer(this, prop1, i_p1)) then
+       if (.not. assign_pointer(this, prop1, r_p1)) then
+	  RAISE_ERROR("atoms_sort can't find 1st integer or real property '" // prop1 //"'", error)
+       endif
+    endif
+    if (present(prop2)) then
+       if (.not. assign_pointer(this, prop2, i_p2)) then
+	  if (.not. assign_pointer(this, prop2, r_p2)) then
+	     RAISE_ERROR("atoms_sort can't find 2nd integer or real property '" // prop2 //"'", error)
+	  endif
+       endif
+    endif
+    if (present(prop3)) then
+       if (.not. assign_pointer(this, prop3, i_p3)) then
+	  if (.not. assign_pointer(this, prop3, r_p3)) then
+	     RAISE_ERROR("atoms_sort can't find 3rd integer or real property '" // prop3 //"'", error)
+	  endif
+       endif
+    endif
+
+    do cur_place=1, this%N-1
+       smallest_i_a = cur_place
+       do i_a = cur_place+1, this%N
+	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, i_p3=i_p3, r_p3=r_p3, error=error)
+	  PASS_ERROR(error)
+	  if (is_lt) then
+	     smallest_i_a = i_a
+	  endif
+       end do
+       if (smallest_i_a /= cur_place) then
+	  call copy_entry(this, cur_place, smallest_i_a, swap=.true., error=error)
+	  PASS_ERROR(error)
+       endif
+    end do
+  end subroutine atoms_sort
 
 
 

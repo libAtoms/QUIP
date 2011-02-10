@@ -111,7 +111,8 @@ wrap_modules = spec['wrap_modules']
 del wrap_modules[wrap_modules.index('atoms_types')]
 del wrap_modules[wrap_modules.index('atoms')]
 del wrap_modules[wrap_modules.index('connection')]
-wrap_modules += [ [ 'atoms_types', 'atoms', 'connection' ] ]
+del wrap_modules[wrap_modules.index('domaindecomposition')]
+wrap_modules += [ [ 'atoms_types', 'atoms', 'connection', 'domaindecomposition' ] ]
 ###
 classes, routines, params = wrap_all(_quippy, spec, wrap_modules, spec['short_names'], prefix='qp_')
 

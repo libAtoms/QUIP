@@ -41,7 +41,7 @@ private
 public :: MPI_context
 type MPI_context
   logical :: active = .false.
-  integer :: communicator
+  integer :: communicator = 0
   integer :: n_procs = 1, my_proc = 0
   logical :: is_cart = .false.
   integer :: my_coords(3) = 0

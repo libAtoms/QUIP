@@ -61,6 +61,7 @@ module  atoms_module
   use periodictable_module
   use Atoms_types_module
   use Connection_module
+  use DomainDecomposition_module
   use minimization_module
   use Quaternions_module
 
@@ -90,6 +91,11 @@ module  atoms_module
   interface is_initialised
      module procedure atoms_is_initialised
   end interface is_initialised
+
+  private :: atoms_is_domain_decomposed
+  interface is_domain_decomposed
+     module procedure atoms_is_domain_decomposed
+  endinterface is_domain_decomposed
 
   private :: atoms_shallowcopy
   interface shallowcopy
@@ -248,11 +254,6 @@ module  atoms_module
      module procedure atoms_copy_properties
   endinterface copy_properties
 
-  private :: atoms_copy_entry
-  interface copy_entry
-     module procedure atoms_copy_entry
-  endinterface copy_entry
-
   private :: atoms_transform_basis
   interface transform_basis
      module procedure atoms_transform_basis
@@ -287,6 +288,11 @@ module  atoms_module
   interface is_min_image
      module procedure atoms_is_min_image
   endinterface
+
+  private :: atoms_set_comm_property
+  interface set_comm_property
+     module procedure atoms_set_comm_property
+  endinterface set_comm_property
 
   private :: atoms_set_Zs
   interface set_Zs
@@ -338,6 +344,9 @@ contains
        call initialise(this%params)
     end if
 
+    call initialise(this%domain, error=error)
+    PASS_ERROR(error)
+
     this%N = N
     this%Ndomain = N
     this%Nbuffer = N
@@ -376,7 +385,14 @@ contains
             error=error)
        PASS_ERROR(error)
     end if
-
+ 
+    call set_comm_property(this, 'Z', &
+         comm_atoms=.true., comm_ghosts=.true.)
+    call set_comm_property(this, 'pos', &
+         comm_atoms=.true., comm_ghosts=.true.)
+    call set_comm_property(this, 'species', &
+         comm_atoms=.true.)
+ 
     call atoms_repoint(this)
 
     stack_size = 3*N*8/1024
@@ -436,6 +452,14 @@ contains
     atoms_is_initialised = this%ref_count > 0
   end function atoms_is_initialised
 
+
+  !% Is this atoms object domain decomposed?
+  logical function atoms_is_domain_decomposed(this)
+    type(Atoms), intent(in)  :: this
+    atoms_is_domain_decomposed = this%domain%decomposed
+  end function atoms_is_domain_decomposed
+
+
   !% Shallow copy of this Atoms object
   subroutine atoms_shallowcopy(this, from)
     type(Atoms), pointer, intent(out)  :: this
@@ -461,6 +485,8 @@ contains
     if (this%ref_count == 0) then
 
        call print("atoms_finalise: ref_count = 0, finalising", PRINT_ANAL)
+
+       call finalise(this%domain)
 
        call finalise(this%properties)
        call finalise(this%params)
@@ -546,8 +572,7 @@ contains
 
     call deepcopy(to%connect, from%connect)
     call deepcopy(to%hysteretic_connect, from%hysteretic_connect)
-
-    to%domain_decomposed = from%domain_decomposed
+    call deepcopy(to%domain, from%domain)
 
   end subroutine atoms_assignment
 
@@ -604,11 +629,12 @@ contains
     endif
     to%params = from%params
     to%fixed_size = from%fixed_size
-    to%domain_decomposed = from%domain_decomposed
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff = from%cutoff
     to%cutoff_break = from%cutoff_break
     to%nneightol = from%nneightol
+
+    call deepcopy(to%domain, from%domain)
 
     call atoms_repoint(to)
     to%ref_count = 1
@@ -1454,6 +1480,8 @@ contains
        ! mass specified but property doesn't yet exist, so create it...
        call add_property(this, 'mass', ElementMass(this%Z), ptr=this%mass, error=error)
        PASS_ERROR(error)
+       call set_comm_property(this, 'mass', &
+            comm_atoms=.true.)
        ! ... and then override for new atoms
        this%mass(oldN+1:this%N) = mass
     end if
@@ -1706,6 +1734,8 @@ contains
 
     if (.not. has_property(this, 'travel')) then
        call add_property(this, 'travel', 0, n_cols=3, ptr2=this%travel)
+       call set_comm_property(this, 'travel', &
+            comm_atoms=.true.)
     end if
 
     do i=1,this%N
@@ -3160,7 +3190,6 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
-       call bcast(mpi, at%domain_decomposed)
        call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
        call bcast(mpi, at%cutoff_break)
@@ -3177,7 +3206,6 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
-       call bcast(mpi, at%domain_decomposed)
        call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
        call bcast(mpi, at%cutoff_break)
@@ -3242,160 +3270,6 @@ contains
     PASS_ERROR(error)
 
   end subroutine atoms_copy_properties
-
-  !% Move a single atom from one location to another one.
-  !% The destination will be overriden.
-  subroutine atoms_copy_entry(this, src, dst, swap, error)
-
-    type(Atoms), intent(inout)  :: this
-    integer, intent(in)         :: src
-    integer, intent(in)         :: dst
-    logical, intent(in), optional :: swap
-    integer, optional, intent(out) :: error
-
-    integer i
-
-    logical :: my_swap
-    integer :: t_i
-    integer, allocatable :: t_i_a(:)
-    real(dp) :: t_r
-    real(dp), allocatable :: t_r_a(:)
-    logical :: t_l
-    character(len=1), allocatable :: t_c(:)
-
-    ! ---
-
-    INIT_ERROR(error)
-    my_swap = optional_default(.false., swap)
-
-    if (src < 1 .or. src > this%N) then
-       RAISE_ERROR('atoms_copy_entry: src='//src//' out of range 1 <= src <= '//this%n, error)
-    end if
-    if (dst < 1 .or. dst > this%N) then
-       RAISE_ERROR('atoms_copy_entry: dst='//dst//' out of range 1 <= dst <= '//this%n, error)
-    end if
-
-    do i=1,this%properties%N
-       select case (this%properties%entries(i)%type)
-
-       case(T_INTEGER_A)
-	  if (my_swap) then
-	     t_i = this%properties%entries(i)%i_a(dst)
-	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
-	     this%properties%entries(i)%i_a(src) = t_i
-	  else
-	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
-	  endif
-
-       case(T_REAL_A)
-	  if (my_swap) then
-	     t_r = this%properties%entries(i)%r_a(dst)
-	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
-	     this%properties%entries(i)%r_a(src) = t_r
-	  else
-	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
-	  endif
-
-       case(T_LOGICAL_A)
-	  if (my_swap) then
-	     t_l = this%properties%entries(i)%l_a(dst)
-	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
-	     this%properties%entries(i)%l_a(src) = t_l
-	  else
-	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
-	  endif
-
-       case(T_INTEGER_A2)
-	  if (my_swap) then
-	     allocate(t_i_a(size(this%properties%entries(i)%i_a2,1)))
-	     t_i_a = this%properties%entries(i)%i_a2(:,dst)
-	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
-	     this%properties%entries(i)%i_a2(:,src) = t_i_a
-	     deallocate(t_i_a)
-	  else
-	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
-	  endif
-
-       case(T_REAL_A2)
-	  if (my_swap) then
-	     allocate(t_r_a(size(this%properties%entries(i)%r_a2,1)))
-	     t_r_a = this%properties%entries(i)%r_a2(:,dst)
-	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
-	     this%properties%entries(i)%r_a2(:,src) = t_r_a
-	     deallocate(t_r_a)
-	  else
-	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
-	  endif
-
-       case(T_CHAR_A)
-	  if (my_swap) then
-	     allocate(t_c(size(this%properties%entries(i)%s_a,1)))
-	     t_c = this%properties%entries(i)%s_a(:,dst)
-	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
-	     this%properties%entries(i)%s_a(:,src) = t_c
-	     deallocate(t_c)
-	  else
-	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
-	  endif
-
-       case default
-          RAISE_ERROR('atoms_copy_entry: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
-
-       end select
-    end do
-
-  endsubroutine atoms_copy_entry
-
-
-  !% sort atoms by one or more (max 2 now) integer or real properties
-  subroutine atoms_sort(this, prop1, prop2, prop3, error)
-    type(Atoms), intent(inout) :: this
-    character(len=*), intent(in) :: prop1
-    character(len=*), intent(in), optional :: prop2, prop3
-    integer, intent(out), optional :: error
-
-    integer, pointer :: i_p1(:) => null(), i_p2(:) => null(), i_p3(:) => null()
-    real(dp), pointer :: r_p1(:) => null(), r_p2(:) => null(), r_p3(:) => null()
-    integer :: cur_place, i_a, smallest_i_a
-    logical :: is_lt
-
-    INIT_ERROR(error)
-
-    if (.not. assign_pointer(this, prop1, i_p1)) then
-       if (.not. assign_pointer(this, prop1, r_p1)) then
-	  RAISE_ERROR("atoms_sort can't find 1st integer or real property '" // prop1 //"'", error)
-       endif
-    endif
-    if (present(prop2)) then
-       if (.not. assign_pointer(this, prop2, i_p2)) then
-	  if (.not. assign_pointer(this, prop2, r_p2)) then
-	     RAISE_ERROR("atoms_sort can't find 2nd integer or real property '" // prop2 //"'", error)
-	  endif
-       endif
-    endif
-    if (present(prop3)) then
-       if (.not. assign_pointer(this, prop3, i_p3)) then
-	  if (.not. assign_pointer(this, prop3, r_p3)) then
-	     RAISE_ERROR("atoms_sort can't find 3rd integer or real property '" // prop3 //"'", error)
-	  endif
-       endif
-    endif
-
-    do cur_place=1, this%N-1
-       smallest_i_a = cur_place
-       do i_a = cur_place+1, this%N
-	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, i_p3=i_p3, r_p3=r_p3, error=error)
-	  PASS_ERROR(error)
-	  if (is_lt) then
-	     smallest_i_a = i_a
-	  endif
-       end do
-       if (smallest_i_a /= cur_place) then
-	  call atoms_copy_entry(this, cur_place, smallest_i_a, swap=.true., error=error)
-	  PASS_ERROR(error)
-       endif
-    end do
-  end subroutine atoms_sort
 
 
   !% sort atoms according to an externally provided field
@@ -3676,6 +3550,35 @@ contains
     endif
 
   end subroutine atoms_calc_connect
+
+
+  !% Set which properties to communicate when
+  !% comm_atoms:   Communicate when atom is moved to different domain.
+  !%               Forces, for example, may be excluded since they are updated
+  !%               on every time step.
+  !% comm_ghosts:  Communicate when atom is dublicated as a ghost on a domain.
+  !%               Masses, for example, might be excluded since atoms are
+  !%               propagated on the domain they reside in only.
+  !% comm_reverse: Communicate back from ghost atoms to the original domain atom
+  !%               and accumulate
+  !% By default, properties are not communicated.
+  subroutine atoms_set_comm_property(this, propname, &
+       comm_atoms, comm_ghosts, comm_reverse)
+    implicit none
+
+    type(Atoms),       intent(inout)  :: this
+    character(*),      intent(in)     :: propname
+    logical, optional, intent(in)     :: comm_atoms
+    logical, optional, intent(in)     :: comm_ghosts
+    logical, optional, intent(in)     :: comm_reverse
+
+    ! ---
+
+    call set_comm_property(this%domain, propname, &
+         comm_atoms, comm_ghosts, comm_reverse)
+
+  endsubroutine atoms_set_comm_property
+
 
   !% set Zs from species
   subroutine atoms_set_Zs(this, error)
