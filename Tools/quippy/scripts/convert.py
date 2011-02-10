@@ -143,7 +143,7 @@ if opt.merge is not None:
    if opt.merge_properties is not None:
       opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
    else:
-      at_merge = merge_configs[1]
+      at_merge = merge_configs[0]
       opt.merge_properties = at_merge.properties.keys()
 
 def process(at, frame):
@@ -171,7 +171,7 @@ def process(at, frame):
       try:
          at_merge = merge_configs[frame]
       except IndexError:
-         at_merge = merge_configs[1]
+         at_merge = merge_configs[0]
       for k in opt.merge_properties:
          at.add_property(k, at_merge.properties[k], property_type=at_merge.properties.get_type(k), overwrite=True)
 
@@ -201,7 +201,7 @@ def process(at, frame):
               del at.params[old]
 
    # Verbose output
-   if opt.verbose and frame == 1:
+   if opt.verbose and frame == 0:
       print 'N_ATOMS', at.n
       print 'PROPERTIES:', at.properties.keys()
       print 'PARAMS:', at.params.keys()
@@ -283,7 +283,7 @@ if outfile is not None:
 
 try:
    if len(all_configs) == 1:
-      opt.range = 1
+      opt.range = 0
    got_length = True
 except ValueError:
    got_length = False
@@ -314,7 +314,7 @@ if isinstance(opt.range, slice):
 else:
    # single frame
    try:
-      process(AtomsList(infile)[opt.range], 1)
+      process(AtomsList(infile)[opt.range], 0)
    except RuntimeError, re:
       p.error(str(re))
 
