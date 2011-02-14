@@ -319,7 +319,6 @@ contains
 
     integer:: i,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale
-    real(dp), parameter::delta = 1.0e-4_dp
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
     character(len=STRING_LENGTH) :: my_args_str, cluster_args_str, new_args_str
@@ -340,6 +339,7 @@ contains
     integer, pointer :: old_cluster_mark_p(:)
     character(len=FIELD_LENGTH) :: hybrid_mark_postfix
     logical :: force_using_fd
+    real(dp) :: force_fd_delta
 
     INIT_ERROR(error)
 
@@ -369,7 +369,9 @@ contains
     call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, &
       help_string="rescale calculate energies (and correspondingly forces) by this factor")
     call param_register(params, 'force_using_fd', 'F', force_using_fd, &
-      help_string="If true, calculate forces using finite difference")
+      help_string="If true, and if 'force' is also present in the argument list, calculate forces using finite difference.")
+    call param_register(params, 'force_fd_delta', '1.0e-4', force_fd_delta, &
+      help_string="Displacement to use with finite difference force calculation")
     call param_register(params, 'energy', '', calc_energy, &
       help_string="If present, calculate energy and put it in field with this string as name")
     call param_register(params, 'force', '', calc_force, &
@@ -385,6 +387,8 @@ contains
       RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
     endif
     call finalise(params)
+
+    
 
     if (single_cluster .and. little_clusters) then
          RAISE_ERROR('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive', error)
@@ -648,6 +652,12 @@ contains
        do_calc_local_energy = len_trim(calc_local_energy) > 0
        do_calc_virial = len_trim(calc_virial) > 0
        do_calc_local_virial = len_trim(calc_local_virial) > 0
+       call print("do_calc_force=        "//do_calc_force//" calc_force="//trim(calc_force), PRINT_VERBOSE)
+       call print("force_using_fd=       "//force_using_fd, PRINT_VERBOSE)
+       call print("do_calc_energy=       "//do_calc_energy//" calc_energy="//trim(calc_energy), PRINT_VERBOSE)
+       call print("do_calc_local_energy= "//do_calc_local_energy//" calc_local_energy="//trim(calc_local_energy), PRINT_VERBOSE)
+       call print("do_calc_virial=       "//do_calc_virial//" calc_virial="//trim(calc_virial), PRINT_VERBOSE)
+       call print("do_calc_local_virial= "//do_calc_local_virial//" calc_local_virial="//trim(calc_local_virial), PRINT_VERBOSE)
 
        if(do_calc_virial .or. do_calc_energy .or. do_calc_force .or. do_calc_local_energy .or. do_calc_local_virial) then
           if(associated(this%ip)) then
@@ -994,7 +1004,14 @@ contains
 
        if (force_using_fd) then ! do forces by finite difference
 
-          ! must remove 'calc_df' from args_str if it's there (and the rest, or properties get overwritten)
+          call print("Calculating force by finite differences with displacement="//force_fd_delta, PRINT_VERBOSE)
+
+          if (.not. len_trim(calc_force) > 0) then
+             RAISE_ERROR("Potential_Simple_Calc: force calculation by finite difference requires that you must specify 'force' in the argument string as well as 'force_using_fd'.", error) ! otherwise there might be no 'force' property to store the force into 
+          end if
+
+
+          ! must remove 'force_using_fd' from args_str if it's there (and the rest, or properties get overwritten)
           call initialise(params)
           call read_string(params, my_args_str)
           call remove_value(params, 'force_using_fd')
@@ -1010,21 +1027,22 @@ contains
           do i=1,at%N
              do k=1,3
                 pos_save = at%pos(k,i)
-                at%pos(k,i) = pos_save + delta
+                at%pos(k,i) = pos_save + force_fd_delta
                 call calc_dists(at)
                 call calc(this, at, args_str=new_args_str, error=error)
 		call get_param_value(at, "fd_energy", e_plus, error=error)
 	        PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
-                at%pos(k,i) = pos_save - delta
+                at%pos(k,i) = pos_save - force_fd_delta
                 call calc_dists(at)
                 call calc(this, at, args_str=new_args_str, error=error)
 		call get_param_value(at, "fd_energy", e_minus, error=error)
 		PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
                 at%pos(k,i) = pos_save
                 call calc_dists(at)
-                at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*delta) ! force is -ve gradient
+                at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*force_fd_delta) ! force is -ve gradient
              end do
           end do
+          call print("Done with finite difference calculation", PRINT_VERBOSE)
        end if
     end if
 
