@@ -1042,6 +1042,7 @@ contains
                 at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*force_fd_delta) ! force is -ve gradient
              end do
           end do
+          call remove_value(at%params, "fd_energy")
           call print("Done with finite difference calculation", PRINT_VERBOSE)
        end if
     end if
