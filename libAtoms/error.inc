@@ -57,9 +57,9 @@
 
 #define INIT_ERROR(error)  if (present(error)) then ; error = ERROR_NONE ; endif
 
-#define RAISE_ERROR(info, error)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif
+#define RAISE_ERROR(info, error)   if (.true.) then ; call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif ; endif
 
-#define RAISE_ERROR_WITH_KIND(kind, info, error)   call push_error_with_info(info, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = kind ; return ; else ; call error_abort(error) ; endif
+#define RAISE_ERROR_WITH_KIND(kind, info, error)   if (.true.) then ; call push_error_with_info(info, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = kind ; return ; else ; call error_abort(error) ; endif ; endif
 
 #define PASS_ERROR(error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
 

@@ -208,8 +208,9 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
      call finalise(params)
 
      if( has_atom_mask_name ) then
-        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
-        RAISE_ERROR("IPModel_Brenner_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.",error)
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
+           RAISE_ERROR("IPModel_Brenner_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.",error)
+        endif
      else
         atom_mask_pointer => null()
      endif
