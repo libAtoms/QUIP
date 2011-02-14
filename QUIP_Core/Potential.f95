@@ -587,11 +587,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     end if
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "energy", "", calc_energy, help_string="If present, calculate energy and put it in field with this string as name")
+    call param_register(params, "virial", "", calc_virial, help_string="If present, calculate virial and put it in field with this string as name")
+    call param_register(params, "force", "", calc_force, help_string="If present, calculate force and put it in field with this string as name")
+    call param_register(params, "local_energy", "", calc_local_energy, help_string="If present, calculate local energy and put it in field with this string as name")
+    call param_register(params, "local_virial", "", calc_local_virial, help_string="If present, calculate local virial and put it in field with this string as name")
     call param_register(params, "r_scale", "0.0", r_scale, has_value_target=has_r_scale, help_string="Distance rescale factor. Overrides r_scale init arg")
     call param_register(params, "E_scale", "0.0", E_scale, has_value_target=has_E_scale, help_string="Energy rescale factor. Overrides E_scale init arg")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
