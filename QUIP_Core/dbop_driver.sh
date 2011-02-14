@@ -50,7 +50,7 @@ xyzfile=$1
 outfile=$2
 stem=`basename $xyzfile .xyz`
 
-cd $olddir
+cd "$olddir"
 
 # Extract a property from an extended XYZ file and print it
 # $1 : file name
@@ -90,7 +90,7 @@ if [[ ! -d $stem ]]; then
 fi
 cd $stem
 
-cp $olddir/$xyzfile .
+cp "$olddir/$xyzfile" .
 
 
 N=`head -1 $xyzfile`                # Number of atoms
@@ -100,7 +100,7 @@ params=`head -2 $xyzfile | tail -1` # Parameter line
 lattice=`echo $params | gawk '{match($0,/Lattice="?([^"]*)/,a); print a[1]}'`
 
 echo dbop_driver ${stem}: got $N atoms
-echo dbop_driver ${stem}: got unit cell, $lattice
+#echo dbop_driver ${stem}: got unit cell, $lattice
 
 # we now need to invert the lattice matrix because BOP needs the atomic positions in fractional coords
 invdet=`echo $lattice | awk '{printf "%24.16e", 1/($1*($5*$9-$6*$8)-$2*($4*$9-$6*$7)+$3*($4*$8-$5*$7));}'`
@@ -113,7 +113,7 @@ i8=`echo $lattice | awk -v id="$invdet" '{printf "%24.16e", -($1*$8-$2*$7)*id;}'
 i3=`echo $lattice | awk -v id="$invdet" '{printf "%24.16e",  ($2*$6-$3*$5)*id;}'`
 i6=`echo $lattice | awk -v id="$invdet" '{printf "%24.16e", -($1*$6-$3*$4)*id;}'`
 i9=`echo $lattice | awk -v id="$invdet" '{printf "%24.16e",  ($1*$5-$2*$4)*id;}'`
-echo dbop_driver ${stem}: inverse unit cell: ${i1} ${i2} ${i3} ${i4} ${i5} ${i6} ${i7} ${i8} ${i9}  
+#echo dbop_driver ${stem}: inverse unit cell: ${i1} ${i2} ${i3} ${i4} ${i5} ${i6} ${i7} ${i8} ${i9}  
 
 # Make BOP input file from input xyz file
 echo "A" > input
@@ -138,19 +138,19 @@ echo >> input
 if [[ $test_mode == 1 ]]; then
     echo dbop_driver: test mode
 else
-    rm -f quip.out out phonon.eng block.unwrapped block.out ${olddir}/${stem}.out
-    ln -sf ${bopdir}/BNDSCL.WW .
-    ln -sf ${bopdir}/BOP.atomdat .
-    ln -sf ${bopdir}/PARAM.BOP .
-    ln -sf ${bopdir}/SPLINE.WW 
-    ln -sf ${bopdir}/ENV.WW  .
+    rm -f quip.out out phonon.eng block.unwrapped block.out "${olddir}/${stem}.out"
+    ln -sf "${bopdir}/BNDSCL.WW" .
+    ln -sf "${bopdir}/BOP.atomdat" .
+    ln -sf "${bopdir}/PARAM.BOP" .
+    ln -sf "${bopdir}/SPLINE.WW" 
+    ln -sf "${bopdir}/ENV.WW"  .
     
     ln -sf PARAM.BOP fort.8
     ln -sf SPLINE.WW fort.12
     ln -sf ENV.WW fort.14
     ln -sf input fort.31
     ln -sf out fort.9
-    ${bopexe} 2>&1 1>outerr
+    "${bopexe}" 2>&1 1>outerr
     rm fort.*
 fi
 
@@ -189,7 +189,7 @@ max_force=`print_property ${stem}.out force 0 | awk '{ print sqrt($1*$1 + $2*$2 
 echo dbop_driver ${stem}: max force is $max_force 
 
 # Copy output file
-cp ${stem}.out $olddir/$outfile
+cp ${stem}.out "$olddir/$outfile"
 
 echo dbop_driver ${stem}: done, E\=$energy eV, time $ctime s
 exit 0
