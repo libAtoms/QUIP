@@ -3667,8 +3667,14 @@ module descriptors_module
        real(dp), intent(in) :: cutoff
        real(dp) :: rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6), &
        fOH(8), fHH(6), dfOH(3,6,8), dfHH(3,6,6), &
-       arg, arg_r
+       arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
+
+       real(dp), dimension(8), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.75_dp, 2.50_dp, 3.25_dp, 4.25_dp/)
+       real(dp), dimension(8), parameter :: sigma_OH = 1.0_dp / (/0.0125_dp, 0.0125_dp, 0.0125_dp, 0.0125_dp, 0.125_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
+
+       real(dp), dimension(6), parameter :: r0_HH = (/1.51_dp, 1.57_dp, 2.40_dp, 2.90_dp, 3.70_dp, 4.50_dp/)
+       real(dp), dimension(6), parameter :: sigma_HH = 1.0_dp / (/0.05_dp, 0.05_dp, 0.25_dp, 0.40_dp, 0.60_dp, 0.60_dp/)**2
 
        !real(dp) :: rA1, rA2, rB1, rB2
        !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
@@ -3768,14 +3774,14 @@ module descriptors_module
        if(present(vec) .or. present(dvec)) then
           fOH = 0.0_dp
           dfOH = 0.0_dp
-          do i = 1, 8
-             arg = PI*i/cutoff
-             do j = 1, 8
-                arg_r = arg * rOH(j)
-                if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
+          do i = 1, 8     ! basis function
+             do j = 1, 8  ! atom pair
+                arg_r = rOH(j) - r0_OH(i)
+                fOH_ij = exp( - 0.5_dp * arg_r**2 * sigma_OH(i) )
+                if(present(vec)) fOH(i) = fOH(i) + fOH_ij
                 if(present(dvec)) then
                    do k = 1, 6
-                      dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j)
+                      dfOH(:,k,i) = dfOH(:,k,i) - arg_r * sigma_OH(i) * fOH_ij * drOH(:,k,j)
                    enddo
                 endif
              enddo
@@ -3783,19 +3789,52 @@ module descriptors_module
 
           fHH = 0.0_dp
           dfHH = 0.0_dp
-          do i = 1, 6
-             arg = PI*i/cutoff
-             do j = 1, 6
-                arg_r = arg * rHH(j)
-                if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
+          do i = 1, 6     ! basis function
+             do j = 1, 6  ! atom pair
+                arg_r = rHH(j) - r0_HH(i)
+                fHH_ij = exp( - 0.5_dp * arg_r**2 * sigma_HH(i) )
+                if(present(vec)) fHH(i) = fHH(i) + fHH_ij
                 if(present(dvec)) then
                    do k = 1, 6
-                      dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j)
+                      dfHH(:,k,i) = dfHH(:,k,i) - arg_r * sigma_HH(i) * fHH_ij * drHH(:,k,j)
                    enddo
                 endif
              enddo
           enddo
        endif
+
+
+       !if(present(vec) .or. present(dvec)) then
+       !   fOH = 0.0_dp
+       !   dfOH = 0.0_dp
+       !   do i = 1, 8
+       !      arg = PI*i/cutoff
+       !      do j = 1, 8
+       !         arg_r = arg * rOH(j)
+       !         if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
+       !         if(present(dvec)) then
+       !            do k = 1, 6
+       !               dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j)
+       !            enddo
+       !         endif
+       !      enddo
+       !   enddo
+
+       !   fHH = 0.0_dp
+       !   dfHH = 0.0_dp
+       !   do i = 1, 6
+       !      arg = PI*i/cutoff
+       !      do j = 1, 6
+       !         arg_r = arg * rHH(j)
+       !         if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
+       !         if(present(dvec)) then
+       !            do k = 1, 6
+       !               dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j)
+       !            enddo
+       !         endif
+       !      enddo
+       !   enddo
+       !endif
 
        if (present(vec)) then
           vec(1) = distance_min_image(at, iAo, iBo)
