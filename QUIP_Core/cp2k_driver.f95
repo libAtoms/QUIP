@@ -189,7 +189,7 @@ contains
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
-      call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, QMMM_CORE, QMMM_EXTENDED")
+      call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, or QMMM")
       call param_register(cli, 'use_buffer', 'T', use_buffer, help_string="If true, use buffer as specified in relevant hybrid_mark")
       call param_register(cli, 'qm_name_postfix', '', qm_name_postfix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="filename for cp2k input template")
@@ -582,10 +582,16 @@ contains
 
        qm_list_changed = .false.
        do i=1,at%N
-          !only hybrid_no_mark matters
-          if (old_cluster_mark_p(i).ne.cluster_mark_p(i) .and. &
-              any((/old_cluster_mark_p(i),cluster_mark_p(i)/).eq.HYBRID_NO_MARK)) then
-              qm_list_changed = .true.
+          if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
+	      if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
+		if (any((/old_cluster_mark_p(i),cluster_mark_p(i)/) == HYBRID_NO_MARK)) qm_list_changed = .true.
+	      else ! CORE, check for transitions between ACTIVE/TRANS and other
+		if ( ( any(old_cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+		       all(cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) .or. &
+		     ( any(cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+		       all(old_cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) ) qm_list_changed = .true.
+              endif
+	      if (qm_list_changed) exit
           endif
        enddo
        call set_value(at%params,'QM_list_changed',qm_list_changed)
