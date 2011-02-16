@@ -519,7 +519,7 @@ logical :: have_silica_potential
     ds%atoms%nneightol = nneightol
     ! topology calculation
     if (trim(Run_Type1).ne.'QS') then
-!       if (.not.Continue_it) then
+       if (.not.Continue_it) then
 	  ! residues are needed here for heuristics based on them (e.g. don't break residue, don't break molecule)
 	  ! in update_QM_region() (and also buffer cluster creating in potential_simple_calc())
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
@@ -527,7 +527,7 @@ logical :: have_silica_potential
 	  call calc_dists(ds%atoms)
           call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
-!       endif
+       endif
     endif
 
    !QM CORE
