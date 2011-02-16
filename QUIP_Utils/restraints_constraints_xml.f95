@@ -55,6 +55,26 @@ contains
 
       else if (parse_in_restraints .or. parse_in_constraints) then
 
+	 if (parse_in_restraints) then
+	    call QUIP_FoX_get_value(attributes, "k", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length "//trim(type_str))
+	    read (value, *) k
+	    call QUIP_FoX_get_value(attributes, "bound", value, status)
+	    if (status == 0) then
+	       read (value, *) bound_str
+	       call interpret_bound_string(trim(bound_str),bound)
+	    else
+	       bound = BOTH_UPPER_AND_LOWER_BOUNDS
+	    endif
+	 else
+	    call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
+	    if (status == 0) then
+	       read (value, *) tol
+	    else
+	       tol=-1._dp !default
+	    endif
+	 endif
+
 	 if (name == 'bond_length') then
 	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length "//trim(type_str))
@@ -62,25 +82,7 @@ contains
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length "//trim(type_str))
 	    read (value, *) atom_2
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
+
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
 	    if (status == 0) then
 	       read (value, *) d
@@ -106,26 +108,6 @@ contains
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in relax_bond_length "// &
 	      trim(type_str))
 	    read (value, *) atom_2
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in relax_bond_length "// &
-		trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "t0", value, status)
 	    if (status /= 0) then
 	       call print("restraint_startElement_handler failed to read t0 in relax_bond_length "//trim(type_str)// &
@@ -165,26 +147,6 @@ contains
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in relax_bond_length_dev_pow "// &
 	      trim(type_str))
 	    read (value, *) atom_2
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in relax_bond_length_dev_pow "// &
-		trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "p", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read p in relax_bond_length_dev_pow "//trim(type_str))
 	    read (value, *) p
@@ -226,25 +188,6 @@ contains
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length_sq "//trim(type_str))
 	    read (value, *) atom_2
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length_sq "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
 	    if (status == 0) then
 	       read (value, *) d
@@ -269,25 +212,6 @@ contains
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length_dev_pow "//trim(type_str))
 	    read (value, *) atom_2
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length_dev_pow "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "p", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read p in bond_length_dev_pow "//trim(type_str))
 	    read (value, *) p
@@ -318,25 +242,6 @@ contains
 	    call QUIP_FoX_get_value(attributes, "atom_3", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_3 in bond_angle_cos "//trim(type_str))
 	    read (value, *) atom_3
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_angle_cos "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "c", value, status)
 	    if (status == 0) then
 	       read (value, *) c
@@ -364,25 +269,6 @@ contains
 	    call QUIP_FoX_get_value(attributes, "atom_3", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_3 in bond_length_diff "//trim(type_str))
 	    read (value, *) atom_3
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length_diff "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
 	    if (status == 0) then
 	       read (value, *) d
@@ -401,25 +287,6 @@ contains
 
 	 else if (name == 'gap_energy') then
 
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in gap_energy "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-            endif
 	    call QUIP_FoX_get_value(attributes, "egap", value, status)
 	    if (status == 0) then
 	       read (value, *) egap
@@ -445,25 +312,6 @@ contains
 	    call QUIP_FoX_get_value(attributes, "normal", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read normal in atom_plane "//trim(type_str))
 	    read (value, *) plane_n
-	    if (parse_in_restraints) then
-	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in atom_plane "//trim(type_str))
-	       read (value, *) k
-	       call QUIP_FoX_get_value(attributes, "bound", value, status)
-	       if (status == 0) then
-	          read (value, *) bound_str
-                  call interpret_bound_string(trim(bound_str),bound)
-               else
-                  bound = BOTH_UPPER_AND_LOWER_BOUNDS
-               endif
-            else
-               call QUIP_FoX_get_value(attributes, "tol", value, status) !constraint tolerance
-	       if (status == 0) then
-	          read (value, *) tol
-               else
-                  tol=-1._dp !default
-               endif
-	    endif
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
 	    if (status == 0) then
 	       read (value, *) d
