@@ -144,10 +144,10 @@ module constraints_module
   real(dp), parameter :: CONSTRAINT_WARNING_TOLERANCE = 1.0E-3_dp !% Warn if a constraint is added which is not obeyed
                                                                   !% to within this tolerance
 
-  integer, parameter :: UPPER_BOUND = 1                 !% Restraint should only act if the instantaneous value is larger than the equilibrium restraint value
   integer, parameter :: LOWER_BOUND = -1                !% Restraint should only act if the instantaneous value is larger than the equilibrium restraint value
   integer, parameter :: BOTH_UPPER_AND_LOWER_BOUNDS = 0  !% Restraint acts independently from the instantaneous value of the restraint
-  character(len=32), parameter :: BOUND_STRING(-1:1) = (/"UPPER_BOUND           ","LOWER_BOUND           ","UPPER_AND_LOWER_BOUNDS"/)
+  integer, parameter :: UPPER_BOUND = 1                 !% Restraint should only act if the instantaneous value is larger than the equilibrium restraint value
+  character(len=32), parameter :: BOUND_STRING(-1:1) = (/"LOWER_BOUND           ","UPPER_AND_LOWER_BOUNDS","UPPER_BOUND           "/)
 
   type Constraint
 
