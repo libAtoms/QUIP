@@ -3670,8 +3670,8 @@ module descriptors_module
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
 
-       real(dp), dimension(8), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.75_dp, 2.50_dp, 3.25_dp, 4.25_dp/)
-       real(dp), dimension(8), parameter :: sigma_OH = 1.0_dp / (/0.0125_dp, 0.0125_dp, 0.0125_dp, 0.0125_dp, 0.125_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
+       real(dp), dimension(8), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.90_dp, 2.50_dp, 3.25_dp, 4.00_dp/)
+       real(dp), dimension(8), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.4_dp, 0.4_dp, 0.4_dp/)**2
 
        real(dp), dimension(6), parameter :: r0_HH = (/1.51_dp, 1.57_dp, 2.40_dp, 2.90_dp, 3.70_dp, 4.50_dp/)
        real(dp), dimension(6), parameter :: sigma_HH = 1.0_dp / (/0.05_dp, 0.05_dp, 0.25_dp, 0.40_dp, 0.60_dp, 0.60_dp/)**2
