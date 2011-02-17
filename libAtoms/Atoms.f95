@@ -125,6 +125,9 @@ module  atoms_module
   interface assignment(=)
      module procedure atoms_assignment
   end interface assignment(=)
+  interface deepcopy
+     module procedure atoms_assignment
+  endinterface
 
   private :: atoms_set_atoms, atoms_set_atoms_singlez
   interface set_atoms
@@ -604,9 +607,7 @@ contains
     integer n_properties    
 
     INIT_ERROR(error)
-    if(.not. is_initialised(from)) then
-       RAISE_ERROR("atoms_copy_without_connect: 'from' object is not initialised", error)
-    end if
+    ASSERT(is_initialised(from), "atoms_copy_without_connect: 'from' object is not initialised", error)
 
     to%N = from%N
     to%Nbuffer = from%Nbuffer
@@ -1694,17 +1695,19 @@ contains
     do i = 1, this%N
        if (mask(i))  n = n + 1
     enddo
-    allocate(atom_indices(n))
-    n = 0
-    do i = 1, this%N
-       if (mask(i)) then
-          n = n + 1
-          atom_indices(n) = i
-       endif
-    enddo
-    call remove_atom_multiple(this, atom_indices, error)
-    PASS_ERROR(error)
-    deallocate(atom_indices)
+    if (n > 0) then
+       allocate(atom_indices(n))
+       n = 0
+       do i = 1, this%N
+          if (mask(i)) then
+             n = n + 1
+             atom_indices(n) = i
+          endif
+       enddo
+       call remove_atom_multiple(this, atom_indices, error)
+       PASS_ERROR(error)
+       deallocate(atom_indices)
+    endif
 
   endsubroutine remove_atom_multiple_mask
 
