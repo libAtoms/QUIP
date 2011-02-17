@@ -44,6 +44,8 @@ def makecrack(params):
       bulk = bigger_bulk
    bulk.write(stem+'_bulk.xyz')
 
+   crack_slab.write(stem+'_slab.xyz')
+
    crack_slab.params['OrigWidth'] = width
    crack_slab.params['OrigHeight'] = height
 

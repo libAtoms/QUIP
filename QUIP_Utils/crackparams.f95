@@ -160,8 +160,9 @@ module CrackParams_module
      logical  :: crack_relax_loading_field      !% Should 'makecrack' relax the applied loading field
      real(dp) :: crack_edge_fix_tol       !% How close must an atom be to top or bottom to be fixed. Unit:~\AA{}.
      real(dp) :: crack_y_shift            !% Shift required to align y=0 with centre of a vertical bond. 
-     logical  :: crack_align_y            !% Vertical alignment turned on
                                           !% This value is only used for unknown values of 'crack_name'. Unit:~\AA{}.
+     real(dp) :: crack_x_shift            !% Shift required to get "nice" surface terminations on vertical edges
+     logical  :: crack_align_y            !% Vertical alignment turned on
      real(dp) :: crack_seed_embed_tol     !% Atoms closer than this distance from crack tip will be used to seed embed region. Unit:~\AA{}.
      real(dp) :: crack_graphene_theta        !% Rotation angle of graphene plane, in radians.
      real(dp) :: crack_graphene_notch_width  !% Width of graphene notch. Unit:~\AA{}.
@@ -426,6 +427,7 @@ contains
     this%crack_rescale_x         = .false. 
     this%crack_edge_fix_tol      = 2.7_dp   ! Angstrom
     this%crack_y_shift           = 0.0_dp   ! Angstrom
+    this%crack_x_shift           = 0.0_dp   ! Angstrom
     this%crack_align_y           = .true.   ! Angstrom
     this%crack_seed_embed_tol    = 3.0_dp   ! Angstrom
     this%crack_dislo_seed        = 0
@@ -841,6 +843,11 @@ contains
        call QUIP_FoX_get_value(attributes, "y_shift", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_y_shift
+       end if
+
+       call QUIP_FoX_get_value(attributes, "x_shift", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_x_shift
        end if
 
        call QUIP_FoX_get_value(attributes, "align_y", value, status)
@@ -1524,6 +1531,7 @@ contains
     call Print('     rescale_x             = '//this%crack_rescale_x, file=file)
     call Print('     edge_fix_tol          = '//this%crack_edge_fix_tol//' A', file=file)
     call Print('     y_shift               = '//this%crack_y_shift//' A', file=file)
+    call Print('     x_shift               = '//this%crack_x_shift//' A', file=file)
     call Print('     align_y               = '//this%crack_align_y, file=file)
     call Print('     seed_embed_tol        = '//this%crack_seed_embed_tol//' A', file=file)
     call Print('     graphene_theta        = '//this%crack_graphene_theta//' rad', file=file)
