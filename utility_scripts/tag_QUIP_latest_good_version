@@ -9,29 +9,47 @@ GOOD_REPORT_FILE=latest_good_version_report.txt
 LOCKFILE=tag.lock
 
 function check_version {
-   version=$1
+   svn_version=$1
 
    rm -rf QUIP_test
-   svn co -r$version $SVNROOT/trunk/QUIP QUIP_test
+   svn co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test
    if [[ $? != 0 ]]; then
-      echo "Failed to check out version $version"
+      echo "Failed to check out version $svn_version"
       make_status="Checkout Failed"
       quippy_status="Checkout Failed"
       return
    fi
 
    pushd QUIP_test > /dev/null
-   # export QUIP_ROOT=`pwd`
+
+   declare -a suffixes_a
+   declare -a fields
+
+   # get suffixes from config file
+   suffixes=`egrep -v '^#' ../tag_test_configs | fgrep SUFFIXES | sed 's/SUFFIXES[ ]*//'`
+   suffixes_a=($suffixes)
+   # will use empty suffix plus those read from file
+   n_suffixes=$(( 1 + ${#suffixes_a[@]} ))
 
    make_status=""
    quippy_status=""
-   for compiler_module in gnu/4.5.1 intel/11.1.073 gnu/4.4.4 intel/10.1.025 intel/12.0.084; do
+   # loop over lines listing compiler modules and versions
+   rm -f tag_test_configs.lines
+   egrep -v '^#' ../tag_test_configs | egrep -v SUFFIXES > tag_test_configs.lines
+   while read line; do
+      fields=($line)
+      compiler_module_dir=${fields[0]}
+      compiler_version=${fields[1]}
+      compiler_module="$compiler_module_dir/$compiler_version"
+
       module unload intel gnu pgi mkl openmpi
-      if [[ $compiler_module == "intel/12.0.084" ]]; then
-	 mkl_module="mkl/10.3.0.084"
-      else
-	 mkl_module="mkl"
+      mkl_module="mkl"
+      if [[ $compiler_module == "intel" ]]; then
+	 if echo $compiler_version | egrep -q '^12\.'; then
+	    mkl_module=${compiler_module/intel/mkl}
+	 fi
       fi
+
       module load ${compiler_module} ${mkl_module} openmpi > module_load.out 2>&1
       if grep -q "Unable to locate a modulefile" module_load.out; then
 	 echo "Failed in 'module load ${compiler_module} mkl openmpi'"
@@ -39,17 +57,15 @@ function check_version {
 	 exit 1
       fi
 
-      for suffix in "" _openmp _openmpi; do
-	 do=1
-	 if [[ $compiler_module == "gnu/4.4.4" && $suffix == "_openmp" ]]; then
-	    do=0 # don't even try openmp with gfortran 4.4
-	 fi
-	 if [[ $compiler_module == "intel/12.0.084" && $suffix == "_openmp" ]]; then
-	    do=0 # don't even try openmp with ifort 12 either (weird use iso_c_binding and '!$ use omp' conflict)
-	 fi
+      # loop over empty suffix and suffixes previously read in
+      suffix_i=-1
+      for suffix in "" $suffixes; do
+	 suffix_i=$(( $suffix_i + 1 ))
+	 # extract required status of make and quippy
+	 make_req=${fields[$(( 2*$suffix_i + 2 ))]}
+	 quippy_req=${fields[$(( 2*$suffix_i + 3 ))]}
 
-	 if [[ $do == 1 ]]; then
-
+	 if [[ $make_req != "-" ]]; then
 	    if echo $compiler_module | grep -q intel; then
 	       export QUIP_ARCH=linux_x86_64_ifort_gcc${suffix}
 	    else
@@ -63,7 +79,7 @@ function check_version {
 	       fi
 	    fi
 
-	    compiler_name=`echo $compiler_module | sed 's/\//_/g'`
+	    compiler_name="${compiler_module_dir}_${compiler_version}"
 
 	    rm -rf build.${QUIP_ARCH}
 	    mkdir build.${QUIP_ARCH}
@@ -73,34 +89,42 @@ function check_version {
 	    # make deepclean >> ../autobuild.version_${version} 2>&1
 	    rm -rf ThirdParty/FoX*/obj*
 
-	    # try QUIP
+	    # try QUIP make all
 	    make all > ../make.out.${version}.${compiler_name}${suffix} 2>&1
 	    if [[ $? == 0 ]]; then
 	       make_status=${make_status}"${compiler_name}${suffix} OK "
 	    else
-	       make_status=${make_status}"${compiler_name}${suffix} Failed "
+	       if [[ $make_req == "O" ]]; then
+		  make_status=${make_status}"${compiler_name}${suffix} Optional_Failed "
+	       else
+		  make_status=${make_status}"${compiler_name}${suffix} Failed "
+	       fi
 	       failed_list=${failed_list}"make.out.${version}.${compiler_name}${suffix} "
 	    fi
 
-	    # try quippy (only without openmp or mpi)
-	    if [[ -z $suffix ]]; then
+	    # try quippy make test
+	    if [[ $quippy_req != "-" ]]; then
 	       pushd Tools/quippy > /dev/null
 	       make test > ../../../quippy_test.out.${version}.${compiler_name}${suffix} 2>&1
 	       if [[ $? == 0 ]]; then
 		  quippy_status=${quippy_status}"$compiler_name OK "
 	       else
-		  quippy_status=${quippy_status}"$compiler_name Failed "
+		  if [[ $quippy_req == "O" ]]; then
+		     quippy_status=${quippy_status}"$compiler_name Optional_Failed "
+		  else
+		     quippy_status=${quippy_status}"$compiler_name Failed "
+		  fi
 		  failed_list=${failed_list}"quippy_test.out.${version}.${compiler_name}${suffix} "
 	       fi
 	       popd > /dev/null
-	    fi # -z suffix
-	 fi # do = 1
+	    fi # quippy_req != -
+	 fi # make_req != -
       done # suffix
-   done # compiler_module
+   done < tag_test_configs.lines # while read line
    popd > /dev/null
 }
 
-function status_all_OK {
+function status_no_Failed {
    declare -a a
    ii=1
    for f in $*; do
@@ -109,7 +133,7 @@ function status_all_OK {
    done
    is_OK=0
    for n in `seq 2 2 $#`; do
-      if [[ ${a[$n]} != 'OK' ]]; then
+      if [[ ${a[$n]} == 'Failed' ]]; then
 	 is_OK=1
       fi
    done
@@ -128,8 +152,8 @@ date > $LOCKFILE
 module load silent
 
 check_version HEAD
-status_all_OK $make_status; make_ok=$?
-status_all_OK $quippy_status; quippy_ok=$?
+status_no_Failed $make_status; make_ok=$?
+status_no_Failed $quippy_status; quippy_ok=$?
 
 cd QUIP_test; cur_rev=`svnversion -n`; cd ..
 HEAD_rev=${cur_rev}
@@ -152,8 +176,8 @@ while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; 
    check_version ${cur_rev}
    echo "${cur_rev} make $make_status quippy test $quippy_status"
    echo "${cur_rev} make $make_status quippy test $quippy_status" >> ${REPORT_FILE}
-   status_all_OK $make_status; make_ok=$?
-   status_all_OK $quippy_status; quippy_ok=$?
+   status_no_Failed $make_status; make_ok=$?
+   status_no_Failed $quippy_status; quippy_ok=$?
    if [[ $make_ok != 0 || $quippy_ok != 0 ]]; then
       author=`svn log -r${cur_rev} QUIP_test/ | head -2 | tail -1 | awk '{print $3}'`
       failed_mails="$failed_mails"`egrep "^${author} " AUTHORS | awk '{print $2}'`" "
