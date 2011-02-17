@@ -56,14 +56,15 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #define INIT_ERROR(error)  if (present(error)) then ; error = ERROR_NONE ; endif
+#define ASSERT(condition, message, error)   if (.not. (condition)) then ; RAISE_ERROR(message, error) ; endif
 
-#define RAISE_ERROR(info, error)   if (.true.) then ; call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif ; endif
+#define RAISE_ERROR(message, error)   if (.true.) then ; call push_error_with_info(message, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif ; endif
 
-#define RAISE_ERROR_WITH_KIND(kind, info, error)   if (.true.) then ; call push_error_with_info(info, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = kind ; return ; else ; call error_abort(error) ; endif ; endif
+#define RAISE_ERROR_WITH_KIND(kind, message, error)   if (.true.) then ; call push_error_with_info(message, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = kind ; return ; else ; call error_abort(error) ; endif ; endif
 
 #define PASS_ERROR(error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
 
-#define PASS_ERROR_WITH_INFO(info, error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; return ; endif ; endif
+#define PASS_ERROR_WITH_INFO(message, error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error_with_info(message, __FILE__, __LINE__) ; return ; endif ; endif
 
 #define HANDLE_ERROR(error)  if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; call error_abort(error) ; endif
 
@@ -95,9 +96,11 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#define BCAST_RAISE_ERROR(info, error, mpi) if (present(error)) call bcast(mpi, error); RAISE_ERROR(info, error)
+#define BCAST_ASSERT(condition, message, error, mpi) if (.not. (condition)) then ; BCAST_RAISE_ERROR(message, error, mpi) ; endif
 
-#define BCAST_RAISE_ERROR_WITH_KIND(kind, info, error, mpi) if (present(error)) then; error = kind; call bcast(mpi, error); end if; RAISE_ERROR_WITH_KIND(kind, info, error)
+#define BCAST_RAISE_ERROR(message, error, mpi) if (present(error)) call bcast(mpi, error); RAISE_ERROR(message, error)
+
+#define BCAST_RAISE_ERROR_WITH_KIND(kind, message, error, mpi) if (present(error)) then; error = kind; call bcast(mpi, error); end if; RAISE_ERROR_WITH_KIND(kind, message, error)
 
 #define BCAST_PASS_ERROR(error, mpi) if (present(error)) then; if (error /= ERROR_NONE) call bcast(mpi, error); endif; PASS_ERROR(error)
 
@@ -116,11 +119,11 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#define RAISE_DELAYED_ERROR(info, error_loc)   if (error_loc == ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; error_loc = ERROR_UNSPECIFIED ; endif
+#define RAISE_DELAYED_ERROR(message, error_loc)   if (error_loc == ERROR_NONE) then ; call push_error_with_info(message, __FILE__, __LINE__) ; error_loc = ERROR_UNSPECIFIED ; endif
 
 #define TRACE_DELAYED_ERROR(error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; endif
 
-#define TRACE_DELAYED_ERROR_WITH_INFO(info, error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; endif
+#define TRACE_DELAYED_ERROR_WITH_INFO(message, error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error_with_info(message, __FILE__, __LINE__) ; endif
 
 #define INVOKE_DELAYED_ERROR(error_loc, error)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; if (present(error)) then ; error = error_loc ; else ; call error_abort(error) ; endif ; endif
 
