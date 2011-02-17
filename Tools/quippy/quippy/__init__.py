@@ -159,10 +159,15 @@ class QuippyWriter:
    def __init__(self, fortran_file):
       self.fortran_file = fortran_file
       self.saved_prefix = None
+      self.leading_space = ''
       
    def write(self, text):
+      if text.startswith(' '):
+         self.leading_space += ' '*(len(text) - len(text.lstrip()))
+         return
       for line in text.splitlines(True):
-         inoutput_print_string(line.strip(), file=self.fortran_file, nocr=not line.endswith('\n'))
+         inoutput_print_string(self.leading_space+line.rstrip(), file=self.fortran_file, nocr=not line.endswith('\n'))
+         self.leading_space = ''
          if self.saved_prefix is not None and line.endswith('\n'):
             self.fortran_file.prefix = self.saved_prefix
             self.saved_prefix = None
