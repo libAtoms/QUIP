@@ -86,11 +86,11 @@ function check_version {
 	    cp ../Makefile.inc.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.inc
 
 	    # clean thoroughly
-	    # make deepclean >> ../autobuild.version_${version} 2>&1
+	    # make deepclean >> ../autobuild.version_${svn_version} 2>&1
 	    rm -rf ThirdParty/FoX*/obj*
 
 	    # try QUIP make all
-	    make all > ../make.out.${version}.${compiler_name}${suffix} 2>&1
+	    make all > ../make.out.${svn_version}.${compiler_name}${suffix} 2>&1
 	    if [[ $? == 0 ]]; then
 	       make_status=${make_status}"${compiler_name}${suffix} OK "
 	    else
@@ -99,13 +99,13 @@ function check_version {
 	       else
 		  make_status=${make_status}"${compiler_name}${suffix} Failed "
 	       fi
-	       failed_list=${failed_list}"make.out.${version}.${compiler_name}${suffix} "
+	       failed_list=${failed_list}"make.out.${svn_version}.${compiler_name}${suffix} "
 	    fi
 
 	    # try quippy make test
 	    if [[ $quippy_req != "-" ]]; then
 	       pushd Tools/quippy > /dev/null
-	       make test > ../../../quippy_test.out.${version}.${compiler_name}${suffix} 2>&1
+	       make test > ../../../quippy_test.out.${svn_version}.${compiler_name}${suffix} 2>&1
 	       if [[ $? == 0 ]]; then
 		  quippy_status=${quippy_status}"$compiler_name OK "
 	       else
@@ -114,7 +114,7 @@ function check_version {
 		  else
 		     quippy_status=${quippy_status}"$compiler_name Failed "
 		  fi
-		  failed_list=${failed_list}"quippy_test.out.${version}.${compiler_name}${suffix} "
+		  failed_list=${failed_list}"quippy_test.out.${svn_version}.${compiler_name}${suffix} "
 	       fi
 	       popd > /dev/null
 	    fi # quippy_req != -
