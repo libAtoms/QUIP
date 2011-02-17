@@ -2538,6 +2538,15 @@ contains
       end if
     endif
 
+    ! Horizontal shift
+    if (params%crack_x_shift .fne. 0.0_dp) then
+       do i=1,crack_slab%N
+          crack_slab%pos(1,i) = crack_slab%pos(1,i) + params%crack_x_shift
+       end do
+    end if
+
+    call map_into_cell(crack_slab)
+
   end subroutine crack_make_slab
 
   subroutine crack_check_coordination(at,params,j,y,x_boundaries,neigh_removed, at_for_connectivity)
