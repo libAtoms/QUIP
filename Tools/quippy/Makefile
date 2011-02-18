@@ -36,6 +36,6 @@ clean:
 
 test:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
-	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py test
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py test ${QUIPPY_TEST_OPTIONS}
 
 
