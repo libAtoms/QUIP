@@ -98,4 +98,7 @@ if outcar:
 	 lat_i=1
       if (at_i == at_cur.n):
 	 at_cur.set_lattice(lat_cur, False)
+	 for i in frange(at_cur.n):
+	    dr = at_cur.diff_min_image(i, at.pos[:,i])
+	    at_cur.pos[:,i] = at.pos[:,i] - dr
 	 at_cur.write("stdout")
