@@ -685,7 +685,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial,
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)
-  character(len=STRING_LENGTH), intent(in), optional      :: args_str 
+  character(len=*), intent(in), optional      :: args_str 
 
 
   integer :: pgroup_size, prev_pgroup_size
