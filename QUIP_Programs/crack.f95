@@ -314,12 +314,12 @@ program crack
   real(dp), pointer :: dr_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit, k
+  integer :: movie_n, nargs, i, state, steps, iunit, k, md_stanza_idx
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
-       G, last_update_selection_time
+       G, last_update_selection_time, last_stanza_change_time
   character(FIELD_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
   character(FIELD_LENGTH) :: state_string
 
@@ -367,7 +367,7 @@ program crack
   else
      stem = 'crack' ! Some MPIs can't handle command line arguments
   end if
-  
+
   xmlfilename = trim(stem)//'.xml'
 
   call print_title('Initialisation')
@@ -513,7 +513,7 @@ program crack
         call initialise(crackin, trim(stem)//'.nc', action=INPUT, mpi=mpi_glob)
         call read(crackin, crack_slab)
         call finalise(crackin)
-     endif     
+     endif
   end if
 
   if (.not. texist) then
@@ -525,7 +525,7 @@ program crack
         call finalise(crackin)
      endif
   end if
-  
+
   if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz with stem="'//trim(stem)//'"')
 
   call initialise(ds, crack_slab)
@@ -559,7 +559,7 @@ program crack
   else
      suffix = '.xyz'
   end if
-  
+
   if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
      ! Avoid overwriting movie file from previous runs by suffixing a number
      movie_n = 1
@@ -569,7 +569,7 @@ program crack
         inquire (file=movie_name, exist=movie_exist)
         movie_n = movie_n + 1
      end do
-     
+
      call print('Setting up movie output file '//movie_name)
      call initialise(movie, movie_name, action=OUTPUT)
      if (params%io_backup) then 
@@ -578,9 +578,9 @@ program crack
      end if
   endif
 
-  call Print('Setting neighbour cutoff to '//(cutoff(classicalpot)+params%md_crust)//' A.')
-  call set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
-  call print('Neighbour crust is '//params%md_crust// ' A.')
+  call Print('Setting neighbour cutoff to '//(cutoff(classicalpot)+params%md(params%md_stanza)%crust)//' A.')
+  call set_cutoff(ds%atoms, cutoff(classicalpot)+params%md(params%md_stanza)%crust)
+  call print('Neighbour crust is '//params%md(params%md_stanza)%crust// ' A.')
 
   call calc_connect(ds%atoms, store_is_min_image=.true.)
 
@@ -591,8 +591,8 @@ program crack
 
   ! Allocate various flags 
 
-  call Print('Setting nneightol to '//params%md_nneigh_tol)
-  ds%atoms%nneightol = params%md_nneigh_tol
+  call Print('Setting nneightol to '//params%md(params%md_stanza)%nneigh_tol)
+  ds%atoms%nneightol = params%md(params%md_stanza)%nneigh_tol
 
   call crack_update_connect(ds%atoms, params)
 
@@ -628,7 +628,7 @@ program crack
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
   end if
 
-  call setup_parallel(classicalpot, ds%atoms, args_str=params%classical_args_str//" energy force")
+  call setup_parallel(classicalpot, ds%atoms, args_str=trim(params%classical_args_str)//" energy force")
 
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark, force)
@@ -645,8 +645,8 @@ program crack
   if (params%simulation_force_initial_load_step) then
      if (.not. has_property(ds%atoms, 'load')) &
           call system_abort('simulation_force_initial_load_step is true but crack slab has no load field - set crack_apply_initial_load = T to regenerate load')
-    call print_title('Force_load_step is true,  applying load')
-    call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
+     call print_title('Force_load_step is true,  applying load')
+     call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
   end if
 
   call system_timer('initialisation', time_elapsed=time_elapsed)
@@ -662,499 +662,516 @@ program crack
   !****************************************************************    
   if (trim(params%simulation_task) == 'md' .or. trim(params%simulation_task) == 'damped_md') then
 
-     call system_timer('md_initialisation')
+     md_stanza: do md_stanza_idx = 1, params%num_md_stanza
+        params%md_stanza = md_stanza_idx
 
-     call print_title('Molecular Dynamics')
+        call system_timer('md_initialisation')
 
-     if (.not. get_value(ds%atoms%params, 'Temp', temp)) temp = 2.0_dp*params%md_sim_temp
+        call print_title('Molecular Dynamics (md_stanza='//params%md_stanza//')')
 
-     ! If velocities are zero, randomise them at correct temperature
-     if (maxval(abs(ds%atoms%velo)) < 1e-5_dp) then
-        call rescale_velo(ds, temp)
-        call zero_momentum(ds)
-	ds%cur_temp = temperature(ds, instantaneous=.true.)
-	ds%avg_temp = temperature(ds)
-     end if
+        if (.not. get_value(ds%atoms%params, 'Temp', temp)) temp = 2.0_dp*params%md(params%md_stanza)%sim_temp
 
-     if (.not. get_value(ds%atoms%params, 'Time', time))  time = 0.0_dp
-     ds%t = time
-
-     if (.not. get_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)) &
-          last_state_change_time = ds%t
-
-     if (.not. get_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)) &
-          last_md_interval_time = ds%t
-
-     if (.not. get_value(ds%atoms%params, 'LastPrintTime', last_print_time)) &
-          last_print_time = ds%t
-
-     if (.not. get_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)) &
-          last_checkpoint_time = ds%t
-
-     if (.not. get_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)) &
-          last_calc_connect_time = ds%t
-
-     last_update_selection_time = ds%t
-
-     ! Special cases for first time
-     if (all(md_old_changed_nn == 0)) md_old_changed_nn = changed_nn
-     if (all(old_nn == 0)) old_nn = nn
-
-     ds%avg_time = params%md_avg_time
-
-     if (trim(params%simulation_task) == 'md') then
-        if (.not. get_value(ds%atoms%params, "State", state_string)) then
-           if (params%md_smooth_loading_rate .fne. 0.0_dp) then 
-              state_string = 'MD_LOADING'
-           else
-              state_string = 'THERMALISE'
-           end if
+        ! If velocities are zero, randomise them at correct temperature
+        if (maxval(abs(ds%atoms%velo)) < 1e-5_dp) then
+           call rescale_velo(ds, temp)
+           call zero_momentum(ds)
+           ds%cur_temp = temperature(ds, instantaneous=.true.)
+           ds%avg_temp = temperature(ds)
         end if
-     else 
-        state_string = 'DAMPED_MD'
-     end if
 
-     ! Allow initial state to be overridden in XML file
-     if (trim(params%simulation_initial_state) /= '') state_string = params%simulation_initial_state
+        if (.not. get_value(ds%atoms%params, 'Time', time))  time = 0.0_dp
+        ds%t = time
 
-     if (trim(state_string) == "MD" .and. (params%md_smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
+        if (.not. get_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)) &
+             last_state_change_time = ds%t
 
-     if (state_string(1:10) == 'THERMALISE') then
-        state = STATE_THERMALISE
-        call disable_damping(ds)
-        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_thermalise_tau)
+        if (.not. get_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)) &
+             last_md_interval_time = ds%t
 
-     else if (state_string(1:10) == 'MD') then
-        state = STATE_MD
-        call disable_damping(ds)
-        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
+        if (.not. get_value(ds%atoms%params, 'LastPrintTime', last_print_time)) &
+             last_print_time = ds%t
 
-     else if (state_string(1:10) == 'MD_LOADING') then
-        state = STATE_MD_LOADING
-        call disable_damping(ds)
-        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
-        call crack_find_tip(ds%atoms, params, old_crack_tips)
-        crack_tips = old_crack_tips
+        if (.not. get_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)) &
+             last_checkpoint_time = ds%t
 
-     else if (state_string(1:11) == 'MD_CRACKING') then
-        state = STATE_MD_CRACKING
-        call disable_damping(ds)
-        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
-        call crack_find_tip(ds%atoms, params, old_crack_tips)
-        crack_tips = old_crack_tips
+        if (.not. get_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)) &
+             last_calc_connect_time = ds%t
 
-     else if (state_string(1:9) == 'DAMPED_MD') then
-        state = STATE_DAMPED_MD
-        call enable_damping(ds, params%md_damping_time)
+        last_stanza_change_time = ds%t
+        last_update_selection_time = ds%t
 
-     else if (state_string(1:14) == 'MICROCANONICAL') then
-        state = STATE_MICROCANONICAL
-        call disable_damping(ds)
+        ! Special cases for first time
+        if (all(md_old_changed_nn == 0)) md_old_changed_nn = changed_nn
+        if (all(old_nn == 0)) old_nn = nn
 
-     else if (state_string(1:11) == 'MD_CONSTANT') then
-        state = STATE_MD_CONSTANT
-        call disable_damping(ds)
-        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
+        ds%avg_time = params%md(params%md_stanza)%avg_time
 
-     else  
-        call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
-     end if
-
-     call print('Thermostats')
-     call print(ds%thermostat)
-
-     call print('Starting in state '//STATE_NAMES(state))
-
-     ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
-     if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
-        call calc(hybrid_pot, ds%atoms, args_str="force=force")
-     end if
-
-     call system_timer('md_initialisation', time_elapsed=time_elapsed)
-     total_time_elapsed = total_time_elapsed + time_elapsed
-
-     !****************************************************************
-     !*  Main MD Loop                                                *
-     !*                                                              *
-     !****************************************************************    
-     do
-        call system_timer('step')
-        call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-             old_nn, hybrid, hybrid_mark, force)
-
-
-        select case(state)
-        case(STATE_THERMALISE)
-           if (ds%t - last_state_change_time >= params%md_thermalise_wait_time .and. &
-                abs(ds%avg_temp - temperature(ds))/temperature(ds) < params%md_thermalise_wait_factor/sqrt(real(ds%atoms%N,dp))) then
-              ! Change to state MD
-              call print('STATE changing THERMALISE -> MD')
-              state = STATE_MD
-              last_state_change_time = ds%t
-              call disable_damping(ds)
-              call initialise(ds%thermostat(1), LANGEVIN, params%md_sim_temp, &
-                   gamma=1.0_dp/params%md_tau)
-              md_old_changed_nn = changed_nn
+        if (trim(params%simulation_task) == 'md') then
+           if (.not. get_value(ds%atoms%params, "State", state_string)) then
+              if (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp) then 
+                 state_string = 'MD_LOADING'
+              else
+                 state_string = 'THERMALISE'
+              end if
            end if
+        else 
+           state_string = 'DAMPED_MD'
+        end if
 
-        case(STATE_MD)
-           if ((ds%t - last_state_change_time >= params%md_wait_time) .and. &
-                (ds%t - last_md_interval_time  >= params%md_interval_time)) then
+        ! Allow initial state to be overridden in XML file
+        if (trim(params%simulation_initial_state) /= '') state_string = params%simulation_initial_state
 
-              mismatch = .false.
-              do i = 1,ds%atoms%N
-                 if ((changed_nn(i) == 0 .and. md_old_changed_nn(i) /= 0) .or. &
-                      (changed_nn(i) /= 0 .and. md_old_changed_nn(i) == 0)) then
-                    mismatch = .true.
-                    exit
-                 end if
-              end do
+        if (trim(state_string) == "MD" .and. (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
-              if (.not. mismatch) then 
-                 ! changed_nn hasn't changed for a while so we can increase strain
-                 ! Rescale and change to state THERMALISE
-                 call print('STATE changing MD -> THERMALISE')
-                 state = STATE_THERMALISE
+        ! Remove any existing thermostats prior to re-adding them
+        call finalise(ds%thermostat)
+        
+        ! Special thermostat for damping
+        allocate(ds%thermostat(0:0)); call initialise(ds%thermostat(0),NONE,0.0_dp)
+
+        if (state_string(1:10) == 'THERMALISE') then
+           state = STATE_THERMALISE
+           call disable_damping(ds)
+           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau)
+
+        else if (state_string(1:10) == 'MD') then
+           state = STATE_MD
+           call disable_damping(ds)
+           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+
+        else if (state_string(1:10) == 'MD_LOADING') then
+           state = STATE_MD_LOADING
+           call disable_damping(ds)
+           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+           call crack_find_tip(ds%atoms, params, old_crack_tips)
+           crack_tips = old_crack_tips
+
+        else if (state_string(1:11) == 'MD_CRACKING') then
+           state = STATE_MD_CRACKING
+           call disable_damping(ds)
+           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+           call crack_find_tip(ds%atoms, params, old_crack_tips)
+           crack_tips = old_crack_tips
+
+        else if (state_string(1:9) == 'DAMPED_MD') then
+           state = STATE_DAMPED_MD
+           call enable_damping(ds, params%md(params%md_stanza)%damping_time)
+
+        else if (state_string(1:14) == 'MICROCANONICAL') then
+           state = STATE_MICROCANONICAL
+           call disable_damping(ds)
+
+        else if (state_string(1:11) == 'MD_CONSTANT') then
+           state = STATE_MD_CONSTANT
+           call disable_damping(ds)
+           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+
+        else  
+           call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
+        end if
+
+        call print('Thermostats')
+        call print(ds%thermostat)
+
+        call print('Starting in state '//STATE_NAMES(state))
+
+        ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
+        if (params%md(params%md_stanza)%extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
+           call calc(hybrid_pot, ds%atoms, args_str="force=force")
+        end if
+
+        call system_timer('md_initialisation', time_elapsed=time_elapsed)
+        total_time_elapsed = total_time_elapsed + time_elapsed
+
+        !****************************************************************
+        !*  Main MD Loop                                                *
+        !*                                                              *
+        !****************************************************************    
+        do
+           call system_timer('step')
+           call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
+                old_nn, hybrid, hybrid_mark, force)
+
+
+           select case(state)
+           case(STATE_THERMALISE)
+              if (ds%t - last_state_change_time >= params%md(params%md_stanza)%thermalise_wait_time .and. &
+                   abs(ds%avg_temp - temperature(ds))/temperature(ds) < params%md(params%md_stanza)%thermalise_wait_factor/sqrt(real(ds%atoms%N,dp))) then
+                 ! Change to state MD
+                 call print('STATE changing THERMALISE -> MD')
+                 state = STATE_MD
                  last_state_change_time = ds%t
-
                  call disable_damping(ds)
-                 call initialise(ds%thermostat(1), LANGEVIN, params%md_sim_temp, &
-                      gamma=1.0_dp/params%md_thermalise_tau)
-              end if
-              
-              ! Apply loading field
-              if (has_property(ds%atoms, 'load')) then
-                 call print_title('Applying load')
-                 call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
-                 call calc_dists(ds%atoms)
-              else
-                 call print('No load field found - not increasing load.')
+                 call initialise(ds%thermostat(1), LANGEVIN, params%md(params%md_stanza)%sim_temp, &
+                      gamma=1.0_dp/params%md(params%md_stanza)%tau)
+                 md_old_changed_nn = changed_nn
               end if
 
-              md_old_changed_nn = changed_nn
-              last_md_interval_time = ds%t
-           end if
+           case(STATE_MD)
+              if ((ds%t - last_state_change_time >= params%md(params%md_stanza)%wait_time) .and. &
+                   (ds%t - last_md_interval_time  >= params%md(params%md_stanza)%interval_time)) then
 
-        case(STATE_DAMPED_MD)
+                 mismatch = .false.
+                 do i = 1,ds%atoms%N
+                    if ((changed_nn(i) == 0 .and. md_old_changed_nn(i) /= 0) .or. &
+                         (changed_nn(i) /= 0 .and. md_old_changed_nn(i) == 0)) then
+                       mismatch = .true.
+                       exit
+                    end if
+                 end do
 
-        case(STATE_MICROCANONICAL)
+                 if (.not. mismatch) then 
+                    ! changed_nn hasn't changed for a while so we can increase strain
+                    ! Rescale and change to state THERMALISE
+                    call print('STATE changing MD -> THERMALISE')
+                    state = STATE_THERMALISE
+                    last_state_change_time = ds%t
 
-        case(STATE_MD_LOADING)
-           ! If tip has moved by more than smooth_loading_tip_move_tol then
-           ! turn off loading. 
-           call crack_find_tip(ds%atoms, params, crack_tips)
-
-           if (crack_tips%N /= old_crack_tips%N) &
-                call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
-           
-           if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) > params%md_smooth_loading_tip_move_tol) then
-              call print_title('Crack Moving')
-              call print('STATE changing MD_LOADING -> MD_CRACKING')
-              state = STATE_MD_CRACKING
-              last_state_change_time = ds%t
-              old_crack_tips = crack_tips
-           else
-              call print('STATE: crack is not moving (crack_pos='//crack_tips%real(1,crack_tips%N)//')')
-           end if
-
-        case(STATE_MD_CRACKING)
-           ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
-           ! time smooth_loading_arrest_time then switch back to loading
-           if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
-
-              call crack_find_tip(ds%atoms, params, crack_tips)
-
-              if (crack_tips%N == 0) then
-                 call print_title('Cracked Through')
-                 exit
-              end if
-
-              if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) < params%md_smooth_loading_tip_move_tol) then
-                 call print_title('Crack Arrested')
-                 call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, &
-                      .false., mpi_glob)
-                 call print('STATE changing MD_CRACKING -> MD_LOADING')
-                 state = STATE_MD_LOADING
-              else
-                 call print('STATE: crack is moving, crack_tips=')
-                 call print(crack_tips)
-              end if
-
-              last_state_change_time = ds%t
-              old_crack_tips = crack_tips
-           end if
-
-        case(STATE_MD_CONSTANT)
-
-        case default
-           call system_abort('Unknown molecular dynamics state!')
-        end select
-
-        ! Are we doing predictor/corrector dynamics?
-        if (params%md_extrapolate_steps /= 1) then
-
-           !****************************************************************
-           !*  Quantum Selection                                           *
-           !*                                                              *
-           !****************************************************************    
-           call system_timer('selection')
-           call print_title('Quantum Selection')
-           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
-           call system_timer('selection')
-
-           !****************************************************************
-           !*  Extrapolation                                               *
-           !*                                                              *
-           !****************************************************************    
-           if (.not. params%simulation_classical) then
-              call print_title('Extrapolation')
-              call system_timer('extrapolation')
-              call ds_save_state(ds_save, ds)
-           else
-              call system_timer('md_time')
-           end if
-
-           do i = 1, params%md_extrapolate_steps
-
-              if (params%simulation_classical) then
-                 call calc(classicalpot, ds%atoms, args_str=trim(params%classical_args_str)//' force=force')
-              else
-                 if (i== 1) then
-                    call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
-                 else
-                    call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F")
+                    call disable_damping(ds)
+                    call initialise(ds%thermostat(1), LANGEVIN, params%md(params%md_stanza)%sim_temp, &
+                         gamma=1.0_dp/params%md(params%md_stanza)%thermalise_tau)
                  end if
-                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
-                 if (params%hack_qm_zero_z_force) then
-                    ! Zero z forces in embed region
-                    force(3,find(hybrid == 1)) = 0.0_dp 
-                    if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
-                 end if
-              end if
-
-              ! advance the dynamics
-              call system_timer('advance_verlet')
-              call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
-              call system_timer('advance_verlet')
-              if (params%simulation_classical) then
-                 call ds_print_status(ds, 'E', epot=energy)
-              else
-                 call ds_print_status(ds, 'E')
-              end if
-              if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
-
-              if (state == STATE_MD_LOADING) then
-                 ! increment the load
-                 call system_timer('apply_load_increment')
+                 ! Apply loading field
                  if (has_property(ds%atoms, 'load')) then
-                    call system_timer('load_increment')
-                    call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
-                    call system_timer('load_increment')
-                    call system_timer('calc_dists')
+                    call print_title('Applying load')
+                    call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
                     call calc_dists(ds%atoms)
-                    call system_timer('calc_dists')
-                    if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                  else
                     call print('No load field found - not increasing load.')
                  end if
-                 call system_timer('apply_load_increment')
+
+                 md_old_changed_nn = changed_nn
+                 last_md_interval_time = ds%t
               end if
 
-           end do
+           case(STATE_DAMPED_MD)
 
-           if (.not. params%simulation_classical) then
-              call system_timer('extrapolation')
-           else
-              call system_timer('md_time')
-           endif
+           case(STATE_MICROCANONICAL)
 
-           if (.not. params%simulation_classical) then
+           case(STATE_MD_LOADING)
+              ! If tip has moved by more than smooth_loading_tip_move_tol then
+              ! turn off loading. 
+              call crack_find_tip(ds%atoms, params, crack_tips)
+
+              if (crack_tips%N /= old_crack_tips%N) &
+                   call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
+
+              if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) > params%md(params%md_stanza)%smooth_loading_tip_move_tol) then
+                 call print_title('Crack Moving')
+                 call print('STATE changing MD_LOADING -> MD_CRACKING')
+                 state = STATE_MD_CRACKING
+                 last_state_change_time = ds%t
+                 old_crack_tips = crack_tips
+              else
+                 call print('STATE: crack is not moving (crack_pos='//crack_tips%real(1,crack_tips%N)//')')
+              end if
+
+           case(STATE_MD_CRACKING)
+              ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
+              ! time smooth_loading_arrest_time then switch back to loading
+              if (ds%t - last_state_change_time >= params%md(params%md_stanza)%smooth_loading_arrest_time) then
+
+                 call crack_find_tip(ds%atoms, params, crack_tips)
+
+                 if (crack_tips%N == 0) then
+                    call print_title('Cracked Through')
+                    exit
+                 end if
+
+                 if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) < params%md(params%md_stanza)%smooth_loading_tip_move_tol) then
+                    call print_title('Crack Arrested')
+                    call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, &
+                         .false., mpi_glob)
+                    call print('STATE changing MD_CRACKING -> MD_LOADING')
+                    state = STATE_MD_LOADING
+                 else
+                    call print('STATE: crack is moving, crack_tips=')
+                    call print(crack_tips)
+                 end if
+
+                 last_state_change_time = ds%t
+                 old_crack_tips = crack_tips
+              end if
+
+           case(STATE_MD_CONSTANT)
+
+           case default
+              call system_abort('Unknown molecular dynamics state!')
+           end select
+
+           ! Are we doing predictor/corrector dynamics?
+           if (params%md(params%md_stanza)%extrapolate_steps /= 1) then
 
               !****************************************************************
-              !*  QM Force Computation                                        *
-              !*  and optimisation of Adjustable Potential                    *
+              !*  Quantum Selection                                           *
               !*                                                              *
               !****************************************************************    
-
-              call print_title('Computation of forces')
-              call system_timer('force computation')
-              call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
-              call system_timer('force computation')
-
+              call system_timer('selection')
+              call print_title('Quantum Selection')
+              if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
+              call system_timer('selection')
 
               !****************************************************************
-              !*  Interpolation                                               *
+              !*  Extrapolation                                               *
               !*                                                              *
               !****************************************************************    
-              call print_title('Interpolation')
-              call system_timer('interpolation')
+              if (.not. params%simulation_classical) then
+                 call print_title('Extrapolation')
+                 call system_timer('extrapolation')
+                 call ds_save_state(ds_save, ds)
+              else
+                 call system_timer('md_time')
+              end if
 
-              ! revert to the saved positions etc.
-              call ds_restore_state(ds, ds_save)
+              do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
-              do i = 1, params%md_extrapolate_steps
+                 if (params%simulation_classical) then
+                    call calc(classicalpot, ds%atoms, args_str=trim(params%classical_args_str)//' force=force')
+                 else
+                    if (i== 1) then
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
+                    else
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F")
+                    end if
+                    if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
-                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
-                      //(real(i-1,dp)/real(params%md_extrapolate_steps,dp)))
-
-                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
-
-                 if (params%hack_qm_zero_z_force) then
-                    ! Zero z forces in embed region
-                    force(3,find(hybrid == 1)) = 0.0_dp 
-                    if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
+                    if (params%hack_qm_zero_z_force) then
+                       ! Zero z forces in embed region
+                       force(3,find(hybrid == 1)) = 0.0_dp 
+                       if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
+                    end if
                  end if
 
                  ! advance the dynamics
-                 call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
-                 call ds_print_status(ds, 'I')
-                 if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
-
-                 if (trim(params%simulation_task) == 'damped_md') &
-                      call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
-                      ' max(abs(force)) = '//maxval(abs(force)))
+                 call system_timer('advance_verlet')
+                 call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+                 call system_timer('advance_verlet')
+                 if (params%simulation_classical) then
+                    call ds_print_status(ds, 'E', epot=energy)
+                 else
+                    call ds_print_status(ds, 'E')
+                 end if
+                 if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
 
                  if (state == STATE_MD_LOADING) then
                     ! increment the load
+                    call system_timer('apply_load_increment')
                     if (has_property(ds%atoms, 'load')) then
-                       call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
+                       call system_timer('load_increment')
+                       call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
+                       call system_timer('load_increment')
+                       call system_timer('calc_dists')
                        call calc_dists(ds%atoms)
+                       call system_timer('calc_dists')
                        if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                     else
                        call print('No load field found - not increasing load.')
                     end if
+                    call system_timer('apply_load_increment')
                  end if
 
               end do
-              call system_timer('interpolation')
 
-           end if ! .not. params%simulation_classical
-
-        else ! params%md_extrapolate_steps /= 1
-
-           !****************************************************************
-           !*  Non-Predictor/Corrector Dynamics                            *
-           !*                                                              *
-           !****************************************************************    
-
-           if (ds%t - last_update_selection_time >= params%selection_update_interval) then
-              last_update_selection_time = ds%t
-              call print_title('Quantum Selection')
-              call system_timer('selection')
-              if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
-              call system_timer('selection')
-           end if
-
-           call print_title('Force Computation')
-           call system_timer('force computation/optimisation')
-           if (params%simulation_classical) then
-              call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
-           else
-              call calc(hybrid_pot, ds%atoms, args_str="force=force")
-           end if
-           call system_timer('force computation/optimisation')
-
-           if (params%hack_qm_zero_z_force) then
-              ! Zero z forces in embed region
-              force(3,find(hybrid == 1)) = 0.0_dp 
-           end if
-
-           call print_title('Advance Verlet')
-           call advance_verlet(ds, params%md_time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
-           call ds_print_status(ds, 'D')
-
-           if (trim(params%simulation_task) == 'damped_md') &
-                call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
-                ' max(abs(force)) = '//maxval(abs(force)))
-
-           if (state == STATE_MD_LOADING) then
-              ! increment the load
-              if (has_property(ds%atoms, 'load')) then
-                 call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
-                 call calc_dists(ds%atoms)
-                 if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
+              if (.not. params%simulation_classical) then
+                 call system_timer('extrapolation')
               else
-                 call print('No load field found - not increasing load.')
+                 call system_timer('md_time')
+              endif
+
+              if (.not. params%simulation_classical) then
+
+                 !****************************************************************
+                 !*  QM Force Computation                                        *
+                 !*  and optimisation of Adjustable Potential                    *
+                 !*                                                              *
+                 !****************************************************************    
+
+                 call print_title('Computation of forces')
+                 call system_timer('force computation')
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
+                 call system_timer('force computation')
+
+
+                 !****************************************************************
+                 !*  Interpolation                                               *
+                 !*                                                              *
+                 !****************************************************************    
+                 call print_title('Interpolation')
+                 call system_timer('interpolation')
+
+                 ! revert to the saved positions etc.
+                 call ds_restore_state(ds, ds_save)
+
+                 do i = 1, params%md(params%md_stanza)%extrapolate_steps
+
+                    call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                         //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp)))
+
+                    if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
+
+                    if (params%hack_qm_zero_z_force) then
+                       ! Zero z forces in embed region
+                       force(3,find(hybrid == 1)) = 0.0_dp 
+                       if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
+                    end if
+
+                    ! advance the dynamics
+                    call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+                    call ds_print_status(ds, 'I')
+                    if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
+
+                    if (trim(params%simulation_task) == 'damped_md') &
+                         call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
+                         ' max(abs(force)) = '//maxval(abs(force)))
+
+                    if (state == STATE_MD_LOADING) then
+                       ! increment the load
+                       if (has_property(ds%atoms, 'load')) then
+                          call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
+                          call calc_dists(ds%atoms)
+                          if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
+                       else
+                          call print('No load field found - not increasing load.')
+                       end if
+                    end if
+
+                 end do
+                 call system_timer('interpolation')
+
+              end if ! .not. params%simulation_classical
+
+           else ! params%md(params%md_stanza)%extrapolate_steps /= 1
+
+              !****************************************************************
+              !*  Non-Predictor/Corrector Dynamics                            *
+              !*                                                              *
+              !****************************************************************    
+
+              if (ds%t - last_update_selection_time >= params%selection_update_interval) then
+                 last_update_selection_time = ds%t
+                 call print_title('Quantum Selection')
+                 call system_timer('selection')
+                 if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
+                 call system_timer('selection')
               end if
-           end if
 
-        end if ! params%extrapolate_steps /= 1
+              call print_title('Force Computation')
+              call system_timer('force computation/optimisation')
+              if (params%simulation_classical) then
+                 call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
+              else
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force")
+              end if
+              call system_timer('force computation/optimisation')
 
+              if (params%hack_qm_zero_z_force) then
+                 ! Zero z forces in embed region
+                 force(3,find(hybrid == 1)) = 0.0_dp 
+              end if
 
-        ! Do I/O only on master node
-        if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
+              call print_title('Advance Verlet')
+              call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+              call ds_print_status(ds, 'D')
 
-           call set_value(ds%atoms%params, 'Time', ds%t)
-           call set_value(ds%atoms%params, 'Temp', temperature(ds))
-           call set_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)
-           call set_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)
-           call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
-           call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
+              if (trim(params%simulation_task) == 'damped_md') &
+                   call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
+                   ' max(abs(force)) = '//maxval(abs(force)))
 
-           ! Print movie
-           if (ds%t - last_print_time >=  params%io_print_interval) then
-              
-              last_print_time = ds%t
-              call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
-
-              if (params%io_backup) then
-                 k=k+1           
-                 if (mod(k,2).eq.0) then
-                    call crack_print(ds%atoms, movie, params)
-                    call print('writing .nc file '//trim(stem)//'.nc')
+              if (state == STATE_MD_LOADING) then
+                 ! increment the load
+                 if (has_property(ds%atoms, 'load')) then
+                    call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
+                    call calc_dists(ds%atoms)
+                    if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                  else
-                    call crack_print(ds%atoms, movie_backup, params)
-                    call print('writing .nc file '//trim(stem)//'_backup.nc')
-                 endif
-              else
-                 call crack_print(ds%atoms, movie, params)
+                    call print('No load field found - not increasing load.')
+                 end if
               end if
+
+           end if ! params%extrapolate_steps /= 1
+
+
+           ! Do I/O only on master node
+           if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
+
+              call set_value(ds%atoms%params, 'Time', ds%t)
+              call set_value(ds%atoms%params, 'Temp', temperature(ds))
+              call set_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)
+              call set_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)
+              call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
+              call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
+
+              ! Print movie
+              if (ds%t - last_print_time >=  params%io_print_interval) then
+
+                 last_print_time = ds%t
+                 call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
+
+                 if (params%io_backup) then
+                    k=k+1           
+                    if (mod(k,2).eq.0) then
+                       call crack_print(ds%atoms, movie, params)
+                       call print('writing .nc file '//trim(stem)//'.nc')
+                    else
+                       call crack_print(ds%atoms, movie_backup, params)
+                       call print('writing .nc file '//trim(stem)//'_backup.nc')
+                    endif
+                 else
+                    call crack_print(ds%atoms, movie, params)
+                 end if
+              end if
+
+              ! Write checkpoint file
+              if (ds%t - last_checkpoint_time >=  params%io_checkpoint_interval) then
+                 last_checkpoint_time = ds%t
+                 call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
+
+                 checkfile_name = trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix
+                 inquire (file=checkfile_name,exist=texist)
+                 if (texist) then
+                    call system_command('mv '//trim(checkfile_name)//' '//trim(checkfile_name)//'.backup')
+                 end if
+                 call write(ds%atoms, checkfile_name)
+              endif
            end if
 
-           ! Write checkpoint file
-           if (ds%t - last_checkpoint_time >=  params%io_checkpoint_interval) then
-              last_checkpoint_time = ds%t
-              call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
+           ! Recalculate connectivity and nearest neighbour tables
+           if (ds%t - last_calc_connect_time >= params%md(params%md_stanza)%calc_connect_interval) then
+              last_calc_connect_time = ds%t
+              call crack_update_connect(ds%atoms, params)
+           end if
 
-              checkfile_name = trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix
-              inquire (file=checkfile_name,exist=texist)
-              if (texist) then
-                 call system_command('mv '//trim(checkfile_name)//' '//trim(checkfile_name)//'.backup')
-              end if
-              call write(ds%atoms, checkfile_name)
-             endif
-        end if
+           ! check if time exceeds time for this MD stanza
+           if (params%md(params%md_stanza)%stanza_time >= 0.0_dp) then
+              if (ds%t - last_stanza_change_time >= params%md(params%md_stanza)%stanza_time) cycle md_stanza
+           end if
 
-        ! Recalculate connectivity and nearest neighbour tables
-        if (ds%t - last_calc_connect_time >= params%md_calc_connect_interval) then
-           last_calc_connect_time = ds%t
-           call crack_update_connect(ds%atoms, params)
-        end if
+           ! Exit cleanly if file 'stop_run' exists
+           inquire (file='stop_run',exist=texist)
+           if (texist) then
+              iunit = pick_up_unit()
+              open (iunit,file='stop_run',status='old')
+              close (iunit,status='delete')
+              exit md_stanza
+           endif
 
-        ! Exit cleanly if file 'stop_run' exists
-        inquire (file='stop_run',exist=texist)
-        if (texist) then
-           iunit = pick_up_unit()
-           open (iunit,file='stop_run',status='old')
-           close (iunit,status='delete')
-           exit
-        endif
+           ! exit cleanly if we exceeded the max run time
+           call system_timer('step', time_elapsed=time_elapsed)
+           total_time_elapsed = total_time_elapsed + time_elapsed
+           if (params%md(params%md_stanza)%max_runtime >= 0.0_dp) then
+              call print("elapsed time="//total_time_elapsed//" max_runtime="//params%md(params%md_stanza)%max_runtime)
+              if (total_time_elapsed >= params%md(params%md_stanza)%max_runtime) then
+                 call print("Exceeded max_runtime, exiting cleanly", PRINT_ALWAYS)
+                 exit md_stanza
+              endif
+           endif
 
-	! exit cleanly if we exceeded the max run time
-        call system_timer('step', time_elapsed=time_elapsed)
-	total_time_elapsed = total_time_elapsed + time_elapsed
-	if (params%md_max_runtime >= 0.0_dp) then
-	  call print("elapsed time="//total_time_elapsed//" max_runtime="//params%md_max_runtime)
-	  if (total_time_elapsed >= params%md_max_runtime) then
-	    call print("Exceeded max_runtime, exiting cleanly", PRINT_ALWAYS)
-	    exit
-	  endif
-	endif
+           call flush(mainlog%unit)
 
-	call flush(mainlog%unit)
+        end do
 
-     end do
+     end do md_stanza
 
 
      !****************************************************************
@@ -1252,10 +1269,10 @@ program crack
              eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
      end if
 
-  if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
-     call crack_update_connect(ds%atoms, params)
-     call crack_print(ds%atoms, movie, params)
-  end if
+     if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
+        call crack_update_connect(ds%atoms, params)
+        call crack_print(ds%atoms, movie, params)
+     end if
 
 
      !****************************************************************
@@ -1306,7 +1323,7 @@ program crack
         ! Apply loading field
         call print_title('Applying load')
         call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
-        
+
         call crack_print(ds%atoms, movie, params)
      end do
 
