@@ -539,7 +539,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
   GET_LINE("premature end - expecting comment line");
 
-  if (!stristr(linebuffer, "lattice")) {
+  if (!stristr(linebuffer, "lattice=")) {
     // It's not an extended XYZ file. Try to guess what's going on.
     // If comment line contains nine or more fields, assume last nine are
     // lattice in cartesian coordinates.
@@ -561,6 +561,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	}
 
       if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
+      if ((p = strstr(linebuffer, "\r")) != NULL) *p = '\0';
       if (!error_occured) {
 	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
@@ -576,10 +577,11 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
-  if (!stristr(linebuffer, "properties")) {
+  if (!stristr(linebuffer, "properties=")) {
     // No Properties key. Add a default one.
     if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-    strncat(linebuffer, "Properties=species:S:1:pos:R:3",LINESIZE-strlen(linebuffer)-1);
+    if ((p = strstr(linebuffer, "\r")) != NULL) *p = '\0';
+    strncat(linebuffer, " Properties=species:S:1:pos:R:3",LINESIZE-strlen(linebuffer)-1);
   }
 
   // Parse parameters. First split on ", ', { or }
