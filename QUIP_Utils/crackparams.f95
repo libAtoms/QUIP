@@ -119,9 +119,37 @@ module CrackParams_module
 
   private
 
-  integer, parameter :: MAX_PROPERTIES = 100
+  integer, parameter :: MAX_PROPERTIES = 100, MAX_MD_STANZA = 5
 
-  public :: CrackParams
+  public :: CrackParams, CrackMDParams
+
+  type CrackMDParams
+     ! Molecular dynamics parameters
+     real(dp) :: time_step             !% Molecular Dynamics time-step, in fs.
+     integer  :: extrapolate_steps     !% Number of steps to extrapolate for
+     real(dp) :: crust                 !% Distance by which 'Atoms' cutoff should exceed that of MM potential, in \AA{}.
+     real(dp) :: recalc_connect_factor !% Maximum atom movement as a fraction of 'md_crust' before connectivity is recalculated.
+     real(dp) :: nneigh_tol            !% Nearest neighbour tolerance, as a fraction of sum of covalant radii.
+     integer  :: eqm_coordination(2)   !% Equilibrium coordination number of bulk (used for finding crack tip).
+     real(dp) :: sim_temp              !% Target temperature for Langevin thermostat, in Kelvin.
+     real(dp) :: avg_time              !% Averaging time for bonding/nearest neighbours etc. Unit:~fs.
+     real(dp) :: thermalise_tau        !% Thermostat time constant during thermalisiation. Unit:~fs.
+     real(dp) :: thermalise_wait_time  !% Minimium thermalisation time at each load before changing to (almost) microcanoical MD. Unit:~fs.
+     real(dp) :: thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD     
+     real(dp) :: tau                   !% Thermostat time constant during (almost) microcanonical MD. Unit:~fs.
+     real(dp) :: wait_time             !% Minimum wait time between loadings. Unit:~fs.
+     real(dp) :: interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
+     real(dp) :: calc_connect_interval !% How often should connectivity be recalculated?
+     real(dp) :: smooth_loading_rate !% increment load at this rate, in units of (J/m$^2$)/fs, after every integration step
+     real(dp) :: smooth_loading_tip_move_tol !% Distance in angstrom by which CrackPos must increase for crack to be considered to be moving
+     real(dp) :: smooth_loading_arrest_time  !% Crack must move by at least 'smooth_loading_tip_move_tol' A in every 'smooth_loading_arrest_time'
+                                                     !% to be considered to be moving.
+     real(dp) :: smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
+     real(dp) :: damping_time !% Time constant for damped molecular dynamics
+     real(dp) :: stanza_time !% Time to run in this MD stanza before moving to next one
+     real(dp) :: max_runtime !% If >= 0, exit cleanly if elapsed runtime (in seconds) is >= this
+
+  end type CrackMDParams
 
   !% This type contains all the parameters for a crack simulation, each of which is described briefly 
   !% below.
@@ -188,29 +216,6 @@ module CrackParams_module
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
      character(FIELD_LENGTH) :: simulation_initial_state !% Initial state. Overrides value read from input atoms structure
 
-     ! Molecular dynamics parameters
-     real(dp) :: md_time_step             !% Molecular Dynamics time-step, in fs.
-     integer  :: md_extrapolate_steps     !% Number of steps to extrapolate for
-     real(dp) :: md_crust                 !% Distance by which 'Atoms' cutoff should exceed that of MM potential, in \AA{}.
-     real(dp) :: md_recalc_connect_factor !% Maximum atom movement as a fraction of 'md_crust' before connectivity is recalculated.
-     real(dp) :: md_nneigh_tol            !% Nearest neighbour tolerance, as a fraction of sum of covalant radii.
-     integer  :: md_eqm_coordination(2)   !% Equilibrium coordination number of bulk (used for finding crack tip).
-     real(dp) :: md_sim_temp              !% Target temperature for Langevin thermostat, in Kelvin.
-     real(dp) :: md_avg_time              !% Averaging time for bonding/nearest neighbours etc. Unit:~fs.
-     real(dp) :: md_thermalise_tau        !% Thermostat time constant during thermalisiation. Unit:~fs.
-     real(dp) :: md_thermalise_wait_time  !% Minimium thermalisation time at each load before changing to (almost) microcanoical MD. Unit:~fs.
-     real(dp) :: md_thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD     
-     real(dp) :: md_tau                   !% Thermostat time constant during (almost) microcanonical MD. Unit:~fs.
-     real(dp) :: md_wait_time             !% Minimum wait time between loadings. Unit:~fs.
-     real(dp) :: md_interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
-     real(dp) :: md_calc_connect_interval !% How often should connectivity be recalculated?
-     real(dp) :: md_smooth_loading_rate !% increment load at this rate, in units of (J/m$^2$)/fs, after every integration step
-     real(dp) :: md_smooth_loading_tip_move_tol !% Distance in angstrom by which CrackPos must increase for crack to be considered to be moving
-     real(dp) :: md_smooth_loading_arrest_time  !% Crack must move by at least 'smooth_loading_tip_move_tol' A in every 'smooth_loading_arrest_time'
-                                                        !% to be considered to be moving.
-     real(dp) :: md_smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
-     real(dp) :: md_damping_time !% Time constant for damped molecular dynamics
-     real(dp) :: md_max_runtime !% If >= 0, exit cleanly if elapsed runtime (in seconds) is >= this
 
      ! Minimisation parameters
      character(FIELD_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
@@ -321,7 +326,9 @@ module CrackParams_module
      logical  :: hack_fit_on_eqm_coordination_only !% Only include fit atoms that have coordination 
                                                    !% number equal to 'md_eqm_coordination' (used for graphene).
 
-    
+     integer :: num_md_stanza, md_stanza
+     type(CrackMDParams) :: md(MAX_MD_STANZA)
+
   end type CrackParams
 
   type(CrackParams), pointer :: parse_cp
@@ -393,6 +400,7 @@ contains
     type(CrackParams), intent(inout) :: this
     character(len=*), optional, intent(in) :: filename
     logical, optional, intent(in) :: validate
+    integer md_idx
     
     ! Parameters for 'makecrack'
     this%crack_structure         = 'diamond'
@@ -458,28 +466,33 @@ contains
     this%simulation_initial_state = ''
 
     ! Molecular dynamics parameters
-    this%md_time_step            = 1.0_dp   ! fs
-    this%md_extrapolate_steps    = 10       ! number
-    this%md_crust                = 2.0_dp   ! Angstrom
-    this%md_recalc_connect_factor = 0.8_dp  ! fraction of md_crust
-    this%md_nneigh_tol           = 1.3_dp   ! fraction of sum of covalent radii
-    this%md_eqm_coordination(1)  = 4        ! eqm coordination for element 1 (e.g. Si)
-    this%md_eqm_coordination(2)  = 2        ! eqm coordination for element 2 (e.g. O)
-    this%md_sim_temp             = 300.0_dp ! Kelvin
-    this%md_avg_time             = 50.0_dp  ! fs
-    this%md_thermalise_tau       = 50.0_dp  ! fs
-    this%md_thermalise_wait_time = 400.0_dp ! fs
-    this%md_thermalise_wait_factor= 2.0_dp  ! number
-    this%md_tau                  = 500.0_dp ! fs
-    this%md_wait_time            = 500.0_dp ! fs
-    this%md_interval_time        = 100.0_dp ! fs
-    this%md_calc_connect_interval = 10.0_dp ! fs
-    this%md_smooth_loading_rate = 0.0_dp
-    this%md_smooth_loading_tip_move_tol = 3.0_dp ! Angstrom
-    this%md_smooth_loading_arrest_time  = 400.0_dp ! fs
-    this%md_smooth_loading_tip_edge_tol = 50.0_dp ! Angstrom
-    this%md_damping_time = 100.0_dp ! fs
-    this%md_max_runtime = -1.0_dp ! fs
+    this%num_md_stanza = 0
+    this%md_stanza = 1
+    do md_idx=1,MAX_MD_STANZA
+       this%md(md_idx)%time_step            = 1.0_dp   ! fs
+       this%md(md_idx)%extrapolate_steps    = 10       ! number
+       this%md(md_idx)%crust                = 2.0_dp   ! Angstrom
+       this%md(md_idx)%recalc_connect_factor = 0.8_dp  ! fraction of md%crust
+       this%md(md_idx)%nneigh_tol           = 1.3_dp   ! fraction of sum of covalent radii
+       this%md(md_idx)%eqm_coordination(1)  = 4        ! eqm coordination for element 1 (e.g. Si)
+       this%md(md_idx)%eqm_coordination(2)  = 2        ! eqm coordination for element 2 (e.g. O)
+       this%md(md_idx)%sim_temp             = 300.0_dp ! Kelvin
+       this%md(md_idx)%avg_time             = 50.0_dp  ! fs
+       this%md(md_idx)%thermalise_tau       = 50.0_dp  ! fs
+       this%md(md_idx)%thermalise_wait_time = 400.0_dp ! fs
+       this%md(md_idx)%thermalise_wait_factor= 2.0_dp  ! number
+       this%md(md_idx)%tau                  = 500.0_dp ! fs
+       this%md(md_idx)%wait_time            = 500.0_dp ! fs
+       this%md(md_idx)%interval_time        = 100.0_dp ! fs
+       this%md(md_idx)%calc_connect_interval = 10.0_dp ! fs
+       this%md(md_idx)%smooth_loading_rate = 0.0_dp
+       this%md(md_idx)%smooth_loading_tip_move_tol = 3.0_dp ! Angstrom
+       this%md(md_idx)%smooth_loading_arrest_time  = 400.0_dp ! fs
+       this%md(md_idx)%smooth_loading_tip_edge_tol = 50.0_dp ! Angstrom
+       this%md(md_idx)%damping_time = 100.0_dp ! fs
+       this%md(md_idx)%stanza_time = -1.0_dp ! fs
+       this%md(md_idx)%max_runtime = -1.0_dp ! CPU seconds
+    end do
 
     
     ! Minimisation parameters
@@ -528,12 +541,12 @@ contains
 
      ! Classical parameters
     this%classical_args           = 'IP SW' 
-    this%classical_args_str       = ' ' 
+    this%classical_args_str       = '' 
     this%classical_force_reweight = 1.0_dp   ! Fraction
 
      ! QM parameters
     this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
-    this%qm_args_str              = ' '
+    this%qm_args_str              = ''
     this%qm_clusters              = .true.
     this%qm_little_clusters       = .false.
     this%qm_buffer_hops           = 3        ! Number
@@ -971,110 +984,117 @@ contains
 
     elseif (parse_in_crack .and. name == 'md') then
 
+       parse_cp%num_md_stanza = parse_cp%num_md_stanza + 1
+       if (parse_cp%num_md_stanza > MAX_MD_STANZA) call system_abort('Too many <md> stanza (maxmimum '//MAX_MD_STANZA//')')
+
        call QUIP_FoX_get_value(attributes, "time_step", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_time_step
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%time_step
        end if
 
        call QUIP_FoX_get_value(attributes, "sim_temp", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_sim_temp
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%sim_temp
        end if
 
        call QUIP_FoX_get_value(attributes, "extrapolate_steps", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_extrapolate_steps
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%extrapolate_steps
        end if
 
        call QUIP_FoX_get_value(attributes, "crust", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_crust
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%crust
        end if
 
        call QUIP_FoX_get_value(attributes, "recalc_connect_factor", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_recalc_connect_factor
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%recalc_connect_factor
        end if
-
 
        call QUIP_FoX_get_value(attributes, "nneigh_tol", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_nneigh_tol
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%nneigh_tol
        end if
 
        call QUIP_FoX_get_value(attributes, "eqm_coordination", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_eqm_coordination
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%eqm_coordination
        end if
 
        call QUIP_FoX_get_value(attributes, "avg_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_avg_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%avg_time
        end if
 
        call QUIP_FoX_get_value(attributes, "thermalise_tau", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_thermalise_tau
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%thermalise_tau
        end if
 
        call QUIP_FoX_get_value(attributes, "thermalise_wait_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_thermalise_wait_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%thermalise_wait_time
        end if
 
        call QUIP_FoX_get_value(attributes, "thermalise_wait_factor", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_thermalise_wait_factor
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%thermalise_wait_factor
        end if
 
        call QUIP_FoX_get_value(attributes, "tau", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_tau
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%tau
        end if
 
        call QUIP_FoX_get_value(attributes, "wait_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_wait_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%wait_time
        end if
 
        call QUIP_FoX_get_value(attributes, "interval_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_interval_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%interval_time
        end if
 
        call QUIP_FoX_get_value(attributes, "calc_connect_interval", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_calc_connect_interval
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%calc_connect_interval
        end if
 
        call QUIP_FoX_get_value(attributes, "smooth_loading_rate", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_smooth_loading_rate
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%smooth_loading_rate
        end if
 
        call QUIP_FoX_get_value(attributes, "smooth_loading_tip_move_tol", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_smooth_loading_tip_move_tol
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%smooth_loading_tip_move_tol
        end if
 
        call QUIP_FoX_get_value(attributes, "smooth_loading_arrest_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_smooth_loading_arrest_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%smooth_loading_arrest_time
        end if
 
        call QUIP_FoX_get_value(attributes, "smooth_loading_tip_edge_tol", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_smooth_loading_tip_edge_tol
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%smooth_loading_tip_edge_tol
        end if
 
        call QUIP_FoX_get_value(attributes, "damping_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_damping_time
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%damping_time
+       end if
+
+       call QUIP_FoX_get_value(attributes, "stanza_time", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%stanza_time
        end if
 
        call QUIP_FoX_get_value(attributes, "max_runtime", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_max_runtime
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%max_runtime
        end if
 
     elseif (parse_in_crack .and. name == 'minim') then
@@ -1499,7 +1519,7 @@ contains
   subroutine CrackParams_print(this,file)
     type(CrackParams), intent(in) :: this
     type(Inoutput), optional, intent(in) :: file
-    integer :: i
+    integer :: i, md_idx
 
     call Print('  Crack parameters:',file=file)
     call Print('     structure             = '//trim(this%crack_structure),file=file)
@@ -1559,27 +1579,32 @@ contains
     call Print('     initial_state           = '//this%simulation_initial_state,file=file)
     call Print('',file=file)
     call Print('  MD parameters:',file=file)
-    call Print('     time_step             = '//this%md_time_step//' fs',file=file)
-    call Print('     extrapolate_steps     = '//this%md_extrapolate_steps,file=file)
-    call Print('     crust                 = '//this%md_crust//' A',file=file)
-    call Print('     recalc_connect_factor = '//this%md_recalc_connect_factor,file=file)
-    call Print('     nneigh_tol            = '//this%md_nneigh_tol,file=file)
-    call Print('     eqm_coordination      = '//this%md_eqm_coordination,file=file)
-    call Print('     sim_temp              = '//this%md_sim_temp//' K',file=file)
-    call Print('     avg_time              = '//this%md_avg_time//' fs',file=file)
-    call Print('     thermalise_tau        = '//this%md_thermalise_tau//' fs',file=file)
-    call Print('     thermalise_wait_time  = '//this%md_thermalise_wait_time//' fs',file=file)
-    call Print('     thermalise_wait_factor  = '//this%md_thermalise_wait_factor//' fs',file=file)
-    call Print('     tau                   = '//this%md_tau//' fs',file=file)
-    call Print('     wait_time             = '//this%md_wait_time//' fs',file=file)
-    call Print('     interval_time         = '//this%md_interval_time//' fs',file=file)
-    call Print('     calc_connect_interval = '//this%md_calc_connect_interval//' fs',file=file)
-    call Print('     smooth_loading_rate         = '//this%md_smooth_loading_rate//' (J/m^2)/fs', file=file)
-    call Print('     smooth_loading_tip_move_tol = '//this%md_smooth_loading_tip_move_tol//' A', file=file)
-    call Print('     smooth_loading_arrest_time  = '//this%md_smooth_loading_arrest_time//' fs', file=file)
-    call Print('     smooth_loading_tip_edge_tol = '//this%md_smooth_loading_tip_edge_tol//' A', file=file)
-    call Print('     damping_time ='//this%md_damping_time//' fs', file=file)
-    call Print('     max_runtime ='//this%md_max_runtime//' s', file=file)
+    call print('    num_md_stanza = '//this%num_md_stanza)
+    do md_idx=1,this%num_md_stanza
+       call print('    md_stanza = '//md_idx)
+       call Print('      time_step             = '//this%md(md_idx)%time_step//' fs',file=file)
+       call Print('      extrapolate_steps     = '//this%md(md_idx)%extrapolate_steps,file=file)
+       call Print('      crust                 = '//this%md(md_idx)%crust//' A',file=file)
+       call Print('      recalc_connect_factor = '//this%md(md_idx)%recalc_connect_factor,file=file)
+       call Print('      nneigh_tol            = '//this%md(md_idx)%nneigh_tol,file=file)
+       call Print('      eqm_coordination      = '//this%md(md_idx)%eqm_coordination,file=file)
+       call Print('      sim_temp              = '//this%md(md_idx)%sim_temp//' K',file=file)
+       call Print('      avg_time              = '//this%md(md_idx)%avg_time//' fs',file=file)
+       call Print('      thermalise_tau        = '//this%md(md_idx)%thermalise_tau//' fs',file=file)
+       call Print('      thermalise_wait_time  = '//this%md(md_idx)%thermalise_wait_time//' fs',file=file)
+       call Print('      thermalise_wait_factor  = '//this%md(md_idx)%thermalise_wait_factor//' fs',file=file)
+       call Print('      tau                   = '//this%md(md_idx)%tau//' fs',file=file)
+       call Print('      wait_time             = '//this%md(md_idx)%wait_time//' fs',file=file)
+       call Print('      interval_time         = '//this%md(md_idx)%interval_time//' fs',file=file)
+       call Print('      calc_connect_interval = '//this%md(md_idx)%calc_connect_interval//' fs',file=file)
+       call Print('      smooth_loading_rate         = '//this%md(md_idx)%smooth_loading_rate//' (J/m^2)/fs', file=file)
+       call Print('      smooth_loading_tip_move_tol = '//this%md(md_idx)%smooth_loading_tip_move_tol//' A', file=file)
+       call Print('      smooth_loading_arrest_time  = '//this%md(md_idx)%smooth_loading_arrest_time//' fs', file=file)
+       call Print('      smooth_loading_tip_edge_tol = '//this%md(md_idx)%smooth_loading_tip_edge_tol//' A', file=file)
+       call Print('      damping_time ='//this%md(md_idx)%damping_time//' fs', file=file)
+       call Print('      stanza_time ='//this%md(md_idx)%stanza_time//' s', file=file)
+       call Print('      max_runtime ='//this%md(md_idx)%max_runtime//' s', file=file)
+    end do
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)
     call Print('     method                = '//trim(this%minim_method),file=file)

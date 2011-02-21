@@ -270,7 +270,7 @@ def find_wrap_sources(makefile, quip_root):
 
     if do_crack:
         wrap_sources += [os.path.join(quip_utils_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
-        wrap_types += ['crackparams']
+        wrap_types += ['crackparams', 'crackmdparams']
         
     return source_dirs, wrap_sources, wrap_types, libraries, targets
 
