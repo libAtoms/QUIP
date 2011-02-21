@@ -18,11 +18,11 @@
 
 from quippy import Atoms, AtomsReaders, AtomsWriters, BOHR
 from farray import *
-import sys
+import sys, numpy
 
 class CubeWriter(object):
 
-   def __init__(self, f, comment=None, data=None, origin=None, pad=True, comment2=None):
+   def __init__(self, f, comment=None, data=None, origin=None, extent=None, pad=True, comment2=None):
       if type(f) == type(''):
          if f == 'stdout':
             self.f = sys.stdout
@@ -38,6 +38,7 @@ class CubeWriter(object):
       self.comment2 = comment2
       self.data = data
       self.origin = origin
+      self.extent = extent
       self.pad = pad
 
    def write(self, at):
@@ -58,7 +59,7 @@ class CubeWriter(object):
        if comment2 is None: comment2 = ''
 
        origin = self.origin
-       if self.origin is None and 'origin' in at.params:
+       if origin is None and 'origin' in at.params:
           origin = at.params['origin']
        if origin is None: origin = (0., 0., 0.)
 
@@ -68,10 +69,17 @@ class CubeWriter(object):
        origin_x, origin_y, origin_z = origin
        self.f.write('%d %f %f %f\n' % (at.n, origin_x, origin_y, origin_z))
 
+       extent = self.extent
+       if extent is None and 'extent' in at.params:
+          extent = at.params['extent']
+       if extent.shape == (3,):
+          extent = numpy.diag(extent)
+       extent = farray(extent)
+
        for i in (1,2,3):
            n = data.shape[i-1]
            if self.pad: n += 1
-           voxel_x, voxel_y, voxel_z = at.lattice[:,i]/BOHR/n
+           voxel_x, voxel_y, voxel_z = extent[:,i]/BOHR/n
            self.f.write('%d %f %f %f\n' % (n, voxel_x, voxel_y, voxel_z))
 
        for i in frange(at.n):
