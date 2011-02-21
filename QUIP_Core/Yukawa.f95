@@ -375,11 +375,14 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
             i_is_min_image = is_min_image(at, i)
          end if
       end if
+      ti = 0
       if (at%Z(i) /= 0) ti = get_type(type_of_atomic_num, at%Z(i))
 
       qi = charge(i)
       dipi = dip(:,i)/BOHR
-      tpoli = abs(yukpol(ti)) > 0.0_dp
+      tpoli = .false.
+      ti = 0
+      if (ti /= 0) tpoli = abs(yukpol(ti)) > 0.0_dp
 
       ! Induced contribution to energy
       if ((present(e) .or. present(local_e)) .and. tpoli) then
@@ -415,11 +418,13 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
          r_ij = r_ij/BOHR
          u_ij = u_ij/BOHR
+         tj = 0
          if (at%Z(j) /= 0) tj = get_type(type_of_atomic_num, at%Z(j))
 
          qj = charge(j)
          dipj = dip(:,j)/BOHR
-         tpolj = abs(yukpol(tj)) > 0.0_dp
+         tpolj = .false.
+         if (tj /= 0) tpolj = abs(yukpol(tj)) > 0.0_dp
 
          qipj = (abs(qi) > 0.0_dp) .and. tpolj
          qjpi = (abs(qj) > 0.0_dp) .and. tpoli
@@ -472,7 +477,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
             de_sr = 0.0_dp
             df_sr = 0.0_dp
-            if (tdip_sr) then
+            if (tdip_sr .and. ti /= 0 .and. tj /= 0) then
 
                bij = b_pol(ti, tj)
                cij = c_pol(ti, tj)
