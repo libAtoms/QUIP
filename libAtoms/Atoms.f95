@@ -465,7 +465,10 @@ contains
 
   !% Shallow copy of this Atoms object
   subroutine atoms_shallowcopy(this, from)
-    type(Atoms), pointer, intent(out)  :: this
+    !NB gfortran 4.3.4 seg faults if this is intent(out)
+    !NB type(Atoms), pointer, intent(out)  :: this
+    type(Atoms), pointer  :: this
+    !NB
     type(Atoms), target                :: from
 
     ! ---

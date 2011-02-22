@@ -1645,11 +1645,15 @@ contains
 
   function connection_neighbour_index(this, i, n, index, t, is_j, error) result(j)
     type(Connection), intent(in) :: this
-    integer :: i, j, n
+    integer :: i, n
     integer,  intent(out) :: index
-    type(Table), pointer, intent(out) :: t
+    !NB gfortran 4.3.4 seg faults if this is intent(out)
+    !NB type(Table), pointer, intent(out) :: t
+    type(Table), pointer :: t
+    !NB
     logical, intent(out) :: is_j
     integer, intent(out), optional :: error     
+    integer :: j
 
     integer :: i_n1n, j_n1n
 

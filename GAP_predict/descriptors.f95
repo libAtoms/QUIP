@@ -294,6 +294,10 @@ module descriptors_module
 
    public :: fourier_coefficient_atom, fourier_coefficient_pair, &
    & bispectrum_coefficient_atom, bispectrum_coefficient_pair
+   !NB gfortran 4.3.4 doesn't like private type members of a public type
+   public :: radial_bispectrum, magnetic, radial_fourier, cplx_1d, cplx_2d, magnetic_x, cplx_1d_x, &
+     cplx_2d_x, real_3, cplx_3, angular_bispectrum, angular_fourier, symm_radial, symm_angular
+   !NB
 
    public :: test_qw_gradient
 
