@@ -2887,12 +2887,23 @@ end function pad
     integer :: current_version
     character(len=SYSTEM_STRING_LENGTH) :: string
 
+    integer :: last_num
+
 #ifdef SVN_VERSION    
     string = SVN_VERSION
 #else    
     string = "0"
 #endif
-    current_version = string_to_int(string(1:scan(string,'0123456789',back=.true.)))
+
+    do last_num=0, len(trim(string))
+      if (last_num == len(trim(string))) exit
+      if (scan(string(last_num+1:last_num+1),'0123456789') /= 1) exit
+    end do
+    if (last_num > 0) then
+       current_version = string_to_int(string(1:last_num))
+    else
+       current_version = 0
+    endif
 
   endfunction current_version
 
