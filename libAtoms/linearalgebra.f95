@@ -5727,5 +5727,61 @@ CONTAINS
     deallocate(ipiv)
    end subroutine symmetric_linear_solve
 
+  !% round n to the nearest number greater or equal to n
+  !% with prime factors of only 2, 3, 5, ... max_prime_factor
+  subroutine round_prime_factors(n, max_prime_factor, error)
+    integer, intent(inout) :: n !% The number to be rounded
+    integer, optional, intent(in) :: max_prime_factor
+    integer, optional, intent(out) :: error
+
+    integer :: factor, test, i, my_max_prime_factor, num_prime_factors
+
+    INIT_ERROR(error)
+
+    ! Check that n is not zero, otherwise we get stuck in an infinite loop
+    ASSERT(n /= 0, 'n=0 has no prime factors', error)
+
+    my_max_prime_factor = optional_default(5, max_prime_factor)
+    select case (my_max_prime_factor)
+       case ( 2) ; num_prime_factors = 1
+       case ( 3) ; num_prime_factors = 2
+       case ( 5) ; num_prime_factors = 3
+       case ( 7) ; num_prime_factors = 4
+       case (11) ; num_prime_factors = 5
+       case (13) ; num_prime_factors = 6
+       case (17) ; num_prime_factors = 7
+       case (19) ; num_prime_factors = 8
+       case default
+          RAISE_ERROR('unsupported max_prime_factor '//my_max_prime_factor//' in prime_factors()', error)
+    end select
+
+    do
+       test = n
+       do i=1,num_prime_factors
+          factor = 1
+          select case (i)
+             case (1) ; factor = 2
+             case (2) ; factor = 3
+             case (3) ; factor = 5
+             case (4) ; factor = 7
+             case (5) ; factor = 11
+             case (6) ; factor = 13
+             case (7) ; factor = 17
+             case (8) ; factor = 19
+             case default
+                RAISE_ERROR('unsupported prime factor '//i//' in prime_factors()', error)
+          end select
+
+          do while(mod(test,factor).eq.0)
+             test = test / factor
+          enddo
+       end do
+
+       if (test == 1) return
+       n = n + 1
+    end do
+
+  end subroutine round_prime_factors
+
 
 end module linearalgebra_module
