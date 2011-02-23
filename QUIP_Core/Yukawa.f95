@@ -381,7 +381,6 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
       qi = charge(i)
       dipi = dip(:,i)/BOHR
       tpoli = .false.
-      ti = 0
       if (ti /= 0) tpoli = abs(yukpol(ti)) > 0.0_dp
 
       ! Induced contribution to energy
