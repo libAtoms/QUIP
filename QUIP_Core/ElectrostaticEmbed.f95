@@ -45,10 +45,23 @@ module ElectrostaticEmbed_module
 
   integer, private, parameter :: nspins = 2
 
-  public :: assign_grid_coordinates, calc_electrostatic_potential, &
+  public :: extent_to_ngrid, assign_grid_coordinates, calc_electrostatic_potential, &
        write_electrostatic_potential_cube, make_periodic_potential
 
 contains
+
+  subroutine extent_to_ngrid(extent, fine_gmax, ngrid)
+    real(dp), intent(in) :: extent(3), fine_gmax
+    integer, intent(out) :: ngrid(3)
+
+    integer i
+
+    do i=1,3
+       ngrid(i) = ceiling(fine_gmax*extent(i)/BOHR/PI)
+       call round_prime_factors(ngrid(i))
+    end do
+    
+  end subroutine extent_to_ngrid
 
   subroutine assign_grid_coordinates(ngrid, origin, extent, grid_size, r_real_grid)
     integer, intent(in) :: ngrid(3)
@@ -73,13 +86,13 @@ contains
 
              r_real_grid(1,point) = real(nx-1,dp)*lattice(1,1)/real(ngrid(1),dp) +&
                   & real(ny-1,dp)*lattice(2,1)/real(ngrid(2),dp) +&
-                  & real(nz-1,dp)*lattice(3,1)/real(ngrid(3),dp) + origin(1) - extent(1)/2.0_dp
+                  & real(nz-1,dp)*lattice(3,1)/real(ngrid(3),dp) + origin(1)
              r_real_grid(2,point) = real(nx-1,dp)*lattice(1,2)/real(ngrid(1),dp) +&
                   & real(ny-1,dp)*lattice(2,2)/real(ngrid(2),dp) +&
-                  & real(nz-1,dp)*lattice(3,2)/real(ngrid(3),dp) + origin(2) - extent(2)/2.0_dp
+                  & real(nz-1,dp)*lattice(3,2)/real(ngrid(3),dp) + origin(2)
              r_real_grid(3,point) = real(nx-1,dp)*lattice(1,3)/real(ngrid(1),dp) +&
                   & real(ny-1,dp)*lattice(2,3)/real(ngrid(2),dp) +&
-                  & real(nz-1,dp)*lattice(3,3)/real(ngrid(3),dp) + origin(3) - extent(3)/2.0_dp
+                  & real(nz-1,dp)*lattice(3,3)/real(ngrid(3),dp) + origin(3)
 
           end do
        end do
@@ -399,7 +412,7 @@ contains
 
     ! choose balance between number of evaluations and number of simulataneous grid points
     npoint = 150
-    stride = size(real_grid, 2)/npoint
+    stride = max(1,size(real_grid, 2)/npoint)
     npoint = size(real_grid(:,1:size(real_grid,2):stride), 2)
     call print('npoint = '//npoint//' stride = '//stride)
 
