@@ -141,7 +141,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call initialise(params)
   this%label=''
 
-  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Initialise_str args_str')) &
   call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
   call finalise(params)
@@ -820,10 +820,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
      call QUIP_FoX_get_value(attributes, 'svn_version', value, status)
      if( (status == 0) .and. (string_to_int(value) > current_version()) ) then
-        call print_warning('Database was created with a different version of the code.')
-        call print_warning('Version of code used to generate the database is '//trim(value))
-        call print_warning('Version of current code is '//current_version())
-        call system_abort('Please update your code.')
+	call system_abort( &
+	   'Database was created with a different version of the code.' // &
+	   'Version of code used to generate the database is '//trim(value) //'.'// &
+	   'Version of current code is '//current_version() // &
+	   'Please update your code.')
      endif
 
   elseif(parse_in_ip .and. name == 'GAP_data') then

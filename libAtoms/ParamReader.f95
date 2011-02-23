@@ -775,18 +775,10 @@ module paramreader_module
          else
 	    out_line=trim(out_line)//" current_value="//trim(entry%value)
          end if
-
 	 call print(trim(out_line), verbosity=PRINT_ALWAYS, file=out)
-	 out_line=trim(entry%help_string)
-	 do while (len_trim(out_line) > 0)
-	    if (out_line(80:80) == " ") then
-	       call print("    "//trim(out_line(1:80)), verbosity=PRINT_ALWAYS, file=out)
-	    else
-	       call print("    "//trim(out_line(1:80))//"-", verbosity=PRINT_ALWAYS, file=out)
-	    endif
-	    out_line(1:80) = ""
-	    out_line=adjustl(out_line)
-	 end do
+
+	 call print(linebreak_string(trim(entry%help_string), 80), verbosity=PRINT_ALWAYS, file=out)
+
 	 call print("", verbosity=PRINT_ALWAYS, file=out)
       end do
 
