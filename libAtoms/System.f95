@@ -2907,4 +2907,50 @@ end function pad
 
   endfunction current_version
 
+  function linebreak_string(str, line_len) result(lb_str)
+    character(len=*), intent(in) :: str
+    integer, intent(in) :: line_len
+
+    character(len=len_trim(str)+2*len_trim(str)/line_len+3) :: lb_str
+
+    logical :: word_break
+    integer :: copy_len, last_space
+    character(len=len(lb_str)) :: tmp_str
+
+    lb_str=""
+    tmp_str=trim(str)
+    do while (len_trim(tmp_str) > 0)
+      copy_len = min(len_trim(tmp_str),line_len)
+      if (tmp_str(copy_len:copy_len) /= " ") then
+	 last_space=scan(tmp_str(1:copy_len), " ", .true.)
+	 if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
+	    copy_len=last_space
+	 endif
+      endif
+
+      if (len_trim(lb_str) > 0) then ! we already have some text, add newline before concatenating next line
+	lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
+      else ! just concatenate next line
+	lb_str = trim(tmp_str(1:copy_len))
+      endif
+      ! if we broke in mid word, add "-"
+      word_break = .true.
+      if (tmp_str(copy_len:copy_len) == " ") then ! we broke right after a space, so no wordbreak
+	word_break = .false.
+      else ! we broke after a character
+	if (copy_len < len_trim(tmp_str)) then ! there's another character after this one, check if it's a space
+	  if (tmp_str(copy_len+1:copy_len+1) == " ") then
+	    word_break = .false.
+	  endif
+	else ! we broke after the last character
+	  word_break = .false.
+	endif
+      endif
+      if (word_break) lb_str = trim(lb_str)//"-"
+      tmp_str(1:copy_len) = ""
+      tmp_str=adjustl(tmp_str)
+    end do
+
+   end function linebreak_string
+
 end module system_module
