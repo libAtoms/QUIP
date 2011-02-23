@@ -37,10 +37,11 @@ if (major, minor) < (2, 4):
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
     quip_root = os.path.abspath(os.path.join(os.getcwd(), '../../'))
+    os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
 
     if not 'QUIP_ARCH' in os.environ:
         raise ValueError('QUIP_ARCH environment variable not set')
-    
+
     quip_arch = os.environ['QUIP_ARCH']
 
     return (quip_root, quip_arch)
