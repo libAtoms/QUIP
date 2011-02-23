@@ -22,7 +22,7 @@ import sys, numpy
 
 class CubeWriter(object):
 
-   def __init__(self, f, comment=None, data=None, origin=None, extent=None, pad=True, comment2=None):
+   def __init__(self, f, comment=None, data=None, origin=None, extent=None, comment2=None):
       if type(f) == type(''):
          if f == 'stdout':
             self.f = sys.stdout
@@ -39,7 +39,6 @@ class CubeWriter(object):
       self.data = data
       self.origin = origin
       self.extent = extent
-      self.pad = pad
 
    def write(self, at):
        data = self.data
@@ -66,41 +65,40 @@ class CubeWriter(object):
        self.f.write(comment1.strip()+'\n')
        self.f.write(comment2.strip()+'\n')
        
-       origin_x, origin_y, origin_z = origin
+       origin_x, origin_y, origin_z = origin/BOHR
        self.f.write('%d %f %f %f\n' % (at.n, origin_x, origin_y, origin_z))
 
        extent = self.extent
        if extent is None and 'extent' in at.params:
           extent = at.params['extent']
+       if extent is None:
+          extent = at.lattice
        if extent.shape == (3,):
           extent = numpy.diag(extent)
        extent = farray(extent)
 
        for i in (1,2,3):
            n = data.shape[i-1]
-           if self.pad: n += 1
            voxel_x, voxel_y, voxel_z = extent[:,i]/BOHR/n
+           n += 1 # for padding
            self.f.write('%d %f %f %f\n' % (n, voxel_x, voxel_y, voxel_z))
 
        for i in frange(at.n):
            self.f.write('%d 0.0 %f %f %f\n' % (at.z[i], at.pos[1,i]/BOHR, at.pos[2,i]/BOHR, at.pos[3,i]/BOHR))
 
-       if self.pad:
-          padded_data = numpy.zeros([s+1 for s in data.shape])
-          padded_data[:-1,:-1,:-1] = data
-          padded_data[-1,:,:] = padded_data[0,:,:]
-          padded_data[:,-1,:] = padded_data[:,0,:]
-          padded_data[:,:,-1] = padded_data[:,:,0]
-          data = padded_data
-
-       for d in data.flat:
+       padded_data = numpy.zeros([s+1 for s in data.shape])
+       padded_data[:-1,:-1,:-1] = data
+       padded_data[-1,:,:] = padded_data[0,:,:]
+       padded_data[:,-1,:] = padded_data[:,0,:]
+       padded_data[:,:,-1] = padded_data[:,:,0]
+       for d in padded_data.flat:
            self.f.write('%f\n' % d)
 
    def close(self):
        if self.opened:  self.f.close()
 
 
-def CubeReader(f, pad=True, property_name='charge'):
+def CubeReader(f, property_name='charge'):
 
    def convert_line(line, *fmts):
       return (f(s) for f,s in zip(fmts, line.split()))
@@ -144,9 +142,7 @@ def CubeReader(f, pad=True, property_name='charge'):
    data = farray(data.reshape(shape))
 
    # Discard periodic repeat
-   if pad: data = data[:-1,:-1,:-1]
-
-   at.data = data
+   at.data = data[:-1,:-1,:-1]
 
    if opened:
       f.close()
