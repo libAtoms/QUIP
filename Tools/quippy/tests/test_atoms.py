@@ -466,7 +466,9 @@ class TestAtoms_Extras(QuippyTestCase):
       self.a = 5.44
       self.at = diamond(self.a, 14)
       self.params = {'k1': 1, 'k2': 2.0, 'k3': 's', 'k4': fidentity(3)}
-      self.at.params.update(self.params)
+      self.at.params.update(self.params)      
+      self.at.nneightol = 1.4
+      self.at.set_cutoff(5.0)
 
    def test_copy(self):
       cp = self.at.copy()
@@ -710,14 +712,15 @@ class TestAtoms_Extras(QuippyTestCase):
       self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
-   # bcast() test relies on SIZEOF_ATOMS parameter, which is compiler and architecture dependant
-   if QUIP_MAKEFILE['QUIPPY_FCOMPILER'] == 'gnu95' and '-DDARWIN' in QUIP_MAKEFILE['DEFINES']:
-      def test_bcast(self):
-         from quippy import MPI_context, atoms_bcast
-         mpi = MPI_context()
-         atoms_bcast(mpi, self.at)
-
-
+   def test_bcast(self):
+      # Serial test of atoms_bcast by copying into test_out
+      # if test fails add new data elements to ALL THREE sections in atoms_bcast() in Atoms.f95
+      from quippy import MPI_context, atoms_bcast
+      mpi = MPI_context()
+      test_out = Atoms()
+      atoms_bcast(mpi, self.at, test_out=test_out)
+      self.assertEqual(self.at, test_out)
+      
 class TestAtoms_Neighbour(QuippyTestCase):
 
    def setUp(self):
