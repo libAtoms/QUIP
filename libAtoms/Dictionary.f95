@@ -2768,22 +2768,8 @@ contains
     integer :: i, size_tmp, shape_tmp(2)
     character, allocatable, dimension(:) :: char_array
     type(DictEntry) :: entry
-    integer, parameter :: SIZEOF_DICTIONARY = 112
-    integer, parameter :: SIZEOF_DICTENTRY = 576
 
     INIT_ERROR(error)
-
-#ifdef __GFORTRAN__
-    ! Raise an error if sizeof(Dictionary) or sizeof(DictEntry) have
-    ! changed, indicating fields have been added or removed from
-    ! definition of derived type.
-    if (size(transfer(dict, char_array)) /= SIZEOF_DICTIONARY) then
-       RAISE_ERROR('dictionary_bcast: size of Dictionary object /= '//SIZEOF_DICTIONARY//' - please update dictionary_bcast()', error)
-    end if
-    if (size(transfer(entry, char_array)) /= SIZEOF_DICTENTRY) then
-       RAISE_ERROR('dictentry_bcast: size of DictEntry object /= '//SIZEOF_DICTENTRY//' - please update dictionary_bcast()', error)
-    end if
-#endif
 
     if (.not. mpi%active) return
 

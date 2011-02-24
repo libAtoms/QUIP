@@ -3168,30 +3168,39 @@ contains
 
   endfunction atoms_is_min_image
 
-  subroutine atoms_bcast(mpi, at, error)
+  subroutine atoms_bcast(mpi, at, test_out, error)
     type(MPI_context), intent(in) :: mpi
     type(Atoms), intent(inout) :: at
+    type(Atoms), intent(out), optional :: test_out
     integer, optional, intent(out) :: error
-
-#ifdef __GFORTRAN__
-    character, allocatable, dimension(:) :: char_array
-    integer, parameter :: SIZEOF_ATOMS = 1776
-#endif
 
     INIT_ERROR(error)
 
-#ifdef __GFORTRAN__
-    ! Raise an error if sizeof(Atoms) has changed, indicating fields
-    ! have been added or removed from definition of derived type.
-    if (size(transfer(at, char_array)) /= SIZEOF_ATOMS) then
-       RAISE_ERROR('atoms_bcast: size of Atoms object ('//size(transfer(at, char_array))//' /= '//SIZEOF_ATOMS//' - please make sure atoms_bcast() is up to date, sharing all variables if any new were added', error)
+    ! Serial test of atoms_bcast by copying into test_out
+    ! If test fails add new data elements to ALL THREE sections below
+    if (present(test_out)) then
+       call finalise(test_out)
+       test_out%n = at%n
+       test_out%ndomain = at%ndomain
+       test_out%nbuffer = at%nbuffer
+       test_out%use_uniform_cutoff = at%use_uniform_cutoff
+       test_out%cutoff = at%cutoff
+       test_out%cutoff_break = at%cutoff_break
+       test_out%nneightol = at%nneightol
+       test_out%lattice = at%lattice
+       test_out%is_orthorhombic = at%is_orthorhombic
+       test_out%is_periodic = at%is_periodic
+       test_out%fixed_size = at%fixed_size
+       test_out%properties = at%properties
+       test_out%params = at%params
+       call matrix3x3_inverse(test_out%lattice,test_out%g)
+       call atoms_repoint(test_out)
+       test_out%ref_count = 1
     end if
-#endif
 
     if (.not. mpi%active) return
 
     if (mpi%my_proc == 0) then
-
        call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_VERBOSE)
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
