@@ -212,10 +212,13 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      else
         atom_mask_pointer => null()
      endif
-     if (do_rescale_r .or. do_rescale_E) then
-        RAISE_ERROR("IPModel_SW_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
-     end if
+  else
+     do_rescale_r = .false.
+     do_rescale_E = .false.
   endif
+
+  if (do_rescale_r) call print('IPModel_SW_Calc: rescaling distances by factor '//r_scale, PRINT_VERBOSE)
+  if (do_rescale_E) call print('IPModel_SW_Calc: rescaling energy by factor '//E_scale, PRINT_VERBOSE)
 
   if (.not.assign_pointer(at,"weight", w_e)) nullify(w_e)
 
@@ -258,6 +261,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff)
       if (j <= 0) cycle
       if (drij_mag .feq. 0.0_dp) cycle
+
+      if (do_rescale_r) drij_mag = drij_mag*r_scale
 
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -332,6 +337,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 	k = atoms_neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
 	if (k <= 0) cycle
 	if (drik_mag .feq. 0.0_dp) cycle
+
+        if (do_rescale_r) drik_mag = drik_mag*r_scale
 
 	tk = get_type(this%type_of_atomic_num, at%Z(k))
 
@@ -483,6 +490,20 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      if (present(virial)) call sum_in_place(mpi, virial)
      if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
+
+  if (do_rescale_r) then
+     if (present(f)) f = f*r_scale
+  end if
+
+  if (do_rescale_E) then
+     if (present(e)) e = e*E_scale
+     if (present(local_e)) local_e = local_e*E_scale
+     if (present(f)) f = f*E_scale
+     if (present(virial)) virial=virial*E_scale
+     if (present(local_virial)) local_virial=local_virial*E_scale
+  end if  
+
+  atom_mask_pointer => null()
 
 end subroutine IPModel_SW_Calc
 
