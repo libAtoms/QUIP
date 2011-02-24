@@ -382,17 +382,20 @@ program crack
      mainlog%mpi_print_id = .true.
   end if
 
+  call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
+  call read(bulk, trim(stem)//'_bulk.xyz')
+
   call print ("Initialising classical potential with args " // trim(params%classical_args) &
        // " from file " // trim(xmlfilename))
   call rewind(xmlfile)
-  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj = mpi_glob)
+  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk)
   call Print(classicalpot)
 
   if (.not. params%simulation_classical) then
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob)
+     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk)
      call finalise(xmlfile)
      call Print(qmpot)
   end if
@@ -452,16 +455,8 @@ program crack
           ' cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
 	  ' '//trim(params%qm_args_str))
 
-     if (params%qm_rescale_r) then
-        call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
-        call read(bulk, trim(stem)//'_bulk.xyz')
-
-        call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
-             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
-     else
-        call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
-             pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
-     end if
+     call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
+          pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
 
      call print_title('Hybrid Potential')
      call print(hybrid_pot)
