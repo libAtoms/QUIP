@@ -1007,8 +1007,8 @@ contains
     integer, intent(in), optional :: Z
 
     call initialise(myatoms, 2, &
-         reshape((/        a,   0.0_dp,   0.0_dp, &
-                  &   0.0_dp,        a,   0.0_dp, &
+         reshape((/ 0.5_dp*a,-0.5_dp*a,-0.5_dp*c, &
+                  &-0.5_dp*a, 0.5_dp*a,-0.5_dp*c, &
                   & 0.5_dp*a, 0.5_dp*a, 0.5_dp*c /), (/3,3/) ))
     
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ -0.125_dp, -0.375_dp,  0.25_dp /))
@@ -1164,6 +1164,33 @@ contains
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine imma
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! imma4(myatoms, a, b, c, u, Z)
+  !
+  !% Creates a 4-atom Imma cell
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine imma4(myatoms, a, b, c, u, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a, b, c, u
+    integer, intent(in), optional :: Z
+
+    call initialise(myatoms, 4, &
+                  reshape( (/ a, 0.0_dp, 0.0_dp, &
+                              0.0_dp, b, 0.0_dp, &
+                              0.0_dp, 0.0_dp,  c /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp,        0.00_dp,        0.00_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.50_dp,        0.50_dp,        0.50_dp /))
+    myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 0.00_dp,        0.50_dp,              u /))
+    myatoms%pos(:,4) = matmul(myatoms%lattice, (/ 0.50_dp,        0.00_dp,    0.50_dp + u /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine imma4
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
