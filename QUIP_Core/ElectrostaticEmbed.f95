@@ -105,14 +105,14 @@ contains
   end subroutine assign_grid_coordinates
 
   subroutine write_electrostatic_potential_cube(at, mark_name, filename, ngrid, origin, extent, pot, &
-       write_efield, convert_to_atomic_units, error)
+       write_efield, flip_sign, convert_to_atomic_units, error)
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: mark_name
     character(len=*), intent(in) :: filename
     integer, intent(in) :: ngrid(3)
     real(dp), intent(in) :: origin(3), extent(3)
     real(dp), dimension(:,:,:), intent(in) :: pot
-    logical, optional, intent(in) :: write_efield, convert_to_atomic_units
+    logical, optional, intent(in) :: write_efield, flip_sign, convert_to_atomic_units
     integer, optional, intent(out) :: error
 
     type(InOutput) :: out
@@ -123,11 +123,12 @@ contains
     real(dp), pointer, dimension(:) :: charge, es_pot
     real(dp), pointer, dimension(:,:) :: es_efield
     integer, dimension(size(ElementMass)) :: nsp
-    logical do_efield, do_atomic_units
+    logical do_efield, do_atomic_units, do_flip_sign
 
     INIT_ERROR(error)
 
     do_efield = optional_default(.true., write_efield)
+    do_flip_sign = optional_default(.false., flip_sign)
     do_atomic_units = optional_default(.true., convert_to_atomic_units)
 
     call assign_property_pointer(at, mark_name, mark, error)
@@ -198,6 +199,8 @@ contains
     cube%voxels(cube%na,:,:,1) = real(cube%voxels(1,:,:,1))
     cube%voxels(:,cube%nb,:,1) = real(cube%voxels(:,1,:,1))
     cube%voxels(:,:,cube%nc,1) = real(cube%voxels(:,:,1,1))
+
+    if (do_flip_sign) cube%voxels = -cube%voxels
 
     if (do_atomic_units) then
        cube%da = cube%da/BOHR
@@ -377,8 +380,12 @@ contains
 
   !% Evaluate electrostatic potential on a grid by adding test atoms at grid points
   subroutine calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+#ifdef _OPENMP
+    use omp_lib
+#endif
+
     type(Potential), intent(inout) :: this
-    type(Atoms), intent(inout) :: at
+    type(Atoms), intent(in) :: at
     character(len=*), intent(in) :: args_str, mark_name
     integer, intent(in) :: ngrid(3)
     real(dp), intent(in) :: origin(3), extent(3)
@@ -386,23 +393,56 @@ contains
     integer, optional, intent(out) :: error
 
     type(Atoms) :: at_copy
-    real(dp) :: grid_size(3)
+    type(Atoms), save :: private_at_copy
+    real(dp) :: grid_size(3), tmp_cutoff
     real(dp), pointer :: at_charge(:)
     real(dp), allocatable :: local_e(:)
     integer, pointer, dimension(:) :: mark
     integer, allocatable, dimension(:) :: z
     integer, allocatable, dimension(:,:) :: lookup
     logical, pointer, dimension(:) :: atom_mask, source_mask
-    integer i, j, k, n, igrid, offset, stride, npoint
+    logical, allocatable, dimension(:) :: select_mask
+    logical old_nested
+    integer i, j, k, n, igrid, offset, stride, npoint, select_n
+
+    !$omp threadprivate(private_at_copy)
 
     INIT_ERROR(error)
     call system_timer('calc_electrostatic_potential_grid')
 
     call assign_grid_coordinates(ngrid, origin, extent, grid_size, real_grid)
 
-    ! Make copy of atoms, so we can add test atoms at grid points
-    call atoms_copy_without_connect(at_copy, at)
-    call set_cutoff(at_copy, cutoff(this))
+
+    call assign_property_pointer(at, mark_name, mark, error)
+    PASS_ERROR(error)
+
+    ! Make copy of atoms within cutoff distance of a marked atom
+    ! so we can add test atoms at grid points
+
+!     allocate(select_mask(at%n))
+!     tmp_cutoff = cutoff(this)
+!     select_mask = .false.
+!     do i=1,at%n
+!        dr = diff_min_image(at, at%pos(:,i), origin+extent/2.0_dp)
+!        if (all(abs(dr(:)) < extent/2.0_dp+tmp_cutoff)) select_mask(i) = .true.
+!     end do
+!     call select(at_copy, at, mask=select_mask)
+!     select_n = at_copy%n
+!     deallocate(select_mask)
+
+    allocate(select_mask(at%n))
+    tmp_cutoff = cutoff(this)
+    select_mask = .false.
+    do i=1,at%n
+       if (mark(i) == HYBRID_NO_MARK) cycle
+       select_mask(i) = .true.
+       do j=1,at%n
+          if (mark(j) /= HYBRID_NO_MARK) cycle
+          if (distance_min_image(at, i, j) < tmp_cutoff) select_mask(j) = .true.
+       end do
+    end do
+    call select(at_copy, at, mask=select_mask)
+    select_n = at_copy%n
 
     call assign_property_pointer(at_copy, mark_name, mark, error)
     PASS_ERROR(error)
@@ -411,7 +451,7 @@ contains
     PASS_ERROR(error)
 
     ! choose balance between number of evaluations and number of simulataneous grid points
-    npoint = 150
+    npoint = select_n
     stride = max(1,size(real_grid, 2)/npoint)
     npoint = size(real_grid(:,1:size(real_grid,2):stride), 2)
     call print('npoint = '//npoint//' stride = '//stride)
@@ -420,7 +460,7 @@ contains
     z(:) = 0
     call add_atoms(at_copy, real_grid(:,1:size(real_grid,2):stride), z)
 
-    allocate(local_e(at_copy%n))
+    call write(at_copy, 'at_copy.xyz')
 
     ! added atoms so must reassign pointers
     if (.not. assign_pointer(at_copy, mark_name, mark)) then
@@ -429,19 +469,19 @@ contains
     if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
     endif
-    at_charge(at%n+1:at_copy%n) = 1.0_dp
+    at_charge(select_n+1:at_copy%n) = 1.0_dp
 
-    ! atom_mask is true for atoms for which we want the local potential energy, i.e dummy atoms
+    ! atom_mask is true for atoms for which we want the local potential energy, i.e grid point atoms
     call add_property(at_copy, 'atom_mask', .false., overwrite=.true., ptr=atom_mask, error=error)
     PASS_ERROR(error)
     atom_mask = .false. 
-    atom_mask(at%n+1:at_copy%n) = .true.
+    atom_mask(select_n+1:at_copy%n) = .true.
 
     ! source_mask is true for atoms which should act as electrostatic sources
     call add_property(at_copy, 'source_mask', .false., overwrite=.true., ptr=source_mask, error=error)
     PASS_ERROR(error)
-    source_mask(1:at%n) = mark(1:at%n) == HYBRID_ELECTROSTATIC_MARK
-    source_mask(at%n+1:at_copy%n) = .false.
+    source_mask(1:select_n) = mark(1:select_n) == HYBRID_ELECTROSTATIC_MARK
+    source_mask(select_n+1:at_copy%n) = .false.
 
     call print('calc_electrostatic_potential_grid: evaluating electrostatic potential due to '//count(source_mask)//' sources')
 
@@ -457,26 +497,44 @@ contains
        end do
     end do
 
+#ifdef _OPENMP
+    old_nested = omp_get_nested()
+    call omp_set_nested(.false.)
+#endif
+    !$omp parallel default(none) shared(at_copy,stride,args_str,grid_size,this,pot,real_grid,select_n,at_charge,lookup) private(local_e,npoint,igrid)
+
+    call atoms_copy_without_connect(private_at_copy, at_copy)
+    call set_cutoff(private_at_copy, cutoff(this))
+    
+    allocate(local_e(private_at_copy%n))
+
+    !$omp do
     do offset=1,stride
        npoint = size(real_grid(:,offset:size(real_grid,2):stride),2)
-       at_copy%n = at%n + npoint
-       at_copy%nbuffer = at%nbuffer + npoint
-       at_copy%pos(:,at%n+1:at_copy%n) = real_grid(:,offset:size(real_grid,2):stride)
-       call calc_connect(at_copy, skip_zero_zero_bonds=.true.)
+       private_at_copy%n = select_n + npoint
+       private_at_copy%nbuffer = select_n + npoint
+       private_at_copy%pos(:,select_n+1:private_at_copy%n) = real_grid(:,offset:size(real_grid,2):stride)
+       call calc_connect(private_at_copy, skip_zero_zero_bonds=.true.)
 
        local_e = 0.0_dp
-       call calc(this, at_copy, local_energy=local_e(1:at_copy%n), &
+       call calc(this, private_at_copy, local_energy=local_e(1:private_at_copy%n), &
             args_str=trim(args_str)//' atom_mask_name=atom_mask source_mask_name=source_mask grid_size='//minval(grid_size))
-       
        do n=1,npoint
           igrid = (n-1)*stride + offset
-          pot(lookup(1,igrid),lookup(2,igrid),lookup(3,igrid)) = 2.0_dp*local_e(at%n+n)/at_charge(at%n+n)
+          pot(lookup(1,igrid),lookup(2,igrid),lookup(3,igrid)) = 2.0_dp*local_e(select_n+n)/at_charge(select_n+n)
        end do
     end do
 
-    deallocate(lookup)
-    call finalise(at_copy)
-    deallocate(local_e, z)
+    call finalise(private_at_copy)
+    deallocate(local_e)
+
+    !$omp end parallel
+#ifdef _OPENMP
+    call omp_set_nested(old_nested)       
+#endif
+
+    deallocate(select_mask)
+    deallocate(lookup,z)
     call system_timer('calc_electrostatic_potential_grid')
 
   end subroutine calc_electrostatic_potential_grid
