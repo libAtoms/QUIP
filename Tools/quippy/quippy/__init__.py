@@ -96,13 +96,13 @@ from oo_fortran import FortranDerivedType, FortranDerivedTypes, fortran_class_pr
 
 def quippy_cleanup():
    try:
-      #_quippy.qp_verbosity_pop()
+      _quippy.qp_verbosity_pop()
       _quippy.qp_system_finalise()
    except AttributeError:
       pass
 
-_quippy.qp_system_initialise(0, qp_quippy_running=QUIPPY_TRUE)
-#_quippy.qp_verbosity_push(0)
+_quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
+_quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 from spec import spec
