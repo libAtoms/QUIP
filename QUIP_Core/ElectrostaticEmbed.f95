@@ -460,8 +460,6 @@ contains
     z(:) = 0
     call add_atoms(at_copy, real_grid(:,1:size(real_grid,2):stride), z)
 
-    call write(at_copy, 'at_copy.xyz')
-
     ! added atoms so must reassign pointers
     if (.not. assign_pointer(at_copy, mark_name, mark)) then
        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(mark_name)//'" property', error)
