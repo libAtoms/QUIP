@@ -2198,6 +2198,9 @@ contains
    !%> if system_do_timing is false.
    !
    subroutine system_timer(name, do_always, time_elapsed, do_print)
+#ifdef _OPENMP
+     use omp_lib
+#endif
      character(len=*), intent(in) :: name !% Unique identifier for this timer
      logical, intent(in), optional :: do_always
      real(dp), intent(out), optional :: time_elapsed
@@ -2221,6 +2224,11 @@ contains
      my_do_print = optional_default(.true., do_print)
 
      if (.not. my_do_always .and. .not. system_do_timing) return
+
+#ifdef _OPENMP
+     ! stacks are not thread safe, so if we're in an OpenMP parallel region do nothing
+     if (omp_get_num_threads() > 1) return
+#endif
 
      found_name = .false.
      if (stack_pos >= 1) found_name = trim(names(stack_pos)) == trim(name)
