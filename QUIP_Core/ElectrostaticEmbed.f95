@@ -104,10 +104,9 @@ contains
 
   end subroutine assign_grid_coordinates
 
-  subroutine write_electrostatic_potential_cube(at, mark_name, filename, ngrid, origin, extent, pot, &
+  subroutine write_electrostatic_potential_cube(at, filename, ngrid, origin, extent, pot, &
        write_efield, flip_sign, convert_to_atomic_units, error)
     type(Atoms), intent(inout) :: at
-    character(len=*), intent(in) :: mark_name
     character(len=*), intent(in) :: filename
     integer, intent(in) :: ngrid(3)
     real(dp), intent(in) :: origin(3), extent(3)
@@ -119,7 +118,6 @@ contains
     type(cube_type) :: cube
     type(Dictionary) :: metadata
     integer i, j, n, z!, na, nb, nc
-    integer, pointer, dimension(:) :: mark
     real(dp), pointer, dimension(:) :: charge, es_pot
     real(dp), pointer, dimension(:,:) :: es_efield
     integer, dimension(size(ElementMass)) :: nsp
@@ -130,9 +128,6 @@ contains
     do_efield = optional_default(.true., write_efield)
     do_flip_sign = optional_default(.false., flip_sign)
     do_atomic_units = optional_default(.true., convert_to_atomic_units)
-
-    call assign_property_pointer(at, mark_name, mark, error)
-    PASS_ERROR(error)
 
     if (do_efield) then
        call assign_property_pointer(at, 'es_pot', es_pot, error)
@@ -147,7 +142,7 @@ contains
 
     call cube_clear(cube)
     cube%comment1 = trim(filename)
-    cube%N = count(mark /= HYBRID_ELECTROSTATIC_MARK .and. mark /= HYBRID_NO_MARK)
+    cube%N = at%n
     cube%r0 = real(origin)
     cube%na = ngrid(1)+1
     cube%nb = ngrid(2)+1
@@ -157,11 +152,12 @@ contains
     cube%da = 0.0_dp; cube%da(1) = real(extent(1)/ngrid(1))
     cube%db = 0.0_dp; cube%db(2) = real(extent(2)/ngrid(2))
     cube%dc = 0.0_dp; cube%dc(3) = real(extent(3)/ngrid(3))
+
+    ! We sort atoms by atomic number for compatibility with CASTEP
     
     ! Count number of each species
     nsp(:) = 0
     do i=1,at%n
-       if (mark(i) == HYBRID_NO_MARK .or. mark(i) == HYBRID_ELECTROSTATIC_MARK) cycle
        nsp(at%z(i)) = nsp(at%z(i)) + 1
     end do
 
@@ -173,13 +169,13 @@ contains
 
        do j=1,at%n
           if (at%z(j) /= z) cycle
-          if (mark(j) == HYBRID_NO_MARK .or. mark(j) == HYBRID_ELECTROSTATIC_MARK) cycle
 
           n = n + 1
           cube%atoms(n)%number = at%z(j)
           if (do_efield) then
              ! Potential on ions and electric field
              cube%atoms(n)%unknown = real(es_pot(j))
+             if (do_flip_sign) cube%atoms(n)%unknown = -cube%atoms(n)%unknown
              cube%atoms(n)%r(:) = real(es_efield(:,j))
           else
              ! Charge and position of ions
@@ -335,57 +331,15 @@ contains
 
   end subroutine make_periodic_potential
 
-  !% Evaluate electrostatic potential and electric field on atoms not marked with HYBRID_ELECTROSTATIC_MARK
-  subroutine calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
-    type(Potential), intent(inout) :: this
-    type(Atoms), intent(inout) :: at
-    character(len=*), intent(in) :: args_str, mark_name
-    integer, optional, intent(out) :: error
-
-    integer, dimension(:), pointer :: mark
-    logical, dimension(:), pointer :: atom_mask, source_mask
-    real(dp), dimension(:), pointer :: at_charge, es_pot
-
-    INIT_ERROR(error)
-
-    call assign_property_pointer(at, mark_name, mark, error)
-    PASS_ERROR(error)
-
-    call assign_property_pointer(at, 'charge', at_charge)
-    PASS_ERROR(error)
-
-    call add_property(at, 'atom_mask', .false., overwrite=.true., ptr=atom_mask, error=error)
-    PASS_ERROR(error)
-    atom_mask = mark /= HYBRID_ELECTROSTATIC_MARK .and. mark /= HYBRID_NO_MARK
-
-    call add_property(at, 'source_mask', .false., overwrite=.true., ptr=source_mask, error=error)
-    PASS_ERROR(error)
-    source_mask = mark == HYBRID_ELECTROSTATIC_MARK
-
-    call add_property(at, 'es_efield', 0.0_dp, n_cols=3, overwrite=.true., error=error)
-    PASS_ERROR(error)
-
-    call add_property(at, 'es_pot', 0.0_dp, overwrite=.true., ptr=es_pot, error=error)
-    PASS_ERROR(error)
-
-    call calc(this, at, args_str=trim(args_str)//' efield=es_efield local_energy=es_pot atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
-    PASS_ERROR(error)
-
-    ! Electrostatic potential at ion positions is 2*local_energy/charge
-    where (es_pot /= 0.0_dp) 
-       es_pot = 2.0_dp*es_pot/at_charge
-    end where
-
-  end subroutine calc_electrostatic_potential_ions
-
   !% Evaluate electrostatic potential on a grid by adding test atoms at grid points
-  subroutine calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
+  subroutine calc_electrostatic_potential(this, at, cluster, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
 #ifdef _OPENMP
     use omp_lib
 #endif
 
     type(Potential), intent(inout) :: this
     type(Atoms), intent(in) :: at
+    type(Atoms), intent(inout) :: cluster
     character(len=*), intent(in) :: args_str, mark_name
     integer, intent(in) :: ngrid(3)
     real(dp), intent(in) :: origin(3), extent(3)
@@ -395,7 +349,7 @@ contains
     type(Atoms) :: at_copy
     type(Atoms), save :: private_at_copy
     real(dp) :: grid_size(3), tmp_cutoff
-    real(dp), pointer :: at_charge(:)
+    real(dp), pointer :: at_charge(:), cluster_charge(:), cluster_es_pot(:), cluster_es_efield(:,:), es_pot(:), es_efield(:,:)
     real(dp), allocatable :: local_e(:)
     integer, pointer, dimension(:) :: mark
     integer, allocatable, dimension(:) :: z
@@ -408,7 +362,7 @@ contains
     !$omp threadprivate(private_at_copy)
 
     INIT_ERROR(error)
-    call system_timer('calc_electrostatic_potential_grid')
+    call system_timer('calc_electrostatic_potential')
 
     call assign_grid_coordinates(ngrid, origin, extent, grid_size, real_grid)
 
@@ -462,10 +416,10 @@ contains
 
     ! added atoms so must reassign pointers
     if (.not. assign_pointer(at_copy, mark_name, mark)) then
-       RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(mark_name)//'" property', error)
+       RAISE_ERROR('calc_electrostatic_potential_calc failed to assign pointer to "'//trim(mark_name)//'" property', error)
     end if
     if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
-       RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+       RAISE_ERROR('calc_electrostatic_potential_calc failed to assign pointer to "charge" property', error)
     endif
     at_charge(select_n+1:at_copy%n) = 1.0_dp
 
@@ -481,7 +435,7 @@ contains
     source_mask(1:select_n) = mark(1:select_n) == HYBRID_ELECTROSTATIC_MARK
     source_mask(select_n+1:at_copy%n) = .false.
 
-    call print('calc_electrostatic_potential_grid: evaluating electrostatic potential due to '//count(source_mask)//' sources')
+    call print('calc_electrostatic_potential: evaluating electrostatic potential due to '//count(source_mask)//' sources')
 
     ! Construct mapping from igrid to (i,j,k)
     igrid = 0
@@ -531,29 +485,40 @@ contains
     call omp_set_nested(old_nested)       
 #endif
 
+    ! Now do a single calculation of potential and field at ion positions in cluster
+    if (cluster%n > (size(at_copy%z)-select_n)) then
+       RAISE_ERROR("cluster contains too many atoms!", error)
+    end if
+    at_copy%n = select_n + cluster%n
+    at_copy%nbuffer = select_n + cluster%n
+    at_copy%pos(:,select_n+1:at_copy%n) = cluster%pos(:,:)
+    if (.not. assign_pointer(cluster, 'charge', cluster_charge)) then
+       RAISE_ERROR('calc_electrostatic_potential failed to assign pointer to cluster "charge" property', error)
+    end if
+    at_charge(select_n+1:at_copy%n) = 1.0_dp
+    at_copy%z(select_n+1:at_copy%n) = 0 ! treat as non-interacting dummy atoms
+    call calc_connect(at_copy, skip_zero_zero_bonds=.true.)
+
+    call add_property(at_copy, 'es_efield', 0.0_dp, n_cols=3, overwrite=.true., ptr2=es_efield,  error=error)
+    PASS_ERROR(error)
+    call add_property(at_copy, 'es_pot', 0.0_dp, overwrite=.true., ptr=es_pot, error=error)
+    PASS_ERROR(error)
+    call add_property(cluster, 'es_efield', 0.0_dp, n_cols=3, overwrite=.true., ptr2=cluster_es_efield, error=error)
+    PASS_ERROR(error)
+    call add_property(cluster, 'es_pot', 0.0_dp, overwrite=.true., ptr=cluster_es_pot, error=error)
+    PASS_ERROR(error)
+
+    call calc(this, at_copy, args_str=trim(args_str)//' efield=es_efield local_energy=es_pot atom_mask_name=atom_mask source_mask_name=source_mask', error=error)
+    PASS_ERROR(error)
+
+    ! Electrostatic potential at ion positions is 2*local_energy/charge
+    cluster_es_pot = 2.0_dp*es_pot(select_n+1:at_copy%n)/cluster_charge
+    cluster_es_efield = es_efield(:,select_n+1:at_copy%n)
+    
     deallocate(select_mask)
     deallocate(lookup,z)
-    call system_timer('calc_electrostatic_potential_grid')
-
-  end subroutine calc_electrostatic_potential_grid
-
-
-  subroutine calc_electrostatic_potential(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
-    type(Potential), intent(inout) :: this
-    type(Atoms), intent(inout) :: at
-    character(len=*), intent(in) :: args_str, mark_name
-    integer, intent(in) :: ngrid(3)
-    real(dp), intent(in) :: origin(3), extent(3)
-    real(dp), intent(inout) :: real_grid(:,:), pot(:,:,:)
-    integer, optional, intent(out) :: error
-
-    INIT_ERROR(error)
-
-    call calc_electrostatic_potential_grid(this, at, mark_name, ngrid, origin, extent, real_grid, pot, args_str, error)
-    PASS_ERROR(error)
-
-    call calc_electrostatic_potential_ions(this, at, mark_name, args_str, error)
-    PASS_ERROR(error)
+    call finalise(at_copy)
+    call system_timer('calc_electrostatic_potential')
 
   end subroutine calc_electrostatic_potential
 
