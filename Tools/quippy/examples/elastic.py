@@ -67,9 +67,9 @@ print (c*GPA).round(decimals=3)
 print
 
 if len(sys.argv[1:]) == 1:
-   a = Atoms(sys.argv[1])
-   elastic_fields(a, a.lattice[1,1], c[1,1], c[1,2], c[4,4])
-   a.show('Sig_xx')
+   b = Atoms(sys.argv[1])
+   elastic_fields(b, a.lattice[1,1], c[1,1], c[1,2], c[4,4])
+   b.show('Sig_xx')
 else:
    print 'Usage: elastic.py <input file>'
 
