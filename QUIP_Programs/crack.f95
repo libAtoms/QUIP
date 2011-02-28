@@ -1266,9 +1266,13 @@ program crack
 
      if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
         call crack_update_connect(ds%atoms, params)
+        if (params%simulation_classical) then
+           call crack_find_tip(ds%atoms, params, crack_tips)
+        else
+           call crack_update_selection(ds%atoms, params)
+        end if
         call crack_print(ds%atoms, movie, params)
      end if
-
 
      !****************************************************************
      !*                                                              *
