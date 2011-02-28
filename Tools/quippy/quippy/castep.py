@@ -1175,7 +1175,6 @@ class CastepPotential(Potential):
 
       self.castep_exec = castep_exec
       self.stem = stem
-      self.n = 0
       self.test_mode = test_mode
 
    def run(self, at):
@@ -1191,9 +1190,10 @@ class CastepPotential(Potential):
          param = CastepParam()
       param.update_from_atoms(at)
 
+      n = 0
       while True:
-         stem = '%s_%05d' % (self.stem, self.n)
-         self.n += 1
+         stem = '%s_%05d' % (self.stem, n)
+         n += 1
          if not os.path.exists(stem+'.castep'): break
 
       run_castep(cell, param, stem, self.castep_exec, test_mode=self.test_mode)
@@ -1206,7 +1206,7 @@ class CastepPotential(Potential):
 
       # Energy and force
       at.params['energy'] = float(result.energy)
-      at.add_property('force', result.force)
+      at.add_property('force', result.force, overwrite=True)
 
       # Virial stress tensor
       if hasattr(result, 'virial'):
@@ -1217,7 +1217,7 @@ class CastepPotential(Potential):
       # Add popn_calculate output
       for k in result.properties.keys():
          if k.startswith('popn_'):
-            at.add_property(k, getattr(result, k))
+            at.add_property(k, getattr(result, k), overwrite=True)
 
 
 def read_formatted_potential(filename):
