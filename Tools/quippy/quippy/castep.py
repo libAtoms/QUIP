@@ -152,7 +152,7 @@ valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'chec
                              'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step', 'pspot_beta_phi_type', 
                              'grid_scale', 'fine_grid_scale', 'fine_gmax', 
                              'mix_charge_gmax', 'mix_spin_gmax', 'devel_code',
-                             'max_scf_cycles_dm', 'max_scf_cycles_edft', 'extcharge_file']
+                             'max_scf_cycles_dm', 'max_scf_cycles_edft', 'extpot_file']
 
 class CastepCell(OrderedDict):
    """Class to wrap a CASTEP cell (.cell) file"""
@@ -854,26 +854,18 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
 
       # Have we calculated stress?
       got_virial = False
-      try:
-         for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
-            stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
-            if stress_start_lines != []: break
+      for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
+         stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
+         if stress_start_lines != []: break
 
-         if stress_start_lines == []:
-            raise ValueError
-
+      if stress_start_lines != []:
          stress_start = stress_start_lines[-1]
          stress_lines = castep_output[stress_start+6:stress_start+9]
          virial = fzeros((3,3),float)
          for i, line in fenumerate(stress_lines):
             star1, label, vx, vy, vz, star2 = line.split()
             virial[:,i] = [-float(v) for v in (vx,vy,vz) ]
-
          got_virial = True
-
-      except ValueError:
-         if abort:
-            raise ValueError('No stress tensor found in .castep file')
 
       spin_polarised = 'spin_polarised' in param and param['spin_polarised']
 
