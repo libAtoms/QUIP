@@ -71,6 +71,7 @@ p.add_option('-u', '--update', action='store_true', help="""Update a previous mo
 p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
 p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
 p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
+p.add_option('-R', '--rcut', action='append', help="""Following three arguments should be SYM1 SYM2 INCREMENT, to increment cutoff distance for SYM1-SYM2 bonds.""", nargs=3)
 
 opt, args = p.parse_args()
 
@@ -149,6 +150,10 @@ view.show(a0, property=opt.property, arrows=opt.arrows)
 if opt.load_view is not None:
    view.run_script(opt.load_view)
    view.redraw()
+
+if opt.rcut is not None:
+   for (sym1, sym2, rcut) in opt.rcut:
+      view.rcut_patch(sym1, sym2, float(rcut))
 
 if opt.width is not None or opt.height is not None:
    print 'width', opt.width, 'height', opt.height, 'aspect', opt.aspect
