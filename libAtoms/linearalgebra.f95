@@ -346,12 +346,6 @@ module linearalgebra_module
      module procedure find_in_array_element_i, find_in_array_element_s, find_in_array_row
   end interface
 
-  !% Search a sorted array by element
-  private :: find_in_sorted_array_element_i
-  interface find_in_sorted_array
-     module procedure find_in_sorted_array_element_i
-  endinterface
-
   !% Root-mean-square difference calculation for components of two vectors or arrays.
   private :: rms_diff1, rms_diff2
   interface rms_diff
@@ -4597,53 +4591,6 @@ CONTAINS
      ! not found
      n = 0
    end function find_in_array_row
-
-
-   !% Find element in a sorted array, O(log N)
-   pure function find_in_sorted_array_element_i(this, val) result(n)
-     integer,               intent(in)  :: val
-     integer, dimension(:), intent(in)  :: this
-     integer                            :: n
-
-     ! ---
-
-     integer   :: i, j, k
-     real(DP)  :: ti, tj, tk
-
-     ! ---
-
-     n = -1
-
-     i = 1
-     j = size(this)
-
-     if (val < this(i))  return
-     if (val > this(j))  return
-
-     k  = (i+j)/2
-     tk = this(k)
-     do while (tk /= val .and. i <= j)
-        ti = this(i)
-        tj = this(j)
-
-        ! List not sorted: Should we cast an error here?!?
-        if (tj < ti)   return
-
-        k  = (i+j)/2
-        tk = this(k)
-
-        if (val > tk) then
-           i = k+1
-        else
-           j = k-1
-        endif
-     enddo
-
-     if (tk == val) then
-        n = k
-     endif
-
-   endfunction find_in_sorted_array_element_i
 
 
    !% Return a copy of the integer array 'array' with duplicate
