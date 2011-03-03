@@ -852,6 +852,32 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          if abort:
             raise ValueError('No forces found in castep file %s: ' % m)
 
+      # Individual contributions to total force
+      for name,label in [('force_ewald', 'Ewald forces'),
+                         ('force_locpot', 'Local potential forces'),
+                         ('force_nlpot', 'Non-local potential forces'),
+                         ('force_extpot', 'External potential forces')]:
+         force_start_lines = [i for (i,s) in enumerate(castep_output) if s.find('****** %s ******' % label) != -1]
+         if force_start_lines == []: continue
+
+         # Use last set of forces
+         force_start = force_start_lines[-1]
+
+         # Extract force lines from .castep file
+         force_lines = castep_output[force_start+6:force_start+6+atoms.n]
+
+         # remove "cons" tags from constrained degrees of freedom
+         force_lines = [ s.replace("(cons' d)", "") for s in force_lines ]
+
+         atoms.add_property(name,0.0,overwrite=True,n_cols=3)
+
+         # Fill in the forces
+         for i, line in enumerate(force_lines):
+            line = line.replace('*','') # Remove the *s
+            el, num_str, fx, fy, fz = line.split()
+            num = int(num_str)
+            getattr(atoms, name)[:,lookup[(el,num)]] = (fx,fy,fz)
+
       # Have we calculated stress?
       got_virial = False
       for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
