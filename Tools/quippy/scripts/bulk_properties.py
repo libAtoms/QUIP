@@ -17,12 +17,12 @@ p.add_option('--at-file', action='store', help='Input file for primitive unit ce
 p.add_option('--init-args', action='store', help='Potential init_args, e.g. {IP SW}')
 p.add_option('--param-file', action='store', help='XML parameter filename')
 
-p.add_option('--relax-lattice', action='store_true', help='Relax lattice of initial structure')
-p.add_option('--cij-virial', action='store_true', help='Calculate elastic constants C_ij using virial')
+p.add_option('--relax-lattice', action='store_true', help='Relax lattice of initial structure', default=True)
+p.add_option('--cij-virial', action='store_true', help='Calculate elastic constants C_ij using virial', default=True)
 p.add_option('--cij-fit', action='store_true', help='Calculate elastic constants C_ij using fitting')
 p.add_option('--cij-symmetry', action='store', help='Symmetry name for C_ij fitting (default monoclinic)', default='monoclinic')
 
-p.add_option('--surface-energy', action='store_true', help='Calculate surface energy')
+p.add_option('--surface-energy', action='store_true', help='Calculate surface energy', default=True)
 p.add_option('--surface', action='store', help='Generate surface with given Miller indices (e.g. (111)[11b0])')
 p.add_option('--relax-surface', action='store_true', help='Calculate relaxed surface energy')
 p.add_option('--at-bulk', action='store', help='Input file for bulk cell')
@@ -99,7 +99,7 @@ try:
         if opt.surface:
             axes = crack_parse_name(opt.surface)
             m = crack_rotation_matrix(at, axes[:,2], axes[:,3])
-            bulk = orthorhombic_slab(at, rot=m, verbose=True)
+            bulk = orthorhombic_slab(at, rot=m, verbose=False)
 
             surface = bulk.copy()
             surface.lattice[2,2] = surface.lattice[2,2] + 10.0
