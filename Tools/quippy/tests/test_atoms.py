@@ -504,6 +504,8 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_eq2(self):
       d = diamond(self.a, 14)
       d.params.update(self.at.params)
+      d.set_cutoff(5.0)      
+      d.nneightol = 1.4
       self.assertEqual(d, self.at)
 
    def test_eq3(self):
