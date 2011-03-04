@@ -277,7 +277,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
   real(dp) :: target_vol, target_B, r_scale, vol, B
-  character(len=STRING_LENGTH) :: my_args_str
+  character(len=STRING_LENGTH) :: my_args_str, init_args_str
   type(Atoms) :: bulk
   integer :: it
 
@@ -286,36 +286,36 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call finalise(this)
 
   call initialise(params)
-  call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="Label in xml file Potential stanza to match")
   if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)
 
+  my_args_str = ""
   if(has_xml_label) then
      call Potential_read_params_xml(this, param_str)
      my_args_str = trim(this%xml_init_args)
-  else
-     my_args_str = trim(args_str)
   endif
+  my_args_str = trim(my_args_str) // " " // trim(args_str)
 
   call initialise(params)
-  call param_register(params, 'init_args_pot1', '', this%init_args_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'init_args_pot2', '', this%init_args_pot2, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'Sum', 'false', this%is_sum, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'ForceMixing', 'false', this%is_forcemixing, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'EVB', 'false', this%is_evb, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'init_args_pot1', '', this%init_args_pot1, help_string="Argument string for initializing pot1 (for non-simple potentials")
+  call param_register(params, 'init_args_pot2', '', this%init_args_pot2, help_string="Argument string for initializing pot2 (for non-simple potentials")
+  call param_register(params, 'Sum', 'false', this%is_sum, help_string="Potential that's a sum of 2 other potentials")
+  call param_register(params, 'ForceMixing', 'false', this%is_forcemixing, help_string="Potential that's force-mixing of 2 other potentials")
+  call param_register(params, 'EVB', 'false', this%is_evb, help_string="Potential using empirical-valence bond to mix 2 other potentials")
 #ifdef HAVE_LOCAL_E_MIX
-  call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix, help_string="Potential that's local energy mixing of 2 other potentials")
 #endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
-  call param_register(params, 'ONIOM', 'false', this%is_oniom, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'ONIOM', 'false', this%is_oniom, help_string="Potential from ONIOM mixing of two other potential energies")
 #endif /* HAVE_ONIOM */
   call param_register(params, 'do_rescale_r', 'F', this%do_rescale_r, help_string="If true, rescale distances by factor r_scale.")
   call param_register(params, 'r_scale', '1.0', this%r_scale, has_value_target=has_r_scale, help_string="Recaling factor for distances. Default 1.0.")
   call param_register(params, 'do_rescale_E', 'F', this%do_rescale_E, help_string="If true, rescale energy by factor E_scale.")
   call param_register(params, 'E_scale', '1.0', this%E_scale, has_value_target=has_E_scale, help_string="Recaling factor for energy. Default 1.0.")
-  call param_register(params, "minimise_bulk", "F", minimise_bulk, help_string="If true, minimise bulk_scale when measuring eqm. volume and bulk modulus")
+  call param_register(params, "minimise_bulk", "F", minimise_bulk, help_string="If true, minimise bulk_scale structure before measuring eqm. volume and bulk modulus for rescaling")
   call param_register(params, "target_vol", "0.0", target_vol, has_value_target=has_target_vol, &
        help_string="Target volume per cell used if do_rescale_r=T Unit is A^3.")
   call param_register(params, "target_B", "0.0", target_B, has_value_target=has_target_B, &
@@ -568,20 +568,20 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
        if (at%use_uniform_cutoff) then
           if (at%cutoff < cutoff(this)) then
-             RAISE_ERROR('IP_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
+             RAISE_ERROR('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
           end if
        else
           ! Find effective cutoff 
           effective_cutoff = 0.0_dp
           do i = 1, at%N
              if (at%Z(i) < 1 .or. at%Z(i) > 116) then
-                RAISE_ERROR('IP_calc: bad atomic number i='//i//' z='//at%z(i), error)
+                RAISE_ERROR('Potential_calc: bad atomic number i='//i//' z='//at%z(i), error)
              end if
              if (ElementCovRad(at%Z(i)) > effective_cutoff) effective_cutoff = ElementCovRad(at%Z(i))
           end do
           effective_cutoff = (2.0_dp * effective_cutoff) * at%cutoff
           if (effective_cutoff < cutoff(this)) then
-             RAISE_ERROR('IP_calc: effective cutoff of Atoms object ('//effective_cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
+             RAISE_ERROR('Potential_calc: effective cutoff of Atoms object ('//effective_cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
           end if
        end if
     end if
