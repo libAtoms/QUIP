@@ -775,11 +775,11 @@ def wrap_get(name):
        if self._fpointer is None:
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
-           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
+           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name))
        res = self._elements[name][0](self._fpointer)
 
        if self._elements[name][2] == 'logical':
-           return res == QUIPPY_TRUE
+           return res != QUIPPY_FALSE
        else:
            return res
 
