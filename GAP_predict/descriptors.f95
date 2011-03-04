@@ -30,7 +30,8 @@ module descriptors_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   integer, parameter :: WATER_DIMER_D = 15
+   integer, parameter :: FOURIER_N_COMP = 10
+   integer, parameter :: WATER_DIMER_D = 2*FOURIER_N_COMP+1
 
    type real_3
         real(dp), dimension(3) :: x
@@ -3670,7 +3671,7 @@ module descriptors_module
        real(dp), intent(out), optional :: rOHout(8), rHHout(6)
        real(dp), intent(in) :: cutoff
        real(dp) :: rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6), &
-       fOH(8), fHH(6), dfOH(3,6,8), dfHH(3,6,6), &
+       fOH(FOURIER_N_COMP), fHH(FOURIER_N_COMP), dfOH(3,6,FOURIER_N_COMP), dfHH(3,6,FOURIER_N_COMP), &
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
        logical, parameter :: DO_FOURIER = .true.
@@ -3778,6 +3779,8 @@ module descriptors_module
 
           ! Fit gaussians to the distance distribution functions
 
+          call system_abort("Gaussian fit to water dimer distances is currently broken because the WATER_DIMER_D parameter is wrongly hardwired")
+
           if(present(vec) .or. present(dvec)) then
              fOH = 0.0_dp
              dfOH = 0.0_dp
@@ -3818,9 +3821,9 @@ module descriptors_module
           if(present(vec) .or. present(dvec)) then
              fOH = 0.0_dp
              dfOH = 0.0_dp
-             do i = 1, 8
+             do i = 1, FOURIER_N_COMP
                 arg = PI*i/cutoff
-                do j = 1, 8
+                do j = 1, FOURIER_N_COMP
                    arg_r = arg * rOH(j)
                    if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
                    if(present(dvec)) then
@@ -3833,9 +3836,9 @@ module descriptors_module
              
              fHH = 0.0_dp
              dfHH = 0.0_dp
-             do i = 1, 6
+             do i = 1, FOURIER_N_COMP
                 arg = PI*i/cutoff
-                do j = 1, 6
+                do j = 1, FOURIER_N_COMP
                    arg_r = arg * rHH(j)
                    if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
                    if(present(dvec)) then
@@ -3851,8 +3854,8 @@ module descriptors_module
 
        if (present(vec)) then
           vec(1) = distance_min_image(at, iAo, iBo)
-          vec(2:9) = fOH
-          vec(10:15) = fHH
+          vec(2:FOURIER_N_COMP+1) = fOH
+          vec(FOURIER_N_COMP+2:2*FOURIER_N_COMP+1) = fHH
        endif
 
        if (present(dvec)) then
@@ -3861,8 +3864,8 @@ module descriptors_module
           dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / distance_min_image(at, iAo, iBo)
           dvec(:,4,1) = - dvec(:,1,1)
 
-          dvec(:,:,2:9)   = dfOH
-          dvec(:,:,10:15) = dfHH
+          dvec(:,:,2:FOURIER_N_COMP+1)   = dfOH
+          dvec(:,:,FOURIER_N_COMP+2:2*FOURIER_N_COMP+1) = dfHH
        endif
 
        !! O--H vectors
