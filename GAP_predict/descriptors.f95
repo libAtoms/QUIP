@@ -3823,7 +3823,7 @@ module descriptors_module
              dfOH = 0.0_dp
              do i = 1, FOURIER_N_COMP
                 arg = PI*i/cutoff
-                do j = 1, FOURIER_N_COMP
+                do j = 1, 8
                    arg_r = arg * rOH(j)
                    if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
                    if(present(dvec)) then
@@ -3838,7 +3838,7 @@ module descriptors_module
              dfHH = 0.0_dp
              do i = 1, FOURIER_N_COMP
                 arg = PI*i/cutoff
-                do j = 1, FOURIER_N_COMP
+                do j = 1, 6
                    arg_r = arg * rHH(j)
                    if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
                    if(present(dvec)) then
