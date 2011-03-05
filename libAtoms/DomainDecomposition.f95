@@ -666,6 +666,10 @@ contains
     if (allocated(this%ghosts_r))         deallocate(this%ghosts_r)
     if (allocated(this%ghosts_l))         deallocate(this%ghosts_l)
 
+    if (allocated(this%atoms_mask))    deallocate(this%atoms_mask)
+    if (allocated(this%ghost_mask))    deallocate(this%ghost_mask)
+    if (allocated(this%reverse_mask))  deallocate(this%reverse_mask)
+
     if (this%n_send_p_tot > 0 .and. this%n_recv_p_tot > 0 .and. &
         this%n_send_g_tot > 0 .and. this%n_recv_g_tot > 0) then
        call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_VERBOSE)

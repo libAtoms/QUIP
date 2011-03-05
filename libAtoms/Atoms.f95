@@ -312,6 +312,15 @@ module  atoms_module
      module procedure atoms_shuffle
   endinterface
 
+  !% Neighbor list stuf
+  interface n_neighbours
+     module procedure atoms_n_neighbours
+  endinterface
+
+  interface neighbour
+     module procedure atoms_neighbour
+  endinterface
+
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -562,10 +571,11 @@ contains
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
 
-    ! We do not fail if from is unitialised, since overloaded operator routines
-    ! are outside scope of error handling mechanism.
+    ! We do not fail if *from* is unitialised, since overloaded operator
+    ! routines are outside scope of error handling mechanism.
     if(.not. is_initialised(from)) then
-       to%ref_count = 0
+       call finalise(to)
+!       to%ref_count = 0
        return
     end if
     
