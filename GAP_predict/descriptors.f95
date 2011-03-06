@@ -30,8 +30,9 @@ module descriptors_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   integer, parameter :: FOURIER_N_COMP = 10
-   integer, parameter :: WATER_DIMER_D = 2*FOURIER_N_COMP+1
+   integer, parameter :: FOURIER_N_COMP_OH = 12
+   integer, parameter :: FOURIER_N_COMP_HH = 12
+   integer, parameter :: WATER_DIMER_D = FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1
 
    type real_3
         real(dp), dimension(3) :: x
@@ -3671,7 +3672,7 @@ module descriptors_module
        real(dp), intent(out), optional :: rOHout(8), rHHout(6)
        real(dp), intent(in) :: cutoff
        real(dp) :: rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6), &
-       fOH(FOURIER_N_COMP), fHH(FOURIER_N_COMP), dfOH(3,6,FOURIER_N_COMP), dfHH(3,6,FOURIER_N_COMP), &
+       fOH(FOURIER_N_COMP_OH), fHH(FOURIER_N_COMP_HH), dfOH(3,6,FOURIER_N_COMP_OH), dfHH(3,6,FOURIER_N_COMP_HH), &
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
        logical, parameter :: DO_FOURIER = .true.
@@ -3821,7 +3822,7 @@ module descriptors_module
           if(present(vec) .or. present(dvec)) then
              fOH = 0.0_dp
              dfOH = 0.0_dp
-             do i = 1, FOURIER_N_COMP
+             do i = 1, FOURIER_N_COMP_OH
                 arg = PI*i/cutoff
                 do j = 1, 8
                    arg_r = arg * rOH(j)
@@ -3836,7 +3837,7 @@ module descriptors_module
              
              fHH = 0.0_dp
              dfHH = 0.0_dp
-             do i = 1, FOURIER_N_COMP
+             do i = 1, FOURIER_N_COMP_HH
                 arg = PI*i/cutoff
                 do j = 1, 6
                    arg_r = arg * rHH(j)
@@ -3854,8 +3855,8 @@ module descriptors_module
 
        if (present(vec)) then
           vec(1) = distance_min_image(at, iAo, iBo)
-          vec(2:FOURIER_N_COMP+1) = fOH
-          vec(FOURIER_N_COMP+2:2*FOURIER_N_COMP+1) = fHH
+          vec(2:FOURIER_N_COMP_OH+1) = fOH
+          vec(FOURIER_N_COMP_OH+2:FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1) = fHH
        endif
 
        if (present(dvec)) then
@@ -3864,8 +3865,8 @@ module descriptors_module
           dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / distance_min_image(at, iAo, iBo)
           dvec(:,4,1) = - dvec(:,1,1)
 
-          dvec(:,:,2:FOURIER_N_COMP+1)   = dfOH
-          dvec(:,:,FOURIER_N_COMP+2:2*FOURIER_N_COMP+1) = dfHH
+          dvec(:,:,2:FOURIER_N_COMP_OH+1)   = dfOH
+          dvec(:,:,FOURIER_N_COMP_OH+2:FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1) = dfHH
        endif
 
        !! O--H vectors
