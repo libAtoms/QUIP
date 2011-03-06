@@ -30,9 +30,9 @@ module descriptors_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   integer, parameter :: FOURIER_N_COMP_OH = 12
-   integer, parameter :: FOURIER_N_COMP_HH = 12
-   integer, parameter :: WATER_DIMER_D = FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1
+   integer, parameter :: WATER_DIMER_N_OH = 13
+   integer, parameter :: WATER_DIMER_N_HH = 10
+   integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
 
    type real_3
         real(dp), dimension(3) :: x
@@ -3672,16 +3672,18 @@ module descriptors_module
        real(dp), intent(out), optional :: rOHout(8), rHHout(6)
        real(dp), intent(in) :: cutoff
        real(dp) :: rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6), &
-       fOH(FOURIER_N_COMP_OH), fHH(FOURIER_N_COMP_HH), dfOH(3,6,FOURIER_N_COMP_OH), dfHH(3,6,FOURIER_N_COMP_HH), &
+       fOH(WATER_DIMER_N_OH), fHH(WATER_DIMER_N_HH), dfOH(3,6,WATER_DIMER_N_OH), dfHH(3,6,WATER_DIMER_N_HH), &
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
-       logical, parameter :: DO_FOURIER = .true.
+       logical, parameter :: DO_FOURIER = .false.
 
-       real(dp), dimension(8), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.90_dp, 2.50_dp, 3.25_dp, 4.00_dp/)
-       real(dp), dimension(8), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.4_dp, 0.4_dp, 0.4_dp/)**2
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.90_dp, 2.50_dp, 3.25_dp, 4.00_dp/)
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.4_dp, 0.4_dp, 0.4_dp/)**2
+       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.94_dp, 0.96_dp, 0.98_dp, 1.0_dp, 1.02_dp, 1.90_dp, 2.10_dp, 2.30_dp, 2.60_dp, 3.00_dp, 3.50_dp, 4.00_dp/)
+       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.125_dp, 0.2_dp, 0.4_dp, 0.5_dp, 0.5_dp, 0.5_dp/)**2
 
-       real(dp), dimension(6), parameter :: r0_HH = (/1.51_dp, 1.57_dp, 2.40_dp, 2.90_dp, 3.70_dp, 4.50_dp/)
-       real(dp), dimension(6), parameter :: sigma_HH = 1.0_dp / (/0.05_dp, 0.05_dp, 0.25_dp, 0.40_dp, 0.60_dp, 0.60_dp/)**2
+       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.45_dp, 1.52_dp, 1.60_dp, 1.75_dp, 1.90_dp, 2.40_dp, 2.90_dp, 3.50_dp, 4.00_dp, 4.50_dp/)
+       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.08_dp, 0.08_dp, 0.1_dp, 0.2_dp, 0.50_dp, 0.50_dp, 0.50_dp, 0.5_dp, 0.5_dp, 0.5_dp/)**2
 
        !real(dp) :: rA1, rA2, rB1, rB2
        !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
@@ -3780,12 +3782,10 @@ module descriptors_module
 
           ! Fit gaussians to the distance distribution functions
 
-          call system_abort("Gaussian fit to water dimer distances is currently broken because the WATER_DIMER_D parameter is wrongly hardwired")
-
           if(present(vec) .or. present(dvec)) then
              fOH = 0.0_dp
              dfOH = 0.0_dp
-             do i = 1, 8     ! basis function
+             do i = 1, WATER_DIMER_N_OH     ! basis function
                 do j = 1, 8  ! atom pair
                    arg_r = rOH(j) - r0_OH(i)
                    fOH_ij = exp( - 0.5_dp * arg_r**2 * sigma_OH(i) )
@@ -3800,7 +3800,7 @@ module descriptors_module
              
              fHH = 0.0_dp
              dfHH = 0.0_dp
-             do i = 1, 6     ! basis function
+             do i = 1, WATER_DIMER_N_HH     ! basis function
                 do j = 1, 6  ! atom pair
                    arg_r = rHH(j) - r0_HH(i)
                    fHH_ij = exp( - 0.5_dp * arg_r**2 * sigma_HH(i) )
@@ -3822,7 +3822,7 @@ module descriptors_module
           if(present(vec) .or. present(dvec)) then
              fOH = 0.0_dp
              dfOH = 0.0_dp
-             do i = 1, FOURIER_N_COMP_OH
+             do i = 1, WATER_DIMER_N_OH
                 arg = PI*i/cutoff
                 do j = 1, 8
                    arg_r = arg * rOH(j)
@@ -3837,7 +3837,7 @@ module descriptors_module
              
              fHH = 0.0_dp
              dfHH = 0.0_dp
-             do i = 1, FOURIER_N_COMP_HH
+             do i = 1, WATER_DIMER_N_HH
                 arg = PI*i/cutoff
                 do j = 1, 6
                    arg_r = arg * rHH(j)
@@ -3855,8 +3855,8 @@ module descriptors_module
 
        if (present(vec)) then
           vec(1) = distance_min_image(at, iAo, iBo)
-          vec(2:FOURIER_N_COMP_OH+1) = fOH
-          vec(FOURIER_N_COMP_OH+2:FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1) = fHH
+          vec(2:WATER_DIMER_N_OH+1) = fOH
+          vec(WATER_DIMER_N_OH+2:WATER_DIMER_N_OH+WATER_DIMER_N_HH+1) = fHH
        endif
 
        if (present(dvec)) then
@@ -3865,8 +3865,8 @@ module descriptors_module
           dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / distance_min_image(at, iAo, iBo)
           dvec(:,4,1) = - dvec(:,1,1)
 
-          dvec(:,:,2:FOURIER_N_COMP_OH+1)   = dfOH
-          dvec(:,:,FOURIER_N_COMP_OH+2:FOURIER_N_COMP_OH+FOURIER_N_COMP_HH+1) = dfHH
+          dvec(:,:,2:WATER_DIMER_N_OH+1)   = dfOH
+          dvec(:,:,WATER_DIMER_N_OH+2:WATER_DIMER_N_OH+WATER_DIMER_N_HH+1) = dfHH
        endif
 
        !! O--H vectors
