@@ -288,7 +288,7 @@ contains
   subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
-    type(Atoms), target, intent(inout) :: at
+    type(Atoms), target, intent(out) :: at
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
