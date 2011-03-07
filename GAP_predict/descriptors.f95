@@ -3848,7 +3848,7 @@ module descriptors_module
              do i = 1, WATER_DIMER_N_OH
                 arg = PI*i/cutoff
                 do j = 1, 8
-                   arg_r = arg * water_dimer_space_warp_oh(rOH(j))
+                   arg_r = arg * (rOH(j) + water_dimer_space_warp_oh(rOH(j)))
                    if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
                    if(present(dvec)) then
                       do k = 1, 6
@@ -3863,7 +3863,7 @@ module descriptors_module
              do i = 1, WATER_DIMER_N_HH
                 arg = PI*i/cutoff
                 do j = 1, 6
-                   arg_r = arg * water_dimer_space_warp_hh(rHH(j))
+                   arg_r = arg * (rHH(j) + water_dimer_space_warp_hh(rHH(j)))
                    if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
                    if(present(dvec)) then
                       do k = 1, 6
