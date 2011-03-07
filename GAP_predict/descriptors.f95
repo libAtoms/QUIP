@@ -30,8 +30,8 @@ module descriptors_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   integer, parameter :: WATER_DIMER_N_OH = 13
-   integer, parameter :: WATER_DIMER_N_HH = 10
+   integer, parameter :: WATER_DIMER_N_OH = 15
+   integer, parameter :: WATER_DIMER_N_HH = 12
    integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
 
    type real_3
@@ -3679,11 +3679,13 @@ module descriptors_module
 
 !       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.90_dp, 2.50_dp, 3.25_dp, 4.00_dp/)
 !       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.4_dp, 0.4_dp, 0.4_dp/)**2
-       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.94_dp, 0.96_dp, 0.98_dp, 1.0_dp, 1.02_dp, 1.90_dp, 2.10_dp, 2.30_dp, 2.60_dp, 3.00_dp, 3.50_dp, 4.00_dp/)
-       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.125_dp, 0.2_dp, 0.4_dp, 0.5_dp, 0.5_dp, 0.5_dp/)**2
+       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.8_dp, 0.85_dp, 0.90_dp, 0.95_dp, 1.0_dp, 1.05_dp, 1.1_dp, 1.50_dp, 2.0_dp, 2.50_dp, 3.0_dp, 3.5_dp, 4.00_dp, 4.50_dp, 5.0_dp/)
+       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.94_dp, 0.96_dp, 0.98_dp, 1.0_dp, 1.02_dp, 1.90_dp, 2.10_dp, 2.30_dp, 2.60_dp/)
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.125_dp, 0.2_dp, 0.4_dp/)**2
 
-       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.45_dp, 1.52_dp, 1.60_dp, 1.75_dp, 1.90_dp, 2.40_dp, 2.90_dp, 3.50_dp, 4.00_dp, 4.50_dp/)
-       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.08_dp, 0.08_dp, 0.1_dp, 0.2_dp, 0.50_dp, 0.50_dp, 0.50_dp, 0.5_dp, 0.5_dp, 0.5_dp/)**2
+       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.3_dp, 1.4_dp, 1.50_dp, 1.6_dp, 1.70_dp, 2.0_dp, 2.70_dp, 3.40_dp, 4.3_dp, 5.00_dp, 5.70_dp, 6.4_dp/)
+       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.30_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
 
        !real(dp) :: rA1, rA2, rB1, rB2
        !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
