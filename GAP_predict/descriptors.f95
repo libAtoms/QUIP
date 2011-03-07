@@ -3673,7 +3673,7 @@ module descriptors_module
      pure function water_dimer_space_warp_deriv_oh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_deriv_oh
-       water_dimer_space_warp_deriv_oh = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)*0.05_dp
+       water_dimer_space_warp_deriv_oh = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)/0.05_dp
      end function water_dimer_space_warp_deriv_oh
 
      function water_dimer_space_warp_hh(r)
@@ -3685,7 +3685,7 @@ module descriptors_module
      function water_dimer_space_warp_deriv_hh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_deriv_hh
-       water_dimer_space_warp_deriv_hh = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)*0.2_dp
+       water_dimer_space_warp_deriv_hh = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)/0.2_dp
      end function water_dimer_space_warp_deriv_hh
 
      subroutine water_dimer(at,w1,w2,cutoff, vec, dvec, rOHout, rHHout)
