@@ -1167,7 +1167,7 @@ contains
      real(dp), intent(in)      :: mass, velo(3)
      real(dp), dimension(3,3)  :: kv
 
-     kv = 0.5_dp*mass * (velo .outer. velo)
+     kv = mass * (velo .outer. velo)
    end function single_kinetic_virial
 
    !% Return the total kinetic virial given atomic masses and velocities
@@ -1176,7 +1176,7 @@ contains
      real(dp), intent(in)      :: velo(:,:)
      real(dp), dimension(3,3)  :: kv
 
-     kv = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
+     kv = matmul(velo*spread(mass,dim=1,ncopies=3),transpose(velo))
    end function arrays_kinetic_virial
 
    pure function torque(pos, force, origin) result(tau)
