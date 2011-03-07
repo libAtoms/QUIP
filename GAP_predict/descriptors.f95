@@ -30,7 +30,7 @@ module descriptors_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   integer, parameter :: WATER_DIMER_N_OH = 15
+   integer, parameter :: WATER_DIMER_N_OH = 12
    integer, parameter :: WATER_DIMER_N_HH = 12
    integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
 
@@ -3846,7 +3846,7 @@ module descriptors_module
              fOH = 0.0_dp
              dfOH = 0.0_dp
              do i = 1, WATER_DIMER_N_OH
-                arg = PI*i/cutoff
+                arg = PI*i/(cutoff+water_dimer_space_warp_oh(cutoff))
                 do j = 1, 8
                    arg_r = arg * (rOH(j) + water_dimer_space_warp_oh(rOH(j)))
                    if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
@@ -3861,13 +3861,13 @@ module descriptors_module
              fHH = 0.0_dp
              dfHH = 0.0_dp
              do i = 1, WATER_DIMER_N_HH
-                arg = PI*i/cutoff
+                arg = PI*i/(cutoff+water_dimer_space_warp_hh(cutoff))
                 do j = 1, 6
                    arg_r = arg * (rHH(j) + water_dimer_space_warp_hh(rHH(j)))
                    if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
                    if(present(dvec)) then
                       do k = 1, 6
-                         dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j) * (1.0_dp+water_dimer_space_Warp_deriv_hh(rHH(j)))
+                         dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j) * (1.0_dp+water_dimer_space_warp_deriv_hh(rHH(j)))
                       enddo
                    endif
                 enddo
