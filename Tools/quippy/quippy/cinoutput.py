@@ -16,7 +16,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import FortranCInOutput, INPUT, OUTPUT, INOUT, AtomsReaders, AtomsWriters, atoms_reader
+from quippy import FortranCInOutput, INPUT, OUTPUT, INOUT, AtomsReaders, AtomsWriters, atoms_reader, Atoms
 from farray import farray, padded_str_array
 from quippy import netcdf_file
 
@@ -41,6 +41,14 @@ class CInOutput(FortranCInOutput):
 
    def __setitem__(self, index, value):
       self.write(value, frame=index)
+
+   def read(self, properties=None, properties_array=None, frame=None,
+            zero=None, range=None, str=None, estr=None):
+      at = Atoms()
+      FortranCInOutput.read(self, at, properties=properties,
+                            properties_array=properties_array, frame=frame,
+                            zero=zero, range=range, str=str, estr=estr)
+      return at
 
    def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
              shuffle=None, deflate=None, deflate_level=None, estr=None, update_index=None):
