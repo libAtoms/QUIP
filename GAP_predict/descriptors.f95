@@ -3664,6 +3664,30 @@ module descriptors_module
 
      end function water_monomer
 
+     pure function water_dimer_space_warp_oh(r) result rr
+       real(dp), intent(in)  :: r
+       real(dp), intent(out) :: rr
+       rr = 2.0_dp*(1.0_dp+tanh((r-0.95_dp)/0.05_dp))
+     end function water_dimer_space_warp_oh
+
+     pure function water_dimer_space_warp_deriv_oh(r) result rr
+       real(dp), intent(in)  :: r
+       real(dp), intent(out) :: rr
+       rr = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)*0.05_dp
+     end function water_dimer_space_warp_deriv_oh
+
+     pure function water_dimer_space_warp_hh(r) result rr
+       real(dp), intent(in)  :: r
+       real(dp), intent(out) :: rr
+       rr = 3.0_dp*(1.0_dp+tanh((r-1.5_dp)/0.2_dp))
+     end function water_dimer_space_warp_hh
+
+     pure function water_dimer_space_warp_deriv_hh(r) result rr
+       real(dp), intent(in)  :: r
+       real(dp), intent(out) :: rr
+       rr = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)*0.2_dp
+     end function water_dimer_space_warp_deriv_hh
+
      subroutine water_dimer(at,w1,w2,cutoff, vec, dvec, rOHout, rHHout)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
@@ -3675,17 +3699,14 @@ module descriptors_module
        fOH(WATER_DIMER_N_OH), fHH(WATER_DIMER_N_HH), dfOH(3,6,WATER_DIMER_N_OH), dfHH(3,6,WATER_DIMER_N_HH), &
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
-       logical, parameter :: DO_FOURIER = .false.
+       logical, parameter :: DO_FOURIER = .true.
+       logical, parameter :: DO_WARP = .true.
 
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.95_dp, 0.98_dp, 1.01_dp, 1.90_dp, 2.50_dp, 3.25_dp, 4.00_dp/)
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.4_dp, 0.4_dp, 0.4_dp/)**2
-       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.8_dp, 0.85_dp, 0.90_dp, 0.95_dp, 1.0_dp, 1.05_dp, 1.1_dp, 1.50_dp, 2.0_dp, 2.50_dp, 3.0_dp, 3.5_dp, 4.00_dp, 4.50_dp, 5.0_dp/)
-       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.92_dp, 0.94_dp, 0.96_dp, 0.98_dp, 1.0_dp, 1.02_dp, 1.90_dp, 2.10_dp, 2.30_dp, 2.60_dp/)
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.015_dp, 0.125_dp, 0.125_dp, 0.2_dp, 0.4_dp/)**2
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.8_dp, 0.85_dp, 0.90_dp, 0.95_dp, 1.0_dp, 1.05_dp, 1.1_dp, 1.50_dp, 2.0_dp, 2.50_dp, 3.0_dp, 3.5_dp, 4.00_dp, 4.50_dp, 5.0_dp/)
+!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
 
-       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.3_dp, 1.4_dp, 1.50_dp, 1.6_dp, 1.70_dp, 2.0_dp, 2.70_dp, 3.40_dp, 4.3_dp, 5.00_dp, 5.70_dp, 6.4_dp/)
-       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.30_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
+!       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.3_dp, 1.4_dp, 1.50_dp, 1.6_dp, 1.70_dp, 2.0_dp, 2.70_dp, 3.40_dp, 4.3_dp, 5.00_dp, 5.70_dp, 6.4_dp/)
+!       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.30_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
 
        !real(dp) :: rA1, rA2, rB1, rB2
        !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
@@ -3789,12 +3810,12 @@ module descriptors_module
              dfOH = 0.0_dp
              do i = 1, WATER_DIMER_N_OH     ! basis function
                 do j = 1, 8  ! atom pair
-                   arg_r = rOH(j) - r0_OH(i)
-                   fOH_ij = exp( - 0.5_dp * arg_r**2 * sigma_OH(i) )
-                   if(present(vec)) fOH(i) = fOH(i) + fOH_ij
-                   if(present(dvec)) then
-                      do k = 1, 6
-                         dfOH(:,k,i) = dfOH(:,k,i) - arg_r * sigma_OH(i) * fOH_ij * drOH(:,k,j)
+!                   arg_r = rOH(j) - r0_OH(i)
+!                   fOH_ij = exp( - 0.5_dp * arg_r**2 * sigma_OH(i) )
+!                   if(present(vec)) fOH(i) = fOH(i) + fOH_ij
+!                   if(present(dvec)) then
+!                      do k = 1, 6
+!                         dfOH(:,k,i) = dfOH(:,k,i) - arg_r * sigma_OH(i) * fOH_ij * drOH(:,k,j)
                       enddo
                    endif
                 enddo
@@ -3804,12 +3825,12 @@ module descriptors_module
              dfHH = 0.0_dp
              do i = 1, WATER_DIMER_N_HH     ! basis function
                 do j = 1, 6  ! atom pair
-                   arg_r = rHH(j) - r0_HH(i)
-                   fHH_ij = exp( - 0.5_dp * arg_r**2 * sigma_HH(i) )
-                   if(present(vec)) fHH(i) = fHH(i) + fHH_ij
-                   if(present(dvec)) then
-                      do k = 1, 6
-                         dfHH(:,k,i) = dfHH(:,k,i) - arg_r * sigma_HH(i) * fHH_ij * drHH(:,k,j)
+!                   arg_r = rHH(j) - r0_HH(i)
+!                   fHH_ij = exp( - 0.5_dp * arg_r**2 * sigma_HH(i) )
+!                   if(present(vec)) fHH(i) = fHH(i) + fHH_ij
+!                   if(present(dvec)) then
+!                      do k = 1, 6
+!                         dfHH(:,k,i) = dfHH(:,k,i) - arg_r * sigma_HH(i) * fHH_ij * drHH(:,k,j)
                       enddo
                    endif
                 enddo
@@ -3827,11 +3848,11 @@ module descriptors_module
              do i = 1, WATER_DIMER_N_OH
                 arg = PI*i/cutoff
                 do j = 1, 8
-                   arg_r = arg * rOH(j)
+                   arg_r = arg * water_dimer_space_warp_oh(rOH(j))
                    if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
                    if(present(dvec)) then
                       do k = 1, 6
-                         dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j)
+                         dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j) * (1.0_dp + water_dimer_space_warp_deriv_oh(rOH(j)))
                       enddo
                    endif
                 enddo
@@ -3842,11 +3863,11 @@ module descriptors_module
              do i = 1, WATER_DIMER_N_HH
                 arg = PI*i/cutoff
                 do j = 1, 6
-                   arg_r = arg * rHH(j)
+                   arg_r = arg * water_dimer_space_warp_hh(rHH(j))
                    if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
                    if(present(dvec)) then
                       do k = 1, 6
-                         dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j)
+                         dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j) * (1.0_dp+water_dimer_space_Warp_deriv_hh(rHH(j))
                       enddo
                    endif
                 enddo
