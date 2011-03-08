@@ -33,6 +33,7 @@ module descriptors_module
    integer, parameter :: WATER_DIMER_N_OH = 12
    integer, parameter :: WATER_DIMER_N_HH = 12
    integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
+   logical, parameter :: DO_FOURIER_WARP = .true.
 
    type real_3
         real(dp), dimension(3) :: x
@@ -3667,25 +3668,41 @@ module descriptors_module
      pure function water_dimer_space_warp_oh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_oh
-       water_dimer_space_warp_oh = 2.0_dp*(1.0_dp+tanh((r-0.95_dp)/0.05_dp))
+       if(DO_FOURIER_WARP .eqv. .true.) then
+          water_dimer_space_warp_oh = 2.0_dp*(1.0_dp+tanh((r-0.95_dp)/0.05_dp))
+       else
+          water_dimer_space_warp_oh = 0.0_dp
+       end if
      end function water_dimer_space_warp_oh
 
      pure function water_dimer_space_warp_deriv_oh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_deriv_oh
-       water_dimer_space_warp_deriv_oh = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)/0.05_dp
+       if(DO_FOURIER_WARP .eqv. .true.) then
+          water_dimer_space_warp_deriv_oh = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)/0.05_dp
+       else
+          water_dimer_space_warp_deriv_oh = 0.0_dp
+       end if
      end function water_dimer_space_warp_deriv_oh
 
      function water_dimer_space_warp_hh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_hh
-       water_dimer_space_warp_hh = 3.0_dp*(1.0_dp+tanh((r-1.5_dp)/0.2_dp))
+       if(DO_FOURIER_WARP .eqv. .true.) then
+          water_dimer_space_warp_hh = 3.0_dp*(1.0_dp+tanh((r-1.5_dp)/0.2_dp))
+       else
+          water_dimer_space_warp_hh = 0.0_dp
+       end if
      end function water_dimer_space_warp_hh
 
      function water_dimer_space_warp_deriv_hh(r)
        real(dp), intent(in)  :: r
        real(dp) :: water_dimer_space_warp_deriv_hh
-       water_dimer_space_warp_deriv_hh = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)/0.2_dp
+       if(DO_FOURIER_WARP .eqv. .true.) then
+          water_dimer_space_warp_deriv_hh = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)/0.2_dp
+       else
+          water_dimer_space_warp_deriv_hh = 0.0_dp
+       end if
      end function water_dimer_space_warp_deriv_hh
 
      subroutine water_dimer(at,w1,w2,cutoff, vec, dvec, rOHout, rHHout)
@@ -3700,7 +3717,6 @@ module descriptors_module
        arg, arg_r, fOH_ij, fHH_ij
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
        logical, parameter :: DO_FOURIER = .true.
-       logical, parameter :: DO_WARP = .true.
 
 !       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.8_dp, 0.85_dp, 0.90_dp, 0.95_dp, 1.0_dp, 1.05_dp, 1.1_dp, 1.50_dp, 2.0_dp, 2.50_dp, 3.0_dp, 3.5_dp, 4.00_dp, 4.50_dp, 5.0_dp/)
 !       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
