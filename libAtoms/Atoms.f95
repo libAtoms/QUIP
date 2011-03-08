@@ -2597,7 +2597,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
    subroutine atoms_print(this,file,error)
-      type(Atoms),    intent(inout)             :: this
+      type(Atoms),    intent(in)             :: this
       type(Inoutput), intent(inout),optional, target :: file
       integer, intent(out), optional :: error
 
