@@ -28,14 +28,16 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-.SUFFIXES: .c .h .f .f95 .fpp
+.SUFFIXES: .c .h .f .f95 .f90 .fpp
 
 FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
+FX_LIB = -lfx
 NETCDF_LIBS =  -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
 MDCORE_LIBS = -lmdcore
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
+
 
 ifndef AR
 	AR = ar
@@ -56,7 +58,7 @@ F77FLAGS += ${INCLUDES} ${OPTIM} ${DEBUG} ${DEFINES}
 CPLUSPLUSFLAGS += ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} 
 CFLAGS += ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} 
 
-SYSLIBS += -L${FOX_LIBDIR} ${FOX_LIBS}
+SYSLIBS += -L${FOX_LIBDIR} ${FOX_LIBS} ${FX_LIB}
 INCLUDES += -I${QUIP_ROOT}/libAtoms -I${FOX_INCDIR}
 
 ifeq (${HAVE_NETCDF},1)
@@ -131,6 +133,9 @@ LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS}
 	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@
 
 .f95.o:
+	${F95}  ${F95FLAGS} -c ${F95_PRE_FILENAME_FLAG} $< -o $@
+
+.f90.o:
 	${F95}  ${F95FLAGS} -c ${F95_PRE_FILENAME_FLAG} $< -o $@
 
 FPP_PRE_TARGET_STRING ?= >
