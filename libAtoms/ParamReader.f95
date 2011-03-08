@@ -727,7 +727,7 @@ module paramreader_module
               call system_abort('param_print: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
 
-	 out_line="parameter "//string(dict%keys(i)//" type=")
+	 out_line=string(dict%keys(i)//" type=")
 
 	 param_dim_str = "unknown"
 	 select case(entry%param_type)
