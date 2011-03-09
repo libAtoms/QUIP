@@ -212,7 +212,7 @@ diff --new-file -u -r1.41 topology_exyz.F
 +          CALL reallocate(atom_info%beta,          1,    natom)
 +          CALL reallocate(atom_info%id_element,       1,    natom)
 +       ELSE IF(natom > SIZE(atom_info%id_atmname)) THEN
-+          CALL stop_program (routineP,&
++          CALL stop_program (routineN,moduleN,__LINE__,&
 +               "Atom number differs in different frames!")
 +       END IF
 +
@@ -257,7 +257,7 @@ diff --new-file -u -r1.41 topology_exyz.F
 +           WRITE(my_default_index,'(I0)') at%Z(j)   
 +           atom_info%id_atmname(j) = str2id(s2s(trim(my_default_index)))
 +         else
-+           CALL stop_program (routineP,&
++           CALL stop_program (routineN,moduleN,__LINE__,&
 +               "read_coordinate_exyz couldn't find atmname, species, or Z property")
 +         endif
 +
@@ -265,7 +265,7 @@ diff --new-file -u -r1.41 topology_exyz.F
 +         if (associated(at%pos)) then
 +           atom_info%r(:,j) = at%pos(:,j)
 +         else
-+           CALL stop_program (routineP,&
++           CALL stop_program (routineN,moduleN,__LINE__,&
 +               "read_coordinate_exyz couldn't find pos property")
 +         endif
 +         if (associated(molname)) then
@@ -291,7 +291,7 @@ diff --new-file -u -r1.41 topology_exyz.F
 +           WRITE(my_default_index,'(I0)') at%Z(j)   
 +           atom_info%id_element(j) = str2id(s2s(trim(my_default_index)))
 +         else
-+           CALL stop_program (routineP,&
++           CALL stop_program (routineN,moduleN,__LINE__,&
 +               "read_coordinate_exyz couldn't find element, species, or Z property")
 +         endif
 +         if (associated(atm_mass)) then
