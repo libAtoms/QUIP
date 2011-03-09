@@ -2,14 +2,18 @@ Patches tested against CP2K cvs version 21 April 2010 (NB).
 
 Most robust forms for applying the changes are in
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
-  cp2k_exyz.patch (enables CP2K reading of our extended xyz format, needed for current version of cp2k_driver)
-    verified to be compatible with cp2k data structures as of 15 Dec 2010.
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
   cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs)
 
   cp2k_silica.patch (CV: Silica potential)
 
-  cp2k_topology_pdb.F.patch.OUTDATED (OUTDATED, don't use if you enable exyz reading, which is more accurate and only supported way right now)
+  cp2k_exyz.patch.OUTDATED (OUTDATED, no need for EXYZ reading anyway, all additional
+    information (beyond plain XYZ) is transmitted via CELL section and PSF file.
+    Enables CP2K reading of our extended xyz format.)
+    verified to be compatible with cp2k data structures as of 15 Dec 2010.
+  cp2k_topology_pdb.F.patch.OUTDATED (OUTDATED, don't use if you enable exyz reading, which is more 
+    accurate and only supported way right now)
+
 Use them by going to the CP2K cp2k/src directory, and running
   patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/cp2k_motion_utils.F.patch
   patch -l -F 4 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch 
