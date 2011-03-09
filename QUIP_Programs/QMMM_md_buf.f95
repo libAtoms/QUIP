@@ -175,7 +175,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'IO_Rate', '1', IO_Rate, help_string="Frequency of output printing (every IO_Rate steps).")
       call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Thermostat_7_rs', '0.0 0.0', Thermostat_7_rs, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print, help_string="when to print PSF file: NO_PSF, EVERY_#, DRIVER_PRINT_AT_0")
+      call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print, help_string="when to print PSF file: NO_PSF, EVERY_#, DRIVER_PRINT_AT_0, USE_EXISTING_PSF")
       call param_register(params_in, 'Time_Step', '0.5', Time_Step, help_string="Time step in fs.")
       call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time, help_string="Equilibration time in fs.")
       call param_register(params_in, 'Run_Time', '0.5', Run_Time, help_string="Run time in fs.")
