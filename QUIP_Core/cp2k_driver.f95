@@ -687,7 +687,7 @@ contains
 
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&TOPOLOGY")
     call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORD_FILE_NAME quip_cp2k.xyz", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE EXYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE XYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
       if (tmp_run_dir_i>0) then
         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_cp2k"//trim(topology_suffix)//".psf ] ; then cp quip_cp2k"//trim(topology_suffix)//".psf /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
