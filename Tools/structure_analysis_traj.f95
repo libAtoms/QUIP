@@ -1736,33 +1736,40 @@ subroutine read_geometry_params(this,filename)
     geom_type = string_to_int(fields(1))
     select case (geom_type)
       case (1) !y coord atom1
-        if (num_fields.lt.2) call system_abort('type 1: coordinate, =1 atom needed')
+        if (num_fields.lt.2) call system_abort('type 1: coordinate, =1 atoms needed')
         call append(this%geometry_params,(/geom_type, &
                                            string_to_int(fields(2)), &
                                            0, &
                                            0, &
                                            0/) )
       case (2) !distance atom1-atom2
-        if (num_fields.lt.3) call system_abort('type 2: bond length, =2 atom needed')
+        if (num_fields.lt.3) call system_abort('type 2: bond length, =2 atoms needed')
         call append(this%geometry_params, (/geom_type, &
                                             string_to_int(fields(2)), &
                                             string_to_int(fields(3)), &
                                             0, &
                                             0/) )
       case (3) !angle atom1-atom2-atom3
-        if (num_fields.lt.4) call system_abort('type 3: angle, =3 atom needed')
+        if (num_fields.lt.4) call system_abort('type 3: angle, =3 atoms needed')
         call append(this%geometry_params, (/geom_type, &
                                             string_to_int(fields(2)), &
                                             string_to_int(fields(3)), &
                                             string_to_int(fields(4)), &
                                             0/) )
       case (4) !dihedral atom1-atom2-atom3-atom4
-        if (num_fields.lt.5) call system_abort('type 4: dihedral, =4 atom needed')
+        if (num_fields.lt.5) call system_abort('type 4: dihedral, =4 atoms needed')
         call append(this%geometry_params, (/geom_type, &
                                             string_to_int(fields(2)), &
                                             string_to_int(fields(3)), &
                                             string_to_int(fields(4)), &
                                             string_to_int(fields(5)) /) )
+      case (5) !distance of any atom3(Z) from the atom1-atom2 bond
+        if (num_fields.lt.4) call system_abort('type 5: Zatom3 distance from the atom1-atom2 bond, =3 atoms needed')
+        call append(this%geometry_params, (/geom_type, &
+                                            string_to_int(fields(2)), &
+                                            string_to_int(fields(3)), &
+                                            string_to_int(fields(4)), &
+                                            0/) )
       case default
         call system_abort('unknown type '//geom_type//', must be one of 1(y coordinate), 2(bond length/distance), 3(angle), 4(dihedral).')
     end select
@@ -1785,6 +1792,8 @@ subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_
   integer :: i, j, geom_type
   integer :: atom1, atom2, atom3, atom4
   real(dp) :: shift(3), bond12(3),bond23(3),bond34(3)
+  real(dp) :: a, b, c, dist, min_dist
+  logical :: found
 
   !center around central_atom if requested
   if (central_atom.gt.at%N) call system_abort('central atom is greater than atom number '//at%N)
@@ -1833,6 +1842,30 @@ subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_
          bond34(1:3) = diff_min_image(at,atom3,atom4)
          histogram(i) = atan2(norm(bond23(1:3)) * bond12(1:3).dot.(bond23(1:3).cross.bond34(1:3)), &
                               (bond12(1:3).cross.bond23(1:3)) .dot. (bond23(1:3).cross.bond34(1:3)))
+       case(5) !distance of atom3-Z from atom1-atom2 bond
+         min_dist=HUGE(1._dp)
+         found=.false.
+         do j=1, at%N
+            if (j==atom1 .or. j==atom2) cycle
+            if (at%Z(j)/=atom3) cycle
+            if (j<=6) cycle !CH3Cl2- specific!!!
+            !only close ones
+            a = distance_min_image(at,atom1,atom2)
+            b = distance_min_image(at,atom1,j)
+            c = distance_min_image(at,atom2,j)
+!            if (b>4.0_dp .or. c>4.0_dp) cycle
+            if (b>a .or. c>a) cycle
+            dist = 0.25_dp*sqrt((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c)) / (0.5_dp*a)
+            if (dist<min_dist) then
+               found=.true.
+               min_dist=dist
+            endif
+            if (found) then
+               histogram(i) = min_dist
+            else
+               histogram(i) = 0._dp
+            endif
+         enddo
        case default
          call system_abort("geometry_calc: unknown geometry type "//geom_type)
      end select
