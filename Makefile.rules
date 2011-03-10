@@ -36,7 +36,7 @@ NETCDF_LIBS =  -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
 MDCORE_LIBS = -lmdcore
-SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
+SVN_VERSION := -D'SVN_VERSION="$(shell ${QUIP_ROOT}/utility_scripts/svnversion -n ..)"'
 
 
 ifndef AR

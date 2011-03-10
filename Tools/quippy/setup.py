@@ -311,7 +311,7 @@ if 'QUIPPY_LDFLAGS' in makefile:
     extra_link_args.extend(makefile['QUIPPY_LDFLAGS'].split())
 
 # Preprocessor macros
-macros = [('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
+macros = [('SVN_VERSION',r'\"%s\"' % os.popen('%s/utility_scripts/svnversion -n .' % quip_root).read())]
 for defn in makefile['DEFINES'].split():
     if defn[:2] == '-D':
         if '=' in defn:
@@ -444,7 +444,7 @@ setup(name='quippy',
       ext_modules = exts,
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext, 'interact': interact},
-      version=os.popen('svnversion -n .').read(),
+      version=os.popen('%s/utility_scripts/svnversion -n .' % quip_root).read(),
       description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',
