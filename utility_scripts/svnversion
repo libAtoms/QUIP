@@ -1,0 +1,9 @@
+#!/bin/sh
+# svnversion wrapper script which first checks for file ${QUIP_ROOT}/STABLE_VERSION  
+
+if [[ -f $QUIP_ROOT/STABLE_VERSION ]]; then
+   echo -ne $(cat $QUIP_ROOT/STABLE_VERSION)
+   exit 0
+else
+   svnversion $*
+fi
