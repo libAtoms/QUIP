@@ -1,25 +1,7 @@
-# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# HQ X
-# HQ X   quippy: Python interface to QUIP atomistic simulation library
-# HQ X
-# HQ X   Copyright James Kermode 2010
-# HQ X
-# HQ X   These portions of the source code are released under the GNU General
-# HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-# HQ X
-# HQ X   If you would like to license the source code under different terms,
-# HQ X   please contact James Kermode, james.kermode@gmail.com
-# HQ X
-# HQ X   When using this software, please cite the following reference:
-# HQ X
-# HQ X   http://www.jrkermode.co.uk/quippy
-# HQ X
-# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-# Set matplotlib in interactive mode with the TkAgg backend
+# Set matplotlib in interactive mode with the macosx backend
 # THESE MUST BE THE FIRST MATPLOTLIB COMMANDS CALLED!
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('macosx')
 matplotlib.interactive(True)
 
 # Bring all of the numeric and plotting commands to the toplevel namespace
@@ -35,3 +17,14 @@ help(numpy) -> help on NumPy, Python's basic numerical library.
 help(plotting) -> help on plotting commands.
 help(quippy) -> help on quippy commands
 """
+
+import IPython.ipapi
+ip = IPython.ipapi.get()
+
+def load_atoms(self, arg):
+    ip = self.api
+    f = arg
+    n = os.path.splitext(os.path.basename(arg))[0].replace('-','_').replace('.','_')
+    ip.ex('%s = Atoms("%s")' % (n,f))
+
+ip.expose_magic("atoms", load_atoms)
