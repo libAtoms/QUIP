@@ -713,7 +713,12 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          new_param.read_from_castep_output(castep_output)
          param.update(new_param)
       except ValueError:
-         if abort:
+         # If iprint < 2, params are not in .castep, file so let's look for .param file in same place
+         param_file = os.path.splitext(castep_file_name)[0]+'.param'
+         if os.path.exists(param_file):
+            new_param.read(param_file)
+            param.update(new_param)
+         elif abort:
             raise
 
       # Next let's extract the lattice and atomic positions
@@ -1177,8 +1182,8 @@ def hash_atoms(at, ndigits):
 from quippy import Potential
 
 class CastepPotential(Potential):
-   def __init__(self, cell=None, param=None, castep_exec='castep %s', stem='castep_callback', test_mode=False):
-      Potential.__init__(self, 'CallbackPot')
+   def __init__(self, cell=None, param=None, castep_exec='castep %s', stem='castep_callback', test_mode=False, little_clusters=False):
+      Potential.__init__(self, 'CallbackPot little_clusters=%s' % ({True: 'T', False: 'F'}[little_clusters]))
       self.set_callback(self.run)
 
       if isinstance(cell, str):
