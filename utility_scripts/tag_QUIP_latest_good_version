@@ -200,6 +200,13 @@ if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
    echo svn copy -m "Update QUIP-stable tag to revision ${cur_rev} (current HEAD rev is ${HEAD_rev})" -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable >> ${REPORT_FILE}
    svn delete -m "Get rid of old QUIP-stable tag in preparation for a new one" $SVNROOT/tags/QUIP-stable
    svn copy -m "Update QUIP-stable tag to revision ${cur_rev} (current HEAD rev is ${HEAD_rev})" -r${cur_rev} $SVNROOT/trunk/QUIP $SVNROOT/tags/QUIP-stable
+   rm -rf QUIP-stable
+   svn checkout $SVNROOT/tags/QUIP-stable QUIP-stable --depth files 
+   cd QUIP-stable
+   echo $cur_rev > STABLE_VERSION
+   svn add STABLE_VERSION
+   svn commit -m "Add STABLE_VERSION ($cur_rev) file to tags/QUIP-stable" STABLE_VERSION
+   cd ..
    if [[ $retried == 0 ]]; then
       rm -f mail_msg.txt
       (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
