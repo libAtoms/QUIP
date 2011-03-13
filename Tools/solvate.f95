@@ -47,7 +47,7 @@ program solvate
   character(len=FIELD_LENGTH) :: filename, waterfilename, solvated_filename
 !  type(inoutput)              :: xyzfile, waterfile
   real(dp)                    :: xmin, xmax, ymin, ymax, zmin, zmax, exclusion, security_zone
-  logical                     :: add
+  logical                     :: add_molec
   integer                     :: center_around_atom
   real(dp)                    :: shift(3)
   real(dp), pointer           :: pos_p(:,:), avgpos_p(:,:)
@@ -112,23 +112,23 @@ program solvate
 
   !Add water molecules between the given limits to at2
   do i=1,wat%N,3
-     add = .false.
+     add_molec = .false.
      if (minval(wat%pos(1,i:i+2)).gt.xmin+security_zone .and. &
          maxval(wat%pos(1,i:i+2)).lt.xmax-security_zone .and. &
          minval(wat%pos(2,i:i+2)).gt.ymin+security_zone .and. &
          maxval(wat%pos(2,i:i+2)).lt.ymax-security_zone .and. &
          minval(wat%pos(3,i:i+2)).gt.zmin+security_zone .and. &
          maxval(wat%pos(3,i:i+2)).lt.zmax-security_zone ) then
-        add = .true.
+        add_molec = .true.
      endif
      do j = 1,at%N
         if (distance_min_image(at2,j,wat%pos(1:3,i  )).lt.exclusion .or. &
             distance_min_image(at2,j,wat%pos(1:3,i+1)).lt.exclusion .or. &
             distance_min_image(at2,j,wat%pos(1:3,i+2)).lt.exclusion ) then
-           add = .false.
+           add_molec = .false.
         endif
      enddo
-     if (add) then
+     if (add_molec) then
         call add_atoms(at2,wat%pos(1:3,i  ),wat%Z(i  ))
         call add_atoms(at2,wat%pos(1:3,i+1),wat%Z(i+1))
         call add_atoms(at2,wat%pos(1:3,i+2),wat%Z(i+2))
