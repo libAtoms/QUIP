@@ -490,7 +490,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   if (!got_index && frame != 0 && in != stdin) {
     debug("read_xyz: skipping to frame %d\n", frame);
 
-    for (i=0; i<frame-1; i++) {
+    for (i=0; i<frame; i++) {
       GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
       if (sscanf(linebuffer, "%d", &nxyz) != 1) {
   	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms when skipping frame %d", linebuffer, i);
