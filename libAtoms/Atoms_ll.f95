@@ -359,6 +359,8 @@ contains
 !	    if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
 	  endif ! skip_frame
 	  frame_count = frame_count + do_decimation
+        else
+           CLEAR_ERROR(error)
 	endif ! l_error == 0 for reading this structure
 
       end do ! while l_error == 0 for frames in this file
@@ -367,7 +369,7 @@ contains
       else
 	last_file_frame_n = last_file_frame_n + cfile%current_frame
       endif
-      ! call print("at end of file, frame_count " // frame_count // " last_file_frame_n " // last_file_frame_n)
+      !call print("at end of file, frame_count " // frame_count // " last_file_frame_n " // last_file_frame_n)
       call finalise(cfile)
 
       if (file_is_list) then
