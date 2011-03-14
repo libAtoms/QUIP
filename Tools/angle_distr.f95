@@ -77,7 +77,7 @@ implicit none
 
   real(dp) :: part_dens, cell_vol
 
-  call system_initialise(PRINT_NORMAL)
+  call system_initialise(PRINT_VERBOSE)
 
   call initialise(cli_params)
   call register_cli_params(cli_params,.true., infilename, infile_is_list, outfilename, commandfilename, &
@@ -90,10 +90,12 @@ implicit none
   end if
 
   call print("Reading configurations")
+  no_compute_index=.false.
+  if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
   call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
 
   if (len_trim(commandfilename) == 0) then
-    args_str = write_string(cli_params)
+    args_str = param_write_string(cli_params)
     call finalise(cli_params)
   else
     call finalise(cli_params)
@@ -116,9 +118,6 @@ implicit none
 
   have_params = .true.
   do while (have_params)
-    no_compute_index=.false.
-    if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
-
     call print("infile " // trim(infilename) // " infile_is_list " // infile_is_list)
     call print("outfilename " // trim(outfilename))
     call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
