@@ -754,7 +754,7 @@ subroutine IPModel_ASAP2_read_params_xml(this, param_str)
   ! pseudise_sigma defaults to covalent radii
   do ti=1,this%n_types
      if (this%pseudise_sigma(ti) .feq. 0.0_dp) then
-        this%pseudise_sigma(ti) = ElementCovRad(this%atomic_num(ti))
+        this%pseudise_sigma(ti) = ElementCovRad(this%atomic_num(ti))/BOHR
      end if
   end do
 
