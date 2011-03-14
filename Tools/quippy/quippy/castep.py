@@ -368,9 +368,21 @@ class CastepCellWriter(object):
    def __init__(self, dest):
       if dest == 'stdout': dest = sys.stdout
       self.dest = dest
+      self.n = 0
 
-   def write(self, at):
-      CastepCell(atoms=at).write(self.dest)
+   def write(self, at, cell_template=None, param_template=None):
+      dest = self.dest
+      if '%' in dest: dest = self.dest % self.n
+      if cell_template is None:
+         cell = CastepCell()
+      else:
+         cell = CastepCell(cell_template)
+      cell.update_from_atoms(at)
+      cell.write(dest)
+      if param_template is not None:
+         param = CastepParam(param_template)
+         param.write(os.path.splitext(dest)[0]+'.param')
+      self.n += 1
 
 AtomsWriters['cell'] = CastepCellWriter
 
