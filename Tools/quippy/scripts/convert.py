@@ -66,7 +66,7 @@ p.add_option('--int-format', action='store', help="""Format string to use when w
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
 p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printing of Atoms object (useful when also using -e argument).""", default=False)
 
-# Options related to rendering of imagees with AtomEye
+# Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
 p.add_option('--property', action='store', help="""Property to use to colour atoms (default none)""")
 p.add_option('--arrows', action='store', help="""Property to use to draw arrows (default none)""")
@@ -75,6 +75,9 @@ p.add_option('-H', '--height', action='store', help="""Height of output movie, i
 p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", type='float')
 p.add_option('-c', '--centre', action='store', help="Atom index or position on which to centre view")
 
+# CASTEP specific output options
+p.add_option('--cell-template', action='store', help='Template .cell file, to be used when writing CASTEP .cell files')
+p.add_option('--param-template', action='store', help='Template .param file, to be used when writing CASTEP .cell files')
 
 opt, args = p.parse_args()
 
@@ -219,6 +222,10 @@ def process(at, frame):
 
       if opt.format in ('eps', 'png', 'jpg') and isinstance(opt.range, slice):
          write_args['frame'] = frame
+
+      if opt.format == 'cell':
+         write_args['cell_template'] = opt.cell_template
+         write_args['param_template'] = opt.param_template
       
       if opt.properties is None:
          outfile.write(at, **write_args)
