@@ -2234,7 +2234,7 @@ contains
        if (params%elastic_read) then
           c = params%elastic_cij/GPA
        else
-          call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+          call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=params%crack_relax_bulk, return_relaxed=params%crack_relax_bulk)
           
           call print('Relaxed elastic constants (GPa):')
           call print(c*GPA)
@@ -2394,7 +2394,7 @@ contains
           if (params%elastic_read) then
              c = params%elastic_cij/GPA
           else
-             call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+             call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=params%crack_relax_bulk, return_relaxed=params%crack_relax_bulk)
 
              call print('Relaxed elastic constants (GPa):')
              call print(c*GPA)

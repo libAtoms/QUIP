@@ -197,6 +197,7 @@ module CrackParams_module
      real(dp) :: crack_graphene_notch_height !% Height of graphene notch. Unit:~\AA{}.
      character(FIELD_LENGTH) :: crack_slab_filename !% Input file to use instead of generating slabs.
      character(FIELD_LENGTH) :: crack_bulk_filename  !% Input file containing primitive cell
+     logical :: crack_relax_bulk !% If true (default) relax bulk cell using classical potential
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
      logical  :: crack_check_surface_coordination !% Checking of the surface coordination before generating the crack seed
      integer  :: crack_check_coordination_atom_type       !% Atom type we check the coordination for 
@@ -450,8 +451,10 @@ contains
     this%crack_graphene_theta        = 0.0_dp  ! Angle
     this%crack_graphene_notch_width  = 5.0_dp  ! Angstrom
     this%crack_graphene_notch_height = 5.0_dp  ! Angstrom
+
     this%crack_slab_filename = ''
     this%crack_bulk_filename = ''
+    this%crack_relax_bulk = .true.
 
     this%crack_check_surface_coordination         = .false.
     this%crack_check_coordination_atom_type       = 18  
@@ -896,6 +899,11 @@ contains
        call QUIP_FoX_get_value(attributes, "bulk_filename", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_bulk_filename
+       end if
+
+       call QUIP_FoX_get_value(attributes, "relax_bulk", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_relax_bulk
        end if
 
        call QUIP_FoX_get_value(attributes, "dislo_seed", value, status)
@@ -1558,7 +1566,8 @@ contains
     call Print('     graphene_notch_width  = '//this%crack_graphene_notch_width//' A', file=file)
     call Print('     graphene_notch_height = '//this%crack_graphene_notch_height//' A', file=file)
     call Print('     slab_filename         = '//this%crack_slab_filename, file=file)
-    call Print('     bulk_filename         = '//this%crack_slab_filename, file=file)
+    call Print('     bulk_filename         = '//this%crack_bulk_filename, file=file)
+    call Print('     relax_bulk            = '//this%crack_relax_bulk, file=file)
     call Print('     dislo_seed            = '//this%crack_dislo_seed, file=file)
     call Print('     check_surface_coordination         = '//this%crack_check_surface_coordination, file=file)
     call Print('     check_coordination_atom_type       = '//this%crack_check_coordination_atom_type, file=file)
