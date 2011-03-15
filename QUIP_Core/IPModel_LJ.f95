@@ -420,6 +420,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find type")
     read (value, *) ti
 
+    if (ti < 1) call system_abort("IPModel_LJ_read_params_xml got per_type_data type="//ti//" < 1")
+    if (ti > parse_ip%n_types) call system_abort("IPModel_LJ_read_params_xml got per_type_data type="//ti//" > n_types="//parse_ip%n_types)
+
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find atomic_num")
     read (value, *) parse_ip%atomic_num(ti)
@@ -443,6 +446,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "type2", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find type2")
     read (value, *) tj
+
+    if (ti < 1) call system_abort("IPModel_LJ_read_params_xml got per_type_data type1="//ti//" < 1")
+    if (ti > parse_ip%n_types) call system_abort("IPModel_LJ_read_params_xml got per_pair_data type1="//ti//" > n_types="//parse_ip%n_types)
+    if (tj < 1) call system_abort("IPModel_LJ_read_params_xml got per_type_data type2="//tj//" < 1")
+    if (tj > parse_ip%n_types) call system_abort("IPModel_LJ_read_params_xml got per_pair_data type2="//tj//" > n_types="//parse_ip%n_types)
 
     call QUIP_FoX_get_value(attributes, "sigma", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find sigma")
