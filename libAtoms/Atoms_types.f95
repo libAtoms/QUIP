@@ -154,7 +154,8 @@ module Atoms_types_module
                                                               !% Simply contains $j$ and a reference to $j$'s
                                                               !% 'neighbour1' table.
 
-     type(table), allocatable, dimension(:,:,:) :: cell    !% For the linear scaling connection calculator
+     integer, allocatable, dimension(:,:,:) :: cell_heads          !% First entry in cell atoms structure
+     integer, allocatable, dimension(:)     :: next_atom_in_cell   !% List of atoms, terminated by zero
 
      logical, allocatable, dimension(:) :: is_min_image   !% True if i is a minimum image
 

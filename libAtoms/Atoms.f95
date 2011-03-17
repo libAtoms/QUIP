@@ -3106,10 +3106,13 @@ contains
 	     ! with shift (i4,j4,k4)
 	     ! loop over it's atoms and test connectivity if atom1 < atom2
 
-	     do n2 = 1, this%connect%cell(i3,j3,k3)%N
-		atom_i = this%connect%cell(i3,j3,k3)%int(1,n2)
+             atom_i = this%connect%cell_heads(i3, j3, k3)
+             atom_i_loop: do while (atom_i > 0)
                 if (present(mask)) then
-                   if (.not. mask(atom_i)) cycle
+                   if (.not. mask(atom_i)) then
+                      atom_i = this%connect%next_atom_in_cell(atom_i)
+                      cycle atom_i_loop
+                   endif
                 end if
 		pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
                 cur_diff = pos - r
@@ -3120,7 +3123,8 @@ contains
 		  closest_atom = atom_i
 		endif
 
-	     end do
+                atom_i = this%connect%next_atom_in_cell(atom_i)
+	     end do atom_i_loop
 
 	  end do
        end do

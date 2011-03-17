@@ -1855,7 +1855,8 @@ contains
        do k=1,connect%cellsnc
           do j=1,connect%cellsnb
              do i=1,connect%cellsna
-                n_cell(i,j,k) = connect%cell(i,j,k)%n
+!                n_cell(i,j,k) = connect%cell(i,j,k)%n
+                n_cell(i,j,k) = cell_n(connect,i,j,k)
              end do
           end do
        end do
