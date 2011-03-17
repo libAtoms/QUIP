@@ -1680,7 +1680,7 @@ contains
        RAISE_ERROR("remove_atom_multiple: Fatal internal error: this%N /= copysrc, should not happen", error)
     endif
 
-    ! This will reallocate all buffer to the new size (i.e. this%N)
+    ! This will reallocate all buffers to the new size (i.e. this%N)
     call shuffle(this, new_indices(1:this%N), error=error)
     PASS_ERROR(error)
 
@@ -1697,30 +1697,42 @@ contains
 
     ! ---
 
-    integer               :: n, i
-    integer, allocatable  :: atom_indices(:)
+    integer  :: i, j
     
+    integer, allocatable :: new_indices(:)
+
     ! ---
 
     INIT_ERROR(error)
 
-    n = 0
+    if (this%fixed_size) then
+       RAISE_ERROR("remove_atom_multiple_mask: Atoms object cannot be resized (this%fixed_size = .true.)", error)
+    end if
+
+    !Delete the connection data because the atomic indices become mangled
+    call finalise(this%connect)
+
+    allocate(new_indices(this%N))
+
+    j = 1
     do i = 1, this%N
-       if (mask(i))  n = n + 1
+       if (.not. mask(i)) then
+          ! Keep this atom
+          new_indices(j) = i
+          j = j + 1
+       endif
     enddo
-    if (n > 0) then
-       allocate(atom_indices(n))
-       n = 0
-       do i = 1, this%N
-          if (mask(i)) then
-             n = n + 1
-             atom_indices(n) = i
-          endif
-       enddo
-       call remove_atom_multiple(this, atom_indices, error)
-       PASS_ERROR(error)
-       deallocate(atom_indices)
-    endif
+    
+    ! update N
+    this%N = j-1
+    this%Ndomain = this%N
+    this%Nbuffer = this%N
+
+    ! This will reallocate all buffers to the new size (i.e. this%N)
+    call shuffle(this, new_indices(1:this%N), error=error)
+    PASS_ERROR(error)
+
+    deallocate(new_indices)
 
   endsubroutine remove_atom_multiple_mask
 
