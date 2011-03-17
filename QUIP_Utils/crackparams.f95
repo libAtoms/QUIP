@@ -1656,6 +1656,7 @@ contains
     call Print('     cutoff_plane          = '//this%selection_cutoff_plane//' A',file=file)
     call Print('     directionality        = '//this%selection_directionality)
     call Print('     edge_tol              = '//this%selection_edge_tol//' A',file=file)
+    call Print('     update_interval       = '//this%selection_update_interval//' fs',file=file)
     call Print('',file=file)
     call Print('  Classical parameters:',file=file)
     call Print('     args                  = '//trim(this%classical_args),file=file)
