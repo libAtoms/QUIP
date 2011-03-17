@@ -442,14 +442,14 @@ contains
     real(dp), intent(in), optional :: C11, C12, C44
     real(dp), intent(in), optional :: Cij(6,6)
 
-    real(dp) :: C(6,6), strain(6), stress(6)
+    real(dp) :: C(6,6), strain(6), stress(6), b
     real(dp), dimension(3) :: n1,n2,n3, d
     real(dp), dimension(3,3) :: rotXYZ, E123, EEt, V, S, R, SS, Sig, RSigRt, RtE, SigEvecs
     integer :: i, j, m, nn, ngood
 
     real(dp), pointer, dimension(:) :: S_xx_sub1, S_yy_sub1, S_zz_sub1, S_yz, S_xz, S_xy, &
          Sig_xx, Sig_yy, Sig_zz, Sig_yz, Sig_xz, Sig_xy, SigEval1, SigEval2, SigEval3, &
-         von_mises_stress, von_mises_strain
+         von_mises_stress, von_mises_strain, atomic_vol, energy_density
 
     real(dp), pointer, dimension(:,:) :: SigEvec1, SigEvec2, SigEvec3
     logical :: dum
@@ -502,6 +502,9 @@ contains
     call add_property(at, 'von_mises_stress', 0.0_dp)
     call add_property(at, 'von_mises_strain', 0.0_dp)
 
+    call add_property(at, 'atomic_vol', 0.0_dp)
+    call add_property(at, 'energy_density', 0.0_dp)
+
     dum = assign_pointer(at, 'S_xx_sub1', S_xx_sub1)
     dum = assign_pointer(at, 'S_yy_sub1', S_yy_sub1)
     dum = assign_pointer(at, 'S_zz_sub1', S_zz_sub1)
@@ -525,6 +528,9 @@ contains
 
     dum = assign_pointer(at, 'von_mises_stress', von_mises_stress)
     dum = assign_pointer(at, 'von_mises_strain', von_mises_strain)
+
+    dum = assign_pointer(at, 'atomic_vol', atomic_vol)
+    dum = assign_pointer(at, 'energy_density', energy_density)
 
     call calc_connect(at)
 
@@ -563,6 +569,11 @@ contains
           call print('n1 '//norm(n1)//n1, PRINT_VERBOSE)
           call print('n2 '//norm(n2)//n2, PRINT_VERBOSE)
           call print('n3 '//norm(n3)//n3, PRINT_VERBOSE)
+
+          ! Estimate volume of Voronoi cell as rhombic dodecahedron with volume 16/9*sqrt(3)*b**3 * 1/2
+          b = (norm(ndiff(:,1)) + norm(ndiff(:,2)) + norm(ndiff(:,3)))/3.0_dp
+          atomic_vol(i) = 16.0_dp/9.0_dp*sqrt(3.0_dp)*b**3/2.0_dp
+          call print('atomic volume '//atomic_vol(i), PRINT_VERBOSE)
 
           e123(:,1) = (n1 + n2 - n3)/a
           e123(:,2) = (n2 + n3 - n1)/a
@@ -688,6 +699,11 @@ contains
        SigEvec1(:,i) = SigEvecs(:,1)
        SigEvec2(:,i) = SigEvecs(:,2)
        SigEvec3(:,i) = SigEvecs(:,3)
+
+       ! energy density in eV/A**3, from u = 1/2*stress*strain
+       energy_density(i) = 0.5_dp*( (/Sig_xx(i), Sig_yy(i), Sig_zz(i), Sig_yz(i), Sig_xz(i), Sig_xy(i) /) .dot. &
+            (/S_xx_sub1(i), S_yy_sub1(i), S_zz_sub1(i), S_yz(i), S_xz(i), S_xy(i) /) )/GPA
+
     end do
 
     call print('Processed '//ngood//' of '//at%N//' atoms.')
