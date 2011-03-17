@@ -225,8 +225,10 @@ class Atoms(FortranAtoms):
 
    @classmethod
    def read(cls, source, format=None, *args, **kwargs):
+      filename = None
       if format is None:
          if isinstance(source, str):
+            filename = source
             if source in AtomsReaders:
                format = source
             else:
@@ -251,10 +253,20 @@ class Atoms(FortranAtoms):
          raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
       if opened and hasattr(source, 'close'):
          source.close()
+      if filename is not None:
+         at.filename = filename
       return at
          
 
-   def write(self, dest, format=None, properties=None, prefix=None, *args, **kwargs):
+   def write(self, dest=None, format=None, properties=None, prefix=None, *args, **kwargs):
+
+      if dest is None:
+         # if filename is missing, save back to file from which we loaded configuration
+         if hasattr(self, 'filename'):
+            dest = self.filename
+         else:
+            raise ValueError("Atoms.write() called with no 'dest' and Atoms has no filename attribute")
+         
       opened = False
       if format is None:
          if isinstance(dest, str):
