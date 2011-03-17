@@ -127,7 +127,7 @@ module Connection_module
 
   public :: add_bond, remove_bond, cell_of_pos, connection_cells_initialise
   public :: connection_fill, divide_cell, fit_box_in_cell, get_min_max_images
-  public :: max_cutoff, partition_atoms
+  public :: max_cutoff, partition_atoms, cell_n
 
 contains
 
@@ -267,16 +267,9 @@ contains
        stdev_atoms = 10
     end if
 
-    allocate( this%cell(cellsNa,cellsNb,cellsNc) )
-
-    do k=1,cellsNc
-       do j=1,cellsNb
-          do i=1,cellsNa
-             call allocate(this%cell(i,j,k),1,0,0,0,max(1,(av_atoms+2*stdev_atoms))) !Good for 97.5% of cells
-             call set_increment(this%cell(i,j,k),max(1,stdev_atoms))
-          end do
-       end do
-    end do
+    allocate(this%cell_heads(cellsNa, cellsNb, cellsNc))
+    allocate(this%next_atom_in_cell(this%N))
+    this%cell_heads = 0
 
     this%cellsNa = cellsNa
     this%cellsNb = cellsNb
@@ -355,15 +348,8 @@ contains
 
     if (.not.this%cells_initialised) return
 
-    do k=1,this%cellsNc
-       do j=1,this%cellsNb
-          do i=1,this%cellsNa
-             call finalise(this%cell(i,j,k))
-          end do
-       end do
-    end do
-
-    deallocate(this%cell)
+    deallocate(this%cell_heads)
+    deallocate(this%next_atom_in_cell)
 
     this%cells_initialised = .false.
 
@@ -396,13 +382,8 @@ contains
     !If cell data is present then copy that too
     if (from%cells_initialised) then
        call connection_cells_initialise(to,from%cellsNa,from%cellsNb,from%cellsNc)
-       do k = 1, from%cellsNc
-          do j = 1, from%cellsNb
-             do i = 1, from%cellsNa
-                call append(to%cell(i,j,k),from%cell(i,j,k))
-             end do
-          end do
-       end do
+       to%cell_heads = from%cell_heads
+       to%next_atom_in_cell = from%next_atom_in_cell
     end if
 
   end subroutine connection_assignment
@@ -414,15 +395,7 @@ contains
     integer          :: i,j,k
 
     if (this%cells_initialised) then
-
-       do k = 1, this%cellsNc
-          do j = 1, this%cellsNb
-             do i = 1, this%cellsNa
-                call wipe(this%cell(i,j,k))
-             end do
-          end do
-       end do
-
+       this%cell_heads = 0
     end if
 
   end subroutine wipe_cells
@@ -729,11 +702,14 @@ contains
     logical, optional, intent(in) :: own_neighbour, store_is_min_image
     integer, intent(out), optional :: error
 
-    integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
-    integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
-    integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
-                                            min_cell_image_Nc, max_cell_image_Nc
-    real(dp)                             :: cutoff
+    integer  :: cellsNa,cellsNb,cellsNc
+    integer  :: i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,atom1,atom2
+!    integer  :: n1, n2
+    integer  :: cell_image_Na, cell_image_Nb, cell_image_Nc
+    integer  :: min_cell_image_Na
+    integer  :: max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb
+    integer  :: min_cell_image_Nc, max_cell_image_Nc
+    real(dp)  :: cutoff
     integer :: ji, s_ij(3), nn_guess
     logical my_own_neighbour, my_store_is_min_image
     logical :: change_i, change_j, change_k, broken
@@ -874,9 +850,8 @@ contains
 	     change_k = .false.
 
              !Loop over atoms in cell(i,j,k)
-             do n1 = 1, this%cell(i,j,k)%N
-
-                atom1 = this%cell(i,j,k)%int(1,n1)
+             atom1 = this%cell_heads(i, j, k)
+             atom1_loop: do while (atom1 > 0)
 
                 ! Loop over neighbouring cells, applying PBC
                 do k2 = -cell_image_Nc, +cell_image_Nc
@@ -905,15 +880,21 @@ contains
                          ! with shift (i4,j4,k4)
                          ! loop over it's atoms and test connectivity if atom1 < atom2
 
-                         do n2 = 1, this%cell(i3,j3,k3)%N
+                         atom2 = this%cell_heads(i3,j3,k3)
+                         atom2_loop: do while (atom2 > 0)
 
-                            atom2 = this%cell(i3,j3,k3)%int(1,n2)
                             ! omit atom2 < atom1
-                            if (atom1 > atom2) cycle
+                            if (atom1 > atom2) then
+                               atom2 = this%next_atom_in_cell(atom2)
+                               cycle atom2_loop
+                            endif
                             ! omit self in the same cell without shift
                             if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
-                                 (i==i3 .and. j==j3 .and. k==k3))) cycle
+                                 (i==i3 .and. j==j3 .and. k==k3))) then
+                               atom2 = this%next_atom_in_cell(atom2)
+                               cycle atom2_loop
+                            endif
 
                             call test_form_bond(this, at%cutoff, at%use_uniform_cutoff, &
                                  at%Z, at%pos, at%lattice, atom1,atom2, &
@@ -921,13 +902,15 @@ contains
 				 .true., error)
                             PASS_ERROR(error)
 
-                         end do ! n2
+                            atom2 = this%next_atom_in_cell(atom2)
+                         end do atom2_loop ! atom2
 
                       end do ! i2
 		   end do ! j2
                 end do ! k2
 
-             end do ! n1
+                atom1 = this%next_atom_in_cell(atom1)
+             end do atom1_loop ! atom1
 
           end do ! i
        end do ! j
@@ -984,11 +967,13 @@ contains
     logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds
     integer, intent(out), optional :: error
 
-    integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
-    integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
-    integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
-                                            min_cell_image_Nc, max_cell_image_Nc
-    real(dp)                             :: cutoff, density, volume_per_cell
+    integer  :: cellsNa,cellsNb,cellsNc
+    integer  :: i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,atom1,atom2
+!    integer  :: n1,n2
+    integer  :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
+    integer  :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb
+    integer  :: max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
+    real(dp) :: cutoff, density, volume_per_cell
     logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, do_fill
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:)
@@ -1074,7 +1059,8 @@ contains
        do k=1,cellsNc
           do j=1,cellsNb
              do i=1,cellsNa
-                if (this%cell(i,j,k)%n /= 0) n_occ = n_occ + 1
+                if (this%cell_heads(i, j, k) > 0) &
+                     n_occ = n_occ + 1
              end do
           end do
        end do
@@ -1109,9 +1095,8 @@ contains
 	     change_i = .false.
 	     change_j = .false.
 	     change_k = .false.
-	     do n1=1, this%cell(i,j,k)%N
-
-		atom1 = this%cell(i,j,k)%int(1,n1)
+             atom1 = this%cell_heads(i, j, k)
+             atom1_loop: do while (atom1 > 0)
 
 		! Loop over neighbouring cells, applying PBC
 
@@ -1141,31 +1126,44 @@ contains
 			 ! with shift (i4,j4,k4)
 			 ! loop over it's atoms and test connectivity if atom1 < atom2
 
-			 do n2 = 1, this%cell(i3,j3,k3)%N
+                         atom2 = this%cell_heads(i3, j3, k3)
+                         atom2_loop: do while (atom2 > 0)
 
-			    atom2 = this%cell(i3,j3,k3)%int(1,n2)
 			    ! omit atom2 < atom1
-			    if (atom1 > atom2) cycle
+			    if (atom1 > atom2) then 
+                               atom2 = this%next_atom_in_cell(atom2)
+                               cycle atom2_loop
+                            endif
                             
-                            if (my_skip_zero_zero_bonds .and. at%z(atom1) == 0 .and. at%z(atom2) == 0) cycle 
+                            if (my_skip_zero_zero_bonds .and. &
+                                 at%z(atom1) == 0 .and. at%z(atom2) == 0) then
+                               atom2 = this%next_atom_in_cell(atom2)
+                               cycle atom2_loop
+                            endif
        
 			    ! omit self in the same cell without shift
-			    if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
+			    if (.not. my_own_neighbour .and. &
+                                 (atom1 == atom2 .and. & 
 				 (i4==0 .and. j4==0 .and. k4==0) .and. &
-				 (i==i3 .and. j==j3 .and. k==k3))) cycle
+				 (i==i3 .and. j==j3 .and. k==k3))) then
+                               atom2 = this%next_atom_in_cell(atom2)
+                               cycle atom2_loop
+                            endif
 			    call test_form_bond(this,at%cutoff, at%use_uniform_cutoff, &
 			      at%Z, at%pos, at%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
 				 .false., error)
                             PASS_ERROR(error)
 
-			 end do ! n2
+                            atom2 = this%next_atom_in_cell(atom2)
+			 end do atom2_loop ! atom2
 
 		      end do ! i2
 		   end do ! j2
 		end do ! k2
 
-	     end do ! n1
+                atom1 = this%next_atom_in_cell(atom1)
+	     end do atom1_loop ! atom1
 	  end do ! i
        end do ! j
     end do ! k
@@ -1273,7 +1271,11 @@ contains
     if (present(dont_wipe)) my_dont_wipe = dont_wipe
 
     ! Wipe the cells
-    if (.not.my_dont_wipe) call wipe_cells(this)
+    if (.not.my_dont_wipe) then
+       call wipe_cells(this)
+    else
+       RAISE_ERROR("Partition_Atoms: dont_wipe=.true. not supported", error)
+    endif
 
 !!    ! Make sure all atomic positions are within the cell
 !!    call map_into_cell(at)
@@ -1285,6 +1287,11 @@ contains
     endif
 
     neighbour1_allocated = allocated(this%neighbour1)
+
+    if (size(this%next_atom_in_cell) < this%N) then
+       deallocate(this%next_atom_in_cell)
+       allocate(this%next_atom_in_cell(this%N))
+    endif
 
     do n = 1, at%N
        if (neighbour1_allocated) then
@@ -1299,7 +1306,8 @@ contains
 
        call cell_of_pos(this, lat_pos, i, j, k)
        !Add the atom to this cell
-       call append( this%cell(i,j,k), (/n/) )
+       this%next_atom_in_cell(n) = this%cell_heads(i, j, k)
+       this%cell_heads(i, j, k) = n
     end do
 
   end subroutine partition_atoms
@@ -1343,6 +1351,7 @@ contains
       type(Connection), intent(in) :: this
       integer, intent(in) :: i, j, k
       integer :: cell_n
+      integer :: a
       integer, intent(out), optional :: error
       
       INIT_ERROR(error)
@@ -1350,24 +1359,31 @@ contains
          RAISE_ERROR('cell_n: cells are not initialised', error)
       end if
 
-      cell_n = this%cell(i,j,k)%n
+      cell_n = 0
+      a = this%cell_heads(i, j, k)
+      do while (a > 0)
+         cell_n = cell_n + 1
+         a = this%next_atom_in_cell(a)
+      enddo
 
     end function cell_n
 
-    function cell_contents(this, i, j, k, n, error)
-      type(Connection), intent(in) :: this
-      integer, intent(in) :: i, j, k, n
-      integer :: cell_contents
-      integer, intent(out), optional :: error
-
-      INIT_ERROR(error)
-      if (.not. this%cells_initialised) then
-         RAISE_ERROR('cell_n: cells are not initialised', error)
-      end if
-
-      cell_contents = this%cell(i,j,k)%int(1,n)
-
-    end function cell_contents
+!   Don't understand what this is doing, and doesn't seem to be used
+!   anywhere - Lars
+!    function cell_contents(this, i, j, k, n, error)
+!      type(Connection), intent(in) :: this
+!      integer, intent(in) :: i, j, k, n
+!      integer :: cell_contents
+!      integer, intent(out), optional :: error
+!
+!      INIT_ERROR(error)
+!      if (.not. this%cells_initialised) then
+!         RAISE_ERROR('cell_n: cells are not initialised', error)
+!      end if
+!
+!      cell_contents = this%cell(i,j,k)%int(1,n)
+!
+!    end function cell_contents
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !
@@ -1432,7 +1448,8 @@ contains
     type(Connection), intent(in)    :: this
     type(Inoutput),   optional, intent(inout) :: file
     integer, intent(out), optional :: error
-    integer                         :: i,j,k,n,m
+    integer                         :: i,j,k,n,a
+    integer                         :: ndata(10)
 
     INIT_ERROR(error)
     if (.not.this%initialised) then
@@ -1513,16 +1530,24 @@ contains
              do i = 1, this%cellsNa
                 write(line,'(a7,i0,a1,i0,a1,i0,a3)')'Cell ( ',i,' ',j,' ',k,' ):'
                 call print(line,file=file)
-                n = this%cell(i,j,k)%N / 10 ! integer division will round down
-                do m = 1, n
-                   write(line,'(10i7)') this%cell(i,j,k)%int(1,(10*m-9):(10*m))
+
+                a = this%cell_heads(i, j, k)
+                n = 0
+                do while (a > 0)
+                   n = n + 1
+                   ndata(n) = a
+                   if (n == 10) then
+                      write (line, '(10i7)')  ndata
+                      call print(line,file=file)
+                      n = 0
+                   endif
+                   a = this%next_atom_in_cell(a)
+                enddo
+                if (n > 0) then
+                   write (line, '(10i7)')  ndata(1:n)
                    call print(line,file=file)
-                end do
-                m = this%cell(i,j,k)%N - 10 * n
-                if (m /= 0) then
-                   write(line,'(10i7)') this%cell(i,j,k)%int(1,(10*n+1):(10*n+m))
-                   call print(line,file=file)
-                end if
+                endif
+
                 write(line,'(a70)')'----------------------------------------------------------------------'
                 call print(line,file=file)
              end do

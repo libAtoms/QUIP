@@ -590,9 +590,11 @@ subroutine IPModel_BOP_compute_buffer(this,at,at_bop)
   loop_c : do k = cellsNc2, cellsNc
     loop_b : do j = cellsNb2, cellsNb
        loop_a : do i = cellsNa2, cellsNa
-         n_atom =  at%connect%cell(i,j,k)%N
+!         n_atom =  at%connect%cell(i,j,k)%N
+          n_atom = at%connect%cell_heads(i,j,k)
          if(n_atom.ne.0) then
-            i_atom = at%connect%cell(i,j,k)%int(1,1)
+!            i_atom = at%connect%cell(i,j,k)%int(1,1)
+            i_atom = n_atom
             exit loop_c 
          endif
        enddo  loop_a
@@ -671,18 +673,24 @@ subroutine add_cells(at, n_cell_rep, at_bop)
        if(i.eq.1) then
           do j = 1, cells(2)
            do k = 1, cells(3)
-            do ii = 1, at%connect%cell(ic_right_p,j,k)%N
-              iatom = at%connect%cell(ic_right_p,j,k)%int(1,ii)
-              call print( j //" "// k // " atom : " // iatom // " " // at%connect%cell(ic_right_p,j,k)%N ) 
+!            do ii = 1, at%connect%cell(ic_right_p,j,k)%N
+!              iatom = at%connect%cell(ic_right_p,j,k)%int(1,ii)
+              iatom = at%connect%cell_heads(ic_right_p,j,k)
+             do while(iatom > 0)
+              call print( j //" "// k // " atom : " // iatom // " " // cell_n(at%connect, ic_right_p,j,k))
               pos = at%pos(:,iatom) + real(periodicity,dp) * at%lattice(i,i) 
               call add_atoms(at_bop, pos, at%Z(iatom))  
+              iatom = at%connect%next_atom_in_cell(iatom)
             enddo
 
-            do ii = 1, at%connect%cell(ic_right_m,j,k)%N  
-              iatom = at%connect%cell(ic_right_m,j,k)%int(1,ii)
-              call print( j //" "// k // " atom : " // iatom // " " // at%connect%cell(ic_right_m,j,k)%N ) 
+!            do ii = 1, at%connect%cell(ic_right_m,j,k)%N  
+!              iatom = at%connect%cell(ic_right_m,j,k)%int(1,ii)
+             iatom = at%connect%cell_heads(ic_right_m,j,k)
+             do while (iatom > 0)
+              call print( j //" "// k // " atom : " // iatom // " " // cell_n(at%connect, ic_right_m,j,k))
               pos = at%pos(:,iatom) + real(periodicity,dp) * at%lattice(i,i)
               call add_atoms(at_bop, pos, at%Z(iatom))
+              iatom = at%connect%next_atom_in_cell(iatom)
              enddo
            enddo
           enddo
