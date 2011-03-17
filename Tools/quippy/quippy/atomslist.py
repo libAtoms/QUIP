@@ -16,8 +16,8 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys, os, fnmatch, re, itertools
-from quippy import Atoms, AtomsReaders, AtomsWriters
+import sys, os, fnmatch, re, itertools, glob
+from quippy import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from farray import *
 
 def find_files(filepat, top=None):
@@ -52,10 +52,15 @@ def AtomsReader(source, format=None, *args, **kwargs):
             format = source
          else:
             source = os.path.expanduser(source)
-            base, ext = os.path.splitext(source)
-            format = ext[1:]
-      else:
-         format = source.__class__
+            glob_list = glob.glob(source)
+            if len(glob_list) > 1:
+               source = sorted(glob_list)
+            else:
+               base, ext = os.path.splitext(source)
+               format = ext[1:]
+
+   if format is None:
+      format = source.__class__
 
    if format in AtomsReaders:
       source = iter(AtomsReaders[format](source, *args, **kwargs))
@@ -101,10 +106,15 @@ class AtomsList(object):
                format = source
             else:
                source = os.path.expanduser(source)
-               base, ext = os.path.splitext(source)
-               format = ext[1:]
-         else:
-            format = source.__class__
+               glob_list = glob.glob(source)
+               if len(glob_list) > 1:
+                  source = sorted(glob_list)
+               else:
+                  base, ext = os.path.splitext(source)
+                  format = ext[1:]
+
+      if format is None:
+         format = source.__class__
 
       if format in AtomsReaders:
          if lazy is None: #and hasattr(AtomsReaders[format], 'lazy'):
@@ -342,3 +352,19 @@ class AtomsList(object):
          else:
             return seq
 
+
+
+@atoms_reader(list, True)
+def SequenceReader(L):
+   """This reader allows an AtomsList to be constructed from a list of filenames or glob patterns"""
+   res = []
+   for a in L:
+      if isinstance(a, str):
+         glob_list = glob.glob(a)
+         if len(glob_list) > 1:
+            res.extend([Atoms(aa) for aa in glob_list])
+         else:
+            res.append(Atoms(a))
+      else:
+         res.append(a)
+   return res
