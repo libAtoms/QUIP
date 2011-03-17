@@ -1249,9 +1249,9 @@ class CastepPotential(Potential):
       else:
          at.params['virial'] = fzeros((3,3))
 
-      # Add popn_calculate output
+      # Add popn_calculate output and force components
       for k in result.properties.keys():
-         if k.startswith('popn_'):
+         if k.startswith('popn_') or k.startswith('force_'):
             at.add_property(k, getattr(result, k), overwrite=True)
 
 
