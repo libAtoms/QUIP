@@ -525,7 +525,7 @@ logical :: have_silica_potential
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
-          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
           call check_topology(ds%atoms)
        endif
     endif
