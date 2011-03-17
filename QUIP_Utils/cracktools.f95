@@ -1641,7 +1641,7 @@ contains
     type(CrackParams), intent(in) :: params
     type(Table), intent(out) :: crack_tips
 
-    integer, pointer, dimension(:) :: crack_front
+    logical, pointer, dimension(:) :: crack_front
     real(dp) :: crack_tip(2)
     integer :: i, n
 
@@ -1657,17 +1657,19 @@ contains
        call crack_find_tip_local_energy(at, params)
 
        if (.not. assign_pointer(at, 'crack_front', crack_front)) &
-            call system_abort('crack_find_tip_local_energy: crack_front property missing from atoms')
+            call system_abort('crack_find_tip: crack_front property missing from atoms')
     
        ! Calculate crack tip position as average along crack front
        crack_tip = 0.0_dp
+       n = 0
        do i=1,at%N
-          if (crack_front(i) /= 1) cycle
+          if (.not. crack_front(i)) cycle
           crack_tip(1) = crack_tip(1) + at%pos(1,i)
           crack_tip(2) = crack_tip(2) + at%pos(2,i)
           n = n + 1
        end do
        crack_tip = crack_tip / real(n, dp)
+       call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
        
     else
        call system_abort('crack_find_tip: unknown tip_method '//trim(params%crack_tip_method))
