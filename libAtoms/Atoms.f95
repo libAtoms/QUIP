@@ -1359,7 +1359,7 @@ contains
     end if
 
     if (present(travel)) then
-       if (size(travel, 2) > 0) then
+       if (size(travel, 1) > 0 .and. size(travel, 2) > 0) then
           has_travel = .true.
           call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom', error)
           PASS_ERROR(error)
@@ -1367,7 +1367,7 @@ contains
     end if
 
     if (present(velo)) then
-       if (size(velo, 2) > 0) then
+       if (size(velo, 1) > 0 .and. size(velo, 2) > 0) then
           has_velo = .true.
           call check_size('Velo', velo, (/3,size(Z)/), 'Add_Atom', error)
           PASS_ERROR(error)
@@ -1375,7 +1375,7 @@ contains
     end if
 
     if (present(acc)) then
-       if (size(acc, 2) > 0) then
+       if (size(acc, 1) > 0 .and. size(acc, 2) > 0) then
           has_acc = .true.
           call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom', error)
           PASS_ERROR(error)
@@ -1529,7 +1529,8 @@ contains
 
     call atoms_repoint(from)
 
-    call add_atom_multiple(this, from%pos, from%Z, from%mass, from%velo, from%acc, from%travel, error)
+    call add_atom_multiple(this, pos=from%pos, Z=from%Z, mass=from%mass, &
+         velo=from%velo, acc=from%acc, travel=from%travel, error=error)
     PASS_ERROR(error)
 
   endsubroutine atoms_join
