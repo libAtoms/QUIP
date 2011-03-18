@@ -177,6 +177,7 @@ contains
              cube%atoms(n)%unknown = real(es_pot(j))
              if (do_flip_sign) cube%atoms(n)%unknown = -cube%atoms(n)%unknown
              cube%atoms(n)%r(:) = real(es_efield(:,j))
+             if (do_flip_sign) cube%atoms(n)%r = -cube%atoms(n)%r
           else
              ! Charge and position of ions
              cube%atoms(n)%unknown = real(charge(j))
@@ -220,7 +221,6 @@ contains
 
     ! Write  meta-data into second line of .cube file
     call initialise(metadata)
-    metadata = at%params
     call set_value(metadata, 'volumetric_data', 'electrostatic_potential')
     if (do_atomic_units) then
        call set_value(metadata, 'units', 'atomic')
@@ -514,7 +514,7 @@ contains
     ! Electrostatic potential at ion positions is 2*local_energy/charge
     cluster_es_pot = 2.0_dp*es_pot(select_n+1:at_copy%n)/cluster_charge
     cluster_es_efield = es_efield(:,select_n+1:at_copy%n)
-    
+
     deallocate(select_mask)
     deallocate(lookup,z)
     call finalise(at_copy)
