@@ -680,7 +680,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
 
   case default
-!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps,new_x_star,e,covariance,do_fast_gap_dgemv,local_e,local_e_in,force_calc_new_x_star,virial_in,atom_mask_reverse_lookup) private(k,f_gp,f_gp_k,n,j,jn,jj,shift,i,xixjtheta)
+!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps,e,covariance,do_fast_gap_dgemv,local_e,local_e_in,force_calc_new_x_star,virial_in,atom_mask_reverse_lookup) private(k,f_gp,f_gp_k,n,j,jn,jj,shift,i,xixjtheta,new_x_star)
 
      allocate(xixjtheta(this%my_gp%d, this%my_gp%n))
 
@@ -708,7 +708,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(present(f).or.present(virial) .or. present(local_virial)) then
            do k = 1, 3
               f_gp = 0.0_dp
-       
+              
 
               call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,ii),x_prime_star=jack(:,k,ii),Z=at%Z(i),c_in=covariance(:,ii), xixjtheta_in=xixjtheta, new_x_star=new_x_star, use_dgemv=do_fast_gap_dgemv)
               new_x_star = force_calc_new_x_star
