@@ -268,7 +268,6 @@ contains
     end if
 
     allocate(this%cell_heads(cellsNa, cellsNb, cellsNc))
-    allocate(this%next_atom_in_cell(this%N))
     this%cell_heads = 0
 
     this%cellsNa = cellsNa
@@ -349,7 +348,9 @@ contains
     if (.not.this%cells_initialised) return
 
     deallocate(this%cell_heads)
-    deallocate(this%next_atom_in_cell)
+    if (allocated(this%next_atom_in_cell)) then
+       deallocate(this%next_atom_in_cell)
+    endif
 
     this%cells_initialised = .false.
 
@@ -383,7 +384,9 @@ contains
     if (from%cells_initialised) then
        call connection_cells_initialise(to,from%cellsNa,from%cellsNb,from%cellsNc)
        to%cell_heads = from%cell_heads
-       to%next_atom_in_cell = from%next_atom_in_cell
+       if (allocated(to%next_atom_in_cell) .and. allocated(from%next_atom_in_cell)) then
+          to%next_atom_in_cell = from%next_atom_in_cell
+       endif
     end if
 
   end subroutine connection_assignment
@@ -1288,8 +1291,12 @@ contains
 
     neighbour1_allocated = allocated(this%neighbour1)
 
-    if (size(this%next_atom_in_cell) < this%N) then
-       deallocate(this%next_atom_in_cell)
+    if (allocated(this%next_atom_in_cell)) then
+       if (size(this%next_atom_in_cell) < this%N) then
+          deallocate(this%next_atom_in_cell)
+       endif
+    endif
+    if (.not. allocated(this%next_atom_in_cell) .and. this%N > 0) then
        allocate(this%next_atom_in_cell(this%N))
     endif
 
