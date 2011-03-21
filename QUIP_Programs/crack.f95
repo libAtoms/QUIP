@@ -1052,7 +1052,7 @@ program crack
               call print_title('Force Computation')
               call system_timer('force computation/optimisation')
               if (params%simulation_classical) then
-                 call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
+                 call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' energy=energy force=force')
               else
                  call calc(hybrid_pot, ds%atoms, args_str="force=force")
               end if
@@ -1065,7 +1065,11 @@ program crack
 
               call print_title('Advance Verlet')
               call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
-              call ds_print_status(ds, 'D')
+              if (params%simulation_classical) then
+                 call ds_print_status(ds, 'D', epot=energy)
+              else
+                 call ds_print_status(ds, 'D')
+              end if
 
               if (trim(params%simulation_task) == 'damped_md') &
                    call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
