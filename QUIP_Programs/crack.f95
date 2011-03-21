@@ -524,6 +524,7 @@ program crack
   if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz with stem="'//trim(stem)//'"')
 
   call initialise(ds, crack_slab)
+  if (any(params%md(1:params%num_md_stanza)%extrapolate_steps /= 1)) call initialise(ds_save, crack_slab)
   call finalise(crack_slab)
 
   call print('Initialised dynamical system with '//ds%N//' atoms')
@@ -578,9 +579,6 @@ program crack
   call print('Neighbour crust is '//params%md(params%md_stanza)%crust// ' A.')
 
   call calc_connect(ds%atoms, store_is_min_image=.true.)
-
-!!$  call table_allocate(embedlist, 4, 0, 0, 0) 
-!!$  call table_allocate(fitlist, 4, 0, 0, 0)   
 
   if (params%qm_calc_force_error) allocate(f_fm(3,ds%atoms%N))
 
