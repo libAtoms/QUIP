@@ -499,6 +499,10 @@ contains
 
       INIT_ERROR(error)
 
+      if (.not. to%initialised) then
+         RAISE_ERROR('ds_save_state: target DynamicalSystem "to" not initialised', error)
+      end if
+
       if (associated(to%atoms, from%atoms)) then
          ! Both DynamicalSystem object point to the same Atoms object, so we
          ! need to allocate our own buffer.
