@@ -920,7 +920,7 @@ program crack
               do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
                  if (params%simulation_classical) then
-                    call calc(classicalpot, ds%atoms, args_str=trim(params%classical_args_str)//' force=force')
+                    call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' energy=energy force=force')
                  else
                     if (i== 1) then
                        call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
