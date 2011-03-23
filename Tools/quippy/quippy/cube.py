@@ -98,7 +98,7 @@ class CubeWriter(object):
        if self.opened:  self.f.close()
 
 
-def CubeReader(f, property_name='charge'):
+def CubeReader(f, property_name='charge', discard_repeat=True):
 
    def convert_line(line, *fmts):
       return (f(s) for f,s in zip(fmts, line.split()))
@@ -113,6 +113,7 @@ def CubeReader(f, property_name='charge'):
 
    # Now number of atoms and origin
    n_atom, origin_x, origin_y, origin_z = convert_line(f.readline(), int, float, float, float)
+   origin = farray([origin_x, origin_y, origin_z])*BOHR
 
    # Next three lines define number of voxels and shape of each element
    shape = [0,0,0]
@@ -121,9 +122,6 @@ def CubeReader(f, property_name='charge'):
       shape[i-1], voxel[1,i], voxel[2,i], voxel[3,i] = convert_line(f.readline(), int, float, float, float)
 
    at = Atoms(n=n_atom, lattice=voxel*BOHR*shape)
-   at.params['comment1'] = comment1
-   at.params['comment2'] = comment2
-   at.params['origin'] = (origin_x, origin_y, origin_z)
    at.add_property(property_name, 0.0)
    prop_array = getattr(at, property_name)
 
@@ -141,8 +139,22 @@ def CubeReader(f, property_name='charge'):
    # Save volumetric data in at.data
    data = farray(data.reshape(shape))
 
-   # Discard periodic repeat
-   at.data = data[:-1,:-1,:-1]
+   # Discard periodic repeats?
+   if discard_repeat:
+      at.data = data[:-1,:-1,:-1]
+      shape = [s-1 for s in shape]
+      at.set_lattice(voxel*BOHR*shape, False)
+
+   at.params['comment1'] = comment1
+   at.params['comment2'] = comment2
+   at.params['origin'] = origin
+   at.params['shape'] = shape
+
+   # save grids in at.grid_x, at.grid_y, at.grid_z
+   if at.is_orthorhombic:
+      at.grid_x, at.grid_y, at.grid_z = numpy.mgrid[origin[1]:origin[1]+at.lattice[1,1]:shape[0]*1j,
+                                                    origin[2]:origin[2]+at.lattice[2,2]:shape[1]*1j,
+                                                    origin[3]:origin[3]+at.lattice[3,3]:shape[2]*1j]
 
    if opened:
       f.close()
