@@ -52,7 +52,7 @@ if 'modules' in cfg.sections():
 # External dependencies
 available_modules = []
 unavailable_modules = []
-for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye']:
+for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye', 'enthought.mayavi']:
    if mod in disabled_modules: continue
    try:
       __import__(mod)
@@ -204,3 +204,7 @@ except ImportError:
 if 'atomeye' in available_modules:
    import atomeye
    import atomeyewriter
+
+if 'enthought.mayavi' in available_modules:
+   import mayavi
+   
