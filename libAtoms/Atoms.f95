@@ -1121,9 +1121,9 @@ contains
        if (remap) call set_map_shift(this)
     end if
 
-    this%is_orthorhombic = ( (count(this%lattice(:,1) == 0.0_dp) <= 1) .and. &
-			     (count(this%lattice(:,2) == 0.0_dp) <= 1) .and. &
-			     (count(this%lattice(:,3) == 0.0_dp) <= 1) )
+    this%is_orthorhombic = ( (count(this%lattice(:,1) /= 0.0_dp) <= 1) .and. &
+			     (count(this%lattice(:,2) /= 0.0_dp) <= 1) .and. &
+			     (count(this%lattice(:,3) /= 0.0_dp) <= 1) )
     this%is_periodic(1) = any(this%lattice(:,1) /= 0.0_dp)
     this%is_periodic(2) = any(this%lattice(:,2) /= 0.0_dp)
     this%is_periodic(3) = any(this%lattice(:,3) /= 0.0_dp)
