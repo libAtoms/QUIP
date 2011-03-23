@@ -47,7 +47,7 @@ program teach_sparse_program
   character(len=FIELD_LENGTH) :: verbosity
   character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
   theta_file, sparse_file, bispectrum_file, config_type_hypers_string, tmp
-  real(dp) :: mem_required, mem_total, mem_free
+  real(dp) :: mem_required, mem_total, mem_free, z0_ratio
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
   character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, config_type_hypers_fields
@@ -65,7 +65,7 @@ program teach_sparse_program
   call param_register(params, 'm', '50', main_teach_sparse%m, help_string="Number of sparse environments")
   call param_register(params, 'r_cut', '2.75', main_teach_sparse%r_cut, help_string="Cutoff for GAP environment")
   call param_register(params, 'j_max', '4', main_teach_sparse%j_max, help_string="Max of expansion of bispectrum, i.e. resulution")
-  call param_register(params, 'z0', '0.0', main_teach_sparse%z0, help_string="Developer option. Radius of 4D projection sphere.")
+  call param_register(params, 'z0_ratio', '0.0', z0_ratio, help_string="Developer option. Ratio of radius of 4D projection sphere times PI and the cutoff.")
   call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates, help_string="{bispectrum,qw,water_monomer,water_dimer} representation to use")
   call param_register(params, 'l_max', '6', main_teach_sparse%qw_l_max, help_string="Maximum sphearical harmonic expansion")
   call param_register(params, 'cutoff', '', qw_cutoff_string, help_string="Cutoffs for the radial basis functions")
@@ -106,7 +106,7 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     [r_cut=2.75] [j_max=4] [z0_ratio=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
@@ -239,7 +239,7 @@ program teach_sparse_program
      enddo
      main_teach_sparse%r_cut = maxval(main_teach_sparse%qw_cutoff(1:main_teach_sparse%qw_f_n))
   case('bispectrum')
-     main_teach_sparse%z0 = max(1.0_dp,main_teach_sparse%z0) * main_teach_sparse%r_cut/(PI-0.02_dp)
+     main_teach_sparse%z0 = max(1.0_dp,z0_ratio) * main_teach_sparse%r_cut/(PI-0.02_dp)
      main_teach_sparse%d = j_max2d(main_teach_sparse%j_max)
   case default
      call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
