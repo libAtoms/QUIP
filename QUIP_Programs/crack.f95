@@ -995,6 +995,8 @@ program crack
 
                  ! revert to the saved positions etc.
                  call ds_restore_state(ds, ds_save)
+                 call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
+                      old_nn, hybrid, hybrid_mark, force)
 
                  do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
