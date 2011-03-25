@@ -160,7 +160,7 @@ contains
     real(dp), intent(in) :: strain, E, v, height
     real(dp) :: crack_strain_to_g
 
-    crack_strain_to_g = 1.0_dp/2.0_dp*E/(1-v*v)*strain*strain*height*0.1_dp
+    crack_strain_to_g = 1.0_dp/2.0_dp*E/(1.0_dp-v*v)*strain*strain*height*0.1_dp
 
   end function crack_strain_to_g
 
@@ -2512,6 +2512,7 @@ contains
          call print('  Atom 1 pos = '//crack_slab%pos(:,atom1))
          call print('  Atom 2 pos = '//crack_slab%pos(:,atom2))
          call Print('Shifting atoms vertically by '//shift)
+
          do i=1,crack_slab%N
             crack_slab%pos(2,i) = crack_slab%pos(2,i) + shift
          end do
@@ -2547,8 +2548,6 @@ contains
           crack_slab%pos(1,i) = crack_slab%pos(1,i) + params%crack_x_shift
        end do
     end if
-
-    call map_into_cell(crack_slab)
 
   end subroutine crack_make_slab
 

@@ -64,8 +64,14 @@ def makecrack(params):
    # 3D crack with free surfaces at z = +/- depth/2
    if params.crack_free_surfaces:
       crack_slab.lattice[3,3] = crack_slab.lattice[3,3] + params.crack_vacuum_size
-   
+
    crack_slab.set_lattice(crack_slab.lattice, False)
+
+   # Map atoms into cell AFTER changing to the new lattice
+   crack_slab.map_into_cell()
+
+   miny, maxy = crack_slab.pos[2,:].min(), crack_slab.pos[2,:].max()
+   assert abs((maxy-miny) - height) < 1e-5  # be sure that remapping didn't change height of slab
 
    # Add various properties to crack_slab
    crack_slab.add_property('hybrid', 0)
