@@ -50,12 +50,6 @@ def loadstring(s):
    from numpy import loadtxt
    return loadtxt(StringIO.StringIO(s.replace('[','').replace(']','')))
 
-from quippy import available_modules
-if 'pylab' in available_modules:
-   from pylab import plot
-   from farray import convert_farray_to_ndarray
-   plot = convert_farray_to_ndarray(plot)
-        
 def quip_xml_parameters(name, label=None):
    """Search for an QUIP XML parameter set matching `name' and, optionally `label`.
 

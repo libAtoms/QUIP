@@ -176,5 +176,7 @@ if 'atomeye' in available_modules:
    import atomeyewriter
 
 if 'enthought.mayavi' in available_modules:
-   import mayavi
+   import plot3d
    
+if 'pylab' in available_modules:
+   import plot2d
