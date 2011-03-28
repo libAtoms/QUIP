@@ -2757,14 +2757,14 @@ type(inoutput), optional :: debugfile
 	RAISE_ERROR("do_loop_atoms_no_connectivity is false, trying connectivity hops, but no core list is specified", error)
       endif
 
-	if (present(debugfile)) call print("   connectivity hopping", file=debugfile)
-	if (present(debugfile) .and. present(radius)) call print("    have radius " // radius, file=debugfile)
-	if (present(debugfile)) call print("   present nneighb_only " // present(nneighb_only), file=debugfile)
-	if (present(debugfile) .and. present(nneighb_only)) call print("   nneighb_only " // nneighb_only, file=debugfile)
+      if (present(debugfile)) call print("   connectivity hopping", file=debugfile)
+      if (present(debugfile) .and. present(radius)) call print("    have radius " // radius, file=debugfile)
+      if (present(debugfile)) call print("   present nneighb_only " // present(nneighb_only), file=debugfile)
+      if (present(debugfile) .and. present(nneighb_only)) call print("   nneighb_only " // nneighb_only, file=debugfile)
       do_nneighb_only = optional_default(.true., nneighb_only)
       do_min_images_only = optional_default(.true., min_images_only)
       if (do_use_avgpos) then
-	RAISE_ERROR("can't use avgpos with connectivity hops - make sure your connectivity is based on avgpos instead", error)
+	RAISE_ERROR("can't use avgpos with connectivity hops - make sure your connectivity is based on pos instead", error)
       endif
 
       ! start with core
