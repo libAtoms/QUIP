@@ -155,41 +155,11 @@ del wrap_all
 del fortran_class_prefix
 del spec
 
-class QuippyWriter:
-   def __init__(self, fortran_file):
-      self.fortran_file = fortran_file
-      self.saved_prefix = None
-      self.leading_space = ''
-      
-   def write(self, text):
-      if text.startswith(' '):
-         self.leading_space += ' '*(len(text) - len(text.lstrip()))
-         return
-      for line in text.splitlines(True):
-         inoutput_print_string(self.leading_space+line.rstrip(), file=self.fortran_file, nocr=not line.endswith('\n'))
-         self.leading_space = ''
-         if self.saved_prefix is not None and line.endswith('\n'):
-            self.fortran_file.prefix = self.saved_prefix
-            self.saved_prefix = None
-         if self.saved_prefix is None and not line.endswith('\n'):
-            self.saved_prefix = self.fortran_file.prefix
-            self.fortran_file.prefix = ''
-
-# Create InOutput objects associated with stdout and stderr                
-mainlog_ptr, errorlog_ptr = _quippy.qp_get_mainlog_errorlog_ptr()
-mainlog = InOutput(fpointer=mainlog_ptr, finalise=False)
-errorlog = InOutput(fpointer=errorlog_ptr, finalise=False)
-del mainlog_ptr, errorlog_ptr
-
+import fortranio;   from fortranio import *
 import farray;      from farray import *
 import atomslist;   from atomslist import *
 import periodic;    from periodic import *
 import util;        from util import *
-
-# Redirect Python stdout to Fortran mainlog so that prefix, verbosity, etc. work.
-if not is_interactive_shell():
-   sys.stdout = QuippyWriter(mainlog)
-
 
 import sio2, povray, cube, xyz, netcdf
 
