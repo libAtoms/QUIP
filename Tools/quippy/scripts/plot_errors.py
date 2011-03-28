@@ -19,6 +19,7 @@
 
 from pylab import *
 from quippy import *
+from quippy.plot2d import *
 import optparse
 
 p = optparse.OptionParser(usage='%prog [options] <input files>...')
@@ -85,55 +86,28 @@ for pot_file in args:
     i = 1
     if opt.energy:
         subplot(n_plots, 1, i)
-        plot([abs(getattr(at, opt.energy_name) - getattr(ref_at, opt.energy_ref_name))/at.n for (at, ref_at) in zip(configs, ref_configs)])
-        xlim(0,len(configs)-1)
-        ylabel('Energy error per atom / eV')
-        if opt.energy_scale: ylim(0,opt.energy_scale)
+        plot_energy_error(configs, ref_configs, opt.energy_name, opt.energy_ref_name, opt.energy_scale)
         i += 1
 
     if opt.max_force:
         subplot(n_plots, 1, i)
-        plot([abs(getattr(at, opt.force_name) - getattr(ref_at, opt.force_ref_name)).max() for (at, ref_at) in zip(configs, ref_configs)])
-        xlim(0,len(configs)-1)
-        ylabel('Max force error / eV/A')
-        if opt.max_force_scale: ylim(0,opt.max_force_scale)        
+        plot_max_force_error(configs, ref_configs, opt.force_name, opt.force_ref_name, opt.max_force_scale)
         i += 1
 
     if opt.rms_force:
         subplot(n_plots, 1, i)
-        plot([sqrt(((getattr(at, opt.force_name) - getattr(ref_at, opt.force_ref_name)).reshape(3*at.n)**2).mean()) for (at, ref_at) in zip(configs, ref_configs)])
-        xlim(0,len(configs)-1)
-        ylabel('RMS force error / eV/A')
-        if opt.rms_force_scale: ylim(0,opt.rms_force_scale)        
+        plot_rms_force_error(configs, ref_configs, opt.force_name, opt.force_ref_name, opt.rms_force_scale)
         i += 1
 
-    if opt.max_stress or opt.rms_stress:
-        max_stress_error = []
-        rms_stress_error = []
-        for (at, ref_at) in zip(configs, ref_configs):
-            if not hasattr(ref_at, opt.virial_name):
-                max_stress_error.append(0)
-                rms_stress_error.append(0)
-            else:
-                max_stress_error.append((getattr(at, opt.virial_name) - getattr(ref_at, opt.virial_ref_name)).max()/at.cell_volume()*GPA)
-                rms_stress_error.append(sqrt(((getattr(at, opt.virial_name) - getattr(ref_at, opt.virial_ref_name)).reshape(9)**2).mean())/at.cell_volume()*GPA)
+    if opt.max_stress:
+        subplot(n_plots, 1, i)
+        plot_max_stress_error(configs, ref_configs, opt.opt.virial_name, opt.virial_ref_name, opt.max_stress_scale)
+        i += 1
 
-                
-        if opt.max_stress:
-            subplot(n_plots, 1, i)            
-            plot(max_stress_error)
-            xlim(0,len(configs)-1)
-            ylabel('Max stress error / eV')
-            if opt.max_stress_scale: ylim(0,opt.max_stress_scale)                    
-            i += 1
-
-        if opt.rms_stress:
-            subplot(n_plots, 1, i)            
-            plot(rms_stress_error)
-            xlim(0,len(configs)-1)
-            ylabel('RMS stress error / eV')
-            if opt.rms_stress_scale: ylim(0,opt.rms_stress_scale)                    
-            i += 1
+    if opt.rms_stress:
+        subplot(n_plots, 1, i)
+        plot_rms_stress_error(configs, ref_configs, opt.opt.virial_name, opt.virial_ref_name, opt.rms_stress_scale)
+        i += 1
 
     if opt.sparse_points:
         subplot(n_plots, 1, i)
@@ -148,7 +122,7 @@ xlabel('Configuration number')
 if opt.legend is not None:
     subplots_adjust(bottom=0.15)
     labels = opt.legend.split()
-    figlegend(gca().lines, labels, 'lower center', ncol=len(labels))
+    figlegend(gca().lines, labels, 'lower center', ncol=len(labels)/2)
         
 if opt.output is not None:
     savefig(opt.output)

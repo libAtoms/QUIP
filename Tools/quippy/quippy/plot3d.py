@@ -1,10 +1,29 @@
+#!/usr/bin/env python
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ X
+# HQ X   quippy: Python interface to QUIP atomistic simulation library
+# HQ X
+# HQ X   Copyright James Kermode 2010
+# HQ X
+# HQ X   These portions of the source code are released under the GNU General
+# HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# HQ X
+# HQ X   If you would like to license the source code under different terms,
+# HQ X   please contact James Kermode, james.kermode@gmail.com
+# HQ X
+# HQ X   When using this software, please cite the following reference:
+# HQ X
+# HQ X   http://www.jrkermode.co.uk/quippy
+# HQ X
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 from enthought.mayavi import mlab
 import quippy
 import numpy as np
 
 atom_colours_lut = np.array([list(quippy.ElementColours[k])+[1] for k in range(110)])*255
 
-def draw_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=None, vmax=None):
+def add_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=None, vmax=None):
 
     r = np.array([quippy.ElementCovRad[z] for z in at.z])
 
@@ -31,7 +50,7 @@ def draw_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=Non
     return pts
 
 
-def draw_bonds(at, pts, cutoff_factor=1.2, bond_radius=0.2, bond_colour=(.55, .55, .55)):
+def add_bonds(at, pts, cutoff_factor=1.2, bond_radius=0.2, bond_colour=(.55, .55, .55)):
     at.set_cutoff_factor(cutoff_factor)
     at.calc_connect()
 
@@ -48,11 +67,11 @@ def draw_bonds(at, pts, cutoff_factor=1.2, bond_radius=0.2, bond_colour=(.55, .5
             bonds.append([i-1,n.j-1])
 
     pts.mlab_source.dataset.lines = np.array(bonds)
-    mlab.pipeline.surface(mlab.pipeline.tube(pts, tube_radius=bond_radius), color=bond_colour)
+    return mlab.pipeline.surface(mlab.pipeline.tube(pts, tube_radius=bond_radius), color=bond_colour)
     
     
 
-def draw_cell(at, pts, origin=[0.,0.,0.], shift=[.5, .5, .5], supercell=[1, 1, 1]):
+def add_cell(at, pts, origin=[0.,0.,0.], shift=[.5, .5, .5], supercell=[1, 1, 1]):
     if not at.is_orthorhombic:
         raise ValueError('Cannot draw cell outline for non-orthorhombic cells')
 
@@ -72,16 +91,24 @@ def draw_cell(at, pts, origin=[0.,0.,0.], shift=[.5, .5, .5], supercell=[1, 1, 1
                 disp = np.array([i*at.lattice[1,1], i*at.lattice[1,1],
                                  j*at.lattice[2,2], j*at.lattice[2,2],
                                  k*at.lattice[3,3], k*at.lattice[3,3]])
-                mlab.outline(pts, extent=origin+disp+extent-shift, name='outline_%d_%d_%d' % (i,j,k))
+                return mlab.outline(pts, extent=origin+disp+extent-shift, name='outline_%d_%d_%d' % (i,j,k))
 
 
-def draw_arrows(at, pts, arrows, arrow_colour=(0, 0, 0), arrow_scale_factor=1.0, clf=True):
+def add_arrows(at, arrows, arrow_colour=(0, 0, 0), arrow_scale_factor=1.0, clf=True):
     pos = np.array(at.pos)
     arrows = np.array(arrows)
     return mlab.quiver3d(pos[0,:], pos[1,:], pos[2,:],
                   arrows[0,:], arrows[1,:], arrows[2,:],
                   scale_factor=arrow_scale_factor, color=arrow_colour, name='arrows')
 
+def scalar_field(at, x=None, y=None, z=None, v=None):
+    # Default to attributes read from a .cube file
+    if x is None: x = at.grid_x
+    if y is None: y = at.grid_y
+    if z is None: z = at.grid_z
+    if v is None: v = at.data
+
+    return mlab.pipeline.scalar_field(x, y, z, v)
 
 def draw_atoms(at, colours=None, colorbar=None, atom_scale_factor=1.0,
                cell=True, origin=[0., 0., 0.], shift=[.5, .5, .5], supercell=[1, 1, 1],
@@ -93,18 +120,21 @@ def draw_atoms(at, colours=None, colorbar=None, atom_scale_factor=1.0,
     fig = mlab.gcf()
     fig.scene.disable_render = True
 
-    pts = draw_balls(at, colours, colorbar, atom_scale_factor)
+    balls = add_balls(at, colours, colorbar, atom_scale_factor)
 
     if cell:
-        draw_cell(at, pts, origin, shift, supercell)
+        add_cell(at, balls, origin, shift, supercell)
         
     if bonds:
-        draw_bonds(at, pts, cutoff_factor, bond_radius, bond_colour)
+        add_bonds(at, balls, cutoff_factor, bond_radius, bond_colour)
 
     if arrows:
-        draw_arrows(at, pts, arrows, arrow_colour, arrow_scale_factor)
+        arrows = add_arrows(at, arrows, arrow_colour, arrow_scale_factor)
 
     fig.scene.disable_render = False
-        
-    return pts
+
+    if arrows:
+        return (balls, arrows)
+    else:
+        return balls
         
