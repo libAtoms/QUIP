@@ -1115,11 +1115,7 @@ CONTAINS
      real(dp), intent(in) :: x, y
      logical              :: feq
 
-     if (abs(x-y) > NUMERICAL_ZERO * abs(x)) then
-        feq = .false.
-     else
-        feq = .true.
-     end if
+     feq = (abs(x-y) <= NUMERICAL_ZERO * (abs(x)+abs(y))/2.0_dp) .or. (abs(x-y) <= NUMERICAL_ZERO)
      
    end function real_feq
 
@@ -1131,11 +1127,7 @@ CONTAINS
      real(dp), intent(in) :: x, y
      logical              :: fne
      
-     if (abs(x-y) > NUMERICAL_ZERO * abs(x)) then
-        fne = .true.
-     else
-        fne = .false.
-     end if
+     fne = .not. real_feq(x, y) 
      
    end function real_fne
 
