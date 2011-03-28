@@ -1094,6 +1094,7 @@ contains
     logical, intent(in)                     :: scale_positions
     logical, optional,        intent(in)    :: remap, reconnect
     real(dp), dimension(:,:), allocatable :: frac
+    real(dp) :: zeros(3,3), test_lattice(3,3), x, y
 
     ! only do the allocation if needed
     if(scale_positions) then
@@ -1121,12 +1122,26 @@ contains
        if (remap) call set_map_shift(this)
     end if
 
-    this%is_orthorhombic = ( (count(this%lattice(:,1) /= 0.0_dp) <= 1) .and. &
-			     (count(this%lattice(:,2) /= 0.0_dp) <= 1) .and. &
-			     (count(this%lattice(:,3) /= 0.0_dp) <= 1) )
-    this%is_periodic(1) = any(this%lattice(:,1) /= 0.0_dp)
-    this%is_periodic(2) = any(this%lattice(:,2) /= 0.0_dp)
-    this%is_periodic(3) = any(this%lattice(:,3) /= 0.0_dp)
+    zeros(:,:) = 0.0_dp
+    test_lattice = this%lattice
+    test_lattice(1,1) = 0.0_dp  ! zero diagonal elements
+    test_lattice(2,2) = 0.0_dp
+    test_lattice(3,3) = 0.0_dp
+    this%is_orthorhombic = test_lattice .feq. zeros
+
+    !write (*,*) x, y, (abs(x-y) <= NUMERICAL_ZERO * (abs(x)+abs(y))/2.0_dp) .or. (abs(x-y) <= NUMERICAL_ZERO), x .feq. y, TINY(1.0_dp)
+
+    test_lattice = 0.0_dp
+    test_lattice(:,1) = this%lattice(:,1)
+    this%is_periodic(1) = test_lattice .fne. zeros
+
+    test_lattice = 0.0_dp
+    test_lattice(:,2) = this%lattice(:,2)
+    this%is_periodic(2) = test_lattice .fne. zeros
+
+    test_lattice = 0.0_dp
+    test_lattice(:,3) = this%lattice(:,3)
+    this%is_periodic(3) = test_lattice .fne. zeros
 
   end subroutine atoms_set_lattice
 
