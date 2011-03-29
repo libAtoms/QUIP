@@ -18,7 +18,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import available_modules
-from pylab import plot, xlim, ylim, xlabel, ylabel, scatter
+from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, xticks, text
 from quippy.farray import convert_farray_to_ndarray
 import numpy
 
@@ -109,3 +109,19 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
 
     return (max_error, rms_error, rm4_error, rm8_error)
     
+
+def label_axes_from_config_types(config_types):
+    names = sorted(set(config_types))
+    idx1 = 0
+    tics = []
+    for name in names:
+        tics.append(config_types.index(name))
+    xticks(tics)
+
+    idx1 = 0
+    for name in names:
+        idx2 = config_types.index(name)
+        text((idx2+idx1)/2., -0.5, name, rotation=17)
+        idx1 = idx2
+        
+        
