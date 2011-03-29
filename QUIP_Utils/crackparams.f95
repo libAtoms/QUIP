@@ -177,6 +177,7 @@ module CrackParams_module
      real(dp) :: crack_load_interp_length !% Length over which linear interpolation between k-field 
                                           !% and uniform strain field is carried out
      real(dp) :: crack_ramp_length        !% Length of ramp for the case 'crack_loading="ramp"'
+     real(dp) :: crack_ramp_start_length  !% Length of the region in between the crack tip and the start of the ramp for the case 'crack_loading="ramp"'
      real(dp) :: crack_ramp_end_G         !% Loading at end of ramp for the case 'crack_loading="ramp"'
      real(dp) :: crack_initial_loading_strain        !% Rate of loading, expressed as strain of initial loading
      real(dp) :: crack_G_increment        !% Rate of loading, expressed as increment in G (override initial_loading_strain)
@@ -425,6 +426,7 @@ contains
     this%crack_loading           = 'uniform'
     this%crack_load_interp_length = 100.0_dp ! Angstrom
     this%crack_ramp_length       = 100.0_dp ! Angstrom
+    this%crack_ramp_start_length = 200.0_dp ! Angstrom
     this%crack_ramp_end_G        = 1.0_dp   ! J/m^2
     this%crack_initial_loading_strain       = 0.005_dp ! 0.5% per loading cycle
     this%crack_G_increment       = 0.0_dp   ! increment of G per loading cycle, override initial_loading_strain if present
@@ -806,11 +808,15 @@ contains
           read (value, *) parse_cp%crack_ramp_length
        end if
 
+       call QUIP_FoX_get_value(attributes, "ramp_start_length", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_ramp_start_length
+       end if
+
        call QUIP_FoX_get_value(attributes, "ramp_end_G", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_ramp_end_G
        end if
-
        call QUIP_FoX_get_value(attributes, "initial_loading_strain", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_initial_loading_strain
@@ -1548,6 +1554,7 @@ contains
     call Print('     loading               = '//this%crack_loading, file=file)
     call Print('     load_interp_length    = '//this%crack_load_interp_length, file=file)
     call Print('     ramp_length           = '//this%crack_ramp_length//' A', file=file)
+    call Print('     ramp_start_length     = '//this%crack_ramp_start_length//' A', file=file)
     call Print('     ramp_end_G            = '//this%crack_ramp_end_G//' J/m^2', file=file)
     call Print('     initial_loading_strain= '//this%crack_initial_loading_strain, file=file)
     call Print('     G_increment           = '//this%crack_G_increment//' J/m^2 per load cycle', file=file)
