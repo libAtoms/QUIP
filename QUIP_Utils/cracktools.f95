@@ -465,11 +465,17 @@ contains
 
   end subroutine crack_k_field
 
+!The subroutine crack_apply_strain_ramp  has to be called in order to create a slab with two different strain regions (or loading regions). 
+!G1 defines the initial loading with which the initial crack is created and it characterizes the third region just before the start of the ramp.
+!G2 defines the final loading belonging to the fifth region, immediately after the ramp, and is associated to the parameter crack_ramp_end_G.
+!Tha parameter crack_ramp_start_length defines the extension of region 3, lying in between the crack tip (d2) and start of the ramp.
+!In between of the 2 different strain regions (region3 with G=G1 and region 5 with G=G2) is created a buffer region 
+!which length is defined by the parameter crack_ramp_length (|d4-d3| in this subroutine).
+!IMPORTANT: In the crack.xml the option crack_loading="ramp" has to be used with crack_apply_loading_field="F" and simulation_initial_state="MD_CONSTANT".
 
-
-  subroutine crack_apply_strain_ramp(at, G1, G2, d1, d2, d3)  !I didn't change crack tip from 1D to 2D in this routine...
+  subroutine crack_apply_strain_ramp(at, G1, G2, d1, d2, d3, d4)  !I didn't change crack tip from 1D to 2D in this routine...
     type(Atoms), intent(inout) :: at
-    real(dp), intent(in) :: G1, G2, d1, d2, d3
+    real(dp), intent(in) :: G1, G2, d1, d2, d3, d4
 
     integer ::  j
     real(dp) x, y, q, strain1, strain2, &
@@ -499,7 +505,7 @@ contains
        x = at%pos(1,j)
        y = at%pos(2,j)
 
-       ! Rigidly shift first region
+       ! Rigidly shift region 1
        if (x <= d1) then
           at%pos(2,j) = at%pos(2,j) + strain1*orig_height/2.0_dp*sign(1.0_dp,y)
        end if
@@ -513,15 +519,21 @@ contains
                strain1*orig_height/2.0_dp*sign(1.0_dp,y)*(1.0_dp-q)
        end if
 
-       ! Decreasing strain in region 3
-       ! Interpolate between strain1 at x=d2 and strain2 at x=d3
+
+       ! Equilibration region in region 3: constant strain1 in this region
        if (x > d2 .and. x <= d3) then
-          q = (x - d2)/(d3-d2)
+          at%pos(2,j) = at%pos(2,j) * (1.0_dp + strain1)
+       end if
+
+       ! Decreasing strain in region 4
+       ! Interpolate between strain1 at x=d2 and strain2 at x=d3
+       if (x > d3 .and. x <= d4) then
+          q = (x - d3)/(d4-d3)
           at%pos(2,j) = at%pos(2,j) * (1.0_dp +  (strain1*(1.0_dp-q) + strain2*q))
        end if
 
-       ! Constant strain2 in last region
-       if (x > d3) then
+       ! Constant strain2 in region 5
+       if (x > d4) then
           at%pos(2,j) = at%pos(2,j) * (1.0_dp + strain2)
        end if
 
@@ -957,13 +969,17 @@ contains
           endif
        end if
 
+
     else if (trim(params%crack_loading) == 'ramp') then
 
        call print_title('Seed crack - Loading Ramp')
-
+       call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+       call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
+       call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call crack_apply_strain_ramp(crack_slab, params%crack_G, params%crack_ramp_end_G, r_crack_pos, &
             r_crack_pos+params%crack_strain_zone_width, &
-            r_crack_pos+params%crack_strain_zone_width+params%crack_ramp_length)
+            r_crack_pos+params%crack_strain_zone_width+params%crack_ramp_start_length, &
+            r_crack_pos+params%crack_strain_zone_width+params%crack_ramp_start_length+params%crack_ramp_length)
 
     else if (trim(params%crack_loading) == 'kfield') then
 
