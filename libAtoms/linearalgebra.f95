@@ -374,6 +374,11 @@ module linearalgebra_module
     module procedure insertion_sort_i, insertion_sort_r
   end interface insertion_sort
 
+  private :: binary_search_i, binary_search_r
+  interface binary_search
+     module procedure binary_search_i, binary_search_r
+  endinterface
+
   ! in addition, these are the intrinsics defined on matrices and vectors:
   !
   ! =    : intrinsic assignment, the left part needs to be allocated
@@ -4957,34 +4962,36 @@ CONTAINS
    !% then, if the element isn't found, the value returned is 'first' minus 1.
    !% To restrict the search to a subsection of the array supply 'low' and/or 'high'.
 
-   function binary_search(array,value,first,low,high) result(index)
+   function binary_search_i(array,value,first,low,high,error) result(index)
      
-     integer, dimension(:), intent(in) :: array
-     integer,               intent(in) :: value
-     integer, optional,     intent(in) :: first,low,high
-     integer                           :: index
+     integer, dimension(:), intent(in)   :: array
+     integer,               intent(in)   :: value
+     integer, optional,     intent(in)   :: first,low,high
+     integer, optional,     intent(out)  :: error
+     integer                             :: index
      !local variables
-     integer                           :: ilow, ihigh, count, max
-     logical                           :: done
+     integer                             :: ilow, ihigh, count, max
+     logical                             :: done
      
+     INIT_ERROR(error)
      max = size(array)
      ilow = 1; ihigh = max
      if (present(low)) then
         ilow = low
         if (present(first)) ilow = ilow - first + 1
-        if (ilow < 1) call system_abort('binary_search: Bad lower index supplied')
+        ASSERT(ilow >= 1, 'binary_search: Bad lower index supplied', error)
      end if
      if (present(high)) then
         ihigh = high
         if (present(first)) ihigh = ihigh - first + 1
-        if (ihigh > max) call system_abort('binary_search: Bad higher index supplied')
+        ASSERT(ihigh <= max, 'binary_search: Bad higher index supplied', error)
      end if
-     if (ilow > ihigh) call system_abort('binary_search: Lower index > Higher index!')
+     ASSERT(ilow <= ihigh, 'binary_search: Lower index > Higher index!', error)
 
      index = 0; count = 0
      done = .false.
      
-     if (max < 1) call system_abort('binary_search: Array must have at lease one element!')
+     ASSERT(max >= 1, 'binary_search: Array must have at lease one element!', error)
 
      if ( (array(ilow) > value) .or. (array(ihigh) < value) ) done = .true.
      if (array(ilow) == value) then
@@ -5009,12 +5016,77 @@ CONTAINS
         else                                 ! value at this index is too high. shift upper bound
            ihigh = index
         end if
-        if (count >= max) call system_abort('binary_search: Counter hit maximum. Is the array sorted properly?')
+        ASSERT(count < max, 'binary_search: Counter hit maximum. Is the array sorted properly?', error)
      end do
      
      if (present(first)) index = index - 1 + first
      
-   end function binary_search
+   end function binary_search_i
+
+
+   !% Do binary search and return 'index' of element being smaller or equal
+   !% to 'value'. 'array' must be sorted into ascending order beforehand.
+   !% If the array subscripts don't start at 1, then pass the actual index of
+   !% the first element as 'first'
+   function binary_search_r(array,value,first,low,high,error) result(index)
+     
+     real(DP), dimension(:), intent(in)   :: array
+     real(DP),               intent(in)   :: value
+     integer, optional,      intent(in)   :: first,low,high
+     integer, optional,      intent(out)  :: error
+     integer                              :: index
+     !local variables
+     integer                              :: ilow, ihigh, count, max
+     logical                              :: done
+
+     INIT_ERROR(error)
+     max = size(array)
+     ilow = 1; ihigh = max
+     if (present(low)) then
+        ilow = low
+        if (present(first)) ilow = ilow - first + 1
+        ASSERT(ilow >= 1, 'binary_search: Bad lower index supplied', error)
+     end if
+     if (present(high)) then
+        ihigh = high
+        if (present(first)) ihigh = ihigh - first + 1
+        ASSERT(ihigh <= max, 'binary_search: Bad higher index supplied', error)
+     end if
+     ASSERT(ilow <= ihigh, 'binary_search: Lower index > Higher index!', error)
+
+     index = 0; count = 0
+     done = .false.
+     
+     ASSERT(max >= 1, 'binary_search: Array must have at lease one element!', error)
+
+     if (array(ilow) > value) then
+        index = ilow-1
+        done = .true.
+     end if
+     if (array(ihigh) <= value) then
+        index = ihigh
+        done = .true.
+     end if
+     
+     do while(.not.done)
+        count = count + 1
+        index = (ihigh + ilow) / 2
+        if (array(index) <= value .and. array(index+1) > value) then
+           ! value found
+           done = .true.
+        else if (array(index) < value) then
+           ! value at this index is too low. shift lower bound
+           ilow = index
+        else
+           ! value at this index is too high. shift upper bound
+           ihigh = index
+        endif
+        ASSERT(count < max, 'binary_search: Counter hit maximum. Is the array sorted properly?', error)
+     end do
+     
+     if (present(first)) index = index - 1 + first
+     
+   end function binary_search_r
 
 
    !% Subtract the average value from each element of a real array.

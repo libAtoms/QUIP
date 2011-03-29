@@ -21,7 +21,7 @@ from numpy import dtype, int32
 import unittest
 from quippytest import *
 
-from quippy import sort_array_i, sort_array_r, heap_sort_i, heap_sort_r
+from quippy import sort_array_i, sort_array_r, heap_sort_i, heap_sort_r, binary_search_i, binary_search_r
 
 class TestLinearAlgebra(QuippyTestCase):
 
@@ -57,7 +57,25 @@ class TestLinearAlgebra(QuippyTestCase):
       self.assertArrayAlmostEqual(i, [  7.,  5., 1.,  6., 2., 4., 3.,  8.])
       self.assertArrayAlmostEqual(r, [  7.,  5., 1., 6.6, 2., 4., 3.,  8.])
 
-      
+   def test_binary_search_i(self):
+      a = farray([1,  2,  3,  4,   5,    6,    7,   8 ], dtype=int32)
+      i = binary_search_i(a, 4)
+      self.assertEqual(i, 4)
+
+   def test_binary_search_r(self):
+      r = farray([1., 2., 3., 4.,  5., 6.6,    7.,  8.])
+      i = binary_search_r(r, 0.)
+      self.assertEqual(i, 0)
+      i = binary_search_r(r, 1.1)
+      self.assertEqual(i, 1)
+      i = binary_search_r(r, 5)
+      self.assertEqual(i, 5)
+      i = binary_search_r(r, 6.6)
+      self.assertEqual(i, 6)
+      i = binary_search_r(r, 6.9)
+      self.assertEqual(i, 6)
+      i = binary_search_r(r, 8.8)
+      self.assertEqual(i, 8)
 
 if __name__ == '__main__':
    unittest.main()
