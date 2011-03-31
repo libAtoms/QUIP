@@ -154,12 +154,12 @@ clean: ${BUILDDIR}
 	done
 
 deepclean: clean
-	for mods in  ${MODULES} ; do \
+	-for mods in  ${MODULES} ; do \
 	  echo "deepclean in $$mods"; \
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles deepclean ; \
 	done
-	for dir in ${EXTRA_CLEAN_DIRS}; do \
+	-for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
 	done
 
