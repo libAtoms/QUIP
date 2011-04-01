@@ -13,7 +13,9 @@ function check_version {
    svn_version=$1
 
    rm -rf QUIP_test
-   ${SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test
+   echo "starting {SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
+   ${SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test > /dev/null 2>&1 
+   echo "finished {SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
    if [[ $? != 0 ]]; then
       echo "Failed to check out version $svn_version"
       make_status="Checkout Failed"
@@ -87,7 +89,9 @@ function check_version {
 	    cp ../Makefile.inc.${QUIP_ARCH} build.${QUIP_ARCH}/Makefile.inc
 
 	    # clean thoroughly
-	    # make deepclean >> ../autobuild.version_${svn_version} 2>&1
+	    # no need for deepclean in QUIP, we just wiped build dir
+	    ## make deepclean >> ../autobuild.version_${svn_version} 2>&1
+	    # here we clean in ThirdParty, quippy is done below 
 	    rm -rf ThirdParty/FoX*/obj*
 
 	    # try QUIP make all
@@ -106,6 +110,7 @@ function check_version {
 	    # try quippy make test
 	    if [[ $quippy_req != "-" ]]; then
 	       pushd Tools/quippy > /dev/null
+	       make clean > /dev/null
 	       make test > ../../../quippy_test.out.${svn_version}.${compiler_name}${suffix} 2>&1
 	       if [[ $? == 0 ]]; then
 		  quippy_status=${quippy_status}"$compiler_name OK "
