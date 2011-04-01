@@ -13,6 +13,7 @@ p.add_option('-V', '--vector', action='store', help="""property to use for vecto
 p.add_option('-p', '--post_config_command', action='append', help="""commands to add after each config""")
 p.add_option('-P', '--post_file_command', action='append', help="""commands to add after each input file""")
 p.add_option('-e', '--end_command', action='append', help="""commands to add at the very end""")
+p.add_option('-d', '--decimate', action='append', help="""use every nth config""")
 
 opt, args = p.parse_args()
 
@@ -23,12 +24,24 @@ if (opt.graph is not None):
   graph_min=[1.0e38]*len(opt.graph)
   graph_max=[-1.0e38]*len(opt.graph)
 
+if (opt.decimate is not None):
+   decimate_n = int(opt.decimate[0])
+else:
+   decimate_n = 1
+
 first_config=True
+config_i=-1
+config_i_used=-1
 for file in args:
   if (file == "-"):
     file = "stdin"
 
   for at in AtomsReader(file):
+    config_i += 1
+    if (decimate_n > 1 and mod(config_i,decimate_n) != 0):
+      continue
+    config_i_used += 1
+    sys.stderr.write("%d" % mod(config_i_used,10))
     if (first_config and opt.graph is not None):
       print "n_graphs %d" % len(opt.graph)
       first_config=False
@@ -79,6 +92,7 @@ for file in args:
   if (opt.post_file_command is not None):
     for cmd in opt.post_file_command:
       print cmd
+  sys.stderr.write("\n")
 
 if (opt.end_command is not None):
   for cmd in opt.end_command:
