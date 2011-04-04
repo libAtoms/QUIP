@@ -1,23 +1,9 @@
-# Set matplotlib in interactive mode with the macosx backend
-# THESE MUST BE THE FIRST MATPLOTLIB COMMANDS CALLED!
-import matplotlib
-matplotlib.use('macosx')
-matplotlib.interactive(True)
-
-# Bring all of the numeric and plotting commands to the toplevel namespace
 from pylab import *
-
 from numpy import *
+
 import quippy
 from quippy import *
 from quippy.plot2d import *
-
-print """Welcome to quippy!
-
-help(numpy) -> help on NumPy, Python's basic numerical library.
-help(plotting) -> help on plotting commands.
-help(quippy) -> help on quippy commands
-"""
 
 import IPython.ipapi
 ip = IPython.ipapi.get()
