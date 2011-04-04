@@ -18,71 +18,71 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import available_modules
-from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, xticks, text
+from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines
 from quippy.farray import convert_farray_to_ndarray
 import numpy
 
 # Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)
 
-def plot_energy_error(configs, ref_configs, energy_name='energy', energy_ref_name='energy', scale=None, **plot_args):
-    p = plot([abs(getattr(at, energy_name) - getattr(ref_at, energy_ref_name))/at.n for (at, ref_at) in zip(configs, ref_configs)], **plot_args)
+def plot_energy_error(configs, ref_configs, energy_name='energy', energy_ref_name='energy', scale=None, *plot_args, **plot_kwargs):
+    p = plot([abs(getattr(at, energy_name) - getattr(ref_at, energy_ref_name))/at.n for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('Energy error per atom / eV')
     if scale: ylim(0,scale)
     return p
 
-def plot_max_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, **plot_args):
-    p = plot([abs(getattr(at, force_name) - getattr(ref_at, force_ref_name)).max() for (at, ref_at) in zip(configs, ref_configs)], **plot_args)
+def plot_max_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, *plot_args, **plot_kwargs):
+    p = plot([abs(getattr(at, force_name) - getattr(ref_at, force_ref_name)).max() for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('Max force error / eV/A')
     if scale: ylim(0,scale)
     return p
 
-def plot_rms_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, **plot_args):
+def plot_rms_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, *plot_args, **plot_kwargs):
     p = plot([numpy.sqrt(((getattr(at, force_name) - getattr(ref_at, force_ref_name)).reshape(3*at.n)**2).mean())
-          for (at, ref_at) in zip(configs, ref_configs)], **plot_args)
+          for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('RMS force error / eV/A')
     if scale: ylim(0,scale)
     return p
 
-def plot_max_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, **plot_args):
+def plot_max_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, *plot_args, **plot_kwargs):
     max_stress_error = []
     for (at, ref_at) in zip(configs, ref_configs):
-        if not hasattr(ref_at, opt.virial_name):
+        if not hasattr(ref_at, virial_name):
             max_stress_error.append(0)
         else:
-            max_stress_error.append((getattr(at, opt.virial_name) - getattr(ref_at, opt.virial_ref_name)).max()/at.cell_volume()*GPA)
+            max_stress_error.append((getattr(at, virial_name) - getattr(ref_at, virial_ref_name)).max()/at.cell_volume()*GPA)
             
-    p = plot(max_stress_error, **plot_args)
+    p = plot(max_stress_error, *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
-    ylabel('Max stress error / eV')
+    ylabel('Max stress error / GPa')
     if scale: ylim(0,scale)
     return p
 
-def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, **plot_args):
+def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, *plot_args, **plot_kwargs):
     rms_stress_error = []
     for (at, ref_at) in zip(configs, ref_configs):
-        if not hasattr(ref_at, opt.virial_name):
+        if not hasattr(ref_at, virial_name):
             rms_stress_error.append(0)
         else:
-            rms_stress_error.append(numpy.sqrt(((getattr(at, opt.virial_name) - getattr(ref_at, opt.virial_ref_name)).reshape(9)**2).mean())/at.cell_volume()*GPA)
+            rms_stress_error.append(numpy.sqrt(((getattr(at, virial_name) - getattr(ref_at, virial_ref_name)).reshape(9)**2).mean())/at.cell_volume()*GPA)
             
-    p = plot(rms_stress_error, **plot_args)
+    p = plot(rms_stress_error, *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
-    ylabel('RMS stress error / eV')
+    ylabel('RMS stress error / GPa')
     if scale: ylim(0,scale)
     return p
 
-def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name='force', **plot_args):
+def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
     ref_force = getattr(ref_configs, force_ref_name)
     ref_force.reshape(ref_force.size)
 
     force = getattr(configs, force_name)
     force.reshape(force.size)
                             
-    s = scatter(abs(ref_force), abs(ref_force - force), **plot_args)
+    s = scatter(abs(ref_force), abs(ref_force - force), *plot_args, **plot_kwargs)
     xlim(0, abs(ref_force).max())
     ylim(0, abs(ref_force - force).max())
     xlabel('Reference forces / eV/A')
@@ -92,10 +92,10 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
 
 def force_error_statistics(configs, ref_configs, force_name='force', force_ref_name='force'):
     ref_force = getattr(ref_configs, force_ref_name)
-    ref_force.reshape(ref_force.size)
+    ref_force = ref_force.reshape(ref_force.size, order='F')
 
     force = getattr(configs, force_name)
-    force.reshape(force.size)
+    force = force.reshape(force.size, order='F')
     
     max_error = abs(force - ref_force).max()
     rms_error = (((force - ref_force)**2).mean())**0.5
@@ -106,22 +106,80 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
     print 'RMS force error %.3f eV/A' % rms_error
     print 'RM4 force error %.3f eV/A' % rm4_error
     print 'RM8 force error %.3f eV/A' % rm8_error
+    print
 
-    return (max_error, rms_error, rm4_error, rm8_error)
+    if hasattr(ref_configs, 'config_type'):
+        ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
+        names = sorted(set(ct))
+        for name in names:
+
+            first = ct.index(name)
+            last  = len(ct)-ct[::-1].index(name)
+
+            this_force = force[first:last]
+            this_ref_force = ref_force[first:last]
+            
+            rms_error = ((this_force - this_ref_force)**2).mean()**0.5
+            print 'config_type %s RMS force error %.3f eV/A' % (name, rms_error)
     
 
-def label_axes_from_config_types(config_types):
+def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
+    ref_force = getattr(ref_configs, force_ref_name)
+    ref_force = ref_force.reshape(ref_force.size, order='F')
+
+    force = getattr(configs, force_name)
+    force = force.reshape(force.size, order='F')
+
+    plot(abs(force - ref_force), *plot_args, **plot_kwargs)
+    xlim(0, len(force))
+
+    if hasattr(ref_configs, 'config_type'):
+        ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
+        label_axes_with_config_types(ct)
+        
+        names = sorted(set(ct))
+        for name in names:
+            first = ct.index(name)
+            last  = len(ct)-ct[::-1].index(name)
+
+            this_force = force[first:last]
+            this_ref_force = ref_force[first:last]
+            
+            rms_error = ((this_force - this_ref_force)**2).mean()**0.5
+            hlines(rms_error, first, last, lw=3, color='k')
+        
+
+def label_axes_with_config_types(config_types):
     names = sorted(set(config_types))
-    idx1 = 0
-    tics = []
-    for name in names:
-        tics.append(config_types.index(name))
-    xticks(tics)
+    major_tics = []
+    minor_tics = []
 
     idx1 = 0
-    for name in names:
-        idx2 = config_types.index(name)
-        text((idx2+idx1)/2., -0.5, name, rotation=17)
-        idx1 = idx2
+    for name1, name2 in zip(names, names[1:] + [None]):
+        idx1 = config_types.index(name1)
+        if name2 is not None:
+            idx2 = config_types.index(name2)
+        else:
+            idx2 = len(config_types)
+        half = (idx2+idx1)/2
+        minor_tics.append(half)
+        major_tics.append(idx2)
+
+    import matplotlib.ticker as ticker
+    ax = gca()
+    ax.xaxis.set_major_locator(ticker.FixedLocator(major_tics))
+    ax.xaxis.set_minor_locator(ticker.FixedLocator(minor_tics))
+
+    ax.xaxis.set_major_formatter(ticker.NullFormatter()) 
+    ax.xaxis.set_minor_formatter(ticker.FixedFormatter(names))
+
+    for tick in ax.xaxis.get_minor_ticks(): 
+        tick.tick1line.set_markersize(0) 
+        tick.tick2line.set_markersize(0) 
+        tick.label1.set_horizontalalignment('center')
+        tick.label1.set_rotation(90)
+
+    draw()
+
         
         
