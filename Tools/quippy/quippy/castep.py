@@ -833,18 +833,20 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             raise ValueError('No total energy found in castep file')
       else:
          # Use last matching energy line in file
-         # Energy field before "eV"
+         # Has this energy been corrected for the finite basis set?
+         energy_param_name = 'energy'
+         if 'not corrected for finite basis set' in energy_lines[-1]: energy_param_name = 'energy_no_basis_corr'
+         
          fields = energy_lines[-1].split()
          if 'eV' not in fields:
             if abort:
                raise ValueError('No value found in energy line "%s"' % energy_lines[-1])
          else:
-            atoms.params['energy'] = float(fields[fields.index('eV')-1])
+            atoms.params[energy_param_name] = float(fields[fields.index('eV')-1])
 
       # If we're doing geom-opt, look for enthalpy
       enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
                         s.startswith(' BFGS: Final Enthalpy')]
-      print 'enthalpy', enthalpy_lines
       if enthalpy_lines != []:
          atoms.params['enthalpy'] = float(enthalpy_lines[-1].split()[-2])
 
