@@ -22,7 +22,7 @@ from numpy import *
 import sys, optparse, itertools
 
 
-p = optparse.OptionParser(usage='%prog [options] <input file> <output file>')
+p = optparse.OptionParser(usage='%prog [options] ( <input file> [ <output file> ] | <input file> [ <input file> ... ] [ (-o|--output) <output file> ] )')
 
 p.add_option('-r', '--range', action='store', help="""Range of frames to include. Should be either a single frame
 number or a slice [start]:[stop][:step]. If -r is omitted,
@@ -65,6 +65,7 @@ p.add_option('-s', '--select', action='store', help="""Output only a subset of t
 p.add_option('--int-format', action='store', help="""Format string to use when writing integers in XYZ format.""")
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
 p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printing of Atoms object (useful when also using -e argument).""", default=False)
+p.add_option('-o', '--output', action='store', help="""File to output to (required when more than 1 input file is listed)""")
 
 # Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
@@ -84,25 +85,37 @@ opt, args = p.parse_args()
 if opt.extract_params:
    opt.no_print_at = True
 
+# check for conflicts with -o|--output 
 if opt.no_print_at:
-   if len(args) != 1:
-       p.error('One input file must be specified')
-else:       
-   if len(args) != 2:
-      p.error('One input file and one output file must be specified (use /dev/null or NONE for no output).')
+   if opt.output is not None:
+       p.error('--no_print_at can not coexist with --output')
+   if len(args) < 1:
+       p.error('At least one input file must be specified')
+   infiles = args
+else: # didn't specify no_print_at
+   if opt.output is None:
+      if len(args) != 2:
+	 p.error('With no --output, exactly one input and one output file must be specified (use /dev/null or NONE for no output).')
+      outfile = args.pop()
+      infiles = args
+   else:
+      outfile = opt.output
+      infiles = args
 
-try:
-   infile, outfile = args
-except ValueError:
-   infile, = args
-   outfile = '-'
-
+# make no-output outfile name standard
 if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
    outfile = None
 
-if infile == '-':  infile = 'stdin'
+# convert - to stdin/stdout
+infiles = [ f == 'stdin' and '-' or f for f in infiles ]
 if outfile == '-': outfile = 'stdout'
 
+# check for existing outfile
+if opt.output is None:
+   if os.path.exists(outfile):
+      p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
+
+# check for proper format of --range
 if opt.range is not None:
    try:
       opt.range = parse_slice(opt.range)
@@ -250,9 +263,17 @@ def process(at, frame):
 
 try:
    if opt.atoms_ref is not None:
-      all_configs = AtomsList(infile, store=False, atoms_ref=opt.atoms_ref)
+      if (len(infiles) == 1):
+	 all_configs = AtomsList(infiles[0], store=False, atoms_ref=opt.atoms_ref)
+      else:
+	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False, atoms_ref=opt.atoms_ref) for f in infiles])
+	 all_configs = AtomsList(all_configs_seq)
    else:
-      all_configs = AtomsList(infile, store=False)
+      if (len(infiles) == 1):
+	 all_configs = AtomsList(infiles[0], store=False)
+      else:
+	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False) for f in infiles])
+	 all_configs = AtomsList(all_configs_seq)
 except IOError, io:
    p.error(str(io))
 
@@ -291,7 +312,11 @@ if outfile is not None:
 try:
    if len(all_configs) == 1:
       opt.range = 0
-   got_length = True
+   else:
+      if len(all_configs) == 0:
+	 got_length = False
+      else:
+	 got_length = True
 except ValueError:
    got_length = False
 
@@ -321,7 +346,9 @@ if isinstance(opt.range, slice):
 else:
    # single frame
    try:
-      process(AtomsList(infile)[opt.range], 0)
+      all_configs_seq = itertools.chain(*[AtomsList(f, store=False) for f in infiles])
+      all_configs = AtomsList(all_configs_seq)
+      process(all_configs[opt.range], 0)
    except RuntimeError, re:
       p.error(str(re))
 
