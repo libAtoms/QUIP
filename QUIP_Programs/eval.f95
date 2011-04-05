@@ -89,6 +89,7 @@ implicit none
   real(dp), allocatable :: force_const_mat(:,:)
   real(dp) :: eval_froz
   real(dp) :: override_pot_cutoff
+  logical :: do_create_residue_labels, fill_in_mass
 
   logical did_something
   logical test_ok
@@ -155,6 +156,8 @@ implicit none
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
   call param_register(cli_params, 'override_pot_cutoff', '-1.0', override_pot_cutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
+  call param_register(cli_params, 'create_residue_labels', 'F', do_create_residue_labels, help_string="if true, create residue labels (for CP2K) before calling calc")
+  call param_register(cli_params, 'fill_in_mass', 'F', fill_in_mass, help_string="if true, fill in mass property")
 
   call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
   call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
@@ -216,6 +219,18 @@ implicit none
      endif
 
      call calc_connect(at)
+
+     if (do_create_residue_labels) then
+       call create_residue_labels_arb_pos(at, do_CHARMM=.true., pos_field_for_connectivity="pos", error=error)
+       HANDLE_ERROR(error)
+     endif
+
+     if (fill_in_mass) then
+	if (.not. associated(at%mass)) then
+	  call add_property(at, 'mass', 0.0_dp, 1)
+	endif
+	at%mass = ElementMass(at%Z)
+     endif
 
      did_something=.false.
      

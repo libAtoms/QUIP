@@ -134,9 +134,11 @@ program qmmm_md
   real(dp)                    :: spline_dpot
   logical                     :: use_spline
   integer                     :: max_n_steps
+  integer                     :: update_QM_region_interval
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
   character(len=FIELD_LENGTH) :: filepot_program
+
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
   real(dp) :: qm_region_ctr(3), qm_core_region_ctr(3)
@@ -225,7 +227,8 @@ logical :: have_silica_potential
       call param_register(params_in, 'spline_to', '0.0', spline_to, help_string="outer radius of the external spline potential")
       call param_register(params_in, 'spline_dpot', '0.0', spline_dpot, help_string="depth of the external spline potential")
       call param_register(params_in, 'use_spline', 'F', use_spline, help_string="whether to use an external spline potential within a spherical shell around (/0. 0. 0./).")
-      call param_register(params_in, 'max_n_steps', '-1', max_n_steps, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'max_n_steps', '-1', max_n_steps, help_string="Maximum number of time steps to run")
+      call param_register(params_in, 'update_QM_region_interval', '1', update_QM_region_interval, help_string="interval between updates of QM region")
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
       evb_args_str=''
@@ -441,9 +444,9 @@ logical :: have_silica_potential
 
     call print('Reading in the coordinates from file '//trim(coord_file)//'...')
     call read(my_atoms,coord_file)
-!    call read(my_atoms,coord_file)
 
     call initialise(ds,my_atoms)
+
     if (Continue_it) then
       if (get_value(my_atoms%params,'Time',ds%t)) then
 	  call print('Found Time in atoms%params'//ds%t)
@@ -572,42 +575,54 @@ logical :: have_silica_potential
     ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
+	  call print("SETUP_POT EVBSUB_POT")
           call setup_pot(evbsub_pot, Run_Type1, filepot_program, tmp_run_dir_i)
           call initialise(pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_pot)
+	  call print("INITIALISE_POT EVB")
        else
+	  call print("SETUP_POT POT")
           call setup_pot(pot, Run_Type1, filepot_program, tmp_run_dir_i)
        endif
        ! set up mm only pot, in case we need it for empty QM core
        if (EVB) then
+	  call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
           call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
           call initialise(empty_qm_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_empty_qm_pot)
+	  call print("INITIALISE_POT EVB")
        else
+	  call print("SETUP_POT EMPTY_QM_POT")
           call setup_pot(empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
        endif
     else ! doing force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
           call print("WARNING: Force Mixing with MM as the slow potential!")
+	  call print("SETUP_POT EVBSUB_CP2K_SLOW_POT")
           call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
           call initialise(cp2k_slow_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_slow_pot)
+	  call print("INITIALISE_POT EVB")
        else
+	  call print("SETUP_POT CP2K_SLOW_POT")
           call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
        endif
        if (EVB.and.trim(Run_Type2)=='MM') then
+	  call print("SETUP_POT EVBSUB_CP2K_FAST_POT")
           call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
           call initialise(cp2k_fast_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_fast_pot)
+	  call print("INITIALISE_POT EVB")
        else
+	  call print("SETUP_POT CP2K_FAST_POT")
           call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
        endif
        if (distance_ramp) then
@@ -628,16 +643,28 @@ logical :: have_silica_potential
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
 	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
 	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
+       call print('INITIALISE_POT ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
+	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
+	  ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
+	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+	  ' weight_interpolation='//trim(weight_interpolation)// &
+	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
+	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster // &
+	  ' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)))
 
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
           if (EVB) then
+	     call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
              call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
              call initialise(empty_qm_pot,args_str='EVB=T',  &
                 !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
                 !' form_bond={1 2} break_bond={2 6} ', &
                 pot1=evbsub_empty_qm_pot)
+	     call print("INITIALISE_POT EVB")
           else
+	     call print("SETUP_POT EMPTY_QM_POT")
              call setup_pot(empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
           endif
        endif
@@ -797,11 +824,15 @@ call print("MAIN CALLED CALC EVB")
 
   !QM CORE + BUFFER UPDATE + THERMOSTAT REASSIGNMENT
 
+     if (mod(n,update_QM_region_interval) == 0) then
      !NB should we really recalculate residue labels, so heuristics that keep residues together function here?  probably
-     if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
-       qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false., qm_seed_extended)
-     if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
-       qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .false., qm_seed_core)
+       if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, &
+	 qm_region_atom_ctr, qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, &
+	 use_create_cluster_info_for_core, .false., qm_seed_extended)
+       if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, &
+	 qm_core_region_atom_ctr, qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, &
+	 use_create_cluster_info_for_core, .false., qm_seed_core)
+     endif
 
   !FORCE
 
@@ -1339,6 +1370,7 @@ contains
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_extended) then
 	    call print('WARNING: Empty QM extended region. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
+	    call print("CALC_POT '"//trim(args_str)//"'")
 	    call calc(empty_qm_pot,at,energy=energy,force=f1,args_str=trim(args_str))
 	    if (assign_pointer(at, 'force', force_p)) force_p = f1
 	    return
@@ -1356,9 +1388,11 @@ contains
 	endif
 	if (Run_Type1(1:4) == 'QMMM' .and. trim(Run_Type2)=="NONE") then
           !potential simple will not calculate energy with single_cluster=T
+	  call print("CALC_POT '"//trim(args_str)//"'")
 	  call calc(pot,at,force=f1,args_str=trim(args_str))
           energy=0.0_dp
 	else
+	  call print("CALC_POT '"//trim(args_str)//"'")
 	  call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
         endif
      else ! do force mixing
@@ -1415,6 +1449,7 @@ contains
 !	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
 !	 call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
        else
+	 call print("CALC_POT '"//trim(args_str)//"'")
 	 call calc(pot,at,force=f1,args_str=trim(args_str))
        endif
        energy=0._dp !no energy
@@ -1455,12 +1490,16 @@ contains
        filename="filepot"
     endif
     if (trim(Run_Type) == 'QS') then
+       call print('INITIALISE_POT QS FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos min_cutoff=0.0')
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos min_cutoff=0.0')
     else if (trim(Run_Type) == 'MM') then
+       call print('INITIALISE_POT MM FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
+       call print('INITIALISE_POT QMMM_CORE FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds_core min_cutoff=0.0')
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds_core min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
+       call print('INITIALISE_POT QMMM_EXTENDED FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds_extended min_cutoff=0.0')
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds_extended min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
