@@ -452,6 +452,9 @@ class CastepParam(OrderedDict):
          f.close()
       elif hasattr(castep_output, 'read'):
          castep_output = castep_output.readlines()
+
+      # Remove newlines from end of each line in castep_output
+      castep_output = [line.rstrip() for line in castep_output]
       
       # Bizarrelly, the parameter names in the output file have the underscores
       # removed from them. Here we construct a mapping from the .castep names to
@@ -461,7 +464,7 @@ class CastepParam(OrderedDict):
       
       # Find the user parameters section
       try:
-         user_param_start = castep_output.index(' ******************************* User Parameters *******************************\n')
+         user_param_start = castep_output.index(' ******************************* User Parameters *******************************')
       except ValueError:
          raise ValueError('No user parameters found in castep output')
       
@@ -707,6 +710,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       if castep_output == []:
          break
 
+      # Remove newlines from end of each line in castep_output
+      castep_output = [line.rstrip() for line in castep_output]
+
       # NB: CASTEP doesn't always print 'Total time'
       run_time = None
       total_time = filter(lambda s: s.startswith('Total time'), castep_output)
@@ -734,7 +740,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             raise
 
       # Next let's extract the lattice and atomic positions
-      lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell\n']
+      lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell']
       
       if lattice_lines == []:
          if atoms_ref is None or abort:
@@ -750,7 +756,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          lattice[:,2] = map(float, lattice_lines[1].split()[0:3])
          lattice[:,3] = map(float, lattice_lines[2].split()[0:3])
 
-      cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
+      cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents']
       if cell_contents == []:
          if atoms_ref is None or abort:
             raise ValueError('No cell contents found in castep file - try passing atoms_ref')
@@ -814,7 +820,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       # (correct if we're doing a variable cell geom. opt. with fixed ions)
       atoms.pos[:] = numpy.dot(atoms.lattice, atoms.frac_pos)
 
-      energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
+      energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT'), castep_output)
 
       # If we're using smearing, correct energy is 'free energy'
       energy_lines.extend(filter(lambda s: s.startswith('Final free energy (E-TS)'), castep_output))
@@ -826,17 +832,21 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          if abort:
             raise ValueError('No total energy found in castep file')
       else:
-         # Energy is second to last field on line (last is "eV")
          # Use last matching energy line in file
-         atoms.params['energy'] = float(energy_lines[-1].split()[-2])
+         # Energy field before "eV"
+         fields = energy_lines[-1].split()
+         if 'eV' not in fields:
+            if abort:
+               raise ValueError('No value found in energy line "%s"' % energy_lines[-1])
+         else:
+            atoms.params['energy'] = float(fields[fields.index('eV')-1])
 
       # If we're doing geom-opt, look for enthalpy
-      if param.has_key('task') and (param['task'].lower() == 'geometryoptimization' or
-                                    param['task'].lower() == 'geometryoptimisation'):
-         enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
-                            s.startswith(' BFGS: Final Enthalpy')]
-         if enthalpy_lines != []:
-            atoms.params['enthalpy'] = float(enthalpy_lines[-1].split()[-2])
+      enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
+                        s.startswith(' BFGS: Final Enthalpy')]
+      print 'enthalpy', enthalpy_lines
+      if enthalpy_lines != []:
+         atoms.params['enthalpy'] = float(enthalpy_lines[-1].split()[-2])
 
       try:
 
@@ -916,10 +926,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       if 'popn_calculate' in param and param['popn_calculate']:
          try:
             try:
-               popn_start = castep_output.index('     Atomic Populations\n')
+               popn_start = castep_output.index('     Atomic Populations')
             except ValueError:
                try:
-                  popn_start = castep_output.index('     Atomic Populations (Mulliken)\n')
+                  popn_start = castep_output.index('     Atomic Populations (Mulliken)')
                except ValueError:
                   raise
 
@@ -956,7 +966,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
       mod_param = param.copy()
 
       # check for calculation of dipole moment - one vector per spin component
-      if ' calculate electric dipole moment of system     : on\n' in castep_output:
+      if ' calculate electric dipole moment of system     : on' in castep_output:
          dipole_magnitudes = [s for s in castep_output if s.startswith('  +  Magnitude of Dipole')]
          dipole_directions = [s for s in castep_output if s.startswith('  +  Direction of Dipole')]
 
@@ -972,7 +982,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
 
       # append K-point information
       try:
-         kpoint_start = castep_output.index('                              k-Points For BZ Sampling\n')
+         kpoint_start = castep_output.index('                              k-Points For BZ Sampling')
          kp_mesh_line = castep_output[kpoint_start+2]
          fields = kp_mesh_line.split()
          mod_param['kpoints_mp_grid'] = [int(fields[-3]), int(fields[-2]), int(fields[-1])]
@@ -1012,8 +1022,8 @@ def get_valid_keywords(castep):
    for level in ('basic', 'inter', 'expert'):
       lines = os.popen(castep % ('-help %s' % level)).readlines()
       try:
-         cell_start = lines.index('Help information on CELL keywords:\n')
-         param_start = lines.index('Help information on PARAMETERS keywords:\n')
+         cell_start = lines.index('Help information on CELL keywords:')
+         param_start = lines.index('Help information on PARAMETERS keywords:')
       except ValueError:
          raise ValueError('Error parsing output of castep -help %s' % level)
 
