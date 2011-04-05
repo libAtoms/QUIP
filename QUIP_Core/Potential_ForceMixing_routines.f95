@@ -439,7 +439,7 @@
     end if
 
     if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-         RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+         RAISE_ERROR('Potential_FM_Calc: hybrid_mark'//trim(hybrid_mark_postfix)//' property missing', error)
     endif
 
     ! Do the MM minimisation, freezing the atoms marked as active
@@ -687,8 +687,14 @@
           case(UNIFORM_WEIGHT)
              weight = 1.0_dp
           case(MASS_WEIGHT)
+	     if (.not. associated(at%mass)) then
+	        RAISE_ERROR('Potential_FM_Calc MASS_WEIGHT, but at%mass is not associated', error)
+	     endif
              weight = at%mass(fit(i))
           case(MASS2_WEIGHT)
+	     if (.not. associated(at%mass)) then
+	        RAISE_ERROR('Potential_FM_Calc MASS2_WEIGHT, but at%mass is not associated', error)
+	     endif
              weight = at%mass(fit(i))*at%mass(fit(i))
           case(USER_WEIGHT)
              weight = conserve_momentum_weight(fit(i))
