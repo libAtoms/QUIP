@@ -52,10 +52,11 @@ def AtomsReader(source, format=None, *args, **kwargs):
             format = source
          else:
             source = os.path.expanduser(source)
-            glob_list = glob.glob(source)
+            glob_list = sorted(glob.glob(source))
             if len(glob_list) > 1:
-               source = sorted(glob_list)
+               source = glob_list
             else:
+               source = glob_list[0]
                base, ext = os.path.splitext(source)
                format = ext[1:]
 
@@ -106,10 +107,11 @@ class AtomsList(object):
                format = source
             else:
                source = os.path.expanduser(source)
-               glob_list = glob.glob(source)
+               glob_list = sorted(glob.glob(source))
                if len(glob_list) > 1:
-                  source = sorted(glob_list)
+                  source = glob_list
                else:
+                  source = glob_list[0]
                   base, ext = os.path.splitext(source)
                   format = ext[1:]
 
@@ -360,11 +362,7 @@ def SequenceReader(L):
    res = []
    for a in L:
       if isinstance(a, str):
-         glob_list = glob.glob(a)
-         if len(glob_list) > 1:
-            res.extend([Atoms(aa) for aa in glob_list])
-         else:
-            res.append(Atoms(a))
+         res.extend(itertools.chain(*[AtomsList(aa) for aa in glob.glob(a)]))
       else:
          res.append(a)
    return res
