@@ -171,12 +171,13 @@ try:
 except ImportError:
    logging.warning('quippy.castep import failed.')
 
-if 'atomeye' in available_modules:
-   import atomeye
-   import atomeyewriter
+if is_interactive_shell():
+   if 'atomeye' in available_modules:
+      import atomeye
+      import atomeyewriter
 
-if 'enthought.mayavi' in available_modules:
-   import plot3d
-   
-if 'pylab' in available_modules:
-   import plot2d
+   if 'enthought.mayavi' in available_modules:
+      import plot3d
+
+   if 'pylab' in available_modules:
+      import plot2d
