@@ -143,7 +143,9 @@ implicit none
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N
+  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N, do_exp_smoothing
+  real(dp) :: exp_smoothing_time
+  integer :: exp_smoothing_bin_i
   integer :: histogram_n_bins
   real(dp) :: histogram_min_v, histogram_max_v, histogram_cur_min_v, histogram_cur_max_v, histogram_extra_width, histogram_bin_width
   logical :: do_histogram_effective_N, do_histogram_correl
@@ -151,6 +153,7 @@ implicit none
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
+  real(dp), allocatable :: smooth_data_v(:)
   integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_effective_N_long_lag
   logical :: over_bins, over_time
   real(dp), allocatable :: effective_N(:), histogram_effective_N(:,:)
@@ -162,6 +165,9 @@ implicit none
   call param_register(cli_params, "infile", "stdin", infile_name, help_string="input filename")
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
+  call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
+  call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames)")
+  call param_register(cli_params, "exp_smoothing_bin_i", "0", exp_smoothing_bin_i, help_string="bin to evaluate for exponential smoothing")
   call param_register(cli_params, "variance", "F", do_var, help_string="calculate variance")
   call param_register(cli_params, "effective_N", "F", do_effective_N, help_string="calculate effective N from ratio of initial to long time autocorrelation")
   call param_register(cli_params, "correlation", "F", do_correl, help_string="calculate autocorrelation")
@@ -265,6 +271,30 @@ implicit none
       call calc_effective_N(data_correl, over_bins, correlation_effective_N_long_lag, effective_N)
     endif ! do_effective_N
   endif ! do_correl or do_effective_N
+
+  ! data(n_bins, n_data)
+  if (do_exp_smoothing) then
+    if (over_bins) then
+      call system_abort("Can't actually do exponentially smoothed time trace over bins")
+    else
+      myline="# bin_label value"
+      if (exp_smoothing_bin_i <= 0 .or. exp_smoothing_bin_i > n_bins) then
+	 call system_abort("exp_smoothing_bin_i out of range "//exp_smoothing_bin_i)
+      endif
+    endif
+    call print(trim(myline), file=outfile)
+    if (over_bins) then
+      call system_abort("Can't actually do exponentially smoothed time trace over bins")
+    else
+       allocate(smooth_data_v(n_bins))
+       smooth_data_v(1:n_bins) = data(1:n_bins, 1)
+       call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
+       do i=2, n_data
+	 smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
+	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
+       end do
+    endif
+  end if ! do_exp_smoothing
 
   if (do_mean .or. do_var .or. do_effective_N) then
     if (over_bins) then
@@ -388,7 +418,7 @@ implicit none
       call print("", file=outfile)
       call print("", file=outfile)
     end do
-  end if
+  end if ! do_histogram
 
   call finalise(outfile)
   call system_finalise()
