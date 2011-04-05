@@ -166,7 +166,7 @@ implicit none
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
   call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
-  call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames)")
+  call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
   call param_register(cli_params, "exp_smoothing_bin_i", "0", exp_smoothing_bin_i, help_string="bin to evaluate for exponential smoothing")
   call param_register(cli_params, "variance", "F", do_var, help_string="calculate variance")
   call param_register(cli_params, "effective_N", "F", do_effective_N, help_string="calculate effective N from ratio of initial to long time autocorrelation")
@@ -290,7 +290,11 @@ implicit none
        smooth_data_v(1:n_bins) = data(1:n_bins, 1)
        call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
        do i=2, n_data
-	 smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
+	 if (exp_smoothing_time > 0.0_dp) then
+	    smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
+	 else
+	    smooth_data_v(1:n_bins) = data(1:n_bins, i)
+	 endif
 	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
        end do
     endif
