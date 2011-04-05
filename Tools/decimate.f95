@@ -36,35 +36,40 @@ implicit none
   type(Atoms) :: at
   integer :: i, n, error
   type(dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: filename
-  type(cinoutput) :: xyzfile
+  character(len=FIELD_LENGTH) :: infilename, outfilename
+  type(cinoutput) :: infile_io, outfile_io
 
   call system_initialise(verbosity=PRINT_SILENT)
   call verbosity_push(PRINT_NORMAL)
 
   call initialise(cli_params)
-  call param_register(cli_params,"n",PARAM_MANDATORY, n, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params,"file","stdin", filename, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params,"n",PARAM_MANDATORY, n, help_string="Number of frames to skip between printing")
+  call param_register(cli_params,"infile","stdin", infilename, help_string="input filename")
+  call param_register(cli_params,"outfile","stdout", outfilename, help_string="output filename")
   if (.not. param_read_args(cli_params)) then
-    call system_abort("Usage: decimate n=(1) [file=(stdin)]")
+    call system_abort("Usage: decimate n=(1) [infile=(stdin)] [outfile=(stdout)]")
   endif
   call finalise(cli_params)
 
-  call initialise(xyzfile, filename, INPUT)
+  call initialise(infile_io, infilename, INPUT)
+  call initialise(outfile_io, outfilename, OUTPUT)
 
-  call read(at, xyzfile, error=error)
+  call read(at, infile_io, error=error)
   HANDLE_ERROR(error)
-  call write(at, "stdout")
+  call write(at, outfile_io)
   i = 1
   do while (error == 0)
     i = i + n
-    call read(at, xyzfile, frame=i, error=error)
+    call read(at, infile_io, frame=i, error=error)
     if (error /= 0) then
        if (error == ERROR_IO_EOF) exit
        HANDLE_ERROR(error)
     endif
-    call write(at, "stdout")
+    call write(at, outfile_io)
   end do
+
+  call finalise(outfile_io)
+  call finalise(infile_io)
 
   call verbosity_pop()
   call system_finalise()
