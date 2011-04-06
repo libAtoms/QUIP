@@ -1,0 +1,37 @@
+Input data for mean_var_correl
+
+   comment line
+   n_bins=n n_data=m
+   bin_1_label
+   bin_2_label
+   .
+   .
+   bin_n_label
+   data_t_1_bin_1 data_t_1_bin_2 ... data_t_1_bin_n
+   data_t_2_bin_1 data_t_2_bin_2 ... data_t_2_bin_n
+   .
+   .
+   data_t_m_bin_1 data_t_m_bin_2 ... data_t_m_bin_n
+
+mean_var_correl infile=filename outfile=filename over_time [mean] [variance] \
+   [correlation] [correlation_subtract_mean] [correlation_max_lag] \ 
+   [effective_N] [correlation_effective_N_long_lag]
+
+keyword over_time means to do averaging over time, not over bins, and output results for each bin
+keywords mean, variance, correlation, effective_N activate calculation of those quantities
+correlation_subtract_mean means do correlation of value with mean subtracted
+correlation_max_lag is maximum lag to calculation correlation for (in units of frames)
+correlation_effective_N_long_lag is lag after which "long time" regime starts, for automatic calculations of effective N from (in units of frames)
+   effective_N = (correlation(t=0) / std_dev(correlation)_{t>t_long_lag})^2
+
+if mean and/or variance and/or effective_N are active, output is (only calculated fields are printed)
+   # bin_label mean var N effective_N effective_decorrel_time
+   bin_label mean_bin_1 var_bin_1 N_bin_1 effective_N_bin_1 effective_decorrel_time [ mean_bin_2 var_bin_2 ... ]
+
+If correlation is active, output is (in addition to (before?) mean,var,effective_N):
+   # correl
+   correl_t_0_bin_1 [ correl_t_0_bin_2 ...]
+   correl_t_1_bin_1 [ correl_t_1_bin_2 ...]
+   .
+   .
+   correl_t_max_lag_bin_1 [ correl_t_max_lag_bin_2 ...]
