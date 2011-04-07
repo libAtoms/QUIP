@@ -559,7 +559,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         endif
      elseif (trim(this%coordinates) == 'cosnx') then
-        call calc_cosnx(my_cosnx,at,vec(:,i),i)
+        call calc_cosnx(my_cosnx,at,vec(:,i),i,w)
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            do n = 0, atoms_n_neighbours(at,i)
               ! method(1) we loop over those neighbours which are not local! not interested in derivatives wro non-local atoms.
@@ -570,7 +570,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  if( .not. atom_mask_pointer(j) ) cycle
               endif
 
-              call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n)
+              call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n,w)
            enddo
         endif
 
