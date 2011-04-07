@@ -825,7 +825,7 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell,p)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell,p, n)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -835,17 +835,14 @@ contains
      real(dp), optional,    intent(in)    :: tau
      real(dp), optional,    intent(in)    :: tau_cell
      real(dp), optional,    intent(in)    :: p
+     integer, optional,     intent(in)    :: n
 
      real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
      real(dp) :: gamma_eff
 
      if (count( (/present(gamma), present(tau) /) ) /= 1 ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
 
-     if (present(gamma)) then
-       gamma_eff = gamma
-     else
-       gamma_eff = 1.0_dp/tau
-     endif
+     gamma_eff = optional_default(1.0_dp/tau, gamma)
 
      if(present(p)) then
         if(present(tau_cell)) then
@@ -863,7 +860,7 @@ contains
         endselect
         volume_0 = cell_volume(this%atoms)
      endif
-     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0)
+     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0,n=n)
      
    end subroutine ds_add_thermostat
 

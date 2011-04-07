@@ -2071,7 +2071,7 @@ contains
 	    if (my_nneighb_only) then
 	       if (.not. is_nearest_neighbour(at, k, ji, alt_connect=alt_connect)) cycle
 	    endif
-	    q = find_in_array(core%int(1,:),j)
+	    q = find_in_array(core%int(1,1:core%N),j)
 	    if (q > 0) then
 	       B(p,q) = 1
 	       B(q,p) = 1
