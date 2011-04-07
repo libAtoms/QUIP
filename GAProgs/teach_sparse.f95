@@ -73,6 +73,11 @@ program teach_sparse_program
   call param_register(params, 'cutoff_r1', '', qw_cutoff_r1_string, help_string="Characteristic width of the cutoff function")
   call param_register(params, 'no_q', 'F', main_teach_sparse%qw_no_q, help_string="Turn off Qs")
   call param_register(params, 'no_w', 'F', main_teach_sparse%qw_no_w, help_string="Turn off Ws")
+
+  call param_register(params, 'cosnx_l_max', '6', main_teach_sparse%cosnx_l_max, help_string="Maximum cos(l theta) expansion")
+  call param_register(params, 'cosnx_n_max', '3', main_teach_sparse%cosnx_n_max, help_string="Maximum number of radial basis functions")
+  call param_register(params, 'use_rdf', 'F', main_teach_sparse%use_rdf, help_string="Whether to optimise the radial basis set with respect of the distribution of distances")
+
   call param_register(params, 'e0', '0.0', main_teach_sparse%e0, has_value_target = has_e0, help_string="Value to be subtracted from energies before fittint (and added back on after prediction)")
   call param_register(params, 'f0', '0.0', main_teach_sparse%f0, has_value_target = has_f0, help_string="Mean of the gp predictor, defaults to data mean. another useful value is 0.0")
   call param_register(params, 'sgm', '0.1 0.1 0.1', main_teach_sparse%sgm, help_string="error in [energies forces virials]")
@@ -106,7 +111,8 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     [r_cut=2.75] [j_max=4] [z0_ratio=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     [r_cut=2.75] [j_max=4] [z0_ratio=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer,cosnx}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     [cosnx_l_max=6] [cosnx_n_max=3] [use_rdf=T] &
      [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
@@ -241,6 +247,8 @@ program teach_sparse_program
   case('bispectrum')
      main_teach_sparse%z0 = max(1.0_dp,z0_ratio) * main_teach_sparse%r_cut/(PI-0.02_dp)
      main_teach_sparse%d = j_max2d(main_teach_sparse%j_max)
+  case('cosnx')
+     main_teach_sparse%d = (main_teach_sparse%cosnx_l_max+1)*main_teach_sparse%cosnx_n_max
   case default
      call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
   endselect
@@ -384,12 +392,18 @@ program teach_sparse_program
         gp_teach_memory = 0
      endif
 
+     call enable_timing()
+     call system_timer('GP sparsify')
+
+
      call gp_sparsify(gp_sp,main_teach_sparse%r,&
      main_teach_sparse%sigma,main_teach_sparse%dlta,main_teach_sparse%theta,&
      main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
      main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
      main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
      main_teach_sparse%target_type, gp_teach_memory_in=gp_teach_memory)
+
+     call system_timer('GP sparsify')
 
      call print('')
      call print('theta')
@@ -404,8 +418,6 @@ program teach_sparse_program
      call print(real(gp_sp%sigma,kind=dp))
      call print('')
 
-     call enable_timing()
-     
      if( main_teach_sparse%do_test_gp_gradient ) then
         call verbosity_push(PRINT_NERD)
         test_gp_gradient_result = test_gp_gradient(gp_sp,&
@@ -455,7 +467,9 @@ program teach_sparse_program
         call print(real(gp_sp%f0,kind=dp))
         call print('')
 
+        call system_timer('GP initialise')
         call initialise(main_teach_sparse%my_gp,gp_sp)
+        call system_timer('GP initialise')
 
         gp_file = 'gp_'//main_teach_sparse%m//'_'//k//'.xml'
 
@@ -505,6 +519,10 @@ program teach_sparse_program
   case('bispectrum')
      call print("j_max     = "//main_teach_sparse%j_max)
      call print("z0        = "//main_teach_sparse%z0)
+  case('cosnx')
+     call print("l_max     = "//main_teach_sparse%cosnx_l_max)
+     call print("n_max     = "//main_teach_sparse%cosnx_n_max)
+     call print("use_rdf   = "//main_teach_sparse%use_rdf)
   case default
      call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
   endselect

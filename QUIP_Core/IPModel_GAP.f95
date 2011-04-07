@@ -85,8 +85,11 @@ type IPModel_GAP
   real(dp), allocatable :: qw_cutoff(:)
   integer, allocatable :: qw_cutoff_f(:)
   real(dp), allocatable :: qw_cutoff_r1(:)
-  real(dp), dimension(:), allocatable :: pca_mean
-  real(dp), dimension(:,:), allocatable :: pca_matrix
+
+  integer :: cosnx_l_max, cosnx_n_max
+
+  real(dp), dimension(:), allocatable :: pca_mean, NormFunction
+  real(dp), dimension(:,:), allocatable :: pca_matrix, RadialTransform
 
   logical :: do_pca = .false.
 
@@ -248,6 +251,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(grad_fourier_so3), save :: df3_hat
   type(qw_so3), save :: qw
   type(grad_qw_so3), save :: dqw
+  type(cosnx), save :: my_cosnx
 
   real(dp), allocatable :: xixjtheta(:,:)
 
@@ -426,6 +430,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   case('bispectrum')
      d = j_max2d(this%j_max)
      call cg_initialise(this%j_max,2)
+  case('cosnx')
+     d = (this%cosnx_l_max+1)*this%cosnx_n_max
   case('qw')
      d = (this%qw_l_max / 2) * this%qw_f_n
      if (this%qw_do_q .and. this%qw_do_w) d = d * 2
@@ -490,6 +496,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         jack = 0.0_dp
      endif
   endselect
+
+  if(trim(this%coordinates) == 'cosnx') then
+     call initialise(my_cosnx,this%cosnx_l_max, this%cosnx_n_max, this%cutoff)
+     my_cosnx%NormFunction = this%NormFunction
+     my_cosnx%RadialTransform = this%RadialTransform
+  endif
+
   ! Method(1):
   ! * vec will contain the bispectrum of all local atoms and their neighbours
   ! * jack will contain the derivative of bispectrum of neighbours of local atoms wro local atoms
@@ -498,7 +511,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   ! * jack will contain the derivative of bispectrum of local atoms wro neighbours
 
   call system_timer('IPModel_GAP_Calc bispectrum')
-!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps) private(n,i,j)
+!$omp parallel default(none) shared(this,at,mpi,n_atoms_eff,atom_mask_lookup,do_atom_mask_lookup,atom_mask_pointer,vec,jack,f,virial,local_virial,w,do_lammps,my_cosnx) private(n,i,j)
 
   if (trim(this%coordinates) == 'bispectrum') then
      call initialise(f_hat,this%j_max,this%z0,this%cutoff)
@@ -545,6 +558,22 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),ii))
            enddo
         endif
+     elseif (trim(this%coordinates) == 'cosnx') then
+        call calc_cosnx(my_cosnx,at,vec(:,i),i)
+        if(present(f) .or. present(virial) .or. present(local_virial)) then
+           do n = 0, atoms_n_neighbours(at,i)
+              ! method(1) we loop over those neighbours which are not local! not interested in derivatives wro non-local atoms.
+              ! method(2) we need the derivatives wro all neighbours regardsless they are local or not.
+
+              if (n /= 0 .and. do_atom_mask_lookup .and. (.not. do_lammps)) then
+                 j = atoms_neighbour(at,i,n)
+                 if( .not. atom_mask_pointer(j) ) cycle
+              endif
+
+              call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n)
+           enddo
+        endif
+
      elseif (trim(this%coordinates) == 'qw') then
         call fourier_transform(f3_hat, at, i)
         call calc_qw(qw, f3_hat)
@@ -593,6 +622,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
 !$omp end parallel
+  if (trim(this%coordinates) == 'cosnx') call finalise(my_cosnx)
   call system_timer('IPModel_GAP_Calc bispectrum')
 
   if(this%do_pca) then
@@ -915,6 +945,31 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find z0')
      endif
 
+  elseif(parse_in_ip .and. name == 'cosnx_params') then
+  
+     call QUIP_FoX_get_value(attributes, 'l_max', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cosnx_l_max
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find l_max')
+     endif
+  
+     call QUIP_FoX_get_value(attributes, 'n_max', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cosnx_n_max
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find n_max')
+     endif
+  
+     call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cutoff
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
+     endif
+  
+     allocate(parse_ip%NormFunction(parse_ip%cosnx_n_max), parse_ip%RadialTransform(parse_ip%cosnx_n_max,parse_ip%cosnx_n_max))
+
   elseif(parse_in_ip .and. name == 'qw_so3_params') then
 
      call QUIP_FoX_get_value(attributes, 'l_max', value, status)
@@ -990,6 +1045,22 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   elseif(parse_in_ip .and. name == 'PCA_mean') then
 
+     call zero(parse_cur_data)
+  elseif(parse_in_ip .and. name == 'NormFunction') then
+  
+     parse_n_row = parse_ip%cosnx_n_max
+     call zero(parse_cur_data)
+  
+  elseif(parse_in_ip .and. name == 'RadialTransform_row') then
+  
+     parse_n_row = parse_ip%cosnx_n_max
+     call QUIP_FoX_get_value(attributes, 'i', value, status)
+     if(status == 0) then
+        read (value, *) parse_cur_row
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find i')
+     endif
+  
      call zero(parse_cur_data)
 
   elseif(parse_in_ip .and. name == 'row') then
@@ -1067,6 +1138,16 @@ subroutine IPModel_endElement_handler(URI, localname, name)
 
        val = string(parse_cur_data)
        read(val,*) parse_ip%pca_matrix(:,parse_cur_row)
+
+    elseif(name == 'NormFunction') then
+       
+       val = string(parse_cur_data)
+       read(val,*) parse_ip%NormFunction
+    
+    elseif(name == 'RadialTransform_row') then
+    
+       val = string(parse_cur_data)
+       read(val,*) parse_ip%RadialTransform(:,parse_cur_row)
 
     elseif(name == 'command_line') then
        parse_ip%command_line = parse_cur_data

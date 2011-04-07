@@ -49,16 +49,16 @@ module teach_sparse_mod
      logical :: do_core = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_config_type_hypers, do_pca, do_mark_sparse_atoms
+     has_config_type_hypers, do_pca, do_mark_sparse_atoms, use_rdf
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
-     qw_f_n
+     qw_f_n, cosnx_l_max, cosnx_n_max
      type(extendable_str) :: quip_string
      type(gp) :: my_gp
 
      real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
-     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean, sigma
-     real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix
+     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean, sigma, NormFunction
+     real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix, RadialTransform, rdf
      integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, config_type
      integer, dimension(99) :: qw_cutoff_f
      type(sparse_types), dimension(:), allocatable :: config_type_hypers
@@ -86,10 +86,12 @@ contains
     type(atoms) :: at
     integer :: n_max, n_con
     logical :: has_ener, has_force, has_virial
-    real(dp) :: ener, virial(3,3)
+    real(dp) :: ener, virial(3,3), d, bin_width
     real(dp), pointer :: f(:,:)
-    integer :: i
+    integer :: i, j, n, num_bins
     integer, dimension(116) :: species_present
+
+    type(Table) :: distances
 
     call initialise(xyzfile,this%at_file)
 
@@ -104,6 +106,11 @@ contains
     species_present = 0
     this%n_species = 0
 
+    if ( this%use_rdf ) then
+       call allocate(distances,0,1,0,0,1000000)
+       call set_increment(distances,1000000)
+    endif
+
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
@@ -111,9 +118,18 @@ contains
        has_force = assign_pointer(at,this%force_parameter_name, f)
        has_virial = get_value(at%params,this%virial_parameter_name,virial)
 
-       if( has_ener .or. has_force .or. has_virial ) then
+       if( has_ener .or. has_force .or. has_virial .or. this%use_rdf ) then
           call set_cutoff(at,this%r_cut)
           call calc_connect(at)
+       endif
+
+       if ( this%use_rdf ) then
+          do i = 1, at%N
+             do n = 1, atoms_n_neighbours(at,i)
+                j = atoms_neighbour(at,i,n,distance=d)
+                call append(distances, d)
+             enddo
+          enddo
        endif
 
        if( has_ener ) then
@@ -149,6 +165,19 @@ contains
 
     call finalise(xyzfile)
 
+    if ( this%use_rdf ) then
+       num_bins = int(sqrt(real(distances%N,dp)))
+       allocate(this%rdf(num_bins,2))
+       
+       bin_width = this%r_cut / real(num_bins,dp)
+       do i = 1, num_bins
+          this%rdf(i,1) = (real(i,dp) - 0.5_dp) * bin_width
+       enddo
+    
+       this%rdf(:,2) = histogram(distances%real(1,1:distances%N), 0.0_dp, this%r_cut, num_bins)
+       call finalise(distances)
+    endif
+
     select case(trim(this%coordinates))
     case('water_monomer')
        this%n_species = 1
@@ -182,6 +211,7 @@ contains
     type(grad_fourier_so4) :: df_hat
     type(bispectrum_so4) :: bis
     type(grad_bispectrum_so4) :: dbis
+    type(cosnx) :: my_cosnx
     type(fourier_so3) :: f3_hat
     type(grad_fourier_so3) :: df3_hat
     type(qw_so3) :: qw
@@ -230,6 +260,19 @@ contains
        call initialise(df_hat,this%j_max, this%z0,this%r_cut)
 
        this%d = j_max2d(f_hat%j_max)
+
+    case('cosnx')
+    
+       if( this%use_rdf ) then
+          call initialise(my_cosnx,this%cosnx_l_max, this%cosnx_n_max, this%r_cut, w = this%rdf )
+       else
+          call initialise(my_cosnx,this%cosnx_l_max, this%cosnx_n_max, this%r_cut )
+       endif
+       allocate(this%NormFunction(this%cosnx_n_max),this%RadialTransform(this%cosnx_n_max,this%cosnx_n_max))
+       this%NormFunction = my_cosnx%NormFunction
+       this%RadialTransform = my_cosnx%RadialTransform
+    
+       this%d = (this%cosnx_l_max+1)*this%cosnx_n_max
 
     case('water_monomer')
        this%d = 3
@@ -402,6 +445,15 @@ contains
                    enddo
                 endif
              enddo
+          case('cosnx')
+             do i = 1, at%N
+                call calc_cosnx(my_cosnx,at,vec(:,i),i)
+                if(has_force .or. has_virial) then
+                   do n = 0, atoms_n_neighbours(at,i)
+                      call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n)
+                   enddo
+                endif
+             enddo
           case default
              call system_abort('Unknown coordinates '//trim(this%coordinates))
           endselect
@@ -533,7 +585,7 @@ contains
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
-       has_ener = get_value(at%params,'Energy',ener)
+       has_ener = get_value(at%params,trim(this%energy_parameter_name),ener)
 
        if( has_ener ) then
 
@@ -649,6 +701,29 @@ contains
         enddo
 
         call xml_EndElement(xf,"qw_so3_params")
+     case('cosnx')
+        call xml_AddAttribute(xf,"coordinates","cosnx")
+     
+        call xml_NewElement(xf,"cosnx_params")
+        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
+        call xml_AddAttribute(xf,"l_max",""//this%cosnx_l_max)
+        call xml_AddAttribute(xf,"n_max",""//this%cosnx_n_max)
+     
+        call xml_NewElement(xf,"NormFunction")
+        call xml_AddCharacters(xf, ""//this%NormFunction)
+        call xml_EndElement(xf,"NormFunction")
+     
+        call xml_NewElement(xf,"RadialTransform")
+        do i = 1, this%cosnx_n_max
+           call xml_NewElement(xf,"RadialTransform_row")
+           call xml_AddAttribute(xf,"i",""//i)
+           call xml_AddCharacters(xf, ""//this%RadialTransform(:,i))
+           call xml_EndElement(xf,"RadialTransform_row")
+        enddo
+        call xml_EndElement(xf,"RadialTransform")
+     
+        call xml_EndElement(xf,"cosnx_params")
+
      case('bispectrum')
         call xml_AddAttribute(xf,"coordinates","bispectrum")
         

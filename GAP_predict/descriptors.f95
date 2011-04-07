@@ -59,6 +59,14 @@ module descriptors_module
       complex(dp), dimension(:), allocatable :: m
    endtype cplx_1d
 
+   type cosnx
+      integer :: l_max, n_max
+      real(dp) :: cutoff
+      real(dp), dimension(:,:), allocatable :: RadialTransform
+      real(dp), dimension(:), allocatable :: NormFunction
+      logical :: initialised = .false.
+   endtype cosnx
+
    type fourier_so4
       integer :: j_max
       real(dp) :: z0, cutoff
@@ -229,37 +237,37 @@ module descriptors_module
 
    interface initialise
       module procedure initialise_fourier_atom, initialise_bispectrum_atom, &
-      & initialise_fourier_pair, initialise_bispectrum_pair, initialise_symm, &
-      & initialise_fourier_so4, initialise_bispectrum_so4, &
-      & initialise_grad_fourier_so4, initialise_grad_bispectrum_so4, &
-      & initialise_fourier_periodic, &
-      & initialise_fourier_so3, initialise_qw_so3, &
-      & initialise_grad_fourier_so3, initialise_grad_qw_so3
+      initialise_fourier_pair, initialise_bispectrum_pair, initialise_symm, &
+      initialise_fourier_so4, initialise_bispectrum_so4, &
+      initialise_grad_fourier_so4, initialise_grad_bispectrum_so4, &
+      initialise_fourier_periodic, &
+      initialise_fourier_so3, initialise_qw_so3, &
+      initialise_grad_fourier_so3, initialise_grad_qw_so3, initialise_cosnx
    endinterface initialise
 
    interface finalise
       module procedure finalise_fourier_atom, finalise_bispectrum_atom, &
-      & finalise_fourier_pair, finalise_bispectrum_pair, finalise_symm, &
-      & finalise_fourier_so4, finalise_bispectrum_so4, finalise_grad_fourier_so4, &
-      & finalise_grad_bispectrum_so4, finalise_fourier_periodic, &
-      & finalise_fourier_so3, finalise_qw_so3, &
-      & finalise_grad_fourier_so3, finalise_grad_qw_so3
+      finalise_fourier_pair, finalise_bispectrum_pair, finalise_symm, &
+      finalise_fourier_so4, finalise_bispectrum_so4, finalise_grad_fourier_so4, &
+      finalise_grad_bispectrum_so4, finalise_fourier_periodic, &
+      finalise_fourier_so3, finalise_qw_so3, &
+      finalise_grad_fourier_so3, finalise_grad_qw_so3, finalise_cosnx
    endinterface finalise
 
    interface print
       module procedure print_fourier_atom, print_bispectrum_atom, &
-      & print_fourier_pair, print_bispectrum_pair, print_bispectrum_so4
+      print_fourier_pair, print_bispectrum_pair, print_bispectrum_so4
    endinterface print
 
    interface fourier_transform
       module procedure fourier_transform_atom, fourier_transform_vec, fourier_transform_pair, &
-      & fourier_transform_periodic, fourier_transform_so4, grad_fourier_transform_so4, &
-      & fourier_transform_so3, grad_fourier_transform_so3
+      fourier_transform_periodic, fourier_transform_so4, grad_fourier_transform_so4, &
+      fourier_transform_so3, grad_fourier_transform_so3
    endinterface fourier_transform
 
    interface calc_bispectrum
       module procedure calc_bispectrum1_atom, calc_bispectrum_pair, calc_bispectrum_so4, calc_grad_bispectrum_so4, &
-      & bispectrum_periodic
+      bispectrum_periodic
    endinterface calc_bispectrum
 
    interface calc_qw
@@ -268,7 +276,7 @@ module descriptors_module
 
    interface bispectrum2vec
       module procedure bispectrum2vec1_atom, bispectrum2vec2_atom, bispectrum2vec3_atom, &
-      & bispectrum2vec1_pair, bispectrum2vec_so4, bispectrum2vec_grad_so4, bispectrum2vec_periodic
+      bispectrum2vec1_pair, bispectrum2vec_so4, bispectrum2vec_grad_so4, bispectrum2vec_periodic
    endinterface bispectrum2vec
 
    interface qw2vec
@@ -323,6 +331,7 @@ module descriptors_module
    public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
    public :: kmax2d, suggest_kmax, suggest_resolution
    public :: water_monomer, water_dimer, WATER_DIMER_D
+   public :: cosnx, calc_cosnx, calc_grad_cosnx
 
    contains
 
@@ -431,6 +440,60 @@ module descriptors_module
        this%initialised = .true.
 
      endsubroutine initialise_grad_fourier_so3
+
+     subroutine initialise_cosnx(this, l_max, n_max, cutoff, w)
+  
+       type(cosnx), intent(inout) :: this
+       integer, intent(in) :: l_max, n_max
+       real(dp), intent(in) :: cutoff
+       real(dp), dimension(:,:), intent(in), optional :: w
+  
+       real(dp), dimension(n_max,n_max) :: S, vS
+       real(dp), dimension(n_max) :: eS
+       real(dp), dimension(:,:), allocatable :: f
+       integer :: i, j, w_max
+  
+       if (this%initialised) call finalise(this)
+  
+       this%l_max = l_max
+       this%n_max = n_max
+       this%cutoff = cutoff
+  
+       allocate(this%RadialTransform(n_max,n_max),this%NormFunction(n_max))
+  
+       if( present(w) ) then
+          if(size(w,2) /= 2) call system_abort('initialise_cosnx: weight (w) expected to be (N,2) dimensional array')
+          w_max = size(w,1)
+          if(w(w_max,1) > cutoff) call system_abort('Last distance in w ('//w(w_max,1)//') is larger than the cutoff ('//cutoff//').')
+  
+          allocate(f(w_max,n_max))
+          do i = 1, n_max
+             f(:,i) = ( cutoff-w(:,1) )**(i+2)
+             this%NormFunction(i) = sqrt(TrapezoidIntegral(w(:,1),w(:,2)*f(:,i)**2))
+          enddo
+          do i = 1, n_max
+             do j = 1, n_max
+                S(j,i) = TrapezoidIntegral(w(:,1),w(:,2)*f(:,i)*f(:,j)) /( this%NormFunction(i)*this%NormFunction(j) )
+             enddo
+          enddo
+          deallocate(f)
+       else
+          do i = 1, n_max
+             this%NormFunction(i) = sqrt(cutoff**(2.0_dp*i+5.0_dp)/(2.0_dp*i+5.0_dp))
+             do j = 1, n_max
+                S(j,i) = sqrt((2.0_dp*i+5)*(2.0_dp*j+5))/(i+j+5.0_dp)
+             enddo
+          enddo
+       endif
+  
+       call diagonalise(S,eS,vS)
+  
+       this%RadialTransform = matmul(matmul(vS,diag(1.0_dp/sqrt(eS))),transpose(vS))
+  
+       this%initialised = .true.
+     
+     endsubroutine initialise_cosnx
+
 
      subroutine initialise_bispectrum_so4(this,j_max)
 
@@ -625,6 +688,19 @@ module descriptors_module
 
      endsubroutine finalise_grad_fourier_so3
      
+     subroutine finalise_cosnx(this)
+        type(cosnx), intent(inout) :: this
+     
+        if (.not. this%initialised) return
+     
+        deallocate(this%RadialTransform,this%NormFunction)
+        this%l_max = 0
+        this%n_max = 0
+        this%cutoff = 0.0_dp
+        this%initialised = .false.
+     
+     endsubroutine finalise_cosnx
+
      subroutine finalise_bispectrum_so4(this)
         type(bispectrum_so4), intent(inout) :: this
 
@@ -1045,6 +1121,248 @@ module descriptors_module
         deallocate( U, Up, dU, dUp, my_w )
 
      endsubroutine grad_fourier_transform_so4
+
+     subroutine calc_cosnx(this,at,vec,i,w)
+     
+        type(cosnx), intent(in)               :: this
+        type(atoms), intent(in)               :: at
+        real(dp), dimension(:), intent(out)   :: vec
+        integer, intent(in)                   :: i
+        real(dp), dimension(:), intent(in), optional :: w
+     
+        integer :: a, b, n, m, j, k, vec_i
+        real(dp) :: r_ij, r_ik, r_jk, cos_ijk, theta_ijk, Rad_ij, Rad_ik, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk
+        real(dp), dimension(3) :: d_ij, d_ik, d_jk
+        integer, dimension(3) :: shift_ij, shift_ik
+        real(dp), dimension(:), allocatable :: my_w
+     
+        if( (this%n_max * (this%l_max+1)) > size(vec) ) &
+        call system_abort('atom2symm: array sizes do not conform')
+     
+        allocate(my_w(at%N))
+        my_w = 1.0_dp
+        if(present(w)) then
+           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
+           my_w = w
+        endif
+
+        vec = 0.0_dp
+     
+        do n = 1, atoms_n_neighbours(at,i)
+           j = atoms_neighbour(at,i,n,distance=r_ij,diff=d_ij,shift=shift_ij)
+           if( r_ij > this%cutoff ) cycle
+     
+           do m = 1, atoms_n_neighbours(at,i)
+              k = atoms_neighbour(at,i,m,distance=r_ik,diff=d_ik,shift=shift_ik)
+              if( r_ik > this%cutoff ) cycle
+     
+              d_jk = diff(at,j,k,shift_ik-shift_ij)
+              r_jk = norm(d_jk)
+              if( r_jk .feq. 0.0_dp ) cycle
+     
+              cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik) !cosine(at,i,j,k)
+              theta_ijk = acos(cos_ijk)
+     
+              vec_i = 1
+     
+              do a = 1, this%n_max
+                 Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
+                 Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
+     
+                 T_0_cos_ijk = 1
+                 T_1_cos_ijk = cos_ijk
+                 if( this%l_max >= 0 ) then
+                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_0_cos_ijk
+                    vec_i = vec_i + 1
+                 endif
+     
+                 if( this%l_max >= 1 ) then
+                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_1_cos_ijk
+                    vec_i = vec_i + 1
+                 endif
+     
+                 do b = 2, this%l_max
+                    T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
+                    T_0_cos_ijk = T_1_cos_ijk
+                    T_1_cos_ijk = T_n_cos_ijk
+     
+                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_n_cos_ijk
+                    vec_i = vec_i + 1
+                 enddo
+              enddo
+           enddo
+        enddo
+     
+        vec = vec * 0.5_dp
+
+        deallocate(my_w)
+
+     endsubroutine calc_cosnx
+
+     subroutine calc_grad_cosnx(this,at,vec,i,ni,w)
+     
+        type(cosnx), intent(in)               :: this
+        type(atoms), intent(in)               :: at
+        real(dp), dimension(:,:), intent(out) :: vec
+        integer, intent(in)                   :: i, ni
+        real(dp), dimension(:), intent(in), optional :: w
+     
+        integer :: n, m, j, k, vec_i, a, b
+        real(dp) :: r_ij, r_ik, r_jk,  &
+        cos_ijk, Rad_ij, Rad_ik, Ang, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk, &
+        U_0_cos_ijk, U_1_cos_ijk, U_n_cos_ijk 
+     
+        real(dp), dimension(3) :: dRad_ij, dRad_ik, dAng, dcosijk_ij, dcosijk_ik, &
+        u_ij, u_ik, u_jk, d_ij, d_ik, d_jk
+        integer, dimension(3) :: shift_ij, shift_ik
+        real(dp), dimension(:), allocatable :: my_w
+     
+        allocate(my_w(at%N))
+        my_w = 1.0_dp
+        if(present(w)) then
+           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
+           my_w = w
+        endif
+
+        vec = 0.0_dp 
+     
+        if(ni == 0) then
+           do n = 1, atoms_n_neighbours(at,i)
+              j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij,diff=d_ij,shift=shift_ij)
+              if( r_ij > this%cutoff ) cycle
+     
+              do m = 1, atoms_n_neighbours(at,i)
+                 k = atoms_neighbour(at,i,m,distance=r_ik,cosines=u_ik,diff=d_ik,shift=shift_ik)
+                 if( r_ik > this%cutoff ) cycle
+                 
+                 d_jk = diff(at,j,k,shift_ik-shift_ij)
+                 r_jk = norm(d_jk)
+                 u_jk = d_jk / r_jk
+     
+                 if( r_jk .feq. 0.0_dp ) cycle
+     
+                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
+     
+                 dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                 dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+     
+                 vec_i = 1
+                 do a = 1, this%n_max
+                    Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
+                    Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
+                    dRad_ij = GradRadialFunction2(this, d_ij, a)*my_w(j)
+                    dRad_ik = GradRadialFunction2(this, d_ik, a)*my_w(k)
+     
+                    T_0_cos_ijk = 1
+                    T_1_cos_ijk = cos_ijk
+     
+                    U_0_cos_ijk = 1
+                    U_1_cos_ijk = 2*cos_ijk
+     
+                    if( this%l_max >= 0 ) then
+                       Ang = T_0_cos_ijk
+                       dAng = 0.0_dp
+     
+                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
+                       vec_i = vec_i + 1
+                    endif
+     
+                    if( this%l_max >= 1 ) then
+                       Ang = T_1_cos_ijk
+                       dAng = U_0_cos_ijk * (dcosijk_ij+dcosijk_ik)
+     
+                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
+                       vec_i = vec_i + 1
+                    endif
+     
+                    do b = 2, this%l_max
+                       T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
+                       T_0_cos_ijk = T_1_cos_ijk
+                       T_1_cos_ijk = T_n_cos_ijk
+     
+                       U_n_cos_ijk = 2*cos_ijk*U_1_cos_ijk - U_0_cos_ijk
+                       U_0_cos_ijk = U_1_cos_ijk
+                       U_1_cos_ijk = U_n_cos_ijk
+     
+                       Ang = T_n_cos_ijk
+                       dAng = b*U_0_cos_ijk * (dcosijk_ij+dcosijk_ik)
+     
+                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
+                       vec_i = vec_i + 1
+                    enddo
+                 enddo
+              enddo
+           enddo
+     
+        else
+           j = atoms_neighbour(at,i,ni,distance=r_ij,cosines=u_ij,diff=d_ij,shift=shift_ij)
+           if( r_ij < this%cutoff ) then
+     
+              do m = 1, atoms_n_neighbours(at,i)
+                 k = atoms_neighbour(at,i,m,distance=r_ik,cosines=u_ik,diff=d_ik,shift=shift_ik)
+                 if( r_ik > this%cutoff ) cycle
+                    
+                 d_jk = diff(at,j,k,shift_ik-shift_ij)
+                 r_jk = norm(d_jk)
+                 u_jk = d_jk / r_jk
+     
+                 if( r_jk .feq. 0.0_dp ) cycle
+     
+                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
+                 dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                 dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+     
+                 vec_i = 1
+                 do a = 1, this%n_max
+                    Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
+                    Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
+                    dRad_ij = GradRadialFunction2(this, d_ij, a)*my_w(j)
+     
+                    T_0_cos_ijk = 1
+                    T_1_cos_ijk = cos_ijk
+     
+                    U_0_cos_ijk = 1
+                    U_1_cos_ijk = 2*cos_ijk
+     
+                    if( this%l_max >= 0 ) then
+                       Ang = T_0_cos_ijk
+                       dAng = 0.0_dp
+     
+                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
+                       vec_i = vec_i + 1
+                    endif
+     
+                    if( this%l_max >= 1 ) then
+                       Ang = T_1_cos_ijk
+                       dAng = U_0_cos_ijk * dcosijk_ij
+     
+                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
+                       vec_i = vec_i + 1
+                    endif
+     
+                    do b = 2, this%l_max
+                       T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
+                       T_0_cos_ijk = T_1_cos_ijk
+                       T_1_cos_ijk = T_n_cos_ijk
+     
+                       U_n_cos_ijk = 2*cos_ijk*U_1_cos_ijk - U_0_cos_ijk
+                       U_0_cos_ijk = U_1_cos_ijk
+                       U_1_cos_ijk = U_n_cos_ijk
+     
+                       Ang = T_n_cos_ijk
+                       dAng = b*U_0_cos_ijk * dcosijk_ij
+     
+                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
+                       vec_i = vec_i + 1
+                    enddo
+                 enddo
+              enddo
+           endif
+        endif
+
+        deallocate(my_w)
+
+     endsubroutine calc_grad_cosnx
 
      subroutine fourier_transform_so4_old(this,at,i)
         type(fourier_so4), intent(inout) :: this
@@ -4552,6 +4870,50 @@ module descriptors_module
       end if
 
     end function GradRadialFunction
+
+    function RadialFunction2(this,x,i)
+       real(dp) :: RadialFunction2
+       type(cosnx), intent(in) :: this
+       real(dp), dimension(3), intent(in) :: x
+       integer, intent(in) :: i
+    
+       real(dp), dimension(this%n_max) :: h
+       real(dp) :: r
+       integer :: j
+    
+       r = norm(x)
+       if( r < this%cutoff ) then
+          do j = 1, this%n_max
+             h(j) = (this%cutoff-r)**(j+2) / this%NormFunction(j)
+          enddo
+          RadialFunction2 = dot_product(this%RadialTransform(:,i),h)
+       else
+          RadialFunction2 = 0.0_dp
+       endif
+    
+    endfunction RadialFunction2
+    
+    function GradRadialFunction2(this,x,i)
+       real(dp), dimension(3) :: GradRadialFunction2
+       type(cosnx), intent(in) :: this
+       real(dp), dimension(3), intent(in) :: x
+       integer, intent(in) :: i
+    
+       real(dp), dimension(this%n_max) :: h
+       real(dp) :: r
+       integer :: j
+    
+       r = norm(x)
+       if( r < this%cutoff ) then
+          do j = 1, this%n_max
+             h(j) = - (j+2) * (this%cutoff-r)**(j+1) / this%NormFunction(j)
+          enddo
+          GradRadialFunction2 = dot_product(this%RadialTransform(:,i),h) * x / r
+       else
+          GradRadialFunction2 = 0.0_dp
+       endif
+    
+    endfunction GradRadialFunction2
 
     function wigner_big_U(j,m1,m2,omega,theta,phi,denom)
        complex(dp) :: wigner_big_U
