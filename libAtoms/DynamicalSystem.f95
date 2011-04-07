@@ -842,7 +842,11 @@ contains
 
      if (count( (/present(gamma), present(tau) /) ) /= 1 ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
 
-     gamma_eff = optional_default(1.0_dp/tau, gamma)
+     if (present(gamma)) then
+       gamma_eff = gamma
+     else
+       gamma_eff = 1.0_dp/tau
+     endif
 
      if(present(p)) then
         if(present(tau_cell)) then
