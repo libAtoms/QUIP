@@ -447,10 +447,10 @@ contains
              enddo
           case('cosnx')
              do i = 1, at%N
-                call calc_cosnx(my_cosnx,at,vec(:,i),i)
+                call calc_cosnx(my_cosnx,at,vec(:,i),i,w)
                 if(has_force .or. has_virial) then
                    do n = 0, atoms_n_neighbours(at,i)
-                      call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n)
+                      call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n,w)
                    enddo
                 endif
              enddo
