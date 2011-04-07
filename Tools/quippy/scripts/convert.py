@@ -107,7 +107,7 @@ if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or out
    outfile = None
 
 # convert - to stdin/stdout
-infiles = [ f == 'stdin' and '-' or f for f in infiles ]
+infiles = [ f == '-' and 'stdin' or f for f in infiles ]
 if outfile == '-': outfile = 'stdout'
 
 # check for existing outfile
