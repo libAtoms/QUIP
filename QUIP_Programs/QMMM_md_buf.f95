@@ -1527,9 +1527,10 @@ contains
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover thermostat for each atom")
       case(4)
-	do i=1, ds%atoms%N
-	  call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau)
-	end do
+	call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau, n=ds%atoms%N)
+	! do i=1, ds%atoms%N
+	  ! call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau)
+	! end do
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
       case(5)

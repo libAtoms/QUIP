@@ -341,7 +341,7 @@ contains
 
   end subroutine thermostats_finalise
 
-  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,n)
 
     type(thermostat), allocatable, intent(inout) :: this(:)
     integer,                       intent(in)    :: type
@@ -352,9 +352,12 @@ contains
     real(dp), optional,            intent(in)    :: gamma_p
     real(dp), optional,            intent(in)    :: W_p
     real(dp), optional,            intent(in)    :: volume_0
+    integer, optional,             intent(in)    :: n
 
     type(thermostat), allocatable                :: temp(:)
-    integer                                      :: i, l, u, la(1), ua(1)
+    integer                                      :: i, l, u, la(1), ua(1), use_n
+
+    use_n = optional_default(1, n)
 
     if (allocated(this)) then
        la = lbound(this); l=la(1)
@@ -369,7 +372,7 @@ contains
        u=0
     end if
     
-    allocate(this(l:u+1))
+    allocate(this(l:u+use_n))
 
     if (allocated(temp)) then
        do i = l,u
@@ -378,7 +381,9 @@ contains
        call finalise(temp)
     end if
 
-    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+    do i=1, use_n
+      call initialise(this(u+i),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+    end do
 
   end subroutine thermostats_add_thermostat
 
