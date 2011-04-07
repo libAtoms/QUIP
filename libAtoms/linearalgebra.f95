@@ -5794,5 +5794,21 @@ CONTAINS
 
   end subroutine round_prime_factors
 
+  !% Calculates integral numerically using the trapezoid formula from (x,y) data
+  !% pairs.
+  function TrapezoidIntegral(x,y)
+  
+     real(dp) :: TrapezoidIntegral
+     real(dp), dimension(:), intent(in) :: x, y
+  
+     integer :: n
+  
+     if( size(x) /= size(y) ) call system_abort('TrapezoidIntegral: dimensions of x and y not the same')
+     n = size(x)
+  
+     TrapezoidIntegral = sum((x(2:n)-x(1:n-1))*(y(2:n)+y(1:n-1)))/2.0_dp
+  
+  endfunction TrapezoidIntegral
+
 
 end module linearalgebra_module
