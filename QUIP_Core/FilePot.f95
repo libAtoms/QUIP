@@ -159,7 +159,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   endif
   call finalise(params)
   if (do_rescale_r .or. do_rescale_E) then
-     RAISE_ERROR("IPModel_SW_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+     RAISE_ERROR("FilePot_Initialise: rescaling of potential with r_scale and E_scale not yet implemented!", error)
   end if
 
   this%command = command

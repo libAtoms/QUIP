@@ -137,6 +137,7 @@ program qmmm_md
   integer                     :: update_QM_region_interval
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
+  character(len=FIELD_LENGTH) :: extra_calc_args                 ! extra args to mm and qm calcs (like FilePot_log)
   character(len=FIELD_LENGTH) :: filepot_program
 
   logical                     :: do_carve_cluster
@@ -229,13 +230,12 @@ logical :: have_silica_potential
       call param_register(params_in, 'use_spline', 'F', use_spline, help_string="whether to use an external spline potential within a spherical shell around (/0. 0. 0./).")
       call param_register(params_in, 'max_n_steps', '-1', max_n_steps, help_string="Maximum number of time steps to run")
       call param_register(params_in, 'update_QM_region_interval', '1', update_QM_region_interval, help_string="interval between updates of QM region")
-      cp2k_calc_args=''
-      call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="No help yet.  This source file was $LastChangedBy$")
-      evb_args_str=''
+      call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="calc args for cp2k_filepot")
       call param_register(params_in, 'evb_args_str', '', evb_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'extra_calc_args', '', extra_calc_args, help_string="Extra args for mm and qm calc(), for things like FilePot_log")
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="Filepot program.")
-      call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="If true, carve cluster instead of doing QM/MM.  Untested")
+      call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="If true, use cluster_create_inf() to create core, which does things like residue completing heuristics")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
@@ -685,7 +685,7 @@ logical :: have_silica_potential
 call print("MAIN CALL CALC EVB")
 call print(pot)
      call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, qm_core_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, extra_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
 call print("MAIN CALLED CALC EVB")
      if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
@@ -844,7 +844,7 @@ call print("MAIN CALLED CALC EVB")
         endif
      endif
      call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, qm_core_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+       distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, extra_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
 
     !SPLINE force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
@@ -1317,12 +1317,13 @@ contains
   end subroutine print_qm_region
 
   subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, &
-			  distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+			  distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, extra_calc_args, &
+			  do_carve_cluster, driver_PSF_Print, f1, energy)
      type(Potential), intent(inout) :: pot, empty_qm_pot
      type(Atoms), intent(inout) :: at
      logical, intent(in) :: EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, distance_ramp, do_carve_cluster
      real(dp), intent(in) :: qm_region_ctr(3), qm_core_region_ctr(3)
-     character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, evb_args_str, driver_PSF_Print
+     character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, evb_args_str, extra_calc_args, driver_PSF_Print
      real(dp), intent(inout) :: f1(:,:)
      real(dp), intent(out) :: energy
 
@@ -1438,7 +1439,7 @@ contains
          endif
        endif
 
-       args_str='qm_args_str={'//trim(slow_args_str)//'} mm_args_str={'//trim(fast_args_str)//'} hybrid_mark_postfix=_extended'
+       args_str='qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} hybrid_mark_postfix=_extended'
        if (distance_ramp) then
 	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
        endif
