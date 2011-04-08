@@ -387,8 +387,12 @@ contains
        PASS_ERROR_WITH_INFO("Failed to add saved_rev_sort_index property", error)
        ! read it from file
        if (tmp_run_dir_i>0) then
-         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)//" ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
-         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)//" into the tmp dir "//trim(tmp_run_dir))
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)// &
+	                     " ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
+         if ( stat /= 0 ) then
+	    call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)// &
+	                      " into the tmp dir "//trim(tmp_run_dir))
+	 endif
          call initialise(rev_sort_index_io, trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
        else
          call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
@@ -401,12 +405,21 @@ contains
        sorted = .true.
     endif
     if (trim(psf_print) == 'DRIVER_PRINT_AND_SAVE') then ! sort by labels
-       if (has_property(at,'mol_id') .and. has_property(at,'atom_res_type') .or. .not. has_property(at,'motif_atom_num')) then
-	  call atoms_sort(at, 'mol_id', 'atom_res_type', 'motif_atom_num', error=error)
-	  PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_type", error)
+       if (has_property(at,'mol_id') .and. has_property(at,'atom_res_number')) then
+	  if (has_property(at,'motif_atom_num')) then
+	    call atoms_sort(at, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
+	  else
+	    call atoms_sort(at, 'mol_id', 'atom_res_number', error=error)
+	  endif
+	  PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id, atom_res_number, and motif_atom_num", error)
 	  sorted = .true.
        endif
     endif
+
+    allocate(rev_sort_index(at%N))
+    do i=1, at%N
+       rev_sort_index(sort_index_p(i)) = i
+    end do
 
     if (sorted) then
       do at_i=1, at%N
@@ -417,16 +430,11 @@ contains
       end do
       call calc_connect(at)
       if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
-	 allocate(rev_sort_index(at%N))
-	 do i=1, at%N
-	   rev_sort_index(sort_index_p(i)) = i
-	 end do
 	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond_sorted(:) = rev_sort_index(form_bond(:))
 	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond_sorted(:) = rev_sort_index(break_bond(:))
-	 deallocate(rev_sort_index)
       end if
     else
-      call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
+      call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_number, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
     end if
 
     ! write PSF file, if requested
@@ -444,12 +452,7 @@ contains
 	endif
 	! write sort order
 	call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=OUTPUT)
-	allocate(rev_sort_index(at%N))
-	do i=1, at%N
-	  rev_sort_index(sort_index_p(i)) = i
-	end do
 	call print(rev_sort_index, file=rev_sort_index_io)
-	deallocate(rev_sort_index)
 	call finalise(rev_sort_index_io)
       endif
     endif
@@ -484,8 +487,8 @@ contains
           call initialise(cut_bonds,2,0,0,0,0)
           do i_inner=1,at%N
              do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
-                i_outer = cut_bonds_p(j,i_inner)
-                if (i_outer .eq. 0) exit
+		if (cut_bonds_p(j,i_inner) == 0) exit
+                i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
                 call append(cut_bonds,(/i_inner,i_outer/))
              enddo
           enddo
@@ -786,6 +789,8 @@ contains
 	 endif
        endif
     endif
+
+    if (allocated(rev_sort_index)) deallocate(rev_sort_index)
 
     call system_timer('do_cp2k_calc')
 
