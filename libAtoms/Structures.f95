@@ -920,6 +920,200 @@ contains
   end subroutine supercell
 
 
+  !% Create a supercell of size sx and sy out of unit cell that are rotated
+  !% by phi in the x-y plane.
+  !% 
+  !% The final cell might be distorted, but distortions become smaller then
+  !% sx and sy grow. The strain tensor that describes these distortions is
+  !% returned in the optional parameter eps.
+  !%
+  !% If phi_min is given, the angle that minimizes the norm of the strain
+  !% tensor will be determined using a downhill search starting from phi.
+  !% The minimum angle is then output in phi_min.
+  subroutine rotated_supercell(at, unitcell, sx, sy, phi, phi_min, eps, error)
+    implicit none
+
+    type(Atoms),        intent(inout)  :: at
+    type(Atoms),        intent(in)     :: unitcell
+    real(DP),           intent(in)     :: sx, sy
+    real(DP),           intent(in)     :: phi
+    real(DP), optional, intent(out)    :: phi_min
+    real(DP), optional, intent(out)    :: eps(2, 2)
+    integer,  optional, intent(out)    :: error
+
+    ! ---
+ 
+    real(DP), parameter  :: initial_step_size = 0.001_DP
+
+    integer      :: i, n1, n2, m1, m2
+
+    real(DP)     :: p1, p3, p5, en1, en3, en5, step_size
+    real(DP)     :: x(3), T(2, 2), Tr(2, 2), lattice(3, 3)
+
+    logical, allocatable  :: mask(:)
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    !
+    ! Determine parameters of the rotated supercell
+    !
+
+    if (present(phi_min)) then
+       step_size = initial_step_size
+       p3 = phi
+       call find_rotated_supercell(unitcell, sx, sy, p3, n1, n2, m1, m2, eps)
+       en3 = sqrt(sum(eps*eps))
+
+       do while (step_size > 1e-6)
+          p1 = p3-step_size
+          p5 = p3+step_size
+
+          call find_rotated_supercell( &
+               unitcell, sx, sy, p1, n1, n2, m1, m2, eps)
+          en1 = sqrt(sum(eps*eps))
+          call find_rotated_supercell( &
+               unitcell, sx, sy, p5, n1, n2, m1, m2, eps)
+          en5 = sqrt(sum(eps*eps))
+
+          if (en1 < en3 .and. en5 < en3) then
+             if (en1 < en5) then
+                p3  = p1
+                en3 = en1
+             else
+                p3  = p5
+                en3 = en5
+             endif
+          else if (en1 < en3) then
+             p3  = p1
+             en3 = en1
+          else if (en5 < en3) then
+             p3  = p5
+             en3 = en5
+          else
+             step_size = step_size * 0.1_DP
+          endif
+       enddo
+
+       phi_min = p3
+       call find_rotated_supercell( &
+            unitcell, sx, sy, phi_min, n1, n2, m1, m2, eps)
+    else
+       call find_rotated_supercell( &
+            unitcell, sx, sy, phi, n1, n2, m1, m2, eps)
+    endif
+
+    !
+    ! Create template supercell
+    !
+
+    call supercell( &
+         at, unitcell,  &
+         abs(n1)+abs(m1)+2, &
+         abs(n2)+abs(m2)+2, &
+         1, error=error)
+    PASS_ERROR(error)
+
+    !
+    ! Transformation
+    !
+
+    allocate(mask(at%N))
+    mask = .true.
+    
+    ! n2 is negative for 0 < phi < pi/2
+    at%pos(2, :) = at%pos(2, :) + n2*unitcell%lattice(2, 2)
+
+    T(:, 1) = n1*unitcell%lattice(1:2, 1) + n2*unitcell%lattice(1:2, 2)
+    T(:, 2) = m1*unitcell%lattice(1:2, 1) + m2*unitcell%lattice(1:2, 2)
+    call inverse(T, Tr)
+
+    do i = 1, at%N
+       x(1:2) = matmul(Tr, at%pos(1:2, i))
+
+       if (x(1) >= 0.0_DP .and. x(1) < 1.0_DP .and. &
+           x(2) >= 0.0_DP .and. x(2) < 1.0_DP) then
+          at%pos(1, i) = x(1)*sx
+          at%pos(2, i) = x(2)*sy
+          mask(i)      = .false.
+       endif
+    enddo
+
+    call remove_atoms(at, mask, error=error)
+    PASS_ERROR(error)
+    deallocate(mask)
+
+    lattice       = 0.0_DP
+    lattice(1, 1) = sx
+    lattice(2, 2) = sy
+    lattice(3, 3) = at%lattice(3, 3)
+    call set_lattice(at, lattice, .false.)
+
+  endsubroutine rotated_supercell
+
+
+  !% Find the lattice parameters for the rotated supercell
+  subroutine find_rotated_supercell( &
+       unitcell, sx, sy, phi, n1, n2, m1, m2, eps)
+    implicit none
+
+    type(Atoms),           intent(in)   :: unitcell
+    real(DP),              intent(in)   :: sx, sy
+    real(DP),              intent(in)   :: phi
+    integer,               intent(out)  :: n1, n2
+    integer,               intent(out)  :: m1, m2
+    real(DP),    optional, intent(out)  :: eps(2, 2)     !% strain
+
+    ! ---
+
+    !                 / sx \
+    ! n1 a1 + n2 a2 = |    |
+    !                 \ 0  /
+    !
+    !                 / 0  \
+    ! m1 a1 + m2 a2 = |    |
+    !                 \ sy /
+
+    real(DP)  :: l1, l2, sphi, cphi, tphi, n2r, m2r
+    real(DP)  :: a1(2), a2(2), b1(2), b2(2)
+
+    ! ---
+
+    l1 = unitcell%lattice(1, 1)
+    l2 = unitcell%lattice(2, 2)
+
+    sphi = sin(phi)
+    cphi = cos(phi)
+    tphi = sphi/cphi
+
+    n2r = - sx/(sphi + cphi/tphi)
+    m2r =   sy/(cphi + sphi*tphi)
+
+    n1  = - nint( n2r/(l1*tphi) )
+    m1  =   nint( m2r/l1 *tphi  )
+
+    n2  =   nint( n2r/l2 )
+    m2  =   nint( m2r/l2 )
+
+    if (present(eps)) then
+       ! Compute strain
+
+       a1 = (/  cphi*l1,  sphi*l1  /)
+       a2 = (/ -sphi*l2,  cphi*l2  /)
+
+       b1 = n1*a1 + n2*a2
+       b2 = m1*a1 + m2*a2
+
+       eps(1, 1) = b1(1)/sx - 1.0_DP
+       eps(2, 1) = b1(2)/sx
+       eps(1, 2) = b2(1)/sy
+       eps(2, 2) = b2(2)/sy - 1.0_DP
+    endif
+
+  endsubroutine find_rotated_supercell
+
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   ! diamond(myatoms, a)
