@@ -183,7 +183,7 @@ program xyz2pdb
           my_atoms%pos(:,i) = my_atoms%pos(:,i)-shift
        end do
     end if
-    call map_into_cell(my_atoms)
+    ! call map_into_cell(my_atoms)
 
    ! identify residues
     call print('Identifying residues...')
