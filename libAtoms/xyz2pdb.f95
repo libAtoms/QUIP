@@ -84,9 +84,10 @@ program xyz2pdb
     logical                     :: ex
     logical                     :: have_silica_potential
     logical                     :: use_avgpos
-    integer :: at_i
+    integer :: at_i, iri_i
     integer, pointer :: sort_index_p(:)
-    logical                     :: do_sort
+    integer, allocatable :: rev_sort_index(:)
+    logical                     :: do_sort, do_sort_3
     integer :: error = ERROR_NONE
     character(80) :: sorted_name
 
@@ -105,6 +106,7 @@ program xyz2pdb
     call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential in CP2K.")
     call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="Whether to use the average positions (avgpos) for the pattern matching rather than the instantaneous positions (pos).")
     call param_register(params_in, 'sort', 'F', do_sort, help_string="Whether to sort atoms by molecule and/or residue.")
+    call param_register(params_in, 'sort_3', 'F', do_sort_3, help_string="Whether to sort atoms by molecule and/or residue.")
     if (.not. param_read_args(params_in)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -200,28 +202,38 @@ program xyz2pdb
        if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) then
 	 call add_property(my_atoms, 'sort_index', 0)
 	 if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) &
-	   call system_abort("WARNING: do_cp2k_calc failed to assign pointer for sort_index, not sorting")
+	   call system_abort("WARNING: do_cp2k_calc failed to assign pointer or create new field for sort_index, can't sort")
        endif
-       if (associated(sort_index_p)) then
-	 do at_i=1, my_atoms%N
-	   sort_index_p(at_i) = at_i
-	 end do
-       endif
+       do at_i=1, my_atoms%N
+	 sort_index_p(at_i) = at_i
+       end do
        if (.not.(has_property(my_atoms,'mol_id')) .or. .not. has_property(my_atoms,'atom_res_number')) then
 	 call system_abort("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number")
        else
-	 call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', error=error)
-	 HANDLE_ERROR(error)
-	 if (associated(sort_index_p)) then
-	   do at_i=1, my_atoms%N
-	     if (sort_index_p(at_i) /= at_i) then
-	       call print("sort() of my_atoms%data by mol_id, atom_res_number reordered some atoms")
-	       exit
-	     endif
-	   end do
+	 if (do_sort_3) then
+	   call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
+	 else
+	   call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', error=error)
 	 endif
+	 HANDLE_ERROR(error)
+	 do at_i=1, my_atoms%N
+	   if (sort_index_p(at_i) /= at_i) then
+	     call print("sort() of my_atoms%data by mol_id, atom_res_number reordered some atoms")
+	     exit
+	   endif
+	 end do
        end if
        call calc_connect(my_atoms)
+
+       ! fix intrares_impropers to correspond to sorted atom numbers
+       allocate(rev_sort_index(my_atoms%N))
+       do at_i=1, my_atoms%N
+	  rev_sort_index(sort_index_p(at_i)) = at_i
+       end do
+       do iri_i=1, intrares_impropers%N
+	  intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
+       end do
+       deallocate(rev_sort_index)
     end if ! do_sort
 
    ! print output PDB and PSF files
