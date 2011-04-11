@@ -167,7 +167,7 @@ contains
 
     integer, pointer :: sort_index_p(:), saved_rev_sort_index_p(:)
     integer, allocatable :: rev_sort_index(:)
-    integer :: at_i
+    integer :: at_i, iri_i
     type(Inoutput) :: rev_sort_index_io
     logical :: sorted
 
@@ -428,11 +428,16 @@ contains
 	  exit
 	endif
       end do
+      ! fix EVB bond forming/breaking indices for new sorted atom numbers
       call calc_connect(at)
       if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
 	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond_sorted(:) = rev_sort_index(form_bond(:))
 	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond_sorted(:) = rev_sort_index(break_bond(:))
       end if
+      ! fix intrares impropers atom indices for new sorted atom numbers
+      do iri_i=1, intrares_impropers%N
+	intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
+      end do
     else
       call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_number, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
     end if
@@ -488,6 +493,7 @@ contains
           do i_inner=1,at%N
              do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
 		if (cut_bonds_p(j,i_inner) == 0) exit
+		! correct for new atom indices resulting from sorting of atoms
                 i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
                 call append(cut_bonds,(/i_inner,i_outer/))
              enddo
