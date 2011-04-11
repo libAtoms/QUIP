@@ -42,7 +42,8 @@ PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_ne
   clean_traj file_rewrite find_space_minim \
   structure_analysis_traj mean_var_correl angle_distr coordination_number \
   make_bulk_supercell \
-  extract_cv extract_EVB mean_var_decorrelated_err rings UI_integrate solvate
+  extract_cv extract_EVB mean_var_decorrelated_err rings UI_integrate solvate \
+  merge_traj
 
 ifeq (${HAVE_TB},1)
   PROGRAMS += make_k_mesh
