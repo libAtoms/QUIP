@@ -431,7 +431,7 @@ contains
     this%crack_initial_loading_strain       = 0.005_dp ! 0.5% per loading cycle
     this%crack_G_increment       = 0.0_dp   ! increment of G per loading cycle, override initial_loading_strain if present
     this%crack_seed_length       = 50.0_dp  ! Angstrom
-    this%crack_strain_zone_width = 100.0_dp ! Angstrom
+    this%crack_strain_zone_width = 0.0_dp ! Angstrom
     this%crack_vacuum_size       = 100.0_dp ! Angstrom
     this%crack_relax_loading_field     = .true.
     this%crack_rescale_x_z       = .false. 
@@ -687,6 +687,9 @@ contains
 
     call close_xml_t(fxml)
     call Finalise(ss2)
+
+    if (this%crack_strain_zone_width .feq. 0.0_dp) &
+         this%crack_strain_zone_width = this%crack_G * 10.0_dp
 
   end subroutine CrackParams_read_xml
 
