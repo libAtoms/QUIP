@@ -51,6 +51,8 @@ module  structures_module
      module procedure slab_width_height_nz, slab_nx_ny_nz
   end interface
 
+  private :: find_rotated_supercell
+
 contains
 
   !X 
@@ -945,9 +947,9 @@ contains
  
     real(DP), parameter  :: initial_step_size = 0.001_DP
 
-    integer      :: i, n1, n2, m1, m2
+    integer      :: i, j, jn, n1, n2, m1, m2
 
-    real(DP)     :: p1, p3, p5, en1, en3, en5, step_size
+    real(DP)     :: p1, p3, p5, en1, en3, en5, step_size, d, d0
     real(DP)     :: x(3), T(2, 2), Tr(2, 2), lattice(3, 3)
 
     logical, allocatable  :: mask(:)
@@ -955,6 +957,17 @@ contains
     ! ---
 
     INIT_ERROR(error)
+
+    !
+    ! Determine nearest neighbor distance
+    !
+
+    d0 = sum(unitcell%lattice)
+    do i = 1, at%N-1
+       do j = i+1, at%N
+          d0 = min(d0, distance_min_image(at, i, j))
+       enddo
+    enddo
 
     !
     ! Determine parameters of the rotated supercell
@@ -1016,7 +1029,7 @@ contains
     PASS_ERROR(error)
 
     !
-    ! Transformation
+    ! Transform from unrotated to rotated cell
     !
 
     allocate(mask(at%N))
@@ -1032,23 +1045,49 @@ contains
     do i = 1, at%N
        x(1:2) = matmul(Tr, at%pos(1:2, i))
 
-       if (x(1) >= 0.0_DP .and. x(1) < 1.0_DP .and. &
-           x(2) >= 0.0_DP .and. x(2) < 1.0_DP) then
-          at%pos(1, i) = x(1)*sx
-          at%pos(2, i) = x(2)*sy
+       ! Allow for reasonable epsilon. Dublicates will be removed later.
+       if (x(1) > -0.01_DP .and. x(1)-1.0_DP < 0.01_DP .and. &
+           x(2) > -0.01_DP .and. x(2)-1.0_DP < 0.01_DP) then
+          at%pos(1, i) = modulo(x(1), 1.0_DP)*sx
+          at%pos(2, i) = modulo(x(2), 1.0_DP)*sy
           mask(i)      = .false.
        endif
     enddo
 
     call remove_atoms(at, mask, error=error)
     PASS_ERROR(error)
-    deallocate(mask)
 
     lattice       = 0.0_DP
     lattice(1, 1) = sx
     lattice(2, 2) = sy
     lattice(3, 3) = at%lattice(3, 3)
     call set_lattice(at, lattice, .false.)
+
+    !
+    ! Remove dublicates.
+    ! Any better idea to do this is greatly appreciated. It seems that any
+    ! threshold above always leads to either dublicates or missing atoms
+    ! in some situations.
+    !
+
+    call set_cutoff(at, d0*1.1_DP)
+    call calc_connect(at)
+    mask(1:at%N) = .false.
+    d0 = 0.5_DP*d0
+    do i = 1, at%N
+       do jn = 1, n_neighbours(at, i)
+          j = neighbour(at, i, jn, distance=d)
+          if (i < j) then
+             if (d < d0) then
+                mask(i) = .true.
+             endif
+          endif
+       enddo
+    enddo
+    call remove_atoms(at, mask(1:at%N), error=error)
+    PASS_ERROR(error)
+
+    deallocate(mask)
 
   endsubroutine rotated_supercell
 
