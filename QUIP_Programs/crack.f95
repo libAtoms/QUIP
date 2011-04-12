@@ -834,7 +834,6 @@ program crack
                  if (has_property(ds%atoms, 'load')) then
                     call print_title('Applying load')
                     call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
-                    call calc_dists(ds%atoms)
                  else
                     call print('No load field found - not increasing load.')
                  end if
@@ -959,9 +958,6 @@ program crack
                        call system_timer('load_increment')
                        call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
                        call system_timer('load_increment')
-                       call system_timer('calc_dists')
-                       call calc_dists(ds%atoms)
-                       call system_timer('calc_dists')
                        if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                     else
                        call print('No load field found - not increasing load.')
@@ -1029,7 +1025,6 @@ program crack
                        ! increment the load
                        if (has_property(ds%atoms, 'load')) then
                           call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
-                          call calc_dists(ds%atoms)
                           if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                        else
                           call print('No load field found - not increasing load.')
@@ -1071,7 +1066,9 @@ program crack
               end if
 
               call print_title('Advance Verlet')
+              call system_timer('advance_verlet')
               call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+              call system_timer('advance_verlet')
               if (params%simulation_classical) then
                  call ds_print_status(ds, 'D', epot=energy)
               else
@@ -1082,16 +1079,17 @@ program crack
                    call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
                    ' max(abs(force)) = '//maxval(abs(force)))
 
+              call system_timer('load_increment')
               if (state == STATE_MD_LOADING) then
                  ! increment the load
                  if (has_property(ds%atoms, 'load')) then
                     call crack_apply_load_increment(ds%atoms, params%md(params%md_stanza)%smooth_loading_rate*params%md(params%md_stanza)%time_step)
-                    call calc_dists(ds%atoms)
                     if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                  else
                     call print('No load field found - not increasing load.')
                  end if
               end if
+              call system_timer('load_increment')
 
            end if ! params%extrapolate_steps /= 1
 
