@@ -1455,9 +1455,10 @@ contains
     centre = at%pos(:,cluster_list%int(1,1))
 !!$    call print('centre = '//centre)
 
-    ! Find atom closest to centre of cluster, using min image convention  
+    ! Find ACTIVE atom closest to centre of cluster, using min image convention  
     r_min = huge(1.0_dp)
     do i=1,cluster_list%N
+       if (hybrid_mark(cluster_list%int(1,i)) /= HYBRID_ACTIVE_MARK) cycle
        r = distance_min_image(at, centre, cluster_list%int(1,i))
 !!$       call print(cluster_list%int(1,i)//' '//r)
        if (r < r_min) then
