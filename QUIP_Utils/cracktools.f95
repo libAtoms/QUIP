@@ -1114,12 +1114,14 @@ contains
        call print("crack_apply_load: doing G_increment, cur_G="//cur_G)
 
        ! calc properties after full load_step
+       !$omp parallel do
        do i=1,at%N
           at%pos(:,i) = at%pos(:,i) + load(:,i)
        end do
        test_height = maxval(at%pos(2,:))-minval(at%pos(2,:))
        load_dheight = test_height-cur_height
        ! step back to orig positions
+       !$omp parallel do
        do i=1,at%N
           at%pos(:,i) = at%pos(:,i) - load(:,i)
        end do
@@ -1136,10 +1138,13 @@ contains
        load_scale = 1.0_dp
     endif
 
+    !$omp parallel do
     do i=1,at%N
        at%pos(:,i) = at%pos(:,i) + load_scale*load(:,i)
     end do
+    call system_timer('calc_dists')
     call calc_dists(at)
+    call system_timer('calc_dists')
 
     new_height = maxval(at%pos(2,:))-minval(at%pos(2,:))
     call print('crack_apply_load: new height = '//new_height)
