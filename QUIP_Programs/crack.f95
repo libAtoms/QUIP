@@ -314,7 +314,7 @@ program crack
   real(dp), pointer :: dr_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit, k, md_stanza_idx
+  integer :: movie_n, nargs, i, state, steps, iunit, k, md_stanza_idx, random_seed
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
@@ -529,6 +529,7 @@ program crack
 
   call print('Initialised dynamical system with '//ds%N//' atoms')
 
+
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark, force)
 
@@ -543,7 +544,11 @@ program crack
   ds%Ndof = 3*count(ds%atoms%move_mask == 1)
 
   ! Reseed random number generator if necessary
-  if (params%simulation_seed /= 0) call system_reseed_rng(params%simulation_seed)
+  if (get_value(ds%atoms%params, 'random_seed', random_seed)) then
+     call system_reseed_rng(random_seed)
+  else if (params%simulation_seed /= 0) then
+     call system_reseed_rng(params%simulation_seed)
+  end if
 
 #ifndef HAVE_NETCDF
   if (params%io_netcdf) &
@@ -1125,6 +1130,7 @@ program crack
               if (ds%t - last_checkpoint_time >=  params%io_checkpoint_interval) then
                  last_checkpoint_time = ds%t
                  call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
+                 call set_value(ds%atoms%params, 'random_seed', system_get_random_seed())
 
                  checkfile_name = trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix
                  inquire (file=checkfile_name,exist=texist)
