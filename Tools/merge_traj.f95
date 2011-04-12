@@ -30,6 +30,8 @@
 
 #include "error.inc"
 
+! Syntax: merge_traj <outfile> <infiles[@frame]>
+
 program merge_traj
   use libAtoms_module
 
@@ -42,8 +44,8 @@ program merge_traj
 
   ! ---
 
-  character(FN_MAX)               :: outfn
-  character(FN_MAX), allocatable  :: infn(:)
+  character(FN_MAX)               :: outfn, infn
+  character(FN_MAX), allocatable  :: infndescr(:)  
 
   integer  :: i, j, frame, n
   integer  :: error
@@ -53,11 +55,11 @@ program merge_traj
   call system_initialise
 
   n = cmd_arg_count()
-  allocate(infn(n-1))
+  allocate(infndescr(n-1))
 
   call get_cmd_arg(1, outfn)
   do i = 1, n-1
-     call get_cmd_arg(i+1, infn(i))
+     call get_cmd_arg(i+1, infndescr(i))
   enddo
 
   call print("Creating merged trajectory file " // outfn)
@@ -65,21 +67,35 @@ program merge_traj
   HANDLE_ERROR(error)
   frame = 0
   do i = 1, n-1
-     call print("..." //infn(i))
-     call initialise(infile, infn(i), action=INPUT, error=error)
-     HANDLE_ERROR(error)
-     do j = 1, infile%n_frame
-        call read(infile, at, frame=j-1, error=error)
+     j = index(infndescr(i), "@")
+     if (j == 0) then
+        call print("..." // infndescr(i))
+        call initialise(infile, infndescr(i), action=INPUT, error=error)
+        HANDLE_ERROR(error)
+        do j = 1, infile%n_frame
+           call read(infile, at, frame=j-1, error=error)
+           HANDLE_ERROR(error)
+           call write(outfile, at, frame=frame, error=error)
+           HANDLE_ERROR(error)
+           frame = frame + 1
+        enddo
+        call finalise(infile)
+     else
+        infn = infndescr(i)(:j-1)
+        read (infndescr(i)(j+1:), *)  j
+        call print("..." // trim(infn) // ", frame " // j)
+        call initialise(infile, infn, action=INPUT, error=error)
+        call read(infile, at, frame=j, error=error)
         HANDLE_ERROR(error)
         call write(outfile, at, frame=frame, error=error)
         HANDLE_ERROR(error)
         frame = frame + 1
-     enddo
-     call finalise(infile)
+        call finalise(infile)
+     endif
   enddo
   call finalise(outfile)
 
-  deallocate(infn)
+  deallocate(infndescr)
 
   call system_finalise
 
