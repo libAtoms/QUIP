@@ -20,27 +20,6 @@ import sys, os, fnmatch, re, itertools, glob
 from quippy import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from farray import *
 
-def find_files(filepat, top=None):
-   if top is None:
-      top = os.getcwd()
-      
-   for path, dirlist, filelist in os.walk(top):
-      for name in fnmatch.filter(filelist, filepat):
-         yield os.path.join(path, name)
-
-def read_files(filenames, frame=None, *args, **kwargs):
-   for item in filenames:
-      try:
-         filename, value = item
-      except ValueError:
-         filename = item
-      if frame is None:
-         a = Atoms(filename, *args, **kwargs)
-      else:
-         a = AtomsList(filename, lazy=False, *args, **kwargs)[frame]
-      a.params['filename'] = filename
-      yield a
-
 def AtomsReader(source, format=None, *args, **kwargs):
    """Generator to read successive frames from source"""
 

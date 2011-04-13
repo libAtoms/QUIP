@@ -131,31 +131,6 @@
 Utility functions
 -----------------
 
-.. function:: find_files(filepat[, top])
-
-   Generator which yields a sequence of filenames which match the
-   pattern `filepat`, similar to the unix ``find(1)`` command. If
-   `top` is absent it defaults to the current working directory.
-
-
-.. function:: read_files(filenames[, frame, *args, **kwargs])
-
-   Return a generator which reads :class:`Atoms` objects from the
-   sequence of files with names given by `filenames`. If `frame` is
-   absent the first frame is read from each file, otherwise it
-   specifies the frame to load. The extra arguments in `*args` and
-   `**kwargs` are passed along to :class:`Atoms.read`. The Atoms objects
-   are labelled with a `filename` parameter to indicate the file
-   from which they were read.
-
-   This function can be usefully combined with :func:`find_files`::
-
-      filenames = find_files('cluster*.castep')
-      source    = read_files(filenames, abort=False)
-      al = AtomsList(source)
-      al.loadall()
-
-
 .. function:: AtomsReader(source[, format, *args, **kwargs])
 
    Simpler generator version of :class:`AtomsList` which does not
