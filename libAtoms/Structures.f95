@@ -51,8 +51,6 @@ module  structures_module
      module procedure slab_width_height_nz, slab_nx_ny_nz
   end interface
 
-  private :: find_rotated_supercell
-
 contains
 
   !X 
