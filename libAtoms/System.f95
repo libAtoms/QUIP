@@ -2014,6 +2014,9 @@ contains
     call date_and_time(values=values)
 
     call print('System::Hello World: '//date_and_time_string(values))
+    call print('System::Hello World: SVN version  '//current_version())
+    call print('System::Hello World: QUIP_ARCH    '//QUIP_ARCH)
+    call print('System::Hello World: compiled on  '//__DATE__//' at '//__TIME__)
 #ifdef _MPI
     call print('System::Hello World: MPI parallelisation with '//mpi_n_procs()//' processes')
 #endif
