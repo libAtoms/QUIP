@@ -17,7 +17,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import available_modules
+from quippy import available_modules, print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines
 from quippy.farray import convert_farray_to_ndarray
 import numpy
@@ -87,6 +87,10 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
     ylim(0, abs(ref_force - force).max())
     xlabel('Reference forces / eV/A')
     ylabel('Force error / eV/A')
+
+    rms_error = (((force - ref_force)**2).mean())**0.5
+    hlines(rms_error, 0, abs(ref_force).max(), lw=2, color='r')           
+    
     return s
 
 
@@ -96,31 +100,36 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
 
     force = getattr(configs, force_name)
     force = force.reshape(force.size, order='F')
-    
-    max_error = abs(force - ref_force).max()
-    rms_error = (((force - ref_force)**2).mean())**0.5
-    rm4_error = (((force - ref_force)**4).mean())**0.25
-    rm8_error = (((force - ref_force)**8).mean())**0.125
 
-    print 'Max force error %.3f eV/A' % max_error
-    print 'RMS force error %.3f eV/A' % rms_error
-    print 'RM4 force error %.3f eV/A' % rm4_error
-    print 'RM8 force error %.3f eV/A' % rm8_error
-    print
-
+    names = ['default']
     if hasattr(ref_configs, 'config_type'):
         ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
-        names = sorted(set(ct))
-        for name in names:
+        names.extend(sorted(set(ct)))
 
-            first = ct.index(name)
-            last  = len(ct)-ct[::-1].index(name)
+    for name in names:
+        
+        if name == 'default':
+            start = 0
+            stop  = len(force)
+        else:
+            start = ct.index(name)
+            stop  = len(ct)-ct[::-1].index(name)
 
-            this_force = force[first:last]
-            this_ref_force = ref_force[first:last]
-            
-            rms_error = ((this_force - this_ref_force)**2).mean()**0.5
-            print 'config_type %s RMS force error %.3f eV/A' % (name, rms_error)
+        print_title('config_type "%s" indices [%d:%d]' % (name, start, stop))
+
+        this_force = force[start:stop]
+        this_ref_force = ref_force[start:stop]
+
+        max_error = abs(this_force - this_ref_force).max()
+        rms_error = (((this_force - this_ref_force)**2).mean())**0.5
+        rm4_error = (((this_force - this_ref_force)**4).mean())**0.25
+        rm8_error = (((this_force - this_ref_force)**8).mean())**0.125
+
+        print 'Max force error %.3f eV/A' % max_error
+        print 'RMS force error %.3f eV/A' % rms_error
+        print 'RM4 force error %.3f eV/A' % rm4_error
+        print 'RM8 force error %.3f eV/A' % rm8_error
+        print
     
 
 def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
@@ -139,14 +148,14 @@ def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='f
         
         names = sorted(set(ct))
         for name in names:
-            first = ct.index(name)
-            last  = len(ct)-ct[::-1].index(name)
+            start = ct.index(name)
+            stop  = len(ct)-ct[::-1].index(name)
 
-            this_force = force[first:last]
-            this_ref_force = ref_force[first:last]
+            this_force = force[start:stop]
+            this_ref_force = ref_force[start:stop]
             
             rms_error = ((this_force - this_ref_force)**2).mean()**0.5
-            hlines(rms_error, first, last, lw=3, color='k')
+            hlines(rms_error, start, stop, lw=3, color='r')
         
 
 def label_axes_with_config_types(config_types):
