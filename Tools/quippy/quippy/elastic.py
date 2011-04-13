@@ -446,7 +446,7 @@ def atomic_strain(at, r0, crystal_factor=1.0):
    return strain/crystal_factor
 
 
-def elastic_fields(at, a, cij, save_reference=False, use_reference=False, mask=None):
+def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mask=None):
    """
    Compute atomistic strain field and linear elastic stress response.
 
