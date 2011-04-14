@@ -35,6 +35,53 @@ module descriptors_module
    integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
    logical, parameter :: DO_FOURIER_WARP = .true.
 
+   integer, parameter :: besseli_max_n = 20
+   real(dp), dimension(besseli_max_n), parameter :: besseli0_c = (/ &
+   0.125_dp, &
+   7.03125E-002_dp, &
+   7.32421875E-002_dp, &
+   0.112152099609375_dp, &    
+   0.22710800170898438_dp, &    
+   0.57250142097473145_dp, &    
+   1.7277275025844574_dp, &    
+   6.0740420012734830_dp, &    
+   24.380529699556064_dp, &    
+   110.01714026924674_dp, &    
+   551.33589612202059_dp, &    
+   3038.0905109223841_dp, &    
+   18257.755474293175_dp, &    
+   118838.42625678326_dp, &    
+   832859.30401628942_dp, &    
+   6252951.4934347980_dp, &    
+   50069589.531988934_dp, &    
+   425939216.50476694_dp, &    
+   3836255180.2304339_dp, &    
+   36468400807.065559_dp /)    
+
+   real(dp), dimension(besseli_max_n), parameter :: besseli1_c = (/ &
+   -0.375_dp, &    
+   -0.1171875_dp, &    
+   -0.1025390625_dp, &    
+   -0.144195556640625_dp, &    
+   -0.27757644653320313_dp, &    
+   -0.67659258842468262_dp, &    
+   -1.9935317337512970_dp, &    
+   -6.8839142681099474_dp, &    
+   -27.248827311268542_dp, &    
+   -121.59789187653587_dp, &    
+   -603.84407670507017_dp, &    
+   -3302.2722944808525_dp, &    
+   -19718.375912236628_dp, &    
+   -127641.27264617461_dp, &    
+   -890297.87670706783_dp, &    
+   -6656367.7188176867_dp, &    
+   -53104110.109685220_dp, &    
+   -450278600.30503929_dp, &    
+   -4043620325.1077542_dp, &    
+   -38338575207.427895_dp /)
+
+   real(dp), parameter :: besseli_max_x = 18.0_dp
+
    type real_3
         real(dp), dimension(3) :: x
    endtype real_3
@@ -332,6 +379,7 @@ module descriptors_module
    public :: kmax2d, suggest_kmax, suggest_resolution
    public :: water_monomer, water_dimer, WATER_DIMER_D
    public :: cosnx, calc_cosnx, calc_grad_cosnx
+   public :: besseli0, besseli1, covariance_atom_atom
 
    contains
 
@@ -5300,5 +5348,204 @@ module descriptors_module
        p_norm = ( sum(vec**my_p) / size(vec) ) ** (1.0_dp/real(my_p,dp)) 
 
     endfunction p_norm
+
+    !#################################################################################
+    !#
+    !% Modified Bessel Function of the first kind, 0th and 1st order (the derivative in this case).
+    !#
+    !#################################################################################
+
+    function besseli0(x)
+
+       real(dp), intent(in) :: x
+       real(dp) :: besseli0
+
+       real(dp) :: x2, r, k
+       integer :: i
+
+       x2 = x**2
+
+       if(x == 0.0_dp) then
+          besseli0 = 1.0_dp
+       elseif( x < besseli_max_x ) then
+          besseli0 = 1.0_dp
+          r = 1.0_dp
+          k = 1.0_dp
+          do while ( abs(r/besseli0) > NUMERICAL_ZERO )
+             r = 0.25_dp * r * x2 / k**2
+             besseli0 = besseli0 + r
+             k = k + 1.0_dp
+          enddo
+       else
+          besseli0 = 1.0_dp
+          do i = 1, besseli_max_n
+             besseli0 = besseli0 + besseli0_c(i)/x**i
+          enddo
+          besseli0 = besseli0 * exp(x) / sqrt(2.0_dp*pi*x)
+       endif
+
+    endfunction besseli0
+
+    function besseli1(x)
+
+       real(dp), intent(in) :: x
+       real(dp) :: besseli1
+
+       real(dp) :: x2, r, k
+       integer :: i
+
+       x2 = x**2
+
+       if(x == 0.0_dp) then
+          besseli1 = 0.0_dp
+       elseif( x < besseli_max_x ) then
+          besseli1 = 1.0_dp
+          r = 1.0_dp
+          k = 1.0_dp
+          do while ( abs(r/besseli1) > NUMERICAL_ZERO )
+             r = 0.25_dp * r * x2 / (k*(k+1.0_dp))
+             besseli1 = besseli1 + r
+             k = k + 1.0_dp
+          enddo
+          besseli1 = besseli1 * 0.5_dp * x
+       else
+          besseli1 = 1.0_dp
+          do i = 1, besseli_max_n
+             besseli1 = besseli1 + besseli1_c(i)/x**i
+          enddo
+          besseli1 = besseli1 * exp(x) / sqrt(2.0_dp*pi*x)
+       endif
+
+    endfunction besseli1
+
+    function covariance_atom_atom(at1,i1,at2,i2)
+
+       type(atoms), intent(in) :: at1, at2
+       integer, intent(in) :: i1, i2
+       real(dp) :: covariance_atom_atom
+
+       real(dp) :: s, s2, sum1, sum2, bessel_arg, r_j1, r_j2, r_k1, r_k2, &
+       cos_j1k1, cos_j2k2, dj1j2, dj1k2, dk1j2, dk1k2, cos_j1k1_m_j2k2, cos_j1k1_p_j2k2, &
+       r_j1k1, r_j2k2
+
+       real(dp), dimension(3) :: d_j1, d_j2, d_k1, d_k2
+
+       integer, dimension(3) :: shift_j1, shift_j2, shift_k1, shift_k2
+
+       integer :: n1, n2, m1, m2, j1, j2, k1, k2
+
+       s = 0.3_dp
+       s2 = s**2
+
+       sum1 = 0.0_dp
+       sum2 = 0.0_dp
+       bessel_arg = 0.0_dp
+
+       do n1 = 1, atoms_n_neighbours(at1,i1)
+          j1 = atoms_neighbour(at1,i1,n1,distance=r_j1,diff=d_j1)
+
+          do m1 = 1, atoms_n_neighbours(at1,i1)
+             k1 = atoms_neighbour(at1,i1,m1,distance=r_k1,diff=d_k1)
+
+             cos_j1k1 = dot_product(d_j1,d_k1)/(r_j1*r_k1)
+             print*, r_j1, r_k1, cos_j1k1
+
+             sum1 = sum1 + 0.25_dp * exp( -(r_j1**2+r_k1**2)/(2.0_dp*s2) ) * pi * s * &
+             ( 2.0_dp * s + exp( (r_j1+r_k1)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_k1)* &
+             (1.0_dp + erf((r_j1+r_k1)/(2.0_dp*s))) ) * cos_j1k1
+          enddo
+       enddo
+
+       do n2 = 1, atoms_n_neighbours(at2,i2)
+          j2 = atoms_neighbour(at2,i2,n2,distance=r_j2,diff=d_j2)
+
+          do m2 = 1, atoms_n_neighbours(at2,i2)
+             k2 = atoms_neighbour(at2,i2,m2,distance=r_k2,diff=d_k2)
+
+             cos_j2k2 = dot_product(d_j2,d_k2)/(r_j2*r_k2)
+
+             sum2 = sum2 + 0.25_dp * exp( -(r_j2**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
+             ( 2.0_dp * s + exp( (r_j2+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j2+r_k2)* &
+             (1.0_dp + erf((r_j2+r_k2)/(2.0_dp*s))) ) * cos_j2k2
+          enddo
+       enddo
+
+       !do n1 = 1, atoms_n_neighbours(at1,i1)
+       !   j1 = atoms_neighbour(at1,i1,n1,distance=r_j1,diff=d_j1,shift=shift_j1)
+
+       !   do m1 = 1, atoms_n_neighbours(at1,i1)
+       !      k1 = atoms_neighbour(at1,i1,m1,distance=r_k1,diff=d_k1,shift=shift_k1)
+
+       !      r_j1k1 = norm(diff(at1,j1,k1,shift_k1-shift_j1))
+
+       !      if(r_j1k1 .feq. 0.0_dp) then
+       !         cos_j1k1 = 1.0_dp
+       !      else
+       !         cos_j1k1 = dot_product(d_j1,d_k1)/(r_j1*r_k1)
+       !      endif
+
+       !      do n2 = 1, atoms_n_neighbours(at2,i2)
+       !         j2 = atoms_neighbour(at2,i2,n2,distance=r_j2,diff=d_j2,shift=shift_j2)
+
+       !         do m2 = 1, atoms_n_neighbours(at2,i2)
+       !            k2 = atoms_neighbour(at2,i2,m2,distance=r_k2,diff=d_k2,shift=shift_k2)
+
+       !            r_j2k2 = norm(diff(at2,j2,k2,shift_k2-shift_j2))
+
+       !            if(r_j2k2 .feq. 0.0_dp) then
+       !               cos_j2k2 = 1.0_dp
+       !            else
+       !               cos_j2k2 = dot_product(d_j2,d_k2)/(r_j2*r_k2)
+       !            endif
+
+       !            dj1j2 = 0.25_dp * exp(-(r_j1**2+r_j2**2)/(2.0_dp*s2) ) * pi * s * &
+       !            ( 2.0_dp * s + exp( (r_j1+r_j2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_j2)* &
+       !            (1.0_dp + erf((r_j1+r_j2)/(2.0_dp*s))) )
+
+       !            dj1k2 = 0.25_dp * exp(-(r_j1**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
+       !            ( 2.0_dp * s + exp( (r_j1+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_k2)* &
+       !            (1.0_dp + erf((r_j1+r_k2)/(2.0_dp*s))) )
+
+       !            dk1j2 = 0.25_dp * exp(-(r_k1**2+r_j2**2)/(2.0_dp*s2) ) * pi * s * &
+       !            ( 2.0_dp * s + exp( (r_k1+r_j2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_k1+r_j2)* &
+       !            (1.0_dp + erf((r_k1+r_j2)/(2.0_dp*s))) )
+
+       !            dk1k2 = 0.25_dp * exp(-(r_k1**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
+       !            ( 2.0_dp * s + exp( (r_k1+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_k1+r_k2)* &
+       !            (1.0_dp + erf((r_k1+r_k2)/(2.0_dp*s))) )
+
+
+       !            cos_j1k1_m_j2k2 = cos_j1k1*cos_j2k2+sqrt((1.0_dp-cos_j1k1**2)*(1.0_dp-cos_j2k2**2))
+       !            cos_j1k1_p_j2k2 = cos_j1k1*cos_j2k2-sqrt((1.0_dp-cos_j1k1**2)*(1.0_dp-cos_j2k2**2))
+
+
+
+       !            if(n2 < m2) then
+       !               if( n1 < m1 ) then
+       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_m_j2k2
+       !                  print*, dj1j2 * dk1k2 * cos_j1k1_m_j2k2
+       !               else
+       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_p_j2k2
+       !                  print*, dj1j2 * dk1k2 * cos_j1k1_p_j2k2
+       !               endif
+       !            else
+       !               if( n1 < m1 ) then
+       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_p_j2k2
+       !                  print*, dj1j2 * dk1k2 * cos_j1k1_p_j2k2
+       !               else
+       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_m_j2k2
+       !                  print*, dj1j2 * dk1k2 * cos_j1k1_m_j2k2
+       !               endif
+
+       !            endif
+
+       !         enddo
+       !      enddo
+       !   enddo
+       !enddo
+
+       covariance_atom_atom = exp( -(sum1+sum2) )*besseli0(sqrt(4.0_dp * bessel_arg)) 
+
+    endfunction covariance_atom_atom
 
 endmodule descriptors_module
