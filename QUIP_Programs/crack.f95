@@ -289,8 +289,9 @@ program crack
   integer, parameter :: STATE_DAMPED_MD = 5
   integer, parameter :: STATE_MICROCANONICAL = 6
   integer, parameter :: STATE_MD_CONSTANT = 7
-  character(len=14), dimension(7), parameter :: STATE_NAMES = &
-       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL", "MD_CONSTANT   "/)
+  integer, parameter :: STATE_MD_NVE = 8
+  character(len=14), dimension(8), parameter :: STATE_NAMES = &
+       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL", "MD_CONSTANT   ", "MD_NVE        "/)
 
   ! Objects
   type(InOutput) :: xmlfile
@@ -319,7 +320,7 @@ program crack
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
-       G, last_update_selection_time, last_stanza_change_time
+       G, last_update_selection_time, last_stanza_change_time, last_update_crack_tip_time
   character(FIELD_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
   character(FIELD_LENGTH) :: state_string
 
@@ -697,6 +698,7 @@ program crack
 
         last_stanza_change_time = ds%t
         last_update_selection_time = ds%t
+        last_update_crack_tip_time = ds%t
 
         ! Special cases for first time
         if (all(md_old_changed_nn == 0)) md_old_changed_nn = changed_nn
@@ -763,6 +765,10 @@ program crack
            state = STATE_MD_CONSTANT
            call disable_damping(ds)
            call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+
+        else if (state_string(1:10) == 'MD_NVE') then
+           state = STATE_MD_NVE
+           call disable_damping(ds)
 
         else  
            call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
@@ -892,6 +898,8 @@ program crack
               end if
 
            case(STATE_MD_CONSTANT)
+              
+           case(STATE_MD_NVE)
 
            case default
               call system_abort('Unknown molecular dynamics state!')
@@ -1049,6 +1057,16 @@ program crack
                  call system_timer('selection')
                  if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
                  call system_timer('selection')
+              end if
+
+              if (ds%t - last_update_crack_tip_time >= params%md(params%md_stanza)%crack_find_tip_interval) then
+                 call system_timer('crack_find_tip')
+                 last_update_crack_tip_time = ds%t
+                 mainlog%prefix = 'CRACK_TIP'
+                 call crack_find_tip(ds%atoms, params, crack_tips)
+                 call print(crack_tips)
+                 mainlog%prefix = ''
+                 call system_timer('crack_find_tip')
               end if
 
               call print_title('Force Computation')
