@@ -23,11 +23,17 @@ class Potential(FortranPotential):
    __doc__ = FortranPotential.__doc__
    callback_map = {}
    
-   def __init__(self, args_str, pot1=None, pot2=None, param_str=None, param_filename=None,
+   def __init__(self, args_str=None, pot1=None, pot2=None, param_str=None, param_filename=None,
                 bulk_scale=None, mpi_obj=None, error=None):
-      
+
       if param_filename is not None:
          param_str = open(param_filename).read()
+
+      if param_str is None:
+         raise ValueError('Either param_str or param_filename must be present')
+
+      if args_str is None:
+         args_str = 'xml_label=%s' % param_str[:param_str.index('\n')].translate(None, '<>')
 
       if args_str.lower().startswith('callbackpot') and not 'label' in args_str:
          args_str = args_str + ' label=%d' % id(self)
