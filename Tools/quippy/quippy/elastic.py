@@ -446,7 +446,7 @@ def atomic_strain(at, r0, crystal_factor=1.0):
    return strain/crystal_factor
 
 
-def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mask=None):
+def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mask=None, interpolate=False):
    """
    Compute atomistic strain field and linear elastic stress response.
 
@@ -619,16 +619,17 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
          compute_stress_eig(i)
 
    # For atoms without 4 neighbours, interpolate stress and strain fields
-   for i in frange(at.n):
-      if mask is not None and not mask[i]: continue
-      
-      neighb = at.neighbours[i]
-      if len(neighb) == 4: continue
+   if interpolate:
+      for i in frange(at.n):
+         if mask is not None and not mask[i]: continue
 
-      at.strain[:,i] = at.strain[:,[n.j for n in neighb]].mean(axis=1)
-      at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=1)
+         neighb = at.neighbours[i]
+         if len(neighb) == 4: continue
 
-      compute_stress_eig(i)
+         at.strain[:,i] = at.strain[:,[n.j for n in neighb]].mean(axis=2)
+         at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=2)
+
+         compute_stress_eig(i)
 
    # Restore original neighbour cutoff
    at.cutoff, at.use_uniform_cutoff = save_cutoff, save_use_uniform_cutoff
