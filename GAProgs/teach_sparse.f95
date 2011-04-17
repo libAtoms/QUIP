@@ -57,6 +57,7 @@ program teach_sparse_program
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
   integer :: i, j, k, l, o, dd, dt, config_type_hypers_num_fields, i_default, m_total, li, ui, gp_teach_memory
   integer, dimension(:), allocatable :: type_indices, sparse_points
+  integer, dimension(:,:), allocatable :: permutation
   character(len=FIELD_LENGTH) :: gp_file
 
   call system_initialise(verbosity=PRINT_NORMAL)
@@ -227,6 +228,8 @@ program teach_sparse_program
 
   main_teach_sparse%coordinates = lower_case(trim(main_teach_sparse%coordinates))
   select case(trim(main_teach_sparse%coordinates))
+  case('hf_dimer')
+     main_teach_sparse%d = 6
   case('water_monomer')
      main_teach_sparse%d = 3
   case('water_dimer')
@@ -480,9 +483,26 @@ program teach_sparse_program
         call finalise(main_teach_sparse%my_gp)
      enddo
   else
-     call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
-     main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &
-     main_teach_sparse%yf, main_teach_sparse%x)
+     select case(trim(main_teach_sparse%coordinates))
+     case('hf_dimer')
+        allocate(permutation(6,2))
+        permutation(:,1) = (/1, 2, 3, 4, 5, 6/)
+        permutation(:,2) = (/4, 3, 2, 1, 5, 6/)
+        !permutation(:,3) = (/3, 4, 1, 2, 5, 6/)
+        !permutation(:,4) = (/2, 1, 4, 3, 5, 6/)
+
+        call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
+        main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &
+        main_teach_sparse%yf, main_teach_sparse%x, permutation_in = permutation )
+
+        !print*, main_teach_sparse%my_gp%c
+        !print*, main_teach_sparse%yf
+     case default
+        call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
+        main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &
+        main_teach_sparse%yf, main_teach_sparse%x )
+     endselect
+
 
      if( main_teach_sparse%do_test_gp_gradient ) then
         call verbosity_push(PRINT_NERD)
@@ -508,7 +528,7 @@ program teach_sparse_program
   call print("model parameters:")
   call print("r_cut     = "//main_teach_sparse%r_cut)
   select case(trim(main_teach_sparse%coordinates))
-  case('water_monomer','water_dimer')
+  case('water_monomer','water_dimer','hf_dimer')
   case('qw')
      call print("l_max     = "//main_teach_sparse%qw_l_max)
      call print("cutoff    = "//qw_cutoff_string)

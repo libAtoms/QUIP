@@ -25,23 +25,24 @@ module gp_predict_module
 
       integer, dimension(:), allocatable :: xz, sp
 
-      integer, dimension(:,:), allocatable :: Z_index
+      integer, dimension(:,:), allocatable :: Z_index, permutation
 
       !% Vector sizes.
       !% d: dimensionality of input space
       !% n: number of teaching points
       !% m: number of teaching function values
       !% p: number of hyperparameters
-      integer :: d, n, nsp
+      integer :: d, n, nsp, n_permutation
 
       logical :: initialised = .false.
+      logical :: do_permutations = .false.
 
       character(len=1024) :: label = ""
       character(len=10000) :: comment
 
    end type gp
 
-   integer :: parse_cur_type, parse_cur_sparse_point
+   integer :: parse_cur_type, parse_cur_sparse_point, parse_cur_permutation_point
    type(extendable_str), private, save :: parse_cur_data
    logical, private :: parse_in_gp, parse_matched_label
    type (gp), pointer :: parse_gp
@@ -77,6 +78,7 @@ module gp_predict_module
          if(allocated(this%f0)) deallocate(this%f0)
 
          if(allocated(this%Z_index)) deallocate(this%Z_index)
+         if(allocated(this%permutation)) deallocate(this%permutation)
 
          call finalise(this%LA_C_nn)
             
@@ -174,7 +176,7 @@ module gp_predict_module
          real(dp) :: kappa
 
 	 logical :: my_new_x_star, my_use_dgemv
-         integer :: i, do_Z, Z_type
+         integer :: i, n, do_Z, Z_type
 
 	 allocate(k(gp_data%n))
 	 allocate(c(gp_data%n))
@@ -201,14 +203,27 @@ module gp_predict_module
          
 	 ! not needed - all values to be used will be set before they're used
          ! xixjtheta = 0.0_dp 
-         c = 0.0_dp
-         do i = 1, gp_data%n
-            if( do_Z == gp_data%xz(i) ) then
-               if (my_new_x_star) xixjtheta(:,i) = gp_data%x_div_theta(:,i)-x_star_div_theta
-               if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
-            endif
-         enddo
-         if(present(c_in)) c = real(c_in, qp)
+         if( gp_data%do_permutations ) then
+            c = 0.0_dp
+            do i = 1, gp_data%n
+               if( do_Z == gp_data%xz(i) ) then
+                  do n = 1, gp_data%n_permutation
+                     xixjtheta(:,i) = gp_data%x_div_theta(gp_data%permutation(:,n),i)-x_star_div_theta
+                     c(i) = c(i) + gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
+                  enddo
+               endif
+            enddo
+            print*,c
+         else
+            c = 0.0_dp
+            do i = 1, gp_data%n
+               if( do_Z == gp_data%xz(i) ) then
+                  if (my_new_x_star) xixjtheta(:,i) = gp_data%x_div_theta(:,i)-x_star_div_theta
+                  if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
+               endif
+            enddo
+            if(present(c_in)) c = real(c_in, qp)
+         endif
 
          if(present(x_prime_star)) then
 	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
@@ -344,6 +359,8 @@ module gp_predict_module
          call xml_AddAttribute(xf,"dimensions", ""//this%d)
          call xml_AddAttribute(xf,"n_species", ""//this%nsp)
          call xml_AddAttribute(xf,"n_sparse_x", ""//this%n)
+         call xml_AddAttribute(xf,"do_permutations", ""//this%do_permutations)
+         if(this%do_permutations) call xml_AddAttribute(xf,"n_permutation", ""//this%n_permutation)
          if(present(label)) call xml_AddAttribute(xf,"label", trim(label))
 
          do i = 1, this%nsp
@@ -357,6 +374,15 @@ module gp_predict_module
             call xml_EndElement(xf,"theta")
             call xml_EndElement(xf,"per_species_data")
          enddo
+
+         if(this%do_permutations) then
+            do i = 1, this%n_permutation
+               call xml_NewElement(xf,"permutation")
+               call xml_AddAttribute(xf,"i",""//i)
+               call xml_AddCharacters(xf, ""//this%permutation(:,i)//" ")
+               call xml_EndElement(xf,"permutation")
+            enddo
+         endif
 
          do i = 1, this%n
             call xml_NewElement(xf,"sparse_x")
@@ -417,7 +443,7 @@ module gp_predict_module
          character(len=*), intent(in)   :: name
          type(dictionary_t), intent(in) :: attributes
 
-         integer             :: status, ti, xi
+         integer             :: status, ti, xi, pi
          character(len=1024) :: value
 
          if(name == 'GP_data') then ! new GP_data
@@ -464,8 +490,25 @@ module gp_predict_module
                   call system_abort("GP_startElement_handler did not find the n_sparse_x attribute.")
                endif
 
+               call GP_FoX_get_value(attributes, 'do_permutations', value, status)
+               if (status == 0) then
+                  read (value,*) parse_gp%do_permutations
+               else
+                  parse_gp%do_permutations = .false.
+               endif
+
+               call GP_FoX_get_value(attributes, 'n_permutation', value, status)
+               if (status == 0) then
+                  read (value,*) parse_gp%n_permutation
+               else
+                  if(parse_gp%do_permutations) &
+                     call system_abort("GP_startElement_handler did not find the n_permutation although found do_permutations = T")
+               endif
+
                allocate(parse_gp%theta(parse_gp%d,parse_gp%nsp), parse_gp%delta(parse_gp%nsp), parse_gp%x(parse_gp%d,parse_gp%n), &
                & parse_gp%alpha(parse_gp%n), parse_gp%xz(parse_gp%n), parse_gp%sp(parse_gp%nsp), parse_gp%f0(parse_gp%nsp))
+
+               if( parse_gp%do_permutations ) allocate(parse_gp%permutation(parse_gp%d,parse_gp%n_permutation))
             endif
 
          elseif(parse_in_gp .and. name == 'per_species_data') then
@@ -499,6 +542,20 @@ module gp_predict_module
             endif
 
             parse_cur_type = ti
+
+         elseif(parse_in_gp .and. name == 'permutation') then
+
+            call GP_FoX_get_value(attributes, 'i', value, status)
+            if (status == 0) then
+               read (value,*) pi
+               if(pi > parse_gp%n_permutation) call system_abort("GP_startElement_handler got permutation out of range ("//pi//")")
+            else
+               call system_abort("GP_startElement_handler did not find the i attribute.")
+            endif
+
+            parse_cur_permutation_point = pi
+
+            call zero(parse_cur_data)
 
          elseif(parse_in_gp .and. name == 'sparse_x') then
 
@@ -544,6 +601,9 @@ module gp_predict_module
          if(parse_in_gp) then
             if(name == 'GP_data') then
                parse_in_gp = .false.
+            elseif(name == 'permutation') then
+               val = string(parse_cur_data)
+               read(val,*) parse_gp%permutation(:,parse_cur_permutation_point)
             elseif(name == 'sparse_x') then
                val = string(parse_cur_data)
                read(val,*) parse_gp%x(:,parse_cur_sparse_point)

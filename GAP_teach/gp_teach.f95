@@ -236,13 +236,14 @@ module gp_teach_module
 
       end subroutine GP_initialise
 
-      subroutine gp_simple_initialise(this,sigma_in, delta_in, theta_in, f0_in, y_in, x_in)
+      subroutine gp_simple_initialise(this,sigma_in, delta_in, theta_in, f0_in, y_in, x_in, permutation_in)
 
          type(gp), intent(inout)                        :: this
          real(dp), intent(in)                           :: sigma_in, delta_in, f0_in
          real(dp), dimension(:,:), intent(in)           :: theta_in    !% hyperparameters, dimension(p)
          real(dp), dimension(:), intent(in)             :: y_in        !% function (or derivative) value at teaching points, dimension(m)
          real(dp), dimension(:,:), intent(in)           :: x_in        !% teaching points, dimension(d,n)
+         integer, dimension(:,:), intent(in), optional  :: permutation_in
 
          real(dp) :: mem_required, mem_total, mem_free
 
@@ -257,6 +258,7 @@ module gp_teach_module
          call check_size('theta_in',theta_in,(/this%d,1/),'gp_simple_initialise')
          call check_size('y_in',y_in,(/this%n/),'gp_simple_initialise')
 
+
          mem_required = 3.0_dp*real(this%n,dp)**2 * real(dp,dp) / (1024.0_dp**3)
          call mem_info(mem_total,mem_free)
          mem_total = mem_total / (1024.0_dp**3)
@@ -264,6 +266,14 @@ module gp_teach_module
 
          call print('Memory required (approx.): '//mem_required//' GB')
          if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_total//' GB).')
+
+         if( present(permutation_in) ) then
+            this%do_permutations = .true.
+            if( size(permutation_in,1) /= this%d ) call system_abort('gp_simple_initialise: permutation vector permutation_in has wrong first dimension')
+            this%n_permutation = size(permutation_in,2)
+            allocate(this%permutation(this%d,this%n_permutation))
+            this%permutation = permutation_in
+         endif
 
          allocate(this%x(this%d,this%n), this%alpha(this%n), this%y(this%n), this%x_div_theta(this%d,this%n), &
          this%c(this%n,this%n), this%theta(this%d,1), this%delta(1), this%f0(1), this%xz(this%n), this%sp(1))
@@ -899,7 +909,7 @@ deallocate(diff_xijt)
       subroutine covariance_matrix_simple(this)
          type(gp), intent(inout) :: this
 
-         integer :: i, j
+         integer :: i, j, n
          real(qp), dimension(:), allocatable :: xixjtheta
          real(qp), dimension(:,:), allocatable :: c
          real(qp), dimension(:), allocatable :: local_alpha
@@ -908,13 +918,26 @@ deallocate(diff_xijt)
 	 call setup_x_div_theta(this)
          allocate(xixjtheta(this%d),c(this%n,this%n))
 
-         do i = 1, this%n
-            do j = i + 1, this%n
-               xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
-               c(j,i) = exp(-0.5_dp * dot_product(xixjtheta,xixjtheta))
+         if(this%do_permutations) then
+            do i = 1, this%n
+               do j = i, this%n
+                  c(j,i) = 0.0_dp
+                  do n = 1, this%n_permutation
+                     xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(this%permutation(:,n),j)
+                     c(j,i) = c(j,i) + exp(-0.5_dp * dot_product(xixjtheta,xixjtheta))
+                  enddo
+               enddo
+               c(i,i) = c(i,i) + this%sigma**2 / this%delta(1)**2
             enddo
-            c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
-         enddo
+         else
+            do i = 1, this%n
+               do j = i + 1, this%n
+                  xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
+                  c(j,i) = exp(-0.5_dp * dot_product(xixjtheta,xixjtheta))
+               enddo
+               c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
+            enddo
+         endif
 
          c = c * this%delta(1)**2
 
@@ -934,6 +957,7 @@ deallocate(diff_xijt)
          call LA_Matrix_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
 #endif
          this%alpha = real(local_alpha, dp)
+         this%c = c
          deallocate(c,xixjtheta, local_alpha)
          
       endsubroutine covariance_matrix_simple

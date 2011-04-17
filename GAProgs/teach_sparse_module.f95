@@ -179,6 +179,13 @@ contains
     endif
 
     select case(trim(this%coordinates))
+    case('hf_dimer')
+       this%n_species = 1
+       allocate(this%species_Z(this%n_species))
+       this%species_Z = 9
+       if(4*this%n_ener /= this%nn) call system_abort('coordinates type hf_dimer, but 4*n_ener /= ne')
+       this%nn = this%n_ener
+       this%ne = this%n_ener
     case('water_monomer')
        this%n_species = 1
        allocate(this%species_Z(this%n_species))
@@ -274,6 +281,8 @@ contains
     
        this%d = (this%cosnx_l_max+1)*this%cosnx_n_max
 
+    case('hf_dimer')
+       this%d = 6
     case('water_monomer')
        this%d = 3
     case('water_dimer')
@@ -348,7 +357,7 @@ contains
 
        if(has_ener) then
           select case(trim(this%coordinates))
-          case('water_monomer','water_dimer')
+          case('water_monomer','water_dimer','hf_dimer')
              ener = ener - this%e0     
           case default
              ener = ener - at%N*this%e0     
@@ -376,6 +385,17 @@ contains
 
        if(has_ener .or. has_force .or. has_virial ) then
           select case(trim(this%coordinates))
+          case('hf_dimer')
+             if( at%N /= 4 ) call system_abort('Number of atoms is '//at%N//', not two HF molecules')
+
+             w_con = w_con + 1
+             this%x(:,w_con) = hf_dimer(at)
+             this%xz(w_con) = 9
+             this%xf(w_con) = w_con
+             this%yf(w_con) = ener
+             this%lf(w_con) = w_con
+             this%target_type(w_con) = 1
+
           case('water_monomer')
              if( at%N /= 3 ) call system_abort('Number of atoms is '//at%N//', not a single water molecule')
              call find_water_monomer(at,water_monomer_index)
@@ -459,7 +479,7 @@ contains
           endselect
 
           select case(trim(this%coordinates))
-          case('water_monomer','water_dimer')
+          case('water_monomer','water_dimer','hf_dimer')
 
           case default
              do i = 1, at%N
@@ -597,7 +617,7 @@ contains
           endif
 
           select case(trim(this%coordinates))
-          case('water_monomer','water_dimer')
+          case('water_monomer','water_dimer','hf_dimer')
              this%e0 = this%e0 + (ener-ener_core)
           case default
              this%e0 = this%e0 + (ener-ener_core) / at%N
@@ -626,7 +646,7 @@ contains
 
     allocate(this%w_Z(maxval(this%species_Z)))
     select case(trim(this%coordinates))
-    case('water_monomer','water_dimer')
+    case('water_monomer','water_dimer','hf_dimer')
        this%w_Z(8) = 1.0_dp
     case default
        call initialise(xyzfile,this%at_file)
@@ -672,6 +692,11 @@ contains
      call xml_AddAttribute(xf,"do_pca",""//this%do_pca)
 
      select case(trim(this%coordinates))
+     case('hf_dimer')
+        call xml_AddAttribute(xf,"coordinates","hf_dimer")
+        call xml_NewElement(xf,"hf_dimer_params")
+        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
+        call xml_EndElement(xf,"hf_dimer_params")
      case('water_monomer')
         call xml_AddAttribute(xf,"coordinates","water_monomer")
         call xml_NewElement(xf,"water_monomer_params")
