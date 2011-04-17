@@ -220,7 +220,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 #ifdef HAVE_GP_PREDICT
   real(dp), pointer :: w_e(:)
-  real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy, water_dimer_energy
+  real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:,:,:), allocatable   :: dvec
@@ -414,7 +414,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   allocate(w(at%n))
   select case(trim(this%coordinates))
-  case('water_monomer','water_dimer')
+  case('water_monomer','water_dimer','hf_dimer')
      w = 1.0_dp
   case default
      do i = 1, at%N
@@ -423,6 +423,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endselect
 
   select case(trim(this%coordinates))
+  case('hf_dimer')
+     d = 6
   case('water_monomer')
      d = 3
   case('water_dimer')
@@ -447,6 +449,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   enddo
 
   select case(trim(this%coordinates))
+  case('hf_dimer')
+     if(at%N /= 4) call system_abort('IPModel_GAP_Calc: number of atoms '//at%N//' not 4 - cannot be HF dimer.')
+     allocate(vec(d,1))
+     vec(:,1) = hf_dimer(at)
+
   case('water_monomer')
      if(mod(at%N,3) /= 0) call system_abort('IPModel_GAP_Calc: number of atoms '//at%N//' cannot be divided by 3 - cannot be pure water.')
 
@@ -660,7 +667,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
   select case(trim(this%coordinates))
-  case('water_monomer','water_dimer')
+  case('water_monomer','water_dimer','hf_dimer')
 
   case default
      allocate(covariance(this%my_gp%n,n_atoms_eff))
@@ -673,7 +680,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
     
   call system_timer('IPModel_GAP_Calc gp_predict')
   select case(trim(this%coordinates))
-  case('water_monomer','water_dimer')
+  case('water_monomer','water_dimer','hf_dimer')
      do i = 1, size(vec,2)
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))
@@ -913,6 +920,15 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
      endif
 
+  elseif(parse_in_ip .and. name == 'hf_dimer_params') then
+
+     call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cutoff
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
+     endif
+
   elseif(parse_in_ip .and. name == 'water_dimer_params') then
 
      call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
@@ -1118,6 +1134,8 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     elseif(name == 'GAP_data') then
 
     elseif(name == 'bispectrum_so4_params') then
+
+    elseif(name == 'hf_dimer_params') then
 
     elseif(name == 'water_monomer_params') then
 
