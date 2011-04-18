@@ -1064,6 +1064,7 @@ program crack
                  last_update_crack_tip_time = ds%t
                  mainlog%prefix = 'CRACK_TIP'
                  call crack_find_tip(ds%atoms, params, crack_tips)
+  	         call print('time '//ds%t)
                  call print(crack_tips)
                  mainlog%prefix = ''
                  call system_timer('crack_find_tip')
