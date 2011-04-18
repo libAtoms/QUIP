@@ -149,6 +149,7 @@ module CrackParams_module
      real(dp) :: stanza_time !% Time to run in this MD stanza before moving to next one
      real(dp) :: max_runtime !% If >= 0, exit cleanly if elapsed runtime (in seconds) is >= this
      real(dp) :: crack_find_tip_interval !% Print position of crack tip at this frequency
+     character(len=3) :: ensemble !$ MD ensmble: NVE only NVT are supported
 
   end type CrackMDParams
 
@@ -499,6 +500,7 @@ contains
        this%md(md_idx)%stanza_time = -1.0_dp ! fs
        this%md(md_idx)%max_runtime = -1.0_dp ! CPU seconds
        this%md(md_idx)%crack_find_tip_interval = 100.0_dp ! fs
+       this%md(md_idx)%ensemble = 'NVT'
     end do
 
     
@@ -1121,6 +1123,12 @@ contains
           read (value, *) parse_cp%md(parse_cp%num_md_stanza)%crack_find_tip_interval
        end if
 
+       call QUIP_FoX_get_value(attributes, "ensemble", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%ensemble
+       end if
+
+
     elseif (parse_in_crack .and. name == 'minim') then
 
        call QUIP_FoX_get_value(attributes, "method", value, status)
@@ -1631,6 +1639,7 @@ contains
        call Print('      stanza_time ='//this%md(md_idx)%stanza_time//' s', file=file)
        call Print('      max_runtime ='//this%md(md_idx)%max_runtime//' s', file=file)
        call Print('      crack_find_tip_interval ='//this%md(md_idx)%crack_find_tip_interval//' fs', file=file)
+       call Print('      ensemble = '//this%md(md_idx)%ensemble, file=file)
     end do
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)

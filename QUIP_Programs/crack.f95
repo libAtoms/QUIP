@@ -281,17 +281,15 @@ program crack
 
   implicit none
 
-  ! Constants
+  ! Constantsmic
   integer, parameter :: STATE_THERMALISE = 1
   integer, parameter :: STATE_MD = 2
   integer, parameter :: STATE_MD_LOADING = 3
   integer, parameter :: STATE_MD_CRACKING = 4
   integer, parameter :: STATE_DAMPED_MD = 5
-  integer, parameter :: STATE_MICROCANONICAL = 6
-  integer, parameter :: STATE_MD_CONSTANT = 7
-  integer, parameter :: STATE_MD_NVE = 8
-  character(len=14), dimension(8), parameter :: STATE_NAMES = &
-       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL", "MD_CONSTANT   ", "MD_NVE        "/)
+  integer, parameter :: STATE_MD_CONSTANT = 6
+  character(len=14), dimension(6), parameter :: STATE_NAMES = &
+       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MD_CONSTANT   "/)
 
   ! Objects
   type(InOutput) :: xmlfile
@@ -723,6 +721,12 @@ program crack
 
         if (trim(state_string) == "MD" .and. (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
+        if (params%md(params%md_stanza)%ensemble /= 'NVE' .and. &
+            params%md(params%md_stanza)%ensemble /= 'NVT') then
+           call system_abort('MD ensemble must be either "NVT" or "NVE"')
+        end if
+
+
         ! Remove any existing thermostats prior to re-adding them
         call finalise(ds%thermostat)
         
@@ -732,24 +736,28 @@ program crack
         if (state_string(1:10) == 'THERMALISE') then
            state = STATE_THERMALISE
            call disable_damping(ds)
-           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau)
+           if (params%md(params%md_stanza)%ensemble == 'NVT') &
+                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau)
 
         else if (state_string(1:10) == 'MD') then
            state = STATE_MD
            call disable_damping(ds)
-           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+           if (params%md(params%md_stanza)%ensemble == 'NVT') &
+                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
 
         else if (state_string(1:10) == 'MD_LOADING') then
            state = STATE_MD_LOADING
            call disable_damping(ds)
-           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+           if (params%md(params%md_stanza)%ensemble == 'NVT') &
+                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
            call crack_find_tip(ds%atoms, params, old_crack_tips)
            crack_tips = old_crack_tips
 
         else if (state_string(1:11) == 'MD_CRACKING') then
            state = STATE_MD_CRACKING
            call disable_damping(ds)
-           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+           if (params%md(params%md_stanza)%ensemble == 'NVT') &
+                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
            call crack_find_tip(ds%atoms, params, old_crack_tips)
            crack_tips = old_crack_tips
 
@@ -757,18 +765,11 @@ program crack
            state = STATE_DAMPED_MD
            call enable_damping(ds, params%md(params%md_stanza)%damping_time)
 
-        else if (state_string(1:14) == 'MICROCANONICAL') then
-           state = STATE_MICROCANONICAL
-           call disable_damping(ds)
-
         else if (state_string(1:11) == 'MD_CONSTANT') then
            state = STATE_MD_CONSTANT
            call disable_damping(ds)
-           call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
-
-        else if (state_string(1:10) == 'MD_NVE') then
-           state = STATE_MD_NVE
-           call disable_damping(ds)
+           if (params%md(params%md_stanza)%ensemble == 'NVT') &
+                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
 
         else  
            call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
@@ -850,8 +851,6 @@ program crack
 
            case(STATE_DAMPED_MD)
 
-           case(STATE_MICROCANONICAL)
-
            case(STATE_MD_LOADING)
               ! If tip has moved by more than smooth_loading_tip_move_tol then
               ! turn off loading. 
@@ -899,8 +898,6 @@ program crack
 
            case(STATE_MD_CONSTANT)
               
-           case(STATE_MD_NVE)
-
            case default
               call system_abort('Unknown molecular dynamics state!')
            end select
