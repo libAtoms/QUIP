@@ -183,9 +183,9 @@ contains
        this%n_species = 1
        allocate(this%species_Z(this%n_species))
        this%species_Z = 9
-       if(4*this%n_ener /= this%nn) call system_abort('coordinates type hf_dimer, but 4*n_ener /= ne')
-       this%nn = this%n_ener
+       this%nn = this%nn / 4
        this%ne = this%n_ener
+       this%n = this%n_force
     case('water_monomer')
        this%n_species = 1
        allocate(this%species_Z(this%n_species))
@@ -233,8 +233,7 @@ contains
     real(dp), dimension(3,3) :: virial, virial_core
     real(dp), pointer :: f(:,:)
     real(dp), dimension(:,:), allocatable :: f_core
-    real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
-    real(dp) ::  dvec(3,6,WATER_DIMER_D,1)
+    real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:), dvec(:,:,:,:)
     integer :: shift(3)
     integer, dimension(3,1) :: water_monomer_index
     integer, dimension(3,2) :: water_dimer_index
@@ -374,8 +373,17 @@ contains
 
        if(has_ener .or. has_force .or. has_virial ) allocate(vec(d,at%N))
        if(has_force .or. has_virial) then
-          allocate(jack(d,3*nei_max,at%N))
-          jack = 0.0_dp
+          select case(trim(this%coordinates))
+          case('water_dimer')
+             allocate(dvec(3,6,d,1))
+             dvec = 0.0_dp
+          case('hf_dimer')
+             allocate(dvec(3,4,d,1))
+             dvec = 0.0_dp
+          case default
+             allocate(jack(d,3*nei_max,at%N))
+             jack = 0.0_dp
+          endselect
        endif
        allocate(w(at%N))
 
@@ -389,12 +397,29 @@ contains
              if( at%N /= 4 ) call system_abort('Number of atoms is '//at%N//', not two HF molecules')
 
              w_con = w_con + 1
+
+             if(has_ener) then
+                ie = ie + 1
+                this%xf(ie) = w_con
+                this%yf(ie) = ener
+                this%lf(ie) = ie
+                this%target_type(ie) = 1
+             endif
+
+             if(has_force) then
+                li = ui + 1
+                ui = ui + 12
+                dvec(:,:,:,1) = hf_dimer_grad(at)
+                this%xd(:,li:ui) = transpose(reshape(dvec(:,:,:,1), (/12,d/)))
+                this%ydf(li:ui) = -reshape(f(:,:),(/12/))
+                this%xdf(li:ui) = w_con
+                this%ldf(li:ui) = (/(i, i=li,ui)/)
+                this%target_type(this%n_ener+li:this%n_ener+ui) = 2
+             endif
+
              this%x(:,w_con) = hf_dimer(at)
              this%xz(w_con) = 9
-             this%xf(w_con) = w_con
-             this%yf(w_con) = ener
-             this%lf(w_con) = w_con
-             this%target_type(w_con) = 1
+             this%config_type(w_con) = n_config_type
 
           case('water_monomer')
              if( at%N /= 3 ) call system_abort('Number of atoms is '//at%N//', not a single water molecule')
@@ -566,6 +591,7 @@ contains
        endif
 
        if(allocated(vec)) deallocate(vec)
+       if(allocated(dvec)) deallocate(dvec)
        if(allocated(jack)) deallocate(jack)
        if(allocated(w)) deallocate(w)
 
@@ -645,9 +671,12 @@ contains
     type(atoms) :: at
 
     allocate(this%w_Z(maxval(this%species_Z)))
+    this%w_Z = 0.0_dp
     select case(trim(this%coordinates))
-    case('water_monomer','water_dimer','hf_dimer')
+    case('water_monomer','water_dimer')
        this%w_Z(8) = 1.0_dp
+    case('hf_dimer')
+       this%w_Z(9) = 1.0_dp
     case default
        call initialise(xyzfile,this%at_file)
 

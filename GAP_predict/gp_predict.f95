@@ -37,8 +37,7 @@ module gp_predict_module
       logical :: initialised = .false.
       logical :: do_permutations = .false.
 
-      character(len=1024) :: label = ""
-      character(len=10000) :: comment
+      character(len=1024) :: label = "", comment = ""
 
    end type gp
 
@@ -204,16 +203,28 @@ module gp_predict_module
 	 ! not needed - all values to be used will be set before they're used
          ! xixjtheta = 0.0_dp 
          if( gp_data%do_permutations ) then
-            c = 0.0_dp
-            do i = 1, gp_data%n
-               if( do_Z == gp_data%xz(i) ) then
-                  do n = 1, gp_data%n_permutation
-                     xixjtheta(:,i) = gp_data%x_div_theta(gp_data%permutation(:,n),i)-x_star_div_theta
-                     c(i) = c(i) + gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
-                  enddo
-               endif
-            enddo
-            print*,c
+            k = 0.0_dp
+            if(present(x_prime_star)) then
+               x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
+               do i = 1, gp_data%n
+                  if( do_Z == gp_data%xz(i) ) then
+                     do n = 1, gp_data%n_permutation
+                        xixjtheta(:,i) = gp_data%x_div_theta(gp_data%permutation(:,n),i)-x_star_div_theta
+                        k(i) = k(i) + gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) ) * &
+                        dot_product(xixjtheta(:,i),x_prime_star_div_theta)
+                     enddo
+                  endif
+               enddo
+            else
+               do i = 1, gp_data%n
+                  if( do_Z == gp_data%xz(i) ) then
+                     do n = 1, gp_data%n_permutation
+                        xixjtheta(:,i) = gp_data%x_div_theta(gp_data%permutation(:,n),i)-x_star_div_theta
+                        k(i) = k(i) + gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
+                     enddo
+                  endif
+               enddo
+            endif
          else
             c = 0.0_dp
             do i = 1, gp_data%n
@@ -223,61 +234,61 @@ module gp_predict_module
                endif
             enddo
             if(present(c_in)) c = real(c_in, qp)
-         endif
 
-         if(present(x_prime_star)) then
-	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
-	    if (my_use_dgemv) then
-	       k = 0.0_dp
-	       call dgemv('T',gp_data%d,gp_data%Z_index(2,do_Z)-gp_data%Z_index(1,do_Z)+1,1.0_dp, &
-		  xixjtheta(1,gp_data%Z_index(1,do_Z)), gp_data%d, x_prime_star_div_theta, 1, 0.0_dp, k(gp_data%Z_index(1,do_Z)), 1)
-	       k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) = k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) * &
-								    c(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z))
-	    else
-	       do i = 1, gp_data%n
-		  !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
-		  if( do_Z == gp_data%xz(i) ) then
-#ifdef GP_PREDICT_QP
-		     !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-		     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-		     !dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
-#else
-		     !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
-		     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
-		     !& dot_product(xixjtheta,x_prime_star_div_theta)
-#endif
-		     k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
-		  else
-		     k(i) = 0.0_dp
-		  end if
-		  
-		  !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-		  !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
-		  !xixjtheta = real((real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp),dp)
-
-		  !k(i) = gp_data%delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
-		  !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
-	       end do
-	    endif ! use_dgemv
-         else
-            do i = 1, gp_data%n
-!               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
-               if( do_Z == gp_data%xz(i) ) then
-#ifdef GP_PREDICT_QP
-                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
-#else
-                  !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
-#endif
-                  k(i) = c(i) + gp_data%f0(Z_type)**2
+            if(present(x_prime_star)) then
+               x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
+               if (my_use_dgemv) then
+                  k = 0.0_dp
+                  call dgemv('T',gp_data%d,gp_data%Z_index(2,do_Z)-gp_data%Z_index(1,do_Z)+1,1.0_dp, &
+                     xixjtheta(1,gp_data%Z_index(1,do_Z)), gp_data%d, x_prime_star_div_theta, 1, 0.0_dp, k(gp_data%Z_index(1,do_Z)), 1)
+                  k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) = k(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z)) * &
+                                                                       c(gp_data%Z_index(1,do_Z):gp_data%Z_index(2,do_Z))
                else
-                  k(i) = 0.0_dp
-               end if
-               !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
-               !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) )
-            end do
-         end if
+                  do i = 1, gp_data%n
+                     !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
+                     if( do_Z == gp_data%xz(i) ) then
+#ifdef GP_PREDICT_QP
+                        !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                        !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+                        !dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
+#else
+                        !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
+                        !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
+                        !& dot_product(xixjtheta,x_prime_star_div_theta)
+#endif
+                        k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
+                     else
+                        k(i) = 0.0_dp
+                     end if
+		  
+                     !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+                     !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
+                     !xixjtheta = real((real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp),dp)
+
+                     !k(i) = gp_data%delta**2 * exp( - 0.5_dp * normsq(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
+                     !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
+                  end do
+               endif ! use_dgemv
+            else
+               do i = 1, gp_data%n
+!               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
+                  if( do_Z == gp_data%xz(i) ) then
+#ifdef GP_PREDICT_QP
+                     !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+#else
+                     !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
+                     !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+#endif
+                     k(i) = c(i) + gp_data%f0(Z_type)**2
+                  else
+                     k(i) = 0.0_dp
+                  end if
+                  !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
+                  !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) )
+               end do
+            end if
+         endif
 #ifdef GP_PREDICT_QP
          if( present(mean) ) mean = dot_product( k, gp_data%alpha )
 #else

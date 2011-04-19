@@ -59,6 +59,7 @@ program teach_sparse_program
   integer, dimension(:), allocatable :: type_indices, sparse_points
   integer, dimension(:,:), allocatable :: permutation
   character(len=FIELD_LENGTH) :: gp_file
+  real(dp), dimension(:), allocatable :: theta
 
   call system_initialise(verbosity=PRINT_NORMAL)
   call initialise(params)
@@ -399,12 +400,34 @@ program teach_sparse_program
      call system_timer('GP sparsify')
 
 
-     call gp_sparsify(gp_sp,main_teach_sparse%r,&
-     main_teach_sparse%sigma,main_teach_sparse%dlta,main_teach_sparse%theta,&
-     main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
-     main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
-     main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
-     main_teach_sparse%target_type, gp_teach_memory_in=gp_teach_memory)
+     select case(trim(main_teach_sparse%coordinates))
+     case('hf_dimer')
+        allocate(permutation(6,2))
+        permutation(:,1) = (/1, 2, 3, 4, 5, 6/)
+        permutation(:,2) = (/4, 3, 2, 1, 5, 6/)
+
+        allocate(theta(size(main_teach_sparse%theta,1)))
+        theta = 0.0_dp
+        do i = 1, size(permutation,2)
+           theta = theta + main_teach_sparse%theta(permutation(:,i),1)
+        enddo
+        main_teach_sparse%theta(:,1) = theta / size(permutation,2)
+        deallocate(theta)
+
+        call gp_sparsify(gp_sp,main_teach_sparse%r,&
+        main_teach_sparse%sigma,main_teach_sparse%dlta,main_teach_sparse%theta,&
+        main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
+        main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
+        main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
+        main_teach_sparse%target_type, gp_teach_memory_in=gp_teach_memory,permutation_in = permutation)
+     case default
+        call gp_sparsify(gp_sp,main_teach_sparse%r,&
+        main_teach_sparse%sigma,main_teach_sparse%dlta,main_teach_sparse%theta,&
+        main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
+        main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
+        main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
+        main_teach_sparse%target_type, gp_teach_memory_in=gp_teach_memory)
+     endselect
 
      call system_timer('GP sparsify')
 
@@ -490,6 +513,14 @@ program teach_sparse_program
         permutation(:,2) = (/4, 3, 2, 1, 5, 6/)
         !permutation(:,3) = (/3, 4, 1, 2, 5, 6/)
         !permutation(:,4) = (/2, 1, 4, 3, 5, 6/)
+
+        allocate(theta(size(main_teach_sparse%theta,1)))
+        theta = 0.0_dp
+        do i = 1, size(permutation,2)
+           theta = theta + main_teach_sparse%theta(permutation(:,i),1)
+        enddo
+        main_teach_sparse%theta(:,1) = theta / size(permutation,2)
+        deallocate(theta)
 
         call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
         main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &

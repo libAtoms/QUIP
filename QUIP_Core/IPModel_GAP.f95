@@ -454,6 +454,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      allocate(vec(d,1))
      vec(:,1) = hf_dimer(at)
 
+     allocate(dvec(3,4,d,1))
+     dvec(:,:,:,1) = hf_dimer_grad(at)
+
   case('water_monomer')
      if(mod(at%N,3) /= 0) call system_abort('IPModel_GAP_Calc: number of atoms '//at%N//' cannot be divided by 3 - cannot be pure water.')
 
@@ -680,7 +683,23 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
     
   call system_timer('IPModel_GAP_Calc gp_predict')
   select case(trim(this%coordinates))
-  case('water_monomer','water_dimer','hf_dimer')
+  case('water_monomer','hf_dimer')
+     do i = 1, size(vec,2)
+        if(present(e)) then
+           call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))
+           local_e_in(1) = local_e_in(1) + water_monomer_energy + this%e0
+        endif
+     enddo
+
+     if(present(f)) then
+        do i = 1, at%N
+           do k = 1, 3
+              call gp_predict(gp_data=this%my_gp,mean=f_gp,x_star=vec(:,1),x_prime_star=dvec(k,i,:,1))
+              f(k,i) = f(k,i) - f_gp
+           enddo
+        enddo
+     endif
+  case('water_dimer')
      do i = 1, size(vec,2)
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))

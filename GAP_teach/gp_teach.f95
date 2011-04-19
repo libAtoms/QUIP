@@ -49,7 +49,7 @@ module gp_teach_module
 
    private
 
-   real(qp), parameter :: gp_jitter  = 1.0e-6_qp
+   real(qp), parameter :: gp_jitter  = 1.0e-5_qp
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !
@@ -66,6 +66,7 @@ module gp_teach_module
       real(qp), dimension(:,:), allocatable :: x, x_prime, x_sparse, k_mn, big_raw_k_mn, big_k_mn, k_mm, inverse_k_mm_k_mn
       real(qp), dimension(:), allocatable   :: y, lambda
       integer, dimension(:), allocatable    :: l, lf, ldf, xf, xdf, xz, xz_sparse, sp, target_type
+      integer, dimension(:,:), allocatable :: permutation
 
       !% Hyperparameters.
       !% Error parameter, range parameter, sensitivity parameters.
@@ -76,11 +77,12 @@ module gp_teach_module
       !% n: number of teaching points
       !% m: number of teaching function values
       !% p: number of hyperparameters
-      integer :: d, n, m, sr, nx, nxx, nxd, mf, mdf, nsp, n_target_type
+      integer :: d, n, m, sr, nx, nxx, nxd, mf, mdf, nsp, n_target_type, n_permutation
 
       integer :: gp_teach_memory = GP_TEACH_MEMORY_0
 
       logical :: initialised = .false.
+      logical :: do_permutations = .false.
 
       character(len=1024) :: label, comment
 
@@ -179,6 +181,13 @@ module gp_teach_module
          this%x = real(sparse%x_sparse,kind=dp)
          this%xz = sparse%xz_sparse
          this%sp = sparse%sp
+         this%do_permutations = sparse%do_permutations
+
+         if( this%do_permutations ) then
+            allocate(this%permutation(sparse%d,sparse%n_permutation))
+            this%permutation = sparse%permutation
+            this%n_permutation = sparse%n_permutation
+         endif
 
 	 call setup_x_div_theta(this)
 
@@ -213,6 +222,8 @@ module gp_teach_module
          allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m), alpha(m))
          call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,1.0_qp/sparse%lambda) ! O(NM)
          k_mn_l_k_nm = matmul(k_mn_inverse_lambda,transpose(sparse%k_mn))
+!print*,sparse%k_mn
+!print*,sparse%lambda
 
          call initialise(LA_q_mm,sparse%k_mm + k_mn_l_k_nm)
          call LA_Matrix_Inverse(LA_q_mm,inverse_q_mm,info=info)
@@ -294,7 +305,7 @@ module gp_teach_module
 
       endsubroutine gp_simple_initialise
 
-      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in, gp_teach_memory_in)
+      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in, gp_teach_memory_in, permutation_in)
          type(gp_sparse), intent(inout)                 :: this        !% gp to initialise
          !integer, intent(in)                            :: sr
          integer, dimension(:), intent(in)              :: r
@@ -314,6 +325,7 @@ module gp_teach_module
          real(dp), dimension(:), intent(in), optional   :: f0_in    !% hyperparameters, dimension(p)
          integer, dimension(:), intent(in), optional    :: target_type_in        !% what type of target is the function value
          integer, intent(in), optional                  :: gp_teach_memory_in
+         integer, dimension(:,:), intent(in), optional  :: permutation_in
 
          integer :: i, lmf, nsp
          integer, dimension(:), allocatable :: my_target_type
@@ -371,6 +383,12 @@ module gp_teach_module
             this%gp_teach_memory = GP_TEACH_MEMORY_0
          endif
 
+         if( present(permutation_in) ) then
+            this%do_permutations = .true.
+            if( size(permutation_in,1) /= this%d ) call system_abort('gp_sparsify: permutation vector permutation_in has wrong first dimension')
+            this%n_permutation = size(permutation_in,2)
+         endif
+
          call gp_allocate(this)
 
          this%sigma = real(sigma_in,kind=qp)
@@ -414,6 +432,8 @@ module gp_teach_module
             this%f0 = 0.0_qp
          end if
          this%target_type = my_target_type
+
+         if( this%do_permutations ) this%permutation = permutation_in
          
          call covariance_matrix_sparse(this)
 
@@ -470,6 +490,11 @@ module gp_teach_module
             this%big_raw_k_mn = 0.0_qp
          endif
 
+         if( this%do_permutations ) then
+            allocate(this%permutation(this%d,this%n_permutation))
+            this%permutation = 0
+         endif
+
          allocate(this%xz(this%nxx), this%xz_sparse(this%sr) )
          this%x     = 0.0_qp
          this%x_prime = 0.0_qp
@@ -524,6 +549,7 @@ module gp_teach_module
          if(allocated(this%delta)) deallocate( this%delta )
          if(allocated(this%f0)) deallocate( this%f0 )
          if(allocated(this%target_type)) deallocate( this%target_type )
+         if(allocated(this%permutation)) deallocate( this%permutation )
 
       end subroutine gp_deallocate
 
@@ -747,7 +773,7 @@ module gp_teach_module
 
          type(LA_Matrix) :: LA_k_mm
 
-         integer :: i, j, lj, uj, j1, j2, id, jd, xj, xj1, xj2, k, Z_type, info
+         integer :: i, j, lj, uj, j1, j2, id, jd, xj, xj1, xj2, k, Z_type, info, n
          real(qp) :: ep, big_raw_k_mn_ij, big_k_mn_ij
          real(qp), dimension(:,:), allocatable :: inverse_k_mm
          real(qp), dimension(:), allocatable   :: lknnl, diff_xijt
@@ -757,6 +783,138 @@ module gp_teach_module
          
          theta2 = 1.0_qp / this%theta**2
          this%k_mn = 0.0_qp
+
+         if( this%do_permutations ) then
+
+            do j = 1, this%nx
+               xj = this%xf(j)
+               lj = count(j > this%l) + 1
+               
+               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
+
+               do i = 1, this%sr
+                  if( this%xz(xj) == this%xz_sparse(i) ) then
+                     do n = 1, this%n_permutation
+                        big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(this%permutation(:,n),i) )
+                        big_k_mn_ij = big_raw_k_mn_ij !+ this%f0(Z_type)**2 
+
+                        !if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = big_raw_k_mn_ij
+                        !if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = big_k_mn_ij
+                        if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
+                     enddo
+                  else
+                     !if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,j) = 0.0_qp
+                     !if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,j) = 0.0_qp
+                  end if
+
+               end do
+            end do
+
+            do j = 1, this%nxd
+               jd = j + this%nx
+               xj = this%xdf(j)
+               lj = count(jd > this%l) + 1
+               
+               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
+               
+               do i = 1, this%sr
+                  if( this%xz(xj) == this%xz_sparse(i) ) then
+                     do n = 1, this%n_permutation
+                        big_raw_k_mn_ij = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj), this%x_sparse(this%permutation(:,n),i) )
+                        big_k_mn_ij = big_raw_k_mn_ij * &
+                           dot_product(( this%x_sparse(this%permutation(:,n),i) - this%x(:,xj) )*theta2(:,Z_type),this%x_prime(:,j))
+
+                        !if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,jd) = big_raw_k_mn_ij
+                        !if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,jd) = big_k_mn_ij
+                        if(this%gp_teach_memory == GP_TEACH_MEMORY_0) this%k_mn(i,lj) = this%k_mn(i,lj) + big_k_mn_ij
+                     enddo
+
+                 else
+
+                    !if(this%gp_teach_memory >= GP_TEACH_MEMORY_2) this%big_raw_k_mn(i,jd) = 0.0_qp
+                    !if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) this%big_k_mn(i,jd) = 0.0_qp
+
+                 end if
+               end do
+            end do
+
+!print*,this%theta(:,:)            
+            do j = 1, this%sr
+            
+!print*,j,this%x_sparse(:,j)                  
+               do k = 1, this%nsp; if( this%sp(k) == this%xz_sparse(j) ) Z_type = k; end do
+
+               do i = 1, this%sr
+                  this%k_mm(i,j) = 0.0_qp
+                  !if( this%xz_sparse(j) == this%xz_sparse(i) ) then
+                     do n = 1, this%n_permutation
+!print*, i, j, n, covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x_sparse(:,j), this%x_sparse(this%permutation(:,n),i) )
+                        this%k_mm(i,j) = this%k_mm(i,j) + this%delta(Z_type)**2 * exp(-0.5_dp * sum(((this%x_sparse(:,j) - this%x_sparse(this%permutation(:,n),i))/this%theta(:,Z_type))**2))
+!                        this%k_mm(i,j) = this%k_mm(i,j) + covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x_sparse(:,j), this%x_sparse(this%permutation(:,n),i) )
+                     enddo
+                  !endif
+               end do
+            end do
+
+            ep = gp_jitter !*trace(this%k_mm)/this%sr
+            do i = 1, this%sr
+               this%k_mm(i,i) = this%k_mm(i,i) + ep
+            end do
+
+            lknnl = 0.0_qp
+
+            do i = 1, this%mf
+               if(i==1) then 
+                  lj = 1
+               else
+                  lj = this%lf(i-1)+1
+               end if
+               uj = this%lf(i)
+               do j1 = lj, uj
+                  xj1 = this%xf(j1)
+
+                  do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; end do
+
+                  do j2 = lj, uj
+                     xj2 = this%xf(j2)
+                     do n = 1, this%n_permutation
+                        if( this%xz(xj1) == this%xz(xj2) ) &
+                        lknnl(i) = lknnl(i) + covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj1), this%x(this%permutation(:,n),xj2) ) !+ this%f0(Z_type)**2
+                     enddo
+                  end do
+               end do
+            end do
+
+            allocate(diff_xijt(this%d))
+            do i = 1, this%mdf
+               id = i + this%mf
+               if(i==1) then 
+                  lj = 1
+               else
+                  lj = this%ldf(i-1)+1
+               end if
+               uj = this%ldf(i)
+               do j1 = lj, uj
+                  xj1 = this%xdf(j1)
+                 
+                  do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; end do
+                 
+                  do j2 = lj, uj
+                     xj2 = this%xdf(j2)
+                     if( this%xz(xj1) == this%xz(xj2) ) then
+                        do n = 1, this%n_permutation
+                           diff_xijt = (this%x(:,xj1) - this%x(this%permutation(:,n),xj2)) * theta2(:,Z_type)
+                           lknnl(id) = lknnl(id) + covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj1), this%x(this%permutation(:,n),xj2) ) * &
+                           & ( dot_product( this%x_prime(:,j1) * theta2(:,Z_type), this%x_prime(this%permutation(:,n),j2) ) - &
+                           & dot_product( diff_xijt,this%x_prime(:,j1) ) * dot_product( diff_xijt,this%x_prime(this%permutation(:,n),j2) ) )
+                        enddo
+                     end if
+                  end do
+               end do
+            end do
+            deallocate(diff_xijt)
+
+         else ! dont do permutations
 
 !$omp parallel do private(xj,k,Z_type,lj,i,big_raw_k_mn_ij,big_k_mn_ij)
          do j = 1, this%nx
@@ -888,10 +1046,13 @@ allocate(diff_xijt(this%d))
 deallocate(diff_xijt)
 !$omp end parallel
 
+         endif ! do permutations or not
+
          if(this%gp_teach_memory >= GP_TEACH_MEMORY_1) call apply_l(this%big_k_mn,this%l,this%k_mn)
          !call inverse(this%k_mm,inverse_k_mm)
          !inverse_k_mm = this%k_mm
          call initialise(LA_k_mm,this%k_mm)
+!print*,this%k_mm         
          call Matrix_Solve(LA_k_mm,this%k_mn,this%inverse_k_mm_k_mn,info=info)
          if( info /= 0 ) call system_abort('covariance_matrix_sparse: LA_k_mm')
          call finalise(LA_k_mm)

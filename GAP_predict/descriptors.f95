@@ -377,7 +377,7 @@ module descriptors_module
    public :: fourier_so3, grad_fourier_so3, qw_so3, grad_qw_so3
    public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
    public :: kmax2d, suggest_kmax, suggest_resolution
-   public :: water_monomer, water_dimer, WATER_DIMER_D, hf_dimer
+   public :: water_monomer, water_dimer, WATER_DIMER_D, hf_dimer, hf_dimer_grad
    public :: cosnx, calc_cosnx, calc_grad_cosnx
    public :: besseli0, besseli1, covariance_atom_atom
 
@@ -4027,6 +4027,34 @@ module descriptors_module
 
 
      end function hf_dimer
+
+     function hf_dimer_grad(at) result(vec)
+       type(atoms), intent(in) :: at
+       real(dp), dimension(3,4,6) :: vec
+       integer :: i, j, k
+
+       vec = 0.0_dp
+       k = 0
+       do i = 1, at%N
+          do j = 1, at%N
+             if( i == j ) cycle
+
+             if( (at%Z(i) == 9) .and. (at%Z(j) == 9) ) then
+                vec(:,j,5) = diff_min_image(at,i,j) / distance_min_image(at,i,j)
+                vec(:,i,5) = - vec(:,j,5)
+             elseif( (at%Z(i) == 1) .and. (at%Z(j) == 1) ) then
+                vec(:,j,6) = diff_min_image(at,i,j) / distance_min_image(at,i,j)
+                vec(:,i,6) = - vec(:,j,6)
+             elseif( (at%Z(i) == 1) .and. (at%Z(j) == 9) ) then
+                k = k+1
+                vec(:,j,k) = diff_min_image(at,i,j) / distance_min_image(at,i,j)
+                vec(:,i,k) = - vec(:,j,k)
+             endif
+          enddo
+       enddo
+
+
+     end function hf_dimer_grad
 
      function water_monomer(at,w) result(vec)
        type(atoms), intent(in) :: at
