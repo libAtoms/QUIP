@@ -111,7 +111,7 @@ infiles = [ f == '-' and 'stdin' or f for f in infiles ]
 if outfile == '-': outfile = 'stdout'
 
 # check for existing outfile
-if opt.output is None:
+if opt.output is None and not opt.no_print_at:
    if os.path.exists(outfile):
       p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
 
