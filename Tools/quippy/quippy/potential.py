@@ -29,8 +29,8 @@ class Potential(FortranPotential):
       if param_filename is not None:
          param_str = open(param_filename).read()
 
-      if param_str is None:
-         raise ValueError('Either param_str or param_filename must be present')
+      if args_str is None and param_str is None:
+         raise ValueError('Either args_str, param_str or param_filename must be present')
 
       if args_str is None:
          args_str = 'xml_label=%s' % param_str[:param_str.index('\n')].translate(None, '<>')
