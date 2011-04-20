@@ -633,7 +633,11 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       if (*p1 == '\0') continue;
       strncpy(fields[k++], p1, LINESIZE);
     }
+    
     if (k == 0) {
+      if (strlen(linebuffer) == 0) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
+      }
       k = 1;
       strncpy(fields[0], linebuffer, LINESIZE);
     }

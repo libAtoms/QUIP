@@ -446,6 +446,21 @@ H	6.859570	9.215634	3.262673""")
       os.system('touch empty.xyz')
       self.assertRaises(RuntimeError, Atoms, 'empty.xyz')
 
+   def test_missing_value(self):
+      cio = CInOutput()
+      self.assertRaises(RuntimeError, cio.read, str="""1
+Properties="species:S:1:pos:R:3" Lattice="10. 0 0 0 10.0 0 0 0 10"  State=
+H 0. 0. 0.
+""")
+
+   def test_missing_value_quoted(self):
+      cio = CInOutput()
+      self.assertRaises(RuntimeError, cio.read, str="""1
+Properties="species:S:1:pos:R:3" Lattice="10. 0 0 0 10.0 0 0 0 10"  State=""
+H 0. 0. 0.
+""")
+      
+
 class TestPythonNetCDF(QuippyTestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44,14), 2,2,2)
