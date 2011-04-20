@@ -3,6 +3,8 @@ Patches tested against CP2K cvs version 21 April 2010 (NB).
 Most robust forms for applying the changes are in
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
+  cp2k_speed.patch.outdated (speed improvements that are now, as of 20 April 2011, in the CP2K
+                             CVS repository)
   cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs)
 
   cp2k_silica.patch (CV: Silica potential)
