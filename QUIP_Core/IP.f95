@@ -52,6 +52,7 @@
 !%    \item    Einstein crystal potential ({\bf IPModel_Einstein})
 !%    \item    Coulomb potential ({\bf IPModel_Coulomb})
 !%    \item    Sutton-Chen potential ({\bf IPModel_Sutton_Chen})
+!%    \item    Customised (hardwired) potential (\{\bf IPModel_Custom})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -80,6 +81,7 @@
 !%    \item    'IP_Einstein'
 !%    \item    'IP_Coulomb'
 !%    \item    'IP_Sutton_Chen'
+!%    \item    'IP_Custom'
 !%    \item    'IP_Template'
 !%   \end{itemize}
 !X
@@ -119,6 +121,7 @@ use IPModel_Template_module
 use IPModel_KIM_module
 #endif
 use IPModel_FX_module
+use IPModel_Custom_module
 ! Add new IPs here
 
 implicit none
@@ -128,7 +131,7 @@ private
 integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
-     FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, &! Add new IPs here
+     FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_Custom = 24, &! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -162,9 +165,9 @@ type IP_type
   type(IPModel_KIM) ip_KIM
 #endif
   type(IPModel_FX) ip_FX
+  type(IPModel_Custom) ip_Custom
      ! Add new IPs here  
   type(IPModel_Template) ip_Template
-
   type(mpi_context) :: mpi_glob, mpi_local
 
 end type IP_type
@@ -270,7 +273,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX,  is_Template
+       is_Sutton_Chen, is_KIM, is_FX, is_Custom, is_Template
   ! Add new IPs here
 
   INIT_ERROR(error)
@@ -309,6 +312,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   is_KIM = .false.
 #endif
   call param_register(params, 'FX', 'false', is_FX, help_string="Fanourgakis-Xantheas model of water")
+  call param_register(params, 'Custom', 'false', is_Custom, help_string="Customised (hard wired) potential")
   ! Add new IPs here
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
 
@@ -319,7 +323,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX, &       ! add new IPs here
+       is_Sutton_Chen, is_KIM, is_FX, is_Custom, &       ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -394,10 +398,13 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
     this%functional_form = FF_KIM
     call Initialise(this%ip_KIM, args_str, param_str) 
 #endif
-    ! add new IPs here
   else if (is_FX) then
      this%functional_form = FF_FX
      call Initialise(this%ip_fx, args_str, param_str)
+  else if (is_Custom) then
+     this%functional_form = FF_Custom
+     call Initialise(this%ip_custom, args_str, param_str)
+    ! add new IPs here
   else if (is_Template) then
     this%functional_form = FF_Template
     call Initialise(this%ip_Template, args_str, param_str) 
@@ -462,6 +469,8 @@ subroutine IP_Finalise(this)
 #endif
    case (FF_FX)
       call Finalise(this%ip_FX)
+   case (FF_Custom)
+      call Finalise(this%ip_Custom)
       ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
@@ -522,9 +531,11 @@ function IP_cutoff(this)
   case (FF_KIM)
      IP_cutoff = this%ip_kim%cutoff
 #endif
-  ! Add new IP here
   case (FF_FX)
      IP_cutoff = this%ip_fx%cutoff
+  case (FF_Custom)
+     IP_cutoff = this%ip_custom%cutoff
+  ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
   case default
@@ -611,9 +622,11 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_KIM, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
       PASS_ERROR(error)
 #endif
-    ! Add new IP here
    case (FF_FX)
       call calc(this%ip_FX, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_Custom)
+      call calc(this%ip_Custom, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+    ! Add new IP here
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case default
@@ -682,9 +695,11 @@ subroutine IP_Print(this, file, error)
     case (FF_KIM)
       call Print(this%ip_kim, file=file)
 #endif
-    ! add new IP here
    case (FF_FX)
       call Print(this%ip_fx, file=file)
+   case (FF_Custom)
+      call Print(this%ip_custom, file=file)
+    ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)
    case default
