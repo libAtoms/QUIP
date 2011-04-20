@@ -175,8 +175,8 @@ paste ${stem}_tmppos ${stem}_tmpforce >> ${stem}.out
     
 # Save BOP raw output
 
-cat out >> ${stem}.out_log
-cat outerr >> ${stem}.outerr_log
+#cat out >> ${stem}.out_log
+#cat outerr >> ${stem}.outerr_log
 
 
 if [[ `wc -l ${stem}.out | awk '{print $1}'` != $(($N+2)) ]]; then
