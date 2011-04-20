@@ -200,8 +200,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'max_time', '-1.0', this%max_time, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'min_frame', '-1', this%min_frame, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'max_frame', '-1', this%max_frame, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'type', '', this%type, help_string="No help yet.  This source file was $LastChangedBy$")
-
+    call param_register(params, 'type', '', this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
     ! radial density
     call param_register(params, 'density_radial_bin_width', '-1.0', this%density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_radial_n_bins', '-1', this%density_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -305,7 +304,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'max_time', ''//prev%max_time, this%max_time, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
 
     ! radial density
     call param_register(params, 'density_radial_bin_width', ''//this%density_radial_bin_width, this%density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
