@@ -401,10 +401,23 @@ program teach_sparse_program
 
 
      select case(trim(main_teach_sparse%coordinates))
-     case('hf_dimer')
-        allocate(permutation(6,2))
-        permutation(:,1) = (/1, 2, 3, 4, 5, 6/)
-        permutation(:,2) = (/4, 3, 2, 1, 5, 6/)
+     case('hf_dimer', 'water_dimer')
+        if(trim(main_teach_sparse%coordinates) .eq. 'hf_dimer') then
+           allocate(permutation(6,2))
+           permutation(:,1) = (/1, 2, 3, 4, 5, 6/) ! original order
+           permutation(:,2) = (/4, 3, 2, 1, 5, 6/) ! swap the two HF molecules
+        end if
+        if(trim(main_teach_sparse%coordinates) .eq. 'water_dimer') then
+           allocate(permutation(15,8))
+           permutation(:,1) = (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15/) ! original order
+           permutation(:,2) = (/1, 3, 2, 4, 5, 7, 6, 8, 9, 10, 13, 14, 11, 12, 15/) ! swap Hs on monomer A
+           permutation(:,3) = (/1, 2, 3, 5, 4, 6, 7, 9, 8, 10, 12, 11, 14, 13, 15/) ! swap Hs on monomer B
+           permutation(:,4) = (/1, 3, 2, 5, 4, 7, 6, 9, 8, 10, 14, 13, 12, 11, 15/) ! swap Hs on both monomers
+           permutation(:,5) = (/1, 8, 9, 6, 7, 4, 5, 2, 3, 15, 11, 13, 12, 14, 10/) ! swap monomers A and B
+           permutation(:,6) = (/1, 9, 8, 6, 7, 5, 4, 2, 3, 15, 12, 14, 11, 13, 10/) ! swap monomers and Hs on monomer A
+           permutation(:,7) = (/1, 8, 9, 7, 6, 4, 5, 3, 2, 15, 13, 11, 14, 12, 10/) ! swap monomers and Hs on monomer B
+           permutation(:,8) = (/1, 9, 8, 7, 6, 5, 4, 3, 2, 15, 14, 12, 13, 11, 10/) ! swap monomers and Hs on both monomers
+        end if
 
         allocate(theta(size(main_teach_sparse%theta,1)))
         theta = 0.0_dp
@@ -507,12 +520,24 @@ program teach_sparse_program
      enddo
   else
      select case(trim(main_teach_sparse%coordinates))
-     case('hf_dimer')
-        allocate(permutation(6,2))
-        permutation(:,1) = (/1, 2, 3, 4, 5, 6/)
-        permutation(:,2) = (/4, 3, 2, 1, 5, 6/)
-        !permutation(:,3) = (/3, 4, 1, 2, 5, 6/)
-        !permutation(:,4) = (/2, 1, 4, 3, 5, 6/)
+     case('hf_dimer', 'water_dimer')
+        if(trim(main_teach_sparse%coordinates) .eq. 'hf_dimer') then
+           allocate(permutation(6,2))
+           permutation(:,1) = (/1, 2, 3, 4, 5, 6/) ! original order
+           permutation(:,2) = (/4, 3, 2, 1, 5, 6/) ! swap the two HF molecules
+        end if
+        if(trim(main_teach_sparse%coordinates) .eq. 'water_dimer') then
+           allocate(permutation(15,8))
+           permutation(:,1) = (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15/) ! original order
+           permutation(:,2) = (/1, 3, 2, 4, 5, 7, 6, 8, 9, 10, 13, 14, 11, 12, 15/) ! swap Hs on monomer A
+           permutation(:,3) = (/1, 2, 3, 5, 4, 6, 7, 9, 8, 10, 12, 11, 14, 13, 15/) ! swap Hs on monomer B
+           permutation(:,4) = (/1, 3, 2, 5, 4, 7, 6, 9, 8, 10, 14, 13, 12, 11, 15/) ! swap Hs on both monomers
+           permutation(:,5) = (/1, 8, 9, 6, 7, 4, 5, 2, 3, 15, 11, 13, 12, 14, 10/) ! swap monomers A and B
+           permutation(:,6) = (/1, 9, 8, 6, 7, 5, 4, 2, 3, 15, 12, 14, 11, 13, 10/) ! swap monomers and Hs on monomer A
+           permutation(:,7) = (/1, 8, 9, 7, 6, 4, 5, 3, 2, 15, 13, 11, 14, 12, 10/) ! swap monomers and Hs on monomer B
+           permutation(:,8) = (/1, 9, 8, 7, 6, 5, 4, 3, 2, 15, 14, 12, 13, 11, 10/) ! swap monomers and Hs on both monomers
+        end if
+
 
         allocate(theta(size(main_teach_sparse%theta,1)))
         theta = 0.0_dp

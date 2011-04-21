@@ -683,7 +683,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
     
   call system_timer('IPModel_GAP_Calc gp_predict')
   select case(trim(this%coordinates))
-  case('water_monomer','hf_dimer')
+  case('water_monomer','hf_dimer', 'water_dimer')
      do i = 1, size(vec,2)
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))
@@ -699,7 +699,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         enddo
      endif
-  case('water_dimer')
+  case('water_dimer NOT WORKING')
      do i = 1, size(vec,2)
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))

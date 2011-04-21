@@ -199,7 +199,6 @@ contains
        this%species_Z = 8
        this%nn = this%nn / 6
        this%ne = this%n_ener
-
        this%n = this%n_force
     case default
        allocate(this%species_Z(this%n_species))
@@ -454,7 +453,8 @@ contains
                 li = ui + 1
                 ui = ui + 18
                 this%xd(:,li:ui) = transpose(reshape(dvec(:,:,:,1), (/18,d/)))
-                this%ydf(li:ui) = -reshape(f(:,(/water_dimer_index(:,1),water_dimer_index(:,2)/)),(/18/))
+                !this%ydf(li:ui) = -reshape(f(:,(/water_dimer_index(:,1),water_dimer_index(:,2)/)),(/18/))
+                this%ydf(li:ui) = -reshape(f(:,:),(/18/))                
                 this%xdf(li:ui) = w_con
                 this%ldf(li:ui) = (/(i, i=li,ui)/)
                 this%target_type(this%n_ener+li:this%n_ener+ui) = 2
