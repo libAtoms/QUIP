@@ -1,104 +1,224 @@
 Index: pw_grids.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/pw_grids.F,v
-retrieving revision 1.115
-diff -u -r1.115 pw_grids.F
---- pw_grids.F	31 Dec 2010 16:03:59 -0000	1.115
-+++ pw_grids.F	2 Feb 2011 18:29:53 -0000
-@@ -807,7 +807,7 @@
-        CASE DEFAULT
-           CPPrecondition(.FALSE.,cp_failure_level,routineP,error,failure)
-        END SELECT
--       
-+
-        !..create group for real space distribution
-        CALL mp_cart_create ( pw_grid % para % group, 2, &
-             pw_grid % para % rs_dims, &
-@@ -1111,9 +1111,14 @@
-                                                 j1, j2
-     INTEGER, ALLOCATABLE, DIMENSION(:)       :: cindex, icol, irow, rindex
-     LOGICAL                                  :: failure
-+!NB load balance
-+    INTEGER                                  :: im, ic, jc, ii, jj
- 
- !------------------------------------------------------------------------------
- 
-+#ifdef ORIGINAL_RAY_DISTRIBUTION
-+!NB original distribution, can have bad load balance in cp_ddapc_apply_CD which
-+!NB uses spherical cutoff even though overall grid is full and block distributed
-     failure = .FALSE.
- 
-     i1 = SIZE ( yz_mask, 1 )
-@@ -1154,6 +1159,72 @@
-     DEALLOCATE ( irow, rindex, icol, cindex, STAT = ierr )
-     CPPrecondition(ierr == 0,cp_failure_level,routineP,error,failure)
- 
-+#else
-+!NB spiral out from origin, so that even if overall grid is full and
-+!NB block distributed, spherical cutoff still leads to good load
-+!NB balance in cp_ddapc_apply_CD
-+
-+    i1 = SIZE ( yz_mask, 1 )
-+    i2 = SIZE ( yz_mask, 2 )
-+    yz_index = 0
-+
-+   icount = 1
-+   ic=i1/2
-+   jc=i2/2
-+   ii=ic
-+   jj=jc
-+   if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+      if (yz_mask(ii,jj) /= 0) then
-+	 yz_index(1,icount) = ii
-+	 yz_index(2,icount) = jj
-+	 icount = icount + 1
-+      endif
-+   endif
-+   do im=1, max(ic+1,jc+1)
-+      ii = ic-im
-+      do jj=jc-im,jc+im
-+	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+	    if (yz_mask(ii,jj) /= 0) then
-+	       yz_index(1,icount) = ii
-+	       yz_index(2,icount) = jj
-+	       icount = icount + 1
-+	    endif
-+	 endif
-+      end do
-+      ii = ic+im
-+      do jj=jc-im,jc+im
-+	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+	    if (yz_mask(ii,jj) /= 0) then
-+	       yz_index(1,icount) = ii
-+	       yz_index(2,icount) = jj
-+	       icount = icount + 1
-+	    endif
-+	 endif
-+      end do
-+      jj = jc-im
-+      do ii=ic-im+1,ic+im-1
-+	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+	    if (yz_mask(ii,jj) /= 0) then
-+	       yz_index(1,icount) = ii
-+	       yz_index(2,icount) = jj
-+	       icount = icount + 1
-+	    endif
-+	 endif
-+      end do
-+      jj = jc+im
-+      do ii=ic-im+1,ic+im-1
-+	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
-+	    if (yz_mask(ii,jj) /= 0) then
-+	       yz_index(1,icount) = ii
-+	       yz_index(2,icount) = jj
-+	       icount = icount + 1
-+	    endif
-+	 endif
-+      end do
-+   end do
-+
-+#endif
-+
-   END SUBROUTINE order_mask
- 
- ! *****************************************************************************
+retrieving revision 1.118
+diff -b -c -3 -r1.118 pw_grids.F
+*** pw_grids.F	25 Feb 2011 12:48:36 -0000	1.118
+--- pw_grids.F	22 Apr 2011 18:01:42 -0000
+***************
+*** 1112,1120 ****
+--- 1112,1125 ----
+                                                  j1, j2
+      INTEGER, ALLOCATABLE, DIMENSION(:)       :: cindex, icol, irow, rindex
+      LOGICAL                                  :: failure
++ !NB load balance
++     INTEGER                                  :: im, ic, jc, ii, jj
+  
+  !------------------------------------------------------------------------------
+  
++ #ifdef ORIGINAL_RAY_DISTRIBUTION
++ !NB original distribution, can have bad load balance in cp_ddapc_apply_CD which
++ !NB uses spherical cutoff even though overall grid is full and block distributed
+      failure = .FALSE.
+  
+      i1 = SIZE ( yz_mask, 1 )
+***************
+*** 1155,1160 ****
+--- 1160,1231 ----
+      DEALLOCATE ( irow, rindex, icol, cindex, STAT = ierr )
+      CPPrecondition(ierr == 0,cp_failure_level,routineP,error,failure)
+  
++ #else
++ !NB spiral out from origin, so that even if overall grid is full and
++ !NB block distributed, spherical cutoff still leads to good load
++ !NB balance in cp_ddapc_apply_CD
++ 
++     i1 = SIZE ( yz_mask, 1 )
++     i2 = SIZE ( yz_mask, 2 )
++     yz_index = 0
++ 
++    icount = 1
++    ic=i1/2
++    jc=i2/2
++    ii=ic
++    jj=jc
++    if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
++       if (yz_mask(ii,jj) /= 0) then
++ 	 yz_index(1,icount) = ii
++ 	 yz_index(2,icount) = jj
++ 	 icount = icount + 1
++       endif
++    endif
++    do im=1, max(ic+1,jc+1)
++       ii = ic-im
++       do jj=jc-im,jc+im
++ 	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
++ 	    if (yz_mask(ii,jj) /= 0) then
++ 	       yz_index(1,icount) = ii
++ 	       yz_index(2,icount) = jj
++ 	       icount = icount + 1
++ 	    endif
++ 	 endif
++       end do
++       ii = ic+im
++       do jj=jc-im,jc+im
++ 	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
++ 	    if (yz_mask(ii,jj) /= 0) then
++ 	       yz_index(1,icount) = ii
++ 	       yz_index(2,icount) = jj
++ 	       icount = icount + 1
++ 	    endif
++ 	 endif
++       end do
++       jj = jc-im
++       do ii=ic-im+1,ic+im-1
++ 	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
++ 	    if (yz_mask(ii,jj) /= 0) then
++ 	       yz_index(1,icount) = ii
++ 	       yz_index(2,icount) = jj
++ 	       icount = icount + 1
++ 	    endif
++ 	 endif
++       end do
++       jj = jc+im
++       do ii=ic-im+1,ic+im-1
++ 	 if (ii > 0 .and. ii <= i1 .and. jj > 0 .and. jj <= i2) then
++ 	    if (yz_mask(ii,jj) /= 0) then
++ 	       yz_index(1,icount) = ii
++ 	       yz_index(2,icount) = jj
++ 	       icount = icount + 1
++ 	    endif
++ 	 endif
++       end do
++    end do
++ 
++ #endif
++ 
+    END SUBROUTINE order_mask
+  
+  ! *****************************************************************************
+Index: ewald_spline_util.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
+retrieving revision 1.28
+diff -b -c -3 -r1.28 ewald_spline_util.F
+*** ewald_spline_util.F	19 Apr 2011 06:28:35 -0000	1.28
+--- ewald_spline_util.F	22 Apr 2011 18:01:42 -0000
+***************
+*** 152,159 ****
+                                                  Term, xs1, xs2, xs3
+      TYPE(pw_spline_precond_type), POINTER    :: precond
+      TYPE(section_vals_type), POINTER         :: interp_section
+! 
+! !NB parallelization
+  
+      CALL timeset(routineN,handle)
+      n1  = grid%pw_grid%npts(1)
+--- 152,163 ----
+                                                  Term, xs1, xs2, xs3
+      TYPE(pw_spline_precond_type), POINTER    :: precond
+      TYPE(section_vals_type), POINTER         :: interp_section
+!     !NB pull expensive Cos() out of inner looop
+!     REAL(KIND=dp), allocatable               :: cos_gx(:,:), cos_gy(:,:), cos_gz(:,:)
+!     REAL(KIND=dp), allocatable               :: sin_gx(:,:), sin_gy(:,:), sin_gz(:,:)
+!     REAL(KIND=dp)                            :: cos_gy_gz, sin_gy_gz
+!     INTEGER                                  :: iLg, stat
+!     LOGICAL                                  :: failure
+  
+      CALL timeset(routineN,handle)
+      n1  = grid%pw_grid%npts(1)
+***************
+*** 177,182 ****
+--- 181,222 ----
+      ! Used the full symmetry to reduce the evaluation to 1/64th
+      !NB parallelization
+      iii = 0
++      !NB allocate temporaries for Cos refactoring
++      ALLOCATE(cos_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      ALLOCATE(sin_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      ALLOCATE(cos_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      ALLOCATE(sin_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      ALLOCATE(cos_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      ALLOCATE(sin_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
++      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++      !NB precalculate Cos(gx*xs1) etc for Cos refactoring
++      DO k=gbo(1,3), gbo(2,3)
++        my_k  = k-gbo(1,3)
++        xs3   = REAL(my_k,dp)*dr3
++        IF (k > nzlim ) CYCLE
++        cos_gz(1:size(Lg),k) = Cos(gz(1:size(Lg))*xs3)
++        sin_gz(1:size(Lg),k) = Sin(gz(1:size(Lg))*xs3)
++      END DO ! k
++      xs2   = 0.0_dp
++      DO j  =  gbo(1,2), gbo(2,2)
++        IF (j > nylim ) CYCLE
++        cos_gy(1:size(Lg),j) = Cos(gy(1:size(Lg))*xs2)
++        sin_gy(1:size(Lg),j) = Sin(gy(1:size(Lg))*xs2)
++        xs2 = xs2 + dr2
++      END DO ! j
++      xs1   = 0.0_dp
++      DO i  =  gbo(1,1), gbo(2,1)
++        IF (i > nxlim ) CYCLE
++        cos_gx(1:size(Lg),i) = Cos(gx(1:size(Lg))*xs1)
++        sin_gx(1:size(Lg),i) = Sin(gx(1:size(Lg))*xs1)
++        xs1 = xs1 + dr1
++     END DO ! i
++ 
+      LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+         my_k  = k-gbo(1,3)
+         xs3   = REAL(my_k,dp)*dr3
+***************
+*** 193,207 ****
+                 Term  = 0.0_dp
+                 ! Sum over k vectors
+                 DO kg = 1, SIZE(Lg)
+!                   Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
+                 END DO
+                 grid%cr3d(i,j,k) = Term
+               ENDIF
+               xs1 = xs1 + dr1
+!           END DO
+            xs2 = xs2 + dr2
+!        END DO
+      END DO LoopOnGrid
+      !NB parallelization
+      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
+  
+--- 233,264 ----
+                 Term  = 0.0_dp
+                 ! Sum over k vectors
+                 DO kg = 1, SIZE(Lg)
+!                   !NB Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
+! 		  ! cos(A+B) = cos A cos B − sin A sin B
+! 		  cos_gy_gz = cos_gy(kg,j)*cos_gz(kg,k) - sin_gy(kg,j)*sin_gz(kg,k)
+! 		  sin_gy_gz = cos_gy(kg,j)*sin_gz(kg,k) + sin_gy(kg,j)*cos_gz(kg,k)
+! 		  Term = Term + lg(kg)*(cos_gx(kg,i)*cos_gy_gz - sin_gx(kg,i)*sin_gy_gz)
+                 END DO
+                 grid%cr3d(i,j,k) = Term
+               ENDIF
+               xs1 = xs1 + dr1
+!           END DO ! i
+            xs2 = xs2 + dr2
+!        END DO ! j
+      END DO LoopOnGrid
++     !NB deallocate temporaries for Cos refactoring
++     DEALLOCATE(cos_gx,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(sin_gx,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(cos_gy,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(sin_gy,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(cos_gz,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     DEALLOCATE(sin_gz,stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      !NB parallelization
+      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
+  
