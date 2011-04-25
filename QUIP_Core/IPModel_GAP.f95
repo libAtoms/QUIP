@@ -699,7 +699,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         enddo
      endif
-  case('water_dimer NOT WORKING')
+  case('water_dimer NOT WORKING') ! something is wrong with the monomer-indexing business
      do i = 1, size(vec,2)
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))
