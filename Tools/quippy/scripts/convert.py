@@ -175,13 +175,6 @@ def process(at, frame):
    if opt.lattice is not None:
       at.set_lattice(opt.lattice)
 
-   # Filter parameters
-   if opt.params is not None:
-      for k in at.params.keys():
-         k = k.lower()
-         if not k in opt.params:
-            del at.params[k]
-
    # Merge from merge_config
    if opt.merge:
       try:
@@ -203,6 +196,13 @@ def process(at, frame):
 
    if opt.centre is not None:
       write_args['centre'] = eval(opt.centre)
+
+   # Filter parameters
+   if opt.params is not None:
+      for k in at.params.keys():
+         k = k.lower()
+         if not k in opt.params:
+            del at.params[k]
 
    # Rename properties and parameters
    if opt.rename is not None:
