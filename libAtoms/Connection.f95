@@ -1241,10 +1241,10 @@ contains
 	 endif
       endif
       
-      if (current_verbosity() >= PRINT_NERD) then
-         call print('get_min_max_images cell_image_na min='//min_cell_image_na//' max='//max_cell_image_na, PRINT_NERD)
-         call print('get_min_max_images cell_image_nb min='//min_cell_image_nb//' max='//max_cell_image_nb, PRINT_NERD)
-         call print('get_min_max_images cell_image_nc min='//min_cell_image_nc//' max='//max_cell_image_nc, PRINT_NERD)
+      if (current_verbosity() >= PRINT_ANAL) then
+         call print('get_min_max_images cell_image_na min='//min_cell_image_na//' max='//max_cell_image_na, PRINT_ANAL)
+         call print('get_min_max_images cell_image_nb min='//min_cell_image_nb//' max='//max_cell_image_nb, PRINT_ANAL)
+         call print('get_min_max_images cell_image_nc min='//min_cell_image_nc//' max='//max_cell_image_nc, PRINT_ANAL)
       end if
 
    end subroutine get_min_max_images

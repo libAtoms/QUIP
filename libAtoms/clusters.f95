@@ -523,8 +523,9 @@ contains
     call print('doing cluster_fix_termination_clash', PRINT_NERD)
 
     !Loop over atoms in the cluster
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)     ! index of atom in the cluster
       ishift = cluster_info%int(2:4,n)
       call print('cluster_fix_termination_clash: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
@@ -604,7 +605,6 @@ contains
 
       end do ! m
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_fix_termination_clash: Finished checking',PRINT_NERD)
@@ -635,8 +635,9 @@ contains
       return
     endif
 
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       if (atom_res_number(i) < 0) cycle
@@ -662,8 +663,6 @@ contains
 	call print('cluster_keep_whole_residues:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
 
       end do ! m
-
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_keep_whole_residues: Finished checking',PRINT_NERD)
@@ -671,6 +670,212 @@ contains
     call print(cluster_info, PRINT_NERD)
 
   end function cluster_keep_whole_residues
+
+  !% keep each whole proline (using atom_subgroup_number(:) and atom_res_number(:) property) if any bit of it is already included
+  function cluster_keep_whole_prolines(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_keep_whole_prolines) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_keep_whole_prolines !% if true, keep_whole_prolines was specified by user, not just a default value
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+    integer, pointer :: atom_res_number(:), atom_subgroup_number(:)
+    logical :: is_proline
+
+    call print('doing cluster_keep_whole_prolines', PRINT_NERD)
+
+    cluster_changed = .false.
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number) .or. .not. assign_pointer(this, 'atom_subgroup_number', atom_subgroup_number)) then
+      if (present_keep_whole_prolines) then
+	call print("WARNING: cluster_keep_whole_prolines got keep_whole_prolines requested explicitly, but no proper atom_res_number or atom_subgroup_number properties available", PRINT_ALWAYS)
+      endif
+      return
+    endif
+
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (atom_res_number(i) < 0) cycle
+      call print('cluster_keep_whole_prolines: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // &
+                 '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+	is_proline = .false.
+
+	if (atom_res_number(i) /= atom_res_number(j)) then
+	  call print("cluster_keep_whole_prolines:   j = "//j//" ["//jshift//"] has different res number " // atom_res_number(j), PRINT_ANAL)
+	  cycle
+	endif
+	if (atom_subgroup_number(i) <= -10 .or. atom_subgroup_number(j) <= -10) then
+	  call print("cluster_keep_whole_prolines:   j = "//j//" ["//jshift//"] has proline subgroup number " // atom_subgroup_number(j), PRINT_ANAL)
+	  is_proline = .true.
+	endif
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print("cluster_keep_whole_prolines:   j = "//j//" ["//jshift//"] is in cluster",PRINT_ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_prolines:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
+	  cycle
+	end if
+
+	if (is_proline) then
+	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"subgp_num "/) )
+	  cluster_changed = .true.
+	  call print('cluster_keep_whole_prolines:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+	endif
+
+      end do ! m
+
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_prolines: Finished checking',PRINT_NERD)
+    call print("cluster_keep_whole_prolines: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+
+  end function cluster_keep_whole_prolines
+
+  !% keep each proline sidechain and directly connected bit of backbone (using atom_subgroup_number and atom_res_number(:) property) if any bit of it is already included
+  function cluster_keep_whole_proline_sidechains(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_keep_whole_proline_sidechains) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_keep_whole_proline_sidechains !% if true, keep_whole_proline_sidechains was specified by user, not just a default value
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+    integer, pointer :: atom_res_number(:), atom_subgroup_number(:)
+    logical :: is_proline
+
+    call print('doing cluster_keep_whole_proline_sidechains', PRINT_NERD)
+
+    cluster_changed = .false.
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number) .or. .not. assign_pointer(this, 'atom_subgroup_number', atom_subgroup_number)) then
+      if (present_keep_whole_proline_sidechains) then
+	call print("WARNING: cluster_keep_whole_proline_sidechains got keep_whole_proline_sidechains requested explicitly, but no proper atom_res_number or atom_subgroup_number properties available", PRINT_ALWAYS)
+      endif
+      return
+    endif
+
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (atom_res_number(i) < 0) cycle
+      call print('cluster_keep_whole_proline_sidechains: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // &
+                 '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+	is_proline = .false.
+
+	if (atom_res_number(i) /= atom_res_number(j)) then
+	  call print("cluster_keep_whole_proline_sidechains:   j = "//j//" ["//jshift//"] has different res number " // atom_res_number(j), PRINT_ANAL)
+	  cycle
+	endif
+	if (atom_subgroup_number(i) == -1000 .or. atom_subgroup_number(j) == -1000) then
+	  call print("cluster_keep_proline_sidechains:   i or j = "//j//" ["//jshift//"] has proline sidechain subgroup number " // atom_subgroup_number(j), PRINT_ANAL)
+	  is_proline = .true.
+	endif
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print("cluster_keep_proline_sidechains:   j = "//j//" ["//jshift//"] is in cluster",PRINT_ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_proline_sidechains:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
+	  cycle
+	end if
+
+	if (is_proline) then
+	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"subgp_num "/) )
+	  cluster_changed = .true.
+	  call print('cluster_keep_whole_proline_sidechains:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+	endif
+
+      end do ! m
+
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_proline_sidechains: Finished checking',PRINT_NERD)
+    call print("cluster_keep_whole_proline_sidechains: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+
+  end function cluster_keep_whole_proline_sidechains
+
+  !% keep each whole subgroup (using atom_subgroup_number and atom_res_number(:) property) if any bit of it is already included
+  function cluster_keep_whole_subgroups(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_keep_whole_subgroups) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_keep_whole_subgroups !% if true, keep_whole_subgroups was specified by user, not just a default value
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+    integer, pointer :: atom_res_number(:), atom_subgroup_number(:)
+
+    call print('doing cluster_keep_whole_subgroups', PRINT_NERD)
+
+    cluster_changed = .false.
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number) .or. .not. assign_pointer(this, 'atom_subgroup_number', atom_subgroup_number)) then
+      if (present_keep_whole_subgroups) then
+	call print("WARNING: cluster_keep_whole_subgroups got keep_whole_subgroups requested explicitly, but no proper atom_res_number or atom_subgroup_number properties available", PRINT_ALWAYS)
+      endif
+      return
+    endif
+
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (atom_res_number(i) < 0) cycle
+      if (atom_subgroup_number(i) == 0) cycle
+      call print('cluster_keep_whole_subgroups: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+	call print("cluster_keep_whole_subgroups:    m = " // m //" j = " // j, PRINT_ANAL)
+	if (atom_res_number(j) < 0) cycle
+	if (atom_subgroup_number(j) == 0) cycle
+
+	if (atom_res_number(i) /= atom_res_number(j)) then
+	  call print("cluster_keep_whole_subgroups:   j = "//j//" ["//jshift//"] has different res number " // atom_res_number(j), PRINT_ANAL)
+	  cycle
+	endif
+	if (atom_subgroup_number(i) /= atom_subgroup_number(j)) then
+	  call print("cluster_keep_whole_subgroups:   j = "//j//" ["//jshift//"] has different subgroup number " // atom_subgroup_number(j), PRINT_ANAL)
+	  cycle
+	endif
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print("cluster_keep_whole_subgroups:   j = "//j//" ["//jshift//"] is in cluster",PRINT_ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_subgroups:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
+	  cycle
+	end if
+
+	call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"subgp_num "/) )
+	cluster_changed = .true.
+	call print('cluster_keep_whole_subgroups:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+
+      end do ! m
+
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_subgroups: Finished checking',PRINT_NERD)
+    call print("cluster_keep_whole_subgroups: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+
+  end function cluster_keep_whole_subgroups
 
   !% keep whole silica tetrahedra -- that is, for each silicon atom, keep all it's oxygen nearest neighbours
   function cluster_keep_whole_silica_tetrahedra(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
@@ -686,8 +891,9 @@ contains
     call print('doing cluster_keep_whole_silica_tetrahedra', PRINT_NERD)
 
     cluster_changed = .false.
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       if (this%z(i) /= 14) then
@@ -719,7 +925,6 @@ contains
 
       end do ! m
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_keep_whole_silica_tetrahedra: Finished checking',PRINT_NERD)
@@ -746,8 +951,9 @@ contains
     cluster_changed = .false.
 
     ! loop over each atom in the cluster already
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
@@ -787,7 +993,6 @@ contains
 	endif
       end do ! m
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_reduce_n_cut_bonds: Finished checking',PRINT_NERD)
@@ -812,8 +1017,9 @@ contains
     cluster_changed = .false.
 
     ! loop over each atom in the cluster already
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       call print('cluster_protect_X_H_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
@@ -837,7 +1043,6 @@ contains
 	endif
       end do ! m
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_protect_X_H_bonds: Finished checking',PRINT_NERD)
@@ -862,8 +1067,9 @@ contains
     cluster_changed = .false.
 
     ! loop over each atom in the cluster already
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       call print('cluster_keep_whole_molecules: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
@@ -885,7 +1091,6 @@ contains
 	call print('cluster_keep_whole_molecules:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
       end do ! m
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_keep_whole_molecules: Finished checking',PRINT_NERD)
@@ -997,8 +1202,9 @@ contains
       return
     endif
 
-    n = 1
-    do while (n <= cluster_info%N)
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
 
@@ -1037,13 +1243,154 @@ contains
 	endif ! valence defined
       end if !  atom_res_number(i) >= 0
 
-      n = n + 1
     end do ! while (n <= cluster_info%N)
 
     call print('cluster_protect_double_bonds: Finished checking',PRINT_NERD)
     call print("cluster_protect_double_bonds: cluster list:", PRINT_NERD)
     call print(cluster_info, PRINT_NERD)
   end function cluster_protect_double_bonds
+
+  !% protect bond between R-C ... -N-R
+  !%                        |      |
+  !%                        O      R (usually H or C (proline))
+  function cluster_protect_peptide_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_protect_peptide_bonds) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_protect_peptide_bonds !% if true, protect_peptide_bonds was specified by user, not just a default value
+    logical :: cluster_changed
+
+    integer :: n, i, ishift(3), ji, j, ki, k, jshift(3)
+    integer, pointer :: atom_res_number(:)
+    integer :: found_other_j, found_other_jshift(3)
+    integer :: this_neighbour_Z, other_neighbour_Z, other_Z
+    logical :: found_this_neighbour, found_other_neighbour
+
+    call print('doing cluster_protect_peptide_bonds', PRINT_NERD)
+    cluster_changed = .false.
+
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number)) then
+      if (present_protect_peptide_bonds) then
+	call print("WARNING: cluster_protect_peptide_bonds got protect_peptide_bonds requested explicitly, but no proper atom_res_number property available", PRINT_ALWAYS)
+      endif
+      return
+    endif
+
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+
+      if (this%Z(i) /= 0 .and. atom_res_number(i) >= 0) then
+
+	call print("cluster_protect_peptide_bonds: i = "//i//" Z(i) " // this%Z(i), PRINT_ANAL)
+
+	! peptide bond is C-N
+	!                 |
+	!                 O
+	if (this%Z(i) == 6) then
+	  other_Z = 7
+	  this_neighbour_Z = 8
+	  other_neighbour_Z = 0
+	else if (this%Z(i) == 7) then
+	  other_Z = 6
+	  this_neighbour_Z = 0
+	  other_neighbour_Z = 8
+	else
+	  call print("cluster_protect_peptide_bonds:   i = "//i//" not C or N",PRINT_ANAL)
+	  cycle
+	endif
+
+	found_other_j = 0
+	found_this_neighbour = (this_neighbour_Z == 0)
+	found_other_neighbour = (other_neighbour_Z == 0)
+
+	call print("cluster_protect_peptide_bonds: other_Z " // other_Z // " this_neighbour_Z " // this_neighbour_Z // " other_neighbour_z " // other_neighbour_Z, PRINT_ANAL)
+	call print("cluster_protect_peptide_bonds: found_this_neighbour " // found_this_neighbour // " found_other_neighbour " // found_other_neighbour, PRINT_ANAL)
+
+	! must have 3 neighbours
+	if (atoms_n_neighbours(this, i, alt_connect=use_connect) /= 3) then
+	  call print("cluster_protect_peptide_bonds:   i = "//i//" doesn't have 3 neighbours",PRINT_ANAL)
+	  cycle
+	endif
+	do ji=1, atoms_n_neighbours(this, i, alt_connect=use_connect) ! look for correct neighbour
+	  j=atoms_neighbour(this, i, ji, shift=jshift, alt_connect=use_connect)
+	  call print("cluster_protect_peptide_bonds:   j = " //j//" Z(j) " // this%Z(j), PRINT_ANAL)
+	  ! only nearest neighbours count, usually
+	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, ji, alt_connect=use_connect))) then
+	    call print("cluster_protect_peptide_bonds:   neighbour j = "//j//" not nearest neighbour",PRINT_ANAL)
+	    cycle
+	  end if
+	  if (this%Z(j) == this_neighbour_Z .and. atoms_n_neighbours(this, j) == 1) then ! neighbour has right Z and coordination
+	    found_this_neighbour = .true.
+	    call print("cluster_protect_peptide_bonds:   neighbour j = "//j//" is neighbor (O) we're looking for",PRINT_ANAL)
+	  endif
+	  if (this%Z(j) == other_Z) then ! found other
+	    ! if j is already in, this isn't a peptide bond in need of protection from being cut
+	    if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask) /= 0) then
+	      call print("cluster_protect_peptide_bonds:   other_Z neighbour j = "//j//" already in",PRINT_ANAL)
+	      cycle
+	    endif
+	    ! save info on other
+	    call print("cluster_protect_peptide_bonds: found_other_j " // j // " Z(found_other_j) " // this%Z(j), PRINT_ANAL)
+	    found_other_j = j
+	    found_other_jshift = jshift
+
+	    ! if (.not. found_this_neighbour .or. found_other_j == 0) then ! some part of motif missing
+	      ! call print("cluster_protect_peptide_bonds:   failed to find this_neighbour_Z or other_j",PRINT_ANAL)
+	      ! cycle
+	    ! endif
+
+	    ! other must have 3 neighbours
+	    if (atoms_n_neighbours(this, found_other_j, alt_connect=use_connect) /= 3) then
+	      call print("cluster_protect_peptide_bonds:   found_other_j = "//found_other_j//" doesn't have 3 neighbours", PRINT_ANAL)
+	      cycle
+	    endif
+	    ! perhaps we should require that other be in a different residue, but not doing that now
+	    ! if (atoms_res_number(i) == atom_res_number(found_other_j)) then
+	      ! call print("cluster_protect_peptide_bonds:   i and found_other_j are in the same residue", PRINT_ANAL)
+	      ! cycle
+	    ! endif
+
+	    ! check neighbours of other
+	    do ki=1, atoms_n_neighbours(this, found_other_j, alt_connect=use_connect)
+	      k=atoms_neighbour(this, found_other_j, ki, alt_connect=use_connect)
+	      ! only nearest neighbours count
+	      if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,found_other_j, ki, alt_connect=use_connect))) then
+		call print("cluster_protect_peptide_bonds:   found_other_j's neighbour k = "//k//" not nearest neighbour",PRINT_ANAL)
+		cycle
+	      end if
+
+	      if (this%Z(k) == other_neighbour_Z .and. atoms_n_neighbours(this, k) == 1) then ! neighbour has right Z and coordination
+		found_other_neighbour = .true.
+		call print("cluster_protect_peptide_bonds:   neighbour k = "//k//" is neighbor (O) we're looking for",PRINT_ANAL)
+	      endif
+	    end do ! ki
+
+	    ! some part of motif is missing
+	    if (.not. found_other_neighbour) then
+	      call print("cluster_protect_peptide_bonds:   couldn't find other_neighbour",PRINT_ANAL)
+	      cycle
+	    endif
+
+	    call append(cluster_info, (/ found_other_j, ishift+found_other_jshift, this%Z(found_other_j), 0 /), &
+			(/ this%pos(:,found_other_j), 1.0_dp /), (/"pep_bond  " /) )
+	    cluster_changed = .true.
+	    call print('cluster_protect_peptide_bonds:  Added atom ' //found_other_j//' ['//(ishift+found_other_jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+	  endif ! Z(j) == other_Z
+	end do ! ji
+
+      end if ! Z(i) /= 0 .and. atom_res_number(i) /= 0
+
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_protect_peptide_bonds: Finished checking',PRINT_NERD)
+    call print("cluster_protect_peptide_bonds: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+  end function cluster_protect_peptide_bonds
 
   subroutine create_cluster_simple(at, args_str, cluster, mark_name, error)
      type(Atoms), intent(inout) :: at
@@ -1358,9 +1705,12 @@ contains
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
          even_electrons, do_periodic(3), cluster_nneighb_only, &
          cluster_allow_modification, hysteretic_connect, same_lattice, &
-         fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
-         protect_X_H_bonds, protect_double_bonds, keep_whole_molecules, has_termination_rescale
-    logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
+         fix_termination_clash, keep_whole_residues, keep_whole_subgroups, keep_whole_prolines, keep_whole_proline_sidechains, &
+	 keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
+         protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
+	 combined_protein_heuristics
+    logical :: keep_whole_residues_has_value, keep_whole_subgroups_has_value, keep_whole_prolines_has_value, keep_whole_proline_sidechains_has_value, &
+               protect_double_bonds_has_value, protect_peptide_bonds_has_value, keep_whole_molecules_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale, termination_clash_factor
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
     integer :: i, j, jj, first_active, old_n, n_cluster
@@ -1410,8 +1760,16 @@ contains
       help_string="Don't modify cluster cell vectors from incoming cell vectors")
     call param_register(params, 'fix_termination_clash','T', fix_termination_clash,&
       help_string="Apply termination clash (terimnation H too close together) heureistic")
+    call param_register(params, 'combined_protein_heuristics','F', combined_protein_heuristics, &
+      help_string="Apply heuristics for proteins: overrides keep_whole_molecules=F, keep_whole_residues=F, keep_whole_subgroups=T, keep_whole_prolines=T, keep_whole_proline_sidechains=F, protect_double_bonds=F, protect_peptide_bonds=T")
     call param_register(params, 'keep_whole_residues','T', keep_whole_residues, has_value_target=keep_whole_residues_has_value,&
       help_string="Apply heuristic keeping identified residues whole")
+    call param_register(params, 'keep_whole_prolines','F', keep_whole_prolines, has_value_target=keep_whole_prolines_has_value,&
+      help_string="Apply heuristic keeping identified prolines whole")
+    call param_register(params, 'keep_whole_proline_sidechains','F', keep_whole_proline_sidechains, has_value_target=keep_whole_proline_sidechains_has_value,&
+      help_string="Apply heuristic keeping identified prolines sidechain+directly connected backbone part whole")
+    call param_register(params, 'keep_whole_subgroups','F', keep_whole_subgroups, has_value_target=keep_whole_subgroups_has_value,&
+      help_string="Apply heuristic keeping identified subgroups within a residue whole")
     call param_register(params, 'keep_whole_silica_tetrahedra','F', keep_whole_silica_tetrahedra,&
       help_string="Apply heureistic keeping SiO2 tetrahedra whole")
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds,&
@@ -1420,7 +1778,9 @@ contains
       help_string="Apply heuristic protecting X-H bonds - no point H passivating bonds with an H")
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, has_value_target=protect_double_bonds_has_value,&
       help_string="Apply heuristic protecting double bonds from being cut (based one some heuristic idea of what's a double bond")
-    call param_register(params, 'keep_whole_molecules','F', keep_whole_molecules,&
+    call param_register(params, 'protect_peptide_bonds','F', protect_peptide_bonds, has_value_target=protect_peptide_bonds_has_value,&
+      help_string="Apply heuristic protecting peptide bonds from being cut (RO-C...N-RR)")
+    call param_register(params, 'keep_whole_molecules','F', keep_whole_molecules, has_value_target=keep_whole_molecules_has_value, &
       help_string="Apply heuristic keeping identified molecules (i.e. contiguous bonded groups of atoms) whole")
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_value_target=has_termination_rescale,&
       help_string="rescale factor for X-H passivation bonds")
@@ -1433,6 +1793,29 @@ contains
          RAISE_ERROR("create_cluster_info_from_mark failed to parse args_str='"//trim(args_str)//"'", error)
     endif
     call finalise(params)
+
+    if (combined_protein_heuristics) then
+      if (keep_whole_molecules_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding keep_whole_molecules")
+      if (keep_whole_residues_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding keep_whole_residues")
+      if (keep_whole_subgroups_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding keep_whole_subgroups")
+      if (keep_whole_prolines_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding keep_whole_prolines")
+      if (keep_whole_proline_sidechains_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding keep_whole_proline_sidechains")
+      if (protect_double_bonds_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding protect_double_bonds_has_value")
+      if (protect_peptide_bonds_has_value) call print("WARNING: create_cluster_info_from_mark got combined_protein_heuristics, overriding protect_peptide_bonds_has_value")
+      keep_whole_molecules = .false.
+      keep_whole_molecules_has_value = .true.
+      keep_whole_residues = .false.
+      keep_whole_residues_has_value = .true.
+      keep_whole_subgroups = .true.
+      keep_whole_subgroups_has_value = .true.
+      keep_whole_prolines = .true.
+      keep_whole_prolines_has_value = .true.
+      keep_whole_proline_sidechains = .true.
+      keep_whole_proline_sidechains_has_value = .true.
+      protect_double_bonds = .false.
+      protect_peptide_bonds = .true.
+      protect_peptide_bonds_has_value = .true.
+    endif
 
     do_periodic = (/periodic_x,periodic_y,periodic_z/)
 
@@ -1636,11 +2019,24 @@ contains
        do while (cluster_changed) 
           cluster_changed = .false.
           call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
+               ' keep_whole_prolines ' // keep_whole_prolines // &
+               ' keep_whole_proline_sidechains ' // keep_whole_proline_sidechains // &
+               ' keep_whole_subgroups ' // keep_whole_subgroups // &
                ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
                ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
                ' protect_X_H_bonds ' // protect_X_H_bonds // &
                ' protect_double_bonds ' // protect_double_bonds // &
+               ' protect_peptide_bonds ' // protect_peptide_bonds // &
                ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=PRINT_NERD)
+          if (keep_whole_proline_sidechains) then
+             cluster_changed = cluster_changed .or. cluster_keep_whole_proline_sidechains(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_proline_sidechains_has_value)
+          endif
+          if (keep_whole_prolines) then
+             cluster_changed = cluster_changed .or. cluster_keep_whole_prolines(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_prolines_has_value)
+          endif
+          if (keep_whole_subgroups) then
+             cluster_changed = cluster_changed .or. cluster_keep_whole_subgroups(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_subgroups_has_value)
+          endif
           if (keep_whole_residues) then
              cluster_changed = cluster_changed .or. cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)
           endif
@@ -1655,6 +2051,9 @@ contains
           endif
           if (protect_double_bonds) then
              cluster_changed = cluster_changed .or. cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)
+          endif
+          if (protect_peptide_bonds) then
+             cluster_changed = cluster_changed .or. cluster_protect_peptide_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_peptide_bonds_has_value)
           endif
           if (terminate .or. fix_termination_clash) then
              cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, termination_clash_factor)
