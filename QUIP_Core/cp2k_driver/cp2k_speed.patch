@@ -222,3 +222,282 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
       !NB parallelization
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
+Index: ../src/cp_ddapc_methods.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
+retrieving revision 1.43
+diff -b -c -3 -r1.43 cp_ddapc_methods.F
+*** cp_ddapc_methods.F	19 Apr 2011 06:28:35 -0000	1.43
+--- cp_ddapc_methods.F	28 Apr 2011 21:55:12 -0000
+***************
+*** 200,208 ****
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+!     REAL(KIND=dp)                            :: g2, gcut2, rvec1(3), &
+!                                                 rvec2(3), rvec_diff(3), tmp
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
+  
+      failure = .FALSE.
+  
+--- 200,209 ----
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+!     REAL(KIND=dp)                            :: g2, gcut2, tmp
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
++     !NB precalculate as many things outside of the innermost loop as possible, in particular w(ig)*gfunc(ig,igauus1)*gfunc(ig,igauss2)
++     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: gfunc_sq(:,:,:)
+  
+      failure = .FALSE.
+  
+***************
+*** 221,234 ****
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DO iparticle1 = 1, SIZE(particle_set)
+-           rvec1=particle_set(iparticle1)%r
+            DO iparticle2 = iparticle1, SIZE(particle_set)
+-              rvec2=particle_set(iparticle2)%r
+-              rvec_diff=rvec1-rvec2
+               DO ig = s_dim, igmax
+                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
+!                 my_Am(ig) = w(ig)*(g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
+                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
+               END DO
+               DO igauss1 = 1, SIZE(radii)
+--- 222,241 ----
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++        ALLOCATE(gfunc_sq(s_dim:igmax,SIZE(radii),SIZE(radii)),stat=stat)
++        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 
++        DO igauss1 = 1, SIZE(radii)
++ 	  DO igauss2 = 1, SIZE(radii)
++ 	     gfunc_sq(s_dim:igmax,igauss1,igauss2) = w(s_dim:igmax)*gfunc(s_dim:igmax,igauss1)*gfunc(s_dim:igmax,igauss2)
++ 	  END DO
++        END DO
++ 
+         DO iparticle1 = 1, SIZE(particle_set)
+            DO iparticle2 = iparticle1, SIZE(particle_set)
+               DO ig = s_dim, igmax
+                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
+!                 my_Am(ig) = (g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
+                               g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
+               END DO
+               DO igauss1 = 1, SIZE(radii)
+***************
+*** 237,245 ****
+                  IF (iparticle2==iparticle1) istart_g = igauss1
+                  DO igauss2 = istart_g, SIZE(radii)
+                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) = my_Am(ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+  !NB no loss of accuracy in my test cases
+  #ifdef ACCURATE_SUMS
+                     tmp = accurate_sum(my_Amw)
+--- 244,250 ----
+                  IF (iparticle2==iparticle1) istart_g = igauss1
+                  DO igauss2 = istart_g, SIZE(radii)
+                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+! 		   my_Amw(s_dim:igmax) = my_Am(s_dim:igmax)*gfunc_sq(s_dim:igmax,igauss1,igauss2)
+  !NB no loss of accuracy in my test cases
+  #ifdef ACCURATE_SUMS
+                     tmp = accurate_sum(my_Amw)
+***************
+*** 252,257 ****
+--- 257,264 ----
+               END DO
+            END DO
+         END DO
++        DEALLOCATE(gfunc_sq,stat=stat)
++        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DEALLOCATE(my_Amw,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DEALLOCATE(my_Am,stat=stat)
+***************
+*** 373,384 ****
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
+!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin, my_Amw
+!     REAL(KIND=dp), ALLOCATABLE, &
+!       DIMENSION(:, :)                        :: my_Am
+!     REAL(KIND=dp), DIMENSION(3)              :: rvec1, rvec2, rvec_diff
+! 
+! !NB temporary for precomputing expensive sin()
+  
+      failure = .FALSE.
+      CALL timeset(routineN,handle)
+--- 380,390 ----
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
+!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin
+!     !NB Use DGEMM to speed up calculation, can't do accurate_sum() anymore because dgemm does the sum over g
+!     EXTERNAL DGEMM
+!     REAL(KIND=dp), ALLOCATABLE :: lhs(:,:), rhs(:,:)
+!     INTEGER :: Nr, Np, Ng, icomp
+  
+      failure = .FALSE.
+      CALL timeset(routineN,handle)
+***************
+*** 392,470 ****
+            IF (g2 > gcut2) EXIT
+            igmax  = ig
+         ENDDO
+-        ALLOCATE(my_Am(3,s_dim:igmax),stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-        ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+  
+!        DO iparticle1 = 1, SIZE(particle_set)
+!           rvec1 =  particle_set(iparticle1)%r
+!           DO iparticle2 = iparticle1, SIZE(particle_set)
+!              rvec2 =  particle_set(iparticle2)%r
+!              IF ((iparticle1 /= iparticle0).AND.(iparticle2 /= iparticle0)) CYCLE
+!              IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
+!                    factor=2.0_dp
+!              ELSEIF (iparticle1 == iparticle0) THEN
+!                    factor=1.0_dp
+!              ELSEIF (iparticle2 == iparticle0) THEN
+!                    factor=-1.0_dp
+!              END IF
+!              rvec_diff=rvec2-rvec1
+! 
+!              !NB precompute sin(g.(r1-r2)) with sin(A+B) formula - perhaps just move this into the loop?
+!              arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_cos(1:igmax-s_dim+1, iparticle1) - &
+!                                        g_dot_rvec_cos(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_sin(1:igmax-s_dim+1, iparticle1)
+!              DO ig = s_dim, igmax
+!                 my_Am(1:3,ig) = factor * w(ig) * arg1_v_sin(ig) * rho_tot_g%pw_grid%g(:,ig)
+!              END DO
+!              DO igauss1 = 1, SIZE(radii)
+!                 idim1 = (iparticle1-1)*SIZE(radii)+igauss1
+!                 istart_g = 1
+!                 IF (iparticle2==iparticle1) istart_g = igauss1
+!                 DO igauss2 = istart_g, SIZE(radii)
+!                    idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(1,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,1) = tmp
+!                    dAm (idim2,idim1,1) = tmp
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(2,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,2) = tmp
+!                    dAm (idim2,idim1,2) = tmp
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(3,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,3) = tmp
+!                    dAm (idim2,idim1,3) = tmp
+!                 END DO
+!              END DO
+!           END DO
+!        END DO
+!        DEALLOCATE(my_Amw,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(my_Am,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         !!! DEALLOCATE(arg1_v,stat=stat)
+         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+--- 398,455 ----
+            IF (g2 > gcut2) EXIT
+            igmax  = ig
+         ENDDO
+         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+  
+! ! want dAm(idim1 = (iparticle0-1)*SIZE(radii)+1:(iparticle0-1)*SIZE(radii)+size(radii),1:size(particle_set)*size(radii),1:3)
+!        iparticle1 = iparticle0
+!        Nr=SIZE(radii)
+!        Np=SIZE(particle_set)
+!        Ng=igmax-s_dim+1
+!        allocate(lhs(Nr,Ng), stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        allocate(rhs(Ng,Np*Nr), stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+! 
+! 	! fill in RHS
+!        do iparticle2=1,Np
+! !!	  IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
+! !!		factor = 2.0_dp
+! !!	  ELSEIF (iparticle1 == iparticle0) THEN
+! !!		factor = 1.0_dp
+! !!	  ELSEIF (iparticle2 == iparticle0) THEN
+! !!		factor = -1.0_dp
+! !!	  END IF
+! 	  arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:Ng, iparticle2)*g_dot_rvec_cos(1:Ng, iparticle1) - &
+! 				    g_dot_rvec_cos(1:Ng, iparticle2)*g_dot_rvec_sin(1:Ng, iparticle1)
+! 	  do igauss2=1,Nr
+! 	     !! rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = factor*arg1_v_sin(s_dim:igmax)*gfunc(s_dim:igmax,igauss2)
+! 	     rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = arg1_v_sin(s_dim:igmax)*gfunc(s_dim:igmax,igauss2)
+! 	  end do
+!        end do
+!        rhs(1:Ng,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr) = 2.0D0*rhs(1:Ng,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr)
+! 
+!        do icomp=1,3
+! 	  ! fill in LHS
+! 	  do ig=s_dim,igmax
+! 	     lhs(1:Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr)
+! 	  end do
+! 	  call DGEMM('N', 'N', Nr, Np*Nr, Ng, 1.0D0, lhs, Nr, rhs, Ng, 0.0D0, dAm((iparticle1-1)*Nr+1,1,icomp), Np*Nr)
+!        end do ! icomp
+! 
+!        if (iparticle0 > 1) then
+! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,1))
+! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,2) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,2))
+! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,3) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,3))
+!        endif
+!        if (iparticle0 < Np) then
+! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,1))
+! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,2) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,2))
+! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,3) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,3))
+!        endif
+!        DEALLOCATE(rhs,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(lhs,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         !!! DEALLOCATE(arg1_v,stat=stat)
+         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+***************
+*** 612,618 ****
+            DEALLOCATE(AmE, stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         END IF
+!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
+         IF (iw>0) THEN
+            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
+         END IF
+--- 597,603 ----
+            DEALLOCATE(AmE, stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         END IF
+!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error, improve=.false.)
+         IF (iw>0) THEN
+            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
+         END IF
