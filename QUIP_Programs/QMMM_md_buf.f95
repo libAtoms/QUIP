@@ -142,6 +142,7 @@ program qmmm_md
 
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
+  character(len=FIELD_LENGTH) :: core_create_cluster_info_args
   real(dp) :: qm_region_ctr(3), qm_core_region_ctr(3)
   real(dp) :: use_cutoff
   real(dp) :: H_extra_heat_ctr(3), H_extra_heat_r(2), H_extra_heat_velo_factor
@@ -232,10 +233,11 @@ logical :: have_silica_potential
       call param_register(params_in, 'update_QM_region_interval', '1', update_QM_region_interval, help_string="interval between updates of QM region")
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="calc args for cp2k_filepot")
       call param_register(params_in, 'evb_args_str', '', evb_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'extra_calc_args', '', extra_calc_args, help_string="Extra args for mm and qm calc(), for things like FilePot_log")
+      call param_register(params_in, 'extra_calc_args', '', extra_calc_args, help_string="Extra args for mm and qm calc(), for things like FilePot_log, and arguments for buffer create_cluster_info")
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="Filepot program.")
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="If true, carve cluster instead of doing QM/MM.  Untested")
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="If true, use cluster_create_inf() to create core, which does things like residue completing heuristics")
+      call param_register(params_in, 'core_create_cluster_info_args', '', core_create_cluster_info_args, help_string="Arguments to pass to create_cluster_info for QM core, if used by update_QM_region")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
@@ -548,9 +550,11 @@ logical :: have_silica_potential
        !(re)initialise QM region -- marks overwritten!
        if (reinitialise_qm_region .or. .not. Continue_it) then
 	  if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
-	    qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true., qm_seed_extended)
+	    qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
+	    core_create_cluster_info_args, .true., qm_seed_extended)
 	  if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
-	    qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, .true., qm_seed_core)
+	    qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
+	    core_create_cluster_info_args, .true., qm_seed_core)
 
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
@@ -828,10 +832,10 @@ call print("MAIN CALLED CALC EVB")
      !NB should we really recalculate residue labels, so heuristics that keep residues together function here?  probably
        if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, &
 	 qm_region_atom_ctr, qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, &
-	 use_create_cluster_info_for_core, .false., qm_seed_extended)
+	 use_create_cluster_info_for_core, core_create_cluster_info_args, .false., qm_seed_extended)
        if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, &
 	 qm_core_region_atom_ctr, qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, &
-	 use_create_cluster_info_for_core, .false., qm_seed_core)
+	 use_create_cluster_info_for_core, core_create_cluster_info_args, .false., qm_seed_core)
      endif
 
   !FORCE
@@ -1783,7 +1787,7 @@ contains
      enddo
    end subroutine print_cv
 
-  subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, first_time, qm_seed)
+  subroutine update_QM_region(ds_atoms, mark_postfix, qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, qm_list_filename, inner_radius, outer_radius, buffer_general, use_create_cluster_info_for_core, create_cluster_info_args, first_time, qm_seed)
     type(Atoms), intent(inout) :: ds_atoms
     character(len=*), intent(in) :: mark_postfix
     logical, intent(in) :: qm_region_pt_ctr
@@ -1792,6 +1796,7 @@ contains
     character(len=*), intent(in) :: qm_list_filename
     real(dp), intent(in) :: inner_radius, outer_radius
     logical, intent(in) :: buffer_general, use_create_cluster_info_for_core
+    character(len=*), intent(in) :: create_cluster_info_args
     logical, intent(in) :: first_time
     type(table), intent(inout) :: qm_seed
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:), cluster_mark_p(:)
@@ -1816,7 +1821,8 @@ contains
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
 	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
-	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+	 use_create_cluster_info=use_create_cluster_info_for_core,create_cluster_info_args=create_cluster_info_args,&
+	 list_changed=list_changed1, mark_postfix=trim(mark_postfix))
        if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
        if (list_changed1) then
 	  call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
@@ -1862,7 +1868,8 @@ contains
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
 	 add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true., &
-	 use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+	 use_create_cluster_info=use_create_cluster_info_for_core,create_cluster_info_args=create_cluster_info_args, &
+	 list_changed=list_changed1, mark_postfix=trim(mark_postfix))
 
         !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
         !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')

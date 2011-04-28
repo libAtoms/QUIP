@@ -351,7 +351,7 @@ contains
       call print('Potential_Simple_calc got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
       my_args_str = args_str
     else
-      call print('Potential_Simple_calc got not args_str', PRINT_VERBOSE)
+      call print('Potential_Simple_calc got no args_str', PRINT_VERBOSE)
       my_args_str = ""
     endif
 

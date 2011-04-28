@@ -47,6 +47,7 @@ module topology_module
   implicit none
   private
 
+public :: next_motif, find_motif_backbone
   !! private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
   !! private :: create_angle_list, create_dihedral_list
   !! private :: create_improper_list
@@ -202,15 +203,17 @@ contains
     integer                              :: residue_number(at%N)
     character(4)                         :: atom_name(at%N), atom_name_PDB(at%N)
     real(dp)                             :: atom_charge(at%N)
+    integer                              :: atom_subgroup(at%N)
     type(Table)                          :: residue_type, list
     logical                              :: unidentified(at%N)
     integer, allocatable, dimension(:,:) :: motif
     integer                              :: i, m, n, nres
-    character(4), allocatable, dimension(:) :: at_names, at_names_PDB
-    real(dp),     allocatable, dimension(:) :: at_charges
+    character(4), allocatable            :: at_names(:), at_names_PDB(:)
+    real(dp),     allocatable            :: at_charges(:)
+    integer, allocatable                 :: at_subgroups(:)
     logical                              :: my_do_charmm
     character, dimension(:,:), pointer   :: atom_type, atom_type_PDB, atom_res_name, atom_mol_name
-    integer, dimension(:), pointer       :: atom_res_number, atom_res_type, motif_atom_num
+    integer, dimension(:), pointer       :: atom_res_number, atom_res_type, motif_atom_num, atom_subgroup_number
     real(dp), dimension(:), pointer      :: atom_charge_ptr
     logical                              :: ex
     type(extendable_str)                 :: residue_library
@@ -428,15 +431,22 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 
        ! Pull the next residue template from the library
        if (my_do_charmm) then
-          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_charges=at_charges,atom_names_PDB=at_names_PDB, n_impr=n_impr,imp_atoms=imp_atoms,do_CHARMM=.true.)
+          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_charges=at_charges,atom_names_PDB=at_names_PDB, n_impr=n_impr,imp_atoms=imp_atoms,do_CHARMM=.true.,at_subgroups=at_subgroups)
        else
-          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_names_PDB=at_names_PDB, do_CHARMM=.false.)
+          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_names_PDB=at_names_PDB, do_CHARMM=.false.,at_subgroups=at_subgroups)
        endif
 
        if (cres_name=='NONE') then
           found_residues = .true.
           exit
        endif
+
+! call print("motif")
+!   call print("cres_name " // trim(cres_name)// " pres_name "//trim(pres_name) // " n_impr " // n_impr)
+! do m=1, size(motif,1)
+!   call print("motif  " // motif(m,1:7) // " name " // trim(at_names(m)) // " charge " // at_charges(m) // " PDB name " // trim(at_names_PDB(m)) // &
+!    " subgroup " // at_subgroups(m))
+! end do
 
        ! Store its CHARMM (3 char) and PDB (3 char) names
        ! e.g. cha/pdb_res_name(5) corresponds to the 5th residue found in the library
@@ -474,6 +484,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
                   !        residue_type(1,j)   = k        k-th residue in the library file, in order
                   !        cha_res_name(k)   = 'ALA'    name of the k-th residue in the library file
                   !then atom 'i' is in a residue 'ALA'
+	     atom_subgroup(list%int(:,m)) = at_subgroups
              atom_name(list%int(:,m)) = at_names
              atom_name_PDB(list%int(:,m)) = at_names_PDB
              if (my_do_charmm) then
@@ -532,6 +543,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_res_name)
     call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_mol_name)
     call add_property(at,'atom_res_number',0, ptr=atom_res_number)
+    call add_property(at,'atom_subgroup_number',0, ptr=atom_subgroup_number)
     call add_property(at,'atom_res_type',0, ptr=atom_res_type)
     call add_property(at,'atom_charge',0._dp, ptr=atom_charge_ptr)
 
@@ -540,12 +552,14 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     atom_res_name(1,1:at%N) = 'X'
     atom_mol_name(1,1:at%N) = 'X'
     atom_res_number(1:at%N) = 0
+    atom_subgroup_number(1:at%N) = 0
     atom_res_type(1:at%N) = 0
     atom_charge_ptr(1:at%N) = 0._dp
 
     do i=1, at%N
        atom_res_name(:,i) = pad(cha_res_name(residue_type%int(1,residue_number(i))), TABLE_STRING_LENGTH)
        atom_res_number(i) = residue_number(i)
+       atom_subgroup_number(i) = atom_subgroup(i)
        atom_res_type(i) = residue_type%int(1,residue_number(i))
        atom_type(:,i) = pad(adjustl(atom_name(i)), TABLE_STRING_LENGTH)
        atom_type_PDB(:,i) = pad(adjustl(atom_name_PDB(i)), TABLE_STRING_LENGTH)
@@ -671,7 +685,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
   !% Used by create_CHARMM, can read from CHARMM and AMBER residue libraries.
   !% do_CHARMM=.true. is the default
   !
-  subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,atom_names_PDB, n_impr,imp_atoms,do_CHARMM)
+  subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,atom_names_PDB, n_impr,imp_atoms,do_CHARMM,at_subgroups,header_line)
     
     type(Inoutput),                   intent(in)  :: library
     character(4),                     intent(out) :: res_name
@@ -682,10 +696,13 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     logical,  optional,               intent(in)  :: do_CHARMM
     integer,  optional,  allocatable, intent(out) :: imp_atoms(:,:)
     integer,  optional,               intent(out) :: n_impr
+    integer, optional, allocatable, intent(out)   :: at_subgroups(:)
+    character(len=*), optional, intent(out)       :: header_line
 
-    character(20), dimension(10) :: fields
+    character(20), dimension(11) :: fields
     integer                      :: status, num_fields, data(7), i, n_at, max_num_fields
     type(Table)                  :: motif_table
+    integer :: tmp_at_subgroups(MAX_ATOMS_PER_RES)
     character(4)                 :: tmp_at_names(MAX_ATOMS_PER_RES), tmp_at_names_PDB(MAX_ATOMS_PER_RES)
     real(dp)                     :: tmp_at_charges(MAX_ATOMS_PER_RES),check_charge
     logical                      :: my_do_charmm
@@ -697,19 +714,24 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     if (present(do_CHARMM)) my_do_charmm = do_CHARMM
 
     if (my_do_charmm) then
-       max_num_fields = 10
+       max_num_fields = 11
        imp_fields = 5
     else !do AMBER
-       max_num_fields = 8
+       max_num_fields = 9
     endif
 
     status = 0
 
+    if (present(header_line)) header_line =''
     do while(status==0)
        line = read_line(library,status)
+       if (present(header_line)) then
+	 if (len_trim(header_line) > 0) header_line=trim(header_line)//quip_new_line
+	 header_line=trim(header_line)//trim(line)
+       endif
        if (line(1:8)=='%residue') exit
     end do
-    
+
     if (status/=0) then
        res_name = 'NONE'
        pdb_name = 'NON'
@@ -728,16 +750,17 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
        call parse_line(library,' ',fields,num_fields)
        if (num_fields < max_num_fields-1) exit ! last column of protein library (atom_name_PDB) is optional
        do i = 1, 7
-          data(i) = string_to_int(fields(i))
+          data(i) = string_to_int(fields(i+1))
        end do
        call append(motif_table,data)
        n_at = n_at + 1
-       tmp_at_names(n_at) = fields(8)
+       tmp_at_subgroups(n_at) = string_to_int(fields(1))
+       tmp_at_names(n_at) = fields(9)
        if (my_do_charmm) then
-          tmp_at_charges(n_at) = string_to_real(fields(9))
+          tmp_at_charges(n_at) = string_to_real(fields(10))
           check_charge=check_charge+tmp_at_charges(n_at)
-          if(num_fields == 10) then
-             tmp_at_names_PDB(n_at) = fields(10)
+          if(num_fields == 11) then
+             tmp_at_names_PDB(n_at) = fields(11)
           else
              tmp_at_names_PDB(n_at) = tmp_at_names(n_at)
           end if
@@ -778,6 +801,14 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
        atom_names_PDB = tmp_at_names_PDB(1:n_at)
     else
        atom_names_PDB = atom_names
+    endif
+
+    if (present(at_subgroups)) then
+      if (allocated(at_subgroups)) then
+	if (size(at_subgroups) /= n_at) deallocate(at_subgroups)
+      endif
+      if (.not. allocated(at_subgroups)) allocate(at_subgroups(n_at))
+      at_subgroups = tmp_at_subgroups(1:n_at)
     endif
 
     call finalise(motif_table)
@@ -1688,6 +1719,7 @@ call print('PSF| '//impropers%n//' impropers')
   integer               :: i_pro, tmp_atoms(3)
   logical               :: reordered
   character, dimension(:,:), pointer   :: atom_res_name, atom_type
+  integer, pointer :: atom_res_number(:)
 
     call system_timer('create_improper_list')
 
@@ -1698,7 +1730,9 @@ call print('PSF| '//impropers%n//' impropers')
 
     allocate (count_array(angles%N))
 
+call print("create_improper_list", PRINT_ANAL)
     do i = 1,at%N
+call print("i " // i // " " // trim(a2s(at%species(:,i))), PRINT_ANAL)
       if (.not.any(trim(a2s(at%species(:,i))).eq.(/'C','N'/))) cycle
       count_array = 0
       where (angles%int(2,1:angles%N).eq.i) count_array = 1
@@ -1729,6 +1763,7 @@ call print('PSF| '//impropers%n//' impropers')
          !no need to check X2-N-X3
          if (.not.cont) cycle
       endif
+call print("i is N with 3 neighbours, continuing", PRINT_ANAL)
 
      ! add to impropers i and its neighbours
       imp_atoms = 0
@@ -1747,21 +1782,26 @@ call print('PSF| '//impropers%n//' impropers')
            imp_atoms(4) = angles%int(3,j)
         endif
 
+call print("original imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_ANAL)
 !VVV ORDER is done according to the topology file! - and is read in when finding motifs
 !if you don't do this, you won't have only the backbone impropers!
-      if (.not. assign_pointer(at, 'atom_res_name', atom_res_name)) &
-           call system_abort('Cannot assign point to "atom_res_name" property.')
-      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
-          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
-          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
-          cycle  ! these should be added when identifying the residues
+      if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) &
+           call system_abort('Cannot assign point to "atom_res_number" property.')
+      if (atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(2)) .and. &
+          atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(3)) .and. &
+          atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(4))) cycle ! these should be added when identifying the residues
+!      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
+!          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
+!          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
+!          cycle  ! these should be added when identifying the residues
 
 !ORDER: check charmm.pot file - start with $i, end with  H or O or N, in this order -- for intraresidual residues this can be needed later on...
       reordered = .true.
       tmp = 0
       ! if there is H
       last = find_in_array(at%Z(imp_atoms(2:4)),1)
-      if (last.gt.0) then
+      if (last.gt.0) then ! found a H
+call print("reorder H to end", PRINT_ANAL)
         last = last + 1
         tmp = imp_atoms(4)
         imp_atoms(4) = imp_atoms(last)
@@ -1773,7 +1813,8 @@ call print('PSF| '//impropers%n//' impropers')
 !                    trim(ElementName(at%Z(imp_atoms(4))))//imp_atoms(4))
       else
         last = find_in_array(at%Z(imp_atoms(2:4)),8) ! at the C-terminal there should be one "CC X X OC", with the double bonding the last one
-        if (last.gt.0) then
+        if (last.gt.0) then ! found an O
+call print("reorder O to end", PRINT_ANAL)
           last = last + 1
           tmp = imp_atoms(4)
           imp_atoms(4) = imp_atoms(last)
@@ -1785,7 +1826,8 @@ call print('PSF| '//impropers%n//' impropers')
 !                      trim(ElementName(at%Z(imp_atoms(4))))//imp_atoms(4))
         else
           last = find_in_array(at%Z(imp_atoms(2:4)),7)
-          if (last.gt.0) then
+          if (last.gt.0) then ! found an N
+call print("reorder P to end", PRINT_ANAL)
             last = last + 1
             tmp = imp_atoms(4)
             imp_atoms(4) = imp_atoms(last)
@@ -1805,18 +1847,27 @@ call print('PSF| '//impropers%n//' impropers')
           endif
         endif
       endif
+call print("reordered " // reordered, PRINT_ANAL)
+call print("final imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_ANAL)
 
       !checking and adding only backbone (i.e. not intraresidual impropers) where the order of the 2nd and 3rd atoms doesn't matter
-      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
-          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
-          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
-          cycle  ! these should be added when identifying the residues
+      if (atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(2)) .and. &
+          atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(3)) .and. &
+          atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(4))) cycle ! these should be added when identifying the residues
+!      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
+!          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
+!          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
+!          cycle  ! these should be added when identifying the residues
 
       if (.not.reordered) then
         ! Found N-C-CP1-CP3 Pro backbone, reordering according to atomic types (could be also according to the H neighbours)
 !         call print('|PRO Found Pro backbone')
          if (.not. assign_pointer(at, 'atom_type', atom_type)) &
               call system_abort('Cannot assign pointer to "atom_type" property.')
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(1)))), PRINT_ANAL)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(2)))), PRINT_ANAL)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(3)))), PRINT_ANAL)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
          if (trim(a2s(atom_type(:,imp_atoms(1)))).ne.'N') call system_abort('something has gone wrong. what is this if not proline? '// &
                      trim(a2s(atom_type(:,imp_atoms(1))))//imp_atoms(1)//'--'// &
                      trim(a2s(atom_type(:,imp_atoms(2))))//imp_atoms(2)//'--'// &
@@ -2146,5 +2197,114 @@ call print('PSF| '//impropers%n//' impropers')
 	 endif ! valid atom #s
        endif ! present(break_bond)
    end subroutine break_form_bonds
+
+   function find_motif_backbone(motif, is_proline) result(backbone)
+   integer :: motif(:,:)
+   logical :: is_proline
+   integer :: backbone(5,3)
+
+   integer :: i, ji, j, ki, k, li, l, mi, m, ii, ni, n, found_N, found_aC, found_cC
+
+   is_proline = .false.
+
+     backbone = 0
+     do i=1, size(motif,1) ! look for N
+!call print("check atom i " //i // " Z=" // motif(i,1))
+       if (motif(i,1) /= 7) cycle
+       ! i is an N
+       found_N = i
+!call print("atom i is a N, continuing")
+       do ji=2, size(motif,2) ! look for alpha-C
+	 j=motif(i,ji); if (j == 0) exit
+!call print("check atom j "//j//" Z=" // motif(j,1))
+	 if (motif(j,1) == 6) then ! j is a possible alpha-C
+!call print("atom j is a C, continuing")
+	   found_aC = j
+	   do ki=2, size(motif,2) ! look for possible carboxyl-C
+	     k = motif(j,ki); if (k == 0) exit
+!call print("check atom k " //k//" Z=" // motif(k,1))
+	     if (motif(k,1) == 6) then ! k is a possible carboxyl-C
+!call print("atom k  is a C, continuing")
+	       found_cC = k
+	       do li=2, size(motif,2) ! loook for possible carboxyl-O
+		 l = motif(k, li); if (l == 0) exit
+!call print("check atom l "//l//" Z=" // motif(l,1))
+		 if (motif(l,1) == 8 .and. count(motif(l,2:) /= 0) == 1) then ! found carboxyl O
+!call print("atom l is an O with coord 1, continuing")
+
+		     ii = 1
+		     backbone(ii,1) = found_N
+		     do mi=2, size(motif,2) ! find neighbours of N for backbone
+		       m = motif(found_N, mi); if (m == 0) exit
+!call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of N")
+		       if (m == found_aC) cycle
+		       if (motif(m,1) == 1) then
+!call print("neighbor m is a H, adding to backbone")
+			 ii = ii + 1
+			 backbone(ii,1) = m
+		       else if (motif(m,1) == 6) then 
+			 is_proline = .true.
+		       else
+			 call print("find_motif_backbone confused by neighbor of N", PRINT_VERBOSE)
+			 backbone = 0
+			 return
+		       endif
+		     end do ! mi
+
+		     ii = 1
+		     backbone(ii,2) = found_aC
+		     do mi=2, size(motif,2) ! find neighbours of alpha-C for backbone
+		       m = motif(found_aC, mi); if (m == 0) exit
+!call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of alpha-C")
+		       if (m == found_N .or. m == found_cC) cycle
+		       if (motif(m,1) == 1) then
+!call print("neighbor m is a H, adding to backbone")
+			 ii = ii + 1
+			 backbone(ii,2) = m
+		       else if (motif(m,1) /= 6) then 
+			  call print("find_motif_backbone confused by neighbor of alpha-C, neither H or C", PRINT_VERBOSE)
+			  backbone = 0
+			  return
+		       endif
+		     end do ! mi
+
+		     ii = 1
+		     backbone(ii,3) = found_cC
+		     do mi=2, size(motif,2) ! find neighbours of carboxyl-C for backbone
+		       m = motif(found_cC, mi); if (m == 0) exit
+!call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of carboxyl-C")
+		       if (m == found_aC) cycle
+		       if (motif(m,1) == 8) then
+!call print("neighbor m is an O, adding to backbone")
+			 ii = ii + 1
+			 backbone(ii,3) = m
+			 do ni=2, size(motif,2) ! look for OH
+			   n = motif(m, ni); if (n == 0) exit
+			   if (n == found_cC) cycle
+!call print("neighbor n " // n // " Z="//motif(n,1)// " neighbor of carboxyl-C-O")
+			   if (motif(n,1) == 1) then
+!call print("neighbor n is an H, adding to backbone")
+			     ii = ii + 1
+			     backbone(ii,3) = n
+			   else
+			     call print("find_motif_backbone confused by non-H neighbor of carboxyl-O", PRINT_VERBOSE)
+			     backbone = 0
+			     return
+			   endif
+			 end do
+		       else
+			 call print("find_motif_backbone confused by neighbor of carboxyl-C", PRINT_VERBOSE)
+			 backbone = 0
+			 return
+		       endif
+		     end do ! mi
+		 endif ! found carboxyl O
+	       end do ! li
+	     endif ! carboxyl-C
+	   end do ! ki
+	 endif ! found alpha C
+       end do ! ji
+     end  do ! i
+   end function find_motif_backbone
 
 end module topology_module
