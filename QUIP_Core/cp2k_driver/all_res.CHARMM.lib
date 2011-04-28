@@ -6,6 +6,14 @@
 #################################
 #################################
 #################################
+#FORMAT
+# subgroup_num Z n1 n2 n3 n4 n5 n6 psf_name q pdb_name
+#
+# subgroup_num for heuristics that don't cut within a
+# subgroup.  Negative for backbone, positive for side 
+# chain, 0 to be ignored by subgroup heuristics
+# proline is special (-10n for backbond -1000 for sidechain), 
+#   so proline protecting heuristic can find it
 
 #The zwitterionic form of individual amino acids
 %residue H7C3N1O2 ALA ALA
