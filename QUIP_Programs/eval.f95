@@ -40,7 +40,9 @@ use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module
-
+#ifdef HAVE_GP_PREDICT
+use descriptors_module
+#endif
 
 implicit none
 
@@ -88,8 +90,14 @@ implicit none
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
   real(dp), allocatable :: force_const_mat(:,:)
   real(dp) :: eval_froz
-  real(dp) :: override_pot_cutoff
+  real(dp) :: mycutoff
   logical :: do_create_residue_labels, fill_in_mass
+
+  real(dp), allocatable :: vec(:)
+  integer :: bispectrum_jmax
+  logical :: do_print_bispectrum
+  type(fourier_so4) :: f_hat
+  type(bispectrum_so4) :: bis
 
   logical did_something
   logical test_ok
@@ -144,7 +152,7 @@ implicit none
   call param_register(cli_params, 'relax_iter', '1000', relax_iter, help_string="max number of iterations for relaxation")
   call param_register(cli_params, 'relax_tol', '0.001', relax_tol, help_string="tolerance for convergence of relaxation")
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps, help_string="estimate of energy reduction for first step of relaxation")
-  call param_register(cli_params, 'init_args', PARAM_MANDATORY, init_args, help_string="string arguments for initializing potential")
+  call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
@@ -155,13 +163,15 @@ implicit none
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
-  call param_register(cli_params, 'override_pot_cutoff', '-1.0', override_pot_cutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
+  call param_register(cli_params, 'cutoff', '-1.0', mycutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
   call param_register(cli_params, 'create_residue_labels', 'F', do_create_residue_labels, help_string="if true, create residue labels (for CP2K) before calling calc")
   call param_register(cli_params, 'fill_in_mass', 'F', fill_in_mass, help_string="if true, fill in mass property")
 
   call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
   call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
   call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
+  call param_register(cli_params, 'print_bispectrum', 'F', do_print_bispectrum,  help_string="print the bispectrum for each atom. cutoff and jmax are controlled by separate arguments")
+  call param_register(cli_params, 'bispectrum_jmax', '5', bispectrum_jmax, help_string="jmax for calculating the bispectrum when print_bispectrum is True")
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
@@ -172,18 +182,20 @@ implicit none
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
     call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
     call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
-    call print("  [minim_method=string(cg)] [override_pot_cutoff=r]", PRINT_ALWAYS)
+    call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
 
-  call print ("Using init args " // trim(init_args))
-  call print ("Using calc args " // trim(calc_args))
-  call print ("Using pre-relax calc args " // trim(pre_relax_calc_args))
+  call print ("Using calc args: " // trim(calc_args))
+  call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
-  call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+  if(trim(init_args) .ne. '') then
+     call print ("Using init args: " // trim(init_args))
+     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+  end if
 
   call initialise(infile, trim(at_file))
 
@@ -212,8 +224,8 @@ implicit none
 	endif
      endif
 
-     if (override_pot_cutoff >= 0.0_dp) then
-	call set_cutoff(at, override_pot_cutoff)
+     if (mycutoff >= 0.0_dp) then
+	call set_cutoff(at, mycutoff)
      else
 	call set_cutoff(at, cutoff(pot)+0.5_dp)
      endif
@@ -491,6 +503,20 @@ implicit none
         deallocate(absorption_v)
      endif
 #endif
+
+     if ( do_print_bispectrum ) then
+        did_something=.true.
+        call initialise(f_hat, bispectrum_jmax, 1.2_dp*mycutoff/(PI-0.02_dp), mycutoff)
+        allocate(vec(j_max2d(bispectrum_jmax)))
+        do i = 1, at%N
+           call fourier_transform(f_hat, at, i)
+           call calc_bispectrum(bis, f_hat)
+           call bispectrum2vec(bis, vec)
+           call print("BIS "//vec, PRINT_ALWAYS, mainlog)
+        end do
+        call finalise(f_hat)
+        deallocate(vec)
+     end if
     
      if (.not. did_something) call system_abort("Nothing to be calculated")
           
