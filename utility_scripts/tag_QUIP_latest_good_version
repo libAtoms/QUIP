@@ -13,16 +13,23 @@ function check_version {
    svn_version=$1
 
    rm -rf QUIP_test
-   echo "starting {SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
+   echo "starting ${SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
    ${SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test > /dev/null 2>&1 
-   echo "finished {SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
-   if [[ $? != 0 ]]; then
+   svn_stat=$?
+   echo "finished ${SVN} co -r$svn_version $SVNROOT/trunk/QUIP QUIP_test"
+   if [[ $svn_stat != 0 ]]; then
       echo "Failed to check out version $svn_version"
       make_status="Checkout Failed"
       quippy_status="Checkout Failed"
       return
    fi
 
+   if [ ! -d QUIP_test ]; then
+      echo "Can't find QUIP_test directory to run test in.  svn co must have failed"
+      make_status="Checkout Failed"
+      quippy_status="Checkout Failed"
+      return
+   fi
    pushd QUIP_test > /dev/null
 
    declare -a suffixes_a
@@ -104,7 +111,9 @@ function check_version {
 	       else
 		  make_status=${make_status}"${compiler_name}${suffix} Failed "
 	       fi
-	       failed_list=${failed_list}"make.out.${svn_version}.${compiler_name}${suffix} "
+	       if [[ $svn_version == "HEAD" ]]; then
+		  failed_list=${failed_list}"make.out.${svn_version}.${compiler_name}${suffix} "
+	       fi
 	    fi
 
 	    # try quippy make test
@@ -120,7 +129,9 @@ function check_version {
 		  else
 		     quippy_status=${quippy_status}"$compiler_name Failed "
 		  fi
-		  failed_list=${failed_list}"quippy_test.out.${svn_version}.${compiler_name}${suffix} "
+		  if [[ $svn_version == "HEAD" ]]; then
+		     failed_list=${failed_list}"quippy_test.out.${svn_version}.${compiler_name}${suffix} "
+		  fi
 	       fi
 	       popd > /dev/null
 	    fi # quippy_req != -
@@ -216,12 +227,14 @@ if [[ $make_ok == 0 && $quippy_ok == 0 ]]; then
    if [[ $retried == 0 ]]; then
       rm -f mail_msg.txt
       (echo "latest QUIP revision to compile is current HEAD=${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+      echo "mutt -s \"QUIP autobuild succeeded\" ${MAILS} < mail_msg.txt"
       mutt -s "QUIP autobuild succeeded" ${MAILS} < mail_msg.txt
       rm -f $LOCKFILE
       exit 0
    else
       rm -f mail_msg.txt
       (echo "latest QUIP revision to compile is not HEAD=${HEAD_rev}, but ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+      echo "mutt -s \"QUIP autobuild failed on HEAD, succeeded eventually\" `for f in $failed_list; do echo \"-a $f \"; done` `for c in $failed_mails; do echo \"-c $c \"; done` ${MAILS} < mail_msg.txt"
       mutt -s "QUIP autobuild failed on HEAD, succeeded eventually" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS} < mail_msg.txt
       rm -f $LOCKFILE
       exit 2
@@ -231,6 +244,7 @@ else
    echo "Failed to find working revision between HEAD and $cur_rev" >> ${REPORT_FILE}
    rm -f mail_msg.txt
    (echo "Failed to find working revision between HEAD=${HEAD_rev} and ${cur_rev}"; echo ""; cat ${REPORT_FILE} ) > mail_msg.txt
+   echo "mutt -s \"QUIP autobuild failed\" `for f in $failed_list; do echo \"-a $f \"; done` `for c in $failed_mails; do echo \"-c $c \"; done` ${MAILS} < mail_msg.txt"
    mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS} < mail_msg.txt
    rm -f $LOCKFILE
    exit 3
