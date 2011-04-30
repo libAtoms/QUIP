@@ -898,7 +898,6 @@ contains
       ishift = cluster_info%int(2:4,n)
       if (this%z(i) /= 14) then
          ! Consider only silicon atoms, which form centres of tetrahedra
-         n = n + 1
          cycle  
       end if
 
