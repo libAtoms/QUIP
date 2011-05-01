@@ -83,7 +83,8 @@ module Potential_simple_module
      type(CallbackPot_type), pointer     :: callbackpot => null()
      logical :: is_wrapper
      logical :: little_clusters
-
+     logical :: force_using_fd
+     
   end type Potential_Simple
 
 !% Initialise a Potential object (selecting the force field) and, if necessary, the  input file for potential parameters.
@@ -202,6 +203,10 @@ contains
     call param_register(params, 'wrapper', 'false', is_wrapper, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'force_using_fd', 'F', this%force_using_fd, &
+      help_string="If true, and if 'force' is also present in the calc argument list, calculate forces using finite difference.")
+
+
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_Initialise_str args_str')) then
       call system_abort("Potential_Simple_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     endif
@@ -388,7 +393,9 @@ contains
     endif
     call finalise(params)
 
-    
+    if(this%force_using_fd) then
+       force_using_fd = .true.
+    end if
 
     if (single_cluster .and. little_clusters) then
          RAISE_ERROR('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive', error)
