@@ -570,7 +570,7 @@ end subroutine IPModel_PartridgeSchwenke_Print
 !X
 !X the following is the original code accompanying the article
 !X modified to f90 freeform format and some printing commented out
-!X paramter declarations were moved out into the module scope
+!X parameter declarations were moved out into the module scope
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
