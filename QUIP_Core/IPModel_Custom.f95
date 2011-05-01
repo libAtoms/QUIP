@@ -108,58 +108,27 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
    ! Add calc() code here
 
 
-   real(dp) :: energy, force(3,4)
-   real(dp) :: rHF1, rHF2, rFF, rF1, rF2, dr1(3), dr2(3), drFF(3), drF1(3), drF2(3), rHH, rH1F2, rH2F1, drHH(3), drH1F2(3), drH2F1(3), q2
-!   real(dp), parameter :: kHF = 37.84_dp, r0HF = 0.9_dp, AFF = 1.0_dp, BFF = 1.0_dp/3.713770447147178_dp, r0FF = 2.0312819622_dp, kConf = 0.15_dp, q=0.43_dp
-   real(dp), parameter :: kHF = 0.0_dp, r0HF = 0.9_dp, AFF = 1.0_dp, BFF = 1.0_dp/3.713770447147178_dp, r0FF = 2.0312819622_dp, kConf = 0.0_dp, q=0.43_dp
+   real(dp) :: energy, force(3,at%N)
+   real(dp) :: rO1, rO2, drO1(3), drO2(3)
+   real(dp), parameter ::  kConf = 0.15_dp
 
    INIT_ERROR(error)
 
+   ! Harmonic confining potential on Os
+
+   rO1 = distance_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))
+   rO2 = distance_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))
 
 
-   ! Hydrogen Fluoride dimer potential
-   ! spring constant between H-F and repulsive interaction between Fs, Coulomb interaction between nonbonded things
-   ! The order in the Atoms object must be H-F H-F
-   ! 
-   ! Harmonic confining potential on Fs
-
-   rHF1 = distance_min_image(at, 1, 2)
-   rHF2 = distance_min_image(at, 3, 4)
-   rFF = distance_min_image(at, 2, 4)
-   rHH = distance_min_image(at,1,3)
-   rH1F2 = distance_min_image(at,1,4)
-   rH2F1 = distance_min_image(at,2,3)
-
-   rF1 = distance_min_image(at, 2, (/0.0_dp, 0.0_dp, 0.0_dp/))
-   rF2 = distance_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))
-
-   ! Bonded energy terms
-   energy = kHF*(rHF1-r0HF)**2 + kHF*(rHF2-r0HF)**2 + AFF*exp(-(rFF-r0FF)/BFF) + kConf*rF1**2 + kConf*rF2**2
-
-   ! Coulomb Energy
-   q2 = HARTREE*BOHR*q*q
-   energy = energy + q2*(&
-        (+1.0_dp)/rHH +   & ! H1-H2
-        (-1.0_dp)/rH1F2 + & ! H1-F2
-        (+1.0_dp)/rFF +   & ! F1-F2
-        (-1.0_dp)/rH2F1)    ! F1-H2
+   energy = kConf*rO1**2 + kConf*rO2**2 
 
    !Forces
 
-   dr1 = diff_min_image(at, 1, 2)/rHF1
-   dr2 = diff_min_image(at, 3, 4)/rHF2
-   drFF = diff_min_image(at, 2, 4)/rFF
-   drF1 = diff_min_image(at, 2, (/0.0_dp, 0.0_dp, 0.0_dp/))/rF1
-   drF2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rF2
+   drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
+   drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
 
-   drHH = diff_min_image(at,1,3)/rHH
-   drH1F2 = diff_min_image(at,1,4)/rH1F2
-   drH2F1 = diff_min_image(at,2,3)/rH2F1
-
-   force(:,1) = 2.0_dp*kHF*(rHF1-r0HF)*dr1 -q2/rHH**2*drHH + q2/rH1F2**2*drH1F2
-   force(:,2) = -2.0_dp*kHF*(rHF1-r0HF)*dr1 - AFF/BFF*exp(-(rFF-r0FF)/BFF) * drFF + 2.0_dp*kConf*rF1*drF1 +q2/rH2F1**2*drH2F1 -q2/rFF**2*drFF
-   force(:,3) = 2.0_dp*kHF*(rHF2-r0HF)*dr2 +q2/rHH**2*drHH - q2/rH2F1**2*drH2F1
-   force(:,4) = -2.0_dp*kHF*(rHF2-r0HF)*dr2 + AFF/BFF*exp(-(rFF-r0FF)/BFF) * drFF + 2.0_dp*kConf*rF2*drF2 -q2/rH1F2**2*drH1F2 +q2/rFF**2*drFF
+   force(:,1) = 2.0_dp*kConf*rO1*drO1 
+   force(:,4) = 2.0_dp*kConf*rO2*drO2 
 
 
    if (present(e)) e = energy
