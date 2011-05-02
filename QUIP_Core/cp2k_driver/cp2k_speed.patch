@@ -222,13 +222,13 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
       !NB parallelization
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
-Index: ../src/cp_ddapc_methods.F
+Index: cp_ddapc_methods.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
-retrieving revision 1.43
-diff -b -c -3 -r1.43 cp_ddapc_methods.F
-*** cp_ddapc_methods.F	19 Apr 2011 06:28:35 -0000	1.43
---- cp_ddapc_methods.F	28 Apr 2011 21:55:12 -0000
+retrieving revision 1.44
+diff -b -c -3 -r1.44 cp_ddapc_methods.F
+*** cp_ddapc_methods.F	2 May 2011 10:50:56 -0000	1.44
+--- cp_ddapc_methods.F	2 May 2011 14:37:33 -0000
 ***************
 *** 200,208 ****
       INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
@@ -285,7 +285,7 @@ diff -b -c -3 -r1.43 cp_ddapc_methods.F
                DO ig = s_dim, igmax
                   !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
 !                 my_Am(ig) = (g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
-                               g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
+                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
                END DO
                DO igauss1 = 1, SIZE(radii)
 ***************
@@ -484,23 +484,6 @@ diff -b -c -3 -r1.43 cp_ddapc_methods.F
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          !!! DEALLOCATE(arg1_v,stat=stat)
          !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-***************
-*** 612,618 ****
-            DEALLOCATE(AmE, stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         END IF
-!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
-         IF (iw>0) THEN
-            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
-         END IF
---- 597,603 ----
-            DEALLOCATE(AmE, stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         END IF
-!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error, improve=.false.)
-         IF (iw>0) THEN
-            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
-         END IF
 Index: ../src/qmmm_gpw_forces.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/qmmm_gpw_forces.F,v
