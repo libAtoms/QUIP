@@ -601,3 +601,7 @@ def s2a(d, pad=None):
 def a2s(a):
     """Convert from array of shape (pad, len(d)) to list of strings d"""
     return [ ''.join(a[:,i]).strip() for i in frange(a.shape[1]) ]
+
+def loadtxt(filename):
+    return farray(numpy.loadtxt(filename))
+
