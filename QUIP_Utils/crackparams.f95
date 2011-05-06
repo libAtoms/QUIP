@@ -212,6 +212,7 @@ module CrackParams_module
      character(FIELD_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation' or 'local_e'
      logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
      real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
+     logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
  
      ! Simulation parameters
      character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -451,6 +452,7 @@ contains
     this%crack_tip_method    = 'coordination'
     this%crack_free_surfaces = .false.
     this%crack_front_window_size = 5.44_dp ! Angstrom
+    this%crack_fix_sides = .false.
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -974,6 +976,11 @@ contains
        call QUIP_FoX_get_value(attributes, "front_window_size", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_front_window_size
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fix_sides", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_fix_sides
        end if
 
 
@@ -1611,6 +1618,7 @@ contains
     call Print('     tip_method            = '//trim(this%crack_tip_method), file=file)
     call Print('     free_surfaces         = '//this%crack_free_surfaces, file=file)
     call Print('     front_window_size     = '//this%crack_front_window_size, file=file)
+    call Print('     fix_sides             = '//this%crack_fix_sides, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)

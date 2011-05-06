@@ -114,6 +114,12 @@ def makecrack(params, stem):
    crack_slab.move_mask[(abs(crack_slab.pos[2,:]-maxy) < params.crack_edge_fix_tol) |
                         (abs(crack_slab.pos[2,:]-miny) < params.crack_edge_fix_tol)] = 0
 
+   if params.crack_fix_sides:
+      maxx, minx = crack_slab.pos[1,:].min(), crack_slab.pos[1,:].max()
+      crack_slab.move_mask[(abs(crack_slab.pos[1,:]-maxx) < params.crack_edge_fix_tol) |
+                           (abs(crack_slab.pos[1,:]-minx) < params.crack_edge_fix_tol)] = 0
+      
+
    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
    print_title('Setting edge mask')
