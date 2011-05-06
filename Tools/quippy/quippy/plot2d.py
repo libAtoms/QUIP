@@ -106,6 +106,7 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
         ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
         names.extend(sorted(set(ct)))
 
+    res = {}
     for name in names:
         
         if name == 'default':
@@ -130,6 +131,10 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
         print 'RM4 force error %.3f eV/A' % rm4_error
         print 'RM8 force error %.3f eV/A' % rm8_error
         print
+
+        res[name] = (max_error, rms_error, rm4_error, rm8_error)
+
+    return res
     
 
 def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
