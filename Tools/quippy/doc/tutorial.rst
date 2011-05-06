@@ -16,9 +16,9 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-********
-
 .. currentmodule:: quippy
+
+.. _tutorial-intro:
 
 Tutorial
 ********
