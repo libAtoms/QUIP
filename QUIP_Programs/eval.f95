@@ -93,11 +93,13 @@ implicit none
   real(dp) :: mycutoff
   logical :: do_create_residue_labels, fill_in_mass
 
+#ifdef HAVE_GP_PREDICT
   real(dp), allocatable :: vec(:)
   integer :: bispectrum_jmax
   logical :: do_print_bispectrum
   type(fourier_so4) :: f_hat
   type(bispectrum_so4) :: bis
+#endif
 
   logical did_something
   logical test_ok
@@ -170,8 +172,10 @@ implicit none
   call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
   call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
   call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
+#ifdef HAVE_GP_PREDICT
   call param_register(cli_params, 'print_bispectrum', 'F', do_print_bispectrum,  help_string="print the bispectrum for each atom. cutoff and jmax are controlled by separate arguments")
   call param_register(cli_params, 'bispectrum_jmax', '5', bispectrum_jmax, help_string="jmax for calculating the bispectrum when print_bispectrum is True")
+#endif
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
@@ -504,6 +508,7 @@ implicit none
      endif
 #endif
 
+#ifdef HAVE_GP_PREDICT
      if ( do_print_bispectrum ) then
         did_something=.true.
         call initialise(f_hat, bispectrum_jmax, 1.2_dp*mycutoff/(PI-0.02_dp), mycutoff)
@@ -517,6 +522,7 @@ implicit none
         call finalise(f_hat)
         deallocate(vec)
      end if
+#endif
     
      if (.not. did_something) call system_abort("Nothing to be calculated")
           
