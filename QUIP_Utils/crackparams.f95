@@ -253,7 +253,8 @@ module CrackParams_module
      character(FIELD_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing 
                                                     !%lots of I/O to a network drive. Default is current directory.
      logical :: io_mpi_print_all !% Print output on all nodes. Useful for debugging. Default .false.
-     logical :: io_backup
+     logical :: io_backup  !% If true, create backups of check files
+     logical :: io_timing  !% If true, enable timing (default false)
 
      ! Selection parameters
      integer  :: selection_max_qm_atoms   !% Maximum number of QM atoms to select
@@ -536,6 +537,7 @@ contains
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
     this%io_backup               = .false. 
+    this%io_timing               = .false.
 
      ! Selection parameters
     this%selection_max_qm_atoms   = 200
@@ -1280,6 +1282,11 @@ contains
           read (value, *) parse_cp%io_backup
        end if
 
+       call QUIP_FoX_get_value(attributes, "timing", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%io_timing
+       end if
+
     elseif (parse_in_crack .and. name == 'selection') then
 
        call QUIP_FoX_get_value(attributes, "max_qm_atoms", value, status)
@@ -1673,6 +1680,7 @@ contains
     call Print('     checkpoint_path       = '//this%io_checkpoint_path,file=file)
     call Print('     mpi_print_all         = '//this%io_mpi_print_all,file=file)
     call Print('     backup                = '//this%io_backup, file=file)
+    call Print('     timing                = '//this%io_timing, file=file)
     call Print('',file=file)
     call Print('  Selection parameters:',file=file)
     call Print('     max_qm_atoms          = '//this%selection_max_qm_atoms,file=file)
