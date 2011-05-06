@@ -85,7 +85,7 @@ are the instantaneous and time-averaged temperatures in Kelvin.
 After a few hundred femtoseconds, you should see the crack start to
 propagate in a fairly steady way, similar to the snapshot shown below
 (as a rough guide you can expect the simulation to progress at a
-rate of about 1 picosecond per hour).
+rate of about 2 picoseconds per hour).
 
 .. image:: quartz_running_crack.png
    :align: center
