@@ -395,10 +395,10 @@ strain we applied to our fracture specimen?
 Changing the loading of the fracture system
 -------------------------------------------
 
-Once your crack simulation should has run for around a picosecond
-(1000 fs) the crack should have reached its terminal velocity so you
-can stop the simulation (you can do this nicely creating an empty file
-named `stop_run`, or simply by killing the process).
+Once your crack simulation should has run for a couple of picoseconds
+the crack should have reached its terminal velocity so you can stop
+the simulation (you can do this nicely creating an empty file named
+`stop_run`, or simply by killing the process).
 
 We are going to take the current state of the simulation and rescale
 it homogeneously to change the applied load. We will then continue the
