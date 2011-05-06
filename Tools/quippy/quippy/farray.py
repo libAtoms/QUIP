@@ -605,3 +605,12 @@ def a2s(a):
 def loadtxt(filename):
     return farray(numpy.loadtxt(filename))
 
+def loadcsv(filename):
+    """Read CSV formatted data file and return dictionary of farrays, using first
+       row in file as column labels for dictionary keys."""
+    data = numpy.loadtxt(filename,delimiter=',',skiprows=1)
+    cols = open(filename,'rU').readline().strip().split(',')
+    data = dict(zip(cols, (farray(data[:,i]) for i in range(data.shape[1]))))
+    return data
+
+
