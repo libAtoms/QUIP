@@ -188,4 +188,7 @@ if is_interactive_shell():
    import surface
    from surface import *
 
+   import crack
+   from crack import *
+   
    
