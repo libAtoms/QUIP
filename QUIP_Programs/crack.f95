@@ -333,10 +333,10 @@ program crack
 
   if (mpi_glob%active) then
      ! Same random seed for each process, otherwise velocites will differ
-     call system_initialise (common_seed = .true., enable_timing=.true., mpi_all_inoutput=.false.)
+     call system_initialise (common_seed=.true., mpi_all_inoutput=.false.)
      call print('MPI run with '//mpi_glob%n_procs//' processes')
   else
-     call system_initialise( enable_timing=.true.)
+     call system_initialise()
      call print('Serial run')
   end if
 
@@ -380,6 +380,8 @@ program crack
      mainlog%mpi_all_inoutput_flag = .true.
      mainlog%mpi_print_id = .true.
   end if
+
+  if (params%io_timing) call enable_timing()
 
   call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
   call read(bulk, trim(stem)//'_bulk.xyz')

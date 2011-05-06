@@ -1823,7 +1823,7 @@ contains
     integer, dimension(:,:,:), allocatable, target :: n_cell, cells, min_cells, old_cells
     type(Connection) :: connect
     type(Table) :: minima
-    integer :: cellsna, cellsnb, cellsnc, min_dist
+    integer :: min_dist
     integer :: start_i, start_j, start_k, i, j, k, nstep, d_i, d_j, grid_i, u, v, w, grid_factor
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
     integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_slab
@@ -1831,21 +1831,23 @@ contains
     logical :: duplicate
     integer, pointer, dimension(:) :: horz_slice, vert_slice
     integer, pointer, dimension(:,:,:) :: n_cell_slab
+    type(Atoms) :: at_copy
     
     call system_timer('crack_find_tip')
     
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_tip_percolation: "OrigWidth" parameter missing from atoms')
     
+    call atoms_copy_without_connect(at_copy, at)
     call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)   
     
-    do grid_i=0,2
+    do grid_i=0,0
        grid_factor = 2**grid_i
        grid_size = params%crack_tip_grid_size/grid_factor
        
        if (grid_factor /= 1) then
           if (allocated(old_cells)) deallocate(old_cells)
-          allocate(old_cells(cellsNa,cellsNb,cellsNc))
+          allocate(old_cells(connect%cellsNa,connect%cellsNb,connect%cellsNc))
           old_cells = cells
           call print('old_cells allocated to shape '//shape(old_cells))
           call print('cells allocated to shape '//shape(cells))
@@ -1853,19 +1855,23 @@ contains
        end if
        
        ! Construct temporary Connection object and partition atoms into cells
-       call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A', PRINT_VERBOSE)
+       call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A')
        
-       if (grid_i == 0) then
-          call divide_cell(at%lattice, grid_size, cellsNa, cellsNb, cellsNc)
-       else
-          cellsNa = cellsNa*2
-          cellsNb = cellsNb*2
-          cellsNc = cellsNc*2
-       end if
-       call initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g)
-       call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
-       call partition_atoms(connect, at)
-       
+       call finalise(connect)
+       call set_cutoff(at_copy, grid_size)
+       call calc_connect(at_copy, alt_connect=connect)
+
+!!$       if (grid_i == 0) then
+!!$          call divide_cell(at%lattice, grid_size, cellsNa, cellsNb, cellsNc)
+!!$       else
+!!$          cellsNa = cellsNa*2
+!!$          cellsNb = cellsNb*2
+!!$          cellsNc = cellsNc*2
+!!$       end if
+!!$       call initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g, fill=.false.)
+!!$       call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
+!!$       call partition_atoms(connect, at)
+              
        allocate(n_cell(connect%cellsNa,connect%cellsNb, connect%cellsNc))
        allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
        allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
@@ -1918,7 +1924,7 @@ contains
        
        call print('crack_find_tip_percolation: edges left='//left_edge//' right='//right_edge//' top='//top_edge//' bottom='//bottom_edge)
        
-       n_slab = (right_edge-left_edge+1)*(bottom_edge-top_edge+1)*cellsnc
+       n_slab = (right_edge-left_edge+1)*(bottom_edge-top_edge+1)*connect%cellsnc
        
        call print('crack_find_tip_percolation: n_slab='//n_slab)
        
@@ -1965,7 +1971,7 @@ contains
        if (params%crack_double_ended) then
           start_pos = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
        else
-          start_pos = (/ -orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
+          start_pos = (/ -0.5_dp*orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
        end if
        
        call cell_of_pos(connect, at%g .mult. start_pos, start_i, start_j, start_k)
@@ -1998,6 +2004,7 @@ contains
           if (allocated(old_cells)) deallocate(old_cells)
           
           call finalise(connect)
+          call finalise(at_copy)
           call finalise(minima)
           call system_timer('crack_find_tip')
           return
@@ -2116,6 +2123,7 @@ contains
     if (allocated(old_cells)) deallocate(old_cells)
     
     call finalise(connect)
+    call finalise(at_copy)
     call finalise(minima)
     call system_timer('crack_find_tip')
     
