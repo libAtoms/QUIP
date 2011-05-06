@@ -378,7 +378,7 @@ class Atoms(FortranAtoms):
       if hasattr(self, 'mass'):
          mass = sum(self.mass)/MASSCONVERT/1.0e3
       else:
-         mass = sum(ElementMass[z] for z in self.z)/1.0e3
+         mass = sum(ElementMass[z] for z in self.z)/MASSCONVERT/1.0e3
 
       return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
