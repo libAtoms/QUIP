@@ -181,3 +181,11 @@ if is_interactive_shell():
 
    if 'pylab' in available_modules:
       import plot2d
+
+   import elastic
+   from elastic import *
+
+   import surface
+   from surface import *
+
+   
