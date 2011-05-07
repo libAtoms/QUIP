@@ -103,7 +103,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
 retrieving revision 1.28
 diff -b -c -3 -r1.28 ewald_spline_util.F
 *** ewald_spline_util.F	19 Apr 2011 06:28:35 -0000	1.28
---- ewald_spline_util.F	22 Apr 2011 18:01:42 -0000
+--- ewald_spline_util.F	6 May 2011 16:43:38 -0000
 ***************
 *** 152,159 ****
                                                   Term, xs1, xs2, xs3
@@ -114,7 +114,7 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
   
       CALL timeset(routineN,handle)
       n1  = grid%pw_grid%npts(1)
---- 152,163 ----
+--- 152,167 ----
                                                   Term, xs1, xs2, xs3
       TYPE(pw_spline_precond_type), POINTER    :: precond
       TYPE(section_vals_type), POINTER         :: interp_section
@@ -124,373 +124,453 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
 !     REAL(KIND=dp)                            :: cos_gy_gz, sin_gy_gz
 !     INTEGER                                  :: iLg, stat
 !     LOGICAL                                  :: failure
+!     !NB temporaries for holding stuff so that dgemm can be used 
+!     INTEGER                                  :: NLg_loc, Lg_loc_min, Lg_loc_max, act_nx, act_ny
+!     REAL(KIND=dp), allocatable               :: lhs(:,:), rhs(:,:)
+!     EXTERNAL :: DGEMM
   
       CALL timeset(routineN,handle)
       n1  = grid%pw_grid%npts(1)
 ***************
-*** 177,182 ****
---- 181,222 ----
+*** 177,208 ****
       ! Used the full symmetry to reduce the evaluation to 1/64th
       !NB parallelization
       iii = 0
-+      !NB allocate temporaries for Cos refactoring
-+      ALLOCATE(cos_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      ALLOCATE(sin_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      ALLOCATE(cos_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      ALLOCATE(sin_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      ALLOCATE(cos_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      ALLOCATE(sin_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
-+      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+      !NB precalculate Cos(gx*xs1) etc for Cos refactoring
-+      DO k=gbo(1,3), gbo(2,3)
-+        my_k  = k-gbo(1,3)
-+        xs3   = REAL(my_k,dp)*dr3
-+        IF (k > nzlim ) CYCLE
+!     LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+         my_k  = k-gbo(1,3)
+         xs3   = REAL(my_k,dp)*dr3
+         IF (k > nzlim ) CYCLE
+         xs2   = 0.0_dp
+         DO j  =  gbo(1,2), gbo(2,2)
+            IF (j > nylim ) CYCLE
+            xs1   = 0.0_dp
+            DO i  =  gbo(1,1), gbo(2,1)
+               IF (i > nxlim ) CYCLE
+!              !NB parallelization
+!              iii = iii + 1
+!              IF (MOD(iii,grid%pw_grid%para%group_size) == grid%pw_grid%para%my_pos) THEN
+!                Term  = 0.0_dp
+!                ! Sum over k vectors
+!                DO kg = 1, SIZE(Lg)
+!                   Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
+!                END DO
+!                grid%cr3d(i,j,k) = Term
+!              ENDIF
+               xs1 = xs1 + dr1
+            END DO
+!           xs2 = xs2 + dr2
+         END DO
+!     END DO LoopOnGrid
+      !NB parallelization
+      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
+  
+      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+--- 185,287 ----
+      ! Used the full symmetry to reduce the evaluation to 1/64th
+      !NB parallelization
+      iii = 0
+!      !NB allocate temporaries for Cos refactoring
+!      ALLOCATE(cos_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      ALLOCATE(sin_gx(size(Lg),gbo(1,1):gbo(2,1)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      ALLOCATE(cos_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      ALLOCATE(sin_gy(size(Lg),gbo(1,2):gbo(2,2)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      ALLOCATE(cos_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      ALLOCATE(sin_gz(size(Lg),gbo(1,3):gbo(2,3)),stat=stat)
+!      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!      !NB precalculate Cos(gx*xs1) etc for Cos refactoring
+!      DO k=gbo(1,3), gbo(2,3)
+         my_k  = k-gbo(1,3)
+         xs3   = REAL(my_k,dp)*dr3
+         IF (k > nzlim ) CYCLE
 +        cos_gz(1:size(Lg),k) = Cos(gz(1:size(Lg))*xs3)
 +        sin_gz(1:size(Lg),k) = Sin(gz(1:size(Lg))*xs3)
 +      END DO ! k
-+      xs2   = 0.0_dp
-+      DO j  =  gbo(1,2), gbo(2,2)
-+        IF (j > nylim ) CYCLE
+       xs2   = 0.0_dp
+       DO j  =  gbo(1,2), gbo(2,2)
+         IF (j > nylim ) CYCLE
 +        cos_gy(1:size(Lg),j) = Cos(gy(1:size(Lg))*xs2)
 +        sin_gy(1:size(Lg),j) = Sin(gy(1:size(Lg))*xs2)
 +        xs2 = xs2 + dr2
 +      END DO ! j
-+      xs1   = 0.0_dp
-+      DO i  =  gbo(1,1), gbo(2,1)
-+        IF (i > nxlim ) CYCLE
-+        cos_gx(1:size(Lg),i) = Cos(gx(1:size(Lg))*xs1)
-+        sin_gx(1:size(Lg),i) = Sin(gx(1:size(Lg))*xs1)
-+        xs1 = xs1 + dr1
+       xs1   = 0.0_dp
+       DO i  =  gbo(1,1), gbo(2,1)
+         IF (i > nxlim ) CYCLE
+!        cos_gx(1:size(Lg),i) = Cos(gx(1:size(Lg))*xs1)
+!        sin_gx(1:size(Lg),i) = Sin(gx(1:size(Lg))*xs1)
+         xs1 = xs1 + dr1
 +     END DO ! i
 + 
-      LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
-         my_k  = k-gbo(1,3)
-         xs3   = REAL(my_k,dp)*dr3
++     !NB use DGEMM to compute sum over kg for each i, j, k
++     NLg_loc = size(Lg) / grid%pw_grid%para%group_size
++     Lg_loc_min = grid%pw_grid%para%my_pos*NLg_loc+1
++     Lg_loc_max = min(SIZE(Lg),grid%pw_grid%para%my_pos*NLg_loc+NLg_loc)
++     NLg_loc = Lg_loc_max - Lg_loc_min + 1
++     act_nx = min(gbo(2,1),nxlim)-gbo(1,1)+1
++     act_ny = min(gbo(2,2),nylim)-gbo(1,2)+1
++     !NB temporaries for DGEMM use
++     ALLOCATE(lhs(act_nx,NLg_loc),stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++     ALLOCATE(rhs(act_ny,NLg_loc),stat=stat)
++     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 
++     ! do cos(gx) cos(gy+gz) term
++     DO i=gbo(1,1), gbo(2,1)
++       if (i > nxlim) CYCLE
++       lhs(i-gbo(1,1)+1,1:NLg_loc) = lg(Lg_loc_min:Lg_loc_max)*cos_gx(Lg_loc_min:Lg_loc_max,i)
+      END DO
+!     DO k=gbo(1,3), gbo(2,3)
+!       if (k > nzlim) CYCLE
+!       DO j=gbo(1,2), gbo(2,2)
+! 	if (j > nylim) CYCLE
+! 	rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
+        END DO
+!       call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
+!     END DO
+! 
+!     ! do sin(gx) sin(gy+gz) term
+!     DO i=gbo(1,1), gbo(2,1)
+!       if (i > nxlim) CYCLE
+!       lhs(i-gbo(1,1)+1,1:NLg_loc) = -lg(Lg_loc_min:Lg_loc_max)*sin_gx(Lg_loc_min:Lg_loc_max,i)
+!     END DO
+!     DO k=gbo(1,3), gbo(2,3)
+!       if (k > nzlim) CYCLE
+!       DO j=gbo(1,2), gbo(2,2)
+! 	if (j > nylim) CYCLE
+! 	rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k) + sin_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k)
+!       END DO
+!       call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 1.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
+!     END DO
+! 
+!     !NB deallocate temporaries for DGEMM use
+!     DEALLOCATE(lhs,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(rhs,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     !NB deallocate temporaries for Cos refactoring
+!     DEALLOCATE(cos_gx,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(sin_gx,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(cos_gy,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(sin_gy,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(cos_gz,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!     DEALLOCATE(sin_gz,stat=stat)
+!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      !NB parallelization
++ 
+      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
+  
+      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
 ***************
-*** 193,207 ****
-                 Term  = 0.0_dp
-                 ! Sum over k vectors
-                 DO kg = 1, SIZE(Lg)
-!                   Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
-                 END DO
-                 grid%cr3d(i,j,k) = Term
-               ENDIF
-               xs1 = xs1 + dr1
-!           END DO
-            xs2 = xs2 + dr2
-!        END DO
-      END DO LoopOnGrid
-      !NB parallelization
-      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
-  
---- 233,264 ----
-                 Term  = 0.0_dp
-                 ! Sum over k vectors
-                 DO kg = 1, SIZE(Lg)
-!                   !NB Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
-! 		  ! cos(A+B) = cos A cos B − sin A sin B
-! 		  cos_gy_gz = cos_gy(kg,j)*cos_gz(kg,k) - sin_gy(kg,j)*sin_gz(kg,k)
-! 		  sin_gy_gz = cos_gy(kg,j)*sin_gz(kg,k) + sin_gy(kg,j)*cos_gz(kg,k)
-! 		  Term = Term + lg(kg)*(cos_gx(kg,i)*cos_gy_gz - sin_gx(kg,i)*sin_gy_gz)
-                 END DO
-                 grid%cr3d(i,j,k) = Term
-               ENDIF
-               xs1 = xs1 + dr1
-!           END DO ! i
-            xs2 = xs2 + dr2
-!        END DO ! j
-      END DO LoopOnGrid
-+     !NB deallocate temporaries for Cos refactoring
-+     DEALLOCATE(cos_gx,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     DEALLOCATE(sin_gx,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     DEALLOCATE(cos_gy,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     DEALLOCATE(sin_gy,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     DEALLOCATE(cos_gz,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     DEALLOCATE(sin_gz,stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      !NB parallelization
-      CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
-  
-Index: cp_ddapc_methods.F
+*** 230,239 ****
+--- 309,320 ----
+      !
+      ! Solve for spline coefficients
+      !
++ 
+      CALL pw_spline_precond_create(precond,precond_kind=aint_precond,&
+           pool=pw_pool,pbc=.TRUE.,transpose=.FALSE.,error=error)
+      CALL pw_spline_do_precond(precond,grid,TabLR,error=error)
+      CALL pw_spline_precond_set_kind(precond,precond_kind,error=error)
++ 
+      success=find_coeffs(values=grid,coeffs=TabLR,&
+              linOp=spl3_pbc,preconditioner=precond, pool=pw_pool, &
+              eps_r=eps_r,eps_x=eps_x,&
+Index: qmmm_gpw_energy.F
 ===================================================================
-RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
-retrieving revision 1.44
-diff -b -c -3 -r1.44 cp_ddapc_methods.F
-*** cp_ddapc_methods.F	2 May 2011 10:50:56 -0000	1.44
---- cp_ddapc_methods.F	2 May 2011 14:37:33 -0000
+RCS file: /cvsroot/cp2k/cp2k/src/qmmm_gpw_energy.F,v
+retrieving revision 1.27
+diff -b -c -3 -r1.27 qmmm_gpw_energy.F
+*** qmmm_gpw_energy.F	15 Mar 2011 08:26:48 -0000	1.27
+--- qmmm_gpw_energy.F	7 May 2011 01:44:49 -0000
 ***************
-*** 200,208 ****
-      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
-        iparticle1, iparticle2, istart_g, s_dim, stat
-      LOGICAL                                  :: failure
-!     REAL(KIND=dp)                            :: g2, gcut2, rvec1(3), &
-!                                                 rvec2(3), rvec_diff(3), tmp
-      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
-  
-      failure = .FALSE.
-  
---- 200,209 ----
-      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
-        iparticle1, iparticle2, istart_g, s_dim, stat
-      LOGICAL                                  :: failure
-!     REAL(KIND=dp)                            :: g2, gcut2, tmp
-      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
-+     !NB precalculate as many things outside of the innermost loop as possible, in particular w(ig)*gfunc(ig,igauus1)*gfunc(ig,igauss2)
-+     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: gfunc_sq(:,:,:)
-  
-      failure = .FALSE.
-  
-***************
-*** 221,234 ****
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DO iparticle1 = 1, SIZE(particle_set)
--           rvec1=particle_set(iparticle1)%r
-            DO iparticle2 = iparticle1, SIZE(particle_set)
--              rvec2=particle_set(iparticle2)%r
--              rvec_diff=rvec1-rvec2
-               DO ig = s_dim, igmax
-                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
-!                 my_Am(ig) = w(ig)*(g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
-                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
-               END DO
-               DO igauss1 = 1, SIZE(radii)
---- 222,241 ----
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+        ALLOCATE(gfunc_sq(s_dim:igmax,SIZE(radii),SIZE(radii)),stat=stat)
-+        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+ 
-+        DO igauss1 = 1, SIZE(radii)
-+ 	  DO igauss2 = 1, SIZE(radii)
-+ 	     gfunc_sq(s_dim:igmax,igauss1,igauss2) = w(s_dim:igmax)*gfunc(s_dim:igmax,igauss1)*gfunc(s_dim:igmax,igauss2)
-+ 	  END DO
-+        END DO
-+ 
-         DO iparticle1 = 1, SIZE(particle_set)
-            DO iparticle2 = iparticle1, SIZE(particle_set)
-               DO ig = s_dim, igmax
-                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
-!                 my_Am(ig) = (g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
-                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
-               END DO
-               DO igauss1 = 1, SIZE(radii)
-***************
-*** 237,245 ****
-                  IF (iparticle2==iparticle1) istart_g = igauss1
-                  DO igauss2 = istart_g, SIZE(radii)
-                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
-!                    DO ig = s_dim, igmax
-!                       my_Amw(ig) = my_Am(ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
-!                    END DO
-  !NB no loss of accuracy in my test cases
-  #ifdef ACCURATE_SUMS
-                     tmp = accurate_sum(my_Amw)
---- 244,250 ----
-                  IF (iparticle2==iparticle1) istart_g = igauss1
-                  DO igauss2 = istart_g, SIZE(radii)
-                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
-! 		   my_Amw(s_dim:igmax) = my_Am(s_dim:igmax)*gfunc_sq(s_dim:igmax,igauss1,igauss2)
-  !NB no loss of accuracy in my test cases
-  #ifdef ACCURATE_SUMS
-                     tmp = accurate_sum(my_Amw)
-***************
-*** 252,257 ****
---- 257,264 ----
-               END DO
-            END DO
-         END DO
-+        DEALLOCATE(gfunc_sq,stat=stat)
-+        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DEALLOCATE(my_Amw,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DEALLOCATE(my_Am,stat=stat)
-***************
-*** 373,384 ****
-        iparticle1, iparticle2, istart_g, s_dim, stat
-      LOGICAL                                  :: failure
-      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
-!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin, my_Amw
-!     REAL(KIND=dp), ALLOCATABLE, &
-!       DIMENSION(:, :)                        :: my_Am
-!     REAL(KIND=dp), DIMENSION(3)              :: rvec1, rvec2, rvec_diff
-! 
-! !NB temporary for precomputing expensive sin()
-  
-      failure = .FALSE.
-      CALL timeset(routineN,handle)
---- 380,390 ----
-        iparticle1, iparticle2, istart_g, s_dim, stat
-      LOGICAL                                  :: failure
-      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
-!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin
-!     !NB Use DGEMM to speed up calculation, can't do accurate_sum() anymore because dgemm does the sum over g
-!     EXTERNAL DGEMM
-!     REAL(KIND=dp), ALLOCATABLE :: lhs(:,:), rhs(:,:)
-!     INTEGER :: Nr, Np, Ng, icomp
+*** 535,540 ****
+--- 535,541 ----
+        POINTER                                :: grid, grid2
+      TYPE(pw_type), POINTER                   :: pw
+      TYPE(qmmm_per_pot_type), POINTER         :: per_pot
++     REAL(KIND=dp) :: abc_X(4,4), abc_X_Y(4)
   
       failure = .FALSE.
       CALL timeset(routineN,handle)
 ***************
-*** 392,470 ****
-            IF (g2 > gcut2) EXIT
-            igmax  = ig
-         ENDDO
--        ALLOCATE(my_Am(3,s_dim:igmax),stat=stat)
--        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
--        ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
--        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+*** 578,673 ****
+               my_j=bo(1,2)-gbo(1,2)
+               xs2 = REAL(my_j,dp)*dr2c
+               rv3 = rt3 - xs3
+!              DO j =  bo(1,2), bo(2,2)
+!                 xs1 = (bo(1,1)-gbo(1,1))*dr1c
+!                 rv2 = rt2 - xs2
+!                 DO i =  bo(1,1), bo(2,1)
+!                    rv1  = rt1 - xs1
+!                    !
+!                    ! Spline Interpolation 
+!                    !
+!                    vec = (/rv1,rv2,rv3/)
+!                    ivec = FLOOR(vec/pw%pw_grid%dr)
+!                    xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
+!                    xd2  = (vec(2)/dr2)-REAL(ivec(2),kind=dp)
+                     xd3  = (vec(3)/dr3)-REAL(ivec(3),kind=dp)    
+                     ik1 = MODULO(ivec(3)-1,npts(3))+1
+                     ik2 = MODULO(ivec(3)  ,npts(3))+1
+                     ik3 = MODULO(ivec(3)+1,npts(3))+1
+                     ik4 = MODULO(ivec(3)+2,npts(3))+1                   
+                     ij1 = MODULO(ivec(2)-1,npts(2))+1
+                     ij2 = MODULO(ivec(2)  ,npts(2))+1
+                     ij3 = MODULO(ivec(2)+1,npts(2))+1
+                     ij4 = MODULO(ivec(2)+2,npts(2))+1       
+                     ii1 = MODULO(ivec(1)-1,npts(1))+1
+                     ii2 = MODULO(ivec(1)  ,npts(1))+1
+                     ii3 = MODULO(ivec(1)+1,npts(1))+1
+                     ii4 = MODULO(ivec(1)+2,npts(1))+1
+!  
+!                    aaa   = grid(ii1,ij1,ik1)
+!                    baa   = grid(ii2,ij1,ik1)
+!                    caa   = grid(ii3,ij1,ik1)
+!                    daa   = grid(ii4,ij1,ik1)
+!                    aba   = grid(ii1,ij2,ik1)
+!                    bba   = grid(ii2,ij2,ik1)
+!                    cba   = grid(ii3,ij2,ik1)
+!                    dba   = grid(ii4,ij2,ik1)
+!                    aca   = grid(ii1,ij3,ik1)
+!                    bca   = grid(ii2,ij3,ik1)
+!                    cca   = grid(ii3,ij3,ik1)
+!                    dca   = grid(ii4,ij3,ik1)
+!                    ada   = grid(ii1,ij4,ik1)
+!                    bda   = grid(ii2,ij4,ik1)
+!                    cda   = grid(ii3,ij4,ik1)
+!                    dda   = grid(ii4,ij4,ik1)
+!                    aab   = grid(ii1,ij1,ik2)
+!                    bab   = grid(ii2,ij1,ik2)
+!                    cab   = grid(ii3,ij1,ik2)
+!                    dab   = grid(ii4,ij1,ik2)
+!                    abb   = grid(ii1,ij2,ik2)
+!                    bbb   = grid(ii2,ij2,ik2)
+!                    cbb   = grid(ii3,ij2,ik2)
+!                    dbb   = grid(ii4,ij2,ik2)
+!                    acb   = grid(ii1,ij3,ik2)
+!                    bcb   = grid(ii2,ij3,ik2)
+!                    ccb   = grid(ii3,ij3,ik2)
+!                    dcb   = grid(ii4,ij3,ik2)
+!                    adb   = grid(ii1,ij4,ik2)
+!                    bdb   = grid(ii2,ij4,ik2)
+!                    cdb   = grid(ii3,ij4,ik2)
+!                    ddb   = grid(ii4,ij4,ik2)
+!                    aac   = grid(ii1,ij1,ik3)
+!                    bac   = grid(ii2,ij1,ik3)
+!                    cac   = grid(ii3,ij1,ik3)
+!                    dac   = grid(ii4,ij1,ik3)
+!                    abc   = grid(ii1,ij2,ik3)
+!                    bbc   = grid(ii2,ij2,ik3)
+!                    cbc   = grid(ii3,ij2,ik3)
+!                    dbc   = grid(ii4,ij2,ik3)
+!                    acc   = grid(ii1,ij3,ik3)
+!                    bcc   = grid(ii2,ij3,ik3)
+!                    ccc   = grid(ii3,ij3,ik3)
+!                    dcc   = grid(ii4,ij3,ik3)
+!                    adc   = grid(ii1,ij4,ik3)
+!                    bdc   = grid(ii2,ij4,ik3)
+!                    cdc   = grid(ii3,ij4,ik3)
+!                    ddc   = grid(ii4,ij4,ik3)
+!                    aad   = grid(ii1,ij1,ik4)
+!                    bad   = grid(ii2,ij1,ik4)
+!                    cad   = grid(ii3,ij1,ik4)
+!                    dad   = grid(ii4,ij1,ik4)
+!                    abd   = grid(ii1,ij2,ik4)
+!                    bbd   = grid(ii2,ij2,ik4)
+!                    cbd   = grid(ii3,ij2,ik4)
+!                    dbd   = grid(ii4,ij2,ik4)
+!                    acd   = grid(ii1,ij3,ik4)
+!                    bcd   = grid(ii2,ij3,ik4)
+!                    ccd   = grid(ii3,ij3,ik4)
+!                    dcd   = grid(ii4,ij3,ik4)
+!                    add   = grid(ii1,ij4,ik4)
+!                    bdd   = grid(ii2,ij4,ik4)
+!                    cdd   = grid(ii3,ij4,ik4)
+!                    ddd   = grid(ii4,ij4,ik4)
+                     
+                     a1  = 3.0_dp + xd1
+                     a2  = a1*a1
+--- 579,645 ----
+               my_j=bo(1,2)-gbo(1,2)
+               xs2 = REAL(my_j,dp)*dr2c
+               rv3 = rt3 - xs3
+! 	     vec(3) = rv3
+! 	     ivec(3) = FLOOR(vec(3)/pw%pw_grid%dr(3))
+  	     xd3  = (vec(3)/dr3)-REAL(ivec(3),kind=dp)    
+  	     ik1 = MODULO(ivec(3)-1,npts(3))+1
+  	     ik2 = MODULO(ivec(3)  ,npts(3))+1
+  	     ik3 = MODULO(ivec(3)+1,npts(3))+1
+  	     ik4 = MODULO(ivec(3)+2,npts(3))+1                   
++ 	     p1  = 3.0_dp + xd3
++ 	     p2  = p1*p1
++ 	     p3  = p2*p1
++ 	     q1  = 2.0_dp + xd3
++ 	     q2  = q1*q1
++ 	     q3  = q2*q1
++ 	     r1  = 1.0_dp + xd3
++ 	     r2  = r1*r1
++ 	     r3  = r2*r1
++ 	     u1  = xd3
++ 	     u2  = u1*u1
++ 	     u3  = u2*u1
++ 	     v1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*p1 + 12.0_dp*p2 - p3)
++ 	     v2 = -22.0_dp/3.0_dp + 10.0_dp*q1 - 4.0_dp*q2 + 0.5_dp*q3
++ 	     v3 =   2.0_dp/3.0_dp -  2.0_dp*r1 + 2.0_dp*r2 - 0.5_dp*r3
++ 	     v4 =   1.0_dp/6.0_dp*u3
++              DO j =  bo(1,2), bo(2,2)
++                 xs1 = (bo(1,1)-gbo(1,1))*dr1c
++                 rv2 = rt2 - xs2
++ 		vec(2) = rv2
++ 		ivec(2) = FLOOR(vec(2)/pw%pw_grid%dr(2))
++ 		xd2  = (vec(2)/dr2)-REAL(ivec(2),kind=dp)
+  		ij1 = MODULO(ivec(2)-1,npts(2))+1
+  		ij2 = MODULO(ivec(2)  ,npts(2))+1
+  		ij3 = MODULO(ivec(2)+1,npts(2))+1
+  		ij4 = MODULO(ivec(2)+2,npts(2))+1       
++ 		e1  = 3.0_dp + xd2
++ 		e2  = e1*e1
++ 		e3  = e2*e1
++ 		f1  = 2.0_dp + xd2
++ 		f2  = f1*f1
++ 		f3  = f2*f1
++ 		g1  = 1.0_dp + xd2
++ 		g2  = g1*g1
++ 		g3  = g2*g1
++ 		h1  = xd2
++ 		h2  = h1*h1
++ 		h3  = h2*h1
++ 		s1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*e1 + 12.0_dp*e2 - e3)
++ 		s2 = -22.0_dp/3.0_dp + 10.0_dp*f1 - 4.0_dp*f2 + 0.5_dp*f3
++ 		s3 =   2.0_dp/3.0_dp -  2.0_dp*g1 + 2.0_dp*g2 - 0.5_dp*g3
++ 		s4 =   1.0_dp/6.0_dp*h3
++                 DO i =  bo(1,1), bo(2,1)
++                    rv1  = rt1 - xs1
++ 		   vec(1) = rv1
++ 		   ivec(1) = FLOOR(vec(1)/pw%pw_grid%dr(1))
++                    xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
+                     ii1 = MODULO(ivec(1)-1,npts(1))+1
+                     ii2 = MODULO(ivec(1)  ,npts(1))+1
+                     ii3 = MODULO(ivec(1)+1,npts(1))+1
+                     ii4 = MODULO(ivec(1)+2,npts(1))+1
+!                    !
+!                    ! Spline Interpolation 
+!                    !
   
-!        DO iparticle1 = 1, SIZE(particle_set)
-!           rvec1 =  particle_set(iparticle1)%r
-!           DO iparticle2 = iparticle1, SIZE(particle_set)
-!              rvec2 =  particle_set(iparticle2)%r
-!              IF ((iparticle1 /= iparticle0).AND.(iparticle2 /= iparticle0)) CYCLE
-!              IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
-!                    factor=2.0_dp
-!              ELSEIF (iparticle1 == iparticle0) THEN
-!                    factor=1.0_dp
-!              ELSEIF (iparticle2 == iparticle0) THEN
-!                    factor=-1.0_dp
-!              END IF
-!              rvec_diff=rvec2-rvec1
-! 
-!              !NB precompute sin(g.(r1-r2)) with sin(A+B) formula - perhaps just move this into the loop?
-!              arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_cos(1:igmax-s_dim+1, iparticle1) - &
-!                                        g_dot_rvec_cos(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_sin(1:igmax-s_dim+1, iparticle1)
-!              DO ig = s_dim, igmax
-!                 my_Am(1:3,ig) = factor * w(ig) * arg1_v_sin(ig) * rho_tot_g%pw_grid%g(:,ig)
-!              END DO
-!              DO igauss1 = 1, SIZE(radii)
-!                 idim1 = (iparticle1-1)*SIZE(radii)+igauss1
-!                 istart_g = 1
-!                 IF (iparticle2==iparticle1) istart_g = igauss1
-!                 DO igauss2 = istart_g, SIZE(radii)
-!                    idim2 = (iparticle2-1)*SIZE(radii)+igauss2
-!                    DO ig = s_dim, igmax
-!                       my_Amw(ig) =  my_Am(1,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
-!                    END DO
-! !NB no loss of accuracy in my test cases
-! #ifdef ACCURATE_SUMS
-!                    tmp = accurate_sum(my_Amw)
-! #else
-!                    tmp = SUM(my_Amw)
-! #endif
-!                    dAm (idim1,idim2,1) = tmp
-!                    dAm (idim2,idim1,1) = tmp
-!                    DO ig = s_dim, igmax
-!                       my_Amw(ig) =  my_Am(2,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
-!                    END DO
-! !NB no loss of accuracy in my test cases
-! #ifdef ACCURATE_SUMS
-!                    tmp = accurate_sum(my_Amw)
-! #else
-!                    tmp = SUM(my_Amw)
-! #endif
-!                    dAm (idim1,idim2,2) = tmp
-!                    dAm (idim2,idim1,2) = tmp
-!                    DO ig = s_dim, igmax
-!                       my_Amw(ig) =  my_Am(3,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
-!                    END DO
-! !NB no loss of accuracy in my test cases
-! #ifdef ACCURATE_SUMS
-!                    tmp = accurate_sum(my_Amw)
-! #else
-!                    tmp = SUM(my_Amw)
-! #endif
-!                    dAm (idim1,idim2,3) = tmp
-!                    dAm (idim2,idim1,3) = tmp
-!                 END DO
-!              END DO
-!           END DO
-!        END DO
-!        DEALLOCATE(my_Amw,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        DEALLOCATE(my_Am,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         !!! DEALLOCATE(arg1_v,stat=stat)
-         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
---- 398,455 ----
-            IF (g2 > gcut2) EXIT
-            igmax  = ig
-         ENDDO
-         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+                     a1  = 3.0_dp + xd1
+                     a2  = a1*a1
+***************
+*** 681,740 ****
+                     d1  = xd1
+                     d2  = d1*d1
+                     d3  = d2*d1
+-                    e1  = 3.0_dp + xd2
+-                    e2  = e1*e1
+-                    e3  = e2*e1
+-                    f1  = 2.0_dp + xd2
+-                    f2  = f1*f1
+-                    f3  = f2*f1
+-                    g1  = 1.0_dp + xd2
+-                    g2  = g1*g1
+-                    g3  = g2*g1
+-                    h1  = xd2
+-                    h2  = h1*h1
+-                    h3  = h2*h1
+-                    p1  = 3.0_dp + xd3
+-                    p2  = p1*p1
+-                    p3  = p2*p1
+-                    q1  = 2.0_dp + xd3
+-                    q2  = q1*q1
+-                    q3  = q2*q1
+-                    r1  = 1.0_dp + xd3
+-                    r2  = r1*r1
+-                    r3  = r2*r1
+-                    u1  = xd3
+-                    u2  = u1*u1
+-                    u3  = u2*u1
+-        
+                     t1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*a1 + 12.0_dp*a2 - a3)
+                     t2 = -22.0_dp/3.0_dp + 10.0_dp*b1 - 4.0_dp*b2 + 0.5_dp*b3
+                     t3 =   2.0_dp/3.0_dp -  2.0_dp*c1 + 2.0_dp*c2 - 0.5_dp*c3
+                     t4 =   1.0_dp/6.0_dp*d3
+-                    s1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*e1 + 12.0_dp*e2 - e3)
+-                    s2 = -22.0_dp/3.0_dp + 10.0_dp*f1 - 4.0_dp*f2 + 0.5_dp*f3
+-                    s3 =   2.0_dp/3.0_dp -  2.0_dp*g1 + 2.0_dp*g2 - 0.5_dp*g3
+-                    s4 =   1.0_dp/6.0_dp*h3
+-                    v1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*p1 + 12.0_dp*p2 - p3)
+-                    v2 = -22.0_dp/3.0_dp + 10.0_dp*q1 - 4.0_dp*q2 + 0.5_dp*q3
+-                    v3 =   2.0_dp/3.0_dp -  2.0_dp*r1 + 2.0_dp*r2 - 0.5_dp*r3
+-                    v4 =   1.0_dp/6.0_dp*u3
+         
+!                    val = (( aaa * t1 + baa * t2 + caa * t3 + daa * t4 ) * s1  +&
+!                           ( aba * t1 + bba * t2 + cba * t3 + dba * t4 ) * s2  +&
+!                           ( aca * t1 + bca * t2 + cca * t3 + dca * t4 ) * s3  +&
+!                           ( ada * t1 + bda * t2 + cda * t3 + dda * t4 ) * s4  ) * v1 +&
+!                          (( aab * t1 + bab * t2 + cab * t3 + dab * t4 ) * s1  +&
+!                           ( abb * t1 + bbb * t2 + cbb * t3 + dbb * t4 ) * s2  +&
+!                           ( acb * t1 + bcb * t2 + ccb * t3 + dcb * t4 ) * s3  +&
+!                           ( adb * t1 + bdb * t2 + cdb * t3 + ddb * t4 ) * s4  ) * v2 +&
+!                          (( aac * t1 + bac * t2 + cac * t3 + dac * t4 ) * s1  +&
+!                           ( abc * t1 + bbc * t2 + cbc * t3 + dbc * t4 ) * s2  +&
+!                           ( acc * t1 + bcc * t2 + ccc * t3 + dcc * t4 ) * s3  +&
+!                           ( adc * t1 + bdc * t2 + cdc * t3 + ddc * t4 ) * s4  ) * v3 +&
+!                          (( aad * t1 + bad * t2 + cad * t3 + dad * t4 ) * s1  +&
+!                           ( abd * t1 + bbd * t2 + cbd * t3 + dbd * t4 ) * s2  +&
+!                           ( acd * t1 + bcd * t2 + ccd * t3 + dcd * t4 ) * s3  +&
+!                           ( add * t1 + bdd * t2 + cdd * t3 + ddd * t4 ) * s4  ) * v4 
   
-! ! want dAm(idim1 = (iparticle0-1)*SIZE(radii)+1:(iparticle0-1)*SIZE(radii)+size(radii),1:size(particle_set)*size(radii),1:3)
-!        iparticle1 = iparticle0
-!        Nr=SIZE(radii)
-!        Np=SIZE(particle_set)
-!        Ng=igmax-s_dim+1
-!        allocate(lhs(Nr,Ng), stat=stat)
-!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        allocate(rhs(Ng,Np*Nr), stat=stat)
-!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+                     grid2(i,j,k) = grid2(i,j,k) - val * qt 
+                     xs1 = xs1 + dr1c
+--- 653,686 ----
+                     d1  = xd1
+                     d2  = d1*d1
+                     d3  = d2*d1
+                     t1 =   1.0_dp/6.0_dp * (64.0_dp - 48.0_dp*a1 + 12.0_dp*a2 - a3)
+                     t2 = -22.0_dp/3.0_dp + 10.0_dp*b1 - 4.0_dp*b2 + 0.5_dp*b3
+                     t3 =   2.0_dp/3.0_dp -  2.0_dp*c1 + 2.0_dp*c2 - 0.5_dp*c3
+                     t4 =   1.0_dp/6.0_dp*d3
+  
+! 		   abc_X(1,1) = grid(ii1,ij1,ik1)*v1 + grid(ii1,ij1,ik2)*v2 + grid(ii1,ij1,ik3)*v3 + grid(ii1,ij1,ik4)*v4
+! 		   abc_X(1,2) = grid(ii1,ij2,ik1)*v1 + grid(ii1,ij2,ik2)*v2 + grid(ii1,ij2,ik3)*v3 + grid(ii1,ij2,ik4)*v4
+! 		   abc_X(1,3) = grid(ii1,ij3,ik1)*v1 + grid(ii1,ij3,ik2)*v2 + grid(ii1,ij3,ik3)*v3 + grid(ii1,ij3,ik4)*v4
+! 		   abc_X(1,4) = grid(ii1,ij4,ik1)*v1 + grid(ii1,ij4,ik2)*v2 + grid(ii1,ij4,ik3)*v3 + grid(ii1,ij4,ik4)*v4
+! 		   abc_X(2,1) = grid(ii2,ij1,ik1)*v1 + grid(ii2,ij1,ik2)*v2 + grid(ii2,ij1,ik3)*v3 + grid(ii2,ij1,ik4)*v4
+! 		   abc_X(2,2) = grid(ii2,ij2,ik1)*v1 + grid(ii2,ij2,ik2)*v2 + grid(ii2,ij2,ik3)*v3 + grid(ii2,ij2,ik4)*v4
+! 		   abc_X(2,3) = grid(ii2,ij3,ik1)*v1 + grid(ii2,ij3,ik2)*v2 + grid(ii2,ij3,ik3)*v3 + grid(ii2,ij3,ik4)*v4
+! 		   abc_X(2,4) = grid(ii2,ij4,ik1)*v1 + grid(ii2,ij4,ik2)*v2 + grid(ii2,ij4,ik3)*v3 + grid(ii2,ij4,ik4)*v4
+! 		   abc_X(3,1) = grid(ii3,ij1,ik1)*v1 + grid(ii3,ij1,ik2)*v2 + grid(ii3,ij1,ik3)*v3 + grid(ii3,ij1,ik4)*v4
+! 		   abc_X(3,2) = grid(ii3,ij2,ik1)*v1 + grid(ii3,ij2,ik2)*v2 + grid(ii3,ij2,ik3)*v3 + grid(ii3,ij2,ik4)*v4
+! 		   abc_X(3,3) = grid(ii3,ij3,ik1)*v1 + grid(ii3,ij3,ik2)*v2 + grid(ii3,ij3,ik3)*v3 + grid(ii3,ij3,ik4)*v4
+! 		   abc_X(3,4) = grid(ii3,ij4,ik1)*v1 + grid(ii3,ij4,ik2)*v2 + grid(ii3,ij4,ik3)*v3 + grid(ii3,ij4,ik4)*v4
+! 		   abc_X(4,1) = grid(ii4,ij1,ik1)*v1 + grid(ii4,ij1,ik2)*v2 + grid(ii4,ij1,ik3)*v3 + grid(ii4,ij1,ik4)*v4
+! 		   abc_X(4,2) = grid(ii4,ij2,ik1)*v1 + grid(ii4,ij2,ik2)*v2 + grid(ii4,ij2,ik3)*v3 + grid(ii4,ij2,ik4)*v4
+! 		   abc_X(4,3) = grid(ii4,ij3,ik1)*v1 + grid(ii4,ij3,ik2)*v2 + grid(ii4,ij3,ik3)*v3 + grid(ii4,ij3,ik4)*v4
+! 		   abc_X(4,4) = grid(ii4,ij4,ik1)*v1 + grid(ii4,ij4,ik2)*v2 + grid(ii4,ij4,ik3)*v3 + grid(ii4,ij4,ik4)*v4
 ! 
-! 	! fill in RHS
-!        do iparticle2=1,Np
-! !!	  IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
-! !!		factor = 2.0_dp
-! !!	  ELSEIF (iparticle1 == iparticle0) THEN
-! !!		factor = 1.0_dp
-! !!	  ELSEIF (iparticle2 == iparticle0) THEN
-! !!		factor = -1.0_dp
-! !!	  END IF
-! 	  arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:Ng, iparticle2)*g_dot_rvec_cos(1:Ng, iparticle1) - &
-! 				    g_dot_rvec_cos(1:Ng, iparticle2)*g_dot_rvec_sin(1:Ng, iparticle1)
-! 	  do igauss2=1,Nr
-! 	     !! rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = factor*arg1_v_sin(s_dim:igmax)*gfunc(s_dim:igmax,igauss2)
-! 	     rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = arg1_v_sin(s_dim:igmax)*gfunc(s_dim:igmax,igauss2)
-! 	  end do
-!        end do
-!        rhs(1:Ng,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr) = 2.0D0*rhs(1:Ng,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr)
+! 		   abc_X_Y(1) = abc_X(1,1)*t1 + abc_X(2,1)*t2 + abc_X(3,1)*t3 + abc_X(4,1)*t4
+! 		   abc_X_Y(2) = abc_X(1,2)*t1 + abc_X(2,2)*t2 + abc_X(3,2)*t3 + abc_X(4,2)*t4
+! 		   abc_X_Y(3) = abc_X(1,3)*t1 + abc_X(2,3)*t2 + abc_X(3,3)*t3 + abc_X(4,3)*t4
+! 		   abc_X_Y(4) = abc_X(1,4)*t1 + abc_X(2,4)*t2 + abc_X(3,4)*t3 + abc_X(4,4)*t4
 ! 
-!        do icomp=1,3
-! 	  ! fill in LHS
-! 	  do ig=s_dim,igmax
-! 	     lhs(1:Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr)
-! 	  end do
-! 	  call DGEMM('N', 'N', Nr, Np*Nr, Ng, 1.0D0, lhs, Nr, rhs, Ng, 0.0D0, dAm((iparticle1-1)*Nr+1,1,icomp), Np*Nr)
-!        end do ! icomp
-! 
-!        if (iparticle0 > 1) then
-! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,1))
-! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,2) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,2))
-! 	  dAm(1:(iparticle0-1)*Nr+1,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,3) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1:(iparticle0-1)*Nr+1,3))
-!        endif
-!        if (iparticle0 < Np) then
-! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,1) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,1))
-! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,2) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,2))
-! 	  dAm(iparticle0*Nr+1:Np*Nr,(iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr,3) = transpose(dAm((iparticle0-1)*Nr+1:(iparticle0-1)*Nr+Nr, iparticle0*Nr+1:Np*Nr,3))
-!        endif
-!        DEALLOCATE(rhs,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        DEALLOCATE(lhs,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         !!! DEALLOCATE(arg1_v,stat=stat)
-         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+! 		   val = abc_X_Y(1)*s1 + abc_X_Y(2)*s2 + abc_X_Y(3)*s3 + abc_X_Y(4)*s4
+  
+                     grid2(i,j,k) = grid2(i,j,k) - val * qt 
+                     xs1 = xs1 + dr1c
 Index: qmmm_gpw_forces.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/qmmm_gpw_forces.F,v
 retrieving revision 1.19
 diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 *** qmmm_gpw_forces.F	31 Dec 2010 16:04:00 -0000	1.19
---- qmmm_gpw_forces.F	29 Apr 2011 18:39:39 -0000
+--- qmmm_gpw_forces.F	7 May 2011 01:44:50 -0000
 ***************
 *** 738,743 ****
 --- 738,744 ----
@@ -506,104 +586,108 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
                my_j = bo(1,2)-gbo(1,2)
                xs2 = REAL(my_j,dp)*dr2c
                rv3 = rt3 - xs3
-               DO j =  bo(1,2), bo(2,2)
-                  my_i= bo(1,1)-gbo(1,1)
-                  xs1 = REAL(my_i,dp)*dr1c
-                  rv2 = rt2 - xs2
-                  DO i =  bo(1,1), bo(2,1)
-                     rv1 = rt1 - xs1
+!              DO j =  bo(1,2), bo(2,2)
+!                 my_i= bo(1,1)-gbo(1,1)
+!                 xs1 = REAL(my_i,dp)*dr1c
+!                 rv2 = rt2 - xs2
+!                 DO i =  bo(1,1), bo(2,1)
+!                    rv1 = rt1 - xs1
 !                    vec = (/rv1,rv2,rv3/)
 !                    ivec = FLOOR(vec/pw%pw_grid%dr)
-                     xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
--                    xd2  = (vec(2)/dr2)-REAL(ivec(2),kind=dp)
--                    xd3  = (vec(3)/dr3)-REAL(ivec(3),kind=dp)
--                    ik1 = MODULO(ivec(3)-1,npts(3))+1
--                    ik2 = MODULO(ivec(3)  ,npts(3))+1
--                    ik3 = MODULO(ivec(3)+1,npts(3))+1
--                    ik4 = MODULO(ivec(3)+2,npts(3))+1
--                    ij1 = MODULO(ivec(2)-1,npts(2))+1
--                    ij2 = MODULO(ivec(2)  ,npts(2))+1
--                    ij3 = MODULO(ivec(2)+1,npts(2))+1
--                    ij4 = MODULO(ivec(2)+2,npts(2))+1
--                    ii1 = MODULO(ivec(1)-1,npts(1))+1
--                    ii2 = MODULO(ivec(1)  ,npts(1))+1
--                    ii3 = MODULO(ivec(1)+1,npts(1))+1
--                    ii4 = MODULO(ivec(1)+2,npts(1))+1
-- 
--                    aaa   = grid2(ii1,ij1,ik1)
--                    baa   = grid2(ii2,ij1,ik1)
--                    caa   = grid2(ii3,ij1,ik1)
--                    daa   = grid2(ii4,ij1,ik1)
--                    aba   = grid2(ii1,ij2,ik1)
--                    bba   = grid2(ii2,ij2,ik1)
--                    cba   = grid2(ii3,ij2,ik1)
--                    dba   = grid2(ii4,ij2,ik1)
--                    aca   = grid2(ii1,ij3,ik1)
--                    bca   = grid2(ii2,ij3,ik1)
--                    cca   = grid2(ii3,ij3,ik1)
--                    dca   = grid2(ii4,ij3,ik1)
--                    ada   = grid2(ii1,ij4,ik1)
--                    bda   = grid2(ii2,ij4,ik1)
--                    cda   = grid2(ii3,ij4,ik1)
--                    dda   = grid2(ii4,ij4,ik1)
--                    aab   = grid2(ii1,ij1,ik2)
--                    bab   = grid2(ii2,ij1,ik2)
--                    cab   = grid2(ii3,ij1,ik2)
--                    dab   = grid2(ii4,ij1,ik2)
--                    abb   = grid2(ii1,ij2,ik2)
--                    bbb   = grid2(ii2,ij2,ik2)
--                    cbb   = grid2(ii3,ij2,ik2)
--                    dbb   = grid2(ii4,ij2,ik2)
--                    acb   = grid2(ii1,ij3,ik2)
--                    bcb   = grid2(ii2,ij3,ik2)
--                    ccb   = grid2(ii3,ij3,ik2)
--                    dcb   = grid2(ii4,ij3,ik2)
--                    adb   = grid2(ii1,ij4,ik2)
--                    bdb   = grid2(ii2,ij4,ik2)
--                    cdb   = grid2(ii3,ij4,ik2)
--                    ddb   = grid2(ii4,ij4,ik2)
--                    aac   = grid2(ii1,ij1,ik3)
--                    bac   = grid2(ii2,ij1,ik3)
--                    cac   = grid2(ii3,ij1,ik3)
--                    dac   = grid2(ii4,ij1,ik3)
--                    abc   = grid2(ii1,ij2,ik3)
--                    bbc   = grid2(ii2,ij2,ik3)
--                    cbc   = grid2(ii3,ij2,ik3)
--                    dbc   = grid2(ii4,ij2,ik3)
--                    acc   = grid2(ii1,ij3,ik3)
--                    bcc   = grid2(ii2,ij3,ik3)
--                    ccc   = grid2(ii3,ij3,ik3)
--                    dcc   = grid2(ii4,ij3,ik3)
--                    adc   = grid2(ii1,ij4,ik3)
--                    bdc   = grid2(ii2,ij4,ik3)
--                    cdc   = grid2(ii3,ij4,ik3)
--                    ddc   = grid2(ii4,ij4,ik3)
--                    aad   = grid2(ii1,ij1,ik4)
--                    bad   = grid2(ii2,ij1,ik4)
--                    cad   = grid2(ii3,ij1,ik4)
--                    dad   = grid2(ii4,ij1,ik4)
--                    abd   = grid2(ii1,ij2,ik4)
--                    bbd   = grid2(ii2,ij2,ik4)
--                    cbd   = grid2(ii3,ij2,ik4)
--                    dbd   = grid2(ii4,ij2,ik4)
--                    acd   = grid2(ii1,ij3,ik4)
--                    bcd   = grid2(ii2,ij3,ik4)
--                    ccd   = grid2(ii3,ij3,ik4)
--                    dcd   = grid2(ii4,ij3,ik4)
--                    add   = grid2(ii1,ij4,ik4)
--                    bdd   = grid2(ii2,ij4,ik4)
--                    cdd   = grid2(ii3,ij4,ik4)
--                    ddd   = grid2(ii4,ij4,ik4)
-- 
+!                    xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
+!                    xd2  = (vec(2)/dr2)-REAL(ivec(2),kind=dp)
+!                    xd3  = (vec(3)/dr3)-REAL(ivec(3),kind=dp)
+                     ik1 = MODULO(ivec(3)-1,npts(3))+1
+                     ik2 = MODULO(ivec(3)  ,npts(3))+1
+                     ik3 = MODULO(ivec(3)+1,npts(3))+1
+                     ik4 = MODULO(ivec(3)+2,npts(3))+1
+                     ij1 = MODULO(ivec(2)-1,npts(2))+1
+                     ij2 = MODULO(ivec(2)  ,npts(2))+1
+                     ij3 = MODULO(ivec(2)+1,npts(2))+1
+                     ij4 = MODULO(ivec(2)+2,npts(2))+1
+                     ii1 = MODULO(ivec(1)-1,npts(1))+1
+                     ii2 = MODULO(ivec(1)  ,npts(1))+1
+                     ii3 = MODULO(ivec(1)+1,npts(1))+1
+                     ii4 = MODULO(ivec(1)+2,npts(1))+1
+! 
+!                    aaa   = grid2(ii1,ij1,ik1)
+!                    baa   = grid2(ii2,ij1,ik1)
+!                    caa   = grid2(ii3,ij1,ik1)
+!                    daa   = grid2(ii4,ij1,ik1)
+!                    aba   = grid2(ii1,ij2,ik1)
+!                    bba   = grid2(ii2,ij2,ik1)
+!                    cba   = grid2(ii3,ij2,ik1)
+!                    dba   = grid2(ii4,ij2,ik1)
+!                    aca   = grid2(ii1,ij3,ik1)
+!                    bca   = grid2(ii2,ij3,ik1)
+!                    cca   = grid2(ii3,ij3,ik1)
+!                    dca   = grid2(ii4,ij3,ik1)
+!                    ada   = grid2(ii1,ij4,ik1)
+!                    bda   = grid2(ii2,ij4,ik1)
+!                    cda   = grid2(ii3,ij4,ik1)
+!                    dda   = grid2(ii4,ij4,ik1)
+!                    aab   = grid2(ii1,ij1,ik2)
+!                    bab   = grid2(ii2,ij1,ik2)
+!                    cab   = grid2(ii3,ij1,ik2)
+!                    dab   = grid2(ii4,ij1,ik2)
+!                    abb   = grid2(ii1,ij2,ik2)
+!                    bbb   = grid2(ii2,ij2,ik2)
+!                    cbb   = grid2(ii3,ij2,ik2)
+!                    dbb   = grid2(ii4,ij2,ik2)
+!                    acb   = grid2(ii1,ij3,ik2)
+!                    bcb   = grid2(ii2,ij3,ik2)
+!                    ccb   = grid2(ii3,ij3,ik2)
+!                    dcb   = grid2(ii4,ij3,ik2)
+!                    adb   = grid2(ii1,ij4,ik2)
+!                    bdb   = grid2(ii2,ij4,ik2)
+!                    cdb   = grid2(ii3,ij4,ik2)
+!                    ddb   = grid2(ii4,ij4,ik2)
+!                    aac   = grid2(ii1,ij1,ik3)
+!                    bac   = grid2(ii2,ij1,ik3)
+!                    cac   = grid2(ii3,ij1,ik3)
+!                    dac   = grid2(ii4,ij1,ik3)
+!                    abc   = grid2(ii1,ij2,ik3)
+!                    bbc   = grid2(ii2,ij2,ik3)
+!                    cbc   = grid2(ii3,ij2,ik3)
+!                    dbc   = grid2(ii4,ij2,ik3)
+!                    acc   = grid2(ii1,ij3,ik3)
+!                    bcc   = grid2(ii2,ij3,ik3)
+!                    ccc   = grid2(ii3,ij3,ik3)
+!                    dcc   = grid2(ii4,ij3,ik3)
+!                    adc   = grid2(ii1,ij4,ik3)
+!                    bdc   = grid2(ii2,ij4,ik3)
+!                    cdc   = grid2(ii3,ij4,ik3)
+!                    ddc   = grid2(ii4,ij4,ik3)
+!                    aad   = grid2(ii1,ij1,ik4)
+!                    bad   = grid2(ii2,ij1,ik4)
+!                    cad   = grid2(ii3,ij1,ik4)
+!                    dad   = grid2(ii4,ij1,ik4)
+!                    abd   = grid2(ii1,ij2,ik4)
+!                    bbd   = grid2(ii2,ij2,ik4)
+!                    cbd   = grid2(ii3,ij2,ik4)
+!                    dbd   = grid2(ii4,ij2,ik4)
+!                    acd   = grid2(ii1,ij3,ik4)
+!                    bcd   = grid2(ii2,ij3,ik4)
+!                    ccd   = grid2(ii3,ij3,ik4)
+!                    dcd   = grid2(ii4,ij3,ik4)
+!                    add   = grid2(ii1,ij4,ik4)
+!                    bdd   = grid2(ii2,ij4,ik4)
+!                    cdd   = grid2(ii3,ij4,ik4)
+!                    ddd   = grid2(ii4,ij4,ik4)
+! 
                      a1  = 3.0_dp + xd1
                      a2  = a1*a1
                      a3  = a2*a1
---- 792,852 ----
+--- 792,864 ----
                my_j = bo(1,2)-gbo(1,2)
                xs2 = REAL(my_j,dp)*dr2c
                rv3 = rt3 - xs3
-+ 	     vec(3) = rv3
-+ 	     ivec(3) = FLOOR(vec(3)/pw%pw_grid%dr(3))
+! 	     vec(3) = rv3
+! 	     ivec(3) = FLOOR(vec(3)/pw%pw_grid%dr(3))
+  	     ik1 = MODULO(ivec(3)-1,npts(3))+1
+  	     ik2 = MODULO(ivec(3)  ,npts(3))+1
+  	     ik3 = MODULO(ivec(3)+1,npts(3))+1
+  	     ik4 = MODULO(ivec(3)+2,npts(3))+1
 + 	     xd3  = (vec(3)/dr3)-REAL(ivec(3),kind=dp)
 + 	     p1  = 3.0_dp + xd3
 + 	     p2  = p1*p1
@@ -625,12 +709,16 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 + 	     v2d =  10.0_dp - 8.0_dp*q1 + 1.5_dp*q2
 + 	     v3d =  -2.0_dp + 4.0_dp*r1 - 1.5_dp*r2
 + 	     v4d =   0.5_dp*u2
-               DO j =  bo(1,2), bo(2,2)
-                  my_i= bo(1,1)-gbo(1,1)
-                  xs1 = REAL(my_i,dp)*dr1c
-                  rv2 = rt2 - xs2
++              DO j =  bo(1,2), bo(2,2)
++                 my_i= bo(1,1)-gbo(1,1)
++                 xs1 = REAL(my_i,dp)*dr1c
++                 rv2 = rt2 - xs2
 + 	        vec(2) = rv2
 + 	        ivec(2) = FLOOR(vec(2)/pw%pw_grid%dr(2))
+  		ij1 = MODULO(ivec(2)-1,npts(2))+1
+  		ij2 = MODULO(ivec(2)  ,npts(2))+1
+  		ij3 = MODULO(ivec(2)+1,npts(2))+1
+  		ij4 = MODULO(ivec(2)+2,npts(2))+1
 + 		xd2  = (vec(2)/dr2)-REAL(ivec(2),kind=dp)
 + 		e1  = 3.0_dp + xd2
 + 		e2  = e1*e1
@@ -652,11 +740,15 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 + 		s2d =  10.0_dp - 8.0_dp*f1 + 1.5_dp*f2
 + 		s3d =  -2.0_dp + 4.0_dp*g1 - 1.5_dp*g2
 + 		s4d =   0.5_dp*h2
-                  DO i =  bo(1,1), bo(2,1)
-                     rv1 = rt1 - xs1
-! 		   vec(1) = rv1
-! 		   ivec(1) = FLOOR(vec(1)/pw%pw_grid%dr(1))
-                     xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
++                 DO i =  bo(1,1), bo(2,1)
++                    rv1 = rt1 - xs1
++ 		   vec(1) = rv1
++ 		   ivec(1) = FLOOR(vec(1)/pw%pw_grid%dr(1))
+  		   ii1 = MODULO(ivec(1)-1,npts(1))+1
+  		   ii2 = MODULO(ivec(1)  ,npts(1))+1
+  		   ii3 = MODULO(ivec(1)+1,npts(1))+1
+  		   ii4 = MODULO(ivec(1)+2,npts(1))+1
+!                    xd1  = (vec(1)/dr1)-REAL(ivec(1),kind=dp)
                      a1  = 3.0_dp + xd1
                      a2  = a1*a1
                      a3  = a2*a1
@@ -718,7 +810,7 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
   
                      t1     = t1d*dr1i
                      t2     = t2d*dr1i
---- 859,939 ----
+--- 871,939 ----
                      d1  = xd1
                      d2  = d1*d1
                      d3  = d2*d1
@@ -731,18 +823,6 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
                      t3d =  -2.0_dp + 4.0_dp*c1 - 1.5_dp*c2
                      t4d =   0.5_dp*d2
 ! 
-!                    ik1 = MODULO(ivec(3)-1,npts(3))+1
-!                    ik2 = MODULO(ivec(3)  ,npts(3))+1
-!                    ik3 = MODULO(ivec(3)+1,npts(3))+1
-!                    ik4 = MODULO(ivec(3)+2,npts(3))+1
-!                    ij1 = MODULO(ivec(2)-1,npts(2))+1
-!                    ij2 = MODULO(ivec(2)  ,npts(2))+1
-!                    ij3 = MODULO(ivec(2)+1,npts(2))+1
-!                    ij4 = MODULO(ivec(2)+2,npts(2))+1
-!                    ii1 = MODULO(ivec(1)-1,npts(1))+1
-!                    ii2 = MODULO(ivec(1)  ,npts(1))+1
-!                    ii3 = MODULO(ivec(1)+1,npts(1))+1
-!                    ii4 = MODULO(ivec(1)+2,npts(1))+1
 ! 
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
@@ -798,8 +878,8 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 ! ! echo ""
 ! ! done
   
-  		   t1 = t1d*dr1i
-  		   t2 = t2d*dr1i
+                     t1     = t1d*dr1i
+                     t2     = t2d*dr1i
 ***************
 *** 955,976 ****
                      v2     = v2o
@@ -825,9 +905,9 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
                      t1     = t1o
                      t2     = t2o
 --- 947,975 ----
-  		   v2 = v2o
-  		   v3 = v3o
-  		   v4 = v4o
+                     v2     = v2o
+                     v3     = v3o
+                     v4     = v4o
 ! 		   abc_X(1,1) = grid2(ii1,ij1,ik1)*v1 + grid2(ii1,ij1,ik2)*v2 + grid2(ii1,ij1,ik3)*v3 + grid2(ii1,ij1,ik4)*v4
 ! 		   abc_X(1,2) = grid2(ii1,ij2,ik1)*v1 + grid2(ii1,ij2,ik2)*v2 + grid2(ii1,ij2,ik3)*v3 + grid2(ii1,ij2,ik4)*v4
 ! 		   abc_X(1,3) = grid2(ii1,ij3,ik1)*v1 + grid2(ii1,ij3,ik2)*v2 + grid2(ii1,ij3,ik3)*v3 + grid2(ii1,ij3,ik4)*v4
@@ -852,8 +932,8 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 ! 
 ! 		   val(1) = abc_X_Y(1)*s1 + abc_X_Y(2)*s2 + abc_X_Y(3)*s3 + abc_X_Y(4)*s4
   
-  		   t1 = t1o
-  		   t2 = t2o
+                     t1     = t1o
+                     t2     = t2o
 ***************
 *** 980,1005 ****
                      s2     = s2d*dr2i
@@ -883,9 +963,9 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
                      t1     = t1o
                      t2     = t2o
 --- 979,1011 ----
-  		   s2 = s2d*dr2i
-  		   s3 = s3d*dr2i
-  		   s4 = s4d*dr2i
+                     s2     = s2d*dr2i
+                     s3     = s3d*dr2i
+                     s4     = s4d*dr2i
 ! 		   !! v1 = v1o
 ! 		   !! v2 = v2o
 ! 		   !! v3 = v3o
@@ -914,8 +994,8 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
 ! 
 ! 		   val(2) = abc_X_Y(1)*s1 + abc_X_Y(2)*s2 + abc_X_Y(3)*s3 + abc_X_Y(4)*s4
   
-  		   t1 = t1o
-  		   t2 = t2o
+                     t1     = t1o
+                     t2     = t2o
 ***************
 *** 1013,1034 ****
                      v2     = v2d*dr3i
@@ -941,9 +1021,9 @@ diff -b -c -3 -r1.19 qmmm_gpw_forces.F
                      fac = grid(i,j,k)
                      ft1 = ft1 + val(1) * fac
 --- 1019,1048 ----
-  		   v2 = v2d*dr3i
-  		   v3 = v3d*dr3i
-  		   v4 = v4d*dr3i
+                     v2     = v2d*dr3i
+                     v3     = v3d*dr3i
+                     v4     = v4d*dr3i
 ! 		   abc_X(1,1) = grid2(ii1,ij1,ik1)*v1 + grid2(ii1,ij1,ik2)*v2 + grid2(ii1,ij1,ik3)*v3 + grid2(ii1,ij1,ik4)*v4
 ! 		   abc_X(1,2) = grid2(ii1,ij2,ik1)*v1 + grid2(ii1,ij2,ik2)*v2 + grid2(ii1,ij2,ik3)*v3 + grid2(ii1,ij2,ik4)*v4
 ! 		   abc_X(1,3) = grid2(ii1,ij3,ik1)*v1 + grid2(ii1,ij3,ik2)*v2 + grid2(ii1,ij3,ik3)*v3 + grid2(ii1,ij3,ik4)*v4
@@ -1224,3 +1304,516 @@ diff -b -c -3 -r1.24 pw_methods.F
     FUNCTION pw_integral_a2b ( pw1, pw2, error) RESULT ( integral_value )
   
       TYPE(pw_type), INTENT(IN)                :: pw1, pw2
+Index: cp_ddapc_util.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_util.F,v
+retrieving revision 1.25
+diff -b -c -3 -r1.25 cp_ddapc_util.F
+*** cp_ddapc_util.F	19 Apr 2011 06:28:35 -0000	1.25
+--- cp_ddapc_util.F	6 May 2011 14:33:10 -0000
+***************
+*** 16,25 ****
+    USE cp_control_types,                ONLY: ddapc_restraint_type,&
+                                               dft_control_type
+    USE cp_ddapc_forces,                 ONLY: evaluate_restraint_functional
+- !NB routines to precompute sin(g . r) and cos(g.r), so it doesn't have to be done for each r_i-r_j pair in build_der_A_matrix()
+    USE cp_ddapc_methods,                ONLY: build_A_matrix,&
+                                               build_b_vector,&
+!                                              build_der_A_matrix,&
+                                               build_der_b_vector,&
+                                               cleanup_g_dot_rvec_sin_cos,&
+                                               prep_g_dot_rvec_sin_cos
+--- 16,24 ----
+    USE cp_control_types,                ONLY: ddapc_restraint_type,&
+                                               dft_control_type
+    USE cp_ddapc_forces,                 ONLY: evaluate_restraint_functional
+    USE cp_ddapc_methods,                ONLY: build_A_matrix,&
+                                               build_b_vector,&
+!                                              build_der_A_matrix_rows,&
+                                               build_der_b_vector,&
+                                               cleanup_g_dot_rvec_sin_cos,&
+                                               prep_g_dot_rvec_sin_cos
+***************
+*** 220,225 ****
+--- 219,226 ----
+      CHARACTER(LEN=default_string_length)     :: type_of_density
+      INTEGER :: handle, handle2, handle3, i, ii, iparticle, ispin, iw, j, &
+        myid, n_rep_val, ndim, num_gauss, pmax, pmin, stat
++     !NB variables for doing build_der_A_matrix_rows in blocks
++     INTEGER                                  :: iparticle0, nparticles
+      LOGICAL                                  :: failure, need_f
+      REAL(KIND=dp)                            :: c1, c3, ch_dens, gcut, pfact, &
+                                                  rcmin, Vol
+***************
+*** 425,467 ****
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            AmI_bv = MATMUL(cp_ddapc_env%AmI,bv)
+  
+!           !NB call routine to precompute sin(g.r) and cos(g.r), so it doesn't have to be done for each r_i-r_j pair in build_der_A_matrix()
+            CALL prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
+!           DO iparticle = 1, SIZE(particle_set)
+!              dbv = 0.0_dp
+!              CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+!                   particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
+!              IF (debug_this_module) THEN
+!                 CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
+!                      gcut, iparticle, Vol, qs_env, error)
+!                 cp_ddapc_env => qs_env%cp_ddapc_env 
+!              END IF
+!              CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+!                   particle_set, radii, rho_tot_g, gcut, iparticle, g_dot_rvec_sin, g_dot_rvec_cos, error); 
+               !NB no more reduction of dbv and dAm - instead we go through with each node's contribution
+               !NB and reduce resulting charges/forces once, at the end.  Intermediate speedup can be
+               !NB had by reducing dqv after the inner loop, and then other routines don't need to know
+               !NB that contributions to dqv are distributed over the nodes.
+               !NB also get rid of zeroing of dAm and division by Vol**2 - it's slow, and can be done 
+               !NB more quickly later, to a scalar or vector rather than a matrix
+               IF (debug_this_module) THEN
+                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
+                       gcut, iparticle, Vol, qs_env, error)
+                  cp_ddapc_env => qs_env%cp_ddapc_env 
+               END IF
+               DO j = 1, 3
+                  !NB dAmj is actually pretty sparse - one block of cols + one block of rows - use this here:
+                  pmin = (iparticle-1)*SIZE(radii)+1
+                  pmax = iparticle*SIZE(radii)
+                  IF (pmin > 1) THEN
+!                   dAmj_qv(1:pmin-1)      = MATMUL(dAm(1:pmin-1,pmin:pmax,j),qv(pmin:pmax))
+!                   cvT_AmI_dAmj(1:pmin-1) = MATMUL(dAm(1:pmin-1,pmin:pmax,j),cvT_AmI(pmin:pmax))
+                  ENDIF
+                  dAmj_qv(pmin:pmax)      = MATMUL(dAm(pmin:pmax,:,j),qv(:))
+                  cvT_AmI_dAmj(pmin:pmax) = MATMUL(dAm(pmin:pmax,:,j),cvT_AmI(:))
+                  IF (pmax < SIZE(particle_set)*SIZE(radii)) THEN
+!                   dAmj_qv(pmax+1:)      = MATMUL(dAm(pmax+1:,pmin:pmax,j),qv(pmin:pmax))
+!                   cvT_AmI_dAmj(pmax+1:) = MATMUL(dAm(pmax+1:,pmin:pmax,j),cvT_AmI(pmin:pmax))
+                  ENDIF
+                  dAmj_qv      = dAmj_qv / (Vol*Vol)
+                  cvT_AmI_dAmj = cvT_AmI_dAmj / (Vol*Vol)
+--- 426,481 ----
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            AmI_bv = MATMUL(cp_ddapc_env%AmI,bv)
+  
+!           !NB call routine to precompute sin(g.r) and cos(g.r), so it doesn't have to be done for each r_i-r_j pair in build_der_A_matrix_rows()
+            CALL prep_g_dot_rvec_sin_cos(rho_tot_g, particle_set, gcut, g_dot_rvec_sin, g_dot_rvec_cos, error)
+! 	  !NB do build_der_A_matrix_rows in blocks, for more efficient use of DGEMM
+! #define NPSET 100
+! 	  DO iparticle0 = 1, SIZE(particle_set), NPSET
+! 	     nparticles = min(NPSET, SIZE(particle_set)-iparticle0+1)
+! 	     !NB each dAm is supposed to have one block of rows and one block of columns
+! 	     !NB for derivatives with respect to each atom.  build_der_A_matrix_rows()
+! 	     !NB just returns rows, since dAm is symmetric, and missing columns can be 
+! 	     !NB reconstructed with a simple transpose, as below
+!              CALL build_der_A_matrix_rows(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+!                   particle_set, radii, rho_tot_g, gcut, iparticle0, nparticles, g_dot_rvec_sin, g_dot_rvec_cos, error); 
+               !NB no more reduction of dbv and dAm - instead we go through with each node's contribution
+               !NB and reduce resulting charges/forces once, at the end.  Intermediate speedup can be
+               !NB had by reducing dqv after the inner loop, and then other routines don't need to know
+               !NB that contributions to dqv are distributed over the nodes.
+               !NB also get rid of zeroing of dAm and division by Vol**2 - it's slow, and can be done 
+               !NB more quickly later, to a scalar or vector rather than a matrix
++ 	     DO iparticle = iparticle0, iparticle0+nparticles-1
+  	        IF (debug_this_module) THEN
+  		   CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
+  		        gcut, iparticle, Vol, qs_env, error)
+  		   cp_ddapc_env => qs_env%cp_ddapc_env 
+  	        END IF
++ 		dbv = 0.0_dp
++ 		CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
++ 		     particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
++ 		IF (debug_this_module) THEN
++ 		   CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
++ 			gcut, iparticle, Vol, qs_env, error)
++ 		   cp_ddapc_env => qs_env%cp_ddapc_env 
++ 		END IF
+  		DO j = 1, 3
+  		   !NB dAmj is actually pretty sparse - one block of cols + one block of rows - use this here:
+  		   pmin = (iparticle-1)*SIZE(radii)+1
+  		   pmax = iparticle*SIZE(radii)
++ 		   !NB multiply by block of columns that aren't explicitly in dAm, but can be reconstructured
++ 		   !NB as transpose of relevant block of rows
+  		   IF (pmin > 1) THEN
+! 		     dAmj_qv(:pmin-1)      = MATMUL(transpose(dAm(pmin:pmax,:pmin-1,j)),qv(pmin:pmax))
+! 		     cvT_AmI_dAmj(:pmin-1) = MATMUL(transpose(dAm(pmin:pmax,:pmin-1,j)),cvT_AmI(pmin:pmax))
+  		   ENDIF
++ 		   !NB multiply by block of rows that are explicitly in dAm
+  		   dAmj_qv(pmin:pmax)      = MATMUL(dAm(pmin:pmax,:,j),qv(:))
+  		   cvT_AmI_dAmj(pmin:pmax) = MATMUL(dAm(pmin:pmax,:,j),cvT_AmI(:))
++ 		   !NB multiply by block of columns that aren't explicitly in dAm, but can be reconstructured
++ 		   !NB as transpose of relevant block of rows
+  		   IF (pmax < SIZE(particle_set)*SIZE(radii)) THEN
+! 		     dAmj_qv(pmax+1:)      = MATMUL(transpose(dAm(pmin:pmax,pmax+1:,j)),qv(pmin:pmax))
+! 		     cvT_AmI_dAmj(pmax+1:) = MATMUL(transpose(dAm(pmin:pmax,pmax+1:,j)),cvT_AmI(pmin:pmax))
+  		   ENDIF
+  		   dAmj_qv      = dAmj_qv / (Vol*Vol)
+  		   cvT_AmI_dAmj = cvT_AmI_dAmj / (Vol*Vol)
+***************
+*** 470,477 ****
+               END DO ! j
+               !NB zero relevant parts of dAm here
+               dAm((iparticle-1)*SIZE(radii)+1:iparticle*SIZE(radii),:,:) = 0.0_dp
+!              dAm(:,(iparticle-1)*SIZE(radii)+1:iparticle*SIZE(radii),:) = 0.0_dp
+            END DO ! iparticle
+            !NB final part of refactoring of math - one dgemm is faster than many dgemv 
+            CALL dgemm('N','N',SIZE(dqv,1),SIZE(dqv,2)*SIZE(dqv,3),SIZE(cp_ddapc_env%AmI,2),1.0_dp,&
+                       cp_ddapc_env%AmI,SIZE(cp_ddapc_env%AmI,1),tv,SIZE(tv,1),0.0_dp,dqv,SIZE(dqv,1))
+--- 484,492 ----
+  		END DO ! j
+  		!NB zero relevant parts of dAm here
+  		dAm((iparticle-1)*SIZE(radii)+1:iparticle*SIZE(radii),:,:) = 0.0_dp
+! 		!! dAm(:,(iparticle-1)*SIZE(radii)+1:iparticle*SIZE(radii),:) = 0.0_dp
+  	     END DO ! iparticle
++           END DO ! iparticle0
+            !NB final part of refactoring of math - one dgemm is faster than many dgemv 
+            CALL dgemm('N','N',SIZE(dqv,1),SIZE(dqv,2)*SIZE(dqv,3),SIZE(cp_ddapc_env%AmI,2),1.0_dp,&
+                       cp_ddapc_env%AmI,SIZE(cp_ddapc_env%AmI,1),tv,SIZE(tv,1),0.0_dp,dqv,SIZE(dqv,1))
+Index: cp_ddapc_methods.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
+retrieving revision 1.44
+diff -b -c -3 -r1.44 cp_ddapc_methods.F
+*** cp_ddapc_methods.F	2 May 2011 10:50:56 -0000	1.44
+--- cp_ddapc_methods.F	6 May 2011 14:33:10 -0000
+***************
+*** 43,49 ****
+              build_b_vector,&
+              build_der_b_vector,&
+              build_A_matrix,&
+!             build_der_A_matrix,&
+              prep_g_dot_rvec_sin_cos,&
+              cleanup_g_dot_rvec_sin_cos,&
+              ddapc_eval_AmI,&
+--- 43,49 ----
+              build_b_vector,&
+              build_der_b_vector,&
+              build_A_matrix,&
+!             build_der_A_matrix_rows,&
+              prep_g_dot_rvec_sin_cos,&
+              cleanup_g_dot_rvec_sin_cos,&
+              ddapc_eval_AmI,&
+***************
+*** 200,208 ****
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+!     REAL(KIND=dp)                            :: g2, gcut2, rvec1(3), &
+!                                                 rvec2(3), rvec_diff(3), tmp
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
+  
+      failure = .FALSE.
+  
+--- 200,209 ----
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+!     REAL(KIND=dp)                            :: g2, gcut2, tmp
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: my_Am, my_Amw
++     !NB precalculate as many things outside of the innermost loop as possible, in particular w(ig)*gfunc(ig,igauus1)*gfunc(ig,igauss2)
++     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: gfunc_sq(:,:,:)
+  
+      failure = .FALSE.
+  
+***************
+*** 221,234 ****
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DO iparticle1 = 1, SIZE(particle_set)
+-           rvec1=particle_set(iparticle1)%r
+            DO iparticle2 = iparticle1, SIZE(particle_set)
+-              rvec2=particle_set(iparticle2)%r
+-              rvec_diff=rvec1-rvec2
+               DO ig = s_dim, igmax
+                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
+!                 my_Am(ig) = w(ig)*(g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
+                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
+               END DO
+               DO igauss1 = 1, SIZE(radii)
+--- 222,241 ----
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++        ALLOCATE(gfunc_sq(s_dim:igmax,SIZE(radii),SIZE(radii)),stat=stat)
++        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 
++        DO igauss1 = 1, SIZE(radii)
++ 	  DO igauss2 = 1, SIZE(radii)
++ 	     gfunc_sq(s_dim:igmax,igauss1,igauss2) = w(s_dim:igmax)*gfunc(s_dim:igmax,igauss1)*gfunc(s_dim:igmax,igauss2)
++ 	  END DO
++        END DO
++ 
+         DO iparticle1 = 1, SIZE(particle_set)
+            DO iparticle2 = iparticle1, SIZE(particle_set)
+               DO ig = s_dim, igmax
+                  !NB replace explicit dot product and cosine with cos(A+B) formula - much faster
+!                 my_Am(ig) = (g_dot_rvec_cos(ig-s_dim+1,iparticle1)*g_dot_rvec_cos(ig-s_dim+1,iparticle2) + &
+                                     g_dot_rvec_sin(ig-s_dim+1,iparticle1)*g_dot_rvec_sin(ig-s_dim+1,iparticle2))
+               END DO
+               DO igauss1 = 1, SIZE(radii)
+***************
+*** 237,245 ****
+                  IF (iparticle2==iparticle1) istart_g = igauss1
+                  DO igauss2 = istart_g, SIZE(radii)
+                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) = my_Am(ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+  !NB no loss of accuracy in my test cases
+  #ifdef ACCURATE_SUMS
+                     tmp = accurate_sum(my_Amw)
+--- 244,250 ----
+                  IF (iparticle2==iparticle1) istart_g = igauss1
+                  DO igauss2 = istart_g, SIZE(radii)
+                     idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+! 		   my_Amw(s_dim:igmax) = my_Am(s_dim:igmax)*gfunc_sq(s_dim:igmax,igauss1,igauss2)
+  !NB no loss of accuracy in my test cases
+  #ifdef ACCURATE_SUMS
+                     tmp = accurate_sum(my_Amw)
+***************
+*** 252,257 ****
+--- 257,264 ----
+               END DO
+            END DO
+         END DO
++        DEALLOCATE(gfunc_sq,stat=stat)
++        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DEALLOCATE(my_Amw,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DEALLOCATE(my_Am,stat=stat)
+***************
+*** 350,357 ****
+  !> \author Teodoro Laino
+  ! *****************************************************************************
+    !NB accept g_dot_rvec_* arrays
+!   SUBROUTINE build_der_A_matrix(dAm, gfunc, w, particle_set, radii,&
+!        rho_tot_g, gcut, iparticle0, g_dot_rvec_sin, g_dot_rvec_cos, error)
+      REAL(KIND=dp), DIMENSION(:, :, :), &
+        INTENT(INOUT)                          :: dAm
+      REAL(KIND=dp), DIMENSION(:, :), POINTER  :: gfunc
+--- 357,364 ----
+  !> \author Teodoro Laino
+  ! *****************************************************************************
+    !NB accept g_dot_rvec_* arrays
+!   SUBROUTINE build_der_A_matrix_rows(dAm, gfunc, w, particle_set, radii,&
+!        rho_tot_g, gcut, iparticle0, nparticles, g_dot_rvec_sin, g_dot_rvec_cos, error)
+      REAL(KIND=dp), DIMENSION(:, :, :), &
+        INTENT(INOUT)                          :: dAm
+      REAL(KIND=dp), DIMENSION(:, :), POINTER  :: gfunc
+***************
+*** 361,384 ****
+      REAL(KIND=dp), DIMENSION(:), POINTER     :: radii
+      TYPE(pw_type), POINTER                   :: rho_tot_g
+      REAL(KIND=dp), INTENT(IN)                :: gcut
+!     INTEGER, INTENT(IN)                      :: iparticle0
+      REAL(KIND=dp), DIMENSION(:, :), &
+        INTENT(IN)                             :: g_dot_rvec_sin, g_dot_rvec_cos
+      TYPE(cp_error_type), INTENT(inout)       :: error
+  
+!     CHARACTER(len=*), PARAMETER :: routineN = 'build_der_A_matrix', &
+        routineP = moduleN//':'//routineN
+  
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
+!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin, my_Amw
+!     REAL(KIND=dp), ALLOCATABLE, &
+!       DIMENSION(:, :)                        :: my_Am
+!     REAL(KIND=dp), DIMENSION(3)              :: rvec1, rvec2, rvec_diff
+! 
+! !NB temporary for precomputing expensive sin()
+  
+      failure = .FALSE.
+      CALL timeset(routineN,handle)
+--- 368,391 ----
+      REAL(KIND=dp), DIMENSION(:), POINTER     :: radii
+      TYPE(pw_type), POINTER                   :: rho_tot_g
+      REAL(KIND=dp), INTENT(IN)                :: gcut
+!     !NB calculate derivatives for a block of particles, just the row parts (since derivative matrix is symmetric)
+!     INTEGER, INTENT(IN)                      :: iparticle0, nparticles
+      REAL(KIND=dp), DIMENSION(:, :), &
+        INTENT(IN)                             :: g_dot_rvec_sin, g_dot_rvec_cos
+      TYPE(cp_error_type), INTENT(inout)       :: error
+  
+!     CHARACTER(len=*), PARAMETER :: routineN = 'build_der_A_matrix_rows', &
+        routineP = moduleN//':'//routineN
+  
+      INTEGER :: e_dim, handle, idim1, idim2, ig, igauss1, igauss2, igmax, &
+        iparticle1, iparticle2, istart_g, s_dim, stat
+      LOGICAL                                  :: failure
+      REAL(KIND=dp)                            :: factor, g2, gcut2, tmp
+!     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: arg1_v_sin
+!     !NB Use DGEMM to speed up calculation, can't do accurate_sum() anymore because dgemm does the sum over g
+!     EXTERNAL DGEMM
+!     REAL(KIND=dp), ALLOCATABLE :: lhs(:,:), rhs(:,:)
+!     INTEGER :: Nr, Np, Ng, icomp, ipp
+  
+      failure = .FALSE.
+      CALL timeset(routineN,handle)
+***************
+*** 392,470 ****
+            IF (g2 > gcut2) EXIT
+            igmax  = ig
+         ENDDO
+-        ALLOCATE(my_Am(3,s_dim:igmax),stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-        ALLOCATE(my_Amw(s_dim:igmax),stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+  
+!        DO iparticle1 = 1, SIZE(particle_set)
+!           rvec1 =  particle_set(iparticle1)%r
+!           DO iparticle2 = iparticle1, SIZE(particle_set)
+!              rvec2 =  particle_set(iparticle2)%r
+!              IF ((iparticle1 /= iparticle0).AND.(iparticle2 /= iparticle0)) CYCLE
+!              IF    ((iparticle1 == iparticle0).AND.(iparticle2==iparticle0))  THEN
+!                    factor=2.0_dp
+!              ELSEIF (iparticle1 == iparticle0) THEN
+!                    factor=1.0_dp
+!              ELSEIF (iparticle2 == iparticle0) THEN
+!                    factor=-1.0_dp
+!              END IF
+!              rvec_diff=rvec2-rvec1
+! 
+!              !NB precompute sin(g.(r1-r2)) with sin(A+B) formula - perhaps just move this into the loop?
+!              arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_cos(1:igmax-s_dim+1, iparticle1) - &
+!                                        g_dot_rvec_cos(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_sin(1:igmax-s_dim+1, iparticle1)
+!              DO ig = s_dim, igmax
+!                 my_Am(1:3,ig) = factor * w(ig) * arg1_v_sin(ig) * rho_tot_g%pw_grid%g(:,ig)
+!              END DO
+!              DO igauss1 = 1, SIZE(radii)
+!                 idim1 = (iparticle1-1)*SIZE(radii)+igauss1
+!                 istart_g = 1
+!                 IF (iparticle2==iparticle1) istart_g = igauss1
+!                 DO igauss2 = istart_g, SIZE(radii)
+!                    idim2 = (iparticle2-1)*SIZE(radii)+igauss2
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(1,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,1) = tmp
+!                    dAm (idim2,idim1,1) = tmp
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(2,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,2) = tmp
+!                    dAm (idim2,idim1,2) = tmp
+!                    DO ig = s_dim, igmax
+!                       my_Amw(ig) =  my_Am(3,ig)*gfunc(ig,igauss1)*gfunc(ig,igauss2)
+!                    END DO
+! !NB no loss of accuracy in my test cases
+! #ifdef ACCURATE_SUMS
+!                    tmp = accurate_sum(my_Amw)
+! #else
+!                    tmp = SUM(my_Amw)
+! #endif
+!                    dAm (idim1,idim2,3) = tmp
+!                    dAm (idim2,idim1,3) = tmp
+!                 END DO
+!              END DO
+!           END DO
+!        END DO
+!        DEALLOCATE(my_Amw,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(my_Am,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         !!! DEALLOCATE(arg1_v,stat=stat)
+         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+--- 399,467 ----
+            IF (g2 > gcut2) EXIT
+            igmax  = ig
+         ENDDO
+         ALLOCATE(arg1_v_sin(s_dim:igmax),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+  
+!        Nr=SIZE(radii)
+!        Np=SIZE(particle_set)
+!        Ng=igmax-s_dim+1
+!        allocate(lhs(nparticles*Nr,Ng), stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        allocate(rhs(Ng,Np*Nr), stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+! 
+!        ! rhs with first term of sin(g.(rvec1-rvec2)), which used to be called arg1_v_sin()
+!        ! rhs has all parts that depend on iparticle2
+!        do iparticle2=1,Np
+! 	  do igauss2=1,Nr
+! 	     rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = g_dot_rvec_sin(1:Ng, iparticle2)*gfunc(s_dim:igmax,igauss2)
+! 	  end do
+!        end do
+!        do icomp=1,3
+! 	  ! create lhs, which has all parts that depend on iparticle1
+! 	  do ipp=1, nparticles
+! 	    iparticle1 = iparticle0 + ipp - 1
+! 	    do ig=s_dim,igmax
+! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr) * g_dot_rvec_cos(ig-s_dim+1, iparticle1)
+! 	    end do
+! 	  end do ! ipp
+! 	  ! do main multiply
+! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), Ng, 0.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
+! 	  ! do extra multiplies to compensate for missing factor of 2
+! 	  do ipp=1, nparticles
+! 	     iparticle1 = iparticle0 + ipp - 1
+! 	     call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
+! 	  end do
+! 	  ! now extra columns to account for factor of 2 in some rhs columns
+!        end do ! icomp
+! 
+!        ! rhs with second term of sin(g.(rvec1-rvec2)), which used to be called arg1_v_sin()
+!        ! rhs has all parts that depend on iparticle2
+!        do iparticle2=1,Np
+! 	  do igauss2=1,Nr
+! 	     rhs(1:Ng,(iparticle2-1)*Nr+igauss2) = -g_dot_rvec_cos(1:Ng, iparticle2)*gfunc(s_dim:igmax,igauss2)
+! 	  end do
+!        end do
+!        do icomp=1,3
+! 	  ! create lhs, which has all parts that depend on iparticle1
+! 	  do ipp=1, nparticles
+! 	    iparticle1 = iparticle0 + ipp - 1
+! 	    do ig=s_dim,igmax
+! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr) * g_dot_rvec_sin(ig-s_dim+1, iparticle1)
+! 	    end do
+! 	  enddo
+! 	  ! do main multiply
+! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), Ng, 1.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
+! 	  ! do extra multiples to compensate for missing factor of 2
+! 	  do ipp=1, nparticles
+! 	    iparticle1 = iparticle0 + ipp - 1
+! 	    call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
+! 	  end do
+!        end do
+! 
+!        DEALLOCATE(rhs,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(lhs,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         !!! DEALLOCATE(arg1_v,stat=stat)
+         !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+***************
+*** 472,478 ****
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      END IF
+      CALL timestop(handle)
+!   END SUBROUTINE build_der_A_matrix
+  
+    !NB deallocate g_dot_rvec_* arrays
+    SUBROUTINE cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
+--- 469,475 ----
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      END IF
+      CALL timestop(handle)
+!   END SUBROUTINE build_der_A_matrix_rows
+  
+    !NB deallocate g_dot_rvec_* arrays
+    SUBROUTINE cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
