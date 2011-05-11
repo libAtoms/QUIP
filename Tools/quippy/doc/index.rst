@@ -31,7 +31,7 @@ Contents:
    :maxdepth: 2
 
    install.rst
-   tutorial.rst
+   tutorials.rst
    quippy.rst
    filetypes.rst
    fortran_wrapper.rst
