@@ -20,8 +20,8 @@
 
 .. _tutorial-intro:
 
-Tutorial
-********
+Introductory Tutorial
+*********************
 
 This tutorial assumes you've successfully installed quippy and that
 all the tests pass. If not, see :ref:`installation`. We make use
