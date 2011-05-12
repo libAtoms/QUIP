@@ -3,10 +3,11 @@
 Molecular Dynamics Simulation of Fracture in Quartz
 ***************************************************
 
-This tutorial was originally prepared for use as a hands-on workshop
-at the ADGLASS Workshop, ICTP, Trieste, May 2011. The slides from the
-introductory talk which preceeded the hands-on workshop are available
-to download (:download:`PDF <adglass-slides.pdf>`).
+This tutorial was prepared for use at a hands-on session at the
+`Advanced Oxide Interfaces Workshop
+<http://cdsagenda5.ictp.it/full_display.php?ida=a10139>`_,
+
+ICTP, Trieste, James Kermode May 2011.
 
 Setting up your working environment
 -----------------------------------
