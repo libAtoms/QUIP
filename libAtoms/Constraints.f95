@@ -1578,6 +1578,192 @@ contains
 
   end subroutine GAP_ENERGY
 
+  subroutine PARABOLIC_FIT(x,afunc)
+    real(dp) :: x, afunc(:)
+
+    afunc(1) = x*x
+    afunc(2) = x
+    afunc(3) = 1
+  
+  end subroutine PARABOLIC_FIT
+
+  subroutine LINEAR_FIT(x,afunc)
+    real(dp) :: x, afunc(:)
+
+    afunc(1) = x*x
+    afunc(2) = x
+    afunc(3) = 1
+  
+  end subroutine LINEAR_FIT
+
+
+  subroutine CRACK_TIP_CURVATURE(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    real(dp)                        :: a(3), am(3), ap(3), chisq, a_target
+    real(dp), allocatable :: xp(:,:), xm(:,:), x(:,:), sig(:), da1_dR(:,:), da2_dR(:,:), da3_dR(:,:)
+    integer                         :: i, n, k, constraint_type
+    real(dp), parameter :: eps = 1e-4_dp
+
+    n = size(pos)/3
+    allocate(x(3,n), xp(3,n), xm(3,n), sig(n), da1_dR(3,n))
+    sig(:) = 0.0_dp
+    x = reshape(pos, (/3,n/))
+    a_target = data(1) ! target curvature
+    
+    call least_squares(x(2,:), x(1,:), sig, a, chisq, PARABOLIC_FIT)
+    call print('CRACK_TIP_CURVATURE coefficients '//a)
+    call print('CRACK_TIP_CURVATURE target '//a_target)
+    
+    do k=1,3
+       do i=1,n
+          xp = x
+          xm = x
+
+          xp(k,i) = xp(k,i) + eps
+          call least_squares(xp(2,:), xp(1,:), sig, ap, chisq, PARABOLIC_FIT)
+
+          xm(k,i) = xm(k,i) - eps
+          call least_squares(xm(2,:), xm(1,:), sig, am, chisq, PARABOLIC_FIT)
+
+          da1_dR(k,i) = (ap(1) - am(1))/(2.0_dp*eps)
+       end do
+    end do
+    
+    ! C = a - a_target
+    ! dC_dR = da_dR
+    C = a(1) - a_target
+    target_v = a_target
+    dC_dR = reshape(da1_dR, (/3*N/))
+    call print('CRACK_TIP_CURVATURE C '//C)
+    call print('CRACK_TIP_CURVATURE dC_dR '//dC_dR)
+
+    dC_dt = dC_dr .dot. velo
+
+  end subroutine CRACK_TIP_CURVATURE
+
+  subroutine CRACK_TIP_GRADIENT(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    real(dp)                        :: a(2), am(2), ap(2), chisq, a_target
+    real(dp), allocatable :: xp(:,:), xm(:,:), x(:,:), sig(:), da1_dR(:,:), da2_dR(:,:), da3_dR(:,:)
+    integer                         :: i, n, k, constraint_type
+    real(dp), parameter :: eps = 1e-4_dp
+
+    n = size(pos)/3
+    allocate(x(3,n), xp(3,n), xm(3,n), sig(n), da1_dR(3,n))
+    sig(:) = 0.0_dp
+    x = reshape(pos, (/3,n/))
+    a_target = data(1) ! target gradient
+    
+    call least_squares(x(1,:), x(2,:), sig, a, chisq, LINEAR_FIT)
+    call print('CRACK_TIP_GRADIENT coefficients '//a)
+    call print('CRACK_TIP_GRADIENT target '//a_target)
+    
+    do k=1,3
+       do i=1,n
+          xp = x
+          xm = x
+
+          xp(k,i) = xp(k,i) + eps
+          call least_squares(xp(1,:), xp(2,:), sig, ap, chisq, LINEAR_FIT)
+
+          xm(k,i) = xm(k,i) - eps
+          call least_squares(xm(1,:), xm(2,:), sig, am, chisq, LINEAR_FIT)
+
+          da1_dR(k,i) = (ap(1) - am(1))/(2.0_dp*eps)
+       end do
+    end do
+    
+    ! C = a - a_target
+    ! dC_dR = da_dR
+    C = a(1) - a_target
+    target_v = a_target
+    dC_dR = reshape(da1_dR, (/3*N/))
+    call print('CRACK_TIP_GRADIENT C '//C)
+    call print('CRACK_TIP_GRADIENT dC_dR '//dC_dR)
+
+    dC_dt = dC_dr .dot. velo
+
+  end subroutine CRACK_TIP_GRADIENT
+
+  subroutine CRACK_TIP_POSITION(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    real(dp)                        :: a(3), am(3), ap(3), chisq, dC_da1, dC_da2, dC_da3, pos_target
+    real(dp), allocatable :: xp(:,:), xm(:,:), x(:,:), sig(:), da1_dR(:,:), da2_dR(:,:), da3_dR(:,:)
+    real(dp), parameter :: eps = 1e-4_dp
+    integer i, k, n 
+
+    n = size(pos)/3
+    allocate(x(3,n), xp(3,n), xm(3,n), sig(n), da1_dR(3,n), da2_dR(3,n), da3_dR(3,n))
+    sig(:) = 0.0_dp
+    x = reshape(pos, (/3,n/))
+    pos_target = data(1) ! target position
+    
+    call least_squares(x(2,:), x(1,:), sig, a, chisq, PARABOLIC_FIT)
+    call print('CRACK_TIP_POSITION coefficients '//a)
+    call print('CRACK_TIP_POSITION target '//pos_target)
+    
+    do k=1,3
+       do i=1,n
+          xp = x
+          xm = x
+
+          xp(k,i) = xp(k,i) + eps
+          call least_squares(xp(2,:), xp(1,:), sig, ap, chisq, PARABOLIC_FIT)
+
+          xm(k,i) = xm(k,i) - eps
+          call least_squares(xm(2,:), xm(1,:), sig, am, chisq, PARABOLIC_FIT)
+
+          da1_dR(k,i) = (ap(1) - am(1))/(2.0_dp*eps)
+          da2_dR(k,i) = (ap(2) - am(2))/(2.0_dp*eps)
+          da3_dR(k,i) = (ap(3) - am(3))/(2.0_dp*eps)
+
+       end do
+    end do
+
+    ! C = y0 - pos_target
+    ! dC_dR = dC_da*da_dR + dC_db*db_dR + dC_dc*dc_dR
+    ! x0 = -b/2*a
+    ! y0 = a*x0**2 + b*x0 + c =  c - b**2/(4*a)
+    C = (a(3) - a(2)**2/(4.0_dp*a(1))) - pos_target
+    target_v = pos_target
+
+    dC_da1 = a(2)**2/(4.0_dp*a(1)**2)
+    dC_da2 = -a(2)/(2*a(1))
+    dC_da3 = 1.0_dp
+    
+    dC_dR = dC_da1*reshape(da1_dR, (/3*N/)) + &
+            dC_da2*reshape(da2_dR, (/3*N/)) + &
+            dC_da3*reshape(da3_dR, (/3*N/))
+
+    dC_dt = dC_dr .dot. velo
+
+    call print('CRACK_TIP_POSITION C '//C)
+    call print('CRACK_TIP_POSITION dC_dR '//dC_dR)
+
+  end subroutine CRACK_TIP_POSITION
+
+
    subroutine add_restraint_forces(at, Nrestraints, restraints, t, f, E, store_restraint_force)
       type(Atoms), intent(inout) :: at
       integer, intent(in) :: Nrestraints
