@@ -335,6 +335,9 @@ module CrackParams_module
      integer :: num_md_stanza, md_stanza
      type(CrackMDParams) :: md(MAX_MD_STANZA)
 
+     logical :: constraint_fix_gradient, constraint_fix_curvature, constraint_fix_position
+     real(dp) :: constraint_gradient, constraint_curvature, constraint_position
+
   end type CrackParams
 
   type(CrackParams), pointer :: parse_cp
@@ -597,6 +600,13 @@ contains
     ! Nasty hack
     this%hack_qm_zero_z_force        = .false.
     this%hack_fit_on_eqm_coordination_only = .false.
+
+    this%constraint_fix_position = .false.
+    this%constraint_fix_gradient = .false.
+    this%constraint_fix_curvature = .false.
+    this%constraint_position = 0.0_dp
+    this%constraint_gradient = 0.0_dp
+    this%constraint_curvature = 0.0_dp
 
     if (present(filename)) then
        call read_xml(this, filename, validate=validate)
@@ -1541,6 +1551,38 @@ contains
           read (value, *) parse_cp%hack_fit_on_eqm_coordination_only
        end if
 
+    elseif (parse_in_crack .and. name == 'constraint') then
+
+       call QUIP_FoX_get_value(attributes, "fix_position", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_fix_position
+       end if
+
+       call QUIP_FoX_get_value(attributes, "position", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_position
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fix_curvature", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_fix_curvature
+       end if
+
+       call QUIP_FoX_get_value(attributes, "curvature", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_curvature
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fix_gradient", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_fix_gradient
+       end if
+
+       call QUIP_FoX_get_value(attributes, "gradient", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_gradient
+       end if
+
 
     endif
 
@@ -1747,6 +1789,14 @@ contains
     call Print('     qm_zero_z_force       = '//this%hack_qm_zero_z_force,file=file)
     call Print('     fit_on_eqm_coordination_only = '//this%hack_fit_on_eqm_coordination_only)
     call Print('',file=file)
+    call Print('  Constraints:',file=file)
+    call Print('     constraint_fix_position    = '//this%constraint_fix_position, file=file)
+    call Print('     constraint_position        = '//this%constraint_position, file=file)
+    call Print('     constraint_fix_curvature   = '//this%constraint_fix_curvature, file=file)
+    call Print('     constraint_curvature       = '//this%constraint_curvature, file=file)
+    call Print('     constraint_fix_gradient    = '//this%constraint_fix_gradient, file=file)
+    call Print('     constraint_gradient        = '//this%constraint_gradient, file=file)
+
 
   end subroutine CrackParams_print
 

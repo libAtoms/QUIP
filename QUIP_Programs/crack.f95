@@ -313,7 +313,7 @@ program crack
   real(dp), pointer :: dr_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit, k, md_stanza_idx, random_seed
+  integer :: movie_n, nargs, i, j, state, steps, iunit, k, md_stanza_idx, random_seed
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
@@ -324,6 +324,9 @@ program crack
 
   real(dp) :: time_elapsed, total_time_elapsed
 
+  integer :: CRACK_TIP_CURVATURE_FUNC, CRACK_TIP_POSITION_FUNC, CRACK_TIP_GRADIENT_FUNC
+  logical, pointer :: constraint_mask(:)
+  integer, allocatable :: constraint_list(:)
 
   !** Initialisation Code **
 
@@ -536,10 +539,10 @@ program crack
 
   ds%atoms%damp_mask = 1
   ds%atoms%thermostat_region = 1
-!!$  where (ds%atoms%move_mask == 0)
-!!$     ds%atoms%thermostat_region = 0
-!!$     ds%atoms%damp_mask = 0
-!!$  end where
+  where (ds%atoms%move_mask == 0)
+     ds%atoms%thermostat_region = 0
+     ds%atoms%damp_mask = 0
+  end where
 
   ! Set number of degrees of freedom correctly
   ds%Ndof = 3*count(ds%atoms%move_mask == 1)
@@ -550,6 +553,38 @@ program crack
   else if (params%simulation_seed /= 0) then
      call system_reseed_rng(params%simulation_seed)
   end if
+
+  ! add constraints
+  if (params%constraint_fix_position .or. params%constraint_fix_gradient .or. params%constraint_fix_curvature) then
+     CRACK_TIP_CURVATURE_FUNC = register_constraint(CRACK_TIP_CURVATURE)
+     CRACK_TIP_POSITION_FUNC  = register_constraint(CRACK_TIP_POSITION)
+     CRACK_TIP_GRADIENT_FUNC  = register_constraint(CRACK_TIP_GRADIENT)
+     call assign_property_pointer(ds%atoms, "constraint_mask", constraint_mask)
+     allocate(constraint_list(count(constraint_mask)))
+     j = 1
+     do i=1,ds%atoms%n
+        if (.not. constraint_mask(i)) cycle
+        constraint_list(j) = i
+        j = j + 1
+     end do
+
+     if (params%constraint_fix_curvature) then
+        call print("Constraining "//count(constraint_mask)//" tip atoms to fix curvature "//params%constraint_curvature)
+        call ds_add_constraint(ds, constraint_list, CRACK_TIP_CURVATURE_FUNC, (/params%constraint_curvature/))
+     end if
+
+     if (params%constraint_fix_gradient) then
+        call print("Constraining "//count(constraint_mask)//" tip atoms to fix gradient "//params%constraint_gradient)
+        call ds_add_constraint(ds, constraint_list, CRACK_TIP_GRADIENT_FUNC, (/params%constraint_gradient/))
+     end if
+
+     if (params%constraint_fix_position) then
+        call print("Constraining "//count(constraint_mask)//" tip atoms to fix position "//params%constraint_position)
+        call ds_add_constraint(ds, constraint_list, CRACK_TIP_POSITION_FUNC, (/params%constraint_position/))
+     end if
+     deallocate(constraint_list)
+  end if
+
 
 #ifndef HAVE_NETCDF
   if (params%io_netcdf) &
