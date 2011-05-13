@@ -1174,7 +1174,7 @@ contains
     if (has_property(this, 'species')) then
        do i=1,this%N
           this%species(:,i) = ' '
-          this%species(1:3,i) = s2a(ElementName(Z(i)))
+          this%species(1:len(ElementName(Z(i))),i) = s2a(ElementName(Z(i)))
        end do
     end if
     
@@ -1476,7 +1476,7 @@ contains
     end if
     do i=1,size(Z)
        this%species(:,oldN+i) = ' '
-       this%species(1:3,oldN+i) = s2a(ElementName(Z(i)))
+       this%species(1:len(ElementName(Z(i))),oldN+i) = s2a(ElementName(Z(i)))
     end do
 
     if (has_travel) then

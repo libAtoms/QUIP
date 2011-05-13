@@ -493,7 +493,7 @@ contains
           call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
           call atoms_repoint(at)
           do i=1,at%N
-             at%species(:,i) = s2a(ElementName(at%Z(i)))
+             at%species(1:len(ElementName(at%Z(i))),i) = s2a(ElementName(at%Z(i)))
           end do
        else if (.not. has_property(at,"Z") .and. has_property(at, "species")) then
           call add_property(at, "Z", 0)
