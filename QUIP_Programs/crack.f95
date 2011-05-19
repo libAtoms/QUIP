@@ -307,13 +307,16 @@ program crack
   real(dp), pointer, dimension(:,:) :: load, force
   integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark
+  integer :: n_per_atom_tau
+  real(dp), pointer, dimension(:) :: per_atom_tau
+  real(dp), allocatable, dimension(:) :: per_atom_tau_a
 
   ! Big arrays
   real(dp), allocatable, dimension(:,:) :: f_fm, dr
   real(dp), pointer :: dr_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, j, state, steps, iunit, k, md_stanza_idx, random_seed
+  integer :: movie_n, nargs, i, j, state, steps, iunit, k, md_stanza_idx, random_seed, i_thermostat
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
@@ -537,13 +540,6 @@ program crack
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark, force)
 
-  ds%atoms%damp_mask = 1
-  ds%atoms%thermostat_region = 1
-  where (ds%atoms%move_mask == 0)
-     ds%atoms%thermostat_region = 0
-     ds%atoms%damp_mask = 0
-  end where
-
   ! Set number of degrees of freedom correctly
   ds%Ndof = 3*count(ds%atoms%move_mask == 1)
 
@@ -766,51 +762,77 @@ program crack
 
         ! Remove any existing thermostats prior to re-adding them
         call finalise(ds%thermostat)
-        
+
         ! Special thermostat for damping
         allocate(ds%thermostat(0:0)); call initialise(ds%thermostat(0),NONE,0.0_dp)
+	! set damp mask, just in case we'll be doing damping
+	ds%atoms%damp_mask = 1
+	where (ds%atoms%move_mask == 0)
+	   ds%atoms%damp_mask = 0
+	end where
 
-        if (state_string(1:10) == 'THERMALISE') then
-           state = STATE_THERMALISE
-           call disable_damping(ds)
-           if (params%md(params%md_stanza)%ensemble == 'NVT') &
-                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau)
+	! if DAMPED_MD, override this below
+	call disable_damping(ds)
 
-        else if (state_string(1:10) == 'MD') then
-           state = STATE_MD
-           call disable_damping(ds)
-           if (params%md(params%md_stanza)%ensemble == 'NVT') &
-                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+	select case(trim(state_string))
+	   case ('THERMALISE')
+	      state = STATE_THERMALISE
 
-        else if (state_string(1:10) == 'MD_LOADING') then
-           state = STATE_MD_LOADING
-           call disable_damping(ds)
-           if (params%md(params%md_stanza)%ensemble == 'NVT') &
-                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
-           call crack_find_tip(ds%atoms, params, old_crack_tips)
-           crack_tips = old_crack_tips
+	   case ('MD')
+	      state = STATE_MD
 
-        else if (state_string(1:11) == 'MD_CRACKING') then
-           state = STATE_MD_CRACKING
-           call disable_damping(ds)
-           if (params%md(params%md_stanza)%ensemble == 'NVT') &
-                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
-           call crack_find_tip(ds%atoms, params, old_crack_tips)
-           crack_tips = old_crack_tips
+	   case ('MD_LOADING')
+	      state = STATE_MD_LOADING
+	      call crack_find_tip(ds%atoms, params, old_crack_tips)
+	      crack_tips = old_crack_tips
 
-        else if (state_string(1:9) == 'DAMPED_MD') then
-           state = STATE_DAMPED_MD
-           call enable_damping(ds, params%md(params%md_stanza)%damping_time)
+	   case ('MD_CRACKING')
+	      state = STATE_MD_CRACKING
+	      call crack_find_tip(ds%atoms, params, old_crack_tips)
+	      crack_tips = old_crack_tips
 
-        else if (state_string(1:11) == 'MD_CONSTANT') then
-           state = STATE_MD_CONSTANT
-           call disable_damping(ds)
-           if (params%md(params%md_stanza)%ensemble == 'NVT') &
-                call ds_add_thermostat(ds, LANGEVIN, params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau)
+	   case ('MD_CONSTANT')
+	      state = STATE_MD_CONSTANT
 
-        else  
-           call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
-        end if
+	   case ('DAMPED_MD')
+	      state = STATE_DAMPED_MD
+	      call enable_damping(ds, params%md(params%md_stanza)%damping_time)
+
+	   case default
+	      call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
+
+        end select
+
+	if (state /= STATE_DAMPED_MD) then
+	   ! default thermostat 
+	   if (params%md(params%md_stanza)%ensemble == 'NVT') then
+	      if (state == STATE_THERMALISE) then
+		 call ds_add_thermostat(ds, LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
+	      else
+		 call ds_add_thermostat(ds, LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
+	      endif
+	      ds%atoms%thermostat_region = i_thermostat
+	   endif
+	   ! per-atom thermostats
+	   if (params%md(params%md_stanza)%per_atom_tau) then
+	      call assign_property_pointer(ds%atoms, 'per_atom_tau', per_atom_tau)
+	      n_per_atom_tau = count(per_atom_tau > 0.0_dp)
+	      allocate(per_atom_tau_a(n_per_atom_tau))
+	      per_atom_tau_a = pack(per_atom_tau, per_atom_tau > 0.0_dp)
+	      call add_thermostats(ds, LANGEVIN, n=n_per_atom_tau, T=params%md(params%md_stanza)%sim_temp, tau_a=per_atom_tau_a, &
+	         region_i=i_thermostat)
+	      do i=1, ds%atoms%N
+	         if (per_atom_tau(i) > 0.0_dp) then
+		    ds%atoms%thermostat_region(i) = i_thermostat
+		    i_thermostat = i_thermostat + 1
+	         endif
+	      end do
+	   endif ! per_atom_tau
+	endif ! state /= STATE_DAMPED_MD
+	! never thermostat atoms with move_mask == 0
+	where (ds%atoms%move_mask == 0)
+	   ds%atoms%thermostat_region = 0
+	end where
 
         call print('Thermostats')
         call print(ds%thermostat)

@@ -167,6 +167,10 @@ module dynamicalsystem_module
       module procedure ds_add_thermostat
    end interface add_thermostat
 
+   interface add_thermostats
+      module procedure ds_add_thermostats
+   end interface add_thermostats
+
    interface update_thermostat
       module procedure ds_update_thermostat
    end interface update_thermostat
@@ -825,7 +829,7 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell,p, n)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, region_i)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -835,12 +839,13 @@ contains
      real(dp), optional,    intent(in)    :: tau
      real(dp), optional,    intent(in)    :: tau_cell
      real(dp), optional,    intent(in)    :: p
-     integer, optional,     intent(in)    :: n
+     integer, optional,     intent(out)   :: region_i
 
      real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
      real(dp) :: gamma_eff
 
-     if (count( (/present(gamma), present(tau) /) ) /= 1 ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
+     if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
+        call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
 
      if (present(gamma)) then
        gamma_eff = gamma
@@ -864,9 +869,76 @@ contains
         endselect
         volume_0 = cell_volume(this%atoms)
      endif
-     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0,n=n)
+     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0, &
+        region_i=region_i)
      
    end subroutine ds_add_thermostat
+
+   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   !X 
+   !X Adding many thermostats
+   !X
+   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+   subroutine ds_add_thermostats(this,type,n,T,T_a,gamma,gamma_a,Q,Q_a,tau,tau_a,region_i)
+
+     type(dynamicalsystem), intent(inout) :: this
+     integer,               intent(in)    :: type
+     integer,     intent(in)              :: n
+     real(dp), optional, target,     intent(in)    :: T, T_a(:)
+     real(dp), optional, target,   intent(in)    :: gamma, gamma_a(:)
+     real(dp), optional, target,   intent(in)    :: Q, Q_a(:)
+     real(dp), optional,    intent(in)    :: tau, tau_a(:)
+     integer, optional,     intent(out)   :: region_i
+
+     real(dp), allocatable :: gamma_eff_a(:)
+     real(dp), pointer :: use_T_a(:), use_Q_a(:)
+
+     if (count( (/present(T), present(T_a) /) ) /= 1 ) &
+        call system_abort('ds_add_thermostat: exactly one of T, T_a must be present')
+
+     if (count( (/present(Q), present(Q_a) /) ) > 1 ) &
+        call system_abort('ds_add_thermostat: at most one of Q, Q_a must be present')
+
+     if (count( (/present(gamma), present(gamma_a), present(tau), present(tau_a) /) ) /= 1 ) &
+        call system_abort('ds_add_thermostat: exactly one of gamma, gamma_a, tau, tau_a must be present')
+
+     if (present(T)) then
+        allocate(use_T_a(n))
+	use_T_a = T
+     else
+        use_T_a => T_a
+     endif
+
+     if (present(Q)) then
+        allocate(use_Q_a(n))
+	use_Q_a = Q
+     else if (present(Q_a)) then
+        use_Q_a => Q_a
+     end if
+
+     allocate(gamma_eff_a(n))
+     if (present(gamma)) then
+       gamma_eff_a = gamma
+     else ! tau or tau_a
+       if (present(tau)) then
+	  gamma_eff_a = 1.0_dp/tau
+       else
+	  gamma_eff_a = 1.0_dp/tau_a
+       endif
+     endif
+
+     if (associated(use_Q_a)) then
+	call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,use_Q_a,region_i=region_i)
+     else
+	call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,region_i=region_i)
+     endif
+
+     deallocate(gamma_eff_a)
+     if (present(Q)) deallocate(use_Q_a)
+     if (present(T)) deallocate(use_T_a)
+     
+   end subroutine ds_add_thermostats
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X 
