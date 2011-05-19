@@ -115,6 +115,10 @@ module thermostat_module
      module procedure thermostats_add_thermostat
   end interface add_thermostat
 
+  interface add_thermostats
+     module procedure thermostats_add_thermostats
+  end interface add_thermostats
+
   interface update_thermostat
      module procedure thermostats_update_thermostat
   end interface update_thermostat
@@ -341,7 +345,7 @@ contains
 
   end subroutine thermostats_finalise
 
-  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,n)
+  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,region_i)
 
     type(thermostat), allocatable, intent(inout) :: this(:)
     integer,                       intent(in)    :: type
@@ -352,12 +356,10 @@ contains
     real(dp), optional,            intent(in)    :: gamma_p
     real(dp), optional,            intent(in)    :: W_p
     real(dp), optional,            intent(in)    :: volume_0
-    integer, optional,             intent(in)    :: n
+    integer, optional,             intent(out)    :: region_i
 
     type(thermostat), allocatable                :: temp(:)
-    integer                                      :: i, l, u, la(1), ua(1), use_n
-
-    use_n = optional_default(1, n)
+    integer                                      :: i, l, u, la(1), ua(1)
 
     if (allocated(this)) then
        la = lbound(this); l=la(1)
@@ -372,7 +374,7 @@ contains
        u=0
     end if
     
-    allocate(this(l:u+use_n))
+    allocate(this(l:u+1))
 
     if (allocated(temp)) then
        do i = l,u
@@ -381,11 +383,82 @@ contains
        call finalise(temp)
     end if
 
-    do i=1, use_n
-      call initialise(this(u+i),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
-    end do
+    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+
+    if (present(region_i)) region_i=u+1
 
   end subroutine thermostats_add_thermostat
+
+  subroutine thermostats_add_thermostats(this,type,n,T_a,gamma_a,Q_a,region_i)
+
+    type(thermostat), allocatable, intent(inout) :: this(:)
+    integer,                       intent(in)    :: type
+    integer,                       intent(in)    :: n
+    real(dp), optional,            intent(in)    :: T_a(:)
+    real(dp), optional,            intent(in)    :: gamma_a(:)
+    real(dp), optional,            intent(in)    :: Q_a(:)
+    integer, optional,             intent(out)    :: region_i
+
+    type(thermostat), allocatable                :: temp(:)
+    integer                                      :: i, l, u, la(1), ua(1)
+
+    if (allocated(this)) then
+       la = lbound(this); l=la(1)
+       ua = ubound(this); u=ua(1)
+       allocate(temp(l:u))
+       do i = l,u
+          temp(i) = this(i)
+       end do
+       call finalise(this)
+    else
+       l=1
+       u=0
+    end if
+    
+    allocate(this(l:u+n))
+
+    if (allocated(temp)) then
+       do i = l,u
+          this(i) = temp(i)
+       end do
+       call finalise(temp)
+    end if
+
+    do i=1, n
+      if (present(T_a)) then
+	 if (present(Q_a)) then
+	    if (present(gamma_a)) then
+	       call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i),Q=Q_a(i))
+	    else
+	       call initialise(this(u+i),type,T=T_a(i),Q=Q_a(i))
+	    endif
+	 else ! no Q_a
+	    if (present(gamma_a)) then
+	       call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i))
+	    else
+	       call initialise(this(u+i),type,T=T_a(i))
+	    endif
+	 endif
+      else ! no T_A
+	 if (present(Q_a)) then
+	    if (present(gamma_a)) then
+	       call initialise(this(u+i),type,gamma=gamma_a(i),Q=Q_a(i))
+	    else
+	       call initialise(this(u+i),type,Q=Q_a(i))
+	    endif
+	 else ! no Q_aa
+	    if (present(gamma_a)) then
+	       call initialise(this(u+i),type,gamma=gamma_a(i))
+	    else
+	       call initialise(this(u+i),type)
+	    endif
+	 endif
+      endif
+    end do
+
+    if (present(region_i)) region_i=u+1
+
+  end subroutine thermostats_add_thermostats
 
   subroutine thermostats_update_thermostat(this,T,p,w_p)
 

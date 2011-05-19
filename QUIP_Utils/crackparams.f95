@@ -137,6 +137,7 @@ module CrackParams_module
      real(dp) :: thermalise_wait_time  !% Minimium thermalisation time at each load before changing to (almost) microcanoical MD. Unit:~fs.
      real(dp) :: thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD     
      real(dp) :: tau                   !% Thermostat time constant during (almost) microcanonical MD. Unit:~fs.
+     logical  :: per_atom_tau          !% Use per-atom thermostat time constant (property name 'per_atom_tau', overrides md%tau for atoms where property > 0) during (almost) microcanonical MD. Logical.
      real(dp) :: wait_time             !% Minimum wait time between loadings. Unit:~fs.
      real(dp) :: interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
      real(dp) :: calc_connect_interval !% How often should connectivity be recalculated?
@@ -495,6 +496,7 @@ contains
        this%md(md_idx)%thermalise_wait_time = 400.0_dp ! fs
        this%md(md_idx)%thermalise_wait_factor= 2.0_dp  ! number
        this%md(md_idx)%tau                  = 500.0_dp ! fs
+       this%md(md_idx)%per_atom_tau         = .false.  !
        this%md(md_idx)%wait_time            = 500.0_dp ! fs
        this%md(md_idx)%interval_time        = 100.0_dp ! fs
        this%md(md_idx)%calc_connect_interval = 10.0_dp ! fs
@@ -1085,6 +1087,11 @@ contains
        call QUIP_FoX_get_value(attributes, "tau", value, status)
        if (status == 0) then
           read (value, *) parse_cp%md(parse_cp%num_md_stanza)%tau
+       end if
+
+       call QUIP_FoX_get_value(attributes, "per_atom_tau", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md(parse_cp%num_md_stanza)%per_atom_tau
        end if
 
        call QUIP_FoX_get_value(attributes, "wait_time", value, status)
@@ -1685,6 +1692,7 @@ contains
        call Print('      thermalise_wait_time  = '//this%md(md_idx)%thermalise_wait_time//' fs',file=file)
        call Print('      thermalise_wait_factor  = '//this%md(md_idx)%thermalise_wait_factor//' fs',file=file)
        call Print('      tau                   = '//this%md(md_idx)%tau//' fs',file=file)
+       call Print('      per_atom_tau          = '//this%md(md_idx)%per_atom_tau,file=file)
        call Print('      wait_time             = '//this%md(md_idx)%wait_time//' fs',file=file)
        call Print('      interval_time         = '//this%md(md_idx)%interval_time//' fs',file=file)
        call Print('      calc_connect_interval = '//this%md(md_idx)%calc_connect_interval//' fs',file=file)

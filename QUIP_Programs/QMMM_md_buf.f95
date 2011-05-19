@@ -466,7 +466,7 @@ logical :: have_silica_potential
     ds%avg_time = avg_time
 
   !THERMOSTAT
-    call add_thermostats(ds, thermostat_type, Simulation_Temperature)
+    call add_QMMM_md_buf_thermostats(ds, thermostat_type, Simulation_Temperature)
     call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
       Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
 
@@ -1511,7 +1511,7 @@ contains
     endif
   end subroutine setup_pot
 
-  subroutine add_thermostats(ds, thermostat_type, T)
+  subroutine add_QMMM_md_buf_thermostats(ds, thermostat_type, T)
     type(DynamicalSystem), intent(inout) :: ds
     integer, intent(in) :: thermostat_type
     real(dp), intent(in) :: T
@@ -1532,7 +1532,7 @@ contains
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover thermostat for each atom")
       case(4)
-	call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau, n=ds%atoms%N)
+	call add_thermostats(ds,type=NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
 	! do i=1, ds%atoms%N
 	  ! call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau)
 	! end do
@@ -1562,7 +1562,7 @@ contains
       case default
 	call system_abort("add_thermostats: Unknown Thermostat_Type="//Thermostat_type)
     end select
-  end subroutine add_thermostats
+  end subroutine add_QMMM_md_buf_thermostats
 
   subroutine set_thermostat_masses(at, Thermostat_type, T, Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
     type(Atoms), intent(in) :: at
