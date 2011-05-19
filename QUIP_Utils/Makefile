@@ -40,17 +40,28 @@ include Makefile.inc
 include Makefile.rules
 
 
-F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
-OBJS = ${addsuffix .o, ${F95_FILES}}
+QUIP_UTILS_F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
+QUIP_UTILS_F95_SOURCES = ${addsuffix .f95, ${QUIP_UTILS_F95_FILES}}
+QUIP_UTILS_OBJS = ${addsuffix .o, ${QUIP_UTILS_F95_FILES}}
 
 
 .PHONY : clean allclean 
 
 
-libquiputils.a:  ${OBJS}
-	${AR} ${AR_ADD} libquiputils.a ${OBJS}
+libquiputils.a:  ${QUIP_UTILS_OBJS}
+	${AR} ${AR_ADD} libquiputils.a ${QUIP_UTILS_OBJS}
 
 clean:
 	rm -f *.o *.mod *.mod.save libquiputils.a
+	-rm QUIP_Utils.depend
 
 allclean: clean
+
+ifeq (${USE_MAKEDEP},1)
+QUIP_UTILS_F95_FPP_FILES = ${addsuffix .fpp, ${QUIP_UTILS_F95_FILES}}
+
+QUIP_Utils.depend: ${QUIP_UTILS_F95_FPP_FILES}
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Utils/,${QUIP_UTILS_F95_SOURCES}} > QUIP_Utils.depend
+
+-include QUIP_Utils.depend
+endif
