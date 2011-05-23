@@ -121,7 +121,7 @@ def makecrack(params, stem):
       maxx, minx = crack_slab.pos[1,:].min(), crack_slab.pos[1,:].max()
       crack_slab.move_mask[(abs(crack_slab.pos[1,:]-maxx) < params.crack_edge_fix_tol) |
                            (abs(crack_slab.pos[1,:]-minx) < params.crack_edge_fix_tol)] = 0
-      
+
 
    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
@@ -158,6 +158,45 @@ def makecrack(params, stem):
       crack_setup_marks(crack_slab, params)
       crack_update_selection(crack_slab, params)
 
+   if params.any_per_atom_tau():
+      # Set up per_atom_tau property for ramped Langevin thermostat:
+      #
+      #    tau
+      #    ^
+      #    |\        /|                     |\        /|  max_tau
+      #    | \      / |                     | \      / |
+      #    |  \    /  |     constant E      |  \    /  |
+      #    |   \  /   |      (tau = 0)      |   \  /   |
+      #    |    \/    |                     |    \/    |
+      #    +----------+---------------------+----------+---> x
+      #   -w/2      -w/2+r                 w/2-r      w/2
+
+      w_by_2   = crack_slab.OrigWidth/2.
+      ramp_len = params.crack_thermostat_ramp_length
+      max_tau  = params.crack_thermostat_ramp_max_tau
+      print 'Adding thermostat ramp with length', ramp_len, 'max_tau', max_tau
+      
+      @np.vectorize
+      def tau(x):
+         if x < -w_by_2 + ramp_len/2:
+            q = (x+w_by_2)/(ramp_len/2.)
+            return max_tau*(1.- q)
+         elif (x > -w_by_2 + ramp_len/2 and
+               x < -w_by_2 + ramp_len):
+            q = (x+w_by_2-ramp_len/2.)/(ramp_len/2.)
+            return max_tau*q
+         elif (x > -w_by_2 + ramp_len and
+               x < w_by_2 - ramp_len):
+            return 0.
+         elif (x > w_by_2 - ramp_len and
+               x < w_by_2 - ramp_len/2):
+            q = (x-w_by_2+ramp_len)/(ramp_len/2.)
+            return max_tau*(1.- q)
+         else:
+            q = (x-w_by_2+ramp_len/2.)/(ramp_len/2.)
+            return max_tau*q
+      crack_slab.add_property('per_atom_tau', tau(crack_slab.pos[1,:]))
+
    return crack_slab
 
 
@@ -182,7 +221,7 @@ def crack_rescale_homogeneous_xy(at, params, new_strain):
     crack_update_connect(b, params)
 
     return b
-    
+
 
 def crack_initial_velocity_field(params, stem, advance_step=3.84, advance_time=100.):
    crack_slab_1 = makecrack(params, stem)
