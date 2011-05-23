@@ -19,9 +19,12 @@
 import os
 import numpy as np
 from quippy import (Potential, Atoms, MPI_context, transform, print_title, verbosity_push,
-                    HYBRID_NO_MARK, GPA, J_PER_M2)
+                    HYBRID_NO_MARK, GPA)
 
-from quippy import (crack_apply_load_increment,
+from quippy.surface import J_PER_M2
+
+from quippy import (CrackParams,
+                    crack_apply_load_increment,
                     crack_find_tip_local_energy, crack_k_to_g,
                     crack_setup_marks, crack_apply_strain_ramp,
                     crack_find_tip_percolation, crack_make_seed,
@@ -195,21 +198,31 @@ def crack_initial_velocity_field(params, stem, advance_step=3.84, advance_time=1
 
 
 
-def crack_strain_energy_release_rate(at, bulk, f_min=.8, f_max=.9, pot=None, xmlfile=None):
+def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=None, avg_pos=False):
 
    print 'Analytical effective elastic modulus E\' = ', at.YoungsModulus/(1-at.PoissonRatio_yx**2), 'GPa'
    print 'Analytical energy release rate G = ', crack_measure_g(at, at.YoungsModulus, at.PoissonRatio_yx, at.OrigHeight), 'J/m^2'
 
+   if bulk is None:
+      if stem is None: raise ValueError('Either "bulk" or "stem" must be present')
+      bulk = Atoms(stem+'_bulk.xyz')
+
    if not hasattr(at, 'local_energy') or not hasattr(bulk, 'energy'):
-      if pot is None:
-         if xmlfile is None:
-            raise ValueError('One of "pot" or "xmlfile" must be present')
-         params = CrackParams(xmlfile)
-         pot = Potential(params.classical_args, param_filename=stem+'.xml')
+      if stem is None: raise ValueError('local_energy property not found in Atoms and "stem" is missing')
+      xmlfile = stem+'.xml'
+      params = CrackParams(xmlfile)
+      pot = Potential(params.classical_args, param_filename=stem+'.xml')
+      pot.print_()
+
       if not hasattr(at, 'local_energy'):
+         if avg_pos:
+            tmp_pos = at.pos.copy()
+            at.pos[...] = at.avgpos
          at.set_cutoff(pot.cutoff()+1.)
          at.calc_connect()
          pot.calc(at, args_str="local_energy")
+         if avg_pos:
+            at.pos[...] = tmp_pos
 
       if not hasattr(bulk, 'energy'):
          bulk.set_cutoff(pot.cutoff()+1.)
@@ -233,6 +246,8 @@ def crack_strain_energy_release_rate(at, bulk, f_min=.8, f_max=.9, pot=None, xml
    print 'Strip contains', strip.count(), 'atoms', 'width', strip_width, 'height', strip_height, 'volume', strip_volume
 
    strain_energy_density = (at.local_energy[strip].sum() - bulk.energy/bulk.n*strip.count())/strip_volume
+
+   print 'Strain energy density in strip', strain_energy_density, 'eV/A**3'
 
    E_effective = 2*strain_energy_density/strain**2*GPA
    print 'Effective elastic modulus E =', E_effective, 'GPa'
