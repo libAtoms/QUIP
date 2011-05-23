@@ -19,7 +19,7 @@
 import os
 import numpy as np
 from quippy import (Potential, Atoms, MPI_context, transform, print_title, verbosity_push,
-                    HYBRID_NO_MARK)
+                    HYBRID_NO_MARK, GPA, J_PER_M2)
 
 from quippy import (crack_apply_load_increment,
                     crack_find_tip_local_energy, crack_k_to_g,
@@ -154,7 +154,7 @@ def makecrack(params, stem):
 
       crack_setup_marks(crack_slab, params)
       crack_update_selection(crack_slab, params)
-   
+
    return crack_slab
 
 
@@ -180,3 +180,64 @@ def crack_rescale_homogeneous_xy(at, params, new_strain):
 
     return b
     
+
+def crack_initial_velocity_field(params, stem, advance_step=3.84, advance_time=100.):
+   crack_slab_1 = makecrack(params, stem)
+
+   # advance by one bond
+   params.crack_seed_length = params.crack_seed_length + advance_step
+   crack_slab_2 = makecrack(params, stem)
+
+   crack_slab_1.add_property('velo', 0., n_cols=3)
+   crack_slab_1.velo[...] = (crack_slab_2.pos - crack_slab_1.pos)/(advance_step*advance_time)
+
+   return crack_slab_1
+
+
+
+def crack_strain_energy_release_rate(at, bulk, f_min=.8, f_max=.9, pot=None, xmlfile=None):
+
+   print 'Analytical effective elastic modulus E\' = ', at.YoungsModulus/(1-at.PoissonRatio_yx**2), 'GPa'
+   print 'Analytical energy release rate G = ', crack_measure_g(at, at.YoungsModulus, at.PoissonRatio_yx, at.OrigHeight), 'J/m^2'
+
+   if not hasattr(at, 'local_energy') or not hasattr(bulk, 'energy'):
+      if pot is None:
+         if xmlfile is None:
+            raise ValueError('One of "pot" or "xmlfile" must be present')
+         params = CrackParams(xmlfile)
+         pot = Potential(params.classical_args, param_filename=stem+'.xml')
+      if not hasattr(at, 'local_energy'):
+         at.set_cutoff(pot.cutoff()+1.)
+         at.calc_connect()
+         pot.calc(at, args_str="local_energy")
+
+      if not hasattr(bulk, 'energy'):
+         bulk.set_cutoff(pot.cutoff()+1.)
+         bulk.calc_connect()
+         pot.calc(bulk, args_str='energy')
+
+   h = at.pos[2,:].max() - at.pos[2,:].min()
+   h0 = at.OrigHeight
+   strain = (h - h0)/h0
+   print 'Applied strain', strain
+
+   x_min = f_min*at.OrigWidth - at.OrigWidth/2.
+   x_max = f_max*at.OrigWidth - at.OrigWidth/2.
+   strip = np.logical_and(at.move_mask == 1, np.logical_and(at.pos[1,:] > x_min, at.pos[1,:] < x_max))
+   at.add_property('strip', strip, overwrite=True)
+
+   strip_depth = at.lattice[3,3]
+   strip_width = at.pos[1,strip].max() - at.pos[1,strip].min()
+   strip_height = at.pos[2,strip].max() - at.pos[2,strip].min()
+   strip_volume = strip_width*strip_height*strip_depth
+   print 'Strip contains', strip.count(), 'atoms', 'width', strip_width, 'height', strip_height, 'volume', strip_volume
+
+   strain_energy_density = (at.local_energy[strip].sum() - bulk.energy/bulk.n*strip.count())/strip_volume
+
+   E_effective = 2*strain_energy_density/strain**2*GPA
+   print 'Effective elastic modulus E =', E_effective, 'GPa'
+
+   G_effective = strain_energy_density*strip_height*J_PER_M2
+   print 'Effective energy release rate G =', G_effective, 'J/m^2'
+
+   return G_effective
