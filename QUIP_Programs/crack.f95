@@ -530,8 +530,11 @@ program crack
 
   if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz with stem="'//trim(stem)//'"')
 
-  call initialise(ds, crack_slab)
-  if (any(params%md(1:params%num_md_stanza)%extrapolate_steps /= 1)) call initialise(ds_save, crack_slab)
+  call initialise(ds, crack_slab, constraints=count((/params%constraint_fix_bond, &
+       params%constraint_fix_position, params%constraint_fix_gradient, params%constraint_fix_curvature /)))
+  if (any(params%md(1:params%num_md_stanza)%extrapolate_steps /= 1)) &
+       call initialise(ds_save, crack_slab, constraints=count((/params%constraint_fix_bond, &
+       params%constraint_fix_position,params%constraint_fix_gradient,params%constraint_fix_curvature /)))
   call finalise(crack_slab)
 
   call print('Initialised dynamical system with '//ds%N//' atoms')
@@ -1086,9 +1089,11 @@ program crack
                     call ds_print_status(ds, 'I')
                     if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
 
-                    if (trim(params%simulation_task) == 'damped_md') &
-                         call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
-                         ' max(abs(force)) = '//maxval(abs(force)))
+                    if (trim(params%simulation_task) == 'damped_md') then
+                       force(:,move_mask) = 0.0_dp
+                       call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
+                            ' max(abs(force)) = '//maxval(abs(force)))
+                    end if
 
                     if (state == STATE_MD_LOADING) then
                        ! increment the load
