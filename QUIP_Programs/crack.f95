@@ -551,6 +551,11 @@ program crack
   end if
 
   ! add constraints
+  if (params%constraint_fix_bond) then
+     call print("Constraining bond "//params_constraint_bond_i//"--"//params%constraint_bond_j//" to length "//params%constraint_bond_length)
+     call constrain_bondlength(ds, params%constraint_bond_i, params%constraint_bond_j, params%constraint_bond_length)
+  end if
+
   if (params%constraint_fix_position .or. params%constraint_fix_gradient .or. params%constraint_fix_curvature) then
      CRACK_TIP_CURVATURE_FUNC = register_constraint(CRACK_TIP_CURVATURE)
      CRACK_TIP_POSITION_FUNC  = register_constraint(CRACK_TIP_POSITION)

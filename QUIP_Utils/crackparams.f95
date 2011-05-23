@@ -121,7 +121,7 @@ module CrackParams_module
 
   integer, parameter :: MAX_PROPERTIES = 100, MAX_MD_STANZA = 5
 
-  public :: CrackParams, CrackMDParams
+  public :: CrackParams, CrackMDParams, CrackParams_any_per_atom_tau
 
   type CrackMDParams
      ! Molecular dynamics parameters
@@ -214,6 +214,8 @@ module CrackParams_module
      logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
      real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
      logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
+     real(dp) :: crack_thermostat_ramp_length  !% Length of thermostat ramp used for stadium damping at left and right edges
+     real(dp) :: crack_thermostat_ramp_max_tau !% Value of thermostat tau at end of ramp, in fs.
  
      ! Simulation parameters
      character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -336,8 +338,9 @@ module CrackParams_module
      integer :: num_md_stanza, md_stanza
      type(CrackMDParams) :: md(MAX_MD_STANZA)
 
-     logical :: constraint_fix_gradient, constraint_fix_curvature, constraint_fix_position
-     real(dp) :: constraint_gradient, constraint_curvature, constraint_position
+     logical :: constraint_fix_gradient, constraint_fix_curvature, constraint_fix_position, constraint_fix_bond
+     real(dp) :: constraint_gradient, constraint_curvature, constraint_position, constraint_bond_length
+     integer :: constraint_bond_i, constraint_bond_j
 
   end type CrackParams
 
@@ -457,6 +460,8 @@ contains
     this%crack_free_surfaces = .false.
     this%crack_front_window_size = 5.44_dp ! Angstrom
     this%crack_fix_sides = .false.
+    this%crack_thermostat_ramp_length = 50.0
+    this%crack_thermostat_ramp_max_tau = 10000.0
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -603,9 +608,14 @@ contains
     this%hack_qm_zero_z_force        = .false.
     this%hack_fit_on_eqm_coordination_only = .false.
 
+    ! Constraints
     this%constraint_fix_position = .false.
     this%constraint_fix_gradient = .false.
     this%constraint_fix_curvature = .false.
+    this%constraint_fix_bond = .false.
+    this%constraint_bond_i = 0
+    this%constraint_bond_j = 0
+    this%constraint_bond_length = 0.0_dp
     this%constraint_position = 0.0_dp
     this%constraint_gradient = 0.0_dp
     this%constraint_curvature = 0.0_dp
@@ -994,6 +1004,17 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%crack_fix_sides
        end if
+
+       call QUIP_FoX_get_value(attributes, "thermostat_ramp_length", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_thermostat_ramp_length
+       end if
+
+       call QUIP_FoX_get_value(attributes, "thermostat_ramp_max_tau", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_thermostat_ramp_max_tau
+       end if
+
 
 
     elseif (parse_in_crack .and. name == 'simulation') then
@@ -1560,6 +1581,26 @@ contains
 
     elseif (parse_in_crack .and. name == 'constraint') then
 
+       call QUIP_FoX_get_value(attributes, "fix_bond", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_fix_bond
+       end if
+
+       call QUIP_FoX_get_value(attributes, "bond_i", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_bond_i
+       end if
+
+       call QUIP_FoX_get_value(attributes, "bond_j", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_bond_j
+       end if
+
+       call QUIP_FoX_get_value(attributes, "bond_length", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%constraint_bond_length
+       end if
+
        call QUIP_FoX_get_value(attributes, "fix_position", value, status)
        if (status == 0) then
           read (value, *) parse_cp%constraint_fix_position
@@ -1668,6 +1709,8 @@ contains
     call Print('     free_surfaces         = '//this%crack_free_surfaces, file=file)
     call Print('     front_window_size     = '//this%crack_front_window_size, file=file)
     call Print('     fix_sides             = '//this%crack_fix_sides, file=file)
+    call Print('     thermostat_ramp_length  = '//this%crack_thermostat_ramp_length//' A', file=file)
+    call Print('     thermostat_ramp_max_tau = '//this%crack_thermostat_ramp_max_tau//' fs', file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
@@ -1807,5 +1850,20 @@ contains
 
 
   end subroutine CrackParams_print
+
+  function CrackParams_any_per_atom_tau(this)
+    type(CrackParams), intent(in) :: this
+    logical :: CrackParams_any_per_atom_tau
+    integer :: i
+
+    CrackParams_any_per_atom_tau = .false.
+    do i=1,this%num_md_stanza
+       if (this%md(i)%per_atom_tau) then
+          CrackParams_any_per_atom_tau = .true.
+          return
+       end if
+    end do
+    
+  end function CrackParams_any_per_atom_tau
 
 end module CrackParams_module
