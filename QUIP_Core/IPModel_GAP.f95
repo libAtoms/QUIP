@@ -481,7 +481,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      enddo
 
      n_water_pair = n_water_pair / 2 ! Water dimers were double counted
-
      allocate(vec(d,n_water_pair),dvec(3,6,d,n_water_pair),water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index)
      k = 0
@@ -691,7 +690,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
      enddo
 
-     if(present(f)) then
+     if(present(f) .and. size(vec,2)==1 ) then
         do i = 1, at%N
            do k = 1, 3
               call gp_predict(gp_data=this%my_gp,mean=f_gp,x_star=vec(:,1),x_prime_star=dvec(k,i,:,1))
