@@ -45,7 +45,7 @@ nx = 1
 ny = 3
 nz = 1
 d  = 15.0
-h = 10.0
+h = 15.0
 
 quartz_bulk = {}
 quartz_surface = {}
@@ -63,7 +63,7 @@ for (y, z, shift) in indices:
 
    quartz_surface[(y,z)]  = supercell(quartz_bulk[(y,z)], nx, ny, nz)
    quartz_surface[(y,z)].lattice[2,2] += d
-   quartz_surface[(y,z)].set_lattice(quartz_surface[(y,z)].lattice)
+   quartz_surface[(y,z)].set_lattice(quartz_surface[(y,z)].lattice, False)
 
    quartz_surface[(y,z)].params['axes'] = crack_rotation_matrix(aq, y, z).T
 
@@ -105,7 +105,7 @@ xml_lda_500k = """
 """
 
 
-pot = Potential('IP ASAP2', xml_lda_500k)
+pot = Potential('IP ASAP2', param_str=xml_lda_500k)
 #pot = Potential('IP ASAP', xml_ewald)
 
 gamma = {}
@@ -116,7 +116,7 @@ aq.set_cutoff(pot.cutoff()+2.0)
 
 
 do_relax = False
-do_md = True
+do_md = False
 
 movie = CInOutput('relax.xyz', OUTPUT)
 
@@ -153,6 +153,7 @@ for index in sorted(quartz_surface.keys()):
    surface.set_cutoff(pot.cutoff()+2.0)   
    gamma[index] = surface_energy(pot, aq, surface)*J_PER_M2
    print 'gamma[%s] = %f' % (index, gamma[index])
+   surface.write('quartz_%d%d%d%d_%d%d%d.xyz' % tuple(list(index[0]) + list(index[1])))
 
    if do_relax:
       if do_md:
