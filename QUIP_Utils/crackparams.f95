@@ -216,6 +216,8 @@ module CrackParams_module
      logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
      real(dp) :: crack_thermostat_ramp_length  !% Length of thermostat ramp used for stadium damping at left and right edges
      real(dp) :: crack_thermostat_ramp_max_tau !% Value of thermostat tau at end of ramp, in fs.
+     logical :: crack_initial_velocity_field !% If true, initialise velocity field with dU/dc
+     real(dp) :: crack_initial_velocity_field_dx, crack_initial_velocity_field_dt
  
      ! Simulation parameters
      character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -462,6 +464,10 @@ contains
     this%crack_fix_sides = .false.
     this%crack_thermostat_ramp_length = 50.0
     this%crack_thermostat_ramp_max_tau = 10000.0
+
+    this%crack_initial_velocity_field = .false.
+    this%crack_initial_velocity_field_dx = 3.84_dp   ! Angstrom
+    this%crack_initial_velocity_field_dt = 100.0_dp  ! fs
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -1015,7 +1021,20 @@ contains
           read (value, *) parse_cp%crack_thermostat_ramp_max_tau
        end if
 
+       call QUIP_FoX_get_value(attributes, "initial_velocity_field", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_initial_velocity_field
+       end if
 
+       call QUIP_FoX_get_value(attributes, "initial_velocity_field_dx", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_initial_velocity_field_dx
+       end if
+
+       call QUIP_FoX_get_value(attributes, "initial_velocity_field_dt", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_initial_velocity_field_dt
+       end if
 
     elseif (parse_in_crack .and. name == 'simulation') then
 

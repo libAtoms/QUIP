@@ -41,7 +41,7 @@ from quippy import (CrackParams,
                     crack_print_filename,
                     crack_update_selection_crack_front)
 
-def makecrack(params, stem):
+def makecrack_main(params, stem):
    """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
 
    xmlfilename = stem+'.xml'
@@ -223,18 +223,26 @@ def crack_rescale_homogeneous_xy(at, params, new_strain):
     return b
 
 
-def crack_initial_velocity_field(params, stem, advance_step=3.84, advance_time=100.):
-   crack_slab_1 = makecrack(params, stem)
+def makecrack_initial_velocity_field(params, stem, advance_step, advance_time):
+   crack_slab_1 = makecrack_main(params, stem)
 
    # advance by one bond
    params.crack_seed_length = params.crack_seed_length + advance_step
-   crack_slab_2 = makecrack(params, stem)
+   crack_slab_2 = makecrack_main(params, stem)
 
    crack_slab_1.add_property('velo', 0., n_cols=3)
    crack_slab_1.velo[...] = (crack_slab_2.pos - crack_slab_1.pos)/(advance_step*advance_time)
 
    return crack_slab_1
 
+def makecrack(params, stem):
+   if params.crack_initial_velocity_field:
+      slab = makecrack_initial_velocity_field(params, stem, params.crack_initial_velocity_field_dx,
+                                              params.crack_initial_velocity_field_dt)
+   else:
+      slab = makecrack_main(params, stem)
+
+   return slab
 
 
 def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=None, avg_pos=False):
