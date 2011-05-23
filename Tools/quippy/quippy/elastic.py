@@ -515,6 +515,7 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
    at.add_property('stress_evec1', 0.0, n_cols=3)
    at.add_property('stress_evec2', 0.0, n_cols=3)
    at.add_property('stress_evec3', 0.0, n_cols=3)
+   at.add_property('strain_energy_density', 0.0)
 
    rotXYZ = fzeros((3,3))
    rotXYZ[1,2] = 1.0
@@ -615,6 +616,8 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
          # Symmetrise stress tensor
          RsigRt = (RsigRt + RsigRt.T)/2.0
          at.stress[:,i] = stress_vector(RsigRt)
+
+         at.strain_energy_density[i] = 0.5*numpy.dot(at.strain[:,i], at.stress[:,i])
 
          compute_stress_eig(i)
 
@@ -763,3 +766,4 @@ def rayleigh_wave_speed(C, rho):
    y = lambda x: (x/vp)**4*( (C[3,3]/C[2,2])*(1-(x/vp)**2)) - ((1-( (C[3,2]**2)/(C[2,2]*C[3,3]) ) - (x/vp)**2)**2)*(1-(x/vsv)**2)
 
    return y
+
