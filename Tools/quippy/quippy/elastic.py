@@ -746,4 +746,20 @@ def transform_elasticity(c, R):
    else:
       return cp
 
+
+def rayleigh_wave_speed_isotropic(C, rho):
+   vp = sqrt(C[1,1]/rho)
+   vs = sqrt(C[4,4]/rho)
    
+   y = lambda v: sqrt(1 - (v/vs)**2)*sqrt(1 - (v/vp)**2) - sqrt(1 - v**2/(2*vs**2))**4
+
+
+   
+def rayleigh_wave_speed(C, rho):
+
+   vp = sqrt(C[3,3]/rho)
+   vsv = sqrt(C[4,4]/rho)
+
+   y = lambda x: (x/vp)**4*( (C[3,3]/C[2,2])*(1-(x/vp)**2)) - ((1-( (C[3,2]**2)/(C[2,2]*C[3,3]) ) - (x/vp)**2)**2)*(1-(x/vsv)**2)
+
+   return y
