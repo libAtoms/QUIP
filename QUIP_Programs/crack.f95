@@ -552,7 +552,7 @@ program crack
 
   ! add constraints
   if (params%constraint_fix_bond) then
-     call print("Constraining bond "//params_constraint_bond_i//"--"//params%constraint_bond_j//" to length "//params%constraint_bond_length)
+     call print("Constraining bond "//params%constraint_bond_i//"--"//params%constraint_bond_j//" to length "//params%constraint_bond_length)
      call constrain_bondlength(ds, params%constraint_bond_i, params%constraint_bond_j, params%constraint_bond_length)
   end if
 
