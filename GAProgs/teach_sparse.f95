@@ -44,10 +44,9 @@ program teach_sparse_program
   type(Dictionary) :: params
   type(gp_sparse) :: gp_sp
 
-  character(len=FIELD_LENGTH) :: verbosity, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
-  theta_file, sparse_file, bispectrum_file, config_type_hypers_string, tmp, &
-  default_cosnx_sigma_Ang, default_cosnx_sigma_RadS, default_cosnx_sigma_RadA
-
+  character(len=FIELD_LENGTH) :: verbosity
+  character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
+  theta_file, sparse_file, bispectrum_file, config_type_hypers_string, tmp
   real(dp) :: mem_required, mem_total, mem_free, z0_ratio
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
@@ -69,7 +68,7 @@ program teach_sparse_program
   call param_register(params, 'r_cut', '2.75', main_teach_sparse%r_cut, help_string="Cutoff for GAP environment")
   call param_register(params, 'j_max', '4', main_teach_sparse%j_max, help_string="Max of expansion of bispectrum, i.e. resulution")
   call param_register(params, 'z0_ratio', '0.0', z0_ratio, help_string="Developer option. Ratio of radius of 4D projection sphere times PI and the cutoff.")
-  call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates, help_string="{bispectrum,qw,water_monomer,water_dimer,cosnx,twobody,coordination} representation to use")
+  call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates, help_string="{bispectrum,qw,water_monomer,water_dimer} representation to use")
   call param_register(params, 'l_max', '6', main_teach_sparse%qw_l_max, help_string="Maximum sphearical harmonic expansion")
   call param_register(params, 'cutoff', '', qw_cutoff_string, help_string="Cutoffs for the radial basis functions")
   call param_register(params, 'cutoff_f', '', qw_cutoff_f_string, help_string="Types of the radial basis functions: 1 - Fermi, 2 - Gaussian, 3 - Skewed Gaussian")
@@ -79,15 +78,7 @@ program teach_sparse_program
 
   call param_register(params, 'cosnx_l_max', '6', main_teach_sparse%cosnx_l_max, help_string="Maximum cos(l theta) expansion")
   call param_register(params, 'cosnx_n_max', '3', main_teach_sparse%cosnx_n_max, help_string="Maximum number of radial basis functions")
-  call param_register(params, 'cosnx_o_l_max', '2', main_teach_sparse%cosnx_o_l_max, help_string="Maximum cos(l theta) expansion - original version")
-  call param_register(params, 'cosnx_o_n_max', '2', main_teach_sparse%cosnx_o_n_max, help_string="Maximum number of radial basis functions - original version")
-
-  default_cosnx_sigma_Ang  = ""// (0.5_dp / main_teach_sparse%cosnx_l_max)
-  default_cosnx_sigma_RadS = ""// (main_teach_sparse%r_cut / main_teach_sparse%cosnx_n_max)
-  default_cosnx_sigma_RadA = ""// (main_teach_sparse%r_cut**2 / main_teach_sparse%cosnx_n_max)
-  call param_register(params, 'cosnx_sigma_Ang', default_cosnx_sigma_Ang, main_teach_sparse%cosnx_sigma_Ang, help_string="Width of Gaussians used as angular basis functions")
-  call param_register(params, 'cosnx_sigma_RadS', default_cosnx_sigma_RadS, main_teach_sparse%cosnx_sigma_RadS, help_string="Width of Gaussians used as basis functions for the sum of distances")
-  call param_register(params, 'cosnx_sigma_RadA', default_cosnx_sigma_RadA, main_teach_sparse%cosnx_sigma_RadA, help_string="Width of Gaussians used as basis functions for the difference in distances")
+  call param_register(params, 'use_rdf', 'F', main_teach_sparse%use_rdf, help_string="Whether to optimise the radial basis set with respect of the distribution of distances")
 
   call param_register(params, 'e0', '0.0', main_teach_sparse%e0, has_value_target = has_e0, help_string="Value to be subtracted from energies before fittint (and added back on after prediction)")
   call param_register(params, 'f0', '0.0', main_teach_sparse%f0, has_value_target = has_f0, help_string="Mean of the gp predictor, defaults to data mean. another useful value is 0.0")
@@ -122,8 +113,8 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     [r_cut=2.75] [j_max=4] [z0_ratio=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer,cosnx,twobody,coordination}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
-     [cosnx_l_max=6] [cosnx_n_max=3] [cosnx_sigma_Ang=0.5/cosnx_l_max] [cosnx_sigma_RadS=r_cut/cosnx_n_max] [cosnx_sigma_RadA=r_cut**2/cosnx_n_max] &
+     [r_cut=2.75] [j_max=4] [z0_ratio=0.0] [coordinates={bispectrum,qw,water_monomer,water_dimer,cosnx}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     [cosnx_l_max=6] [cosnx_n_max=3] [use_rdf=T] &
      [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] &
@@ -261,11 +252,7 @@ program teach_sparse_program
      main_teach_sparse%z0 = max(1.0_dp,z0_ratio) * main_teach_sparse%r_cut/(PI-0.02_dp)
      main_teach_sparse%d = j_max2d(main_teach_sparse%j_max)
   case('cosnx')
-     main_teach_sparse%d = (2*main_teach_sparse%cosnx_l_max+1)*main_teach_sparse%cosnx_n_max**2 + (main_teach_sparse%cosnx_o_l_max+1)*main_teach_sparse%cosnx_o_n_max
-  case('twobody')
-     main_teach_sparse%d = 1
-  case('coordination')
-     main_teach_sparse%d = 1
+     main_teach_sparse%d = (main_teach_sparse%cosnx_l_max+1)*main_teach_sparse%cosnx_n_max
   case default
      call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
   endselect
@@ -597,7 +584,7 @@ program teach_sparse_program
   call print("model parameters:")
   call print("r_cut     = "//main_teach_sparse%r_cut)
   select case(trim(main_teach_sparse%coordinates))
-  case('water_monomer','water_dimer','hf_dimer','twobody','coordination')
+  case('water_monomer','water_dimer','hf_dimer')
   case('qw')
      call print("l_max     = "//main_teach_sparse%qw_l_max)
      call print("cutoff    = "//qw_cutoff_string)
@@ -611,8 +598,7 @@ program teach_sparse_program
   case('cosnx')
      call print("l_max     = "//main_teach_sparse%cosnx_l_max)
      call print("n_max     = "//main_teach_sparse%cosnx_n_max)
-     call print("o_l_max     = "//main_teach_sparse%cosnx_o_l_max)
-     call print("o_n_max     = "//main_teach_sparse%cosnx_o_n_max)
+     call print("use_rdf   = "//main_teach_sparse%use_rdf)
   case default
      call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
   endselect
@@ -627,6 +613,3 @@ program teach_sparse_program
   call system_finalise()
 
 end program teach_sparse_program
-
-
-
