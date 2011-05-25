@@ -304,12 +304,17 @@ subroutine print_summary(params, ds, e)
   type(DynamicalSystem), intent(in) :: ds
   real(dp), intent(in) :: e
 
-  real(dp) :: mu(3)
+  real(dp) :: mu(3), virial(3,3)
 
   call ds_print_status(ds, "STAT", e)
   if (get_value(ds%atoms%params, 'Dipole_Moment', mu)) then
     call print("MU " // ds%t // " " // mu)
   endif
+  if (params%calc_virial) then
+    call get_param_value(ds%atoms, "virial", virial)
+    call print("STRESS " // (reshape(virial,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa")
+  endif
+
 end subroutine print_summary
 
 subroutine print_atoms_params(params, at)
