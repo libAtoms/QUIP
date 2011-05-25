@@ -1545,6 +1545,7 @@ if (am%minim_do_pos) then
       hack_restraint_E = 0.5_dp * hack_restraint_k*(dr - hack_restraint_r)**2
       val = val + hack_restraint_E
       hack_restraint_F = hack_restraint_k*(dr - hack_restraint_r)*diff_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2))/dr
+      call print("hack_restraint E "//hack_restraint_E// " F " // hack_restraint_F, PRINT_ALWAYS)
       f(:,hack_restraint_i(1)) = f(:,hack_restraint_i(1)) + hack_restraint_F
       f(:,hack_restraint_i(2)) = f(:,hack_restraint_i(2)) - hack_restraint_F
    endif
