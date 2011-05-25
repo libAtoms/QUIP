@@ -2247,7 +2247,7 @@ contains
 
      if (this%print_thermostat_temps) then
        if (any(region_temps >= 0.0_dp)) then
-	 call print("T", nocr=.true.)
+	 call print("T "//this%t, nocr=.true.)
 	 do i=0, size(region_temps)-1
 	   if (this%thermostat(i)%type /= NONE) then
 	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
