@@ -1090,8 +1090,8 @@ program crack
                     if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
 
                     if (trim(params%simulation_task) == 'damped_md') then
-                       do i=1,ds%atoms%n
-                          if (move_mask(i)) force(:,i) = 0.0_dp
+                       do j=1,ds%atoms%n
+                          if (move_mask(j) == 0) force(:,j) = 0.0_dp
                        end do
                        call print('Damped MD: normsq(force) = '//normsq(reshape(force,(/3*ds%N/)))//&
                             ' max(abs(force)) = '//maxval(abs(force)))
