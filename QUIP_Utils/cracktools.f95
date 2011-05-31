@@ -269,17 +269,17 @@ contains
   !% \hline 
   !% \hline
   !% \end{tabular}\end{center}
-  subroutine crack_uniform_load(at, params, l_crack_pos, r_crack_pos, zone_width, G, apply_load, disp)
-    type(Atoms), intent(inout)    :: at
-    type(CrackParams), intent(in) :: params
-    real(dp), intent(in)          :: l_crack_pos, r_crack_pos, zone_width
-    real(dp), intent(inout)       :: G
-    logical, optional             :: apply_load
+  subroutine crack_uniform_load(at, params, l_crack_pos, r_crack_pos, zone_width, eps, G, apply_load, disp)
+    type(Atoms), intent(inout)     :: at
+    type(CrackParams), intent(in)  :: params
+    real(dp), intent(in)           :: l_crack_pos, r_crack_pos, zone_width
+    real(dp), intent(in), optional :: eps, G
+    logical, optional              :: apply_load
     real(dp), dimension(:,:), intent(out) :: disp
 
     integer ::  j
     real(dp) top_old, top_new, bottom_old, bottom_new, x, y, q, strain, E, v, &
-         orig_height, new_height, crack_pos_y, y_check
+         orig_height, new_height, crack_pos_y, y_check, my_G
     logical :: do_apply_load
 
     if (.not. get_value(at%params, 'OrigHeight', orig_height)) &
@@ -294,10 +294,16 @@ contains
     if (.not. get_value(at%params, 'CrackPosy', crack_pos_y)) & 
          call system_abort('crack_uniform_load: CrackPosy parameter missing from atoms')
 
-    ! Calculate strain corresponding to given G
-    strain = crack_g_to_strain(G, E, v, orig_height)
+    if ((.not. present(eps) .and. .not. present(G)) .or. (present(eps) .and. present(G))) &
+         call system_abort('crack_uniform_load: one of eps or G must be present (but not both)')
 
-    call print('Requested G = '//G)
+    ! Calculate strain corresponding to given G
+    if (present(G)) then
+       call print('Requested G = '//G)
+       strain = crack_g_to_strain(G, E, v, orig_height)
+    else
+       strain = eps
+    end if
     call Print('Applying strain '//strain)
 
     top_old = 0.0; top_new = 0.0; bottom_old = 0.0; bottom_new = 0.0
@@ -368,10 +374,11 @@ contains
 
        new_height = maxval(at%pos(2,:))-minval(at%pos(2,:))
        call print('Measured slab height after strain = '//new_height)
-       G = 0.1_dp*0.5_dp*E/(1.0_dp-v*v)*(new_height - orig_height)**2.0_dp/orig_height
-       call print('Measured G = '//G)
+       my_G = 0.1_dp*0.5_dp*E/(1.0_dp-v*v)*(new_height - orig_height)**2.0_dp/orig_height
+       call print('Measured G = '//my_G)
 
-       call set_value(at%params, 'G', G)
+       call set_value(at%params, 'strain', strain)
+       call set_value(at%params, 'G', my_G)
     end if
 
   end subroutine crack_uniform_load
@@ -724,7 +731,7 @@ contains
           call print_title('Applying uniform load increment')
           ! strain it a bit
           do i=1,crack_slab%N
-             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp+params%crack_initial_loading_strain)
+             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp+params%crack_strain_increment)
           end do
      
        else if (trim(load_method) == 'reduce_uniform') then
@@ -738,7 +745,7 @@ contains
           ! strain it a bit
           do i=1,crack_slab%N
             if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) &
-             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp-params%crack_initial_loading_strain)    
+             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp-params%crack_strain_increment)    
           end do
 
        else if (trim(load_method) == 'kfield') then
@@ -770,7 +777,7 @@ contains
           ! apply load increment
           K1 = crack_g_to_k(crack_strain_to_g( &
                crack_g_to_strain(G, E, v, orig_height) + &
-               params%crack_initial_loading_strain, E, v, orig_height),E,v)
+               params%crack_strain_increment, E, v, orig_height),E,v)
        
           k_disp = 0.0_dp
           call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
@@ -825,7 +832,7 @@ contains
 
           G1 = crack_strain_to_g( &
                crack_g_to_strain(G, E, v, orig_height) + &
-               params%crack_initial_loading_strain, E, v, orig_height)
+               params%crack_strain_increment, E, v, orig_height)
 
           u_disp = 0.0_dp
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
@@ -941,34 +948,36 @@ contains
 !!$    end if
 
     if (trim(params%crack_loading) == 'uniform') then
+       call print_title('Seed crack - Uniform Load')
+
+
+       call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+       call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
+       call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+
        if (params%crack_G > 0.0_dp) then
-
-          call print_title('Seed crack - Uniform Load')
-
-          G = params%crack_G
-          call set_value(crack_slab%params, 'G', G)
-          call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-          call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
-          call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
-
-          if(params%crack_rescale_x_z) then
-             !  Rescale in x direction by v and in z direction by v2
-             if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-             strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
-             crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
-             crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
-             crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
-             call set_lattice(crack_slab, crack_slab%lattice, scale_positions=.false.)
-          elseif(params%crack_rescale_x) then 
-             !  Rescale in x direction by v 
-             if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-             strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
-             crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
-          endif
+               params%crack_strain_zone_width, G=params%crack_G, apply_load=.true., disp=u_disp) 
+       else
+          call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
+               params%crack_strain_zone_width, eps=params%crack_strain, apply_load=.true., disp=u_disp) 
        end if
 
+       if (.not. get_value(crack_slab%params, 'strain', strain)) &
+            call system_abort('After crack_uniform_load(), strain parameter missing')
+
+       if(params%crack_rescale_x_z) then
+          !  Rescale in x direction by v and in z direction by v2
+          if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
+          crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
+          crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
+          crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
+          call set_lattice(crack_slab, crack_slab%lattice, scale_positions=.false.)
+       elseif(params%crack_rescale_x) then 
+          !  Rescale in x direction by v 
+          if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
+          crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
+       endif
 
     else if (trim(params%crack_loading) == 'ramp') then
 
@@ -1707,10 +1716,11 @@ contains
   end subroutine crack_find_tip
 
   !% Return $x$ coordinate of rightmost undercoordinated atom
-  function crack_find_tip_coordination(at, params) result(crack_pos)
+  function crack_find_tip_coordination(at, params, n_tip_atoms, tip_indices) result(crack_pos)
     type(Atoms), intent(inout) :: at
     type(CrackParams) :: params
     real(dp), dimension(2) :: crack_pos
+    integer, intent(out), optional :: n_tip_atoms, tip_indices(:)
 
     integer :: i, crack_tip_atom, ti, n_tip
     integer, pointer, dimension(:) :: nn, edge_mask, orig_index
@@ -1762,6 +1772,12 @@ contains
     call Print('Crack position = '//crack_pos//' near atoms ['//orig_index(surface%N-n_tip+1:surface%N)//']')
     call set_value(at%params, 'CrackPosx', crack_pos(1))
     call set_value(at%params, 'CrackPosy', crack_pos(2))
+    
+    if (present(n_tip_atoms)) n_tip_atoms = n_tip
+    if (present(tip_indices)) then
+       if (size(tip_indices) < n_tip) call system_abort('crack_find_tip_coordination: tip_indices array too small')
+       tip_indices(1:n_tip) = orig_index(surface%N-n_tip+1:surface%N)
+    end if
 
     call finalise(surface)
 
