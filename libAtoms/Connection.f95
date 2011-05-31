@@ -964,10 +964,10 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, error)
+  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
     type(Connection), intent(inout)  :: this
     type(Atoms), intent(inout) :: at
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb
     integer, intent(out), optional :: error
 
     integer  :: cellsNa,cellsNb,cellsNc
@@ -977,9 +977,9 @@ contains
     integer  :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb
     integer  :: max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
     real(dp) :: cutoff, density, volume_per_cell
-    logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, do_fill
+    logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, my_store_n_neighb, do_fill
     logical :: change_i, change_j, change_k
-    integer, pointer :: map_shift(:,:)
+    integer, pointer :: map_shift(:,:), n_neighb(:)
 
     INIT_ERROR(error)
 
@@ -988,6 +988,7 @@ contains
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
     my_skip_zero_zero_bonds = optional_default(.false., skip_zero_zero_bonds)
+    my_store_n_neighb = optional_default(.true., store_n_neighb)
 
     if (at%cutoff < 0.0_dp .or. at%cutoff_break < 0.0_dp) then
        RAISE_ERROR('calc_connect: Negative cutoff radius ' // at%cutoff // ' ' // at%cutoff_break, error)
@@ -1177,6 +1178,13 @@ contains
        do i=1,at%n
           this%is_min_image(i) = is_min_image(this, i, error=error)
           PASS_ERROR(error)
+       end do
+    end if
+
+    if (my_store_n_neighb) then
+       call add_property(at, 'n_neighb', 0, ptr=n_neighb, overwrite=.true.)
+       do i=1,at%n
+          n_neighb(i) = n_neighbours(this, i)
        end do
     end if
 

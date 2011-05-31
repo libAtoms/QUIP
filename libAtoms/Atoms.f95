@@ -3589,21 +3589,21 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, error)
+  subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
     type(Atoms),                intent(inout)  :: this
     type(Connection), optional, intent(inout)  :: alt_connect
-    logical,          optional, intent(in)     :: own_neighbour, store_is_min_image, skip_zero_zero_bonds
+    logical,          optional, intent(in)     :: own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb
     integer,          optional, intent(out)    :: error
 
 
     INIT_ERROR(error)
     if (present(alt_connect)) then
        call calc_connect(alt_connect, this, &
-            own_neighbour, store_is_min_image, skip_zero_zero_bonds, error)
+            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
        PASS_ERROR(error)
     else
        call calc_connect(this%connect, this, &
-            own_neighbour, store_is_min_image, skip_zero_zero_bonds, error)
+            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
     endif
 
   end subroutine atoms_calc_connect
