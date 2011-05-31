@@ -43,6 +43,8 @@ def find_quip_root_and_arch():
         raise ValueError('QUIP_ARCH environment variable not set')
 
     quip_arch = os.environ['QUIP_ARCH']
+    if 'QUIP_ARCH_SUFFIX' in os.environ:
+      quip_arch = quip_arch+os.environ['QUIP_ARCH_SUFFIX']
 
     return (quip_root, quip_arch)
 
