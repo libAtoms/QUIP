@@ -499,7 +499,7 @@ implicit none
 
   call finalise(params_es)
 
-  call initialise(traj_out, params%trajectory_out_file, OUTPUT)
+  call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob)
 
   call initialise_md_thermostat(ds, params)
 
