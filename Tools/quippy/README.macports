@@ -5,6 +5,7 @@ How to install gcc, python, and numpy to work with MacPorts 1.8.2
   python_select python26
   port install py26-numpy +no_atlas
   port install hdf5-18 netcdf-devel +static
+For MacPorts 1.9.2, you don't need the '+atlas' in py26-numpy, and just 'netcdf' instead of 'netcdf-devel +static'
 
 For elastic constanst, also need scipy:
   port install py26-scipy @0.7.1_0+gcc44
