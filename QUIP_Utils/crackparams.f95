@@ -74,7 +74,7 @@
 !%>    name="(111)[11b0]" width="200.0" height="100.0" 
 !%>    num_layers="1" G="1.0" seed_length="50.0"
 !%>    strain_zone_width="50.0" vacuum_size="50.0"
-!%>    hydrogenate="T" rescale_x_z="F" rescale_x="F" nerate_load="F" initial_loading_strain="0.005" />
+!%>    hydrogenate="T" rescale_x_z="F" rescale_x="F" nerate_load="F" strain_increment="0.005" />
 !%>
 !%>  <simulation task="md" seed="0" restart="0" classical="F" />
 !%>
@@ -170,7 +170,8 @@ module CrackParams_module
      real(dp) :: crack_height             !% Height of crack slab, in \AA{}.
      integer  :: crack_num_layers         !% Number of primitive cells in $z$ direction
      logical  :: crack_apply_initial_load !% If 'true', apply initial loading field to crack slab
-     real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$
+     real(dp) :: crack_strain             !% Initial applied strain
+     real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$ (override strain)
      character(FIELD_LENGTH) :: crack_loading !% 'uniform' for constant load, 
                                                !% 'ramp' for linearly decreasing load along $x$, 
                                                !% 'kfield' for Irwin plane strain K-field,
@@ -182,8 +183,8 @@ module CrackParams_module
      real(dp) :: crack_ramp_length        !% Length of ramp for the case 'crack_loading="ramp"'
      real(dp) :: crack_ramp_start_length  !% Length of the region in between the crack tip and the start of the ramp for the case 'crack_loading="ramp"'
      real(dp) :: crack_ramp_end_G         !% Loading at end of ramp for the case 'crack_loading="ramp"'
-     real(dp) :: crack_initial_loading_strain        !% Rate of loading, expressed as strain of initial loading
-     real(dp) :: crack_G_increment        !% Rate of loading, expressed as increment in G (override initial_loading_strain)
+     real(dp) :: crack_strain_increment   !% Rate of loading, expressed as strain of initial loading
+     real(dp) :: crack_G_increment        !% Rate of loading, expressed as increment in G (override strain_increment)
      real(dp) :: crack_seed_length        !% Length of seed crack. Unit:~\AA{}.
      real(dp) :: crack_strain_zone_width  !% Distance over which strain increases. Unit:~\AA{}.
      real(dp) :: crack_vacuum_size        !% Amount of vacuum around crack slab. Unit:~\AA{}.
@@ -435,13 +436,14 @@ contains
     this%crack_height            = 100.0_dp ! Angstrom
     this%crack_num_layers        = 1        ! number
     this%crack_apply_initial_load = .true.
-    this%crack_G                 = 2.0_dp   ! J/m^2
+    this%crack_strain            = 0.01    ! default is 1% strain
+    this%crack_G                 = -1.0_dp ! overrides strain if > 0
     this%crack_loading           = 'uniform'
     this%crack_load_interp_length = 100.0_dp ! Angstrom
     this%crack_ramp_length       = 100.0_dp ! Angstrom
     this%crack_ramp_start_length = 200.0_dp ! Angstrom
     this%crack_ramp_end_G        = 1.0_dp   ! J/m^2
-    this%crack_initial_loading_strain       = 0.005_dp ! 0.5% per loading cycle
+    this%crack_strain_increment  = 0.005_dp ! 0.5% per loading cycle
     this%crack_G_increment       = 0.0_dp   ! increment of G per loading cycle, override initial_loading_strain if present
     this%crack_seed_length       = 50.0_dp  ! Angstrom
     this%crack_strain_zone_width = 0.0_dp ! Angstrom
@@ -724,7 +726,7 @@ contains
     call close_xml_t(fxml)
     call Finalise(ss2)
 
-    if (this%crack_strain_zone_width .feq. 0.0_dp) &
+    if ((this%crack_strain_zone_width .feq. 0.0_dp) .and. this%crack_G > 0.0_dp) &
          this%crack_strain_zone_width = this%crack_G * 10.0_dp
 
   end subroutine CrackParams_read_xml
@@ -827,6 +829,11 @@ contains
           read (value, *) parse_cp%crack_apply_initial_load
        end if
 
+       call QUIP_FoX_get_value(attributes, "strain", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_strain
+       end if
+
        call QUIP_FoX_get_value(attributes, "G", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_G
@@ -858,7 +865,7 @@ contains
        end if
        call QUIP_FoX_get_value(attributes, "initial_loading_strain", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%crack_initial_loading_strain
+          read (value, *) parse_cp%crack_strain_increment
        end if
 
        call QUIP_FoX_get_value(attributes, "G_increment", value, status)
@@ -1691,13 +1698,14 @@ contains
     call Print('     height                = '//this%crack_height//' A', file=file)
     call Print('     num_layers            = '//this%crack_num_layers, file=file)
     call Print('     apply_initial_load    = '//this%crack_apply_initial_load, file=file)
+    call Print('     strain                = '//this%crack_strain, file=file)
     call Print('     G                     = '//this%crack_G//' J/m^2', file=file)
     call Print('     loading               = '//this%crack_loading, file=file)
     call Print('     load_interp_length    = '//this%crack_load_interp_length, file=file)
     call Print('     ramp_length           = '//this%crack_ramp_length//' A', file=file)
     call Print('     ramp_start_length     = '//this%crack_ramp_start_length//' A', file=file)
     call Print('     ramp_end_G            = '//this%crack_ramp_end_G//' J/m^2', file=file)
-    call Print('     initial_loading_strain= '//this%crack_initial_loading_strain, file=file)
+    call Print('     strain_increment      = '//this%crack_strain_increment, file=file)
     call Print('     G_increment           = '//this%crack_G_increment//' J/m^2 per load cycle', file=file)
     call Print('     seed_length           = '//this%crack_seed_length//' A', file=file)
     call Print('     strain_zone_width     = '//this%crack_strain_zone_width//' A', file=file)
