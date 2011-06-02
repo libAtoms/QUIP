@@ -446,7 +446,7 @@ def atomic_strain(at, r0, crystal_factor=1.0):
    return strain/crystal_factor
 
 
-def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mask=None, interpolate=False):
+def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False, mask=None, interpolate=False):
    """
    Compute atomistic strain field and linear elastic stress response.
 
@@ -510,12 +510,13 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
 
    # Add various properties to store results
    at.add_property('strain', 0.0, n_cols=6)
-   at.add_property('stress', 0.0, n_cols=6)
-   at.add_property('stress_eval', 0.0, n_cols=3)
-   at.add_property('stress_evec1', 0.0, n_cols=3)
-   at.add_property('stress_evec2', 0.0, n_cols=3)
-   at.add_property('stress_evec3', 0.0, n_cols=3)
-   at.add_property('strain_energy_density', 0.0)
+   if cij is not None:
+      at.add_property('stress', 0.0, n_cols=6)
+      at.add_property('stress_eval', 0.0, n_cols=3)
+      at.add_property('stress_evec1', 0.0, n_cols=3)
+      at.add_property('stress_evec2', 0.0, n_cols=3)
+      at.add_property('stress_evec3', 0.0, n_cols=3)
+      at.add_property('strain_energy_density', 0.0)
 
    rotXYZ = fzeros((3,3))
    rotXYZ[1,2] = 1.0
@@ -606,20 +607,19 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
          RtSR = numpy.dot(numpy.dot(R.T, S), R)
          #print 'RtSR:', RtSR
 
-         sig = stress_matrix(numpy.dot(cij, strain_vector(RtSR)))
+         if cij is not None:
+            sig = stress_matrix(numpy.dot(cij, strain_vector(RtSR)))
 
-         #print 'sig', sig
+            # Rotate back to local coordinate system
+            RsigRt = numpy.dot(numpy.dot(R, sig), R.T)
 
-         # Rotate back to local coordinate system
-         RsigRt = numpy.dot(numpy.dot(R, sig), R.T)
+            # Symmetrise stress tensor
+            RsigRt = (RsigRt + RsigRt.T)/2.0
+            at.stress[:,i] = stress_vector(RsigRt)
 
-         # Symmetrise stress tensor
-         RsigRt = (RsigRt + RsigRt.T)/2.0
-         at.stress[:,i] = stress_vector(RsigRt)
+            at.strain_energy_density[i] = 0.5*numpy.dot(at.strain[:,i], at.stress[:,i])
 
-         at.strain_energy_density[i] = 0.5*numpy.dot(at.strain[:,i], at.stress[:,i])
-
-         compute_stress_eig(i)
+            compute_stress_eig(i)
 
    # For atoms without 4 neighbours, interpolate stress and strain fields
    if interpolate:
@@ -630,7 +630,8 @@ def elastic_fields_py(at, a, cij, save_reference=False, use_reference=False, mas
          if len(neighb) == 4: continue
 
          at.strain[:,i] = at.strain[:,[n.j for n in neighb]].mean(axis=2)
-         at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=2)
+         if cij is not None:
+            at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=2)
 
          compute_stress_eig(i)
 
