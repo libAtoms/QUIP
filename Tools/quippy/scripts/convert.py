@@ -173,7 +173,7 @@ def process(at, frame):
    
    # Override lattice
    if opt.lattice is not None:
-      at.set_lattice(opt.lattice)
+      at.set_lattice(opt.lattice, False)
 
    # Merge from merge_config
    if opt.merge:
@@ -346,8 +346,6 @@ if isinstance(opt.range, slice):
 else:
    # single frame
    try:
-      all_configs_seq = itertools.chain(*[AtomsList(f, store=False) for f in infiles])
-      all_configs = AtomsList(all_configs_seq)
       process(all_configs[opt.range], 0)
    except RuntimeError, re:
       p.error(str(re))
