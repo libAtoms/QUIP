@@ -627,13 +627,12 @@ def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False
          if mask is not None and not mask[i]: continue
 
          neighb = at.neighbours[i]
-         if len(neighb) == 4: continue
+         if len(neighb) == 4 or len(neighb) == 0: continue
 
          at.strain[:,i] = at.strain[:,[n.j for n in neighb]].mean(axis=2)
          if cij is not None:
             at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=2)
-
-         compute_stress_eig(i)
+            compute_stress_eig(i)
 
    # Restore original neighbour cutoff
    at.cutoff, at.use_uniform_cutoff = save_cutoff, save_use_uniform_cutoff
