@@ -263,17 +263,17 @@ def process(at, frame):
 
 try:
    if opt.atoms_ref is not None:
-      if (len(infiles) == 1):
+      if len(infiles) == 1:
 	 all_configs = AtomsList(infiles[0], store=False, atoms_ref=opt.atoms_ref)
       else:
 	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False, atoms_ref=opt.atoms_ref) for f in infiles])
-	 all_configs = AtomsList(all_configs_seq)
+	 all_configs = AtomsList(all_configs_seq, store=False)
    else:
-      if (len(infiles) == 1):
+      if len(infiles) == 1:
 	 all_configs = AtomsList(infiles[0], store=False)
       else:
 	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False) for f in infiles])
-	 all_configs = AtomsList(all_configs_seq)
+	 all_configs = AtomsList(all_configs_seq, store=False)
 except IOError, io:
    p.error(str(io))
 
@@ -347,7 +347,7 @@ else:
    # single frame
    try:
       process(all_configs[opt.range], 0)
-   except RuntimeError, re:
+   except (IndexError, ValueError, RuntimeError), re:
       p.error(str(re))
 
 if outfile is not None:
