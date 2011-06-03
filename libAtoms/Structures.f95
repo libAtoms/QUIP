@@ -327,6 +327,35 @@ contains
     at%pos(:, 2) = lat .mult. (/  0.5_DP,  0.5_DP,  0.5_DP  /)
   endsubroutine fcc_z100
 
+  subroutine bulk(at, lat_type, a, c, u, x, y, z, atnum)
+    type(Atoms), intent(out) :: at
+    character(len=*), intent(in) :: lat_type
+    real(dp), intent(in) :: a
+    real(dp), intent(in), optional :: c, u, x, y, z
+    integer, intent(in), optional :: atnum(:) ! atomic numbers
+
+    if(trim(lat_type).eq.'diamond') then
+       call diamond(at, a, atnum)
+    elseif(trim(lat_type).eq.'bcc') then
+       call bcc(at, a, atnum(1))
+    elseif(trim(lat_type).eq.'fcc') then
+       call fcc(at, a, atnum(1))
+    elseif(trim(lat_type) .eq. 'alpha_quartz') then
+       if (.not. present(c) .or. .not. present(u) .or. .not. present(x) &
+            .or. .not. present(y) .or. .not. present(z)) call system_abort('bulk: alpha_quartz missing c, u, x, y or z')
+       call alpha_quartz_cubic(at, a, c, u, x, y, z)
+    elseif(trim(lat_type) .eq. 'anatase') then
+       if (.not. present(c) .or. .not. present(u) ) call system_abort('bulk: anatase missing c, u')
+       call anatase(at, a, c, u)
+    elseif(trim(lat_type) .eq. 'rutile') then
+       if (.not. present(c) .or. .not. present(u) ) call system_abort('bulk: rutile missing c, u')
+       call rutile(at, a, c, u)
+    else
+       call system_abort('bulk: unknown lattice type '//lat_type)
+    endif
+
+  end subroutine bulk
+
 
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  ! 
@@ -358,6 +387,7 @@ contains
 
    my_lat_type = optional_default('diamond', lat_type)
    call print("unit_slab : Lattice type " // trim(my_lat_type))    
+   call bulk(at, lat_type, a, c, u, x, y, z, atnum)
 
    ! Need special cases for some surfaces to ensure we only get one unit cell
    if (all(axes(:,2) == (/ 1,1,1 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) & 
@@ -367,25 +397,6 @@ contains
    if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) &
         Nrep = (/ 2,1,2 /)
 
-   if(trim(my_lat_type).eq.'diamond') then
-      call diamond(at, a, atnum)
-   elseif(trim(my_lat_type).eq.'bcc') then
-      call bcc(at, a, atnum(1))
-   elseif(trim(my_lat_type).eq.'fcc') then
-      call fcc(at, a, atnum(1))
-   elseif(trim(my_lat_type) .eq. 'alpha_quartz') then
-      if (.not. present(c) .or. .not. present(u) .or. .not. present(x) &
-           .or. .not. present(y) .or. .not. present(z)) call system_abort('unit_slab: alpha_quartz missing c, u, x, y or z')
-      call alpha_quartz_cubic(at, a, c, u, x, y, z)
-   elseif(trim(my_lat_type) .eq. 'anatase') then
-      if (.not. present(c) .or. .not. present(u) ) call system_abort('unit_slab: anatase missing c, u')
-      call anatase(at, a, c, u)
-   elseif(trim(my_lat_type) .eq. 'rutile') then
-      if (.not. present(c) .or. .not. present(u) ) call system_abort('unit_slab: rutile missing c, u')
-      call rutile(at, a, c, u)
-   else
-      call system_abort('unit_slab: unknown lattice type '//my_lat_type)
-   endif
    a1 = axes(:,1);   a2 = axes(:,2);    a3 = axes(:,3)
    rot(1,:) = a1/norm(a1);  rot(2,:) = a2/norm(a2);  rot(3,:) = a3/norm(a3)
 
@@ -395,7 +406,6 @@ contains
 
    call supercell(myatoms, at, 5, 5, 5)
    call zero_sum(myatoms%pos)
-
 
    ! Project rotated lattice onto <xyz> axes
    do i=1,3
