@@ -76,6 +76,34 @@ class NeighbourInfo(object):
       return 'NeighbourInfo(j=%d, distance=%f, diff=%s, cosines=%s, shift=%s)' % (self.j, self.distance, self.diff, self.cosines, self.shift)
 
 
+def get_bulk_params(bulk, lat_type, verbose=True):
+   """Return 6-tuple of lattice parameters a, c, u, x, y, z for cell `bulk` of lattice type `lat_type`"""
+   a, b, c, alpha, beta, gamma = get_lattice_params(bulk.lattice)
+   u, x, y, z = (None, None, None, None)
+
+   if lat_type in ('diamond', 'bcc', 'fcc'):
+      if verbose:
+         print '%s lattice, a=%.3f' % (lat_type, a)
+   elif lat_type == 'anatase':
+      u = bulk.pos[3,5]/c
+      if verbose:
+         print 'anatase lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+   elif lat_type == 'rutile':
+      u = bulk.pos[1,3]/a
+      if verbose:
+         print 'rutile lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+   elif lat_type == 'alpha_quartz':
+      from quippy.sio2 import get_quartz_params
+      qz = get_quartz_params(bulk)
+      a, c, u, x, y, z = qp['a'], qp['c'], qp['u'], qp['x'], qp['y'], qp['z']
+      if verbose:
+         print 'alpha_quartz lattice, a=%.3f c=%.3f u=%.3f x=%.3f y=%.3f z=%.3f' % (a,c,u,x,y,z)
+   else:
+      raise ValueError('Unknown latttice type %s' % lat_type)
+
+   return (a, c, u, x, y, z)
+
+
 class Neighbours(object):
 
    def __init__(self, at, hysteretic=False):
