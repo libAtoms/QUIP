@@ -67,6 +67,9 @@ def quip_xml_parameters(name, label=None):
    
    param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
 
+   if name.startswith('IP ') or name.startswith('TB '):
+      name = name[3:]
+
    xml_files = [ os.path.join(param_dir, name),
                  os.path.join(param_dir, name) + '.xml',
                  os.path.join(param_dir, 'ip.parms.'+name) + '.xml',
