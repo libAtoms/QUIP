@@ -2643,7 +2643,7 @@ if hasattr(quippy, 'Potential'):
          self.pot = Potential('IP SW', param_str=self.xml)
 
          self.at = supercell(diamond(5.44, 14), 4, 4, 4)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.calc_connect()
 
          self.embedlist = Table()

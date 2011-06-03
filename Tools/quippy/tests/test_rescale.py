@@ -394,7 +394,7 @@ class TestRescale_ForceMixing(QuippyTestCase):
          verbosity_pop()
 
          self.at = supercell(dia, 4, 4, 4)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.set_cutoff(self.pot.cutoff()+1.0)
          self.at.calc_connect()
 

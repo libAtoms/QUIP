@@ -717,10 +717,10 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_bcast(self):
       # Serial test of atoms_bcast by copying into test_out
       # if test fails add new data elements to ALL THREE sections in atoms_bcast() in Atoms.f95
-      from quippy import MPI_context, atoms_bcast
+      from quippy import MPI_context, bcast
       mpi = MPI_context()
       test_out = Atoms()
-      atoms_bcast(mpi, self.at, test_out=test_out)
+      bcast(mpi, self.at, test_out=test_out)
       self.assertEqual(self.at, test_out)
       
 class TestAtoms_Neighbour(QuippyTestCase):

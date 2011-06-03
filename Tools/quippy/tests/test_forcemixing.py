@@ -90,7 +90,7 @@ if hasattr(quippy, 'Potential'):
 
          dia = diamond(5.44, 14)
          self.at = supercell(dia, 4, 4, 4)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.set_cutoff(self.pot1.cutoff()+2.0)
          self.at.calc_connect()
 

@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import _quippy
-from quippy import InOutput, inoutput_print_string
+from quippy import InOutput, print_
 
 # Create InOutput objects associated with Fortran stdout and stderr                
 mainlog_ptr, errorlog_ptr = _quippy.qp_get_mainlog_errorlog_ptr()
@@ -36,7 +36,7 @@ class FortranWriter:
          self.leading_space += ' '*(len(text) - len(text.lstrip()))
          text = text.lstrip()
       for line in text.splitlines(True):
-         inoutput_print_string(self.leading_space+line.rstrip(), file=self.fortran_file, nocr=not line.endswith('\n'))
+         print_(self.leading_space+line.rstrip(), file=self.fortran_file, nocr=not line.endswith('\n'))
          self.leading_space = ''
          if self.saved_prefix is not None and line.endswith('\n'):
             self.fortran_file.prefix = self.saved_prefix
