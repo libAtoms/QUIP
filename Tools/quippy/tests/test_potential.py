@@ -58,7 +58,7 @@ if hasattr(quippy, 'Potential'):
          self.pot = Potential('IP SW', param_str=xml)
 
          self.at = diamond(5.44, 14)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.set_cutoff(self.pot.cutoff())
          self.at.calc_connect()
 
@@ -473,7 +473,7 @@ if hasattr(quippy, 'Potential'):
          # self.pot = Potential'Simple', self.pot)
          self.pot = Potential('IP SW', param_str=xml)
          self.at = diamond(5.44, 14)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.set_cutoff(self.pot.cutoff())
          self.at.calc_connect()
 

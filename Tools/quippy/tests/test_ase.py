@@ -103,7 +103,7 @@ if got_ase:
          self.pot = PotentialCalculator('IP SW', param_str=xml)
 
          self.at = diamond(5.44, 14)
-         matrix_randomise(self.at.pos, 0.1)
+         randomise(self.at.pos, 0.1)
          self.at.calc_connect()
 
          self.e, = fvar('e')

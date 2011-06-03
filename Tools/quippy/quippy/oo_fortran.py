@@ -43,6 +43,8 @@ py_keywords = ['and',       'del',       'from',      'not',       'while',
                'continue',  'finally',   'is',        'return',             
                'def',       'for',       'lambda',    'try']
 
+py_keywords_map = dict([(k,k+'_') for k in py_keywords])
+
 numpy_to_fortran = {
     'd': 'real(dp)',
     'i': 'integer',
@@ -53,6 +55,7 @@ numpy_to_fortran = {
     }
 
 FortranDerivedTypes = {}
+FortranRoutines = {}
 
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 
@@ -490,7 +493,8 @@ def flatten_list_of_dicts(dictlist):
 def wrap_all(fobj, spec, mods, short_names, prefix):
    all_classes = []
    leftover_routines = []
-   standalone_routines = []
+   interfaces = {}
+   top_level_routines = []
    params = {}
 
    for mod in mods:
@@ -505,12 +509,8 @@ def wrap_all(fobj, spec, mods, short_names, prefix):
                                            params=params, prefix=prefix)
        all_classes.extend(classes)
        leftover_routines.append((curspec, routines))
-   #specs = flatten_list_of_dict([ spec[mod] for mod in mods ])
-   #all_classes, routines, params = wrapmod(
-   #    fobj, specs, short_names=short_names, params=params, prefix=prefix)
-   #leftover_routines.append((specs, routines))
 
-   # Now try to add orphaned routines to classes where possible
+   # add orphaned routines to classes and generate top-level interfaces
    for modspec, routines in leftover_routines:
       for routine in routines:
          rspec = modspec['routines'][routine]
@@ -531,15 +531,34 @@ def wrap_all(fobj, spec, mods, short_names, prefix):
                 method_name = routine
 
             if method_name in py_keywords: name = name+'_'
-         
-            setattr(cls, method_name, wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix))
+
+            wrapped_routine = wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix)
+            FortranRoutines[cls.__name__+'.'+method_name] = wrapped_routine
+            setattr(cls, method_name, wrapped_routine)
             logging.debug('  added method %s to class %s' % (method_name, cls.__name__))
                   
          else:
-            standalone_routines.append((routine,wraproutine(fobj, modspec, routine, routine, prefix)))
-            logging.debug('  added stand-alone routine %s' % routine)
+             wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix)
+             for intf_name,intf_spec in modspec['interfaces'].iteritems():
+                 if routine in intf_spec['routines']:
+                     if not intf_name in interfaces: interfaces[intf_name] = (intf_spec, [])
+                     interfaces[intf_name][1].append((routine, rspec, wrapped_routine))
+                     logging.debug('  added routine %s to top-level interface %s' % (routine, intf_name))
+                     break
+             else:
+                 FortranRoutines[routine] = wrapped_routine
+                 top_level_routines.append((routine,wrapped_routine))
+                 logging.debug('  added top-level routine %s' % routine)
 
-   return all_classes, standalone_routines, params
+   # remap interface names which clash with keywords and skip overloaded operator
+   interfaces = dict([(py_keywords_map.get(k,k),v) for (k,v) in interfaces.iteritems() if '.' ])
+
+   for name, (intf_spec, routines) in interfaces.iteritems():
+       wrapped_interface = wrapinterface(name, intf_spec, routines, prefix)
+       FortranRoutines[name] = wrapped_interface
+       top_level_routines.append((name, wrapped_interface))
+
+   return all_classes, top_level_routines, params
 
 
 
@@ -927,5 +946,70 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
 
    return add_doc(func, fobj, doc, name, shortname, prefix)
 
+
+def wrapinterface(name, intf_spec, routines, prefix):
+
+    def func(*args, **kwargs):
+        logging.debug('Interface %s ' % name)
+
+        for rname, spec, routine in routines:
+           logging.debug('Trying candidate routine %s' % rname)
+    
+           inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
+           oblig_inargs = filter(lambda x: not 'optional' in x['attributes'], inargs)
+           opt_inargs = filter(lambda x: 'optional' in x['attributes'], inargs)
+    
+           # Check number of arguments is compatible
+           # Should be in range len(oblig_inargs) <= L <= len(oblig_inargs) + len(opt_inargs)
+           if (len(args)+len(kwargs) < len(oblig_inargs) or
+               len(args)+len(kwargs) > len(oblig_inargs) + len(opt_inargs)):
+               if logging.root.getEffectiveLevel() <= logging.DEBUG:               
+                   logging.debug('Number of arguments incompatible: %d must be in range %d <= n <= %d' %
+                                 (len(args), len(oblig_inargs), len(oblig_inargs)+len(opt_inargs)))
+               continue
+    
+           newinargs = (oblig_inargs + opt_inargs)[:len(args)]
+    
+           # Check types and dimensions are compatible
+           if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
+               if logging.root.getEffectiveLevel() <= logging.DEBUG:
+                   logging.debug('Types and dimensions of args incompatible %s %s %s' %
+                                 (newinargs, args, [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]))
+               continue
+    
+           # Check keyword arguments, if incompatible continue to next
+           # candidate interface
+           if kwargs:
+               innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
+    
+           if not all([prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
+               if logging.root.getEffectiveLevel() <= logging.DEBUG:               
+                   logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
+               continue
+    
+           try:
+               for key, arg in kwargs.iteritems():
+                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == prefix+key.lower()]
+                   if not type_is_compatible(inarg, arg):
+                       if logging.root.getEffectiveLevel() <= logging.DEBUG:
+                           logging.debug('Types and dimensions of kwarg %s incompatible' % key)
+                       raise ValueError
+           except ValueError:
+               continue
+
+           logging.debug('calling '+rname)
+           return routine(*args, **kwargs)
+
+        raise TypeError('No matching routine found in interface %s' % name)
+
+    doc = '\n'.join(intf_spec['doc']) + '\n\n'
+    for rname,spec,routine in routines:
+        doc += routine.__doc__.replace(rname,name)
+    func.__doc__ = doc
+    return func
+    
+
+
+   
 
 

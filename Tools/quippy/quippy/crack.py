@@ -35,10 +35,9 @@ from quippy import (CrackParams,
                     crack_check_coordination_boundaries,
                     crack_is_edge_atom, crack_parse_name,
                     crack_update_selection, crack_find_tip,
-                    crack_is_topbottom_edge_atom, crack_print_cio,
+                    crack_is_topbottom_edge_atom,
                     crack_update_selection_coordination,
                     crack_find_tip_coordination, crack_k_field,
-                    crack_print_filename,
                     crack_update_selection_crack_front)
 
 def makecrack_main(params, stem):

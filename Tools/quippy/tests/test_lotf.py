@@ -88,7 +88,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
          
             self.dia = diamond(5.44, 14)
             self.at = supercell(self.dia, 4, 4, 4)
-            matrix_randomise(self.at.pos, 0.1)
+            randomise(self.at.pos, 0.1)
             self.at.set_cutoff(self.pot1.cutoff()+2.0)
             self.at.calc_connect()
             
@@ -114,7 +114,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
             self.forcemix.calc(ds.atoms, force=f_hyb)
             ds.advance_verlet(1.0, f_hyb)
             verbosity_pop()
-            self.assertArrayAlmostEqual([rms_diff2(f_hyb, f), abs(f_hyb -f).max()],
+            self.assertArrayAlmostEqual([rms_diff(f_hyb, f), abs(f_hyb -f).max()],
                                         [0.00032825, 0.00179225])
 
         def do_predictor_corrector(self, n_extrap):
@@ -134,7 +134,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
                 self.forcemix.calc(self.ds.atoms, force=f_hyb)
                 self.ds.advance_verlet(1.0, f)
                 self.ds.print_status('E', instantaneous=True)
-                extrap_force_err.append([rms_diff2(f_hyb, f), abs(f_hyb -f).max()])
+                extrap_force_err.append([rms_diff(f_hyb, f), abs(f_hyb -f).max()])
             
             # Force computation
             self.lotf.calc(self.ds.atoms, force=f, lotf_do_qm=True, lotf_do_init=False, lotf_do_fit=True)
@@ -147,7 +147,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
                 self.forcemix.calc(self.ds.atoms, force=f_hyb)
                 self.ds.advance_verlet(1.0, f)
                 self.ds.print_status('I', instantaneous=True)
-                interp_force_err.append([rms_diff2(f_hyb, f), abs(f_hyb -f).max()])
+                interp_force_err.append([rms_diff(f_hyb, f), abs(f_hyb -f).max()])
 
             return extrap_force_err, interp_force_err
 
