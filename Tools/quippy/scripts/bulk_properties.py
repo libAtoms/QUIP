@@ -54,16 +54,17 @@ try:
 
     pot = Potential(opt.init_args, param_filename=opt.param_file)
 
+    pot.print_()
+
     at.set_cutoff(pot.cutoff()+1.0)
     at.calc_connect()
 
     if opt.relax_lattice:
-        at0 = at.copy()
-        pot.minim(at, 'cg', 1e-6, 100, do_pos=False, do_lat=True)
+        relaxed = at.copy()
+        pot.minim(relaxed, 'cg', 1e-3, 100, do_pos=True, do_lat=True)
 
         # Remove near-zero elements, and exactly restore original symmetries
-        at = at0
-        at.set_lattice(numpy.where(abs(at.lattice) > 1e-6, at.lattice, 0), True)
+        at.set_lattice(numpy.where(abs(relaxed.lattice) > 1e-6, relaxed.lattice, 0), True)
         
         mainlog.prefix = 'LATTICE'        
         print 'Relaxed lattice / A'
