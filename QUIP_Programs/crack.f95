@@ -295,7 +295,7 @@ program crack
   type(InOutput) :: xmlfile
   type(CInOutput) :: movie, crackin, movie_backup
   type(DynamicalSystem), target :: ds, ds_save
-  type(Atoms) :: crack_slab, fd_start, fd_end, bulk
+  type(Atoms) :: crack_slab, fd_start, fd_end, bulk_cell
   type(CrackParams) :: params
   type(Potential) :: classicalpot, qmpot
   type(Potential) :: hybrid_pot, forcemix_pot
@@ -390,19 +390,19 @@ program crack
   if (params%io_timing) call enable_timing()
 
   call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
-  call read(bulk, trim(stem)//'_bulk.xyz')
+  call read(bulk_cell, trim(stem)//'_bulk.xyz')
 
   call print ("Initialising classical potential with args " // trim(params%classical_args) &
        // " from file " // trim(xmlfilename))
   call rewind(xmlfile)
-  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk)
+  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk_cell)
   call Print(classicalpot)
 
   if (.not. params%simulation_classical) then
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk)
+     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk_cell)
      call finalise(xmlfile)
      call Print(qmpot)
   end if
@@ -463,7 +463,7 @@ program crack
 	  ' '//trim(params%qm_args_str))
 
      call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
-          pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
+          pot1=classicalpot, pot2=qmpot, bulk_scale=bulk_cell, mpi_obj=mpi_glob)
 
      call print_title('Hybrid Potential')
      call print(hybrid_pot)
@@ -471,8 +471,8 @@ program crack
      call set_value(pot_params, 'method', 'force_mixing')
      if (params%qm_rescale_r) then
         call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
-             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
-        call finalise(bulk)
+             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk_cell, mpi_obj=mpi_glob)
+        call finalise(bulk_cell)
      else
         call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
