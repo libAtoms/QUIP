@@ -258,7 +258,7 @@ contains
       call set_comm_property(this%atoms, 'thermostat_region', &
            comm_atoms=.true.)
 
-      added_avgke = .not. has_property(this%atoms, 'avgke')
+      added_avgke = .not. has_property(this%atoms, 'avg_ke')
       call add_property(this%atoms, 'avg_ke', 0.0_dp, error=error)
       PASS_ERROR(error)
       call set_comm_property(this%atoms, 'avg_ke', &
