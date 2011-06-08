@@ -2918,11 +2918,20 @@ end function pad
 
   endfunction current_version
 
+  pure function linebreak_string_length(str, line_len) result(length)
+    character(len=*), intent(in) :: str
+    integer, intent(in) :: line_len
+    integer :: length
+
+    length = len_trim(str)+2*len_trim(str)/line_len+3
+
+  end function linebreak_string_length
+ 
   function linebreak_string(str, line_len) result(lb_str)
     character(len=*), intent(in) :: str
     integer, intent(in) :: line_len
 
-    character(len=len_trim(str)+2*len_trim(str)/line_len+3) :: lb_str
+    character(len=linebreak_string_length(str, line_len)) :: lb_str
 
     logical :: word_break
     integer :: copy_len, last_space
