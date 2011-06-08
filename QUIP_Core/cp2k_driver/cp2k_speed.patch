@@ -101,9 +101,9 @@ Index: ewald_spline_util.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
 retrieving revision 1.28
-diff -b -c -3 -r1.28 ewald_spline_util.F
+diff -c -r1.28 ewald_spline_util.F
 *** ewald_spline_util.F	19 Apr 2011 06:28:35 -0000	1.28
---- ewald_spline_util.F	6 May 2011 16:43:38 -0000
+--- ewald_spline_util.F	8 Jun 2011 20:23:47 -0000
 ***************
 *** 152,159 ****
                                                   Term, xs1, xs2, xs3
@@ -165,7 +165,7 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
---- 185,287 ----
+--- 185,288 ----
       ! Used the full symmetry to reduce the evaluation to 1/64th
       !NB parallelization
       iii = 0
@@ -190,23 +190,24 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
 +        cos_gz(1:size(Lg),k) = Cos(gz(1:size(Lg))*xs3)
 +        sin_gz(1:size(Lg),k) = Sin(gz(1:size(Lg))*xs3)
 +      END DO ! k
-       xs2   = 0.0_dp
-       DO j  =  gbo(1,2), gbo(2,2)
-         IF (j > nylim ) CYCLE
+         xs2   = 0.0_dp
+         DO j  =  gbo(1,2), gbo(2,2)
+            IF (j > nylim ) CYCLE
 +        cos_gy(1:size(Lg),j) = Cos(gy(1:size(Lg))*xs2)
 +        sin_gy(1:size(Lg),j) = Sin(gy(1:size(Lg))*xs2)
 +        xs2 = xs2 + dr2
 +      END DO ! j
-       xs1   = 0.0_dp
-       DO i  =  gbo(1,1), gbo(2,1)
-         IF (i > nxlim ) CYCLE
+            xs1   = 0.0_dp
+            DO i  =  gbo(1,1), gbo(2,1)
+               IF (i > nxlim ) CYCLE
 !        cos_gx(1:size(Lg),i) = Cos(gx(1:size(Lg))*xs1)
 !        sin_gx(1:size(Lg),i) = Sin(gx(1:size(Lg))*xs1)
-         xs1 = xs1 + dr1
+               xs1 = xs1 + dr1
 +     END DO ! i
 + 
 +     !NB use DGEMM to compute sum over kg for each i, j, k
 +     NLg_loc = size(Lg) / grid%pw_grid%para%group_size
++     if (NLg_loc*grid%pw_grid%para%group_size < size(Lg)) NLg_loc = NLg_loc + 1
 +     Lg_loc_min = grid%pw_grid%para%my_pos*NLg_loc+1
 +     Lg_loc_max = min(SIZE(Lg),grid%pw_grid%para%my_pos*NLg_loc+NLg_loc)
 +     NLg_loc = Lg_loc_max - Lg_loc_min + 1
@@ -222,13 +223,13 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
 +     DO i=gbo(1,1), gbo(2,1)
 +       if (i > nxlim) CYCLE
 +       lhs(i-gbo(1,1)+1,1:NLg_loc) = lg(Lg_loc_min:Lg_loc_max)*cos_gx(Lg_loc_min:Lg_loc_max,i)
-      END DO
+            END DO
 !     DO k=gbo(1,3), gbo(2,3)
 !       if (k > nzlim) CYCLE
 !       DO j=gbo(1,2), gbo(2,2)
 ! 	if (j > nylim) CYCLE
 ! 	rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
-        END DO
+         END DO
 !       call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
 !     END DO
 ! 
@@ -271,7 +272,7 @@ diff -b -c -3 -r1.28 ewald_spline_util.F
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
 ***************
 *** 230,239 ****
---- 309,320 ----
+--- 310,321 ----
       !
       ! Solve for spline coefficients
       !
