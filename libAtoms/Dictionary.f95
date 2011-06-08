@@ -2850,41 +2850,48 @@ contains
              !size_tmp = size(dict%entries(i)%i_a)
              call bcast(mpi, size_tmp)
              dict%entries(i)%len = size_tmp
+             dict%entries(i)%len2 = (/0, 0/)
              allocate(dict%entries(i)%i_a(size_tmp))
              call bcast(mpi, dict%entries(i)%i_a)
           else if (dict%entries(i)%type == T_REAL_A) then
              !size_tmp = size(dict%entries(i)%r_a)
              call bcast(mpi, size_tmp)
              dict%entries(i)%len = size_tmp
+             dict%entries(i)%len2 = (/0, 0/)
              allocate(dict%entries(i)%r_a(size_tmp))
              call bcast(mpi, dict%entries(i)%r_a)
           else if (dict%entries(i)%type == T_COMPLEX_A) then
              !size_tmp = size(dict%entries(i)%c_a)
              call bcast(mpi, size_tmp)
              dict%entries(i)%len = size_tmp
+             dict%entries(i)%len2 = (/0, 0/)
              allocate(dict%entries(i)%c_a(size_tmp))
              call bcast(mpi, dict%entries(i)%c_a)
           else if (dict%entries(i)%type == T_LOGICAL_A) then
              !size_tmp = size(dict%entries(i)%l_a)
              call bcast(mpi, size_tmp)
              dict%entries(i)%len = size_tmp
+             dict%entries(i)%len2 = (/0, 0/)
              allocate(dict%entries(i)%l_a(size_tmp))
              call bcast(mpi, dict%entries(i)%l_a)
           else if (dict%entries(i)%type == T_CHAR_A) then
              !shape_tmp = shape(dict%entries(i)%s_a)
              call bcast(mpi, shape_tmp)
+             dict%entries(i)%len = 0
              dict%entries(i)%len2 = shape_tmp
              allocate(dict%entries(i)%s_a(shape_tmp(1),shape_tmp(2)))
              call bcast(mpi, dict%entries(i)%s_a)
           else if (dict%entries(i)%type == T_INTEGER_A2) then
              !shape_tmp = shape(dict%entries(i)%i_a2)
              call bcast(mpi, shape_tmp)
+             dict%entries(i)%len = 0
              dict%entries(i)%len2 = shape_tmp
              allocate(dict%entries(i)%i_a2(shape_tmp(1),shape_tmp(2)))
              call bcast(mpi, dict%entries(i)%i_a2)
           else if (dict%entries(i)%type == T_REAL_A2) then
              !shape_tmp = shape(dict%entries(i)%r_a2)
              call bcast(mpi, shape_tmp)
+             dict%entries(i)%len = 0
              dict%entries(i)%len2 = shape_tmp
              allocate(dict%entries(i)%r_a2(shape_tmp(1),shape_tmp(2)))
              call bcast(mpi, dict%entries(i)%r_a2)
