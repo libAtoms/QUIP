@@ -32,6 +32,8 @@ def AtomsReader(source, format=None, *args, **kwargs):
          else:
             source = os.path.expanduser(source)
             glob_list = sorted(glob.glob(source))
+	    if (len(glob_list) == 0):
+	       raise IOError("input file '%s' not found" % source)
             if len(glob_list) > 1:
                source = glob_list
             else:
@@ -87,6 +89,8 @@ class AtomsList(object):
             else:
                source = os.path.expanduser(source)
                glob_list = sorted(glob.glob(source))
+	       if (len(glob_list) == 0):
+		  raise IOError("input file '%s' not found" % source)
                if len(glob_list) > 1:
                   source = glob_list
                else:
