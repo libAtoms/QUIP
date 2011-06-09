@@ -103,7 +103,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
 retrieving revision 1.28
 diff -c -r1.28 ewald_spline_util.F
 *** ewald_spline_util.F	19 Apr 2011 06:28:35 -0000	1.28
---- ewald_spline_util.F	8 Jun 2011 20:23:47 -0000
+--- ewald_spline_util.F	9 Jun 2011 21:43:10 -0000
 ***************
 *** 152,159 ****
                                                   Term, xs1, xs2, xs3
@@ -125,7 +125,7 @@ diff -c -r1.28 ewald_spline_util.F
 !     INTEGER                                  :: iLg, stat
 !     LOGICAL                                  :: failure
 !     !NB temporaries for holding stuff so that dgemm can be used 
-!     INTEGER                                  :: NLg_loc, Lg_loc_min, Lg_loc_max, act_nx, act_ny
+!     INTEGER                                  :: NLg_loc, Lg_loc_min, Lg_loc_max, act_nx, act_ny, n_extra
 !     REAL(KIND=dp), allocatable               :: lhs(:,:), rhs(:,:)
 !     EXTERNAL :: DGEMM
   
@@ -157,15 +157,15 @@ diff -c -r1.28 ewald_spline_util.F
 !                grid%cr3d(i,j,k) = Term
 !              ENDIF
                xs1 = xs1 + dr1
-            END DO
+!           END DO
 !           xs2 = xs2 + dr2
          END DO
 !     END DO LoopOnGrid
-      !NB parallelization
+!     !NB parallelization
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
---- 185,288 ----
+--- 185,304 ----
       ! Used the full symmetry to reduce the evaluation to 1/64th
       !NB parallelization
       iii = 0
@@ -203,76 +203,92 @@ diff -c -r1.28 ewald_spline_util.F
 !        cos_gx(1:size(Lg),i) = Cos(gx(1:size(Lg))*xs1)
 !        sin_gx(1:size(Lg),i) = Sin(gx(1:size(Lg))*xs1)
                xs1 = xs1 + dr1
-+     END DO ! i
-+ 
-+     !NB use DGEMM to compute sum over kg for each i, j, k
-+     NLg_loc = size(Lg) / grid%pw_grid%para%group_size
-+     if (NLg_loc*grid%pw_grid%para%group_size < size(Lg)) NLg_loc = NLg_loc + 1
-+     Lg_loc_min = grid%pw_grid%para%my_pos*NLg_loc+1
-+     Lg_loc_max = min(SIZE(Lg),grid%pw_grid%para%my_pos*NLg_loc+NLg_loc)
-+     NLg_loc = Lg_loc_max - Lg_loc_min + 1
-+     act_nx = min(gbo(2,1),nxlim)-gbo(1,1)+1
-+     act_ny = min(gbo(2,2),nylim)-gbo(1,2)+1
-+     !NB temporaries for DGEMM use
-+     ALLOCATE(lhs(act_nx,NLg_loc),stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+     ALLOCATE(rhs(act_ny,NLg_loc),stat=stat)
-+     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+ 
-+     ! do cos(gx) cos(gy+gz) term
-+     DO i=gbo(1,1), gbo(2,1)
-+       if (i > nxlim) CYCLE
-+       lhs(i-gbo(1,1)+1,1:NLg_loc) = lg(Lg_loc_min:Lg_loc_max)*cos_gx(Lg_loc_min:Lg_loc_max,i)
-            END DO
-!     DO k=gbo(1,3), gbo(2,3)
-!       if (k > nzlim) CYCLE
-!       DO j=gbo(1,2), gbo(2,2)
-! 	if (j > nylim) CYCLE
-! 	rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
+!     END DO ! i
+! 
+!     !NB use DGEMM to compute sum over kg for each i, j, k
+!     ! number of elements per node, round down
+!     NLg_loc = size(Lg) / grid%pw_grid%para%group_size
+!     ! number of extra elements not yet accounted for
+!     n_extra = mod(size(Lg),grid%pw_grid%para%group_size) 
+!     ! first n_extra nodes get NLg_loc+1, remaining get NLg_loc
+!     if (grid%pw_grid%para%my_pos < n_extra) then
+!        Lg_loc_min = (NLg_loc+1)*grid%pw_grid%para%my_pos + 1
+!        Lg_loc_max = Lg_loc_min + (NLg_loc+1)-1
+!     else
+!        Lg_loc_min = (NLg_loc+1)*n_extra + NLg_loc*(grid%pw_grid%para%my_pos-n_extra) + 1
+!        Lg_loc_max = Lg_loc_min + NLg_loc - 1
+!     end if
+!     ! shouldn't be necessary
+!     Lg_loc_max = min(SIZE(Lg), Lg_loc_max)
+!     NLg_loc = Lg_loc_max - Lg_loc_min + 1
+! 
+!     if (NLg_loc > 0) then ! some work for this node
+! 
+!        act_nx = min(gbo(2,1),nxlim)-gbo(1,1)+1
+!        act_ny = min(gbo(2,2),nylim)-gbo(1,2)+1
+!        !NB temporaries for DGEMM use
+!        ALLOCATE(lhs(act_nx,NLg_loc),stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        ALLOCATE(rhs(act_ny,NLg_loc),stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+! 
+!        ! do cos(gx) cos(gy+gz) term
+!        DO i=gbo(1,1), gbo(2,1)
+! 	 if (i > nxlim) CYCLE
+! 	 lhs(i-gbo(1,1)+1,1:NLg_loc) = lg(Lg_loc_min:Lg_loc_max)*cos_gx(Lg_loc_min:Lg_loc_max,i)
+! 	     END DO
+!        DO k=gbo(1,3), gbo(2,3)
+! 	 if (k > nzlim) CYCLE
+! 	 DO j=gbo(1,2), gbo(2,2)
+! 	   if (j > nylim) CYCLE
+! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
+! 	  END DO
+! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
          END DO
-!       call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
-!     END DO
 ! 
-!     ! do sin(gx) sin(gy+gz) term
-!     DO i=gbo(1,1), gbo(2,1)
-!       if (i > nxlim) CYCLE
-!       lhs(i-gbo(1,1)+1,1:NLg_loc) = -lg(Lg_loc_min:Lg_loc_max)*sin_gx(Lg_loc_min:Lg_loc_max,i)
-!     END DO
-!     DO k=gbo(1,3), gbo(2,3)
-!       if (k > nzlim) CYCLE
-!       DO j=gbo(1,2), gbo(2,2)
-! 	if (j > nylim) CYCLE
-! 	rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k) + sin_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k)
-!       END DO
-!       call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 1.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
-!     END DO
+!        ! do sin(gx) sin(gy+gz) term
+!        DO i=gbo(1,1), gbo(2,1)
+! 	 if (i > nxlim) CYCLE
+! 	 lhs(i-gbo(1,1)+1,1:NLg_loc) = -lg(Lg_loc_min:Lg_loc_max)*sin_gx(Lg_loc_min:Lg_loc_max,i)
+!        END DO
+!        DO k=gbo(1,3), gbo(2,3)
+! 	 if (k > nzlim) CYCLE
+! 	 DO j=gbo(1,2), gbo(2,2)
+! 	   if (j > nylim) CYCLE
+! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k) + sin_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k)
+! 	 END DO
+! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 1.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
+!        END DO
 ! 
-!     !NB deallocate temporaries for DGEMM use
-!     DEALLOCATE(lhs,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(rhs,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     !NB deallocate temporaries for Cos refactoring
-!     DEALLOCATE(cos_gx,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(sin_gx,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(cos_gy,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(sin_gy,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(cos_gz,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DEALLOCATE(sin_gz,stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      !NB parallelization
-+ 
+!        !NB deallocate temporaries for DGEMM use
+!        DEALLOCATE(lhs,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(rhs,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        !NB deallocate temporaries for Cos refactoring
+!        DEALLOCATE(cos_gx,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(sin_gx,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(cos_gy,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(sin_gy,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(cos_gz,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        DEALLOCATE(sin_gz,stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        !NB parallelization
+!     else ! no work for this node, just zero contribution
+!        grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim) = 0.0_dp
+!     endif ! NLg_loc > 0
+! 
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
 ***************
 *** 230,239 ****
---- 310,321 ----
+--- 326,337 ----
       !
       ! Solve for spline coefficients
       !
