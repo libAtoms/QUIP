@@ -1482,6 +1482,7 @@ max_atom_rij_change = 1.038_dp
     real(dp) :: max_atom_rij_change
     integer :: t_i(2), i
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    real(dp), pointer :: minim_extra_force(:,:)
 
     type(potential_minimise) :: am
 
@@ -1550,6 +1551,11 @@ if (am%minim_do_pos) then
       f(:,hack_restraint_i(2)) = f(:,hack_restraint_i(2)) - hack_restraint_F
    endif
 endif
+
+    if (assign_pointer(am%minim_at, "minim_extra_force", minim_extra_force)) then
+      f = f + minim_extra_force
+      val = val - sum(minim_extra_force*am%minim_at%pos)
+    endif
 
     call print ("both_func got f", PRINT_NERD)
     call print(f, PRINT_NERD)
