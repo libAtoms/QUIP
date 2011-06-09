@@ -296,6 +296,31 @@ contains
 
   end function spline_deriv
 
+  function spline_nintegrate(this, x0, x, n_per_knot) result (y_int)
+     type(spline), intent(in) :: this
+     real(dp), intent(in) :: x0, x
+     integer, intent(in), optional :: n_per_knot
+     real(dp) :: y_int
+
+     integer :: use_n, total_n, i
+     real(dp), allocatable :: int_x(:), int_y(:)
+
+     use_n = optional_default(10, n_per_knot)
+     total_n = use_n*abs(x-x0)/minval(abs(this%x(2:this%n)-this%x(1:this%n-1)))
+
+     allocate(int_x(total_n))
+     allocate(int_y(total_n))
+
+     do i=1, total_n
+        int_x(i) = x0+real(i-1,dp)*(x-x0)/real(total_n-1,dp)
+	int_y(i) = spline_value(this, int_x(i))
+     end do
+
+     y_int = TrapezoidIntegral(int_x, int_y)
+     deallocate(int_x)
+     deallocate(int_y)
+
+  end function spline_nintegrate
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
