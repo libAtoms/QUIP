@@ -34,7 +34,7 @@ diff -b -c -3 -r1.2 fft_kinds.F
   !> \author Teodoro Laino - 01.2011
   ! *****************************************************************************
 ! #if defined ( __FFTMKL )
-! #include 'mkl_dfti.f90'
+! #include "mkl_dfti.f90"
 ! #endif
    
   MODULE fft_kinds
@@ -45,7 +45,7 @@ diff -b -c -3 -r1.2 fft_kinds.F
   ! *****************************************************************************
 ! ! moved to fft_kinds_pre.F by NB (needs to be compiled first so that MKL_DFTI module exists)
 ! ! #if defined ( __FFTMKL )
-! ! #include 'mkl_dfti.f90'
+! ! #include "mkl_dfti.f90"
 ! ! #endif
    
   MODULE fft_kinds
