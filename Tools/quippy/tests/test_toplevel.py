@@ -20,7 +20,7 @@ import unittest, glob, os, sys, quippy
 from quippy import QUIP_ROOT, QUIP_ARCH
 from quippytest import *
 
-mpi_n_cores = [1, 2]
+mpi_n_cores = [1, 2, 4]
 
 class Test_TopLevel(QuippyTestCase):
     pass
