@@ -34,6 +34,49 @@ class Test_MPI(QuippyTestCase):
         self.mpi = MPI_context()
         #mainlog.mpi_all_inoutput(True) # for debugging
 
+    def test_bcast_int(self):
+        if self.mpi.my_proc == 0:
+            a = farray(1, dtype=int32)
+        else:
+            a = farray(0, dtype=int32)
+        self.mpi.bcast(a)
+        self.assertEquals(a, 1)
+
+    def test_bcast_int(self):
+        if self.mpi.my_proc == 0:
+            a = farray(1.0)
+        else:
+            a = farray(0.0)
+        self.mpi.bcast(a)
+        self.assertAlmostEquals(a, 1.0)
+
+    def test_sum_int(self):
+        i = 1
+        s = self.mpi.sum(i)
+        self.assertEquals(s, self.mpi.n_procs)
+
+    def test_sum_real(self):
+        i = 1.0
+        s = self.mpi.sum(i)
+        self.assertAlmostEquals(s, float(self.mpi.n_procs))
+
+    def test_sum_in_place_real_a(self):
+        f1 = fzeros(self.mpi.n_procs)
+        f2 = fzeros(self.mpi.n_procs)
+        f1[self.mpi.my_proc+1] = 1.
+        f2[:] = 1.
+        self.mpi.sum_in_place(f1)
+        self.assertArrayAlmostEqual(f1, f2)
+
+    def test_sum_in_place_real_a2(self):
+        f1 = fzeros((10,self.mpi.n_procs))
+        f2 = fzeros((10,self.mpi.n_procs))
+        f1[:,self.mpi.my_proc+1] = 1.
+        f2[:,:] = 1.
+        self.mpi.sum_in_place(f1)
+        self.assertArrayAlmostEqual(f1, f2)
+
+
     def test_atoms_bcast(self):
         a = Atoms("""12
 Lattice="3.679445 -0.181265 -0.219095 -0.140937 3.759568 0.175386 -0.223013 -0.011764 9.715448" Properties=species:S:1:pos:R:3:frac_pos:R:3:f:R:3 castep_run_time=40430.63 energy=-9949.25932697 virial="6.38880278817 4.17889707917 7.15229427215 4.17889707917 -0.740653778339 -2.86812348957 7.15229427215 -2.86812348957 -4.60133902559"
