@@ -25,9 +25,9 @@ class CInOutput(FortranCInOutput):
    __doc__ = FortranCInOutput.__doc__
 
    def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
-                frame=None, zero=False, range=None, fpointer=None, finalise=True):
+                frame=None, mpi=None, zero=False, range=None, fpointer=None, finalise=True):
       FortranCInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
-                                frame, fpointer=fpointer, finalise=finalise)
+                                frame, mpi, fpointer=fpointer, finalise=finalise)
       self.zero = zero
       self.range = range
 

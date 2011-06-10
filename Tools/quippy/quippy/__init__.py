@@ -52,6 +52,7 @@ if 'modules' in cfg.sections():
 # External dependencies
 available_modules = []
 unavailable_modules = []
+
 for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye', 'enthought.mayavi']:
    if mod in disabled_modules: continue
    try:
@@ -69,6 +70,14 @@ if 'netCDF4' in available_modules:
    netcdf_file = Dataset
 else:
    from pupynere import netcdf_file
+
+# if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
+if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
+       ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
+   import dl
+   flags = sys.getdlopenflags()
+   sys.setdlopenflags(flags | dl.RTLD_GLOBAL)
+   available_modules.append('mpi')
 
 AtomsReaders = {}
 AtomsWriters = {}
@@ -119,6 +128,14 @@ classes, routines, params = wrap_all(_quippy, spec, wrap_modules, spec['short_na
 QUIP_ROOT = spec['quip_root']
 QUIP_ARCH = spec['quip_arch']
 QUIP_MAKEFILE = spec['quip_makefile']
+
+if 'netdf' in disabled_modules:
+   disabled_modules.append('netcdf')
+else:
+   if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
+      available_modules.append('netcdf')
+   else:
+      unavailable_modules.append('netcdf')
 
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)

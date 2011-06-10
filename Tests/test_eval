@@ -4,8 +4,8 @@ if [ -z $QUIP_ROOT ]; then
    echo "$0: Need QUIP_ROOT defined"
    exit 1
 fi
-if [ -z $QUIP_ROOT ]; then
-   echo "$0: Need QUIP_ROOT defined"
+if [ -z $QUIP_ARCH ]; then
+   echo "$0: Need QUIP_ARCH defined"
    exit 1
 fi
 

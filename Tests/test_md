@@ -4,8 +4,8 @@ if [ -z $QUIP_ROOT ]; then
    echo "$0: Need QUIP_ROOT defined"
    exit 1
 fi
-if [ -z $QUIP_ROOT ]; then
-   echo "$0: Need QUIP_ROOT defined"
+if [ -z $QUIP_ARCH ]; then
+   echo "$0: Need QUIP_ARCH defined"
    exit 1
 fi
 
@@ -57,7 +57,7 @@ STAT       10.00    320.1768     15.8971    0.48E+02      0.00000000E+00      0.
 STAT       10.00    320.1768     15.8971    0.48E+02      0.00000000E+00      0.00000000E+00      0.33109042E+00     -0.34190241E+02     -0.34190241E+02
 EOF3
 
-${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 const_T dt=1.0 N_steps=10 rng_seed=1 < ${TEST}.in.xyz > ${TEST}.out.raw
+${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 const_T dt=1.0 N_steps=10 rng_seed=1 atoms_in_file=${TEST}.in.xyz > ${TEST}.out.raw
 egrep '^ST' ${TEST}.out.raw > ${TEST}.out
 tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 
