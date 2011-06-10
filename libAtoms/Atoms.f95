@@ -3275,6 +3275,8 @@ contains
        call bcast(mpi, at%params)
 
        call matrix3x3_inverse(at%lattice,at%g)
+       call initialise(at%domain, error=error)
+       PASS_ERROR(error)
        call atoms_repoint(at)
        at%ref_count = 1
     end if
