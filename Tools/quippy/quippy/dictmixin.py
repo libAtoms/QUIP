@@ -101,8 +101,8 @@ class ParamReaderMixin:
         return self.copy()
          
     def parse(self, s):
-        key_quoted_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*["\{\}]([^"\{\}]+)["\{\}]\s*')
-        key_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*([-0-9A-Za-z_.:\[\]()]+)\s*')
+        key_quoted_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*["\{\}]([^"\{\}]+)["\{\}e+-]\s*')
+        key_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*([-0-9A-Za-z_.:\[\]()e+-]+)\s*')
         key_re = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*')
 
         s = s.strip()
