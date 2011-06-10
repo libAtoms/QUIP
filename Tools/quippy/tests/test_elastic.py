@@ -21,13 +21,7 @@ from numpy import *
 import unittest, itertools, sys, quippy, os
 from quippytest import *
 
-got_scipy = True
-try:
-   from quippy.elastic import *
-except ImportError:
-   got_scipy = False
-
-if hasattr(quippy, 'Potential') and got_scipy:
+if 'scipy' in available_modules:
    
    class TestElastic(QuippyTestCase):
 

@@ -16,26 +16,47 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import unittest, glob, os
+import unittest, glob, os, sys, quippy
+from quippy import QUIP_ROOT, QUIP_ARCH
 from quippytest import *
 
-if 'QUIP_ROOT' in os.environ:
+mpi_n_cores = [1, 2]
 
-    class Test_TopLevel(QuippyTestCase):
-        pass
+class Test_TopLevel(QuippyTestCase):
+    pass
+
+def make_test(script, env=None):
+    def run_script(self):
+        if env is not None: os.environ.update(env)
+        exitcode = os.system(script)
+        if exitcode != 0:
+            self.fail()
+
+    return run_script
+
+scripts =  [script for script in glob.glob(os.path.join(QUIP_ROOT, 'Tests/test_*')) if '.' not in script and not script.endswith('~')]
+
+if 'mpi' in quippy.available_modules:
+    for script in scripts:
+        for cores in mpi_n_cores:
+            setattr(Test_TopLevel, '%s_MPI_%d_cores' % (os.path.basename(script), cores), make_test(script,{'QUIP_ROOT': QUIP_ROOT,
+                                                                                                        'QUIP_ARCH': QUIP_ARCH,
+                                                                                                        'MPIRUN': 'mpirun -n %d' % cores}))
+
+    for cores in mpi_n_cores:
+        setattr(Test_TopLevel, 'test_python_MPI_%d_cores' % cores,
+                make_test('mpirun -n %d python %s/Tools/quippy/tests/test_mpi.py' % (cores, QUIP_ROOT),
+                          {'QUIP_ROOT': QUIP_ROOT,
+                           'QUIP_ARCH': QUIP_ARCH,
+                           'PYTHONPATH': ':'.join(sys.path)}))
+        
+
+else:
+    for script in scripts:
+        setattr(Test_TopLevel, os.path.basename(script), make_test(script, {'QUIP_ROOT': QUIP_ROOT,
+                                                                            'QUIP_ARCH': QUIP_ARCH}))
 
 
-    def make_test(script):
-        def run_script(self):
-            exitcode = os.system(script)
-            if exitcode != 0:
-                self.fail()
-
-        return run_script
-
-    for script in glob.glob(os.path.join(os.environ['QUIP_ROOT'], 'Tests/test_*')):
-        if '.' in script or script.endswith('~') : continue # skip data and backup files
-        setattr(Test_TopLevel, os.path.basename(script), make_test(script))
 
                           
 

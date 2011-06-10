@@ -714,7 +714,7 @@ class TestAtoms_Extras(QuippyTestCase):
       self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
-   def test_bcast(self):
+   def test_bcast_serial(self):
       # Serial test of atoms_bcast by copying into test_out
       # if test fails add new data elements to ALL THREE sections in atoms_bcast() in Atoms.f95
       from quippy import MPI_context, bcast
@@ -722,7 +722,8 @@ class TestAtoms_Extras(QuippyTestCase):
       test_out = Atoms()
       bcast(mpi, self.at, test_out=test_out)
       self.assertEqual(self.at, test_out)
-      
+
+
 class TestAtoms_Neighbour(QuippyTestCase):
 
    def setUp(self):

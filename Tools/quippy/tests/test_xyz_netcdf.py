@@ -200,17 +200,19 @@ class TestCInOutput(QuippyTestCase):
          a.append(cio.read())
       self.assertEqual(a, list(self.al))      
 
-   def testnclowlevel(self):
-      cio = CInOutput("test.nc", OUTPUT)
-      for a in self.al:
-         cio.write(a)
-      cio.close()
+   if 'netcdf' in quippy.available_modules:
+      
+      def testnclowlevel(self):
+         cio = CInOutput("test.nc", OUTPUT)
+         for a in self.al:
+            cio.write(a)
+         cio.close()
 
-      cio = CInOutput("test.nc")
-      a = []
-      for i in range(5):
-         a.append(cio.read())
-      self.assertEqual(a, list(self.al))      
+         cio = CInOutput("test.nc")
+         a = []
+         for i in range(5):
+            a.append(cio.read())
+         self.assertEqual(a, list(self.al))      
 
    def testwritecio(self):
       cio = CInOutput("test2.xyz", OUTPUT)
@@ -471,12 +473,14 @@ class TestPythonNetCDF(QuippyTestCase):
       if os.path.exists('test3.nc'): os.remove('test3.nc')
       if os.path.exists('dataset.nc'): os.remove('dataset.nc')
 
-   def testpupynere_read(self):
-      from quippy.pupynere import netcdf_file
-      nc = netcdf_file('test3.nc', 'r')
-      al = AtomsList(nc, format=quippy.netcdf.netcdf_file)
-      self.assertEqual(list(self.al), list(al))
-      nc.close()
+   if 'netcdf' in quippy.available_modules:
+      
+      def testpupynere_read(self):
+         from quippy.pupynere import netcdf_file
+         nc = netcdf_file('test3.nc', 'r')
+         al = AtomsList(nc, format=quippy.netcdf.netcdf_file)
+         self.assertEqual(list(self.al), list(al))
+         nc.close()
 
    if 'netCDF4' in quippy.available_modules:
       

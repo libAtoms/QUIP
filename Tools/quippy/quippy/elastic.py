@@ -46,12 +46,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from scipy import stats
-try:
+from quippy import available_modules
+if 'scipy' in available_modules:
+   from scipy import stats
+if 'pylab' in available_modules:
    import pylab
-except  ImportError:
-   pass
-
 from farray import *
 
 def strain_matrix(strain_vector):

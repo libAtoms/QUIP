@@ -414,6 +414,8 @@ class TestRescale_ForceMixing(QuippyTestCase):
       def tearDown(self):
          if os.path.exists('clusters.xyz'): os.unlink('clusters.xyz')
          if os.path.exists('clusters.xyz.idx'): os.unlink('clusters.xyz.idx')
+         if os.path.exists('clusters.000.xyz'): os.unlink('clusters.000.xyz')
+         if os.path.exists('clusters.000.xyz.idx'): os.unlink('clusters.000.xyz.idx')
 
       def test_cluster(self):
          f = fzeros((3,self.at.n))
@@ -421,7 +423,11 @@ class TestRescale_ForceMixing(QuippyTestCase):
          self.pot_r.calc(self.at, force=f, args_str="qm_args_str={single_cluster cluster_calc_connect print_clusters terminate=F randomise_buffer=F}")
 
          # Load both clusters
-         cluster, cluster_r = AtomsList('clusters.xyz')
+         if 'mpi' in quippy.available_modules:
+             cluster_file = 'clusters.000.xyz'
+         else:
+             cluster_file = 'clusters.xyz'
+         cluster, cluster_r = AtomsList(cluster_file)
 
          # Check non-zero lattice components and positions
          mask = cluster.lattice != 0.0
@@ -430,8 +436,8 @@ class TestRescale_ForceMixing(QuippyTestCase):
          mask = cluster.pos != 0.0
          pos_ratio = cluster_r.pos[mask]/cluster.pos[mask]
 
-         self.assert_(abs(lattice_ratio - self.r_scale).max() < 1.0e-5 and 
-                      abs(pos_ratio - self.r_scale).max() < 1.0e-5)
+         self.assert_(abs(lattice_ratio - self.r_scale).max() < 1.0e-4 and 
+                      abs(pos_ratio - self.r_scale).max() < 1.0e-4)
 
       def test_force_cluster_atom_mask_no_rescale(self):
           cluster_force = fzeros((3,self.at.n))
