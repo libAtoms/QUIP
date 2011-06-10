@@ -691,7 +691,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             break
          castep_output.append(line)
 
-         if line == ' |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |\n':
+         if line.startswith(' Atomic calculation performed'):
             if got_header:
                got_param = True
                break
