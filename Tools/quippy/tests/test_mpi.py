@@ -42,7 +42,7 @@ class Test_MPI(QuippyTestCase):
         self.mpi.bcast(a)
         self.assertEquals(a, 1)
 
-    def test_bcast_int(self):
+    def test_bcast_real(self):
         if self.mpi.my_proc == 0:
             a = farray(1.0)
         else:
