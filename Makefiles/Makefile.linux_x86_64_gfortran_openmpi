@@ -41,4 +41,6 @@ LINKER = mpif90
 
 DEFINES += -D_MPI
 
+QUIPPY_LDFLAGS=`mpif90 --showme:link`
+
 # rules
