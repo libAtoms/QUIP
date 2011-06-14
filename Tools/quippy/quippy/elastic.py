@@ -445,7 +445,7 @@ def atomic_strain(at, r0, crystal_factor=1.0):
    return strain/crystal_factor
 
 
-def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False, mask=None, interpolate=False):
+def elastic_fields_py(at, a, c=None, c_vector=None, cij=None, save_reference=False, use_reference=False, mask=None, interpolate=False, cutoff_factor=1.2, system='tetrahedric'):
    """
    Compute atomistic strain field and linear elastic stress response.
 
@@ -501,7 +501,7 @@ def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False
 
    # We want nearest neighbour connectivity only
    save_cutoff, save_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
-   at.set_cutoff_factor(1.2)
+   at.set_cutoff_factor(cutoff_factor)
    at.calc_connect()
 
    if (save_reference or use_reference) and not at.has_property('primitive_index'):
@@ -530,26 +530,63 @@ def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False
       
       neighb = at.neighbours[i]
 
-      if len(neighb) == 4:
-         #print '\nProcessing atom', i
+      if (system == 'tetrahedric' and len(neighb) == 4) or (system == 'anatase' and len(neighb) == 6): 
 
-         # Consider neighbours in order of their index within the primitive cell
-         if hasattr(at, 'primitive_index'):
-            (j1,i1), (j2,i2), (j3,i3), (j4,i4) = sorted((at.primitive_index[n.j],i) for i,n in fenumerate(neighb))
-         else:
-            (j1,i1), (j2,i2), (j3,i3), (j4,i4) = list((n.j,i) for i,n in fenumerate(neighb))
+         if (system == 'tetrahedric' and len(neighb) == 4):
 
-         # Find cubic axes from neighbours
-         n1 = neighb[i2].diff - neighb[i1].diff
-         n2 = neighb[i3].diff - neighb[i1].diff
-         n3 = neighb[i4].diff - neighb[i1].diff
-         #print 'n1', n1.norm(), n1
-         #print 'n2', n2.norm(), n2
-         #print 'n3', n3.norm(), n3
+             #print '\nProcessing atom', i
+     
+             # Consider neighbours in order of their index within the primitive cell
+             if hasattr(at, 'primitive_index'):
+                (j1,i1), (j2,i2), (j3,i3), (j4,i4) = sorted((at.primitive_index[n.j],i) for i,n in fenumerate(neighb))
+             else:
+                (j1,i1), (j2,i2), (j3,i3), (j4,i4) = list((n.j,i) for i,n in fenumerate(neighb))
+     
+             # Find cubic axes from neighbours
+             n1 = neighb[i2].diff - neighb[i1].diff
+             n2 = neighb[i3].diff - neighb[i1].diff
+             n3 = neighb[i4].diff - neighb[i1].diff
+             #print 'n1', n1.norm(), n1
+             #print 'n2', n2.norm(), n2
+             #print 'n3', n3.norm(), n3
+     
+             E[:,1] = (n1 + n2 - n3)/a
+             E[:,2] = (n2 + n3 - n1)/a
+             E[:,3] = (n3 + n1 - n2)/a
 
-         E[:,1] = (n1 + n2 - n3)/a
-         E[:,2] = (n2 + n3 - n1)/a
-         E[:,3] = (n3 + n1 - n2)/a
+         elif (system == 'anatase' and len(neighb) == 6):
+
+             if(c_vector==None):
+                c_vector = fzeros(3)
+                c_vector[:] = [0, 0, 1]
+
+             c_local = fzeros(3)
+             for j in frange(3):
+                 c_local[j] = c_vector[j] * (c/2)
+
+             # Consider neighbours in order of their index within the primitive cell
+             if hasattr(at, 'primitive_index'):
+                (j1,i1), (j2,i2), (j3,i3), (j4,i4), (j5,i5), (j6,i6) = sorted((at.primitive_index[n.j],i) for i,n in fenumerate(neighb))
+             else:
+                (j1,i1), (j2,i2), (j3,i3), (j4,i4), (j5,i5), (j6,i6) = list((n.j,i) for i,n in fenumerate(neighb))
+
+             dd = fzeros(6)
+             dd[1] = numpy.linalg.norm(c_local - neighb[i1].diff)
+             dd[2] = numpy.linalg.norm(c_local - neighb[i2].diff)
+             dd[3] = numpy.linalg.norm(c_local - neighb[i3].diff)
+             dd[4] = numpy.linalg.norm(c_local - neighb[i4].diff)
+             dd[5] = numpy.linalg.norm(c_local - neighb[i5].diff)
+             dd[6] = numpy.linalg.norm(c_local - neighb[i6].diff)
+             #print dd[5], c_local - neighb[i5].diff 
+             ind =  numpy.argsort(dd)
+
+             n1 = neighb[ind[1]].diff - neighb[ind[6]].diff
+             n2 = neighb[ind[2]].diff - neighb[ind[3]].diff
+             n3 = neighb[ind[4]].diff - neighb[ind[5]].diff
+
+             E[:,1] = n3/a
+             E[:,2] = n2/a
+             E[:,3] = n1/c 
 
          #print 'E', E
 
@@ -617,6 +654,7 @@ def elastic_fields_py(at, a, cij=None, save_reference=False, use_reference=False
             at.stress[:,i] = stress_vector(RsigRt)
 
             at.strain_energy_density[i] = 0.5*numpy.dot(at.strain[:,i], at.stress[:,i])
+            print at.strain[:, i]
 
             compute_stress_eig(i)
 
