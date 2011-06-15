@@ -9,7 +9,7 @@ SVN=/share/apps/local/bin/svn
 
 LOCKFILE=tag.lock
 
-function check_version {
+function test_version {
    svn_version=$1
 
    rm -rf QUIP_test
@@ -46,11 +46,22 @@ function check_version {
    # loop over lines listing compiler modules and versions
    rm -f tag_test_configs.lines
    egrep -v '^#' ../tag_test_configs | egrep -v SUFFIXES > tag_test_configs.lines
-   while read line; do
+
+   ## cat tag_test_configs.lines | while read line; do
+   orig_IFS="$IFS"
+   IFS='
+'
+   configs=( $( cat tag_test_configs.lines ) )
+   IFS="$orig_IFS"
+   for li in `seq 0 $(( ${#configs[@]} - 1 ))`; do
+      line=${configs[$li]}
+      echo "doing line '$line'" 1>&2
       fields=($line)
       compiler_module_dir=${fields[0]}
       compiler_version=${fields[1]}
       compiler_module="$compiler_module_dir/$compiler_version"
+
+      echo "compiler_module $compiler_module" 1>&2
 
       module unload intel gnu pgi mkl openmpi
       mkl_module="mkl"
@@ -66,10 +77,13 @@ function check_version {
 	 rm -f $LOCKFILE
 	 exit 1
       fi
+      # undo openmpi module's setting, because it fails from within python
+      export OMPI_MCA_mpi_paffinity_alone=0
 
       # loop over empty suffix and suffixes previously read in
       suffix_i=-1
       for suffix in "" $suffixes; do
+	 echo "suffix $suffix" 1>&2
 	 suffix_i=$(( $suffix_i + 1 ))
 	 # extract required status of make and quippy
 	 make_req=${fields[$(( 2*$suffix_i + 2 ))]}
@@ -122,12 +136,12 @@ function check_version {
 	       make clean > /dev/null
 	       make test > ../../../quippy_test.out.${svn_version}.${compiler_name}${suffix} 2>&1
 	       if [[ $? == 0 ]]; then
-		  quippy_status=${quippy_status}"$compiler_name OK "
+		  quippy_status=${quippy_status}"${compiler_name}${suffix} OK "
 	       else
 		  if [[ $quippy_req == "O" ]]; then
-		     quippy_status=${quippy_status}"$compiler_name Optional_Failed "
+		     quippy_status=${quippy_status}"${compiler_name}${suffix} Optional_Failed "
 		  else
-		     quippy_status=${quippy_status}"$compiler_name Failed "
+		     quippy_status=${quippy_status}"${compiler_name}${suffix} Failed "
 		  fi
 		  if [[ $svn_version == "HEAD" ]]; then
 		     failed_list=${failed_list}"quippy_test.out.${svn_version}.${compiler_name}${suffix} "
@@ -137,7 +151,7 @@ function check_version {
 	    fi # quippy_req != -
 	 fi # make_req != -
       done # suffix
-   done < tag_test_configs.lines # while read line
+   done # loop over config lines
    popd > /dev/null
 }
 
@@ -168,7 +182,7 @@ date > $LOCKFILE
 . /share/apps/local/etc/profile.d/modules.sh
 module load silent
 
-check_version HEAD
+test_version HEAD
 status_no_Failed $make_status; make_ok=$?
 status_no_Failed $quippy_status; quippy_ok=$?
 
@@ -190,7 +204,7 @@ while [[ ( $make_ok != 0 || $quippy_ok != 0) && $i -lt ${max_versions_back} ]]; 
    i=$(( $i + 1 ))
    cur_rev=$(( $cur_rev - 1 ))
 
-   check_version ${cur_rev}
+   test_version ${cur_rev}
    echo "${cur_rev} make $make_status quippy test $quippy_status"
    echo "${cur_rev} make $make_status quippy test $quippy_status" >> ${REPORT_FILE}
    status_no_Failed $make_status; make_ok=$?
