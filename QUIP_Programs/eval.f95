@@ -201,7 +201,7 @@ implicit none
      call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
   end if
 
-  call initialise(infile, trim(at_file))
+  call initialise(infile, trim(at_file), mpi=mpi_glob)
 
   if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
   external_pressure = 0.0_dp
