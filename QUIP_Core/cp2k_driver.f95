@@ -1048,7 +1048,7 @@ contains
 	  call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
 	  converged = .false.
 	else
-	  call system_command('grep "SCF run converged" '//trim(run_dir)//'/cp2k_output.out',status=stat)
+	  call system_command('grep "outer SCF loop converged" '//trim(run_dir)//'/cp2k_output.out',status=stat)
 	  if (stat == 0) then
 	    converged = .true.
 	  else

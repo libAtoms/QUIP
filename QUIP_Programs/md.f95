@@ -494,9 +494,7 @@ implicit none
     CLEAR_ERROR(error)
   endif
 
-print *, "BOB"
   call init_restraints_constraints(ds, string(params_es))
-print *, "JOE"
   store_constraint_force = has_property(ds%atoms, "constraint_force")
   if (ds%Nrestraints > 0) then
      allocate(restraint_stuff(5,ds%Nrestraints))
