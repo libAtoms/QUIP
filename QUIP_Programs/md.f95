@@ -473,7 +473,11 @@ implicit none
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
-  call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+  if (len_trim(params%params_in_file) > 0) then
+     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+  else
+     call initialise(params_es)
+  endif
 
   call initialise(pot, args_str=params%pot_init_args, param_str=string(params_es), mpi_obj=mpi_glob)
 
@@ -490,7 +494,9 @@ implicit none
     CLEAR_ERROR(error)
   endif
 
+print *, "BOB"
   call init_restraints_constraints(ds, string(params_es))
+print *, "JOE"
   store_constraint_force = has_property(ds%atoms, "constraint_force")
   if (ds%Nrestraints > 0) then
      allocate(restraint_stuff(5,ds%Nrestraints))

@@ -374,6 +374,8 @@ contains
 
       type(xml_t) :: fxml
 
+      if (len_trim(param_str) == 0) return
+
       parse_ds => this
 
       call open_xml_string(fxml, param_str)
