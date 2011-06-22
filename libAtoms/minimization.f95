@@ -2248,6 +2248,27 @@ CONTAINS
 
 
 
+!%%%%
+!% Noam's line minimizer
+!%
+!% args
+!% x: input vector, flattened into 1-D double array
+!% bothfunc: input pointer to function computing value and gradient
+!% neg_gradient: input negative of gradient (i.e. force) for input x
+!% E: input value at x
+!% search_dir: input vector search direction, not necessarily normalized
+!% new_x: output x at minimimum
+!% new_new_gradient: output negative of gradient at new_x
+!% new_E: output value at new_x
+!% max_step_size: input max step size (on _normalized_ search dir), output actual step size for this linmin
+!% accuracy: input desired accuracy on square of L2 norm of projected gradient
+!% N_evals: input initial number of function evals so far, output final number of function evalutions
+!% max_N_evals: input max number of function evaluations before giving up
+!% hook: input pointer to function to call after each evaluation
+!% data: input pointer to other data needed for calc, flattened to 1-D character array with transfer()
+!% error: output error state
+!%%%%
+
 subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 		  new_x, new_neg_gradient, new_E, &
 		  max_step_size, accuracy, N_evals, max_N_evals, hook,data, error)
@@ -2523,7 +2544,28 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     call print ("done with line search", PRINT_NERD)
 end subroutine n_linmin
 
-! with preconditioning from Cristoph Ortner
+!%%%%
+!% Noam's minimizer with preconditioning from Cristoph Ortner
+!% return value: number of function evaluations
+!% args
+!% x_i: input vector, flattened into a 1-D double array
+!% bothfunc: input pointer to function that returns value and gradient
+!%    can apply simple constraints and external (body) forces
+!% use_precond: input logical controling preconditioning
+!% apply_precond_func: input pointer to function that applies preconditioner to a vector
+!% initial_E: output initial value
+!% final_E: output final value
+!% expected reduction: input expected reduction in value used to estimate initial step
+!% max_N_evals: max number of function evaluations before giving up
+!% accuracy: desired accuracy on square of L2 norm of gradient
+!% hook: pointer to function passed to linmin and called once per CG step
+!%       does stuff like print configuration, and can also apply other ending conditions,
+!%       although latter capability isn't used
+!% hook_print_interval: how often to call hook, depending on verbosity level
+!% data: other data both_func will need to actually do calculation, flattened into
+!%       character array by transfer() function.  Maybe be replaced with F2003 pointer soon
+!% error: output error state
+!%%%%
 function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, final_E, &
     expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, error) result(N_evals)
     real(dp), intent(inout) :: x_i(:)
