@@ -1,464 +1,6 @@
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/barostat_types.F src_20100521_patched/barostat_types.F
-*** src_20100521_latest_orig/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100521_patched/barostat_types.F	2010-05-21 10:49:13.863092489 +0100
-***************
-*** 21,27 ****
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
---- 21,28 ----
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble,&
-!                                              npt_y_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
-***************
-*** 85,90 ****
---- 86,92 ----
-      CALL section_vals_get(barostat_section, explicit=explicit, error=error)
-      IF (simpar%ensemble == npt_i_ensemble .OR. &
-          simpar%ensemble == npt_f_ensemble .OR. &
-+         simpar%ensemble == npt_y_ensemble .OR. &
-          simpar%ensemble == npe_f_ensemble .OR. &
-          simpar%ensemble == npe_i_ensemble .OR. &
-          simpar%ensemble == nph_uniaxial_ensemble .OR. &
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/barostat_utils.F src_20100521_patched/barostat_utils.F
-*** src_20100521_latest_orig/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100521_patched/barostat_utils.F	2010-05-21 10:49:25.839546042 +0100
-***************
-*** 19,25 ****
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble
-    USE kinds,                           ONLY: default_string_length,&
-                                               dp
-    USE machine,                         ONLY: m_flush
---- 19,26 ----
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble,&
-!                                              npt_y_ensemble
-    USE kinds,                           ONLY: default_string_length,&
-                                               dp
-    USE machine,                         ONLY: m_flush
-***************
-*** 80,85 ****
---- 81,89 ----
-         baro_pot = -0.5_dp * v_shock * v_shock * ( 1._dp - cell%deth * iv0 )**2 - simpar%p0 * ( v0 - cell%deth )
-         ! Valid only for orthorhombic cell
-         baro_kin = 0.5_dp * npt ( 1, 1 )%v * npt ( 1, 1 )%v * npt ( 1, 1 )%mass
-+     ELSEIF ( simpar%ensemble==npt_y_ensemble) THEN
-+        baro_pot = simpar%p_ext * cell%deth
-+        baro_kin = 0.5_dp * npt ( 1, 1 )%v**2 * npt ( 1, 1 )%mass
-      END IF
-  
-    END SUBROUTINE get_baro_energies
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/constraint.F src_20100521_patched/constraint.F
-*** src_20100521_latest_orig/constraint.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100521_patched/constraint.F	2010-05-21 10:50:37.700636851 +0100
-***************
-*** 43,49 ****
-    USE distribution_1d_types,           ONLY: distribution_1d_type
-    USE f77_blas
-    USE input_constants,                 ONLY: npt_f_ensemble,&
-!                                              npt_i_ensemble
-    USE input_section_types,             ONLY: section_vals_get_subs_vals,&
-                                               section_vals_type
-    USE kinds,                           ONLY: default_string_length,&
---- 43,50 ----
-    USE distribution_1d_types,           ONLY: distribution_1d_type
-    USE f77_blas
-    USE input_constants,                 ONLY: npt_f_ensemble,&
-!                                              npt_i_ensemble,&
-!                                              npt_y_ensemble
-    USE input_section_types,             ONLY: section_vals_get_subs_vals,&
-                                               section_vals_type
-    USE kinds,                           ONLY: default_string_length,&
-***************
-*** 341,346 ****
---- 342,349 ----
-         CALL get_roll_matrix ('SHAKE', r_shake, v_shake, vector_r, vector_v )
-      ELSE IF ( simpar % ensemble == npt_f_ensemble ) THEN
-         CALL get_roll_matrix ('SHAKE', r_shake, v_shake, vector_r, vector_v, u )
-+     ELSE IF ( simpar % ensemble == npt_y_ensemble ) THEN
-+        CALL get_roll_matrix ('SHAKE', r_shake, v_shake, vector_r, vector_v )
-      END IF
-      DO k = 1, SIZE(pos,2)
-         atomic_kind=>particle_set (k) % atomic_kind
-***************
-*** 479,484 ****
---- 482,489 ----
-         CALL get_roll_matrix ('RATTLE', v_shake=r_rattle, vector_v=vector )
-      ELSE IF ( simpar % ensemble == npt_f_ensemble ) THEN
-         CALL get_roll_matrix ('RATTLE', v_shake=r_rattle, vector_v=vector, u=u )
-+     ELSE IF ( simpar % ensemble == npt_y_ensemble ) THEN
-+        CALL get_roll_matrix ('RATTLE', v_shake=r_rattle, vector_v=vector)
-      END IF
-      DO k = 1, SIZE(vel,2)
-         atomic_kind=>particle_set (k) % atomic_kind
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/cp_ddapc_methods.F src_20100521_patched/cp_ddapc_methods.F
-*** src_20100521_latest_orig/cp_ddapc_methods.F	2010-04-08 20:18:04.000000000 +0100
---- src_20100521_patched/cp_ddapc_methods.F	2010-05-21 10:49:54.114502147 +0100
-***************
-*** 506,512 ****
-            DEALLOCATE(AmE, stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         END IF
-!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
-         IF (iw>0) THEN
-            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
-         END IF
---- 506,513 ----
-            DEALLOCATE(AmE, stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         END IF
-!        !!NB speedup
-!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error, improve=.false.)
-         IF (iw>0) THEN
-            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
-         END IF
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/cp_ddapc_util.F src_20100521_patched/cp_ddapc_util.F
-*** src_20100521_latest_orig/cp_ddapc_util.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100521_patched/cp_ddapc_util.F	2010-05-21 10:50:17.879752449 +0100
-***************
-*** 238,243 ****
---- 238,246 ----
-      TYPE(pw_type), POINTER                   :: rho_tot_g
-      TYPE(qs_charges_type), POINTER           :: qs_charges
-      TYPE(qs_rho_type), POINTER               :: rho
-+     !!NB speed
-+     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj
-+     !!
-  
-      CALL timeset(routineN,handle)
-      failure         = .FALSE.
-***************
-*** 399,411 ****
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
-            !
-            DO iparticle = 1, SIZE(particle_set)
-               dAm = 0.0_dp
-               dbv = 0.0_dp
-               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
-                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
-!              CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
-               IF (debug_this_module) THEN
-                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
-                       gcut, iparticle, Vol, qs_env, error)
---- 402,424 ----
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
-+ 	  !!NB speed
-+ 	  ALLOCATE(cvT_AmI(ndim), stat=stat)
-+ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+ 	  ALLOCATE(cvT_AmI_dAmj(ndim), stat=stat)
-+ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+ 	  ALLOCATE(AmI_cv(ndim), stat=stat)
-+ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+ 	  cvT_AmI = MATMUL(cv, cp_ddapc_env%AmI)
-+ 	  AmI_cv = MATMUL(cp_ddapc_env%AmI,cv)
-+ 	  !!
-            !
-            DO iparticle = 1, SIZE(particle_set)
-               dAm = 0.0_dp
-               dbv = 0.0_dp
-               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
-                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
-! !! NB parallelization            CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
-               IF (debug_this_module) THEN
-                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
-                       gcut, iparticle, Vol, qs_env, error)
-***************
-*** 413,435 ****
-               END IF
-               CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
-                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
-!              CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
-               IF (debug_this_module) THEN
-                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
-                       gcut, iparticle, Vol, qs_env, error)
-                  cp_ddapc_env => qs_env%cp_ddapc_env 
-               END IF
-               DO j = 1, 3
-                  dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
-!                 c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
-!                        DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
-                  c3   = c3 / cp_ddapc_env%c0
-!                 c4 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,cv)))) / &
-!                      cp_ddapc_env%c0
-!                 dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
-!                      c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
-               END DO
-            END DO
-            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
-            IF (.NOT.ASSOCIATED(dq_out)) THEN
-               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
---- 426,458 ----
-               END IF
-               CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
-                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
-! !! NB parallelization            CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
-               IF (debug_this_module) THEN
-                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
-                       gcut, iparticle, Vol, qs_env, error)
-                  cp_ddapc_env => qs_env%cp_ddapc_env 
-               END IF
-               DO j = 1, 3
-+ 		!!NB speed
-+ 		cvT_AmI_dAmj = MATMUL(cvT_AmI, dAm(:,:,j))
-                  dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
-! 		c3 = - DOT_PRODUCT(cvT_AmI_dAmj,MATMUL(cp_ddapc_env%AmI,bv)) + DOT_PRODUCT(cvT_AmI, dbv(:,j))
-                  c3   = c3 / cp_ddapc_env%c0
-! 		c4 = - DOT_PRODUCT(cvT_AmI_dAmj,AmI_cv) / cp_ddapc_env%c0
-! 		dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - (c3 - c4*c1) * AmI_cv)
-!                 ! dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
-!                 ! c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
-!                        ! DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
-!                 ! c3   = c3 / cp_ddapc_env%c0
-!                 ! c4 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,cv)))) / &
-!                      ! cp_ddapc_env%c0
-!                 ! dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
-!                      ! c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
-               END DO
-            END DO
-+ 	  !! NB parallelization
-+           CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
-+ 	  !!
-            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
-            IF (.NOT.ASSOCIATED(dq_out)) THEN
-               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
-***************
-*** 453,458 ****
---- 476,487 ----
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            DEALLOCATE(dbv, stat=stat)
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+           DEALLOCATE(cvT_AmI, stat=stat)
-+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+           DEALLOCATE(cvT_AmI_dAmj, stat=stat)
-+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+           DEALLOCATE(AmI_cv, stat=stat)
-+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            CALL timestop(handle3)
-         END IF
-         !
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/csvr_system_mapping.F src_20100521_patched/csvr_system_mapping.F
-*** src_20100521_latest_orig/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100521_patched/csvr_system_mapping.F	2010-05-21 10:49:40.047388500 +0100
-***************
-*** 22,28 ****
-         do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
-         langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_section_types,             ONLY: section_vals_type,&
-                                               section_vals_val_get
-    USE kinds,                           ONLY: dp
---- 22,28 ----
-         do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
-         langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_section_types,             ONLY: section_vals_type,&
-                                               section_vals_val_get
-    USE kinds,                           ONLY: dp
-***************
-*** 72,78 ****
-      SELECT CASE (simpar%ensemble)
-      CASE  DEFAULT
-         CALL stop_program(routineN, 'Never reach this point!' )
-!     CASE ( npt_i_ensemble, npt_f_ensemble )
-         map_info => csvr%map_info
-         map_info%dis_type = do_thermo_only_master
-  
---- 72,78 ----
-      SELECT CASE (simpar%ensemble)
-      CASE  DEFAULT
-         CALL stop_program(routineN, 'Never reach this point!' )
-!     CASE ( npt_i_ensemble, npt_f_ensemble, npt_y_ensemble )
-         map_info => csvr%map_info
-         map_info%dis_type = do_thermo_only_master
-  
-***************
-*** 138,144 ****
-      CASE ( nve_ensemble, isokin_ensemble, npe_f_ensemble, npe_i_ensemble, nph_uniaxial_ensemble,&
-             nph_uniaxial_damped_ensemble, reftraj_ensemble, langevin_ensemble )
-         CALL stop_program ( routineN, 'Never reach this point!' )
-!     CASE ( nvt_ensemble, npt_i_ensemble, npt_f_ensemble)
-  
-         CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom,&
-              massive_atom_list, molecule_kind_set, local_molecules, molecule_set,&
---- 138,144 ----
-      CASE ( nve_ensemble, isokin_ensemble, npe_f_ensemble, npe_i_ensemble, nph_uniaxial_ensemble,&
-             nph_uniaxial_damped_ensemble, reftraj_ensemble, langevin_ensemble )
-         CALL stop_program ( routineN, 'Never reach this point!' )
-!     CASE ( nvt_ensemble, npt_i_ensemble, npt_f_ensemble, npt_y_ensemble )
-  
-         CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom,&
-              massive_atom_list, molecule_kind_set, local_molecules, molecule_set,&
-***************
-*** 367,373 ****
-      CASE ( isokin_ensemble, nph_uniaxial_ensemble,&
-             nph_uniaxial_damped_ensemble, reftraj_ensemble, langevin_ensemble )
-         CALL stop_program ( routineN, 'Never reach this point!' )
-!     CASE ( nve_ensemble, npe_f_ensemble, npe_i_ensemble, nvt_ensemble, npt_i_ensemble, npt_f_ensemble )
-  
-         CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
-              molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
---- 367,373 ----
-      CASE ( isokin_ensemble, nph_uniaxial_ensemble,&
-             nph_uniaxial_damped_ensemble, reftraj_ensemble, langevin_ensemble )
-         CALL stop_program ( routineN, 'Never reach this point!' )
-!     CASE ( nve_ensemble, npe_f_ensemble, npe_i_ensemble, nvt_ensemble, npt_i_ensemble, npt_f_ensemble, npt_y_ensemble )
-  
-         CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
-              molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
-Common subdirectories: src_20100521_latest_orig/CVS and src_20100521_patched/CVS
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/ewald_spline_util.F src_20100521_patched/ewald_spline_util.F
-*** src_20100521_latest_orig/ewald_spline_util.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100521_patched/ewald_spline_util.F	2010-05-21 10:50:12.519608415 +0100
-***************
-*** 41,46 ****
---- 41,49 ----
-                                               pw_type
-    USE timings,                         ONLY: timeset,&
-                                               timestop
-+   !! NB parallelization
-+   USE message_passing,                 ONLY: mp_sum
-+   !!
-  #include "cp_common_uses.h"
-  
-    IMPLICIT NONE
-***************
-*** 150,155 ****
---- 153,161 ----
-                                                  Term, xs1, xs2, xs3
-      TYPE(pw_spline_precond_type), POINTER    :: precond
-      TYPE(section_vals_type), POINTER         :: interp_section
-+     !! NB parallelization
-+     integer :: iii
-+     !!
-  
-      CALL timeset(routineN,handle)
-      n1  = grid%pw_grid%npts(1)
-***************
-*** 171,176 ****
---- 177,185 ----
-      CALL pw_zero(grid, error=error)
-  
-      ! Used the full symmetry to reduce the evaluation to 1/64th
-+     !! NB parallelization
-+     iii = 0
-+     !!
-      LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
-         my_k  = k-gbo(1,3)
-         xs3   = REAL(my_k,dp)*dr3
-***************
-*** 181,197 ****
-            xs1   = 0.0_dp
-            DO i  =  gbo(1,1), gbo(2,1)
-               IF (i > nxlim ) CYCLE
-!              Term  = 0.0_dp
-!              ! Sum over k vectors
-!              DO kg = 1, SIZE(Lg)
-!                 Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
-!              END DO
-!              grid%cr3d(i,j,k) = Term
-               xs1 = xs1 + dr1
-            END DO
-            xs2 = xs2 + dr2
-         END DO
-      END DO LoopOnGrid
-  
-      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
-         my_k = k
---- 190,214 ----
-            xs1   = 0.0_dp
-            DO i  =  gbo(1,1), gbo(2,1)
-               IF (i > nxlim ) CYCLE
-! 	     !! NB parallelization
-! 	     iii = iii + 1
-! 	     IF (mod(iii,grid%pw_grid%para%group_size) == grid%pw_grid%para%my_pos) THEN
-! 	       Term  = 0.0_dp
-! 	       ! Sum over k vectors
-! 	       DO kg = 1, SIZE(Lg)
-! 		  Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
-! 	       END DO
-! 	       grid%cr3d(i,j,k) = Term
-! 	     ENDIF
-! 	     !!
-               xs1 = xs1 + dr1
-            END DO
-            xs2 = xs2 + dr2
-         END DO
-      END DO LoopOnGrid
-+     !! NB parallelization
-+     call mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
-+     !!
-  
-      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
-         my_k = k
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/extended_system_init.F src_20100521_patched/extended_system_init.F
-*** src_20100521_latest_orig/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100521_patched/extended_system_init.F	2010-05-21 10:50:25.852322017 +0100
-***************
-*** 32,38 ****
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
---- 32,39 ----
-                                               nph_uniaxial_damped_ensemble,&
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-!                                              npt_i_ensemble,&
-!                                              npt_y_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
-***************
-*** 107,112 ****
---- 108,118 ----
-         CPPrecondition(stat==0,cp_fatal_level,routineP,error,failure)
-         temp = simpar % temp_baro_ext
-  
-+     CASE ( npt_y_ensemble )
-+        ALLOCATE ( npt_info ( 1, 1 ), STAT = stat )
-+        CPPrecondition(stat==0,cp_fatal_level,routineP,error,failure)
-+        temp = simpar % temp_baro_ext
-+ 
-      CASE  DEFAULT
-         ! Do nothing..
-         NULLIFY(npt_info)
-***************
-*** 696,701 ****
---- 702,709 ----
-         npt ( :, : ) % mass =  REAL ( nfree + 3,KIND=dp) * temp_ext * tau_cell ** 2 / 3.0_dp
-      CASE ( npe_i_ensemble )
-         npt ( :, : ) % mass = REAL ( nfree + 3,KIND=dp) * temp_ext * tau_cell ** 2
-+     CASE ( npt_y_ensemble )
-+        npt ( :, : ) % mass = REAL ( nfree + 3,KIND=dp) * temp_ext * tau_cell ** 2
-      END SELECT
-      ! initializing velocities
-      DO i = 1, SIZE ( npt,1)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_20100521_patched/fist_force.F
-*** src_20100521_latest_orig/fist_force.F	2010-05-05 10:28:28.000000000 +0100
---- src_20100521_patched/fist_force.F	2010-05-21 10:51:01.185903534 +0100
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/fist_force.F src/fist_force.F
+*** src_orig/fist_force.F	2011-03-14 10:46:29.765610380 +0000
+--- src/fist_force.F	2011-03-14 11:18:48.045832399 +0000
 ***************
 *** 52,57 ****
 --- 52,62 ----
@@ -501,21 +43,21 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_2
         node, nparticle_kind, nparticle_local, nshell, shell_index, stat
 +     INTEGER :: iw_danny, iw_danny_forces
       LOGICAL                                  :: do_multipoles, failure, &
-                                                  scale_cutoff, shell_model_ad, &
+                                                  shell_model_ad, &
                                                   shell_present, use_virial
 ***************
-*** 136,141 ****
---- 145,151 ----
+*** 135,140 ****
+--- 144,150 ----
         fgshell_coulomb, fshell_nonbond, fshell_total
       REAL(KIND=dp), DIMENSION(3, 3) :: ident, pv_bc, pv_bend, pv_bond, pv_g, &
-        pv_imptors, pv_nonbond, pv_onef, pv_opbend, pv_torsion, pv_urey_bradley
+        pv_imptors, pv_nonbond, pv_opbend, pv_torsion, pv_urey_bradley
 +     REAL(KIND=dp), DIMENSION(3, 3) :: pv_danny_2body, pv_danny_3body ! added by Csilla
       TYPE(atomic_kind_type), DIMENSION(:), &
         POINTER                                :: atomic_kind_set
       TYPE(atomic_kind_type), POINTER          :: atomic_kind
 ***************
-*** 158,163 ****
---- 168,178 ----
+*** 159,164 ****
+--- 169,179 ----
                                                   shell_particle_set
       TYPE(section_vals_type), POINTER         :: mm_section, print_section
       TYPE(shell_kind_type), POINTER           :: shell
@@ -574,8 +116,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_2
            extension=".mmLog",error=error)
       iw2= cp_print_key_unit_nr(logger,mm_section,"PRINT%EWALD_INFO",&
 ***************
-*** 255,260 ****
---- 305,312 ----
+*** 251,256 ****
+--- 301,308 ----
          pv_urey_bradley  = 0.0_dp
          pv_nonbond       = 0.0_dp
          pv_g             = 0.0_dp
@@ -585,8 +127,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_2
       END IF
   
 ***************
-*** 271,276 ****
---- 323,331 ----
+*** 266,271 ****
+--- 318,326 ----
       vg_coulomb        = 0.0_dp
       thermo%pot        = 0.0_dp
       thermo%harm_shell = 0.0_dp
@@ -595,111 +137,111 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_2
 + !added by Csilla
   
       ! Get real-space non-bonded forces:
-      IF (iw>0) THEN
+      IF(iw>0)THEN
 ***************
-*** 500,505 ****
---- 555,562 ----
-              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+*** 532,537 ****
+--- 587,594 ----
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, &
               debug%f_bond, debug%f_bend, debug%f_torsion, debug%f_ub, &
-              debug%f_imptors, debug%f_opbend, debug%f_onef, cell, use_virial, &
+              debug%f_imptors, debug%f_opbend, cell, use_virial, &
 +             pot_danny, pv_danny_2body, pv_danny_3body, do_danny, &
 +             danny_cutoff, iw_danny, & !added by Csilla
               error)
   
       ELSE
 ***************
-*** 509,515 ****
-              pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imptors, &
-              pot_opbend, pot_onef, pot_shell, pv_bond, pv_bend, &
-              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+*** 540,546 ****
+              core_particle_set, pot_bond, pot_bend, pot_urey_bradley, &
+              pot_torsion, pot_imptors, pot_opbend, pot_shell, pv_bond, pv_bend, &
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, &
 !             cell=cell, use_virial=use_virial, error=error)
       ENDIF
   
-      IF (iw>0) THEN
---- 566,575 ----
-              pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imptors, &
-              pot_opbend, pot_onef, pot_shell, pv_bond, pv_bend, &
-              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+      IF(iw>0)THEN
+--- 597,606 ----
+              core_particle_set, pot_bond, pot_bend, pot_urey_bradley, &
+              pot_torsion, pot_imptors, pot_opbend, pot_shell, pv_bond, pv_bend, &
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, &
 !             cell=cell, use_virial=use_virial, &
 !             pot_danny=pot_danny, pv_danny_2body=pv_danny_2body, &
 !             pv_danny_3body=pv_danny_3body, do_danny=do_danny, danny_cutoff=danny_cutoff, &
 !             iw_danny=iw_danny, error=error) !added by Csilla
       ENDIF
   
-      IF (iw>0) THEN
+      IF(iw>0)THEN
 ***************
-*** 535,542 ****
-      END IF
+*** 570,576 ****
   
       ! add up all the potential energies
-!     thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion + pot_opbend + &
-!          pot_onef + pot_imptors + pot_urey_bradley + pot_manybody + pot_shell
+      thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion + pot_opbend + &
+!          pot_imptors + pot_urey_bradley + pot_manybody + pot_shell
   
-      CALL mp_sum ( thermo%pot, para_env%group )
-      IF(shell_present) THEN
---- 595,602 ----
-      END IF
+      CALL mp_sum(thermo%pot, para_env%group)
+      IF(shell_present)THEN
+--- 630,636 ----
   
       ! add up all the potential energies
-!     thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion +pot_opbend + &
-!          pot_onef + pot_imptors + pot_urey_bradley + pot_manybody + pot_shell + pot_danny !Added by Csilla
+      thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion + pot_opbend + &
+!          pot_imptors + pot_urey_bradley + pot_manybody + pot_shell + pot_danny !Added by Csilla
   
-      CALL mp_sum ( thermo%pot, para_env%group )
-      IF(shell_present) THEN
+      CALL mp_sum(thermo%pot, para_env%group)
+      IF(shell_present)THEN
 ***************
-*** 625,643 ****
-            WRITE(iw,'(3f15.9)')((fcore_total ( j, i ),j=1,3), i = 1, nshell)
+*** 659,669 ****
+            WRITE(iw,'(3f15.9)')((fcore_total(j, i),j=1,3), i = 1, nshell)
          END IF
       END IF
-! 
-      IF (use_virial) THEN
+  
+      IF(use_virial)THEN
          ! Add up all the pressure tensors
-         IF ( ewald_type == do_ewald_none ) THEN
+         IF(ewald_type == do_ewald_none)THEN
 !           virial%pv_virial = pv_nonbond + pv_bond + pv_bend + pv_torsion + pv_imptors + pv_urey_bradley
-            CALL mp_sum (virial%pv_virial, para_env%group)
+            CALL mp_sum(virial%pv_virial, para_env%group)
          ELSE
             ident = 0.0_dp
-            DO i = 1, 3
-               ident(i, i) = 1.0_dp
-            END DO
-! 
-!           virial%pv_virial = pv_nonbond + pv_bond + pv_bend + pv_torsion + pv_imptors + pv_urey_bradley + pv_bc
-            CALL mp_sum (virial%pv_virial, para_env%group)
-  
-            virial%pv_virial = virial%pv_virial + ident * thermo%e_neut
---- 685,711 ----
-            WRITE(iw,'(3f15.9)')((fcore_total ( j, i ),j=1,3), i = 1, nshell)
+--- 719,738 ----
+            WRITE(iw,'(3f15.9)')((fcore_total(j, i),j=1,3), i = 1, nshell)
          END IF
       END IF
-! !Added by Csilla
-!     IF (iw_danny_forces>0) THEN
-!        WRITE(iw_danny_forces,'(A)') "Csilla: TOTAL FORCES + ELECTROSTATIC FORCES in eV/A"
-!        do i=1,natoms
-!           WRITE(iw_danny_forces,'(I8,3F15.9)') i, (f_total ( 1:3, i )*evolt/angstrom)
-!        enddo
-!     END IF
-! !Added by Csilla
-!     
-      IF (use_virial) THEN
++ !Added by Csilla
++     IF (iw_danny_forces>0) THEN
++        WRITE(iw_danny_forces,'(A)') "Csilla: TOTAL FORCES + ELECTROSTATIC FORCES in eV/A"
++        do i=1,natoms
++           WRITE(iw_danny_forces,'(I8,3F15.9)') i, (f_total ( 1:3, i )*evolt/angstrom)
++        enddo
++     END IF
++ !Added by Csilla
++     
+  
+      IF(use_virial)THEN
          ! Add up all the pressure tensors
-         IF ( ewald_type == do_ewald_none ) THEN
+         IF(ewald_type == do_ewald_none)THEN
 !           virial%pv_virial = pv_nonbond + pv_bond + pv_bend + pv_torsion + pv_imptors + pv_urey_bradley + pv_danny_2body + pv_danny_3body !Added by Csilla
-            CALL mp_sum (virial%pv_virial, para_env%group)
+            CALL mp_sum(virial%pv_virial, para_env%group)
          ELSE
             ident = 0.0_dp
-            DO i = 1, 3
-               ident(i, i) = 1.0_dp
+***************
+*** 671,677 ****
+               ident(i, i)= 1.0_dp
             END DO
-!           
+  
+!           virial%pv_virial = pv_nonbond + pv_bond + pv_bend + pv_torsion + pv_imptors + pv_urey_bradley + pv_bc
+            CALL mp_sum(virial%pv_virial, para_env%group)
+  
+            virial%pv_virial = virial%pv_virial + ident * thermo%e_neut
+--- 740,746 ----
+               ident(i, i)= 1.0_dp
+            END DO
+  
 !           virial%pv_virial = pv_nonbond + pv_bond + pv_bend + pv_torsion + pv_imptors + pv_urey_bradley + pv_bc + pv_danny_2body + pv_danny_3body !Added by Csilla
-            CALL mp_sum (virial%pv_virial, para_env%group)
+            CALL mp_sum(virial%pv_virial, para_env%group)
   
             virial%pv_virial = virial%pv_virial + ident * thermo%e_neut
 ***************
-*** 830,835 ****
---- 898,911 ----
+*** 860,865 ****
+--- 929,942 ----
          END IF
-         DEALLOCATE ( fshell_nonbond, STAT = stat )
+         DEALLOCATE(fshell_nonbond, STAT = stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 + !added by Csilla
 +        DEALLOCATE ( fcore_total, STAT = stat )
@@ -712,14 +254,14 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_2
       END IF
       CALL cp_print_key_finished_output(iw,logger,mm_section,"PRINT%DERIVATIVES",error=error)
       CALL cp_print_key_finished_output(iw2,logger,mm_section,"PRINT%EWALD_INFO",error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F src_20100521_patched/fist_intra_force.F
-*** src_20100521_latest_orig/fist_intra_force.F	2010-05-09 18:40:05.000000000 +0100
---- src_20100521_patched/fist_intra_force.F	2010-05-21 10:50:56.656168845 +0100
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/fist_intra_force.F src/fist_intra_force.F
+*** src_orig/fist_intra_force.F	2011-03-14 10:46:18.522223480 +0000
+--- src/fist_intra_force.F	2011-03-14 11:18:48.090369466 +0000
 ***************
-*** 13,24 ****
---- 13,34 ----
+*** 12,22 ****
+--- 12,32 ----
+  MODULE fist_intra_force
   
-    USE atomic_kind_types,               ONLY: get_atomic_kind
     USE cell_types,                      ONLY: cell_type,&
 + !added by Csilla
 +                                              get_cell, &
@@ -731,8 +273,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
 + !added by Csilla
     USE distribution_1d_types,           ONLY: distribution_1d_type
     USE f77_blas
-    USE input_constants,                 ONLY: do_ewald_none,&
-                                               do_ff_harmonic
+    USE input_constants,                 ONLY: do_ff_harmonic
     USE kinds,                           ONLY: dp
 + !added by Csilla
 +   USE mathconstants,                   ONLY: pi
@@ -741,29 +282,27 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
                                                force_bonds,&
                                                force_imp_torsions,&
 ***************
-*** 29,40 ****
---- 39,56 ----
+*** 27,36 ****
+--- 37,52 ----
                                                get_pv_torsion
     USE molecule_kind_types,             ONLY: &
          bend_type, bond_type, get_molecule_kind, impr_type, &
 + !added by Csilla
 +        atom_type, &
 + !added by Csilla
-         molecule_kind_type, onfo_type, opbend_type, shell_type, torsion_type, &
-         ub_type
+         molecule_kind_type, opbend_type, shell_type, torsion_type, ub_type
     USE molecule_types_new,              ONLY: get_molecule,&
                                                molecule_type
-    USE pair_potential_coulomb,          ONLY: potential_coulomb
     USE particle_types,                  ONLY: particle_type
 + !added by Csilla
 +   USE physcon,                         ONLY: angstrom, evolt
 + !added by Csilla
-    USE splines_methods,                 ONLY: potential_s
-    USE splines_types,                   ONLY: spline_data_p_type,&
-                                               spline_factor_type
+    USE timings,                         ONLY: timeset,&
+                                               timestop
+  #include "cp_common_uses.h"
 ***************
-*** 48,53 ****
---- 64,140 ----
+*** 41,46 ****
+--- 57,133 ----
     CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'fist_intra_force'
     PUBLIC :: force_intra_control
   
@@ -842,35 +381,34 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
   
   ! *****************************************************************************
 ***************
-*** 62,68 ****
-         pot_urey_bradley, pot_torsion, pot_imp_torsion, pot_opbend, pot_onef, &
-         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
-         pv_imp_torsion, pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, &
-!        f_imptor, f_opbend, f_onef, cell, use_virial, error)
+*** 54,60 ****
+         pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imp_torsion, &
+         pot_opbend, pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
+         pv_imp_torsion, pv_opbend, f_bond, f_bend, f_torsion, f_ub, &
+!        f_imptor, f_opbend, cell, use_virial, error)
   
       TYPE(molecule_type), POINTER             :: molecule_set( : )
       TYPE(molecule_kind_type), POINTER        :: molecule_kind_set( : )
---- 149,157 ----
-         pot_urey_bradley, pot_torsion, pot_imp_torsion, pot_opbend, pot_onef, &
-         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
-         pv_imp_torsion, pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, &
-!        f_imptor, f_opbend, f_onef, cell, use_virial, &
+--- 141,149 ----
+         pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imp_torsion, &
+         pot_opbend, pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
+         pv_imp_torsion, pv_opbend, f_bond, f_bend, f_torsion, f_ub, &
+!        f_imptor, f_opbend, cell, use_virial, &
 !        pot_danny, pv_danny_2body, pv_danny_3body, do_danny, danny_cutoff, iw_danny, & !added by Csilla
 !        error)
   
       TYPE(molecule_type), POINTER             :: molecule_set( : )
       TYPE(molecule_kind_type), POINTER        :: molecule_kind_set( : )
 ***************
-*** 80,90 ****
---- 169,187 ----
-                                                  pv_imp_torsion, pv_opbend, &
-                                                  pv_onef
+*** 69,78 ****
+--- 158,175 ----
+                                                  pv_urey_bradley, pv_torsion, &
+                                                  pv_imp_torsion, pv_opbend
       REAL(KIND=dp), DIMENSION(:, :), &
 +       INTENT(INOUT)                          :: pv_danny_2body, pv_danny_3body
 +     REAL(KIND=dp), DIMENSION(:, :), &
         INTENT(INOUT), OPTIONAL                :: f_bond, f_bend, f_torsion, &
-                                                  f_ub, f_imptor, f_opbend, &
-                                                  f_onef
+                                                  f_ub, f_imptor, f_opbend
       TYPE(cell_type), POINTER                 :: cell
       LOGICAL, INTENT(IN)                      :: use_virial
 + !added by Csilla
@@ -883,9 +421,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
   
       CHARACTER(len=*), PARAMETER :: routineN = 'force_intra_control', &
 ***************
-*** 115,120 ****
---- 212,230 ----
-      TYPE(spline_factor_type), POINTER        :: spl_f
+*** 99,104 ****
+--- 196,214 ----
+      TYPE(shell_type), POINTER                :: shell_list( : )
       TYPE(torsion_type), POINTER              :: torsion_list( : )
       TYPE(ub_type), POINTER                   :: ub_list( : )
 + !added by Csilla
@@ -905,10 +443,10 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
       CALL timeset ( routineN, handle )
       NULLIFY(logger)
 ***************
-*** 135,140 ****
---- 245,253 ----
+*** 117,122 ****
+--- 227,235 ----
+      pot_imp_torsion =  0.0_dp
       pot_opbend =0.0_dp
-      pot_onef =  0.0_dp
       pot_shell =  0.0_dp
 + !added by Csilla
 +     pot_danny = 0.0_dp
@@ -917,41 +455,28 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
       nkind = SIZE ( molecule_kind_set )
       MOL: DO ikind = 1, nkind
 ***************
-*** 142,147 ****
---- 255,261 ----
+*** 124,129 ****
+--- 237,243 ----
   
          DO imol = 1, nmol_per_kind
             i = local_molecules % list ( ikind ) % array ( imol )
-+           nullify(molecule,molecule_kind,bond_list,bend_list,ub_list,torsion_list,impr_list,onef_list,shell_list)
++           nullify(molecule,molecule_kind,bond_list,bend_list,ub_list,torsion_list,impr_list,shell_list)
             molecule => molecule_set ( i )
             molecule_kind => molecule % molecule_kind
             CALL get_molecule_kind ( molecule_kind, nbend = nbends, nbond = nbonds,  &
 ***************
-*** 150,162 ****
+*** 132,144 ****
+--- 246,418 ----
                                      bond_list = bond_list, ub_list = ub_list, &
                                      bend_list = bend_list, torsion_list = torsion_list, &
                                      impr_list = impr_list, opbend_list = opbend_list, &
-!                                    onfo_list = onef_list, shell_list=shell_list )
++ !added by Csilla
++                                    natom = natom, &
++ !added by Csilla
+                                     shell_list=shell_list )
   
             CALL get_molecule ( molecule, first_atom=first_atom )
   
-            BOND: DO ibond = 1, nbonds
-               index_a = bond_list ( ibond ) % a + first_atom - 1
-               index_b = bond_list ( ibond ) % b + first_atom - 1
-               rij = particle_set ( index_a ) % r - particle_set ( index_b ) % r
-               rij = pbc(rij,cell)
-               CALL force_bonds(bond_list(ibond)%bond_kind%id_type, rij, &
---- 264,436 ----
-                                     bond_list = bond_list, ub_list = ub_list, &
-                                     bend_list = bend_list, torsion_list = torsion_list, &
-                                     impr_list = impr_list, opbend_list = opbend_list, &
-!                                    onfo_list = onef_list,&
-! !added by Csilla
-!                                    natom = natom, &
-! !added by Csilla
-!                                    shell_list=shell_list )
-  
-            CALL get_molecule ( molecule, first_atom=first_atom )
 + !added by Csilla
 +           if (do_danny) then
 +     CALL timeset ( routineN//"_d2body", handle2 )
@@ -1101,7 +626,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
 +              WRITE(iw_danny,'(A20,F15.9)') ' pot_danny: ',pot_danny
 +           ENDIF
 + !added by Csilla
-  
++ 
             BOND: DO ibond = 1, nbonds
                index_a = bond_list ( ibond ) % a + first_atom - 1
                index_b = bond_list ( ibond ) % b + first_atom - 1
@@ -1116,8 +641,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
                rij = pbc(rij,cell)
                CALL force_bonds(bond_list(ibond)%bond_kind%id_type, rij, &
 ***************
-*** 188,193 ****
---- 462,477 ----
+*** 170,175 ****
+--- 444,459 ----
                END IF
   
             END DO BOND
@@ -1135,9 +660,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             SHELL: DO ishell = 1, nshell
                index_a = shell_list ( ishell ) % a + first_atom - 1
 ***************
-*** 207,212 ****
---- 491,501 ----
-               shell_particle_set ( index_b )% f(3) = shell_particle_set ( index_b ) % f(3)  +rij(3) * fscalar
+*** 193,198 ****
+--- 477,487 ----
+               IF (use_virial) CALL get_pv_bond  ( k1, rij, pv_bond )
   
             END DO SHELL
 + !added by Csilla
@@ -1149,8 +674,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             UREY_BRADLEY: DO ibend = 1, nub
                index_a = ub_list ( ibend ) % a + first_atom - 1
 ***************
-*** 235,240 ****
---- 524,534 ----
+*** 221,226 ****
+--- 510,520 ----
                END IF
   
             END DO UREY_BRADLEY
@@ -1163,8 +688,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             BEND: DO ibend = 1, nbends
                index_a = bend_list ( ibend ) % a + first_atom - 1
 ***************
-*** 287,292 ****
---- 581,591 ----
+*** 273,278 ****
+--- 567,577 ----
                   f_bend(:,index_c) = f_bend(:,index_c) + fscalar*g3
                END IF
             END DO BEND
@@ -1177,8 +702,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             TORSION: DO itorsion = 1, ntorsions
                index_a = torsion_list ( itorsion ) % a + first_atom - 1
 ***************
-*** 353,358 ****
---- 652,662 ----
+*** 339,344 ****
+--- 638,648 ----
                   END IF
                END DO
             END DO TORSION
@@ -1191,8 +716,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             IMP_TORSION: DO itorsion = 1, nimptors
                index_a = impr_list ( itorsion ) % a + first_atom - 1
 ***************
-*** 388,393 ****
---- 692,708 ----
+*** 374,379 ****
+--- 678,694 ----
                                         impr_list(itorsion)%impr_kind%k, &
                                         impr_list(itorsion)%impr_kind%phi0, &
                                         gt1,gt2,gt3,gt4,energy,fscalar)
@@ -1211,8 +736,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
                particle_set ( index_a )% f(1) = particle_set ( index_a ) % f(1) + gt1(1) * fscalar
                particle_set ( index_a )% f(2) = particle_set ( index_a ) % f(2) + gt1(2) * fscalar
 ***************
-*** 416,421 ****
---- 731,741 ----
+*** 402,407 ****
+--- 717,727 ----
                   f_imptor(:,index_d) = f_imptor(:,index_d) + fscalar*gt4
                END IF
             END DO IMP_TORSION
@@ -1225,28 +750,14 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
             OPBEND: DO iopbend = 1, nopbends
                index_a = opbend_list ( iopbend ) % a + first_atom - 1
 ***************
-*** 481,486 ****
---- 801,811 ----
+*** 467,478 ****
+--- 787,1850 ----
                   f_opbend(:,index_d) = f_opbend(:,index_d) + fscalar*gt4
                END IF
             END DO OPBEND
 + !added by Csilla
 +           IF (iw_danny>0) THEN
 +              WRITE(iw_danny,'(A20,F15.9)') ' pot_opbend: ',pot_opbend
-+           ENDIF
-+ !added by Csilla
-  
-            ONEF: DO ionef = 1, nonefs
-               index_a = onef_list ( ionef ) % a + first_atom - 1
-***************
-*** 532,543 ****
---- 857,1920 ----
-                  f_onef(:,index_b) = f_onef(:,index_b) + rij*fscalar
-               END IF
-            END DO ONEF
-+ !added by Csilla
-+           IF (iw_danny>0) THEN
-+              WRITE(iw_danny,'(A20,F15.9)') ' pot_onef: ',pot_onef
 +           ENDIF
 + !added by Csilla
          END DO
@@ -2305,24 +1816,30 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F
   
   END MODULE fist_intra_force
   
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/force_env_methods.F src_20100521_patched/force_env_methods.F
-*** src_20100521_latest_orig/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
---- src_20100521_patched/force_env_methods.F	2010-05-21 10:49:13.779471031 +0100
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/force_env_methods.F src/force_env_methods.F
+*** src_orig/force_env_methods.F	2011-03-14 10:46:29.950923644 +0000
+--- src/force_env_methods.F	2011-03-14 11:18:48.147632686 +0000
 ***************
-*** 119,124 ****
---- 119,127 ----
-                                               update_particle_set,&
-                                               write_particle_coordinates
-    USE physcon,                         ONLY: debye,&
-+ !added by Csilla
-+                                              evolt, &
-+ !added by Csilla
-                                               pascal
+*** 102,108 ****
+    USE particle_list_types,             ONLY: particle_list_p_type,&
+                                               particle_list_type
+    USE particle_types,                  ONLY: particle_type
+!   USE physcon,                         ONLY: debye
     USE qmmm_gpw_energy,                 ONLY: qmmm_el_coupling
     USE qmmm_gpw_forces,                 ONLY: qmmm_forces
+    USE qmmm_links_methods,              ONLY: qmmm_added_chrg_coord,&
+--- 102,109 ----
+    USE particle_list_types,             ONLY: particle_list_p_type,&
+                                               particle_list_type
+    USE particle_types,                  ONLY: particle_type
+!   USE physcon,                         ONLY: debye,&
+!                                              evolt
+    USE qmmm_gpw_energy,                 ONLY: qmmm_el_coupling
+    USE qmmm_gpw_forces,                 ONLY: qmmm_forces
+    USE qmmm_links_methods,              ONLY: qmmm_added_chrg_coord,&
 ***************
-*** 316,321 ****
---- 319,328 ----
+*** 281,286 ****
+--- 282,291 ----
             CALL force_env_get(force_env, potential_energy=e_pot, error=error)
             WRITE(output_unit,'(/,T2,"ENERGY| Total FORCE_EVAL ( ",A," ) energy (a.u.): ",T55,F26.15,/)')&
                  ADJUSTR(TRIM(use_prog_name(force_env%in_use))),e_pot
@@ -2332,88 +1849,10 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/force_env_methods.
 + !Added by Csilla
          END IF
          CALL cp_print_key_finished_output(output_unit,logger,force_env%force_env_section,&
-              "PRINT%PROGRAM_RUN_INFO",error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_constants.F src_20100521_patched/input_constants.F
-*** src_20100521_latest_orig/input_constants.F	2010-03-10 12:51:50.000000000 +0000
---- src_20100521_patched/input_constants.F	2010-05-21 10:51:04.602050468 +0100
-***************
-*** 105,111 ****
-                                                reftraj_ensemble=9,&
-                                                langevin_ensemble=10,&
-                                                npe_f_ensemble=11,&
-!                                               npe_i_ensemble=12
-  
-    INTEGER, PARAMETER, PUBLIC               :: do_thermo_same_as_part=100,&
-                                                do_thermo_nose=101,&
---- 105,112 ----
-                                                reftraj_ensemble=9,&
-                                                langevin_ensemble=10,&
-                                                npe_f_ensemble=11,&
-!                                               npe_i_ensemble=12,&
-!                                               npt_y_ensemble=13
-  
-    INTEGER, PARAMETER, PUBLIC               :: do_thermo_same_as_part=100,&
-                                                do_thermo_nose=101,&
-***************
-*** 326,333 ****
-                                                do_coord_g96=3,&
-                                                do_coord_crd=4,&
-                                                do_coord_cif=5,&
-!                                               do_coord_xtl=6
-! 
-    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
-                                                do_ff_quartic=1,&
-                                                do_ff_g96=2,&
---- 327,335 ----
-                                                do_coord_g96=3,&
-                                                do_coord_crd=4,&
-                                                do_coord_cif=5,&
-!                                               do_coord_xtl=6,&
-!                                               do_coord_exyz=7
-!                                            
-    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
-                                                do_ff_quartic=1,&
-                                                do_ff_g96=2,&
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_check.F src_20100521_patched/input_cp2k_check.F
-*** src_20100521_latest_orig/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
---- src_20100521_patched/input_cp2k_check.F	2010-05-21 12:04:07.241788111 +0100
-***************
-*** 22,28 ****
-    USE input_constants,                 ONLY: &
-         do_region_global, do_thermo_csvr, do_thermo_gle, do_thermo_nose, &
-         do_thermo_same_as_part, do_vwn5, id_release_version, npt_f_ensemble, &
-!        npt_i_ensemble, xc_funct_b3lyp, xc_funct_blyp, xc_funct_bp, &
-         xc_funct_hcth120, xc_funct_no_shortcut, xc_funct_olyp, xc_funct_pade, &
-         xc_funct_pbe, xc_funct_pbe0, xc_funct_tpss, xc_funct_xwpbe, xc_none
-    USE input_cp2k,                      ONLY: create_cp2k_root_section
---- 22,28 ----
-    USE input_constants,                 ONLY: &
-         do_region_global, do_thermo_csvr, do_thermo_gle, do_thermo_nose, &
-         do_thermo_same_as_part, do_vwn5, id_release_version, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, xc_funct_b3lyp, xc_funct_blyp, xc_funct_bp, &
-         xc_funct_hcth120, xc_funct_no_shortcut, xc_funct_olyp, xc_funct_pade, &
-         xc_funct_pbe, xc_funct_pbe0, xc_funct_tpss, xc_funct_xwpbe, xc_none
-    USE input_cp2k,                      ONLY: create_cp2k_root_section
-***************
-*** 547,553 ****
-            flag = check_restart(input_file, restart_file, "MOTION%MD", error)
-            IF(flag) THEN
-               CALL section_vals_val_get(input_file,"MOTION%MD%ENSEMBLE",i_val=ensemble,error=error)
-!              IF(ensemble == npt_i_ensemble .OR. ensemble==npt_f_ensemble) THEN
-                  CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
-                  check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
-                  CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
---- 547,553 ----
-            flag = check_restart(input_file, restart_file, "MOTION%MD", error)
-            IF(flag) THEN
-               CALL section_vals_val_get(input_file,"MOTION%MD%ENSEMBLE",i_val=ensemble,error=error)
-!              IF(ensemble == npt_i_ensemble .OR. ensemble==npt_f_ensemble .or. ensemble==npt_y_ensemble) THEN
-                  CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
-                  check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
-                  CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_mm.F src_20100521_patched/input_cp2k_mm.F
-*** src_20100521_latest_orig/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
---- src_20100521_patched/input_cp2k_mm.F	2010-05-21 10:49:25.597764156 +0100
+                                           "PRINT%PROGRAM_RUN_INFO",error=error)
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/input_cp2k_mm.F src/input_cp2k_mm.F
+*** src_orig/input_cp2k_mm.F	2011-03-14 10:46:08.778221434 +0000
+--- src/input_cp2k_mm.F	2011-03-14 11:18:48.216521148 +0000
 ***************
 *** 232,237 ****
 --- 232,238 ----
@@ -2457,8 +1896,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_mm.F sr
               description="Specifies the filename that contains the parameters of the FF.",&
               usage="PARM_FILE_NAME {FILENAME}",type_of_var=lchar_t,error=error)
 ***************
-*** 362,367 ****
---- 377,395 ----
+*** 367,372 ****
+--- 382,400 ----
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
   
@@ -2478,141 +1917,12 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_mm.F sr
          CALL create_IMPROPER_section(subsection, error=error)
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_motion.F src_20100521_patched/input_cp2k_motion.F
-*** src_20100521_latest_orig/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
---- src_20100521_patched/input_cp2k_motion.F	2010-05-21 10:51:03.649012174 +0100
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/input_cp2k_subsys.F src/input_cp2k_subsys.F
+*** src_orig/input_cp2k_subsys.F	2011-03-14 11:09:36.751905811 +0000
+--- src/input_cp2k_subsys.F	2011-03-14 11:18:48.299755744 +0000
 ***************
-*** 128,133 ****
---- 128,152 ----
-              n_keywords=0, n_subsections=1, repeats=.TRUE., required=.FALSE.,&
-              error=error)
-         NULLIFY(keyword)
-+ 
-+        CALL cp_print_key_section_create(print_key,"COLVAR_ATOMS",&
-+             description="controls the output of a list of atoms. Useful for colvars.",&
-+             print_level=low_print_level, common_iter_levels=1,&
-+             filename="",error=error)
-+        !CALL section_create(subsubsection,name="COLVAR_ATOMS",&
-+        !     description=" controls the output of a list of atoms. Useful for colvars.", &
-+        !     n_keywords=1, n_subsections=0, repeats=.FALSE., required=.TRUE.,&
-+        !     error=error)
-+        CALL keyword_create(keyword, name="LIST",&
-+             description="Specifies a list of atomic indexes of the isolated ion",&
-+             usage="LIST {integer}", type_of_var=integer_t, n_var=-1,&
-+             required=.TRUE., repeats=.TRUE.,error=error)
-+        CALL section_add_keyword(print_key,keyword,error=error)
-+        CALL keyword_release(keyword,error=error)
-+ 
-+        CALL section_add_subsection(subsection,print_key,error=error)
-+        CALL section_release(print_key,error=error)
-+ 
-         CALL cp_print_key_section_create(print_key,"trajectory",&
-              description="controls the output of the trajectory",&
-              print_level=low_print_level, common_iter_levels=1,&
-***************
-*** 1423,1434 ****
-              description="The ensemble/integrator that you want to use for MD propagation",&
-              usage="ensemble nve",&
-              default_i_val=nve_ensemble,&
-!             enum_c_vals=s2a("NVE", "NVT", "NPT_I", "NPT_F", "MSST", "MSST_DAMPED",&
-              "HYDROSTATICSHOCK", "ISOKIN", "REFTRAJ", "LANGEVIN", "NPE_F", "NPE_I" ),&
-              enum_desc=s2a("constant energy (microcanonical)",&
-              "constant temperature and volume (canonical)",&
-              "constant temperature and pressure using an isotropic cell",&
-              "constant temperature and pressure using a flexible cell",&
-              "simulate steady shock (uniaxial)",&
-              "simulate steady shock (uniaxial) with extra viscosity",&
-              "simulate steady shock with hydrostatic pressure",&
---- 1442,1454 ----
-              description="The ensemble/integrator that you want to use for MD propagation",&
-              usage="ensemble nve",&
-              default_i_val=nve_ensemble,&
-!             enum_c_vals=s2a("NVE", "NVT", "NPT_I", "NPT_F", "NPT_Y", "MSST", "MSST_DAMPED",&
-              "HYDROSTATICSHOCK", "ISOKIN", "REFTRAJ", "LANGEVIN", "NPE_F", "NPE_I" ),&
-              enum_desc=s2a("constant energy (microcanonical)",&
-              "constant temperature and volume (canonical)",&
-              "constant temperature and pressure using an isotropic cell",&
-              "constant temperature and pressure using a flexible cell",&
-+             "constant temperature and pressure using a flexible cell in y direction",&
-              "simulate steady shock (uniaxial)",&
-              "simulate steady shock (uniaxial) with extra viscosity",&
-              "simulate steady shock with hydrostatic pressure",&
-***************
-*** 1438,1444 ****
-              "constant pressure ensemble (no thermostat)",&
-              "constant pressure ensemble using an isotropic cell (no thermostat)"),&
-              citations=(/Evans1983,Minary2003,Kolafa2004/),&
-!             enum_i_vals=(/nve_ensemble,nvt_ensemble,npt_i_ensemble,npt_f_ensemble,&
-              nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
-              reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
-         CALL section_add_keyword(section,keyword,error=error)
---- 1458,1464 ----
-              "constant pressure ensemble (no thermostat)",&
-              "constant pressure ensemble using an isotropic cell (no thermostat)"),&
-              citations=(/Evans1983,Minary2003,Kolafa2004/),&
-!             enum_i_vals=(/nve_ensemble,nvt_ensemble,npt_i_ensemble,npt_f_ensemble,npt_y_ensemble,&
-              nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
-              reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
-         CALL section_add_keyword(section,keyword,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_subsys.F src_20100521_patched/input_cp2k_subsys.F
-*** src_20100521_latest_orig/input_cp2k_subsys.F	2010-05-07 17:59:31.000000000 +0100
---- src_20100521_patched/input_cp2k_subsys.F	2010-05-21 10:49:33.924112388 +0100
-***************
-*** 377,382 ****
---- 377,387 ----
-              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-         CALL section_add_keyword(print_key,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
-+        CALL keyword_create(keyword,"exyz_info",&
-+             description="Prints information when parsing EXYZ files.",&
-+             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-+        CALL section_add_keyword(print_key,keyword,error=error)
-+        CALL keyword_release(keyword,error=error)
-         CALL keyword_create(keyword,"psf_info",&
-              description="Prints information when parsing PSF files.",&
-              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-***************
-*** 1568,1576 ****
-              variants=s2a("COORDINATE"),&
-              description="Set up the way in which coordinates will be read.",&
-              usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
-!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL"),&
-              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
-!             do_coord_cif,do_coord_xtl/),&
-              enum_desc=s2a(&
-              "Coordinates read in the &COORD section of the input file",&
-              "Coordinates provided through a PDB file format",&
---- 1573,1581 ----
-              variants=s2a("COORDINATE"),&
-              description="Set up the way in which coordinates will be read.",&
-              usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
-!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL","EXYZ"),&
-              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
-!             do_coord_cif,do_coord_xtl,do_coord_exyz/),&
-              enum_desc=s2a(&
-              "Coordinates read in the &COORD section of the input file",&
-              "Coordinates provided through a PDB file format",&
-***************
-*** 1578,1584 ****
-              "Coordinates provided through a GROMOS96 file format",&
-              "Coordinates provided through an AMBER file format",&
-              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
-!             "Coordinates provided through a XTL (MSI native) file format"),&
-              default_i_val=do_coord_off,error=error)
-         CALL section_add_keyword(section,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
---- 1583,1590 ----
-              "Coordinates provided through a GROMOS96 file format",&
-              "Coordinates provided through an AMBER file format",&
-              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
-!             "Coordinates provided through a XTL (MSI native) file format",&
-!             "Coordinates provided through an EXYZ (QUIP native) file format"),&
-              default_i_val=do_coord_off,error=error)
-         CALL section_add_keyword(section,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
-***************
-*** 1603,1608 ****
---- 1609,1635 ----
+*** 1635,1640 ****
+--- 1635,1661 ----
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
   
@@ -2641,7 +1951,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_subsys.
               description="When True, the exclude lists are solely based on"//&
                           " the bond data in the topology. The (minimal)"//&
 ***************
-*** 1694,1705 ****
+*** 1734,1745 ****
               "applied to all bond kinds. When this section is present the 1-2 exclusion "//&
               "is applied ONLY to the bonds defined herein. This section allows ONLY fine tuning of 1-2 "//&
               "interactions. ",&
@@ -2654,7 +1964,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_subsys.
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
---- 1721,1739 ----
+--- 1755,1773 ----
               "applied to all bond kinds. When this section is present the 1-2 exclusion "//&
               "is applied ONLY to the bonds defined herein. This section allows ONLY fine tuning of 1-2 "//&
               "interactions. ",&
@@ -2674,985 +1984,14 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_subsys.
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/integrator.F src_20100521_patched/integrator.F
-*** src_20100521_latest_orig/integrator.F	2010-02-11 22:31:20.000000000 +0000
---- src_20100521_patched/integrator.F	2010-05-21 10:50:20.567241702 +0100
+Common subdirectories: src_orig/lib and src/lib
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/particle_types.F src/particle_types.F
+*** src_orig/particle_types.F	2011-03-14 10:46:16.238538183 +0000
+--- src/particle_types.F	2011-03-14 11:18:48.350973133 +0000
 ***************
-*** 100,106 ****
-  
-    CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'integrator'
-  
-!   PUBLIC :: isokin, langevin, nve, nvt, npt_i, npt_f, nve_respa
-    PUBLIC :: nph_uniaxial_damped, nph_uniaxial, reftraj
-  
-  
---- 100,106 ----
-  
-    CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'integrator'
-  
-!   PUBLIC :: isokin, langevin, nve, nvt, npt_i, npt_f, npt_y, nve_respa
-    PUBLIC :: nph_uniaxial_damped, nph_uniaxial, reftraj
-  
-  
-***************
-*** 1022,1027 ****
---- 1022,1028 ----
-  
-      ! Initialize eps_0 the first time through
-      IF ( first_time ) eps_0 = npt (1,1)%eps
-+ if (first_time) print *,'npt_i first eps_0 ',eps_0
-  
-      ! Apply thermostat to  barostat
-      CALL apply_thermostat_baro( thermostat_baro, npt, para_env%group, error)
-***************
-*** 1114,1123 ****
-         vector_r ( : ) = tmp%scale_r(:) * tmp%poly_r(:)
-         vector_v ( : ) = tmp%scale_v(:) * tmp%poly_v(:)
-  
-!        IF ( simpar%constraint ) CALL shake_roll_control( gci, local_molecules, &
-              molecule_set, molecule_kind_set, particle_set, tmp%pos, tmp%vel, dt, simpar,  &
-              roll_tol, iroll, vector_r, vector_v, para_env%group, cell=cell, &
-              local_particles=local_particles, error=error )
-      END DO SR
-  
-      ! Update eps:
---- 1115,1126 ----
-         vector_r ( : ) = tmp%scale_r(:) * tmp%poly_r(:)
-         vector_v ( : ) = tmp%scale_v(:) * tmp%poly_v(:)
-  
-!        IF ( simpar%constraint ) then
-!           CALL shake_roll_control( gci, local_molecules, &
-              molecule_set, molecule_kind_set, particle_set, tmp%pos, tmp%vel, dt, simpar,  &
-              roll_tol, iroll, vector_r, vector_v, para_env%group, cell=cell, &
-              local_particles=local_particles, error=error )
-+        endif
-      END DO SR
-  
-      ! Update eps:
-***************
-*** 2435,2439 ****
---- 2438,2826 ----
-  
-    END SUBROUTINE nve_respa
-  
-+ ! *****************************************************************************
-+ !> \brief npt_y integrator for particle positions & momenta
-+ !>      isotropic box changes
-+ !> \par History
-+ !>      none
-+ !> \author CJM
-+ ! *****************************************************************************
-+   SUBROUTINE npt_y ( md_env, globenv, error )
-+ 
-+     TYPE(md_environment_type), POINTER       :: md_env
-+     TYPE(global_environment_type), POINTER   :: globenv
-+     TYPE(cp_error_type), INTENT(inout)       :: error
-+ 
-+     CHARACTER(len=*), PARAMETER :: routineN = 'npt_y', &
-+       routineP = moduleN//':'//routineN
-+     LOGICAL, PARAMETER                       :: box_change = .TRUE.
-+     REAL(KIND=dp), PARAMETER                 :: e2 = 1.0_dp/6.0_dp, &
-+                                                 e4 = e2/20.0_dp, &
-+                                                 e6 = e4/42.0_dp, &
-+                                                 e8 = e6/72.0_dp
-+ 
-+     INTEGER                                  :: iroll, istat, ivar, &
-+                                                 nparticle, nparticle_kind, &
-+                                                 nshell
-+     LOGICAL                                  :: failure, first, first_time, &
-+                                                 shell_adiabatic, &
-+                                                 shell_check_distance, &
-+                                                 shell_present
-+     REAL(KIND=dp)                            :: dt, infree, kin, roll_tol, &
-+                                                 roll_tol_thrs
-+     REAL(KIND=dp), DIMENSION(3)              :: vector_r, vector_v
-+     REAL(KIND=dp), DIMENSION(3, 3)           :: pv_kin
-+     REAL(KIND=dp), DIMENSION(:), POINTER     :: rand
-+     REAL(KIND=dp), SAVE                      :: eps_0
-+     TYPE(atomic_kind_list_type), POINTER     :: atomic_kinds
-+     TYPE(atomic_kind_type), DIMENSION(:), &
-+       POINTER                                :: atomic_kind_set
-+     TYPE(cell_type), POINTER                 :: cell
-+     TYPE(cp_para_env_type), POINTER          :: para_env
-+     TYPE(cp_subsys_type), POINTER            :: subsys
-+     TYPE(distribution_1d_type), POINTER      :: local_molecules, &
-+                                                 local_particles
-+     TYPE(force_env_type), POINTER            :: force_env
-+     TYPE(global_constraint_type), POINTER    :: gci
-+     TYPE(mol_kind_new_list_type), POINTER    :: molecule_kinds
-+     TYPE(mol_new_list_type), POINTER         :: molecules
-+     TYPE(molecule_kind_type), DIMENSION(:), &
-+       POINTER                                :: molecule_kind_set
-+     TYPE(molecule_type), DIMENSION(:), &
-+       POINTER                                :: molecule_set
-+     TYPE(npt_info_type), POINTER             :: npt(:,:)
-+     TYPE(old_variables_type), POINTER        :: old
-+     TYPE(particle_list_type), POINTER        :: core_particles, particles, &
-+                                                 shell_particles
-+     TYPE(particle_type), DIMENSION(:), &
-+       POINTER                                :: core_particle_set, &
-+                                                 particle_set, &
-+                                                 shell_particle_set
-+     TYPE(rng_stream_type), POINTER           :: rng_stream
-+     TYPE(simpar_type), POINTER               :: simpar
-+     TYPE(thermostat_type), POINTER           :: thermostat_baro, &
-+                                                 thermostat_part, &
-+                                                 thermostat_shell
-+     TYPE(tmp_variables_type), POINTER        :: tmp
-+     TYPE(virial_type), POINTER               :: virial
-+ 
-+     failure = .FALSE. 
-+ 
-+     NULLIFY(gci,thermostat_baro,thermostat_part,thermostat_shell,force_env)
-+     NULLIFY(atomic_kinds,cell,para_env,subsys,local_molecules,local_particles)
-+     NULLIFY(molecule_kinds,molecules,molecule_kind_set,npt)
-+     NULLIFY(core_particles,particles,shell_particles, tmp, old)
-+     NULLIFY(core_particle_set,particle_set,shell_particle_set)
-+     NULLIFY(simpar,virial,rand)
-+    
-+     CALL get_md_env(md_env=md_env,simpar=simpar,force_env=force_env,&
-+          thermostat_part=thermostat_part, thermostat_baro=thermostat_baro,&
-+          thermostat_shell=thermostat_shell, npt=npt, first_time=first_time,&
-+          para_env=para_env, error=error)
-+     dt = simpar%dt
-+     infree = 1.0_dp / REAL ( simpar%nfree,KIND=dp)
-+ 
-+     CALL force_env_get(force_env=force_env, subsys=subsys, virial=virial,&
-+          cell=cell, error=error)
-+ 
-+     ! Do some checks on coordinates and box
-+     CALL apply_qmmm_walls_reflective(force_env, error=error)
-+ 
-+     CALL cp_subsys_get(subsys=subsys,atomic_kinds=atomic_kinds,local_particles=local_particles,&
-+          particles=particles,local_molecules_new=local_molecules,molecules_new=molecules, &
-+          gci=gci,molecule_kinds_new=molecule_kinds ,error=error)
-+ 
-+     nparticle_kind = atomic_kinds%n_els
-+     atomic_kind_set => atomic_kinds%els
-+     molecule_kind_set => molecule_kinds%els
-+ 
-+     nparticle = particles%n_els
-+     particle_set => particles%els
-+     molecule_set => molecules%els
-+ 
-+     CALL get_atomic_kind_set(atomic_kind_set=atomic_kind_set,&
-+          shell_present=shell_present,shell_adiabatic=shell_adiabatic,&
-+          shell_check_distance=shell_check_distance)
-+ 
-+     IF ( first_time ) THEN
-+        CALL virial_evaluate ( atomic_kind_set, particle_set,  &
-+             local_particles, virial, para_env%group, error=error)
-+     END IF
-+ 
-+     ! Allocate work storage for positions and velocities
-+     CALL allocate_old ( old, particle_set, npt, error=error )
-+ 
-+     IF (ASSOCIATED(force_env%meta_env)) THEN
-+ print *,'meta_env is not implemented with npt_y.'
-+ stop
-+        ! Allocate random number for Langevin Thermostat acting on COLVARS
-+        IF(force_env%meta_env%langevin) THEN
-+           ALLOCATE (rand(force_env%meta_env%n_colvar),STAT=istat)
-+           CPPostcondition(istat==0,cp_failure_level,routineP,error,failure)
-+           rand(:) = 0.0_dp
-+        ENDIF
-+     ENDIF
-+ 
-+     IF(shell_present) THEN
-+ print *,'shell is not implemented with npt_y.'
-+ stop
-+        CALL cp_subsys_get(subsys=subsys,&
-+             shell_particles=shell_particles, core_particles=core_particles,&
-+             error=error)
-+        shell_particle_set =>  shell_particles%els
-+        nshell = SIZE(shell_particles%els)
-+        IF(shell_adiabatic) THEN
-+           core_particle_set =>  core_particles%els
-+        END IF
-+     END IF
-+ 
-+     CALL allocate_tmp(md_env, tmp, nparticle, nshell, shell_adiabatic, error=error)
-+ 
-+     ! Initialize eps_0 the first time through
-+     IF ( first_time ) eps_0 = npt (1,1)%eps
-+ if (first_time) print *,'npt_y first eps_0 ',eps_0
-+ 
-+     ! Apply thermostat to  barostat
-+     ! rescale barostat kinetic energy according to thermostat checked csvr barostat, not lnhc
-+     CALL apply_thermostat_baro( thermostat_baro, npt, para_env%group, error)
-+ 
-+     ! Apply Thermostat over the full set of particles
-+     IF(simpar% ensemble /= npe_i_ensemble) THEN
-+       IF(shell_adiabatic) THEN
-+ print *,'shell is not implemented with npt_y.'
-+ stop
-+         CALL apply_thermostat_particles(thermostat_part, molecule_kind_set, molecule_set,&
-+              particle_set, local_molecules, para_env%group,shell_adiabatic=shell_adiabatic,&
-+              shell_particle_set=shell_particle_set, core_particle_set=core_particle_set,&
-+              error=error)
-+ 
-+       ELSE
-+         CALL apply_thermostat_particles(thermostat_part, molecule_kind_set, molecule_set,&
-+              particle_set, local_molecules, para_env%group ,error=error)
-+       END IF
-+     END IF
-+ 
-+     ! Apply Thermostat over the core-shell motion 
-+     CALL apply_thermostat_shells(thermostat_shell, atomic_kind_set, particle_set,&
-+          local_particles, para_env%group, shell_particle_set=shell_particle_set,&
-+          core_particle_set=core_particle_set, error=error)
-+ 
-+     IF (simpar%constraint) THEN
-+        ! Possibly update the target values
-+        CALL shake_update_targets(gci, local_molecules, molecule_set, &
-+             molecule_kind_set, dt, force_env%root_section, error)
-+     END IF
-+ 
-+     ! setting up for ROLL: saving old variables
-+     IF (simpar%constraint) THEN
-+        roll_tol_thrs = simpar%roll_tol
-+        iroll = 1
-+        CALL set ( old, atomic_kind_set, particle_set, local_particles, cell, npt, 'F' )
-+        CALL getold ( gci, local_molecules, molecule_set,  &
-+             molecule_kind_set, particle_set, cell, error)
-+     ELSE
-+        roll_tol_thrs = EPSILON(0.0_dp)
-+     ENDIF
-+     roll_tol = -roll_tol_thrs
-+ 
-+     !    *** Velocity Verlet for Langeving *** v(t)--> v(t+1/2)
-+     IF (ASSOCIATED(force_env%meta_env)) THEN
-+ print *,'meta_env is not implemented with npt_y.'
-+ stop
-+        IF(force_env%meta_env%langevin) THEN
-+           DO ivar = 1 , force_env%meta_env%n_colvar
-+              rng_stream => force_env%meta_env%rng(ivar)%stream
-+              rand(ivar)=next_random_number(rng_stream,error=error)
-+           ENDDO
-+           CALL metadyn_velocities_colvar(force_env,rand,error=error)
-+        ENDIF
-+     ENDIF
-+ 
-+     SR: DO WHILE (ABS(roll_tol)>=roll_tol_thrs) ! SHAKE-ROLL LOOP
-+ 
-+        IF (simpar%constraint) THEN
-+           CALL set ( old, atomic_kind_set, particle_set, local_particles, cell, npt, 'B' )
-+        END IF
-+ 
-+        CALL update_pv ( gci, simpar, atomic_kind_set, particle_set, &
-+             local_molecules, molecule_set, molecule_kind_set, &
-+             local_particles, kin, pv_kin, virial, para_env%group )
-+        CALL update_veps ( cell, npt, simpar, pv_kin, kin, virial, infree )
-+ 
-+        !POS scaling -- special case of npt_f, similarly to npt_i or nph_uniaxial
-+        tmp%arg_r(1) = ( 0.5_dp * npt ( 1, 1 )%v * dt ) * &
-+             ( 0.5_dp * npt ( 1, 1 )%v * dt )
-+ 
-+        tmp%poly_r(2) = 1.0_dp + e2*tmp%arg_r(1) + e4*tmp%arg_r(1)*tmp%arg_r(1) + &
-+             e6*tmp%arg_r(1)**3 + e8*tmp%arg_r(1)**4
-+        tmp%poly_r(1) = 1.0_dp
-+        tmp%poly_r(3) = 1.0_dp
-+ 
-+        tmp%scale_r(1) = 1.0_dp
-+        tmp%scale_r(2) = EXP( 0.5_dp * dt * npt ( 1, 1 )%v )
-+        tmp%scale_r(3) = 1.0_dp
-+ 
-+        !VEL scaling -- special case of npt_f, similarly to npt_i or nph_uniaxial
-+        tmp%arg_v(1) = ( 0.25_dp * npt ( 1, 1 )%v * dt *  &
-+             (1.0_dp + infree ) )*( 0.25_dp * npt ( 1, 1 )%v * &
-+             dt * ( 1.0_dp + infree ) )
-+        tmp%arg_v(2) = ( 0.25_dp * npt ( 1, 1 )%v * dt * infree) * &
-+             ( 0.25_dp * npt ( 1, 1 )%v * dt * infree )
-+ 
-+        tmp%poly_v(2) = 1.0_dp + e2*tmp%arg_v(1) + e4*tmp%arg_v(1)*tmp%arg_v(1) + &
-+             e6*tmp%arg_v(1)**3 + e8*tmp%arg_v(1)**4
-+        tmp%poly_v(1) = 1.0_dp + e2*tmp%arg_v(2) + e4*tmp%arg_v(2)*tmp%arg_v(2) + &
-+             e6*tmp%arg_v(2)**3 + e8*tmp%arg_v(2)**4
-+        tmp%poly_v(3) = 1.0_dp + e2*tmp%arg_v(2) + e4*tmp%arg_v(2)*tmp%arg_v(2) + &
-+             e6*tmp%arg_v(2)**3 + e8*tmp%arg_v(2)**4
-+ 
-+        !this would be from nph_uniaxial
-+        tmp%scale_v(2) = EXP( -0.25_dp * dt * npt ( 1, 1 )%v * &
-+             (1.0_dp + infree ) )
-+        tmp%scale_v(1) = EXP( -0.25_dp * dt * npt ( 1, 1 )%v * infree )
-+        tmp%scale_v(3) = EXP( -0.25_dp * dt * npt ( 1, 1 )%v * infree )
-+ 
-+        ! first half of velocity verlet
-+        CALL vv_first( tmp, atomic_kind_set, local_particles, particle_set, &
-+             core_particle_set, shell_particle_set, nparticle_kind,&
-+             shell_adiabatic, dt, error=error )
-+ 
-+        IF(simpar%variable_dt) CALL  variable_timestep(md_env,tmp, dt, simpar,para_env,&
-+             atomic_kind_set, local_particles, particle_set, core_particle_set,&
-+             shell_particle_set, nparticle_kind, shell_adiabatic, npt=npt,error=error)
-+ 
-+        roll_tol = 0.0_dp
-+        vector_r ( : ) = 0._dp !scale_r * poly_r would be 1._dp
-+        vector_r ( 2 ) = tmp%scale_r(2) * tmp%poly_r(2)
-+        vector_v ( : ) = tmp%scale_v(:) * tmp%poly_v(:)
-+ 
-+        IF ( simpar%constraint ) then
-+           CALL shake_roll_control( gci, local_molecules, &
-+             molecule_set, molecule_kind_set, particle_set, tmp%pos, tmp%vel, dt, simpar,  &
-+             roll_tol, iroll, vector_r, vector_v, para_env%group, cell=cell, &
-+             local_particles=local_particles, error=error )
-+        endif
-+     END DO SR
-+ 
-+     ! Update eps:
-+     npt ( :, : )%eps =  npt ( :, : )%eps + dt * npt ( :, : )%v
-+ 
-+     ! Update h_mat
-+     cell%hmat ( 2, 2 ) = cell%hmat ( 2, 2 ) * EXP ( npt ( 1, 1 )%eps - eps_0 )
-+ 
-+     eps_0 =  npt ( 1, 1 )%eps
-+ 
-+     ! Update the inverse
-+     CALL init_cell ( cell )
-+ 
-+     ! Broadcast the new particle positions and deallocate the pos components of temporary
-+     CALL update_dealloc_tmp ( tmp, particle_set, shell_particle_set, &
-+          core_particle_set, para_env, shell_adiabatic, pos=.TRUE.,  error=error )
-+ 
-+     IF(shell_adiabatic .AND. shell_check_distance) THEN
-+         CALL optimize_shell_core(force_env,  particle_set,&
-+              shell_particle_set, core_particle_set, globenv, tmp=tmp, check=.TRUE., error=error)
-+     END IF
-+ 
-+     ! Update forces
-+     CALL force_env_set_cell(force_env, cell, error)
-+     CALL force_env_calc_energy_force(force_env,error=error)
-+ 
-+     ! Metadynamics
-+     CALL metadyn_integrator(force_env, tmp%vel, rand=rand, error=error)
-+ 
-+     ! Velocity Verlet (second part)
-+     CALL vv_second(tmp, atomic_kind_set, local_particles, particle_set, &
-+          core_particle_set, shell_particle_set, nparticle_kind,&
-+          shell_adiabatic, dt, error=error )
-+ 
-+     IF (simpar%constraint) THEN
-+        roll_tol_thrs = simpar%roll_tol
-+        first = .TRUE.
-+        iroll = 1
-+        CALL set ( old, atomic_kind_set, particle_set, tmp%vel, local_particles, cell, npt, 'F' )
-+     ELSE
-+        roll_tol_thrs = EPSILON(0.0_dp)
-+     ENDIF
-+     roll_tol = -roll_tol_thrs
-+ 
-+     RR: DO WHILE (ABS(roll_tol)>=roll_tol_thrs) ! RATTLE-ROLL LOOP
-+        roll_tol = 0.0_dp
-+        IF ( simpar%constraint ) CALL rattle_roll_setup ( old, gci, atomic_kind_set, &
-+             particle_set, local_particles, molecule_kind_set, molecule_set,  &
-+             local_molecules, tmp%vel, dt,  cell, npt, simpar, virial, vector_v,  &
-+             roll_tol, iroll, infree, first, para_env,error=error)
-+ 
-+        CALL update_pv ( gci, simpar, atomic_kind_set, tmp%vel, particle_set, &
-+             local_molecules, molecule_set, molecule_kind_set, &
-+             local_particles, kin, pv_kin, virial, para_env%group )
-+        CALL update_veps ( cell, npt, simpar, pv_kin, kin, virial, infree )
-+     END DO RR
-+ 
-+     ! Apply Thermostat over the full set of particles
-+     IF(simpar% ensemble /= npe_i_ensemble) THEN
-+       IF (shell_adiabatic) THEN
-+         CALL apply_thermostat_particles(thermostat_part,molecule_kind_set, molecule_set, &
-+              particle_set, local_molecules, para_env%group, shell_adiabatic=shell_adiabatic,&
-+              vel=tmp%vel, shell_vel=tmp%shell_vel, core_vel=tmp%core_vel, error=error)
-+       ELSE
-+         CALL apply_thermostat_particles(thermostat_part,molecule_kind_set, molecule_set, &
-+              particle_set, local_molecules, para_env%group, vel=tmp%vel, error=error)
-+       END IF
-+     END IF
-+ 
-+ 
-+     ! Apply Thermostat over the core-shell motion 
-+     IF(ASSOCIATED(thermostat_shell)) THEN
-+       CALL apply_thermostat_shells(thermostat_shell,atomic_kind_set, particle_set,&
-+            local_particles, para_env%group, vel=tmp%vel, shell_vel=tmp%shell_vel, &
-+            core_vel=tmp%core_vel, error=error)
-+     END IF
-+ 
-+     ! Apply Thermostat to Barostat
-+     CALL apply_thermostat_baro( thermostat_baro, npt, para_env%group, error)
-+ 
-+     ! Annealing of particle velocities is only possible when no thermostat is active
-+     IF (simpar% ensemble == npe_i_ensemble .AND. simpar%annealing) THEN
-+        tmp%vel(:,:)=tmp%vel(:,:)*simpar%f_annealing
-+        IF (shell_adiabatic) THEN
-+           CALL shell_scale_comv(atomic_kind_set,local_particles,particle_set,&
-+                tmp%vel,tmp%shell_vel,tmp%core_vel)
-+        END IF
-+     END IF
-+     ! Annealing of CELL velocities is only possible when no thermostat is active
-+     IF (simpar% ensemble == npe_i_ensemble .AND. simpar%annealing_cell) THEN
-+        npt(1,1)%v = npt(1,1)%v * simpar%f_annealing_cell
-+     END IF
-+ 
-+ 
-+     ! Broadcast the new particle velocities and deallocate temporary
-+     CALL update_dealloc_tmp ( tmp, particle_set, shell_particle_set, &
-+          core_particle_set, para_env, shell_adiabatic, vel=.TRUE.,  error=error )
-+ 
-+     ! Update constraint virial
-+     IF ( simpar%constraint ) CALL pv_constraint ( gci, local_molecules, &
-+          molecule_set, molecule_kind_set, particle_set, virial, para_env%group )
-+ 
-+     CALL virial_evaluate ( atomic_kind_set, particle_set,  &
-+          local_particles, virial, para_env%group , error=error)
-+ 
-+     ! Deallocate old variables
-+     CALL deallocate_old (old, error=error )
-+ 
-+     IF (ASSOCIATED(force_env%meta_env)) THEN
-+        IF(force_env%meta_env%langevin) THEN
-+           DEALLOCATE(rand,STAT=istat)    
-+           CPPostcondition(istat==0,cp_failure_level,routineP,error,failure)
-+        ENDIF
-+     ENDIF
-+ 
-+     IF (first_time) THEN
-+        first_time = .FALSE.
-+        CALL set_md_env(md_env, first_time=first_time,error=error)
-+     END IF
-+ 
-+   END SUBROUTINE npt_y
-+ 
-  END MODULE integrator
-  
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/integrator_utils.F src_20100521_patched/integrator_utils.F
-*** src_20100521_latest_orig/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
---- src_20100521_patched/integrator_utils.F	2010-05-21 10:50:12.851241591 +0100
-***************
-*** 26,32 ****
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nve_ensemble, nvt_ensemble
-    USE kinds,                           ONLY: dp
-    USE mathlib,                         ONLY: matvec_3x3,&
-                                               transpose_3d
---- 26,32 ----
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nve_ensemble, nvt_ensemble, npt_y_ensemble
-    USE kinds,                           ONLY: dp
-    USE mathlib,                         ONLY: matvec_3x3,&
-                                               transpose_3d
-***************
-*** 750,755 ****
---- 750,762 ----
-         npt_loc ( 3, 3 ) % mass = npt ( 1, 1 ) % mass
-      CASE ( npt_f_ensemble )
-         npt_loc = npt
-+     CASE ( npt_y_ensemble)
-+ !       print *,'Constraints with npt_y_ensemble are not implemented'
-+ !       stop
-+        npt_loc ( :, : ) % v = 0.0_dp
-+        npt_loc ( :, : ) % mass = 0.0_dp
-+        npt_loc ( 2, 2 ) % v = npt ( 1, 1 ) % v
-+        npt_loc ( 2, 2 ) % mass = npt ( 1, 1 ) % mass
-      END SELECT
-  
-      ! resetting
-***************
-*** 959,964 ****
---- 966,977 ----
-                 pv_kin ( 1, 1 ) +  virial % pv_constraint ( 1, 1 ) -  &
-                 simpar % p0 * box % deth + infree * kin
-         END IF
-+     ELSEIF ( simpar % ensemble == npt_y_ensemble ) THEN
-+        ! get force on barostat, as a special case of npt_f
-+        npt ( 1, 1 ) % f = virial % pv_virial ( 2, 2 ) +  &
-+             pv_kin ( 2, 2 ) +  virial % pv_constraint ( 2, 2 ) -  &
-+             simpar % p_ext * box % deth +  &
-+             infree * kin
-      ENDIF
-  
-      ! update barostat velocities
-***************
-*** 1575,1580 ****
---- 1588,1596 ----
-              core_particle_set, shell_particle_set, nparticle_kind,&
-              shell_adiabatic, dt, error=error)
-              
-+     CASE (npt_y_ensemble)
-+         print *,'Rescaled time step with npt_y_ensemble is not implemented'
-+         stop
-      END SELECT
-  
-    END SUBROUTINE rescaled_vv_first
-Common subdirectories: src_20100521_latest_orig/lib and src_20100521_patched/lib
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/mathlib.F src_20100521_patched/mathlib.F
-*** src_20100521_latest_orig/mathlib.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100521_patched/mathlib.F	2010-05-21 10:50:08.419205856 +0100
-***************
-*** 466,472 ****
-  !>       -            "T" => invert transpose(a)
-  !> \version 1.0
-  ! *****************************************************************************
-!   SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error)
-      REAL(KIND=dp), DIMENSION(:, :), &
-        INTENT(IN)                             :: a
-      REAL(KIND=dp), DIMENSION(:, :), &
---- 466,472 ----
-  !>       -            "T" => invert transpose(a)
-  !> \version 1.0
-  ! *****************************************************************************
-!   SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error,improve)
-      REAL(KIND=dp), DIMENSION(:, :), &
-        INTENT(IN)                             :: a
-      REAL(KIND=dp), DIMENSION(:, :), &
-***************
-*** 474,479 ****
---- 474,480 ----
-      REAL(KIND=dp), INTENT(OUT)               :: eval_error
-      CHARACTER(LEN=1), INTENT(IN), OPTIONAL   :: option
-      TYPE(cp_error_type), INTENT(inout)       :: error
-+     LOGICAL, INTENT(IN), OPTIONAL            :: improve
-  
-      CHARACTER(LEN=*), PARAMETER :: routineN = 'invert_matrix_d', &
-        routineP = moduleN//':'//routineN
-***************
-*** 488,493 ****
---- 489,495 ----
-      REAL(KIND=dp), ALLOCATABLE, &
-        DIMENSION(:, :)                        :: a_lu, b
-      REAL(KIND=dp), EXTERNAL                  :: dlange
-+     LOGICAL                                  :: do_improve
-  
-      EXTERNAL dgecon,dgerfs,dgetrf,dgetrs
-  
-***************
-*** 500,505 ****
---- 502,513 ----
-        trans = "N"
-      END IF
-  
-+     IF (PRESENT(improve)) THEN
-+       do_improve = improve
-+     ELSE
-+       do_improve = .true.
-+     ENDIF
-+ 
-      ! Get the dimension of matrix a
-      n = SIZE(a,1)
-  
-***************
-*** 596,617 ****
-  
-      eval_error = 0.0_dp
-  
-!     DO iter=1,10
-  
-!       CALL dgerfs(trans,n,n,a,n,a_lu,n,ipiv,b,n,a_inverse,n,ferr,berr,&
-!                   work,iwork,info)
-  
-!       IF (info /= 0) THEN
-!         CALL stop_program(moduleN,routineN,__LINE__,&
-!                           "Improving the computed solution in dgerfs failed")
-!       END IF
-  
-!       old_eval_error = eval_error
-!       eval_error = MAXVAL(ferr)
-  
-!       IF (ABS(eval_error - old_eval_error) <= EPSILON(1.0_dp)) EXIT
-  
-!     END DO
-  
-      ! Release work storage
-      DEALLOCATE (work,STAT=stat)
---- 604,627 ----
-  
-      eval_error = 0.0_dp
-  
-!     IF (do_improve) THEN
-!       DO iter=1,10
-  
-! 	CALL dgerfs(trans,n,n,a,n,a_lu,n,ipiv,b,n,a_inverse,n,ferr,berr,&
-! 		    work,iwork,info)
-  
-! 	IF (info /= 0) THEN
-! 	  CALL stop_program(moduleN,routineN,__LINE__,&
-! 			    "Improving the computed solution in dgerfs failed")
-! 	END IF
-  
-! 	old_eval_error = eval_error
-! 	eval_error = MAXVAL(ferr)
-  
-! 	IF (ABS(eval_error - old_eval_error) <= EPSILON(1.0_dp)) EXIT
-  
-!       END DO
-!     ENDIF
-  
-      ! Release work storage
-      DEALLOCATE (work,STAT=stat)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_conserved_quantities.F src_20100521_patched/md_conserved_quantities.F
-*** src_20100521_latest_orig/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100521_patched/md_conserved_quantities.F	2010-05-21 10:51:03.165539728 +0100
-***************
-*** 28,34 ****
-         dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
-         npe_f_ensemble, npe_i_ensemble, nph_uniaxial_damped_ensemble, &
-         nph_uniaxial_ensemble, npt_f_ensemble, npt_i_ensemble, nve_ensemble, &
-!        nvt_ensemble, reftraj_ensemble
-    USE kinds,                           ONLY: dp
-    USE mathconstants,                   ONLY: zero
-    USE md_ener_types,                   ONLY: md_ener_type,&
---- 28,34 ----
-         dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
-         npe_f_ensemble, npe_i_ensemble, nph_uniaxial_damped_ensemble, &
-         nph_uniaxial_ensemble, npt_f_ensemble, npt_i_ensemble, nve_ensemble, &
-!        nvt_ensemble, reftraj_ensemble, npt_y_ensemble
-    USE kinds,                           ONLY: dp
-    USE mathconstants,                   ONLY: zero
-    USE md_ener_types,                   ONLY: md_ener_type,&
-***************
-*** 158,164 ****
-         CALL get_econs_nve (md_env, md_ener,  para_env,error=error)
-      CASE ( nvt_ensemble)
-         CALL get_econs_nvt (md_env, md_ener,  para_env,error=error)
-!     CASE (  npt_i_ensemble,  npt_f_ensemble )
-         CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
-         md_ener%temp_baro = md_ener%temp_baro*kelvin
-      CASE (  nph_uniaxial_ensemble )
---- 158,164 ----
-         CALL get_econs_nve (md_env, md_ener,  para_env,error=error)
-      CASE ( nvt_ensemble)
-         CALL get_econs_nvt (md_env, md_ener,  para_env,error=error)
-!     CASE (  npt_i_ensemble,  npt_f_ensemble,  npt_y_ensemble )
-         CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
-         md_ener%temp_baro = md_ener%temp_baro*kelvin
-      CASE (  nph_uniaxial_ensemble )
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_energies.F src_20100521_patched/md_energies.F
-*** src_20100521_latest_orig/md_energies.F	2010-03-23 13:42:39.000000000 +0000
---- src_20100521_patched/md_energies.F	2010-05-21 10:50:31.828053746 +0100
-***************
-*** 40,45 ****
---- 40,46 ----
-                                               nph_uniaxial_ensemble,&
-                                               npt_f_ensemble,&
-                                               npt_i_ensemble,&
-+                                              npt_y_ensemble,&
-                                               reftraj_ensemble
-    USE input_cp2k_motion,               ONLY: create_md_section
-    USE input_enumeration_types,         ONLY: enum_i2c,&
-***************
-*** 50,55 ****
---- 51,58 ----
-                                               section_release,&
-                                               section_type,&
-                                               section_vals_get_subs_vals,&
-+                                              section_vals_get,&
-+                                              section_vals_val_get,&
-                                               section_vals_type
-    USE kinds,                           ONLY: default_string_length,&
-                                               dp
-***************
-*** 60,71 ****
---- 63,76 ----
-    USE md_environment_types,            ONLY: get_md_env,&
-                                               md_environment_type,&
-                                               set_md_env
-+   USE memory_utilities,                ONLY: reallocate
-    USE motion_utils,                    ONLY: write_simulation_cell,&
-                                               write_stress_tensor,&
-                                               write_trajectory
-    USE particle_list_types,             ONLY: particle_list_type
-    USE particle_types,                  ONLY: write_structure_data
-    USE physcon,                         ONLY: angstrom,&
-+                                              evolt, &
-                                               femtoseconds,&
-                                               kelvin
-    USE qmmm_types,                      ONLY: qmmm_env_qm_type
-***************
-*** 312,317 ****
---- 317,328 ----
-      TYPE(thermostats_type), POINTER          :: thermostats
-      TYPE(virial_type), POINTER               :: virial
-  
-+     TYPE(section_vals_type), POINTER         :: colvar_atoms_section, print_section
-+     INTEGER, DIMENSION(:), POINTER           :: isolated_atoms, tmp_v, colvar_atoms
-+     logical :: explicit
-+     integer :: iatom, n_rep, traj_unit, stat
-+ 
-+ 
-      failure = .FALSE.
-      NULLIFY(logger)
-      logger => cp_error_get_logger(error)
-***************
-*** 476,481 ****
---- 487,536 ----
-         CALL write_trajectory(force_env, root_section, itimes, time*femtoseconds, dt*femtoseconds, md_ener%epot,&
-              "FORCES", my_pos, my_act, middle_name="frc", extended_xmol_title=.TRUE., error=error)
-  
-+        ! Print atoms given in PRINT%COLVAR_ATOMS
-+        ! get list
-+        print_section => section_vals_get_subs_vals(motion_section,"PRINT",error=error)
-+        colvar_atoms_section => section_vals_get_subs_vals(print_section,"COLVAR_ATOMS",error=error)
-+        CALL section_vals_get(colvar_atoms_section, explicit=explicit, error=error)
-+        nullify(colvar_atoms)
-+        ALLOCATE(colvar_atoms(0), stat=stat)
-+        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+        IF (explicit) THEN
-+           CALL section_vals_val_get(colvar_atoms_section,"LIST", n_rep_val=n_rep, error=error)
-+           DO i = 1, n_rep
-+              CALL section_vals_val_get(colvar_atoms_section,"LIST", i_vals=tmp_v, i_rep_val=i, error=error)
-+              CALL reallocate(colvar_atoms, 1, SIZE(colvar_atoms)+SIZE(tmp_v))
-+              colvar_atoms(SIZE(colvar_atoms)-SIZE(tmp_v)+1:SIZE(colvar_atoms)) = tmp_v
-+           END DO
-+           ! print colvar
-+           ! Get the otuput format
-+ !          CALL get_output_format(root_section,"MOTION%PRINT%COLVAR_ATOMS",my_form,my_ext,error)
-+           traj_unit = cp_print_key_unit_nr(logger,root_section,"MOTION%PRINT%COLVAR_ATOMS",&
-+                   extension=".cv", file_position=my_pos, file_action=my_act, is_new_file=new_file, error=error) !&
-+ !                  file_form=my_form, middle_name=TRIM(my_middle), is_new_file=new_file,&
-+ !                  error=error)
-+           IF (traj_unit > 0) THEN
-+              IF (new_file) THEN
-+                 WRITE (traj_unit,'("#",1X,A,3X,A,2X,A,2X,A,5X,A,5X,A,4X,A,2X,A,2X,A,2X,A,2X,A,2X,A)') &
-+                      "Step Nr.","Time[fs]","Atom Nr.", &
-+                      "Pos_x[A]","Pos_y[A]","Pos_z[A]",&
-+                      "Vel_x[A/fs]","Vel_y[A/fs]","Vel_z[A/fs]", &
-+                      "Frc_x[eV/A]","Frc_y[eV/A]","Frc_z[eV/A]"
-+              END IF
-+              do iatom=1,size(colvar_atoms)
-+                WRITE (UNIT=traj_unit,FMT="(I8,F13.3,I8,9F13.8)") &
-+                  !"CV| ", &
-+                  itimes,time*femtoseconds, colvar_atoms(iatom), &
-+                  particles%els(colvar_atoms(iatom))%r(1:3)*angstrom, &
-+                  particles%els(colvar_atoms(iatom))%v(1:3)*angstrom/femtoseconds, &
-+                  particles%els(colvar_atoms(iatom))%f(1:3)*evolt/angstrom
-+              enddo
-+           ENDIF
-+           DEALLOCATE(colvar_atoms,stat=stat)
-+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+           CALL cp_print_key_finished_output(traj_unit,logger,root_section,"MOTION%PRINT%COLVAR_ATOMS",error=error)
-+        END IF
-+ 
-         ! Print Simulation Cell 
-         CALL write_simulation_cell(cell, motion_section, itimes, time*femtoseconds, my_pos, my_act, error)
-  
-***************
-*** 675,680 ****
---- 730,736 ----
-            IF ( simpar%ensemble == nph_uniaxial_ensemble .OR.&
-                 simpar%ensemble == nph_uniaxial_damped_ensemble.OR.&
-                 simpar%ensemble == npt_i_ensemble.OR.&
-+                simpar%ensemble == npt_y_ensemble.OR.&
-                 simpar%ensemble == npt_f_ensemble.OR.&
-                 simpar%ensemble == npe_i_ensemble.OR.&
-                 simpar%ensemble == npe_f_ensemble)  &
-***************
-*** 753,758 ****
---- 809,815 ----
-            IF ( simpar%ensemble == nph_uniaxial_ensemble .OR.&
-                 simpar%ensemble == nph_uniaxial_damped_ensemble.OR.&
-                 simpar%ensemble == npt_i_ensemble.OR.&
-+                simpar%ensemble == npt_y_ensemble.OR.&
-                 simpar%ensemble == npt_f_ensemble.OR.&
-                 simpar%ensemble == npe_i_ensemble.OR.&
-                 simpar%ensemble == npe_f_ensemble) THEN
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_run.F src_20100521_patched/md_run.F
-*** src_20100521_latest_orig/md_run.F	2010-03-23 12:03:28.000000000 +0000
---- src_20100521_patched/md_run.F	2010-05-21 10:50:09.776159542 +0100
-***************
-*** 35,46 ****
-                                               force_env_type
-    USE free_energy_methods,             ONLY: free_energy_evaluate
-    USE free_energy_types,               ONLY: fe_env_create,&
-                                               free_energy_type
-    USE global_types,                    ONLY: global_environment_type
-    USE input_constants,                 ONLY: &
-         ehrenfest, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, reftraj_ensemble
-    USE input_cp2k_check,                ONLY: remove_restart_info
-    USE input_section_types,             ONLY: section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
---- 35,47 ----
-                                               force_env_type
-    USE free_energy_methods,             ONLY: free_energy_evaluate
-    USE free_energy_types,               ONLY: fe_env_create,&
-+                                              fe_env_release, &
-                                               free_energy_type
-    USE global_types,                    ONLY: global_environment_type
-    USE input_constants,                 ONLY: &
-         ehrenfest, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, reftraj_ensemble
-    USE input_cp2k_check,                ONLY: remove_restart_info
-    USE input_section_types,             ONLY: section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
-***************
-*** 288,294 ****
-  
-      CALL set_md_env(md_env=md_env, simpar=simpar, fe_env=fe_env, cell=cell,&
-                      force_env=force_env, error=error)
-!    
-      ! Possibly initialize Wiener processes
-      IF (simpar%ensemble == langevin_ensemble) CALL create_wiener_process(md_env,error)
-      time_iter_start=m_walltime()
---- 289,297 ----
-  
-      CALL set_md_env(md_env=md_env, simpar=simpar, fe_env=fe_env, cell=cell,&
-                      force_env=force_env, error=error)
-! 
-! !call fe_env_release(fe_env, error=error)
-! 
-      ! Possibly initialize Wiener processes
-      IF (simpar%ensemble == langevin_ensemble) CALL create_wiener_process(md_env,error)
-      time_iter_start=m_walltime()
-***************
-*** 306,311 ****
---- 309,315 ----
-      ! multiple force_evals
-      IF ( (simpar%ensemble==npt_i_ensemble).OR.&
-           (simpar%ensemble==npt_f_ensemble).OR.&
-+          (simpar%ensemble==npt_y_ensemble).OR.&
-           (simpar%ensemble==npe_f_ensemble).OR.&
-           (simpar%ensemble==npe_i_ensemble).OR.&
-           (simpar%ensemble==nph_uniaxial_ensemble).OR.&
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_vel_utils.F src_20100521_patched/md_vel_utils.F
-*** src_20100521_latest_orig/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100521_patched/md_vel_utils.F	2010-05-21 10:50:40.235795540 +0100
-***************
-*** 36,42 ****
-    USE global_types,                    ONLY: global_environment_type
-    USE input_constants,                 ONLY: &
-         npe_f_ensemble, npe_i_ensemble, nph_uniaxial_damped_ensemble, &
-!        nph_uniaxial_ensemble, npt_f_ensemble, npt_i_ensemble, &
-         reftraj_ensemble, use_perd_none, use_perd_x, use_perd_xy, &
-         use_perd_xyz, use_perd_xz, use_perd_y, use_perd_yz, use_perd_z
-    USE input_cp2k_restarts,             ONLY: update_subsys
---- 36,42 ----
-    USE global_types,                    ONLY: global_environment_type
-    USE input_constants,                 ONLY: &
-         npe_f_ensemble, npe_i_ensemble, nph_uniaxial_damped_ensemble, &
-!        nph_uniaxial_ensemble, npt_f_ensemble, npt_i_ensemble, npt_y_ensemble, &
-         reftraj_ensemble, use_perd_none, use_perd_x, use_perd_xy, &
-         use_perd_xyz, use_perd_xz, use_perd_y, use_perd_yz, use_perd_z
-    USE input_cp2k_restarts,             ONLY: update_subsys
-***************
-*** 1238,1243 ****
---- 1238,1246 ----
-        IF ( simpar%ensemble==npt_i_ensemble .OR. simpar%ensemble==npe_i_ensemble) THEN
-           npt ( 1, 1 )%v = npt ( 1, 1 )%v*scale
-           md_ener%baro_kin = 0.5_dp * npt ( 1, 1 )%v**2 * npt ( 1, 1 )%mass
-+        ELSE IF (simpar%ensemble==npt_y_ensemble) THEN
-+          npt ( 1, 1 )%v = npt ( 1, 1 )%v*scale
-+          md_ener%baro_kin = 0.5_dp * npt ( 1, 1 )%v**2 * npt ( 1, 1 )%mass
-         ELSE IF (simpar%ensemble==npt_f_ensemble .OR. simpar%ensemble==npe_f_ensemble) THEN
-           md_ener%baro_kin = 0.0_dp
-           DO i = 1, 3
-***************
-*** 1306,1312 ****
-      ! Control cell motion
-      SELECT CASE (simpar%ensemble)
-      CASE( nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, &
-!             npt_f_ensemble, npt_i_ensemble, npe_f_ensemble, npe_i_ensemble)
-         IF(simpar%temp_baro_tol > 0.0_dp) THEN
-            CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
-         END IF
---- 1309,1315 ----
-      ! Control cell motion
-      SELECT CASE (simpar%ensemble)
-      CASE( nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, &
-!             npt_f_ensemble, npt_i_ensemble, npe_f_ensemble, npe_i_ensemble, npt_y_ensemble)
-         IF(simpar%temp_baro_tol > 0.0_dp) THEN
-            CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
-         END IF
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/motion_utils.F src_20100521_patched/motion_utils.F
-*** src_20100521_latest_orig/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100521_patched/motion_utils.F	2010-05-21 10:49:41.700606632 +0100
-***************
-*** 261,267 ****
-      CHARACTER(LEN=4)                         :: id_dcd
-      CHARACTER(LEN=default_string_length) :: id_label, id_wpc, my_act, my_ext, &
-        my_form, my_middle, my_pk_name, my_pos, remark1, remark2, section_ref, &
-!       title, unit_str
-      INTEGER                                  :: iskip, nat, outformat, &
-                                                  traj_unit
-      LOGICAL                                  :: failure, &
---- 261,269 ----
-      CHARACTER(LEN=4)                         :: id_dcd
-      CHARACTER(LEN=default_string_length) :: id_label, id_wpc, my_act, my_ext, &
-        my_form, my_middle, my_pk_name, my_pos, remark1, remark2, section_ref, &
-!       unit_str
-!     CHARACTER(LEN=3*default_string_length)   :: title !Added by Csilla
-!     CHARACTER(LEN=4)                         :: property !Added by Csilla
-      INTEGER                                  :: iskip, nat, outformat, &
-                                                  traj_unit
-      LOGICAL                                  :: failure, &
-***************
-*** 288,303 ****
---- 290,309 ----
-      IF (PRESENT(act))          my_act     = act
-      IF (PRESENT(pk_name))      my_pk_name = pk_name
-      
-+     property = '' !Added by Csilla
-      SELECT CASE(TRIM(my_pk_name))
-      CASE("TRAJECTORY","SHELL_TRAJECTORY","CORE_TRAJECTORY")
-         id_dcd = "CORD"
-         id_wpc = "POS"
-+        property = 'pos' !Added by Csilla
-      CASE("VELOCITIES","SHELL_VELOCITIES","CORE_VELOCITIES")
-         id_dcd = "VEL "
-         id_wpc = "VEL"
-+        property = 'velo' !Added by Csilla
-      CASE("FORCES","SHELL_FORCES","CORE_FORCES")
-         id_dcd = "FRC "
-         id_wpc = "FORCE"
-+        property = 'frc' !Added by Csilla
-      CASE DEFAULT
-         CPPostcondition(.FALSE.,cp_fatal_level,routineP,error,failure)
-      END SELECT
-***************
-*** 344,351 ****
-            IF (PRESENT(extended_xmol_title)) my_extended_xmol_title = extended_xmol_title
-            ! This information can be digested by Molden
-            IF (my_extended_xmol_title) THEN
-!             WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10)")&
-!               " i = ",it,", time = ",time,", E = ",etot
-            ELSE
-              WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
-            END IF
---- 350,362 ----
-            IF (PRESENT(extended_xmol_title)) my_extended_xmol_title = extended_xmol_title
-            ! This information can be digested by Molden
-            IF (my_extended_xmol_title) THEN
-!             WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10,A,9F13.8,A)")&
-! !              " i = ",it,", time = ",time,", E = ",etot
-!               '  i="',it,' " time="',time,' " E="',etot, &
-!               '" Lattice="',cell%hmat(1,1)*angstrom,cell%hmat(2,1)*angstrom,cell%hmat(3,1)*angstrom, &
-!                             cell%hmat(1,2)*angstrom,cell%hmat(2,2)*angstrom,cell%hmat(3,2)*angstrom, &
-!                             cell%hmat(1,3)*angstrom,cell%hmat(2,3)*angstrom,cell%hmat(3,3)*angstrom, &
-!                '" Properties=species:S:1:'//trim(property)//':R:3'
-            ELSE
-              WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
-            END IF
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/OBJECTDEFS src_20100521_patched/OBJECTDEFS
-*** src_20100521_latest_orig/OBJECTDEFS	2010-04-26 16:54:35.000000000 +0100
---- src_20100521_patched/OBJECTDEFS	2010-05-21 10:49:46.695289556 +0100
-***************
-*** 680,685 ****
---- 680,686 ----
-   topology_util.o\
-   topology_xtl.o\
-   topology_xyz.o\
-+  topology_exyz.o\
-   util.o\
-   velocity_verlet_control.o\
-   vibrational_analysis.o\
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/particle_types.F src_20100521_patched/particle_types.F
-*** src_20100521_latest_orig/particle_types.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100521_patched/particle_types.F	2010-05-21 10:50:11.225476639 +0100
-***************
-*** 71,76 ****
---- 71,80 ----
-       REAL(KIND=dp)                         :: rho, f_embed
+*** 65,70 ****
+--- 65,74 ----
+                                                v           ! velocity
        ! Particle dependent terms for shell-model
        INTEGER                               :: atom_index, t_region_index, shell_index
 + !added by Csilla
@@ -3663,19 +2002,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/particle_types.F s
   
     ! Public data types
 ***************
-*** 129,134 ****
---- 133,140 ----
-      p_out%shell_index=p_in%shell_index
-      p_out%atom_index=p_in%atom_index
-      p_out%t_region_index=p_in%t_region_index
-+     p_out%q=p_in%q
-+     p_out%name=p_in%name
-    END SUBROUTINE clone_particle
-  
-  ! *****************************************************************************
-***************
-*** 166,171 ****
---- 172,179 ----
+*** 122,127 ****
+--- 126,133 ----
         particle_set(iparticle)%shell_index = 0
         particle_set(iparticle)%atom_index = 0
         particle_set(iparticle)%t_region_index = 0
@@ -3684,193 +2012,12 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/particle_types.F s
       END DO
   
     END SUBROUTINE allocate_particle_set
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/simpar_methods.F src_20100521_patched/simpar_methods.F
-*** src_20100521_latest_orig/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/simpar_methods.F	2010-05-21 10:50:07.938386715 +0100
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/topology_coordinate_util.F src/topology_coordinate_util.F
+*** src_orig/topology_coordinate_util.F	2011-03-14 10:46:22.342963837 +0000
+--- src/topology_coordinate_util.F	2011-03-14 11:18:48.404812914 +0000
 ***************
-*** 23,29 ****
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_cp2k_motion,               ONLY: create_md_section
-    USE input_enumeration_types,         ONLY: enum_i2c,&
-                                               enumeration_type
---- 23,29 ----
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_cp2k_motion,               ONLY: create_md_section
-    USE input_enumeration_types,         ONLY: enum_i2c,&
-                                               enumeration_type
-***************
-*** 133,138 ****
---- 133,139 ----
-              simpar%f_annealing_cell
-         IF (  simpar%ensemble == npt_i_ensemble .OR. &
-               simpar%ensemble == npt_f_ensemble .OR. &
-+              simpar%ensemble == npt_y_ensemble .OR. &
-               simpar%ensemble == npe_i_ensemble .OR. &
-               simpar%ensemble == npe_f_ensemble ) THEN
-            tmp_r1 = cp_unit_from_cp2k(simpar%p_ext,"bar",error=error)
-***************
-*** 169,174 ****
---- 170,176 ----
-              simpar%ensemble == nph_uniaxial_damped_ensemble.OR.&
-              simpar%ensemble == npt_i_ensemble.OR.&
-              simpar%ensemble == npt_f_ensemble .OR. &
-+             simpar%ensemble == npt_y_ensemble .OR. &
-              simpar%ensemble == npe_i_ensemble .OR. &
-              simpar%ensemble == npe_f_ensemble) THEN
-  
-***************
-*** 229,238 ****
-         IF(simpar%annealing ) THEN
-           IF ( simpar%ensemble == nvt_ensemble .OR. &
-                simpar%ensemble == npt_i_ensemble .OR. &
-                simpar%ensemble == npt_f_ensemble )  THEN
-                CALL cp_assert(.FALSE.,cp_failure_level,cp_assertion_failed,routineP,&
-                "Annealing of the ions has been required "//&
-!               "even if the thermostat is active (nvt or npt_i or npt_f) "//&
-                "These two methods to control the temperature act one against the other. "//&
-  CPSourceFileRef,&
-                 only_ionode=.TRUE.)
---- 231,241 ----
-         IF(simpar%annealing ) THEN
-           IF ( simpar%ensemble == nvt_ensemble .OR. &
-                simpar%ensemble == npt_i_ensemble .OR. &
-+               simpar%ensemble == npt_y_ensemble .OR. &
-                simpar%ensemble == npt_f_ensemble )  THEN
-                CALL cp_assert(.FALSE.,cp_failure_level,cp_assertion_failed,routineP,&
-                "Annealing of the ions has been required "//&
-!               "even if the thermostat is active (nvt or npt_i or npt_f or npt_y) "//&
-                "These two methods to control the temperature act one against the other. "//&
-  CPSourceFileRef,&
-                 only_ionode=.TRUE.)
-***************
-*** 332,338 ****
-         
-         SELECT CASE (simpar%ensemble)
-         CASE( nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, &
-!                npt_f_ensemble, npt_i_ensemble, npe_f_ensemble, npe_i_ensemble)
-            tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
-            CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
-            CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
---- 335,341 ----
-         
-         SELECT CASE (simpar%ensemble)
-         CASE( nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, &
-!                npt_f_ensemble, npt_i_ensemble, npt_y_ensemble, npe_f_ensemble, npe_i_ensemble)
-            tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
-            CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
-            CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermal_region_utils.F src_20100521_patched/thermal_region_utils.F
-*** src_20100521_latest_orig/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/thermal_region_utils.F	2010-05-21 10:49:20.593330620 +0100
-***************
-*** 19,24 ****
---- 19,25 ----
-                                               force_env_type
-    USE input_constants,                 ONLY: npt_f_ensemble,&
-                                               npt_i_ensemble,&
-+                                              npt_y_ensemble,&
-                                               nvt_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-***************
-*** 79,84 ****
---- 80,86 ----
-      IF (explicit)THEN
-         apply_thermostat =(simpar%ensemble == nvt_ensemble)  .OR.&
-                           (simpar%ensemble == npt_f_ensemble).OR.&
-+                          (simpar%ensemble == npt_y_ensemble).OR.&
-                           (simpar%ensemble == npt_i_ensemble)
-         IF(apply_thermostat) THEN
-           CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermostat_methods.F src_20100521_patched/thermostat_methods.F
-*** src_20100521_latest_orig/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/thermostat_methods.F	2010-05-21 10:50:36.696949179 +0100
-***************
-*** 46,52 ****
-    USE input_constants,                 ONLY: &
-         do_region_global, do_thermo_csvr, do_thermo_gle, do_thermo_nose, &
-         do_thermo_same_as_part, npe_f_ensemble, npe_i_ensemble, &
-!        npt_f_ensemble, npt_i_ensemble, nve_ensemble, nvt_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
---- 46,52 ----
-    USE input_constants,                 ONLY: &
-         do_region_global, do_thermo_csvr, do_thermo_gle, do_thermo_nose, &
-         do_thermo_same_as_part, npe_f_ensemble, npe_i_ensemble, &
-!        npt_f_ensemble, npt_i_ensemble, npt_y_ensemble, nve_ensemble, nvt_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_remove_values,&
-***************
-*** 148,153 ****
---- 148,154 ----
-      CALL section_vals_get(thermo_baro_section,  explicit=explicit_baro,  error=error)
-  
-      apply_thermo_baro = (simpar%ensemble == npt_f_ensemble).OR.&
-+                         (simpar%ensemble == npt_y_ensemble).OR.&
-                          (simpar%ensemble == npt_i_ensemble)
-  
-      apply_thermo_coeff= (simpar%ensemble == nve_ensemble).OR.&
-***************
-*** 159,164 ****
---- 160,166 ----
-                           (simpar%ensemble == nvt_ensemble)  .OR.&
-                           (simpar%ensemble == npt_f_ensemble).OR.&
-                           (simpar%ensemble == npt_i_ensemble).OR.&
-+                          (simpar%ensemble == npt_y_ensemble).OR.&
-                           (simpar%ensemble == npe_i_ensemble).OR.&
-                           (simpar%ensemble == npe_f_ensemble)
-  
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermostat_utils.F src_20100521_patched/thermostat_utils.F
-*** src_20100521_latest_orig/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/thermostat_utils.F	2010-05-21 10:50:29.164615777 +0100
-***************
-*** 31,37 ****
-         do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
---- 31,37 ----
-         do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
-***************
-*** 211,217 ****
-      CASE(isokin_ensemble, nph_uniaxial_ensemble, nph_uniaxial_damped_ensemble,&
-           reftraj_ensemble, langevin_ensemble)
-         ! Do Nothing
-!     CASE(nve_ensemble, nvt_ensemble, npt_i_ensemble, npt_f_ensemble, npe_i_ensemble, npe_f_ensemble)
-         IF (ensemble==nve_ensemble) check = do_shell
-         IF (check) THEN
-            SELECT CASE(region)
---- 211,217 ----
-      CASE(isokin_ensemble, nph_uniaxial_ensemble, nph_uniaxial_damped_ensemble,&
-           reftraj_ensemble, langevin_ensemble)
-         ! Do Nothing
-!     CASE(nve_ensemble, nvt_ensemble, npt_i_ensemble, npt_y_ensemble, npt_f_ensemble, npe_i_ensemble, npe_f_ensemble)
-         IF (ensemble==nve_ensemble) check = do_shell
-         IF (check) THEN
-            SELECT CASE(region)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinate_util.F src_20100521_patched/topology_coordinate_util.F
-*** src_20100521_latest_orig/topology_coordinate_util.F	2010-05-07 17:59:32.000000000 +0100
---- src_20100521_patched/topology_coordinate_util.F	2010-05-21 10:50:14.077244229 +0100
-***************
-*** 27,32 ****
---- 27,33 ----
+*** 28,33 ****
+--- 28,34 ----
     USE input_section_types,             ONLY: section_vals_get,&
                                                section_vals_get_subs_vals,&
                                                section_vals_type,&
@@ -3879,26 +2026,29 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
     USE kinds,                           ONLY: default_string_length,&
                                                dp
 ***************
-*** 99,110 ****
---- 100,114 ----
+*** 99,104 ****
+--- 100,106 ----
       INTEGER :: atom_i, atom_j, counter, dim0, dim1, dim2, dim3, first, &
         handle, handle2, i, iatom, ikind, iw, j, k, last, method_name_id, n, &
-        natom, position, stat
+        natom, stat
 +     INTEGER :: n_rep12, n_rep13
-      INTEGER, DIMENSION(:), POINTER           :: iatomlist, kind_of, list, &
+      INTEGER, DIMENSION(:), POINTER           :: iatomlist, id_element, &
+                                                  id_work, kind_of, list, &
                                                   list2, molecule_list, &
-                                                  natom_of_kind, wlist
-      INTEGER, DIMENSION(:, :), POINTER        :: pairs
-      LOGICAL :: autogen, check, do_center, explicit, failure, found, my_qmmm, &
-        present_12_excl_ei_list, present_12_excl_vdw_list
+***************
+*** 107,112 ****
+--- 109,116 ----
+      LOGICAL :: autogen, check, disable_exclusion_lists, do_center, explicit, &
+        failure, found, my_qmmm, present_12_excl_ei_list, &
+        present_12_excl_vdw_list
 +     LOGICAL ::  present_13_excl_ei_list, present_13_excl_vdw_list, &
 +       exclude_14_vdw, exclude_14_ei
       REAL(KIND=dp)                            :: bounds(2,3), cdims(3), &
                                                   dims(3), qeff, vec(3)
       REAL(KIND=dp), DIMENSION(:), POINTER     :: charge, cpoint, mass
 ***************
-*** 112,117 ****
---- 116,123 ----
+*** 114,119 ****
+--- 118,125 ----
         POINTER                                :: ex_bend_list, ex_bond_list, &
                                                   ex_bond_list_ei, &
                                                   ex_bond_list_vdw, ex_onfo_list
@@ -3908,8 +2058,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
       TYPE(atom_type), DIMENSION(:), POINTER   :: atom_list
       TYPE(atomic_kind_type), POINTER          :: atomic_kind
 ***************
-*** 122,127 ****
---- 128,134 ----
+*** 124,129 ****
+--- 130,136 ----
       TYPE(molecule_type), POINTER             :: molecule
       TYPE(section_vals_type), POINTER         :: exclude_section, &
                                                   topology_section
@@ -3918,39 +2068,40 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
       failure = .FALSE.
       NULLIFY(logger)
 ***************
-*** 374,379 ****
---- 381,392 ----
+*** 376,381 ****
+--- 383,395 ----
+            WRITE(iw,*)"atom number :: ",i,"kind number ::",ikind
          END IF
          particle_set(i)%atomic_kind => atomic_kind_set(ikind)
-         particle_set(i)%r(:) = atom_info%r(:,i) - dims
 + !added by Csilla
 +        particle_set(i)%q = atom_info%atm_charge(i)
 + !       print *, 'atom ',i,trim(atom_info%label_atmname(i)), atom_info%atm_charge(i)
 +        particle_set(i)%name = ""
-+        particle_set(i)%name = trim(atom_info%label_atmname(i))
++ !?       particle_set(i)%name = id2str(atom_info%id_atom_names(i)) trim(id2str(atom_info%id_atmname(i)))
++        particle_set(i)%name = trim(id2str(atom_info%id_atmname(i)))
 + !added by Csilla
-         NULLIFY(particle_set(i)%list_exclude_vdw)
-         NULLIFY(particle_set(i)%list_exclude_ei)
+         particle_set(i)%r(:) = atom_info%r(:,i) - dims
       END DO
+      CALL timestop(handle2)
 ***************
-*** 401,414 ****
-        CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
-      END IF
+*** 416,429 ****
+           CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
+         END IF
   
-!     ! Check if a list of 1-2 exclusion bonds is defined.. if not use all bonds
-      NULLIFY(ex_bond_list_vdw, ex_bond_list_ei)
-      ! VdW
-      exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_VDW_LIST",error=error)
-      CALL section_vals_get(exclude_section, explicit=explicit, error=error)
-      present_12_excl_vdw_list = .FALSE.
-!     IF (explicit) present_12_excl_vdw_list = .TRUE.
-      IF (present_12_excl_vdw_list) THEN
-         ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DO I=1,natom
---- 414,458 ----
-        CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
-      END IF
+!        ! Check if a list of 1-2 exclusion bonds is defined.. if not use all bonds
+         NULLIFY(ex_bond_list_vdw, ex_bond_list_ei)
+         ! VdW
+         exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_VDW_LIST",error=error)
+         CALL section_vals_get(exclude_section, explicit=explicit, error=error)
+         present_12_excl_vdw_list = .FALSE.
+!        IF (explicit) present_12_excl_vdw_list = .TRUE.
+         IF (present_12_excl_vdw_list) THEN
+            ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            DO I=1,natom
+--- 430,474 ----
+           CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
+         END IF
   
 !     ! Reorder bends
 !     ALLOCATE(ex_bend_list(natom),stat=stat)
@@ -3966,7 +2117,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 !     END IF
 ! 
 !     ! Check if a list of 1-2 or 1-3 exclusion bonds/bends is defined.. if not use all bonds/bends
-      NULLIFY(ex_bond_list_vdw, ex_bond_list_ei)
+         NULLIFY(ex_bond_list_vdw, ex_bond_list_ei)
 +     NULLIFY(ex_bend_list_vdw, ex_bend_list_ei)
 + 
 +     !check whether to do a shortcut for silica
@@ -3977,10 +2128,10 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 +        shortcut= .false.
 +     endif
 + 
-      ! VdW
-      exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_VDW_LIST",error=error)
-      CALL section_vals_get(exclude_section, explicit=explicit, error=error)
-      present_12_excl_vdw_list = .FALSE.
+         ! VdW
+         exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_VDW_LIST",error=error)
+         CALL section_vals_get(exclude_section, explicit=explicit, error=error)
+         present_12_excl_vdw_list = .FALSE.
 !     present_13_excl_vdw_list = .FALSE.
 !     IF (explicit) then
 !        CALL section_vals_val_get(exclude_section,"BOND",n_rep_val=n_rep12,error=error)
@@ -3989,36 +2140,36 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 !        if (n_rep13>0) present_13_excl_vdw_list = .TRUE.
 !        CPPostcondition((n_rep12>0.or.n_rep13>0),cp_failure_level,routineP,error,failure)
 !     endif
-      IF (present_12_excl_vdw_list) THEN
+         IF (present_12_excl_vdw_list) THEN
 +        !1-2 exclusion list
-         ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DO I=1,natom
+            ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            DO I=1,natom
 ***************
-*** 416,431 ****
+*** 431,446 ****
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ENDDO
+            CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
+!                                     particle_set, error)
+         ELSE
+            ex_bond_list_vdw => ex_bond_list
+         END IF
+         ! EI
+         exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_EI_LIST",error=error)
+         CALL section_vals_get(exclude_section, explicit=explicit, error=error)
+         present_12_excl_ei_list = .FALSE.
+!        IF (explicit) present_12_excl_ei_list = .TRUE.
+         IF (present_12_excl_ei_list) THEN
+            ALLOCATE(ex_bond_list_ei(natom),stat=stat)
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ENDDO
-         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
-!                                  particle_set, error)
-      ELSE
-         ex_bond_list_vdw => ex_bond_list
-      END IF
-      ! EI
-      exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_EI_LIST",error=error)
-      CALL section_vals_get(exclude_section, explicit=explicit, error=error)
-      present_12_excl_ei_list = .FALSE.
-!     IF (explicit) present_12_excl_ei_list = .TRUE.
-      IF (present_12_excl_ei_list) THEN
-         ALLOCATE(ex_bond_list_ei(natom),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DO I=1,natom
---- 460,496 ----
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ENDDO
-         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
+            DO I=1,natom
+--- 476,512 ----
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ENDDO
+            CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
 !                                  particle_set, shortcut, error)
-      ELSE
-         ex_bond_list_vdw => ex_bond_list
+         ELSE
+            ex_bond_list_vdw => ex_bond_list
 +     endif
 +     IF (present_13_excl_vdw_list) THEN
 +        !1-3 exclusion list
@@ -4032,11 +2183,11 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 +                                  particle_set, shortcut, error)
 +     ELSE
 +        ex_bend_list_vdw => ex_bend_list
-      END IF
-      ! EI
-      exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_EI_LIST",error=error)
-      CALL section_vals_get(exclude_section, explicit=explicit, error=error)
-      present_12_excl_ei_list = .FALSE.
+         END IF
+         ! EI
+         exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_EI_LIST",error=error)
+         CALL section_vals_get(exclude_section, explicit=explicit, error=error)
+         present_12_excl_ei_list = .FALSE.
 !     present_13_excl_ei_list = .FALSE.
 !     IF (explicit) then
 !        CALL section_vals_val_get(exclude_section,"BOND",n_rep_val=n_rep12,error=error)
@@ -4045,168 +2196,168 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 !        if (n_rep13>0) present_13_excl_ei_list = .TRUE.
 !        CPPostcondition((n_rep12>0.or.n_rep13>0),cp_failure_level,routineP,error,failure)
 !     endif
-      IF (present_12_excl_ei_list) THEN
+         IF (present_12_excl_ei_list) THEN
 +        !1-2 exclusion list
-         ALLOCATE(ex_bond_list_ei(natom),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         DO I=1,natom
+            ALLOCATE(ex_bond_list_ei(natom),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            DO I=1,natom
 ***************
-*** 433,495 ****
+*** 448,510 ****
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ENDDO
+            CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
+!                                     particle_set, error)
+         ELSE
+            ex_bond_list_ei => ex_bond_list
+         END IF
+! 
+! 
+!        CALL section_vals_val_get(topology_section, "AUTOGEN_EXCLUDE_LISTS", &
+!             l_val=autogen, error=error)
+!        ! Reorder bends
+!        ALLOCATE(ex_bend_list(natom),stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DO I=1,natom
+!           ALLOCATE(ex_bend_list(I)%array1(0),stat=stat)
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          ENDDO
-         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
-!                                  particle_set, error)
-      ELSE
-         ex_bond_list_ei => ex_bond_list
-      END IF
-! 
-! 
-!     CALL section_vals_val_get(topology_section, "AUTOGEN_EXCLUDE_LISTS", &
-!          l_val=autogen, error=error)
-!     ! Reorder bends
-!     ALLOCATE(ex_bend_list(natom),stat=stat)
-!     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     DO I=1,natom
-!        ALLOCATE(ex_bend_list(I)%array1(0),stat=stat)
-!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!     ENDDO
-!     IF (autogen) THEN
-!        ! Construct autogenerated 1-3 pairs, i.e. all possible 1-3 pairs instead
-!        ! of only the bends that are present in the topology.
-!        ALLOCATE(pairs(0,2),stat=stat)
-!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        N = 0
-!        DO iatom = 1, natom
-!           DO i = 1, SIZE(ex_bond_list(iatom)%array1)
-!              ! a neighboring atom of iatom:
-!              atom_i = ex_bond_list(iatom)%array1(i)
-!              DO j = 1, i-1
-!                 ! another neighboring atom of iatom
-!                 atom_j = ex_bond_list(iatom)%array1(j)
-!                 ! It is only a true bend if there is no shorter path.
-!                 ! No need to check if i and j correspond to the same atom.
-!                 ! Check if i and j are not involved in a bond:
-!                 check = .FALSE.
-!                 DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
-!                   IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
-!                      check = .TRUE.
-!                      EXIT
-!                   END IF
+!        IF (autogen) THEN
+!           ! Construct autogenerated 1-3 pairs, i.e. all possible 1-3 pairs instead
+!           ! of only the bends that are present in the topology.
+!           ALLOCATE(pairs(0,2),stat=stat)
+!           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!           N = 0
+!           DO iatom = 1, natom
+!              DO i = 1, SIZE(ex_bond_list(iatom)%array1)
+!                 ! a neighboring atom of iatom:
+!                 atom_i = ex_bond_list(iatom)%array1(i)
+!                 DO j = 1, i-1
+!                    ! another neighboring atom of iatom
+!                    atom_j = ex_bond_list(iatom)%array1(j)
+!                    ! It is only a true bend if there is no shorter path.
+!                    ! No need to check if i and j correspond to the same atom.
+!                    ! Check if i and j are not involved in a bond:
+!                    check = .FALSE.
+!                    DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
+!                      IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
+!                         check = .TRUE.
+!                         EXIT
+!                      END IF
+!                    END DO
+!                    IF (check) CYCLE
+!                    ! Add the genuine 1-3 pair
+!                    N = N + 1
+!                    IF (SIZE(pairs,dim=1)<=N) THEN
+!                       CALL reallocate(pairs, 1, N+5, 1, 2)
+!                    END IF
+!                    pairs(N,1) = atom_i
+!                    pairs(N,2) = atom_j
 !                 END DO
-!                 IF (check) CYCLE
-!                 ! Add the genuine 1-3 pair
-!                 N = N + 1
-!                 IF (SIZE(pairs,dim=1)<=N) THEN
-!                    CALL reallocate(pairs, 1, N+5, 1, 2)
-!                 END IF
-!                 pairs(N,1) = atom_i
-!                 pairs(N,2) = atom_j
 !              END DO
 !           END DO
-!        END DO
-!        CALL reorder_structure(ex_bend_list, pairs(:,1), pairs(:,2), N, error)
-!        DEALLOCATE(pairs,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      ELSE
-!        IF (ASSOCIATED(conn_info%theta_a)) THEN
-!           N = SIZE(conn_info%theta_a)
-!           CALL reorder_structure(ex_bend_list, conn_info%theta_a, conn_info%theta_c, N, error)
-!        END IF
-      END IF
+!           CALL reorder_structure(ex_bend_list, pairs(:,1), pairs(:,2), N, error)
+!           DEALLOCATE(pairs,stat=stat)
+!           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ELSE
+!           IF (ASSOCIATED(conn_info%theta_a)) THEN
+!              N = SIZE(conn_info%theta_a)
+!              CALL reorder_structure(ex_bend_list, conn_info%theta_a, conn_info%theta_c, N, error)
+!           END IF
+         END IF
   
-      ! Reorder onfo
---- 498,519 ----
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-         ENDDO
-         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
+         ! Reorder onfo
+--- 514,535 ----
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ENDDO
+            CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
 !                                  particle_set, shortcut, error)
-      ELSE
-         ex_bond_list_ei => ex_bond_list
-      END IF
+         ELSE
+            ex_bond_list_ei => ex_bond_list
+         END IF
 !     IF (present_13_excl_ei_list) THEN
 !        !1-3 exclusion list
 !        ALLOCATE(ex_bend_list_ei(natom),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+        DO I=1,natom
-+           ALLOCATE(ex_bend_list_ei(I)%array1(0),stat=stat)
-+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-+        ENDDO
-+        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_ei,&
-+                                  particle_set, shortcut, error)
-      ELSE
+!           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DO I=1,natom
+!           ALLOCATE(ex_bend_list_ei(I)%array1(0),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+!        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_ei,&
+!                                  particle_set, shortcut, error)
+         ELSE
 !        ex_bend_list_ei => ex_bend_list
-      END IF
+         END IF
   
-      ! Reorder onfo
+         ! Reorder onfo
 ***************
-*** 499,557 ****
-         ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      ENDDO
--     IF (autogen) THEN
--        ! Construct autogenerated 1-4 pairs, i.e. all possible 1-4 pairs instead
--        ! of only the onfo's that are present in the topology.
--        ALLOCATE(pairs(0,2),stat=stat)
--        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
--        N = 0
--        DO iatom = 1, natom
--           DO i = 1, SIZE(ex_bond_list(iatom)%array1)
--              ! a neighboring atom of iatom:
--              atom_i = ex_bond_list(iatom)%array1(i)
--              DO j = 1, SIZE(ex_bend_list(iatom)%array1)
--                 ! a next neighboring atom of iatom:
--                 atom_j = ex_bend_list(iatom)%array1(j)
--                 ! It is only a true onfo if there is no shorter path.
--                 ! check if i and j are not the same atom
--                 IF (atom_i==atom_j) CYCLE
--                 ! check if i and j are not involved in a bond
--                 check = .FALSE.
--                 DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
--                   IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
--                      check = .TRUE.
--                      EXIT
--                   END IF
+*** 514,572 ****
+            ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+-        IF (autogen) THEN
+-           ! Construct autogenerated 1-4 pairs, i.e. all possible 1-4 pairs instead
+-           ! of only the onfo's that are present in the topology.
+-           ALLOCATE(pairs(0,2),stat=stat)
+-           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-           N = 0
+-           DO iatom = 1, natom
+-              DO i = 1, SIZE(ex_bond_list(iatom)%array1)
+-                 ! a neighboring atom of iatom:
+-                 atom_i = ex_bond_list(iatom)%array1(i)
+-                 DO j = 1, SIZE(ex_bend_list(iatom)%array1)
+-                    ! a next neighboring atom of iatom:
+-                    atom_j = ex_bend_list(iatom)%array1(j)
+-                    ! It is only a true onfo if there is no shorter path.
+-                    ! check if i and j are not the same atom
+-                    IF (atom_i==atom_j) CYCLE
+-                    ! check if i and j are not involved in a bond
+-                    check = .FALSE.
+-                    DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
+-                      IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
+-                         check = .TRUE.
+-                         EXIT
+-                      END IF
+-                    END DO
+-                    IF (check) CYCLE
+-                    ! check if i and j are not involved in a bend
+-                    check = .FALSE.
+-                    DO counter = 1, SIZE(ex_bend_list(atom_i)%array1)
+-                      IF (ex_bend_list(atom_i)%array1(counter) == atom_j) THEN
+-                         check = .TRUE.
+-                         EXIT
+-                      END IF
+-                    END DO
+-                    IF (check) CYCLE
+-                    ! Add the true onfo.
+-                    N = N + 1
+-                    IF (SIZE(pairs,dim=1)<=N) THEN
+-                       CALL reallocate(pairs, 1, N+5, 1, 2)
+-                    END IF
+-                    pairs(N,1) = atom_i
+-                    pairs(N,2) = atom_j
 -                 END DO
--                 IF (check) CYCLE
--                 ! check if i and j are not involved in a bend
--                 check = .FALSE.
--                 DO counter = 1, SIZE(ex_bend_list(atom_i)%array1)
--                   IF (ex_bend_list(atom_i)%array1(counter) == atom_j) THEN
--                      check = .TRUE.
--                      EXIT
--                   END IF
--                 END DO
--                 IF (check) CYCLE
--                 ! Add the true onfo.
--                 N = N + 1
--                 IF (SIZE(pairs,dim=1)<=N) THEN
--                    CALL reallocate(pairs, 1, N+5, 1, 2)
--                 END IF
--                 pairs(N,1) = atom_i
--                 pairs(N,2) = atom_j
 -              END DO
 -           END DO
--        END DO
--        CALL reorder_structure(ex_onfo_list, pairs(:,1), pairs(:,2), N, error)
--        DEALLOCATE(pairs,stat=stat)
--        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
--     ELSE
-         IF(ASSOCIATED(conn_info%onfo_a)) THEN
-            N = SIZE(conn_info%onfo_a)
-            CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
-         END IF
-!     END IF
+-           CALL reorder_structure(ex_onfo_list, pairs(:,1), pairs(:,2), N, error)
+-           DEALLOCATE(pairs,stat=stat)
+-           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-        ELSE
+            IF(ASSOCIATED(conn_info%onfo_a)) THEN
+               N = SIZE(conn_info%onfo_a)
+               CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
+            END IF
+!        END IF
   
-      !
-      DO iatom = 1, SIZE(particle_set)
---- 523,545 ----
-         ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      ENDDO
-         IF(ASSOCIATED(conn_info%onfo_a)) THEN
-            N = SIZE(conn_info%onfo_a)
-            CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
-         END IF
+         ! Build the exclusion (and onfo) list per atom.
+         DO iatom = 1, SIZE(particle_set)
+--- 539,561 ----
+            ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+            IF(ASSOCIATED(conn_info%onfo_a)) THEN
+               N = SIZE(conn_info%onfo_a)
+               CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
+            END IF
 ! 
 !     CALL section_vals_val_get(topology_section,"EXCLUDE_VDW_14", explicit=explicit, error=error)
 !     if (explicit) then
@@ -4221,116 +2372,114 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 !        exclude_14_ei = .true.
 !     endif
   
-      !
-      DO iatom = 1, SIZE(particle_set)
+         ! Build the exclusion (and onfo) list per atom.
+         DO iatom = 1, SIZE(particle_set)
 ***************
-*** 565,574 ****
-         dim1 = dim1 + dim0
-         dim2 = 0
-         IF  (topology%exclude_vdw==do_skip_13.OR. &
-!             topology%exclude_vdw==do_skip_14) dim2 = SIZE(ex_bend_list(iatom)%array1)
-         dim2 = dim1 + dim2
-         ! Always exclude 1-4 since we treat them in a different way..
-!        dim3 = SIZE(ex_onfo_list(iatom)%array1)
-         dim3 = dim2 + dim3
-         IF (dim3 /= 0) THEN
-            NULLIFY(list, wlist)
---- 553,566 ----
-         dim1 = dim1 + dim0
-         dim2 = 0
-         IF  (topology%exclude_vdw==do_skip_13.OR. &
-!             topology%exclude_vdw==do_skip_14) dim2 = SIZE(ex_bend_list_vdw(iatom)%array1)
-         dim2 = dim1 + dim2
-         ! Always exclude 1-4 since we treat them in a different way..
-!        if (exclude_14_vdw) then
-!           dim3 = SIZE(ex_onfo_list(iatom)%array1)
-!        else
-!           dim3=0
-!        endif
-         dim3 = dim2 + dim3
-         IF (dim3 /= 0) THEN
-            NULLIFY(list, wlist)
+*** 580,589 ****
+            dim1 = dim1 + dim0
+            dim2 = 0
+            IF  (topology%exclude_vdw==do_skip_13.OR. &
+!                topology%exclude_vdw==do_skip_14) dim2 = SIZE(ex_bend_list(iatom)%array1)
+            dim2 = dim1 + dim2
+            dim3 = 0
+            IF  (topology%exclude_vdw==do_skip_14) dim3 = SIZE(ex_onfo_list(iatom)%array1)
+            dim3 = dim2 + dim3
+            IF (dim3 /= 0) THEN
+               NULLIFY(list, wlist)
+--- 569,583 ----
+            dim1 = dim1 + dim0
+            dim2 = 0
+            IF  (topology%exclude_vdw==do_skip_13.OR. &
+!                topology%exclude_vdw==do_skip_14) dim2 = SIZE(ex_bend_list_vdw(iatom)%array1)
+            dim2 = dim1 + dim2
+            dim3 = 0
+            IF  (topology%exclude_vdw==do_skip_14) dim3 = SIZE(ex_onfo_list(iatom)%array1)
++           if (exclude_14_vdw) then
++              dim3 = SIZE(ex_onfo_list(iatom)%array1)
++           else
++              dim3=0
++           endif
+            dim3 = dim2 + dim3
+            IF (dim3 /= 0) THEN
+               NULLIFY(list, wlist)
 ***************
-*** 576,582 ****
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            wlist(  dim0:dim0) = iatom
-            IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
-!           IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list(iatom)%array1
-            IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
-            ! Get a unique list
-            DO i = 1, SIZE(wlist)-1
---- 568,574 ----
-            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-            wlist(  dim0:dim0) = iatom
-            IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
+*** 591,597 ****
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+               wlist(  dim0:dim0) = iatom
+               IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
+!              IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list(iatom)%array1
+               IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
+               ! Get a unique list
+               DO i = 1, SIZE(wlist)-1
+--- 585,591 ----
+               CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+               wlist(  dim0:dim0) = iatom
+               IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
 !           IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list_vdw(iatom)%array1
-            IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
-            ! Get a unique list
-            DO i = 1, SIZE(wlist)-1
+               IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
+               ! Get a unique list
+               DO i = 1, SIZE(wlist)-1
 ***************
-*** 612,621 ****
-               dim1 = dim1 + dim0
-               dim2 = 0
-               IF  (topology%exclude_ei==do_skip_13.OR. &
-!                   topology%exclude_ei==do_skip_14) dim2 = SIZE(ex_bend_list(iatom)%array1)
-               dim2 = dim1 + dim2
-               ! Always exclude 1-4 since we treat them in a different way..
-!              dim3 = SIZE(ex_onfo_list(iatom)%array1)
-               dim3 = dim2 + dim3
-  
-               IF (dim3 /= 0) THEN
---- 604,617 ----
-               dim1 = dim1 + dim0
-               dim2 = 0
-               IF  (topology%exclude_ei==do_skip_13.OR. &
-!                   topology%exclude_ei==do_skip_14) dim2 = SIZE(ex_bend_list_ei(iatom)%array1)
-               dim2 = dim1 + dim2
-               ! Always exclude 1-4 since we treat them in a different way..
-!              if (exclude_14_ei) then
-!                 dim3 = SIZE(ex_onfo_list(iatom)%array1)
-!              else
-!                 dim3=0
-!              endif
-               dim3 = dim2 + dim3
-  
-               IF (dim3 /= 0) THEN
+*** 627,634 ****
+                  dim1 = dim1 + dim0
+                  dim2 = 0
+                  IF  (topology%exclude_ei==do_skip_13.OR. &
+!                      topology%exclude_ei==do_skip_14) dim2 = SIZE(ex_bend_list(iatom)%array1)
+                  dim2 = dim1 + dim2
+                  dim3 = 0
+                  IF  (topology%exclude_ei==do_skip_14) dim3 = SIZE(ex_onfo_list(iatom)%array1)
+                  dim3 = dim2 + dim3
+--- 621,633 ----
+                  dim1 = dim1 + dim0
+                  dim2 = 0
+                  IF  (topology%exclude_ei==do_skip_13.OR. &
+!                      topology%exclude_ei==do_skip_14) dim2 = SIZE(ex_bend_list_ei(iatom)%array1)
+                  dim2 = dim1 + dim2
++ !              if (exclude_14_ei) then
++ !                 dim3 = SIZE(ex_onfo_list(iatom)%array1)
++ !              else
++ !                 dim3=0
++ !              endif
+                  dim3 = 0
+                  IF  (topology%exclude_ei==do_skip_14) dim3 = SIZE(ex_onfo_list(iatom)%array1)
+                  dim3 = dim2 + dim3
 ***************
-*** 623,629 ****
-                  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-                  wlist(  dim0:dim0) = iatom
-                  IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
-!                 IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list(iatom)%array1
-                  IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
-                  ! Get a unique list
-                  DO i = 1, SIZE(wlist)-1
---- 619,625 ----
-                  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-                  wlist(  dim0:dim0) = iatom
-                  IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
+*** 638,644 ****
+                     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+                     wlist(  dim0:dim0) = iatom
+                     IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
+!                    IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list(iatom)%array1
+                     IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
+                     ! Get a unique list
+                     DO i = 1, SIZE(wlist)-1
+--- 637,643 ----
+                     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+                     wlist(  dim0:dim0) = iatom
+                     IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
 !                 IF (dim2>dim1) wlist(dim1+1:dim2) = ex_bend_list_ei(iatom)%array1
-                  IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
-                  ! Get a unique list
-                  DO i = 1, SIZE(wlist)-1
+                     IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
+                     ! Get a unique list
+                     DO i = 1, SIZE(wlist)-1
 ***************
-*** 649,654 ****
---- 645,655 ----
-         END IF
-         particle_set(iatom)%list_exclude_vdw => list
-         particle_set(iatom)%list_exclude_ei  => list2
+*** 664,669 ****
+--- 663,673 ----
+            END IF
+            exclusions(iatom)%list_exclude_vdw => list
+            exclusions(iatom)%list_exclude_ei  => list2
 + !print *,'VDW list of atom ',iatom
 + !print *,list
 + !print *,'EI list of atom ',iatom
 + !print *,list2
 + 
-         ! The onfo must always be excluded to avoid double counting
-         DO i=1,SIZE(ex_onfo_list(iatom)%array1)
-            CPPostcondition(ANY(list==ex_onfo_list(iatom)%array1(i)),cp_failure_level,routineP,error,failure)
+            ! Keep a list of onfo atoms for proper selection of specialized 1-4
+            ! potentials instead of conventional nonbonding potentials.
+            ALLOCATE(exclusions(iatom)%list_onfo(SIZE(ex_onfo_list(iatom)%array1)))
 ***************
-*** 675,680 ****
---- 676,701 ----
-      DEALLOCATE(ex_onfo_list,stat=stat)
-      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-      ! deallocate bends
+*** 695,700 ****
+--- 699,724 ----
+         DEALLOCATE(ex_onfo_list,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ! deallocate bends
 +     IF (present_13_excl_ei_list) THEN
 +        DO I=1,natom
 +           DEALLOCATE(ex_bend_list_ei(I)%array1,stat=stat)
@@ -4351,11 +2500,11 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
 +     ELSE
 +        NULLIFY(ex_bend_list_vdw)
 +     END IF
-      DO I=1,natom
-         DEALLOCATE(ex_bend_list(I)%array1,stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         DO I=1,natom
+            DEALLOCATE(ex_bend_list(I)%array1,stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 ***************
-*** 779,791 ****
+*** 799,811 ****
   !>      Teodoro Laino [tlaino] - 12.2009
   ! *****************************************************************************
     SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
@@ -4369,7 +2518,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
       TYPE(cp_error_type), INTENT(inout)       :: error
   
       CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
---- 800,813 ----
+--- 823,836 ----
   !>      Teodoro Laino [tlaino] - 12.2009
   ! *****************************************************************************
     SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
@@ -4385,7 +2534,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
   
       CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
 ***************
-*** 796,813 ****
+*** 816,833 ****
         DIMENSION(:), POINTER                  :: names
       INTEGER                                  :: i, ind, j, k, l, m, n_rep
       LOGICAL                                  :: failure
@@ -4404,7 +2553,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
             m = SIZE(ex_bond_list(j)%array1)
             CALL reallocate(ex_bond_list_w(j)%array1,1,m)
   
---- 818,859 ----
+--- 841,882 ----
         DIMENSION(:), POINTER                  :: names
       INTEGER                                  :: i, ind, j, k, l, m, n_rep
       LOGICAL                                  :: failure
@@ -4448,8 +2597,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
             CALL reallocate(ex_bond_list_w(j)%array1,1,m)
   
 ***************
-*** 815,827 ****
---- 861,902 ----
+*** 835,847 ****
+--- 884,925 ----
             DO k =1, m
                ind = ex_bond_list(j)%array1(k)
                flag2=particle_set(ind)%atomic_kind%name
@@ -4492,323 +2641,3 @@ diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinat
                   END IF
                END DO
             END DO
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_exyz.F src_20100521_patched/topology_exyz.F
-*** src_20100521_latest_orig/topology_exyz.F	1970-01-01 01:00:00.000000000 +0100
---- src_20100521_patched/topology_exyz.F	2010-05-21 10:50:03.714331210 +0100
-***************
-*** 0 ****
---- 1,238 ----
-+ MODULE topology_exyz
-+   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
-+                                              cp_print_key_unit_nr
-+   USE cp_para_types,                   ONLY: cp_para_env_type
-+   USE cp_parser_methods,               ONLY: parser_get_next_line,&
-+                                              parser_get_object
-+   USE cp_parser_types,                 ONLY: cp_parser_type,&
-+                                              parser_create,&
-+                                              parser_release
-+   USE cp_units,                        ONLY: cp_unit_to_cp2k
-+   USE f77_blas
-+   USE input_section_types,             ONLY: section_vals_type
-+   USE kinds,                           ONLY: default_string_length,&
-+                                              dp
-+   USE memory_utilities,                ONLY: reallocate
-+   USE termination,                     ONLY: stop_program
-+   USE timings,                         ONLY: timeset,&
-+                                              timestop
-+   USE topology_types,                  ONLY: atom_info_type,&
-+                                              topology_parameters_type
-+   USE libatoms_module,                 ONLY: atoms, &
-+                                              extendable_str, &
-+                                              zero,&
-+                                              concat,&
-+                                              assign_pointer,&
-+                                              initialise,&
-+                                              read_xyz,&
-+                                              TABLE_STRING_LENGTH, &
-+                                              finalise
-+ #include "cp_common_uses.h"
-+ 
-+   IMPLICIT NONE
-+ 
-+   CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'topology_exyz'
-+ 
-+   PRIVATE
-+   PUBLIC :: read_coordinate_exyz
-+ 
-+ CONTAINS
-+ 
-+ ! *****************************************************************************
-+ !> \author Teodoro Laino
-+ ! *****************************************************************************
-+   SUBROUTINE read_coordinate_exyz (topology,para_env,subsys_section,error)
-+     TYPE(topology_parameters_type)           :: topology
-+     TYPE(cp_para_env_type), POINTER          :: para_env
-+     TYPE(section_vals_type), POINTER         :: subsys_section
-+     TYPE(cp_error_type), INTENT(inout)       :: error
-+ 
-+     CHARACTER(len=*), PARAMETER :: routineN = 'read_coordinate_exyz', &
-+       routineP = moduleN//':'//routineN
-+     INTEGER, PARAMETER                       :: nblock_atom = 1000
-+ 
-+     CHARACTER(LEN=default_string_length)     :: my_default_index
-+     INTEGER                                  :: frame, handle, iw, j, natom
-+     LOGICAL                                  :: failure, my_end
-+     TYPE(atom_info_type), POINTER            :: atom_info
-+     TYPE(cp_logger_type), POINTER            :: logger
-+     TYPE(cp_parser_type), POINTER            :: parser
-+     TYPE(Extendable_Str)                     :: es
-+     TYPE(atoms)                              :: at
-+     character(len=TABLE_STRING_LENGTH), pointer :: atmname(:), molname(:), resname(:), element(:)
-+     integer, pointer                         :: resid(:)
-+     REAL(KIND=dp), pointer                   :: atm_mass(:), atm_charge(:), occup(:), beta(:)
-+ 
-+     NULLIFY(parser, logger)
-+     failure = .FALSE.
-+     logger => cp_error_get_logger(error)
-+     iw = cp_print_key_unit_nr(logger,subsys_section,"PRINT%TOPOLOGY_INFO/EXYZ_INFO",&
-+          extension=".subsysLog",error=error)
-+     CALL timeset(routineN,handle)
-+ 
-+     atom_info => topology%atom_info
-+ 
-+     IF(iw>0) WRITE(iw,*) "    Reading in EXYZ file ",TRIM(topology%coord_file_name)
-+     CALL parser_create(parser,topology%coord_file_name, para_env=para_env, &
-+                        parse_white_lines=.TRUE.,error=error)
-+ 
-+     call initialise(es)
-+ 
-+     natom = 0
-+     frame = 0
-+     CALL parser_get_next_line(parser,1,error=error)
-+     Frames: DO
-+        ! Atom numbers
-+        CALL parser_get_object  (parser,natom,error=error)
-+        frame = frame + 1
-+        IF (frame == 1) THEN
-+           CALL reallocate(atom_info%label_molname, 1,    natom)
-+           CALL reallocate(atom_info%label_resname, 1,    natom)
-+           CALL reallocate(atom_info%label_resid,   1,    natom)
-+           CALL reallocate(atom_info%label_atmname, 1,    natom)
-+           CALL reallocate(atom_info%r,             1,3,1,natom)
-+           CALL reallocate(atom_info%atm_mass,      1,    natom)
-+           CALL reallocate(atom_info%atm_charge,    1,    natom)
-+           CALL reallocate(atom_info%occup,         1,    natom)
-+           CALL reallocate(atom_info%beta,          1,    natom)
-+           CALL reallocate(atom_info%element,       1,    natom)
-+        ELSE IF(natom > SIZE(atom_info%label_atmname)) THEN
-+           CALL stop_program (routineP,&
-+                "Atom number differs in different frames!")
-+        END IF
-+ 
-+        ! zero Extendable_Str, and concatentate number line
-+        call zero(es)
-+        call concat(es, trim(parser%input_line) // char(13))
-+ 
-+        ! concatentate comment line
-+        CALL parser_get_next_line(parser,1,error=error)
-+        call concat(es, trim(parser%input_line) // char(13))
-+ 
-+        DO j = 1, natom
-+          ! concatentate atom line
-+          CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
-+          call concat(es, trim(parser%input_line) // char(13))
-+          IF (my_end) THEN 
-+             CALL cp_assert(j==natom,cp_fatal_level,cp_assertion_failed,routineP,&
-+                  "Number of lines in EXYZ format not equal to the number of atoms."//&
-+                  " Please check the EXYZ file and rerun your job!"//CPSourceFileRef,only_ionode=.TRUE.)
-+             EXIT Frames
-+          END IF
-+        END DO
-+ 
-+        call read_xyz(at, es)
-+        if (.not. assign_pointer(at, 'atom_type', atmname)) nullify(atmname)
-+        if (.not. assign_pointer(at, 'atom_mol_name', molname)) nullify(molname)
-+        if (.not. assign_pointer(at, 'atom_res_name', resname)) nullify(resname)
-+        if (.not. assign_pointer(at, 'atom_res_number', resid)) nullify(resid)
-+        if (.not. assign_pointer(at, 'element', element)) nullify(element)
-+        if (.not. assign_pointer(at, 'atm_mass', atm_mass)) nullify(atm_mass)
-+        if (.not. assign_pointer(at, 'atom_charge', atm_charge)) nullify(atm_charge)
-+        if (.not. assign_pointer(at, 'occup', occup)) nullify(occup)
-+        if (.not. assign_pointer(at, 'beta', beta)) nullify(beta)
-+ 
-+        DO j = 1, natom
-+          if (associated(atmname)) then
-+            atom_info%label_atmname(j) = trim(atmname(j))
-+          else if (associated(at%species)) then
-+            atom_info%label_atmname(j) = trim(at%species(j))
-+          else if (associated(at%Z)) then
-+            WRITE(my_default_index,'(I0)') at%Z(j)   
-+            atom_info%label_atmname(j) = trim(my_default_index)
-+          else
-+            CALL stop_program (routineP,&
-+                "read_coordinate_exyz couldn't find atmname, species, or Z property")
-+          endif
-+ 
-+          WRITE(my_default_index,'(I0)')j   
-+          if (associated(at%pos)) then
-+            atom_info%r(:,j) = at%pos(:,j)
-+          else
-+            CALL stop_program (routineP,&
-+                "read_coordinate_exyz couldn't find pos property")
-+          endif
-+          if (associated(molname)) then
-+            atom_info%label_molname(j) = trim(molname(j))
-+          else
-+            atom_info%label_molname(j) = trim(atom_info%label_atmname(j)) // TRIM(my_default_index)
-+          endif
-+          if (associated(resname)) then
-+            atom_info%label_resname(j) = trim(resname(j))
-+          else
-+            atom_info%label_resname(j) = trim(atom_info%label_molname(j))
-+          endif
-+          if (associated(resid)) then
-+            atom_info%label_resid(j) = resid(j)
-+          else
-+            atom_info%label_resid(j) = 1
-+          endif
-+          if (associated(element)) then
-+            atom_info%element(j) = element(j)
-+          else if (associated(at%species)) then
-+            atom_info%element(j) = trim(at%species(j))
-+          else if (associated(at%Z)) then
-+            WRITE(my_default_index,'(I0)') at%Z(j)   
-+            atom_info%element(j) = trim(my_default_index)
-+          else
-+            CALL stop_program (routineP,&
-+                "read_coordinate_exyz couldn't find element, species, or Z property")
-+          endif
-+          if (associated(atm_mass)) then
-+            atom_info%atm_mass(j) = atm_mass(j)
-+          else
-+            atom_info%atm_mass(j) = HUGE(0.0_dp)
-+          endif
-+          if (associated(atm_charge)) then
-+            atom_info%atm_charge(j) = atm_charge(j)
-+          else
-+            atom_info%atm_charge(j) = -HUGE(0.0_dp)
-+          endif
-+          if (associated(occup)) then
-+            atom_info%occup(j) = occup(j)
-+          else
-+            atom_info%occup(j) = -HUGE(0.0_dp)
-+          endif
-+          if (associated(beta)) then
-+            atom_info%beta(j) = beta(j)
-+          else
-+            atom_info%beta(j) = -HUGE(0.0_dp)
-+          endif
-+          if (topology%charge_occup) atom_info%atm_charge(j) = atom_info%occup(j)
-+          if (topology%charge_beta) atom_info%atm_charge(j) = atom_info%beta(j)
-+ 
-+           IF(iw>0) WRITE(iw,'(T2,"EXYZ_INFO| ",A4,3F8.3,A4,I4)') &
-+                TRIM(atom_info%label_atmname(j)),&
-+                atom_info%r(1,j),&
-+                atom_info%r(2,j),&
-+                atom_info%r(3,j),&
-+                TRIM(atom_info%label_resname(j)),&
-+                atom_info%label_resid(j)
-+           atom_info%r(1,j) = cp_unit_to_cp2k(atom_info%r(1,j),"angstrom",error=error)
-+           atom_info%r(2,j) = cp_unit_to_cp2k(atom_info%r(2,j),"angstrom",error=error)
-+           atom_info%r(3,j) = cp_unit_to_cp2k(atom_info%r(3,j),"angstrom",error=error)
-+ 
-+        END DO
-+ 
-+        ! If there's a white line or end of file exit.. otherwise read other available
-+        ! snapshots
-+        CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
-+        my_end = my_end .OR. (LEN_TRIM(parser%input_line)==0)
-+        IF (my_end) EXIT Frames
-+ 
-+     END DO Frames
-+     CALL parser_release(parser,error=error)
-+ 
-+     topology%natoms            = natom
-+     topology%molname_generated = .TRUE.
-+ 
-+     call finalise(es)
-+     call finalise(at)
-+ 
-+     CALL timestop(handle)
-+     CALL cp_print_key_finished_output(iw,logger,subsys_section,&
-+          "PRINT%TOPOLOGY_INFO/EXYZ_INFO",error=error)
-+ 
-+   END SUBROUTINE read_coordinate_exyz
-+ 
-+ END MODULE topology_exyz
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology.F src_20100521_patched/topology.F
-*** src_20100521_latest_orig/topology.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/topology.F	2010-05-21 10:51:01.707467679 +0100
-***************
-*** 26,32 ****
-         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
-         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
-         do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
-!        do_coord_xtl, do_coord_xyz
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
---- 26,32 ----
-         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
-         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
-         do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
-!        do_coord_xtl, do_coord_xyz, do_coord_exyz
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
-***************
-*** 81,86 ****
---- 81,87 ----
-                                               topology_set_atm_mass
-    USE topology_xtl,                    ONLY: read_coordinate_xtl
-    USE topology_xyz,                    ONLY: read_coordinate_xyz
-+   USE topology_exyz,                   ONLY: read_coordinate_exyz
-  #include "cp_common_uses.h"
-  
-    IMPLICIT NONE
-***************
-*** 533,538 ****
---- 534,541 ----
-         CALL read_coordinate_pdb (topology,para_env,subsys_section,error)
-      CASE (do_coord_xyz)
-         CALL read_coordinate_xyz (topology,para_env,subsys_section,error)
-+     CASE (do_coord_exyz)
-+        CALL read_coordinate_exyz (topology,para_env,subsys_section,error)
-      CASE (do_coord_cif)
-         CALL read_coordinate_cif (topology,para_env,subsys_section,error)
-      CASE (do_coord_xtl)
-diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/velocity_verlet_control.F src_20100521_patched/velocity_verlet_control.F
-*** src_20100521_latest_orig/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100521_patched/velocity_verlet_control.F	2010-05-21 10:50:22.102636247 +0100
-***************
-*** 16,24 ****
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE integrator,                      ONLY: &
-!        isokin, langevin, nph_uniaxial, nph_uniaxial_damped, npt_f, npt_i, &
-         nve, nve_respa, nvt, reftraj
-    USE md_environment_types,            ONLY: get_md_env,&
-                                               md_environment_type
---- 16,24 ----
-    USE input_constants,                 ONLY: &
-         isokin_ensemble, langevin_ensemble, npe_f_ensemble, npe_i_ensemble, &
-         nph_uniaxial_damped_ensemble, nph_uniaxial_ensemble, npt_f_ensemble, &
-!        npt_i_ensemble, npt_y_ensemble, nve_ensemble, nvt_ensemble, reftraj_ensemble
-    USE integrator,                      ONLY: &
-!        isokin, langevin, nph_uniaxial, nph_uniaxial_damped, npt_f, npt_i, npt_y, &
-         nve, nve_respa, nvt, reftraj
-    USE md_environment_types,            ONLY: get_md_env,&
-                                               md_environment_type
-***************
-*** 80,85 ****
---- 80,87 ----
-         CALL isokin (md_env, error)
-      CASE (npt_i_ensemble)
-         CALL npt_i (md_env, globenv, error)
-+     CASE (npt_y_ensemble)
-+        CALL npt_y (md_env, globenv, error)
-      CASE (npt_f_ensemble)
-         CALL npt_f (md_env, globenv, error)
-      CASE (nph_uniaxial_ensemble)

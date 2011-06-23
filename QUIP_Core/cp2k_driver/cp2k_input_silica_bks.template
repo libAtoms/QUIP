@@ -1,0 +1,165 @@
+&FORCE_EVAL
+ &MM
+    &FORCEFIELD
+      IGNORE_MISSING_CRITICAL_PARAMS
+      PARMTYPE OFF
+      &SPLINE
+        EMAX_SPLINE 100.0
+      &END SPLINE
+      &CHARGE
+         ATOM SIO
+	 CHARGE 2.4
+      &END CHARGE
+      &CHARGE
+         ATOM OSB
+         CHARGE -1.2
+      &END CHARGE
+      &NONBONDED
+        &BMHFT
+           ATOMS OSB OSB
+           A [eV] 1388.7730     # eV
+	   B 2.76               # angstrom^-1
+	   C 6.43112905         # Hartree angstrom^6
+	   D 0.0
+           RCUT 10.0
+	&END BMHFT
+        &BMHFT
+           ATOMS SIO OSB
+           A [eV] 18003.7572     # eV
+	   B 4.87318             # angstrom^-1
+	   C 4.9006603523734675  # Hartree angstrom^6
+	   D 0.0
+           RCUT 10.0
+	&END BMHFT
+        &BMHFT
+           ATOMS SIO SIO
+           A [eV] 0.0
+	   B 0.0
+	   C 0.0
+	   D 0.0
+	&END BMHFT
+      &END NONBONDED
+    &END FORCEFIELD
+    &POISSON
+      &EWALD
+        EWALD_TYPE spme
+        EWALD_ACCURACY 1.E-6
+        ALPHA 0.35
+        GMAX ${MAX_CELL_SIZE_INT}
+      &END EWALD
+    &END POISSON
+  &END MM
+  &QMMM
+    ECOUPL GAUSS  # NONE for mech embed
+    USE_GEEP_LIB 10
+#from Laino 2006 using Blochl 1995, periodic electrostatic QM-MM coupling
+    &PERIODIC
+      GMAX 1.0
+      NGRIDS 50 50 50
+      &MULTIPOLE
+!        RCUT ${MAX_CELL_SIZE_INT}
+        EWALD_PRECISION 1.E-8
+        NGRIDS 50 50 50
+        ANALYTICAL_GTERM T
+        &INTERPOLATOR
+        &END INTERPOLATOR
+      &END MULTIPOLE
+    &END PERIODIC
+#from Laino 2005, radii of the smeared MM charges
+    &MM_KIND OT
+      RADIUS 1.2
+    &END MM_KIND
+    &MM_KIND HT
+      RADIUS 0.44
+    &END MM_KIND
+#    otherwise use default: 0.800
+  &END QMMM
+  &SUBSYS
+    &CELL
+      PERIODIC XYZ
+    &END CELL
+    &TOPOLOGY
+      EXCLUDE_VDW 1-1
+      EXCLUDE_EI 1-1
+      &DUMP_PSF
+      &END DUMP_PSF
+      &DUMP_PDB
+      &END DUMP_PDB
+      &GENERATE
+        BONDLENGTH_MAX     5.0
+      &END GENERATE
+    &END TOPOLOGY
+    &KIND H
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q1
+    &END KIND
+    &KIND OSB
+      ELEMENT O
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q6
+    &END KIND
+    &KIND SIO
+      ELEMENT Si
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q4
+    &END KIND
+    &KIND O
+      ELEMENT O
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q6
+    &END KIND
+    &KIND SI
+      ELEMENT Si
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q4
+    &END KIND
+
+  &END SUBSYS
+
+  &DFT
+    BASIS_SET_FILE_NAME ../BASIS_SET
+    POTENTIAL_FILE_NAME ../POTENTIAL
+    &MGRID
+      COMMENSURATE
+      CUTOFF 280.0
+      NGRIDS 4
+      REL_CUTOFF 30.0
+    &END MGRID
+#periodic QS calculation. Blochl 1995, decoupling of periodic QM images is NOT applied.
+#this is ignored if &QMMM&PERIODIC is present
+    &QS
+      EXTRAPOLATION PS
+      EXTRAPOLATION_ORDER 1
+!      EPS_DEFAULT 1.0E-12
+    &END QS
+    &SCF
+      SCF_GUESS restart
+      EPS_SCF 1.0E-6
+      MAX_SCF 20
+      &OUTER_SCF
+         EPS_SCF 1.0E-6
+         MAX_SCF 100
+      &END
+      &OT
+         MINIMIZER CG
+         PRECONDITIONER FULL_ALL
+      &END OT
+!      &SMEAR
+!         ELECTRONIC_TEMPERATURE 1000
+!      &END SMEAR
+    &END SCF
+    &XC
+      &XC_FUNCTIONAL BLYP
+      &END XC_FUNCTIONAL
+#density smoothing, VandeVondele 2005
+      &XC_GRID
+#        USE_FINER_GRID
+        XC_DERIV NN10_SMOOTH
+        XC_SMOOTH_RHO NN10
+      &END XC_GRID
+    &END XC
+  &END DFT
+&END FORCE_EVAL
+&GLOBAL
+  PRINT_LEVEL LOW
+&END GLOBAL

@@ -1,83 +1,127 @@
-Index: motion_utils.F
-===================================================================
-RCS file: /cvsroot/cp2k/cp2k/src/motion_utils.F,v
-retrieving revision 1.21
-diff -u -r1.21 motion_utils.F
---- motion_utils.F	3 Jan 2010 23:41:36 -0000	1.21
-+++ motion_utils.F	13 Aug 2010 16:15:24 -0000
-@@ -123,18 +123,18 @@
-        IF (iw>0) THEN
-           WRITE(iw,'(T2,A,3F12.6)')"ROT| Rotational Analysis Info "
-           WRITE(iw,'(T2,A)')"ROT| Principal axes and moments of inertia in atomic units:"
--          WRITE(iw,'(T2,A,T27,3(3X,I9,6X))')"ROT|",1,2,3
--          WRITE(iw,'(T2,A,T27,3(3X,E15.9))')"ROT| EIGENVALUES",Ip_eigval
--          WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      X",Ip(1,1),Ip(1,2),Ip(1,3)
--          WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      Y",Ip(2,1),Ip(2,2),Ip(2,3)
--          WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      Z",Ip(3,1),Ip(3,2),Ip(3,3)
-+          WRITE(iw,'(T2,A,T32,3(3X,I6,6X))')"ROT|",1,2,3
-+          WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT| EIGENVALUES",Ip_eigval
-+          WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      X",Ip(1,1),Ip(1,2),Ip(1,3)
-+          WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      Y",Ip(2,1),Ip(2,2),Ip(2,3)
-+          WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      Z",Ip(3,1),Ip(3,2),Ip(3,3)
-        END IF
-        CALL cp_print_key_finished_output(iw,logger,print_section,"ROTATIONAL_INFO",error=error)
-        iw=cp_print_key_unit_nr(logger,print_section,"ROTATIONAL_INFO/COORDINATES",extension=".vibLog",error=error)
-        IF (iw>0) THEN
-           WRITE(iw,'(/,T2,A)')"ROT| Standard Molecule Orientation - ANGSTROM "
-           DO iparticle = 1, natoms
--             WRITE(iw,'(T2,"ROT|",T20,A,T27,3(3X,F15.9))')&
-+             WRITE(iw,'(T2,"ROT|",T20,A,T30,3(3X,F12.6))')&
-                   TRIM(particles(iparticle)%atomic_kind%name),&
-                   MATMUL(particles(iparticle)%r,Ip)*angstrom
-           END DO
-@@ -261,7 +261,9 @@
-     CHARACTER(LEN=4)                         :: id_dcd
-     CHARACTER(LEN=default_string_length) :: id_label, id_wpc, my_act, my_ext, &
-       my_form, my_middle, my_pk_name, my_pos, remark1, remark2, section_ref, &
--      title, unit_str
-+      unit_str
-+    CHARACTER(LEN=3*default_string_length)   :: title !Added by Csilla
-+    CHARACTER(LEN=4)                         :: property !Added by Csilla
-     INTEGER                                  :: iskip, nat, outformat, &
-                                                 traj_unit
-     LOGICAL                                  :: failure, &
-@@ -287,17 +289,21 @@
-     IF (PRESENT(pos))          my_pos     = pos
-     IF (PRESENT(act))          my_act     = act
-     IF (PRESENT(pk_name))      my_pk_name = pk_name
--    
-+
-+    property = '' !Added by Csilla
-     SELECT CASE(TRIM(my_pk_name))
-     CASE("TRAJECTORY","SHELL_TRAJECTORY","CORE_TRAJECTORY")
-        id_dcd = "CORD"
-        id_wpc = "POS"
-+       property = 'pos' !Added by Csilla
-     CASE("VELOCITIES","SHELL_VELOCITIES","CORE_VELOCITIES")
-        id_dcd = "VEL "
-        id_wpc = "VEL"
-+       property = 'velo' !Added by Csilla
-     CASE("FORCES","SHELL_FORCES","CORE_FORCES")
-        id_dcd = "FRC "
-        id_wpc = "FORCE"
-+       property = 'frc' !Added by Csilla
-     CASE DEFAULT
-        CPPostcondition(.FALSE.,cp_fatal_level,routineP,error,failure)
-     END SELECT
-@@ -344,8 +350,14 @@
-           IF (PRESENT(extended_xmol_title)) my_extended_xmol_title = extended_xmol_title
-           ! This information can be digested by Molden
-           IF (my_extended_xmol_title) THEN
--            WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10)")&
--              " i = ",it,", time = ",time,", E = ",etot
-+            
-+            WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10,A,9F13.8,A)")&
-+!              " i = ",it,", time = ",time,", E = ",etot
-+              '  i="',it,' " time="',time,' " E="',etot, &
-+              '" Lattice="',cell%hmat(1,1)*angstrom,cell%hmat(2,1)*angstrom,cell%hmat(3,1)*angstrom, &
-+                            cell%hmat(1,2)*angstrom,cell%hmat(2,2)*angstrom,cell%hmat(3,2)*angstrom, &
-+                            cell%hmat(1,3)*angstrom,cell%hmat(2,3)*angstrom,cell%hmat(3,3)*angstrom, &
-+               '" Properties=species:S:1:'//trim(property)//':R:3'
-           ELSE
-             WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
-           END IF
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_orig/motion_utils.F src/motion_utils.F
+*** src_orig/motion_utils.F	2011-03-14 10:46:11.333673218 +0000
+--- src/motion_utils.F	2011-03-14 10:46:56.835566488 +0000
+***************
+*** 123,140 ****
+         IF (iw>0) THEN
+            WRITE(iw,'(T2,A,3F12.6)')"ROT| Rotational Analysis Info "
+            WRITE(iw,'(T2,A)')"ROT| Principal axes and moments of inertia in atomic units:"
+!           WRITE(iw,'(T2,A,T27,3(3X,I9,6X))')"ROT|",1,2,3
+!           WRITE(iw,'(T2,A,T27,3(3X,E15.9))')"ROT| EIGENVALUES",Ip_eigval
+!           WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      X",Ip(1,1),Ip(1,2),Ip(1,3)
+!           WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      Y",Ip(2,1),Ip(2,2),Ip(2,3)
+!           WRITE(iw,'(T2,A,T27,3(3X,F15.9))')"ROT|      Z",Ip(3,1),Ip(3,2),Ip(3,3)
+         END IF
+         CALL cp_print_key_finished_output(iw,logger,print_section,"ROTATIONAL_INFO",error=error)
+         iw=cp_print_key_unit_nr(logger,print_section,"ROTATIONAL_INFO/COORDINATES",extension=".vibLog",error=error)
+         IF (iw>0) THEN
+            WRITE(iw,'(/,T2,A)')"ROT| Standard Molecule Orientation - ANGSTROM "
+            DO iparticle = 1, natoms
+!              WRITE(iw,'(T2,"ROT|",T20,A,T27,3(3X,F15.9))')&
+                    TRIM(particles(iparticle)%atomic_kind%name),&
+                    MATMUL(particles(iparticle)%r,Ip)*angstrom
+            END DO
+--- 123,140 ----
+         IF (iw>0) THEN
+            WRITE(iw,'(T2,A,3F12.6)')"ROT| Rotational Analysis Info "
+            WRITE(iw,'(T2,A)')"ROT| Principal axes and moments of inertia in atomic units:"
+!           WRITE(iw,'(T2,A,T32,3(3X,I6,6X))')"ROT|",1,2,3
+!           WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT| EIGENVALUES",Ip_eigval
+!           WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      X",Ip(1,1),Ip(1,2),Ip(1,3)
+!           WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      Y",Ip(2,1),Ip(2,2),Ip(2,3)
+!           WRITE(iw,'(T2,A,T30,3(3X,F12.6))')"ROT|      Z",Ip(3,1),Ip(3,2),Ip(3,3)
+         END IF
+         CALL cp_print_key_finished_output(iw,logger,print_section,"ROTATIONAL_INFO",error=error)
+         iw=cp_print_key_unit_nr(logger,print_section,"ROTATIONAL_INFO/COORDINATES",extension=".vibLog",error=error)
+         IF (iw>0) THEN
+            WRITE(iw,'(/,T2,A)')"ROT| Standard Molecule Orientation - ANGSTROM "
+            DO iparticle = 1, natoms
+!              WRITE(iw,'(T2,"ROT|",T20,A,T30,3(3X,F12.6))')&
+                    TRIM(particles(iparticle)%atomic_kind%name),&
+                    MATMUL(particles(iparticle)%r,Ip)*angstrom
+            END DO
+***************
+*** 261,267 ****
+      CHARACTER(LEN=4)                         :: id_dcd
+      CHARACTER(LEN=default_string_length) :: id_label, id_wpc, my_act, my_ext, &
+        my_form, my_middle, my_pk_name, my_pos, remark1, remark2, section_ref, &
+!       title, unit_str
+      INTEGER                                  :: handle, iskip, nat, &
+                                                  outformat, traj_unit
+      LOGICAL                                  :: failure, &
+--- 261,269 ----
+      CHARACTER(LEN=4)                         :: id_dcd
+      CHARACTER(LEN=default_string_length) :: id_label, id_wpc, my_act, my_ext, &
+        my_form, my_middle, my_pk_name, my_pos, remark1, remark2, section_ref, &
+!       unit_str
+!     CHARACTER(LEN=3*default_string_length)   :: title !Added by Csilla
+!     CHARACTER(LEN=4)                         :: property !Added by Csilla
+      INTEGER                                  :: handle, iskip, nat, &
+                                                  outformat, traj_unit
+      LOGICAL                                  :: failure, &
+***************
+*** 289,305 ****
+      IF (PRESENT(pos))          my_pos     = pos
+      IF (PRESENT(act))          my_act     = act
+      IF (PRESENT(pk_name))      my_pk_name = pk_name
+!     
+      SELECT CASE(TRIM(my_pk_name))
+      CASE("TRAJECTORY","SHELL_TRAJECTORY","CORE_TRAJECTORY")
+         id_dcd = "CORD"
+         id_wpc = "POS"
+      CASE("VELOCITIES","SHELL_VELOCITIES","CORE_VELOCITIES")
+         id_dcd = "VEL "
+         id_wpc = "VEL"
+      CASE("FORCES","SHELL_FORCES","CORE_FORCES")
+         id_dcd = "FRC "
+         id_wpc = "FORCE"
+      CASE DEFAULT
+         CPPostcondition(.FALSE.,cp_fatal_level,routineP,error,failure)
+      END SELECT
+--- 291,311 ----
+      IF (PRESENT(pos))          my_pos     = pos
+      IF (PRESENT(act))          my_act     = act
+      IF (PRESENT(pk_name))      my_pk_name = pk_name
+! 
+!     property = '' !Added by Csilla
+      SELECT CASE(TRIM(my_pk_name))
+      CASE("TRAJECTORY","SHELL_TRAJECTORY","CORE_TRAJECTORY")
+         id_dcd = "CORD"
+         id_wpc = "POS"
++        property = 'pos' !Added by Csilla
+      CASE("VELOCITIES","SHELL_VELOCITIES","CORE_VELOCITIES")
+         id_dcd = "VEL "
+         id_wpc = "VEL"
++        property = 'velo' !Added by Csilla
+      CASE("FORCES","SHELL_FORCES","CORE_FORCES")
+         id_dcd = "FRC "
+         id_wpc = "FORCE"
++        property = 'frc' !Added by Csilla
+      CASE DEFAULT
+         CPPostcondition(.FALSE.,cp_fatal_level,routineP,error,failure)
+      END SELECT
+***************
+*** 346,353 ****
+            IF (PRESENT(extended_xmol_title)) my_extended_xmol_title = extended_xmol_title
+            ! This information can be digested by Molden
+            IF (my_extended_xmol_title) THEN
+!             WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10)")&
+!               " i = ",it,", time = ",time,", E = ",etot
+            ELSE
+              WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
+            END IF
+--- 352,365 ----
+            IF (PRESENT(extended_xmol_title)) my_extended_xmol_title = extended_xmol_title
+            ! This information can be digested by Molden
+            IF (my_extended_xmol_title) THEN
+!             
+!             WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10,A,9F13.8,A)")&
+! !              " i = ",it,", time = ",time,", E = ",etot
+!               '  i="',it,' " time="',time,' " E="',etot, &
+!               '" Lattice="',cell%hmat(1,1)*angstrom,cell%hmat(2,1)*angstrom,cell%hmat(3,1)*angstrom, &
+!                             cell%hmat(1,2)*angstrom,cell%hmat(2,2)*angstrom,cell%hmat(3,2)*angstrom, &
+!                             cell%hmat(1,3)*angstrom,cell%hmat(2,3)*angstrom,cell%hmat(3,3)*angstrom, &
+!                '" Properties=species:S:1:'//trim(property)//':R:3'
+            ELSE
+              WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
+            END IF
