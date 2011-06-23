@@ -56,6 +56,7 @@ include 'IPModel_interface.h'
 public :: IPModel_Custom
 type IPModel_Custom
   real(dp) :: cutoff = 10.0_dp
+  real(dp) :: kconf = 0.0_dp
 end type IPModel_Custom
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -85,6 +86,8 @@ subroutine IPModel_Custom_Initialise_str(this, args_str, param_str)
 
   !  Add initialisation code here
 
+  this%kconf = 0.05_dp
+
 end subroutine IPModel_Custom_Initialise_str
 
 subroutine IPModel_Custom_Finalise(this)
@@ -110,7 +113,6 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    real(dp) :: energy, force(3,at%N)
    real(dp) :: rO1, rO2, drO1(3), drO2(3)
-   real(dp), parameter ::  kConf = 0.15_dp
 
    INIT_ERROR(error)
 
@@ -120,15 +122,15 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
    rO2 = distance_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))
 
 
-   energy = kConf*rO1**2 + kConf*rO2**2 
+   energy = this%kConf*rO1**2 + this%kConf*rO2**2 
 
    !Forces
 
    drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
    drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
 
-   force(:,1) = 2.0_dp*kConf*rO1*drO1 
-   force(:,4) = 2.0_dp*kConf*rO2*drO2 
+   force(:,1) = 2.0_dp*this%kConf*rO1*drO1 
+   force(:,4) = 2.0_dp*this%kConf*rO2*drO2 
 
 
    if (present(e)) e = energy
@@ -156,6 +158,7 @@ subroutine IPModel_Custom_Print(this, file)
 
   call Print("IPModel_Custom : Custom Potential", file=file)
   call Print("IPModel_Custom : cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_Custom : kconf = " // this%kconf, file=file)
 
 end subroutine IPModel_Custom_Print
 
