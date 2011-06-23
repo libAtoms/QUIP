@@ -2231,6 +2231,9 @@ contains
     integer :: cur_trans_hop
     real(dp) :: bond_len, d
 
+    logical :: have_silica_potential ! lam81
+    integer :: res_num_silica ! lam81
+
     INIT_ERROR(error)
 
 ! only one set of defaults now, not one in args_str and one in arg list 
@@ -2253,6 +2256,8 @@ contains
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'hysteretic_connect_outer_factor', '1.5', hysteretic_connect_outer_factor, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.") !lam81
+    call param_register(params, 'res_num_silica', '1', res_num_silica, help_string="No help yet.") !lam81
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights_args_str args_str') ) then
       RAISE_ERROR("create_hybrid_weights_args_str failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -2570,13 +2575,14 @@ contains
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
 	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, &
-	   alt_connect=at%hysteretic_connect, error=error) !NB, debugfile=mainlog)
+	   alt_connect=at%hysteretic_connect, &
+           have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB, debugfile=mainlog) lam81
        else
 	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=PRINT_NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
-	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB, &
-	   !NB debugfile=mainlog)
+	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, &
+           have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB, debugfile=mainlog) lam81
        endif
 
        call print('bufferlist=',PRINT_VERBOSE)
@@ -2963,7 +2969,7 @@ contains
   !% Optionally use the time averaged positions.
   !% Optionally use only heavy atom selection.
   !
-  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, error)
+  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
 
     type(Table),           intent(inout) :: region
     type(Atoms),           intent(in)    :: at
@@ -2983,6 +2989,9 @@ contains
     type(Table)                          :: inner_region
     type(Table)                          :: outer_region
     logical                              :: no_hysteresis
+
+    logical,     optional, intent(in)    :: have_silica_potential ! lam81
+    integer,     optional, intent(in)    :: res_num_silica        ! lam81
 
     INIT_ERROR(error)
 
@@ -3004,7 +3013,8 @@ contains
     if (present(debugfile)) call print("   constructing inner region", file=debugfile)
     call construct_region(region=inner_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
       radius=inner_radius,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,nneighb_only=nneighb_only, &
-      min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile)
+      min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile, &
+      have_silica_potential=have_silica_potential, res_num_silica=res_num_silica) !lam81
     if (no_hysteresis) then
        call initialise(outer_region,4,0,0,0,0)
        call append(outer_region,inner_region)
@@ -3012,7 +3022,8 @@ contains
     if (present(debugfile)) call print("   constructing outer region", file=debugfile)
        call construct_region(region=outer_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
 	radius=outer_radius, use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,nneighb_only=nneighb_only, &
-	min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile)
+	min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile, &
+        have_silica_potential=have_silica_potential, res_num_silica=res_num_silica) ! lam81
     endif
 
     if (present(debugfile)) call print("   orig inner_region list", file=debugfile)
@@ -3057,7 +3068,7 @@ contains
   !% Optionally use a heavy atom based selection (applying to both the core and the region atoms).
   !% Alternatively use the hysteretic connection, only nearest neighbours and/or min_images (only for the n_connectivity_hops).
   !
-  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, error)
+  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
 
     type(Table),           intent(out) :: region
     type(Atoms),           intent(in)  :: at
@@ -3085,14 +3096,24 @@ type(inoutput), optional :: debugfile
     integer                             :: cur_hop
     real(dp), pointer                   :: use_pos(:,:)
     integer                             ::  shift_i(3)
+    logical :: do_have_silica_potential
+
+    integer, pointer :: atom_res_number(:) !lam81
+    logical,     optional, intent(in)  :: have_silica_potential !lam81
+    integer,     optional, intent(in)  :: res_num_silica
 
     INIT_ERROR(error)
 
     do_loop_atoms_no_connectivity = optional_default(.false.,loop_atoms_no_connectivity)
+    do_have_silica_potential = optional_default(.false., have_silica_potential)
 
     do_add_only_heavy_atoms = optional_default(.false.,add_only_heavy_atoms)
     if (do_add_only_heavy_atoms .and. .not. has_property(at,'Z')) then
       RAISE_ERROR("construct_region: atoms has no Z property", error)
+    endif
+
+    if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) then
+      RAISE_ERROR("BLABLA", error)
     endif
 
     do_use_avgpos = optional_default(.false.,  use_avgpos)
@@ -3166,6 +3187,10 @@ type(inoutput), optional :: debugfile
 	RAISE_ERROR("can't use avgpos with connectivity hops - make sure your connectivity is based on pos instead", error)
       endif
 
+      if (have_silica_potential) then
+         call print_warning('Overriding min_images_only since have_silica_potential=T')
+         do_min_images_only = .true. !lam81 
+      end if
       ! start with core
       call append(region,core)
 
@@ -3185,6 +3210,9 @@ type(inoutput), optional :: debugfile
 	    add_i = .true.
 	    if (do_add_only_heavy_atoms) then
 	      if (at%Z(i) == 1) cycle
+	    endif
+	    if (have_silica_potential) then     ! lam81
+               if (atom_res_number(i) == res_num_silica) cycle ! lam81
 	    endif
 	    if (present(debugfile)) call print("  i " // i // " is heavy or all atoms requested", file=debugfile)
 	    if (present(radius)) then ! check to make sure we're close enough to core list
@@ -3772,7 +3800,8 @@ type(inoutput), optional :: debugfile
   !% optionally correct selected region with heuristics (as coded in create_cluster_info())
   !
   subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
-	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, mark_postfix, error)
+	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, mark_postfix, &
+             have_silica_potential, res_num_silica, error) ! lam81
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
@@ -3789,10 +3818,12 @@ type(inoutput), optional :: debugfile
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, old_all_but_term
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:), old_hybrid_mark_p(:)
-    character(len=STRING_LENGTH) :: my_create_cluster_info_args
-    character(len=FIELD_LENGTH)  :: my_mark_postfix
+    character(len=STRING_LENGTH) :: my_create_cluster_info_args, my_mark_postfix
     integer, pointer :: hybrid_region_core_tmp_p(:)
     type(Table) :: padded_cluster_info
+
+    logical,  optional, intent(in)   :: have_silica_potential ! lam81
+    integer,  optional, intent(in)   :: res_num_silica        ! lam81
 
     INIT_ERROR(error)
 
@@ -3822,12 +3853,14 @@ type(inoutput), optional :: debugfile
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
+       nneighb_only=nneighb_only, min_images_only=min_images_only, &
+       have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB , debugfile=mainlog) lam81
    else !present origin
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,centre=origin,loop_atoms_no_connectivity=.true., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
+       nneighb_only=nneighb_only, min_images_only=min_images_only, &
+       have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB , debugfile=mainlog) lam81
    endif
    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
 
