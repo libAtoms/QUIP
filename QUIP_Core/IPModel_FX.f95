@@ -56,6 +56,8 @@ include 'IPModel_interface.h'
 public :: IPModel_FX
 type IPModel_FX
    real(dp) :: cutoff = 2.0_dp
+   logical :: return_one_body = .false.
+   logical :: return_two_body = .false.
 end type IPModel_FX
 
 
@@ -77,9 +79,23 @@ end interface Calc
 
 contains
 
-subroutine IPModel_FX_Initialise_str(this, args_str, param_str)
+subroutine IPModel_FX_Initialise_str(this, args_str, param_str, error)
   type(IPModel_FX), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
+  type(Dictionary)                :: params
+  logical :: return_two_body, return_one_body
+  integer, optional, intent(out) :: error
+
+  INIT_ERROR(error)
+
+  call initialise(params)
+  call param_register(params, 'return_two_body', 'F', this%return_two_body, help_string="if set, return the two_body energy and force as the main return data")
+  call param_register(params, 'return_one_body', 'F', this%return_one_body, help_string="if set, return the one_body energy and force as the main return data")
+  
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_FX_Initialise args_str')) then
+     RAISE_ERROR("IPModel_FX_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+  endif
+  call finalise(params)
 
   call Finalise(this)
 end subroutine IPModel_FX_Initialise_str
@@ -156,7 +172,8 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   ! cluster expansion
 
-  if(do_one_body .or. do_two_body) then
+
+  if(do_one_body .or. do_two_body .or. this%return_one_body .or. this%return_two_body) then
      
      allocate(water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index, error)
@@ -182,13 +199,22 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      end do
 
      ! if one body terms were asked for, store them
+     if(this%return_one_body) then
+        if(present(e)) then
+           e = sum(one_body_energy)
+        end if
+        if(present(f)) then
+           f = one_body_force
+        end if
+     end if
+
      if(do_one_body) then
         call set_value(at%params, trim(one_body_name)//"_energy", sum(one_body_energy))
         call add_property(at, trim(one_body_name)//"_force", one_body_force)
      end if
 
      ! compute dimer energies and forces
-     if(do_two_body) then
+     if(do_two_body .or. this%return_two_body) then
         allocate(two_body_force(3,at%N))
         two_body_energy = 0.0_dp
         two_body_force = 0.0_dp
@@ -222,9 +248,21 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
               end do
            end do
         end do
+
+        if(this%return_two_body) then
+           if(present(e)) then
+              e = two_body_energy
+           end if
+           if(present(f)) then
+              f = two_body_force
+           end if
+        end if
+
         ! store two-body terms
-        call set_value(at%params, trim(two_body_name)//"_energy", two_body_energy)
-        call add_property(at, trim(two_body_name)//"_force", two_body_force)
+        if(do_two_body) then
+           call set_value(at%params, trim(two_body_name)//"_energy", two_body_energy)
+           call add_property(at, trim(two_body_name)//"_force", two_body_force)
+        end if
      end if
   endif
 
