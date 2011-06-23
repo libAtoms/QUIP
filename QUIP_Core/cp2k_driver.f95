@@ -163,6 +163,7 @@ contains
 
     integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
     logical :: dummy, have_silica_potential
+    integer :: res_num_silica !lam81
     type(Table) :: intrares_impropers
 
     integer, pointer :: sort_index_p(:), saved_rev_sort_index_p(:)
@@ -206,6 +207,7 @@ contains
       call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum, help_string="amount of vacuum to add to size of qm region in hybrid (and nonperiodic?) runs")
       call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn, help_string="if true, try to reuse previous wavefunction file")
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential, help_string="if true, use 2.8A SILICA_CUTOFF for the connectivities")
+      call param_register(cli, 'res_num_silica', '1', res_num_silica, help_string="residue number for silica residue") !lam81
       call param_register(cli, 'auto_centre', 'F', auto_centre, help_string="if true, automatically center configuration.  May cause energy/force fluctuations.  Mutually exclusive with centre_pos")
       call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos, help_string="position to center around, mutually exclusive with auto_centre")
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake, help_string="if true, do fake cp2k runs that just read from old output files")
@@ -244,6 +246,7 @@ contains
     call print("  qm_vacuum " // qm_vacuum)
     call print("  try_reuse_wfn " // try_reuse_wfn)
     call print('  have_silica_potential '//have_silica_potential)
+    if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
     call print('  calc_qm_charges '//trim(calc_qm_charges))
@@ -653,7 +656,8 @@ contains
 	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
-      call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error)
+!     call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error) !lam81
+      call calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error=error) !lam81
       PASS_ERROR(error)
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
@@ -1218,14 +1222,18 @@ contains
 
   end function
 
-  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, error)
+  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error) !lam81
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
+    logical, intent(in) :: have_silica_potential !lam81
+    integer, intent(in) :: res_num_silica        !lam81
     integer, intent(out) :: charge
     logical, intent(out) :: do_lsd
     integer, intent(out), optional :: error
 
     real(dp), pointer :: atom_charge(:)
+    integer :: i                                 !lam81
+    integer, pointer :: atom_res_number(:)       !lam81
     integer, pointer  :: Z_p(:)
     integer           :: sum_Z
     integer           :: l_error
@@ -1240,9 +1248,30 @@ contains
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) then
 	RAISE_ERROR("calc_charge_lsd could not find atom_charge", error)
       endif
-      charge = nint(sum(atom_charge(qm_list_a)))
+      if (.not. assign_pointer(at, "atom_res_number", atom_res_number)) then !lam81
+        RAISE_ERROR("calc_charge_lsd could not find atom_res_number", error) !lam81
+      endif                                                                  !lam81
+
+      if(.not. have_silica_potential) then
+       charge = nint(sum(atom_charge(qm_list_a)))
+      else
+       charge = 0
+       do i=1, size(qm_list_a)
+        if(atom_res_number(qm_list_a(i)) == res_num_silica) cycle
+        charge = charge + atom_charge(qm_list_a(i))
+       enddo
+      endif
+
       !check if we have an odd number of electrons
-      sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
+      if(.not. have_silica_potential) then
+       sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
+      else
+       sum_Z = 0
+       do i=1, size(qm_list_a)
+        if(atom_res_number(qm_list_a(i)) == res_num_silica) cycle
+        sum_Z = sum_Z +Z_p(qm_list_a(i))
+       enddo
+      endif
       do_lsd = (mod(sum_Z-charge,2) /= 0)
     else
       sum_Z = sum(Z_p)

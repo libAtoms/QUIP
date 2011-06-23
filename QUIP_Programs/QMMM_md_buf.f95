@@ -155,7 +155,8 @@ program qmmm_md
 
   real(dp) :: max_move_since_calc_connect
   real(dp) :: calc_connect_buffer
-logical :: have_silica_potential
+  logical :: have_silica_potential
+  integer :: res_num_silica ! lam81
   integer :: stat
 
   logical have_QMMM_core, have_QMMM_extended
@@ -240,6 +241,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'core_create_cluster_info_args', '', core_create_cluster_info_args, help_string="Arguments to pass to create_cluster_info for QM core, if used by update_QM_region")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
+      call param_register(params_in, 'res_num_silica', '1', res_num_silica, help_string="residue number of silica") !lam81
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
 
       call param_register(params_in, 'distance_ramp', 'F', distance_ramp, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -418,6 +420,7 @@ logical :: have_silica_potential
       call print('  Print forces at t=0? '//print_forces_at0)
       call print('  carve_cluster '//do_carve_cluster)
       call print('  have_silica_potential '//have_silica_potential)
+      if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
       call print('  evb_args_str '//trim(evb_args_str))
       call print('  cp2k_calc_args '//trim(cp2k_calc_args))
       call print('  filepot_program '//trim(filepot_program))
@@ -446,7 +449,7 @@ logical :: have_silica_potential
 
     call print('Reading in the coordinates from file '//trim(coord_file)//'...')
     call read(my_atoms,coord_file)
-
+ 
     call initialise(ds,my_atoms)
 
     if (Continue_it) then
@@ -454,7 +457,7 @@ logical :: have_silica_potential
 	  call print('Found Time in atoms%params'//ds%t)
       endif
     endif
-
+ 
     if (len_trim(restraint_constraint_xml_file) > 0) then
        call initialise(restraint_constraint_xml_es)
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
@@ -464,7 +467,7 @@ logical :: have_silica_potential
     endif
 
     ds%avg_time = avg_time
-
+ 
   !THERMOSTAT
     call add_QMMM_md_buf_thermostats(ds, thermostat_type, Simulation_Temperature)
     call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
@@ -472,9 +475,9 @@ logical :: have_silica_potential
 
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
-
+ 
     if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
-
+ 
   !PRINT CONSTRAINTS AND RESTRAINTS
 
    if (ds%Nconstraints > 0) then
@@ -566,7 +569,7 @@ logical :: have_silica_potential
   !TOPOLOGY
 
   !CHARGE
-
+ 
     if (trim(Run_Type1).eq.'QS') then
        call set_value(ds%atoms%params,'Charge',Charge)
     endif
@@ -645,6 +648,7 @@ logical :: have_silica_potential
 	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
+          //' have_silica_potential='//have_silica_potential// ' res_num_silica'//res_num_silica & !lam81
 	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
 	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
        call print('INITIALISE_POT ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
@@ -1350,7 +1354,8 @@ contains
            call system_abort("couldn't find hybrid_mark_extended property")
         if (.not.any(qm_flag_p(1:at%N).eq.HYBRID_ACTIVE_MARK)) empty_QM_extended = .true.
      endif
-     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+!     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+     if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         call print_qm_region(at)
      endif
 
@@ -1476,7 +1481,7 @@ contains
     else ! QMMM
       cp2k_driver_run_type_args = "Run_Type=QMMM"
       if (run_type(1:9) == 'QMMM_CORE') then
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F qm_name_postfix=_core'
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_postfix=_core'
       else
 	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_postfix=_extended'
       endif
@@ -1809,7 +1814,8 @@ contains
       call add_property(ds_atoms,'old_hybrid_mark'//trim(mark_postfix),HYBRID_NO_MARK)
       call add_property(ds_atoms,'cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
       call add_property(ds_atoms,'old_cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
-      call add_property(ds_atoms,'cut_bonds'//trim(mark_postfix), 0, n_cols=4) !MAX_CUT_BONDS)
+!lam81     call add_property(ds_atoms,'cut_bonds'//trim(mark_postfix), 0, n_cols=4) !MAX_CUT_BONDS)
+      call add_property(ds_atoms,'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
     endif
 
     if (qm_region_pt_ctr) then
@@ -1822,7 +1828,8 @@ contains
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
 	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
 	 use_create_cluster_info=use_create_cluster_info_for_core,create_cluster_info_args=create_cluster_info_args,&
-	 list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
+         mark_postfix=trim(mark_postfix))
        if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
        if (list_changed1) then
 	  call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
@@ -1869,7 +1876,8 @@ contains
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
 	 add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,create_cluster_info_args=create_cluster_info_args, &
-	 list_changed=list_changed1, mark_postfix=trim(mark_postfix))
+	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
+         mark_postfix=trim(mark_postfix))
 
         !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
         !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
