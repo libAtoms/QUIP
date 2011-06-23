@@ -35,6 +35,7 @@ olddir=`pwd`
 [[ -z "$molpro" ]] && molpro="molpro"                                # Path to MolPro executable
 [[ -z "$molpro_command_file" ]] && molpro_command_file=$olddir/molpro_command_file # Template command input file for MolPro
 [[ -z "$molpro_dir" ]] && molpro_dir=$olddir                         # Directory in which to run MolPro
+[[ -z "$scratch_dir" ]] && scratch_dir=/scratch/gc121                # scratch dir for MolPro
 
 test_mode=0                                                          # Set to 1 to test script without actually running MolPro
 
@@ -97,44 +98,50 @@ lattice=`echo $params | awk '{match($0,/Lattice="?([^"]*)/,a); print a[1]}'`
 
 echo molpro_driver ${stem}: got $N atoms
 
+# Create MolPro compatible stem, so without any "."s in the filename
+
+molprostem=`echo ${stem} | tr '.' '_'`
+
 # Amend Molpro command file
-cp ${molpro_command_file} ${stem}_molpro
-echo "geometry=${inpfile}" >> ${stem}_molpro
+echo "file,2,molpro_temp" > ${molprostem}
+echo "geometry=${inpfile}" >> ${molprostem}
+cat ${molpro_command_file} >> ${molprostem}
+
 
 
 # Invoke MolPro
 if [[ $test_mode == 1 ]]; then
     echo molpro_driver: test mode
 else
-    rm -f ${stem}_molpro.out ${stem}_molpro.xml ${olddir}/${stem}.out
-    ${molpro} ${stem}_molpro
+    rm -f ${molprostem}.out ${molprostem}.xml ${olddir}/${stem}.out.xyz ${scratch_dir}/molpro_temp
+    ${molpro} -d ${scratch_dir} ${molprostem}
 fi
 
 
 # Extract information from output file
-energy_Ha=grep -A 1 '<property name="Energy"' ${stem}_molpro.xml | tr -d '\n' | sed 's/.*value="\(.*\)".*/\1/'
-energy=echo "${energy_Ha} * 27.2113961" | bc -ql
+energy_Ha=`grep -A 1 '<property name="Energy"' ${stem}.xml | tr -d '\n' | sed 's/.*value="\(.*\)".*/\1/'`
+energy=`echo "${energy_Ha} * 27.2113961" | bc -ql`
 
 # First line of output is number of atoms
-$N > ${stem}.out
+echo $N > ${stem}.out.xyz
 
 # Second line of output is parameter line
-echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy\" >> ${stem}.out
+echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy\" >> ${stem}.out.xyz
 
 # Extract gradient
-awk '/<gradient/,/<[/]gradient/ {if(!/>/){print -$1*27.2113961/0.529177249, -$2*27.2113961/0.529177249, -$3*27.2113961/0.529177249}}' ${stem}_molpro.xml > ${stem}_tmpforce
+awk '/<gradient/,/<[/]gradient/ {if(!/>/){printf("%16.8f%16.8f%16.8f\n", -$1*27.2113961/0.529177249, -$2*27.2113961/0.529177249, -$3*27.2113961/0.529177249)}}' ${stem}.xml > ${stem}_tmpforce
 
 # Merge pos and gradient
 print_property $inpfile pos 1 > ${stem}_tmppos
-paste ${stem}_tmppos ${stem}_tmpforce >> ${stem}.out
+paste ${stem}_tmppos ${stem}_tmpforce >> ${stem}.out.xyz
 
 
 # Save all  output
-cat ${stem}_molpro.out >> ${stem}_molpro_output
-
+cat ${molprostem}.out >> ${molprostem}_molpro_output
+cat ${stem}.out.xyz >> ${stem}.log.xyz
 
 # Copy output file
-cp ${stem}.out $olddir/$outfile
+cp ${stem}.out.xyz $olddir/$outfile
 
 echo molpro_driver ${stem}: done, E\=$energy eV
 exit 0
