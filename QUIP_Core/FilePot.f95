@@ -146,11 +146,11 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   this%init_args_str = args_str
 
   call initialise(params)
-  call param_register(params, 'command', PARAM_MANDATORY, command, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'property_list', 'species:pos', property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'command', PARAM_MANDATORY, command, help_string="system command to execute that should read the structure file, run the model and deposit the output file")
+  call param_register(params, 'property_list', 'species:pos', property_list, help_string="list of properties to print with the structure file")
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'filename', 'filepot', filename, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'filename', 'filepot', filename, help_string="seed name for directory and structure files to be used")
+  call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="if the unit cell does not fit into this cutoff, it is periodically replicated so that it does")
   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
   call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
@@ -219,7 +219,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
 
-  character(len=FIELD_LENGTH)  :: xyzfile, outfile
+  character(len=FIELD_LENGTH)  :: xyzfile, outfile, filename
   character(len=STRING_LENGTH) :: my_args_str
   integer :: nx, ny, nz
   type(Atoms) :: sup
@@ -228,7 +228,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
 
   character(len=FIELD_LENGTH) :: read_extra_property_list
   type(Dictionary) :: cli
-  logical :: FilePot_log
+  logical :: FilePot_log, filename_override
   
   INIT_ERROR(error)
 
@@ -243,10 +243,16 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
+
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif
   call finalise(cli)
+
+  if(filename_override) then
+     this%filename = filename
+  end if
 
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
