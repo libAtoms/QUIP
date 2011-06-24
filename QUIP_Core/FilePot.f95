@@ -243,7 +243,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
+  call param_register(cli, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
 
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
