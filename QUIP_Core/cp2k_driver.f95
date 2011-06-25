@@ -50,56 +50,6 @@ public :: do_cp2k_calc
 
 contains
 
-  subroutine do_cp2k_calc_fake(at, f, e, args_str)
-    type(Atoms), intent(inout) :: at
-    real(dp), intent(out) :: f(:,:), e
-    character(len=*), intent(in) :: args_str
-
-    type(inoutput) :: last_run_io
-    type(cinoutput) :: force_cio
-    character(len=FIELD_LENGTH) :: last_run_s
-    integer :: this_run_i
-    integer :: stat
-    type(Atoms) :: for
-    real(dp), pointer :: frc(:,:)
-
-    call initialise(last_run_io, "cp2k_driver_fake_run", action=INPUT)
-    last_run_s = read_line(last_run_io, status=stat)
-    call finalise(last_run_io)
-    if (stat /= 0) then
-      this_run_i = 1
-    else
-      read (fmt=*,unit=last_run_s) this_run_i
-      this_run_i = this_run_i + 1
-    endif
-
-    call print("do_cp2k_calc_fake run_i " // this_run_i, PRINT_ALWAYS)
-
-    call initialise(force_cio, "cp2k_force_file_log")
-    call read(force_cio, for, frame=this_run_i-1)
-    !NB why does this crash now?
-    ! call finalise(force_cio)
-    if (.not. assign_pointer(for, 'frc', frc)) &
-      call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
-    f = frc
-
-    if (.not. get_value(for%params, "energy", e)) then
-      if (.not. get_value(for%params, "Energy", e)) then
-	if (.not. get_value(for%params, "E", e)) then
-	  call system_abort("do_cp2k_calc_fake didn't find energy")
-	endif
-      endif
-    endif
-
-    e = e * HARTREE
-    f  = f * HARTREE/BOHR 
-
-    call initialise(last_run_io, "cp2k_driver_fake_run", action=OUTPUT)
-    call print(""//this_run_i, file=last_run_io)
-    call finalise(last_run_io)
-
-  end subroutine do_cp2k_calc_fake
-
 
   subroutine do_cp2k_calc(at, f, e, args_str, error)
     type(Atoms), intent(inout) :: at
@@ -121,9 +71,6 @@ contains
 
     character(len=128) :: method
 
-    type(Inoutput) :: template_io
-    integer :: template_n_lines
-    character(len=FIELD_LENGTH), allocatable :: cp2k_template_a(:)
     type(Inoutput) :: link_template_io
     integer :: link_template_n_lines
     character(len=FIELD_LENGTH), allocatable :: link_template_a(:)
@@ -151,32 +98,22 @@ contains
     logical :: cp2k_calc_fake
 
     integer, pointer :: isolated_atom(:)
-    integer i, j, atno, insert_pos
+    integer i, j, at_Z, insert_pos
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
-
-    type(Atoms) :: at_cp2k
-
-    character(len=TABLE_STRING_LENGTH), pointer :: from_str(:), to_str(:)
-    character(len=TABLE_STRING_LENGTH) :: dummy_s
-    real(dp), pointer :: from_dp(:), to_dp(:)
-    integer, pointer :: from_i(:), to_i(:)
 
     integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
     logical :: dummy, have_silica_potential
     integer :: res_num_silica !lam81
     type(Table) :: intrares_impropers
 
-    integer, pointer :: sort_index_p(:), saved_rev_sort_index_p(:)
+    integer, pointer :: sort_index_p(:)
     integer, allocatable :: rev_sort_index(:)
-    integer :: at_i, iri_i
     type(Inoutput) :: rev_sort_index_io
-    logical :: sorted
 
     integer :: run_dir_i, force_run_dir_i, delete_dir_i
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
-    integer :: form_bond_sorted(2), break_bond_sorted(2)
 
     character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
     character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
@@ -184,6 +121,8 @@ contains
     character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
     logical :: exists
+
+    type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
 
     INIT_ERROR(error)
 
@@ -319,14 +258,10 @@ contains
        call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
        call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
        if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(cp2k_template_file)//" into the tmp dir "//trim(tmp_run_dir))
-       call initialise(template_io, trim(tmp_run_dir)//"/"//trim(cp2k_template_file), INPUT)
+       call system("cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/cp2k_input.inp")
     else
-       call initialise(template_io, trim(cp2k_template_file), INPUT)
+       call system("cp "//trim(cp2k_template_file)//" "//trim(run_dir)//"/cp2k_input.inp")
     endif
-    call read_file(template_io, cp2k_template_a, template_n_lines)
-    call finalise(template_io)
-
-    call prefix_cp2k_input_sections(cp2k_template_a(1:template_n_lines))
 
     if ( (trim(psf_print) /= 'NO_PSF') .and. &
          (trim(psf_print) /= 'DRIVER_PRINT_AND_SAVE') .and. &
@@ -374,87 +309,21 @@ contains
       end if
     end if
 
-    ! sort by molecule, residue ID
-    call add_property(at, 'sort_index', 0, n_cols=1, ptr=sort_index_p, error=error)
-    PASS_ERROR_WITH_INFO("Failed to add sort_index property", error)
-    ! initialise sort index
-    do at_i=1, at%N
-      sort_index_p(at_i) = at_i
-    end do
+    call do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
+      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error)
+    PASS_ERROR_WITH_INFO("Failed to sort atoms in do_cp2k_calc", error)
 
-    ! do sort by read in order or labels
-    sorted = .false.
-    if (trim(psf_print) == 'USE_EXISTING_PSF') then ! read sort order
-       ! add property for saved reverse sort indx
-       call add_property(at, 'saved_rev_sort_index', 0, n_cols=1, ptr=saved_rev_sort_index_p, error=error)
-       PASS_ERROR_WITH_INFO("Failed to add saved_rev_sort_index property", error)
-       ! read it from file
-       if (tmp_run_dir_i>0) then
-         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)// &
-	                     " ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
-         if ( stat /= 0 ) then
-	    call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)// &
-	                      " into the tmp dir "//trim(tmp_run_dir))
-	 endif
-         call initialise(rev_sort_index_io, trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
-       else
-         call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
-       endif
-       call read_ascii(rev_sort_index_io, saved_rev_sort_index_p)
-       call finalise(rev_sort_index_io)
-       ! sort by it
-       call atoms_sort(at, 'saved_rev_sort_index', error=error)
-       PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by read-in sort_index from quip_sort_order"//trim(topology_suffix), error)
-       sorted = .true.
-    endif
-    if (trim(psf_print) == 'DRIVER_PRINT_AND_SAVE') then ! sort by labels
-       if (has_property(at,'mol_id') .and. has_property(at,'atom_res_number')) then
-	  if (has_property(at,'motif_atom_num')) then
-	    call atoms_sort(at, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
-	  else
-	    call atoms_sort(at, 'mol_id', 'atom_res_number', error=error)
-	  endif
-	  PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id, atom_res_number, and motif_atom_num", error)
-	  sorted = .true.
-       endif
-    endif
-
-    allocate(rev_sort_index(at%N))
-    do i=1, at%N
-       rev_sort_index(sort_index_p(i)) = i
-    end do
-
-    if (sorted) then
-      do at_i=1, at%N
-	if (sort_index_p(at_i) /= at_i) then
-	  call print("sort() of at%data reordered some atoms")
-	  exit
-	endif
-      end do
-      ! fix EVB bond forming/breaking indices for new sorted atom numbers
-      call calc_connect(at)
-      if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
-	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond_sorted(:) = rev_sort_index(form_bond(:))
-	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond_sorted(:) = rev_sort_index(break_bond(:))
-      end if
-      ! fix intrares impropers atom indices for new sorted atom numbers
-      do iri_i=1, intrares_impropers%N
-	intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
-      end do
-    else
-      call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_number, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
-    end if
 
     ! write PSF file, if requested
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
 	if (has_property(at, 'avgpos')) then
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential,form_bond=form_bond_sorted,break_bond=break_bond_sorted)
+	    add_silica_23body=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
 	else if (has_property(at, 'pos')) then
 	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos',form_bond=form_bond_sorted,break_bond=break_bond_sorted)
+	    add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos',form_bond=form_bond,break_bond=break_bond)
 	else
 	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
 	endif
@@ -465,20 +334,35 @@ contains
       endif
     endif
 
+    call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
+    if (use_QM) then
+      call print("@SET DO_DFT 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    else
+      call print("@SET DO_DFT 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    endif
+    if (use_MM) then
+      call print("@SET DO_MM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    else
+      call print("@SET DO_MM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    endif
+    if (use_QMMM) then
+      call print("@SET DO_QMMM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    else
+      call print("@SET DO_QMMM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    endif
+
     ! set variables having to do with periodic configs
     if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
     insert_pos = 0
     if (at_periodic) then
-      call insert_cp2k_input_line(cp2k_template_a, " @SET PERIODIC XYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      call print("@SET PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     else
-      call insert_cp2k_input_line(cp2k_template_a, " @SET PERIODIC NONE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      call print("@SET PERIODIC NONE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     endif
-    call insert_cp2k_input_line(cp2k_template_a, " @SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), &
-      after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call print("@SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
     ! put in method
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL METHOD "//trim(method), after_line = insert_pos, n_l = template_n_lines)
+    call print("@SET FORCE_EVAL_METHOD "//trim(method), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
     ! get qm_list and link_list
     if (use_QMMM) then
@@ -522,7 +406,6 @@ contains
           call initialise(link_template_io, trim(link_template_file), INPUT)
           call read_file(link_template_io, link_template_a, link_template_n_lines)
           call finalise(link_template_io)
-          call prefix_cp2k_input_sections(link_template_a)
        endif
     else
       allocate(qm_list_a(0))
@@ -562,18 +445,20 @@ contains
 
     can_reuse_wfn = .true.
 
+    call print("@SET DO_QMMM_LINK 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     ! put in things needed for QMMM
     if (use_QMMM) then
 
-      insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
 			' Angstrom around the QM atoms.')
       call print('WARNING! Please check if your cell is centreed around the QM region!',PRINT_ALWAYS)
       call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',PRINT_ALWAYS)
       call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',PRINT_ALWAYS)
       cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
-      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
-      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
+      call print("@SET QMMM_ABC_X "//cur_qmmm_qm_abc(1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+      call print("@SET QMMM_ABC_Y "//cur_qmmm_qm_abc(2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+      call print("@SET QMMM_ABC_Z "//cur_qmmm_qm_abc(3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+      call print("@SET QMMM_PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
       if (get_value(at%params, "QM_cell"//trim(qm_name_postfix), old_qmmm_qm_abc)) then
 	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
@@ -611,121 +496,123 @@ contains
 
        if (qm_list_changed) can_reuse_wfn = .false.
 
+      call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.qmmm_qm_kind',OUTPUT)
+      call print("@SET QMMM_QM_KIND_FILE cp2k_input.qmmm_qm_kind", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
       !Add QM atoms
       counter = 0
-      do atno=minval(at%Z), maxval(at%Z)
-	if (any(at%Z(qm_list_a) == atno)) then
-	  insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&QM_KIND "//ElementName(atno))
+      do at_Z=minval(at%Z), maxval(at%Z)
+	if (any(at%Z(qm_list_a) == at_Z)) then
+	  call print("&QM_KIND "//trim(ElementName(at_Z)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 	  do i=1, size(qm_list_a)
-	    if (at%Z(qm_list_a(i)) == atno) then
-	      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&QM_KIND-"//trim(ElementName(atno))// &
-							" MM_INDEX "//qm_list_a(i), after_line = insert_pos, n_l = template_n_lines)
-	      insert_pos = insert_pos + 1
+	    if (at%Z(qm_list_a(i)) == at_Z) then
+	      call print("  MM_INDEX "//qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 	      counter = counter + 1
 	    endif
 	  end do
+	  call print("&END QM_KIND", file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 	end if
       end do
+      call finalise(cp2k_input_tmp_io)
       if (size(qm_list_a) /= counter) &
 	call system_abort("Number of QM list atoms " // size(qm_list_a) // " doesn't match number of QM_KIND atoms " // counter)
 
       !Add link sections from template file for each link
       if (size(link_list_a).gt.0) then
+	 call print("@SET DO_QMMM_LINK 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 call print("@SET QMMM_LINK_FILE cp2k_input.link", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.link',OUTPUT)
          do i=1,cut_bonds%N
             i_inner = cut_bonds%int(1,i)
             i_outer = cut_bonds%int(2,i)
-            insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&QMMM")
-            inserted_atoms = .false.
             do i_line=1,link_template_n_lines
-               call insert_cp2k_input_line(cp2k_template_a, trim("&FORCE_EVAL&QMMM")//trim(link_template_a(i_line)), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-               if (.not.inserted_atoms) then
-                  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&LINK MM_INDEX "//i_outer, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-                  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&LINK QM_INDEX "//i_inner, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-                  inserted_atoms = .true.
+	       call print(trim(link_template_a(i_line)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+	       if (i_line == 1) then
+		  call print("MM_INDEX "//i_outer, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+		  call print("QM_INDEX "//i_inner, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
                endif
             enddo
          enddo
-      endif
-    endif
+	 call finalise(cp2k_input_tmp_io)
+      endif ! size(link_list_a) > 0
+    endif ! use_QMMM
 
+    call print("@SET WFN_FILE_NAME no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET DO_DFT_LSD 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET DO_DFT_QM_CHARGES 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     ! put in things needed for QM
     if (use_QM) then
       if (try_reuse_wfn .and. can_reuse_wfn) then 
-	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
-        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_postfix), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	call print("@SET WFN_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_postfix), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
 !     call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error) !lam81
       call calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error=error) !lam81
       PASS_ERROR(error)
-      insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
-      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-      if (do_lsd) call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT LSD ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-      if (len_trim(calc_qm_charges) > 0) then
-	 insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&PRINT")
-	 insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT&PRINT", "&MULLIKEN")
-	 call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&PRINT FILENAME qmcharges", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+      if (do_lsd) then
+	 call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
       endif
-    endif
+      if (len_trim(calc_qm_charges) > 0) then
+	 call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+      endif
+    endif ! use_QM
 
     ! put in unit cell
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&SUBSYS")
-
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&CELL")
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL A " // at%lattice(:,1), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL B " // at%lattice(:,2), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL C " // at%lattice(:,3), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call print("@SET SUBSYS_CELL_A_X "//at%lattice(1,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_A_Y "//at%lattice(2,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_A_Z "//at%lattice(3,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_B_X "//at%lattice(1,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_B_Y "//at%lattice(2,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_B_Z "//at%lattice(3,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_C_X "//at%lattice(1,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_C_Y "//at%lattice(2,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET SUBSYS_CELL_C_Z "//at%lattice(3,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
     ! put in topology
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&TOPOLOGY")
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&DUMP_PSF")
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&DUMP_PDB")
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&GENERATE")
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE REORDER F", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE CREATE_MOLECULES F", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE", "&ISOLATED_ATOMS")
+    call print("@SET ISOLATED_ATOMS_FILE cp2k_input.isolated_atoms", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.isolated_atoms',OUTPUT)
     if (use_QMMM) then
       do i=1, size(qm_list_a)
-	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS LIST " // qm_list_a(i), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
       end do
     endif
     if (assign_pointer(at, "isolated_atom", isolated_atom)) then
       do i=1, at%N
 	if (isolated_atom(i) /= 0) then
-	  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS LIST " // i, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	  call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 	endif
       end do
     endif
+    call finalise(cp2k_input_tmp_io)
 
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&TOPOLOGY")
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORD_FILE_NAME quip_cp2k.xyz", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE XYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call print("@SET COORD_FILE quip_cp2k.xyz", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET COORD_FORMAT XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
+      call print("@SET USE_PSF 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
       if (tmp_run_dir_i>0) then
         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_cp2k"//trim(topology_suffix)//".psf ] ; then cp quip_cp2k"//trim(topology_suffix)//".psf /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy quip_cp2k"//trim(topology_suffix)//".psf into the tmp dir "//trim(tmp_run_dir))
-        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME quip_cp2k"//trim(topology_suffix)//".psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+        call print("@SET CONN_FILE quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
       else
-        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME ../quip_cp2k"//trim(topology_suffix)//".psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+        call print("@SET CONN_FILE ../quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
       endif
-      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_FORMAT PSF", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      call print("@SET CONN_FORMAT PSF", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    else
+      call print("@SET USE_PSF 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
     endif
 
     ! put in global stuff to run a single force evalution, print out appropriate things
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&GLOBAL")
-    call insert_cp2k_input_line(cp2k_template_a, "&GLOBAL   PROJECT quip", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&GLOBAL   RUN_TYPE MD", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call print("@SET QUIP_PROJECT quip", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET QUIP_RUN_TYPE MD", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&MOTION")
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION", "&PRINT")
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION&PRINT", "&FORCES")
-    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&PRINT&FORCES       FORMAT XMOL", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION", "&MD")
-    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call print("@SET DO_PRINT_FORCES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET FORCES_FORMAT XMOL", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET QUIP_ENSEMBLE NVE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+    call print("@SET QUIP_N_STEPS 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
-    call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
+    call finalise(cp2k_input_io)
 
     ! prepare xyz file for input to cp2k
     call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
@@ -806,70 +693,97 @@ contains
 
   end subroutine do_cp2k_calc
 
-  function find_make_cp2k_input_section(l_a, n_l, base_sec, new_sec) result(line_n)
-    character(len=*), allocatable, intent(inout) :: l_a(:)
-    integer, intent(inout) :: n_l
-    character(len=*), intent(in) :: base_sec, new_sec
-    integer :: line_n
+  subroutine do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
+      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error)
+    type(Atoms), intent(inout) :: at
+    integer, intent(out), pointer :: sort_index_p(:)
+    integer, intent(inout), allocatable :: rev_sort_index(:)
+    character(len=*), intent(in) :: psf_print
+    character(len=*), intent(in) :: topology_suffix
+    character(len=*), intent(in) :: tmp_run_dir
+    integer, intent(in) :: tmp_run_dir_i
+    integer :: form_bond(2), break_bond(2)
+    type(Table), intent(inout) :: intrares_impropers
+    integer, optional, intent(out) :: error
 
-    integer :: i, pamp, pspc
-    character(len=FIELD_LENGTH) :: sec, word, arg, base_sec_root, base_sec_tail, new_sec_end
+    logical :: sorted
+    integer, pointer :: saved_rev_sort_index_p(:)
+    type(inoutput) :: rev_sort_index_io
+    integer :: at_i, iri_i
+    integer :: stat
 
-    line_n = 0
-
-    do i=1, n_l
-      call split_cp2k_input_line(trim(l_a(i)), sec, word, arg)
-
-      if (trim(sec) == trim(base_sec) .and. trim(word) == trim(new_sec)) then
-	line_n = i
-	return
-      endif
+    ! sort by molecule, residue ID
+    call add_property(at, 'sort_index', 0, n_cols=1, ptr=sort_index_p, error=error)
+    PASS_ERROR_WITH_INFO("Failed to add sort_index property", error)
+    ! initialise sort index
+    do at_i=1, at%N
+      sort_index_p(at_i) = at_i
     end do
 
-    if (len_trim(base_sec) == 0) then
-      i = n_l
-      call insert_cp2k_input_line(l_a, " "//trim(new_sec), after_line=i, n_l=n_l); i = i + 1
-      pspc = index(trim(new_sec)," ")
-      if (pspc == 0) then
-	new_sec_end = "&END " // new_sec(2:len_trim(new_sec))
-      else
-	new_sec_end = "&END " // new_sec(2:pspc-1)
-      endif
-      call insert_cp2k_input_line(l_a, " " // trim(new_sec_end), after_line=i, n_l=n_l); i = i + 1
-      line_n = n_l-1
-      return
+    ! do sort by read in order or labels
+    sorted = .false.
+    if (trim(psf_print) == 'USE_EXISTING_PSF') then ! read sort order
+       ! add property for saved reverse sort indx
+       call add_property(at, 'saved_rev_sort_index', 0, n_cols=1, ptr=saved_rev_sort_index_p, error=error)
+       PASS_ERROR_WITH_INFO("Failed to add saved_rev_sort_index property", error)
+       ! read it from file
+       if (tmp_run_dir_i>0) then
+         call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)// &
+	                     " ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
+         if ( stat /= 0 ) then
+	    call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)// &
+	                      " into the tmp dir "//trim(tmp_run_dir))
+	 endif
+         call initialise(rev_sort_index_io, trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       else
+         call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       endif
+       call read_ascii(rev_sort_index_io, saved_rev_sort_index_p)
+       call finalise(rev_sort_index_io)
+       ! sort by it
+       call atoms_sort(at, 'saved_rev_sort_index', error=error)
+       PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by read-in sort_index from quip_sort_order"//trim(topology_suffix), error)
+       sorted = .true.
+    endif
+    if (trim(psf_print) == 'DRIVER_PRINT_AND_SAVE') then ! sort by labels
+       if (has_property(at,'mol_id') .and. has_property(at,'atom_res_number')) then
+	  if (has_property(at,'motif_atom_num')) then
+	    call atoms_sort(at, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
+	  else
+	    call atoms_sort(at, 'mol_id', 'atom_res_number', error=error)
+	  endif
+	  PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id, atom_res_number, and motif_atom_num", error)
+	  sorted = .true.
+       endif
     endif
 
-    pamp = index(base_sec,"&", back=.true.)
-    if (pamp <= 1) then
-      base_sec_root = ""
-      base_sec_tail = trim(base_sec)
-    else
-      base_sec_root = base_sec(1:pamp-1)
-      base_sec_tail = base_sec(pamp:len_trim(base_sec))
-    endif
+    allocate(rev_sort_index(at%N))
+    do at_i=1, at%N
+       rev_sort_index(sort_index_p(at_i)) = at_i
+    end do
 
-
-    do i=1, n_l
-      call split_cp2k_input_line(trim(l_a(i)), sec, word, arg)
-      if (trim(sec) == trim(base_sec_root) .and. trim(word) == trim(base_sec_tail)) then
-	call insert_cp2k_input_line(l_a, trim(base_sec)//" "//trim(new_sec), after_line=i, n_l=n_l)
-	pspc = index(trim(new_sec)," ")
-	if (pspc == 0) then
-	  new_sec_end = "&END " // new_sec(2:len_trim(new_sec))
-	else
-	  new_sec_end = "&END " // new_sec(2:pspc-1)
+    if (sorted) then
+      do at_i=1, at%N
+	if (sort_index_p(at_i) /= at_i) then
+	  call print("sort() of at%data reordered some atoms")
+	  exit
 	endif
-	call insert_cp2k_input_line(l_a, trim(base_sec)//" " // trim(new_sec_end), after_line=i+1, n_l=n_l)
-	line_n = i+1
-	return
-      endif
-    end do
+      end do
+      ! fix EVB bond forming/breaking indices for new sorted atom numbers
+      call calc_connect(at)
+      if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
+	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond(:) = rev_sort_index(form_bond(:))
+	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond(:) = rev_sort_index(break_bond(:))
+      end if
+      ! fix intrares impropers atom indices for new sorted atom numbers
+      do iri_i=1, intrares_impropers%N
+	intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
+      end do
+    else
+      call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_number, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
+    end if
 
-    if (line_n == 0) &
-      call system_abort("Could not find or make section '"//trim(new_sec)//" in base section '"//trim(base_sec))
-
-  end function find_make_cp2k_input_section
+  end subroutine do_cp2k_atoms_sort
 
   subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, error)
     type(Atoms), intent(inout) :: at
@@ -945,9 +859,9 @@ contains
 
     real(dp) :: shift(3)
     integer, allocatable :: reordering_index(:)
-    integer :: i, j
+    integer :: i
 
-    ! shifted cell in case of QMMM (cp2k/src/toplogy_coordinate_util.F)
+    ! shifted cell in case of QMMM (cp2k/src/topology_coordinate_util.F)
     shift = 0.0_dp
     if (size(qm_list_a) > 0) then
       do i=1,3
@@ -1070,134 +984,6 @@ contains
 
   end subroutine run_cp2k_program
 
-  subroutine write_cp2k_input_file(l_a, filename)
-    character(len=*), intent(in) :: l_a(:)
-    character(len=*), intent(in) :: filename
-
-    integer :: i, pspc
-    type(Inoutput) :: io
-
-    call initialise(io, trim(filename), OUTPUT)
-    do i=1, size(l_a)
-      pspc = index(l_a(i), " ")
-      call print(l_a(i)(pspc+1:len_trim(l_a(i))), file=io)
-    end do
-    call finalise(io)
-
-  end subroutine write_cp2k_input_file
-
-  subroutine split_cp2k_input_line(l, sec, word, arg)
-    character(len=*) :: l, sec, word, arg
-
-    character(len=len(l)) :: t_l
-    integer :: pspc
-
-    t_l = l
-
-    pspc = index(trim(t_l), " ")
-    if (pspc == 0 .or. pspc == 1) then ! top level
-      sec = ""
-    else
-      sec = t_l(1:pspc-1)
-    endif
-
-    t_l = adjustl(t_l(pspc+1:len_trim(t_l)))
-
-    pspc = index(trim(t_l), " ")
-    if (pspc == 0) then ! no arg
-      word = trim(t_l)
-      arg = ""
-    else
-      word = t_l(1:pspc-1)
-      arg = t_l(pspc+1:len_trim(t_l))
-    endif
-
-    sec = adjustl(sec)
-    word = adjustl(word)
-    arg = adjustl(arg)
-
-  end subroutine split_cp2k_input_line
-
-  subroutine substitute_cp2k_input(l_a, s_source, s_targ, n_l)
-    character(len=*), intent(inout) :: l_a(:)
-    character(len=*), intent(in) :: s_source, s_targ
-    integer, intent(in) :: n_l
-
-    character(len=len(l_a(1))) :: t
-    integer :: i, p, l_targ, l_source, len_before, len_after
-
-    l_targ = len(s_targ)
-    l_source = len(s_source)
-
-    do i=1, n_l
-      p = index(l_a(i), s_source)
-      if (p > 0) then
-	len_before = p-1
-	len_after = len_trim(l_a(i)) - l_source - p + 1
-	t = ""
-	if (len_before > 0) then
-	  t(1:len_before) = l_a(i)(1:len_before)
-	endif
-	t(len_before+1:len_before+1+l_targ-1) = s_targ(1:l_targ)
-	if (len_after > 0) then
-	  t(len_before+1+l_targ:len_before+1+l_targ+len_after-1) = l_a(i)(len_before+l_source+1:len_before+l_source+1+len_after-1)
-	endif
-	l_a(i) = t
-      end if
-    end do
-  end subroutine substitute_cp2k_input
-
-  subroutine insert_cp2k_input_line(l_a, l, after_line, n_l)
-    character(len=*), allocatable, intent(inout) :: l_a(:)
-    character(len=*), intent(in) :: l
-    integer, intent(in) :: after_line
-    integer, intent(inout) :: n_l
-
-    integer :: i
-
-    if (n_l+1 > size(l_a)) call extend_char_array(l_a)
-
-    do i=n_l, after_line+1, -1
-      l_a(i+1) = l_a(i)
-    end do
-    l_a(after_line+1) = trim(l)
-    n_l = n_l + 1
-  end subroutine insert_cp2k_input_line
-
-  subroutine prefix_cp2k_input_sections(l_a)
-    character(len=*), intent(inout) :: l_a(:)
-
-    integer :: pamp
-    character(len=CP2K_LINE_LENGTH) :: section_str, new_section_str
-    integer :: i, j, comment_i
-
-    section_str = ""
-    new_section_str = ""
-    do i=1, size(l_a)
-      comment_i = index(l_a(i), "#")
-      if (comment_i /= 0) then
-	l_a(i)(comment_i:len(l_a(i))) = ""
-      endif
-      if (index(l_a(i),"&END") /= 0) then
-	pamp = index(section_str, "&", .true.)
-	new_section_str = section_str(1:pamp-1)
-	section_str = new_section_str
-      else if (index(l_a(i),"&") /= 0) then
-	pamp = index(l_a(i), "&")
-	new_section_str = trim(section_str)
-	do j=pamp, len_trim(l_a(i))
-	  if (l_a(i)(j:j) == " ") then
-	    new_section_str = trim(new_section_str) // "-"
-	  else
-	    new_section_str = trim(new_section_str) // l_a(i)(j:j)
-	  endif
-	end do
-      endif
-      l_a(i) = (trim(section_str) //" "//trim(l_a(i)))
-      section_str = new_section_str
-    end do
-  end subroutine
-
   function qmmm_qm_abc(at, qm_list_a, qm_vacuum)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
@@ -1220,7 +1006,7 @@ contains
     qmmm_qm_abc(2) = min(real(ceiling(qm_maxdist(2)))+qm_vacuum,at%lattice(2,2))
     qmmm_qm_abc(3) = min(real(ceiling(qm_maxdist(3)))+qm_vacuum,at%lattice(3,3))
 
-  end function
+  end function qmmm_qm_abc
 
   subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error) !lam81
     type(Atoms), intent(in) :: at
@@ -1291,7 +1077,57 @@ contains
       if (do_lsd) call print("Using do_lsd " // do_lsd)
     endif
 
-  end subroutine
+  end subroutine calc_charge_lsd
+
+  subroutine do_cp2k_calc_fake(at, f, e, args_str)
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(out) :: f(:,:), e
+    character(len=*), intent(in) :: args_str
+
+    type(inoutput) :: last_run_io
+    type(cinoutput) :: force_cio
+    character(len=FIELD_LENGTH) :: last_run_s
+    integer :: this_run_i
+    integer :: stat
+    type(Atoms) :: for
+    real(dp), pointer :: frc(:,:)
+
+    call initialise(last_run_io, "cp2k_driver_fake_run", action=INPUT)
+    last_run_s = read_line(last_run_io, status=stat)
+    call finalise(last_run_io)
+    if (stat /= 0) then
+      this_run_i = 1
+    else
+      read (fmt=*,unit=last_run_s) this_run_i
+      this_run_i = this_run_i + 1
+    endif
+
+    call print("do_cp2k_calc_fake run_i " // this_run_i, PRINT_ALWAYS)
+
+    call initialise(force_cio, "cp2k_force_file_log")
+    call read(force_cio, for, frame=this_run_i-1)
+    !NB why does this crash now?
+    ! call finalise(force_cio)
+    if (.not. assign_pointer(for, 'frc', frc)) &
+      call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
+    f = frc
+
+    if (.not. get_value(for%params, "energy", e)) then
+      if (.not. get_value(for%params, "Energy", e)) then
+	if (.not. get_value(for%params, "E", e)) then
+	  call system_abort("do_cp2k_calc_fake didn't find energy")
+	endif
+      endif
+    endif
+
+    e = e * HARTREE
+    f  = f * HARTREE/BOHR 
+
+    call initialise(last_run_io, "cp2k_driver_fake_run", action=OUTPUT)
+    call print(""//this_run_i, file=last_run_io)
+    call finalise(last_run_io)
+
+  end subroutine do_cp2k_calc_fake
 
 
 end module cp2k_driver_template_module
