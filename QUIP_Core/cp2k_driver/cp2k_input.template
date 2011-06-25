@@ -1,8 +1,19 @@
+@INCLUDE 'cp2k_input.inp.header'
+
 # USER SETTABLE THINGS ARE MARKED with '#USER'
 # USER set the DFT functional, e.g. BLYP or PBE
-@SET DFT BLYP
+@SET DFT_FUNCTIONAL BLYP
+
 &FORCE_EVAL
+  METHOD ${FORCE_EVAL_METHOD}
   &DFT
+    WFN_RESTART_FILE_NAME ${WFN_FILE_NAME}
+@IF ${DO_DFT} == 1
+    CHARGE ${DFT_CHARGE}
+@ENDIF
+@IF ${DO_DFT_LSD} == 1
+    LSD
+@ENDIF
     BASIS_SET_FILE_NAME ../BASIS_SET
     POTENTIAL_FILE_NAME ../POTENTIAL
     &MGRID
@@ -22,11 +33,12 @@
 @IF ${PERIODIC} == NONE
       POISSON_SOLVER MT
 @ENDIF
-@IF ${PERIODIC} /= XYZ
-@IF ${PERIODIC} /= NONE
-  POISSON_SOLVER NO_IDEA_WHAT_SOLVER_TO_USE_FOR_PERIODIC_${PERIODIC}
-@ENDIF
-@ENDIF
+# nested @IFs don't work
+# @IF ${PERIODIC} /= XYZ
+# @IF ${PERIODIC} /= NONE
+#   POISSON_SOLVER NO_IDEA_WHAT_SOLVER_TO_USE_FOR_PERIODIC_${PERIODIC}
+# @ENDIF
+# @ENDIF
       &EWALD
         EWALD_TYPE ewald
 #USER EWALD_ACCURACY: accuracy of Ewald sum for pure DFT calculation, 1e-6 is decent
@@ -58,7 +70,7 @@
     &END SCF
     &XC
 #USER XC_FUNCTIONAL: exchange-correlation functional to use, usually BLYP
-      &XC_FUNCTIONAL ${DFT}
+      &XC_FUNCTIONAL ${DFT_FUNCTIONAL}
       &END XC_FUNCTIONAL
 #density smoothing, VandeVondele 2005
       &XC_GRID
@@ -67,6 +79,13 @@
         XC_SMOOTH_RHO NN10
       &END XC_GRID
     &END XC
+@IF ${DO_DFT_QM_CHARGES} == 1
+    &PRINT
+      &MULLIKEN
+	 FILENAME qmcharges
+      &END MULLIKEN
+    &END PRINT
+@ENDIF
   &END DFT
   &MM
     &FORCEFIELD
@@ -97,6 +116,13 @@
     &END POISSON
   &END MM
   &QMMM
+@IF ${DO_QMMM} == 1
+@INCLUDE ${QMMM_QM_KIND_FILE}
+     &CELL
+        ABC ${QMMM_ABC_X} ${QMMM_ABC_Y} ${QMMM_ABC_Z}
+	PERIODIC ${QMMM_PERIODIC}
+     &END CELL
+@ENDIF
 #    MM_POTENTIAL_FILE_NAME ../MM_POTENTIAL
 #from Laino 2005 using Blochl 1995, Gaussian expansion of the electrostatic potential
     ECOUPL GAUSS
@@ -111,7 +137,7 @@
 #USER RCUT default is system size dependent and marginally OK.
 # for some systems, setting it to the system size (by uncommenting this RCUT) line is significantly faster
 #    (speedup in ewald_ddapc_pot and ewald_ddapc_force)
-#        RCUT ${MAX_CELL_SIZE_INT}
+        RCUT ${MAX_CELL_SIZE_INT}
 #USER EWALD_PRECISION: Accuracy of Ewald sum for QM/MM calculation (overrides &DFT for the QM part), 1e-8 seems decent
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
@@ -128,10 +154,16 @@
       RADIUS 0.44
     &END MM_KIND
 #    otherwise use default: 0.800
+@IF ${DO_QMMM_LINK} == 1
+@INCLUDE ${QMMM_LINK_FILE}
+@ENDIF
   &END QMMM
   &SUBSYS
     &CELL
       PERIODIC ${PERIODIC}
+      A ${SUBSYS_CELL_A_X} ${SUBSYS_CELL_A_Y} ${SUBSYS_CELL_A_Z}
+      B ${SUBSYS_CELL_B_X} ${SUBSYS_CELL_B_Y} ${SUBSYS_CELL_B_Z}
+      C ${SUBSYS_CELL_C_X} ${SUBSYS_CELL_C_Y} ${SUBSYS_CELL_C_Z}
     &END CELL
     &TOPOLOGY
       &DUMP_PSF
@@ -140,35 +172,63 @@
       &END DUMP_PDB
       &GENERATE
         BONDLENGTH_MAX     5.0
-        # REORDER F
-        # CREATE_MOLECULES F
+        REORDER F
+        CREATE_MOLECULES F
+	&ISOLATED_ATOMS
+@INCLUDE ${ISOLATED_ATOMS_FILE}
+	&END ISOLATED_ATOMS
       &END GENERATE
       CHARGE_EXTENDED
+      COORD_FILE_NAME ${COORD_FILE}
+      COORDINATE ${COORD_FORMAT}
+@IF ${USE_PSF} == 1
+      CONN_FILE_NAME ${CONN_FILE}
+      CONN_FILE_FORMAT ${CONN_FORMAT}
+@ENDIF
     &END TOPOLOGY
 #USER: BASIS_SET - double zeta in valence + polarization (DZVP) is good for most total E calculations
 #USER: make sure to use basis functions consistent with POTENTIAL (e.g. GTH) and XC_FUNCTIONAL (e.g. BLYP)
+@IF ${DO_DFT} == 1
     &KIND H
-      BASIS_SET DZVP-GTH-${DFT}
-      POTENTIAL GTH-${DFT}-q1
+      BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
+      POTENTIAL GTH-${DFT_FUNCTIONAL}-q1
     &END KIND
     &KIND C
-      BASIS_SET DZVP-GTH-${DFT}
-      POTENTIAL GTH-${DFT}-q4
+      BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
+      POTENTIAL GTH-${DFT_FUNCTIONAL}-q4
     &END KIND
     &KIND N
-      BASIS_SET DZVP-GTH-${DFT}
-      POTENTIAL GTH-${DFT}-q5
+      BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
+      POTENTIAL GTH-${DFT_FUNCTIONAL}-q5
     &END KIND
     &KIND O
-      BASIS_SET DZVP-GTH-${DFT}
-      POTENTIAL GTH-${DFT}-q6
+      BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
+      POTENTIAL GTH-${DFT_FUNCTIONAL}-q6
     &END KIND
     &KIND Cl
-      BASIS_SET DZVP-GTH-${DFT}
-      POTENTIAL GTH-${DFT}-q7
+      BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
+      POTENTIAL GTH-${DFT_FUNCTIONAL}-q7
     &END KIND
+@ENDIF
   &END SUBSYS
 &END FORCE_EVAL
 &GLOBAL
+  PROJECT ${QUIP_PROJECT}
+  RUN_TYPE ${QUIP_RUN_TYPE}
   PRINT_LEVEL MEDIUM
 &END GLOBAL
+&MOTION
+@IF ${DO_PRINT_FORCES} == 1
+   &PRINT
+      &FORCES
+	 FORMAT ${FORCES_FORMAT}
+      &END FORCES
+   &END PRINT
+@ENDIF
+@IF ${QUIP_RUN_TYPE} == MD
+   &MD
+      ENSEMBLE ${QUIP_ENSEMBLE}
+      STEPS ${QUIP_N_STEPS}
+   &END MD
+@ENDIF
+&END MOTION
