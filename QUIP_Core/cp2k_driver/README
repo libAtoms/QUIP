@@ -1,4 +1,4 @@
-Patches tested against CP2K cvs version 21 April 2010 (NB).
+Patches tested against CP2K cvs version 27 June 2011 (NB).
 
 Most robust forms for applying the changes are in
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
