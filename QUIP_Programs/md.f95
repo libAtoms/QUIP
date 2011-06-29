@@ -41,7 +41,7 @@ private
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, p_ext
+    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, open_langevin_NH_tau, p_ext
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P
@@ -55,6 +55,7 @@ private
     logical :: quiet_calc, do_timing
     integer :: advance_md_substeps
     logical :: v_dep_quants_extra_calc
+    real(dp) :: extra_heat
     logical :: continuation
   end type md_params
 
@@ -94,6 +95,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'rescale_initial_velocity', 'F', params%rescale_initial_velocity, help_string="if true, rescale initial velocity so T=rescale_initial_velocity_T")
   call param_register(md_params_dict, 'rescale_initial_velocity_T', '-1.0', params%rescale_initial_velocity_T, help_string="T for rescale_initial_velocity")
   call param_register(md_params_dict, 'langevin_tau', '100.0', params%langevin_tau, help_string="time constant for Langevin thermostat")
+  call param_register(md_params_dict, 'open_langevin_NH_tau', '0.0', params%open_langevin_NH_tau, help_string="tau for Nose-Hoover part of open Langevin thermostat, active if > 0")
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
   call param_register(md_params_dict, 'pot_init_args', PARAM_MANDATORY, params%pot_init_args, help_string="args string to initialise potential")
@@ -112,6 +114,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps, help_string="how many actual MD steps for each apparent steps, for things like hybrid MC")
   call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc, help_string="do extra call to calc for velocity dependent quantities (like heat flux)")
   call param_register(md_params_dict, 'continuation', 'F', params%continuation, help_string="if true, this is a continuation of an old run, read initial time and i_step from input config")
+  call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -193,6 +196,7 @@ subroutine print_params(params)
 	call print("md_params%T_increment_time=" // params%T_increment_time)
      endif
      call print("md_params%langevin_tau=" // params%langevin_tau)
+     call print("md_params%open_langevin_NH_tau=" // params%open_langevin_NH_tau)
   end if
   call print("md_params%rescale_initial_velocity=" // params%rescale_initial_velocity)
   call print("md_params%rescale_initial_velocity_T=" // params%rescale_initial_velocity_T)
@@ -226,6 +230,7 @@ subroutine print_params(params)
   call print("md_params%do_timing=" // params%do_timing)
   call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
   call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
+  call print("md_params%extra_heat=" // params%extra_heat)
   call print("md_params%continuation=" // params%continuation)
 end subroutine print_params
 
@@ -372,7 +377,12 @@ subroutine initialise_md_thermostat(ds, params)
     call enable_damping(ds, params%damping_tau)
   elseif (params%const_T.and..not.params%const_P) then
     call print('Running NVT at T = ' // params%T_cur // " K")
-    call add_thermostat(ds, LANGEVIN, params%T_cur, tau=params%langevin_tau)
+    if (params%open_langevin_NH_tau > 0) then
+       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
+       call add_thermostat(ds, LANGEVIN, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
+    else
+       call add_thermostat(ds, LANGEVIN, params%T_cur, tau=params%langevin_tau)
+    endif
     ds%atoms%thermostat_region = 1
   elseif (params%const_T.and.params%const_P) then
     call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext )
@@ -455,6 +465,7 @@ implicit none
   real(dp), allocatable :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
   character(STRING_LENGTH) :: extra_calc_args
   integer :: l_error
+  integer, pointer :: extra_heat_mask(:)
 
   call system_initialise()
 
@@ -521,6 +532,9 @@ implicit none
   call calc_connect(ds%atoms)
   if (params%quiet_calc) call verbosity_push_decrement()
 
+  if (params%extra_heat > 0.0_dp .and. .not. assign_pointer(ds%atoms, 'extra_heat_mask', extra_heat_mask)) &
+      call system_abort("md: extra_heat="//params%extra_heat//" > 0, but no extra_heat_mask integer field found")
+
   extra_calc_args="force"
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
@@ -529,6 +543,8 @@ implicit none
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
   if (params%quiet_calc) call verbosity_pop()
   call set_value(ds%atoms%params, 'time', ds%t)
+
+  if (params%extra_heat > 0.0_dp) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
 
   ! calculate a(t) from f(t)
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = force_p(:,i) / ElementMass(ds%atoms%Z(i))
@@ -613,6 +629,8 @@ contains
       if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
 
+      if (params%extra_heat > 0.0_dp) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+
       if (params%quiet_calc) call verbosity_pop()
       has_new_pos = assign_pointer(ds%atoms, 'new_pos', new_pos)
       has_new_velo = assign_pointer(ds%atoms, 'new_velo', new_velo)
@@ -688,6 +706,8 @@ contains
     if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
     if (.not. assign_pointer(ds%atoms, "force", force_p)) call system_abort("md failed to get force")
 
+    if (params%extra_heat > 0.0_dp) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+
     if (params%quiet_calc) call verbosity_pop()
     call system_timer("md/calc")
     ! now we have a(t+dt)
@@ -708,9 +728,27 @@ contains
       if (params%quiet_calc) call verbosity_push_decrement()
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
       if (params%quiet_calc) call verbosity_pop()
+
+      if (params%extra_heat > 0.0_dp) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
     end if
     call system_timer("md/calc")
 
   end subroutine advance_md_one
+
+  subroutine add_extra_heat(force, extra_heat_mag, extra_heat_mask)
+     real(dp), intent(inout) :: force(:,:)
+     real(dp), intent(in) :: extra_heat_mag
+     integer, intent(in) :: extra_heat_mask(:)
+
+     integer i
+
+     do i=1, size(force,2)
+        if (extra_heat_mask(i) /= 0) then
+	   force(1,i) = force(1,i) + extra_heat_mag*ran_normal()
+	   force(2,i) = force(2,i) + extra_heat_mag*ran_normal()
+	   force(3,i) = force(3,i) + extra_heat_mag*ran_normal()
+	endif
+     end do
+  end subroutine add_extra_heat
 
 end program
