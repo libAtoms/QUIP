@@ -4,7 +4,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/reftraj_types.F,v
 retrieving revision 1.21
 diff -b -c -3 -r1.21 reftraj_types.F
 *** reftraj_types.F	31 Dec 2010 16:04:03 -0000	1.21
---- reftraj_types.F	24 Jun 2011 01:46:40 -0000
+--- reftraj_types.F	29 Jun 2011 14:06:17 -0000
 ***************
 *** 42,47 ****
 --- 42,50 ----
@@ -35,7 +35,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/cp_parser_methods.F,v
 retrieving revision 1.21
 diff -b -c -3 -r1.21 cp_parser_methods.F
 *** cp_parser_methods.F	11 Jan 2011 17:01:25 -0000	1.21
---- cp_parser_methods.F	24 Jun 2011 01:46:40 -0000
+--- cp_parser_methods.F	29 Jun 2011 14:06:17 -0000
 ***************
 *** 218,226 ****
       CHARACTER(LEN=*), PARAMETER :: routineN = 'parser_get_line_from_buffer', &
@@ -70,7 +70,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/integrator.F,v
 retrieving revision 1.198
 diff -b -c -3 -r1.198 integrator.F
 *** integrator.F	24 Feb 2011 20:08:26 -0000	1.198
---- integrator.F	24 Jun 2011 01:46:40 -0000
+--- integrator.F	29 Jun 2011 14:06:17 -0000
 ***************
 *** 37,42 ****
 --- 37,45 ----
@@ -105,23 +105,26 @@ diff -b -c -3 -r1.198 integrator.F
   
 ***************
 *** 1274,1281 ****
---- 1288,1314 ----
+--- 1288,1317 ----
   
       ! SnapShots read from an external file (parsers calls are buffered! please
       ! don't put any additional MPI call!) [tlaino]
 + !NB start reftraj wait
 +     if (reftraj_env%info%wait) then
++        ! wait for input
 +        do while (.true.)
++ 	  ! check for input line
 + 	  CALL parser_read_line(reftraj_env%info%traj_parser,1,at_end=my_end,error=error)
-+ 	  if (my_end) then
++ 	  if (my_end) then ! end of file, no input available, wait
 + 	    call usleep(10000) ! 1e4 microsec = 10 ms
-+ 	  else
++ 	  else ! got som input, check for valid value, wait a bit and exit loop
 + 	    READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)") nread
 + 	    CALL cp_assert(nread /= 0, cp_fatal_level,cp_assertion_failed,routineP,&
 + 		  "Read N=0 in interactive REFTRAJ.  Quitting."//&
 + CPSourceFileRef,&
 +                   only_ionode=.TRUE.)
-+ 	    call usleep(1000) ! 1e3 microsec = 1 ms
++ 	    ! wait for rest of file to be written before trying to read it
++ 	    call usleep(10000) ! 1e4 microsec = 10 ms
 + 	    exit
 + 	  endif
 +        end do
@@ -144,7 +147,7 @@ diff -b -c -3 -r1.198 integrator.F
          ! Check if we reached the end of the file and provide some info..
          IF (my_end) THEN
             CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
---- 1348,1371 ----
+--- 1351,1374 ----
       END IF
   
       IF(reftraj_env%info%variable_volume)THEN
@@ -175,7 +178,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/input_cp2k_motion.F,v
 retrieving revision 1.233
 diff -b -c -3 -r1.233 input_cp2k_motion.F
 *** input_cp2k_motion.F	23 Apr 2011 13:37:57 -0000	1.233
---- input_cp2k_motion.F	24 Jun 2011 01:46:41 -0000
+--- input_cp2k_motion.F	29 Jun 2011 14:06:17 -0000
 ***************
 *** 2155,2160 ****
 --- 2184,2197 ----

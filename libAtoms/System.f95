@@ -2834,7 +2834,7 @@ end function pad
     use_force_run_dir_i = optional_default(0, force_run_dir_i)
     use_basename = optional_default("run", basename)
    
-    if (use_force_run_dir_i > 0) then
+    if (use_force_run_dir_i >= 0) then
       i = use_force_run_dir_i
       dir = trim(use_basename)//"_"//i
       call system_command("bash -c '[ -d "//trim(dir)//" ]'", status=stat)

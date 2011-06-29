@@ -138,10 +138,10 @@ subroutine get_params(params, mpi_glob)
   if (len_trim(params%first_pot_calc_args) == 0) params%first_pot_calc_args = params%pot_calc_args
 
 
-  if (has_N_steps .and. params%N_steps > 0 .and. params%max_time > 0.0_dp) then
-    call system_abort("get_params got both N_steps="//params%N_steps//" > 0 and max_time="//params%max_time//" > 0.0")
+  if (has_N_steps .and. params%N_steps >= 0 .and. params%max_time > 0.0_dp) then
+    call system_abort("get_params got both N_steps="//params%N_steps//" >= 0 and max_time="//params%max_time//" > 0.0")
   endif
-  if (params%max_time <= 0.0_dp .and. params%N_steps < 1) call system_abort("get_params got max_time="//params%max_time//" <= 0.0 and N_steps=" // params%N_steps // " < 1")
+  if (params%max_time <= 0.0_dp .and. params%N_steps < 0) call system_abort("get_params got max_time="//params%max_time//" <= 0.0 and N_steps=" // params%N_steps // " < 0")
   if (params%dt <= 0.0_dp) call system_abort("get_params got dt " // params%dt // " <= 0.0")
   if (params%T_initial >= 0.0_dp) then
     params%const_T = .true.
@@ -547,7 +547,7 @@ implicit none
   ! on entry, we have p(t), v(t), a(t), like advance verlet 1 wants
   call system_timer("md_loop")
   i_step = initial_i_step
-  do while ((params%N_steps > 0 .and. i_step <= params%N_steps) .or. (params%max_time > 0.0_dp .and. ds%t <= params%max_time))
+  do while ((params%N_steps >= 0 .and. i_step <= params%N_steps) .or. (params%max_time > 0.0_dp .and. ds%t <= params%max_time))
 
     call update_md_thermostat(ds, params)
 
