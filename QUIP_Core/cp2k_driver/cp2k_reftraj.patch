@@ -116,7 +116,7 @@ diff -b -c -3 -r1.198 integrator.F
 + 	  ! check for input line
 + 	  CALL parser_read_line(reftraj_env%info%traj_parser,1,at_end=my_end,error=error)
 + 	  if (my_end) then ! end of file, no input available, wait
-+ 	    call usleep(10000) ! 1e4 microsec = 10 ms
++ 	    call usleep(100000) ! 1e5 microsec = 100 ms
 + 	  else ! got som input, check for valid value, wait a bit and exit loop
 + 	    READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)") nread
 + 	    CALL cp_assert(nread /= 0, cp_fatal_level,cp_assertion_failed,routineP,&
@@ -124,7 +124,7 @@ diff -b -c -3 -r1.198 integrator.F
 + CPSourceFileRef,&
 +                   only_ionode=.TRUE.)
 + 	    ! wait for rest of file to be written before trying to read it
-+ 	    call usleep(10000) ! 1e4 microsec = 10 ms
++ 	    call usleep(100000) ! 1e5 microsec = 100 ms
 + 	    exit
 + 	  endif
 +        end do
