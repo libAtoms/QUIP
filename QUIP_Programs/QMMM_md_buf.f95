@@ -1481,9 +1481,9 @@ contains
     else ! QMMM
       cp2k_driver_run_type_args = "Run_Type=QMMM"
       if (run_type(1:9) == 'QMMM_CORE') then
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_postfix=_core'
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_suffix=_core'
       else
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_postfix=_extended'
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_suffix=_extended'
       endif
     endif
   end function cp2k_driver_run_type_args

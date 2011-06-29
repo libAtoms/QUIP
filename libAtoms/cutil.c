@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include <sys/resource.h>
 
 #ifndef DARWIN
@@ -97,6 +98,10 @@ int fisnan_(double *r)
 
 void fabort_() {
   abort();
+}
+
+void fusleep_(int *amt) {
+   usleep((useconds_t)(*amt));
 }
 
 // Call system(3) from fortran

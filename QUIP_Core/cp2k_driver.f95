@@ -59,7 +59,7 @@ contains
 
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
-    logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer
+    logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer, persistent
     integer :: clean_up_keep_n
     integer :: max_n_tries
     real(dp) :: max_force_warning
@@ -85,14 +85,13 @@ contains
     integer, allocatable :: link_list_a(:)
     integer, allocatable :: qm_and_link_list_a(:)
     integer :: i_inner, i_outer
-    logical :: inserted_atoms
     integer :: counter
 
     integer :: charge
     logical :: do_lsd
 
     logical :: can_reuse_wfn, qm_list_changed
-    character(len=FIELD_LENGTH) :: qm_name_postfix
+    character(len=FIELD_LENGTH) :: qm_name_suffix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -108,7 +107,8 @@ contains
 
     integer, pointer :: sort_index_p(:)
     integer, allocatable :: rev_sort_index(:)
-    type(Inoutput) :: rev_sort_index_io
+    type(Inoutput) :: rev_sort_index_io, persistent_run_i_io, persistent_cell_file_io
+    character(len=1024) :: l
 
     integer :: run_dir_i, force_run_dir_i, delete_dir_i
 
@@ -120,7 +120,8 @@ contains
     logical :: truncate_parent_dir
     character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
-    logical :: exists
+    logical :: exists, persistent_already_started, persistent_frc_exists
+    integer :: persistent_run_i, persistent_frc_size
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
 
@@ -128,15 +129,17 @@ contains
 
     call system_timer('do_cp2k_calc')
 
+    call system_timer('do_cp2k_calc/init')
     call initialise(cli)
       call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, or QMMM")
       call param_register(cli, 'use_buffer', 'T', use_buffer, help_string="If true, use buffer as specified in relevant hybrid_mark")
-      call param_register(cli, 'qm_name_postfix', '', qm_name_postfix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
+      call param_register(cli, 'qm_name_suffix', '', qm_name_suffix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="filename for cp2k input template")
       call param_register(cli, "qmmm_link_template_file", "", link_template_file, help_string="filename for cp2k link atoms template file")
       call param_register(cli, 'PSF_print', 'NO_PSF', psf_print, help_string="when to print PSF file: NO_PSF, DRIVER_PRINT_AND_SAVE, USE_EXISTING_PSF")
-      call param_register(cli, "topology_suffix", "", topology_suffix, help_string="suffix to append to file containing topology info (for runs that do multiple topologies not to accidentally reuse PSF file")
+      call param_register(cli, "topology_suffix", "", topology_suffix, help_string="String to append to file containing topology info (for runs that do multiple topologies not to accidentally reuse PSF file")
       call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="path to cp2k executable")
+      call param_register(cli, 'persistent', 'F', persistent, help_string="if true, use persistent connection to cp2k with REFTRAJ")
       call param_register(cli, 'clean_up_files', 'T', clean_up_files, help_string="if true, clean up run directory files")
       call param_register(cli, 'clean_up_keep_n', '1', clean_up_keep_n, help_string="number of old run directories to keep if cleaning up")
       call param_register(cli, 'save_output_files', 'T', save_output_files, help_string="if true, save the output files")
@@ -159,8 +162,9 @@ contains
       call param_register(cli, 'QM_potential_file', '', QM_pot_filename, help_string="If tmp_run_dir>0, where to find QM POTENTIAL file to copy it to the cp2k run dir on /tmp.") !POTENTIAL
       call param_register(cli, 'QM_basis_file', '', QM_basis_filename, help_string="If tmp_run_dir>0, where to find QM BASIS_SET file to copy it to the cp2k run dir on /tmp.") !BASIS_SET
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
-      if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
-	call system_abort('cp2k_driver could not parse argument line')
+      if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) then
+	RAISE_ERROR('cp2k_driver could not parse argument line', error)
+      endif
     call finalise(cli)
 
     if (cp2k_calc_fake) then
@@ -172,7 +176,7 @@ contains
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
     call print("  use_buffer " // use_buffer)
-    call print("  qm_name_postfix " // qm_name_postfix)
+    call print("  qm_name_suffix " // qm_name_suffix)
     call print("  cp2k_template_file " // cp2k_template_file)
     call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
@@ -194,15 +198,45 @@ contains
     call print('  QM_potential_file '//trim(QM_pot_filename))
     call print('  QM_basis_file '//trim(QM_basis_filename))
 
-    if (auto_centre .and. has_centre_pos) &
-      call system_abort("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin")
-
-    if (tmp_run_dir_i>0 .and. clean_up_keep_n > 0) then
-      call system_abort("do_cp2k_calc got both tmp_run_dir_i(only write on /tmp) and clean_up_keep_n (save in home).")
+    if (auto_centre .and. has_centre_pos) then
+      RAISE_ERROR("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin", error)
     endif
 
+    if (tmp_run_dir_i>0 .and. clean_up_keep_n > 0) then
+      RAISE_ERROR("do_cp2k_calc got both tmp_run_dir_i(only write on /tmp) and clean_up_keep_n (save in home).",error)
+    endif
+    call system_timer('do_cp2k_calc/init')
+
+    call system_timer('do_cp2k_calc/get_persistent_i')
+    persistent_already_started=.false.
+    if (persistent) then
+       inquire(file="persistent_run_i", exist=persistent_already_started)
+
+       if (.not. persistent_already_started) then
+	 persistent_run_i=1
+       else
+	 call initialise(persistent_run_i_io, "persistent_run_i", INPUT)
+	 l = read_line(persistent_run_i_io)
+	 call finalise(persistent_run_i_io)
+	 read (unit=l, fmt=*, iostat=stat) persistent_run_i
+	 if (stat /= 0) then
+	    RAISE_ERROR("Failed to read persistent_run_i from 'persistent_run_i' file", error)
+	 endif
+	 persistent_run_i = persistent_run_i + 1
+       endif
+
+       call initialise(persistent_run_i_io, "persistent_run_i", OUTPUT)
+       call print(""//persistent_run_i, file=persistent_run_i_io, verbosity=PRINT_ALWAYS)
+       call finalise(persistent_run_i_io)
+    endif
+    call system_timer('do_cp2k_calc/get_persistent_i')
+
+    call system_timer('do_cp2k_calc/run_dir')
     !create run directory now, because it is needed if running on /tmp
     if (tmp_run_dir_i>0) then
+      if (persistent) then
+	 RAISE_ERROR("Can't do persistent and temp_run_dir_i > 0", error)
+      endif
       tmp_run_dir = "/tmp/cp2k_run_"//tmp_run_dir_i
       run_dir = link_run_directory(trim(tmp_run_dir), basename="cp2k_run", run_dir_i=run_dir_i)
       !and copy necessary files for access on /tmp if not yet present
@@ -216,10 +250,14 @@ contains
                truncate_parent_dir=.false.
             endif
          enddo
-         if (len_trim(tmp_MM_param_filename)==0) call system_abort("Empty tmp_MM_param_filename string")
+         if (len_trim(tmp_MM_param_filename)==0) then
+	    RAISE_ERROR("Empty tmp_MM_param_filename string",error)
+	 endif
          call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_MM_param_filename)//" ] ; then echo 'copy charmm.pot' ; cp "//trim(MM_param_filename)//" "//trim(tmp_run_dir)//"/ ; else echo 'reuse charmm.pot' ; fi")
          call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_MM_param_filename)//" ] ; then echo 'copy charmm.pot' ; cp "//trim(MM_param_filename)//" "//trim(tmp_run_dir)//"/ ; fi",status=stat)
-         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(MM_param_filename)//" into the tmp dir "//trim(tmp_run_dir))
+         if ( stat /= 0 ) then
+	    RAISE_ERROR("Something went wrong when tried to copy "//trim(MM_param_filename)//" into the tmp dir "//trim(tmp_run_dir), error)
+	 endif
       endif
       if (len_trim(QM_pot_filename)>0) then
          tmp_QM_pot_filename = trim(QM_pot_filename)
@@ -233,7 +271,9 @@ contains
          enddo
          call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(QM_pot_filename)//" ] ; then cp "//trim(QM_pot_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
          call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_QM_pot_filename)//" ] ; then echo 'copy QM potential' ; cp "//trim(QM_pot_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
-         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(QM_pot_filename)//" into the tmp dir "//trim(tmp_run_dir))
+         if ( stat /= 0 ) then
+	    RAISE_ERROR("Something went wrong when tried to copy "//trim(QM_pot_filename)//" into the tmp dir "//trim(tmp_run_dir),error)
+	 endif
       endif
       if (len_trim(QM_basis_filename)>0) then
          tmp_QM_basis_filename = trim(QM_basis_filename)
@@ -247,26 +287,43 @@ contains
          enddo
          call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(QM_basis_filename)//" ] ; then cp "//trim(QM_basis_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
          call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(tmp_QM_basis_filename)//" ] ; then echo 'copy QM basis' ; cp "//trim(QM_basis_filename)//" "//trim(tmp_run_dir)//"/ ; fi")
-         if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(QM_basis_filename)//" into the tmp dir "//trim(tmp_run_dir))
+         if ( stat /= 0 ) then
+	    RAISE_ERROR("Something went wrong when tried to copy "//trim(QM_basis_filename)//" into the tmp dir "//trim(tmp_run_dir),error)
+	 endif
       endif
     else
+      if (persistent) then
+	 if (.not. persistent_already_started) then
+	    call system_command("mkdir cp2k_run_0")
+	 endif
+	 force_run_dir_i=0
+      endif
       run_dir = make_run_directory("cp2k_run", force_run_dir_i, run_dir_i)
-    endif
+    endif ! tmp_run_dir
+    call system_timer('do_cp2k_calc/run_dir')
 
-    ! read template file
-    if (tmp_run_dir_i>0) then
-       call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
-       call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
-       if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy "//trim(cp2k_template_file)//" into the tmp dir "//trim(tmp_run_dir))
-       call system("cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/cp2k_input.inp")
-    else
-       call system("cp "//trim(cp2k_template_file)//" "//trim(run_dir)//"/cp2k_input.inp")
+    call system_timer('do_cp2k_calc/copy_templ')
+    if (.not. persistent_already_started) then
+       ! read template file
+       if (tmp_run_dir_i>0) then
+	  call print("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
+	  call system_command("if [ ! -s "//trim(tmp_run_dir)//"/"//trim(cp2k_template_file)//" ] ; then cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/ ; fi")
+	  if ( stat /= 0 ) then
+	    RAISE_ERROR("Something went wrong when tried to copy "//trim(cp2k_template_file)//" into the tmp dir "//trim(tmp_run_dir), error)
+	  endif
+	  call system("cp "//trim(cp2k_template_file)//" "//trim(tmp_run_dir)//"/cp2k_input.inp")
+       else
+	  call system("cp "//trim(cp2k_template_file)//" "//trim(run_dir)//"/cp2k_input.inp")
+       endif
+
     endif
+    call system_timer('do_cp2k_calc/copy_templ')
 
     if ( (trim(psf_print) /= 'NO_PSF') .and. &
-         (trim(psf_print) /= 'DRIVER_PRINT_AND_SAVE') .and. &
-         (trim(psf_print) /= 'USE_EXISTING_PSF')) &
-      call system_abort("Unknown value for psf_print '"//trim(psf_print)//"'")
+	 (trim(psf_print) /= 'DRIVER_PRINT_AND_SAVE') .and. &
+	 (trim(psf_print) /= 'USE_EXISTING_PSF')) then
+      RAISE_ERROR("Unknown value for psf_print '"//trim(psf_print)//"'", error)
+    endif
 
     ! parse run_type
     use_QM = .false.
@@ -285,9 +342,10 @@ contains
 	use_QMMM = .true.
 	method="QMMM"
       case default
-	call system_abort("Unknown run_type "//trim(run_type))
+	RAISE_ERROR("Unknown run_type "//trim(run_type),error)
     end select
 
+    call system_timer('do_cp2k_calc/calc_connect')
     ! prepare CHARMM params if necessary
     if (use_MM) then
       if (have_silica_potential) then
@@ -301,22 +359,28 @@ contains
       call calc_dists(at)
 
     endif
+    call system_timer('do_cp2k_calc/calc_connect')
 
+    call system_timer('do_cp2k_calc/make_psf')
     ! if writing PSF file, calculate residue labels, before sort
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	if (persistent_already_started) then
+	  RAISE_ERROR("Trying to rewrite PSF file with persistent_already_started.  Can't change connectivity during persistent cp2k run", error)
+	endif
 	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
       end if
     end if
 
     call do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
-      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error)
+      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error=error)
     PASS_ERROR_WITH_INFO("Failed to sort atoms in do_cp2k_calc", error)
 
 
     ! write PSF file, if requested
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	! we should fail for persistent_already_started=T, but this should have been dealt with above
 	if (has_property(at, 'avgpos')) then
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
 	    add_silica_23body=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
@@ -325,7 +389,7 @@ contains
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
 	    add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos',form_bond=form_bond,break_bond=break_bond)
 	else
-	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
+	  RAISE_ERROR("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos", error)
 	endif
 	! write sort order
 	call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=OUTPUT)
@@ -333,85 +397,294 @@ contains
 	call finalise(rev_sort_index_io)
       endif
     endif
+    call system_timer('do_cp2k_calc/make_psf')
 
-    call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
-    if (use_QM) then
-      call print("@SET DO_DFT 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    else
-      call print("@SET DO_DFT 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    endif
-    if (use_MM) then
-      call print("@SET DO_MM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    else
-      call print("@SET DO_MM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    endif
-    if (use_QMMM) then
-      call print("@SET DO_QMMM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    else
-      call print("@SET DO_QMMM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    endif
-
-    ! set variables having to do with periodic configs
-    if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
-    insert_pos = 0
-    if (at_periodic) then
-      call print("@SET PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    else
-      call print("@SET PERIODIC NONE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    endif
-    call print("@SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-    ! put in method
-    call print("@SET FORCE_EVAL_METHOD "//trim(method), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-    ! get qm_list and link_list
-    if (use_QMMM) then
-      if (use_buffer) then
-	call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
-      else
-	call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
-      endif
-      allocate(qm_list_a(qm_list%N))
-      if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
-      !get link list
-
-       if (assign_pointer(at,'cut_bonds'//trim(qm_name_postfix),cut_bonds_p)) then
-          call initialise(cut_bonds,2,0,0,0,0)
-          do i_inner=1,at%N
-             do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
-		if (cut_bonds_p(j,i_inner) == 0) exit
-		! correct for new atom indices resulting from sorting of atoms
-                i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
-                call append(cut_bonds,(/i_inner,i_outer/))
-             enddo
-          enddo
-          if (cut_bonds%N > 0) then
-             call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
-             allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
-             qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
-             qm_and_link_list_a(size(qm_list_a)+1:size(qm_list_a)+size(link_list_a)) = link_list_a(1:size(link_list_a))
-          else
-             allocate(link_list_a(0))
-             allocate(qm_and_link_list_a(size(qm_list_a)))
-             if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
-          endif
+    allocate(qm_list_a(0))
+    allocate(link_list_a(0))
+    allocate(qm_and_link_list_a(0))
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (.not. persistent_already_started) then
+       call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
+       if (use_QM) then
+	 call print("@SET DO_DFT 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        else
-          allocate(qm_and_link_list_a(size(qm_list_a)))
-          if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
+	 call print("@SET DO_DFT 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       endif
+       if (use_MM) then
+	 call print("@SET DO_MM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	 call print("@SET DO_MM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       endif
+       if (use_QMMM) then
+	 call print("@SET DO_QMMM 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	 call print("@SET DO_QMMM 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        endif
 
-       !If needed, read QM/MM link_template_file
-       if (size(link_list_a) > 0) then
-          if (trim(link_template_file).eq."") call system_abort("There are QM/MM links, but qmmm_link_template is not defined.")
-          call initialise(link_template_io, trim(link_template_file), INPUT)
-          call read_file(link_template_io, link_template_a, link_template_n_lines)
-          call finalise(link_template_io)
+       ! set variables having to do with periodic configs
+       if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
+       insert_pos = 0
+       if (at_periodic) then
+	 call print("@SET PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	 call print("@SET PERIODIC NONE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        endif
-    else
-      allocate(qm_list_a(0))
-      allocate(link_list_a(0))
-      allocate(qm_and_link_list_a(0))
+       call print("@SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+       ! put in method
+       call print("@SET FORCE_EVAL_METHOD "//trim(method), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+       ! get qm_list and link_list
+       if (use_QMMM) then
+	 if (use_buffer) then
+	   call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	 else
+	   call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	 endif
+	 if (allocated(qm_list_a)) deallocate(qm_list_a)
+	 if (allocated(link_list_a)) deallocate(link_list_a)
+	 if (allocated(qm_and_link_list_a)) deallocate(qm_and_link_list_a)
+	 allocate(qm_list_a(qm_list%N))
+	 if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
+	 !get link list
+
+	  if (assign_pointer(at,'cut_bonds'//trim(qm_name_suffix),cut_bonds_p)) then
+	     call initialise(cut_bonds,2,0,0,0,0)
+	     do i_inner=1,at%N
+		do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
+		   if (cut_bonds_p(j,i_inner) == 0) exit
+		   ! correct for new atom indices resulting from sorting of atoms
+		   i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
+		   call append(cut_bonds,(/i_inner,i_outer/))
+		enddo
+	     enddo
+	     if (cut_bonds%N > 0) then
+		call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
+		allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
+		qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
+		qm_and_link_list_a(size(qm_list_a)+1:size(qm_list_a)+size(link_list_a)) = link_list_a(1:size(link_list_a))
+	     else
+		allocate(link_list_a(0))
+		allocate(qm_and_link_list_a(size(qm_list_a)))
+		if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
+	     endif
+	  else
+	     allocate(qm_and_link_list_a(size(qm_list_a)))
+	     if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
+	  endif
+
+	  !If needed, read QM/MM link_template_file
+	  if (size(link_list_a) > 0) then
+	     if (trim(link_template_file).eq."") then
+	       RAISE_ERROR("There are QM/MM links, but qmmm_link_template is not defined.",error)
+	     endif
+	     call initialise(link_template_io, trim(link_template_file), INPUT)
+	     call read_file(link_template_io, link_template_a, link_template_n_lines)
+	     call finalise(link_template_io)
+	  endif
+       endif
+
+       if (qm_list%N == at%N) then
+	 call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", PRINT_ALWAYS)
+	 run_type='QS'
+	 use_QM = .true.
+	 use_MM = .false.
+	 use_QMMM = .false.
+	 method = 'QS'
+       endif
+
+       can_reuse_wfn = .true.
+
+       call print("@SET DO_QMMM_LINK 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET QMMM_QM_KIND_FILE no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       ! put in things needed for QMMM
+       if (use_QMMM) then
+
+	 call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
+			   ' Angstrom around the QM atoms.')
+	 call print('WARNING! Please check if your cell is centreed around the QM region!',PRINT_ALWAYS)
+	 call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',PRINT_ALWAYS)
+	 call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',PRINT_ALWAYS)
+	 cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
+	 call print("@SET QMMM_ABC_X "//cur_qmmm_qm_abc(1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 call print("@SET QMMM_ABC_Y "//cur_qmmm_qm_abc(2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 call print("@SET QMMM_ABC_Z "//cur_qmmm_qm_abc(3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 call print("@SET QMMM_PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+	 if (get_value(at%params, "QM_cell"//trim(qm_name_suffix), old_qmmm_qm_abc)) then
+	   if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
+	 else
+	   can_reuse_wfn = .false.
+	 endif
+	 call set_value(at%params, "QM_cell"//trim(qm_name_suffix), cur_qmmm_qm_abc)
+	  call print('set_value QM_cell'//trim(qm_name_suffix)//' '//cur_qmmm_qm_abc)
+
+	 !check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
+   !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
+   !       if (qm_list_changed) can_reuse_wfn = .false.
+   !      endif
+	  if (.not.has_property(at, 'cluster_mark'//trim(qm_name_suffix))) then
+	    RAISE_ERROR('no cluster_mark'//trim(qm_name_suffix)//' found in atoms object',error)
+	  endif
+	  if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_suffix))) then
+	    RAISE_ERROR('no old_cluster_mark'//trim(qm_name_suffix)//' found in atoms object',error)
+	  endif
+	  dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
+	  dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p)
+
+	  qm_list_changed = .false.
+	  do i=1,at%N
+	     if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
+		 if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
+		   if (any((/old_cluster_mark_p(i),cluster_mark_p(i)/) == HYBRID_NO_MARK)) qm_list_changed = .true.
+		 else ! CORE, check for transitions between ACTIVE/TRANS and other
+		   if ( ( any(old_cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+			  all(cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) .or. &
+			( any(cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+			  all(old_cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) ) qm_list_changed = .true.
+		 endif
+		 if (qm_list_changed) exit
+	     endif
+	  enddo
+	  call set_value(at%params,'QM_list_changed',qm_list_changed)
+	  call print('set_value QM_list_changed '//qm_list_changed)
+
+	  if (qm_list_changed) can_reuse_wfn = .false.
+
+	 call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.qmmm_qm_kind',OUTPUT)
+	 call print("@SET QMMM_QM_KIND_FILE cp2k_input.qmmm_qm_kind", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 !Add QM atoms
+	 counter = 0
+	 do at_Z=minval(at%Z), maxval(at%Z)
+	   if (any(at%Z(qm_list_a) == at_Z)) then
+	     call print("&QM_KIND "//trim(ElementName(at_Z)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+	     do i=1, size(qm_list_a)
+	       if (at%Z(qm_list_a(i)) == at_Z) then
+		 call print("  MM_INDEX "//qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+		 counter = counter + 1
+	       endif
+	     end do
+	     call print("&END QM_KIND", file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+	   end if
+	 end do
+	 call finalise(cp2k_input_tmp_io)
+	 if (size(qm_list_a) /= counter) then
+	   RAISE_ERROR("Number of QM list atoms " // size(qm_list_a) // " doesn't match number of QM_KIND atoms " // counter,error)
+	 endif
+
+	 !Add link sections from template file for each link
+	 if (size(link_list_a).gt.0) then
+	    call print("@SET DO_QMMM_LINK 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	    call print("@SET QMMM_LINK_FILE cp2k_input.link", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	    call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.link',OUTPUT)
+	    do i=1,cut_bonds%N
+	       i_inner = cut_bonds%int(1,i)
+	       i_outer = cut_bonds%int(2,i)
+	       do i_line=1,link_template_n_lines
+		  call print(trim(link_template_a(i_line)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+		  if (i_line == 1) then
+		     call print("MM_INDEX "//i_outer, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+		     call print("QM_INDEX "//i_inner, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+		  endif
+	       enddo
+	    enddo
+	    call finalise(cp2k_input_tmp_io)
+	 endif ! size(link_list_a) > 0
+       endif ! use_QMMM
+
+       call print("@SET WFN_FILE_NAME no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET DO_DFT_LSD 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET DO_DFT_QM_CHARGES 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       ! put in things needed for QM
+       if (use_QM) then
+	 if (try_reuse_wfn .and. can_reuse_wfn) then 
+	   if (persistent) then
+	      call print("@SET WFN_FILE_NAME quip-RESTART.wfn", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	   else
+	      call print("@SET WFN_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_suffix), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	   endif
+	   !insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
+	   !call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	 endif
+   !     call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error) !lam81
+	 call calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error=error) !lam81
+	 PASS_ERROR(error)
+	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 if (do_lsd) then
+	    call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 endif
+	 if (len_trim(calc_qm_charges) > 0) then
+	    call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 endif
+       endif ! use_QM
+
+       ! put in unit cell
+       call print("@SET SUBSYS_CELL_A_X "//at%lattice(1,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_A_Y "//at%lattice(2,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_A_Z "//at%lattice(3,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_B_X "//at%lattice(1,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_B_Y "//at%lattice(2,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_B_Z "//at%lattice(3,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_C_X "//at%lattice(1,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_C_Y "//at%lattice(2,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET SUBSYS_CELL_C_Z "//at%lattice(3,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+       ! put in topology
+       call print("@SET ISOLATED_ATOMS_FILE cp2k_input.isolated_atoms", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.isolated_atoms',OUTPUT)
+       if (use_QMMM) then
+	 do i=1, size(qm_list_a)
+	   call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+	 end do
+       endif
+       if (assign_pointer(at, "isolated_atom", isolated_atom)) then
+	 do i=1, at%N
+	   if (isolated_atom(i) /= 0) then
+	     call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+	   endif
+	 end do
+       endif
+       call finalise(cp2k_input_tmp_io)
+
+       call print("@SET COORD_FILE quip_cp2k.xyz", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET COORD_FORMAT XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
+	 call print("@SET USE_PSF 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 if (tmp_run_dir_i>0) then
+	   call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_cp2k"//trim(topology_suffix)//".psf ] ; then cp quip_cp2k"//trim(topology_suffix)//".psf /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
+	   if ( stat /= 0 ) then
+	     RAISE_ERROR("Something went wrong when tried to copy quip_cp2k"//trim(topology_suffix)//".psf into the tmp dir "//trim(tmp_run_dir),error)
+	   endif
+	   call print("@SET CONN_FILE quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+	 else
+	   call print("@SET CONN_FILE ../quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 endif
+	 call print("@SET CONN_FORMAT PSF", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	 call print("@SET USE_PSF 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       endif
+
+       ! put in global stuff to run a single force evalution, print out appropriate things
+       call print("@SET QUIP_PROJECT quip", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET QUIP_RUN_TYPE MD", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+
+       call print("@SET FORCES_FORMAT XMOL", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET PERSISTENT_TRAJ_FILE no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET PERSISTENT_CELL_FILE no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       if (persistent) then
+	  call print("@SET QUIP_ENSEMBLE REFTRAJ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	  call print("@SET QUIP_N_STEPS 100000000", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	  call print("@SET PERSISTENT_TRAJ_FILE quip.persistent.traj.xyz", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	  call print("@SET PERSISTENT_CELL_FILE quip.persistent.traj.cell", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	  call print("@SET QUIP_ENSEMBLE NVE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	  call print("@SET QUIP_N_STEPS 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       endif
+
+       call finalise(cp2k_input_io)
     endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     if (auto_centre) then
       if (qm_list%N > 0) then
@@ -434,193 +707,47 @@ contains
       at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
     endif
 
-    if (qm_list%N == at%N) then
-      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", PRINT_ALWAYS)
-      run_type='QS'
-      use_QM = .true.
-      use_MM = .false.
-      use_QMMM = .false.
-      method = 'QS'
-    endif
-
-    can_reuse_wfn = .true.
-
-    call print("@SET DO_QMMM_LINK 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    ! put in things needed for QMMM
-    if (use_QMMM) then
-
-      call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
-			' Angstrom around the QM atoms.')
-      call print('WARNING! Please check if your cell is centreed around the QM region!',PRINT_ALWAYS)
-      call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',PRINT_ALWAYS)
-      call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',PRINT_ALWAYS)
-      cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
-      call print("@SET QMMM_ABC_X "//cur_qmmm_qm_abc(1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      call print("@SET QMMM_ABC_Y "//cur_qmmm_qm_abc(2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      call print("@SET QMMM_ABC_Z "//cur_qmmm_qm_abc(3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      call print("@SET QMMM_PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-      if (get_value(at%params, "QM_cell"//trim(qm_name_postfix), old_qmmm_qm_abc)) then
-	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
-      else
-        can_reuse_wfn = .false.
-      endif
-      call set_value(at%params, "QM_cell"//trim(qm_name_postfix), cur_qmmm_qm_abc)
-       call print('set_value QM_cell'//trim(qm_name_postfix)//' '//cur_qmmm_qm_abc)
-
-      !check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
-!      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
-!       if (qm_list_changed) can_reuse_wfn = .false.
-!      endif
-       if (.not.has_property(at, 'cluster_mark'//trim(qm_name_postfix))) call system_abort('no cluster_mark'//trim(qm_name_postfix)//' found in atoms object')
-       if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_postfix))) call system_abort('no old_cluster_mark'//trim(qm_name_postfix)//' found in atoms object')
-       dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_postfix), old_cluster_mark_p)
-       dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_postfix), cluster_mark_p)
-
-       qm_list_changed = .false.
-       do i=1,at%N
-          if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
-	      if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
-		if (any((/old_cluster_mark_p(i),cluster_mark_p(i)/) == HYBRID_NO_MARK)) qm_list_changed = .true.
-	      else ! CORE, check for transitions between ACTIVE/TRANS and other
-		if ( ( any(old_cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
-		       all(cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) .or. &
-		     ( any(cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
-		       all(old_cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) ) qm_list_changed = .true.
-              endif
-	      if (qm_list_changed) exit
-          endif
-       enddo
-       call set_value(at%params,'QM_list_changed',qm_list_changed)
-       call print('set_value QM_list_changed '//qm_list_changed)
-
-       if (qm_list_changed) can_reuse_wfn = .false.
-
-      call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.qmmm_qm_kind',OUTPUT)
-      call print("@SET QMMM_QM_KIND_FILE cp2k_input.qmmm_qm_kind", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      !Add QM atoms
-      counter = 0
-      do at_Z=minval(at%Z), maxval(at%Z)
-	if (any(at%Z(qm_list_a) == at_Z)) then
-	  call print("&QM_KIND "//trim(ElementName(at_Z)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-	  do i=1, size(qm_list_a)
-	    if (at%Z(qm_list_a(i)) == at_Z) then
-	      call print("  MM_INDEX "//qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-	      counter = counter + 1
-	    endif
-	  end do
-	  call print("&END QM_KIND", file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-	end if
-      end do
-      call finalise(cp2k_input_tmp_io)
-      if (size(qm_list_a) /= counter) &
-	call system_abort("Number of QM list atoms " // size(qm_list_a) // " doesn't match number of QM_KIND atoms " // counter)
-
-      !Add link sections from template file for each link
-      if (size(link_list_a).gt.0) then
-	 call print("@SET DO_QMMM_LINK 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	 call print("@SET QMMM_LINK_FILE cp2k_input.link", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	 call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.link',OUTPUT)
-         do i=1,cut_bonds%N
-            i_inner = cut_bonds%int(1,i)
-            i_outer = cut_bonds%int(2,i)
-            do i_line=1,link_template_n_lines
-	       call print(trim(link_template_a(i_line)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-	       if (i_line == 1) then
-		  call print("MM_INDEX "//i_outer, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-		  call print("QM_INDEX "//i_inner, file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-               endif
-            enddo
-         enddo
-	 call finalise(cp2k_input_tmp_io)
-      endif ! size(link_list_a) > 0
-    endif ! use_QMMM
-
-    call print("@SET WFN_FILE_NAME no_such_file", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET DO_DFT_LSD 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET DO_DFT_QM_CHARGES 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    ! put in things needed for QM
-    if (use_QM) then
-      if (try_reuse_wfn .and. can_reuse_wfn) then 
-	call print("@SET WFN_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_postfix), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
-	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-      endif
-!     call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error) !lam81
-      call calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error=error) !lam81
-      PASS_ERROR(error)
-      call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      if (do_lsd) then
-	 call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      endif
-      if (len_trim(calc_qm_charges) > 0) then
-	 call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      endif
-    endif ! use_QM
-
-    ! put in unit cell
-    call print("@SET SUBSYS_CELL_A_X "//at%lattice(1,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_A_Y "//at%lattice(2,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_A_Z "//at%lattice(3,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_B_X "//at%lattice(1,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_B_Y "//at%lattice(2,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_B_Z "//at%lattice(3,2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_C_X "//at%lattice(1,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_C_Y "//at%lattice(2,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET SUBSYS_CELL_C_Z "//at%lattice(3,3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-    ! put in topology
-    call print("@SET ISOLATED_ATOMS_FILE cp2k_input.isolated_atoms", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.isolated_atoms',OUTPUT)
-    if (use_QMMM) then
-      do i=1, size(qm_list_a)
-	call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-      end do
-    endif
-    if (assign_pointer(at, "isolated_atom", isolated_atom)) then
-      do i=1, at%N
-	if (isolated_atom(i) /= 0) then
-	  call print("LIST " // qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
-	endif
-      end do
-    endif
-    call finalise(cp2k_input_tmp_io)
-
-    call print("@SET COORD_FILE quip_cp2k.xyz", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET COORD_FORMAT XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
-      call print("@SET USE_PSF 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      if (tmp_run_dir_i>0) then
-        call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_cp2k"//trim(topology_suffix)//".psf ] ; then cp quip_cp2k"//trim(topology_suffix)//".psf /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
-        if ( stat /= 0 ) call system_abort("Something went wrong when tried to copy quip_cp2k"//trim(topology_suffix)//".psf into the tmp dir "//trim(tmp_run_dir))
-        call print("@SET CONN_FILE quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-      else
-        call print("@SET CONN_FILE ../quip_cp2k"//trim(topology_suffix)//".psf", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-      endif
-      call print("@SET CONN_FORMAT PSF", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    else
-      call print("@SET USE_PSF 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    endif
-
-    ! put in global stuff to run a single force evalution, print out appropriate things
-    call print("@SET QUIP_PROJECT quip", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET QUIP_RUN_TYPE MD", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-    call print("@SET DO_PRINT_FORCES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET FORCES_FORMAT XMOL", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET QUIP_ENSEMBLE NVE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-    call print("@SET QUIP_N_STEPS 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-    call finalise(cp2k_input_io)
-
     ! prepare xyz file for input to cp2k
-    call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
-    ! actually run cp2k
-    call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
+    if (persistent) then
+       ! write cell file
+       call initialise(persistent_cell_file_io, trim(run_dir)//'/quip.persistent.traj.cell', OUTPUT, append=.true.)
+       call print("0 0.0 "//at%lattice(:,1)//" "//at%lattice(:,2)//" "//at%lattice(:,3)//" "//cell_volume(at), file=persistent_cell_file_io, verbosity=PRINT_ALWAYS)
+       call finalise(persistent_cell_file_io)
+       ! write traj file
+       call write(at, trim(run_dir)//'/quip.persistent.traj.xyz', append=.true., properties='species:pos')
+       ! write initial config if needed
+       if (.not. persistent_already_started) &
+	  call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
+    else
+       call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
+    endif
 
-    ! parse output
-    call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), error=error)
+    ! actually run cp2k
+    if (persistent) then
+       if (.not. persistent_already_started) then
+	  call start_cp2k_program_background(trim(cp2k_program), trim(run_dir), error=error)
+	  PASS_ERROR(error)
+       endif
+       do while(.true.)
+	  inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", exist=persistent_frc_exists)
+	  if (persistent_frc_exists) then
+	     inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", size=persistent_frc_size)
+	     if (persistent_frc_size > 0) then
+		call fusleep(1000000)
+		exit
+	     endif
+	  endif
+	  call fusleep(100000)
+       end do ! waiting for frc file
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), &
+	 out_i=persistent_run_i, error=error)
+       PASS_ERROR(error)
+    else
+       call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
+       PASS_ERROR(error)
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), error=error)
+       PASS_ERROR(error)
+    endif
 
     at%pos(1,:) = at%pos(1,:) + centre_pos(1) - cp2k_box_centre_pos(1)
     at%pos(2,:) = at%pos(2,:) + centre_pos(2) - cp2k_box_centre_pos(2)
@@ -641,9 +768,9 @@ contains
     ! save output
 
     if (use_QM) then
-      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_postfix))
+      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_suffix))
       if (save_output_wfn_files) then
-	call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn run_'//run_dir_i//'_end.wfn.restart.wfn'//trim(qm_name_postfix))
+	call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn run_'//run_dir_i//'_end.wfn.restart.wfn'//trim(qm_name_suffix))
       endif
     endif
 
@@ -652,7 +779,7 @@ contains
         ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
         ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
         ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-        ' cat '//trim(run_dir)//'/quip-frc-1.xyz'// ' >> cp2k_force_file_log')
+        ' cat '//trim(run_dir)//'/quip-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
     endif
 
     ! clean up
@@ -731,8 +858,7 @@ contains
          call system_command("if [ ! -s "//trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix)// &
 	                     " ] ; then cp quip_rev_sort_index"//trim(topology_suffix)//" /tmp/cp2k_run_"//tmp_run_dir_i//"/ ; fi",status=stat)
          if ( stat /= 0 ) then
-	    call system_abort("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)// &
-	                      " into the tmp dir "//trim(tmp_run_dir))
+	    RAISE_ERROR("Something went wrong when tried to copy quip_rev_sort_index"//trim(topology_suffix)//" into the tmp dir "//trim(tmp_run_dir),error)
 	 endif
          call initialise(rev_sort_index_io, trim(tmp_run_dir)//"/quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
        else
@@ -785,7 +911,7 @@ contains
 
   end subroutine do_cp2k_atoms_sort
 
-  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, error)
+  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, out_i, error)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
@@ -793,7 +919,8 @@ contains
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
     character(len=*) :: calc_qm_charges
-    integer, intent(out), optional :: ERROR
+    integer, intent(in), optional :: out_i
+    integer, intent(out), optional :: error
 
     real(dp), pointer :: qm_charges_p(:)
     type(Atoms) :: f_xyz, p_xyz
@@ -801,17 +928,20 @@ contains
     integer :: i, ti
     type(inoutput) :: qm_charges_io
     character(len=FIELD_LENGTH) :: species, qm_charges_l
+    integer :: use_out_i
 
     INIT_ERROR(error)
 
-    call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
-    call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
+    use_out_i = optional_default(0, out_i)
+
+    call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1_'//use_out_i//'.xyz')
+    call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1_'//use_out_i//'.xyz')
     nullify(qm_charges_p)
     if (len_trim(calc_qm_charges) > 0) then
       if (.not. assign_pointer(at, trim(calc_qm_charges), qm_charges_p)) then
 	  call add_property(at, trim(calc_qm_charges), 0.0_dp, ptr=qm_charges_p)
       endif
-      call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1.mulliken',action=INPUT, error=error)
+      call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1_'//use_out_i//'.mulliken',action=INPUT, error=error)
       PASS_ERROR_WITH_INFO("cp2k_driver read_output() failed to open qmcharges file", error)
       do i=1, 3
 	qm_charges_l = read_line(qm_charges_io)
@@ -824,17 +954,18 @@ contains
     endif
 
     if (.not. get_value(f_xyz%params, "E", e)) then
-      RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file', error)
+      RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/quip-frc-1_'//use_out_i//'.xyz file', error)
     endif
 
     if (.not.(assign_pointer(f_xyz, 'frc', force_p))) then
-      RAISE_ERROR("Did not find frc property in "//trim(run_dir)//'/quip-frc-1.xyz file', error)
+      RAISE_ERROR("Did not find frc property in "//trim(run_dir)//'/quip-frc-1_'//use_out_i//'.xyz file', error)
     endif
     f = force_p
 
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
-    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p)
+    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p,error=error)
+    PASS_ERROR_WITH_INFO("cp2k_driver read_output failed to reorder atmos", error)
 
     call print('')
     call print('The energy of the system: '//e)
@@ -849,17 +980,20 @@ contains
 
   end subroutine read_output
 
-  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f, qm_charges_p)
+  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f, qm_charges_p,error)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: qmmm_qm_abc(3)
     real(dp), intent(in) :: new_p(:,:)
     real(dp), intent(inout) :: new_f(:,:)
     real(dp), intent(inout), pointer :: qm_charges_p(:)
+    integer, optional, intent(out) :: error
 
     real(dp) :: shift(3)
     integer, allocatable :: reordering_index(:)
     integer :: i
+
+    INIT_ERROR(error)
 
     ! shifted cell in case of QMMM (cp2k/src/topology_coordinate_util.F)
     shift = 0.0_dp
@@ -879,8 +1013,9 @@ contains
 	! try again with uniform shift (module periodic cell)
 	shift = new_p(:,1) - at%pos(:,1)
 	call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
-	if (any(reordering_index == 0)) &
-	  call system_abort("Could not match original and read in atom objects")
+	if (any(reordering_index == 0)) then
+	  RAISE_ERROR("Could not match original and read in atom objects",error)
+	endif
       endif
     endif
 
@@ -931,14 +1066,34 @@ contains
     end do
   end subroutine check_reordering
 
-  subroutine run_cp2k_program(cp2k_program, run_dir, max_n_tries)
+  subroutine start_cp2k_program_background(cp2k_program, run_dir, error)
+    character(len=*), intent(in) :: cp2k_program, run_dir
+    integer, optional, intent(out) :: error
+
+    character(len=FIELD_LENGTH) :: cp2k_run_command
+    integer :: stat
+
+    INIT_ERROR(error)
+
+    cp2k_run_command = 'cd ' // trim(run_dir)//'; '//trim(cp2k_program)//' cp2k_input.inp >> cp2k_output.out &'
+    call print("Doing '"//trim(cp2k_run_command)//"'")
+    call system_command(trim(cp2k_run_command), status=stat)
+    if (stat /= 0) then
+      RAISE_ERROR("failed to start cp2k program in the background", error)
+    endif
+  end subroutine start_cp2k_program_background
+
+  subroutine run_cp2k_program(cp2k_program, run_dir, max_n_tries, error)
     character(len=*), intent(in) :: cp2k_program, run_dir
     integer, intent(in) :: max_n_tries
+    integer, optional, intent(out) :: error
 
     integer :: n_tries
     logical :: converged
     character(len=FIELD_LENGTH) :: cp2k_run_command
     integer :: stat, error_stat
+
+    INIT_ERROR(error)
 
     n_tries = 0
     converged = .false.
@@ -954,10 +1109,12 @@ contains
       call print('grep -i warning '//trim(run_dir)//'/cp2k_output.out', PRINT_ALWAYS)
       call system_command("fgrep -i 'warning' "//trim(run_dir)//"/cp2k_output.out")
       call system_command("fgrep -i 'error' "//trim(run_dir)//"/cp2k_output.out", status=error_stat)
-      if (stat /= 0) &
-	call system_abort('cp2k_run_command has non zero return status ' // stat //'. check output file '//trim(run_dir)//'/cp2k_output.out')
-      if (error_stat == 0) &
-	call system_abort('cp2k_run_command generated ERROR message in output file '//trim(run_dir)//'/cp2k_output.out')
+      if (stat /= 0) then
+	RAISE_ERROR('cp2k_run_command has non zero return status ' // stat //'. check output file '//trim(run_dir)//'/cp2k_output.out', error)
+      endif
+      if (error_stat == 0) then
+	RAISE_ERROR('cp2k_run_command generated ERROR message in output file '//trim(run_dir)//'/cp2k_output.out', error)
+      endif
 
       call system_command('egrep "FORCE_EVAL.* QS " '//trim(run_dir)//'/cp2k_output.out',status=stat)
       if (stat == 0) then ! QS or QMMM run
@@ -979,8 +1136,9 @@ contains
       endif
     end do
 
-    if (.not. converged) &
-      call system_abort('cp2k failed to converge after n_tries='//n_tries//'. see output file '//trim(run_dir)//'/cp2k_output.out')
+    if (.not. converged) then
+      RAISE_ERROR('cp2k failed to converge after n_tries='//n_tries//'. see output file '//trim(run_dir)//'/cp2k_output.out',error)
+    endif
 
   end subroutine run_cp2k_program
 
@@ -1079,10 +1237,11 @@ contains
 
   end subroutine calc_charge_lsd
 
-  subroutine do_cp2k_calc_fake(at, f, e, args_str)
+  subroutine do_cp2k_calc_fake(at, f, e, args_str, error)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
     character(len=*), intent(in) :: args_str
+    integer, intent(out), optional :: error
 
     type(inoutput) :: last_run_io
     type(cinoutput) :: force_cio
@@ -1091,6 +1250,8 @@ contains
     integer :: stat
     type(Atoms) :: for
     real(dp), pointer :: frc(:,:)
+
+    INIT_ERROR(error)
 
     call initialise(last_run_io, "cp2k_driver_fake_run", action=INPUT)
     last_run_s = read_line(last_run_io, status=stat)
@@ -1108,14 +1269,15 @@ contains
     call read(force_cio, for, frame=this_run_i-1)
     !NB why does this crash now?
     ! call finalise(force_cio)
-    if (.not. assign_pointer(for, 'frc', frc)) &
-      call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
+    if (.not. assign_pointer(for, 'frc', frc)) then
+      RAISE_ERROR("do_cp2k_calc_fake couldn't find frc field in force log file",error)
+    endif
     f = frc
 
     if (.not. get_value(for%params, "energy", e)) then
       if (.not. get_value(for%params, "Energy", e)) then
 	if (.not. get_value(for%params, "E", e)) then
-	  call system_abort("do_cp2k_calc_fake didn't find energy")
+	  RAISE_ERROR("do_cp2k_calc_fake didn't find energy",error)
 	endif
       endif
     endif
