@@ -1,13 +1,20 @@
-Patches tested against CP2K cvs version 27 June 2011 (NB).
+Patches tested against CP2K trunk cvs version 27 June 2011 (NB).
+   http://cp2k.berlios.de/download.html
 
-Most robust forms for applying the changes are in
+MANDATORY patches for cp2k source:
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
+
+RECOMMENDED patches:
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
   cp2k_fft_lib.patch (fixes dependencies for MKL fft library)
-  cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs)
+  cp2k_reftraj.patch (enables &REFTRAJ&WAIT in cp2k, which QUIP uses for cp2k_filepot persistent connections)
+  cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs.
+      Not actually used by QUIP, just useful for pure CP2K umbrella integration)
 
+OPTIONAL patches:
   cp2k_silica.patch (CV: Silica potential)
 
+OUTDATED patches:
   cp2k_speed.patch.outdated (speed improvements that are now, as of 20 April 2011, in the CP2K
                              CVS repository)
   cp2k_exyz.patch.OUTDATED (OUTDATED, no need for EXYZ reading anyway, all additional
@@ -22,17 +29,11 @@ Use them by going to the CP2K cp2k/src directory, and running
   patch -l -F 4 -p0 < path_to_your_QUIP_Core/cp2k_driver/cp2k_speed.patch
   patch -l -F 4 -p0 < path_to_your_QUIP_Core/cp2k_driver/cp2k_fft_lib.patch
   patch -l -F 4 -p0 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_colvar_restraint_constraint_print.patch
-
-You will need to tell the compiler to add
-  -Ipath_to_your_QUIP/build.QUIP_ARCH
-at compile time (add to FCFLAGS and FCFLAGS2 in the relevant file in the arch/ CP2K directory).
-and
-  -Lpath_to_your_QUIP/build.QUIP_ARCH -latoms
-at link time (add to LIBS in the relevant file in the arch/ CP2K directory).
+  patch -l -F 4 -p0 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_reftraj.patch
 
 Add to your path the cp2k programs:
-  serial: cp2k_serial 
-  parallel: cp2k_popt (the driver runs it with 4 proc: mpirun -np 4 cp2k_popt)
+  serial: cp2k.serial 
+  parallel: cp2k.popt (the driver runs it with 4 proc: mpirun -np 4 cp2k.popt)
 Or just pass the cp2k_program=path_to_your_program/cp2k.sopt argument to the filepot
 
 Files needed for CP2K runs:
@@ -41,32 +42,3 @@ Files needed for CP2K runs:
   BASIS_SETS
   charmm.pot : force field
   all_res.CHARMM.lib: motif library
-
-To use exyz file for MM, just set COORD_FILE_FORMAT to EXYZ.
-The EXYZ file support converts from various EXYZ fields to CP2K atom properties as follows:
-  CP2K atmname from:
-    EXYZ atmname if defined
-    EXYZ species if defined
-    EXYZ Z if defined
-    one of those 3 is required
-  CP2K pos from EXYZ pos
-  CP2K molname from:
-    EXYZ molname if defined
-    CP2K atmname // cp2k_atom_number
-  CP2K resname from:
-    EXYZ resname if defined
-    CP2K molname
-  CP2K resid from EXYZ resid (default 1)
-  CP2K element from:
-    EXYZ element if defined
-    EXYZ species if defined
-    EXYZ Z if defined
-    one of those 3 is required
-  CP2K atm_mass from EXYZ atm_mass (default HUGE(0.0_dp))
-  CP2K atm_charge from EXYZ atm_charge (default -HUGE(0.0_dp))
-  CP2K occup from EXYZ occup (default -HUGE(0.0_dp))
-  CP2K beta from EXYZ beta (default -HUGE(0.0_dp))
-
-like PDB, if you set the CHARGE_OCCUP flag, occup will override atm_charge
-like PDB, if you set the CHARGE_BETA flag, beta will override atm_charge
-CHARGE_EXTENDED flag is ignored
