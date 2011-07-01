@@ -4,6 +4,10 @@
 # USER set the DFT functional, e.g. BLYP or PBE
 @SET DFT_FUNCTIONAL BLYP
 
+# only set one of the two MMs
+@SET MM CHARMM
+# @SET MM BKS
+
 &FORCE_EVAL
   METHOD ${FORCE_EVAL_METHOD}
   &DFT
@@ -51,6 +55,7 @@
     &QS
       EXTRAPOLATION PS
       EXTRAPOLATION_ORDER 1
+# this is commented out for our BKS setup.  Why?
       EPS_DEFAULT 1.0E-12
     &END QS
     &SCF
@@ -67,6 +72,10 @@
          MINIMIZER CG
          PRECONDITIONER FULL_ALL
       &END OT
+# this is present and commented out for our BKS setup.  Maybe it's optional.
+#      &SMEAR
+#         ELECTRONIC_TEMPERATURE 1000
+#      &END SMEAR
     &END SCF
     &XC
 #USER XC_FUNCTIONAL: exchange-correlation functional to use, usually BLYP
@@ -93,8 +102,50 @@
   &END DFT
   &MM
     &FORCEFIELD
+@IF ${MM} == CHARMM
       PARMTYPE CHM
       PARM_FILE_NAME ../charmm.pot
+@ENDIF
+@IF ${MM} == BKS
+      IGNORE_MISSING_CRITICAL_PARAMS
+      PARMTYPE OFF
+      &SPLINE
+        EMAX_SPLINE 100.0
+      &END SPLINE
+      &CHARGE
+         ATOM SIO
+	 CHARGE 2.4
+      &END CHARGE
+      &CHARGE
+         ATOM OSB
+         CHARGE -1.2
+      &END CHARGE
+      &NONBONDED
+        &BMHFT
+           ATOMS OSB OSB
+           A [eV] 1388.7730     # eV
+	   B 2.76               # angstrom^-1
+	   C 6.43112905         # Hartree angstrom^6
+	   D 0.0
+           RCUT 10.0
+	&END BMHFT
+        &BMHFT
+           ATOMS SIO OSB
+           A [eV] 18003.7572     # eV
+	   B 4.87318             # angstrom^-1
+	   C 4.9006603523734675  # Hartree angstrom^6
+	   D 0.0
+           RCUT 10.0
+	&END BMHFT
+        &BMHFT
+           ATOMS SIO SIO
+           A [eV] 0.0
+	   B 0.0
+	   C 0.0
+	   D 0.0
+	&END BMHFT
+      &END NONBONDED
+@ENDIF
     &END FORCEFIELD
     &POISSON
       PERIODIC ${PERIODIC}
@@ -129,6 +180,7 @@
 @ENDIF
 #    MM_POTENTIAL_FILE_NAME ../MM_POTENTIAL
 #from Laino 2005 using Blochl 1995, Gaussian expansion of the electrostatic potential
+# Use NONE for "mechanical" embedding
     ECOUPL GAUSS
     # 10 seems accurate enough and faster according to CV e-mail 9 Feb 2011
     USE_GEEP_LIB 10
@@ -141,6 +193,7 @@
 #USER RCUT default is system size dependent and marginally OK.
 # for some systems, setting it to the system size (by uncommenting this RCUT) line is significantly faster
 #    (speedup in ewald_ddapc_pot and ewald_ddapc_force)
+# this is commented out for BKS.  Why?
         RCUT ${MAX_CELL_SIZE_INT}
 #USER EWALD_PRECISION: Accuracy of Ewald sum for QM/MM calculation (overrides &DFT for the QM part), 1e-8 seems decent
         EWALD_PRECISION 1.E-8
@@ -193,6 +246,8 @@
 #USER: BASIS_SET - double zeta in valence + polarization (DZVP) is good for most total E calculations
 #USER: make sure to use basis functions consistent with POTENTIAL (e.g. GTH) and XC_FUNCTIONAL (e.g. BLYP)
 @IF ${DO_DFT} == 1
+
+# for all
     &KIND H
       BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
       POTENTIAL GTH-${DFT_FUNCTIONAL}-q1
@@ -212,6 +267,23 @@
     &KIND Cl
       BASIS_SET DZVP-GTH-${DFT_FUNCTIONAL}
       POTENTIAL GTH-${DFT_FUNCTIONAL}-q7
+    &END KIND
+
+# for BKS
+    &KIND SIO
+      ELEMENT Si
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q4
+    &END KIND
+    &KIND OSB
+      ELEMENT O
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q6
+    &END KIND
+    &KIND SI
+      ELEMENT Si
+      BASIS_SET DZVP-GTH-BLYP
+      POTENTIAL GTH-BLYP-q4
     &END KIND
 @ENDIF
   &END SUBSYS
