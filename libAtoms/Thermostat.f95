@@ -62,7 +62,8 @@ module thermostat_module
                         LANGEVIN_NPT         = 4, &
                         LANGEVIN_PR          = 5, &
                         NPH_ANDERSEN         = 6, &
-                        NPH_PR               = 7
+                        NPH_PR               = 7, &
+                        LANGEVIN_OU          = 8
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
@@ -191,7 +192,7 @@ contains
     case(LANGEVIN)
 
        if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin thermostat')
-       if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0')
+       if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0 for Langevin')
        this%T = T
        this%gamma = gamma
        this%Q = use_Q
@@ -262,6 +263,14 @@ contains
        this%p = p
        this%gamma_p = gamma_p
        this%W_p = W_p
+
+    case(LANGEVIN_OU)
+
+       if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin OU thermostat')
+       if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0 for Langevin OU')
+       this%T = T
+       this%gamma = gamma
+       this%Q = use_Q
 
     end select
 
@@ -526,6 +535,10 @@ contains
 
     case(NPH_PR)
        call print('Parrinello-Rahman NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+
+    case(LANGEVIN_OU)
+       call print('Langevin OU, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
+	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
     end select
     
@@ -903,6 +916,21 @@ contains
        end do
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    case(LANGEVIN_OU)
+              
+       !Decay the velocity for dt/2 by eta (aka chi)
+
+       if (this%eta /= 0.0_dp) then
+	  decay = exp(-0.5_dp*this%eta*dt)
+	  do i = 1, at%N
+	     if (prop_ptr(i) /= value) cycle
+	     at%velo(:,i) = at%velo(:,i)*decay
+	  end do
+       endif
 
     end select
 
@@ -974,6 +1002,7 @@ contains
     real(dp) :: R, a(3)
     integer  :: i
     integer, pointer, dimension(:) :: prop_ptr
+    real(dp) :: delta_K
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat3: cannot find property '//property)
@@ -1026,6 +1055,20 @@ contains
        
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    case(LANGEVIN_OU)
+              
+       ! propagate eta (a.k.a. chi) for a full step
+
+       if (this%Q > 0.0_dp) then
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + dt*2.0_dp*delta_K/this%Q
+       endif
+
     end select
 
   end subroutine thermostat3
@@ -1046,6 +1089,7 @@ contains
     integer  :: i
     integer, pointer, dimension(:) :: prop_ptr
     real(dp) :: delta_K
+    real(dp) :: OU_random_dv_mag
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat4: cannot find property '//property)
@@ -1279,7 +1323,7 @@ contains
           at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
           !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
        end do
-       
+
        volume_p = cell_volume(at)
        ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
        this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
@@ -1287,6 +1331,31 @@ contains
        this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
        call set_lattice(at,lattice_p, scale_positions=.false.)
+
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X LANGEVIN Ornstein-Uhlenbeck
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    case(LANGEVIN_OU)
+
+       !Decay the velocities for dt/2 again by eta (aka chi)
+       if (this%eta /= 0.0_dp) then
+	  decay = exp(-0.5_dp*this%eta*dt)
+	  do i = 1, at%N
+	     if (prop_ptr(i) /= value) cycle
+	     at%velo(:,i) = at%velo(:,i)*decay
+	  end do
+       endif
+
+       !Decay the velocities for dt with gamma
+       decay = exp(-this%gamma*dt)
+       ! add random force
+       OU_random_dv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-2.0_dp*this%gamma*dt)))
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay + OU_random_dv_mag/sqrt(at%mass(i))*ran_normal3()
+       end do
 
     end select
 
