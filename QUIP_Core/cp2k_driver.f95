@@ -125,6 +125,14 @@ contains
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
 
+    INTERFACE     
+	elemental function ffsize(f)
+	  character(len=*), intent(in)::f
+	  integer::ffsize
+	end function ffsize
+    END INTERFACE
+
+
     INIT_ERROR(error)
 
     call system_timer('do_cp2k_calc')
@@ -731,10 +739,13 @@ contains
        do while(.true.)
 	  inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", exist=persistent_frc_exists)
 	  if (persistent_frc_exists) then
-	     inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", size=persistent_frc_size)
-	     if (persistent_frc_size > 0) then
+	     ! inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", size=persistent_frc_size)
+	     persistent_frc_size = ffsize(trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz")
+	     if (persistent_frc_size > 0) then ! got data, leave
 		call fusleep(1000000)
 		exit
+	     else if (persistent_frc_size < 0) then ! error
+	       RAISE_ERROR("Failed to get valid value from ffsize of "//trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", error)
 	     endif
 	  endif
 	  call fusleep(100000)
