@@ -36,6 +36,8 @@
 #include <math.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifndef DARWIN
 #include <sys/sysinfo.h>
@@ -91,6 +93,19 @@ void call_constraint_sub_(int* i, double* pos, double* velo, double* mass, doubl
 int fisnan_(double *r)
 {
   return isnan(*r);
+}
+
+int ffsize_(char *filename, int len) {
+   struct stat st;
+   char c_file[1024];
+
+   strncpy(c_file, filename, (len < 1023 ? len : 1023));
+   c_file[(len < 1023 ? len : 1023)] = 0;
+   if (!stat(c_file, &st)) {
+      return ((int)st.st_size);
+   } else {
+      return (-1);
+   }
 }
 
 
