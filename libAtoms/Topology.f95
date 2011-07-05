@@ -64,7 +64,7 @@ public :: next_motif, find_motif_backbone
              MM_RUN, &
              QMMM_RUN_CORE, &
              QMMM_RUN_EXTENDED, &
-             find_water_monomer
+             find_water_monomer, find_A2_monomer, find_AB_monomer
 
 
 !parameters for Run_Type
@@ -2149,6 +2149,114 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      end if
 
   endsubroutine find_water_monomer
+
+  subroutine find_A2_monomer(at,atomic_number,monomer_cutoff,A2_index,error)
+
+     type(atoms), intent(in) :: at
+     integer, intent(in) :: atomic_number
+     real(dp), intent(in) :: monomer_cutoff
+     integer, dimension(:,:), intent(out) :: A2_index
+     integer, intent(out), optional :: error
+
+     real(dp) :: r, r12
+     integer :: i, j, n, atom_2, atom_index
+     logical, dimension(at%N) :: atom_associated
+
+
+     ! loop through atoms, find oxygens and their closest hydrogens
+     atom_index = 0
+     atom_associated = .false.
+
+     do i = 1, at%N
+        if(at%Z(i) == atomic_number .and. .not. atom_associated(i) ) then
+           atom_index = atom_index + 1
+
+           r12 = monomer_cutoff ! initialise distance
+           atom_2 = 0
+           do n = 1, atoms_n_neighbours(at, i)
+              j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+
+              if( (at%Z(j) /= atomic_number) .or. atom_associated(j) ) cycle
+
+              if(r < r12) then
+                 r12 = r
+                 atom_2 = j
+              endif
+           end do
+           if(atom_2 == 0) then
+              RAISE_ERROR("Cannot find pair for atom index "//i, error)
+           end if
+           atom_associated(i) = .true.
+           atom_associated(atom_2) = .true.
+
+           if(atom_index <= size(A2_index,2)) then
+              A2_index(:,atom_index) = (/i, atom_2/)
+           else
+              RAISE_ERROR("A2_index is too small: "//size(A2_index,2)//". Size required is at least "//atom_index,error)
+           endif
+        endif
+     enddo
+
+     ! sanity check
+     if(atom_index /= count(at%Z == atomic_number)/2) then
+        RAISE_ERROR("Number of monomers is not equal to monomer atoms per two.", error)
+     end if
+
+  endsubroutine find_A2_monomer
+
+  subroutine find_AB_monomer(at,atomic_number,monomer_cutoff,AB_index,error)
+
+     type(atoms), intent(in) :: at
+     integer, dimension(2), intent(in) :: atomic_number 
+     real(dp), intent(in) :: monomer_cutoff
+     integer, dimension(:,:), intent(out) :: AB_index
+     integer, intent(out), optional :: error
+
+     real(dp) :: r, r12
+     integer :: i, j, n, atom_2, atom_index
+     logical, dimension(at%N) :: atom_associated
+
+
+     ! loop through atoms, find oxygens and their closest hydrogens
+     atom_index = 0
+     atom_associated = .false.
+
+     do i = 1, at%N
+        if(at%Z(i) == atomic_number(1) .and. .not. atom_associated(i) ) then
+           atom_index = atom_index + 1
+
+           r12 = monomer_cutoff ! initialise distance
+           atom_2 = 0
+           do n = 1, atoms_n_neighbours(at, i)
+              j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+
+              if( (at%Z(j) /= atomic_number(2)) .or. atom_associated(j) ) cycle
+
+              if(r < r12) then
+                 r12 = r
+                 atom_2 = j
+              endif
+           end do
+           if(atom_2 == 0) then
+              RAISE_ERROR("Cannot find pair for atom index "//i, error)
+           end if
+           atom_associated(i) = .true.
+           atom_associated(atom_2) = .true.
+
+           if(atom_index <= size(AB_index,2)) then
+              AB_index(:,atom_index) = (/i, atom_2/)
+           else
+              RAISE_ERROR("A2_index is too small: "//size(AB_index,2)//". Size required is at least "//atom_index,error)
+           endif
+        endif
+     enddo
+
+     ! sanity check
+     if(atom_index /= count(at%Z == atomic_number(1)) .or. atom_index /= count(at%Z == atomic_number(2))) then
+        RAISE_ERROR("Number of monomers is not equal to the number of monomer atoms.", error)
+     end if
+
+  endsubroutine find_AB_monomer
 
    subroutine break_form_bonds(at, conn, form_bond, break_bond, error)
       type(Atoms), intent(in) :: at
