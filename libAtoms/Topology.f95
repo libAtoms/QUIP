@@ -2175,6 +2175,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            atom_2 = 0
            do n = 1, atoms_n_neighbours(at, i)
               j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+              if( j == 0 ) cycle
 
               if( (at%Z(j) /= atomic_number) .or. atom_associated(j) ) cycle
 
@@ -2229,6 +2230,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            atom_2 = 0
            do n = 1, atoms_n_neighbours(at, i)
               j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+              if( j == 0 ) cycle
 
               if( (at%Z(j) /= atomic_number(2)) .or. atom_associated(j) ) cycle
 
