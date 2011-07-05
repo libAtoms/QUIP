@@ -2155,33 +2155,33 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      type(atoms), intent(in) :: at
      integer, intent(in) :: atomic_number
      real(dp), intent(in) :: monomer_cutoff
-     integer, dimension(:,:), intent(out) :: A2_index
+     integer, dimension(:), intent(out) :: A2_index
      integer, intent(out), optional :: error
 
      real(dp) :: r, r12
-     integer :: i, j, n, atom_2, atom_index
+     integer :: i, j, n, jn, atom_2, atom_n1, atom_n2
      logical, dimension(at%N) :: atom_associated
 
 
      ! loop through atoms, find oxygens and their closest hydrogens
-     atom_index = 0
      atom_associated = .false.
+     A2_index = 0
 
      do i = 1, at%N
         if(at%Z(i) == atomic_number .and. .not. atom_associated(i) ) then
-           atom_index = atom_index + 1
 
            r12 = monomer_cutoff ! initialise distance
            atom_2 = 0
            do n = 1, atoms_n_neighbours(at, i)
-              j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+              j = atoms_neighbour(at, i, n, distance=r, jn = jn, max_dist=monomer_cutoff)
               if( j == 0 ) cycle
-
               if( (at%Z(j) /= atomic_number) .or. atom_associated(j) ) cycle
 
               if(r < r12) then
                  r12 = r
                  atom_2 = j
+                 atom_n2 = n
+                 atom_n1 = jn
               endif
            end do
            if(atom_2 == 0) then
@@ -2190,18 +2190,10 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            atom_associated(i) = .true.
            atom_associated(atom_2) = .true.
 
-           if(atom_index <= size(A2_index,2)) then
-              A2_index(:,atom_index) = (/i, atom_2/)
-           else
-              RAISE_ERROR("A2_index is too small: "//size(A2_index,2)//". Size required is at least "//atom_index,error)
-           endif
+           A2_index(i) = atom_n2
+           A2_index(atom_2) = atom_n1
         endif
      enddo
-
-     ! sanity check
-     if(atom_index /= count(at%Z == atomic_number)/2) then
-        RAISE_ERROR("Number of monomers is not equal to monomer atoms per two.", error)
-     end if
 
   endsubroutine find_A2_monomer
 
