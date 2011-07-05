@@ -46,6 +46,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #include "error.inc"
+#define NEIGHBOR_LOOP_OPTION 1
 
 module IPModel_FC_module
 
@@ -109,6 +110,7 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
 
   integer :: i, ji, j, s(3), fc_i, tind, t_s(3)
   real(dp) :: ideal_v(3), ideal_dr_mag
+  integer, pointer :: travel(:)
 
   call Finalise(this)
 
@@ -124,6 +126,10 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
   call IPModel_FC_read_params_xml(this, param_str)
 
   call read(this%ideal_struct, trim(this%ideal_struct_file))
+#if NEIGHBOR_LOOP_OPTION == 1 || NEIGHBOR_LOOP_OPTION == 2
+  ! will do nothing if travel already exists, but it must exist for inlined neighbor stuff in _Calc()
+  call add_property(this%ideal_struct, "travel", value=0, n_cols=3, overwrite=.false.)
+#endif
 
   do ti=1, this%n_types
   do tj=1, this%n_types
@@ -216,7 +222,6 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   type(Table), pointer :: t
   logical :: is_j
   real(dp) :: dr_v(3)
-#define NEIGHBOR_LOOP_OPTION 1
 #if NEIGHBOR_LOOP_OPTION == 2
   integer :: i_n1n, j_n1n
 #endif
