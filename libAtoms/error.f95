@@ -296,9 +296,9 @@ contains
     if (quippy_running()) call quippy_error_abort(message)
 
 #ifdef _MPI
-    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,error_linebreak_string(trim(message),80)
+    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,error_linebreak_string(trim(message),100)
 #else
-    write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', error_linebreak_string(trim(message),80)
+    write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', error_linebreak_string(trim(message),100)
 #endif
     call flush(error_unit)
 
@@ -354,7 +354,7 @@ contains
     character(len=error_linebreak_string_length(str, line_len)) :: lb_str
 
     logical :: word_break
-    integer :: copy_len, last_space
+    integer :: copy_len, last_space, next_cr
     character(len=len(lb_str)) :: tmp_str
     character :: quip_new_line
 
@@ -367,8 +367,13 @@ contains
     lb_str=""
     tmp_str=trim(str)
     do while (len_trim(tmp_str) > 0)
-      copy_len = min(len_trim(tmp_str),line_len)
-      if (tmp_str(copy_len:copy_len) /= " ") then
+      next_cr = scan(trim(tmp_str),quip_new_line)
+      if (next_cr > 0) then
+	 copy_len = min(len_trim(tmp_str),line_len,next_cr)
+      else
+	 copy_len = min(len_trim(tmp_str),line_len)
+      endif
+      if (copy_len < len_trim(tmp_str) .and. tmp_str(copy_len+1:copy_len+1) /= " ") then
 	 last_space=scan(tmp_str(1:copy_len), " ", .true.)
 	 if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
 	    copy_len=last_space
@@ -376,7 +381,11 @@ contains
       endif
 
       if (len_trim(lb_str) > 0) then ! we already have some text, add newline before concatenating next line
-	lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
+	if (lb_str(len_trim(lb_str):len_trim(lb_str)) == quip_new_line) then
+	   lb_str = trim(lb_str)//trim(tmp_str(1:copy_len))
+	else
+	   lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
+	endif
       else ! just concatenate next line
 	lb_str = trim(tmp_str(1:copy_len))
       endif

@@ -124,6 +124,7 @@ contains
     integer :: persistent_run_i, persistent_frc_size
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
+    real(dp) :: wait_time, max_persistent_wait_time
 
     INTERFACE     
 	elemental function ffsize(f)
@@ -148,6 +149,7 @@ contains
       call param_register(cli, "topology_suffix", "", topology_suffix, help_string="String to append to file containing topology info (for runs that do multiple topologies not to accidentally reuse PSF file")
       call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="path to cp2k executable")
       call param_register(cli, 'persistent', 'F', persistent, help_string="if true, use persistent connection to cp2k with REFTRAJ")
+      call param_register(cli, 'max_persistent_wait_time', '600.0', max_persistent_wait_time, help_string="Max amount of time in s to wait for forces to be available in persistent mode")
       call param_register(cli, 'clean_up_files', 'T', clean_up_files, help_string="if true, clean up run directory files")
       call param_register(cli, 'clean_up_keep_n', '1', clean_up_keep_n, help_string="number of old run directories to keep if cleaning up")
       call param_register(cli, 'save_output_files', 'T', save_output_files, help_string="if true, save the output files")
@@ -745,6 +747,7 @@ contains
 	  call start_cp2k_program_background(trim(cp2k_program), trim(run_dir), error=error)
 	  PASS_ERROR(error)
        endif
+       wait_time = 0.0_dp
        do while(.true.)
 	  inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", exist=persistent_frc_exists)
 	  if (persistent_frc_exists) then
@@ -758,6 +761,10 @@ contains
 	     endif
 	  endif
 	  call fusleep(100000)
+	  wait_time = wait_time + 100000_dp/1.0e6_dp
+	  if (wait_time > max_persistent_wait_time) then
+	     RAISE_ERROR("Failed to get forces after waiting at least "//max_persistent_wait_time//" s", error)
+	  endif
        end do ! waiting for frc file
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), &
 	 trim(calc_virial), out_i=persistent_run_i, error=error)
