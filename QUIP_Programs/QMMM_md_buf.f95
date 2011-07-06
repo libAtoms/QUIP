@@ -63,9 +63,6 @@ program qmmm_md
   !integer, pointer                    :: hybrid_mark_p(:)
   !integer, pointer                    :: cluster_mark_p(:)
 
-  !Thermostat
-  real(dp)                            :: temp
-
   !Spline
 
   type spline_pot
@@ -469,7 +466,6 @@ program qmmm_md
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
        call init_restraints_constraints(ds, string(restraint_constraint_xml_es))
        call finalise(restraint_constraint_xml_es)
-       if (ds%Nrestraints > 0) allocate(restraint_stuff(5,ds%Nrestraints))
     endif
 
     ds%avg_time = avg_time
@@ -724,6 +720,7 @@ call print("MAIN CALLED CALC EVB")
         f = sum0(f1,ds%atoms)
      endif
 
+     ! first call to get_restraint_stuff will allocate restraint_stuff
      if (ds%Nrestraints > 0) call get_restraint_stuff(ds, restraint_stuff)
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
@@ -1768,16 +1765,34 @@ contains
 
    subroutine get_restraint_stuff(ds, restraint_stuff)
      type(DynamicalSystem), intent(in) :: ds
-     real(dp), intent(out) :: restraint_stuff(:,:)
+     real(dp), allocatable, intent(inout) :: restraint_stuff(:,:)
  
-     integer i_r
+     integer :: i_r, n_s
+
+    ! count number to print in summary n_s
+    n_s = 0
+    do i_r = 1, ds%Nrestraints
+      if (ds%restraint(i_r)%print_summary) n_s=n_s + 1
+    end do
+
+    ! (re)allocate array
+    if (allocated(restraint_stuff)) then
+      if (size(restraint_stuff,1) /= 5 .or. size(restraint_stuff,2) /= n_s) deallocate(restraint_stuff)
+    endif
+    if (.not. allocated(restraint_stuff)) then
+       allocate(restraint_stuff(5,n_s))
+    endif
  
+     n_s = 0
      do i_r = 1, ds%Nrestraints
-        restraint_stuff(1,i_r) = ds%restraint(i_r)%target_v
-        restraint_stuff(2,i_r) = ds%restraint(i_r)%C
-        restraint_stuff(3,i_r) = ds%restraint(i_r)%E
-        restraint_stuff(4,i_r) = -ds%restraint(i_r)%dE_dcoll
-        restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
+       if (ds%restraint(i_r)%print_summary) then
+	  n_s = n_s + 1
+	  restraint_stuff(1,n_s) = ds%restraint(i_r)%target_v
+	  restraint_stuff(2,n_s) = ds%restraint(i_r)%C
+	  restraint_stuff(3,n_s) = ds%restraint(i_r)%E
+	  restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
+	  restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
+       endif
      end do
    end subroutine get_restraint_stuff
 
