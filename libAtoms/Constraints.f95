@@ -179,6 +179,7 @@ module constraints_module
      real(dp), allocatable, dimension(:) :: dE_dr     !% restraint force (on atoms)
      real(dp)                            :: dE_dcoll  !% derivative of restraint energy w.r.t. collective coordinate, for Umbrella Integration w.r.t. pos
      real(dp)                            :: dE_dk     !% derivative of restraint energy w.r.t. stifness, for Umbrella Integration w.r.t. stiffness
+     logical                             :: print_summary=.true. !% if true, print in summary
 
   end type Constraint
 

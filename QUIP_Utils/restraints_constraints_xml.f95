@@ -30,6 +30,7 @@ contains
       real(dp) :: egap
       real(dp) :: tol
       character(len=20) :: type_str
+      logical :: print_summary
 
       if (parse_in_restraints) type_str = "restraint"
       if (parse_in_constraints) type_str = "constraint"
@@ -54,6 +55,12 @@ contains
 	 endif
 
       else if (parse_in_restraints .or. parse_in_constraints) then
+	 call QUIP_FoX_get_value(attributes, "print_summary", value, status)
+	 if (status == 0) then
+	    read (value, *) print_summary
+	 else
+	    print_summary=.true.
+	 endif
 
 	 if (parse_in_restraints) then
 	    call QUIP_FoX_get_value(attributes, "k", value, status)
@@ -87,15 +94,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, restraint_k=k, bound=bound)
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, tol=tol)
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound)
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, tol=tol)
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -126,15 +133,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) di
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, restraint_k=k, bound=bound)
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, tol=tol)
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, restraint_k=k, bound=bound)
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, tol=tol)
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -168,15 +175,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) di
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, restraint_k=k, bound=bound)
+		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, tol=tol)
+		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, restraint_k=k, bound=bound)
+		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, tol=tol)
+		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -192,15 +199,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, d, restraint_k=k, bound=bound)
+		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, d, tol=tol)
+		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, d, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound)
+		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, tol=tol)
+		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -219,15 +226,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, restraint_k=k, bound=bound)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, tol=tol)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, restraint_k=k, bound=bound)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, tol=tol)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -246,15 +253,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) c
 	       if (parse_in_restraints) then
-		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, c, restraint_k=k, bound=bound)
+		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, c, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, c, tol=tol)
+		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, c, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, restraint_k=k, bound=bound)
+		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, tol=tol)
+		  call constrain_bondanglecos(parse_ds, atom_1, atom_2, atom_3, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -273,15 +280,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, restraint_k=k, bound=bound)
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, tol=tol)
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, restraint_k=k, bound=bound)
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, tol=tol)
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -291,16 +298,16 @@ contains
 	    if (status == 0) then
 	       read (value, *) egap
 	       if (parse_in_restraints) then
-		  call constrain_gap_energy(parse_ds, egap, restraint_k=k, bound=bound)
+		  call constrain_gap_energy(parse_ds, egap, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_gap_energy(parse_ds, egap, tol=tol)
+		  call constrain_gap_energy(parse_ds, egap, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       call system_abort("restraint_startElement_handler failed to read egap in gap_energy "//trim(type_str))
 	       !if (parse_in_restraints) then
-	       !  call constrain_gap_energy(parse_ds, restraint_k=k)
+	       !  call constrain_gap_energy(parse_ds, restraint_k=k, print_summary=print_summary)
 	       !else
-	       !  call constrain_gap_energy(parse_ds, tol=tol)
+	       !  call constrain_gap_energy(parse_ds, tol=tol, print_summary=print_summary)
 	       !endif
 	    endif
 
@@ -316,15 +323,15 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d, restraint_k=k, bound=bound)
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d, tol=tol)
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_atom_plane(parse_ds, atom_1, plane_n, restraint_k=k, bound=bound)
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_atom_plane(parse_ds, atom_1, plane_n, tol=tol)
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 	 else

@@ -67,7 +67,7 @@ contains
     real(dp) :: centre_pos(3), cp2k_box_centre_pos(3)
     logical :: auto_centre, has_centre_pos
     logical :: try_reuse_wfn
-    character(len=FIELD_LENGTH) :: calc_qm_charges
+    character(len=FIELD_LENGTH) :: calc_qm_charges, calc_virial
 
     character(len=128) :: method
 
@@ -164,6 +164,7 @@ contains
       call param_register(cli, 'form_bond', '0 0', form_bond, help_string="extra bond to form (for EVB)")
       call param_register(cli, 'break_bond', '0 0', break_bond, help_string="bond to break (for EVB)")
       call param_register(cli, 'qm_charges', '', calc_qm_charges, help_string="if not blank, name of property to put QM charges in")
+      call param_register(cli, 'virial', '', calc_virial, help_string="if not blank, name of property to put virial in")
       call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i, help_string="if > 0, force to run in this # run directory")
       call param_register(cli, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
       call param_register(cli, 'MM_param_file', '', MM_param_filename, help_string="If tmp_run_dir>0, where to find MM parameter file to copy it to the cp2k run dir on /tmp.") !charmm.pot
@@ -201,6 +202,7 @@ contains
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
     call print('  calc_qm_charges '//trim(calc_qm_charges))
+    call print('  calc_virial '//trim(calc_virial))
     call print('  tmp_run_dir_i '//tmp_run_dir_i)
     call print('  MM_param_file '//trim(MM_param_filename))
     call print('  QM_potential_file '//trim(QM_pot_filename))
@@ -413,6 +415,13 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. persistent_already_started) then
        call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
+
+       if (len_trim(calc_virial) > 0) then
+	  call print("@SET DO_STRESS 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       else
+	  call print("@SET DO_STRESS 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       endif
+
        if (use_QM) then
 	 call print("@SET DO_DFT 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        else
@@ -751,12 +760,12 @@ contains
 	  call fusleep(100000)
        end do ! waiting for frc file
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), &
-	 out_i=persistent_run_i, error=error)
+	 trim(calc_virial), out_i=persistent_run_i, error=error)
        PASS_ERROR(error)
     else
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), error=error)
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), trim(calc_virial), error=error)
        PASS_ERROR(error)
     endif
 
@@ -922,14 +931,14 @@ contains
 
   end subroutine do_cp2k_atoms_sort
 
-  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, out_i, error)
+  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, calc_virial, out_i, error)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
-    character(len=*) :: calc_qm_charges
+    character(len=*) :: calc_qm_charges, calc_virial
     integer, intent(in), optional :: out_i
     integer, intent(out), optional :: error
 
@@ -937,9 +946,12 @@ contains
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
     integer :: i, ti
-    type(inoutput) :: qm_charges_io
-    character(len=FIELD_LENGTH) :: species, qm_charges_l
+    type(inoutput) :: t_io
+    character(len=FIELD_LENGTH) :: species, t_line
     integer :: use_out_i
+    real(dp) :: virial(3,3)
+    character :: tx, ty, tz
+    integer :: istat
 
     INIT_ERROR(error)
 
@@ -952,16 +964,40 @@ contains
       if (.not. assign_pointer(at, trim(calc_qm_charges), qm_charges_p)) then
 	  call add_property(at, trim(calc_qm_charges), 0.0_dp, ptr=qm_charges_p)
       endif
-      call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1_'//use_out_i//'.mulliken',action=INPUT, error=error)
+      call initialise(t_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1_'//use_out_i//'.mulliken',action=INPUT, error=error)
       PASS_ERROR_WITH_INFO("cp2k_driver read_output() failed to open qmcharges file", error)
       do i=1, 3
-	qm_charges_l = read_line(qm_charges_io)
+	t_line = read_line(t_io)
       end do
       do i=1, at%N
-	qm_charges_l = read_line(qm_charges_io)
-	read (unit=qm_charges_l,fmt=*) ti, species, qm_charges_p(i)
+	t_line = read_line(t_io)
+	read (unit=t_line,fmt=*) ti, species, qm_charges_p(i)
       end do
-      call finalise(qm_charges_io)
+      call finalise(t_io)
+    endif
+    if (len_trim(calc_virial) > 0) then
+      call initialise(t_io, trim(run_dir)//'/'//trim(proj)//'-stress-1_'//use_out_i//'.stress_tensor',action=INPUT, error=error)
+      tx=''
+      ty=''
+      tz=''
+      ! look for line with just 'X Y Z'
+      t_line=read_line(t_io)
+      read(unit=t_line, fmt=*, iostat=istat) tx, ty, tz
+      do while (istat /= 0 .or. tx /= 'X' .or. ty /= 'Y' .or. tz /= 'Z')
+	 t_line=read_line(t_io)
+	 read(unit=t_line, fmt=*, iostat=istat) tx, ty, tz
+      end do
+      ! now let's ready stress
+      t_line=read_line(t_io)
+      read(unit=t_line, fmt=*, iostat=istat) tx, virial(1,1), virial(1,2), virial(1,3)
+      t_line=read_line(t_io)
+      read(unit=t_line, fmt=*, iostat=istat) tx, virial(2,1), virial(2,2), virial(2,3)
+      t_line=read_line(t_io)
+      read(unit=t_line, fmt=*, iostat=istat) tx, virial(3,1), virial(3,2), virial(3,3)
+      ! convert from stress GPa to virial in native units
+      virial = cell_volume(at)*virial/GPA
+      call set_value(at%params, "virial", virial)
+      call finalise(t_io)
     endif
 
     if (.not. get_value(f_xyz%params, "E", e)) then
