@@ -178,8 +178,10 @@ install-build.QUIP_ARCH:
 	@echo "installing from build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}"; \
 	for f in `/bin/ls build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
 	  if [ -x build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
-	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
-	    cp build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
+	    if [ build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f -nt ${QUIP_INSTDIR}/$$f ]; then \
+	       echo "copying f $$f to ${QUIP_INSTDIR}"; \
+	       cp build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
+	    fi; \
 	    if [ $$f == eval ]; then \
 	       rm -f ${QUIP_INSTDIR}/quip_eval; \
 	       ln -s ${QUIP_INSTDIR}/eval ${QUIP_INSTDIR}/quip_eval; \

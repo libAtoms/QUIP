@@ -397,7 +397,12 @@ subroutine initialise_md_thermostat(ds, params)
     ds%atoms%thermostat_region = 1
   elseif (params%const_T.and.params%const_P) then
     call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext )
-    call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext)
+    if (params%open_langevin_NH_tau > 0) then
+       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
+       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
+    else
+       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext)
+    endif
     ds%atoms%thermostat_region = 1
     if (.not.params%calc_virial) then
        params%calc_virial = .true.
@@ -518,10 +523,6 @@ implicit none
 
   call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
-  if (ds%Nrestraints > 0) then
-     allocate(restraint_stuff(5,ds%Nrestraints))
-     allocate(restraint_stuff_timeavg(5,ds%Nrestraints))
-  endif
 
   call finalise(params_es)
 
@@ -549,6 +550,7 @@ implicit none
   extra_calc_args="force"
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+call print("BOB 00 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
   call calc(pot, ds%atoms, args_str=trim(params%first_pot_calc_args)//" "//trim(extra_calc_args))
   if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
@@ -561,7 +563,9 @@ implicit none
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = force_p(:,i) / ElementMass(ds%atoms%Z(i))
 
   if (ds%Nrestraints > 0) then
+     ! first get_restraint_stuff allocates to right size
      call get_restraint_stuff(ds, restraint_stuff)
+     allocate(restraint_stuff_timeavg(size(restraint_stuff,1),size(restraint_stuff,2)))
      restraint_stuff_timeavg = restraint_stuff
   end if
   call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, 0, override_intervals = .true.)
@@ -606,18 +610,37 @@ contains
 
   subroutine get_restraint_stuff(ds, restraint_stuff)
     type(DynamicalSystem), intent(in) :: ds
-    real(dp), intent(out) :: restraint_stuff(:,:)
+    real(dp), allocatable, intent(inout) :: restraint_stuff(:,:)
 
-    integer i_r
+    integer :: i_r, n_s
 
+    ! count number to print in summary n_s
+    n_s = 0
     do i_r = 1, ds%Nrestraints
-       restraint_stuff(1,i_r) =  ds%restraint(i_r)%target_v
-       restraint_stuff(2,i_r) =  ds%restraint(i_r)%C
-       restraint_stuff(3,i_r) =  ds%restraint(i_r)%E
-       restraint_stuff(4,i_r) = -ds%restraint(i_r)%dE_dcoll
-       restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
+      if (ds%restraint(i_r)%print_summary) n_s=n_s + 1
     end do
-  end subroutine
+
+    ! (re)allocate array
+    if (allocated(restraint_stuff)) then
+      if (size(restraint_stuff,1) /= 5 .or. size(restraint_stuff,2) /= n_s) deallocate(restraint_stuff)
+    endif
+    if (.not. allocated(restraint_stuff)) then
+       allocate(restraint_stuff(5,n_s))
+    endif
+
+    ! fill in data
+    n_s = 0
+    do i_r = 1, ds%Nrestraints
+       if (ds%restraint(i_r)%print_summary) then
+	  n_s = n_s + 1
+	  restraint_stuff(1,n_s) =  ds%restraint(i_r)%target_v
+	  restraint_stuff(2,n_s) =  ds%restraint(i_r)%C
+	  restraint_stuff(3,n_s) =  ds%restraint(i_r)%E
+	  restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
+	  restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
+       end if
+    end do
+  end subroutine get_restraint_stuff
 
   subroutine advance_md(ds, params, pot, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
@@ -638,6 +661,7 @@ contains
       extra_calc_args="force"
       if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
       if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+call print("BOB 10 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
 
       if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
@@ -712,6 +736,7 @@ contains
     extra_calc_args="force"
     if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
     if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+call print("BOB 20 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
     call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
     if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
     if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
@@ -737,6 +762,7 @@ contains
     ! call calc again if needed for v dep. forces
     if (params%v_dep_quants_extra_calc) then
       if (params%quiet_calc) call verbosity_push_decrement()
+call print("BOB 30 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
       if (params%quiet_calc) call verbosity_pop()
 
