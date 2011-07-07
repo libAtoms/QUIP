@@ -550,7 +550,6 @@ implicit none
   extra_calc_args="force"
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
-call print("BOB 00 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
   call calc(pot, ds%atoms, args_str=trim(params%first_pot_calc_args)//" "//trim(extra_calc_args))
   if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
@@ -661,7 +660,6 @@ contains
       extra_calc_args="force"
       if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
       if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
-call print("BOB 10 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
 
       if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
@@ -712,6 +710,7 @@ call print("BOB 10 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS
     ! first Verlet half-step
     call system_timer("md/advance_verlet1")
     if(params%const_P) then
+       call get_param_value(ds%atoms, "virial", virial)
        call advance_verlet1(ds, params%dt, virial=virial, store_constraint_force=store_constraint_force)
     else
        call advance_verlet1(ds, params%dt, store_constraint_force=store_constraint_force)
@@ -736,7 +735,6 @@ call print("BOB 10 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS
     extra_calc_args="force"
     if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
     if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
-call print("BOB 20 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
     call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
     if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
     if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
@@ -762,13 +760,11 @@ call print("BOB 20 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS
     ! call calc again if needed for v dep. forces
     if (params%v_dep_quants_extra_calc) then
       if (params%quiet_calc) call verbosity_push_decrement()
-call print("BOB 30 calling calc with pos(:,1) "//ds%atoms%pos(:,1), PRINT_ALWAYS)
       call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
       if (params%quiet_calc) call verbosity_pop()
 
       if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
     end if
-    call system_timer("md/calc")
 
   end subroutine advance_md_one
 

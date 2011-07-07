@@ -737,6 +737,10 @@ contains
        ! write initial config if needed
        if (.not. persistent_already_started) &
 	  call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
+       ! touch REFTRAJ_READY FILE
+       call initialise(persistent_cell_file_io, trim(run_dir)//'/REFTRAJ_READY', OUTPUT, append=.true.)
+       call print("go",file=persistent_cell_file_io)
+       call finalise(persistent_cell_file_io)
     else
        call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
     endif
@@ -984,6 +988,7 @@ contains
     endif
     if (len_trim(calc_virial) > 0) then
       call initialise(t_io, trim(run_dir)//'/'//trim(proj)//'-stress-1_'//use_out_i//'.stress_tensor',action=INPUT, error=error)
+      PASS_ERROR_WITH_INFO("cp2k_driver failed to read cp2k stress_tensor file", error)
       tx=''
       ty=''
       tz=''
@@ -997,10 +1002,22 @@ contains
       ! now let's ready stress
       t_line=read_line(t_io)
       read(unit=t_line, fmt=*, iostat=istat) tx, virial(1,1), virial(1,2), virial(1,3)
+      if (istat /= 0) then
+	 RAISE_ERROR("cp2k_driver failed to read virial(1,:)", error)
+      endif
       t_line=read_line(t_io)
       read(unit=t_line, fmt=*, iostat=istat) tx, virial(2,1), virial(2,2), virial(2,3)
+      if (istat /= 0) then
+	 RAISE_ERROR("cp2k_driver failed to read virial(2,:)", error)
+      endif
       t_line=read_line(t_io)
       read(unit=t_line, fmt=*, iostat=istat) tx, virial(3,1), virial(3,2), virial(3,3)
+      if (istat /= 0) then
+	 RAISE_ERROR("cp2k_driver failed to read virial(3,:)", error)
+      endif
+      call print("got cp2k stress(1,:) "//virial(1,:))
+      call print("got cp2k stress(2,:) "//virial(2,:))
+      call print("got cp2k stress(3,:) "//virial(3,:))
       ! convert from stress GPa to virial in native units
       virial = cell_volume(at)*virial/GPA
       call set_value(at%params, "virial", virial)
