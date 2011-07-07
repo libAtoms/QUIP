@@ -64,114 +64,6 @@ diff -b -c -3 -r1.21 cp_parser_methods.F
          IF(ASSOCIATED(parser%buffer%sub_buffer)) THEN
             ! If the sub_buffer is initialized let's restore its buffer
             CALL finalize_sub_buffer(parser%buffer%sub_buffer,parser%buffer,error=error)
-Index: integrator.F
-===================================================================
-RCS file: /cvsroot/cp2k/cp2k/src/integrator.F,v
-retrieving revision 1.198
-diff -b -c -3 -r1.198 integrator.F
-*** integrator.F	24 Feb 2011 20:08:26 -0000	1.198
---- integrator.F	29 Jun 2011 14:06:17 -0000
-***************
-*** 37,42 ****
---- 37,45 ----
-    USE constraint_util,                 ONLY: getold,&
-                                               pv_constraint
-    USE cp_para_types,                   ONLY: cp_para_env_type
-+ !NB start reftraj wait
-+   USE cp_parser_types,                 ONLY: parser_reset
-+ !NB end reftraj wait
-    USE cp_parser_methods,               ONLY: parser_get_next_line,&
-                                               parser_read_line
-    USE cp_subsys_types,                 ONLY: cp_subsys_get,&
-***************
-*** 101,106 ****
---- 104,120 ----
-    PUBLIC :: isokin, langevin, nve, nvt, npt_i, npt_f, nve_respa
-    PUBLIC :: nph_uniaxial_damped, nph_uniaxial, reftraj
-  
-+ !NB start reftraj
-+   INTERFACE
-+     SUBROUTINE usleep(useconds) bind(C)
-+     ! integer(c_int) function usleep(useconds) bind(C)
-+       use iso_c_binding
-+       implicit none
-+       integer(c_int32_t), value :: useconds
-+     ! end function
-+     END SUBROUTINE
-+   END INTERFACE
-+ !NB end reftraj
-  
-  CONTAINS
-  
-***************
-*** 1274,1281 ****
---- 1288,1317 ----
-  
-      ! SnapShots read from an external file (parsers calls are buffered! please
-      ! don't put any additional MPI call!) [tlaino]
-+ !NB start reftraj wait
-+     if (reftraj_env%info%wait) then
-+        ! wait for input
-+        do while (.true.)
-+ 	  ! check for input line
-+ 	  CALL parser_read_line(reftraj_env%info%traj_parser,1,at_end=my_end,error=error)
-+ 	  if (my_end) then ! end of file, no input available, wait
-+ 	    call usleep(100000) ! 1e5 microsec = 100 ms
-+ 	  else ! got som input, check for valid value, wait a bit and exit loop
-+ 	    READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)") nread
-+ 	    CALL cp_assert(nread /= 0, cp_fatal_level,cp_assertion_failed,routineP,&
-+ 		  "Read N=0 in interactive REFTRAJ.  Quitting."//&
-+ CPSourceFileRef,&
-+                   only_ionode=.TRUE.)
-+ 	    ! wait for rest of file to be written before trying to read it
-+ 	    call usleep(100000) ! 1e5 microsec = 100 ms
-+ 	    exit
-+ 	  endif
-+        end do
-+     else
-         CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
-         READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)") nread
-+     endif
-+ !NB end reftraj wait
-      CPPostcondition(nread==nparticle,cp_failure_level,routineP,error,failure)
-      CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
-      test_ok = .FALSE.
-***************
-*** 1315,1323 ****
-      END IF
-  
-      IF(reftraj_env%info%variable_volume)THEN
-         CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
-         CALL parse_cell_line(reftraj_env%info%cell_parser%input_line, cell_itimes, cell_time, h, vol, error)
-!        CPPostcondition(trj_itimes==cell_itimes,cp_failure_level,routineP,error,failure)
-         ! Check if we reached the end of the file and provide some info..
-         IF (my_end) THEN
-            CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
---- 1351,1374 ----
-      END IF
-  
-      IF(reftraj_env%info%variable_volume)THEN
-+ !NB start reftraj wait
-+        if (reftraj_env%info%wait) then
-+ 	  do while (.true.)
-+ 	     CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
-+ 	     if (my_end) then
-+ 	       call usleep(10000) ! 1e4 microsec = 10 ms
-+ 	     else
-+ 	       exit
-+ 	     endif
-+ 	  end do
-+        else
-  	  CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
-+        endif
-+ !NB end reftraj wait
-         CALL parse_cell_line(reftraj_env%info%cell_parser%input_line, cell_itimes, cell_time, h, vol, error)
-! !NB start reftraj wait
-!        CPPostcondition(trj_itimes==cell_itimes .or. reftraj_env%info%wait,cp_failure_level,routineP,error,failure)
-! !NB end reftraj wait
-         ! Check if we reached the end of the file and provide some info..
-         IF (my_end) THEN
-            CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
 Index: input_cp2k_motion.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/input_cp2k_motion.F,v
@@ -196,3 +88,214 @@ diff -b -c -3 -r1.233 input_cp2k_motion.F
          CALL keyword_create(keyword, name="eval_energy_forces",&
               description="Evaluate energy and forces for each retrieved snapshot during a REFTRAJ run",&
               repeats=.FALSE., default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,&
+Index: integrator.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/integrator.F,v
+retrieving revision 1.198
+diff -b -c -3 -r1.198 integrator.F
+*** integrator.F	24 Feb 2011 20:08:26 -0000	1.198
+--- integrator.F	6 Jul 2011 20:15:55 -0000
+***************
+*** 37,42 ****
+--- 37,43 ----
+    USE constraint_util,                 ONLY: getold,&
+                                               pv_constraint
+    USE cp_para_types,                   ONLY: cp_para_env_type
++   USE cp_parser_types,                 ONLY: parser_reset, cp_parser_type
+    USE cp_parser_methods,               ONLY: parser_get_next_line,&
+                                               parser_read_line
+    USE cp_subsys_types,                 ONLY: cp_subsys_get,&
+***************
+*** 90,95 ****
+--- 91,97 ----
+    USE thermostat_types,                ONLY: thermostat_type
+    USE virial_methods,                  ONLY: virial_evaluate
+    USE virial_types,                    ONLY: virial_type
++   USE message_passing,                 ONLY: mp_sync
+  #include "cp_common_uses.h"
+  
+    IMPLICIT NONE
+***************
+*** 101,106 ****
+--- 103,120 ----
+    PUBLIC :: isokin, langevin, nve, nvt, npt_i, npt_f, nve_respa
+    PUBLIC :: nph_uniaxial_damped, nph_uniaxial, reftraj
+  
++   INTERFACE
++     SUBROUTINE usleep(useconds) bind(C)
++       use iso_c_binding
++       implicit none
++       integer(c_int32_t), value :: useconds
++     END SUBROUTINE
++     SUBROUTINE unlink(file) bind(C)
++       use iso_c_binding
++       implicit none
++       character(KIND=c_char) :: file
++     END SUBROUTINE
++   END INTERFACE
+  
+  CONTAINS
+  
+***************
+*** 1256,1261 ****
+--- 1270,1277 ----
+        POINTER                                :: particle_set
+      TYPE(reftraj_type), POINTER              :: reftraj_env
+      TYPE(simpar_type), POINTER               :: simpar
++     logical :: exists
++     integer istat
+  
+      failure = .FALSE.
+      NULLIFY(reftraj_env, particle_set, particles, force_env, subsys, simpar, para_env, cell, itimes, time)
+***************
+*** 1274,1283 ****
+--- 1290,1328 ----
+  
+      ! SnapShots read from an external file (parsers calls are buffered! please
+      ! don't put any additional MPI call!) [tlaino]
++     if (reftraj_env%info%wait) then
++        ! master checks for REFTRAJ_READY file
++        if (reftraj_env%info%traj_parser%para_env%mepos==reftraj_env%info%traj_parser%para_env%source) then
++ 	  exists=.false.
++ 	  do while (.not. exists)
++ 	     INQUIRE(file="REFTRAJ_READY",EXIST=exists)
++ 	     call usleep(100000) 
++ 	  end do
++ 	  call unlink("REFTRAJ_READY"//char(0))
++        endif
++        ! everyone wait for master
++        call mp_sync(reftraj_env%info%traj_parser%para_env%group)
++        ! start reading
++        call parser_read_line_wait(reftraj_env%info%traj_parser,100000,10000,error=error)
++        READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)",iostat=istat) nread
++        CALL cp_assert(istat == 0, cp_fatal_level,cp_assertion_failed,routineP,&
++ 	    "Bad istat reading nread."//&
++ CPSourceFileRef,&
++ 	    only_ionode=.TRUE.)
++        CALL cp_assert(nread /= 0, cp_fatal_level,cp_assertion_failed,routineP,&
++ 	    "Read N=0 in interactive REFTRAJ.  Quitting."//&
++ CPSourceFileRef,&
++ 	    only_ionode=.TRUE.)
++     else
+         CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
+         READ(reftraj_env%info%traj_parser%input_line,FMT="(I8)") nread
++     endif
+      CPPostcondition(nread==nparticle,cp_failure_level,routineP,error,failure)
++     if (reftraj_env%info%wait) then
++        CALL parser_read_line_wait(reftraj_env%info%traj_parser,10000,10000,error=error)
++     else
+         CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
++     endif
+      test_ok = .FALSE.
+      READ(reftraj_env%info%traj_parser%input_line,FMT="(T6,I8,T23,F12.3,T41,F20.10)",ERR=999)&
+           trj_itimes, trj_time, trj_epot
+***************
+*** 1290,1297 ****
+         trj_epot   = 0.0_dp
+      END IF
+      DO i = 1,nread-1
+         CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
+!        READ(reftraj_env%info%traj_parser%input_line,*) AA,particle_set(i)%r
+         particle_set(i)%r(1) = cp_unit_to_cp2k(particle_set(i)%r(1),"angstrom",error=error)
+         particle_set(i)%r(2) = cp_unit_to_cp2k(particle_set(i)%r(2),"angstrom",error=error)
+         particle_set(i)%r(3) = cp_unit_to_cp2k(particle_set(i)%r(3),"angstrom",error=error)
+--- 1335,1354 ----
+         trj_epot   = 0.0_dp
+      END IF
+      DO i = 1,nread-1
++        if (reftraj_env%info%wait) then
++ 	  CALL parser_read_line_wait(reftraj_env%info%traj_parser,10000,10000,error=error)
++        else
+  	  CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
+!        endif
+!        READ(reftraj_env%info%traj_parser%input_line,*,iostat=istat) AA,particle_set(i)%r
+!        CALL cp_assert(istat == 0, cp_fatal_level,cp_assertion_failed,routineP,&
+! 	    "Bad istat reading atom."//&
+! CPSourceFileRef,&
+! 	    only_ionode=.TRUE.)
+!        CALL cp_assert(nread /= 0, cp_fatal_level,cp_assertion_failed,routineP,&
+! 	    "Got nread=0 in REFTRAJ, quitting."//&
+! CPSourceFileRef,&
+! 	    only_ionode=.TRUE.)
+         particle_set(i)%r(1) = cp_unit_to_cp2k(particle_set(i)%r(1),"angstrom",error=error)
+         particle_set(i)%r(2) = cp_unit_to_cp2k(particle_set(i)%r(2),"angstrom",error=error)
+         particle_set(i)%r(3) = cp_unit_to_cp2k(particle_set(i)%r(3),"angstrom",error=error)
+***************
+*** 1299,1306 ****
+      ! End of file is properly addressed in the previous call..
+      ! Let's check directly (providing some info) also for the last
+      ! line of this frame..
+      CALL parser_read_line(reftraj_env%info%traj_parser,1,at_end=my_end,error=error)
+!     READ(reftraj_env%info%traj_parser%input_line,*) AA,particle_set(i)%r
+      particle_set(i)%r(1) = cp_unit_to_cp2k(particle_set(i)%r(1),"angstrom",error=error)
+      particle_set(i)%r(2) = cp_unit_to_cp2k(particle_set(i)%r(2),"angstrom",error=error)
+      particle_set(i)%r(3) = cp_unit_to_cp2k(particle_set(i)%r(3),"angstrom",error=error)
+--- 1356,1371 ----
+      ! End of file is properly addressed in the previous call..
+      ! Let's check directly (providing some info) also for the last
+      ! line of this frame..
++     if (reftraj_env%info%wait) then
++        CALL parser_read_line_wait(reftraj_env%info%traj_parser,10000,10000,error=error)
++     else
+         CALL parser_read_line(reftraj_env%info%traj_parser,1,at_end=my_end,error=error)
+!     endif
+!     READ(reftraj_env%info%traj_parser%input_line,*,iostat=istat) AA,particle_set(i)%r
+!        CALL cp_assert(istat == 0, cp_fatal_level,cp_assertion_failed,routineP,&
+! 	    "Bad istat reading last atom."//&
+! CPSourceFileRef,&
+! 	    only_ionode=.TRUE.)
+      particle_set(i)%r(1) = cp_unit_to_cp2k(particle_set(i)%r(1),"angstrom",error=error)
+      particle_set(i)%r(2) = cp_unit_to_cp2k(particle_set(i)%r(2),"angstrom",error=error)
+      particle_set(i)%r(3) = cp_unit_to_cp2k(particle_set(i)%r(3),"angstrom",error=error)
+***************
+*** 1315,1323 ****
+      END IF
+  
+      IF(reftraj_env%info%variable_volume)THEN
+         CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
+         CALL parse_cell_line(reftraj_env%info%cell_parser%input_line, cell_itimes, cell_time, h, vol, error)
+!        CPPostcondition(trj_itimes==cell_itimes,cp_failure_level,routineP,error,failure)
+         ! Check if we reached the end of the file and provide some info..
+         IF (my_end) THEN
+            CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
+--- 1380,1392 ----
+      END IF
+  
+      IF(reftraj_env%info%variable_volume)THEN
++        if (reftraj_env%info%wait) then
++ 	  CALL parser_read_line_wait(reftraj_env%info%cell_parser,10000,10000,error=error)
++        else
+  	  CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
++        endif
+         CALL parse_cell_line(reftraj_env%info%cell_parser%input_line, cell_itimes, cell_time, h, vol, error)
+!        CPPostcondition(trj_itimes==cell_itimes .or. reftraj_env%info%wait,cp_failure_level,routineP,error,failure)
+         ! Check if we reached the end of the file and provide some info..
+         IF (my_end) THEN
+            CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
+***************
+*** 2410,2414 ****
+--- 2479,2502 ----
+  
+    END SUBROUTINE nve_respa
+  
++    SUBROUTINE parser_read_line_wait(parser, fail_wait, success_wait, error)
++       TYPE(cp_parser_type), pointer :: parser
++       integer :: fail_wait, success_wait
++       type(cp_error_type) :: error
++ 
++       logical at_end
++ 
++        do while (.true.)
++ 	  ! check for input line
++ 	  CALL parser_read_line(parser,1,at_end=at_end,error=error)
++ 	  if (at_end) then ! end of file, no input available, wait
++ 	    call usleep(fail_wait) 
++ 	  else ! got input, wait a bit and exit loop
++ 	    call usleep(success_wait) 
++ 	    exit
++ 	  endif
++        end do
++    END SUBROUTINE parser_read_line_wait
++ 
+  END MODULE integrator
+  
