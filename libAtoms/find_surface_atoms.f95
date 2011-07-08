@@ -1,4 +1,6 @@
 ! based on Varshney et al IEEE Comp. Graphics and Appl. v. 14 p 19 (1994)
+! linear programming solver from
+!   http://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
 ! Not sure why they think that intersection of power-cell half spaces and enclosing
 !   tetrahedron half spaces is null for internal atoms - seems to be just something
 !   like Voronoi cell of atom (if all (covalent) radii are equal, anyway)
@@ -11,11 +13,11 @@ use atoms_module
 implicit none
 
 private
-public :: find_surface_atoms_atoms
+public :: label_surface_atoms
 
 contains
 
-subroutine find_surface_atoms_atoms(at, probe_r)
+subroutine label_surface_atoms(at, probe_r)
    type(Atoms), intent(inout) :: at
    real(dp), intent(in) :: probe_r
 
@@ -109,45 +111,51 @@ subroutine find_surface_atoms_atoms(at, probe_r)
       end do
    end do
 
-end subroutine find_surface_atoms_atoms
+end subroutine label_surface_atoms
 
 function feasible_cell_has_solution(plane_constraints, bounds)
    real(dp), intent(in) :: plane_constraints(:,:), bounds(3,2)
    real(dp) :: x(3)
    logical :: feasible_cell_has_solution
-   logical :: constraint_check
+   logical :: constraint_ok, t_constraint_ok
 
    integer i
 
-   call print("has_solution "//shape(plane_constraints))
+   call print("has_solution "//shape(plane_constraints), PRINT_VERBOSE)
    do i=1, size(plane_constraints,2)
-      call print("p "//plane_constraints(1:3,i)//" v "//plane_constraints(4:6,i))
+      call print("p "//plane_constraints(1:3,i)//" v "//plane_constraints(4:6,i), PRINT_VERBOSE)
    end do
 
    x = seidel_solve(a=-plane_constraints(4:6,:),b=-sum(plane_constraints(1:3,:)*plane_constraints(4:6,:),1),&
       bounds=bounds, has_solution=feasible_cell_has_solution)
-   call print(" has_solution " // feasible_cell_has_solution)
+   call print(" has_solution " // feasible_cell_has_solution, PRINT_VERBOSE)
    if (feasible_cell_has_solution) then
-      call print("solution x " //x)
-      constraint_check=.true.
+      call print("solution x " //x, PRINT_VERBOSE)
+      constraint_ok=.true.
       do i=1, size(plane_constraints,2)
 	 call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
-	    " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))))
-	 constraint_check = constraint_check .and. (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
+	    " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
+	 t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
+	 if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
+	 constraint_ok = constraint_ok .and. t_constraint_ok
       end do
-      if (.not. constraint_check) then 
+      if (.not. constraint_ok) then 
 	 call print("WARNING: has_solution=T but some constraint violated")
 	 do i=1, size(plane_constraints, 2)
-	    if (.not. (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))) then
+	    t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
+	    if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
+	    if (.not. t_constraint_ok) then
 	       call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
-		  " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))))
+		  " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
 	    endif
 	 end do
       endif
    endif
 end function feasible_cell_has_solution
 
-! solve a.x <= b
+! linear programming solver from
+!   http://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
+! solve a.x <= b for x, subject to bounds.  Returns x, sets has_solution to false if no solution.
 recursive function seidel_solve(a, b, bounds, has_solution) result(x)
    real(dp) :: a(:,:), b(:), bounds(:,:)
    logical :: has_solution
