@@ -1172,6 +1172,9 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(NOSE_HOOVER_LANGEVIN)
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
        
        !Decay the velocities again using p_eta for dt/2, and accumulate Ek for work integration
        if (this%Q > 0.0_dp) then
@@ -1206,6 +1209,9 @@ contains
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt)
 
     case(LANGEVIN_NPT)
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
 
        if( .not. present(virial) ) call system_abort('thermostat4: NPT &
        & simulation, but virial has not been passed')
@@ -1338,6 +1344,9 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(LANGEVIN_OU)
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
 
        !Decay the velocities for dt/2 again by eta (aka chi)
        if (this%eta /= 0.0_dp) then
