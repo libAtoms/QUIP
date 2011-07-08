@@ -220,6 +220,10 @@
       C ${SUBSYS_CELL_C_X} ${SUBSYS_CELL_C_Y} ${SUBSYS_CELL_C_Z}
     &END CELL
     &TOPOLOGY
+@IF ${MM} == BKS
+      EXCLUDE_VDW 1-1
+      EXCLUDE_EI 1-1
+@ENDIF
       &DUMP_PSF
       &END DUMP_PSF
       &DUMP_PDB
