@@ -2003,7 +2003,7 @@ contains
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
 
-    integer:: actual_seed
+    integer:: actual_seed, i, ran_dummy
     integer:: values(20) ! for time inquiry function
     logical :: use_common_seed
 #ifdef _MPI
@@ -2047,6 +2047,11 @@ contains
 
     call print('System::Hello World: Random Seed = '//actual_seed)
     call system_set_random_seeds(actual_seed)
+
+    ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
+    do i = 1, 100
+       ran_dummy = ran()
+    enddo
 
     call print('System::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
