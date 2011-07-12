@@ -126,13 +126,13 @@ manipulate it use an :class:`AtomsList`.
    An :class:`AtomsList` is just like an :class:`AtomsReader` except
    that all frames are read in on initialiased and then stored in
    memory. This is equivalent to an :class:`AtomsReader` with a
-   :var:`cache_limit` of `None` so an :class:`AtomsList` always
+   `cache_limit` of `None` so an :class:`AtomsList` always
    supports random access.  
    
    The :class:`AtomsList` allows configurations to be added, removed
    or reordered using the standard Python methods for `mutable
    sequence types
-   http://docs.python.org/library/stdtypes.html#mutable-sequence-types`_
+   <http://docs.python.org/library/stdtypes.html#mutable-sequence-types>`_
    (e.g. :meth:`append`, :meth:`extend`, :meth:`index`, etc).
    
    The attributes of the component :class:`Atoms` can be accessed as a
