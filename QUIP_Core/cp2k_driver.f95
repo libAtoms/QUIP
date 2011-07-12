@@ -60,7 +60,7 @@ contains
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
     logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer, persistent
-    integer :: clean_up_keep_n
+    integer :: clean_up_keep_n, persistent_restart_interval
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
@@ -107,7 +107,7 @@ contains
 
     integer, pointer :: sort_index_p(:)
     integer, allocatable :: rev_sort_index(:)
-    type(Inoutput) :: rev_sort_index_io, persistent_run_i_io, persistent_cell_file_io
+    type(Inoutput) :: rev_sort_index_io, persistent_run_i_io, persistent_cell_file_io, persistent_traj_io
     character(len=1024) :: l
 
     integer :: run_dir_i, force_run_dir_i, delete_dir_i
@@ -120,11 +120,13 @@ contains
     logical :: truncate_parent_dir
     character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
-    logical :: exists, persistent_already_started, persistent_frc_exists
+    logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists
     integer :: persistent_run_i, persistent_frc_size
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
-    real(dp) :: wait_time, max_persistent_wait_time
+    real(dp) :: wait_time, persistent_max_wait_time
+
+    character(len=100) proj
 
     INTERFACE     
 	elemental function ffsize(f)
@@ -149,7 +151,8 @@ contains
       call param_register(cli, "topology_suffix", "", topology_suffix, help_string="String to append to file containing topology info (for runs that do multiple topologies not to accidentally reuse PSF file")
       call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program, help_string="path to cp2k executable")
       call param_register(cli, 'persistent', 'F', persistent, help_string="if true, use persistent connection to cp2k with REFTRAJ")
-      call param_register(cli, 'max_persistent_wait_time', '600.0', max_persistent_wait_time, help_string="Max amount of time in s to wait for forces to be available in persistent mode")
+      call param_register(cli, 'persistent_restart_interval', '100', persistent_restart_interval, help_string="how often to restart cp2k for persistent connection")
+      call param_register(cli, 'persistent_max_wait_time', '600.0', persistent_max_wait_time, help_string="Max amount of time in s to wait for forces to be available in persistent mode")
       call param_register(cli, 'clean_up_files', 'T', clean_up_files, help_string="if true, clean up run directory files")
       call param_register(cli, 'clean_up_keep_n', '1', clean_up_keep_n, help_string="number of old run directories to keep if cleaning up")
       call param_register(cli, 'save_output_files', 'T', save_output_files, help_string="if true, save the output files")
@@ -191,6 +194,11 @@ contains
     call print("  cp2k_template_file " // cp2k_template_file)
     call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
+    call print("  topology_suffix " // trim(topology_suffix))
+    call print("  cp2k_program " // trim(cp2k_program))
+    call print("  persistent " // persistent)
+    if (persistent) call print("  persistent_restart_interval " // persistent_restart_interval)
+    if (persistent) call print("  persistent_max_wait_time " // persistent_max_wait_time)
     call print("  clean_up_files " // clean_up_files)
     call print("  clean_up_keep_n " // clean_up_keep_n)
     call print("  save_output_files " // save_output_files)
@@ -203,8 +211,12 @@ contains
     if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
-    call print('  calc_qm_charges '//trim(calc_qm_charges))
-    call print('  calc_virial '//trim(calc_virial))
+    call print('  cp2k_calc_fake '//cp2k_calc_fake)
+    call print('  form_bond '//form_bond)
+    call print('  break_bond '//break_bond)
+    call print('  qm_charges '//trim(calc_qm_charges))
+    call print('  virial '//trim(calc_virial))
+    call print('  force_run_dir_i '//force_run_dir_i)
     call print('  tmp_run_dir_i '//tmp_run_dir_i)
     call print('  MM_param_file '//trim(MM_param_filename))
     call print('  QM_potential_file '//trim(QM_pot_filename))
@@ -219,29 +231,9 @@ contains
     endif
     call system_timer('do_cp2k_calc/init')
 
-    call system_timer('do_cp2k_calc/get_persistent_i')
+    proj='quip'
+
     persistent_already_started=.false.
-    if (persistent) then
-       inquire(file="persistent_run_i", exist=persistent_already_started)
-
-       if (.not. persistent_already_started) then
-	 persistent_run_i=1
-       else
-	 call initialise(persistent_run_i_io, "persistent_run_i", INPUT)
-	 l = read_line(persistent_run_i_io)
-	 call finalise(persistent_run_i_io)
-	 read (unit=l, fmt=*, iostat=stat) persistent_run_i
-	 if (stat /= 0) then
-	    RAISE_ERROR("Failed to read persistent_run_i from 'persistent_run_i' file", error)
-	 endif
-	 persistent_run_i = persistent_run_i + 1
-       endif
-
-       call initialise(persistent_run_i_io, "persistent_run_i", OUTPUT)
-       call print(""//persistent_run_i, file=persistent_run_i_io, verbosity=PRINT_ALWAYS)
-       call finalise(persistent_run_i_io)
-    endif
-    call system_timer('do_cp2k_calc/get_persistent_i')
 
     call system_timer('do_cp2k_calc/run_dir')
     !create run directory now, because it is needed if running on /tmp
@@ -303,16 +295,64 @@ contains
 	    RAISE_ERROR("Something went wrong when tried to copy "//trim(QM_basis_filename)//" into the tmp dir "//trim(tmp_run_dir),error)
 	 endif
       endif
-    else
+    else ! not tmp
       if (persistent) then
 	 if (.not. persistent_already_started) then
-	    call system_command("mkdir cp2k_run_0")
+	    call system_command("mkdir -p cp2k_run_0")
 	 endif
 	 force_run_dir_i=0
       endif
       run_dir = make_run_directory("cp2k_run", force_run_dir_i, run_dir_i)
     endif ! tmp_run_dir
     call system_timer('do_cp2k_calc/run_dir')
+
+    call system_timer('do_cp2k_calc/get_persistent_i')
+    if (persistent) then
+       inquire(file="persistent_run_i", exist=persistent_already_started)
+
+       if (.not. persistent_already_started) then
+	 persistent_run_i=1
+	 persistent_start_cp2k=.true.
+       else
+	 persistent_start_cp2k=.false.
+	 call initialise(persistent_run_i_io, "persistent_run_i", INPUT)
+	 l = read_line(persistent_run_i_io)
+	 call finalise(persistent_run_i_io)
+	 read (unit=l, fmt=*, iostat=stat) persistent_run_i
+	 if (stat /= 0) then
+	    RAISE_ERROR("Failed to read persistent_run_i from 'persistent_run_i' file", error)
+	 endif
+	 persistent_run_i = persistent_run_i + 1
+
+	 if (persistent_run_i > persistent_restart_interval) then
+	    ! reset counters
+	    persistent_run_i=1
+	    persistent_start_cp2k=.true.
+	    ! tell running process to stop
+	    call initialise(persistent_traj_io, trim(run_dir)//'/quip.persistent.traj.xyz',OUTPUT,append=.true.)
+	    call print ("0", file=persistent_traj_io)
+	    call finalise(persistent_traj_io)
+	    call initialise(persistent_cell_file_io, trim(run_dir)//'/REFTRAJ_READY', OUTPUT, append=.true.)
+	    call print("go",file=persistent_cell_file_io)
+	    call finalise(persistent_cell_file_io)
+	    ! wait
+	    call fusleep(5000000)
+	    ! clean up files
+	    call system_command('cd '//trim(run_dir)//'; rm -f '//&
+	       'quip.persistent.traj.* '// &
+	       trim(proj)//'-frc-1_[0-9]*.xyz '// &
+	       trim(proj)//'-pos-1_[0-9]*.xyz '// &
+	       trim(proj)//'-qmcharges--1_[0-9]*.mulliken '// &
+	       trim(proj)//'-stress-1_[0-9]*.stress_tensor '// &
+	       'REFTRAJ_READY')
+	 endif
+       endif
+
+       call initialise(persistent_run_i_io, "persistent_run_i", OUTPUT)
+       call print(""//persistent_run_i, file=persistent_run_i_io, verbosity=PRINT_ALWAYS)
+       call finalise(persistent_run_i_io)
+    endif
+    call system_timer('do_cp2k_calc/get_persistent_i')
 
     call system_timer('do_cp2k_calc/copy_templ')
     if (.not. persistent_already_started) then
@@ -685,7 +725,7 @@ contains
        endif
 
        ! put in global stuff to run a single force evalution, print out appropriate things
-       call print("@SET QUIP_PROJECT quip", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET QUIP_PROJECT "//trim(proj), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        call print("@SET QUIP_RUN_TYPE MD", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
        call print("@SET FORCES_FORMAT XMOL", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -747,36 +787,36 @@ contains
 
     ! actually run cp2k
     if (persistent) then
-       if (.not. persistent_already_started) then
+       if (persistent_start_cp2k) then
 	  call start_cp2k_program_background(trim(cp2k_program), trim(run_dir), error=error)
 	  PASS_ERROR(error)
        endif
        wait_time = 0.0_dp
        do while(.true.)
-	  inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", exist=persistent_frc_exists)
+	  inquire(file=trim(run_dir)//"/"//trim(proj)//"-frc-1_"//persistent_run_i//".xyz", exist=persistent_frc_exists)
 	  if (persistent_frc_exists) then
-	     ! inquire(file=trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", size=persistent_frc_size)
-	     persistent_frc_size = ffsize(trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz")
+	     ! inquire(file=trim(run_dir)//"/"//trim(proj)//"-frc-1_"//persistent_run_i//".xyz", size=persistent_frc_size)
+	     persistent_frc_size = ffsize(trim(run_dir)//"/"//trim(proj)//"-frc-1_"//persistent_run_i//".xyz")
 	     if (persistent_frc_size > 0) then ! got data, leave
 		call fusleep(1000000)
 		exit
 	     else if (persistent_frc_size < 0) then ! error
-	       RAISE_ERROR("Failed to get valid value from ffsize of "//trim(run_dir)//"/quip-frc-1_"//persistent_run_i//".xyz", error)
+	       RAISE_ERROR("Failed to get valid value from ffsize of "//trim(run_dir)//"/"//trim(proj)//"-frc-1_"//persistent_run_i//".xyz", error)
 	     endif
 	  endif
 	  call fusleep(100000)
 	  wait_time = wait_time + 100000_dp/1.0e6_dp
-	  if (wait_time > max_persistent_wait_time) then
-	     RAISE_ERROR("Failed to get forces after waiting at least "//max_persistent_wait_time//" s", error)
+	  if (wait_time > persistent_max_wait_time) then
+	     RAISE_ERROR("Failed to get forces after waiting at least "//persistent_max_wait_time//" s", error)
 	  endif
        end do ! waiting for frc file
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), &
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
 	 trim(calc_virial), out_i=persistent_run_i, error=error)
        PASS_ERROR(error)
     else
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), trim(calc_virial), error=error)
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), trim(calc_virial), error=error)
        PASS_ERROR(error)
     endif
 
@@ -806,11 +846,18 @@ contains
     endif
 
     if (save_output_files) then
-      call system_command(&
-        ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
-        ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
-        ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-        ' cat '//trim(run_dir)//'/quip-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
+      if (persistent) then
+	 call system_command(&
+	   ' if [ ! -f cp2k_input_log ]; then cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log; fi;' // &
+	   ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
+      else
+	 call system_command(&
+	   ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
+	   ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
+	   ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
+      endif
     endif
 
     ! clean up
@@ -818,7 +865,7 @@ contains
     if (tmp_run_dir_i>0) then
       if (clean_up_files) then
          !only delete files that need recreating, keep basis, potentials, psf
-         call system_command('rm -f '//trim(tmp_run_dir)//"/quip-* "//trim(tmp_run_dir)//"/cp2k_input.inp "//trim(tmp_run_dir)//"/cp2k_output.out "//trim(run_dir))
+         call system_command('rm -f '//trim(tmp_run_dir)//"/"//trim(proj)//"-* "//trim(tmp_run_dir)//"/cp2k_input.inp "//trim(tmp_run_dir)//"/cp2k_output.out "//trim(run_dir))
       else !save dir
          exists = .true.
          i = 0
@@ -1025,11 +1072,11 @@ contains
     endif
 
     if (.not. get_value(f_xyz%params, "E", e)) then
-      RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/quip-frc-1_'//use_out_i//'.xyz file', error)
+      RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//use_out_i//'.xyz file', error)
     endif
 
     if (.not.(assign_pointer(f_xyz, 'frc', force_p))) then
-      RAISE_ERROR("Did not find frc property in "//trim(run_dir)//'/quip-frc-1_'//use_out_i//'.xyz file', error)
+      RAISE_ERROR("Did not find frc property in "//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//use_out_i//'.xyz file', error)
     endif
     f = force_p
 
