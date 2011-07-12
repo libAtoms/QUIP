@@ -612,5 +612,3 @@ def loadcsv(filename):
     cols = open(filename,'rU').readline().strip().split(',')
     data = dict(zip(cols, (farray(data[:,i]) for i in range(data.shape[1]))))
     return data
-
-

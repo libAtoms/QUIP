@@ -189,7 +189,7 @@
       the class of `source`. 
 
       If `source` corresponds to a known format then it used
-      to construct an appropriate iterator from the :attr:`AtomsReader`
+      to construct an appropriate iterator from the :attr:`AtomsReaders`
       dictionary. See :ref:`fileformats` for a list of supported
       file formats. 
 
@@ -558,24 +558,19 @@ Structure generation routines
    Return average radius of the nanotube `at`.
 
 
-.. function:: slab_nx_ny_nz(axes, a, nx, ny, nz[, atnum, lat_type])
+.. function:: slab(axes, a, [nx, ny,  width, height, nz, atnum, lat_type])
 
    Return a slab of material with the x, y, and z axes desribed by the
    Miller indices in the array axes (with ``x = axes[:,1])``, ``y =
-   axes[:,2]`` and ``z = axes[:,3]``).  The extent of the slab is
-   ``(nx, ny, nz)`` unit cells.
-
+   axes[:,2]`` and ``z = axes[:,3]``).  The extent of the slab should
+   be given either as ``(nx, ny, nz)`` unit cells or as ``(width,
+   height, nz)`` where `width` and `height` are measured in Angstrom
+   and `nz` is the number of cells in the `z` direction.
+   
    `atnum` can be used to initialise the `z` and `species` properties.
    `lat_type` should be of ``"diamond"```, ``"fcc"``, or ``"bcc"``
    (default is ``"diamond"``)
 
-.. function:: slab_width_height_nz(axes, a, width, height, nz[, atnum, lat_type])
-
-   As :func:`slab_nx_ny_nz`, except that the extent of the slab in the x-y plane
-   is given by `width` and `height`, measured in Angstrom. `nz` is the number
-   of unit cells in the z direction.
-
-      
 .. function:: supercell(at, n1, n2, n3)
 
    Replicates the unit cell `at` `n1` x `n2` x `n3` times along its

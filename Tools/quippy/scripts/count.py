@@ -25,7 +25,7 @@ if len(sys.argv[1:]) == 0:
     sys.exit(1)
 
 args = sys.argv[1:]
-sources = [AtomsList(f, store=False) for f in args]
+sources = [AtomsReader(f) for f in args]
 
 nframes = 0
 for s in sources:

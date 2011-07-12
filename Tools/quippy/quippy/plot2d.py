@@ -95,10 +95,10 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
 
 
 def force_error_statistics(configs, ref_configs, force_name='force', force_ref_name='force'):
-    ref_force = getattr(ref_configs, force_ref_name)
+    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = getattr(configs, force_name)
+    force = numpy.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
 
     names = ['default']

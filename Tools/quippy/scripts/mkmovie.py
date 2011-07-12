@@ -26,6 +26,19 @@ from matplotlib.figure import Figure
 from quippy.progbar import ProgressBar
 import atomeye
 
+def skip_bad_frames(seq):
+   it = iter(seq)
+   i = -1
+   while True:
+      i = i + 1
+      print 'trying to load frame ', i
+      try:
+         at = it.next()
+         yield at
+      except RuntimeError:
+         print 'skipping frame ', i
+         continue
+
 def skip_bad_times(seq, fill_value=9969209968386869046778552952102584320.0):
    """Skip frames with no Time param or with Time == fill_value."""
    
@@ -58,6 +71,7 @@ p.add_option('-y', '--ydata', action='store', help='Data for y axis of graph')
 p.add_option('--y2data', action='store', help='Data for y2 axis of graph')
 p.add_option('-t', '--text', action='store', help="""Annotate images with text. Argument should be a Python
 expression which evaluates to a string, e.g. '"G = %f" % at.G'""")
+p.add_option('-S', '--skip-bad-frames', action="store_true", help="Skip bad frames which cause an exception when loading")
 p.add_option('-d', '--skip-time-duplicates', action="store_true", help="Skip duplicate frames (those with matching 'Time' params)")
 p.add_option('-b', '--skip-bad-times', action='store_true', help="Skip frames with no 'Time' param or with where Time equals NetCDF fill value")
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
@@ -90,7 +104,7 @@ else:
 if opt.outfile is None:
    opt.outfile = os.path.splitext(args[0])[0] + '.mp4'
 
-sources = [AtomsList(f, store=False) for f in args]
+sources = [AtomsReader(f) for f in args]
 
 # Try to count number of frames
 nframes = sum([len(s) for s in sources])
@@ -123,6 +137,9 @@ else:
 # Build a chain of iterators over all input files, skipping frames as appropriate
 atomseq = itertools.islice(itertools.chain.from_iterable(sources),
                            opt.range.start, opt.range.stop, opt.range.step)
+
+if opt.skip_bad_frames:
+   atomseq = skip_bad_frames(atomseq)
 
 if opt.skip_bad_times:
    atomseq = skip_bad_times(atomseq)

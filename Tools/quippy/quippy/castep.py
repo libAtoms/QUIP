@@ -359,7 +359,7 @@ class CastepCell(OrderedDict):
 
 
    @staticmethod
-   @atoms_reader('cell', False)
+   @atoms_reader('cell')
    def cellreader(source):
       self = CastepCell(source)
       yield self.to_atoms()
@@ -495,8 +495,8 @@ class CastepParam(OrderedDict):
          value = castep_output_map.get(value, value)
          paramfile.write('%s = %s\n' % (key, value))
 
-@atoms_reader('geom', False)
-@atoms_reader('md', False)
+@atoms_reader('geom')
+@atoms_reader('md')
 def CastepGeomMDReader(source, atoms_ref=None):
    """Generator to read frames from CASTEP .geom and .md files"""
 
@@ -658,8 +658,8 @@ def CastepGeomMDReader(source, atoms_ref=None):
 # Synonyms
 CastepGeomReader = CastepMDReader = CastepGeomMDReader
 
-@atoms_reader('castep', False)
-@atoms_reader('castep_log', False)
+@atoms_reader('castep')
+@atoms_reader('castep_log')
 def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as

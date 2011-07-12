@@ -40,8 +40,8 @@ def netcdf_dimlen(obj, name):
    except TypeError:
       return n
 
-@atoms_reader(netcdf_file, True)
-@atoms_reader('nc', True)
+@atoms_reader(netcdf_file)
+@atoms_reader('nc')
 def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
 
    opened = False
