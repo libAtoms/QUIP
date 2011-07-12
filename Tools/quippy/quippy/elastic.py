@@ -445,7 +445,9 @@ def atomic_strain(at, r0, crystal_factor=1.0):
    return strain/crystal_factor
 
 
-def elastic_fields_py(at, a, c=None, c_vector=None, cij=None, save_reference=False, use_reference=False, mask=None, interpolate=False, cutoff_factor=1.2, system='tetrahedric'):
+def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
+                      save_reference=False, use_reference=False, mask=None, interpolate=False,
+                      cutoff_factor=1.2, system='tetrahedric'):
    """
    Compute atomistic strain field and linear elastic stress response.
 
@@ -498,6 +500,11 @@ def elastic_fields_py(at, a, c=None, c_vector=None, cij=None, save_reference=Fal
       at.stress_evec2[:,i] = SigEvecs[:,order[1]]
       at.stress_evec3[:,i] = SigEvecs[:,order[2]]
 
+   if sum([a is None, bond_length is None]) != 1:
+      raise ValueError('One of lattice constant or bond length must be given')
+
+   if a is None:
+      a = bond_length*4/sqrt(3.)
 
    # We want nearest neighbour connectivity only
    save_cutoff, save_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
