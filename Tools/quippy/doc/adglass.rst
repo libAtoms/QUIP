@@ -579,17 +579,14 @@ Extension tasks
 Input files and Solutions
 -------------------------
 
-* :download:`quartz_crack.xyz`, :download:`quartz_crack.xml`, *
-  :download:`quartz_crack_bulk.xyz` - input files for crack simulation
+* :download:`quartz_crack.xyz`, :download:`quartz_crack.xml`, :download:`quartz_crack_bulk.xyz` - input files for crack simulation
 * :download:`quartz.xyz` - quartz primitive cell
 * :download:`quartz_0001.xyz` - quartz (0001) surface cell
 * :download:`TS_params.xml` - potential parameters
 * :download:`elastic.sh` - script to compute elastic constants
 * :download:`cij.dat` - elastic constants obtained with `eval` program
 * :download:`surface-energy.sh` - script to compute surface energy
-* :download:`surface-energy-relaxed.sh` - script to compute relaxed
-  surface energy
-* :download:`surface-energy-annealed.sh` - script to compute annealed
-  surface energy
+* :download:`surface-energy-relaxed.sh` - script to compute relaxed surface energy
+* :download:`surface-energy-annealed.sh` - script to compute annealed surface energy
 * :download:`crack-velo.sh` - script to crack velocity
 
