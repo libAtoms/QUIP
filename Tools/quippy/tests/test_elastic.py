@@ -17,6 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from quippy.elastic import *
 from numpy import *
 import unittest, itertools, sys, quippy, os
 from quippytest import *
