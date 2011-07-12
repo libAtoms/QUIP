@@ -54,7 +54,7 @@ basename, ext = os.path.splitext(args[0])
 if opt.stem is None: opt.stem = basename
 if opt.format is None: opt.format = ext[1:]
 
-sources = [AtomsList(f, store=False) for f in args]
+sources = [AtomsReader(f) for f in args]
 
 if isinstance(opt.range, slice):
     # Try to count number of frames

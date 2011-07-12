@@ -19,7 +19,7 @@
 
 from quippy import *
 from numpy import *
-import sys, optparse, itertools
+import sys, optparse
 
 
 p = optparse.OptionParser(usage='%prog [options] ( <input file> [ <output file> ] | <input file> [ <input file> ... ] [ (-o|--output) <output file> ] )')
@@ -125,6 +125,13 @@ else:
    # Default is all frames
    opt.range = slice(0, None, None)
 
+if isinstance(opt.range, int):
+   if opt.range >= 0:
+      opt.range = slice(opt.range, opt.range+1,+1)
+   else:
+      opt.range = slice(opt.range, opt.range-1,-1)
+
+
 if opt.lattice is not None:
    opt.lattice = [ float(x) for x in opt.lattice.split() ]
    if len(opt.lattice) == 9:
@@ -152,9 +159,9 @@ if opt.atoms_ref is not None:
 
 if opt.merge is not None:
    if opt.atoms_ref is not None:
-      merge_configs = AtomsList(opt.merge, store=False, atoms_ref=opt.atoms_ref)
+      merge_configs = AtomsReader(opt.merge, atoms_ref=opt.atoms_ref)
    else:
-      merge_configs = AtomsList(opt.merge, store=False)
+      merge_configs = AtomsReader(opt.merge)
 
    if opt.merge_properties is not None:
       opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
@@ -261,22 +268,6 @@ def process(at, frame):
             p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
-try:
-   if opt.atoms_ref is not None:
-      if len(infiles) == 1:
-	 all_configs = AtomsList(infiles[0], store=False, atoms_ref=opt.atoms_ref)
-      else:
-	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False, atoms_ref=opt.atoms_ref) for f in infiles])
-	 all_configs = AtomsList(all_configs_seq, store=False)
-   else:
-      if len(infiles) == 1:
-	 all_configs = AtomsList(infiles[0], store=False)
-      else:
-	 all_configs_seq = itertools.chain(*[AtomsList(f, store=False) for f in infiles])
-	 all_configs = AtomsList(all_configs_seq, store=False)
-except IOError, io:
-   p.error(str(io))
-
 # Build dictionaries of arguments for AtomsWriter constructor
 # and for write() method
 init_arg_rename = {'view': 'script'}
@@ -292,8 +283,8 @@ for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
       writearg = write_arg_rename.get(arg, arg)
       write_args[writearg] = getattr(opt, arg)
 
-if opt.format is None and  outfile is not None:
-      opt.format = os.path.splitext(outfile)[1][1:]
+if opt.format is None and outfile is not None:
+   opt.format = os.path.splitext(outfile)[1][1:]
 
 if opt.format is None or opt.format == '':
    opt.format = 'xyz'
@@ -303,53 +294,37 @@ if opt.aspect is None:
 
 stdout = False
 if outfile is not None:
-   if outfile == 'stdout': stdout = True
+   stdout = outfile == 'stdout'
    try:
       outfile = AtomsWriter(outfile, format=opt.format, **init_args)
    except RuntimeError, re:
       p.error(str(re))
 
+read_args = {}
+if opt.atoms_ref is not None:
+   read_args['atoms_ref'] = opt.atoms_ref
+
+all_configs = AtomsReader(infiles, start=opt.range.start, stop=opt.range.stop, step=opt.range.step, **read_args)
+
 try:
-   if len(all_configs) == 1:
-      opt.range = 0
-   else:
-      if len(all_configs) == 0:
-	 got_length = False
-      else:
-	 got_length = True
-except ValueError:
-   got_length = False
+   show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 
+except IndexError:
+   show_progress = False
 
-if isinstance(opt.range, slice):
-   # multiple frames
+if show_progress:
+   from quippy.progbar import ProgressBar
+   pb = ProgressBar(0,len(all_configs),80,showValue=True)
 
-   if got_length:
-      from quippy.progbar import ProgressBar
-      pb = ProgressBar(0,len(range(*opt.range.indices(len(all_configs)))),80,showValue=True)
-
-   if opt.range.step is None:
-      frames = itertools.islice(all_configs, opt.range.start, opt.range.stop)
-   else:
-      frames = itertools.islice(all_configs, opt.range.start, opt.range.stop, opt.range.step)
-
-   for i, at in enumerate(frames):
-      try:
-         process(at, i)
-      except RuntimeError, re:
-         p.error(str(re))
-      
-      if got_length and not opt.extract_params and not stdout and not opt.no_print_at:
-         pb(i)
-
-   print
-                    
-else:
-   # single frame
+for i, at in enumerate(all_configs):
    try:
-      process(all_configs[opt.range], 0)
+      process(at, i)
    except (IndexError, ValueError, RuntimeError), re:
       p.error(str(re))
+   if show_progress: pb(i)
 
+if show_progress:
+   print
+                    
 if outfile is not None:
    try:
       outfile.close()

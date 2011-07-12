@@ -44,7 +44,7 @@ if opt.format is None and opt.outfile is not None:
 if opt.format is None or opt.format == '':
    opt.format = 'xyz'
 
-sources = [AtomsList(f, store=False) for f in args]
+sources = [AtomsReader(f) for f in args]
 outfile = AtomsWriter(opt.outfile, format=opt.format)
 
 prefixes = ['' for s in sources]

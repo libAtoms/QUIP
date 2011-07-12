@@ -27,7 +27,7 @@ class TestAtomsList(QuippyTestCase):
       self.listal = AtomsList(self.listsrc)
       
       self.gensrc = (diamond(5.44+0.01*x,14) for x in range(5))
-      self.genal = AtomsList(self.gensrc)
+      self.genal = AtomsReader(self.gensrc)
       
    def testgetitem(self):
       a1 = self.listal[0]
@@ -36,11 +36,8 @@ class TestAtomsList(QuippyTestCase):
       self.assertEqual(a5, diamond(5.44+0.04,14))
 
    def testlazygetitem(self):
-      # before items are accessed, AtomsList._list = None
-      self.assert_(self.listal._list[0] is None)
       a0 = self.listal[0]
-      self.assertEqual(self.listal._list[0], a0)
-      self.assert_(self.listal._list[0] is a0)
+      self.assert_(self.listal[0] is a0)
 
    def testgetslice(self):
       sl = self.listal[1:]
@@ -49,13 +46,11 @@ class TestAtomsList(QuippyTestCase):
 
    def testgetitemnegindex(self):
       last = self.listal[-1]
-      self.assert_(self.listal._list[-1] is last)
+      self.assert_(self.listsrc[-1] is last)
 
    def testdelitem(self):
-      self.listal.loadall()
       del self.listal[0]
-      self.assert_(self.listal._list[0] is None)
-      self.assertEqual(self.listal[0], diamond(5.44, 14))
+      self.assertEqual(self.listal[0], self.listsrc[1])
       
    def testgetitemoutofrange(self):
       self.assertRaises(IndexError, self.listal.__getitem__, 6)
@@ -63,11 +58,6 @@ class TestAtomsList(QuippyTestCase):
    def testtuple(self):
       tupal = AtomsList(tuple(self.listsrc))
       self.assertEqual(list(tupal), list(self.listal))
-
-   def testloadall(self):
-      self.listal.loadall()
-      nonlazy = AtomsList([diamond(5.44+0.01*x, 14) for x in range(5)], lazy=False)
-      self.assertEqual(self.listal._list, nonlazy._list)
 
    def testtolist(self):
       L1 = list(self.listal)
@@ -79,6 +69,7 @@ class TestAtomsList(QuippyTestCase):
    def testreversed(self):
       self.assertEqual(list(reversed(self.listal)), list(reversed(list(self.listal))))
 
+   @skip
    def testgen(self):
       self.assertEqual(len(self.genal), 0)
       a0 = self.genal[0]
@@ -96,38 +87,39 @@ class TestAtomsList(QuippyTestCase):
       self.assertEqual(list(self.genal), list(self.listal))
 
    def testgennonlazy(self):
-      nonlazy = AtomsList((diamond(5.44+0.01*x,14) for x in range(5)), lazy=False)
-      self.assertEqual(nonlazy._list, list(self.genal))
+      nonlazy = AtomsList((diamond(5.44+0.01*x,14) for x in range(5)))
+      self.assertEqual(list(nonlazy), list(self.genal))
 
-   def testgenloadall(self):
-      self.assertEqual(len(self.genal), 0)
-      self.genal.loadall()
-      self.assertEqual(len(self.genal), 5)      
-      self.assertEqual(list(self.genal), self.genal._list)
+   #def testgenloadall(self):
+   #   self.assertRaises(AttributeError, len, self.genal)
+   #   self.genal.loadall()
+   #   self.assertEqual(len(self.genal), 5)      
+   #   self.assertEqual(list(self.genal), list(self.listal))
 
-   def testgengetitem(self):
-      a1 = self.genal[0]
-      a5 = self.genal[4]
-      self.assertEqual(a1, diamond(5.44,14))
-      self.assertEqual(a5, diamond(5.44+0.04,14))
+   #def testgengetitem(self):
+   #   a1 = self.genal[0]
+   #   a5 = self.genal[4]
+   #   self.assertEqual(a1, diamond(5.44,14))
+   #   self.assertEqual(a5, diamond(5.44+0.04,14))
 
-   def testgengetslice(self):
-      sl = self.genal[0:2]
-      self.assert_(isinstance(sl, AtomsList))
-      self.assertEqual(list(sl), list(self.genal)[0:2])
+   #def testgengetslice(self):
+   #   sl = self.genal[0:2]
+   #   self.assert_(isinstance(sl, AtomsList))
+   #   self.assertEqual(list(sl), list(self.genal)[0:2])
 
-   def testgengetsliceopen(self):
-      sl = self.genal[0:]
-      self.assert_(isinstance(sl, AtomsList))
-      self.assertEqual(list(sl), list(self.genal)[0:])
+   #def testgengetsliceopen(self):
+   #   sl = self.genal[0:]
+   #   self.assert_(isinstance(sl, AtomsList))
+   #   self.assertEqual(list(sl), list(self.genal)[0:])
 
    def testgengetitemoutofrange(self):
       self.assertRaises(IndexError, self.genal.__getitem__, 6)
 
    def testrandomaccess(self):
-      self.assert_(not self.genal._randomaccess)
-      self.assert_(self.listal._randomaccess)
+      self.assert_(not self.genal.random_access)
+      self.assert_(self.listal.random_access)
 
+   @skip
    def testgenreverse(self):
       revgen = reversed(self.genal)
       self.assertRaises(ValueError, list, revgen)

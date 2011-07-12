@@ -42,7 +42,7 @@ else:
     if opt.format is None: opt.format = ext[1:]
 
 # Build a chain of iterators over all input files
-atomseq = itertools.chain(*[AtomsList(f, store=False) for f in args])
+atomseq = itertools.chain(*[AtomsReader(f) for f in args])
 
 al = AtomsList(atomseq)
 al.write(opt.output, format=opt.format)

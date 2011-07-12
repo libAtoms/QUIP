@@ -64,8 +64,6 @@ class CInOutput(FortranCInOutput):
 class CInOutputReader(object):
   """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
 
-  lazy = True
-
   def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, zero=False):
      if isinstance(source, str):
         self.opened = True
@@ -118,7 +116,7 @@ class CInOutputReader(object):
 
 AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
-@atoms_reader('stdin', True)
+@atoms_reader('stdin')
 def CInOutputStdinReader(source='stdin'):
   assert source == 'stdin'
   source = CInOutput(source, action=INPUT)

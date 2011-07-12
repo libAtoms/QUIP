@@ -82,11 +82,10 @@ if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
 AtomsReaders = {}
 AtomsWriters = {}
 
-def atoms_reader(source, lazy=True):
+def atoms_reader(source):
    """Decorator to add a new reader"""
    def decorate(func):
       from quippy import AtomsReaders
-      func.lazy = lazy
       if not source in AtomsReaders:
          AtomsReaders[source] = func
       return func
@@ -195,9 +194,11 @@ if is_interactive_shell():
 
    if 'enthought.mayavi' in available_modules:
       import plot3d
+      from plot3d import *
 
    if 'pylab' in available_modules:
       import plot2d
+      from plot2d import *
 
    import elastic
    from elastic import *

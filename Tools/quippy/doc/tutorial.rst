@@ -397,16 +397,17 @@ Method 1 uses used a Python feature called `list comprehension
 <http://docs.python.org/tutorial/datastructures.html#list-comprehensions>`_
 to build a list with one entry for each frame in our
 :class:`AtomsList`. The second method works in the same way but saves
-typing by automatically constructing the loop for us, returning a
-:class:`FortranArray` with the last dimension (i.e. slowest varying)
-corresponding to the frame index. In this way, ``al.velo`` gives an
-array with the first axis corresponding to the spatial dimension
-(length 3), the second the atom number (length 216 here) and the third
-to the frame within the file (length 100 here). ::
+typing by automatically constructing the loop for us, returning a list
+of energies.
+
+This trick also works for the Atoms property arrays., e.g. ``al.velo``
+gives us an array with the first axis corresponding to the frame
+within the file (length 100 here), the second to the spatial dimension
+(length 3), and the third to the atom number (length 216 here) ::
 
    >>> print al.velo.shape
-   (3, 216, 100)
-   >>> print all(al.velo[1] == al[0].velo)
+   (100, 3, 216)
+   >>> print all(al.velo[0] == al[0].velo)
    True
 
 To plot the potential energy as a function of time (assuming
@@ -433,11 +434,11 @@ list comprehension::
 Alternatively, we could compute the kinetic energy using array
 arithmetic::
 
-   >>> ke = sum(.5*al.mass*sum(al.velo**2,axis=1), axis=1)
+   >>> ke = sum(.5*al.mass*sum(al.velo**2,axis=2), axis=2)
 
-Note the partial sums: the inner sum is over the first axis of
+Note the partial sums: the inner sum is over the second axis of
 ``al.velo`` which is the spatial dimension, and the outer sum is over
-the first axis of ``.5*al.mass*sum(al.velo**2,axis=1)`` which is the
+the second axis of ``.5*al.mass*sum(al.velo**2,axis=1)`` which is the
 atom number (here of length 216). Let's add plots of the kinetic and
 total energies to our graph::
 

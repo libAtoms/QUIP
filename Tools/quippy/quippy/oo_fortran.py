@@ -110,7 +110,7 @@ def type_is_compatible(spec, arg):
     dimattrs = [s for s in spec['attributes'] if s.startswith('dimension')]
 
     if dims == 'scalar':
-       return len(dimattrs) == 0
+       return len(dimattrs) == 0 
     else:
         try:
             (dimattr,) = dimattrs # asserts len(dimattr) == 1

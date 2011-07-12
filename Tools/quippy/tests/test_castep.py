@@ -1720,7 +1720,7 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
  """
       self.lines = [x + '\n' for x in castep_output.split("\n")]
       self.al = AtomsList(self.lines, format='castep', abort=False)
-      self.al.loadall(progress=False)
+      #self.al.loadall(progress=False)
      
    def testread(self):
       self.assertEqual(len(self.al), 3)
