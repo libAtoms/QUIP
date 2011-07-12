@@ -579,7 +579,6 @@ Extension tasks
 Input files and Solutions
 -------------------------
 
-* :download:`adglass-slides.pdf` - slides from introductory presentation
 * :download:`quartz_crack.xyz`, :download:`quartz_crack.xml`, *
   :download:`quartz_crack_bulk.xyz` - input files for crack simulation
 * :download:`quartz.xyz` - quartz primitive cell
