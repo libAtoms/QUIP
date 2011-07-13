@@ -103,7 +103,7 @@ echo molpro_driver ${stem}: got $N atoms
 molprostem=`echo ${stem} | tr '.' '_'`
 
 # Amend Molpro command file
-echo "file,2,molpro_temp" > ${molprostem}
+echo "file,2,${stem}_temp" > ${molprostem}
 echo "geometry=${inpfile}" >> ${molprostem}
 cat ${molpro_command_file} >> ${molprostem}
 
@@ -113,23 +113,28 @@ cat ${molpro_command_file} >> ${molprostem}
 if [[ $test_mode == 1 ]]; then
     echo molpro_driver: test mode
 else
-    rm -f ${molprostem}.out ${molprostem}.xml ${olddir}/${stem}.out.xyz ${scratch_dir}/molpro_temp
-    ${molpro} -d ${scratch_dir} ${molprostem}
+    rm -f ${molprostem}.out ${molprostem}.xml ${olddir}/${stem}.out.xyz
+    mkdir -p ${scratch_dir}
+    mkdir -p ${scratch_dir}/wfu
+    ${molpro} -d ${scratch_dir} -W ${scratch_dir}/wfu ${molprostem}
 fi
 
 
 # Extract information from output file
-energy_Ha=`grep -A 1 '<property name="Energy"' ${stem}.xml | tr -d '\n' | sed 's/.*value="\(.*\)".*/\1/'`
+energy_Ha=`grep -A 1 '<property name="Energy"' ${molprostem}.xml | tr -d '\n' | sed 's/.*value="\(.*\)".*/\1/'`
 energy=`echo "${energy_Ha} * 27.2113961" | bc -ql`
 
 # First line of output is number of atoms
 echo $N > ${stem}.out.xyz
 
 # Second line of output is parameter line
-echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy\" >> ${stem}.out.xyz
+echo Lattice\=\"$lattice\" Properties\=species:S:1:pos:R:3:force:R:3 energy\=$energy >> ${stem}.out.xyz
 
 # Extract gradient
-awk '/<gradient/,/<[/]gradient/ {if(!/>/){printf("%16.8f%16.8f%16.8f\n", -$1*27.2113961/0.529177249, -$2*27.2113961/0.529177249, -$3*27.2113961/0.529177249)}}' ${stem}.xml > ${stem}_tmpforce
+echo "Extracting gradient from file ${molprostem}.xml:"
+awk '/<gradient/,/<[/]gradient/ {if(!/>/){printf("%16.8f%16.8f%16.8f\n", -$1*27.2113961/0.529177249, -$2*27.2113961/0.529177249, -$3*27.2113961/0.529177249)}}' ${molprostem}.xml
+
+awk '/<gradient/,/<[/]gradient/ {if(!/>/){printf("%16.8f%16.8f%16.8f\n", -$1*27.2113961/0.529177249, -$2*27.2113961/0.529177249, -$3*27.2113961/0.529177249)}}' ${molprostem}.xml > ${stem}_tmpforce
 
 # Merge pos and gradient
 print_property $inpfile pos 1 > ${stem}_tmppos
@@ -139,6 +144,8 @@ paste ${stem}_tmppos ${stem}_tmpforce >> ${stem}.out.xyz
 # Save all  output
 cat ${molprostem}.out >> ${molprostem}_molpro_output
 cat ${stem}.out.xyz >> ${stem}.log.xyz
+cat ${stem}_tmppos >> ${stem}_tmppos.log
+cat ${stem}_tmpforce >> ${stem}_tmpforce.log
 
 # Copy output file
 cp ${stem}.out.xyz $olddir/$outfile
