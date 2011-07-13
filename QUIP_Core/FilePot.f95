@@ -259,8 +259,13 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
 
   if (.not. this%mpi%active .or.  (this%mpi%active .and. this%mpi%my_proc == 0)) then
      
-     xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
-     outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
+     if(this%mpi%active) then
+        xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
+        outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
+     else
+        xyzfile=(trim(this%filename)//".xyz")
+        outfile=(trim(this%filename)//".out")
+     end if
 
      call print("FilePot: filename seed=`"//trim(this%filename)//"'", PRINT_VERBOSE)
      call print("FilePot: outfile=`"//trim(outfile)//"'", PRINT_VERBOSE)
@@ -354,12 +359,15 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
      call finalise(primitive)
   end if
 
+  call print("FilePot: the following keys were found in the atoms structure:")
+  call print_keys(at_out%params)
+
   if (at_out%N /= at%N) then
      RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N, error)
   endif
 
   if (.not. assign_pointer(at_out,'Z',Z_p)) then
-     RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z", error)
+     RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' couldn't assign pointer for field Z", error)
   endif
   do i=1, at%N
     if (at%Z(i) /= Z_p(i)) then
