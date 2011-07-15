@@ -80,9 +80,9 @@ and the second is the atomic number. Let's poke around a little inside
 our new Atoms object. Here are two equivalent ways to determine the
 number of atoms::
 
-    >>> print len(at)
+    >>> print len(dia)
     8
-    >>> print at.n
+    >>> print dia.n
     8
 
 We can save our new atoms to an XYZ file, and then re-read it by
@@ -407,11 +407,11 @@ within the file (length 100 here), the second to the spatial dimension
 
    >>> print al.velo.shape
    (100, 3, 216)
-   >>> print all(al.velo[0] == al[0].velo)
+   >>> print all(al.velo[1] == al[0].velo)
    True
 
 To plot the potential energy as a function of time (assuming
-:mod:`matplotlib` is available, and imported with ``from pylab import
+:mod:`matplotlib` is avaieable, and imported with ``from pylab import
 *``), run the commands::
 
    >>> plot(al.time, al.energy)
@@ -583,6 +583,9 @@ the Atoms object. Let's try to calculate the energy of our silicon cell::
 
     >>> energy = farray(0.0)   # Create a rank-0 array to store energy
     >>> pot.calc(s, energy=energy)  # Do the calculation
+
+In earlier versions, the following error is raised::
+
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
       File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 438, in <lambda>
@@ -591,7 +594,7 @@ the Atoms object. Let's try to calculate the energy of our silicon cell::
        res = fobj(*newargs, **newkwargs)
     RuntimeError: Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.
 
-Oh dear, what's gone wrong here? The :exc:`RuntimeError` exception
+The :exc:`RuntimeError` exception
 gets raised whenever something goes wrong within a Fortran routine. In
 this case we need to calculate the atomic connectivity before we can
 evaluate the energy. To do this we need to choose a cutoff distance,
@@ -723,6 +726,8 @@ conjugate-gradients (``cg``), to a tolerance of :math:`|\mathbf{f}|^2 < 10^{-7}`
 using a maximum of 100 steps.
 
    >>> at0 = diamond(5.44, 14)
+   >>> at0.set_cutoff(pot.cutoff() + 2.0)   #crust of 2.0 Angstrom
+   >>> at0.calc_connect()
    >>> pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
    Welcome to minim()
    space is 33 dimensional
@@ -781,20 +786,22 @@ Here is a Python function which implements this relation::
      return e
 
 We want to calculate the energy for a variety of cell volumes. The
-routine below takes an initial configuration `at0` and first
-compresses and then expands it in increments of `eps`. If `relax` is
-true we then minimise with respect to the internal degrees of freedom
-(the atom positions). Finally, we calculate the energy. ::
+routine below takes an initial configuration `at0` and first 
+compresses and then expands it in increments of `eps`. To achieve 
+this we exploit the :meth: `Atoms.set_lattice()` method making sure 
+that `scale_positions` is true so that all atomic positions are 
+scaled appropriately. If `relax` is true we then minimise with 
+respect to the internal degrees of freedom (the atom positions). 
+Finally, we calculate the energy. ::
 
    def compress_expand(at0, metapot, eps=1e-3, relax=False):
       for i in frange(-5,5):
          at = at0.copy()
-         at.lattice *= 1.0 + eps*i
-         at.pos *= 1.0 + eps*i
+         at.set_lattice((1.0 + eps*i) * at.lattice, scale_positions=True)
          at.calc_connect()
          if relax:
-            pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-         pot.calc(at, energy=True)
+            metapot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
+         metapot.calc(at, energy=True)
          at.volume = at.cell_volume()
          yield at
 

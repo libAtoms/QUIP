@@ -219,10 +219,10 @@ the Voigt convention:
  
 .. math::
   \bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
-      \sigma_{xz}, \sigma_{yz}, \sigma_{xy} \right)
+      \sigma_{yz}, \sigma_{xz}, \sigma_{xy} \right)
 
   \bm\epsilon = \left( \varepsilon_{xx}, \varepsilon_{yy}, \varepsilon_{zz},
-      2\,\varepsilon_{xz}, 2\,\varepsilon_{yz}, 2\,\varepsilon_{xy} \right)
+      2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)
 
 The simplest way to calculate :math:`C` with `QUIP` is to use the
 command line QUIP `eval` program. You will need the file `quartz.xyz`
