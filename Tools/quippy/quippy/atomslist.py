@@ -317,7 +317,6 @@ def AtomsWriter(dest, format=None, **kwargs):
 
 
 
-@atoms_reader(list)
 class AtomsSequenceReader:
    """Read Atoms from a list of sources, which could be filenames or glob patterns"""
 
@@ -364,3 +363,4 @@ class AtomsSequenceReader:
          for at in reader:
             yield at
             
+AtomsReaders[list] = AtomsSequenceReader
