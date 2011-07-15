@@ -42,7 +42,7 @@ module teach_sparse_mod
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name, mark_sparse_atoms = ''
+     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name, mark_sparse_atoms = '', mask_name = ''
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
@@ -84,11 +84,12 @@ contains
 
     type(cinoutput) :: xyzfile
     type(atoms) :: at
-    integer :: n_max, n_con
-    logical :: has_ener, has_force, has_virial
+    integer :: n_max, n_con, n_at
+    logical :: has_ener, has_force, has_virial, has_mask
     real(dp) :: ener, virial(3,3), d, bin_width
     real(dp), pointer :: f(:,:)
-    integer :: i, j, n, num_bins
+    integer :: i, j, n, num_bins, n_neighb
+    logical, dimension(:), pointer :: mask
     integer, dimension(116) :: species_present
 
     type(Table) :: distances
@@ -114,9 +115,24 @@ contains
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
+       has_mask = .false.
+       if (len_trim(this%mask_name) > 0) has_mask = assign_pointer(at, this%mask_name, mask)
+       if (.not. has_mask) then
+          allocate(mask(at%n))
+          mask(:) = .true.
+       end if
+
        has_ener = get_value(at%params,this%energy_parameter_name,ener)
        has_force = assign_pointer(at,this%force_parameter_name, f)
        has_virial = get_value(at%params,this%virial_parameter_name,virial)
+
+       if (has_mask .and. (has_ener .or. has_virial)) &
+            call system_abort('Has mask and energy or virial')
+
+       if (has_mask .and. trim(this%coordinates) /= 'bispectrum') &
+            call system_abort('Masked teaching only implemented for bispectrum descriptor')
+
+       n_at = count(mask)
 
        if( has_ener .or. has_force .or. has_virial .or. this%use_rdf ) then
           call set_cutoff(at,this%r_cut)
@@ -138,10 +154,18 @@ contains
        endif
 
        if( has_force ) then
-          this%n_force = this%n_force + at%N*3
+          this%n_force = this%n_force + 3*count(mask)
+          ! count number of neighbour pairs (i,j) where both i and j are in mask
+          n_neighb = 0
           do i = 1, at%N
-             this%n = this%n + 3*(atoms_n_neighbours(at,i)+1)
+             if (.not. mask(i)) cycle
+             do n = 1, atoms_n_neighbours(at, i)
+                j = atoms_neighbour(at, i, n)
+                if (.not. mask(j)) cycle
+                n_neighb = n_neighb + 1
+             end do
           enddo
+          this%n = this%n + 3*n_at + 3*n_neighb
        endif
 
        if( has_virial ) then
@@ -151,16 +175,18 @@ contains
           enddo
        endif
 
-       if( has_ener .or. has_force .or. has_virial ) this%nn = this%nn + at%N
-
        do i = 1, at%N
+          if (.not. mask(i)) cycle
           if( all(at%Z(i) /= species_present) ) then
              this%n_species = this%n_species + 1
              species_present(this%n_species) = at%Z(i)
           endif
        enddo
 
+       if( has_ener .or. has_force .or. has_virial ) this%nn = this%nn + n_at
+
        call finalise(at)
+       if (.not. has_mask) deallocate(mask)
     enddo
 
     call finalise(xyzfile)
@@ -226,8 +252,8 @@ contains
     type(Potential) :: core_pot
     
     integer :: d
-    integer :: n_max, n_con
-    logical :: has_ener, has_force, has_virial, has_config_type
+    integer :: n_max, n_con, n_at
+    logical :: has_ener, has_force, has_virial, has_config_type, has_mask
     real(dp) :: ener, ener_core
     real(dp), dimension(3,3) :: virial, virial_core
     real(dp), pointer :: f(:,:)
@@ -238,9 +264,10 @@ contains
     integer, dimension(3,2) :: water_dimer_index
     real(dp), dimension(3) :: pos, water_monomer_v
     real(dp), dimension(WATER_DIMER_D) :: water_dimer_v
+    logical, dimension(:), pointer :: mask
     integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
     integer :: nei_max
-    integer :: i, j, n, k, l, jx, jn
+    integer :: i, j, n, k, l, jx, jn, ii, jj
 
     integer :: it, n_config_type
     character(len=FIELD_LENGTH) :: config_type
@@ -319,10 +346,26 @@ contains
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
 
+       has_mask = .false.
+       if (len_trim(this%mask_name) > 0) has_mask = assign_pointer(at, this%mask_name, mask)
+       if (.not. has_mask) then
+          allocate(mask(at%n))
+          mask(:) = .true.
+       end if
+       n_at = count(mask)
+
+       call print('Config #'//n_con//' has mask with '//count(mask)//' selected atoms')
+       
        has_ener = get_value(at%params,this%energy_parameter_name,ener)
        has_force = assign_pointer(at,this%force_parameter_name, f)
        has_virial = get_value(at%params,this%virial_parameter_name,virial)
        has_config_type = get_value(at%params,this%config_type_parameter_name,config_type)
+
+       if (has_mask .and. (has_ener .or. has_virial)) &
+            call system_abort('Has mask and energy or virial')
+
+       if (has_mask .and. trim(this%coordinates) /= 'bispectrum') &
+            call system_abort('Masked teaching only implemented for bispectrum descriptor')
 
        if( has_config_type ) then
           config_type = lower_case(trim(config_type))
@@ -358,7 +401,7 @@ contains
           case('water_monomer','water_dimer','hf_dimer')
              ener = ener - this%e0     
           case default
-             ener = ener - at%N*this%e0     
+             ener = ener - at%n*this%e0     
           endselect
        endif
 
@@ -370,7 +413,7 @@ contains
           if(nei_max < atoms_n_neighbours(at,i)+1) nei_max = atoms_n_neighbours(at,i)+1
        enddo
 
-       if(has_ener .or. has_force .or. has_virial ) allocate(vec(d,at%N))
+       if(has_ener .or. has_force .or. has_virial ) allocate(vec(d,n_at))
        if(has_force .or. has_virial) then
           select case(trim(this%coordinates))
           case('water_dimer')
@@ -380,7 +423,7 @@ contains
              allocate(dvec(3,4,d,1))
              dvec = 0.0_dp
           case default
-             allocate(jack(d,3*nei_max,at%N))
+             allocate(jack(d,3*nei_max,n_at))
              jack = 0.0_dp
           endselect
        endif
@@ -434,7 +477,7 @@ contains
              this%target_type(w_con) = 1
 
           case('water_dimer')
-             if( at%N /= 6 ) call system_abort('Number of atoms is '//at%N//', not two water molecules')
+             if( at%n /= 6 ) call system_abort('Number of atoms is '//at%n//', not two water molecules')
 
              call find_water_monomer(at,water_dimer_index)
              call water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2),this%r_cut, vec = water_dimer_v,dvec=dvec)
@@ -478,15 +521,18 @@ contains
                 endif
              enddo
           case('bispectrum')
+             ii = 0
              do i = 1, at%N
+                if (.not. mask(i)) cycle
+                ii = ii + 1
                 call fourier_transform(f_hat,at,i,w)
                 call calc_bispectrum(bis,f_hat)
-                call bispectrum2vec(bis,vec(:,i))
+                call bispectrum2vec(bis,vec(:,ii))
                 if(has_force .or. has_virial) then
                    do n = 0, atoms_n_neighbours(at,i)
                       call fourier_transform(df_hat,at,i,n,w)
                       call calc_bispectrum(dbis,f_hat,df_hat)
-                      call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
+                      call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),ii))
                    enddo
                 endif
              enddo
@@ -507,9 +553,13 @@ contains
           case('water_monomer','water_dimer','hf_dimer')
 
           case default
+             ii = 0
              do i = 1, at%N
-                ix = i_con + i
-                this%x(:,ix) = vec(:,i)
+                if (.not. mask(i)) cycle
+                ii = ii + 1
+
+                ix = i_con + ii
+                this%x(:,ix) = vec(:,ii)
                 this%config_type(ix) = n_config_type
                 this%xz(ix) = at%Z(i)
 
@@ -520,17 +570,20 @@ contains
            
                 if(has_force) then
                    do k = 1, 3
-                      li = ui + 1
-                      ui = ui + 1
                       nn = nn+1
+                      ui = ui + 1
                       this%xdf(ui) = ix
-                      this%xd(:,ui) = jack(:,k,i)
+                      this%xd(:,ui) = jack(:,k,ii)
+
                       do n = 1, atoms_n_neighbours(at,i)
                          j = atoms_neighbour(at,i,n,jn=jn)
+
+                         if (.not. mask(j)) cycle
+                         jj = count(mask(1:j)) ! find reduced index of neighbour
                          ui = ui + 1
-                         jx = i_con + j
+                         jx = i_con + jj
                          this%xdf(ui) = jx
-                         this%xd(:,ui) = jack(:,jn*3+k,j)
+                         this%xd(:,ui) = jack(:,jn*3+k,jj)
                       enddo
 
                       this%ydf(nn) = -f(k,i)
@@ -540,7 +593,7 @@ contains
                    enddo
                 endif
              enddo
-
+ 
              if(has_virial) then
                 ! check if virial is symmetric
                 if( sum((virial - transpose(virial))**2) .fne. 0.0_dp ) &
@@ -578,7 +631,7 @@ contains
                 enddo
              endif
 
-             i_con = i_con + at%N
+             i_con = i_con + n_at
 
              if(has_ener) then
                 i_ener = i_ener + 1
@@ -594,6 +647,7 @@ contains
        if(allocated(dvec)) deallocate(dvec)
        if(allocated(jack)) deallocate(jack)
        if(allocated(w)) deallocate(w)
+       if(.not. has_mask) deallocate(mask)
 
        call finalise(at)
     enddo
@@ -617,7 +671,6 @@ contains
     integer :: n_ener
     logical :: has_ener
     real(dp) :: ener, ener_core
-    integer :: i
 
     if( this%do_core ) call Initialise(core_pot, this%ip_args, param_str=string(this%quip_string))
 
