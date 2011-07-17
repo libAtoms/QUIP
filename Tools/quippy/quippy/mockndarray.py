@@ -56,7 +56,6 @@ mockNDarray makes a lists of ndarrays (or lists)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
 # THE POSSIBILITY OF SUCH DAMAGE.
             
-from __future__ import absolute_import
 __author__  = "Sebastian Haase <seb.haase@gmail.com>"
 __license__ = "BSD license - see LICENSE file"
 
@@ -150,7 +149,7 @@ class mockNDarray(object):
     ndim = property( _getndim )
 
     def _getdtype(self):
-        return min((a.dtype for a in self._arrs)) if self._ndim else None
+        return self._ndim and min((a.dtype for a in self._arrs)) or None
     dtype = property( _getdtype )
 
     def __len__(self):
@@ -240,7 +239,7 @@ class mockNDarray(object):
         else:
             raise ValueError, "axes don't contain mockAxis"
 
-        othersAxes = (ax if ax<newMockAxis else ax-1 for ax in axes[:newMockAxis] + axes[newMockAxis+1:])
+        othersAxes = (ax<newMockAxis and ax or ax-1 for ax in axes[:newMockAxis] + axes[newMockAxis+1:])
 
         othersAxes = tuple(othersAxes)
         import copy
