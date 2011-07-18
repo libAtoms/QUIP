@@ -393,7 +393,7 @@ We can get a list of all the energies in a couple of different ways::
   >>> print al.energy                             # Method 2
   ...
 
-Method 1 uses used a Python feature called `list comprehension
+Method 1 uses a Python feature called `list comprehension
 <http://docs.python.org/tutorial/datastructures.html#list-comprehensions>`_
 to build a list with one entry for each frame in our
 :class:`AtomsList`. The second method works in the same way but saves
@@ -411,17 +411,18 @@ within the file (length 100 here), the second to the spatial dimension
    True
 
 To plot the potential energy as a function of time (assuming
-:mod:`matplotlib` is avaieable, and imported with ``from pylab import
-*``), run the commands::
+:mod:`matplotlib` is available), run the commands::
 
+   >>> from pylab import *
+   >>> from quippy import *
    >>> plot(al.time, al.energy)
    >>> xlabel('Time / fs')
    >>> ylabel('Energy / eV')
    >>> savefig('potentialenergy.png')
 
-The last command is only necessary if you want to save the plot. See
-the `matplotlib documentation <http://matplotlib.sourceforge.net/>`_
-for a lot more information about plotting.
+The last command is only necessary if you want to save the plot. See the
+`matplotlib documentation <http://matplotlib.sourceforge.net/>`_ for a lot more
+information about plotting.
 
 .. image:: potentialenergy.png
    :align: center
@@ -450,7 +451,11 @@ total energies to our graph::
    When invoked after importing quippy, the :func:`plot` function
    automatically converts arrays from :class:`FortranArray` to the
    standard numpy zero-based form before running the standard
-   :func:`pylab.plot` function.
+   :func:`pylab.plot` function. This is why we had to import quippy
+   again after importing :class:`pylab`. It is recommended that 
+   quippy is imported after importing other standard modules of Python. 
+   Also note that in earlier versions you might need to run 
+   ``from quippy.plot2d import *`` after importing quippy.
 
 Here's the graph we get after adding a legend with. 
 
@@ -788,7 +793,7 @@ Here is a Python function which implements this relation::
 We want to calculate the energy for a variety of cell volumes. The
 routine below takes an initial configuration `at0` and first 
 compresses and then expands it in increments of `eps`. To achieve 
-this we exploit the :meth: `Atoms.set_lattice()` method making sure 
+this we exploit the :meth:`~Atoms.set_lattice` method making sure 
 that `scale_positions` is true so that all atomic positions are 
 scaled appropriately. If `relax` is true we then minimise with 
 respect to the internal degrees of freedom (the atom positions). 
@@ -874,7 +879,7 @@ Repeating for the relaxed configurations gives results in better agreement with 
 We can add plots of the fitted equations to our graph::
 
    >>> vs = linspace(157, 163, 100)
-   >>> plot(vs, birch_energy(vo2, eo2, bo2, bop2, vs))
+   >>> plot(vs, birch_energy(vo , eo , bo , bop , vs))
    >>> plot(vs, birch_energy(vo2, eo2, bo2, bop2, vs))
 
 .. image:: energyvolume2.png
