@@ -212,12 +212,17 @@ class AtomsReader(AtomsReaderMixin):
          if self.start is not None or self.stop is not None or self.step is not None:
             warnings.warn('Iterating over AtomsReader which doesn\'t support random access with start/stop/step present is slow!')
 
-         if self.step is not None:
-            frames = itertools.islice(itertools.count(), self.start, self.stop, self.step)
-            atoms  = itertools.islice(iter(self.reader), self.start, self.stop, self.step)
-         else:
-            frames = itertools.islice(itertools.count(), self.start, self.stop)
-            atoms  = itertools.islice(iter(self.reader), self.start, self.stop)
+         frames = itertools.count()
+         atoms = iter(self.reader)
+
+         if self.start is not None or self.stop is not None or self.step is not None:
+            r = []
+            if self.start is not None: r.append(start)
+            if self.stop is not None: r.append(stop)
+            if self.step is not None: r.append(step)
+            r = tuple(r)
+            frames = itertools.islice(frames, *r)
+            atoms  = itertools.islice(atoms, *r)
 
          n_frames = 0
          for (frame,at) in itertools.izip(frames, atoms):
