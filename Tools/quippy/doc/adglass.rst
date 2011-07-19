@@ -65,7 +65,26 @@ Download the following input files:
   2. :download:`quartz_crack.xml` - parameters for potential and molecular dynamics
   3. :download:`quartz_crack_bulk.xyz` - structure of the quartz primitive cell
 
-Start the simulation by running the QUIP `crack` program, which takes
+Before we begin, we need to make sure that the QUIP `crack` program is compiled
+by running the following commands::
+
+  $ export QUIP_ARCH=linux_x86_64_gfortran # or whichever arch is relevant
+  $ cd $QUIP_ROOT
+  $ make QUIP_Programs/crack
+
+Then press `enter` to accept default settings.
+
+.. Note::
+  
+  The value you should assign to the variable :envvar:`QUIP_ARCH` depends on your 
+  platform (see :ref:`installation` for more details). :envvar:`QUIP_ROOT`
+  refers to the directory where the the QUIP source code is located.
+
+To make the command `crack` available, copy the executable
+``${QUIP_ROOT}/build.${QUIP_ARCH}`` to a directory on your :envvar:`PATH`,
+e.g. ``~/bin``.
+
+Start the simulation by running the `crack` program, which takes
 the "stem" of the input filenames as its only argument::
 
   $ crack quartz_crack > quartz_crack.out &
