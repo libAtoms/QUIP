@@ -329,10 +329,10 @@ contains
 	    persistent_run_i=1
 	    persistent_start_cp2k=.true.
 	    ! tell running process to stop
-	    call initialise(persistent_traj_io, trim(run_dir)//'/quip.persistent.traj.xyz',OUTPUT,append=.true.)
+	    call initialise(persistent_traj_io, trim(run_dir)//'/quip.persistent.traj.xyz',OUTPUT,append=.false.)
 	    call print ("0", file=persistent_traj_io)
 	    call finalise(persistent_traj_io)
-	    call initialise(persistent_cell_file_io, trim(run_dir)//'/REFTRAJ_READY', OUTPUT, append=.true.)
+	    call initialise(persistent_cell_file_io, trim(run_dir)//'/REFTRAJ_READY', OUTPUT, append=.false.)
 	    call print("go",file=persistent_cell_file_io)
 	    call finalise(persistent_cell_file_io)
 	    ! wait
@@ -769,11 +769,11 @@ contains
     ! prepare xyz file for input to cp2k
     if (persistent) then
        ! write cell file
-       call initialise(persistent_cell_file_io, trim(run_dir)//'/quip.persistent.traj.cell', OUTPUT, append=.true.)
+       call initialise(persistent_cell_file_io, trim(run_dir)//'/quip.persistent.traj.cell', OUTPUT, append=.false.)
        call print("0 0.0 "//at%lattice(:,1)//" "//at%lattice(:,2)//" "//at%lattice(:,3)//" "//cell_volume(at), file=persistent_cell_file_io, verbosity=PRINT_ALWAYS)
        call finalise(persistent_cell_file_io)
        ! write traj file
-       call write(at, trim(run_dir)//'/quip.persistent.traj.xyz', append=.true., properties='species:pos')
+       call write(at, trim(run_dir)//'/quip.persistent.traj.xyz', append=.false., properties='species:pos')
        ! write initial config if needed
        if (.not. persistent_already_started) &
 	  call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
