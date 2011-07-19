@@ -19,7 +19,7 @@
 import os
 import numpy as np
 from quippy import (Potential, Atoms, MPI_context, transform, print_title, verbosity_push,
-                    HYBRID_NO_MARK, GPA)
+                    HYBRID_NO_MARK, GPA, supercell)
 
 from quippy.surface import J_PER_M2
 
