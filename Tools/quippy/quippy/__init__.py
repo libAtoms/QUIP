@@ -177,7 +177,7 @@ import atomslist;   from atomslist import *
 import periodic;    from periodic import *
 import util;        from util import *
 
-import sio2, povray, cube, xyz, netcdf
+import sio2, povray, cube, xyz, netcdf, imd
 
 if 'ase' in available_modules:
    import aseinterface
