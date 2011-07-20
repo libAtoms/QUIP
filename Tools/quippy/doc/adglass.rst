@@ -80,9 +80,16 @@ Then press `enter` to accept default settings.
   platform (see :ref:`installation` for more details). :envvar:`QUIP_ROOT`
   refers to the directory where the the QUIP source code is located.
 
-To make the command `crack` available, copy the executable
+To make the command `crack` availale, copy the executable
 ``${QUIP_ROOT}/build.${QUIP_ARCH}`` to a directory on your :envvar:`PATH`,
 e.g. ``~/bin``.
+
+Similarly, to compile `eval` run::
+  
+  $ make QUIP_Program/eval
+
+It is highly recommended to change the name when copying the `eval` prgram to a
+directory on :envvar:`PATH` to avoid a clash with the builtin ``eval`` command.
 
 Start the simulation by running the `crack` program, which takes
 the "stem" of the input filenames as its only argument::
@@ -608,4 +615,3 @@ Input files and Solutions
 * :download:`surface-energy-relaxed.sh` - script to compute relaxed surface energy
 * :download:`surface-energy-annealed.sh` - script to compute annealed surface energy
 * :download:`crack-velo.sh` - script to crack velocity
-
