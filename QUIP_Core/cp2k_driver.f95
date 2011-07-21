@@ -488,7 +488,16 @@ contains
        else
 	 call print("@SET PERIODIC NONE", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        endif
-       call print("@SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_1 "//int(norm(at%lattice(:,1))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_2 "//int(norm(at%lattice(:,2))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_3 "//int(norm(at%lattice(:,3))), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_ODD_1 "//(int(norm(at%lattice(:,1))/2)*2+1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_ODD_2 "//(int(norm(at%lattice(:,2))/2)*2+1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET CELL_SIZE_INT_ODD_3 "//(int(norm(at%lattice(:,3))/2)*2+1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), &
+	    file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       call print("@SET MAX_CELL_SIZE_INT_ODD "//(int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))/2)*2+1), &
+	    file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
        ! put in method
        call print("@SET FORCE_EVAL_METHOD "//trim(method), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
