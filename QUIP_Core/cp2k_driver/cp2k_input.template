@@ -49,7 +49,8 @@
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
 #USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
-	GMAX ${MAX_CELL_SIZE_INT}
+#USER Needs to be odd for EWALD_TYPE ewald, spme doesn't care as long as it's integer
+	GMAX ${CELL_SIZE_INT_ODD_1} ${CELL_SIZE_INT_ODD_2} ${CELL_SIZE_INT_ODD_3}
       &END EWALD
     &END POISSON
     &QS
@@ -162,8 +163,9 @@
 #USER EWALD_ACCURACY: Accuracy of Ewald sum for MM calculation (also used by QMMM), 1e-6 seems decent
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-#USER GMAX: Default to the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
-	GMAX ${MAX_CELL_SIZE_INT}
+#USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
+#USER Needs to be odd for EWALD_TYPE ewald, spme doesn't care as long as it's integer
+	GMAX ${CELL_SIZE_INT_1} ${CELL_SIZE_INT_2} ${CELL_SIZE_INT_3}
       &END EWALD
     &END POISSON
   &END MM
