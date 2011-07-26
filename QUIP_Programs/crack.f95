@@ -633,7 +633,6 @@ program crack
   ds%atoms%nneightol = params%md(params%md_stanza)%nneigh_tol
 
   call crack_update_connect(ds%atoms, params)
-
   ! Initialise QM region
   if (.not. params%simulation_classical) then
      if (trim(params%selection_method) /= 'static') then
@@ -644,7 +643,6 @@ program crack
              call system_abort('No seed atoms found - rerun makecrack')
         call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
         call crack_update_selection(ds%atoms, params)
-
      else
         call print('Static QM region')
         ! Load QM mask from file, then fix it for entire simulation
@@ -922,7 +920,6 @@ program crack
               ! If tip has moved by more than smooth_loading_tip_move_tol then
               ! turn off loading. 
               call crack_find_tip(ds%atoms, params, crack_tips)
-
               if (crack_tips%N /= old_crack_tips%N) &
                    call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
 
@@ -934,6 +931,7 @@ program crack
                  old_crack_tips = crack_tips
               else
                  call print('STATE: crack is not moving (crack_pos='//crack_tips%real(1,crack_tips%N)//')')
+
               end if
 
            case(STATE_MD_CRACKING)
@@ -1231,7 +1229,10 @@ program crack
               last_calc_connect_time = ds%t
               call crack_update_connect(ds%atoms, params)
            end if
-
+           if (count(changed_nn == 1) /= 0) then
+              call crack_find_tip(ds%atoms, params, crack_tips)
+              call print('BOND BREAKING EVENT: Time  '//ds%t)
+           endif
            ! check if time exceeds time for this MD stanza
            if (params%md(params%md_stanza)%stanza_time >= 0.0_dp) then
               if (ds%t - last_stanza_change_time >= params%md(params%md_stanza)%stanza_time) cycle md_stanza
@@ -1297,7 +1298,6 @@ program crack
 
         ds%atoms%pos = fd_start%pos + dr*real(i,dp)
         call calc_connect(ds%atoms, store_is_min_image=.true.)
-
         if (params%simulation_classical) then
            call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
            if (i == 0) fd_e0 = energy
