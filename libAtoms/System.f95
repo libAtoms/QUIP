@@ -52,6 +52,8 @@ module system_module
 
   logical :: system_always_flush = .false.
 
+  logical :: system_use_fortran_random = .false.
+
 #ifdef HAVE_QP
   integer, parameter :: qp = 16 
 #else
@@ -2118,21 +2120,33 @@ contains
   function ran()
     integer::ran
     integer:: k
-    if (idum == 0) &
-      call system_abort("function ran(): linear-congruential random number generators fail with seed idum=0")
-    k = idum/ran_Q
-    idum = ran_A*(idum-k*ran_Q)-ran_R*k
-    if(idum < 0) idum = idum + ran_M
-    ran =idum
+    real(dp):: dran
+
+    if (system_use_fortran_random) then
+       call random_number(dran)
+       ran = dran*RAN_MAX
+    else
+       if (idum == 0) &
+	 call system_abort("function ran(): linear-congruential random number generators fail with seed idum=0")
+       k = idum/ran_Q
+       idum = ran_A*(idum-k*ran_Q)-ran_R*k
+       if(idum < 0) idum = idum + ran_M
+       ran =idum
+     endif
   end function ran
 
   !% Return a random real number uniformly distributed in the range [0,1]
   function ran_uniform()
     real(dp)::ran_uniform
-    ran_uniform = 1.1_dp
-    do while (ran_uniform > 1.0_dp) ! generating [0,1]  
-       ran_uniform = real(ran(),dp)/RAN_MAX
-    end do
+
+    if (system_use_fortran_random) then
+       call random_number(ran_uniform)
+    else
+       ran_uniform = 1.1_dp
+       do while (ran_uniform > 1.0_dp) ! generating [0,1]  
+	  ran_uniform = real(ran(),dp)/RAN_MAX
+       end do
+    end if
   end function ran_uniform
 
   !% Return random real from Normal distribution with mean zero and standard deviation one.

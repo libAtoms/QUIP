@@ -2676,7 +2676,7 @@ contains
 
 	this%Nrestraints = this%Nrestraints + 1
 	new_constraint = this%Nrestraints
-	if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Constraint array full')
+	if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Restraint array size '//size(this%restraint)//' not enough space for '//this%Nrestraints//' restraints')
         if (present(tol)) call print("ds_add_constraint: Restraints will ignore the explicitly given constraint tolerance.",PRINT_ALWAYS)
         call initialise(this%restraint(new_constraint),atoms,func,data,restraint_k,bound=bound)
 	call constraint_calculate_values_at(this%restraint(new_constraint),this%atoms,this%t)
