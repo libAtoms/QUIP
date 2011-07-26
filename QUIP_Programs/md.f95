@@ -58,6 +58,7 @@ private
     logical :: v_dep_quants_extra_calc
     real(dp) :: extra_heat
     logical :: continuation
+    logical :: use_fortran_random
   end type md_params
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
@@ -117,6 +118,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc, help_string="do extra call to calc for velocity dependent quantities (like heat flux)")
   call param_register(md_params_dict, 'continuation', 'F', params%continuation, help_string="if true, this is a continuation of an old run, read initial time and i_step from input config")
   call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
+  call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -139,6 +141,8 @@ subroutine get_params(params, mpi_glob)
      call system_abort("get_params got empty pot_init_args")
   end if
   call finalise(md_params_dict)
+
+  system_use_fortran_random = params%use_fortran_random
 
   if (len_trim(params%first_pot_calc_args) == 0) params%first_pot_calc_args = params%pot_calc_args
 

@@ -42,6 +42,7 @@ contains
 	    call QUIP_FoX_get_value(attributes, "N", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read N in restraints stanza")
 	    read (value, *) n
+	    call print("allocating array for "//n//" restraints")
 	    if (allocated(parse_ds%restraint)) deallocate(parse_ds%restraint)
 	    allocate(parse_ds%restraint(n))
 	 else ! constraints
@@ -50,6 +51,7 @@ contains
 	    call QUIP_FoX_get_value(attributes, "N", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read N in constraints stanza")
 	    read (value, *) n
+	    call print("allocating array for "//n//" constraints")
 	    if (allocated(parse_ds%constraint)) deallocate(parse_ds%constraint)
 	    allocate(parse_ds%constraint(n))
 	 endif
