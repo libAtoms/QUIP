@@ -318,6 +318,9 @@ subroutine print_summary(params, ds, e)
 
   real(dp) :: mu(3), virial(3,3)
 
+  if (params%extra_heat > 0.0_dp) then
+    call print("EH "//ds%t//" "//temperature(ds, property="extra_heat_mask", value=1, instantaneous=.true.)//" "//temperature(ds, property="extra_heat_mask", value=0, instantaneous=.true.))
+  endif
   call ds_print_status(ds, "STAT", e)
   if (get_value(ds%atoms%params, 'Dipole_Moment', mu)) then
     call print("MU " // ds%t // " " // mu)
