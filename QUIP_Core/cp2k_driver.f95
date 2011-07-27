@@ -864,8 +864,8 @@ contains
 	 call system_command(&
 	   ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
 	   ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
-	   ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
+	   ' cat filepot.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_1.xyz'// ' >> cp2k_force_file_log')
       endif
     endif
 
