@@ -143,7 +143,7 @@ implicit none
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N, do_exp_smoothing
+  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N, do_exp_smoothing, exp_smoothing_start_with_mean
   real(dp) :: exp_smoothing_time
   integer :: exp_smoothing_bin_i
   integer :: histogram_n_bins
@@ -153,7 +153,7 @@ implicit none
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
-  real(dp), allocatable :: smooth_data_v(:)
+  real(dp) :: smooth_data
   integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_effective_N_long_lag
   logical :: over_bins, over_time
   real(dp), allocatable :: effective_N(:), histogram_effective_N(:,:)
@@ -166,6 +166,7 @@ implicit none
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
   call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
+  call param_register(cli_params, "exp_smoothing_start_with_mean", "F", exp_smoothing_start_with_mean, help_string="start exponential smoothing with mean for this trajectory")
   call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
   call param_register(cli_params, "exp_smoothing_bin_i", "0", exp_smoothing_bin_i, help_string="bin to evaluate for exponential smoothing")
   call param_register(cli_params, "variance", "F", do_var, help_string="calculate variance")
@@ -286,16 +287,18 @@ implicit none
     if (over_bins) then
       call system_abort("Can't actually do exponentially smoothed time trace over bins")
     else
-       allocate(smooth_data_v(n_bins))
-       smooth_data_v(1:n_bins) = data(1:n_bins, 1)
-       call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
-       do i=2, n_data
+       if (exp_smoothing_start_with_mean) then
+	  smooth_data = sum(data(exp_smoothing_bin_i, :))/real(size(data,2),dp)
+       else
+	  smooth_data = data(exp_smoothing_bin_i, 1)
+       endif
+       do i=1, n_data
 	 if (exp_smoothing_time > 0.0_dp) then
-	    smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
+	    smooth_data = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data + 1.0_dp/exp_smoothing_time*data(exp_smoothing_bin_i, i)
 	 else
-	    smooth_data_v(1:n_bins) = data(1:n_bins, i)
+	    smooth_data = data(exp_smoothing_bin_i, i)
 	 endif
-	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
+	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data, file=outfile)
        end do
     endif
   end if ! do_exp_smoothing
