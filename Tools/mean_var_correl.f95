@@ -94,21 +94,22 @@ subroutine calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, cor
     deallocate(data_mean)
 end subroutine
 
-subroutine calc_effective_N(data_correl, over_bins, correlation_effective_N_long_lag, effective_N)
+! effective N_ind samples from autocorrelation variance
+subroutine calc_correlation_var_effective_N(data_correl, over_bins, correlation_var_effective_N_long_lag, effective_N)
    real(dp) :: data_correl(:,:)
    logical :: over_bins
-   integer :: correlation_effective_N_long_lag
+   integer :: correlation_var_effective_N_long_lag
    real(dp) :: effective_N(:)
 
    real(dp) :: correl_0, correl_mean, correl_std_dev
    integer :: i
 
    if (over_bins) then
-     if (correlation_effective_N_long_lag+1 < size(data_correl,1)) then
+     if (correlation_var_effective_N_long_lag+1 < size(data_correl,1)) then
        do i=1, size(data_correl,2)
 	 correl_0 = data_correl(1, i)
-	 correl_mean = sum(data_correl(correlation_effective_N_long_lag+1:,i)) / real(size(data_correl,1)-correlation_effective_N_long_lag, dp)
-	 correl_std_dev = sqrt( sum((data_correl(correlation_effective_N_long_lag+1:,i)-correl_mean)**2) / real(size(data_correl,1)-correlation_effective_N_long_lag, dp) )
+	 correl_mean = sum(data_correl(correlation_var_effective_N_long_lag+1:,i)) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp)
+	 correl_std_dev = sqrt( sum((data_correl(correlation_var_effective_N_long_lag+1:,i)-correl_mean)**2) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp) )
 	 if (correl_std_dev > 1.0e-8_dp) then
 	   effective_N(i) = (correl_0/correl_std_dev)**2
 	 else
@@ -117,11 +118,11 @@ subroutine calc_effective_N(data_correl, over_bins, correlation_effective_N_long
        end do
      endif ! long_lag short enough
    else ! over_bins false
-     if (correlation_effective_N_long_lag+1 < size(data_correl,2)) then
+     if (correlation_var_effective_N_long_lag+1 < size(data_correl,2)) then
        do i=1, size(data_correl,1)
 	 correl_0 = data_correl(i, 1)
-	 correl_mean = sum(data_correl(i,correlation_effective_N_long_lag+1:)) / real(size(data_correl,2)-correlation_effective_N_long_lag, dp)
-	 correl_std_dev = sqrt( sum((data_correl(i,correlation_effective_N_long_lag+1:)-correl_mean)**2) / real(size(data_correl,2)-correlation_effective_N_long_lag, dp) )
+	 correl_mean = sum(data_correl(i,correlation_var_effective_N_long_lag+1:)) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp)
+	 correl_std_dev = sqrt( sum((data_correl(i,correlation_var_effective_N_long_lag+1:)-correl_mean)**2) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp) )
 	 if (correl_std_dev > 1.0e-8_dp) then
 	   effective_N(i) = (correl_0/correl_std_dev)**2
 	 else
@@ -133,6 +134,178 @@ subroutine calc_effective_N(data_correl, over_bins, correlation_effective_N_long
    endif  ! over_bins
 end subroutine
 
+! effective N_ind samples from summed ac, a la Sokal
+subroutine calc_summed_ac_effective_N(N, data_correl, over_bins, effective_N)
+   integer :: N
+   real(dp) :: data_correl(:,:)
+   logical :: over_bins
+   real(dp) :: effective_N(:)
+
+   real(dp) :: correl_0, two_tau_int
+   integer :: i
+
+   if (over_bins) then
+    do i=1, size(data_correl,2)
+      correl_0 = data_correl(1, i)
+      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(2:,i))/correl_0
+      effective_N(i) = real(N,dp)/two_tau_int
+      call print(" i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+    end do
+   else ! over_bins false
+    do i=1, size(data_correl,1)
+      correl_0 = data_correl(i, 1)
+      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(i,2:))/correl_0
+      effective_N(i) = real(N,dp)/two_tau_int
+      call print(" i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+    end do
+   endif  ! over_bins
+end subroutine
+
+function calc_c_hat(data, k) result(c_hat)
+   real(dp) :: data(:)
+   integer :: k
+   real(dp) :: c_hat
+
+   real(dp)  :: sum_0, sum_k, sum_sq_0, sum_sq_k, cross_covar
+   real(dp) :: N_minus_k
+   integer :: N
+
+   N = size(data)
+   sum_0 = sum(data(1:N-k))
+   sum_k = sum(data(1+k:N))
+   sum_sq_0 = sum(data(1:N-k)**2)
+   sum_sq_k = sum(data(1+k:N)**2)
+   cross_covar = sum(data(1:N-k)*data(1+k:N))
+   N_minus_k = real(N-k,dp)
+
+   c_hat = ( cross_covar/N_minus_k - sum_0*sum_k/N_minus_k**2 ) / &
+           ( sqrt(sum_sq_0 - (sum_0**2)/N_minus_k)* &
+	     sqrt(sum_sq_k - (sum_k**2)/N_minus_k) / (N_minus_k-1.0_dp) )
+end function
+
+! effective N_ind samples from summed ac, a la Kerl
+subroutine calc_sliding_window_effective_N(data, over_bins, max_k, effective_N)
+   real(dp) :: data(:,:)
+   logical :: over_bins
+   integer :: max_k
+   real(dp) :: effective_N(:)
+
+   real(dp), allocatable :: c_hat(:)
+   real(dp) :: two_tau_int
+   integer :: i, k
+
+   ! John Kerl Ph.D. Thesis
+   allocate(c_hat(1:max_k))
+
+   if (over_bins) then
+    do i=1, size(data,2)
+      do k=1, max_k
+	 c_hat(k) = calc_c_hat(data(:,i),k)
+call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))))
+      end do
+      two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
+      effective_N(i) = real(size(data,1),dp)/two_tau_int
+      call print(" i " // i // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+    end do
+   else ! over_bins false
+    do i=1, size(data,1)
+      do k=1, max_k
+	 c_hat(k) = calc_c_hat(data(i,:),k)
+call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))))
+      end do
+      two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
+      effective_N(i) = real(size(data,2),dp)/two_tau_int
+      call print(" i " // i // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+    end do
+   endif  ! over_bins
+
+   deallocate(c_hat)
+end subroutine
+
+! effective N_ind samples from binning (blocking), a la Hartman
+subroutine calc_binning_effective_N(data, over_bins, effective_N)
+   real(dp) :: data(:,:)
+   logical :: over_bins
+   real(dp) :: effective_N(:)
+
+   real(dp) :: bin_size_d
+   integer :: i, bin_size, N
+   real(dp) :: err_est, prev_err_est, best_err_est, mean, means_variance_1
+
+   if (over_bins) then
+      do i=1, size(data,2)
+	 N = size(data,1)
+	 err_est=0.0_dp
+	 best_err_est = -1.0_dp
+	 bin_size_d = 1
+	 do while (bin_size_d > 0 .and. bin_size_d <= N/5)
+	    bin_size = bin_size_d
+
+	    prev_err_est = err_est
+	    err_est = binned_err_estimator(data(:,i),bin_size)
+
+	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
+	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
+	    bin_size_d = bin_size_d * 4
+	 end do
+
+	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
+
+	 mean = sum(data(:,i))/real(N,dp)
+	 means_variance_1 = sum((data(:,i)-mean)**2)/real(N,dp)
+	 effective_N(i) = means_variance_1/best_err_est**2
+	 if (effective_N(i) > N) effective_N(i) = N
+      end do
+   else
+      do i=1, size(data,1)
+	 N = size(data,2)
+	 err_est=0.0_dp
+	 best_err_est = -1.0_dp
+	 bin_size_d = 1
+	 do while (bin_size_d > 0 .and. bin_size_d <= N/5)
+	    bin_size = bin_size_d
+
+	    prev_err_est = err_est
+	    err_est = binned_err_estimator(data(i,:),bin_size)
+
+	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
+	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
+	    bin_size_d = bin_size_d * 4
+	 end do
+
+	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
+
+	 mean = sum(data(i,:))/real(N,dp)
+	 means_variance_1 = sum((data(i,:)-mean)**2)/real(N,dp)
+	 effective_N(i) = means_variance_1/best_err_est**2
+	 if (effective_N(i) > N) effective_N(i) = N
+      end do
+   end if
+end subroutine
+
+function binned_err_estimator(data, bin_size) result(err_est)
+   real(dp) :: data(:)
+   integer :: bin_size
+   real(dp) :: err_est
+
+   integer :: n_bins, bin_i, N
+   real(dp), allocatable :: means(:)
+   real(dp) :: means_mean, means_variance
+
+   N = size(data)
+   n_bins = N/bin_size
+   allocate(means(n_bins))
+
+   do bin_i=1, n_bins
+      means(bin_i) = sum(data((bin_i-1)*bin_size+1:bin_i*bin_size))/real(bin_size,dp)
+   end do
+   means_mean = sum(means)/real(n_bins,dp)
+   means_variance = sum((means-means_mean)**2)/real(n_bins,dp)
+   err_est = sqrt(means_variance/real(n_bins,dp))
+
+   deallocate(means)
+end function
+
 end module mean_var_correl_util_mod
 
 program mean_var_correl
@@ -143,7 +316,7 @@ implicit none
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N, do_exp_smoothing, exp_smoothing_start_with_mean
+  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_correlation_var_effective_N, do_summed_ac_effective_N, do_sliding_window_effective_N, do_binning_effective_N, do_exp_smoothing
   real(dp) :: exp_smoothing_time
   integer :: exp_smoothing_bin_i
   integer :: histogram_n_bins
@@ -153,10 +326,10 @@ implicit none
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
-  real(dp) :: smooth_data
-  integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_effective_N_long_lag
+  real(dp), allocatable :: smooth_data_v(:)
+  integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_var_effective_N_long_lag, sliding_window_effective_N_max_k
   logical :: over_bins, over_time
-  real(dp), allocatable :: effective_N(:), histogram_effective_N(:,:)
+  real(dp), allocatable :: correlation_var_effective_N(:), summed_ac_effective_N(:), sliding_window_effective_N(:), binning_effective_N(:), histogram_effective_N(:,:)
   character(len=FIELD_LENGTH) :: verbosity_str
 
   call system_initialise()
@@ -166,16 +339,20 @@ implicit none
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
   call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
-  call param_register(cli_params, "exp_smoothing_start_with_mean", "F", exp_smoothing_start_with_mean, help_string="start exponential smoothing with mean for this trajectory")
   call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
   call param_register(cli_params, "exp_smoothing_bin_i", "0", exp_smoothing_bin_i, help_string="bin to evaluate for exponential smoothing")
   call param_register(cli_params, "variance", "F", do_var, help_string="calculate variance")
-  call param_register(cli_params, "effective_N", "F", do_effective_N, help_string="calculate effective N from ratio of initial to long time autocorrelation")
+  call param_register(cli_params, "correlation_var_effective_N", "F", do_correlation_var_effective_N, help_string="calculate effective N from ratio of initial variance to long time autocorrelation variance")
+  call param_register(cli_params, "correlation_var_effective_N_long_lag", "1001", &
+    correlation_var_effective_N_long_lag, help_string="lag after which autocorrelation is assumed to be in long time regime (for effective_N calculation)")
+  call param_register(cli_params, "summed_ac_effective_N", "F", do_summed_ac_effective_N, help_string="calculate Sokals's summed_ac \tau_{int} based effective N from integrated autocorrelation")
+  call param_register(cli_params, "sliding_window_effective_N", "F", do_sliding_window_effective_N, help_string="calculate Kerl's sliding_window \tau_{int} based effective N from fancy integrated autocorrelation")
+  call param_register(cli_params, "sliding_window_effective_N_max_k", "1001", &
+    sliding_window_effective_N_max_k, help_string="max lag to calculate autocorrelation estimator for sliding window effective N")
+  call param_register(cli_params, "binning_effective_N", "F", do_binning_effective_N, help_string="calculate binning effective N")
   call param_register(cli_params, "correlation", "F", do_correl, help_string="calculate autocorrelation")
   call param_register(cli_params, "correlation_subtract_mean", "T", correlation_subtract_mean, help_string="subtract mean before calculating autocorrelation")
   call param_register(cli_params, "correlation_max_lag", "2000", correlation_max_lag, help_string="maxmimum lag to compute autocorrelation for")
-  call param_register(cli_params, "correlation_effective_N_long_lag", "1001", &
-    correlation_effective_N_long_lag, help_string="lag after which autocorrelation is assumed to be in long time regime (for effective_N calculation)")
   call param_register(cli_params, "histogram", "F", do_histogram, help_string="compute histogram")
   call param_register(cli_params, "histogram_n_bins", "10", histogram_n_bins, help_string="number of bins for histogram calculation")
   call param_register(cli_params, "histogram_extra_width", "0.1", histogram_extra_width, help_string="extra range to do histogram over, in fractions of max_val-min_val (ignored if histogram_min,max_v are used)")
@@ -188,7 +365,7 @@ implicit none
   call param_register(cli_params, "verbosity", "NORMAL", verbosity_str, help_string="verbosity level")
   if (.not.param_read_args(cli_params)) then
     call print("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F effective_N=F", PRINT_ALWAYS)
-    call print("        correlation_max_lag=1000 correlation_effective_N_long_lag=1001 over_bins=F over_time=T", PRINT_ALWAYS)
+    call print("        correlation_max_lag=1000 correlation_var_effective_N_long_lag=1001 over_bins=F over_time=T", PRINT_ALWAYS)
     call system_abort("Unable to parse command line")
   endif
   call finalise(cli_params)
@@ -252,7 +429,7 @@ implicit none
   endif
 
 
-  if (do_correl .or. do_effective_N) then
+  if (do_correl .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N) then
     call calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, correlation_subtract_mean, data_correl)
 
     if (do_correl) then
@@ -267,11 +444,23 @@ implicit none
       end do
     endif
 
-    if (do_effective_N) then
-      allocate(effective_N(sz))
-      call calc_effective_N(data_correl, over_bins, correlation_effective_N_long_lag, effective_N)
-    endif ! do_effective_N
+    if (do_correlation_var_effective_N) then
+      allocate(correlation_var_effective_N(sz))
+      call calc_correlation_var_effective_N(data_correl, over_bins, correlation_var_effective_N_long_lag, correlation_var_effective_N)
+    endif 
+    if (do_summed_ac_effective_N) then
+      allocate(summed_ac_effective_N(sz))
+      call calc_summed_ac_effective_N(size(data,reduction_index), data_correl, over_bins, summed_ac_effective_N)
+    endif 
   endif ! do_correl or do_effective_N
+  if (do_sliding_window_effective_N) then
+    allocate(sliding_window_effective_N(sz))
+    call calc_sliding_window_effective_N(data, over_bins, sliding_window_effective_N_max_k, sliding_window_effective_N)
+  endif 
+  if (do_binning_effective_N) then
+    allocate(binning_effective_N(sz))
+    call calc_binning_effective_N(data, over_bins, binning_effective_N)
+  endif 
 
   ! data(n_bins, n_data)
   if (do_exp_smoothing) then
@@ -287,23 +476,21 @@ implicit none
     if (over_bins) then
       call system_abort("Can't actually do exponentially smoothed time trace over bins")
     else
-       if (exp_smoothing_start_with_mean) then
-	  smooth_data = sum(data(exp_smoothing_bin_i, :))/real(size(data,2),dp)
-       else
-	  smooth_data = data(exp_smoothing_bin_i, 1)
-       endif
-       do i=1, n_data
+       allocate(smooth_data_v(n_bins))
+       smooth_data_v(1:n_bins) = data(1:n_bins, 1)
+       call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
+       do i=2, n_data
 	 if (exp_smoothing_time > 0.0_dp) then
-	    smooth_data = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data + 1.0_dp/exp_smoothing_time*data(exp_smoothing_bin_i, i)
+	    smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
 	 else
-	    smooth_data = data(exp_smoothing_bin_i, i)
+	    smooth_data_v(1:n_bins) = data(1:n_bins, i)
 	 endif
-	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data, file=outfile)
+	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
        end do
     endif
   end if ! do_exp_smoothing
 
-  if (do_mean .or. do_var .or. do_effective_N) then
+  if (do_mean .or. do_var .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N .or. do_sliding_window_effective_N .or. do_binning_effective_N) then
     if (over_bins) then
       myline = "#"
     else
@@ -311,7 +498,8 @@ implicit none
     endif
     if (do_mean) myline = trim(myline) //" mean"
     if (do_var) myline = trim(myline) //" var N"
-    if (do_effective_N) myline = trim(myline) // " effective_N effective_decorrel_time"
+    if (do_correlation_var_effective_N) myline = trim(myline) // " correlation_var_effective_N correlation_var_effective_decorrel_time"
+    if (do_summed_ac_effective_N) myline = trim(myline) // " summed_ac_effective_N summed_ac_effective_decorrel_time"
 
     call print(trim(myline), file=outfile)
 
@@ -323,11 +511,32 @@ implicit none
       endif
       if (do_mean) myline = trim(myline) //" " // data_mean(i)
       if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
-      if (do_effective_N) then
-	if (effective_N(i) > 0) then
-	  myline = trim(myline) // " " // effective_N(i) // " " // (size(data,reduction_index)/effective_N(i))
+      if (do_correlation_var_effective_N) then
+	if (correlation_var_effective_N(i) > 0) then
+	  myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // (size(data,reduction_index)/correlation_var_effective_N(i))
 	else
-	  myline = trim(myline) // " " // effective_N(i) // " " // 0
+	  myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // 0
+	endif
+      endif
+      if (do_summed_ac_effective_N) then
+	if (summed_ac_effective_N(i) > 0) then
+	  myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // (size(data,reduction_index)/summed_ac_effective_N(i))
+	else
+	  myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // 0
+	endif
+      endif
+      if (do_sliding_window_effective_N) then
+	if (sliding_window_effective_N(i) > 0) then
+	  myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // (size(data,reduction_index)/sliding_window_effective_N(i))
+	else
+	  myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // 0
+	endif
+      endif
+      if (do_binning_effective_N) then
+	if (binning_effective_N(i) > 0) then
+	  myline = trim(myline) // " " // binning_effective_N(i) // " " // (size(data,reduction_index)/binning_effective_N(i))
+	else
+	  myline = trim(myline) // " " // binning_effective_N(i) // " " // 0
 	endif
       endif
       call print(trim(myline), file=outfile)
@@ -397,7 +606,7 @@ implicit none
 	    end do
 	 endif
 	 mainlog%prefix="EFF_N value_i="//i
-	 call calc_effective_N(data_histogram_correl, .false., correlation_effective_N_long_lag, histogram_effective_N(:,i))
+	 call calc_correlation_var_effective_N(data_histogram_correl, .false., correlation_var_effective_N_long_lag, histogram_effective_N(:,i))
 	 mainlog%prefix=""
       end do
     endif
