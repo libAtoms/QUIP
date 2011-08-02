@@ -327,7 +327,7 @@ subroutine print_summary(params, ds, e)
   endif
   if (params%calc_virial) then
     call get_param_value(ds%atoms, "virial", virial)
-    call print("STRESS " // ds%t // " " // (reshape(virial,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa")
+    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa")
   endif
 
 end subroutine print_summary
