@@ -433,72 +433,74 @@ contains
   end function  make_convex_step
 
 
-!OUTDATED   ! Gotcha 1: Hollow sections
-!OUTDATED   !NB equivalent to reduce_n_cut_bonds when new number of bonds is 0
-!OUTDATED   ! OUT and IN refers to the list in cluster_info
-!OUTDATED   ! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
-!OUTDATED   ! atom are IN, then make the OUT atom IN.
-!OUTDATED   function cluster_ss_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
-!OUTDATED     type(Atoms), intent(in) :: this
-!OUTDATED     type(Table), intent(inout) :: cluster_info
-!OUTDATED     logical, intent(in) :: connectivity_just_from_connect
-!OUTDATED     type(Connection), intent(in) :: use_connect
-!OUTDATED     logical, intent(in) :: atom_mask(6)
-!OUTDATED     logical :: cluster_changed
-!OUTDATED 
-!OUTDATED     integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
-!OUTDATED     logical :: all_in
-!OUTDATED 
-!OUTDATED     cluster_changed = .false.
-!OUTDATED 
-!OUTDATED     n = 1
-!OUTDATED     ! Loop over cluster atoms (including ones that may get added in this loop)
-!OUTDATED     call print('create_cluster: Checking for hollow sections', PRINT_NERD)
-!OUTDATED     do while (n <= cluster_info%N)
-!OUTDATED       i = cluster_info%int(1,n)
-!OUTDATED       ishift = cluster_info%int(2:4,n)
-!OUTDATED       call print('cluster_ss_in_out_in: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-!OUTDATED 
-!OUTDATED       !Loop over neighbours
-!OUTDATED       do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
-!OUTDATED 	j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
-!OUTDATED 
-!OUTDATED 	if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
-!OUTDATED 	    (connectivity_just_from_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect)) ) then
-!OUTDATED 	  ! j is out and is nearest neighbour
-!OUTDATED 
-!OUTDATED 	  call print('cluster_ss_in_out_in:   checking j = '//j//" ["//jshift//"]",PRINT_ANAL)
-!OUTDATED 
-!OUTDATED 	  ! We have an OUT nearest neighbour, loop over its nearest neighbours to see if they
-!OUTDATED 	  ! are all IN
-!OUTDATED 
-!OUTDATED 	  all_in = .true.
-!OUTDATED 	  do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
-!OUTDATED 	    k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
-!OUTDATED 	    if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
-!OUTDATED 	      (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
-!OUTDATED 	      all_in = .false.
-!OUTDATED 	      exit
-!OUTDATED 	    end if
-!OUTDATED 	  end do
-!OUTDATED 
-!OUTDATED 	  !If all j's nearest neighbours are IN then add it
-!OUTDATED 	  if (all_in) then
-!OUTDATED 	    call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
-!OUTDATED 	    cluster_changed = .true.
-!OUTDATED 	    call print('cluster_ss_in_out_in:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
-!OUTDATED 	  end if
-!OUTDATED 
-!OUTDATED 	end if
-!OUTDATED 
-!OUTDATED       end do ! m
-!OUTDATED       n = n + 1
-!OUTDATED     end do ! while (n <= cluster_info%N)
-!OUTDATED 
-!OUTDATED     call print('cluster_ss_in_out_in: Finished checking',PRINT_NERD)
-!OUTDATED     call print("cluster_ss_in_out_in: cluster list:", PRINT_NERD)
-!OUTDATED     call print(cluster_info, PRINT_NERD)
-!OUTDATED   end function cluster_ss_in_out_in
+! Gotcha 1: Hollow sections
+! NB equivalent to reduce_n_cut_bonds when new number of bonds is 0
+! JRK: reduce_n_cut_bonds() is not equivalent to cluster_in_out_in() for 
+! silica, where adding IN-OUT-IN atoms doesn't change number of cut bonds
+! OUT and IN refers to the list in cluster_info
+! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
+! atom are IN, then make the OUT atom IN.
+function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+  type(Atoms), intent(in) :: this
+  type(Table), intent(inout) :: cluster_info
+  logical, intent(in) :: connectivity_just_from_connect
+  type(Connection), intent(in) :: use_connect
+  logical, intent(in) :: atom_mask(6)
+  logical :: cluster_changed
+
+  integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
+  logical :: all_in
+
+  cluster_changed = .false.
+
+  n = 1
+  ! Loop over cluster atoms (including ones that may get added in this loop)
+  call print('create_cluster: Checking for hollow sections', PRINT_NERD)
+  do while (n <= cluster_info%N)
+    i = cluster_info%int(1,n)
+    ishift = cluster_info%int(2:4,n)
+    call print('cluster_in_out_in: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+
+    !Loop over neighbours
+    do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
+    j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
+
+    if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
+        (connectivity_just_from_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect)) ) then
+      ! j is out and is nearest neighbour
+
+      call print('cluster_in_out_in:   checking j = '//j//" ["//jshift//"]",PRINT_ANAL)
+
+      ! We have an OUT nearest neighbour, loop over its nearest neighbours to see if they
+      ! are all IN
+
+      all_in = .true.
+      do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
+        k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
+        if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
+          (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
+          all_in = .false.
+          exit
+        end if
+      end do
+
+      !If all j's nearest neighbours are IN then add it
+      if (all_in) then
+        call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "inoutin   "/) )
+        cluster_changed = .true.
+        call print('cluster_in_out_in:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+      end if
+
+    end if
+
+    end do ! m
+    n = n + 1
+  end do ! while (n <= cluster_info%N)
+
+  call print('cluster_in_out_in: Finished checking',PRINT_NERD)
+  call print("cluster_in_out_in: cluster list:", PRINT_NERD)
+  call print(cluster_info, PRINT_NERD)
+end function cluster_in_out_in
 
   !% Find cases where two IN atoms have a common
   !% OUT nearest neighbour, and see if termination would cause the hydrogen
@@ -1705,7 +1707,7 @@ contains
          even_electrons, do_periodic(3), cluster_nneighb_only, &
          cluster_allow_modification, hysteretic_connect, same_lattice, &
          fix_termination_clash, keep_whole_residues, keep_whole_subgroups, keep_whole_prolines, keep_whole_proline_sidechains, &
-	 keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
+	 keep_whole_silica_tetrahedra, reduce_n_cut_bonds, in_out_in, &
          protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
 	 combined_protein_heuristics
     logical :: keep_whole_residues_has_value, keep_whole_subgroups_has_value, keep_whole_prolines_has_value, keep_whole_proline_sidechains_has_value, &
@@ -1773,6 +1775,8 @@ contains
       help_string="Apply heureistic keeping SiO2 tetrahedra whole")
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds,&
       help_string="Apply heuristic that adds atoms if doing so reduces number of broken bonds")
+    call param_register(params, 'in_out_in', 'F', in_out_in, &
+      help_string="Apply heuristic than adds atoms to avoid IN-OUT-IN configurations. Usually equivalent to reduce_n_cut_bonds.")
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds,&
       help_string="Apply heuristic protecting X-H bonds - no point H passivating bonds with an H")
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, has_value_target=protect_double_bonds_has_value,&
@@ -2023,6 +2027,7 @@ contains
                ' keep_whole_subgroups ' // keep_whole_subgroups // &
                ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
                ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
+               ' in_out_in ' // in_out_in // &
                ' protect_X_H_bonds ' // protect_X_H_bonds // &
                ' protect_double_bonds ' // protect_double_bonds // &
                ' protect_peptide_bonds ' // protect_peptide_bonds // &
@@ -2044,6 +2049,9 @@ contains
           end if
           if (reduce_n_cut_bonds) then
              cluster_changed = cluster_changed .or. cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+          endif
+          if (in_out_in) then
+             cluster_changed = cluster_changed .or. cluster_in_out_in(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
           if (protect_X_H_bonds) then
              cluster_changed = cluster_changed .or. cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
