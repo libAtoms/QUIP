@@ -135,10 +135,11 @@ subroutine calc_correlation_var_effective_N(data_correl, over_bins, correlation_
 end subroutine
 
 ! effective N_ind samples from summed ac, a la Sokal
-subroutine calc_summed_ac_effective_N(N, data_correl, over_bins, effective_N)
+subroutine calc_summed_ac_effective_N(N, data_correl, over_bins, max_lag, effective_N)
    integer :: N
    real(dp) :: data_correl(:,:)
    logical :: over_bins
+   integer :: max_lag
    real(dp) :: effective_N(:)
 
    real(dp) :: correl_0, two_tau_int
@@ -147,16 +148,16 @@ subroutine calc_summed_ac_effective_N(N, data_correl, over_bins, effective_N)
    if (over_bins) then
     do i=1, size(data_correl,2)
       correl_0 = data_correl(1, i)
-      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(2:,i))/correl_0
+      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(2:max_lag+1,i))/correl_0
       effective_N(i) = real(N,dp)/two_tau_int
-      call print(" i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+      call print("summed_ac i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
     end do
    else ! over_bins false
     do i=1, size(data_correl,1)
       correl_0 = data_correl(i, 1)
-      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(i,2:))/correl_0
+      two_tau_int = 1.0_dp + 2.0_dp*sum(data_correl(i,2:max_lag+1))/correl_0
       effective_N(i) = real(N,dp)/two_tau_int
-      call print(" i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
+      call print("summed_ac i " // i // " correl_0 " // correl_0 // " two_tau_int " // two_tau_int // " effective_N "// effective_N(i), verbosity=PRINT_VERBOSE)
     end do
    endif  ! over_bins
 end subroutine
@@ -201,7 +202,7 @@ subroutine calc_sliding_window_effective_N(data, over_bins, max_k, effective_N)
     do i=1, size(data,2)
       do k=1, max_k
 	 c_hat(k) = calc_c_hat(data(:,i),k)
-call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))))
+	 call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
       end do
       two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
       effective_N(i) = real(size(data,1),dp)/two_tau_int
@@ -211,7 +212,7 @@ call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))
     do i=1, size(data,1)
       do k=1, max_k
 	 c_hat(k) = calc_c_hat(data(i,:),k)
-call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))))
+	 call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
       end do
       two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
       effective_N(i) = real(size(data,2),dp)/two_tau_int
@@ -327,7 +328,7 @@ implicit none
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
   real(dp), allocatable :: smooth_data_v(:)
-  integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_var_effective_N_long_lag, sliding_window_effective_N_max_k
+  integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_var_effective_N_long_lag, sliding_window_effective_N_max_k, summed_ac_effective_N_max_lag
   logical :: over_bins, over_time
   real(dp), allocatable :: correlation_var_effective_N(:), summed_ac_effective_N(:), sliding_window_effective_N(:), binning_effective_N(:), histogram_effective_N(:,:)
   character(len=FIELD_LENGTH) :: verbosity_str
@@ -346,6 +347,8 @@ implicit none
   call param_register(cli_params, "correlation_var_effective_N_long_lag", "1001", &
     correlation_var_effective_N_long_lag, help_string="lag after which autocorrelation is assumed to be in long time regime (for effective_N calculation)")
   call param_register(cli_params, "summed_ac_effective_N", "F", do_summed_ac_effective_N, help_string="calculate Sokals's summed_ac \tau_{int} based effective N from integrated autocorrelation")
+  call param_register(cli_params, "summed_ac_effective_N_max_lag", "1001", &
+    summed_ac_effective_N_max_lag, help_string="max lag to calculate autocorrelation estimator for summed_ac effective N")
   call param_register(cli_params, "sliding_window_effective_N", "F", do_sliding_window_effective_N, help_string="calculate Kerl's sliding_window \tau_{int} based effective N from fancy integrated autocorrelation")
   call param_register(cli_params, "sliding_window_effective_N_max_k", "1001", &
     sliding_window_effective_N_max_k, help_string="max lag to calculate autocorrelation estimator for sliding window effective N")
@@ -450,7 +453,7 @@ implicit none
     endif 
     if (do_summed_ac_effective_N) then
       allocate(summed_ac_effective_N(sz))
-      call calc_summed_ac_effective_N(size(data,reduction_index), data_correl, over_bins, summed_ac_effective_N)
+      call calc_summed_ac_effective_N(size(data,reduction_index), data_correl, over_bins, summed_ac_effective_N_max_lag, summed_ac_effective_N)
     endif 
   endif ! do_correl or do_effective_N
   if (do_sliding_window_effective_N) then
