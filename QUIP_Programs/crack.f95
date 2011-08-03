@@ -390,7 +390,7 @@ program crack
   if (params%io_timing) call enable_timing()
 
   call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
-  call read(bulk_cell, trim(stem)//'_bulk.xyz')
+  call read(bulk_cell, trim(stem)//'_bulk.xyz', mpi=mpi_glob)
 
   call print ("Initialising classical potential with args " // trim(params%classical_args) &
        // " from file " // trim(xmlfilename))
