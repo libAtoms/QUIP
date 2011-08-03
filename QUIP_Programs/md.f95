@@ -75,6 +75,7 @@ subroutine get_params(params, mpi_glob)
   character(len=FIELD_LENGTH) :: print_property_list_str
   integer :: n_print_property_list
   logical :: has_N_steps
+  logical p_ext_is_present
 
   call initialise(md_params_dict)
   call param_register(md_params_dict, 'atoms_in_file', 'stdin', params%atoms_in_file, help_string="Initial atomic data file name")
@@ -84,14 +85,14 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
   call param_register(md_params_dict, 'dt', '1.0', params%dt, help_string="Time step of the verlet iteration (femtoseconds)")
-  call param_register(md_params_dict, 'T', '-1.0', params%T_initial, help_string="(Initial) Simulation temperature (Kelvin)")
-  call param_register(md_params_dict, 'T_final', '-1.0', params%T_final, help_string="Final simulation temperature, if >= 0.0 (in case of variable_T)")
+  ! call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
+  ! call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
+  ! call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
+  call param_register(md_params_dict, 'T', '-1.0', params%T_initial, help_string="Initial simulation temperature (Kelvin), enables const_T if >= 0.0")
+  call param_register(md_params_dict, 'T_final', '-1.0', params%T_final, help_string="Final simulation temperature (enables variable_T if >= 0.0)")
   call param_register(md_params_dict, 'T_increment', '10.0', params%T_increment, help_string="Temperature increments for variable_T")
   call param_register(md_params_dict, 'T_increment_time', '10.0', params%T_increment_time, help_string="time to wait between increments of T")
-  call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure")
-  call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
-  call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
-  call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
+  call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure (GPa), enables const_P if set explicitly", has_value_target=p_ext_is_present)
   call param_register(md_params_dict, 'damping', 'F', params%damping, help_string="if true, do damping")
   call param_register(md_params_dict, 'damping_tau', '10.0', params%damping_tau, help_string="time constant for damped MD")
   call param_register(md_params_dict, 'rescale_initial_velocity', 'F', params%rescale_initial_velocity, help_string="if true, rescale initial velocity so T=rescale_initial_velocity_T")
@@ -141,6 +142,13 @@ subroutine get_params(params, mpi_glob)
      call system_abort("get_params got empty pot_init_args")
   end if
   call finalise(md_params_dict)
+
+  params%const_P = .false.
+  params%const_T = .false.
+  params%variable_T = .false.
+  if (p_ext_is_present) params%const_P = .true.
+  if (params%T_initial >= 0.0_dp) params%const_T = .true.
+  if (params%T_final >= 0.0_dp) params%variable_T = .true.
 
   system_use_fortran_random = params%use_fortran_random
 
