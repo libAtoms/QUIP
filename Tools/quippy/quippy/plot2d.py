@@ -76,11 +76,11 @@ def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref
     return p
 
 def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
-    ref_force = getattr(ref_configs, force_ref_name)
-    ref_force.reshape(ref_force.size)
+    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
+    ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = getattr(configs, force_name)
-    force.reshape(force.size)
+    force = numpy.hstack(getattr(configs, force_name))
+    force = force.reshape(force.size, order='F')
                             
     s = scatter(abs(ref_force), abs(ref_force - force), *plot_args, **plot_kwargs)
     xlim(0, abs(ref_force).max())
@@ -138,10 +138,10 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
     
 
 def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
-    ref_force = getattr(ref_configs, force_ref_name)
+    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = getattr(configs, force_name)
+    force = numpy.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
 
     plot(abs(force - ref_force), *plot_args, **plot_kwargs)
