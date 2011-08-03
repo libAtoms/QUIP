@@ -58,6 +58,8 @@ p.add_option('-F', '--extract-format', action='store', help="""Format used to pr
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`, and do_print is set to True. If the user-supplied code sets do_print to False, the frame is not printed.""")
 p.add_option('-E', '--exec-code-file', action='store', help="""File with python code to execute, just like -e/--exec-code.""")
+p.add_option('-B', '--exec-before', action='store', help="""Python code to execute after looping over frames""")
+p.add_option('-A', '--exec-after', action='store', help="""Python code to execute after looping over frames""")
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
@@ -73,7 +75,7 @@ p.add_option('--property', action='store', help="""Property to use to colour ato
 p.add_option('--arrows', action='store', help="""Property to use to draw arrows (default none)""")
 p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
 p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
-p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", type='float')
+p.add_option('--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", type='float')
 p.add_option('-c', '--centre', action='store', help="Atom index or position on which to centre view")
 
 # CASTEP specific output options
@@ -315,6 +317,8 @@ if show_progress:
    from quippy.progbar import ProgressBar
    pb = ProgressBar(0,len(all_configs),80,showValue=True)
 
+if opt.exec_before is not None:
+   exec(opt.exec_before)
 for i, at in enumerate(all_configs):
    try:
       process(at, i)
@@ -324,6 +328,9 @@ for i, at in enumerate(all_configs):
 
 if show_progress:
    print
+
+if opt.exec_after is not None:
+   exec(opt.exec_after)
                     
 if outfile is not None:
    try:
