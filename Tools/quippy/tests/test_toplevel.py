@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest, glob, os, sys, quippy
-from quippy import QUIP_ROOT, QUIP_ARCH
+from quippy import QUIP_ROOT, QUIP_ARCH, QUIP_MAKEFILE
 from quippytest import *
 
 mpi_n_cores = [1, 2, 4]
@@ -28,6 +28,14 @@ class Test_TopLevel(QuippyTestCase):
 def make_test(script, env=None):
     def run_script(self):
         if env is not None: os.environ.update(env)
+
+        predicate = [L for L in open(script).readlines() if L.startswith('#PREDICATE:')]
+        if predicate != []:
+            predicate = predicate[0][len('#PREDICATE:'):]
+            if not eval(predicate):
+                print 'Predicate %s is false, skipping test' % predicate
+                return
+            
         exitcode = os.system(script)
         if exitcode != 0:
             self.fail()
