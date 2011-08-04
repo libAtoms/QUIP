@@ -75,7 +75,6 @@ module dynamicalsystem_module
    integer, parameter :: TYPE_ATOM        = 1
    integer, parameter :: TYPE_CONSTRAINED = 2
    integer, parameter :: TYPE_RIGID       = 3
-   real(dp), parameter :: min_ext_p = 1.0e-4_dp / GPA
 
    type DynamicalSystem 
 
@@ -860,7 +859,7 @@ contains
            gamma_cell = gamma_eff * 0.1_dp
         endif
         select case(type)
-        case(LANGEVIN_NPT,NPH_ANDERSEN)
+        case(LANGEVIN_NPT,NPH_ANDERSEN,LANGEVIN_NPT_NB)
            mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((gamma_cell*2*PI)**2)
            mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)
            w_p = max(mass1,mass2)
@@ -963,7 +962,7 @@ contains
         my_T = optional_default(this%thermostat(my_i)%T,T)
         
         select case(this%thermostat(my_i)%type)
-        case(LANGEVIN_NPT,NPH_ANDERSEN)
+        case(LANGEVIN_NPT,NPH_ANDERSEN,LANGEVIN_NPT_NB)
            mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
            mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
            w_p = max(mass1,mass2)
@@ -1694,7 +1693,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat1(this%thermostat(0),this%atoms,dt,'damp_mask',1)
+        call thermostat_pre_vel1(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1703,7 +1702,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      do i = 1, ntherm
-        call thermostat1(this%thermostat(i),this%atoms,dt,'thermostat_region',i,virial)
+        call thermostat_pre_vel1(this%thermostat(i),this%atoms,dt,'thermostat_region',i,virial)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1776,7 +1775,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
+        call thermostat_post_vel1_pre_pos(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1786,7 +1785,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      do i=1, ntherm
-        call thermostat2(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
+        call thermostat_post_vel1_pre_pos(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
  
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1863,6 +1862,27 @@ contains
         end select
 
      end do
+
+     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     !X
+     !X DAMPING
+     !X
+     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+     if (this%thermostat(0)%type==LANGEVIN) then
+        call thermostat_post_pos_pre_calc(this%thermostat(0),this%atoms,dt,'damp_mask',1)
+     end if
+
+     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     !X
+     !X THERMOSTATTING
+     !X
+     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+     do i=1, ntherm
+        call thermostat_post_pos_pre_calc(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
+     end do
+ 
 
 #ifdef _MPI
      ! Broadcast the new positions, velocities, accelerations and possibly constraint forces
@@ -1990,7 +2010,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat3(this%thermostat(0),this%atoms,f,dt,'damp_mask',1)
+        call thermostat_post_calc_pre_vel2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2000,7 +2020,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      do i = 1, ntherm
-        call thermostat3(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i)
+        call thermostat_post_calc_pre_vel2(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2098,7 +2118,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat4(this%thermostat(0),this%atoms,f,dt,'damp_mask',1)
+        call thermostat_post_vel2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2108,7 +2128,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      do i = 1, ntherm
-        call thermostat4(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i,virial)
+        call thermostat_post_vel2(this%thermostat(i),this%atoms,dt,'thermostat_region',i,virial)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

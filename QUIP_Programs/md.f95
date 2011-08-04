@@ -59,6 +59,7 @@ private
     real(dp) :: extra_heat
     logical :: continuation
     logical :: use_fortran_random
+logical :: NPT_NB
   end type md_params
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
@@ -93,6 +94,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'T_increment', '10.0', params%T_increment, help_string="Temperature increments for variable_T")
   call param_register(md_params_dict, 'T_increment_time', '10.0', params%T_increment_time, help_string="time to wait between increments of T")
   call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure (GPa), enables const_P if set explicitly", has_value_target=p_ext_is_present)
+call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="use NPT_NB algorithm for constant P")
   call param_register(md_params_dict, 'damping', 'F', params%damping, help_string="if true, do damping")
   call param_register(md_params_dict, 'damping_tau', '10.0', params%damping_tau, help_string="time constant for damped MD")
   call param_register(md_params_dict, 'rescale_initial_velocity', 'F', params%rescale_initial_velocity, help_string="if true, rescale initial velocity so T=rescale_initial_velocity_T")
@@ -385,7 +387,7 @@ subroutine initialise_md_thermostat(ds, params)
 
   if(params%rescale_initial_velocity) then
     call print('Rescaling initial velocities to T='//params%rescale_initial_velocity_T)
-    call rescale_velo(ds, params%rescale_initial_velocity_T, mass_weighted=.true., zero_L=.true.)
+    call rescale_velo(ds, params%rescale_initial_velocity_T, mass_weighted=.true., zero_L=params%zero_angular_momentum)
   endif
 
   params%T_cur = cur_temp(params, ds%t)
@@ -411,12 +413,16 @@ subroutine initialise_md_thermostat(ds, params)
     endif
     ds%atoms%thermostat_region = 1
   elseif (params%const_T.and.params%const_P) then
-    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext )
+    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/GPA )
     if (params%open_langevin_NH_tau > 0) then
        call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
+       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
     else
-       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext)
+       if (params%NPT_NB) then
+	  call add_thermostat(ds,  LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+       else
+	  call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+       endif
     endif
     ds%atoms%thermostat_region = 1
     if (.not.params%calc_virial) then

@@ -33,7 +33,7 @@
 !X
 !% This module contains the implementations for all the thermostats available
 !% in libAtoms: Langevin, Nose-Hoover and Nose-Hoover-Langevin. 
-!% Each thermostat has its own section in the 'thermostat1-4' subroutines,
+!% Each thermostat has its own section in the 'thermostat_pre_vel1-4' subroutines,
 !% which interleave the usual velocity verlet steps.
 !%
 !% All Langevin variants with Q > 0 are open Langevin, from Jones & Leimkuhler 
@@ -63,7 +63,8 @@ module thermostat_module
                         LANGEVIN_PR          = 5, &
                         NPH_ANDERSEN         = 6, &
                         NPH_PR               = 7, &
-                        LANGEVIN_OU          = 8
+                        LANGEVIN_OU          = 8, &
+			LANGEVIN_NPT_NB      = 9
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
@@ -271,6 +272,17 @@ contains
        this%T = T
        this%gamma = gamma
        this%Q = use_Q
+
+    case(LANGEVIN_NPT_NB)
+
+       if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not. present(W_p) ) &
+       & call system_abort('thermostat initialise: p, gamma, gamma_p, W_p and volume_0 are required for Langevin NPT baro-thermostat')
+       this%T = T
+       this%gamma = gamma
+       this%Q = use_Q
+       this%p = p
+       this%gamma_p = gamma_p
+       this%W_p = W_p
 
     end select
 
@@ -540,6 +552,12 @@ contains
        call print('Langevin OU, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
+    case(LANGEVIN_NPT_NB)
+       call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
+	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+
+
     end select
     
   end subroutine thermostat_print
@@ -617,20 +635,24 @@ contains
   !X These routines interleave the usual velocity Verlet steps and should modify 
   !X the velocities and accelerations as required:
   !X
-  !X (thermostat1)
-  !X v(t+dt/2) = v(t) + a(t)dt/2
-  !X (thermostat2)
-  !X r(t+dt) = r(t) + v(t+dt/2)dt
-  !X (thermostat3)
-  !X v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
-  !X (thermostat4)
+  !X advance_verlet1
+  !X   (thermostat_pre_vel1)
+  !X   v(t+dt/2) = v(t) + a(t)dt/2
+  !X   (thermostat_post_vel1_pre_pos)
+  !X   r(t+dt) = r(t) + v(t+dt/2)dt
+  !X   (thermostat_post_pos_pre_calc)
+  !X calc F, virial
+  !X advance_verlet2
+  !X   (thermostat_post_calc_pre_vel2)
+  !X   v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
+  !X   (thermostat_post_vel2)
   !X
   !X A thermostat can be applied to part of the atomic system by passing an integer
   !X atomic property and the value it must have.
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine thermostat1(this,at,dt,property,value,virial)
+  subroutine thermostat_pre_vel1(this,at,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
@@ -647,7 +669,7 @@ contains
     real(dp) :: delta_K
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
-       call system_abort('thermostat1: cannot find property '//property)
+       call system_abort('thermostat_pre_vel1: cannot find property '//property)
     end if
  
     select case(this%type)
@@ -714,7 +736,7 @@ contains
 !	  ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
        end do
-!       call print("Thermostat " // value //" thermostat1 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
+!       call print("Thermostat " // value //" thermostat_pre_vel1 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Propagate the work for dt/2
        if (this%Q > 0.0_dp) then
@@ -757,6 +779,8 @@ contains
 	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
        endif
 
+       ! advance_verlet1 will do conservative + random force parts of v half step
+
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
        !X LANGEVIN NPT, Andersen barostat
@@ -764,7 +788,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(LANGEVIN_NPT)
               
-       if( .not. present(virial) ) call system_abort('thermostat1: NPT &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
 
        this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
@@ -810,7 +834,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(LANGEVIN_PR)
               
-       if( .not. present(virial) ) call system_abort('thermostat1: NPT &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
 
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
@@ -859,7 +883,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(NPH_ANDERSEN)
               
-       if( .not. present(virial) ) call system_abort('thermostat1: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPH &
        & simulation, but virial has not been passed')
 
        this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
@@ -889,7 +913,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(NPH_PR)
               
-       if( .not. present(virial) ) call system_abort('thermostat1: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPH &
        & simulation, but virial has not been passed')
 
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
@@ -932,26 +956,66 @@ contains
 	  end do
        endif
 
+    case(LANGEVIN_NPT_NB)
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
+	  simulation, but virial has not been passed')
+
+       ! half step epsilon_v, drag and force (from last step) parts 
+       this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_p)
+       this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_p
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       else
+	  this%eta = 0.0_dp
+       endif
+
+       ! half step Langevin drag part of v
+       decay = exp(-0.5_dp*dt*(this%gamma+this%eta))
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+
+       ! half step barostat drag part of v
+       decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       at%velo = at%velo*decay
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       endif
+
+
+       ! half step position affine defomration
+       lattice_p = at%lattice
+       call set_lattice(at, lattice_p*exp(0.5_dp*dt*this%epsilon_v), scale_positions=.false.)
+       at%pos = at%pos*exp(0.5_dp*dt*this%epsilon_v)
+
     end select
 
-  end subroutine thermostat1
+  end subroutine thermostat_pre_vel1
   
-  subroutine thermostat2(this,at,dt,property,value)
+  subroutine thermostat_post_vel1_pre_pos(this,at,dt,property,value)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
     real(dp),         intent(in)    :: dt
-!NB    real(dp),         intent(in)    :: f(:,:)
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
 
     integer, pointer, dimension(:) :: prop_ptr
     
     if (.not. assign_pointer(at,property,prop_ptr)) then
-       call system_abort('thermostat2: cannot find property '//property)
+       call system_abort('thermostat_post_vel1_pre_pos: cannot find property '//property)
     end if
     
-!    select case(this%type)
+    select case(this%type)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
@@ -985,16 +1049,38 @@ contains
 
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-       
-!    end select
 
-  end subroutine thermostat2
+    end select
 
-  subroutine thermostat3(this,at,f,dt,property,value)
+  end subroutine thermostat_post_vel1_pre_pos
+
+  subroutine thermostat_post_pos_pre_calc(this,at,dt,property,value)
+
+    type(thermostat), intent(inout) :: this
+    type(atoms),      intent(inout) :: at
+    real(dp),         intent(in)    :: dt
+    character(*),     intent(in)    :: property
+    integer,          intent(in)    :: value
+
+    real(dp) :: lattice_p(3,3)
+
+    select case(this%type)
+
+      case(LANGEVIN_NPT_NB)
+
+        ! half step position affine defomration
+        lattice_p = at%lattice
+        call set_lattice(at, lattice_p*exp(0.5_dp*dt*this%epsilon_v), scale_positions=.false.)
+        at%pos = at%pos*exp(0.5_dp*dt*this%epsilon_v)
+
+    end select
+
+  end subroutine thermostat_post_pos_pre_calc
+
+  subroutine thermostat_post_calc_pre_vel2(this,at,dt,property,value)
     
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
-    real(dp),         intent(in)    :: f(:,:)
     real(dp),         intent(in)    :: dt
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
@@ -1005,7 +1091,7 @@ contains
     real(dp) :: delta_K
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
-       call system_abort('thermostat3: cannot find property '//property)
+       call system_abort('thermostat_post_calc_pre_vel2: cannot find property '//property)
     end if
 
     select case(this%type)
@@ -1016,7 +1102,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    case(LANGEVIN,LANGEVIN_NPT,LANGEVIN_PR)
+    case(LANGEVIN,LANGEVIN_NPT,LANGEVIN_PR,LANGEVIN_NPT_NB)
      
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
@@ -1071,13 +1157,12 @@ contains
 
     end select
 
-  end subroutine thermostat3
+  end subroutine thermostat_post_calc_pre_vel2
   
-  subroutine thermostat4(this,at,f,dt,property,value,virial)
+  subroutine thermostat_post_vel2(this,at,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
-    real(dp),         intent(in)    :: f(:,:)
     real(dp),         intent(in)    :: dt
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
@@ -1092,10 +1177,11 @@ contains
     real(dp) :: OU_random_dv_mag
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
-       call system_abort('thermostat4: cannot find property '//property)
+       call system_abort('thermostat_post_vel2: cannot find property '//property)
     end if
     
     select case(this%type)
+
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
@@ -1149,7 +1235,7 @@ contains
           at%velo(:,i) = at%velo(:,i)*decay
           K = K + at%mass(i)*normsq(at%velo(:,i))
        end do
-!       call print("Thermostat " // value //" thermostat4 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
+!       call print("Thermostat " // value //" thermostat_post_vel2 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Calculate new f_eta...
        this%f_eta = 0.0_dp
@@ -1208,12 +1294,57 @@ contains
        this%p_eta = this%p_eta + 0.5_dp*this%f_eta*dt
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt)
 
+    case(LANGEVIN_NPT_NB)
+
+       call system_resync_rng()
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       else
+	  this%eta = 0.0_dp
+       endif
+
+       !Decay the velocities for dt/2 again Langevin part
+       decay = exp(-0.5_dp*dt*(this%gamma+this%eta))
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       endif
+       
+
+       !Decay the velocities for dt/2 again barostat part
+       decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       do i = 1, at%N
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+
+       ! half step with epsilon force
+       volume_p = cell_volume(at)
+       f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
+       this%epsilon_f = (trace(virial)+sum(at%mass*sum(at%velo**2,dim=1))-3.0_dp*volume_p*this%p) + &
+	  3.0_dp/this%Ndof*sum(at%mass*sum(at%velo**2,dim=1)) + f_cell
+       this%epsilon_f = this%epsilon_f + f_cell
+       this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_p
+
+       ! half step with epsilon drag
+       this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_p)
+
     case(LANGEVIN_NPT)
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
 
-       if( .not. present(virial) ) call system_abort('thermostat4: NPT &
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPT &
        & simulation, but virial has not been passed')
 
        f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
@@ -1255,7 +1386,7 @@ contains
 
     case(LANGEVIN_PR)
 
-       if( .not. present(virial) ) call system_abort('thermostat4: NPT Parrinello-Rahman&
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPT Parrinello-Rahman&
        & simulation, but virial has not been passed')
 
        if (this%Q > 0.0_dp) then
@@ -1293,7 +1424,7 @@ contains
 
     case(NPH_ANDERSEN)
 
-       if( .not. present(virial) ) call system_abort('thermostat4: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPH &
        & simulation, but virial has not been passed')
 
        !Decay the velocities for dt/2 again
@@ -1316,7 +1447,7 @@ contains
 
     case(NPH_PR)
 
-       if( .not. present(virial) ) call system_abort('thermostat4: NPH Parrinello-Rahman&
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPH Parrinello-Rahman&
        & simulation, but virial has not been passed')
 
        !Decay the velocities for dt/2 again
@@ -1368,7 +1499,7 @@ contains
 
     end select
 
-  end subroutine thermostat4
+  end subroutine thermostat_post_vel2
 
    function open_Langevin_delta_K(N, mass, velo, Ndof, T, prop_ptr, value) result(delta_K)
       integer, intent(in) :: N
