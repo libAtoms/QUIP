@@ -126,6 +126,8 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    !Forces
 
+   force = 0.0_dp
+
    if(rO1 .feq. 0.0_dp) then
       drO1 = 0.0_dp
    else
