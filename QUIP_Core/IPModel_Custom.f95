@@ -126,8 +126,17 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    !Forces
 
-   drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
-   drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
+   if(rO1 .feq. 0.0_dp) then
+      drO1 = 0.0_dp
+   else
+      drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
+   end if
+
+   if(rO2 .feq. 0.0_dp) then
+      drO2 = 0.0_dp
+   else
+      drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
+   end if
 
    force(:,1) = 2.0_dp*this%kConf*rO1*drO1 
    force(:,4) = 2.0_dp*this%kConf*rO2*drO2 
