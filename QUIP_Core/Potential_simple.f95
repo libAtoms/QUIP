@@ -1009,14 +1009,9 @@ contains
 
        end if
 
-       if (force_using_fd) then ! do forces by finite difference
+       if (force_using_fd .and. len_trim(calc_force) > 0) then ! do forces by finite difference
 
           call print("Calculating force by finite differences with displacement="//force_fd_delta, PRINT_VERBOSE)
-
-          if (.not. len_trim(calc_force) > 0) then
-             RAISE_ERROR("Potential_Simple_Calc: force calculation by finite difference requires that you must specify 'force' in the argument string as well as 'force_using_fd'.", error) ! otherwise there might be no 'force' property to store the force into 
-          end if
-
 
           ! must remove 'force_using_fd' from args_str if it's there (and the rest, or properties get overwritten)
           call initialise(params)
