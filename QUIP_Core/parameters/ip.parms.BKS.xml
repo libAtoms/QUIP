@@ -1,0 +1,19 @@
+<BKS_params>
+  <Potential label="BKS" init_args="Sum init_args_pot1={IP Coulomb label=BKS_Coulomb} init_args_pot2={IP BornMayer label=BKS_BornMayer}">
+    <comment>BKS potential for silica, from PRL v64 p1955--1958 (1990)  </comment>
+  </Potential>
+
+  <BornMayer_params n_types="2" label="BKS_BornMayer">
+    <per_type_data type="1" atomic_num="8" />
+    <per_type_data type="2" atomic_num="14" />
+    
+    <per_pair_data atnum_i="8" atnum_j="8" A="1388.7730"  b="2.76000" c="175.0" cutoff="10.0"  energy_shift="T" linear_force_shift="F" />
+    <per_pair_data atnum_i="8" atnum_j="14" A="18003.7572" b="4.87318" c="133.5381" cutoff="10.0"  energy_shift="T" linear_force_shift="F" />
+    <per_pair_data atnum_i="14" atnum_j="14" A="0.0" b="0.0" c="0.0" cutoff="0.0"  energy_shift="T" linear_force_shift="F" />
+  </BornMayer_params>
+
+  <Coulomb_params n_types="2" cutoff="6.0" method="ewald" ewald_error="1.0e-6" label="BKS_Coulomb">
+    <per_type_data type="1" atomic_num="8" charge="-1.2"/>
+    <per_type_data type="2" atomic_num="14" charge="2.4"/>
+  </Coulomb_params>
+</BKS_params>
