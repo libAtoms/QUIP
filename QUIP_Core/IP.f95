@@ -53,6 +53,7 @@
 !%    \item    Coulomb potential ({\bf IPModel_Coulomb})
 !%    \item    Sutton-Chen potential ({\bf IPModel_Sutton_Chen})
 !%    \item    Simple potential for an HF dimer ({\bf IPModel_HFdimer})
+!%    \item    2-body potential for water dimer ({\bf IPModel_WaterDimer_Gillan})
 !%    \item    Born-Mayer potential ({\bf IPModel_BornMayer})
 !%    \item    Customised (hardwired) potential (\{\bf IPModel_Custom})
 !%    \item    Template potential ({\bf IPModel_Template})
@@ -85,6 +86,7 @@
 !%    \item    'IP Sutton_Chen'
 !%    \item    'IP HFdimer'
 !%    \item    'IP BornMayer'
+!%    \item    'IP_WaterDimer_Gillan'
 !%    \item    'IP Custom'
 !%    \item    'IP Template'
 !%   \end{itemize}
@@ -126,6 +128,7 @@ use IPModel_KIM_module
 #endif
 use IPModel_FX_module
 use IPModel_HFdimer_module
+use IPModel_WaterDimer_Gillan_module
 use IPModel_BornMayer_module
 use IPModel_Custom_module
 use IPModel_SW_VP_module
@@ -139,7 +142,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
-     FF_BornMayer = 27, &! Add new IPs here
+     FF_BornMayer = 27, FF_WaterDimer_Gillan=28, &! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -177,6 +180,7 @@ type IP_type
   type(IPModel_Custom) ip_Custom
   type(IPModel_HFdimer) ip_HFdimer 
   type(IPModel_SW_VP) ip_sw_vp
+  type(IPModel_WaterDimer_Gillan) ip_waterdimer_gillan
      ! Add new IP here
   type(IPModel_Template) ip_Template
   type(mpi_context) :: mpi_glob, mpi_local
@@ -284,7 +288,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_Template, is_SW_VP
+       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_Template, is_SW_VP, is_WaterDimer_Gillan
   ! Add new IPs here
 
   INIT_ERROR(error)
@@ -327,6 +331,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'Custom', 'false', is_Custom, help_string="Customised (hard wired) potential")
   call param_register(params, 'HFdimer', 'false', is_HFdimer, help_string="HF dimer potential")
   call param_register(params, 'SW_VP', 'false', is_SW_VP, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'WaterDimer_Gillan', 'false', is_WaterDimer_Gillan, help_string='Water Dimer 2-body potential by Mike Gillan')
  ! Add new IP here
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
 
@@ -337,7 +342,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, &       ! add new IPs here
+       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,&       ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -427,6 +432,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_SW_VP) then
     this%functional_form = FF_SW_VP
     call Initialise(this%ip_sw_vp, args_str, param_str)
+ else if (is_WaterDimer_Gillan) then
+    this%functional_form = FF_WaterDimer_Gillan
+    call Initialise(this%ip_waterdimer_gillan, args_str, param_str)
     ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -500,6 +508,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_HFdimer)
    case (FF_SW_VP)
       call Finalise(this%ip_sw_vp)
+   case (FF_WaterDimer_Gillan)
+      call Finalise(this%ip_waterdimer_gillan)
       ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
@@ -570,6 +580,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_HFdimer%cutoff
   case (FF_SW_VP)
      IP_cutoff = this%ip_sw_vp%cutoff 
+  case (FF_WaterDimer_Gillan)
+     IP_cutoff = this%ip_waterdimer_gillan%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
@@ -667,6 +679,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_HFdimer, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_SW_VP)
       call calc(this%ip_sw_vp, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_WaterDimer_Gillan)
+      call calc(this%ip_waterdimer_gillan, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    ! Add new IP here   
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -746,6 +760,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_HFdimer, file=file)
    case (FF_SW_VP)
       call Print(this%ip_sw_vp, file=file)
+   case (FF_WaterDimer_Gillan)
+      call Print(this%ip_waterdimer_gillan, file=file)
     ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)
