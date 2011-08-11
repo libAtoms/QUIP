@@ -4653,8 +4653,8 @@ CONTAINS
    end subroutine sort_array_i
 
 
-   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
-   !% i_data is an accompanying array of integers on which the same reordering is performed
+   !% Sort an array of reals into ascending order (slow: scales as N$^2$).
+   !% i_data/r_data is an accompanying array of integers/reals on which the same reordering is performed
    subroutine sort_array_r(array, i_data,r_data)
 
       real(dp), dimension(:), intent(inout) :: array
