@@ -50,7 +50,7 @@ implicit none
      infilename = 'stdin'
      outfilename = 'stdout'
   else
-     call system_abort("Usage: convert infile.{xyz|nc} outfile.{xyz|nc}")
+     call system_abort("Usage: convert [ infile.{xyz|nc} outfile.{xyz|nc} ]")
   end if
 
   call initialise(infile, trim(infilename))
