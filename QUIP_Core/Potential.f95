@@ -1731,7 +1731,7 @@ end subroutine pack_pos_dg
      call close_xml_t(fxml)
 
      if(.not. parse_in_pot_done) &
-     call system_abort('Potential_read_params_xml: could not initialise potential from xml_label.')
+     call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str='//trim(param_str))
 
   endsubroutine Potential_read_params_xml
 
