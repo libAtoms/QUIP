@@ -495,7 +495,9 @@ contains
 
        do n = 1, atoms_n_neighbours(at,i)
           j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=my_cutoff) ! nth neighbour of atom i
-           
+          if (j <= 0) cycle
+          if (r_ij .feq. 0.0_dp) cycle
+          
           v_ij = erfc(alpha*r_ij) / r_ij 
           phi_i = phi_i + charge(j) * ( v_ij - v_cutoff + dv_cutoff * (r_ij - my_cutoff) )
 
