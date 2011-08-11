@@ -98,6 +98,7 @@ contains
     ! copy data
     this%x = x
     this%y = y
+    call sort_array(this%x, r_data=this%y)
     this%yp1 = yp1
     this%ypn = ypn
 
