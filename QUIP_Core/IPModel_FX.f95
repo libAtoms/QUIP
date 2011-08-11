@@ -61,7 +61,7 @@ type IPModel_FX
    real(dp) :: two_body_weight_roo = 0.0_dp
    real(dp) :: two_body_weight_delta = 0.0_dp
    logical  :: do_two_body_weight = .false.
-   type(Spline) :: weight
+   type(Spline) :: two_body_weight
 end type IPModel_FX
 
 
@@ -137,7 +137,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   integer, dimension(:,:), allocatable :: water_monomer_index
   real(dp), allocatable :: one_body_energy(:), one_body_force(:,:), two_body_force(:,:)
   real(dp) :: watpos(3,3), wat2pos(3,6), watRR(3,3), watdRR(3,3), wat2RR(3,6), wat2dRR(3,6), wat2_force(3,6)
-  real(dp) :: two_body_energy, diff_iijj(3), watE, wat2E
+  real(dp) :: two_body_energy, diff_OiOj(3), watE, wat2E, two_body_energy_ij
   integer :: wat_rindex(3), wat2_rindex(6), watZ(3), wat2Z(6)
    real(dp):: weight, dweight(3), rOiOj
 
@@ -194,11 +194,11 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      allocate(one_body_force(3,at%N))
      ! compute monomer energies and forces
      do i=1,at%N/3
-        ii = water_monomer_index(1,i)
-        watpos(:,1) = at%pos(:,ii)
+        Oi = water_monomer_index(1,i)
+        watpos(:,1) = at%pos(:,Oi)
         watZ(1) = 8 ! Oxygen
-        watpos(:,2) = at%pos(:,ii)+diff_min_image(at, ii, water_monomer_index(2,i))
-        watpos(:,3) = at%pos(:,ii)+diff_min_image(at, ii, water_monomer_index(3,i))
+        watpos(:,2) = at%pos(:,Oi)+diff_min_image(at, Oi, water_monomer_index(2,i))
+        watpos(:,3) = at%pos(:,Oi)+diff_min_image(at, Oi, water_monomer_index(3,i))
         watZ(2:3) = 1 ! Hydrogens
 
         call nttm3f_readXYZ(1, watZ, watpos, watRR, wat_rindex)
@@ -251,7 +251,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
               if(this%do_two_body_weight) then
                  rOiOj = norm(diff_OiOj)
                  weight = spline_value(this%two_body_weight, rOiOj)
-                 dweight = spine_deriv(this%two_body_weight, rOiOj)
+                 dweight = spline_deriv(this%two_body_weight, rOiOj)
               else
                  weight = 1.0_dp
                  dweight = 0.0_dp
@@ -266,7 +266,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
               do k=1,3
                  kk = water_monomer_index(k, i)
                  two_body_force(:,kk) = two_body_force(:,kk) + (wat2_force(:,k)-one_body_force(:,kk))*weight
-                 if(k==1) two_body_force(:,kk) = two(body_force(:,kk) - two_body_energy_ij*dweight*diff_OiOj/rOiOj
+                 if(k==1) two_body_force(:,kk) = two_body_force(:,kk) - two_body_energy_ij*dweight*diff_OiOj/rOiOj
 
                  kk = water_monomer_index(k, j)
                  two_body_force(:,kk) = two_body_force(:,kk) + (wat2_force(:,3+k)-one_body_force(:,kk))*weight
@@ -308,7 +308,7 @@ subroutine IPModel_FX_Print(this, file)
   if(this%return_one_body) then
      call print("Returning 1-body term as a result of calc()", file=file)
   end if
-  if(this%two_body_weighting) then
+  if(this%do_two_body_weight) then
      call print("Two-body term is weighted with parameters x0="//this%two_body_weight_roo//" delta="//this%two_body_weight_delta, file=file)
   end if
 end subroutine IPModel_FX_Print
