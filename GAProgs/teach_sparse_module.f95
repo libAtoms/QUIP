@@ -388,7 +388,13 @@ contains
           call set_cutoff(at, max(cutoff(core_pot),this%r_cut))
           call calc_connect(at)
 
-          call calc(core_pot,at,energy=ener_core,force=f_core,virial=virial_core)
+          if(has_virial .and. has_force) then
+             call calc(core_pot,at,energy=ener_core,force=f_core,virial=virial_core)
+          elseif(has_force) then
+             call calc(core_pot,at,energy=ener_core,force=f_core)
+          else
+             call calc(core_pot,at,energy=ener_core)
+          endif
 
           if(has_ener) ener = ener - ener_core
           if(has_force) f = f - f_core
