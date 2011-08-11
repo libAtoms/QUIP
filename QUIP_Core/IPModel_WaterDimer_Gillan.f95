@@ -320,7 +320,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ... x-, y- and z-axes form a normal right-handed set.
 ! ... dipole vector
         init3d = 1
-        call lin3d_2(init3d,theta_deg,r1,r2,mux,muz,'')
+        call lin3d_2(init3d,theta_deg,r1,r2,mux,muz,repeat(' ',20))
         dipvec_0(1) = mux
         dipvec_0(2) = 0.d0
         dipvec_0(3) = muz
@@ -330,7 +330,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 !  132   format(3x,3f15.6)
 ! ... compute components of quadrupole tensor
         init3d = 1
-        call lin3d_3(init3d,theta_deg,r1,r2,qxx,qzz,qxz,'')
+        call lin3d_3(init3d,theta_deg,r1,r2,qxx,qzz,qxz,repeat(' ',20))
         quadten_0(1) = qxx
         quadten_0(2) = 0.d0
         quadten_0(3) = qxz
