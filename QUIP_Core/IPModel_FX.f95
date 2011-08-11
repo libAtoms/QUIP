@@ -55,7 +55,7 @@ include 'IPModel_interface.h'
 
 public :: IPModel_FX
 type IPModel_FX
-   real(dp) :: cutoff = 0.0_dp
+   real(dp) :: cutoff = 2.0_dp
    logical :: return_one_body = .false.
    logical :: return_two_body = .false.
    real(dp) :: two_body_weight_roo = 0.0_dp
@@ -188,6 +188,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      
      allocate(water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index, error)
+     call print(at)
      PASS_ERROR(error)
 
      allocate(one_body_energy(at%N/3))
