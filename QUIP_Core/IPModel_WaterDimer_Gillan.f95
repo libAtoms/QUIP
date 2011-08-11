@@ -59,6 +59,10 @@ public :: IPModel_WaterDimer_Gillan
 type IPModel_WaterDimer_Gillan
   real(dp) :: cutoff = 0.0_dp
   character(len=20) :: fname_d, fname_q
+  real(dp) :: two_body_weight_roo = 0.0_dp
+  real(dp) :: two_body_weight_delta = 0.0_dp
+  logical  :: do_two_body_weight = .false.
+  type(Spine) :: two_body_weight
 end type IPModel_WaterDimer_Gillan
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -82,14 +86,31 @@ end interface Calc
 
 contains
 
-subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str)
+subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, error)
   type(IPModel_WaterDimer_Gillan), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-
-  !  Add initialisation code here
-
+  integer, optional, intent(out) :: error
   integer:: init3d
   real(dp) :: theta, r1, r2, f1, f2, f3
+
+  INIT_ERROR(error)
+
+  call Finalise(this)
+
+
+  call initialise(params)
+  call param_register(params, 'two_body_weight_roo', '0.0', this%two_body_weight_roo, has_value_target=this%do_two_body_weight, help_string="if set, apply weight function to 2-body energy and force based on O-O distance. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
+  call param_register(params, 'two_body_weight_delta', '0.25', this%two_body_weight_delta, help_string="width of weighting function for  two_body energy and force based on O-O distance. For weighting to take effect, two_body_weight_roo needs to be explicitly set. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
+  
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_WaterDimer_Gillan_Initialise args_str')) then
+     RAISE_ERROR("IPModel_WaterDimer_Gillan_Init failed to parse args_str='"//trim(args_str)//"'", error)
+  endif
+  call finalise(params)
+
+
+  if(this%do_two_body_weight) then
+     call initialise(this%two_body_weight, (/this%two_body_weight_roo - this%two_body_weight_delta, this%two_body_weight_roo + this%two_body_weight_delta/), (/1.0_dp, 0.0_dp/), 0.0_dp, 0.0_dp)
+  end if
 
   ! read interpolation tables
   init3d = 0
@@ -99,6 +120,9 @@ subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str)
 
   call lin3d_2(init3d,theta,r1,r2,f1,f2, this%fname_d)
   call lin3d_3(init3d,theta,r1,r2,f1,f2,f3,this%fname_q)
+
+
+end subroutine IPModel_FX_Initialise_str
 
 
 end subroutine IPModel_WaterDimer_Gillan_Initialise_str
@@ -121,14 +145,13 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
-   ! Add calc() code here
-
-
    real(dp) :: dip_frac, pol_o, pol_h, c6oo, c6oh, c6hh
    real(dp) :: atpos(2,3,3), axis(3)
    real(dp) :: e_dqtot, e_ind, e_disp, elong_tot
    integer :: nmolec, init3d
    type(Quaternion) :: quat
+
+   real(dp):: weight, dweight(3), rOiOj
 
    INIT_ERROR(error)
 
@@ -168,7 +191,16 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
    ! make that call
    call h2o_dimer_far(dip_frac,pol_o,pol_h,c6oo,c6oh,c6hh,atpos,e_dqtot,e_ind,e_disp,elong_tot)
 
-   if (present(e)) e = elong_tot*HARTREE
+   if(this%do_two_body_weight) then
+      rOiOj = norm(diff_min_image(at, 1, 4))
+      weight = spline_value(this%two_body_weight, rOiOj)
+      dweight = spine_deriv(this%two_body_weight, rOiOj)
+   else
+      weight = 1.0_dp
+      dweight = 0.0_dp
+   end if
+
+   if (present(e)) e = elong_tot*HARTREE*weight
    if (present(local_e)) then
       call check_size('Local_E',local_e,(/at%N/),'IPModel_WaterDimer_Gillan_Calc', error)
       local_e = 0.0_dp
@@ -192,6 +224,9 @@ subroutine IPModel_WaterDimer_Gillan_Print(this, file)
 
   call Print("IPModel_WaterDimer_Gillan : WaterDimer_Gillan Potential", file=file)
   call Print("IPModel_WaterDimer_Gillan : cutoff = " // this%cutoff, file=file)
+  if(this%two_body_weighting) then
+     call print("Two-body term is weighted with parameters x0="//this%two_body_weight_roo//" delta="//this%two_body_weight_delta, file=file)
+  end if
 
 end subroutine IPModel_WaterDimer_Gillan_Print
 
