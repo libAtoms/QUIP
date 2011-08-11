@@ -199,7 +199,7 @@ contains
 
 
 #ifdef _OPENMP
-    !$omp parallel default(none) private(i, ji, j, ki, k, drij, drij_mag, ti, tj, tk, drij_dri, drij_drj, de, de_dr, de_drij, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i)
+    !$omp parallel default(none) private(i, ji, j, drij, drij_mag, ti, tj, drij_dri, drij_drj, de, de_dr, de_drij, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i) shared(this, at, e, virial, atom_mask_pointer, mpi, do_rescale_r, r_scale, f, local_e, local_virial)
 
     if (present(e)) private_e = 0.0_dp
     if (present(local_e)) then
