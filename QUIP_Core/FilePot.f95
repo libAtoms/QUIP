@@ -272,6 +272,10 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
      call print("FilePot: xyzfile=`"//trim(xyzfile)//"'", PRINT_VERBOSE)
      call system_command("rm -f "//trim(outfile), status=status)
      if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", PRINT_ALWAYS)
+     call system_command("rm -f "//trim(xyzfile)//".idx", status=status)
+     if (status /= 0) call print("WARNING: FilePot_calc failed to delete index file="//trim(xyzfile)//".idx before running filepot command", PRINT_ALWAYS)
+     call system_command("rm -f "//trim(outfile)//".idx", status=status)
+     if (status /= 0) call print("WARNING: FilePot_calc failed to delete index file="//trim(outfile)//".idx before running filepot command", PRINT_ALWAYS)
 
      ! Do we need to replicate cell to exceed min_cutoff ?
      if (this%min_cutoff .fne. 0.0_dp) then
@@ -349,6 +353,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   my_filepot_log = optional_default(.false., filepot_log)
 
+  call print('Filepot: reading back results from file '//trim(outfile))
   call read(at_out, outfile, error=error)
   PASS_ERROR(error)
 
