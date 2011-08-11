@@ -62,7 +62,7 @@ type IPModel_WaterDimer_Gillan
   real(dp) :: two_body_weight_roo = 0.0_dp
   real(dp) :: two_body_weight_delta = 0.0_dp
   logical  :: do_two_body_weight = .false.
-  type(Spine) :: two_body_weight
+  type(Spline) :: two_body_weight
 end type IPModel_WaterDimer_Gillan
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -89,6 +89,7 @@ contains
 subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, error)
   type(IPModel_WaterDimer_Gillan), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
+  type(Dictionary)                :: params
   integer, optional, intent(out) :: error
   integer:: init3d
   real(dp) :: theta, r1, r2, f1, f2, f3
@@ -122,10 +123,8 @@ subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, e
   call lin3d_3(init3d,theta,r1,r2,f1,f2,f3,this%fname_q)
 
 
-end subroutine IPModel_FX_Initialise_str
-
-
 end subroutine IPModel_WaterDimer_Gillan_Initialise_str
+
 
 subroutine IPModel_WaterDimer_Gillan_Finalise(this)
   type(IPModel_WaterDimer_Gillan), intent(inout) :: this
@@ -194,7 +193,7 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
    if(this%do_two_body_weight) then
       rOiOj = norm(diff_min_image(at, 1, 4))
       weight = spline_value(this%two_body_weight, rOiOj)
-      dweight = spine_deriv(this%two_body_weight, rOiOj)
+      dweight = spline_deriv(this%two_body_weight, rOiOj)
    else
       weight = 1.0_dp
       dweight = 0.0_dp
@@ -224,7 +223,7 @@ subroutine IPModel_WaterDimer_Gillan_Print(this, file)
 
   call Print("IPModel_WaterDimer_Gillan : WaterDimer_Gillan Potential", file=file)
   call Print("IPModel_WaterDimer_Gillan : cutoff = " // this%cutoff, file=file)
-  if(this%two_body_weighting) then
+  if(this%do_two_body_weight) then
      call print("Two-body term is weighted with parameters x0="//this%two_body_weight_roo//" delta="//this%two_body_weight_delta, file=file)
   end if
 
