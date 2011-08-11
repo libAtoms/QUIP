@@ -7,6 +7,8 @@ How to install gcc, python, and numpy to work with MacPorts 1.8.2
   port install hdf5-18 netcdf-devel +static
 For MacPorts 1.9.2, you don't need the '+atlas' in py26-numpy, and just 'netcdf' instead of 'netcdf-devel +static'
 
+For MacPorts 2.0.1, quippy works with python27, gcc44, hdf5-18, netcdf +netcdf4
+
 For elastic constanst, also need scipy:
   port install py26-scipy @0.7.1_0+gcc44
 
