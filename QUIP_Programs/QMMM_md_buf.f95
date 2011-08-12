@@ -360,6 +360,13 @@ program qmmm_md
          call print('  Thermostat_Type 7: 3 regions, by radius,')
          call print('                   each with its own Nose-Hoover thermostat')
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
+      elseif (Thermostat_Type.eq.8) then
+         call print('  Thermostat_Type 8: separate Langevin for each atom, useful only for open Langevin')
+         call print('  Langevin_Tau ' // Langevin_Tau)
+         call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
+	 if (.not.open_Langevin) then
+	    call system_abort("Without open langevin and Nose_Hoover_Tau > 0, just use regular Langevin Thermostat_Type=1")
+	 endif
       else
 	 call print('  Thermostat_Type '//thermostat_type//' unknown')
       endif
@@ -907,7 +914,7 @@ call print("MAIN CALLED CALC EVB")
      end if
 
      !Thermostat (only if not per-atom)
-     if (thermostat_type /= 3 .and. thermostat_type /= 4) then
+     if (thermostat_type /= 3 .and. thermostat_type /= 4 .and. thermostat_type /= 8) then
        call print(ds%thermostat)
      endif
 
@@ -1540,16 +1547,11 @@ contains
 	call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
 	call print('Added single Nose-Hoover Thermostat')
       case(3)
-	do i=1, ds%atoms%N
-	  call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
-	end do
+	call add_thermostats(ds,type=NOSE_HOOVER,n=ds%atoms%N,T=T,Q=1.0_dp, gamma=0.0_dp)
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover thermostat for each atom")
       case(4)
 	call add_thermostats(ds,type=NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
-	! do i=1, ds%atoms%N
-	  ! call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau)
-	! end do
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
       case(5)
@@ -1573,6 +1575,10 @@ contains
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
 	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
+      case(8)
+	call add_thermostats(ds,type=LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)
+	ds%print_thermostat_temps = .false.
+	call print("Added 1 Langevin thermostat for each atom")
       case default
 	call system_abort("add_thermostats: Unknown Thermostat_Type="//Thermostat_type)
     end select
@@ -1646,7 +1652,7 @@ contains
 	else
 	   ds%thermostat(1)%Q = -1.0_dp
 	endif
-      case(3, 4)
+      case(3, 4, 8)
 	do i=1, ds%atoms%N
 	  ds%thermostat(i)%Q = nose_hoover_mass(Ndof=3, T=T, tau=Nose_Hoover_tau)
 	end do
@@ -1686,7 +1692,7 @@ contains
 	  continue
       case(1, 2)
 	  at%thermostat_region = 1
-      case(3, 4)
+      case(3, 4, 8)
 	  do i=1, ds%atoms%N
 	    at%thermostat_region(i) = i
 	  end do
