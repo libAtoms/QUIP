@@ -613,8 +613,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 !   a file, which contains also the numbers of grid points and
 !   the upper and lower limits of x, y and z. On subsequent call
 !   with init3d != 0, sbrt uses linear interpolation to evaluate
-!   f1 and f2 at requested point (x,y,z). An error is reported
-!   if the requested point falls outside the limits.
+!   f1 and f2 at requested point (x,y,z).
 ! ---------------------------------------------------------------------
       subroutine lin3d_2(init3d,x,y,z,f1,f2,fname)
       implicit none
@@ -643,13 +642,10 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ---------------------------------------------------------------------
       if(init3d .eq. 0) then
         igotdata = 1
-        open(unit=21,file=trim(fname))
+        open(unit=21,file=fname)
         read(21,*) nxsup, xinf, xsup
         read(21,*) nysup, yinf, ysup
         read(21,*) nzsup, zinf, zsup
-        if((nxsup .gt. ngrid_mx) .or. (nysup .gt. ngrid_mx) .or.   (nzsup .gt. ngrid_mx)) then
-          stop
-        endif
         deltax = (xsup - xinf)/float(nxsup - 1)
         deltay = (ysup - yinf)/float(nysup - 1)
         deltaz = (zsup - zinf)/float(nzsup - 1)
@@ -657,54 +653,53 @@ end subroutine IPModel_WaterDimer_Gillan_Print
         do nx = 1, nxsup
           do ny = 1, nysup
             do nz = 1, nzsup
-              read(21,*) ix, iy, iz,          f1tab(ix,iy,iz), f2tab(ix,iy,iz)
+              read(21,*) ix, iy, iz,  f1tab(ix,iy,iz), f2tab(ix,iy,iz)
             enddo
           enddo
         enddo
         close(unit=21)
       else
-        if(((x - xinf)*(x - xsup) .gt. 0.d0) .or.   ((y - yinf)*(y - ysup) .gt. 0.d0) .or.  ((z - zinf)*(z - zsup) .gt. 0.d0)) then
-          write(*,921) x, y, z
-  921     format(//'error: x, y, z out of range: ',3e15.6)
-          stop
-        endif
         xi = (x - xinf)/deltax
-        ix = int(xi)
+        if((x - xinf) .lt. 0.d0) then
+          ix = 0
+        elseif(((x - xinf) .ge. 0.d0) .and. ((x - xsup) .le. 0.d0)) then
+          ix = int(xi)
+        else 
+          ix = nxsup - 2
+        endif
         px = xi - float(ix)
         qx = 1.d0 - px
         ix = ix + 1
-        if((ix .lt. 1) .or. (ix .gt. nxsup)) then
-          write(*,931) ix
-  931     format(//'error: index ix out of range: ',i10)
-          stop
-        endif
         eta = (y - yinf)/deltay
-        iy = int(eta)
+        if((y - yinf) .lt. 0.d0) then
+          iy = 0
+        elseif(((y - yinf) .ge. 0.d0) .and. ((y - ysup) .le. 0.d0)) then
+          iy = int(eta)
+        else 
+          iy = nysup - 2
+        endif
         py = eta - float(iy)
         qy = 1.d0 - py
         iy = iy + 1
-        if((iy .lt. 1) .or. (iy .gt. nysup)) then
-          write(*,932) iy
-  932     format(//'error: index iy out of range: ',i10)
-          stop
-        endif
         zeta = (z - zinf)/deltaz
-        iz = int(zeta)
+        if((z - zinf) .lt. 0.d0) then
+          iz = 0
+        elseif(((z - zinf) .ge. 0.d0) .and. ((z - zsup) .le. 0.d0)) then
+          iz = int(zeta)
+        else 
+          iz = nzsup - 2
+        endif
         pz = zeta - float(iz)
         qz = 1.d0 - pz
         iz = iz + 1
-        if((iz .lt. 1) .or. (iz .gt. nzsup)) then
-          write(*,933) iz
-  933     format(//'error: index iz out of range: ',i10)
-          stop
-        endif
-        f1 =   qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)  + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)  + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)   + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
-        f2 =   qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)   + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)   + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)  + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
+        f1 =      qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)    + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)   + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)   + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
+        f2 =      qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)    + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)   + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)   + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
       endif
 ! ---------------------------------------------------------------------
       return
     end subroutine lin3d_2
 ! =====================================================================
+
 
 ! =====================================================================
 !   sbrt lin3d_3: performs 3D linear interpolation to evaluate three
@@ -714,8 +709,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 !   a file, which contains also the numbers of grid points and
 !   the upper and lower limits of x, y and z. On subsequent call
 !   with init3d != 0, sbrt uses linear interpolation to evaluate
-!   f1, f2 and f3 at requested point (x,y,z). An error is reported
-!   if the requested point falls outside the limits.
+!   f1, f2 and f3 at requested point (x,y,z).
 ! ---------------------------------------------------------------------
       subroutine lin3d_3(init3d,x,y,z,f1,f2,f3,fname)
       implicit none
@@ -746,7 +740,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ---------------------------------------------------------------------
       if(init3d .eq. 0) then
         igotdata = 1
-        open(unit=21,file=trim(fname))
+        open(unit=21,file=fname)
         read(21,*) nxsup, xinf, xsup
         read(21,*) nysup, yinf, ysup
         read(21,*) nzsup, zinf, zsup
@@ -764,7 +758,13 @@ end subroutine IPModel_WaterDimer_Gillan_Print
         close(unit=21)
       else
         xi = (x - xinf)/deltax
-        ix = int(xi)
+        if((x - xinf) .lt. 0.d0) then
+          ix = 0
+        elseif(((x - xinf) .ge. 0.d0) .and. ((x - xsup) .le. 0.d0)) then
+          ix = int(xi)
+        else 
+          ix = nxsup - 2
+        endif
         px = xi - float(ix)
         qx = 1.d0 - px
         ix = ix + 1
@@ -774,7 +774,13 @@ end subroutine IPModel_WaterDimer_Gillan_Print
           stop
         endif
         eta = (y - yinf)/deltay
-        iy = int(eta)
+        if((y - yinf) .lt. 0.d0) then
+          iy = 0
+        elseif(((y - yinf) .ge. 0.d0) .and. ((y - ysup) .le. 0.d0)) then
+          iy = int(eta)
+        else 
+          iy = nysup - 2
+        endif
         py = eta - float(iy)
         qy = 1.d0 - py
         iy = iy + 1
@@ -784,7 +790,13 @@ end subroutine IPModel_WaterDimer_Gillan_Print
           stop
         endif
         zeta = (z - zinf)/deltaz
-        iz = int(zeta)
+        if((z - zinf) .lt. 0.d0) then
+          iz = 0
+        elseif(((z - zinf) .ge. 0.d0) .and. ((z - zsup) .le. 0.d0)) then
+          iz = int(zeta)
+        else 
+          iz = nzsup - 2
+        endif
         pz = zeta - float(iz)
         qz = 1.d0 - pz
         iz = iz + 1
@@ -793,14 +805,15 @@ end subroutine IPModel_WaterDimer_Gillan_Print
   933     format(//'error: index iz out of range: ',i10)
           stop
         endif
-        f1 =   qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)   + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)  + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)  + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
-        f2 =     qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)   + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)  + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)   + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
-        f3 =     qx*qy*qz*f3tab(ix,iy,iz) + qx*qy*pz*f3tab(ix,iy,iz+1)   + qx*py*qz*f3tab(ix,iy+1,iz) + qx*py*pz*f3tab(ix,iy+1,iz+1)   + px*qy*qz*f3tab(ix+1,iy,iz) + px*qy*pz*f3tab(ix+1,iy,iz+1)  + px*py*qz*f3tab(ix+1,iy+1,iz) + px*py*pz*f3tab(ix+1,iy+1,iz+1)
+        f1 =      qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)    + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)   + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)   + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
+        f2 =      qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)    + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)   + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)   + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
+        f3 =      qx*qy*qz*f3tab(ix,iy,iz) + qx*qy*pz*f3tab(ix,iy,iz+1)    + qx*py*qz*f3tab(ix,iy+1,iz) + qx*py*pz*f3tab(ix,iy+1,iz+1)   + px*qy*qz*f3tab(ix+1,iy,iz) + px*qy*pz*f3tab(ix+1,iy,iz+1)   + px*py*qz*f3tab(ix+1,iy+1,iz) + px*py*pz*f3tab(ix+1,iy+1,iz+1)
       endif
 ! ---------------------------------------------------------------------
       return
     end subroutine lin3d_3
 ! =====================================================================
+
 
 ! ============================================================
 !   sbrt dip_dip: evaluates dipole-dipole interaction energy
