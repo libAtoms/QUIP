@@ -29,7 +29,9 @@ def make_test(script, env=None):
     def run_script(self):
         if env is not None: os.environ.update(env)
 
-        predicate = [L for L in open(script).readlines() if L.startswith('#PREDICATE:')]
+        predicate = []
+        if os.path.exists(script):
+            predicate = [L for L in open(script).readlines() if L.startswith('#PREDICATE:')]
         if predicate != []:
             predicate = predicate[0][len('#PREDICATE:'):]
             if not eval(predicate):
@@ -47,9 +49,10 @@ scripts =  [script for script in glob.glob(os.path.join(QUIP_ROOT, 'Tests/test_*
 if 'mpi' in quippy.available_modules:
     for script in scripts:
         for cores in mpi_n_cores:
-            setattr(Test_TopLevel, '%s_MPI_%d_cores' % (os.path.basename(script), cores), make_test(script,{'QUIP_ROOT': QUIP_ROOT,
-                                                                                                        'QUIP_ARCH': QUIP_ARCH,
-                                                                                                        'MPIRUN': 'mpirun -n %d' % cores}))
+            setattr(Test_TopLevel, '%s_MPI_%d_cores' % (os.path.basename(script), cores),
+                    make_test(script,{'QUIP_ROOT': QUIP_ROOT,
+                                      'QUIP_ARCH': QUIP_ARCH,
+                                      'MPIRUN': 'mpirun -n %d' % cores}))
 
     for cores in mpi_n_cores:
         setattr(Test_TopLevel, 'test_python_MPI_%d_cores' % cores,

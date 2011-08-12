@@ -1,6 +1,8 @@
 #!/bin/bash
 #PREDICATE: QUIP_MAKEFILE["HAVE_CP2K"] == 1
 
+set -e
+
 if [ -z $QUIP_ROOT ]; then
    echo "$0: Need QUIP_ROOT defined"
    exit 1
