@@ -43,6 +43,10 @@
 #include <sys/sysinfo.h>
 #else
 #include <sys/sysctl.h>
+#include <mach/host_info.h>
+#include <mach/mach_host.h>
+#include <mach/task_info.h>
+#include <mach/task.h>
 #endif
 
 
@@ -156,13 +160,16 @@ int pointer_to_(void *p) {
   return ((int) p);
 }
 
-void mem_info_(double *total_mem, double *free_mem)
+void c_mem_info_(double *total_mem, double *free_mem)
 {
 #ifndef DARWIN
    struct sysinfo s_info;
 #else
-   long int totalram;
-   size_t size = sizeof(totalram);
+   int mib[6]; 
+   int pagesize;
+   size_t length = sizeof (pagesize);
+   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
+   vm_statistics_data_t vmstat;
 #endif
    int error;
 
@@ -171,9 +178,14 @@ void mem_info_(double *total_mem, double *free_mem)
    *total_mem = s_info.totalram*s_info.mem_unit;
    *free_mem = s_info.freeram*s_info.mem_unit;
 #else
-   error = sysctlbyname("hw.memsize", &totalram, &size, NULL, 0);
-   *total_mem = totalram;
-   *free_mem = *total_mem; // What is the MacOS equivalent??
+   mib[0] = CTL_HW;
+   mib[1] = HW_PAGESIZE;
+
+   sysctl(mib, 2, &pagesize, &length, NULL, 0);
+   host_statistics(mach_host_self (), HOST_VM_INFO, (host_info_t) &vmstat, &count);
+
+   *total_mem = (vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count)*pagesize;
+   *free_mem = vmstat.free_count*pagesize;
 #endif
 }
 

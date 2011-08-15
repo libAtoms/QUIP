@@ -250,11 +250,11 @@ module system_module
   end INTERFACE
 #endif
 
-  interface mem_info
-     subroutine mem_info(total_mem,free_mem)
+  interface c_mem_info
+     subroutine c_mem_info(total_mem,free_mem)
        real(8), intent(out) :: total_mem, free_mem
-     endsubroutine mem_info
-  endinterface mem_info
+     endsubroutine c_mem_info
+  endinterface c_mem_info
 
   private :: Stack_Initialise
   interface Initialise
@@ -2991,5 +2991,10 @@ end function pad
     end do
 
    end function linebreak_string
+
+   subroutine mem_info(total_mem, free_mem)
+     real(8), intent(out) :: total_mem, free_mem
+     call c_mem_info(total_mem, free_mem)
+   end subroutine mem_info
 
 end module system_module
