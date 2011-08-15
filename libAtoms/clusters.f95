@@ -455,7 +455,7 @@ function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, u
 
   n = 1
   ! Loop over cluster atoms (including ones that may get added in this loop)
-  call print('create_cluster: Checking for hollow sections', PRINT_NERD)
+  call print('cluster_in_out_in: Checking for hollow sections', PRINT_NERD)
   do while (n <= cluster_info%N)
     i = cluster_info%int(1,n)
     ishift = cluster_info%int(2:4,n)
