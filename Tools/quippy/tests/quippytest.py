@@ -26,21 +26,30 @@ def string_to_array(s):
 
 class QuippyTestCase(unittest.TestCase):
 
-   def assertDictionariesEqual(self, d1, d2):
-      if d1 != d2:
-         if sorted(d1.keys()) != sorted(d2.keys()):
-             self.fail('Dictionaries differ: d1.keys() (%r) != d2.keys() (%r)'  % (d1.keys(), d2.keys()))
-         for key in d1:
-            v1, v2 = d1[key], d2[key]
-            if isinstance(v1, FortranArray):
-               try:
-                  self.assertArrayAlmostEqual(v1, v2)
-               except AssertionError:
-                  print key, v1, v2
-                  raise
-            else:
-               if v1 != v2:
-                  self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
+   def assertDictionariesEqual(self, d1, d2, skip_keys=[], ignore_case=True):
+
+      def lower_if_ignore_case(k):
+         if ignore_case:
+            return k.lower()
+         else:
+            return k
+      
+      d1 = dict([(lower_if_ignore_case(k),v) for (k,v) in d1.iteritems() if k not in skip_keys])
+      d2 = dict([(lower_if_ignore_case(k),v) for (k,v) in d2.iteritems() if k not in skip_keys])
+
+      if sorted(d1.keys()) != sorted(d2.keys()):
+         self.fail('Dictionaries differ: d1.keys() (%r) != d2.keys() (%r)'  % (d1.keys(), d2.keys()))
+      for key in d1:
+         v1, v2 = d1[key], d2[key]
+         if isinstance(v1, FortranArray):
+            try:
+               self.assertArrayAlmostEqual(v1, v2)
+            except AssertionError:
+               print key, v1, v2
+               raise
+         else:
+            if v1 != v2:
+               self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
       
    def assertEqual(self, a, b):
       if a == b: return

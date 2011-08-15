@@ -222,8 +222,8 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
 
       def testcalc_df(self):
-         self.pot.calc(self.at, args_str="force fd_force")
-         self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+         self.pot.calc(self.at, args_str="force force_using_fd=T force_fd_delta=1.0e-4")
+         self.assertArrayAlmostEqual(self.at.force, self.f_ref, tol=1e-4)
 
       def testcalc_force_both(self):
          self.pot.calc(self.at, force=self.f, args_str="force")

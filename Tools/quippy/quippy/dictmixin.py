@@ -21,10 +21,10 @@
 # Copyright (c) Raymond Hettinger 2002
 # Licensed under the PSF License
 
-class DictMixin:
+class DictMixin(object):
     '''Mixin defining all dictionary methods for classes that already have
        a minimum dictionary interface including getitem, setitem, delitem,
-       and keys 
+       and keys
        '''
 
     # first level definitions should be implemented by the sub-class
@@ -33,22 +33,22 @@ class DictMixin:
     def __setitem__(self, key, value):
         raise NotImplementedError
     def __delitem__(self, key):
-        raise NotImplementedError    
+        raise NotImplementedError
     def keys(self):
         raise NotImplementedError
-    
+
     # second level definitions which assume only getitem and keys
     def has_key(self, key):
-         return key in self.keys()
+        return key in self.keys()
     def __iter__(self):
         for k in self.keys():
             yield k
     def __len__(self):
-	return len(self.keys())
+        return len(self.keys())
 
     # third level uses second level instead of first
     def __contains__(self, key):
-        return self.has_key(key)            
+        return self.has_key(key)
     def iteritems(self):
         for k in self:
             yield (k, self[k])
@@ -79,7 +79,7 @@ class DictMixin:
     def update(self, other):
         for key in other.keys():
             self[key] = other[key]
-    def get(self, key, default):
+    def get(self, key, default=None):
         if key in self:
             return self[key]
         return default
@@ -94,12 +94,12 @@ def MakeFullDict(tgt):
 from farray import *
 import string, re
 
-class ParamReaderMixin:
+class ParamReaderMixin(object):
     """Mixin which adds parse(), read(), write() and asstring() to a dictionary"""
 
     def __copy__(self):
         return self.copy()
-         
+
     def parse(self, s):
         key_quoted_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*["\{\}]([^"\{\}]+)["\{\}e+-]\s*')
         key_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*([-0-9A-Za-z_.:\[\]()e+-]+)\s*')
@@ -108,66 +108,66 @@ class ParamReaderMixin:
         s = s.strip()
 
         while 1:
-           # Match quoted string first, then fall through to plain key=value
-           m = key_quoted_value.match(s)
-           if m is None:
-              m = key_value.match(s)
-              if m is not None:
-                 s = key_value.sub('', s, 1)
-              else:
-                  # Just a key with no value
-                  m = key_re.match(s)
-                  if m is not None:
-                      s = key_re.sub('', s, 1)
-           else:
-              s = key_quoted_value.sub('', s, 1)
+            # Match quoted string first, then fall through to plain key=value
+            m = key_quoted_value.match(s)
+            if m is None:
+                m = key_value.match(s)
+                if m is not None:
+                    s = key_value.sub('', s, 1)
+                else:
+                    # Just a key with no value
+                    m = key_re.match(s)
+                    if m is not None:
+                        s = key_re.sub('', s, 1)
+            else:
+                s = key_quoted_value.sub('', s, 1)
 
-           if m is None: break # No more matches
+            if m is None: break # No more matches
 
-           key = m.group(1)
-           try:
-               value = m.group(2)
-           except IndexError:
-               # default value is 'T' (True)
-               value = 'T'
+            key = m.group(1)
+            try:
+                value = m.group(2)
+            except IndexError:
+                # default value is 'T' (True)
+                value = 'T'
 
-           # Try to convert to (list of) floats, ints
-           try:
-              numvalue = []
-              for x in string.split(value):
-                 if x.find('.') == -1:
-                    numvalue.append(int(float(x)))
-                 else:
-                    numvalue.append(float(x))
-              if len(numvalue) == 1: 
-                 numvalue = numvalue[0] # Only one number
-              elif len(numvalue) == 3:
-                 numvalue = farray(numvalue) # 3-vector
-              elif len(numvalue) == 9:
-                 # 3x3 matrix, fortran ordering
-                 numvalue = farray(numvalue).reshape((3,3), order='F')
-              else:
-                 raise ValueError
-              value = numvalue
-           except ValueError:
-              pass
+            # Try to convert to (list of) floats, ints
+            try:
+                numvalue = []
+                for x in string.split(value):
+                    if x.find('.') == -1:
+                        numvalue.append(int(float(x)))
+                    else:
+                        numvalue.append(float(x))
+                if len(numvalue) == 1:
+                    numvalue = numvalue[0] # Only one number
+                elif len(numvalue) == 3:
+                    numvalue = farray(numvalue) # 3-vector
+                elif len(numvalue) == 9:
+                    # 3x3 matrix, fortran ordering
+                    numvalue = farray(numvalue).reshape((3,3), order='F')
+                else:
+                    raise ValueError
+                value = numvalue
+            except ValueError:
+                pass
 
-           # Parse boolean values, e.g 'T' -> True, 'F' -> False, 'T T F' -> [True, True, False]
-           if isinstance(value, str):
-               str_to_bool  = {'T':True, 'F':False}
-               
-               if len(value.split()) > 1:
-                   if all([x in str_to_bool.keys() for x in value.split() ]):
-                       value = [str_to_bool[x] for x in value.split()]
-               elif value in str_to_bool:
-                   value = str_to_bool[value]
+            # Parse boolean values, e.g 'T' -> True, 'F' -> False, 'T T F' -> [True, True, False]
+            if isinstance(value, str):
+                str_to_bool  = {'T':True, 'F':False}
 
-           self[key] = value
+                if len(value.split()) > 1:
+                    if all([x in str_to_bool.keys() for x in value.split() ]):
+                        value = [str_to_bool[x] for x in value.split()]
+                elif value in str_to_bool:
+                    value = str_to_bool[value]
+
+            self[key] = value
 
     def read(self, f):
         if isinstance(f, str):
             self.parse(f)
-        elif hasattr(f, 'keys') and hasattr(f, '__getitem__'): 
+        elif hasattr(f, 'keys') and hasattr(f, '__getitem__'):
             self.update(f)
         else:
             try:
@@ -190,7 +190,7 @@ class ParamReaderMixin:
                         (bool,False): 'F',
                         (numpy.bool_,True): None,
                         (numpy.bool_,False): 'F'}
-        
+
         s = ''
         for key in self.keys():
             val = self[key]
@@ -217,21 +217,20 @@ class ParamReaderMixin:
 from ordereddict import OrderedDict
 
 class PuPyDictionary(OrderedDict, ParamReaderMixin):
-   """Subclass of OrderedDict for reading key/value pairs from strings or files.
-      The original order of items is maintained. Values that looks like floats or ints
-      or lists of floats or ints are automatically converted on reading."""
-   
-   def __init__(self, source=None):
-      OrderedDict.__init__(self)
-      if source is not None:
-         self.read(source)
+    """Subclass of OrderedDict for reading key/value pairs from strings or files.
+       The original order of items is maintained. Values that looks like floats or ints
+       or lists of floats or ints are automatically converted on reading."""
 
-   def __repr__(self):
-      return ParamReaderMixin.__repr__(self)
+    def __init__(self, source=None):
+        OrderedDict.__init__(self)
+        if source is not None:
+            self.read(source)
 
-   def __str__(self):
-      return ParamReaderMixin.__str__(self)
+    def __repr__(self):
+        return ParamReaderMixin.__repr__(self)
 
-   def copy(self):
-      return PuPyDictionary(OrderedDict.copy(self))
+    def __str__(self):
+        return ParamReaderMixin.__str__(self)
 
+    def copy(self):
+        return PuPyDictionary(OrderedDict.copy(self))

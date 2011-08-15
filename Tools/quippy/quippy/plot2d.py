@@ -20,7 +20,7 @@
 from quippy import available_modules, print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines
 from quippy.farray import convert_farray_to_ndarray
-import numpy
+import numpy as np
 
 # Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)
@@ -40,7 +40,7 @@ def plot_max_force_error(configs, ref_configs, force_name='force', force_ref_nam
     return p
 
 def plot_rms_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, *plot_args, **plot_kwargs):
-    p = plot([numpy.sqrt(((getattr(at, force_name) - getattr(ref_at, force_ref_name)).reshape(3*at.n)**2).mean())
+    p = plot([np.sqrt(((getattr(at, force_name) - getattr(ref_at, force_ref_name)).reshape(3*at.n)**2).mean())
           for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('RMS force error / eV/A')
@@ -54,7 +54,7 @@ def plot_max_stress_error(configs, ref_configs, virial_name='virial', virial_ref
             max_stress_error.append(0)
         else:
             max_stress_error.append((getattr(at, virial_name) - getattr(ref_at, virial_ref_name)).max()/at.cell_volume()*GPA)
-            
+
     p = plot(max_stress_error, *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('Max stress error / GPa')
@@ -67,8 +67,8 @@ def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref
         if not hasattr(ref_at, virial_name):
             rms_stress_error.append(0)
         else:
-            rms_stress_error.append(numpy.sqrt(((getattr(at, virial_name) - getattr(ref_at, virial_ref_name)).reshape(9)**2).mean())/at.cell_volume()*GPA)
-            
+            rms_stress_error.append(np.sqrt(((getattr(at, virial_name) - getattr(ref_at, virial_ref_name)).reshape(9)**2).mean())/at.cell_volume()*GPA)
+
     p = plot(rms_stress_error, *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('RMS stress error / GPa')
@@ -76,12 +76,12 @@ def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref
     return p
 
 def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
-    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
+    ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = numpy.hstack(getattr(configs, force_name))
+    force = np.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
-                            
+
     s = scatter(abs(ref_force), abs(ref_force - force), *plot_args, **plot_kwargs)
     xlim(0, abs(ref_force).max())
     ylim(0, abs(ref_force - force).max())
@@ -89,26 +89,26 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
     ylabel('Force error / eV/A')
 
     rms_error = (((force - ref_force)**2).mean())**0.5
-    hlines(rms_error, 0, abs(ref_force).max(), lw=2, color='r')           
-    
+    hlines(rms_error, 0, abs(ref_force).max(), lw=2, color='r')
+
     return s
 
 
 def force_error_statistics(configs, ref_configs, force_name='force', force_ref_name='force'):
-    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
+    ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = numpy.hstack(getattr(configs, force_name))
+    force = np.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
 
     names = ['default']
     if hasattr(ref_configs, 'config_type'):
-        ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
+        ct = list(np.hstack([[at.config_type]*3*at.n for at in ref_configs]))
         names.extend(sorted(set(ct)))
 
     res = {}
     for name in names:
-        
+
         if name == 'default':
             start = 0
             stop  = len(force)
@@ -135,22 +135,22 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
         res[name] = (max_error, rms_error, rm4_error, rm8_error)
 
     return res
-    
+
 
 def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
-    ref_force = numpy.hstack(getattr(ref_configs, force_ref_name))
+    ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
-    force = numpy.hstack(getattr(configs, force_name))
+    force = np.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
 
     plot(abs(force - ref_force), *plot_args, **plot_kwargs)
     xlim(0, len(force))
 
     if hasattr(ref_configs, 'config_type'):
-        ct = list(numpy.hstack([[at.config_type]*3*at.n for at in ref_configs]))
+        ct = list(np.hstack([[at.config_type]*3*at.n for at in ref_configs]))
         label_axes_with_config_types(ct)
-        
+
         names = sorted(set(ct))
         for name in names:
             start = ct.index(name)
@@ -158,10 +158,10 @@ def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='f
 
             this_force = force[start:stop]
             this_ref_force = ref_force[start:stop]
-            
+
             rms_error = ((this_force - this_ref_force)**2).mean()**0.5
             hlines(rms_error, start, stop, lw=3, color='r')
-        
+
 
 def label_axes_with_config_types(config_types):
     names = sorted(set(config_types))
@@ -184,16 +184,13 @@ def label_axes_with_config_types(config_types):
     ax.xaxis.set_major_locator(ticker.FixedLocator(major_tics))
     ax.xaxis.set_minor_locator(ticker.FixedLocator(minor_tics))
 
-    ax.xaxis.set_major_formatter(ticker.NullFormatter()) 
+    ax.xaxis.set_major_formatter(ticker.NullFormatter())
     ax.xaxis.set_minor_formatter(ticker.FixedFormatter(names))
 
-    for tick in ax.xaxis.get_minor_ticks(): 
-        tick.tick1line.set_markersize(0) 
-        tick.tick2line.set_markersize(0) 
+    for tick in ax.xaxis.get_minor_ticks():
+        tick.tick1line.set_markersize(0)
+        tick.tick2line.set_markersize(0)
         tick.label1.set_horizontalalignment('center')
         tick.label1.set_rotation(90)
 
     draw()
-
-        
-        

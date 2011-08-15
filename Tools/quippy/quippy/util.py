@@ -20,97 +20,119 @@
 
 import sys, os, xml.dom.minidom
 
+def infer_format(file, format, lookup):
+    """Infer the correct format to read from or write to `file`
+
+       If `format` is not None, there is nothing to do. Otherwise we
+       look for file extension in `lookup`."""
+
+    filename = None
+    if format is None:
+        if isinstance(file, str):
+            filename = file
+            if file in lookup:
+                format = file
+            else:
+                file = os.path.expanduser(file)
+                base, ext = os.path.splitext(file)
+                del base
+                format = ext[1:]
+        else:
+            format = file.__class__
+
+    return filename, file, format
+
 def args_str(D):
-   """Construct args string from file, string or mapping object"""
-   from dictmixin import PuPyDictionary
-   return str(PuPyDictionary(D))
+    """Construct args string from file, string or mapping object"""
+    from dictmixin import PuPyDictionary
+    return str(PuPyDictionary(D))
 
 def parse_slice(S):
-   """Parse string containing slice in form [start]:[stop]:[range] and return slice instance."""
+    """Parse string containing slice in form [start]:[stop]:[range] and return slice instance."""
 
-   class SliceParser(object):
-      def __getitem__(self, idx):
-         return idx
+    class SliceParser(object):
+        def __getitem__(self, idx):
+            return idx
 
-   return eval('SliceParser()[%s]' % S)
+    return eval('SliceParser()[%s]' % S)
 
 def parse_comma_colon_list(L):
-   """Parse a comma or colon seperated string into a list, converting each entry to lower-case."""
-   if ':' in L:
-      L = L.split(':')
-   elif ',' in L:
-      L = L.split(',')
-   else:
-      L = [L]
+    """Parse a comma or colon seperated string into a list, converting each entry to lower-case."""
+    if ':' in L:
+        L = L.split(':')
+    elif ',' in L:
+        L = L.split(',')
+    else:
+        L = [L]
 
-   return [k.lower() for k in L]
+    return [k.lower() for k in L]
 
-def loadstring(s): 
-   import StringIO
-   from numpy import loadtxt
-   return loadtxt(StringIO.StringIO(s.replace('[','').replace(']','')))
+def loadstring(s):
+    import StringIO
+    from numpy import loadtxt
+    return loadtxt(StringIO.StringIO(s.replace('[','').replace(']','')))
 
 def quip_xml_parameters(name, label=None):
-   """Search for an QUIP XML parameter set matching `name' and, optionally `label`.
+    """Search for an QUIP XML parameter set matching `name' and, optionally `label`.
 
-   Result is the XML stanza as a string. Looks under
-   ${QUIP_ROOT}/QUIP_Core/parameters for a file matching `name`,
-   `name`.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
-   `label` is given, it should be a text string matching the label
-   attribute of a QUIP <params> XML stanza. If a matching parameter
-   set can't be found, we raise an :exc:`IOError`.
-   """
-   
-   from quippy import QUIP_ROOT
-   from xml.parsers.expat import ExpatError
-   from xml.dom.minidom import Element
-   
-   param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
+    Result is the XML stanza as a string. Looks under
+    ${QUIP_ROOT}/QUIP_Core/parameters for a file matching `name`,
+    `name`.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
+    `label` is given, it should be a text string matching the label
+    attribute of a QUIP <params> XML stanza. If a matching parameter
+    set can't be found, we raise an :exc:`IOError`.
+    """
 
-   if name.startswith('IP ') or name.startswith('TB '):
-      name = name[3:]
+    from quippy import QUIP_ROOT
+    from xml.parsers.expat import ExpatError
+    from xml.dom.minidom import Element
 
-   xml_files = [ os.path.join(param_dir, name),
-                 os.path.join(param_dir, name) + '.xml',
-                 os.path.join(param_dir, 'ip.parms.'+name) + '.xml',
-                 os.path.join(param_dir, 'tightbind.parms.'+name) + '.xml' ]
+    param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
 
-   for xml_file in xml_files:
-      if os.path.exists(xml_file): break
-   else:
-      raise IOError('Cannot find XML parameter file matching "%s"' % name)
+    if name.startswith('IP ') or name.startswith('TB '):
+        name = name[3:]
 
-   xml_string = open(xml_file).read()
+    xml_files = [ os.path.join(param_dir, name),
+                  os.path.join(param_dir, name) + '.xml',
+                  os.path.join(param_dir, 'ip.parms.'+name) + '.xml',
+                  os.path.join(param_dir, 'tightbind.parms.'+name) + '.xml' ]
 
-   if label is not None:
-      # Read XML and extract tag with matching label attribute
-      try:
-         d = xml.dom.minidom.parseString(xml_string)
-      except ExpatError:
-         # Add surrounding document element
-         xml_string = r'<params>%s</params>' % xml_string
-         d = xml.dom.minidom.parseString(xml_string).firstChild
+    for xml_file in xml_files:
+        if os.path.exists(xml_file): break
+    else:
+        raise IOError('Cannot find XML parameter file matching "%s"' % name)
 
-      for child in d.childNodes:
-         if not isinstance(child, Element): continue
-         if child.hasAttribute('label'):
-            if child.getAttribute('label') == label:
-               break
-      else:
-         raise IOError('Cannot find XML stanza in file "%s" matching label "%s"' % (xml_file, label))
+    xml_string = open(xml_file).read()
 
-      return str(child.toxml())
-   else:
-      # Return entire contents of file
-      return str(xml_string)
+    if label is not None:
+        # Read XML and extract tag with matching label attribute
+        try:
+            d = xml.dom.minidom.parseString(xml_string)
+        except ExpatError:
+            # Add surrounding document element
+            xml_string = r'<params>%s</params>' % xml_string
+            d = xml.dom.minidom.parseString(xml_string).firstChild
+
+        for child in d.childNodes:
+            if not isinstance(child, Element): continue
+            if child.hasAttribute('label'):
+                if child.getAttribute('label') == label:
+                    break
+        else:
+            raise IOError('Cannot find XML stanza in file "%s" matching label "%s"' % (xml_file, label))
+
+        return str(child.toxml())
+    else:
+        # Return entire contents of file
+        return str(xml_string)
 
 def is_interactive_shell():
-   """Return True if we're running in an interactive shell (including IPython)"""
-   if hasattr(sys, 'ps1'):
-      return True
-   try:
-      __IPYTHON__
-   except NameError:
-      return False
-   else:
-      return True
+    """Return True if we're running in an interactive shell (including IPython)"""
+    if hasattr(sys, 'ps1'):
+        return True
+    try:
+        __IPYTHON__
+    except NameError:
+        return False
+    else:
+        return True

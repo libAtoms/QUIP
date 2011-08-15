@@ -179,9 +179,6 @@ import util;        from util import *
 
 import sio2, povray, cube, xyz, netcdf, imd
 
-if 'ase' in available_modules:
-   import aseinterface
-
 try:
    import castep
 except ImportError:
@@ -208,5 +205,3 @@ if is_interactive_shell():
 
    import crack
    from crack import *
-   
-   
