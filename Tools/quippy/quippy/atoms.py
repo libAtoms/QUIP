@@ -350,7 +350,7 @@ class Atoms(FortranAtoms, ase.Atoms):
 
         if self.has_property('z') and not self.has_property('species'):
             self.add_property('species', ' '*10)
-            if self.n != 0 and not all(self.z == 0):
+            if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # initialise species from z
 
         self._initialised = True
