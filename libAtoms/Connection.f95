@@ -1620,14 +1620,10 @@ contains
        RAISE_ERROR('connection_n_neighbours: Connection structure has no connectivity data. Call calc_connect first.', error)
     end if
 
-    if (.not. associated(this%neighbour1(i)%t)) then
-      n = 0
-      return
-    endif
-
     ! All neighbours
     n = 0
     do i = 1, this%N
+       if (.not. associated(this%neighbour1(i)%t)) cycle
        n = n + this%neighbour1(i)%t%N + this%neighbour2(i)%t%N
     enddo
 
