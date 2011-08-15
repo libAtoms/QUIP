@@ -585,6 +585,9 @@ contains
     to%cutoff      = from%cutoff
     to%cutoff_break      = from%cutoff_break
     to%nneightol   = from%nneightol
+    to%is_orthorhombic = from%is_orthorhombic
+    to%is_periodic = from%is_periodic
+    to%fixed_size = from%fixed_size
 
     call deepcopy(to%connect, from%connect)
     call deepcopy(to%hysteretic_connect, from%hysteretic_connect)
@@ -647,6 +650,9 @@ contains
     to%cutoff = from%cutoff
     to%cutoff_break = from%cutoff_break
     to%nneightol = from%nneightol
+    to%is_orthorhombic = from%is_orthorhombic
+    to%is_periodic = from%is_periodic
+    to%fixed_size = from%fixed_size
 
     call deepcopy(to%domain, from%domain)
 
