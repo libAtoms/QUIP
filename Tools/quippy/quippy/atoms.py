@@ -1,4 +1,4 @@
-# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
@@ -14,464 +14,744 @@
 # HQ X
 # HQ X   http://www.jrkermode.co.uk/quippy
 # HQ X
-# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import numpy, os, weakref
-from farray import *
-from quippy import FortranAtoms
-from quippy import AtomsReaders, AtomsWriters
+"""Defintion of the Atoms class
+
+This module defines the quippy.Atoms class which stores and
+manipulates a collection of atoms"""
+
+import os, weakref, warnings, copy
+from quippy.farray import frange, farray, fzeros
+from quippy.dictmixin import DictMixin
+from quippy.util import infer_format
+from quippy import FortranAtoms, available_modules, AtomsReaders, AtomsWriters
 from math import pi
+import numpy as np
+
+if 'ase' in available_modules:
+    import ase
+else:
+    import quippy.miniase as ase
 
 def make_lattice(a, b=None, c=None, alpha=pi/2.0, beta=pi/2.0, gamma=pi/2.0):
-   "Form 3x3 lattice from cell lengths (a,b,c) and angles (alpha,beta,gamma) in radians"
+    """Form 3x3 lattice from cell lengths (a,b,c) and angles
+       (alpha,beta,gamma) in radians"""
 
-   if b is None: b = a
-   if c is None: c = a
-   
-   lattice = fzeros((3,3),'d')
+    if b is None:
+        b = a
+    if c is None:
+        c = a
 
-   cos_alpha = numpy.cos(alpha); cos2_alpha = cos_alpha*cos_alpha
-   cos_beta  = numpy.cos(beta);  cos2_beta  = cos_beta *cos_beta
-   cos_gamma = numpy.cos(gamma); cos2_gamma = cos_gamma*cos_gamma
-   sin_gamma = numpy.sin(gamma); sin2_gamma = sin_gamma*sin_gamma
-   
-   lattice[1,1] = a
+    lattice = fzeros((3, 3),'d')
 
-   lattice[1,2] = b * cos_gamma
-   lattice[2,2] = b * sin_gamma
+    cos_alpha = np.cos(alpha)
+    cos2_alpha = cos_alpha*cos_alpha
 
-   lattice[1,3] = c * cos_beta
-   lattice[2,3] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma
-   lattice[3,3] = c * numpy.sqrt(1.0 - (cos2_alpha + cos2_beta - 2.0*cos_alpha*cos_beta*cos_gamma)/ sin2_gamma)
+    cos_beta  = np.cos(beta)
+    cos2_beta  = cos_beta *cos_beta
 
-   return lattice
+    cos_gamma = np.cos(gamma)
+
+    sin_gamma = np.sin(gamma)
+    sin2_gamma = sin_gamma*sin_gamma
+
+    lattice[1, 1] = a
+
+    lattice[1, 2] = b * cos_gamma
+    lattice[2, 2] = b * sin_gamma
+
+    lattice[1, 3] = c * cos_beta
+    lattice[2, 3] = c * (cos_alpha - cos_beta*cos_gamma)/sin_gamma
+    lattice[3, 3] = c * np.sqrt(1.0 - (cos2_alpha + cos2_beta -
+                                2.0*cos_alpha*cos_beta*cos_gamma)/sin2_gamma)
+
+    return lattice
 
 def get_lattice_params(lattice):
-   """Return 6-tuple of cell lengths and angles a,b,c,alpha,beta,gamma"""
-   from math import acos
-   from numpy import dot
-   a_1 = lattice[:,1]
-   a_2 = lattice[:,2]
-   a_3 = lattice[:,3]
+    """Return 6-tuple of cell lengths and angles a,b,c,alpha,beta,gamma"""
+    from math import acos
+    from numpy import dot
+    a_1 = lattice[:, 1]
+    a_2 = lattice[:, 2]
+    a_3 = lattice[:, 3]
 
-   return (a_1.norm(), a_2.norm(), a_3.norm(),
-           acos(dot(a_2,a_3)/(a_2.norm()*a_3.norm())),
-           acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
-           acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
-
-class NeighbourInfo(object):
-   __slots__ = ('j','distance','diff','cosines','shift')
-
-   def __init__(self, j, distance, diff, cosines, shift):
-      self.j = j
-      self.distance = float(distance)
-      self.diff = diff.copy()
-      self.cosines = cosines.copy()
-      self.shift = shift.copy()
-
-   def __int__(self):
-      return self.j
-
-   def __repr__(self):
-      return 'NeighbourInfo(j=%d, distance=%f, diff=%s, cosines=%s, shift=%s)' % (self.j, self.distance, self.diff, self.cosines, self.shift)
+    return (a_1.norm(), a_2.norm(), a_3.norm(),
+            acos(dot(a_2,a_3)/(a_2.norm()*a_3.norm())),
+            acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
+            acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
 
 
 def get_bulk_params(bulk, lat_type, verbose=True):
-   """Return 6-tuple of lattice parameters a, c, u, x, y, z for cell `bulk` of lattice type `lat_type`"""
-   a, b, c, alpha, beta, gamma = get_lattice_params(bulk.lattice)
-   u, x, y, z = (None, None, None, None)
+    """Return 6-tuple of lattice parameters a, c, u, x, y, z for
+       cell `bulk` of lattice type `lat_type`"""
+    a, b, c, alpha, beta, gamma = get_lattice_params(bulk.lattice)
+    del b, alpha, beta, gamma
+    u, x, y, z = (None, None, None, None)
 
-   if lat_type in ('diamond', 'bcc', 'fcc'):
-      if verbose:
-         print '%s lattice, a=%.3f' % (lat_type, a)
-   elif lat_type == 'anatase':
-      u = bulk.pos[3,5]/c
-      if verbose:
-         print 'anatase lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
-   elif lat_type == 'rutile':
-      u = bulk.pos[1,3]/a
-      if verbose:
-         print 'rutile lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
-   elif lat_type == 'alpha_quartz':
-      from quippy.sio2 import get_quartz_params
-      qz = get_quartz_params(bulk)
-      a, c, u, x, y, z = qp['a'], qp['c'], qp['u'], qp['x'], qp['y'], qp['z']
-      if verbose:
-         print 'alpha_quartz lattice, a=%.3f c=%.3f u=%.3f x=%.3f y=%.3f z=%.3f' % (a,c,u,x,y,z)
-   else:
-      raise ValueError('Unknown latttice type %s' % lat_type)
+    if lat_type in ('diamond', 'bcc', 'fcc'):
+        if verbose:
+            print '%s lattice, a=%.3f' % (lat_type, a)
+    elif lat_type == 'anatase':
+        u = bulk.pos[3, 5]/c
+        if verbose:
+            print 'anatase lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+    elif lat_type == 'rutile':
+        u = bulk.pos[1, 3]/a
+        if verbose:
+            print 'rutile lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+    elif lat_type == 'alpha_quartz':
+        from quippy.sio2 import get_quartz_params
+        qz = get_quartz_params(bulk)
+        a, c, u, x, y, z = (qz['a'], qz['c'], qz['u'],
+                            qz['x'], qz['y'], qz['z'])
+        if verbose:
+            print 'alpha_quartz lattice, ',
+            print ('a=%.3f c=%.3f u=%.3f x=%.3f y=%.3f z=%.3f'
+                   % (a, c, u, x, y ,z))
+    else:
+        raise ValueError('Unknown latttice type %s' % lat_type)
 
-   return (a, c, u, x, y, z)
+    return (a, c, u, x, y, z)
 
+class NeighbourInfo(object):
+    """Store information about a single neighbour of an atom"""
+
+    __slots__ = ('j', 'distance', 'diff', 'cosines', 'shift')
+
+    def __init__(self, j, distance, diff, cosines, shift):
+        self.j = j
+        self.distance = float(distance)
+        self.diff = diff.copy()
+        self.cosines = cosines.copy()
+        self.shift = shift.copy()
+
+    def __int__(self):
+        return self.j
+
+    def __repr__(self):
+        return ('NeighbourInfo(j=%d,distance=%f,diff=%s,cosines=%s,shift=%s)'
+                    % (self.j, self.distance, self.diff,
+                       self.cosines, self.shift))
 
 class Neighbours(object):
+    """Provides access to neighbours of an atom.
 
-   def __init__(self, at, hysteretic=False):
-      self.atref = weakref.ref(at)
-      self.hysteretic = hysteretic
+       Supports both iteration over all atoms, and indexing
+       e.g. at.neighbours[1] returns a list of the neighbours of the
+       atom with index 1. If at.fortran_indexing is True, atom and
+       neighbour indices start from 1; otherwise they are numbered
+       from zero."""
 
-   def __iter__(self):
-      return self.iterneighbours()
+    def __init__(self, at, hysteretic=False):
+        self.atref = weakref.ref(at)
+        self.hysteretic = hysteretic
 
-   def iterneighbours(self):
-      at = self.atref()
+    def __iter__(self):
+        return self.iterneighbours()
 
-      for i in frange(at.n):
-         yield self[i]
+    def iterneighbours(self):
+        """Iterate over the neighbours of all atoms"""
+        at = self.atref()
+        for i in at.indices:
+            yield self[i]
 
-   def __getitem__(self, i):
+    def __getitem__(self, i):
+        at = self.atref()
 
-      at = self.atref()
-      if self.hysteretic:
-         connect = at.hysteretic_connect
-      else:
-         connect = at.connect
+        if self.hysteretic:
+            connect = at.hysteretic_connect
+        else:
+            connect = at.connect
 
-      if not connect.initialised:
-         if self.hysteretic:
-            at.calc_connect_hysteretic(connect)
-         else:
-            at.calc_connect(connect)
-
-      distance = farray(0.0)
-      diff = fzeros(3)
-      cosines = fzeros(3)
-      shift = fzeros(3,dtype=numpy.int32)
-
-      res = []
-      for n in frange(at.n_neighbours(i,alt_connect=connect)):
-         j = at.neighbour(i, n, distance, diff, cosines, shift, alt_connect=connect)
-         res.append(NeighbourInfo(j,distance,diff,cosines,shift))
-
-      return farray(res) # to give 1-based indexing      
-
-   def distances(self, Z1=None, Z2=None):
-      """Distances between pairs of neighbours, optionally filtered by species (Z1,Z2)"""
-      at = self.atref()
-      for i in frange(at.n):
-         for neighb in self[i]:
-            if neighb.j > i: continue
-            if Z1 is not None and Z2 is not None:
-               if sorted((at.z[i],at.z[neighb.j])) == sorted((Z1,Z2)):
-                  yield neighb.distance
+        if not connect.initialised:
+            if self.hysteretic:
+                at.calc_connect_hysteretic(connect)
             else:
-               yield neighb.distance
+                at.calc_connect(connect)
 
-class Atom(dict):
-   _cmp_tol = 1e-8
-   
-   def __init__(self, *args, **kwargs):
-      dict.__init__(self, *args, **kwargs)
+        distance = farray(0.0)
+        diff = fzeros(3)
+        cosines = fzeros(3)
+        shift = fzeros(3, dtype=np.int32)
 
-   def __getattr__(self, key):
-      return self[key]
+        res = []
+        if not at.fortran_indexing:
+            i = i+1 # convert to 1-based indexing
 
-   def __setattr__(self, key, value):
-      raise ValueError('Atom instances are read-only')
-      
-   def __repr__(self):
-      return 'Atom(%s)' % ', '.join(['%s=%r' % (k,v) for (k, v) in self.iteritems()])
+        for n in frange(at.n_neighbours(i, alt_connect=connect)):
+            j = at.neighbour(i, n, distance, diff,
+                             cosines, shift, alt_connect=connect)
+            if not at.fortran_indexing:
+                j = j-1
+            res.append(NeighbourInfo(j, distance, diff, cosines, shift))
 
-   def __str__(self):
-      title = 'Atom %d' % self['i']
-      title = title + '\n' + '-'*len(title)+'\n\n'
-      return title+'\n'.join(['%-15s =  %s' % (k,self[k]) for k in sorted(self.keys()) if k != 'i'])
+        if at.fortran_indexing:
+            res = farray(res) # to give 1-based indexing
+        return res
 
-   def __eq__(self, other):
-      self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
-      other_ = dict([(k.lower(),v) for (k,v) in other.iteritems() if k != 'i'])
+    def distances(self, Z1=None, Z2=None):
+        """Distances between pairs of neighbours, optionally
+           filtered by species (Z1,Z2)"""
+        at = self.atref()
+        for i in at.indices:
+            for neighb in self[i]:
+                if neighb.j > i: continue
+                if Z1 is not None and Z2 is not None:
+                    if sorted((at.z[i], at.z[neighb.j])) == sorted((Z1, Z2)):
+                        yield neighb.distance
+                else:
+                    yield neighb.distance
 
-      if sorted(self_.keys()) != sorted(other_.keys()): return False
-      
-      for k in self_.keys():
-         v1, v2 = self_[k], other_[k]
-         if hasattr(v1, '__iter__') and hasattr(v2, '__iter__'):
-            v1 = farray(v1)
-            v2 = farray(v2)
-            if v1.dtype.kind != 'f':
-               if (v1 != v2).any(): return False
-            else:
-               if abs(v1 - v2).max() > self._cmp_tol: return False
-         else:
-            if v1 != v2:
-               return False
-      return True
+class PropertiesWrapper(DictMixin):
+    """Wrapper between quippy properties and ASE arrays"""
 
-   def __ne__(self, other):
-      return not self.__eq__(other)
+    def __init__(self, at):
+        DictMixin.__init__(self)
+        self.atref = weakref.ref(at)
+
+    def __getitem__(self, key):
+        at = self.atref()
+        return at.properties[at.name_map.get(key, key)].view(np.ndarray).T
+
+    def __setitem__(self, key, value):
+        at = self.atref()
+        key = Atoms.name_map.get(key, key)
+        value = np.array(value)
+
+        if value.shape[0] != at.n:
+            warnings.warn(('Assignment to arrays["%s"]: changing size '+
+                           ' from %d to %d') % (key, at.n, value.shape[0]))
+            for p in at.properties.keys():
+                at.remove_property(p)
+            at.n = value.shape[0]
+            at.nbuffer = at.n
+            at.ndomain = at.n
+
+        if value.dtype.kind != 'S':
+            value = value.T
+
+        at.add_property(key, value, overwrite=True)
+
+    def __delitem__(self, key):
+        at = self.atref()
+        warnings.warn('Deletion of arrays["%s"]' % key)
+        key = at.name_map.get(key, key)
+        at.remove_property(key)
+
+    def keys(self):
+        at = self.atref()
+        return [at.rev_name_map.get(key, key) for key in at.properties.keys()]
 
 
-class Atoms(FortranAtoms):
-   """
-   Thin pythonic wrapper over auto-generated FortranAtoms class
-   
-   An atoms object contains atomic numbers, all dynamical variables
-   and connectivity information for all the atoms in the simulation cell.
-   It is initialised like this:
-   >         call initialise(MyAtoms,N,lattice)
-   where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
-   matrix of lattice vectors given as column vectors.
-   
-   Atoms also contains a Connection object, which stores distance information about
-   the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
-   image convention, all neighbours are stored up to a radius of 'cutoff', including images
-   """
-   _cmp_skip_fields = ['own_this', 'ref_count', 'domain']
+class Atoms(FortranAtoms, ase.Atoms):
 
-   def __new__(cls, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
-      """
-      Initialise an Atoms object.
+    """
+    Pythonic wrapper over auto-generated FortranAtoms class.
 
-      The arguments, n, lattice, fpointer, finalise, data, properties and params are passed on
-      to the FortranAtoms constructor.
+    Also inherits from ase.Atoms so has all ASE Atoms methods
 
-      If source is given, Atoms.read(source, frame=frame) is called.
-      """
+    An atoms object contains atomic numbers, all dynamical variables
+    and connectivity information for all the atoms in the simulation
+    cell."""
 
-      if source is None:
-         self = object.__new__(cls)
-      elif isinstance(source, cls):
-         self = cls.copy(source)
-      else:
-         self = cls.read(source, *readargs, **readkwargs)
+    _cmp_skip_fields = ['own_this', 'ref_count', 'domain']
 
-      return self
+    name_map = {'positions'       : 'pos',
+                'numbers'         : 'Z',
+                'charges'         : 'charge'}
 
-   def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
-      from quippy import Dictionary
-      if source is None:
-         if params is not None and not isinstance(params, Dictionary):
-            params = Dictionary(params)
-         if properties is not None and not isinstance(properties, Dictionary):
+    rev_name_map = dict(zip(name_map.values(), name_map.keys()))
+
+    def __init__(self, symbols=None, positions=None, numbers=None, tags=None,
+                 momenta=None, masses=None, magmoms=None, charges=None,
+                 scaled_positions=None, cell=None, pbc=None, constraint=None,
+                 calculator=None, info=None, n=None, lattice=None,
+                 properties=None, params=None, fixed_size=None,
+                 fortran_indexing=True, fpointer=None, finalise=True,
+                 **readargs):
+
+        # check for mutually exclusive options
+        if cell is not None and lattice is not None:
+            raise ValueError('only one of cell and lattice can be present')
+
+        if n is None:
+            n = 0
+        if cell is not None:
+            lattice = cell.T
+        if lattice is None:
+            lattice = np.eye(3)
+
+        from quippy import Dictionary
+        if properties is not None and not isinstance(properties, Dictionary):
             properties = Dictionary(properties)
-         FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
-                               properties=properties, params=params, fixed_size=fixed_size)
-         self.neighbours = Neighbours(self)
-         self.hysteretic_neighbours = Neighbours(self,hysteretic=True)
+        if params is not None and not isinstance(params, Dictionary):
+            params = Dictionary()
 
-   @classmethod
-   def read(cls, source, format=None, *args, **kwargs):
-      filename = None
-      if format is None:
-         if isinstance(source, str):
-            filename = source
-            if source in AtomsReaders:
-               format = source
+        FortranAtoms.__init__(self, n=n, lattice=lattice,
+                              properties=properties,
+                              params=params, fixed_size=fixed_size,
+                              fortran_indexing=fortran_indexing,
+                              fpointer=fpointer, finalise=finalise)
+
+        self._ase_arrays = PropertiesWrapper(self)
+        self.neighbours = Neighbours(self)
+        self.hysteretic_neighbours = Neighbours(self, hysteretic=True)
+
+        # If first argument is quippy.Atoms instance, copy data from it
+        if symbols is not None and isinstance(symbols, self.__class__):
+            self.copy_from(symbols)
+            symbols = None
+
+        # Try to read from first argument
+        if symbols is not None:
+            try:
+                self.read_from(symbols, **readargs)
+                symbols = None
+            except IOError:
+                pass
+
+        ## ASE compatibility
+
+        remove_properties = []
+
+        if symbols is None and numbers is None:
+            if hasattr(self, 'z'):
+                numbers = self.z.view(np.ndarray)
             else:
-               source = os.path.expanduser(source)
-               base, ext = os.path.splitext(source)
-               format = ext[1:]
-         else:
-            format = source.__class__
+                numbers = [0]*len(self)
+                remove_properties.append('Z')
 
-      opened = False
-      if format in AtomsReaders:
-         source = AtomsReaders[format](source, *args, **kwargs)
-         opened = True
+        if symbols is None and positions is None:
+            if hasattr(self, 'pos'):
+                positions = self.pos.view(np.ndarray).T
+            else:
+                remove_properties.append('pos')
 
-      if isinstance(source, str):
-         raise IOError("Don't know how to read Atoms from file '%s'" % source)
-      if not hasattr(source, '__iter__'):
-         raise IOError('Cannot read from source %r - not an iterator' % source)
-      
-      at = iter(source).next()
-      if not isinstance(at, cls):
-         raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
-      if opened and hasattr(source, 'close'):
-         source.close()
-      if filename is not None:
-         at.filename = filename
-      return at
-         
+        # if symbols is None and momenta is None:
+        #     if hasattr(self, 'velo'):
+        #         momenta = self.velo.view(np.ndarray).T
 
-   def write(self, dest=None, format=None, properties=None, prefix=None, *args, **kwargs):
+        if symbols is None and cell is None:
+            cell = self.lattice.T.view(np.ndarray)
+        if symbols is None and pbc is None:
+            pbc = self.get_pbc()
 
-      if dest is None:
-         # if filename is missing, save back to file from which we loaded configuration
-         if hasattr(self, 'filename'):
-            dest = self.filename
-         else:
-            raise ValueError("Atoms.write() called with no 'dest' and Atoms has no filename attribute")
-         
-      opened = False
-      if format is None:
-         if isinstance(dest, str):
+        ase.Atoms.__init__(self, symbols, positions, numbers,
+                           tags, momenta, masses, magmoms, charges,
+                           scaled_positions, cell, pbc, constraint,
+                           calculator, info)
+
+        # remove anything that ASE added that we don't want
+        for p in remove_properties:
+            self.remove_property(p)
+
+        ## end ASE compatibility
+
+        if self.has_property('z') and not self.has_property('species'):
+            self.add_property('species', ' '*10)
+            if self.n != 0 and not all(self.z == 0):
+                self.set_atoms(self.z) # initialise species from z
+
+        self._initialised = True
+
+    def new_array(self, name, a, dtype=None, shape=None):
+        # we overrride ase.Atoms.new_array() to allow "special" arrays
+        # like "numbers", "positions" to be added more than once without
+        # raising a RuntimeError
+        if name in self.name_map and name in self.arrays:
+            self.arrays[name] = a
+            return
+        ase.Atoms.new_array(self, name, a, dtype, shape)
+
+    def set_lattice(self, lattice, scale_positions=False):
+        """Change the lattice vectors, keeping the inverse lattice vectors
+           up to date. Optionally map the existing atoms into the new cell
+           and recalculate connectivity (by default scale_positions=False)."""
+        FortranAtoms.set_lattice(self, lattice, scale_positions)
+
+    def _get_cell(self):
+        """Get ASE cell from QUIP lattice"""
+        return self.lattice.view(np.ndarray).T
+
+    def _set_cell(self, cell):
+        """Set QUIP lattice from ASE cell"""
+        self.set_lattice(cell.T, scale_positions=False)
+
+    _cell = property(_get_cell, _set_cell)
+
+    def _set_pbc(self, pbc):
+        self.is_periodic[:] = np.array(pbc).astype(int)
+
+    def _get_pbc(self):
+        return self.is_periodic.view(np.ndarray)
+
+    _pbc = property(_get_pbc, _set_pbc)
+
+    def _get_ase_arrays(self):
+        """Provides access to ASE arrays, stored in QUIP properties dict"""
+
+        return self._ase_arrays
+
+    def _set_ase_arrays(self, value):
+        """Set ASE arrays. Does not remove existing QUIP properties."""
+
+        self._ase_arrays.update(value)
+
+    arrays = property(_get_ase_arrays, _set_ase_arrays)
+
+    def _get_info(self):
+        """Get ASE info dictionary
+
+        Entries are actually storred in QUIP params dictionary"""
+
+        return self.params
+
+    def _set_info(self, value):
+        """Set ASE info dictionary.
+
+         Updates entries in QUIP params dictionary. Note that assigning {} to
+         info doesn't remove the existing params."""
+
+        self.params.update(value)
+
+    info = property(_get_info, _set_info)
+
+    def iterindices(self):
+        """Iterate over atoms.
+
+        If fortran_indexing is True, returns range 1..self.n.
+        Otherwise, returns range 0..(self.n-1)."""
+
+        if self.fortran_indexing:
+            return iter(frange(len(self)))
+        else:
+            return iter(range(len(self)))
+
+    indices = property(iterindices)
+
+    def iteratoms(self):
+        """Iterate over atoms, calling get_atom() for each one"""
+        for i in self.indices:
+            yield self.get_atom(i)
+
+    def equivalent(self, other):
+        """Test for equivalence of two Atoms objects.
+
+        Equivalence is less strong than equality.  Equality (written
+        `self == other`) requires all properties and parameters to be
+        equal. Equivalence requires only that the number of atoms,
+        positions, atomic numbers, unit cell and periodic boundary
+        conditions match. 
+
+        Note: the quippy expression a.equivalent(b) has the same
+        definition as a == b in ASE. This means that a quippy.Atoms
+        instance can be compared with an ase.Atoms instance using
+        this method.
+        """
+
+        try:
+            a = self.arrays
+            b = other.arrays
+            return (len(self) == len(other) and
+                    (a['positions'] == b['positions']).all() and
+                    (a['numbers'] == b['numbers']).all() and
+                    (self._cell == other.cell).all() and
+                    (self._pbc == other.pbc).all())
+        except AttributeError:
+            return False
+
+    @classmethod
+    def read(cls, source, format=None, **kwargs):
+        """Read Atoms object from file `source` according to `format`.
+
+        If `format` is None, filetype is inferred from filename.
+        Returns a new Atoms instance; to read into an existing Atoms
+        object, use the read_from() method."""
+
+        filename, source, format = infer_format(source, format, AtomsReaders)
+
+        opened = False
+        if format in AtomsReaders:
+            source = AtomsReaders[format](source, **kwargs)
             opened = True
-            if dest in AtomsWriters:
-               format = dest
+
+        if isinstance(source, str):
+            raise IOError("Don't know how to read from file '%s'" % source)
+        if not hasattr(source, '__iter__'):
+            raise IOError('Cannot read from %r - not an iterator' % source)
+
+        at = iter(source).next()
+        if not isinstance(at, cls):
+            raise ValueError('Object %r read from  %r is not Atoms instance'
+                             % (at, source))
+        if opened and hasattr(source, 'close'):
+            source.close()
+        if filename is not None:
+            at.filename = filename
+        return at
+
+
+    def write(self, dest=None, format=None, properties=None,
+              prefix=None, **kwargs):
+        if dest is None:
+            # if filename is missing, save back to file from
+            # which we loaded configuration
+            if hasattr(self, 'filename'):
+                dest = self.filename
             else:
-               dest = os.path.expanduser(dest)
-               base, ext = os.path.splitext(dest)
-               format = ext[1:]
-         else:
-            format = dest.__class__
+                raise ValueError("No 'dest' and Atoms has no stored filename")
 
-      if format in AtomsWriters:
-         dest = AtomsWriters[format](dest, *args, **kwargs)
+        filename, dest, format = infer_format(dest, format, AtomsWriters)
+        opened = filename is not None
 
-      if not hasattr(dest, 'write'):
-         raise ValueError("Don't know how to write to destination \"%s\" in format \"%s\"" % (dest, format))
+        if format in AtomsWriters:
+            dest = AtomsWriters[format](dest, **kwargs)
 
-      write_kwargs = {}
-      if properties is not None: write_kwargs['properties'] = properties
-      if prefix is not None: write_kwargs['prefix'] = prefix
-      try:
-         res = dest.write(self, **write_kwargs)
-      except TypeError:
-         raise ValueError('Atoms.write destination %r does not support arguments %r' % (dest, write_kwargs))
+        if not hasattr(dest, 'write'):
+            raise ValueError('Don\'t know how to write to "%s" in format "%s"'
+                             % (dest, format))
 
-      if opened and hasattr(dest, 'close'):
-         dest.close()
-      return res
+        write_kwargs = {}
+        if properties is not None:
+            write_kwargs['properties'] = properties
+        if prefix is not None:
+            write_kwargs['prefix'] = prefix
+        try:
+            res = dest.write(self, **write_kwargs)
+        except TypeError:
+            raise ValueError('destination %r doesn\'t support arguments %r'
+                             % (dest, write_kwargs))
 
+        if opened and hasattr(dest, 'close'):
+            dest.close()
+        return res
 
-   def show(self, *args, **kwargs):
-      """Show this Atoms object in AtomEye."""
-      try:
-         import atomeye
-         atomeye.show(self, *args, **kwargs)
-      except ImportError:
-         raise RuntimeError('AtomEye not available')
+    def show(self, *args, **kwargs):
+        """Show this Atoms object in AtomEye."""
+        try:
+            import atomeye
+            atomeye.show(self, *args, **kwargs)
+        except ImportError:
+            raise RuntimeError('AtomEye not available')
 
-   def select(self, mask=None, list=None, orig_index=None):
-      """Select a subset of the atoms in an atoms object
+    def select(self, mask=None, list=None, orig_index=None):
+        """Select a subset of the atoms in an atoms object
 
-      Use either a logical mask array or a list of atom indices to include.
+        Use either a logical mask array or a list of atom indices to include.
 
-      small_at = at.select([mask, list])
-      
-      """
-      if mask is not None:
-         mask = farray(mask)
-         out = Atoms(n=mask.count(),lattice=self.lattice)
-         FortranAtoms.select(out, self, mask=mask, orig_index=orig_index)
-      elif list is not None:
-         list = farray(list)
-         out = Atoms(n=len(list), lattice=self.lattice)
-         FortranAtoms.select(out, self, list=list, orig_index=orig_index)
-      else:
-         raise ValueError('Either mask or list must be present.')
-      return out
+        small_at = at.select([mask, list])
 
-   def copy(self):
-      other = Atoms(n=self.n, lattice=self.lattice, 
-                    properties=self.properties, params=self.params)
-      other.use_uniform_cutoff = self.use_uniform_cutoff
-      other.cutoff = self.cutoff
-      other.cutoff_break = self.cutoff_break
-      other.nneightol = self.nneightol
-      return other
+        """
+        if mask is not None:
+            mask = farray(mask)
+            out = self.__class__(n=mask.count(), lattice=self.lattice)
+            FortranAtoms.select(out, self, mask=mask, orig_index=orig_index)
+        elif list is not None:
+            list = farray(list)
+            out = self.__class__(n=len(list), lattice=self.lattice)
+            FortranAtoms.select(out, self, list=list, orig_index=orig_index)
+        else:
+            raise ValueError('Either mask or list must be present.')
+        return out
 
-   def __len__(self):
-      return self.n
+    def copy(self):
+        other = self.__class__(n=self.n, lattice=self.lattice,
+                               properties=self.properties, params=self.params)
 
-   def __getattr__(self, name):
-      try:
-         return self.properties[name]
-      except KeyError:
-         try:
+        # copy any normal (not Fortran) attributes
+        for k, v in self.__dict__.iteritems():
+            if not k.startswith('_') and k not in other.__dict__:
+                other.__dict__[k] = v
+
+        # from FortranAtoms
+        other.use_uniform_cutoff = self.use_uniform_cutoff
+        other.cutoff = self.cutoff
+        other.cutoff_break = self.cutoff_break
+        other.nneightol = self.nneightol
+
+        # from ase.Atoms
+        other.constraints = copy.deepcopy(self.constraints)
+        other.adsorbate_info = copy.deepcopy(self.adsorbate_info)
+        return other
+
+    def copy_from(self, other):
+        """Replace contents of this Atoms object with data from `other`."""
+        self.__class__.__del__(self)
+        self.__init__(n=other.n, lattice=other.lattice,
+                      properties=other.properties, params=other.params)
+
+        # copy any normal (not Fortran) attributes
+        for k, v in other.__dict__.iteritems():
+            if not k.startswith('_') and k not in self.__dict__:
+                self.__dict__[k] = v
+
+        # from FortranAtoms
+        self.use_uniform_cutoff = other.use_uniform_cutoff
+        self.cutoff = other.cutoff
+        self.cutoff_break = other.cutoff_break
+        self.nneightol = other.nneightol
+
+        # from ase.Atoms
+        self.constraints = copy.deepcopy(other.constraints)
+        self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
+
+    def read_from(self, source, **readargs):
+        """Replace contents of this Atoms object with file `source`"""
+        tmp = Atoms.read(source, **readargs)
+        self.shallow_copy_from(tmp)
+        # tmp goes out of scope here, but reference counting
+        # prevents it from being free'd.
+
+    def __len__(self):
+        return self.n
+
+    def __getattr__(self, name):
+        #print 'getattr', name
+        if name in self.properties:
+            return self.properties[name]
+        if name in self.params:
             return self.params[name]
-         except KeyError:
-            raise AttributeError('Unknown Atoms attribute %s' % name)
+        raise AttributeError('Unknown Atoms attribute %s' % name)
 
-   def __getitem__(self, i):
-      if i < 1 or i > self.n:
-         raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
-      res = {}
-      res['i'] = i
-      for k in self.properties.keys():
-         v = getattr(self,k.lower())[...,i]
-         if isinstance(v,FortranArray):
-            if v.dtype.kind == 'S':
-               v = ''.join(v).strip()
-            elif v.shape == ():
-               v = v.item()
-         res[k.lower()] = v
-
-      return Atom(**res)
-
-   def __setitem__(self, i, atom):
-      if i < 1 or i > self.n:
-         raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
-      for k, v in atom.iteratoms():
-         setattr(self, k.lower())[...,i] = v
-
-      
-   def density(self):
-      from quippy import ElementMass, N_A, MASSCONVERT
-      
-      """Density in units of :math:`g/m^3`. If `mass` property exists, use that, otherwise we use `z`"""
-      if hasattr(self, 'mass'):
-         mass = sum(self.mass)/MASSCONVERT/1.0e3
-      else:
-         mass = sum(ElementMass[z] for z in self.z)/MASSCONVERT/1.0e3
-
-      return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
+    def __setattr__(self, name, value):
+        #print 'setattr', name, value
+        if not '_initialised' in self.__dict__:
+            object.__setattr__(self, name, value)
+        elif self.properties._fpointer is not None and name in self.properties:
+            self.properties[name][...] = value
+        elif self.params._fpointer is not None and name in self.params:
+            if self.params.is_array(name):
+                self.params[name][...] = value
+            else:
+                self.params[name] = value
+        else:
+            object.__setattr__(self, name, value)
 
 
-   def add_property(self, name, value, n_cols=None, overwrite=None, property_type=None):
-      """
-      Add a new property to this Atoms object.
+    def __getitem__(self, i):
+        # we override ase.Atoms.__getitem__ so we can raise
+        # exception if we're using fortran indexing
+        if self.fortran_indexing:
+            raise RuntimeError('Atoms[i] inconsistent with fortran indexing')
+        return ase.Atoms.__getitem__(self, i)
 
-      `name` is the name of the new property and `value` should be
-      either a scalar or an array representing the value, which should
-      be either integer, real, logical or string.
+    def get_atom(self, i):
+        """Return a dictionary containing the properties of the atom with
+           index `i`. If fortran_indexing=True (the default), `i` should be in
+           range 1..self.n, otherwise it should be in range 0..(self.n-1)."""
+        if (self.fortran_indexing and (i < 1 or i > self.n)) or \
+            (not self.fortran_indexing and (i < 0 or i > self.n-1)):
+            raise IndexError('Atoms index out of range')
+        atom = {}
+        atom['index'] = i
+        atom['atoms'] = self
+        for k in self.properties.keys():
+            v = getattr(self,k.lower())[...,i]
+            if isinstance(v,np.ndarray):
+                if v.dtype.kind == 'S':
+                    v = ''.join(v).strip()
+                elif v.shape == ():
+                    v = v.item()
+            atom[k.lower()] = v
+        return atom
 
-      If a scalar is given for `value` it is copied to every element
-      in the new property.  `n_cols` can be specified to create a 2D
-      property from a scalar initial value - the default is 1 which
-      creates a 1D property.
+    def print_atom(self, i):
+        """Pretty-print the properties of the atom with index `i`"""
+        at = self.get_atom(i)
+        title = 'Atom %d' % at['index']
+        title = title + '\n' + '-'*len(title)+'\n\n'
+        fields = ['%-15s =  %s' % (k,at[k]) for k in sorted(at.keys())
+                                            if k not in ['index', 'atoms']]
+        print title+'\n'.join(fields)
 
-      If an array is given for `value` it should either have shape
-      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
-      property.  In this case `n_cols` is inferred from the shape of
-      the `value` and shouldn't be passed as an argument.
+    def density(self):
+        from quippy import ElementMass, N_A, MASSCONVERT
 
-      If `property_type` is present, then no attempt is made to
-      infer the type from `value`. This is necessary to resolve
-      ambiguity between integer and logical types.
+        """Density in units of :math:`g/m^3`. If `mass` property exists,
+           use that, otherwise we use `z` and ElementMass table."""
+        if hasattr(self, 'mass'):
+            mass = sum(self.mass)/MASSCONVERT/1.0e3
+        else:
+            mass = sum(ElementMass[z] for z in self.z)/MASSCONVERT/1.0e3
 
-      If property with the same type is already present then no error
-      occurs.If `overwrite` is true, the value will be overwritten with
-      that given in `value`, otherwise the old value is retained.
-      """
-
-      kwargs = {}
-      if n_cols is not None: kwargs['n_cols'] = n_cols
-      if overwrite is not None: kwargs['overwrite'] = overwrite
-
-      if property_type is None:
-         FortranAtoms.add_property(self, name, value, **kwargs)
-
-      else:
-         # override value_ref if property_type is specified
-         
-         from quippy import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
-                             T_INTEGER_A2, T_REAL_A2, TABLE_STRING_LENGTH)
-
-         new_property = not self.has_property(name)
-         
-         type_to_value_ref = {
-            T_INTEGER_A  : 0,
-            T_REAL_A : 0.0,
-            T_CHAR_A  : " "*TABLE_STRING_LENGTH,
-            T_LOGICAL_A : False,
-            T_INTEGER_A2 : 0,
-            T_REAL_A2: 0.0
-            }
-         try:
-            value_ref = type_to_value_ref[property_type]
-         except KeyError:
-            raise ValueError('Unknown property_type %d' % property_type)
-
-         if hasattr(value, 'shape') and len(value.shape) == 2 and property_type != T_CHAR_A and n_cols is None:
-            kwargs['n_cols'] = value.shape[0]
-
-         FortranAtoms.add_property(self, name, value_ref, **kwargs)
-         if new_property or overwrite:
-            getattr(self, name.lower())[:] = value            
+        return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
 
+    def add_property(self, name, value, n_cols=None,
+                     overwrite=None, property_type=None):
+        """
+        Add a new property to this Atoms object.
 
+        `name` is the name of the new property and `value` should be
+        either a scalar or an array representing the value, which should
+        be either integer, real, logical or string.
+
+        If a scalar is given for `value` it is copied to every element
+        in the new property.  `n_cols` can be specified to create a 2D
+        property from a scalar initial value - the default is 1 which
+        creates a 1D property.
+
+        If an array is given for `value` it should either have shape
+        (self.n,) for a 1D property or (n_cols,self.n) for a 2D
+        property.  In this case `n_cols` is inferred from the shape of
+        the `value` and shouldn't be passed as an argument.
+
+        If `property_type` is present, then no attempt is made to
+        infer the type from `value`. This is necessary to resolve
+        ambiguity between integer and logical types.
+
+        If property with the same type is already present then no error
+        occurs.If `overwrite` is true, the value will be overwritten with
+        that given in `value`, otherwise the old value is retained.
+        """
+
+        kwargs = {}
+        if n_cols is not None: kwargs['n_cols'] = n_cols
+        if overwrite is not None: kwargs['overwrite'] = overwrite
+
+        if property_type is None:
+            FortranAtoms.add_property(self, name, value, **kwargs)
+
+        else:
+            # override value_ref if property_type is specified
+
+            from quippy import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
+                                T_INTEGER_A2, T_REAL_A2, TABLE_STRING_LENGTH)
+
+            new_property = not self.has_property(name)
+
+            type_to_value_ref = {
+               T_INTEGER_A  : 0,
+               T_REAL_A : 0.0,
+               T_CHAR_A  : " "*TABLE_STRING_LENGTH,
+               T_LOGICAL_A : False,
+               T_INTEGER_A2 : 0,
+               T_REAL_A2: 0.0
+               }
+            try:
+                value_ref = type_to_value_ref[property_type]
+            except KeyError:
+                raise ValueError('Unknown property_type %d' % property_type)
+
+            if (hasattr(value, 'shape') and len(value.shape) == 2 and
+                property_type != T_CHAR_A and n_cols is None):
+                kwargs['n_cols'] = value.shape[0]
+
+            FortranAtoms.add_property(self, name, value_ref, **kwargs)
+            if new_property or overwrite:
+                getattr(self, name.lower())[:] = value
+
+
+    def mem_estimate(self):
+        """Estimate memory usage of this Atoms object, in bytes"""
+
+        sizeof_table = 320
+        mem = sum([p.itemsize*p.size for p in self.properties.values()])
+        if self.connect.initialised:
+            c = self.connect
+            mem += sizeof_table*self.n*2 # neighbour1 and neighbour2 tables
+            mem += 32*c.n_neighbours_total() # neighbour datag478
+            mem += c.cell_heads.size*c.cell_heads.itemsize # cell data
+
+        return mem

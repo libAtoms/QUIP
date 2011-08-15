@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import AtomsWriters
-import numpy, os
+import os
 import atomeye
 
 class AtomEyeWriter(object):
@@ -45,7 +45,7 @@ class AtomEyeWriter(object):
 
         if self.first_config:
             self.first_config = False
-            
+
             if self.commands is not None:
                 for command in self.commands:
                     self.view.run_command(command)
@@ -66,13 +66,13 @@ class AtomEyeWriter(object):
                 self.view.run_command('set n->anchor %d' % centre)
             else:
                 self.view.run_command('set n->anchor -1')
-                self.view.run_command('set n->hook %f %f %f' % tuple(centre + numpy.diag(at.lattice)/2.))
+                self.view.run_command('set n->hook %f %f %f' % tuple(centre + np.diag(at.lattice)/2.))
             self.view.look_at_the_anchor()
 
         if frame is not None:
             self.view.capture('%s%05d%s' % (os.path.splitext(self.image)[0], frame, os.path.splitext(self.image)[1]))
         else:
-            self.view.capture(self.image)                
+            self.view.capture(self.image)
 
     def close(self):
         pass
