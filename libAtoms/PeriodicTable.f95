@@ -56,6 +56,12 @@ character(3),parameter,dimension(0:116) :: ElementName =   (/"xx ",             
    "Uut","Uuq","Uup","Uuh" /) !% Mapping of atomic number to element name
 
 
+! NOTE: constants used in array initializers below are SINGLE
+! PRECISION, so values of ElementMass and ElementCovRad are slightly
+! incorrect, e.g. masses differ by ~1.0e-7 from results of double
+! precision multiplication of atomic masses by MASSCONVERT. Adding
+! "_dp" after each constant fixes this but causes a number of
+! regression tests to fail.
 
 ! Units: grams per Mole * MASSCONVERT (conforming to eV,A,fs system)
 
