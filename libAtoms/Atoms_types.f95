@@ -416,34 +416,60 @@ contains
 
           ! Integer properties
           case('z')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "Z" not of type T_INTEGER_A')
              this%Z               => this%properties%entries(i)%i_a(:)
           case('travel')
+             if (this%properties%entries(i)%type /= T_INTEGER_A2) &
+                  call system_abort('Confused by Atoms property "travel" not of type T_INTEGER_A2')
              this%travel          => this%properties%entries(i)%i_a2(:,:)
           case('move_mask')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "move_mask" not of type T_INTEGER_A')
              this%move_mask       => this%properties%entries(i)%i_a(:)
           case('damp_mask')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "damp_mask" not of type T_INTEGER_A')
              this%damp_mask       => this%properties%entries(i)%i_a(:)
           case('thermostat_region')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "thermostat_mask" not of type T_INTEGER_A')
              this%thermostat_region => this%properties%entries(i)%i_a(:)
 
           ! Real properties
           case('mass')
+             if (this%properties%entries(i)%type /= T_REAL_A) &
+                  call system_abort('Confused by Atoms property "mass" not of type T_REAL_A')
              this%mass            => this%properties%entries(i)%r_a(:)
           case('pos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "mass" not of type T_REAL_A2')
              this%pos             => this%properties%entries(i)%r_a2(:,:)
           case('velo')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "velo" not of type T_REAL_A2')
              this%velo            => this%properties%entries(i)%r_a2(:,:)
           case('acc')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "acc" not of type T_REAL_A2')
              this%acc             => this%properties%entries(i)%r_a2(:,:)
           case('avgpos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "avgpos" not of type T_REAL_A2')
              this%avgpos          => this%properties%entries(i)%r_a2(:,:)
           case('oldpos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "oldpos" not of type T_REAL_A2')
              this%oldpos          => this%properties%entries(i)%r_a2(:,:)
           case('avg_ke')
+             if (this%properties%entries(i)%type /= T_REAL_A) &
+                  call system_abort('Confused by Atoms property "avg_ke" not of type T_REAL_A')
              this%avg_ke          => this%properties%entries(i)%r_a(:)
 
           ! String properties
           case('species')
+             if (this%properties%entries(i)%type /= T_CHAR_A) &
+                  call system_abort('Confused by Atoms property "species" not of type T_CHAR_A')
              this%species         => this%properties%entries(i)%s_a(:,:)
 
           end select
@@ -455,34 +481,60 @@ contains
 
           ! Integer properties
           case('z')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "Z" not of type T_INTEGER_A')
              this%Z               => this%properties%entries(i)%i_a(1:this%n)
           case('travel')
+             if (this%properties%entries(i)%type /= T_INTEGER_A2) &
+                  call system_abort('Confused by Atoms property "travel" not of type T_INTEGER_A2')
              this%travel          => this%properties%entries(i)%i_a2(:,1:this%n)
           case('move_mask')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "move_mask" not of type T_INTEGER_A')
              this%move_mask       => this%properties%entries(i)%i_a(1:this%n)
           case('damp_mask')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "damp_mask" not of type T_INTEGER_A')
              this%damp_mask       => this%properties%entries(i)%i_a(1:this%n)
           case('thermostat_region')
+             if (this%properties%entries(i)%type /= T_INTEGER_A) &
+                  call system_abort('Confused by Atoms property "thermostat_mask" not of type T_INTEGER_A')
              this%thermostat_region => this%properties%entries(i)%i_a(1:this%n)
 
           ! Real properties
           case('mass')
+             if (this%properties%entries(i)%type /= T_REAL_A) &
+                  call system_abort('Confused by Atoms property "mass" not of type T_REAL_A')
              this%mass            => this%properties%entries(i)%r_a(1:this%n)
           case('pos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "mass" not of type T_REAL_A2')
              this%pos             => this%properties%entries(i)%r_a2(:,1:this%N)
           case('velo')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "velo" not of type T_REAL_A2')
              this%velo            => this%properties%entries(i)%r_a2(:,1:this%N)
           case('acc')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "acc" not of type T_REAL_A2')
              this%acc             => this%properties%entries(i)%r_a2(:,1:this%N)
           case('avgpos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "avgpos" not of type T_REAL_A2')
              this%avgpos          => this%properties%entries(i)%r_a2(:,1:this%N)
           case('oldpos')
+             if (this%properties%entries(i)%type /= T_REAL_A2) &
+                  call system_abort('Confused by Atoms property "oldpos" not of type T_REAL_A2')
              this%oldpos          => this%properties%entries(i)%r_a2(:,1:this%N)
           case('avg_ke')
+             if (this%properties%entries(i)%type /= T_REAL_A) &
+                  call system_abort('Confused by Atoms property "avg_ke" not of type T_REAL_A')
              this%avg_ke          => this%properties%entries(i)%r_a(1:this%n)
 
           ! String properties
           case('species')
+             if (this%properties%entries(i)%type /= T_CHAR_A) &
+                  call system_abort('Confused by Atoms property "species" not of type T_CHAR_A')
              this%species         => this%properties%entries(i)%s_a(:,1:this%N)
 
           end select
