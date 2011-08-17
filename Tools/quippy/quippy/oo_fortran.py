@@ -811,7 +811,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
             # array members
             if 'array' in el:
                 logging.debug('    adding array %s' % name)
-                new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'])
+                new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'], el['type'])
                 setattr(new_cls, '_'+name, property(fget=wrap_array_get(name,reshape=False),
                                                     fset=wrap_array_set(name,reshape=False),
                                                     doc=el['doc']))
@@ -902,14 +902,17 @@ def wrap_obj_set(name):
 def wrap_array_get(name, reshape=True):
     def func(self):
         try:
-            arrayfunc, doc = self._arrays[name]
+            arrayfunc, doc, arraytype = self._arrays[name]
         except KeyError:
-            arrayfunc, doc = self._arrays['_'+name]
+            arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
-            if self.fortran_indexing: a = FortranArray(a,doc)
+            if self.fortran_indexing:
+                a = FortranArray(a,doc)
             nshape = self._get_array_shape(name)
-            if reshape and nshape is not None: a = a[nshape]
+            if reshape and nshape is not None:
+                a = a[nshape]
+            a.fortran_type = arraytype
             return a
         except ValueError:
             return None
@@ -919,14 +922,18 @@ def wrap_array_get(name, reshape=True):
 def wrap_array_set(name, reshape=True):
     def func(self, value):
         try:
-            arrayfunc, doc = self._arrays[name]
+            arrayfunc, doc, arraytype = self._arrays[name]
         except KeyError:
-            arrayfunc, doc = self._arrays['_'+name]
+            arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
             if self.fortran_indexing: a = FortranArray(a,doc)
             nshape = self._get_array_shape(name)
-            if reshape and nshape is not None: a = a[nshape]
+            if reshape and nshape is not None:
+                a = a[nshape]
+            a.fortran_type = arraytype
+            if arraytype == 'logical':
+                value = np.where(value, QUIPPY_TRUE, QUIPPY_FALSE)
             a[...] = value
             
         except ValueError:
