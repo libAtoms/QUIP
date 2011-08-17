@@ -49,7 +49,8 @@ def find_quip_root_and_arch():
     return (quip_root, quip_arch)
 
 
-def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kindlines=[], short_names={},
+def F90WrapperBuilder(modname, wrap_sources, targets, cpp, sizeof_fortran_t,
+                      dep_type_maps=[], kindlines=[], short_names={},
                       initlines={}, filtertypes=None, prefix='',callback_routines={}):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
@@ -130,7 +131,7 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
             tmpf = StringIO.StringIO()
             new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines, initlines=initlines,
                                                  filtertypes=filtertypes, prefix=prefix, callback_routines=callback_routines,
-                                                 public_symbols=public_symbols)
+                                                 public_symbols=public_symbols, sizeof_fortran_t=sizeof_fortran_t)
 
             if not os.path.exists(wrapper) or (new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
                 print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
@@ -188,6 +189,39 @@ def expand_addprefix(s):
             m = add_prefix.search(s)
     return s
 
+
+def find_sizeof_fortran_t(compiler):
+    from numpy.distutils.fcompiler import new_fcompiler
+
+    src = 'sizeof_fortran_t.f90'
+    srcf = open(src, 'w')
+    srcf.write("""program sizeof_fortran_t
+ 
+  type ptr_type
+     type(ptr_type), pointer :: p => NULL()
+  end type ptr_type
+  type(ptr_type) :: ptr
+  integer, allocatable, dimension(:) :: ptr_int
+
+  write (*,*) size(transfer(ptr, ptr_int))
+
+end program sizeof_fortran_t""")
+    srcf.close()
+
+    fc = new_fcompiler(compiler=compiler)
+    fc.customize()
+    if fc.linker_exe is None:
+        fc.linker_exe = fc.linker_so[:1]
+    objs = fc.compile([src])
+    print 'objs', objs
+    exe = "./sizeof_fortran_t"
+    fc.link_executable(objs,exe)
+    sizeof_fortran_t = int(os.popen(exe).read())
+    print 'SIZEOF_FORTRAN_T = ', sizeof_fortran_t
+    os.unlink(src)
+    os.unlink(objs[0])
+    os.unlink(exe)
+    return sizeof_fortran_t
 
 def read_arch_makefiles_and_environment(quip_root, quip_arch):
 
@@ -381,6 +415,8 @@ if makefile_test('QUIPPY_DEBUG') or got_gfortran45:
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
 
+sizeof_fortran_t = find_sizeof_fortran_t(makefile['QUIPPY_FCOMPILER'])
+
 # Install options
 if 'QUIPPY_INSTALL_OPTS' in makefile:
     install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
@@ -403,7 +439,8 @@ library_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
 f2py_info = get_info('f2py')
 arraydata_ext = Extension(name='quippy.arraydata', 
                           sources=['arraydatamodule.c'] + f2py_info['sources'],
-                          include_dirs=f2py_info['include_dirs']+include_dirs)
+                          include_dirs=f2py_info['include_dirs']+include_dirs,
+                          define_macros=[('SIZEOF_FORTRAN_T', sizeof_fortran_t)])
 
 
 # _quippy extension module
@@ -411,6 +448,7 @@ quippy_ext = Extension(name='quippy._quippy',
                        sources=[ F90WrapperBuilder('quippy',
                                                    wrap_sources=wrap_sources,
                                                    cpp=cpp,
+                                                   sizeof_fortran_t=sizeof_fortran_t,
                                                    targets=quip_targets,
                                                    dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                    'dictionary_t':'FoX_sax'}], 
@@ -430,6 +468,7 @@ quippy_ext = Extension(name='quippy._quippy',
                                                                       'dynamicalsystem_run':{'arglines' : ['external :: qp_hook'],
                                                                                              'attributes': [],
                                                                                              'call':'qp_this'}})
+                                                   
                                  ],
                        library_dirs=library_dirs,
                        include_dirs=include_dirs,

@@ -46,7 +46,7 @@ get_array(PyObject *self, PyObject *args)
     return NULL;
 
   /* Processing variable this */
-  this_Dims[0]=12;
+  this_Dims[0]=SIZEOF_FORTRAN_T;
   capi_this_intent |= F2PY_INTENT_IN;
   capi_this_tmp = array_from_pyobj(PyArray_INT,this_Dims,this_Rank,capi_this_intent,this_capi);
   if (capi_this_tmp == NULL) {
@@ -136,7 +136,7 @@ get_array(PyObject *self, PyObject *args)
 
 static PyMethodDef arraydata_methods[] = {
   {"get_array", get_array, METH_VARARGS, 
-   "Make an array from integer(12) array containing reference to derived type object,\n and fortran array function.\n\get_array(fpointer,array_fobj[,key]) -> array"},
+   "Make an array from integer(SIZEOF_FORTRAN_T) array containing reference to derived type object,\n and fortran array function.\n\get_array(fpointer,array_fobj[,key]) -> array"},
   {NULL, NULL}
 };
 

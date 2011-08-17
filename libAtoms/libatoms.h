@@ -117,7 +117,9 @@ extern void c_system_initialise_(int *verbosity);
 
 /* Dictionary.f95 (via libAtoms_utils_no_module.f95) */
 
+#ifndef SIZEOF_FORTRAN_T
 #define SIZEOF_FORTRAN_T 12
+#endif
 typedef int fortran_t;
 
 extern void c_dictionary_initialise_(fortran_t*);
