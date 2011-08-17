@@ -190,39 +190,6 @@ def expand_addprefix(s):
     return s
 
 
-def find_sizeof_fortran_t(compiler):
-    from numpy.distutils.fcompiler import new_fcompiler
-
-    src = 'sizeof_fortran_t.f90'
-    srcf = open(src, 'w')
-    srcf.write("""program sizeof_fortran_t
- 
-  type ptr_type
-     type(ptr_type), pointer :: p => NULL()
-  end type ptr_type
-  type(ptr_type) :: ptr
-  integer, allocatable, dimension(:) :: ptr_int
-
-  write (*,*) size(transfer(ptr, ptr_int))
-
-end program sizeof_fortran_t""")
-    srcf.close()
-
-    fc = new_fcompiler(compiler=compiler)
-    fc.customize()
-    if fc.linker_exe is None:
-        fc.linker_exe = fc.linker_so[:1]
-    objs = fc.compile([src])
-    print 'objs', objs
-    exe = "./sizeof_fortran_t"
-    fc.link_executable(objs,exe)
-    sizeof_fortran_t = int(os.popen(exe).read())
-    print 'SIZEOF_FORTRAN_T = ', sizeof_fortran_t
-    os.unlink(src)
-    os.unlink(objs[0])
-    os.unlink(exe)
-    return sizeof_fortran_t
-
 def read_arch_makefiles_and_environment(quip_root, quip_arch):
 
     # Write a Makefile which simply includes Makefile.inc, Makefile.rules and Makefile.${QUIP_ARCH}
@@ -415,7 +382,7 @@ if makefile_test('QUIPPY_DEBUG') or got_gfortran45:
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
 
-sizeof_fortran_t = find_sizeof_fortran_t(makefile['QUIPPY_FCOMPILER'])
+sizeof_fortran_t = makefile['SIZEOF_FORTRAN_T']
 
 # Install options
 if 'QUIPPY_INSTALL_OPTS' in makefile:

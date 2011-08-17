@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# find size of pointer to Fortran derived type
+# used by quippy and AtomEye for Fortran<->C interoperability
+
+cat > Makefile.tmp <<EOF
+ifeq (${QUIP_ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${QUIP_ARCH}
+endif
+include Makefile.inc
+include Makefile.rules
+EOF
+
+F90=$(make -f Makefile.tmp -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} -I ${QUIP_ROOT} -p 2> /dev/null | grep '^F90'| awk '{print $3}')
+
+cat > sizeof_fortran_t.f90 <<EOF
+program sizeof_fortran_t
+ 
+  type ptr_type
+     type(ptr_type), pointer :: p => NULL()
+  end type ptr_type
+  type(ptr_type) :: ptr
+  integer, allocatable, dimension(:) :: ptr_int
+
+  write (*,*) size(transfer(ptr, ptr_int))
+
+end program sizeof_fortran_t
+EOF
+
+${F90} sizeof_fortran_t.f90 -o sizeof_fortran_t
+echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
+
+rm sizeof_fortran_t.f90
+rm sizeof_fortran_t
