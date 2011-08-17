@@ -24,7 +24,7 @@ static PyObject*
 get_array(PyObject *self, PyObject *args)
 {
   typedef void (*arrayfunc_t)(int*,int*,int*,int*,void*);
-  typedef void (*arrayfunc_key_t)(int*,char*,int*,int*,int*,void*,int*);
+  typedef void (*arrayfunc_key_t)(int*,char*,int*,int*,int*,void*,int);
 
   int nd, i, type, typenum;
   int dim_temp[10];
