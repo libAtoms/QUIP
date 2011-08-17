@@ -6,7 +6,7 @@ mockNDarray makes a lists of ndarrays (or lists)
 # Priithon copyright and licensing notes
 # =====================================
 
-# Priithon is a collection of other open-source projects and code written 
+# Priithon is a collection of other open-source projects and code written
 # at UCSF (contained in the 'Priithon' subfolder).
 
 # Unless indicated otherwise, files in this project are covered by a BSD-type
@@ -16,7 +16,7 @@ mockNDarray makes a lists of ndarrays (or lists)
 # (http://www.opensource.org/licenses/gpl-license.php)
 # This might require you to consider all of Priithon being under GPL!
 # If you cannot accept this please remove those files.
-# (IANAL - some comments are also at 
+# (IANAL - some comments are also at
 # http://www.scipy.org/mailinglists/mailman?fn=scipy-user/2003-March/001484.html)
 
 # Individual authors are the holders of the copyright for their code and are
@@ -40,22 +40,22 @@ mockNDarray makes a lists of ndarrays (or lists)
 #   b. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-#   c. Neither the name of the University of California, San Francisco nor 
-#      the names of its contributors may be used to endorse or promote products 
+#   c. Neither the name of the University of California, San Francisco nor
+#      the names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS 
-# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, 
-# OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+# OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-            
+
 __author__  = "Sebastian Haase <seb.haase@gmail.com>"
 __license__ = "BSD license - see LICENSE file"
 
@@ -70,8 +70,8 @@ class mockNDarray(object):
                 return mockNDarray(*a) # recursively mockify lists
             if a is None:
                 return mockNDarray()   # None makes an empty mockNDarray
-            
-            return N.array(a) # use standard conversion to ndarray (copy!) 
+
+            return N.array(a) # use standard conversion to ndarray (copy!)
             # raise ValueError, "don't know how to mockify %s" %(a,)
         self._arrs = [conv(a) for a in arrs]
         self._mockAxisSet(0)
@@ -139,7 +139,7 @@ class mockNDarray(object):
                 else:
                     foundMinus = True
             elif s[i] != self._shape[i]:
-                    raise ValueError, __setShapeErrMsg
+                raise ValueError, __setShapeErrMsg
 
     shape = property( _getshape,_setshape )
 
@@ -182,22 +182,22 @@ class mockNDarray(object):
             else:
                 mockIdx = idx[self._mockAxis]
                 idxSkipMock = idx[:self._mockAxis] + idx[self._mockAxis+1:]
-            
+
 
             if isinstance(mockIdx, slice):
                 s = copy.copy(self)
-                
+
                 s._arrs = [a[idxSkipMock] for a in self._arrs[mockIdx]]
                 shiftMockAxisBecauseOfInt = sum((1 for i in idx[:self._mockAxis] if not isinstance(i, slice)))
-                s._mockAxisSet( self._mockAxis-shiftMockAxisBecauseOfInt )          
+                s._mockAxisSet( self._mockAxis-shiftMockAxisBecauseOfInt )
                 return s
             elif mockIdx is None:
                 s = copy.copy(self)
                 s._arrs = [a[None][idxSkipMock] for a in self._arrs]
                 s._mockAxisSet( self._mockAxis+1 )
-                idxSkipMock = (slice(None),)+idxSkipMock  # adjust idxSkipMock to keep new axis 
+                idxSkipMock = (slice(None),)+idxSkipMock  # adjust idxSkipMock to keep new axis
                 return s[idxSkipMock]
-                
+
             else: # mockIdx is "normal" int - CHECK
                 # return non-mock ndarray, (or mockNDarray, if there are nested ones)
                 return self._arrs[mockIdx][idxSkipMock]
@@ -224,7 +224,7 @@ class mockNDarray(object):
             return s
 
 
-        raise IndexError, "should not get here .... " 
+        raise IndexError, "should not get here .... "
 
     def transpose(self, *axes):
         if len(axes) == 1:

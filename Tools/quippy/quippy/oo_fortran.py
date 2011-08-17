@@ -367,7 +367,7 @@ class FortranDerivedType(object):
             if ((self.initialised and not other.initialised) or
                 (other.initialised and not self.initialised)):
                 return False
-                  
+
         # Compare elements and sub-objects
         for el in self._elements.keys() + self._subobjs.keys():
             if el in self._cmp_skip_fields:
@@ -935,7 +935,7 @@ def wrap_array_set(name, reshape=True):
             if arraytype == 'logical':
                 value = np.where(value, QUIPPY_TRUE, QUIPPY_FALSE)
             a[...] = value
-            
+
         except ValueError:
             return None
 

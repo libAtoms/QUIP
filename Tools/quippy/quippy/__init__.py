@@ -33,63 +33,63 @@ from ConfigParser import ConfigParser
 cfg = ConfigParser()
 quippyrc = os.path.join(os.environ['HOME'],'.quippyrc')
 if os.path.exists(quippyrc):
-   cfg.read(quippyrc)
+    cfg.read(quippyrc)
 
 # Read config file given in ${QUIPPY_CFG} if it exists
 if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
-   cfg.read(os.environ['QUIPPY_CFG'])
+    cfg.read(os.environ['QUIPPY_CFG'])
 
 if 'logging' in cfg.sections():
-   if 'level' in cfg.options('logging'):
-      logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
+    if 'level' in cfg.options('logging'):
+        logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
 
 disabled_modules = []
 if 'modules' in cfg.sections():
-   for name, value in cfg.items('modules'):
-      if not int(value):
-         disabled_modules.append(name)
+    for name, value in cfg.items('modules'):
+        if not int(value):
+            disabled_modules.append(name)
 
 # External dependencies
 available_modules = []
 unavailable_modules = []
 
 for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye', 'enthought.mayavi']:
-   if mod in disabled_modules: continue
-   try:
-      __import__(mod)
-      available_modules.append(mod)
-   except ImportError:
-      unavailable_modules.append(mod)
+    if mod in disabled_modules: continue
+    try:
+        __import__(mod)
+        available_modules.append(mod)
+    except ImportError:
+        unavailable_modules.append(mod)
 
 logging.debug('disabled_modules %r' % disabled_modules)
 logging.debug('available_modules %r' % available_modules)
 logging.debug('unavailable_modules %r' % unavailable_modules)
 
 if 'netCDF4' in available_modules:
-   from netCDF4 import Dataset
-   netcdf_file = Dataset
+    from netCDF4 import Dataset
+    netcdf_file = Dataset
 else:
-   from pupynere import netcdf_file
+    from pupynere import netcdf_file
 
 # if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
 if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
        ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
-   import dl
-   flags = sys.getdlopenflags()
-   sys.setdlopenflags(flags | dl.RTLD_GLOBAL)
-   available_modules.append('mpi')
+    import dl
+    flags = sys.getdlopenflags()
+    sys.setdlopenflags(flags | dl.RTLD_GLOBAL)
+    available_modules.append('mpi')
 
 AtomsReaders = {}
 AtomsWriters = {}
 
 def atoms_reader(source):
-   """Decorator to add a new reader"""
-   def decorate(func):
-      from quippy import AtomsReaders
-      if not source in AtomsReaders:
-         AtomsReaders[source] = func
-      return func
-   return decorate
+    """Decorator to add a new reader"""
+    def decorate(func):
+        from quippy import AtomsReaders
+        if not source in AtomsReaders:
+            AtomsReaders[source] = func
+        return func
+    return decorate
 
 import _quippy
 
@@ -103,11 +103,11 @@ from oo_fortran import FortranDerivedType, FortranDerivedTypes, FortranRoutines,
 # and routines found therein.
 
 def quippy_cleanup():
-   try:
-      _quippy.qp_verbosity_pop()
-      _quippy.qp_system_finalise()
-   except AttributeError:
-      pass
+    try:
+        _quippy.qp_verbosity_pop()
+        _quippy.qp_system_finalise()
+    except AttributeError:
+        pass
 
 _quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
 _quippy.qp_verbosity_push(0)
@@ -129,18 +129,18 @@ QUIP_ARCH = spec['quip_arch']
 QUIP_MAKEFILE = spec['quip_makefile']
 
 if 'netdf' in disabled_modules:
-   disabled_modules.append('netcdf')
+    disabled_modules.append('netcdf')
 else:
-   if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
-      available_modules.append('netcdf')
-   else:
-      unavailable_modules.append('netcdf')
+    if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
+        available_modules.append('netcdf')
+    else:
+        unavailable_modules.append('netcdf')
 
 for name, cls in classes:
-   setattr(sys.modules[__name__], name, cls)
+    setattr(sys.modules[__name__], name, cls)
 
 for name, routine in routines:
-   setattr(sys.modules[__name__], name, routine)
+    setattr(sys.modules[__name__], name, routine)
 
 sys.modules[__name__].__dict__.update(params)
 
@@ -154,15 +154,15 @@ import table;           from table import Table
 import extendable_str;  from extendable_str import Extendable_str
 
 for name, cls in classes:
-   try:
-      # For some Fortran types, we have customised subclasses written in Python
-      new_cls = getattr(sys.modules[__name__], name[len(fortran_class_prefix):])
-   except AttributeError:
-      # For the rest, we make a dummy subclass which is equivalent to Fortran base class
-      new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
-      setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
+    try:
+        # For some Fortran types, we have customised subclasses written in Python
+        new_cls = getattr(sys.modules[__name__], name[len(fortran_class_prefix):])
+    except AttributeError:
+        # For the rest, we make a dummy subclass which is equivalent to Fortran base class
+        new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
+        setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
 
-   FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
+    FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
 
 del classes
 del routines
@@ -180,28 +180,28 @@ import util;        from util import *
 import sio2, povray, cube, xyz, netcdf, imd
 
 try:
-   import castep
+    import castep
 except ImportError:
-   logging.warning('quippy.castep import failed.')
+    logging.warning('quippy.castep import failed.')
 
 if is_interactive_shell():
-   if 'atomeye' in available_modules:
-      import atomeye
-      import atomeyewriter
+    if 'atomeye' in available_modules:
+        import atomeye
+        import atomeyewriter
 
-   if 'enthought.mayavi' in available_modules:
-      import plot3d
-      from plot3d import *
+    if 'enthought.mayavi' in available_modules:
+        import plot3d
+        from plot3d import *
 
-   if 'pylab' in available_modules:
-      import plot2d
-      from plot2d import *
+    if 'pylab' in available_modules:
+        import plot2d
+        from plot2d import *
 
-   import elastic
-   from elastic import *
+    import elastic
+    from elastic import *
 
-   import surface
-   from surface import *
+    import surface
+    from surface import *
 
-   import crack
-   from crack import *
+    import crack
+    from crack import *

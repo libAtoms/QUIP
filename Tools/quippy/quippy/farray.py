@@ -80,14 +80,14 @@ def fvar(seq):
     as intent(in,out) arguments to a Fortran function. A single
     string argument causes variables with one-letter names to be
     created. The new arrays are also returned.
-    
+
     The following examples are equivalent::
 
        >>> fvar("abc")
        (FortranArray(0.0), FortranArray(0.0), FortranArray(0.0))
        >>> a, b, c = fvar(['a','b','c'])
     """
-    
+
     import inspect
     frame = inspect.currentframe().f_back
     try:
@@ -125,15 +125,15 @@ class FortranArray(numpy.ndarray):
 
         If doc is not None, docstring of new array is set to doc."""
 
-	self = numpy.asarray(input_array)
+        self = numpy.asarray(input_array)
         self = self.view(FortranArray)
-        
+
         if doc is not None:
             self.__doc__ = doc
 
         self.cols = self.col_iter()
         self.rows = self.row_iter()
-	return self
+        return self
 
     def __eq__(self, other):
         obj = numpy.ndarray.__eq__(self, other)
@@ -241,8 +241,8 @@ class FortranArray(numpy.ndarray):
 
     def __getitem__(self, indx):
         "Overloaded __getitem__ which accepts one-based indices."
-	indx = self.mapindices(indx)
-	obj = numpy.ndarray.__getitem__(self, indx)
+        indx = self.mapindices(indx)
+        obj = numpy.ndarray.__getitem__(self, indx)
         if isinstance(obj, numpy.ndarray):
             fa = obj.view(FortranArray)
             return fa
@@ -270,12 +270,12 @@ class FortranArray(numpy.ndarray):
 
         if doext:
             domap = True
-        
+
         if domap:
 #            print 'mapping', indx
             indx = self.mapindices(indx)
-            
-	numpy.ndarray.__setitem__(self, indx, value)
+
+        numpy.ndarray.__setitem__(self, indx, value)
 
     def __getslice__(self, i, j):
         "Overloaded __getslice__ which accepts one-based indices."
@@ -294,64 +294,64 @@ class FortranArray(numpy.ndarray):
 
     def nonzero(self):
         """Return the one-based indices of the elements of a which are not zero."""
-	return tuple(a + 1 for a in numpy.ndarray.nonzero(self))
-	
+        return tuple(a + 1 for a in numpy.ndarray.nonzero(self))
+
     def count(self):
         """Number of nonzero elemnts of this FortranArray.
 
         Equivalent to len(self[self.nonzero()])."""
-	return len(self[self.nonzero()])
-    
+        return len(self[self.nonzero()])
+
     def argmin(self, axis=None, out=None):
         """Return one-based indices of the minimum values along the given  axis of `a`.
-        
+
         Refer to `numpy.ndarray.argmax` for detailed documentation."""
-	if axis is not None and axis > 0:
-	    axis -= 1
-	return numpy.ndarray.argmin(self,axis,out) + 1
+        if axis is not None and axis > 0:
+            axis -= 1
+        return numpy.ndarray.argmin(self,axis,out) + 1
 
     def argmax(self, axis=None, out=None):
         """Return one-based indices of the maximum values along the given axis of `a`.
-        
+
         Refer to `numpy.ndarray.argmax` for detailed documentation."""
-	if axis is not None and axis > 0:
-	    axis -= 1
-	return numpy.ndarray.argmax(self,axis,out) + 1	
+        if axis is not None and axis > 0:
+            axis -= 1
+        return numpy.ndarray.argmax(self,axis,out) + 1
 
     def argsort(self, axis=None, kind='quicksort', order=None):
         """Returns the indices that would sort this array.
-        
+
         Refer to `numpy.argsort` for full documentation."""
 
         if axis is not None and axis > 0:
             axis -= 1
-	return numpy.ndarray.argsort(self,axis,kind,order) + 1
+        return numpy.ndarray.argsort(self,axis,kind,order) + 1
 
     def take(self, indices, axis=None, out=None, mode='raise'):
         """Return an array formed from the elements of a at the given
         one-based indices.
-        
+
         Refer to `numpy.take` for full documentation."""
 
         if axis is not None and axis > 0:
             axis -= 1
-	return numpy.ndarray.take(self,self.mapindices(indices),
-				  axis,out,mode)
-		
+        return numpy.ndarray.take(self,self.mapindices(indices),
+                                  axis,out,mode)
+
     def put(self, indices, values, mode='raise'):
         """Set a.flat[n] = values[n] for all n in indices.
-    
+
         Refer to `numpy.put` for full documentation."""
 
-	return numpy.ndarray.put(self, self.mapindices(indices), 
-				 values, mode)
-				 
+        return numpy.ndarray.put(self, self.mapindices(indices),
+                                 values, mode)
+
     def __repr__(self):
         s = repr(numpy.asarray(self).view(numpy.ndarray))
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
         return s
-        
+
 
     def __str__(self):
         return str(numpy.asarray(self).view(numpy.ndarray))
@@ -379,7 +379,7 @@ class FortranArray(numpy.ndarray):
                     yield fa
                 else:
                     yield obj
-                
+
     def norm2(self):
         """Squared norm of a 1D or 2D array.
 
@@ -399,11 +399,11 @@ class FortranArray(numpy.ndarray):
             return self.item()
         else:
             raise ValueError("Don't know how to take norm2 of array with shape %s" % str(self.shape))
-            
+
 
     def norm(self):
-       "Return ``sqrt(norm2(self))``"
-       return numpy.sqrt(self.norm2())
+        "Return ``sqrt(norm2(self))``"
+        return numpy.sqrt(self.norm2())
 
     def col_iter(self):
         """Iterator for ``MxN`` arrays to return ``cols [...,i]`` for ``i=1,N`` one by one as ``Mx1`` arrays."""
@@ -416,38 +416,38 @@ class FortranArray(numpy.ndarray):
 
     def all(self, axis=None, out=None):
         """One-based analogue of :meth:`numpy.ndarray.all`"""
-        
-	if axis is not None and axis > 0:
-	    axis -= 1
-	obj = numpy.ndarray.all(self, axis, out)
+
+        if axis is not None and axis > 0:
+            axis -= 1
+        obj = numpy.ndarray.all(self, axis, out)
         if isinstance(obj, numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
 
     def any(self, axis=None, out=None):
         """One-based analogue of :meth:`numpy.ndarray.any`"""
-        
-	if axis is not None and axis > 0:
-	    axis -= 1
-	obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
+
+        if axis is not None and axis > 0:
+            axis -= 1
+        obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
 
     def sum(self, axis=None, dtype=None, out=None):
         """One-based analogue of :meth:`numpy.ndarray.sum`"""
-	if axis is not None and axis > 0:
-	    axis -= 1
-	obj = numpy.ndarray.sum(self, axis, out).view(FortranArray)
+        if axis is not None and axis > 0:
+            axis -= 1
+        obj = numpy.ndarray.sum(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
 
     def mean(self, axis=None, dtype=None, out=None):
         """One-based analogue of :meth:`numpy.ndarray.mean`"""
-	if axis is not None and axis > 0:
-	    axis -= 1
-	obj = numpy.ndarray.mean(self, axis, out).view(FortranArray)
+        if axis is not None and axis > 0:
+            axis -= 1
+        obj = numpy.ndarray.mean(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
@@ -480,98 +480,98 @@ def padded_str_array(d, length):
 
 
 def convert_farray_to_ndarray(func):
-   """Decorator to convert all occurences of farray in arguments to ndarray.
-      If result contains ndarray, they will be converted back to farray."""
-   from functools import wraps
-   @wraps(func)
+    """Decorator to convert all occurences of farray in arguments to ndarray.
+       If result contains ndarray, they will be converted back to farray."""
+    from functools import wraps
+    @wraps(func)
 
-   def nfunc(*args, **kwargs):
-       from numpy  import ndarray
-       from farray import FortranArray
+    def nfunc(*args, **kwargs):
+        from numpy  import ndarray
+        from farray import FortranArray
 
-       nargs = []
-       for a in args:
-           if isinstance(a, FortranArray):
-               nargs.append(a.view(ndarray))
-           else:
-               nargs.append(a)
+        nargs = []
+        for a in args:
+            if isinstance(a, FortranArray):
+                nargs.append(a.view(ndarray))
+            else:
+                nargs.append(a)
 
-       nkwargs = {}
-       for k, v in kwargs.iteritems():
-           if isinstance(v, FortranArray):
-               nkwargs[k] = v.view(ndarray)
-           else:
-               nkwargs[k] = v
+        nkwargs = {}
+        for k, v in kwargs.iteritems():
+            if isinstance(v, FortranArray):
+                nkwargs[k] = v.view(ndarray)
+            else:
+                nkwargs[k] = v
 
-       nargs = tuple(nargs)
-       res = func(*nargs, **nkwargs)
-       if res is None: return
-       
-       one_result = not isinstance(res, tuple)
-       if one_result:
-          res = (res,)
+        nargs = tuple(nargs)
+        res = func(*nargs, **nkwargs)
+        if res is None: return
 
-       nres = []
-       for r in res:
-           if isinstance(r, ndarray):
-               nres.append(r.view(FortranArray))
-           else:
-               nres.append(r)
+        one_result = not isinstance(res, tuple)
+        if one_result:
+            res = (res,)
 
-       if one_result:
-          return nres[0]
-       else:
-          return tuple(nres)
-          
+        nres = []
+        for r in res:
+            if isinstance(r, ndarray):
+                nres.append(r.view(FortranArray))
+            else:
+                nres.append(r)
 
-   return nfunc
+        if one_result:
+            return nres[0]
+        else:
+            return tuple(nres)
+
+
+    return nfunc
 
 
 def convert_ndarray_to_farray(func):
-   """Decorator to convert all occurences of ndarray in arguments to farray.
-   If results contains farray, they will be converted back to ndarray. """
-   from functools import wraps
-   @wraps(func)
+    """Decorator to convert all occurences of ndarray in arguments to farray.
+    If results contains farray, they will be converted back to ndarray. """
+    from functools import wraps
+    @wraps(func)
 
-   def nfunc(*args, **kwargs):
-       from numpy  import ndarray
-       from farray import FortranArray
+    def nfunc(*args, **kwargs):
+        from numpy  import ndarray
+        from farray import FortranArray
 
-       nargs = []
-       for a in args:
-           if isinstance(a, ndarray):
-               nargs.append(a.view(FortranArray))
-           else:
-               nargs.append(a)
+        nargs = []
+        for a in args:
+            if isinstance(a, ndarray):
+                nargs.append(a.view(FortranArray))
+            else:
+                nargs.append(a)
 
-       nkwargs = {}
-       for k, v in kwargs.iteritems():
-           if isinstance(v, ndarray):
-               nkwargs[k] = v.view(FortranArray)
-           else:
-               nkwargs[k] = v
+        nkwargs = {}
+        for k, v in kwargs.iteritems():
+            if isinstance(v, ndarray):
+                nkwargs[k] = v.view(FortranArray)
+            else:
+                nkwargs[k] = v
 
-       nargs = tuple(nargs)
-       res = func(*nargs, **nkwargs)
-       if res is None: return
+        nargs = tuple(nargs)
+        res = func(*nargs, **nkwargs)
+        if res is None: return
 
-       one_result = not isinstance(res, tuple)
-       if one_result:
-          res = (res,)
+        one_result = not isinstance(res, tuple)
+        if one_result:
+            res = (res,)
 
-       nres = []
-       for r in res:
-           if isinstance(r, FortranArray):
-               nres.append(r.view(ndarray))
-           else:
-               nres.append(r)
+        nres = []
+        for r in res:
+            if isinstance(r, FortranArray):
+                nres.append(r.view(ndarray))
+            else:
+                nres.append(r)
 
-       if one_result:
-          return nres[0]
-       else:
-          return tuple(nres)
+        if one_result:
+            return nres[0]
+        else:
+            return tuple(nres)
 
-   return nfunc
+    return nfunc
 
 def f2n(x):
     """Return ``x.view(numpy.ndarray)``"""
@@ -580,7 +580,7 @@ def f2n(x):
 def n2f(x):
     """Return ``x.view(FortranArray)``"""
     return x.view(FortranArray)
-    
+
 def unravel_index(x, dims):
     """1-based version of numpy.unravel_index"""
 

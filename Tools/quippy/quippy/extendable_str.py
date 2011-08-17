@@ -44,7 +44,7 @@ class Extendable_str(FortranExtendable_str):
 
     def __str__(self):
         return self.string
-    
+
     def __repr__(self):
         return 'Extendable_str("%s")' % str(self)
 
@@ -53,4 +53,3 @@ class Extendable_str(FortranExtendable_str):
 
     def __getitem__(self, i):
         return self.s[1,i]
-    
