@@ -19,7 +19,8 @@
 from f90doc import *
 import numpy, re
 
-def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix='', callback_routines={},public_symbols=None):
+def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix='',
+             callback_routines={},public_symbols=None,sizeof_fortran_t=12):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
    spec = {}
    def strip_type(t):
@@ -276,7 +277,10 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  intent = 'intent(in)'
                  transfer_in.append((arg.name, 'optional' in attributes))
 
-              arglines.append('integer, %s%s :: %s(12)' % (intent, ('optional' in attributes and ', optional' or ''), arg.name))
+              arglines.append('integer, %s%s :: %s(%d)' % (intent,
+                                                            ('optional' in attributes and ', optional' or ''),
+                                                            arg.name, sizeof_fortran_t))
+              
               arglines.append('%s :: %s_ptr' % (ptr_type, arg.name))
               argnames[argindex] = '%s_ptr%%p' % arg.name
               append_argline = False
@@ -559,7 +563,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               println('type %s_ptr_type' %  tname)
               println('type(%s), pointer :: p' % tname)
               println('end type %s_ptr_type' % tname)
-              println('integer, intent(in) :: this(12)')
+              println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
               println('type(%s_ptr_type) :: this_ptr' % t.name)
               println('integer, intent(out) :: nd')
               println('integer, intent(out) :: dtype')
@@ -621,14 +625,14 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  println('type %s_ptr_type' %  strip_type(mytype))
                  println('type(%s), pointer :: p' % strip_type(mytype))
                  println('end type %s_ptr_type' % strip_type(mytype))
-              println('integer, intent(in)   :: this(12)')
+              println('integer, intent(in)   :: this(%d)' % sizeof_fortran_t)
               println('type(%s_ptr_type) :: this_ptr' % t.name)
 
 
               if el.type.startswith('type'):
 
                   # For derived types elements, treat as opaque reference
-                  println('integer, intent(out) :: the%s(12)' % name)
+                  println('integer, intent(out) :: the%s(%d)' % (name, sizeof_fortran_t))
                   println('type(%s_ptr_type) :: the%s_ptr' % (typename, name))
                   println()
                   println('this_ptr = transfer(this, this_ptr)')
@@ -690,13 +694,13 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  println('type %s_ptr_type' %  strip_type(mytype))
                  println('type(%s), pointer :: p' % strip_type(mytype))
                  println('end type %s_ptr_type' % strip_type(mytype))
-              println('integer, intent(in)   :: this(12)')
+              println('integer, intent(in)   :: this(%d)' % sizeof_fortran_t)
               println('type(%s_ptr_type) :: this_ptr' % t.name)
               attributes = el.attributes[:]
 
               if el.type.startswith('type'):
                   # Set by reference
-                  println('integer, intent(in) :: the%s(12)' % name)
+                  println('integer, intent(in) :: the%s(%d)' % (name, sizeof_fortran_t))
                   println('type(%s_ptr_type) :: the%s_ptr' % (typename,name))
                   println()
                   println('this_ptr = transfer(this, this_ptr)')
