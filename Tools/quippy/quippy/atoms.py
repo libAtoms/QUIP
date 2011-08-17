@@ -446,7 +446,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         `self == other`) requires all properties and parameters to be
         equal. Equivalence requires only that the number of atoms,
         positions, atomic numbers, unit cell and periodic boundary
-        conditions match. 
+        conditions match.
 
         Note: the quippy expression a.equivalent(b) has the same
         definition as a == b in ASE. This means that a quippy.Atoms

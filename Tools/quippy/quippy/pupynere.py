@@ -1,6 +1,6 @@
 # Copyright (c) 2008 Robert De Almeida
 # http://dealmeida.net/2008/07/14/pupynere
-# 
+#
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
 # files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
 # copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following
 # conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 # OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,7 +28,7 @@ NetCDF reader/writer module.
 This module implements the Scientific.IO.NetCDF API to read and create
 NetCDF files. The same API is also used in the PyNIO and pynetcdf
 modules, allowing these modules to be used interchangebly when working
-with NetCDF files. The major advantage of ``scipy.io.netcdf`` over other 
+with NetCDF files. The major advantage of ``scipy.io.netcdf`` over other
 modules is that it doesn't require the code to be linked to the NetCDF
 libraries as the other modules do.
 
@@ -52,7 +52,7 @@ will. All record variables share a same dimension at the first axis,
 and they are stored at the end of the file per record, ie
 
     A[0], B[0], ..., A[1], B[1], ..., etc,
-    
+
 so that new data can be appended to the file without changing its original
 structure. Non-record data are padded to a 4n bytes boundary. Record data
 are also padded, unless there is exactly one record variable in the file,
@@ -105,7 +105,7 @@ from numpy import fromstring, ndarray, dtype, empty, array, asarray
 from numpy import little_endian as LITTLE_ENDIAN
 
 
-ABSENT       = '\x00\x00\x00\x00\x00\x00\x00\x00' 
+ABSENT       = '\x00\x00\x00\x00\x00\x00\x00\x00'
 ZERO         = '\x00\x00\x00\x00'
 NC_BYTE      = '\x00\x00\x00\x01'
 NC_CHAR      = '\x00\x00\x00\x02'
@@ -199,7 +199,7 @@ class netcdf_file(object):
         self._dims.append(name)
 
     def createVariable(self, name, type, dimensions):
-        shape = tuple([self.dimensions[dim] for dim in dimensions]) 
+        shape = tuple([self.dimensions[dim] for dim in dimensions])
         shape_ = tuple([dim or 0 for dim in shape])  # replace None with 0 for numpy
 
         if isinstance(type, basestring): type = dtype(type)
@@ -325,7 +325,7 @@ class netcdf_file(object):
 
     def _write_var_data(self, name):
         var = self.variables[name]
-        
+
         # Set begin in file header.
         the_beguine = self.fp.tell()
         self.fp.seek(var._begin)
@@ -334,7 +334,7 @@ class netcdf_file(object):
 
         # Write data.
         if not var.isrec:
-            self.fp.write(var.data.tostring())    
+            self.fp.write(var.data.tostring())
             count = var.data.size * var.data.itemsize
             self.fp.write('0' * (var._vsize - count))
         else:  # record variable
@@ -360,7 +360,7 @@ class netcdf_file(object):
             self.fp.seek(pos0 + var._vsize)
 
     def _write_values(self, values):
-        values = asarray(values) 
+        values = asarray(values)
         values = values.astype(values.dtype.newbyteorder('>'))
 
         nc_type = REVERSE[values.dtype.char]
@@ -485,7 +485,7 @@ class netcdf_file(object):
         dimensions = []
         shape = []
         dims = self._unpack_int()
-        
+
         for i in range(dims):
             dimid = self._unpack_int()
             dimname = self._dims[dimid]
@@ -523,7 +523,7 @@ class netcdf_file(object):
             values = fromstring(values, dtype='>%s%d' % (typecode, size))
             if values.shape == (1,): values = values[0]
         else:
-            values = values.rstrip('\x00') 
+            values = values.rstrip('\x00')
         return values
 
     def _pack_begin(self, begin):
@@ -604,7 +604,7 @@ class netcdf_variable(object):
     def shape(self):
         return self.data.shape
     shape = property(shape)
-    
+
     def getValue(self):
         return self.data.item()
 

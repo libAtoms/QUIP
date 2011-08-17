@@ -33,20 +33,20 @@ def add_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=None
         vmax = 110
     else:
         scalars = colours
-    
+
     pts = mlab.quiver3d(at.pos[1,:], at.pos[2,:], at.pos[3,:], r, [0]*len(r), [0]*len(r), scale_factor=atom_scale_factor,
                         scale_mode = 'vector',
                         scalars=scalars, mode='sphere', name='balls', vmin=vmin, vmax=vmax)
-    
+
     pts.glyph.color_mode = 'color_by_scalar'
     #pts.glyph.glyph.scale_mode = 'scale_by_vector'
     pts.glyph.glyph_source.glyph_source.center = [0, 0, 0]
 
     if colours is None:
         pts.module_manager.scalar_lut_manager.lut.table = atom_colours_lut
-    
+
     if colorbar: mlab.colorbar()
-        
+
     return pts
 
 
@@ -68,8 +68,8 @@ def add_bonds(at, pts, cutoff_factor=1.2, bond_radius=0.2, bond_colour=(.55, .55
 
     pts.mlab_source.dataset.lines = np.array(bonds)
     return mlab.pipeline.surface(mlab.pipeline.tube(pts, tube_radius=bond_radius), color=bond_colour)
-    
-    
+
+
 
 def add_cell(at, pts, origin=[0.,0.,0.], shift=[.5, .5, .5], supercell=[1, 1, 1]):
     if not at.is_orthorhombic:
@@ -84,7 +84,7 @@ def add_cell(at, pts, origin=[0.,0.,0.], shift=[.5, .5, .5], supercell=[1, 1, 1]
 
     print 'origin', origin
     print 'shift', shift
-    
+
     for i in range(na):
         for j in range(nb):
             for k in range(nc):
@@ -124,7 +124,7 @@ def draw_atoms(at, colours=None, colorbar=None, atom_scale_factor=1.0,
 
     if cell:
         add_cell(at, balls, origin, shift, supercell)
-        
+
     if bonds:
         add_bonds(at, balls, cutoff_factor, bond_radius, bond_colour)
 
@@ -137,4 +137,3 @@ def draw_atoms(at, colours=None, colorbar=None, atom_scale_factor=1.0,
         return (balls, arrows)
     else:
         return balls
-        

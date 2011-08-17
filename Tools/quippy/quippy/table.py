@@ -20,31 +20,29 @@ from quippy import FortranTable
 
 class Table(FortranTable):
 
-   __doc__ = FortranTable.__doc__
-   _cmp_skip_fields = ['max_length', 'increment']
+    __doc__ = FortranTable.__doc__
+    _cmp_skip_fields = ['max_length', 'increment']
 
-   def __repr__(self):
-      return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
-              (self.n, self.intsize, self.realsize, self.strsize, self.logicalsize))
+    def __repr__(self):
+        return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
+                (self.n, self.intsize, self.realsize, self.strsize, self.logicalsize))
 
-   def __str__(self):
-      return repr(self)
+    def __str__(self):
+        return repr(self)
 
-   def copy(self):
-      t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
-      t.append(blank_rows=self.n)
-      if self.intsize != 0: t.int[...] = self.int[...]
-      if self.realsize != 0: t.real[...] = self.real[...]
-      if self.strsize != 0: t.str[...] = self.str[...]
-      if self.logicalsize != 0: t.logical[...] = self.logical[...]
-      return t
+    def copy(self):
+        t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
+        t.append(blank_rows=self.n)
+        if self.intsize != 0: t.int[...] = self.int[...]
+        if self.realsize != 0: t.real[...] = self.real[...]
+        if self.strsize != 0: t.str[...] = self.str[...]
+        if self.logicalsize != 0: t.logical[...] = self.logical[...]
+        return t
 
-   def _get_array_shape(self, name):
-       if name in ('int','real','logical'):
-           return (slice(None),slice(1,self.n))
-       elif name == 'str':
-           return (slice(None),slice(None),slice(1,self.n))
-       else:
-          return None
-
-
+    def _get_array_shape(self, name):
+        if name in ('int','real','logical'):
+            return (slice(None),slice(1,self.n))
+        elif name == 'str':
+            return (slice(None),slice(None),slice(1,self.n))
+        else:
+            return None

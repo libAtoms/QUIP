@@ -126,7 +126,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
             return self.get_type_and_size(key)[0] in Dictionary._array_types
         else:
             raise KeyError('Key "%s" not found')
-        
+
 
     def __getitem__(self, k):
         k = k.lower()

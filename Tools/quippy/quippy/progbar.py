@@ -71,11 +71,11 @@ class ProgressBar:
 
         # slice the percentage or value into the bar
         if self.showValue:
-           valueString = '%d/%d' % (self.amount, self.max)
+            valueString = '%d/%d' % (self.amount, self.max)
         else:
-           valueString = str(percentDone) + "%"
+            valueString = str(percentDone) + "%"
 
-           
+
         valuePlace = (len(self.progBar) / 2) - len(valueString)
         self.progBar = ''.join([self.progBar[0:valuePlace], valueString,
                                 self.progBar[valuePlace+len(valueString):]
