@@ -451,7 +451,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 
     if (strcmp(varname, "cell_lattice") == 0) {
       start[0] = frame;   start[1] = 0;   start[2] = 0;
-      count[0] = 1;       count[2] = 3;   count[3] = 3;
+      count[0] = 1;       count[1] = 3;   count[2] = 3;
       NETCDF_CHECK(nc_get_vara_double(nc_id, i, start, count, &(lattice[0][0])));
       continue;
     }
