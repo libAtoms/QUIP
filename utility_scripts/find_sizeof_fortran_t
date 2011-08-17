@@ -14,6 +14,7 @@ include Makefile.rules
 EOF
 
 F90=$(make -f Makefile.tmp -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} -I ${QUIP_ROOT} -p 2> /dev/null | grep '^F90'| awk '{print $3}')
+rm Makefile.tmp
 
 cat > sizeof_fortran_t.f90 <<EOF
 program sizeof_fortran_t
