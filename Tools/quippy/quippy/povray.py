@@ -50,28 +50,28 @@ class PovrayWriter(object):
     def write(self, at):
         self.f.write('''#include "colors.inc"
 
-  camera
-  {
-    right x*400/600
-    location <%f,%f,%f>
-    look_at <0,0,0>
-  }
+camera
+{
+  right x*400/600
+  location <%f,%f,%f>
+  look_at <0,0,0>
+}
 
-  background
-  {
-    colour White
-  }
-  ''' % tuple(self.camerapos))
+background
+{
+  colour White
+}
+''' % tuple(self.camerapos))
 
 
         for light in self.lights:
             self.f.write('''
-   light_source
-   {
-     <%f,%f,%f>
-     colour White
-   }
-   ''' % tuple(light))
+light_source
+{
+  <%f,%f,%f>
+  colour White
+}
+''' % tuple(light))
 
         center = farray(self.center)
         self.f.write('union {\n')
