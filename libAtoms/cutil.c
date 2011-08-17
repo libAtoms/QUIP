@@ -120,7 +120,7 @@ void fabort_() {
 }
 
 void fusleep_(int *amt) {
-   usleep((useconds_t)(*amt));
+   usleep((unsigned int)(*amt));
 }
 
 // Call system(3) from fortran
