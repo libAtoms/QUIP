@@ -16,29 +16,32 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import os
+import os, warnings
 import numpy as np
 from quippy import (Potential, Atoms, MPI_context, transform, print_title, verbosity_push,
                     HYBRID_NO_MARK, GPA, supercell)
 
 from quippy.surface import J_PER_M2
 
-from quippy import (CrackParams,
-                    crack_apply_load_increment,
-                    crack_find_tip_local_energy, crack_k_to_g,
-                    crack_setup_marks, crack_apply_strain_ramp,
-                    crack_find_tip_percolation, crack_make_seed,
-                    crack_strain_to_g, crack_calc_load_field,
-                    crack_g_to_k, crack_make_slab, crack_uniform_load,
-                    crack_check_coordination, crack_g_to_strain,
-                    crack_measure_g, crack_update_connect,
-                    crack_check_coordination_boundaries,
-                    crack_is_edge_atom, crack_parse_name,
-                    crack_update_selection, crack_find_tip,
-                    crack_is_topbottom_edge_atom,
-                    crack_update_selection_coordination,
-                    crack_find_tip_coordination, crack_k_field,
-                    crack_update_selection_crack_front)
+try:
+   from quippy import (CrackParams,
+                       crack_apply_load_increment,
+                       crack_find_tip_local_energy, crack_k_to_g,
+                       crack_setup_marks, crack_apply_strain_ramp,
+                       crack_find_tip_percolation, crack_make_seed,
+                       crack_strain_to_g, crack_calc_load_field,
+                       crack_g_to_k, crack_make_slab, crack_uniform_load,
+                       crack_check_coordination, crack_g_to_strain,
+                       crack_measure_g, crack_update_connect,
+                       crack_check_coordination_boundaries,
+                       crack_is_edge_atom, crack_parse_name,
+                       crack_update_selection, crack_find_tip,
+                       crack_is_topbottom_edge_atom,
+                       crack_update_selection_coordination,
+                       crack_find_tip_coordination, crack_k_field,
+                       crack_update_selection_crack_front)
+except ImportError:
+   warnings.warn('crack utilities not available')
 
 def makecrack_main(params, stem):
    """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
