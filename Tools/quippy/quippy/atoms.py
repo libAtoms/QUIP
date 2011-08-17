@@ -25,6 +25,7 @@ import os, weakref, warnings, copy
 from quippy.farray import frange, farray, fzeros
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format
+from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import FortranAtoms, available_modules, AtomsReaders, AtomsWriters
 from math import pi
 import numpy as np
@@ -340,7 +341,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         ase.Atoms.__init__(self, symbols, positions, numbers,
                            tags, momenta, masses, magmoms, charges,
                            scaled_positions, cell, pbc, constraint,
-                           calculator, info)
+                           calculator)
 
         # remove anything that ASE added that we don't want
         for p in remove_properties:
@@ -352,6 +353,9 @@ class Atoms(FortranAtoms, ase.Atoms):
             self.add_property('species', ' '*10)
             if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # initialise species from z
+
+        if info is not None:
+            self.params.update(info)
 
         self._initialised = True
 
@@ -381,10 +385,10 @@ class Atoms(FortranAtoms, ase.Atoms):
     _cell = property(_get_cell, _set_cell)
 
     def _set_pbc(self, pbc):
-        self.is_periodic[:] = np.array(pbc).astype(int)
+        self.is_periodic = np.array(pbc).astype(int)
 
     def _get_pbc(self):
-        return self.is_periodic.view(np.ndarray)
+        return self.is_periodic.view(np.ndarray) == QUIPPY_TRUE
 
     _pbc = property(_get_pbc, _set_pbc)
 
@@ -545,7 +549,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         """
         if mask is not None:
             mask = farray(mask)
-            out = self.__class__(n=mask.count(), lattice=self.lattice)
+            out = self.__class__(n=mask.count(), lattice=self.lattice, properties={}, params={})
             FortranAtoms.select(out, self, mask=mask, orig_index=orig_index)
         elif list is not None:
             list = farray(list)
@@ -647,7 +651,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         atom['index'] = i
         atom['atoms'] = self
         for k in self.properties.keys():
-            v = getattr(self,k.lower())[...,i]
+            v = self.properties[k][...,i]
             if isinstance(v,np.ndarray):
                 if v.dtype.kind == 'S':
                     v = ''.join(v).strip()
