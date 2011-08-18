@@ -41,11 +41,11 @@ private
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, open_langevin_NH_tau, p_ext
+    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau
     logical :: langevin_OU
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
-    logical :: calc_virial, calc_energy, const_T, const_P
+    logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, nose_hoover_thermostat, barostat_const_T
     character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
@@ -86,6 +86,9 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
   call param_register(md_params_dict, 'dt', '1.0', params%dt, help_string="Time step of the verlet iteration (femtoseconds)")
+  call param_register(md_params_dict, 'all_purpose_thermostat', 'F', params%all_purpose_thermostat, help_string="if true, use new all purpose thermostat")
+  call param_register(md_params_dict, 'nose_hoover_thermostat', 'F', params%nose_hoover_thermostat, help_string="if true, use new plain Nose Hoover for const T")
+  call param_register(md_params_dict, 'barostat_const_T', 'T', params%barostat_const_T, help_string="if true and running const_T, thermalize barostat for const T")
   ! call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
   ! call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
   ! call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
@@ -100,7 +103,9 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'rescale_initial_velocity', 'F', params%rescale_initial_velocity, help_string="if true, rescale initial velocity so T=rescale_initial_velocity_T")
   call param_register(md_params_dict, 'rescale_initial_velocity_T', '-1.0', params%rescale_initial_velocity_T, help_string="T for rescale_initial_velocity")
   call param_register(md_params_dict, 'langevin_tau', '100.0', params%langevin_tau, help_string="time constant for Langevin thermostat")
-  call param_register(md_params_dict, 'open_langevin_NH_tau', '0.0', params%open_langevin_NH_tau, help_string="tau for Nose-Hoover part of open Langevin thermostat, active if > 0")
+  call param_register(md_params_dict, 'nose_hoover_tau', '100.0', params%nose_hoover_tau, help_string="time constant for nose_hoover thermostat")
+  call param_register(md_params_dict, 'adaptive_langevin_NH_tau', '0.0', params%adaptive_langevin_NH_tau, help_string="tau for Nose-Hoover part of open Langevin thermostat, active if > 0")
+  call param_register(md_params_dict, 'barostat_tau', '10.0', params%barostat_tau, help_string="time constant for barostat Langevin")
   call param_register(md_params_dict, 'langevin_OU', 'F', params%langevin_OU, help_string="If true, do Ornstein-Uhlenbeck Langevin dynamics")
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
@@ -162,14 +167,12 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   endif
   if (params%max_time <= 0.0_dp .and. params%N_steps < 0) call system_abort("get_params got max_time="//params%max_time//" <= 0.0 and N_steps=" // params%N_steps // " < 0")
   if (params%dt <= 0.0_dp) call system_abort("get_params got dt " // params%dt // " <= 0.0")
-  if (params%T_initial >= 0.0_dp) then
-    params%const_T = .true.
-  endif
   if (params%rescale_initial_velocity .and. params%rescale_initial_velocity_T < 0.0_dp) then
     call system_abort("Got rescale_initial_velocity, but rescale_initial_velocity_T="//params%rescale_initial_velocity_T//" < 0.0")
   endif
   if (params%const_T) then
-    if (params%langevin_tau <= 0.0_dp) call system_abort("get_params got const_T, but langevin_tau " // params%langevin_tau // " <= 0.0")
+    if (params%langevin_tau <= 0.0_dp .and. params%adaptive_langevin_NH_tau <= 0.0_dp) &
+      call system_abort("get_params got const_T, but langevin_tau=" // params%langevin_tau // " and adaptive_langevin_NH_tau="//params%adaptive_langevin_NH_tau//" <= 0.0")
   endif
 
   if (len_trim(print_property_list_str) > 0) then
@@ -203,6 +206,7 @@ subroutine print_params(params)
   call print("md_params%max_time=" // params%max_time)
   call print("md_params%dt=" // params%dt)
 
+  call print("md_params%all_purpose_thermostat=" // params%all_purpose_thermostat)
   call print("md_params%const_T=" // params%const_T)
   if (params%const_T) then
      call print("md_params%T_initial=" // params%T_initial)
@@ -213,7 +217,7 @@ subroutine print_params(params)
      endif
      call print("md_params%langevin_OU=" // params%langevin_OU)
      call print("md_params%langevin_tau=" // params%langevin_tau)
-     call print("md_params%open_langevin_NH_tau=" // params%open_langevin_NH_tau)
+     call print("md_params%adaptive_langevin_NH_tau=" // params%adaptive_langevin_NH_tau)
   end if
   call print("md_params%rescale_initial_velocity=" // params%rescale_initial_velocity)
   call print("md_params%rescale_initial_velocity_T=" // params%rescale_initial_velocity_T)
@@ -337,7 +341,7 @@ subroutine print_summary(params, ds, e)
   endif
   if (params%calc_virial) then
     call get_param_value(ds%atoms, "virial", virial)
-    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa")
+    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa   VOL " // cell_volume(ds%atoms)// " A^3")
   endif
 
 end subroutine print_summary
@@ -392,48 +396,75 @@ subroutine initialise_md_thermostat(ds, params)
 
   params%T_cur = cur_temp(params, ds%t)
 
-  if (params%damping) then
-    call print('MD damping')
-    call enable_damping(ds, params%damping_tau)
-  elseif (params%const_T.and..not.params%const_P) then
-    call print('Running NVT at T = ' // params%T_cur // " K")
-    if (params%open_langevin_NH_tau > 0) then
-       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-       if (params%langevin_OU) then
-	  call add_thermostat(ds, LANGEVIN_OU, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-       else
-	  call add_thermostat(ds, LANGEVIN, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-       endif
-    else
-       if (params%langevin_OU) then
-	  call add_thermostat(ds, LANGEVIN_OU, params%T_cur, tau=params%langevin_tau)
-       else
-	  call add_thermostat(ds, LANGEVIN, params%T_cur, tau=params%langevin_tau)
-       endif
-    endif
-    ds%atoms%thermostat_region = 1
-  elseif (params%const_T.and.params%const_P) then
-    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/GPA )
-    if (params%open_langevin_NH_tau > 0) then
-       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-       call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%open_langevin_NH_tau))
-    else
-       if (params%NPT_NB) then
-	  call add_thermostat(ds,  LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
-       else
-	  call add_thermostat(ds,  LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
-       endif
-    endif
-    ds%atoms%thermostat_region = 1
-    if (.not.params%calc_virial) then
-       params%calc_virial = .true.
-       call print('Set true calc_virial option')
-    endif
-  elseif (params%const_P.and..not.params%const_T) then
-    call system_abort('No const_P and not const_T')
-  else
-    call print('Running NVE')
-  endif
+   if (params%damping) then
+      call print('MD damping')
+      call enable_damping(ds, params%damping_tau)
+   else if (params%const_T .or. params%const_P) then
+      if (params%const_P) then
+	 if (.not.params%calc_virial) then
+	    params%calc_virial = .true.
+	    call print('WARNING: Doing const P, setting calc_virial option to true')
+	 endif
+      endif
+
+      if (params%all_purpose_thermostat) then
+	 if (params%const_P) then
+	    if (params%const_T .and. params%barostat_const_T) then
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, tau_epsilon=params%barostat_tau, T=params%T_cur)
+	    else
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, tau_epsilon=params%barostat_tau)
+	    endif
+	 endif
+	 if (params%const_T) then
+	    call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, params%adaptive_langevin_NH_tau))
+	    ds%atoms%thermostat_region=1
+	 endif
+
+      else ! old thermostat
+
+	 if (params%const_T.and..not.params%const_P) then
+	    call print('Running NVT at T = ' // params%T_cur // " K")
+	    if (params%nose_hoover_thermostat) then
+	       call add_thermostat(ds, THERMOSTAT_NOSE_HOOVER, params%T_cur, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%nose_hoover_tau))
+	    else
+	       if (params%adaptive_langevin_NH_tau > 0) then
+		  call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+		  if (params%langevin_OU) then
+		     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+		  else
+		     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+		  endif
+	       else
+		  if (params%langevin_OU) then
+		     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau)
+		  else
+		     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau)
+		  endif
+	       endif
+	    endif
+	    ds%atoms%thermostat_region = 1
+	 else if (params%const_T.and.params%const_P) then
+	    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/GPA )
+	    if (params%adaptive_langevin_NH_tau > 0) then
+	       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+	       call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+	    else
+	       if (params%NPT_NB) then
+		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+	       else
+		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+	       endif
+	    endif
+	    ds%atoms%thermostat_region = 1
+	 else if (params%const_P.and..not.params%const_T) then
+	    call system_abort('No const_P and not const_T')
+	 endif
+
+      endif ! all_purpose vs. old thermostat
+
+   else ! not constP or const_T
+      call print('Running NVE')
+   endif
 
 end subroutine initialise_md_thermostat
 

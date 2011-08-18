@@ -55,16 +55,17 @@ module thermostat_module
 
   real(dp), parameter :: MIN_TEMP = 1.0_dp ! K
 
-  integer, parameter :: NONE                 = 0, &
-                        LANGEVIN             = 1, &
-                        NOSE_HOOVER          = 2, &
-                        NOSE_HOOVER_LANGEVIN = 3, &
-                        LANGEVIN_NPT         = 4, &
-                        LANGEVIN_PR          = 5, &
-                        NPH_ANDERSEN         = 6, &
-                        NPH_PR               = 7, &
-                        LANGEVIN_OU          = 8, &
-			LANGEVIN_NPT_NB      = 9
+  integer, parameter :: THERMOSTAT_NONE                 = 0, &
+                        THERMOSTAT_LANGEVIN             = 1, &
+                        THERMOSTAT_NOSE_HOOVER          = 2, &
+                        THERMOSTAT_NOSE_HOOVER_LANGEVIN = 3, &
+                        THERMOSTAT_LANGEVIN_NPT         = 4, &
+                        THERMOSTAT_LANGEVIN_PR          = 5, &
+                        THERMOSTAT_NPH_ANDERSEN         = 6, &
+                        THERMOSTAT_NPH_PR               = 7, &
+                        THERMOSTAT_LANGEVIN_OU          = 8, &
+			THERMOSTAT_LANGEVIN_NPT_NB      = 9, &
+			THERMOSTAT_ALL_PURPOSE          = 10
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
@@ -77,7 +78,7 @@ module thermostat_module
 
   type thermostat
 
-     integer  :: type  = NONE     !% One of the types listed above
+     integer  :: type  = THERMOSTAT_NONE     !% One of the types listed above
      real(dp) :: gamma = 0.0_dp   !% Friction coefficient in Langevin and Nose-Hoover-Langevin
      real(dp) :: eta   = 0.0_dp   !% $\eta$ variable in Nose-Hoover
      real(dp) :: p_eta = 0.0_dp   !% $p_\eta$ variable in Nose-Hoover and Nose-Hoover-Langevin 
@@ -97,6 +98,7 @@ module thermostat_module
      real(dp) :: volume_0 = 0.0_dp !% Reference volume
      real(dp), dimension(3,3) :: lattice_v = 0.0_dp
      real(dp), dimension(3,3) :: lattice_f = 0.0_dp
+     logical :: massive = .false.
 
   end type thermostat
 
@@ -144,7 +146,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine thermostat_initialise(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+  subroutine thermostat_initialise(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,massive)
 
     type(thermostat),   intent(inout) :: this
     integer,            intent(in)    :: type
@@ -155,6 +157,7 @@ contains
     real(dp), optional, intent(in)    :: gamma_p
     real(dp), optional, intent(in)    :: W_p
     real(dp), optional, intent(in)    :: volume_0
+    logical, optional, intent(in)     :: massive
 
     real(dp) :: use_Q
 
@@ -162,7 +165,7 @@ contains
        if (T < 0.0_dp) call system_abort('initialise: Temperature must be >= 0')
     end if
 
-    if (type /= NONE .and. .not.present(T)) &
+    if (type /= THERMOSTAT_NONE .and. .not.present(T)) &
          call system_abort('initialise: T must be specified when turning on a thermostat')
 
     this%type = type
@@ -184,13 +187,13 @@ contains
 
     select case(this%type)
 
-    case(NONE) 
+    case(THERMOSTAT_NONE) 
 
        this%T = 0.0_dp
        this%gamma = 0.0_dp
        this%Q = 0.0_dp
 
-    case(LANGEVIN)
+    case(THERMOSTAT_LANGEVIN)
 
        if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin thermostat')
        if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0 for Langevin')
@@ -198,7 +201,7 @@ contains
        this%gamma = gamma
        this%Q = use_Q
 
-    case(NOSE_HOOVER)
+    case(THERMOSTAT_NOSE_HOOVER)
 
        if (.not.present(Q)) call system_abort('thermostat initialise: Q is required for Nose-Hoover thermostat')
        if (Q <= 0.0_dp) call system_abort('thermostat initialise: Q must be > 0')
@@ -206,7 +209,7 @@ contains
        this%gamma = 0.0_dp
        this%Q = Q
 
-    case(NOSE_HOOVER_LANGEVIN)
+    case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
 
        if (.not.present(gamma)) &
             call system_abort('thermostat initialise: gamma is required for Nose-Hoover-Langevin thermostat')
@@ -217,7 +220,7 @@ contains
        this%gamma = gamma
        this%Q = Q
 
-    case(LANGEVIN_NPT)
+    case(THERMOSTAT_LANGEVIN_NPT)
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not.present(W_p) .or. .not.present(volume_0) ) &
        & call system_abort('thermostat initialise: p, gamma, gamma_p, W_p and volume_0 are required for Langevin NPT baro-thermostat')
@@ -230,7 +233,7 @@ contains
        this%volume_0 = volume_0
        this%Q = use_Q
 
-    case(LANGEVIN_PR)
+    case(THERMOSTAT_LANGEVIN_PR)
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
        & call system_abort('initialise: p, gamma, W_p are required for Langevin Parrinello-Rahman baro-thermostat')
@@ -242,10 +245,10 @@ contains
        this%W_p = W_p
        this%Q = use_Q
 
-    case(NPH_ANDERSEN)
+    case(THERMOSTAT_NPH_ANDERSEN)
 
        if (.not.present(W_p) .or. .not.present(p) .or. .not.present(volume_0) .or. .not.present(gamma_p) ) &
-       & call system_abort('thermostat initialise: p, W_p and volume_0 are required for Andersen NPH barostat')
+       & call system_abort('thermostat initialise: p, W_p and volume_0 are required for Andersen THERMOSTAT_NPH barostat')
        this%T = 0.0_dp
        this%gamma = 0.0_dp
        this%Q = 0.0_dp
@@ -254,10 +257,10 @@ contains
        this%W_p = W_p
        this%volume_0 = volume_0
 
-    case(NPH_PR)
+    case(THERMOSTAT_NPH_PR)
 
        if (.not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
-       & call system_abort('initialise: p and W_p are required for NPH Parrinello-Rahman barostat')
+       & call system_abort('initialise: p and W_p are required for THERMOSTAT_NPH Parrinello-Rahman barostat')
        this%T = 0.0_dp
        this%gamma = 0.0_dp
        this%Q = 0.0_dp
@@ -265,7 +268,7 @@ contains
        this%gamma_p = gamma_p
        this%W_p = W_p
 
-    case(LANGEVIN_OU)
+    case(THERMOSTAT_LANGEVIN_OU)
 
        if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin OU thermostat')
        if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0 for Langevin OU')
@@ -273,7 +276,7 @@ contains
        this%gamma = gamma
        this%Q = use_Q
 
-    case(LANGEVIN_NPT_NB)
+    case(THERMOSTAT_LANGEVIN_NPT_NB)
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not. present(W_p) ) &
        & call system_abort('thermostat initialise: p, gamma, gamma_p, W_p and volume_0 are required for Langevin NPT baro-thermostat')
@@ -284,6 +287,12 @@ contains
        this%gamma_p = gamma_p
        this%W_p = W_p
 
+    case(THERMOSTAT_ALL_PURPOSE)
+       this%T = T
+       this%gamma = optional_default(0.0_dp, gamma)
+       this%Q = optional_default(-1.0_dp, Q)
+       this%massive = optional_default(.false., massive)
+
     end select
 
   end subroutine thermostat_initialise
@@ -292,7 +301,7 @@ contains
 
     type(thermostat), intent(inout) :: this
 
-    this%type  = NONE  
+    this%type  = THERMOSTAT_NONE  
     this%gamma = 0.0_dp
     this%eta   = 0.0_dp
     this%p_eta = 0.0_dp 
@@ -311,6 +320,7 @@ contains
     this%epsilon_f2 = 0.0_dp
     this%lattice_v = 0.0_dp
     this%lattice_f = 0.0_dp
+    this%massive = .false.
     
   end subroutine thermostat_finalise
 
@@ -338,6 +348,7 @@ contains
     to%volume_0 = from%volume_0
     to%lattice_v = from%lattice_v
     to%lattice_f = from%lattice_f
+    to%massive = from%massive
 
   end subroutine thermostat_assignment
 
@@ -376,7 +387,7 @@ contains
 
   end subroutine thermostats_finalise
 
-  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,region_i)
+  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,massive,region_i)
 
     type(thermostat), allocatable, intent(inout) :: this(:)
     integer,                       intent(in)    :: type
@@ -387,6 +398,7 @@ contains
     real(dp), optional,            intent(in)    :: gamma_p
     real(dp), optional,            intent(in)    :: W_p
     real(dp), optional,            intent(in)    :: volume_0
+    logical, optional,             intent(in)    :: massive
     integer, optional,             intent(out)    :: region_i
 
     type(thermostat), allocatable                :: temp(:)
@@ -414,7 +426,7 @@ contains
        call finalise(temp)
     end if
 
-    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
+    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0,massive)
 
     if (present(region_i)) region_i=u+1
 
@@ -516,47 +528,50 @@ contains
     type(inoutput), optional, intent(in) :: file
     select case(this%type)
 
-    case(NONE)
+    case(THERMOSTAT_NONE)
        call print('Thermostat off',file=file)
 
-    case(LANGEVIN)
+    case(THERMOSTAT_LANGEVIN)
        call print('Langevin, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
-    case(NOSE_HOOVER)
+    case(THERMOSTAT_NOSE_HOOVER)
        call print('Nose-Hoover, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
             round(this%eta,5)//' (#), p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV, Ndof = ' // round(this%Ndof,1),file=file)
 
-    case(NOSE_HOOVER_LANGEVIN)
+    case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
        call print('Nose-Hoover-Langevin, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//&
             ' eV fs^2, gamma = '//round(this%gamma,5)//' fs^-1, eta = '//round(this%eta,5)//&
             ' , p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV, Ndof = ' // round(this%Ndof,1),file=file)
        
-    case(LANGEVIN_NPT)
+    case(THERMOSTAT_LANGEVIN_NPT)
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
-    case(LANGEVIN_PR)
+    case(THERMOSTAT_LANGEVIN_PR)
        call print('Langevin PR, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au',file=file)
 
-    case(NPH_ANDERSEN)
-       call print('Andersen NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+    case(THERMOSTAT_NPH_ANDERSEN)
+       call print('Andersen THERMOSTAT_NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
-    case(NPH_PR)
-       call print('Parrinello-Rahman NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+    case(THERMOSTAT_NPH_PR)
+       call print('Parrinello-Rahman THERMOSTAT_NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
-    case(LANGEVIN_OU)
+    case(THERMOSTAT_LANGEVIN_OU)
        call print('Langevin OU, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
-    case(LANGEVIN_NPT_NB)
+    case(THERMOSTAT_LANGEVIN_NPT_NB)
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
 	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
+    case(THERMOSTAT_ALL_PURPOSE)
+       call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
+	    round(this%eta,5)//' (#), Ndof = ' // round(this%Ndof,1),file=file)
 
     end select
     
@@ -605,7 +620,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
-  !X CHOOSING NOSE-HOOVER(-LANGEVIN) MASS
+  !X CHOOSING NOSE-HOOVER(-THERMOSTAT_LANGEVIN) MASS
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -615,7 +630,7 @@ contains
     real(dp), intent(in) :: T, tau
     real(dp)             :: Q
 
-    Q = real(Ndof,dp)*BOLTZMANN_K*T*tau*tau/(4.0_dp*PI*PI)
+    Q = nose_hoover_mass_real(real(Ndof,dp),T,tau)
 
   end function nose_hoover_mass_int
     
@@ -624,7 +639,11 @@ contains
     real(dp), intent(in) :: Ndof, T, tau
     real(dp)             :: Q
 
-    Q = Ndof*BOLTZMANN_K*T*tau*tau/(4.0_dp*PI*PI)
+    if (tau < 0.0) then
+       Q = -1.0_dp
+    else
+       Q = Ndof*BOLTZMANN_K*T*tau*tau/(4.0_dp*PI*PI)
+    endif
 
   end function nose_hoover_mass_real
 
@@ -636,16 +655,21 @@ contains
   !X the velocities and accelerations as required:
   !X
   !X advance_verlet1
-  !X   (thermostat_pre_vel1)
+  !X   (barostat_pre_vel1) *
+  !X   (thermostat_pre_vel1) *
   !X   v(t+dt/2) = v(t) + a(t)dt/2
   !X   (thermostat_post_vel1_pre_pos)
   !X   r(t+dt) = r(t) + v(t+dt/2)dt
   !X   (thermostat_post_pos_pre_calc)
+  !X   (barostat_post_pos_pre_calc) *
   !X calc F, virial
   !X advance_verlet2
-  !X   (thermostat_post_calc_pre_vel2)
+  !X   (thermostat_post_calc_pre_vel2) *
   !X   v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
-  !X   (thermostat_post_vel2)
+  !X   (thermostat_post_vel2) *
+  !X   (barostat_post_vel2) *
+  !X
+  !X * marks routines that are needed in the refactored barostat/thermostat plan
   !X
   !X A thermostat can be applied to part of the atomic system by passing an integer
   !X atomic property and the value it must have.
@@ -676,10 +700,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN
+       !X THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN)
+    case(THERMOSTAT_LANGEVIN)
               
        !Decay the velocity for dt/2. The random force will have been added to acc during the
        !previous timestep.
@@ -709,7 +733,7 @@ contains
        !X NOSE-HOOVER
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NOSE_HOOVER)
+    case(THERMOSTAT_NOSE_HOOVER)
        
        !Propagate eta for dt (this saves doing it twice, for dt/2)
        if (this%Q > 0.0_dp) then
@@ -745,10 +769,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NOSE-HOOVER-LANGEVIN
+       !X NOSE-HOOVER-THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NOSE_HOOVER_LANGEVIN)
+    case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
        
        !Decay p_eta for dt/2 and propagate it for dt/2
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt) + 0.5_dp*this%f_eta*dt
@@ -783,10 +807,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN NPT, Andersen barostat
+       !X THERMOSTAT_LANGEVIN NPT, Andersen barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN_NPT)
+    case(THERMOSTAT_LANGEVIN_NPT)
               
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
@@ -829,10 +853,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN NPT, Parrinello-Rahman barostat
+       !X THERMOSTAT_LANGEVIN NPT, Parrinello-Rahman barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN_PR)
+    case(THERMOSTAT_LANGEVIN_PR)
               
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
@@ -878,12 +902,12 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NPH, Andersen barostat
+       !X THERMOSTAT_NPH, Andersen barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NPH_ANDERSEN)
+    case(THERMOSTAT_NPH_ANDERSEN)
               
-       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: THERMOSTAT_NPH &
        & simulation, but virial has not been passed')
 
        this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
@@ -908,12 +932,12 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NPH, Parrinello-Rahman barostat
+       !X THERMOSTAT_NPH, Parrinello-Rahman barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NPH_PR)
+    case(THERMOSTAT_NPH_PR)
               
-       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: THERMOSTAT_NPH &
        & simulation, but virial has not been passed')
 
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
@@ -941,10 +965,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
+       !X THERMOSTAT_LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN_OU)
+    case(THERMOSTAT_LANGEVIN_OU)
               
        !Decay the velocity for dt/2 by eta (aka chi)
 
@@ -956,13 +980,17 @@ contains
 	  end do
        endif
 
-    case(LANGEVIN_NPT_NB)
+    case(THERMOSTAT_LANGEVIN_NPT_NB)
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
 	  simulation, but virial has not been passed')
 
        ! half step epsilon_v, drag and force (from last step) parts 
        this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_p)
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_p
+
+       ! half step barostat drag part of v
+       decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       at%velo = at%velo*decay
 
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
@@ -980,10 +1008,6 @@ contains
           at%velo(:,i) = at%velo(:,i)*decay
        end do
 
-       ! half step barostat drag part of v
-       decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
-       at%velo = at%velo*decay
-
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
 	  ! propagate eta (Jones and Leimkuhler chi) dt/4
@@ -996,6 +1020,32 @@ contains
        lattice_p = at%lattice
        call set_lattice(at, lattice_p*exp(0.5_dp*dt*this%epsilon_v), scale_positions=.false.)
        at%pos = at%pos*exp(0.5_dp*dt*this%epsilon_v)
+
+    case(THERMOSTAT_ALL_PURPOSE)
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       else
+	  this%eta = 0.0_dp
+       endif
+
+       ! half step Langevin drag part of v
+       decay = exp(-0.5_dp*dt*(this%gamma+this%eta))
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       endif
+
 
     end select
 
@@ -1019,11 +1069,11 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN
+       !X THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    !case(LANGEVIN)
+    !case(THERMOSTAT_LANGEVIN)
        
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1034,18 +1084,18 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    !case(NOSE_HOOVER)
+    !case(THERMOSTAT_NOSE_HOOVER)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NOSE-HOOVER-LANGEVIN
+       !X NOSE-HOOVER-THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        
-    !case(NOSE_HOOVER_LANGEVIN)
+    !case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
 
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1066,7 +1116,7 @@ contains
 
     select case(this%type)
 
-      case(LANGEVIN_NPT_NB)
+      case(THERMOSTAT_LANGEVIN_NPT_NB)
 
         ! half step position affine defomration
         lattice_p = at%lattice
@@ -1098,11 +1148,11 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN
+       !X THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    case(LANGEVIN,LANGEVIN_NPT,LANGEVIN_PR,LANGEVIN_NPT_NB)
+    case(THERMOSTAT_LANGEVIN,THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_LANGEVIN_PR,THERMOSTAT_LANGEVIN_NPT_NB)
      
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
@@ -1126,27 +1176,27 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    !case(NOSE_HOOVER)
+    !case(THERMOSTAT_NOSE_HOOVER)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NOSE-HOOVER-LANGEVIN
+       !X NOSE-HOOVER-THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    !case(NOSE_HOOVER_LANGEVIN) nothing to be done
+    !case(THERMOSTAT_NOSE_HOOVER_LANGEVIN) nothing to be done
        
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
+       !X THERMOSTAT_LANGEVIN with Ornstein-Uhlenbeck dynamics (Leimkuhler e-mail)
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN_OU)
+    case(THERMOSTAT_LANGEVIN_OU)
               
        ! propagate eta (a.k.a. chi) for a full step
 
@@ -1154,6 +1204,21 @@ contains
 	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
 	  this%eta = this%eta + dt*2.0_dp*delta_K/this%Q
        endif
+
+    case(THERMOSTAT_ALL_PURPOSE)
+     
+       ! Add the random acceleration
+       R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
+
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
+
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          a = sqrt(R/at%mass(i))*ran_normal3()
+          at%acc(:,i) = at%acc(:,i) + a
+       end do
 
     end select
 
@@ -1185,10 +1250,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN
+       !X THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN)
+    case(THERMOSTAT_LANGEVIN)
 
        if (this%Q > 0.0_dp) then
 	  ! propagate eta (Jones and Leimkuhler chi) dt/4
@@ -1216,7 +1281,7 @@ contains
        !X NOSE-HOOVER
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NOSE_HOOVER)
+    case(THERMOSTAT_NOSE_HOOVER)
 
        !Decay the velocities again using p_eta for dt/2, and accumulate the (post-decay)
        !kinetic energy (x2) to integrate the 'work' value.
@@ -1254,10 +1319,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X NOSE-HOOVER-LANGEVIN
+       !X NOSE-HOOVER-THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(NOSE_HOOVER_LANGEVIN)
+    case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
@@ -1294,7 +1359,7 @@ contains
        this%p_eta = this%p_eta + 0.5_dp*this%f_eta*dt
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt)
 
-    case(LANGEVIN_NPT_NB)
+    case(THERMOSTAT_LANGEVIN_NPT_NB)
 
        call system_resync_rng()
 
@@ -1339,7 +1404,7 @@ contains
        ! half step with epsilon drag
        this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_p)
 
-    case(LANGEVIN_NPT)
+    case(THERMOSTAT_LANGEVIN_NPT)
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
@@ -1384,7 +1449,7 @@ contains
 
        this%epsilon_f2 = f_cell - this%epsilon_v*this%W_p*this%gamma_p
 
-    case(LANGEVIN_PR)
+    case(THERMOSTAT_LANGEVIN_PR)
 
        if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPT Parrinello-Rahman&
        & simulation, but virial has not been passed')
@@ -1422,9 +1487,9 @@ contains
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
        call set_lattice(at,lattice_p, scale_positions=.false.)
 
-    case(NPH_ANDERSEN)
+    case(THERMOSTAT_NPH_ANDERSEN)
 
-       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPH &
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: THERMOSTAT_NPH &
        & simulation, but virial has not been passed')
 
        !Decay the velocities for dt/2 again
@@ -1445,9 +1510,9 @@ contains
        lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
        call set_lattice(at,lattice_p, scale_positions=.false.)
 
-    case(NPH_PR)
+    case(THERMOSTAT_NPH_PR)
 
-       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: NPH Parrinello-Rahman&
+       if( .not. present(virial) ) call system_abort('thermostat_post_vel2: THERMOSTAT_NPH Parrinello-Rahman&
        & simulation, but virial has not been passed')
 
        !Decay the velocities for dt/2 again
@@ -1471,10 +1536,10 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN Ornstein-Uhlenbeck
+       !X THERMOSTAT_LANGEVIN Ornstein-Uhlenbeck
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    case(LANGEVIN_OU)
+    case(THERMOSTAT_LANGEVIN_OU)
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
@@ -1496,6 +1561,33 @@ contains
           if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay + OU_random_dv_mag/sqrt(at%mass(i))*ran_normal3()
        end do
+
+    case(THERMOSTAT_ALL_PURPOSE)
+
+       call system_resync_rng()
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       else
+	  this%eta = 0.0_dp
+       endif
+
+       !Decay the velocities for dt/2 again Langevin part
+       decay = exp(-0.5_dp*dt*(this%gamma+this%eta))
+       do i = 1, at%N
+          if (prop_ptr(i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+
+       ! Leimkuhler+Jones adaptive Langevin
+       if (this%Q > 0.0_dp) then
+	  ! propagate eta (Jones and Leimkuhler chi) dt/4
+	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+       endif
 
     end select
 

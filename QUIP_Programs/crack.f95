@@ -813,9 +813,9 @@ program crack
 	   ! default thermostat 
 	   if (params%md(params%md_stanza)%ensemble == 'NVT') then
 	      if (state == STATE_THERMALISE) then
-		 call ds_add_thermostat(ds, LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
+		 call ds_add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
 	      else
-		 call ds_add_thermostat(ds, LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
+		 call ds_add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
 	      endif
 	      ds%atoms%thermostat_region = i_thermostat
 	   endif
@@ -825,7 +825,7 @@ program crack
 	      n_per_atom_tau = count(per_atom_tau > 0.0_dp)
 	      allocate(per_atom_tau_a(n_per_atom_tau))
 	      per_atom_tau_a = pack(per_atom_tau, per_atom_tau > 0.0_dp)
-	      call add_thermostats(ds, LANGEVIN, n=n_per_atom_tau, T=params%md(params%md_stanza)%sim_temp, tau_a=per_atom_tau_a, &
+	      call add_thermostats(ds, THERMOSTAT_LANGEVIN, n=n_per_atom_tau, T=params%md(params%md_stanza)%sim_temp, tau_a=per_atom_tau_a, &
 	         region_i=i_thermostat)
 	      do i=1, ds%atoms%N
 	         if (per_atom_tau(i) > 0.0_dp) then
@@ -872,7 +872,7 @@ program crack
                  state = STATE_MD
                  last_state_change_time = ds%t
                  call disable_damping(ds)
-                 call initialise(ds%thermostat(1), LANGEVIN, params%md(params%md_stanza)%sim_temp, &
+                 call initialise(ds%thermostat(1), THERMOSTAT_LANGEVIN, params%md(params%md_stanza)%sim_temp, &
                       gamma=1.0_dp/params%md(params%md_stanza)%tau)
                  md_old_changed_nn = changed_nn
               end if
@@ -898,7 +898,7 @@ program crack
                     last_state_change_time = ds%t
 
                     call disable_damping(ds)
-                    call initialise(ds%thermostat(1), LANGEVIN, params%md(params%md_stanza)%sim_temp, &
+                    call initialise(ds%thermostat(1), THERMOSTAT_LANGEVIN, params%md(params%md_stanza)%sim_temp, &
                          gamma=1.0_dp/params%md(params%md_stanza)%thermalise_tau)
                  end if
 

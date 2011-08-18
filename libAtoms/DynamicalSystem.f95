@@ -66,6 +66,7 @@ module dynamicalsystem_module
    use group_module
    use constraints_module
    use thermostat_module
+   use barostat_module
    
    implicit none
 
@@ -113,6 +114,7 @@ module dynamicalsystem_module
       type(RigidBody),  allocatable, dimension(:) :: rigidbody
       type(Group),      allocatable, dimension(:) :: group
       type(thermostat), allocatable, dimension(:) :: thermostat
+      type(barostat)                              :: barostat
       logical :: print_thermostat_temps = .true.
 
    end type DynamicalSystem
@@ -165,6 +167,10 @@ module dynamicalsystem_module
    interface add_thermostat
       module procedure ds_add_thermostat
    end interface add_thermostat
+
+   interface set_barostat
+      module procedure ds_set_barostat
+   end interface set_barostat
 
    interface add_thermostats
       module procedure ds_add_thermostats
@@ -343,8 +349,9 @@ contains
       this%Ndof = 3 * this%N
 
       allocate(this%thermostat(0:0))
-      call initialise(this%thermostat(0),NONE,0.0_dp) !a dummy thermostat, which is turned into
+      call initialise(this%thermostat(0),THERMOSTAT_NONE,0.0_dp) !a dummy thermostat, which is turned into
                                                       !a langevin thermostat if damping is needed
+      call initialise(this%barostat,BAROSTAT_NONE)
       this%cur_temp = temperature(this, include_all=.true., instantaneous=.true.)
       this%avg_temp = this%cur_temp
 
@@ -381,6 +388,7 @@ contains
          if (allocated(this%rigidbody)) call finalise(this%rigidbody)
 
          call finalise(this%thermostat)
+         call finalise(this%barostat)
 
          this%N = 0
          this%nSteps = 0
@@ -485,6 +493,7 @@ contains
       ! (uses overloaded routine to copy array of thermostats)
       ! to%thermostat = from%thermostat
       call thermostat_array_assignment(to%thermostat, from%thermostat)
+      to%barostat = from%barostat
 
    end subroutine ds_assignment
 
@@ -828,6 +837,25 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+   subroutine ds_set_barostat(this,type,p_ext,tau_epsilon,W_epsilon,T)
+     type(dynamicalsystem), intent(inout) :: this
+     integer,               intent(in)    :: type
+     real(dp),              intent(in)    :: p_ext
+     real(dp),              intent(in)    :: tau_epsilon
+     real(dp), optional,    intent(in)    :: W_epsilon, T
+
+     real(dp) :: gamma_epsilon
+
+     if (tau_epsilon > 0.0_dp) then
+	gamma_epsilon = 1.0_dp/tau_epsilon
+     else
+        gamma_epsilon = 0.0_dp
+     endif
+
+     call initialise(this%barostat, type=type, p_ext=p_ext, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T)
+
+   end subroutine ds_set_barostat
+
    subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, region_i)
 
      type(dynamicalsystem), intent(inout) :: this
@@ -843,13 +871,21 @@ contains
      real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
      real(dp) :: gamma_eff
 
-     if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
-        call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
+     if (.not. present(Q)) then
+	if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
+	   call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present if Q is not')
+     endif
 
      if (present(gamma)) then
        gamma_eff = gamma
+       if (present(tau)) call print("WARNING: ds_add_thermostat got gamma and tau, gamma overriding tau", PRINT_ALWAYS)
      else
-       gamma_eff = 1.0_dp/tau
+       gamma_eff = 0.0_dp
+       if (present(tau)) then
+	  if (tau /= 0.0_dp) then
+	    gamma_eff = 1.0_dp/tau
+	  endif
+       endif
      endif
 
      if(present(p)) then
@@ -859,11 +895,11 @@ contains
            gamma_cell = gamma_eff * 0.1_dp
         endif
         select case(type)
-        case(LANGEVIN_NPT,NPH_ANDERSEN,LANGEVIN_NPT_NB)
+        case(THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_NPH_ANDERSEN,THERMOSTAT_LANGEVIN_NPT_NB)
            mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((gamma_cell*2*PI)**2)
            mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)
            w_p = max(mass1,mass2)
-        case(LANGEVIN_PR,NPH_PR)
+        case(THERMOSTAT_LANGEVIN_PR,THERMOSTAT_NPH_PR)
            w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)/3.0_dp
         endselect
         volume_0 = cell_volume(this%atoms)
@@ -962,11 +998,11 @@ contains
         my_T = optional_default(this%thermostat(my_i)%T,T)
         
         select case(this%thermostat(my_i)%type)
-        case(LANGEVIN_NPT,NPH_ANDERSEN,LANGEVIN_NPT_NB)
+        case(THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_NPH_ANDERSEN,THERMOSTAT_LANGEVIN_NPT_NB)
            mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
            mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
            w_p = max(mass1,mass2)
-        case(LANGEVIN_PR,NPH_PR)
+        case(THERMOSTAT_LANGEVIN_PR,THERMOSTAT_NPH_PR)
            w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)/3.0_dp
         case default
            call print_warning('Pressure passed but thermostat does not have barostat.')
@@ -976,6 +1012,15 @@ contains
      call update_thermostat(this%thermostat(my_i),T=T,p=p,w_p=w_p)
      
    end subroutine ds_update_thermostat
+
+   subroutine ds_update_barostat(this,p,T)
+     type(dynamicalsystem), intent(inout) :: this
+     real(dp), optional,    intent(in)    :: p, T
+
+     if (.not. present(p)) call system_abort("ds_upadte_barostat needs p")
+     call update_barostat(this%barostat, p, barostat_mass(p, cell_volume(this%atoms), this%Ndof, this%barostat%gamma_epsilon, T))
+   end subroutine ds_update_barostat
+
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X 
@@ -989,14 +1034,14 @@ contains
      real(dp),              intent(in)    :: damp_time
      
      if (damp_time <= 0.0_dp) call system_abort('enable_damping: damp_time must be > 0')
-     call initialise(this%thermostat(0),LANGEVIN,0.0_dp,gamma=1.0_dp/damp_time)
+     call initialise(this%thermostat(0),THERMOSTAT_LANGEVIN,0.0_dp,gamma=1.0_dp/damp_time)
      
    end subroutine enable_damping
 
    subroutine disable_damping(this)
 
      type(dynamicalsystem), intent(inout) :: this    
-     call initialise(this%thermostat(0),NONE)
+     call initialise(this%thermostat(0),THERMOSTAT_NONE)
      
    end subroutine disable_damping
 
@@ -1283,11 +1328,11 @@ contains
 	call system_abort("thermostat_temperatures needs a temps array to match size of this%thermostat() " //size(this%thermostat))
 
       temps = -1.0_dp
-      if (this%thermostat(0)%type == LANGEVIN) then
+      if (this%thermostat(0)%type == THERMOSTAT_LANGEVIN) then
 	temps(1) = temperature(this, property='damp_mask', value=1, instantaneous=.true.)
       endif
       do i=1, size(this%thermostat)-1
-	if (this%thermostat(i)%type /= NONE) temps(i+1) = temperature(this, property='thermostat_region', value=i, instantaneous=.true.)
+	if (this%thermostat(i)%type /= THERMOSTAT_NONE) temps(i+1) = temperature(this, property='thermostat_region', value=i, instantaneous=.true.)
       end do
    end subroutine thermostat_temperatures
 
@@ -1672,6 +1717,8 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+     call barostat_pre_vel1(this%barostat,this%atoms,dt,virial)
+
      therm_ndof = 0.0_dp
      do i = 1, this%atoms%Ndomain
         j = this%atoms%thermostat_region(i)
@@ -1692,7 +1739,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     if (this%thermostat(0)%type==LANGEVIN) then
+     if (this%thermostat(0)%type==THERMOSTAT_LANGEVIN) then
         call thermostat_pre_vel1(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
@@ -1768,13 +1815,15 @@ contains
      end if
 #endif
 
+     call barostat_post_vel1_pre_pos(this%barostat,this%atoms,dt,virial)
+
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
      !X DAMPING
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     if (this%thermostat(0)%type==LANGEVIN) then
+     if (this%thermostat(0)%type==THERMOSTAT_LANGEVIN) then
         call thermostat_post_vel1_pre_pos(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
@@ -1869,7 +1918,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     if (this%thermostat(0)%type==LANGEVIN) then
+     if (this%thermostat(0)%type==THERMOSTAT_LANGEVIN) then
         call thermostat_post_pos_pre_calc(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
@@ -1883,6 +1932,7 @@ contains
         call thermostat_post_pos_pre_calc(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
  
+     call barostat_post_pos_pre_calc(this%barostat,this%atoms,dt,virial)
 
 #ifdef _MPI
      ! Broadcast the new positions, velocities, accelerations and possibly constraint forces
@@ -2009,7 +2059,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     if (this%thermostat(0)%type==LANGEVIN) then
+     if (this%thermostat(0)%type==THERMOSTAT_LANGEVIN) then
         call thermostat_post_calc_pre_vel2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
@@ -2022,6 +2072,8 @@ contains
      do i = 1, ntherm
         call thermostat_post_calc_pre_vel2(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
+
+     call barostat_post_calc_pre_vel2(this%barostat,this%atoms,dt,virial)
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
@@ -2117,7 +2169,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     if (this%thermostat(0)%type==LANGEVIN) then
+     if (this%thermostat(0)%type==THERMOSTAT_LANGEVIN) then
         call thermostat_post_vel2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
@@ -2130,6 +2182,8 @@ contains
      do i = 1, ntherm
         call thermostat_post_vel2(this%thermostat(i),this%atoms,dt,'thermostat_region',i,virial)
      end do
+
+     call barostat_post_vel2(this%barostat,this%atoms,dt,virial)
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
@@ -2269,7 +2323,7 @@ contains
        if (any(region_temps >= 0.0_dp)) then
 	 call print("T "//this%t, nocr=.true.)
 	 do i=0, size(region_temps)-1
-	   if (this%thermostat(i)%type /= NONE) then
+	   if (this%thermostat(i)%type /= THERMOSTAT_NONE) then
 	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
 	   else
 	     call print(" "// i // " type=NONE", nocr=.true.)
