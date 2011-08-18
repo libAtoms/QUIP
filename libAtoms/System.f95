@@ -2513,7 +2513,7 @@ contains
     call pop(mainlog%verbosity_cascade_stack)
   end subroutine verbosity_unset_minimum
 
-  function optional_default_l(def, opt_val)
+  pure function optional_default_l(def, opt_val)
     logical, intent(in) :: def
     logical, intent(in), optional :: opt_val
     logical :: optional_default_l
@@ -2526,7 +2526,7 @@ contains
 
   end function optional_default_l
 
-  function optional_default_i(def, opt_val)
+  pure function optional_default_i(def, opt_val)
     integer, intent(in) :: def
     integer, intent(in), optional :: opt_val
     integer :: optional_default_i
@@ -2539,7 +2539,7 @@ contains
 
   end function optional_default_i
 
-  function optional_default_ia(def, opt_val)
+  pure function optional_default_ia(def, opt_val)
     integer, intent(in) :: def(:)
     integer, intent(in), optional :: opt_val(size(def))
     integer :: optional_default_ia(size(def))
@@ -2553,7 +2553,7 @@ contains
   end function optional_default_ia
 
 
-  function optional_default_r(def, opt_val)
+  pure function optional_default_r(def, opt_val)
     real(dp), intent(in) :: def
     real(dp), intent(in), optional :: opt_val
     real(dp) :: optional_default_r
@@ -2566,7 +2566,7 @@ contains
 
   end function optional_default_r
 
-  function optional_default_ra(def, opt_val)
+  pure function optional_default_ra(def, opt_val)
     real(dp), intent(in) :: def(:)
     real(dp), intent(in), optional :: opt_val(size(def))
     real(dp) :: optional_default_ra(size(def))
@@ -2580,7 +2580,7 @@ contains
   end function optional_default_ra
 
 
-  function optional_default_z(def, opt_val)
+  pure function optional_default_z(def, opt_val)
     complex(dp), intent(in) :: def
     complex(dp), intent(in), optional :: opt_val
     complex(dp) :: optional_default_z
@@ -2593,7 +2593,7 @@ contains
 
   end function optional_default_z
 
-  function optional_default_c(def, opt_val)
+  pure function optional_default_c(def, opt_val)
     character(len=*), intent(in) :: def
     character(len=*), intent(in), optional :: opt_val
     character(SYSTEM_STRING_LENGTH) :: optional_default_c

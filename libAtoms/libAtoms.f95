@@ -59,6 +59,7 @@ module libAtoms_module
   use rigidbody_module
   use constraints_module
   use thermostat_module
+  use barostat_module
   use dynamicalsystem_module
   use clusters_module
   use structures_module

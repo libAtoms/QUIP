@@ -63,12 +63,12 @@ program md
                                                                       ! of the thermostat to the system:
                                                                       ! higher tau = higher mass = lower coupling
 
-  call add_thermostat(ds, NOSE_HOOVER_LANGEVIN, init_temp, Q = Q, tau = 5000.0_dp) ! This tau controls how fast the nose-hoover variable
+  call add_thermostat(ds, THERMOSTAT_NOSE_HOOVER_LANGEVIN, init_temp, Q = Q, tau = 5000.0_dp) ! This tau controls how fast the nose-hoover variable
                                                                                    ! explores phase space.
                                                                                    ! higher tau = slower, and more Nose-Hoover like.
 
-!  call add_thermostat(ds, NOSE_HOOVER, init_temp, Q = Q)
-!  call add_thermostat(ds, LANGEVIN, init_temp, tau = 1000.0_dp)
+!  call add_thermostat(ds, THERMOSTAT_NOSE_HOOVER, init_temp, Q = Q)
+!  call add_thermostat(ds, THERMOSTAT_LANGEVIN, init_temp, tau = 1000.0_dp)
 
   ! Use random forces
   f = 0.0_dp

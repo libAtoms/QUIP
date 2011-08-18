@@ -1536,44 +1536,44 @@ contains
 	call print("No thermostat, NVE!!", PRINT_ALWAYS)
       case(1)
 	if (open_Langevin) then
-	   call add_thermostat(ds,type=LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp)
+	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp)
 	   call print('Added single open Langevin Thermostat')
 	else
 	   Nose_Hoover_Tau = -1.0_dp
-	   call add_thermostat(ds,type=LANGEVIN,T=T,tau=Langevin_Tau)
+	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau)
 	   call print('Added single Langevin Thermostat')
 	endif
       case(2)
-	call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
+	call add_thermostat(ds,type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
 	call print('Added single Nose-Hoover Thermostat')
       case(3)
-	call add_thermostats(ds,type=NOSE_HOOVER,n=ds%atoms%N,T=T,Q=1.0_dp, gamma=0.0_dp)
+	call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER,n=ds%atoms%N,T=T,Q=1.0_dp, gamma=0.0_dp)
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover thermostat for each atom")
       case(4)
-	call add_thermostats(ds,type=NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
+	call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
       case(5)
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
-	call add_thermostat(ds, type=NOSE_HOOVER_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp) ! MM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp) ! MM
 	call print("Added 1 Nose-Hoover for QM+buffer heavy, 1 Nose-Hoover for QM+buffer H, and 1 Nose-Hoover-Langevin for MM")
       case(6)
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
 	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
       case(7)
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
-	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
+	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
 	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
       case(8)
 	call add_thermostats(ds,type=LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)

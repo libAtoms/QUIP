@@ -66,6 +66,7 @@ LIBATOMS_F95_FILES = \
   Group \
   Constraints \
   Thermostat \
+  Barostat \
   DynamicalSystem \
   Spline \
   Sparse \

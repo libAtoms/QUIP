@@ -113,7 +113,7 @@ program bulktest
   call rescale_velo(ds, init_temp)
   call zero_momentum(ds)
 
-  ds%thermostat = LANGEVIN_THERM
+  ds%thermostat = THERMOSTAT_LANGEVIN_THERM
   ds%thermal_tau = 1000.0_dp
   ds%sim_temp = sim_temp
 
