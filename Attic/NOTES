@@ -1,0 +1,2 @@
+bulktest-quip.f95: from QUIP_Programs, seems ancient and refers to non-existent things like LANGEVIN_THERM (18 Aug 2011)
+
