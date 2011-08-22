@@ -309,19 +309,19 @@ contains
   !X should modify the velocities accelerations, and positions as required:
   !X
   !X advance_verlet1
-  !X   (barostat_pre_vel1) *
-  !X   (thermostat_pre_vel1) *
-  !X   v(t+dt/2) = v(t) + a(t)dt/2
-  !X   (thermostat_post_vel1_pre_pos)
-  !X   r(t+dt) = r(t) + v(t+dt/2)dt
-  !X   (thermostat_post_pos_pre_calc)
-  !X   (barostat_post_pos_pre_calc) *
+  !X   00 (barostat_pre_vel1) *
+  !X   10 (thermostat_pre_vel1) *
+  !X   20 v(t+dt/2) = v(t) + a(t)dt/2
+  !X   30 (thermostat_post_vel1_pre_pos)
+  !X   40 r(t+dt) = r(t) + v(t+dt/2)dt
+  !X   50 (thermostat_post_pos_pre_calc)
+  !X   60 (barostat_post_pos_pre_calc) *
   !X calc F, virial
   !X advance_verlet2
-  !X   (thermostat_post_calc_pre_vel2) *
-  !X   v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
-  !X   (thermostat_post_vel2) *
-  !X   (barostat_post_vel2) *
+  !X   70 (thermostat_post_calc_pre_vel2) *
+  !X   80 v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
+  !X   90 (thermostat_post_vel2) *
+  !X   100 (barostat_post_vel2) *
   !X
   !X * marks routines that are needed in the refactored barostat/thermostat plan
   !X
@@ -344,6 +344,15 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(BAROSTAT_HOOVER_LANGEVIN)
+       !TIME_PROPAG_TEX 00
+       !TIME_PROPAG_TEX 00 before all Verlet and thermostat steps (barostat\_pre\_vel1)
+       !TIME_PROPAG_TEX 00
+       !TIME_PROPAG_TEX 00 $$ \epsilon_v = \epsilon_v \exp\left( -(\tau/2) \gamma_\epsilon \right)$$
+       !TIME_PROPAG_TEX 00 $$ \epsilon_v = \epsilon_v +  (\tau/2) \epsilon_f/W_\epsilon $$
+       !TIME_PROPAG_TEX 00 $$ v = v \exp \left(  -(\tau/2) (1 + 3/N_d) \epsilon_v \right) $$
+       !TIME_PROPAG_TEX 00 $$ (r,h) = (r,h) \exp\left( (\tau/2) \epsilon_v \right) $$
+       !TIME_PROPAG_TEX 00 
+
        if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
 
        ! half step epsilon_v drag 
@@ -385,7 +394,12 @@ contains
     select case(this%type)
 
       case(BAROSTAT_HOOVER_LANGEVIN)
-       if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
+       !TIME_PROPAG_TEX 60
+       !TIME_PROPAG_TEX 60 after Verlet pos step, before force calc (barostat\_post\_pos\_pre\_calc)
+       !TIME_PROPAG_TEX 60
+       !TIME_PROPAG_TEX 60 $$ (r,h) = (r,h) \exp\left( (\tau/2) \epsilon_v \right) $$
+       !TIME_PROPAG_TEX 60 
+       if (.not. present(virial)) call system_abort("barostat_post_pos_pre_calc needs virial")
 
         ! half step position affine defomration
         lattice_p = at%lattice
@@ -417,6 +431,15 @@ contains
     select case(this%type)
 
     case(BAROSTAT_HOOVER_LANGEVIN)
+       !TIME_PROPAG_TEX 100
+       !TIME_PROPAG_TEX 100 after all Verlet and thermostat steps (barostat\_post\_vel2)
+       !TIME_PROPAG_TEX 100
+       !TIME_PROPAG_TEX 100 $$ (r,h) = (r,h) \exp\left( (\tau/2) \epsilon_v \right) $$
+       !TIME_PROPAG_TEX 100 $$ v = v \exp \left(  -(\tau/2) (1 + 3/N_d) \epsilon_v \right) $$
+       !TIME_PROPAG_TEX 100 $$ \epsilon_f = \left( Tr[\mathrm{vir}] + \sum_i m_i \left|v_i\right|^2 - 3 V P\right) + 3/N_d \sum_i m_i \left| v_i \right|^2 + \sqrt{2 k_B T \gamma_\epsilon W_\epsilon/\tau} r $$
+       !TIME_PROPAG_TEX 100 $$ \epsilon_v = \epsilon_v +  (\tau/2) \epsilon_f/W_\epsilon $$
+       !TIME_PROPAG_TEX 100 $$ \epsilon_v = \epsilon_v \exp\left( -(\tau/2) \gamma_\epsilon \right)$$
+       !TIME_PROPAG_TEX 100 
        if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
 
        call system_resync_rng()

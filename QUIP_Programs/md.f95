@@ -45,7 +45,8 @@ private
     logical :: langevin_OU
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
-    logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, nose_hoover_thermostat, barostat_const_T
+    logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, all_purpose_thermostat_massive, nose_hoover_thermostat, barostat_const_T
+    real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
     character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
@@ -87,6 +88,9 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
   call param_register(md_params_dict, 'dt', '1.0', params%dt, help_string="Time step of the verlet iteration (femtoseconds)")
   call param_register(md_params_dict, 'all_purpose_thermostat', 'F', params%all_purpose_thermostat, help_string="if true, use new all purpose thermostat")
+  call param_register(md_params_dict, 'all_purpose_thermostat_massive', 'F', params%all_purpose_thermostat_massive, help_string="if true, use massive N-H in all purpose thermostat")
+  call param_register(md_params_dict, 'all_purpose_thermostat_NHL_tau', '0.0', params%all_purpose_thermostat_NHL_tau, help_string="tau of Langevin part of NHL in all purpose thermostat")
+  call param_register(md_params_dict, 'all_purpose_thermostat_NHL_NH_tau', '0.0', params%all_purpose_thermostat_NHL_NH_tau, help_string="tau of N-H part of NHL in all purpose thermostat")
   call param_register(md_params_dict, 'nose_hoover_thermostat', 'F', params%nose_hoover_thermostat, help_string="if true, use new plain Nose Hoover for const T")
   call param_register(md_params_dict, 'barostat_const_T', 'T', params%barostat_const_T, help_string="if true and running const_T, thermalize barostat for const T")
   ! call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
@@ -207,6 +211,7 @@ subroutine print_params(params)
   call print("md_params%dt=" // params%dt)
 
   call print("md_params%all_purpose_thermostat=" // params%all_purpose_thermostat)
+  call print("md_params%all_purpose_thermostat_massive=" // params%all_purpose_thermostat_massive)
   call print("md_params%const_T=" // params%const_T)
   if (params%const_T) then
      call print("md_params%T_initial=" // params%T_initial)
@@ -416,7 +421,15 @@ subroutine initialise_md_thermostat(ds, params)
 	    endif
 	 endif
 	 if (params%const_T) then
-	    call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, params%adaptive_langevin_NH_tau))
+	    if (params%all_purpose_thermostat_massive) then
+	       call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp, params%T_cur, params%adaptive_langevin_NH_tau), &
+		  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
+		  massive=params%all_purpose_thermostat_massive)
+	    else
+	       call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%adaptive_langevin_NH_tau), &
+		  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
+		  massive=params%all_purpose_thermostat_massive)
+	    endif
 	    ds%atoms%thermostat_region=1
 	 endif
 
