@@ -856,7 +856,7 @@ contains
 
    end subroutine ds_set_barostat
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, region_i)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, NHL_tau, NHL_mu, massive, region_i)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -866,10 +866,12 @@ contains
      real(dp), optional,    intent(in)    :: tau
      real(dp), optional,    intent(in)    :: tau_cell
      real(dp), optional,    intent(in)    :: p
+     real(dp), optional,    intent(in)    :: NHL_tau, NHL_mu
+     logical, optional,     intent(in)    :: massive
      integer, optional,     intent(out)   :: region_i
 
      real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
-     real(dp) :: gamma_eff
+     real(dp) :: gamma_eff, NHL_gamma_eff
 
      if (.not. present(Q)) then
 	if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
@@ -886,6 +888,11 @@ contains
 	    gamma_eff = 1.0_dp/tau
 	  endif
        endif
+     endif
+
+     NHL_gamma_eff = 0.0_dp
+     if (present(NHL_tau)) then
+       if (NHL_tau > 0.0_dp) NHL_gamma_eff = 1.0_dp/NHL_tau
      endif
 
      if(present(p)) then
@@ -905,8 +912,8 @@ contains
         volume_0 = cell_volume(this%atoms)
      endif
      call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0, &
-        region_i=region_i)
-     
+        NHL_gamma=NHL_gamma_eff, NHL_mu=NHL_mu, massive=massive, region_i=region_i)
+
    end subroutine ds_add_thermostat
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1682,6 +1689,7 @@ contains
      integer                               :: error_code
 #endif
      
+
      INIT_ERROR(error)
 
      this%dt = dt
@@ -1757,6 +1765,10 @@ contains
      !X VELOCITY UPDATE
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     !TIME_PROPAG_TEX 20
+     !TIME_PROPAG_TEX 20 Verlet vel step 1 (advance\_verlet1)
+     !TIME_PROPAG_TEX 20 $$ v = v + (\tau/2) f/m $$
+     !TIME_PROPAG_TEX 20
 
      do g = 1, size(this%group)
 
@@ -1842,6 +1854,10 @@ contains
      !X POSITION UPDATE
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     !TIME_PROPAG_TEX 40
+     !TIME_PROPAG_TEX 40 Verlet pos step (advance\_verlet1)
+     !TIME_PROPAG_TEX 40 $$ r = r + \tau v $$
+     !TIME_PROPAG_TEX 40
 
      do g = 1, size(this%group)
 
@@ -2080,6 +2096,10 @@ contains
      !X VELOCITY UPDATE
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     !TIME_PROPAG_TEX 80
+     !TIME_PROPAG_TEX 80 Verlet vel step 2 (advance\_verlet2)
+     !TIME_PROPAG_TEX 80 $$ v = v + (\tau/2) f/m $$
+     !TIME_PROPAG_TEX 80
 
      do g = 1, size(this%group)
 
