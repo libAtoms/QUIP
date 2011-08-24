@@ -183,7 +183,7 @@ contains
 
     if (cp2k_calc_fake) then
       call print("do_fake cp2k calc calculation")
-      call do_cp2k_calc_fake(at, f, e, args_str)
+      call do_cp2k_calc_fake(at, f, e, calc_virial, args_str)
       return
     endif
 
@@ -859,13 +859,15 @@ contains
 	 call system_command(&
 	   ' if [ ! -f cp2k_input_log ]; then cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log; fi;' // &
 	   ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log')
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_'//persistent_run_i//'.stress_tensor'// ' >> cp2k_stress_file_log')
       else
 	 call system_command(&
 	   ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
 	   ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
 	   ' cat filepot.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_1.xyz'// ' >> cp2k_force_file_log')
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_0.xyz'// ' >> cp2k_force_file_log;'// &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_0.stress_tensor'// ' >> cp2k_stress_file_log')
       endif
     endif
 
@@ -1076,7 +1078,7 @@ contains
       call print("got cp2k stress(3,:) "//virial(3,:))
       ! convert from stress GPa to virial in native units
       virial = cell_volume(at)*virial/GPA
-      call set_value(at%params, "virial", virial)
+      call set_value(at%params, trim(calc_virial), virial)
       call finalise(t_io)
     endif
 
@@ -1364,19 +1366,27 @@ contains
 
   end subroutine calc_charge_lsd
 
-  subroutine do_cp2k_calc_fake(at, f, e, args_str, error)
+  subroutine do_cp2k_calc_fake(at, f, e, calc_virial, args_str, error)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
+    character(len=FIELD_LENGTH), intent(in) :: calc_virial
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
     type(inoutput) :: last_run_io
+    type(inoutput) :: stress_io
     type(cinoutput) :: force_cio
     character(len=FIELD_LENGTH) :: last_run_s
     integer :: this_run_i
     integer :: stat
     type(Atoms) :: for
     real(dp), pointer :: frc(:,:)
+
+    integer :: cur_i
+    character(len=1024) :: l
+    character t_s
+    real(dp) :: virial(3,3)
+    logical :: got_virial
 
     INIT_ERROR(error)
 
@@ -1407,6 +1417,36 @@ contains
 	  RAISE_ERROR("do_cp2k_calc_fake didn't find energy",error)
 	endif
       endif
+    endif
+
+    if (len_trim(calc_virial) > 0) then
+       call initialise(stress_io, "cp2k_stress_file_log", action=INPUT)
+       got_virial=.false.
+       cur_i=0
+       do while (.not. got_virial)
+	  l=read_line(stress_io, status=stat)
+	  if (stat /= 0) exit
+	  if (index(trim(l), "STRESS TENSOR [GPa]") > 0) then
+	    cur_i=cur_i + 1
+	  endif
+	  if (cur_i == this_run_i) then
+	     if (index(trim(l), 'X') > 0 .and. index(trim(l), 'Y') <= 0) read(unit=l, fmt=*) t_s, virial(1,1), virial(1,2), virial(1,3)
+	     if (index(trim(l), 'Y') > 0 .and. index(trim(l), 'X') <= 0) read(unit=l, fmt=*) t_s, virial(2,1), virial(2,2), virial(2,3)
+	     if (index(trim(l), 'Z') > 0 .and. index(trim(l), 'Y') <= 0) then
+	       read(unit=l, fmt=*) t_s, virial(3,1), virial(3,2), virial(3,3)
+	       got_virial=.true.
+	     endif
+	  endif
+       end do
+       if (.not. got_virial) then
+	 RAISE_ERROR("do_cp2k_calc_fake got calc_virial but couldn't read virial for config "//this_run_i//" from cp2k_stress_file_log",error)
+       endif
+       call print("got cp2k stress(1,:) "//virial(1,:))
+       call print("got cp2k stress(2,:) "//virial(2,:))
+       call print("got cp2k stress(3,:) "//virial(3,:))
+       virial = cell_volume(at)*virial/GPA
+       call set_value(at%params, trim(calc_virial), virial)
+       call finalise(stress_io)
     endif
 
     e = e * HARTREE
