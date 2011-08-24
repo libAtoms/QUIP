@@ -95,5 +95,5 @@ fi
 
 echo ""
 
-# [[ $error == 0 ]] && rm -f ${TEST}.*
+[[ $error == 0 ]] && rm -f ${TEST}.*
 exit $error
