@@ -25,7 +25,7 @@ class IMDReader:
     def __init__(self, filename, z=14):
         self.filename = filename
         self.z = z
-      self.dt = dt
+        self.dt = dt
 
     def __len__(self):
         return 1
