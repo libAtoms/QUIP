@@ -1576,7 +1576,7 @@ contains
 	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
 	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
       case(8)
-	call add_thermostats(ds,type=LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)
+	call add_thermostats(ds,type=THERMOSTAT_LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)
 	ds%print_thermostat_temps = .false.
 	call print("Added 1 Langevin thermostat for each atom")
       case default
