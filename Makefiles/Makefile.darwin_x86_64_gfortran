@@ -52,7 +52,7 @@ AR_ADD = src
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
-NETCDF4_EXTRA_LIBS= -lmfhdf -ldf -ljpeg -lz -lsz
+NETCDF4_EXTRA_LIBS= -lz -lsz
 
 ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
 	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
