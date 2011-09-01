@@ -2971,4 +2971,28 @@ contains
 
   end function min_neighbour_dist
 
+  function torsion_angle(at, i1, i2, i3, i4, error)
+   type(Atoms), intent(in) :: at
+   integer, intent(in) :: i1, i2, i3, i4
+   integer, optional, intent(out) :: error
+   real(dp) :: torsion_angle
+
+   real(dp) :: v21(3), v23(3), v34(3)
+
+   INIT_ERROR(error)
+
+   if (any( (/ i1, i2, i3, i3 /) < 1) .or. &
+       any( (/ i1, i2, i3, i3 /) > at%N)) then
+      RAISE_ERROR("torsion angle atom index out of bounds", error)
+   endif
+   v21 = diff_min_image(at, i2, i1)
+   v23 = diff_min_image(at, i2, i3)
+   v34 = diff_min_image(at, i3, i4)
+
+   v21 = v21 - v23*(v21.dot.v23)/(norm(v23)*norm(v23))
+   v34 = v34 - v23*(v34.dot.v23)/(norm(v23)*norm(v23))
+
+   torsion_angle = acos((v21.dot.v34)/(norm(v21)*norm(v34)))
+  end function torsion_angle
+
 end module structures_module
