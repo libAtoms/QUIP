@@ -382,7 +382,7 @@ if makefile_test('QUIPPY_DEBUG') or got_gfortran45:
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
 
-sizeof_fortran_t = makefile['SIZEOF_FORTRAN_T']
+sizeof_fortran_t = int(makefile['SIZEOF_FORTRAN_T'])
 
 # Install options
 if 'QUIPPY_INSTALL_OPTS' in makefile:
