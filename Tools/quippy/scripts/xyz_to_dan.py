@@ -30,16 +30,12 @@ else:
    decimate_n = 1
 
 first_config=True
-config_i=-1
 config_i_used=-1
 for file in args:
   if (file == "-"):
     file = "stdin"
 
-  for at in AtomsReader(file):
-    config_i += 1
-    if (decimate_n > 1 and mod(config_i,decimate_n) != 0):
-      continue
+  for at in AtomsReader(file, step=decimate_n):
     config_i_used += 1
     sys.stderr.write("%d" % mod(config_i_used,10))
     if (first_config and opt.graph is not None):
