@@ -770,7 +770,7 @@ program crack
         call finalise(ds%thermostat)
 
         ! Special thermostat for damping
-        allocate(ds%thermostat(0:0)); call initialise(ds%thermostat(0),NONE,0.0_dp)
+        allocate(ds%thermostat(0:0)); call initialise(ds%thermostat(0),THERMOSTAT_NONE,0.0_dp)
 	! set damp mask, just in case we'll be doing damping
 	ds%atoms%damp_mask = 1
 	where (ds%atoms%move_mask == 0)
