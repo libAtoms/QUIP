@@ -41,7 +41,6 @@ class TestAtomsList(QuippyTestCase):
 
    def testgetslice(self):
       sl = self.listal[1:]
-      print sl
       self.assert_(isinstance(sl, AtomsList))
       self.assertEqual(list(sl), list(self.listal)[1:])
 
@@ -163,7 +162,7 @@ class TestAtomsList(QuippyTestCase):
 
    def testatomsreader_gen(self):
       ar = AtomsReader(self.genal)
-      self.assertEqual(list(ar), list(self.genal))
+      self.assertEqual(list(ar), list(diamond(5.44+0.01*x,14) for x in range(5)))
 
       
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ class TestDynamicalSystem(QuippyTestCase):
        self.assertArrayAlmostEqual(self.ds.atoms.avgpos, self.ds.atoms.pos)
 
    def test_avg_ke(self):
-       self.assertArrayAlmostEqual(self.ds.atoms.avg_ke, 0.5*self.at.mass*self.at.velo.norm2())
+       self.assertArrayAlmostEqual(self.ds.atoms.avg_ke, 0.5*self.ds.atoms.mass*self.ds.atoms.velo.norm2())
 
 
 if __name__ == '__main__':

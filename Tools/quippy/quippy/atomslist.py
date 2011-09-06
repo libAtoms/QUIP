@@ -88,22 +88,20 @@ class AtomsReader(AtomsReaderMixin):
     """Class to read Atoms frames from source"""
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
-                 mem_limit='default', **kwargs):
+                 cache_mem_limit=0, **kwargs):
         self.source = source
         self.format = format
         self.start = start
         self.stop = stop
         self.step = step
 
-        total, free = mem_info()
-        self.mem_limit = mem_limit
-        if self.mem_limit == 'default':
-            self.mem_limit = 0.5*free # half the available system memory
-        logging.debug('AtomsReader memory limit %r' % self.mem_limit)
+        self.cache_mem_limit = cache_mem_limit
+        logging.debug('AtomsReader memory limit %r' % self.cache_mem_limit)
 
         self._source_len = None
         self._cache_dict = {}
         self._cache_list  = []
+        self._cache_mem_usage = []
 
         self.opened = False
         self.reader = source
@@ -129,6 +127,11 @@ class AtomsReader(AtomsReaderMixin):
 
         if format in AtomsReaders:
             self.reader = AtomsReaders[format](self.reader, **kwargs)
+
+        # special case if source is a list or tuple of filenames or glob patterns
+        if isinstance(self.reader, list) or isinstance(self.reader, tuple):
+            if all(isinstance(item, str) for item in self.reader):
+                self.reader = AtomsSequenceReader(self.reader)
 
         if isinstance(self.reader, str):
             raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
@@ -174,12 +177,17 @@ class AtomsReader(AtomsReaderMixin):
         self._cache_list.append(frame)
         self._cache_dict[frame] = at
 
-        if self.mem_limit is not None:
-            mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
-            while len(self._cache_dict) > 1 and mem_usage > self.mem_limit:
-                logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
-                del self._cache_dict[self._cache_list.pop(0)]
-                mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
+        if self.cache_mem_limit is not None:
+            if self.cache_mem_limit == 0:
+                while len(self._cache_dict) > 1:
+                    logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
+                    del self._cache_dict[self._cache_list.pop(0)]
+            else:
+                self._cache_mem_usage.append(at.mem_estimate())
+                while len(self._cache_dict) > 1 and sum(self._cache_mem_usage) > self.cache_mem_limit:
+                    logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
+                    self._cache_mem_usage.pop(0)
+                    del self._cache_dict[self._cache_list.pop(0)]
 
     def __getitem__(self, frame):
         if not self.random_access:
@@ -192,11 +200,6 @@ class AtomsReader(AtomsReaderMixin):
             if frame < 0: frame = frame + len(self)
 
             if not self._cache_fetch(frame):
-                #try:
-                #at = 
-                #except (KeyError, IndexError):
-                #    raise
-                #    #raise IndexError("frame %r not found in source %r" % (frame, self.reader))
                 self._cache_store(frame, self.reader[frame])
 
             return self._cache_dict[frame]
@@ -263,7 +266,7 @@ class AtomsList(AtomsReaderMixin, list):
         self.start  = start
         self.stop   = stop
         self.step   = step
-        tmp_ar = AtomsReader(source, format, start, stop, step, mem_limit=None, **kwargs)
+        tmp_ar = AtomsReader(source, format, start, stop, step, **kwargs)
         list.__init__(self, list(tmp_ar))
         tmp_ar.close()
 
@@ -330,7 +333,7 @@ def AtomsWriter(dest, format=None, **kwargs):
 
 
 class AtomsSequenceReader:
-    """Read Atoms from a list of sources, which could be filenames or glob patterns"""
+    """Read Atoms from a list of sources"""
 
     def __init__(self, sources):
         self.sources = sources
@@ -375,4 +378,3 @@ class AtomsSequenceReader:
             for at in reader:
                 yield at
 
-AtomsReaders[list] = AtomsSequenceReader

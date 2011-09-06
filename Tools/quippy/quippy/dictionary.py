@@ -40,14 +40,22 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
     def __init__(self, D=None, *args, **kwargs):
         _dictionary.Dictionary.__init__(self, *args, **kwargs)
         self._cache = {}
+        self.key_cache_invalid = 1
+        self._keys = []
+        self._keys_lower = []
         if D is not None:
             self.read(D) # copy from D
 
     def keys(self):
-        return [self.get_key(i).strip() for i in frange(self.n)]
+        if self.key_cache_invalid or len(self._keys) != self.n: # HACK to solve shallow copy bug
+            self._keys = [self.get_key(i).strip() for i in frange(self.n)]
+            self._keys_lower = [k.lower() for k in self._keys]
+            self.key_cache_invalid = 0
+        return self._keys
 
     def has_key(self, key):
-        return key.lower() in [k.lower() for k in self.keys()]
+        k = self.keys() # ensure _keys_lower is up-to-date
+        return key.lower() in self._keys_lower
 
     def get_value(self, k):
         "Return a _copy_ of a value stored in Dictionary"
