@@ -21,17 +21,20 @@ array indexing."""
 
 import sys, numpy
 
+
+__all__ = ['FortranArray', 'frange', 'fenumerate', 'fzeros', 'farray',
+           'fidentity', 'fvar', 'f2n', 'n2f', 'unravel_index', 's2a',
+           'a2s', 'loadtxt', 'loadcsv']
+
 major, minor = sys.version_info[0:2]
 assert (major, minor) >= (2, 4)
 if (major, minor) < (2, 5):
     all = lambda seq: not False in seq
     any = lambda seq: True in seq
+    __all__.extend(['all', 'any'])
 
 del major, minor
 
-__all__ = ['FortranArray', 'frange', 'fenumerate', 'fzeros', 'farray',
-           'fidentity', 'fvar', 'f2n', 'n2f', 'unravel_index', 's2a',
-           'a2s', 'loadtxt', 'loadcsv']
 
 def frange(min,max=None,step=1):
     """Fortran equivalent of :func:`range` builtin.
