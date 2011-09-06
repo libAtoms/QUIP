@@ -263,7 +263,7 @@ class AtomsList(AtomsReaderMixin, list):
         self.start  = start
         self.stop   = stop
         self.step   = step
-        tmp_ar = AtomsReader(source, format, start, step, mem_limit=None, **kwargs)
+        tmp_ar = AtomsReader(source, format, start, stop, step, mem_limit=None, **kwargs)
         list.__init__(self, list(tmp_ar))
         tmp_ar.close()
 
