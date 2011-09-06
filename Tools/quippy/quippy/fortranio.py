@@ -17,7 +17,10 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import _quippy
-from quippy import InOutput, print_
+from quippy.system import InOutput, print_
+
+__all__ = ['FortranWriter', 'fortran_stdout', 'fortran_stderr',
+           'fortran_print', 'fortran_print_error']
 
 # Create InOutput objects associated with Fortran stdout and stderr
 mainlog_ptr, errorlog_ptr = _quippy.qp_get_mainlog_errorlog_ptr()

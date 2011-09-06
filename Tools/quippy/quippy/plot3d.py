@@ -21,6 +21,8 @@ from enthought.mayavi import mlab
 import quippy
 import numpy as np
 
+__all__ = ['draw_atoms']
+
 atom_colours_lut = np.array([list(quippy.ElementColours[k])+[1] for k in range(110)])*255
 
 def add_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=None, vmax=None):

@@ -21,6 +21,8 @@
 # Copyright (c) Raymond Hettinger 2002
 # Licensed under the PSF License
 
+import numpy as np
+
 class DictMixin(object):
     '''Mixin defining all dictionary methods for classes that already have
        a minimum dictionary interface including getitem, setitem, delitem,
@@ -188,8 +190,8 @@ class ParamReaderMixin(object):
 
         type_val_map = {(bool,True): None,
                         (bool,False): 'F',
-                        (numpy.bool_,True): None,
-                        (numpy.bool_,False): 'F'}
+                        (np.bool_,True): None,
+                        (np.bool_,False): 'F'}
 
         s = ''
         for key in self.keys():

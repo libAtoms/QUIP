@@ -21,9 +21,11 @@ import time, os, itertools, sys
 from StringIO import StringIO
 from farray import *
 
-from quippy import (Atoms, AtomsReaders, AtomsWriters, atoms_reader,
-                    ElementMass, MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA,
-                    atomic_number_from_symbol)
+from quippy.atoms import AtomsReaders, AtomsWriters, atoms_reader
+from quippy.periodictable import ElementMass, atomic_number
+from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
+
+__all__ = ['alpha_quartz', 'get_quartz_params']
 
 class PosCelWriter(object):
 
@@ -157,7 +159,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
         at.pos[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in poslines ])
         if not pos_angstrom: at.pos[:] *= BOHR
         species = [ rev_species_map[int(L.split()[3])] for L in poslines ]
-        elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in species ]
+        elements = [ not el.isdigit() and atomic_number(el) or el for el in species ]
         at.set_atoms(elements)
 
         if doenergy:
@@ -875,7 +877,7 @@ def param_to_xml(params, encoding='iso-8859-1'):
             n += 1
 
     for ti in range(params['nspecies']):
-        zi = atomic_number_from_symbol(params['species'][ti])
+        zi = atomic_number(params['species'][ti])
         xml.startElement('per_type_data', {'type':str(ti+1),
                                            'atomic_num': str(zi),
                                            'pol': str(params['pol'][ti]),
@@ -885,7 +887,7 @@ def param_to_xml(params, encoding='iso-8859-1'):
         for tj in range(params['nspecies']):
             if tj > ti: continue
             idx = ti_tj_to_index[(ti,tj)]
-            zj = atomic_number_from_symbol(params['species'][tj])
+            zj = atomic_number(params['species'][tj])
             xml.startElement('per_pair_data', {'atnum_i':str(zi),
                                                'atnum_j':str(zj),
                                                'D_ms': str(params['d_ms'][idx]),

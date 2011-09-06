@@ -16,11 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import FortranDynamicalSystem
+from quippy import _dynamicalsystem
+from quippy._dynamicalsystem import *
 
-class DynamicalSystem(FortranDynamicalSystem):
+__all__ = _dynamicalsystem.__all__
 
-    __doc__ = FortranDynamicalSystem.__doc__
+class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
+
+    __doc__ = _dynamicalsystem.DynamicalSystem.__doc__
 
     def run(self, pot, dt, n_steps, hook_interval=None, write_interval=None, connect_interval=None, trajectory=None, args_str=None, hook=None,
             save_interval=None):
@@ -28,9 +31,12 @@ class DynamicalSystem(FortranDynamicalSystem):
             if hook_interval is not None:
                 raise ValueError('hook_interval not permitted when hook is not present. save_interval is used instead')
             traj = []
-            FortranDynamicalSystem.run(self, pot, dt, n_steps, lambda:traj.append(self.atoms.copy()), hook_interval=save_interval, write_interval=write_interval,
+            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, lambda:traj.append(self.atoms.copy()), hook_interval=save_interval, write_interval=write_interval,
                                        connect_interval=connect_interval, trajectory=trajectory, args_str=args_str)
             return traj
         else:
-            FortranDynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval, write_interval,
+            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval, write_interval,
                                        connect_interval, trajectory, args_str)
+
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(dynamicalsystem)'] = DynamicalSystem

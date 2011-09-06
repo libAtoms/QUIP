@@ -18,6 +18,7 @@
 
 from quippy import *
 from numpy import *
+import numpy as np
 
 import unittest, quippy
 from quippytest import *
@@ -35,7 +36,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.at_def = Atoms(n=10, lattice=10.0*fidentity(3))
 
       self.dia = diamond(5.44, 14)
-      self.dia.pos[:] += numpy.random.uniform(-0.1,0.1,self.dia.n*3).reshape(3,self.dia.n)
+      self.dia.pos[:] += np.random.uniform(-0.1,0.1,self.dia.n*3).reshape(3,self.dia.n)
       self.dia.set_cutoff_factor(1.3)
       self.dia.calc_connect()
 
@@ -299,7 +300,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       
    def test_diff(self):
       d1 = fzeros(3)
-      shift = fzeros(3, dtype=numpy.int32)
+      shift = fzeros(3, dtype=np.int32)
       j = self.dia.neighbour(1, 1, diff=d1, shift=shift)
       d2 = self.dia.diff(1, j, shift)
       self.assertArrayAlmostEqual(d1, d2)
@@ -330,7 +331,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
    
    def test_distance(self):
       d1 = farray(0.0)
-      shift = fzeros(3, dtype=numpy.int32)
+      shift = fzeros(3, dtype=np.int32)
       j = self.dia.neighbour(1, 1, distance=d1, shift=shift)
       d2 = self.dia.distance(1, j, shift)
       self.assertAlmostEqual(d1, d2)
@@ -425,10 +426,10 @@ class TestAtoms_Rotate(QuippyTestCase):
    def setUp(self):
       self.a = diamond(5.44, 14)
       self.a.add_property('force', 0., n_cols=3)
-      self.a.force[:]  = numpy.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
+      self.a.force[:]  = np.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
       self.a.add_property('not_a_vector', 0., n_cols=3)
-      self.a.not_a_vector[:]  = numpy.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
-      self.a.params['virial'] = numpy.random.uniform(-0.1,0.1,9).reshape(3,3)
+      self.a.not_a_vector[:]  = np.random.uniform(-0.1,0.1,self.a.n*3).reshape(3,self.a.n)
+      self.a.params['virial'] = np.random.uniform(-0.1,0.1,9).reshape(3,3)
       self.c = self.a.copy()
 
       theta = pi/3.
@@ -606,7 +607,7 @@ class TestAtoms_Extras(QuippyTestCase):
       self.assertArrayAlmostEqual(list(self.at.int2d), [[0,0]]*8)
 
    def test_add_property_int_from_random_array(self):
-      r = numpy.random.randint(1, 100, 8)
+      r = np.random.randint(1, 100, 8)
       self.at.add_property('int', r)
       self.check_property('int', T_INTEGER_A)
       self.assertArrayAlmostEqual(list(self.at.int), r)
@@ -652,7 +653,7 @@ class TestAtoms_Extras(QuippyTestCase):
       self.assertArrayAlmostEqual(list(self.at.real2d), [[0.,0.]]*8)
 
    def test_add_property_real_from_random_array(self):
-      r = numpy.random.uniform(1.0, 100.0, 8)
+      r = np.random.uniform(1.0, 100.0, 8)
       self.at.add_property('real', r)
       self.check_property('real', T_REAL_A)      
       self.assertArrayAlmostEqual(list(self.at.real), r)
@@ -678,7 +679,7 @@ class TestAtoms_Extras(QuippyTestCase):
       self.assertEqual(list(self.at.logical), [False]*8)      
       
    def test_add_property_logical_from_random_array(self):
-      r = farray(numpy.random.randint(0, 2, 8), dtype=bool)
+      r = farray(np.random.randint(0, 2, 8), dtype=bool)
       self.at.add_property('logical', r)
       self.check_property('logical', T_LOGICAL_A)            
       self.assertArrayAlmostEqual(list(self.at.logical), r)
@@ -783,7 +784,7 @@ class TestAtoms_Neighbour(QuippyTestCase):
 
    def test_shift(self):
       # r_12 shift should be (0, 0, 0)
-      shift = fzeros(3,dtype=numpy.int32)
+      shift = fzeros(3,dtype=np.int32)
       self.at.neighbour(1,4,shift=shift)
       self.assertArrayAlmostEqual(shift, [0.0, 0.0, 0.0])
 

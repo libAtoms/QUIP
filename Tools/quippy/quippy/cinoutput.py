@@ -16,22 +16,28 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import FortranCInOutput, INPUT, OUTPUT, INOUT, AtomsReaders, AtomsWriters, atoms_reader, Atoms
-from farray import farray, padded_str_array
+from quippy import _cinoutput
+from quippy._cinoutput import *
+
 from quippy import netcdf_file
+from quippy.system import INPUT, OUTPUT, INOUT
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.farray import farray, padded_str_array
 
-class CInOutput(FortranCInOutput):
+__all__ = _cinoutput.__all__
 
-    __doc__ = FortranCInOutput.__doc__
+class CInOutput(_cinoutput.CInOutput):
+
+    __doc__ = _cinoutput.CInOutput.__doc__
 
     def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
                  frame=None, mpi=None, zero=False, range=None, fpointer=None, finalise=True):
-        FortranCInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
-                                  frame, mpi, fpointer=fpointer, finalise=finalise)
+        _cinoutput.CInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
+                                      frame, mpi, fpointer=fpointer, finalise=finalise)
         self.zero = zero
         self.range = range
 
-    __init__.__doc__ = FortranCInOutput.__init__.__doc__
+    __init__.__doc__ = _cinoutput.CInOutput.__init__.__doc__
 
     def __len__(self):
         return int(self.n_frame)
@@ -45,9 +51,9 @@ class CInOutput(FortranCInOutput):
     def read(self, properties=None, properties_array=None, frame=None,
              zero=None, range=None, str=None, estr=None):
         at = Atoms()
-        FortranCInOutput.read(self, at, properties=properties,
-                              properties_array=properties_array, frame=frame,
-                              zero=zero, range=range, str=str, estr=estr)
+        _cinoutput.CInOutput.read(self, at, properties=properties,
+                                  properties_array=properties_array, frame=frame,
+                                  zero=zero, range=range, str=str, estr=estr)
         return at
 
     def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
@@ -56,10 +62,12 @@ class CInOutput(FortranCInOutput):
         if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
             properties = padded_str_array(properties, max([len(x) for x in properties])).T
 
-        FortranCInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
-                               real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
-                               deflate_level=deflate_level, estr=estr, update_index=update_index)
+        _cinoutput.CInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
+                                   real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
+                                   deflate_level=deflate_level, estr=estr, update_index=update_index)
 
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(cinoutput)'] = CInOutput
 
 class CInOutputReader(object):
     """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""

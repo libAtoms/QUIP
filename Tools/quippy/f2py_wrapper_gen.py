@@ -551,54 +551,201 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               typename = mytype
 
           if  dim_list != []:
-              if mytype.startswith('type'): continue
-              tname = strip_type(t.name)
+              if mytype.startswith('type'):
+                 tname = strip_type(t.name)
 
-              println('subroutine %s%s__array__%s(this, nd, dtype, dshape, dloc)' % (prefix, t.name,name))
-              indent += 3
-              #println('use %s, only: imported_%s => %s' % (type_map[t.name.lower()], t.name, t.name))
-              for umod in uses:
-                 println('use %s' % umod)
-              println('implicit none')
-              println('type %s_ptr_type' %  tname)
-              println('type(%s), pointer :: p' % tname)
-              println('end type %s_ptr_type' % tname)
-              println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
-              println('type(%s_ptr_type) :: this_ptr' % t.name)
-              println('integer, intent(out) :: nd')
-              println('integer, intent(out) :: dtype')
-              try:
-                  rank = dim_list[0].count(',')+1
-                  if mytype.startswith('character'): rank += 1
-              except ValueError:
-                  rank = 1
-              println('integer, dimension(10), intent(out) :: dshape')
-              println('integer*%d, intent(out) :: dloc' % numpy.dtype('O').itemsize)
-              println()
-              println('nd = %d' % rank)
-              println('dtype = %s' % fortran_type_code[typename])
-              println('this_ptr = transfer(this, this_ptr)')
-              if 'allocatable' in el.attributes:
-                  println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
-                  indent += 3
-              if mytype.startswith('character'):
-                  first = ','.join(['1' for i in range(rank-1)])
-                  println('dshape(1:%d) = (/len(this_ptr%%p%%%s(%s)), shape(this_ptr%%p%%%s)/)' % (rank, el.name, first, el.name))
+                 if len(dim_list) != 1: continue
+
+                 println('subroutine %s%s__array_getitem__%s(this, i, the%s)' % (prefix, t.name,name,name))
+                 indent += 3
+                 #println('use %s, only: imported_%s => %s' % (type_map[t.name.lower()], t.name, t.name))
+                 for line in kindlines:
+                    if not any([line.startswith('use %s' % umod) for umod in uses]):
+                       println(line)
+                 for umod in uses:
+                    println('use %s' % umod)
+                 println('implicit none')
+                 println('type %s_ptr_type' %  tname)
+                 println('type(%s), pointer :: p' % tname)
+                 println('end type %s_ptr_type' % tname)
+                 println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
+                 println('type(%s_ptr_type) :: this_ptr' % t.name)
+
+                 println('type %s_ptr_type' %  strip_type(mytype))
+                 println('type(%s), pointer :: p' % strip_type(mytype))
+                 println('end type %s_ptr_type' % strip_type(mytype))
+                 println('integer, intent(in) :: i')
+                 println('integer, intent(out) :: the%s(%d)' % (name, sizeof_fortran_t))
+                 println('type(%s_ptr_type) :: the%s_ptr' % (typename, name))
+                 println()
+                 println('this_ptr = transfer(this, this_ptr)')
+
+                 if 'allocatable' in el.attributes:
+                     println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
+                     indent += 3
+
+                 println('if (i < 1 .or. i > size(this_ptr%%p%%%s)) then' % el.name)
+                 indent += 3
+                 println('call system_abort("array index out of range")')
+                 indent -= 3
+                 println('else')
+                 indent += 3
+                 println('the%s_ptr%%p => this_ptr%%p%%%s(i)' % (name, el.name))
+                 println('the%s = transfer(the%s_ptr,the%s)' % (name, name, name))
+                 indent -= 3
+                 println('endif')
+
+                 if 'allocatable' in el.attributes:
+                     indent -= 3
+                     println('else')
+                     indent += 3
+                     println('call system_abort("derived type array not allocated")')
+                     indent -= 3
+                     println('end if')
+
+                 indent -= 3
+                 println('end subroutine %s%s__array_getitem__%s' % (prefix, t.name, name))
+                 println()
+                 thisdoc[el.name]['array_getitem'] = '%s%s__array_getitem__%s' % (prefix, t.name.lower(), name.lower())
+
+                 println('subroutine %s%s__array_setitem__%s(this, i, the%s)' % (prefix, t.name, name, name))
+                 indent += 3
+                 for line in kindlines:
+                    if not any([line.startswith('use %s' % umod) for umod in uses]):
+                       println(line)
+                 for umod in uses:
+                    println('use %s' % umod)                 
+
+                 println('implicit none')
+                 println('type %s_ptr_type' %  tname)
+                 println('type(%s), pointer :: p' % tname)
+                 println('end type %s_ptr_type' % tname)
+                 println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
+                 println('type(%s_ptr_type) :: this_ptr' % t.name)
+
+                 println('type %s_ptr_type' %  strip_type(mytype))
+                 println('type(%s), pointer :: p' % strip_type(mytype))
+                 println('end type %s_ptr_type' % strip_type(mytype))
+                 println('integer, intent(in) :: i')
+                 println('integer, intent(in) :: the%s(%d)' % (name, sizeof_fortran_t))
+                 println('type(%s_ptr_type) :: the%s_ptr' % (typename, name))
+                 println()
+                 println('this_ptr = transfer(this, this_ptr)')
+
+                 if 'allocatable' in el.attributes:
+                     println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
+                     indent += 3
+
+                 println('if (i < 1 .or. i > size(this_ptr%%p%%%s)) then' % el.name)
+                 indent += 3
+                 println('call system_abort("array index out of range")')
+                 indent -= 3
+                 println('else')
+                 indent += 3
+                 println('the%s_ptr = transfer(the%s,the%s_ptr)' % (name, name, name))
+                 println('this_ptr%%p%%%s(i) = the%s_ptr%%p' % (name, el.name))
+                 indent -= 3
+                 println('endif')
+
+                 if 'allocatable' in el.attributes:
+                     indent -= 3
+                     println('else')
+                     indent += 3
+                     println('call system_abort("derived type array not allocated")')
+                     indent -= 3
+                     println('end if')
+
+                 indent -= 3
+                 println('end subroutine %s%s__array_setitem__%s' % (prefix, t.name, name))
+                 println()
+                 thisdoc[el.name]['array_setitem'] = '%s%s__array_setitem__%s' % (prefix, t.name.lower(), name.lower())
+
+                 println('subroutine %s%s__array_len__%s(this, n)' % (prefix, t.name, name))
+                 indent += 3
+                 for line in kindlines:
+                    if not any([line.startswith('use %s' % umod) for umod in uses]):
+                       println(line)
+                 for umod in uses:
+                    println('use %s' % umod)                 
+
+                 println('implicit none')
+                 println('type %s_ptr_type' %  tname)
+                 println('type(%s), pointer :: p' % tname)
+                 println('end type %s_ptr_type' % tname)
+                 println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
+                 println('integer, intent(out) :: n')
+                 println('type(%s_ptr_type) :: this_ptr' % t.name)
+                 println()
+                 println('this_ptr = transfer(this, this_ptr)')
+
+                 if 'allocatable' in el.attributes:
+                     println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
+                     indent += 3
+
+                 println('n = size(this_ptr%%p%%%s)' % el.name)
+
+                 if 'allocatable' in el.attributes:
+                     indent -= 3
+                     println('else')
+                     indent += 3
+                     println('n = 0')
+                     indent -= 3
+                     println('end if')
+
+                 indent -= 3
+                 println('end subroutine %s%s__array_len__%s' % (prefix, t.name, name))
+                 println()
+                 thisdoc[el.name]['array_len'] = '%s%s__array_len__%s' % (prefix, t.name.lower(), name.lower())                 
+                 
+
               else:
-                 println('dshape(1:%d) = shape(this_ptr%%p%%%s)' % (rank, el.name))
-              println('dloc = loc(this_ptr%%p%%%s)' % el.name)
-              if 'allocatable' in el.attributes:
-                  indent -= 3
-                  println('else')
-                  indent += 3
-                  println('dloc = 0')
-                  indent -= 3
-                  println('end if')
+                 tname = strip_type(t.name)
 
-              indent -= 3
-              println('end subroutine %s%s__array__%s' % (prefix, t.name, name))
-              thisdoc[el.name]['array'] = '%s%s__array__%s' % (prefix, t.name.lower(), name.lower())
-              println()
+                 println('subroutine %s%s__array__%s(this, nd, dtype, dshape, dloc)' % (prefix, t.name,name))
+                 indent += 3
+                 #println('use %s, only: imported_%s => %s' % (type_map[t.name.lower()], t.name, t.name))
+                 for umod in uses:
+                    println('use %s' % umod)
+                 println('implicit none')
+                 println('type %s_ptr_type' %  tname)
+                 println('type(%s), pointer :: p' % tname)
+                 println('end type %s_ptr_type' % tname)
+                 println('integer, intent(in) :: this(%d)' % sizeof_fortran_t)
+                 println('type(%s_ptr_type) :: this_ptr' % t.name)
+                 println('integer, intent(out) :: nd')
+                 println('integer, intent(out) :: dtype')
+                 try:
+                     rank = dim_list[0].count(',')+1
+                     if mytype.startswith('character'): rank += 1
+                 except ValueError:
+                     rank = 1
+                 println('integer, dimension(10), intent(out) :: dshape')
+                 println('integer*%d, intent(out) :: dloc' % numpy.dtype('O').itemsize)
+                 println()
+                 println('nd = %d' % rank)
+                 println('dtype = %s' % fortran_type_code[typename])
+                 println('this_ptr = transfer(this, this_ptr)')
+                 if 'allocatable' in el.attributes:
+                     println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
+                     indent += 3
+                 if mytype.startswith('character'):
+                     first = ','.join(['1' for i in range(rank-1)])
+                     println('dshape(1:%d) = (/len(this_ptr%%p%%%s(%s)), shape(this_ptr%%p%%%s)/)' % (rank, el.name, first, el.name))
+                 else:
+                    println('dshape(1:%d) = shape(this_ptr%%p%%%s)' % (rank, el.name))
+                 println('dloc = loc(this_ptr%%p%%%s)' % el.name)
+                 if 'allocatable' in el.attributes:
+                     indent -= 3
+                     println('else')
+                     indent += 3
+                     println('dloc = 0')
+                     indent -= 3
+                     println('end if')
+
+                 indent -= 3
+                 println('end subroutine %s%s__array__%s' % (prefix, t.name, name))
+                 thisdoc[el.name]['array'] = '%s%s__array__%s' % (prefix, t.name.lower(), name.lower())
+                 println()
 
           # For scalars write get/set routines
           else:

@@ -22,13 +22,16 @@ array indexing."""
 import sys, numpy
 
 major, minor = sys.version_info[0:2]
-
 assert (major, minor) >= (2, 4)
-
 if (major, minor) < (2, 5):
     all = lambda seq: not False in seq
     any = lambda seq: True in seq
 
+del major, minor
+
+__all__ = ['FortranArray', 'frange', 'fenumerate', 'fzeros', 'farray',
+           'fidentity', 'fvar', 'f2n', 'n2f', 'unravel_index', 's2a',
+           'a2s', 'loadtxt', 'loadcsv']
 
 def frange(min,max=None,step=1):
     """Fortran equivalent of :func:`range` builtin.
@@ -112,9 +115,8 @@ class FortranArray(numpy.ndarray):
     __array_priority__ = 100.0
 
     def __array_finalize__(self, obj):
-        self.cols = self.col_iter()
-        self.rows = self.row_iter()
-
+        pass
+    
     def __array_wrap__(self, out, context=None):
         return out.view(FortranArray)
 
@@ -131,8 +133,6 @@ class FortranArray(numpy.ndarray):
         if doc is not None:
             self.__doc__ = doc
 
-        self.cols = self.col_iter()
-        self.rows = self.row_iter()
         return self
 
     def __eq__(self, other):
@@ -380,6 +380,8 @@ class FortranArray(numpy.ndarray):
                 else:
                     yield obj
 
+    rows = property(row_iter)
+
     def norm2(self):
         """Squared norm of a 1D or 2D array.
 
@@ -413,6 +415,8 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[-1]):
                 obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1)).view(FortranArray)
                 yield obj
+
+    cols = property(col_iter)
 
     def all(self, axis=None, out=None):
         """One-based analogue of :meth:`numpy.ndarray.all`"""

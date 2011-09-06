@@ -52,6 +52,13 @@ if 'scipy' in available_modules:
 if 'pylab' in available_modules:
     import pylab
 from farray import *
+import numpy as np
+
+__all__ = ['strain_matrix', 'stress_matrix', 'strain_vector',
+           'stress_vector', 'generate_strained_configs',
+           'calc_stress', 'fit_elastic_constants',
+           'elastic_constants', 'atomic_strain',
+           'elastic_fields', 'transform_elasticity']
 
 def strain_matrix(strain_vector):
     e1, e2, e3, e4, e5, e6 = strain_vector
@@ -234,11 +241,11 @@ def generate_strained_configs(at0, symmetry='triclinic', N_steps=5, delta=1e-2):
 
     for pindex, (pattern, fit_pairs) in fenumerate(strain_patterns[symmetry]):
         for step in frange(N_steps):
-            strain = numpy.where(pattern == 1, delta*(step-(N_steps+1)/2.0), 0.0)
+            strain = np.where(pattern == 1, delta*(step-(N_steps+1)/2.0), 0.0)
             at = at0.copy()
             T = strain_matrix(strain)
-            at.set_lattice(numpy.dot(T,at.lattice), scale_positions=False)
-            at.pos[:] = numpy.dot(T,at.pos)
+            at.set_lattice(np.dot(T,at.lattice), scale_positions=False)
+            at.pos[:] = np.dot(T,at.pos)
             at.params['strain'] = T
             yield at
 
@@ -375,16 +382,16 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
 
     # Convert lists to mean
     for k in Cijs:
-        Cijs[k] = numpy.mean(Cijs[k])
+        Cijs[k] = np.mean(Cijs[k])
 
     # Combine statistical errors
     for k, v in Cij_err.iteritems():
-        Cij_err[k] = numpy.sqrt(numpy.sum(farray(v)**2))/numpy.sqrt(len(v))
+        Cij_err[k] = np.sqrt(np.sum(farray(v)**2))/np.sqrt(len(v))
 
     if symmetry.startswith('trigonal'):
         # Special case for trigonal lattice: C66 = (C11 - C12)/2
         Cijs[Cij_map[(6,6)]] = 0.5*(Cijs[Cij_map[(1,1)]]-Cijs[Cij_map[(1,2)]])
-        Cij_err[Cij_map[(6,6)]] = numpy.sqrt(Cij_err[Cij_map[(1,1)]]**2 + Cij_err[Cij_map[(1,2)]]**2)
+        Cij_err[Cij_map[(6,6)]] = np.sqrt(Cij_err[Cij_map[(1,1)]]**2 + Cij_err[Cij_map[(1,2)]]**2)
 
     # Generate the 6x6 matrix of elastic constants
     # - negative values signify a symmetry relation
@@ -402,9 +409,9 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
                 C_labels[i,j] = '-C%d%d' % Cij_rev_map[-index]
 
     if verbose:
-        print numpy.array2string(C_labels).replace("'","")
+        print np.array2string(C_labels).replace("'","")
         print '\n = \n'
-        print numpy.array2string(C, suppress_small=True, precision=2)
+        print np.array2string(C, suppress_small=True, precision=2)
         print
 
         # Summarise the independent components of C_ij matrix
@@ -445,9 +452,9 @@ def atomic_strain(at, r0, crystal_factor=1.0):
     return strain/crystal_factor
 
 
-def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
-                      save_reference=False, use_reference=False, mask=None, interpolate=False,
-                      cutoff_factor=1.2, system='tetrahedric'):
+def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=None,
+                   save_reference=False, use_reference=False, mask=None, interpolate=False,
+                   cutoff_factor=1.2, system='tetrahedric'):
     """
     Compute atomistic strain field and linear elastic stress response.
 
@@ -490,7 +497,7 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
     """
 
     def compute_stress_eig(i):
-        D, SigEvecs = numpy.linalg.eig(stress_matrix(at.stress[:,i]))
+        D, SigEvecs = np.linalg.eig(stress_matrix(at.stress[:,i]))
 
         # Order by descending size of eigenvalues
         sorted_evals, order = zip(*sorted(zip(D, [1,2,3]),reverse=True))
@@ -504,7 +511,7 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
         raise ValueError('One of lattice constant or bond length must be given')
 
     if a is None:
-        a = bond_length*4/sqrt(3.)
+        a = bond_length*4/np.sqrt(3.)
 
     # We want nearest neighbour connectivity only
     save_cutoff, save_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
@@ -578,14 +585,14 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
                     (j1,i1), (j2,i2), (j3,i3), (j4,i4), (j5,i5), (j6,i6) = list((n.j,i) for i,n in fenumerate(neighb))
 
                 dd = fzeros(6)
-                dd[1] = numpy.linalg.norm(c_local - neighb[i1].diff)
-                dd[2] = numpy.linalg.norm(c_local - neighb[i2].diff)
-                dd[3] = numpy.linalg.norm(c_local - neighb[i3].diff)
-                dd[4] = numpy.linalg.norm(c_local - neighb[i4].diff)
-                dd[5] = numpy.linalg.norm(c_local - neighb[i5].diff)
-                dd[6] = numpy.linalg.norm(c_local - neighb[i6].diff)
+                dd[1] = np.linalg.norm(c_local - neighb[i1].diff)
+                dd[2] = np.linalg.norm(c_local - neighb[i2].diff)
+                dd[3] = np.linalg.norm(c_local - neighb[i3].diff)
+                dd[4] = np.linalg.norm(c_local - neighb[i4].diff)
+                dd[5] = np.linalg.norm(c_local - neighb[i5].diff)
+                dd[6] = np.linalg.norm(c_local - neighb[i6].diff)
                 #print dd[5], c_local - neighb[i5].diff
-                ind =  numpy.argsort(dd)
+                ind =  np.argsort(dd)
 
                 n1 = neighb[ind[1]].diff - neighb[ind[6]].diff
                 n2 = neighb[ind[2]].diff - neighb[ind[3]].diff
@@ -606,12 +613,12 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
             # and R is a rotation
             #
             #  EEt = E*E', EEt = VDV' D diagonal, S = V D^1/2 V', R = S^-1*E
-            EEt = numpy.dot(E, E.T)
+            EEt = np.dot(E, E.T)
 
-            D, V = numpy.linalg.eig(EEt)
+            D, V = np.linalg.eig(EEt)
 
-            S = farray(numpy.dot(numpy.dot(V, numpy.diag(numpy.sqrt(D))), V.T))
-            R = farray(numpy.dot(numpy.dot(numpy.dot(V, numpy.diag(D**-0.5)), V.T), E))
+            S = farray(np.dot(np.dot(V, np.diag(np.sqrt(D))), V.T))
+            R = farray(np.dot(np.dot(np.dot(V, np.diag(D**-0.5)), V.T), E))
 
             #print 'S:', S
             #print 'R:', R
@@ -619,10 +626,10 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
             if save_reference:
                 key = 'strain_inv_%d' % at.primitive_index[i]
                 if key not in at.params:
-                    at.params[key] = numpy.linalg.inv(S)
+                    at.params[key] = np.linalg.inv(S)
 
             if use_reference:
-                S = numpy.dot(S, at.params['strain_inv_%d' % at.primitive_index[i]])
+                S = np.dot(S, at.params['strain_inv_%d' % at.primitive_index[i]])
 
             #print 'S after apply S0_inv:', S
 
@@ -630,11 +637,11 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
             at.strain[:,i] = strain_vector(S)
 
             # Test for permutations - check which way x points
-            RtE = numpy.dot(R.T, E)
+            RtE = np.dot(R.T, E)
             if RtE[2,1] > RtE[1,1] and RtE[2,1] > RtE[3,1]:
-                R = numpy.dot(rotXYZ, R)
+                R = np.dot(rotXYZ, R)
             elif RtE[3,1] > RtE[1,1] and RtE[3,1] > RtE[2,1]:
-                R = numpy.dot(rotXYZ.T, R)
+                R = np.dot(rotXYZ.T, R)
 
             if save_reference:
                 key = 'rotation_inv_%d' % at.primitive_index[i]
@@ -642,25 +649,25 @@ def elastic_fields_py(at, a,  bond_length=None, c=None, c_vector=None, cij=None,
                     at.params[key] = R.T
 
             if use_reference:
-                R = numpy.dot(R, at.params['rotation_inv_%d' % at.primitive_index[i]])
+                R = np.dot(R, at.params['rotation_inv_%d' % at.primitive_index[i]])
 
             #print 'R after apply R0t:', R
 
             # Rotate to crystal coordinate system to apply Cij matrix
-            RtSR = numpy.dot(numpy.dot(R.T, S), R)
+            RtSR = np.dot(np.dot(R.T, S), R)
             #print 'RtSR:', RtSR
 
             if cij is not None:
-                sig = stress_matrix(numpy.dot(cij, strain_vector(RtSR)))
+                sig = stress_matrix(np.dot(cij, strain_vector(RtSR)))
 
                 # Rotate back to local coordinate system
-                RsigRt = numpy.dot(numpy.dot(R, sig), R.T)
+                RsigRt = np.dot(np.dot(R, sig), R.T)
 
                 # Symmetrise stress tensor
                 RsigRt = (RsigRt + RsigRt.T)/2.0
                 at.stress[:,i] = stress_vector(RsigRt)
 
-                at.strain_energy_density[i] = 0.5*numpy.dot(at.strain[:,i], at.stress[:,i])
+                at.strain_energy_density[i] = 0.5*np.dot(at.strain[:,i], at.stress[:,i])
                 print at.strain[:, i]
 
                 compute_stress_eig(i)

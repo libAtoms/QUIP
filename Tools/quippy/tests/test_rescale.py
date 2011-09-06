@@ -17,7 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
-import unittest, quippy
+import unittest, quippy, os
+import numpy as np
 from quippytest import *
 
 class Test_Tersoff_Rescale_Energy(QuippyTestCase):
@@ -30,7 +31,7 @@ class Test_Tersoff_Rescale_Energy(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
 
@@ -81,7 +82,7 @@ class Test_Tersoff_Rescale_Space(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
         self.d2.set_lattice(self.d2.lattice/self.r_scale, True)
@@ -133,7 +134,7 @@ class Test_Tersoff_Rescale_Space_and_Energy(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
         self.d2.set_lattice(self.d2.lattice/self.r_scale, True)
@@ -211,7 +212,7 @@ class Test_Tersoff_Rescale_Energy(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
 
@@ -262,7 +263,7 @@ class Test_SW_Rescale_Space(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
         self.d2.set_lattice(self.d2.lattice/self.r_scale, True)
@@ -314,7 +315,7 @@ class Test_SW_Rescale_Space_and_Energy(QuippyTestCase):
         self.bulk.calc_connect()
 
         self.d1 = self.bulk.copy()
-        self.d1.pos[:,:] += numpy.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
+        self.d1.pos[:,:] += np.random.uniform(-0.5, 0.5, size=3*self.d1.n).reshape(3,self.d1.n)
         self.d1.calc_connect()
         self.d2 = self.d1.copy()
         self.d2.set_lattice(self.d2.lattice/self.r_scale, True)

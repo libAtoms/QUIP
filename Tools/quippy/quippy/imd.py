@@ -16,9 +16,12 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import Atoms, AtomsReaders, AtomsWriters, BOHR
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters
+from quippy.units import BOHR
 from farray import *
 import sys, numpy
+
+__all__ = ['IMDReader']
 
 class IMDReader:
 

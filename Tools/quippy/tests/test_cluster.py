@@ -18,7 +18,7 @@
 
 from quippy import *
 from numpy import *
-import unittest, quippy
+import unittest, quippy, os
 from quippytest import *
 
 def sort_for_comparison(t, t_padded):

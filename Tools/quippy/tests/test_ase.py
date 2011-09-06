@@ -18,6 +18,7 @@
 
 from quippy import *
 import unittest, quippy
+import numpy as np
 from quippytest import *
 
 if 'ase' in available_modules:
@@ -39,7 +40,7 @@ class TestConvert_ExtraProperties(QuippyTestCase):
 
    def setUp(self):
       self.dia_quippy   = diamond(5.44, 14)
-      self.dia_quippy.add_property('momenta', numpy.random.uniform(-1,1,size=3*8).reshape(3,8))
+      self.dia_quippy.add_property('momenta', np.random.uniform(-1,1,size=3*8).reshape(3,8))
       self.dia_quippy.add_property('charge', [1.0]*8)
       self.dia_ase      = ase.Atoms(self.dia_quippy)
       self.dia_quippy_2 = quippy.Atoms(self.dia_ase)

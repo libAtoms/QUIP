@@ -17,7 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
-import unittest, quippy
+import quippy.sio2 as sio2
+import unittest, quippy, numpy
 from quippytest import *
 
 if hasattr(quippy, 'Potential'):

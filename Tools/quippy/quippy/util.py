@@ -20,6 +20,10 @@
 
 import sys, os, xml.dom.minidom
 
+__all__ = ['infer_format', 'args_str', 'parse_slice',
+           'parse_comma_colon_list', 'loadstring',
+           'quip_xml_parameters', 'is_interactive_shell']
+
 def infer_format(file, format, lookup):
     """Infer the correct format to read from or write to `file`
 

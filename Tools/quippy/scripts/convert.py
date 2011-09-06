@@ -19,7 +19,7 @@
 
 from quippy import *
 from numpy import *
-import sys, optparse
+import sys, optparse, os
 
 
 p = optparse.OptionParser(usage='%prog [options] ( <input file> [ <output file> ] | <input file> [ <input file> ... ] [ (-o|--output) <output file> ] )')

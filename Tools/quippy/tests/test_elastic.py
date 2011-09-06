@@ -19,7 +19,7 @@
 from quippy import *
 from quippy.elastic import *
 from numpy import *
-import unittest, itertools, sys, quippy, os
+import unittest, itertools, sys, quippy, os, numpy
 from quippytest import *
 
 if 'scipy' in available_modules:
@@ -309,7 +309,7 @@ if 'scipy' in available_modules:
          self.pot.calc(at, virial=True)
          virial_stress = stress_vector(-at.virial*GPA/at.cell_volume())
 
-         elastic_fields(at, a=self.a, cij=C)
+         quippy.elasticity.elastic_fields(at, a=self.a, cij=C)
 
          for i in frange(at.n):
             # Check computed strain matches applied strain
