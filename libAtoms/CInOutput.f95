@@ -59,7 +59,7 @@ module CInOutput_module
           n_atom, frame, zero, range, irep, rrep, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        real(kind=C_DOUBLE), dimension(3), intent(out) :: cell_lengths, cell_angles
        integer(kind=C_INT), intent(out) :: cell_rotated, n_atom
@@ -74,7 +74,7 @@ module CInOutput_module
           shuffle, deflate, deflate_level, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
        real(kind=C_DOUBLE), dimension(3), intent(in) :: cell_lengths(3), cell_angles(3)
        integer(kind=C_INT), intent(in), value :: cell_rotated, n_atom, n_label, n_string, frame, netcdf4, append, shuffle, deflate, deflate_level
@@ -91,7 +91,7 @@ module CInOutput_module
      subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, range, string, string_length, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(inout) :: n_atom
        integer(kind=C_INT), intent(in), value :: compute_index, frame, string, string_length
@@ -103,7 +103,7 @@ module CInOutput_module
        int_format, real_format, str_format, logical_format, string, estr, update_index, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties, estr
+       integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties, estr
        real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
        integer(kind=C_INT), intent(in), value :: n_atom, append, update_index
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix, int_format, real_format, str_format, logical_format
@@ -305,7 +305,7 @@ contains
     real(C_DOUBLE) :: r_rep
     real(dp) :: lattice(3,3), maxlen(3), sep(3), cell_lengths(3), cell_angles(3), orig_lattice(3,3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
-    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
+    integer, dimension(SIZEOF_FORTRAN_T) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
     character(len=100) :: tmp_properties_array(100)
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
@@ -549,7 +549,7 @@ contains
     character(len=100) :: tmp_properties_array(at%properties%n)
     integer n_properties
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
-    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i, estr_ptr_i
+    integer, dimension(SIZEOF_FORTRAN_T) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i, estr_ptr_i
     type(c_extendable_str_ptr_type) :: estr_ptr
     real(dp) :: cell_lengths(3), cell_angles(3), orig_lattice(3,3), new_lattice(3,3)
     integer :: cell_rotated
@@ -659,10 +659,12 @@ contains
        
     else
        ! Put "species" in first column and "pos" in second
-       if (has_key(selected_properties, 'species')) &
-            call swap(selected_properties, 'species', string(selected_properties%keys(1)))
-       if (has_key(selected_properties, 'pos')) &
-            call swap(selected_properties, 'pos', string(selected_properties%keys(2)))
+       if (selected_properties%n > 1) then
+          if (has_key(selected_properties, 'species')) &
+               call swap(selected_properties, 'species', string(selected_properties%keys(1)))
+          if (has_key(selected_properties, 'pos')) &
+               call swap(selected_properties, 'pos', string(selected_properties%keys(2)))
+       end if
 
        if (present(estr)) then
           call write_xyz(''//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
