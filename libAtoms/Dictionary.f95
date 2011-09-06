@@ -108,6 +108,7 @@ module dictionary_module
      type(extendable_str), allocatable :: keys(:) !% array of keys
      type(DictEntry), allocatable :: entries(:)    !% array of entries
      integer :: cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed
+     integer :: key_cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any keys changed
   end type Dictionary
 
   public c_dictionary_ptr_type
@@ -382,6 +383,7 @@ contains
 
     call extend_entries(this, n_entry_block)
     this%cache_invalid = 1
+    this%key_cache_invalid = 1
   end subroutine dictionary_initialise
 
   subroutine dictionary_finalise(this)
@@ -408,6 +410,7 @@ contains
     end if
     this%N = 0
     this%cache_invalid = 1
+    this%key_cache_invalid = 1
 
   end subroutine dictionary_finalise
 
@@ -491,9 +494,11 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_NONE
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
     
   end subroutine dictionary_set_value_none
@@ -505,10 +510,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_INTEGER
     entry%i = value
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_i
@@ -520,10 +527,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_REAL
     entry%r = value
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_r
@@ -535,10 +544,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_COMPLEX
     entry%c = value
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_c
@@ -550,10 +561,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_LOGICAL
     entry%l = value
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_l
@@ -565,11 +578,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_CHAR
     call initialise(entry%s)
     call concat(entry%s, value)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_s
@@ -581,10 +596,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_CHAR
     call initialise(entry%s, value)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
 
   end subroutine dictionary_set_value_s_es
@@ -596,17 +613,20 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_INTEGER_A
     entry%len = size(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a(size(value)))
        this%cache_invalid = 1
     end if
     this%entries(entry_i)%i_a = value
     call finalise(entry)
+
 
   end subroutine dictionary_set_value_i_a
 
@@ -617,11 +637,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_REAL_A
     entry%len = size(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%r_a(size(value)))
        this%cache_invalid = 1
@@ -638,12 +660,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_INTEGER_A2
     entry%len = 0
     entry%len2 = shape(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a2(size(value,1),size(value,2)))
        this%cache_invalid = 1
@@ -660,18 +684,21 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_REAL_A2
     entry%len = 0
     entry%len2 = shape(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%r_a2(size(value,1),size(value,2)))
        this%cache_invalid = 1
     end if
     this%entries(entry_i)%r_a2 = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_r_a2
 
   subroutine dictionary_set_value_c_a(this, key, value)
@@ -681,17 +708,20 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_COMPLEX_A
     entry%len = size(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%c_a(size(value)))
        this%cache_invalid = 1
     end if
     this%entries(entry_i)%c_a = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_c_a
 
   subroutine dictionary_set_value_l_a(this, key, value)
@@ -701,17 +731,20 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_LOGICAL_A
     entry%len = size(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%l_a(size(value)))
        this%cache_invalid = 1
     end if
     this%entries(entry_i)%l_a = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_l_a
 
   subroutine dictionary_set_value_s_a(this, key, value)
@@ -721,12 +754,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i, i, j
+    logical new_key
     logical do_alloc
 
     entry%type = T_CHAR_A
     entry%len = 0
     entry%len2 = (/len(value(1)), size(value) /)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
        this%cache_invalid = 1
@@ -737,6 +772,7 @@ contains
        end do
     end do
     call finalise(entry)
+
   end subroutine dictionary_set_value_s_a
 
   subroutine dictionary_set_value_s_a2(this, key, value)
@@ -746,18 +782,21 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc
 
     entry%type = T_CHAR_A
     entry%len = 0
     entry%len2 = shape(value)
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
        this%cache_invalid = 1
     end if
     this%entries(entry_i)%s_a = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_s_a2
 
   subroutine dictionary_set_value_d(this, key, value)
@@ -767,10 +806,12 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_DATA
     entry%d = value
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
     this%cache_invalid = 1
 
@@ -784,11 +825,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_DICT
     allocate(entry%d%d(size(transfer(value,entry%d%d))))
     entry%d%d = transfer(value, entry%d%d)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
     this%cache_invalid = 1
 
@@ -1483,11 +1526,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_INTEGER_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = size(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%i_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1501,11 +1546,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_REAL_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = size(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%r_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1519,11 +1566,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_COMPLEX_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = size(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%c_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1537,11 +1586,13 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_LOGICAL_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = size(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%l_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1555,12 +1606,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_CHAR_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = 0
     entry%len2 = size(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%s_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1574,12 +1627,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_INTEGER_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = 0
     entry%len2 = shape(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%i_a2 => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1593,12 +1648,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
 
     entry%type = T_REAL_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry%len = 0
     entry%len2 = shape(ptr)
-    entry_i = add_entry(this, key, entry)
+    entry_i = add_entry(this, key, entry, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     this%entries(entry_i)%r_a2 => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1622,12 +1679,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a(len))
        this%cache_invalid = 1
@@ -1649,12 +1708,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%r_a(len))
        this%cache_invalid = 1
@@ -1676,12 +1737,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_COMPLEX_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%c_a(len))
        this%cache_invalid = 1
@@ -1703,12 +1766,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_LOGICAL_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%l_a(len))
        this%cache_invalid = 1
@@ -1730,13 +1795,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_CHAR_A
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -1758,13 +1825,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A2
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -1786,13 +1855,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A2
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -1816,12 +1887,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a(len))
        this%cache_invalid = 1
@@ -1843,12 +1916,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%r_a(len))
        this%cache_invalid = 1
@@ -1870,12 +1945,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_COMPLEX_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then 
        allocate(this%entries(entry_i)%c_a(len))
        this%cache_invalid = 1
@@ -1897,12 +1974,14 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_LOGICAL_A
     entry%len = len
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%l_a(len))
        this%cache_invalid = 1
@@ -1924,13 +2003,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_CHAR_A
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -1952,13 +2033,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A2
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then
        allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -1980,13 +2063,15 @@ contains
 
     type(DictEntry) entry
     integer entry_i
+    logical new_key
     logical do_alloc, do_overwrite
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A2
     entry%len = 0
     entry%len2 = len2
-    entry_i = add_entry(this, key, entry, do_alloc)
+    entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
+    if (new_key) this%key_cache_invalid = 1
     if (do_alloc) then 
        allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
        this%cache_invalid = 1
@@ -2409,15 +2494,17 @@ contains
 
     this%N = this%N - 1
     this%cache_invalid = 1
+    this%key_cache_invalid = 1
 
   end subroutine remove_entry
 
   !% OMIT
-  function add_entry(this, key, entry, array_alloc) result(entry_i)
+  function add_entry(this, key, entry, array_alloc, new_key) result(entry_i)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     type(DictEntry), intent(in) :: entry
     logical, intent(out), optional :: array_alloc
+    logical, intent(out), optional :: new_key
 
     integer entry_i
 
@@ -2426,6 +2513,7 @@ contains
     if (this%N >= size(this%entries)) call extend_entries(this, n_entry_block)
 
     entry_i = lookup_entry_i(this, key)
+    if (present(new_key)) new_key = entry_i == -1
     if (present(array_alloc)) array_alloc = .true.
 
     if (entry_i > 0) then
@@ -2451,7 +2539,7 @@ contains
           this%entries(entry_i)%l = entry%l
           this%entries(entry_i)%s = entry%s
        end if
-     else
+    else
        this%N = this%N + 1
        entry_i = this%N
        call initialise(this%keys(entry_i))
@@ -3010,7 +3098,7 @@ contains
     dloc = 0
 
     entry_i = lookup_entry_i(this, key)
-    if (entry_i == 0) return
+    if (entry_i == -1) return
 
     dtype = this%entries(entry_i)%type
 

@@ -259,7 +259,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if properties is not None and not isinstance(properties, Dictionary):
             properties = Dictionary(properties)
         if params is not None and not isinstance(params, Dictionary):
-            params = Dictionary()
+            params = Dictionary(params)
 
         _atoms.Atoms.__init__(self, n=n, lattice=lattice,
                               properties=properties,
@@ -285,7 +285,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 pass
 
         ## ASE compatibility
-
         remove_properties = []
 
         if symbols is None and numbers is None:
@@ -757,7 +756,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if self.connect.initialised:
             c = self.connect
             mem += sizeof_table*self.n*2 # neighbour1 and neighbour2 tables
-            mem += 32*c.n_neighbours_total() # neighbour datag478
+            mem += 32*c.n_neighbours_total() # neighbour data
             mem += c.cell_heads.size*c.cell_heads.itemsize # cell data
 
         return mem
