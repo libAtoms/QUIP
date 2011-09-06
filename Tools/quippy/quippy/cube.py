@@ -16,8 +16,9 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import Atoms, AtomsReaders, AtomsWriters, BOHR
-from farray import *
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters
+from quippy.units import BOHR
+from quippy.farray import *
 import sys, numpy
 
 class CubeWriter(object):

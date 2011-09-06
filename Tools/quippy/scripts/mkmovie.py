@@ -166,7 +166,7 @@ view.show(a0, property=opt.property, arrows=opt.arrows)
 
 if opt.load_view is not None:
    view.run_script(opt.load_view)
-   view.redraw()
+   view.show()
 
 if opt.rcut is not None:
    for (sym1, sym2, rcut) in opt.rcut:

@@ -16,11 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import FortranTable
+from quippy import _table
+from quippy._table import *
 
-class Table(FortranTable):
+__all__ = _table.__all__
 
-    __doc__ = FortranTable.__doc__
+class Table(_table.Table):
+
+    __doc__ = _table.Table.__doc__
     _cmp_skip_fields = ['max_length', 'increment']
 
     def __repr__(self):
@@ -46,3 +49,6 @@ class Table(FortranTable):
             return (slice(None),slice(None),slice(1,self.n))
         else:
             return None
+
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(table)'] = Table

@@ -16,9 +16,11 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import AtomsWriters
+from quippy.atoms import AtomsWriters
 import os
 import atomeye
+
+__all__ = ['AtomEyeWriter']
 
 class AtomEyeWriter(object):
     "Write atoms to image file (png/eps/jpg) using AtomEye"

@@ -16,21 +16,21 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+from quippy import _dictionary
+from quippy._dictionary import *
+
 import numpy as np
 from dictmixin import DictMixin, ParamReaderMixin
-from quippy import FortranDictionary
-from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                    T_CHAR, T_LOGICAL, T_INTEGER_A,
-                    T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2, T_DICT)
 from farray import *
 
-class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
+__all__ = _dictionary.__all__
 
-    __doc__ = FortranDictionary.__doc__
+class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
 
-    _interfaces = FortranDictionary._interfaces
-    _interfaces['set_value'] = [ k for k in FortranDictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
+    __doc__ = _dictionary.Dictionary.__doc__
+
+    _interfaces = _dictionary.Dictionary._interfaces
+    _interfaces['set_value'] = [ k for k in _dictionary.Dictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
 
     _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR, T_DICT)
 
@@ -38,7 +38,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
                      T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 
     def __init__(self, D=None, *args, **kwargs):
-        FortranDictionary.__init__(self, *args, **kwargs)
+        _dictionary.Dictionary.__init__(self, *args, **kwargs)
         self._cache = {}
         if D is not None:
             self.read(D) # copy from D
@@ -210,5 +210,8 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
     def subset(self, keys, out=None, case_sensitive=None, out_no_initialise=None):
         if out is None: out = Dictionary()
-        FortranDictionary.subset(self, keys, out, case_sensitive, out_no_initialise)
+        _dictionary.Dictionary.subset(self, keys, out, case_sensitive, out_no_initialise)
         return out
+
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(dictionary)'] = Dictionary

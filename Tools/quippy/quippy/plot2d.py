@@ -17,10 +17,16 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import available_modules, print_title
+from quippy import available_modules
+from quippy.system import print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines
 from quippy.farray import convert_farray_to_ndarray
 import numpy as np
+
+__all__ = ['plot', 'plot_energy_error', 'plot_max_force_error',
+           'plot_rms_force_error', 'plot_max_stress_error',
+           'plot_rms_stress_error', 'scatter_force_error',
+           'force_error_statistics', 'plot_force_error']
 
 # Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)

@@ -16,9 +16,11 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import AtomsWriters
-from farray import *
+from quippy.atoms import AtomsWriters
+from quippy.farray import *
 import sys
+
+__all__  = ['PovrayWriter']
 
 class PovrayWriter(object):
 

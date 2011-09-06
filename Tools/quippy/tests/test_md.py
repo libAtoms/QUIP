@@ -18,6 +18,7 @@
 
 from quippy import *
 import unittest, quippy
+import numpy as np
 from quippytest import *
 
 if hasattr(quippy, 'Potential'):
@@ -202,7 +203,7 @@ if hasattr(quippy, 'Potential'):
 
       def testpos(self):
 	 self.al[-1].set_map_shift()
-         self.assertArrayAlmostEqual(self.al[-1].pos+numpy.dot(self.al[-1].lattice,self.al[-1].map_shift), self.pos_ref)
+         self.assertArrayAlmostEqual(self.al[-1].pos+np.dot(self.al[-1].lattice,self.al[-1].map_shift), self.pos_ref)
 
       def testforce(self):
          self.assertArrayAlmostEqual(self.al[-1].force, self.force_ref)

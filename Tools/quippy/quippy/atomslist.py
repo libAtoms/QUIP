@@ -16,11 +16,15 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys, os, fnmatch, re, itertools, glob, operator, warnings, math
-from quippy import Atoms, AtomsReaders, AtomsWriters, atoms_reader, mem_info
+import sys, os, fnmatch, re, itertools, glob, operator, warnings, math, logging
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.system import mem_info
 from quippy.util import infer_format
 from quippy.mockndarray import mockNDarray
 from quippy.farray import *
+import numpy as np
+
+__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList']
 
 class AtomsReaderMixin(object):
     def __repr__(self):
@@ -83,7 +87,8 @@ class AtomsReaderMixin(object):
 class AtomsReader(AtomsReaderMixin):
     """Class to read Atoms frames from source"""
 
-    def __init__(self, source, format=None, start=None, stop=None, step=None, cache_limit=10, free_mem_fraction=0.5, **kwargs):
+    def __init__(self, source, format=None, start=None, stop=None, step=None,
+                 mem_limit='default', **kwargs):
         self.source = source
         self.format = format
         self.start = start
@@ -91,7 +96,10 @@ class AtomsReader(AtomsReaderMixin):
         self.step = step
 
         total, free = mem_info()
-        self.mem_limit = free_mem_fraction*free
+        self.mem_limit = mem_limit
+        if self.mem_limit == 'default':
+            self.mem_limit = 0.5*free # half the available system memory
+        logging.debug('AtomsReader memory limit %r' % self.mem_limit)
 
         self._source_len = None
         self._cache_dict = {}
@@ -154,6 +162,25 @@ class AtomsReader(AtomsReaderMixin):
     def __getslice__(self, first, last):
         return self.__getitem__(slice(first,last,None))
 
+    def _cache_fetch(self, frame):
+        # least recently used (LRU) cache
+        try:
+            self._cache_list.append(self._cache_list.pop(self._cache_list.index(frame)))
+            return True   # cache hit
+        except ValueError:
+            return False  # cache miss
+
+    def _cache_store(self, frame, at):
+        self._cache_list.append(frame)
+        self._cache_dict[frame] = at
+
+        if self.mem_limit is not None:
+            mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
+            while len(self._cache_dict) > 1 and mem_usage > self.mem_limit:
+                logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
+                del self._cache_dict[self._cache_list.pop(0)]
+                mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
+
     def __getitem__(self, frame):
         if not self.random_access:
             raise IndexError('This AtomsReader does not support random access')
@@ -164,29 +191,18 @@ class AtomsReader(AtomsReaderMixin):
                 frame = range(*slice(self.start, self.stop, self.step).indices(source_len))[frame]
             if frame < 0: frame = frame + len(self)
 
-            # least recently used (LRU) cache
-            try:
-                self._cache_list.append(self._cache_list.pop(self._cache_list.index(frame)))
-            except ValueError:
-
-                # fetch frame from the source
-                try:
-                    self._cache_dict[frame] = self.reader[frame]
-                except (KeyError, IndexError):
-                    raise IndexError("frame %r not found in source %r" % (frame, self.reader))
-
-                self._cache_list.append(frame)
-                mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
-                while mem_usage > self.mem_limit:
-                    print 'Total memory usage %.0f Mb exceeds limit %.0f Mb' % (mem_usage/(1024**2), self.mem_limit/(1024**2))
-                    print 'Reducing AtomsReader cache size from %d' % len(self._cache_dict)
-                    del self._cache_dict[self._cache_list.pop(0)]
-                    mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
+            if not self._cache_fetch(frame):
+                #try:
+                #at = 
+                #except (KeyError, IndexError):
+                #    raise
+                #    #raise IndexError("frame %r not found in source %r" % (frame, self.reader))
+                self._cache_store(frame, self.reader[frame])
 
             return self._cache_dict[frame]
 
         elif isinstance(frame, slice):
-            return [self[f] for f in range(*frame.indices(len(self))) ]
+            return self.__class__([self[f] for f in range(*frame.indices(len(self))) ])
         else:
             raise TypeError('frame should be either an integer or a slice')
 
@@ -223,18 +239,7 @@ class AtomsReader(AtomsReaderMixin):
 
             n_frames = 0
             for (frame,at) in itertools.izip(frames, atoms):
-                try:
-                    self._cache_list.append(self._cache_list.pop(self._cache_list.index(frame)))
-                except ValueError:
-                    self._cache_dict[frame] = at
-                    self._cache_list.append(frame)
-                    mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
-                    while mem_usage > self.mem_limit:
-                        print 'Total memory usage %.0f Mb exceeds limit %.0f Mb' % (mem_usage/(1024**2), self.mem_limit/(1024**2))
-                        print 'Reducing AtomsReader cache size from %d' % len(self._cache_dict)
-                        del self._cache_dict[self._cache_list.pop(0)]
-                        mem_usage = sum(a.mem_estimate() for a in self._cache_dict.values())
-
+                self._cache_store(frame, at)
                 n_frames += 1
                 last_frame = frame
                 yield at
@@ -258,12 +263,9 @@ class AtomsList(AtomsReaderMixin, list):
         self.start  = start
         self.stop   = stop
         self.step   = step
-        tmp_ar = AtomsReader(source, format, start, step, cache_limit=None, **kwargs)
+        tmp_ar = AtomsReader(source, format, start, step, mem_limit=None, **kwargs)
         list.__init__(self, list(tmp_ar))
         tmp_ar.close()
-
-    def __getslice__(self, i, j):
-        return AtomsList(list.__getslice__(self, i, j))
 
     def __getattr__(self, name):
         if name.startswith('__'):
@@ -279,10 +281,19 @@ class AtomsList(AtomsReaderMixin, list):
                 raise
             if seq == []:
                 return None
-            elif type(seq[0]) in (FortranArray, numpy.ndarray):
+            elif type(seq[0]) in (FortranArray, np.ndarray):
                 return mockNDarray(*seq)
             else:
                 return seq
+
+    def __getslice__(self, first, last):
+        return self.__getitem__(slice(first,last,None))
+
+    def __getitem__(self, idx):
+        res = list.__getitem__(self, idx)
+        if isinstance(res, list):
+            res = AtomsList(res)
+        return res
 
     def iterframes(self, reverse=False):
         if reverse:
@@ -302,6 +313,9 @@ class AtomsList(AtomsReaderMixin, list):
                 raise ValueError('If attr is present, cmp and key must not be present')
             list.sort(self, key=operator.attrgetter(attr), reverse=reverse)
 
+    def apply(self, func):
+        return np.array([func(at) for at in self])
+        
 
 def AtomsWriter(dest, format=None, **kwargs):
     """Return a file-like object capable of writing Atoms in the specified format.

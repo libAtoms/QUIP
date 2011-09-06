@@ -250,7 +250,7 @@ if os.path.exists(outfile):
    os.remove(outfile)
 
 if DO_HASH:
-   path = WORKING_DIR+'/'+stem+'_'+str(castep.hash_atoms(cluster, HASH_NDIGITS))
+   path = WORKING_DIR+'/'+stem+'_'+cluster.md5_hash(HASH_NDIGITS)
 elif BATCH_QUEUE or BATCH_READ:
    try:
       batch_id = int(open('castep_driver_batch_id').read())

@@ -16,17 +16,19 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import FortranExtendable_str
+from quippy import _extendable_str
+from quippy._extendable_str import *
 
+__all__ = _extendable_str.__all__
 
-class Extendable_str(FortranExtendable_str):
+class Extendable_str(_extendable_str.Extendable_str):
 
     def __init__(self, s=None, fpointer=None, finalise=True):
         # Allow an Extendable_str to be created from a Python string or another Extendable_str
         if isinstance(s, Extendable_str):
-            FortranExtendable_str.__init__(self, s, fpointer=fpointer, finalise=finalise)
+            _extendable_str.Extendable_str.__init__(self, s, fpointer=fpointer, finalise=finalise)
         else:
-            FortranExtendable_str.__init__(self, fpointer=fpointer, finalise=finalise)
+            _extendable_str.Extendable_str.__init__(self, fpointer=fpointer, finalise=finalise)
             if s is not None:
                 self.concat(str(s))
 
@@ -53,3 +55,6 @@ class Extendable_str(FortranExtendable_str):
 
     def __getitem__(self, i):
         return self.s[1,i]
+
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(extendable_str)'] = Extendable_str

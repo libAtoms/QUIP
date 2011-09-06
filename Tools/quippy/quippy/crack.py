@@ -18,30 +18,32 @@
 
 import os, warnings
 import numpy as np
-from quippy import (Potential, Atoms, MPI_context, transform, print_title, verbosity_push,
-                    HYBRID_NO_MARK, GPA, supercell)
-
+from quippy.mpi_context import MPI_context
+from quippy.potential import Potential
+from quippy.atoms import Atoms
+from quippy.structures import transform, supercell
+from quippy.system import print_title, verbosity_push
+from quippy.clusters import HYBRID_NO_MARK
+from quippy.units import GPA
 from quippy.surface import J_PER_M2
+from quippy.farray import fzeros
 
+__all__ = []
+ 
 try:
-   from quippy import (CrackParams,
-                       crack_apply_load_increment,
-                       crack_find_tip_local_energy, crack_k_to_g,
-                       crack_setup_marks, crack_apply_strain_ramp,
-                       crack_find_tip_percolation, crack_make_seed,
-                       crack_strain_to_g, crack_calc_load_field,
-                       crack_g_to_k, crack_make_slab, crack_uniform_load,
-                       crack_check_coordination, crack_g_to_strain,
-                       crack_measure_g, crack_update_connect,
-                       crack_check_coordination_boundaries,
-                       crack_is_edge_atom, crack_parse_name,
-                       crack_update_selection, crack_find_tip,
-                       crack_is_topbottom_edge_atom,
-                       crack_update_selection_coordination,
-                       crack_find_tip_coordination, crack_k_field,
-                       crack_update_selection_crack_front)
+   import quippy.cracktools, quippy.crackparams
+   from quippy.crackparams import *
+   from quippy.cracktools import *
+   __all__.extend(quippy.crackparams.__all__)
+   __all__.extend(quippy.cracktools.__all__)
+   
 except ImportError:
    warnings.warn('crack utilities not available')
+
+__all__.extend(['crack_rescale_homogeneous_xy',
+                 'makecrack', 'crack_strain_energy_release_rate',
+                 'crack_rotation_matrix'])
+
 
 def makecrack_main(params, stem):
     """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
@@ -305,3 +307,44 @@ def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=Non
     print 'Effective energy release rate G =', G_effective, 'J/m^2'
 
     return G_effective
+
+
+def crack_rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
+    """Return 3x3 matrix rotation matrix defining a crack with open
+    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either
+    crack tip line `z` or crack propagation direction `x`."""
+
+    axes = fzeros((3,3))
+    if len(y) == 4:
+        h, k, i, l = y
+        y = [h, k, l]
+
+    if (x is None and z is None) or (x is not None and z is not None):
+        raise ValueError('exactly one of x and z must be non-null')
+
+    axes[:,2] = np.dot(unit.g.T, y)     # plane defined by y=(lmn)
+
+    if z is not None:
+        axes[:,3] = np.dot(unit.lattice, z) # line defined by z=[pqr]
+
+        axes[:,2] = axes[:,2]/axes[:,2].norm()
+        axes[:,3] = axes[:,3]/axes[:,3].norm()
+
+        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
+            raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
+
+        axes[:,1] = np.cross(axes[:,2], axes[:,3])
+    else:
+        axes[:,1] = np.dot(unit.lattice, x)
+
+        axes[:,2] = axes[:,2]/axes[:,2].norm()
+        axes[:,1] = axes[:,1]/axes[:,1].norm()
+
+        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
+            raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
+
+        axes[:,3] = np.cross(axes[:,1], axes[:,2])
+
+    # Rotation matrix is transpose of axes matrix
+    return axes.T
+

@@ -21,67 +21,39 @@
 This module defines the quippy.Atoms class which stores and
 manipulates a collection of atoms"""
 
-import os, weakref, warnings, copy
-from quippy.farray import frange, farray, fzeros
+from quippy import _atoms
+from quippy._atoms import *
+
+import os, weakref, warnings, copy, sys
+from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
-from quippy import FortranAtoms, available_modules, AtomsReaders, AtomsWriters
+from quippy import available_modules, FortranDerivedTypes
 from math import pi
 import numpy as np
 
+__all__ = _atoms.__all__ + ['get_bulk_params',
+                            'AtomsReaders',
+                            'AtomsWriters',
+                            'atoms_reader']
+                                   
 if 'ase' in available_modules:
     import ase
 else:
     import quippy.miniase as ase
 
-def make_lattice(a, b=None, c=None, alpha=pi/2.0, beta=pi/2.0, gamma=pi/2.0):
-    """Form 3x3 lattice from cell lengths (a,b,c) and angles
-       (alpha,beta,gamma) in radians"""
-
-    if b is None:
-        b = a
-    if c is None:
-        c = a
-
-    lattice = fzeros((3, 3),'d')
-
-    cos_alpha = np.cos(alpha)
-    cos2_alpha = cos_alpha*cos_alpha
-
-    cos_beta  = np.cos(beta)
-    cos2_beta  = cos_beta *cos_beta
-
-    cos_gamma = np.cos(gamma)
-
-    sin_gamma = np.sin(gamma)
-    sin2_gamma = sin_gamma*sin_gamma
-
-    lattice[1, 1] = a
-
-    lattice[1, 2] = b * cos_gamma
-    lattice[2, 2] = b * sin_gamma
-
-    lattice[1, 3] = c * cos_beta
-    lattice[2, 3] = c * (cos_alpha - cos_beta*cos_gamma)/sin_gamma
-    lattice[3, 3] = c * np.sqrt(1.0 - (cos2_alpha + cos2_beta -
-                                2.0*cos_alpha*cos_beta*cos_gamma)/sin2_gamma)
-
-    return lattice
-
 def get_lattice_params(lattice):
-    """Return 6-tuple of cell lengths and angles a,b,c,alpha,beta,gamma"""
-    from math import acos
-    from numpy import dot
-    a_1 = lattice[:, 1]
-    a_2 = lattice[:, 2]
-    a_3 = lattice[:, 3]
+    a,b,c,alpha,beta,gamma = (farray(0.), farray(0.), farray(0.),
+                              farray(0.), farray(0.), farray(0.))
+    _atoms.get_lattice_params(lattice,a,b,c,alpha,beta,gamma)
+    return tuple(float(x) for x in (a,b,c,alpha,beta,gamma))
 
-    return (a_1.norm(), a_2.norm(), a_3.norm(),
-            acos(dot(a_2,a_3)/(a_2.norm()*a_3.norm())),
-            acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
-            acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
+get_lattice_params.__doc__ = """Wrapper around _atoms.get_lattice_params()
 
+Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
+
+""" + _atoms.get_lattice_params.__doc__
 
 def get_bulk_params(bulk, lat_type, verbose=True):
     """Return 6-tuple of lattice parameters a, c, u, x, y, z for
@@ -245,10 +217,10 @@ class PropertiesWrapper(DictMixin):
         return [at.rev_name_map.get(key, key) for key in at.properties.keys()]
 
 
-class Atoms(FortranAtoms, ase.Atoms):
+class Atoms(_atoms.Atoms, ase.Atoms):
 
     """
-    Pythonic wrapper over auto-generated FortranAtoms class.
+    Pythonic wrapper over auto-generated Atoms class.
 
     Also inherits from ase.Atoms so has all ASE Atoms methods
 
@@ -289,7 +261,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         if params is not None and not isinstance(params, Dictionary):
             params = Dictionary()
 
-        FortranAtoms.__init__(self, n=n, lattice=lattice,
+        _atoms.Atoms.__init__(self, n=n, lattice=lattice,
                               properties=properties,
                               params=params, fixed_size=fixed_size,
                               fortran_indexing=fortran_indexing,
@@ -372,7 +344,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         """Change the lattice vectors, keeping the inverse lattice vectors
            up to date. Optionally map the existing atoms into the new cell
            and recalculate connectivity (by default scale_positions=False)."""
-        FortranAtoms.set_lattice(self, lattice, scale_positions)
+        _atoms.Atoms.set_lattice(self, lattice, scale_positions)
 
     def _get_cell(self):
         """Get ASE cell from QUIP lattice"""
@@ -550,11 +522,11 @@ class Atoms(FortranAtoms, ase.Atoms):
         if mask is not None:
             mask = farray(mask)
             out = self.__class__(n=mask.count(), lattice=self.lattice, properties={}, params={})
-            FortranAtoms.select(out, self, mask=mask, orig_index=orig_index)
+            _atoms.Atoms.select(out, self, mask=mask, orig_index=orig_index)
         elif list is not None:
             list = farray(list)
             out = self.__class__(n=len(list), lattice=self.lattice)
-            FortranAtoms.select(out, self, list=list, orig_index=orig_index)
+            _atoms.Atoms.select(out, self, list=list, orig_index=orig_index)
         else:
             raise ValueError('Either mask or list must be present.')
         return out
@@ -568,7 +540,7 @@ class Atoms(FortranAtoms, ase.Atoms):
             if not k.startswith('_') and k not in other.__dict__:
                 other.__dict__[k] = v
 
-        # from FortranAtoms
+        # from _atoms.Atoms
         other.use_uniform_cutoff = self.use_uniform_cutoff
         other.cutoff = self.cutoff
         other.cutoff_break = self.cutoff_break
@@ -590,7 +562,7 @@ class Atoms(FortranAtoms, ase.Atoms):
             if not k.startswith('_') and k not in self.__dict__:
                 self.__dict__[k] = v
 
-        # from FortranAtoms
+        # from _atoms.Atoms
         self.use_uniform_cutoff = other.use_uniform_cutoff
         self.cutoff = other.cutoff
         self.cutoff_break = other.cutoff_break
@@ -632,13 +604,43 @@ class Atoms(FortranAtoms, ase.Atoms):
         else:
             object.__setattr__(self, name, value)
 
+    def md5_hash(self, ndigits):
+        """Hash an atoms object with a precision of ndigits decimal
+        digits.  Atomic numbers, lattice and fractional positions are
+        fed to MD5 to form the hash."""
 
-    def __getitem__(self, i):
+        def rounded_string_rep(a, ndigits):
+            return np.array2string(a, precision=ndigits, suppress_small=True).replace('-0. ', ' 0. ')
+
+        # Compute fractional positions, round them to ndigits, then sort them
+        # for hash stability
+        flat_frac_pos = np.dot(self.g,self.pos).flatten()
+        flat_frac_pos.sort()
+
+        # md5 module deprecated in Python 2.5 and later
+        try:
+           import hashlib
+           md5 = hashlib.md5
+        except ImportError:
+           import md5
+           md5 = md5.new
+
+        m = md5()
+        m.update(rounded_string_rep(self.lattice.flatten(), ndigits))
+        m.update(str(self.z))
+        m.update(rounded_string_rep(flat_frac_pos, ndigits))
+
+        return m.hexdigest()
+
+    def __hash__(self):
+        return hash(self.md5_hash(4))
+
+    #def __getitem__(self, i):
         # we override ase.Atoms.__getitem__ so we can raise
         # exception if we're using fortran indexing
-        if self.fortran_indexing:
-            raise RuntimeError('Atoms[i] inconsistent with fortran indexing')
-        return ase.Atoms.__getitem__(self, i)
+    #    if self.fortran_indexing:
+    #        raise RuntimeError('Atoms[i] inconsistent with fortran indexing')
+    #    return ase.Atoms.__getitem__(self, i)
 
     def get_atom(self, i):
         """Return a dictionary containing the properties of the atom with
@@ -715,7 +717,7 @@ class Atoms(FortranAtoms, ase.Atoms):
         if overwrite is not None: kwargs['overwrite'] = overwrite
 
         if property_type is None:
-            FortranAtoms.add_property(self, name, value, **kwargs)
+            _atoms.Atoms.add_property(self, name, value, **kwargs)
 
         else:
             # override value_ref if property_type is specified
@@ -742,7 +744,7 @@ class Atoms(FortranAtoms, ase.Atoms):
                 property_type != T_CHAR_A and n_cols is None):
                 kwargs['n_cols'] = value.shape[0]
 
-            FortranAtoms.add_property(self, name, value_ref, **kwargs)
+            _atoms.Atoms.add_property(self, name, value_ref, **kwargs)
             if new_property or overwrite:
                 getattr(self, name.lower())[:] = value
 
@@ -759,3 +761,17 @@ class Atoms(FortranAtoms, ase.Atoms):
             mem += c.cell_heads.size*c.cell_heads.itemsize # cell data
 
         return mem
+
+FortranDerivedTypes['type(atoms)'] = Atoms
+
+AtomsReaders = {}
+AtomsWriters = {}
+
+def atoms_reader(source):
+    """Decorator to add a new reader"""
+    def decorate(func):
+        global AtomsReaders
+        if not source in AtomsReaders:
+            AtomsReaders[source] = func
+        return func
+    return decorate

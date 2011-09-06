@@ -16,12 +16,15 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import (ElementName, atoms_reader, AtomsReaders, AtomsWriters, TABLE_STRING_LENGTH,
-                    PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-                    T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                    T_CHAR, T_LOGICAL, T_INTEGER_A,
-                    T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
-
+from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
+from quippy.periodictable import ElementName
+from quippy.dictionary import (PROPERTY_INT, PROPERTY_REAL,
+                               PROPERTY_STR, PROPERTY_LOGICAL,
+                               T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                               T_CHAR, T_LOGICAL, T_INTEGER_A,
+                               T_REAL_A, T_COMPLEX_A, T_CHAR_A,
+                               T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
+from quippy.table import TABLE_STRING_LENGTH
 
 from atomslist import *
 from ordereddict import *
@@ -29,6 +32,9 @@ from quippy import Dictionary
 from farray import *
 import logging, StringIO
 from math import pi
+import numpy as np
+
+__all__ = ['PuPyXYZReader', 'PuPyXYZWriter']
 
 def _props_dtype(props):
     "Return a record array dtype for the specified properties (default all)"
@@ -47,7 +53,7 @@ def _props_dtype(props):
             for c in range(cols):
                 result.append((prop+str(c),fmt_map[ptype]))
 
-    return numpy.dtype(result)
+    return np.dtype(result)
 
 def parse_properties(prop_str):
     properties = OrderedDict()
@@ -71,13 +77,13 @@ def PuPyXYZReader(xyz):
 
     def _getconv(dtype):
         typ = dtype.type
-        if issubclass(typ, numpy.bool_):
+        if issubclass(typ, np.bool_):
             return lambda x: {'T' : True, 'F' : False, 'True' : True, 'False' : False}.get(x)
-        if issubclass(typ, numpy.integer):
+        if issubclass(typ, np.integer):
             return int
-        elif issubclass(typ, numpy.floating):
+        elif issubclass(typ, np.floating):
             return float
-        elif issubclass(typ, numpy.complex):
+        elif issubclass(typ, np.complex):
             return complex
         else:
             return str
@@ -129,7 +135,7 @@ def PuPyXYZReader(xyz):
             if i == n-1: break # Only read self.n lines
 
         try:
-            data = numpy.array(X,props_dtype)
+            data = np.array(X,props_dtype)
         except TypeError:
             raise IOError('Badly formatted data, or end of file reached before end of frame')
 
@@ -143,7 +149,7 @@ def PuPyXYZReader(xyz):
                 if value.dtype.kind == 'S':
                     value = s2a(value, TABLE_STRING_LENGTH).T
             else:
-                value = numpy.vstack([data[p+str(c)] for c in range(cols) ])
+                value = np.vstack([data[p+str(c)] for c in range(cols) ])
             at.add_property(p, value, overwrite=True)
 
         if not at.has_property('Z')  and not at.has_property('species'):
@@ -182,13 +188,13 @@ class PuPyXYZWriter(object):
 
         def _getfmt(dtype):
             typ = dtype.type
-            if issubclass(typ, numpy.bool_):
+            if issubclass(typ, np.bool_):
                 return ' %.1s '
-            if issubclass(typ, numpy.integer):
+            if issubclass(typ, np.integer):
                 return '%8d '
-            elif issubclass(typ, numpy.floating):
+            elif issubclass(typ, np.floating):
                 return '%16.8f '
-            elif issubclass(typ, numpy.complex):
+            elif issubclass(typ, np.complex):
                 return '(%f,%f) '
             else:
                 return '%s '
@@ -215,7 +221,7 @@ class PuPyXYZWriter(object):
                      T_INTEGER_A2: 'I',
                      T_REAL_A2: 'R'}
 
-            lattice_str = 'Lattice="' + ' '.join(map(str, numpy.reshape(self.lattice,9,order='F'))) + '"'
+            lattice_str = 'Lattice="' + ' '.join(map(str, np.reshape(self.lattice,9,order='F'))) + '"'
 
             props_str =  ':'.join(map(':'.join,
                                       zip(props,
@@ -249,7 +255,7 @@ class PuPyXYZWriter(object):
         props_str, comment = properties_comment(at, props)
 
         subprops = OrderedDict.frompairs([(k, at.properties[k]) for k in props])
-        data = numpy.zeros(at.n, _props_dtype(parse_properties(props_str)))
+        data = np.zeros(at.n, _props_dtype(parse_properties(props_str)))
 
         for prop in props:
             value = getattr(at, prop)

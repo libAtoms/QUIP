@@ -76,7 +76,8 @@ class TestOOFortran(QuippyTestCase):
       self.assertRaises(ValueError, setattr, self.dia, 'n', 0)
 
    def testabort(self):
-      self.assertRaises(RuntimeError, FortranAtoms.select, self.dia, self.dia)
+      import quippy._atoms
+      self.assertRaises(RuntimeError, quippy._atoms.Atoms.select, self.dia, self.dia)
 
    def testoptional(self):
       self.dia.calc_connect() # without optional argument

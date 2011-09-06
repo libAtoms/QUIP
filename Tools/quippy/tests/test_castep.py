@@ -24,6 +24,8 @@
 # HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from quippy import castep
+
 from StringIO import StringIO
 from quippytest import *
 import unittest

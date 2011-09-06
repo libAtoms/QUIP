@@ -16,12 +16,19 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import *
+from quippy.atoms import *
+from quippy.structures import *
+from quippy.farray import fidentity, fzeros, frange, farray
+
 import numpy as np
 try:
     import atomeye
 except ImportError:
     pass
+
+__all__ = ['J_PER_M2', 'surface_energy', 'orthorhombic_slab']
+
+from quippy.units import ELEM_CHARGE
 
 J_PER_M2 = ELEM_CHARGE*1.0e20
 
@@ -39,46 +46,6 @@ def surface_energy(pot, bulk, surface, dir=2):
     area = surface.cell_volume()/surface.lattice[dir,dir]
 
     return (surface.energy - (surface.z == 14).count()*bulk_energy_per_sio2)/(2.0*area)
-
-
-def crack_rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
-    """Return 3x3 matrix rotation matrix defining a crack with open
-    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either
-    crack tip line `z` or crack propagation direction `x`."""
-
-    axes = fzeros((3,3))
-    if len(y) == 4:
-        h, k, i, l = y
-        y = [h, k, l]
-
-    if (x is None and z is None) or (x is not None and z is not None):
-        raise ValueError('exactly one of x and z must be non-null')
-
-    axes[:,2] = np.dot(unit.g.T, y)     # plane defined by y=(lmn)
-
-    if z is not None:
-        axes[:,3] = np.dot(unit.lattice, z) # line defined by z=[pqr]
-
-        axes[:,2] = axes[:,2]/axes[:,2].norm()
-        axes[:,3] = axes[:,3]/axes[:,3].norm()
-
-        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
-            raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
-
-        axes[:,1] = np.cross(axes[:,2], axes[:,3])
-    else:
-        axes[:,1] = np.dot(unit.lattice, x)
-
-        axes[:,2] = axes[:,2]/axes[:,2].norm()
-        axes[:,1] = axes[:,1]/axes[:,1].norm()
-
-        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
-            raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
-
-        axes[:,3] = np.cross(axes[:,1], axes[:,2])
-
-    # Rotation matrix is transpose of axes matrix
-    return axes.T
 
 
 def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=None, periodicity=None, vacuum=None, shift=None, verbose=True):

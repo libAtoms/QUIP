@@ -16,10 +16,15 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import quippy
+
 import numpy as np
+import quippy.atoms
+from quippy import _potential
+from quippy._potential import *
 from quippy.util import quip_xml_parameters
 from quippy.elastic import stress_matrix
+
+__all__ = _potential.__all__
 
 def calculator_callback_factory(calculator):
     """Return a Python function which can be used as a quippy
@@ -50,7 +55,7 @@ def calculator_callback_factory(calculator):
 
     return callback
 
-class Potential(quippy.FortranPotential):
+class Potential(_potential.Potential):
     """Potential class which abstracts all QUIP interatomic potentials.
 
        Provides interface to all energy/force/virial
@@ -61,7 +66,7 @@ class Potential(quippy.FortranPotential):
        It can also be used to geometry optimise an Atoms structure,
        using the 'minim' method."""
 
-    __doc__ = quippy.FortranPotential.__doc__
+    __doc__ = _potential.Potential.__doc__
     callback_map = {}
 
     def __init__(self, args_str=None, pot1=None, pot2=None, param_str=None,
@@ -119,7 +124,7 @@ class Potential(quippy.FortranPotential):
             if param_str is None and pot1 is None and pot2 is None:
                 param_str = quip_xml_parameters(args_str)
 
-        quippy.FortranPotential.__init__(self, args_str, pot1=pot1, pot2=pot2,
+        _potential.Potential.__init__(self, args_str, pot1=pot1, pot2=pot2,
                                          param_str=param_str,
                                          bulk_scale=bulk_scale,
                                          mpi_obj=mpi_obj,
@@ -128,7 +133,7 @@ class Potential(quippy.FortranPotential):
                                          error=error)
 
         if args_str.lower().startswith('callbackpot'):
-            quippy.FortranPotential.set_callback(self, Potential.callback)
+            _potential.Potential.set_callback(self, Potential.callback)
 
             if callback is not None:
                 self.set_callback(callback)
@@ -136,7 +141,7 @@ class Potential(quippy.FortranPotential):
             if calculator is not None:
                 self.set_callback(calculator_callback_factory(calculator))
 
-    __init__.__doc__ = quippy.FortranPotential.__init__.__doc__
+    __init__.__doc__ = _potential.Potential.__init__.__doc__
 
     @staticmethod
     def callback(at_ptr):
@@ -153,8 +158,8 @@ class Potential(quippy.FortranPotential):
         if self.atoms is not None and self.atoms.equivalent(atoms):
             return
 
-        # store a copy of `atoms` as a quippy.Atoms instance
-        self.atoms = quippy.Atoms(atoms)
+        # store a copy of `atoms` as a quippy.atoms.Atoms instance
+        self.atoms = quippy.atoms.Atoms(atoms)
 
         # build neighbour list
         self.atoms.set_cutoff(self.cutoff())
@@ -243,3 +248,6 @@ class Potential(quippy.FortranPotential):
     def get_stresses(self, atoms):
         self.calculate(atoms, ['stresses'])
         return self.stresses.copy()
+
+from quippy import FortranDerivedTypes
+FortranDerivedTypes['type(potential)'] = Potential

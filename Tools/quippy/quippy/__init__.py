@@ -69,7 +69,7 @@ if 'netCDF4' in available_modules:
     from netCDF4 import Dataset
     netcdf_file = Dataset
 else:
-    from pupynere import netcdf_file
+    from quippy.pupynere import netcdf_file
 
 # if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
 if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
@@ -78,18 +78,6 @@ if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
     flags = sys.getdlopenflags()
     sys.setdlopenflags(flags | dl.RTLD_GLOBAL)
     available_modules.append('mpi')
-
-AtomsReaders = {}
-AtomsWriters = {}
-
-def atoms_reader(source):
-    """Decorator to add a new reader"""
-    def decorate(func):
-        from quippy import AtomsReaders
-        if not source in AtomsReaders:
-            AtomsReaders[source] = func
-        return func
-    return decorate
 
 import _quippy
 
@@ -114,21 +102,12 @@ _quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 from spec import spec
-wrap_modules = spec['wrap_modules']
-# Jointly wrap atoms_types, atoms and connection into the respective classes
-del wrap_modules[wrap_modules.index('atoms_types')]
-del wrap_modules[wrap_modules.index('atoms')]
-del wrap_modules[wrap_modules.index('connection')]
-del wrap_modules[wrap_modules.index('domaindecomposition')]
-wrap_modules += [ [ 'atoms_types', 'atoms', 'connection', 'domaindecomposition' ] ]
-###
-classes, routines, params = wrap_all(_quippy, spec, wrap_modules, spec['short_names'], prefix='qp_')
 
 QUIP_ROOT = spec['quip_root']
 QUIP_ARCH = spec['quip_arch']
 QUIP_MAKEFILE = spec['quip_makefile']
 
-if 'netdf' in disabled_modules:
+if 'netcdf' in disabled_modules:
     disabled_modules.append('netcdf')
 else:
     if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
@@ -136,72 +115,132 @@ else:
     else:
         unavailable_modules.append('netcdf')
 
-for name, cls in classes:
-    setattr(sys.modules[__name__], name, cls)
+__all__ = ['QUIP_ROOT', 'QUIP_ARCH', 'QUIP_MAKEFILE',
+           'available_modules', 'unavailable_modules',
+           'disabled_modules']
 
-for name, routine in routines:
-    setattr(sys.modules[__name__], name, routine)
+wrap_modules = spec['wrap_modules']
+# Jointly wrap atoms_types, atoms and connection into the respective classes
+del wrap_modules[wrap_modules.index('atoms_types')]
+del wrap_modules[wrap_modules.index('atoms')]
+del wrap_modules[wrap_modules.index('connection')]
+del wrap_modules[wrap_modules.index('domaindecomposition')]
+wrap_modules.append('atoms')
+merge_modules = {'atoms': ('atoms_types', 'atoms', 'connection', 'domaindecomposition')}
+###
 
-sys.modules[__name__].__dict__.update(params)
+import pkgutil
 
-# Import custom sub classes
-import atoms;           from atoms import Atoms, make_lattice, get_lattice_params, get_bulk_params
-import dictionary;      from dictionary import Dictionary
-import cinoutput;       from cinoutput import CInOutput, CInOutputReader, CInOutputWriter
-import dynamicalsystem; from dynamicalsystem import DynamicalSystem
-import potential;       from potential import Potential
-import table;           from table import Table
-import extendable_str;  from extendable_str import Extendable_str
+# Find entries in wrap_modules which have Python wrappers in this package
+python_wrappers = []
+modules_name_map = {}
+for imp, mod, ispkg in pkgutil.iter_modules(sys.modules[__name__].__path__):
+    if mod in wrap_modules:
+        python_wrappers.append(mod)
+        modules_name_map[mod] = '_'+mod
 
-for name, cls in classes:
-    try:
-        # For some Fortran types, we have customised subclasses written in Python
-        new_cls = getattr(sys.modules[__name__], name[len(fortran_class_prefix):])
-    except AttributeError:
-        # For the rest, we make a dummy subclass which is equivalent to Fortran base class
-        new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
-        setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
+pymods = wrap_all(_quippy, spec, wrap_modules, merge_modules,
+                  spec['short_names'],
+                  prefix='qp_', package='quippy',
+                  modules_name_map=modules_name_map)
 
-    FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
+# Add modules to quippy package and to sys.modules
+for name, mod in pymods.items():
+    sys.modules['quippy.'+name] = mod
+    setattr(sys.modules[__name__], name, mod)
 
-del classes
-del routines
-del params
-del wrap_all
-del fortran_class_prefix
-del spec
+    # Emulate 'from quippy.X import *' for modules without wrapper
+    if name in python_wrappers:
+        continue
+    for sym in mod.__all__:
+        setattr(sys.modules[__name__], sym, getattr(mod, sym))
+    __all__.extend(mod.__all__)
 
-import fortranio;   from fortranio import *
-import farray;      from farray import *
-import atomslist;   from atomslist import *
-import periodic;    from periodic import *
-import util;        from util import *
+del wrap_modules, merge_modules, modules_name_map
+del name, mod, pymods
 
-import sio2, povray, cube, xyz, netcdf, imd
+import quippy.atoms
+from quippy.atoms import *
+__all__.extend(quippy.atoms.__all__)
+
+import quippy.dictionary
+from quippy.dictionary import *
+__all__.extend(quippy.dictionary.__all__)
+
+import quippy.cinoutput
+from quippy.cinoutput import *
+__all__.extend(quippy.cinoutput.__all__)
+
+import quippy.dynamicalsystem
+from quippy.dynamicalsystem import *
+__all__.extend(quippy.dynamicalsystem.__all__)
+
+import quippy.potential
+from quippy.potential import *
+__all__.extend(quippy.potential.__all__)
+
+import quippy.table
+from quippy.table import *
+__all__.extend(quippy.table.__all__)
+
+import quippy.extendable_str
+from quippy.extendable_str import *
+__all__.extend(quippy.extendable_str.__all__)
+
+import quippy.periodictable
+from quippy.periodictable import *
+__all__.extend(quippy.periodictable.__all__)
+
+import quippy.fortranio
+from quippy.fortranio import *
+__all__.extend(quippy.fortranio.__all__)
+
+import quippy.farray
+__all__.extend(quippy.farray.__all__)
+from quippy.farray import *
+
+import quippy.atomslist
+from quippy.atomslist import *
+__all__.extend(quippy.atomslist.__all__)
+
+import quippy.util
+from quippy.util import *
+__all__.extend(quippy.util.__all__)
+
+import quippy.sio2
+import quippy.povray
+import quippy.cube
+import quippy.xyz
+import quippy.netcdf
+import quippy.imd
 
 try:
-    import castep
+    import quippy.castep
 except ImportError:
-    logging.warning('quippy.castep import failed.')
+    logging.warning('quippy.castep import quippy.failed.')
 
-if is_interactive_shell():
-    if 'atomeye' in available_modules:
-        import atomeye
-        import atomeyewriter
+if 'atomeye' in available_modules:
+    import atomeye
+    import quippy.atomeyewriter
 
-    if 'enthought.mayavi' in available_modules:
-        import plot3d
-        from plot3d import *
+if 'enthought.mayavi' in available_modules:
+    import quippy.plot3d
+    from quippy.plot3d import *
+    __all__.extend(quippy.plot3d.__all__)
 
-    if 'pylab' in available_modules:
-        import plot2d
-        from plot2d import *
+if 'pylab' in available_modules:
+    import quippy.plot2d
+    from quippy.plot2d import *
+    __all__.extend(quippy.plot2d.__all__)
 
-    import elastic
-    from elastic import *
+import quippy.elastic
+from quippy.elastic import *
+__all__.extend(quippy.elastic.__all__)
 
-    import surface
-    from surface import *
+import quippy.surface
+from quippy.surface import *
+__all__.extend(quippy.surface.__all__)
 
-    import crack
-    from crack import *
+import quippy.crack
+from quippy.crack import *
+__all__.extend(quippy.crack.__all__)

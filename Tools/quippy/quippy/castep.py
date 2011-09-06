@@ -23,16 +23,24 @@
 # HND X
 # HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys, string, os, operator, itertools, logging, glob, re, md5
+import sys, string, os, operator, itertools, logging, glob, re
 import numpy as np
+
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.dictionary import Dictionary
+from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
+from quippy.periodictable import atomic_number
+from quippy.atoms import make_lattice, get_lattice_params
+
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE, atomic_number_from_symbol
-from quippy import AtomsReaders, AtomsWriters, atoms_reader
-from quippy.atoms import make_lattice, get_lattice_params
 from math import pi
 import xml.dom.minidom
 
+__all__ = ['CastepCell', 'CastepParam', 'CastepPotential',
+           'check_pspots', 'run_castep', 'read_formatted_potential',
+           'read_formatted_density']
+           
 castep_units = {
    'ang' : 1,
    'bohr' : BOHR
@@ -317,7 +325,7 @@ class CastepCell(OrderedDict):
         elements = map(operator.itemgetter(0), field_list)
 
         # Look up names of elements specified by atomic number
-        elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
+        elements = [ not el.isdigit() and atomic_number(el) or el for el in elements ]
 
         # Set the element and pos data
         atoms.set_atoms(elements)
@@ -625,7 +633,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
                 num = int(num)
                 if not (el,num) in lookup:
                     lookup[(el,num)] = i
-                at.z[lookup[(el,num)]] = atomic_number_from_symbol(el)
+                at.z[lookup[(el,num)]] = atomic_number(el)
                 at.pos[:,lookup[(el,num)]] = [ float(r)* BOHR for r in (x,y,z)]
 
             at.set_atoms(at.z) # set at.species property to match at.z
@@ -812,7 +820,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
                 num = int(num)
                 if not (el,num) in lookup:
                     lookup[(el,num)] = i
-                atoms.z[lookup[(el,num)]] = atomic_number_from_symbol(el)
+                atoms.z[lookup[(el,num)]] = atomic_number(el)
                 atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
 
             atoms.set_atoms(atoms.z) # set at.species from at.z
@@ -1185,22 +1193,6 @@ def run_castep(cell, param, stem, castep, castep_log=None, save_all_check_files=
         logf.close()
 
     return not got_error
-
-
-def hash_atoms(at, ndigits):
-    """Hash an atoms object with a precision of ndigits decimal digits.
-    Species, lattice and fractional positions are fed to MD5 to form the hash."""
-
-    # Compute fractional positions, round them to ndigits, then sort them
-    # for hash stability
-    flat_frac_pos = sorted([np.round(x,ndigits) for x in dot(at.g,at.pos).flatten()])
-
-    m = md5.new()
-    m.update(str([np.round(x,ndigits) for x in at.lattice.flatten()]))
-    m.update(str(at.species))
-    m.update(str(flat_frac_pos))
-
-    return m.hexdigest()
 
 from quippy import Potential
 

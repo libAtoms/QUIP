@@ -20,7 +20,9 @@ from quippy import *
 from quippy.xyz import *
 from quippy.netcdf import *
 import unittest, itertools, sys, quippy
+import numpy as np
 from quippytest import *
+import os
 
 have_netcdf = True
 try:
@@ -442,7 +444,7 @@ H	8.505653	8.201400	4.069496
 O	5.939224	8.979049	3.011011
 H	5.602166	8.307183	3.670115
 H	6.859570	9.215634	3.262673""")
-      self.assertArrayAlmostEqual(at.lattice, numpy.diag([20.0,20.0,20.0]))
+      self.assertArrayAlmostEqual(at.lattice, np.diag([20.0,20.0,20.0]))
 
    def test_read_empty_file(self):
       os.system('touch empty.xyz')

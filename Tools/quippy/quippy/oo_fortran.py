@@ -18,7 +18,7 @@
 
 """Object oriented interface on top of f2py generated wrappers."""
 
-import logging, sys
+import logging, sys, imp, weakref
 import arraydata
 from farray import *
 import numpy as np
@@ -33,7 +33,7 @@ if (major, minor) < (2, 5):
     any = lambda seq: True in seq
 
 
-fortran_class_prefix = 'Fortran'
+fortran_class_prefix = ''
 
 py_keywords = ['and',       'del',       'from',      'not',       'while',
                'as',        'elif',      'global',    'or',        'with',
@@ -295,14 +295,14 @@ class FortranDerivedType(object):
 
     fortran_indexing = property(_get_fortran_indexing, _set_fortran_indexing)
 
-    def is_same_fortran_obect(self, other):
+    def is_same_fortran_object(self, other):
         """Test if `self` and `other` point to the same Fortan object."""
-        return all(self._fpointer == other._fpointer)
+        return (self._fpointer == other._fpointer).all()
 
     def shallow_copy(self):
         """Return a shallow copy of `self`."""
         other = self.__class__()
-        other.shallowcopyfrom(self)
+        other.shallow_copy_from(self)
         return other
 
     def shallow_copy_from(self, other):
@@ -321,14 +321,25 @@ class FortranDerivedType(object):
             self.ref_count = self.ref_count + 1
 
     def __del__(self):
+        
         #print 'del %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
         if hasattr(self, '_initialised'):
             del self._initialised
         self._subobjs_cache = {}
         if self._fpointer is not None and not (self._fpointer == 0).all() and self._finalise and '__del__' in self._routines:
+            #from quippy import mem_info
+            #mem_total_1, mem_free_1 = mem_info()
+            #params = ''
+            #if hasattr(self, 'params'):
+            #    params = str(self.params)
+            #n = 0
+            #if hasattr(self, 'n'):
+            #    n = self.n
             fobj, doc = self._routines['__del__']
             fobj(self._fpointer)
+            #mem_total_2, mem_free_2 = mem_info()
+            #print 'Freed %s object n=%d params=%s Free mem increasd by %f Mb' % (self.__class__.__name__, n, params, (mem_free_2-mem_free_1)/(1024**2))
             self._fpointer = None
 
 
@@ -540,28 +551,44 @@ def flatten_list_of_dicts(dictlist):
     return modout
 
 
-def wrap_all(fobj, spec, mods, short_names, prefix):
+def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map):
     all_classes = []
     leftover_routines = []
     interfaces = {}
     top_level_routines = []
-    params = {}
+    all_params = {}
+    pymods = {}
 
     for mod in mods:
-        logging.debug('Module %s' % mod)
-        if type(mod) == list:
-            curspec = flatten_list_of_dicts([spec[x] for x in mod])
+        logging.debug('Module '+str(mod))
+        if mod in merge_mods:
+            curspec = flatten_list_of_dicts([spec[x] for x in merge_mods[mod]])
         else:
             curspec = spec[mod]
 
-        classes, routines, params = wrapmod(fobj, curspec,
-                                            short_names=short_names,
-                                            params=params, prefix=prefix)
+        classes, routines, mod_params = wrapmod(fobj, curspec,
+                                                short_names=short_names,
+                                                params=all_params, prefix=prefix)
         all_classes.extend(classes)
-        leftover_routines.append((curspec, routines))
+
+        pymod = imp.new_module(package+'.'+modules_name_map.get(mod,mod))
+        pymod.__package__ = package
+        
+        for name, cls in classes:
+            cls.__module__ = pymod.__name__
+            setattr(pymod, name, cls)
+
+        pymod.__dict__.update(mod_params)
+        pymods[modules_name_map.get(mod,mod)] = pymod
+        
+        # make classes and params symbols public
+        # (available with 'from ... import *')
+        setattr(pymod, '__all__', [c[0] for c in classes]+mod_params.keys())
+                
+        leftover_routines.append((mod, curspec, routines))
 
     # add orphaned routines to classes and generate top-level interfaces
-    for modspec, routines in leftover_routines:
+    for mod, modspec, routines in leftover_routines:
         for routine in routines:
             rspec = modspec['routines'][routine]
 
@@ -591,24 +618,31 @@ def wrap_all(fobj, spec, mods, short_names, prefix):
                 wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix)
                 for intf_name,intf_spec in modspec['interfaces'].iteritems():
                     if routine in intf_spec['routines']:
-                        if not intf_name in interfaces: interfaces[intf_name] = (intf_spec, [])
-                        interfaces[intf_name][1].append((routine, rspec, wrapped_routine))
+                        if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [])
+                        interfaces[intf_name][2].append((routine, rspec, wrapped_routine))
                         logging.debug('  added routine %s to top-level interface %s' % (routine, intf_name))
                         break
                 else:
                     FortranRoutines[routine] = wrapped_routine
                     top_level_routines.append((routine,wrapped_routine))
+                    wrapped_routine.__module__ = pymods[modules_name_map.get(mod,mod)].__name__
+                    setattr(pymods[modules_name_map.get(mod,mod)], routine, wrapped_routine)
+                    pymods[modules_name_map.get(mod,mod)].__all__.append(routine)
                     logging.debug('  added top-level routine %s' % routine)
-
+                    
     # remap interface names which clash with keywords and skip overloaded operator
     interfaces = dict([(py_keywords_map.get(k,k),v) for (k,v) in interfaces.iteritems() if '.' ])
 
-    for name, (intf_spec, routines) in interfaces.iteritems():
+    for name, (mod, intf_spec, routines) in interfaces.iteritems():
         wrapped_interface = wrapinterface(name, intf_spec, routines, prefix)
         FortranRoutines[name] = wrapped_interface
         top_level_routines.append((name, wrapped_interface))
+        wrapped_interface.__module__ = pymods[modules_name_map.get(mod,mod)].__name__
+        setattr(pymods[modules_name_map.get(mod,mod)], name, wrapped_interface)
+        pymods[modules_name_map.get(mod,mod)].__all__.append(name)
+        logging.debug('  added interface routine %s' % routine)
 
-    return all_classes, top_level_routines, params
+    return pymods
 
 
 
@@ -819,6 +853,19 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
                                                 fset=wrap_array_set(name),
                                                 doc=el['doc']))
 
+            # arrays of derived types (1D only for now..)
+            if 'array_getitem' in el and 'array_setitem' and 'array_len' in el:
+                logging.debug('    adding derived type array %s' % name)
+                new_cls._arrays[name] = (getattr(modobj, el['array_getitem']),
+                                         getattr(modobj, el['array_setitem']),
+                                         getattr(modobj, el['array_len']),
+                                         el['doc'], el['type'])
+
+                setattr(new_cls, name, property(fget=wrap_derived_type_array_get(name),
+                                                fset=wrap_derived_type_array_set(name),
+                                                doc=el['doc']))
+                                                 
+
 
 
 
@@ -827,19 +874,19 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
     evaldict['huge'] = lambda x: np.finfo('d').max
     evaldict['cmplx'] = lambda x,y,kind: complex(x,y)
     evaldict['farray'] = farray
+    mod_params = {}
     for (name, ftype, attributes, value) in moddoc['parameters']:
         code = value.replace('(/','farray([')
         code = code.replace('/)','])')
         code = code.replace('_dp', '')
         try:
-            params[name] = eval(code, evaldict)
-            evaldict[name] = params[name]
+            mod_params[name] = eval(code, evaldict)
+            evaldict[name] = mod_params[name]
             logging.debug('  adding parameter %s' % name)
         except NameError:
             logging.debug('  ignorning NameError in parameter %s = %s' % (name, code))
 
-
-    return (classes, routines, params)
+    return (classes, routines, mod_params)
 
 
 def wrap_get(name):
@@ -897,6 +944,7 @@ def wrap_obj_set(name):
             raise ValueError('%s object not initialised.' % self.__class__.__name__)
         cls, getfunc, setfunc = self._subobjs[name]
         setfunc(self._fpointer, value._fpointer)
+        
     return func
 
 def wrap_array_get(name, reshape=True):
@@ -912,7 +960,6 @@ def wrap_array_get(name, reshape=True):
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 a = a[nshape]
-            a.fortran_type = arraytype
             return a
         except ValueError:
             return None
@@ -931,7 +978,6 @@ def wrap_array_set(name, reshape=True):
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 a = a[nshape]
-            a.fortran_type = arraytype
             if arraytype == 'logical':
                 value = np.where(value, QUIPPY_TRUE, QUIPPY_FALSE)
             a[...] = value
@@ -941,6 +987,70 @@ def wrap_array_set(name, reshape=True):
 
     return func
 
+def wrap_derived_type_array_get(name):
+    def func(self):
+        getfunc, setfunc, lenfunc, doc, arraytype = self._arrays[name]
+        return FortranDerivedTypeArray(self, getfunc, setfunc,
+                                       lenfunc, doc, arraytype,
+                                       self.fortran_indexing)
+    return func
+
+def wrap_derived_type_array_set(name):
+    def func(self, value):
+        getfunc, setfunc, lenfunc, doc, arraytype = self._arrays[name]
+        a = FortranDerivedTypeArray(self, getfunc, setfunc,
+                                    lenfunc, doc, arraytype,
+                                    self.fortran_indexing)
+        for i,v in zip(a.indices, value):
+            a[i] = v
+        
+    return func        
+
+class FortranDerivedTypeArray(object):
+    def __init__(self, parent, getfunc, setfunc, lenfunc, doc, arraytype, fortran_indexing):
+        self.parent = weakref.ref(parent)
+        self.getfunc = getfunc
+        self.setfunc = setfunc
+        self.lenfunc = lenfunc
+        self.doc = doc
+        self.arraytype = arraytype
+        self.fortran_indexing = fortran_indexing
+
+    def iterindices(self):
+        if self.fortran_indexing:
+            return iter(frange(len(self)))
+        else:
+            return iter(range(len(self)))
+
+    indices = property(iterindices)
+
+    def __len__(self):
+        p = self.parent()
+        if p is None:
+            raise ValueError('parent has gone out of scope')
+        return self.lenfunc(p._fpointer)
+
+    def __getitem__(self, i):
+        p = self.parent()
+        if p is None:
+            raise ValueError('parent has gone out of scope')
+        if not self.fortran_indexing:
+            i += 1
+        pp = self.getfunc(p._fpointer, i)
+        try:
+            obj = p._subobjs_cache[tuple(pp)]
+        except KeyError:
+            obj = p._subobjs_cache[tuple(pp)] = FortranDerivedTypes[self.arraytype.lower()](fpointer=pp,finalise=False,
+                                                                                            fortran_indexing=self.fortran_indexing)
+        return obj
+
+    def __setitem__(self, i, value):
+        p = self.parent()
+        if p is None:
+            raise ValueError('parent has gone out of scope')
+        if not self.fortran_indexing:
+            i += 1
+        self.setfunc(p._fpointer, i, value._fpointer)
 
 
 def add_doc(func, fobj, doc, fullname, name, prefix):

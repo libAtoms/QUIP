@@ -4,8 +4,7 @@ from numpy import *
 import quippy
 from quippy import *
 
-from quippy.plot2d import *
-
+import os
 import IPython.ipapi
 ip = IPython.ipapi.get()
 

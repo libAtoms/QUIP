@@ -41,6 +41,7 @@ class TestAtomsList(QuippyTestCase):
 
    def testgetslice(self):
       sl = self.listal[1:]
+      print sl
       self.assert_(isinstance(sl, AtomsList))
       self.assertEqual(list(sl), list(self.listal)[1:])
 
