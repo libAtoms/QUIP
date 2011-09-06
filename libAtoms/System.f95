@@ -2850,7 +2850,7 @@ end function pad
 
     INIT_ERROR(error)
 
-    use_force_run_dir_i = optional_default(0, force_run_dir_i)
+    use_force_run_dir_i = optional_default(-1, force_run_dir_i)
     use_basename = optional_default("run", basename)
    
     if (use_force_run_dir_i >= 0) then
