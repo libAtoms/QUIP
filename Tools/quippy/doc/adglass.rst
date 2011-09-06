@@ -86,7 +86,7 @@ e.g. ``~/bin``.
 
 Similarly, to compile `eval` run::
   
-  $ make QUIP_Program/eval
+  $ make QUIP_Programs/eval
 
 It is highly recommended to change the name when copying the `eval` prgram to a
 directory on :envvar:`PATH` to avoid a clash with the builtin ``eval`` command.
