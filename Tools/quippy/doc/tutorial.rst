@@ -35,9 +35,12 @@ Other tutorials that may be useful:
 #. If you're new to Python, you might like to start with the `offical
    Python tutorial <http://docs.python.org/dev/tutorial/index.html>`_. 
 
-#. There's a good `introductory tutorial
-   <https://wiki.fysik.dtu.dk/ase/python.html>`_ as part of the ASE
-   documentation. 
+#. quippy is compatible with the Atomic Simulation Environnment (ASE),
+   so their `tutorials
+   <https://wiki.fysik.dtu.dk/ase/tutorials/tutorials.html>`_ are a
+   useful resource. In particular, there's a good `introductory Python
+   tutorial <https://wiki.fysik.dtu.dk/ase/python.html>`_ as part of
+   the ASE documentation.
 
 #. The numpy project also provides an (unfinished) `tutorial
    <http://www.scipy.org/Tentative_NumPy_Tutorial>`_. If you follow
@@ -128,7 +131,7 @@ Atoms objects, residing at different memory locations.
    unique number identifying a the memory address to which a reference
    points.
 
-   If you forget about this you can get into difficulties when dealding
+   If you forget about this you can get into difficulties when dealing
    with mutable objects such as lists or Atoms objects::
 
       >>> a = []
@@ -298,30 +301,30 @@ of the Silicon atoms to +2.8 ::
    aq.charge[aq.z == 8]  = -1.4
    aq.charge[aq.z == 14] =  2.8
 
-.. warning::     
+.. .. warning::     
    
-   In view of the way Python assignment works (see warning above), you
-   should be careful not to overwrite array attributes. If you want to
-   set all coordinates to zero you should do::
+..    In view of the way Python assignment works (see warning above), you
+..    should be careful not to overwrite array attributes. If you want to
+..    set all coordinates to zero you should do::
 
-      dia.pos[:] = 0.0
+..       dia.pos[:] = 0.0
 
-   and never ::
+..    and never ::
 
-      dia.pos = 0.0
+..       dia.pos = 0.0
 
-   since the latter overwrites the `dia.pos` attribute, which is a
-   reference to the relevant colums in the underlying Fortran array
-   within the :attr:`~Atoms.data` Table, with a single floating point
-   value (If you do this by accident you can recreate the array
-   references with the :meth:`~quippy.oo_fortran.FortranDerivedType._update`
-   method). 
+..    since the latter overwrites the `dia.pos` attribute, which is a
+..    reference to the relevant colums in the underlying Fortran array
+..    within the :attr:`~Atoms.data` Table, with a single floating point
+..    value (If you do this by accident you can recreate the array
+..    references with the :meth:`~quippy.oo_fortran.FortranDerivedType._update`
+..    method). 
 
-   This caveat applies only to atomic properties arrays, since they're
-   dynamically generated. It's okay to assign directly to derived type
-   scalar attributes such as :attr:`~Atoms.cutoff`. Trying to assign
-   to array attributes such as :attr:`~Atoms.lattice` will raise an
-   exception.
+..    This caveat applies only to atomic properties arrays, since they're
+..    dynamically generated. It's okay to assign directly to derived type
+..    scalar attributes such as :attr:`~Atoms.cutoff`. Trying to assign
+..    to array attributes such as :attr:`~Atoms.lattice` will raise an
+..    exception.
 
 
 Here's an example of making a new Atoms object containing only
