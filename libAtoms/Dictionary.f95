@@ -2854,8 +2854,6 @@ contains
     integer, intent(out), optional :: error
 
     integer :: i, size_tmp, shape_tmp(2)
-    character, allocatable, dimension(:) :: char_array
-    type(DictEntry) :: entry
 
     INIT_ERROR(error)
 
