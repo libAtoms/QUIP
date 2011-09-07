@@ -95,3 +95,14 @@ def skip(f):
    def g(self):
       logging.warning('skipping test %s' % f.__name__)
    return g
+
+def profile(f):
+   import cProfile, pstats, functools
+
+   @functools.wraps(f)
+   def g(self):
+      cProfile.runctx('f(self)', globals(), locals(), f.__name__+'.profile')
+      p = pstats.Stats(f.__name__+'.profile')
+      p.strip_dirs().sort_stats('cumulative').print_stats()
+      return f(self)
+   return g
