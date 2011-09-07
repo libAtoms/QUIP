@@ -204,7 +204,10 @@ class PropertiesWrapper(DictMixin):
         if value.dtype.kind != 'S':
             value = value.T
 
-        at.add_property(key, value, overwrite=True)
+        if not at.has_property(key):
+            at.add_property(key, value)
+        else:
+            at.properties[key][...] = value
 
     def __delitem__(self, key):
         at = self.atref()
@@ -583,11 +586,14 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def __getattr__(self, name):
         #print 'getattr', name
-        if name in self.properties:
+        #if name in self.properties:
+        try:
             return self.properties[name]
-        if name in self.params:
-            return self.params[name]
-        raise AttributeError('Unknown Atoms attribute %s' % name)
+        except KeyError:
+            try:
+                return self.params[name]
+            except KeyError:
+                raise AttributeError('Unknown Atoms attribute %s' % name)
 
     def __setattr__(self, name, value):
         #print 'setattr', name, value
