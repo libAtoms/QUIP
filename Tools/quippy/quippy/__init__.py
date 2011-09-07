@@ -127,22 +127,15 @@ del wrap_modules[wrap_modules.index('connection')]
 del wrap_modules[wrap_modules.index('domaindecomposition')]
 wrap_modules.append('atoms')
 merge_modules = {'atoms': ('atoms_types', 'atoms', 'connection', 'domaindecomposition')}
-###
 
-import pkgutil
-
-# Find entries in wrap_modules which have Python wrappers in this package
-# (do not use pkgutil.walk_modules() since not available with Python 2.4)
-import os
-python_wrappers = []
+# List of Fortran modules which have Python wrappers in this package
+python_wrappers = ['periodictable', 'table', 'potential',
+                   'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
+                   'extendable_str']
 modules_name_map = {}
-for pth in sys.modules[__name__].__path__:
-    for mod_file in os.listdir(pth):
-        if not mod_file.endswith('.py'): continue
-        mod = os.path.splitext(mod_file)[0]
-        if mod in wrap_modules:
-            python_wrappers.append(mod)
-            modules_name_map[mod] = '_'+mod
+for mod in python_wrappers:
+    if mod in wrap_modules:
+        modules_name_map[mod] = '_'+mod
 
 pymods = wrap_all(_quippy, spec, wrap_modules, merge_modules,
                   spec['short_names'],
@@ -163,6 +156,8 @@ for name, mod in pymods.items():
 
 del wrap_modules, merge_modules, modules_name_map
 del name, mod, pymods
+
+# Python modules which extend Fortran modules
 
 import quippy.atoms
 from quippy.atoms import *
@@ -195,6 +190,8 @@ __all__.extend(quippy.extendable_str.__all__)
 import quippy.periodictable
 from quippy.periodictable import *
 __all__.extend(quippy.periodictable.__all__)
+
+# Utility modules - pure Python
 
 import quippy.fortranio
 from quippy.fortranio import *
