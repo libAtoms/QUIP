@@ -147,9 +147,9 @@ class AtomsReader(AtomsReaderMixin):
             try:
                 return len(range(*slice(self.start, self.stop, self.step).indices(len(self.reader))))
             except:
-                raise IndexError('This AtomsReader does not support random access')
+                raise AttributeError('This AtomsReader does not support random access')
         else:
-            raise IndexError('This AtomsReader does not support random access')
+            raise AttributeError('This AtomsReader does not support random access')
 
     @property
     def random_access(self):
@@ -338,7 +338,7 @@ class AtomsSequenceReader:
             self.readers.append(reader)
             try:
                 self.lengths.append(len(reader))
-            except IndexError:
+            except AttributeError:
                 self.lengths.append(None)
 
     def __len__(self):
