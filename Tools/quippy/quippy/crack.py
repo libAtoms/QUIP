@@ -110,6 +110,8 @@ def makecrack_main(params, stem):
     crack_slab.add_property('edge_mask', 0)
     crack_slab.add_property('crack_surface', False)
     crack_slab.add_property('crack_front', False)
+    if params.crack_fix_dipoles:
+	crack_slab.add_property('fixdip', False)
 
     print_title('Fixing Atoms')
 
@@ -146,6 +148,17 @@ def makecrack_main(params, stem):
         minz, maxz = crack_slab.pos[3,:].min(), crack_slab.pos[3,:].max()
         crack_slab.edge_mask[(abs(crack_slab.pos[3,:]-minz) < params.selection_edge_tol) |
                              (abs(crack_slab.pos[3,:]-maxz) < params.selection_edge_tol)] = 1
+
+
+    if params.crack_fix_dipoles:
+        print_title('Fixing dipoles')
+        crack_slab.fixdip[(abs(crack_slab.pos[2,:]-maxy) < params.crack_fix_dipoles_tol) |
+                          (abs(crack_slab.pos[2,:]-miny) < params.crack_fix_dipoles_tol)] = 1
+        if params.crack_fix_sides:
+                maxx, minx = crack_slab.pos[1,:].min(), crack_slab.pos[1,:].max()
+                crack_slab.fixdip[(abs(crack_slab.pos[1,:]-maxx) < params.crack_fix_dipoles_tol) |
+                                  (abs(crack_slab.pos[1,:]-minx) < params.crack_fix_dipoles_tol)] = 1
+
 
     crack_make_seed(crack_slab, params)
 
