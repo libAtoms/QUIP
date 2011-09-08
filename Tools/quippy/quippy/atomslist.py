@@ -89,6 +89,7 @@ class AtomsReader(AtomsReaderMixin):
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
                  cache_mem_limit=0, **kwargs):
+
         self.source = source
         self.format = format
         self.start = start
@@ -131,7 +132,7 @@ class AtomsReader(AtomsReaderMixin):
         # special case if source is a list or tuple of filenames or glob patterns
         if isinstance(self.reader, list) or isinstance(self.reader, tuple):
             if all(isinstance(item, str) for item in self.reader):
-                self.reader = AtomsSequenceReader(self.reader)
+                self.reader = AtomsSequenceReader(self.reader, **kwargs)
 
         if isinstance(self.reader, str):
             raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
@@ -328,12 +329,12 @@ def AtomsWriter(dest, format=None, **kwargs):
 class AtomsSequenceReader:
     """Read Atoms from a list of sources"""
 
-    def __init__(self, sources):
+    def __init__(self, sources, **kwargs):
         self.sources = sources
         self.readers = []
         self.lengths = []
         for source in sources:
-            reader = AtomsReader(source)
+            reader = AtomsReader(source, **kwargs)
             self.readers.append(reader)
             try:
                 self.lengths.append(len(reader))
