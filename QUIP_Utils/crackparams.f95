@@ -215,6 +215,8 @@ module CrackParams_module
      logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
      real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
      logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
+     logical  :: crack_fix_dipoles        !% If true, we keep fixed dipoles for atoms at the edges.
+     real(dp) :: crack_fix_dipoles_tol    !% How close must an atom be to top or bottom to keep fixed its dipole. Unit:~\AA{}.
      real(dp) :: crack_thermostat_ramp_length  !% Length of thermostat ramp used for stadium damping at left and right edges
      real(dp) :: crack_thermostat_ramp_max_tau !% Value of thermostat tau at end of ramp, in fs.
      logical :: crack_initial_velocity_field !% If true, initialise velocity field with dU/dc
@@ -464,6 +466,8 @@ contains
     this%crack_free_surfaces = .false.
     this%crack_front_window_size = 5.44_dp ! Angstrom
     this%crack_fix_sides = .false.
+    this%crack_fix_dipoles = .false. 
+    this%crack_fix_dipoles_tol = 5.0_dp    ! Angstrom 
     this%crack_thermostat_ramp_length = 50.0
     this%crack_thermostat_ramp_max_tau = 10000.0
 
@@ -1016,6 +1020,16 @@ contains
        call QUIP_FoX_get_value(attributes, "fix_sides", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_fix_sides
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fix_dipoles", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_fix_dipoles
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fix_dipoles_tol", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_fix_dipoles_tol
        end if
 
        call QUIP_FoX_get_value(attributes, "thermostat_ramp_length", value, status)
@@ -1736,6 +1750,8 @@ contains
     call Print('     free_surfaces         = '//this%crack_free_surfaces, file=file)
     call Print('     front_window_size     = '//this%crack_front_window_size, file=file)
     call Print('     fix_sides             = '//this%crack_fix_sides, file=file)
+    call Print('     fix_dipoles           = '//this%crack_fix_dipoles, file=file)
+    call Print('     fix_dipoles_tol       = '//this%crack_fix_dipoles_tol, file=file)
     call Print('     thermostat_ramp_length  = '//this%crack_thermostat_ramp_length//' A', file=file)
     call Print('     thermostat_ramp_max_tau = '//this%crack_thermostat_ramp_max_tau//' fs', file=file)
     call Print('',file=file)
