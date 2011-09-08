@@ -19,6 +19,7 @@
 from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
 from quippy.farray import fzeros
 import numpy as np
+import re
 
 @atoms_reader('vasp')
 @atoms_reader('POSCAR')
@@ -53,8 +54,11 @@ def VASPReader(poscar, outcar=None, species=None):
       l = p.readline().strip();
       ns = [ int(n) for n in l.split() ]
 
-   dyn_type = p.readline().strip();
-   coord_type = p.readline().strip();
+   if (re.compile("^\s*s", re.IGNORECASE).match(p.readline().strip())):
+      dyn_type = l
+      coord_type = p.readline().strip();
+   else:
+      coord_type = l
 
    n=0
    for i in range(len(ns)):
@@ -66,6 +70,7 @@ def VASPReader(poscar, outcar=None, species=None):
    lat[:,3] = a3[0:3]
 
    at = Atoms(n=n, lattice=lat)
+   at.params['VASP_Comment'] = comment
 
    ii = 1
    for ti in range(len(ns)):
