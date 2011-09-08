@@ -54,7 +54,8 @@ def VASPReader(poscar, outcar=None, species=None):
       l = p.readline().strip();
       ns = [ int(n) for n in l.split() ]
 
-   if (re.compile("^\s*s", re.IGNORECASE).match(p.readline().strip())):
+   l=p.readline().strip()
+   if (re.compile("^\s*s", re.IGNORECASE).match(l)):
       dyn_type = l
       coord_type = p.readline().strip();
    else:
@@ -72,11 +73,16 @@ def VASPReader(poscar, outcar=None, species=None):
    at = Atoms(n=n, lattice=lat)
    at.params['VASP_Comment'] = comment
 
+   coord_direct=re.compile("^\s*d", re.IGNORECASE).match(coord_type);
+
    ii = 1
    for ti in range(len(ns)):
       for i in range(ns[ti]):
-         l = p.readline().strip(); pos = l.split()[0:3]
-         at.pos[:,ii] = pos[:]
+         l = p.readline().strip(); pos = [ float(x) for x in l.split()[0:3] ]; 
+	 if (coord_direct):
+	    at.pos[:,ii] = np.dot(at.lattice[:,:],pos[:])
+	 else:
+	    at.pos[:,ii] = pos[:]
          at.species[:,ii] = at_species[ti]
          ii += 1
 
