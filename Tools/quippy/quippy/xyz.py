@@ -30,7 +30,7 @@ from atomslist import *
 from ordereddict import *
 from quippy import Dictionary
 from farray import *
-import logging, StringIO
+import logging, StringIO, sys
 from math import pi
 import numpy as np
 
