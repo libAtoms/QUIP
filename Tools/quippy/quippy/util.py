@@ -38,9 +38,12 @@ def infer_format(file, format, lookup):
                 format = file
             else:
                 file = os.path.expanduser(file)
-                base, ext = os.path.splitext(file)
-                del base
-                format = ext[1:]
+                base = os.path.basename(file)
+                base, ext = os.path.splitext(base)
+                if ext == '':
+                    format = base
+                else:
+                    format = ext[1:]
         else:
             format = file.__class__
 

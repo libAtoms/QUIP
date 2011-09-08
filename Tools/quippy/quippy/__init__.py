@@ -215,6 +215,8 @@ import quippy.cube
 import quippy.xyz
 import quippy.netcdf
 import quippy.imd
+import quippy.vasp
+import quippy.dan
 
 try:
     import quippy.castep

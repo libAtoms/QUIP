@@ -68,6 +68,9 @@ p.add_option('--int-format', action='store', help="""Format string to use when w
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
 p.add_option('-N', '--no-print-at', action='store_true', help="""Suppress printing of Atoms object (useful when also using -e argument).""", default=False)
 p.add_option('-o', '--output', action='store', help="""File to output to (required when more than 1 input file is listed)""")
+p.add_option('--extra-args', action='store', help="""Extra arguments to be passed when constructing AtomsWriter""")
+p.add_option('--write-args', action='store', help="""Extra arguments to be passed to write() routine.""")
+p.add_option('--read-args', action='store', help="""Extra arguments to be passed to read() routine.""")
 
 # Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
@@ -285,6 +288,12 @@ for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
       writearg = write_arg_rename.get(arg, arg)
       write_args[writearg] = getattr(opt, arg)
 
+if opt.extra_args is not None:
+   init_args.update(eval('dict(%s)' % opt.extra_args))
+   
+if opt.write_args is not None:
+   write_args.update(eval('dict(%s)' % opt.write_args))
+
 if opt.format is None and outfile is not None:
    opt.format = os.path.splitext(outfile)[1][1:]
 
@@ -305,6 +314,8 @@ if outfile is not None:
 read_args = {}
 if opt.atoms_ref is not None:
    read_args['atoms_ref'] = opt.atoms_ref
+if opt.read_args is not None:
+   read_args.update(eval("dict(%s)" % opt.read_args))
 
 all_configs = AtomsReader(infiles, start=opt.range.start, stop=opt.range.stop, step=opt.range.step, **read_args)
 
