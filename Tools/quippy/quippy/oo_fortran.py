@@ -427,9 +427,12 @@ class FortranDerivedType(object):
 
         fobj, doc = self._routines[name]
 
-        inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
-        outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
+        #inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
+        #outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
 
+        inargs  = [ x for x in doc['args'] if not 'intent(out)' in x['attributes'] ]
+        outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]        
+        
         if not name.startswith('__init__'):
             # Put self at beginning of args list
             args = tuple([self] + list(args))
@@ -474,13 +477,14 @@ class FortranDerivedType(object):
 
             logging.debug('Trying candidate routine %s' % rname)
 
-            inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
+            #inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
+            inargs  = [ x for x in spec['args'] if not 'intent(out)' in x['attributes'] ]
 
             if not name.startswith('__init__'):
                 inargs = inargs[1:] # remove self argument
 
-            oblig_inargs = filter(lambda x: not 'optional' in x['attributes'], inargs)
-            opt_inargs = filter(lambda x: 'optional' in x['attributes'], inargs)
+            oblig_inargs = [x for x in inargs if  not 'optional' in x['attributes'] ]
+            opt_inargs   = [x for x in inargs if 'optional' in x['attributes'] ]
 
             # Check number of arguments is compatible
             # Should be in range len(oblig_inargs) <= L <= len(oblig_inargs) + len(opt_inargs)
@@ -1105,8 +1109,12 @@ def add_doc(func, fobj, doc, fullname, name, prefix):
 def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True):
     doc = moddoc['routines'][name]
     fobj = getattr(modobj, prefix+name)
-    inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
-    outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
+
+    inargs  = [ x for x in doc['args'] if not 'intent(out)' in x['attributes'] ]
+    outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]        
+
+    #inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
+    #outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
 
     def func(*args, **kwargs):
         newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
@@ -1145,9 +1153,13 @@ def wrapinterface(name, intf_spec, routines, prefix):
         for rname, spec, routine in routines:
             logging.debug('Trying candidate routine %s' % rname)
 
-            inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
-            oblig_inargs = filter(lambda x: not 'optional' in x['attributes'], inargs)
-            opt_inargs = filter(lambda x: 'optional' in x['attributes'], inargs)
+            inargs  = [ x for x in spec['args'] if not 'intent(out)' in x['attributes'] ]
+            oblig_inargs = [x for x in inargs if  not 'optional' in x['attributes'] ]
+            opt_inargs   = [x for x in inargs if 'optional' in x['attributes'] ]
+
+            #inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
+            #oblig_inargs = filter(lambda x: not 'optional' in x['attributes'], inargs)
+            #opt_inargs = filter(lambda x: 'optional' in x['attributes'], inargs)
 
             # Check number of arguments is compatible
             # Should be in range len(oblig_inargs) <= L <= len(oblig_inargs) + len(opt_inargs)
