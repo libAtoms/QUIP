@@ -433,25 +433,32 @@ contains
   end function  make_convex_step
 
 
-! Gotcha 1: Hollow sections
-! NB equivalent to reduce_n_cut_bonds when new number of bonds is 0
-! JRK: reduce_n_cut_bonds() is not equivalent to cluster_in_out_in() for 
-! silica, where adding IN-OUT-IN atoms doesn't change number of cut bonds
-! OUT and IN refers to the list in cluster_info
-! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
-! atom are IN, then make the OUT atom IN.
-function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+! Gotcha 1: Hollow sections 
+! NB equivalent to reduce_n_cut_bonds when new number of bonds is 0 
+! JRK: reduce_n_cut_bonds() is not equivalent to cluster_in_out_in()
+! for silica, where adding IN-OUT-IN atoms doesn't change number of
+! cut bonds OUT and IN refers to the list in cluster_info Look at the
+! OUT nearest neighbours of IN atoms. If mode='all', then if ALL the
+! nearest neighbours of the OUT atom are IN, then make the OUT atom
+! IN. If mode='any', then add the OUT atom if ANY of it's nearest
+! neighours (apart from the original IN atom)!  are IN. This stronger
+! condition is required for cp2k.
+
+function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, mode) result(cluster_changed)
   type(Atoms), intent(in) :: this
   type(Table), intent(inout) :: cluster_info
   logical, intent(in) :: connectivity_just_from_connect
   type(Connection), intent(in) :: use_connect
   logical, intent(in) :: atom_mask(6)
+  character(len=*), intent(in) :: mode
   logical :: cluster_changed
 
-  integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
-  logical :: all_in
+  integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3), n_nearest, n_in
+  logical :: add_atom
 
   cluster_changed = .false.
+  if (trim(mode) /= 'all' .and. trim(mode) /= 'any') &
+       call system_abort('cluster_in_out_in: bad mode '//mode//' - should be "all" or "any"')
 
   n = 1
   ! Loop over cluster atoms (including ones that may get added in this loop)
@@ -471,21 +478,30 @@ function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, u
 
       call print('cluster_in_out_in:   checking j = '//j//" ["//jshift//"]",PRINT_ANAL)
 
-      ! We have an OUT nearest neighbour, loop over its nearest neighbours to see if they
-      ! are all IN
+      ! We have an OUT nearest neighbour, loop over its nearest neighbours to see if they are IN
 
-      all_in = .true.
+      n_nearest = 0
+      n_in = 0
       do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
-        k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
-        if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
-          (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
-          all_in = .false.
-          exit
-        end if
+         k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
+         if (k == i) cycle
+         if (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) then
+            n_nearest = n_nearest + 1
+            if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) /= 0) then
+               n_in = n_in + 1
+            end if
+         end if
       end do
 
-      !If all j's nearest neighbours are IN then add it
-      if (all_in) then
+      if (trim(mode) == "all") then
+         !If all of j's nearest neighbours are IN then add it
+         add_atom = n_nearest == n_in
+      else
+         !If any of j's nearest neighbours (apart from i) are in then add it
+         add_atom = n_in /= 0
+      end if
+
+      if (add_atom) then
         call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "inoutin   "/) )
         cluster_changed = .true.
         call print('cluster_in_out_in:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
@@ -1710,6 +1726,7 @@ end function cluster_in_out_in
 	 keep_whole_silica_tetrahedra, reduce_n_cut_bonds, in_out_in, &
          protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
 	 combined_protein_heuristics
+    character(FIELD_LENGTH) :: in_out_in_mode
     logical :: keep_whole_residues_has_value, keep_whole_subgroups_has_value, keep_whole_prolines_has_value, keep_whole_proline_sidechains_has_value, &
                protect_double_bonds_has_value, protect_peptide_bonds_has_value, keep_whole_molecules_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale, termination_clash_factor
@@ -1777,6 +1794,8 @@ end function cluster_in_out_in
       help_string="Apply heuristic that adds atoms if doing so reduces number of broken bonds")
     call param_register(params, 'in_out_in', 'F', in_out_in, &
       help_string="Apply heuristic than adds atoms to avoid IN-OUT-IN configurations. Usually equivalent to reduce_n_cut_bonds.")
+    call param_register(params, 'in_out_in_mode', 'all', in_out_in_mode, &
+      help_string="Mode to use for in_out_in heuristic - can be either 'all' or 'any'. Default is 'all'.")
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds,&
       help_string="Apply heuristic protecting X-H bonds - no point H passivating bonds with an H")
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, has_value_target=protect_double_bonds_has_value,&
@@ -2028,6 +2047,7 @@ end function cluster_in_out_in
                ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
                ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
                ' in_out_in ' // in_out_in // &
+               ' in_out_in_mode ' // in_out_in_mode // &
                ' protect_X_H_bonds ' // protect_X_H_bonds // &
                ' protect_double_bonds ' // protect_double_bonds // &
                ' protect_peptide_bonds ' // protect_peptide_bonds // &
@@ -2051,7 +2071,7 @@ end function cluster_in_out_in
              cluster_changed = cluster_changed .or. cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
           if (in_out_in) then
-             cluster_changed = cluster_changed .or. cluster_in_out_in(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+             cluster_changed = cluster_changed .or. cluster_in_out_in(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, in_out_in_mode)
           endif
           if (protect_X_H_bonds) then
              cluster_changed = cluster_changed .or. cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
