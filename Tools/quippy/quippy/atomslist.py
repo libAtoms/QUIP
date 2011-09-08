@@ -105,6 +105,7 @@ class AtomsReader(AtomsReaderMixin):
 
         self.opened = False
         self.reader = source
+
         if format is None:
             if isinstance(self.reader, str):
                 self.opened = True
@@ -119,8 +120,7 @@ class AtomsReader(AtomsReaderMixin):
                         self.reader = glob_list
                     else:
                         self.reader = glob_list[0]
-                        base, ext = os.path.splitext(self.reader)
-                        format = ext[1:]
+                        filename, self.reader, format = infer_format(self.reader, format, AtomsReaders)
 
         if format is None:
             format = self.reader.__class__
@@ -146,9 +146,9 @@ class AtomsReader(AtomsReaderMixin):
             try:
                 return len(range(*slice(self.start, self.stop, self.step).indices(len(self.reader))))
             except:
-                raise AttributeError('This AtomsReader does not support random access')
+                raise IndexError('This AtomsReader does not support random access')
         else:
-            raise AttributeError('This AtomsReader does not support random access')
+            raise IndexError('This AtomsReader does not support random access')
 
     @property
     def random_access(self):
@@ -225,22 +225,15 @@ class AtomsReader(AtomsReaderMixin):
             if reverse:
                 raise IndexError('Cannot reverse iterate over an AtomsReader which does not support random access')
 
-            if self.start is not None or self.stop is not None or self.step is not None:
-                warnings.warn('Iterating over AtomsReader which doesn\'t support random access with start/stop/step present is slow!')
-
             frames = itertools.count()
             atoms = iter(self.reader)
 
             if self.start is not None or self.stop is not None or self.step is not None:
-                r = []
-                if self.start is not None: r.append(start)
-                if self.stop is not None: r.append(stop)
-                if self.step is not None: r.append(step)
-                r = tuple(r)
-                frames = itertools.islice(frames, *r)
-                atoms  = itertools.islice(atoms, *r)
+                frames = itertools.islice(frames, self.start or 0, self.stop or None, self.step or 1)
+                atoms  = itertools.islice(atoms, self.start or 0, self.stop or None, self.step or 1)
 
             n_frames = 0
+            last_frame = 0
             for (frame,at) in itertools.izip(frames, atoms):
                 self._cache_store(frame, at)
                 n_frames += 1
@@ -267,7 +260,7 @@ class AtomsList(AtomsReaderMixin, list):
         self.stop   = stop
         self.step   = step
         tmp_ar = AtomsReader(source, format, start, stop, step, **kwargs)
-        list.__init__(self, list(tmp_ar))
+        list.__init__(self, list(iter(tmp_ar)))
         tmp_ar.close()
 
     def __getattr__(self, name):
