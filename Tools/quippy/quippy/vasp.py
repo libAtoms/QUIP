@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
-from quippy.farray import fzeros
+from quippy.farray import fzeros,frange
 import numpy as np
 import re
 
@@ -112,4 +112,4 @@ def VASPReader(poscar, outcar=None, species=None):
             for i in frange(at_cur.n):
                dr = at_cur.diff_min_image(i, at.pos[:,i])
                at_cur.pos[:,i] = at.pos[:,i] - dr
-            yield at_car
+            yield at_cur
