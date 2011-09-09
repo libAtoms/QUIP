@@ -199,6 +199,8 @@ subroutine do_vasp_calc(at, args_str, error)
       RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
    endif
 
+   call system_command("fgrep -i 'cpu time' OUTCAR")
+
    call print("reading vasp output", PRINT_VERBOSE)
    call read_vasp_output(trim(run_dir), trim(calc_energy), trim(calc_force), trim(calc_virial), converged, error=error)
    PASS_ERROR(error)
