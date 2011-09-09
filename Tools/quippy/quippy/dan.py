@@ -18,6 +18,7 @@
 
 from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
 from quippy.farray import frange
+from types import StringType
 import sys
 import numpy as np
 
@@ -50,9 +51,13 @@ class DanWriter(object):
 
     def close(self):
         if self.post_file_command is not None:
+	    if (type(self.post_file_command) is StringType):
+	        self.post_file_command=[self.post_file_command]
             for cmd in self.post_file_command:
                 self.out.write(cmd + "\n")
         if self.end_command is not None:
+	    if (type(self.end_command) is StringType):
+	        self.end_command=[self.end_command]
             for cmd in self.end_command:
                 self.out.write(cmd + "\n")
         if self.graph is not None:
@@ -113,6 +118,8 @@ class DanWriter(object):
             self.out.write("bond_by_cutoff\n")
             
         if self.post_config_command is not None:
+	    if (type(self.post_config_command) is StringType):
+	        self.post_config_command=[self.post_config_command]
             for cmd in self.post_config_command:
                 self.out.write(cmd + "\n")
 
