@@ -503,6 +503,8 @@ implicit none
     if (do_var) myline = trim(myline) //" var N"
     if (do_correlation_var_effective_N) myline = trim(myline) // " correlation_var_effective_N correlation_var_effective_decorrel_time"
     if (do_summed_ac_effective_N) myline = trim(myline) // " summed_ac_effective_N summed_ac_effective_decorrel_time"
+    if (do_sliding_window_effective_N) myline = trim(myline) // " sliding_window_effective_N sliding_window_effective_decorrel_time"
+    if (do_binning_effective_N) myline = trim(myline) // " binning_effective_N binning_effective_decorrel_time"
 
     call print(trim(myline), file=outfile)
 
