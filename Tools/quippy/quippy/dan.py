@@ -86,11 +86,11 @@ class DanWriter(object):
                         else:
                             raise ValueError("Can't find z, species, or type for atom type")
 
-            self.out.write("atom %f %f %f %s\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], getattr(at,atom_type)[i_at]))
+            self.out.write("atom %f %f %f %s" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], getattr(at,atom_type)[i_at]))
 
             if self.value is not None:
                 for iv in range(len(self.value)):
-                    self.out.write(" value %d %s\n" % (iv+1, getattr(at,self.value[iv])[i_at]))
+                    self.out.write(" value %d %s" % (iv+1, getattr(at,self.value[iv])[i_at]))
             self.out.write("\n")
 
             if self.vector is not None:
