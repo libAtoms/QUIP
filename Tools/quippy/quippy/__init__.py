@@ -245,6 +245,10 @@ import quippy.surface
 from quippy.surface import *
 __all__.extend(quippy.surface.__all__)
 
+import quippy.structure_tools
+from quippy.structure_tools import *
+__all__.extend(quippy.structure_tools.__all__)
+
 import quippy.crack
 from quippy.crack import *
 __all__.extend(quippy.crack.__all__)

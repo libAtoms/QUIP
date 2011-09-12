@@ -18,8 +18,7 @@
 
 from quippy import *
 from numpy import *
-from quippy.surface import orthorhombic_slab
-from quippy.crack import crack_rotation_matrix
+from quippy.structure_tools import * 
 import quippy.sio2
 import unittest
 from quippytest import *
@@ -31,12 +30,12 @@ class TestSurfaceSilicon(QuippyTestCase):
 
     def test_111_11b0(self):
         y, z, shift = (1,1,1), (1,-1,0), None
-        surf = orthorhombic_slab(self.dia, rot=crack_rotation_matrix(self.dia, y, z), shift=shift, verbose=False)
+        surf = orthorhombic_slab(self.dia, rot=rotation_matrix(self.dia, y, z), shift=shift, verbose=False)
         self.assertArrayAlmostEqual(surf.lattice, diag([6.6626121, 9.42235639, 3.84666089]))
        
     def test_110_001b(self):
         y, z, shift = (1,1,0), (0,0,-1), None
-        surf = orthorhombic_slab(self.dia, rot=crack_rotation_matrix(self.dia, y, z), shift=shift, verbose=False)
+        surf = orthorhombic_slab(self.dia, rot=rotation_matrix(self.dia, y, z), shift=shift, verbose=False)
         self.assertArrayAlmostEqual(surf.lattice, diag([3.84666089, 3.84666089, 5.44]))
 
 class TestSurfaceQuartz(QuippyTestCase):
@@ -48,17 +47,17 @@ class TestSurfaceQuartz(QuippyTestCase):
 
     def test_0001_1b10(self):
         y, z, shift = (0,0,0,1), (-1,1,0), None
-        surf = orthorhombic_slab(self.aq, rot=crack_rotation_matrix(self.aq, y, z), shift=shift, verbose=False)
+        surf = orthorhombic_slab(self.aq, rot=rotation_matrix(self.aq, y, z), shift=shift, verbose=False)
         self.assertArrayAlmostEqual(surf.lattice, diag([4.84038097, 5.328524, 8.38378577]))
 
     def test_101b0_010(self):
         y, z, shift = (1,0,-1,0), (0,1,0), [0.0, 0.07, 0.0]
-        surf = orthorhombic_slab(self.aq, rot=crack_rotation_matrix(self.aq, y, z), shift=shift, verbose=False)
+        surf = orthorhombic_slab(self.aq, rot=rotation_matrix(self.aq, y, z), shift=shift, verbose=False)
         self.assertArrayAlmostEqual(surf.lattice, diag([5.328524, 8.38378577, 4.84038097]))
 
     def test_101b1_010(self):
         y, z, shift = [1,0,-1,1], [0,1,0], None
-        surf = orthorhombic_slab(self.aq, rot=crack_rotation_matrix(self.aq, y, z), shift=shift,
+        surf = orthorhombic_slab(self.aq, rot=rotation_matrix(self.aq, y, z), shift=shift,
                                          periodicity=[0.0, self.h, 0.0], vacuum=[0.0, self.d, 0.0], verbose=False)
         self.assertArrayAlmostEqual(surf.lattice, diag([13.55951828 , self.h+self.d, 4.84038097]))
         
@@ -77,7 +76,7 @@ O               0.89446500      3.69253500      1.47700000       8       6""", f
 
 
     def test_11b0_110(self):
-        slab = orthorhombic_slab(self.rutile, rot=crack_rotation_matrix(self.rutile, y=[1,-1,0],z=[1,1,0]),
+        slab = orthorhombic_slab(self.rutile, rot=rotation_matrix(self.rutile, y=[1,-1,0],z=[1,1,0]),
                                               max_nrep=20, verbose=False, graphics=False)
         self.assertArrayAlmostEqual(slab.lattice, diag([2.954, 6.48699761, 6.48699761]))
 

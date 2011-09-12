@@ -18,6 +18,7 @@
 
 from quippy import *
 from quippy.surface import *
+from quippy.structure_tools import *
 
 def add_asap_props(at):
    at.add_property('efield', 0.0, n_cols=3)
@@ -59,24 +60,24 @@ indices = [ ((0,0,0,1), (-1,1,0), None),
             ((1,0,-1,0), (0,1,0), [0.0, 0.07, 0.0])]
 
 for (y, z, shift) in indices:
-   quartz_bulk[(y,z)] = orthorhombic_slab(aq, rot=crack_rotation_matrix(aq, y, z), shift=shift)
+   quartz_bulk[(y,z)] = orthorhombic_slab(aq, rot=rotation_matrix(aq, y, z), shift=shift)
 
    quartz_surface[(y,z)]  = supercell(quartz_bulk[(y,z)], nx, ny, nz)
    quartz_surface[(y,z)].lattice[2,2] += d
    quartz_surface[(y,z)].set_lattice(quartz_surface[(y,z)].lattice, False)
 
-   quartz_surface[(y,z)].params['axes'] = crack_rotation_matrix(aq, y, z).T
+   quartz_surface[(y,z)].params['axes'] = rotation_matrix(aq, y, z).T
 
 # (10-11)[010]
 
-rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[0,1,0])
+rot = rotation_matrix(aq, y=[1,0,-1,1], z=[0,1,0])
 quartz_surface[((1,0,-1,1),(0,1,0))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h, 0.0],
                                                           shift=[0.0, 0.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(0,1,0))].params['axes'] = rot.T
 
 # (10-11)[21-2]
 
-rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[2,1,-2])
+rot = rotation_matrix(aq, y=[1,0,-1,1], z=[2,1,-2])
 quartz_surface[((1,0,-1,1),(2,1,-2))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h, 0.0],
                                                           shift=[0.0, 0.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(2,1,-2))].params['axes'] = rot.T
@@ -84,14 +85,14 @@ quartz_surface[((1,0,-1,1),(2,1,-2))].params['axes'] = rot.T
 
 # (10-1-1)[010]
 
-rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[0,1,0])
+rot = rotation_matrix(aq, y=[1,0,-1,-1], z=[0,1,0])
 quartz_surface[((1,0,-1,-1),(0,1,0))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h + 2.0, 0.0], vacuum=[0.0, d, 0.0],
                                                           shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(0,1,0))].params['axes'] = rot.T
 
 # (10-1-1)[212]
 
-rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[2,1,2])
+rot = rotation_matrix(aq, y=[1,0,-1,-1], z=[2,1,2])
 quartz_surface[((1,0,-1,-1),(2,1,2))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h + 2.0, 0.0], vacuum=[0.0, d, 0.0],
                                                           shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(2,1,2))].params['axes'] = rot.T

@@ -315,7 +315,7 @@ quartz fracture simulation, we need to rotate the elastic constant
 matrix to align it with the axes of our :math:`(0001)[\bar{1}10]`
 fracture geometry. You can create the required rotation matrix using::
 
-  R = crack_rotation_matrix(aq, (0,0,0,1), (-1,1,0))
+  R = rotation_matrix(aq, (0,0,0,1), (-1,1,0))
   print R
 
 Next we transform :math:`C` using the rotation matrix, and calculate
