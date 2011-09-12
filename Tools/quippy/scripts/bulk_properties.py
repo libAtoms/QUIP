@@ -2,6 +2,7 @@
 
 from quippy import *
 from quippy.surface import *
+from quippy.structure_tools import *
 from quippy.elastic import *
 import optparse
 
@@ -99,7 +100,7 @@ try:
     if opt.surface_energy:
         if opt.surface:
             axes = crack_parse_name(opt.surface)
-            m = crack_rotation_matrix(at, axes[:,2], axes[:,3])
+            m = rotation_matrix(at, axes[:,2], axes[:,3])
             bulk = orthorhombic_slab(at, rot=m, verbose=False)
 
             surface = bulk.copy()
