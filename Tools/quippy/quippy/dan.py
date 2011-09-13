@@ -94,6 +94,8 @@ class DanWriter(object):
             self.out.write("atom %f %f %f %s" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], getattr(at,atom_type)[i_at]))
 
             if self.value is not None:
+	        if (type(self.value) is StringType):
+		    self.value=[self.value]
                 for iv in range(len(self.value)):
                     self.out.write(" value %d %s" % (iv+1, getattr(at,self.value[iv])[i_at]))
             self.out.write("\n")
@@ -106,6 +108,8 @@ class DanWriter(object):
                                                                      getattr(at,self.vector)[3,i_at]))
                         
         if self.graph is not None:
+	    if (type(self.graph) is StringType):
+		self.graph=[self.graph]
             for ig in range(len(self.graph)):
                 graph_val = getattr(at, self.graph[ig])
                 self.out.write("graph_value %d %f\n" % (ig, graph_val))
