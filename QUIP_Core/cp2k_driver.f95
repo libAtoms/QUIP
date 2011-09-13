@@ -68,6 +68,7 @@ contains
     logical :: auto_centre, has_centre_pos
     logical :: try_reuse_wfn
     character(len=FIELD_LENGTH) :: calc_qm_charges, calc_virial
+    logical :: do_calc_virial
 
     character(len=128) :: method
 
@@ -181,9 +182,11 @@ contains
       endif
     call finalise(cli)
 
+    do_calc_virial = len_trim(calc_virial) > 0
+
     if (cp2k_calc_fake) then
       call print("do_fake cp2k calc calculation")
-      call do_cp2k_calc_fake(at, f, e, calc_virial, args_str)
+      call do_cp2k_calc_fake(at, f, e, do_calc_virial, args_str)
       return
     endif
 
@@ -215,7 +218,7 @@ contains
     call print('  form_bond '//form_bond)
     call print('  break_bond '//break_bond)
     call print('  qm_charges '//trim(calc_qm_charges))
-    call print('  virial '//trim(calc_virial))
+    call print('  virial '//do_calc_virial)
     call print('  force_run_dir_i '//force_run_dir_i)
     call print('  tmp_run_dir_i '//tmp_run_dir_i)
     call print('  MM_param_file '//trim(MM_param_filename))
@@ -458,7 +461,7 @@ contains
     if (.not. persistent_already_started) then
        call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
 
-       if (len_trim(calc_virial) > 0) then
+       if (do_calc_virial) then
 	  call print("@SET DO_STRESS 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        else
 	  call print("@SET DO_STRESS 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -820,12 +823,12 @@ contains
 	  endif
        end do ! waiting for frc file
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
-	 trim(calc_virial), out_i=persistent_run_i, error=error)
+	 do_calc_virial, out_i=persistent_run_i, error=error)
        PASS_ERROR(error)
     else
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), trim(calc_virial), error=error)
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), do_calc_virial, error=error)
        PASS_ERROR(error)
     endif
 
@@ -1000,14 +1003,15 @@ contains
 
   end subroutine do_cp2k_atoms_sort
 
-  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, calc_virial, out_i, error)
+  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, do_calc_virial, out_i, error)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
-    character(len=*) :: calc_qm_charges, calc_virial
+    character(len=*) :: calc_qm_charges
+    logical :: do_calc_virial
     integer, intent(in), optional :: out_i
     integer, intent(out), optional :: error
 
@@ -1044,7 +1048,7 @@ contains
       end do
       call finalise(t_io)
     endif
-    if (len_trim(calc_virial) > 0) then
+    if (do_calc_virial) then
       call initialise(t_io, trim(run_dir)//'/'//trim(proj)//'-stress-1_'//use_out_i//'.stress_tensor',action=INPUT, error=error)
       PASS_ERROR_WITH_INFO("cp2k_driver failed to read cp2k stress_tensor file", error)
       tx=''
@@ -1078,7 +1082,7 @@ contains
       call print("got cp2k stress(3,:) "//virial(3,:))
       ! convert from stress GPa to virial in native units
       virial = cell_volume(at)*virial/GPA
-      call set_value(at%params, trim(calc_virial), virial)
+      call set_value(at%params, 'virial', virial)
       call finalise(t_io)
     endif
 
@@ -1366,10 +1370,10 @@ contains
 
   end subroutine calc_charge_lsd
 
-  subroutine do_cp2k_calc_fake(at, f, e, calc_virial, args_str, error)
+  subroutine do_cp2k_calc_fake(at, f, e, do_calc_virial, args_str, error)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
-    character(len=FIELD_LENGTH), intent(in) :: calc_virial
+    logical, intent(in) :: do_calc_virial
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
@@ -1419,7 +1423,7 @@ contains
       endif
     endif
 
-    if (len_trim(calc_virial) > 0) then
+    if (do_calc_virial) then
        call initialise(stress_io, "cp2k_stress_file_log", action=INPUT)
        got_virial=.false.
        cur_i=0
@@ -1439,13 +1443,13 @@ contains
 	  endif
        end do
        if (.not. got_virial) then
-	 RAISE_ERROR("do_cp2k_calc_fake got calc_virial but couldn't read virial for config "//this_run_i//" from cp2k_stress_file_log",error)
+	 RAISE_ERROR("do_cp2k_calc_fake got do_calc_virial but couldn't read virial for config "//this_run_i//" from cp2k_stress_file_log",error)
        endif
        call print("got cp2k stress(1,:) "//virial(1,:))
        call print("got cp2k stress(2,:) "//virial(2,:))
        call print("got cp2k stress(3,:) "//virial(3,:))
        virial = cell_volume(at)*virial/GPA
-       call set_value(at%params, trim(calc_virial), virial)
+       call set_value(at%params, 'virial', virial)
        call finalise(stress_io)
     endif
 

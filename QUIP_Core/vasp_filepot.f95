@@ -65,6 +65,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    character(len=FIELD_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
    character(len=FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+   logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy
    logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
    type(Dictionary) :: incar_dict, cli
 
@@ -102,15 +103,20 @@ subroutine do_vasp_calc(at, args_str, error)
 
    call verbosity_push(verbosity_of_str(trim(verbosity_str)))
 
+   do_calc_energy = len_trim(calc_energy) > 0
+   do_calc_force = len_trim(calc_force) > 0
+   do_calc_virial = len_trim(calc_virial) > 0
+   do_calc_local_energy = len_trim(calc_local_energy) > 0
+
    call print("do_vasp_calc using args:", PRINT_VERBOSE)
    call print("  INCAR_template " // trim(INCAR_template_file), PRINT_VERBOSE)
    call print("  kpoints_file " // trim(kpoints_file), PRINT_VERBOSE)
    call print("  potcar_files " // trim(potcar_files), PRINT_VERBOSE)
    call print("  vasp " // trim(vasp_path), PRINT_VERBOSE)
-   call print("  energy " // trim(calc_energy), PRINT_VERBOSE)
-   call print("  force " // trim(calc_force), PRINT_VERBOSE)
-   call print("  virial " // trim(calc_virial), PRINT_VERBOSE)
-   call print("  local_energy " // trim(calc_local_energy), PRINT_VERBOSE)
+   call print("  energy " // do_calc_energy, PRINT_VERBOSE)
+   call print("  force " // do_calc_force, PRINT_VERBOSE)
+   call print("  virial " // do_calc_virial, PRINT_VERBOSE)
+   call print("  local_energy " // do_calc_local_energy, PRINT_VERBOSE)
    call print("  clean_up_files " // clean_up_files, PRINT_VERBOSE)
    call print("  ignore_convergence " // ignore_convergence, PRINT_VERBOSE)
    call print("  no_use_WAVECAR " // no_use_WAVECAR, PRINT_VERBOSE)
@@ -118,7 +124,7 @@ subroutine do_vasp_calc(at, args_str, error)
    call print("  run_suffix " // run_suffix, PRINT_VERBOSE)
 
    ! check for local energy
-   if (len_trim(calc_local_energy) > 0) then
+   if (do_calc_local_energy) then
       RAISE_ERROR("do_vasp_calc can't do local_energy", error)
    endif
 
@@ -129,9 +135,9 @@ subroutine do_vasp_calc(at, args_str, error)
 
    call print("setting INCAR dictionary parameters", PRINT_VERBOSE)
    ! check for stress, set ISIF
-   if (len_trim(calc_energy) == 0 .and. len_trim(calc_force) == 0 .and. len_trim(calc_virial) == 0) then
+   if (.not. do_calc_energy .and. .not. do_calc_force .and. .not. do_calc_virial) then
       return
-   else if (len_trim(calc_virial) == 0) then
+   else if (.not. do_calc_virial) then
       call set_value(incar_dict, "ISIF", 0)
    else
       call set_value(incar_dict, "ISIF", 2)
@@ -199,10 +205,10 @@ subroutine do_vasp_calc(at, args_str, error)
       RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
    endif
 
-   call system_command("fgrep -i 'cpu time' OUTCAR")
+   call system_command("fgrep -i 'cpu time' "//trim(run_dir)//"OUTCAR")
 
    call print("reading vasp output", PRINT_VERBOSE)
-   call read_vasp_output(trim(run_dir), trim(calc_energy), trim(calc_force), trim(calc_virial), converged, error=error)
+   call read_vasp_output(trim(run_dir), do_calc_energy, do_calc_force, do_calc_virial, converged, error=error)
    PASS_ERROR(error)
 
    if (.not. ignore_convergence .and. .not. converged) then
@@ -301,8 +307,9 @@ subroutine write_vasp_poscar(at, run_dir, error)
 
 end subroutine write_vasp_poscar
 
-subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, converged, error)
-   character(len=*), intent(in) :: run_dir, calc_energy, calc_force, calc_virial
+subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_virial, converged, error)
+   character(len=*), intent(in) :: run_dir
+   logical, intent(in) :: do_calc_energy, do_calc_force, do_calc_virial
    logical, intent(out) :: converged
    integer, intent(out), optional :: ERROR
 
@@ -318,9 +325,9 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, conve
 
    INIT_ERROR(error)
 
-   if (len_trim(calc_force) > 0) then
-      if (.not. assign_pointer(at, trim(calc_force), force_p)) then
-	 call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=force_p, error=error)
+   if (do_calc_force) then
+      if (.not. assign_pointer(at, "force", force_p)) then
+	 call add_property(at, "force", 0.0_dp, n_cols=3, ptr2=force_p, error=error)
 	 PASS_ERROR(error)
       endif
    endif
@@ -332,7 +339,7 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, conve
    line_i = 1
    do while (stat == 0)
       line = read_line(outcar_io, stat)
-      if (len_trim(calc_energy) > 0) then
+      if (do_calc_energy) then
 	 if (index(trim(line),"free  energy") > 0) then ! found energy
 	    call split_string_simple(trim(line), fields, n_fields, " ", error=error)
 	    PASS_ERROR(error)
@@ -343,10 +350,10 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, conve
 	       RAISE_ERROR("read_vasp_output confused by units energy line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
 	    endif
 	    read(unit=fields(5),fmt=*) energy
-	    call set_param_value(at, trim(calc_energy), energy)
+	    call set_param_value(at, 'energy', energy)
 	 endif
       endif
-      if (len_trim(calc_force) > 0) then
+      if (do_calc_force) then
 	 if (force_start_line_i > 0 .and. line_i >= force_start_line_i .and. line_i <= force_start_line_i+at%N-1) then
 	    read(unit=line,fmt=*) t_pos, force_p(:,line_i-force_start_line_i+1)
 	 else
@@ -359,13 +366,13 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, conve
 	    endif
 	 endif
       endif
-      if (len_trim(calc_virial) > 0) then
+      if (do_calc_virial) then
 	 if (virial_start_line_i > 0 .and. line_i == virial_start_line_i) then
 	    read(unit=line,fmt=*) t_s, virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
 	    virial(2,1) = virial(1,2)
 	    virial(3,2) = virial(2,3)
 	    virial(3,1) = virial(1,3)
-	    call set_param_value(at, trim(calc_virial), virial)
+	    call set_param_value(at, 'virial', virial)
 	 else
 	    if (index(trim(line),"FORCE on cell") > 0) then ! found virial
 	       call split_string_simple(trim(line), fields, n_fields, " ", error=error)
