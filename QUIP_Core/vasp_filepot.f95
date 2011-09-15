@@ -199,13 +199,13 @@ subroutine do_vasp_calc(at, args_str, error)
    PASS_ERROR(error)
 
    call print("running vasp", PRINT_VERBOSE)
-   call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > vasp.stdout 2>&1")
-   call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > vasp.stdout 2>&1", status=stat)
+   call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" >> ../vasp.stdout 2>&1")
+   call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" >> ../vasp.stdout 2>&1", status=stat)
    if (stat /= 0) then
       RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
    endif
 
-   call system_command("fgrep -i 'total cpu time used' "//trim(run_dir)//"/OUTCAR; fgrep -c 'LOOP:' "//trim(run_dir)//"OUTCAR")
+   call system_command("fgrep -i 'total cpu time used' "//trim(run_dir)//"/OUTCAR; fgrep -c 'LOOP:' "//trim(run_dir)//"/OUTCAR")
 
    call print("reading vasp output", PRINT_VERBOSE)
    call read_vasp_output(trim(run_dir), do_calc_energy, do_calc_force, do_calc_virial, converged, error=error)
