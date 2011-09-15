@@ -200,7 +200,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    call print("running vasp", PRINT_VERBOSE)
    call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > vasp.stdout 2>&1")
-   call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > vasp.stdout 2>&1", status=stat)
+   call system_command("cd "//trim(run_dir)//"; bash -c "//'"time '//trim(vasp_path)//'"'//" > vasp.stdout 2>&1", status=stat)
    if (stat /= 0) then
       RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
    endif
