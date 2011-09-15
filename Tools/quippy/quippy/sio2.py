@@ -70,7 +70,8 @@ class PosCelWriter(object):
         for i in frange(at.n):
             p = at.pos[:,i].copy()
             if not self.pos_angstrom: p /= BOHR
-            self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], self.species_map[str(at.species[i])], objind))
+            self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], 
+                           self.species_map[str(at.species[i].stripstrings())], objind))
 
         self.cel.write(' %s %d\n' % (self.step_name, self.it))
         for i in (1,2,3):
