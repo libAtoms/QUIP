@@ -188,7 +188,6 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      
      allocate(water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index, error)
-     call print(at)
      PASS_ERROR(error)
 
      allocate(one_body_energy(at%N/3))
