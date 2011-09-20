@@ -287,7 +287,15 @@ class AtomsList(AtomsReaderMixin, list):
         return self.__getitem__(slice(first,last,None))
 
     def __getitem__(self, idx):
-        res = list.__getitem__(self, idx)
+        if isinstance(idx, list) or isinstance(idx, np.ndarray):
+            idx = np.array(idx)
+            if idx.dtype.kind not in ('b', 'i'):
+                raise IndexError("Array used for fancy indexing must be of type integer or bool")
+            if idx.dtype.kind == 'b':
+                idx = idx.nonzero()[0]
+            res = [list.__getitem__(self,i) for i in idx]
+        else:
+            res = list.__getitem__(self, idx)
         if isinstance(res, list):
             res = AtomsList(res)
         return res
