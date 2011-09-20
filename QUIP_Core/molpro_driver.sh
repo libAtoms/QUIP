@@ -103,7 +103,8 @@ echo molpro_driver ${stem}: got $N atoms
 molprostem=`echo ${stem} | tr '.' '_'`
 
 # Amend Molpro command file
-echo "file,2,${stem}_temp" > ${molprostem}
+echo > ${molprostem}
+#echo "file,2,${stem}_temp" > ${molprostem}
 echo "geometry=${inpfile}" >> ${molprostem}
 cat ${molpro_command_file} >> ${molprostem}
 
