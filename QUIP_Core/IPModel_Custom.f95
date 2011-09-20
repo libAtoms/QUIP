@@ -55,7 +55,7 @@ include 'IPModel_interface.h'
 
 public :: IPModel_Custom
 type IPModel_Custom
-  real(dp) :: cutoff = 10.0_dp
+  real(dp) :: cutoff = 0.0_dp
   real(dp) :: kconf = 0.0_dp
 end type IPModel_Custom
 
@@ -80,13 +80,22 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Custom_Initialise_str(this, args_str, param_str)
+subroutine IPModel_Custom_Initialise_str(this, args_str, param_str, error)
   type(IPModel_Custom), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
+  type(Dictionary) :: params
+  integer, optional, intent(out):: error
 
-  !  Add initialisation code here
 
-  this%kconf = 0.05_dp
+  INIT_ERROR(error)
+  call Finalise(this)
+
+  call initialise(params)
+  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on O atoms. potential is kconf*(rO)^2')
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_Custom_Initialise args_str')) then
+     RAISE_ERROR("IPModel_Custom_Init failed to parse args_str='"//trim(args_str)//"'", error)
+  end if
+  call finalise(params)
 
 end subroutine IPModel_Custom_Initialise_str
 
