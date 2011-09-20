@@ -292,12 +292,6 @@ end subroutine IPModel_WaterDimer_Gillan_Print
         r2 = sqrt(r2sq)
         theta = acos(scprod/(r1*r2))
         theta_deg = (180.d0/pi)*theta
-        write(*,113) r1
-  113   format('bond length O-H1:',f15.6,' angstrom')
-        write(*,114) r2
-  114   format('bond length O-H2:',f15.6,' angstrom')
-        write(*,115) theta_deg
-  115   format('bond angle H-O-H:',f15.6,' degrees')
 ! ... unit vectors along local x, y and z axes
         do i = 1, 3
           univec(1,i) = bvec_r(mo,1,i)/r1
