@@ -18,7 +18,11 @@
 
 from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
 from quippy.farray import fzeros,frange
+from StringIO import StringIO
+import sys, string, os, operator, itertools, logging, glob, re
+
 import numpy as np
+import time, os, itertools, sys
 import re
 
 @atoms_reader('vasp')
@@ -119,3 +123,45 @@ def VASPReader(poscar, outcar=None, species=None):
                dr = at_cur.diff_min_image(i, at.pos[:,i])
                at_cur.pos[:,i] = at.pos[:,i] - dr
             yield at_cur
+
+
+class VASPWriter(object): 
+    def __init__(self, pos=None, species_map={'O':1, 'Si':2}):
+	if pos == 'stdout':
+		pos = sys.stdout 
+	
+	self.pos = pos
+	self.species_map = species_map
+
+	if isinstance(self.pos, str): self.pos = open(self.pos, 'w')
+
+    def write(self, at):
+        self.pos.write('System\n')# % (self.step_name, self.it))
+
+#Lattice
+        self.pos.write('%20.10f\n' % 1.0)
+        for i in (1,2,3):
+            L = at.lattice[:,i].copy()
+            self.pos.write('%20.10f%20.10f%20.10f\n' % (L[1], L[2], L[3]))
+
+#Count and print the atomic species sorted according to map_species
+        nat = [0]*len(self.species_map.keys())
+        sorted_species = [' ']*len(self.species_map.keys())
+
+        for i,key in enumerate(sorted(self.species_map, key=self.species_map.get)):
+                sorted_species[i] = key
+		nat[i] = ( at.species[:].stripstrings()==key ).count() 
+        self.pos.write(' '.join([str(n) for n in nat])+'\n')
+
+        self.pos.write('Selective Dynamics\n')
+        self.pos.write('Direct\n')
+
+#Positions
+        for j in range(len(sorted_species)):
+              for i in frange(at.n):
+                  if str(at.species[i].stripstrings()) == sorted_species[j] :
+                  	p = at.pos[:,i].copy()
+                  	self.pos.write('%20.10f%20.10f%20.10f T  T  T\n' % (p[1], p[2], p[3]))
+
+
+AtomsWriters['vasp'] = VASPWriter
