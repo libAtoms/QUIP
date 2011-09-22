@@ -122,6 +122,13 @@ endif
 ifeq (${HAVE_LOCAL_E_MIX},1)
   DEFINES += -DHAVE_LOCAL_E_MIX
 endif
+ifeq (${HAVE_CGAL},1)
+  DEFINES += -DHAVE_CGAL
+  CUSTOM_CPLUSPLUSFLAGS += -frounding-math -DCGAL_FPU_HAS_EXCESS_PRECISION
+  INCLUDES += $(addprefix -I,${CGAL_INCDIR})
+  SYSLIBS += $(addprefix -L,${CGAL_LIBDIR})
+  SYSLIBS += -lCGAL -lgmpxx -lmpfr -lgmp -lboost_thread-mt -lstdc++ #/usr/lib/libstdc++.6.dylib
+endif
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
 LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS} ${CUSTOM_LINKOPTS}
@@ -130,6 +137,9 @@ LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS} ${CUSTOM_LINKOPTS}
 	${F77}  ${F77FLAGS} -c $< -o $@
 
 .c.o:	
+	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@
+
+.cpp.o:	
 	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@
 
 .f95.o:

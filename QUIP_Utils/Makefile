@@ -40,10 +40,19 @@ include Makefile.inc
 include Makefile.rules
 
 
-QUIP_UTILS_F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
+QUIP_UTILS_F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools test_cova
 QUIP_UTILS_F95_SOURCES = ${addsuffix .f95, ${QUIP_UTILS_F95_FILES}}
-QUIP_UTILS_OBJS = ${addsuffix .o, ${QUIP_UTILS_F95_FILES}}
+QUIP_UTILS_F95_OBJS = ${addsuffix .o, ${QUIP_UTILS_F95_FILES}}
 
+QUIP_UTILS_CXX_FILES =
+QUIP_UTILS_CXX_SOURCES = ${addsuffix .cpp ${QUIP_UTILS_CXX_FILES}}
+QUIP_UTILS_CXX_OBJS = ${addsuffix .o, ${QUIP_UTILS_CXX_FILES}}
+
+QUIP_UTILS_OBJS = ${QUIP_UTILS_F95_OBJS} ${QUIP_UTILS_CXX_OBJS}
+
+ifeq (${HAVE_CGAL},1)
+  QUIP_UTILS_CXX_FILES += alphashape
+endif
 
 .PHONY : clean allclean 
 

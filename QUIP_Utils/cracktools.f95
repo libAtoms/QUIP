@@ -46,6 +46,31 @@ module CrackTools_module
      module procedure crack_print_filename
   end interface
 
+#ifdef HAVE_CGAL
+  interface
+     subroutine c_alpha_shape_2(n, x, y, alpha, shape_n, shape_list, error) bind(c)
+       use iso_c_binding, only: C_INT, C_DOUBLE
+       integer(kind=C_INT), intent(in) :: n
+       real(kind=C_DOUBLE), intent(in), dimension(n) :: x, y
+       real(kind=C_DOUBLE), intent(in) :: alpha
+       integer(kind=C_INT), intent(inout) :: shape_n
+       integer(kind=C_INT), intent(in), dimension(shape_n) :: shape_list
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine c_alpha_shape_2
+
+
+     subroutine c_crack_front_alpha_shape(n, x, y, alpha, angle_threshold, front_n, front_list, error) bind(c)
+       use iso_c_binding, only: C_INT, C_DOUBLE
+       integer(kind=C_INT), intent(in) :: n
+       real(kind=C_DOUBLE), intent(in), dimension(n) :: x, y
+       real(kind=C_DOUBLE), intent(in) :: alpha, angle_threshold
+       integer(kind=C_INT), intent(inout) :: front_n
+       integer(kind=C_INT), intent(in), dimension(front_n) :: front_list
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine c_crack_front_alpha_shape
+  end interface
+#endif
+
 contains
 
   subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
@@ -2086,14 +2111,14 @@ contains
     ! Remove duplicate minima of same depth within params%crack_tip_min_separation of one another
     do while (.true.)
        duplicate = .false.
-       OUTER: do i=1,minima%N
+       outer: do i=1,minima%N
           do j=i+1,minima%N
              if (dot_product((minima%int(:,i) - minima%int(:,j)),(minima%int(:,i) - minima%int(:,j))) < min_dist**2) then
                 duplicate = .true.
-                exit OUTER
+                exit outer
              end if
           end do
-       end do OUTER
+       end do outer
        
        if (duplicate) then
           d_i = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
@@ -2231,6 +2256,80 @@ contains
     call print('crack_find_tip_local_energy: found '//count(crack_front)//' crack front atoms.')
     
   end subroutine crack_find_tip_local_energy
+
+#ifdef HAVE_CGAL
+  subroutine alpha_shape_2(x, y, alpha, shape_n, shape_list, error)
+    real(dp), intent(in) :: x(:), y(:)
+    real(dp), intent(in) :: alpha
+    integer, intent(out) :: shape_n
+    integer, intent(out) :: shape_list(size(x))
+    integer, optional, intent(out) :: error
+
+    integer points_n
+
+    INIT_ERROR(error)
+
+    if (size(x) /= size(y)) then
+       RAISE_ERROR("alpha_shape_2: size(x) /= size(y)", error)
+    end if
+    points_n = size(x)
+    shape_n = size(shape_list)
+    call c_alpha_shape_2(points_n, x, y, alpha, shape_n, shape_list, error)
+    ! convert from 0-based to 1-based indices
+    shape_list(1:shape_n) = shape_list(1:shape_n) + 1
+    
+  end subroutine alpha_shape_2
+
+  subroutine crack_front_alpha_shape(at, alpha, angle_threshold, error)
+    use iso_c_binding, only: C_INT, C_DOUBLE
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(in) :: alpha, angle_threshold
+    integer, intent(out), optional :: error
+
+    logical, pointer, dimension(:) :: crack_surface, crack_front
+    real(C_DOUBLE) :: c_alpha, c_angle_threshold
+    real(C_DOUBLE), allocatable, dimension(:) :: x, z
+    integer(C_INT), allocatable, dimension(:) :: front, surf
+    integer(C_INT) :: n_surf, n_front
+    integer :: i
+
+    INIT_ERROR(error)
+
+    if (.not. assign_pointer(at, 'crack_front', crack_front)) then
+       RAISE_ERROR('crack_find_tip_local_energy: crack_front property missing from atoms', error)
+    end if
+
+    if (.not. assign_pointer(at, 'crack_surface', crack_surface)) then
+       RAISE_ERROR('crack_find_tip_local_energy: crack_surface property missing from atoms', error)
+    end if
+    
+    n_surf = count(crack_surface)
+    allocate(x(n_surf), z(n_surf), surf(n_surf))
+    surf(:) = pack((/ (i, i=1,at%N) /), crack_surface)
+    x(:) = pack(at%pos(1,:), crack_surface)
+    z(:) = pack(at%pos(3,:), crack_surface)
+    
+    n_front = size(x)
+    allocate(front(n_front))
+    front(:) = 0
+
+    c_alpha = alpha
+    c_angle_threshold = angle_threshold
+
+    call c_crack_front_alpha_shape(n_surf, x, z, c_alpha, c_angle_threshold, n_front, front, error)
+
+    crack_front(:) = surf(front)
+
+    call print('front=')
+    do i=1,n_front
+       write (*,*) front(i)
+    end do
+    PASS_ERROR(error)
+
+    deallocate(x, z, surf, front)
+
+  end subroutine crack_front_alpha_shape
+#endif
 
   subroutine crack_print_cio(at, cio, params)
     type(Atoms), intent(inout) :: at
