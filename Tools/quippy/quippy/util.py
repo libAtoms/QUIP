@@ -32,7 +32,7 @@ def infer_format(file, format, lookup):
 
     filename = None
     if format is None:
-        if isinstance(file, str):
+        if isinstance(file, basestring):
             filename = file
             if file in lookup:
                 format = file

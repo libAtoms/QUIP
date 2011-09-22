@@ -141,7 +141,7 @@ class CInOutputWriter(object):
         self.opened = False
         self.write_kwargs = {}
         self.write_kwargs.update(write_kwargs)
-        if isinstance(dest, str):
+        if isinstance(dest, basestring):
             self.opened = True
             self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
         else:
