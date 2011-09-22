@@ -26,7 +26,7 @@ from quippy.system import print_title, verbosity_push
 from quippy.clusters import HYBRID_NO_MARK
 from quippy.units import GPA
 from quippy.surface import J_PER_M2
-from quippy.farray import fzeros
+from quippy.farray import fzeros, farray
 
 __all__ = []
  
@@ -42,7 +42,6 @@ except ImportError:
 
 __all__.extend(['crack_rescale_homogeneous_xy',
                  'makecrack', 'crack_strain_energy_release_rate'])
-
 
 def makecrack_main(params, stem):
     """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
@@ -62,6 +61,10 @@ def makecrack_main(params, stem):
     mpi_glob = MPI_context()
 
     crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot)
+    if params.crack_free_surfaces:
+       depth = crack_slab.pos[3,:].max() - crack_slab.pos[3,:].min()
+    else:
+       depth = crack_slab.lattice[3,3]
 
     # Save bulk cube (used for qm_rescale_r parameter in crack code)
     if params.qm_args.startswith('TB'):
@@ -73,6 +76,7 @@ def makecrack_main(params, stem):
 
     crack_slab.params['OrigWidth'] = width
     crack_slab.params['OrigHeight'] = height
+    crack_slab.params['OrigDepth'] = depth
 
     crack_slab.params['YoungsModulus'] = E
     crack_slab.params['PoissonRatio_yx'] = v
@@ -88,6 +92,7 @@ def makecrack_main(params, stem):
 
     # 3D crack with free surfaces at z = +/- depth/2
     if params.crack_free_surfaces:
+        crack_slab.pos[3,:] -= crack_slab.pos[3,:].mean() # center on z=0
         crack_slab.lattice[3,3] = crack_slab.lattice[3,3] + params.crack_vacuum_size
 
     crack_slab.set_lattice(crack_slab.lattice, False)
@@ -148,7 +153,6 @@ def makecrack_main(params, stem):
         crack_slab.edge_mask[(abs(crack_slab.pos[3,:]-minz) < params.selection_edge_tol) |
                              (abs(crack_slab.pos[3,:]-maxz) < params.selection_edge_tol)] = 1
 
-
     if params.crack_fix_dipoles:
         print_title('Fixing dipoles')
         crack_slab.fixdip[(abs(crack_slab.pos[2,:]-maxy) < params.crack_fix_dipoles_tol) |
@@ -159,14 +163,19 @@ def makecrack_main(params, stem):
                                   (abs(crack_slab.pos[1,:]-minx) < params.crack_fix_dipoles_tol)] = 1
 
 
-    crack_make_seed(crack_slab, params)
+    if params.crack_curved_front:
+       crack_make_seed_curved_front(crack_slab, params)
+    else:
+       crack_make_seed(crack_slab, params)
+       if params.crack_apply_initial_load:
+          crack_calc_load_field(crack_slab, params, classicalpot,
+                              params.crack_loading, overwrite_pos=True,
+                              mpi=mpi_glob)
 
-    if (params.crack_apply_initial_load):
-        crack_calc_load_field(crack_slab, params, classicalpot, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
-
+    crack_slab.write('dump.xyz')
     crack_update_connect(crack_slab, params)
 
-    if (not params.simulation_classical):
+    if not params.simulation_classical:
         if (params.selection_method.strip() == 'crack_front' or
             params.crack_tip_method.strip() == 'local_energy'):
             classicalpot.calc(crack_slab, local_energy=True)
@@ -320,3 +329,65 @@ def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=Non
 
     return G_effective
 
+
+def crack_make_seed_curved_front(slab, params):
+   """Given a slab, introduce a 3D curved crack front."""
+
+   orig_width = slab.params['OrigWidth']
+   orig_height = slab.params['OrigHeight']
+   orig_depth  = slab.params['OrigDepth']
+
+   crack_length = params.crack_seed_length/orig_width
+   crack_curvature = params.crack_curvature
+   crack_depth = 1.0
+
+   if params.crack_g > 0.:
+      epsilon_max = crack_g_to_strain(params.crack_g,
+                                     slab.YoungsModulus,
+                                     slab.PoissonRatio_yx,
+                                     orig_height)
+   else:
+      epsilon_max = params.crack_strain
+
+   # ... then shift so coordinates are in ranges x=[0..a], y=[0..b], z=[0..c]
+   slab.pos += np.tile(np.array([orig_width, orig_height, orig_depth])[:,np.newaxis]/2., slab.n)
+
+   xlin = 0.5*crack_length*orig_width
+   crack_center = farray([crack_length*orig_width, 0.5*orig_height, 0.])
+
+   epsilon_min = 0.
+   epsilon_local = 0.
+   dy = 0.
+
+   a = crack_curvature
+   x1 = crack_length*orig_width
+   x2 = x1 + crack_depth
+   z1 = 0.
+   z2 = orig_depth
+   slope = (x2-x1)/(z2-z1)
+   
+   dymax = 0.5*epsilon_max*orig_height
+
+   z = slab.pos[3,:]
+   crack_x_center = crack_curvature*(z*z - z1*z1) + (slope-crack_curvature*(z2+z1))*(z-z1) + crack_center[1]
+   ##slab.add_property('xc', crack_x_center, overwrite=True)
+
+   dymin = abs(slab.pos[2,:]-crack_center[2])*epsilon_max
+
+   dy = dymin
+   dy[slab.pos[1,:] < xlin] = dymax
+   mask = (slab.pos[1,:] > xlin) & (slab.pos[1,:] <= crack_x_center)
+   ##slab.add_property('mask', mask, overwrite=True)
+   dy[mask] = (dymax - dymin[mask])/(xlin - crack_x_center[mask])*abs(slab.pos[1,mask] - xlin) + dymax
+
+   dy *= np.sign(slab.pos[2,:] - crack_center[2])
+   ##slab.add_property('dy', dy, overwrite=True)
+   slab.pos[2,:] += dy
+
+   # Centre slab in cell
+   slab.pos += np.tile((np.array([params.crack_vacuum_size/2.]*3) +
+                        np.diag(slab.lattice)/2.)[:,np.newaxis], slab.n)
+   slab.map_into_cell()
+
+   slab.params['CrackPosx'] = crack_center[1] + params.crack_vacuum_size/2.
+   slab.params['CrackPosy'] = crack_center[2] + params.crack_vacuum_size/2.
