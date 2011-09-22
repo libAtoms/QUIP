@@ -221,6 +221,8 @@ module CrackParams_module
      real(dp) :: crack_thermostat_ramp_max_tau !% Value of thermostat tau at end of ramp, in fs.
      logical :: crack_initial_velocity_field !% If true, initialise velocity field with dU/dc
      real(dp) :: crack_initial_velocity_field_dx, crack_initial_velocity_field_dt
+     logical :: crack_curved_front !% If true, initialise slab with a curved crack front
+     real(dp) :: crack_curvature !% Curvature used when crack_curved_front=T
  
      ! Simulation parameters
      character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -474,6 +476,9 @@ contains
     this%crack_initial_velocity_field = .false.
     this%crack_initial_velocity_field_dx = 3.84_dp   ! Angstrom
     this%crack_initial_velocity_field_dt = 100.0_dp  ! fs
+
+    this%crack_curved_front = .false.
+    this%crack_curvature = -0.001_dp
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -1055,6 +1060,16 @@ contains
        call QUIP_FoX_get_value(attributes, "initial_velocity_field_dt", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_initial_velocity_field_dt
+       end if
+
+       call QUIP_FoX_get_value(attributes, "curved_front", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_curved_front
+       end if
+
+       call QUIP_FoX_get_value(attributes, "curvature", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_curvature
        end if
 
     elseif (parse_in_crack .and. name == 'simulation') then
@@ -1754,6 +1769,8 @@ contains
     call Print('     fix_dipoles_tol       = '//this%crack_fix_dipoles_tol, file=file)
     call Print('     thermostat_ramp_length  = '//this%crack_thermostat_ramp_length//' A', file=file)
     call Print('     thermostat_ramp_max_tau = '//this%crack_thermostat_ramp_max_tau//' fs', file=file)
+    call Print('     curved_front          = '//this%crack_curved_front, file=file)
+    call Print('     curvature             = '//this%crack_curvature, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
