@@ -454,7 +454,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             source = AtomsReaders[format](source, **kwargs)
             opened = True
 
-        if isinstance(source, str):
+        if isinstance(source, basestring):
             raise IOError("Don't know how to read from file '%s'" % source)
         if not hasattr(source, '__iter__'):
             raise IOError('Cannot read from %r - not an iterator' % source)
