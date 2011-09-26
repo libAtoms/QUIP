@@ -154,7 +154,7 @@ class VASPWriter(object):
         self.pos.write(' '.join([str(n) for n in nat])+'\n')
 
         self.pos.write('Selective Dynamics\n')
-        self.pos.write('Direct\n')
+        self.pos.write('Cartesian\n')
 
 #Positions
         for j in range(len(sorted_species)):
