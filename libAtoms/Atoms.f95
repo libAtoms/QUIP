@@ -3026,7 +3026,7 @@ contains
 	      ! atom j does need to move
 	      ! atoms with non-zero shift should not have been touched before
 	      if (touched(j)) then
-                 RAISE_ERROR("undo_pbcs tried to move atom " // j // " twice", error)
+                 RAISE_ERROR("coalesce_in_one_periodic_image tried to move atom " // j // " twice", error)
 	      endif
 
 	      ! shift atom to zero out shift
@@ -3662,5 +3662,18 @@ contains
       this%Z(i) = ii-1
    end do
   end subroutine atoms_set_Zs
+
+  subroutine undo_pbc_jumps(at)
+    type(Atoms), intent(inout) :: at
+    real(dp), pointer :: prev_pos_p(:,:)
+
+    if (.not. assign_pointer(at, 'prev_pos', prev_pos_p)) then
+       call add_property(at, 'prev_pos', 0.0_dp, n_cols=3, ptr2=prev_pos_p)
+       prev_pos_p = at%pos
+    endif
+
+    at%pos = at%pos - (at%lattice .mult. floor((at%g .mult. (at%pos-prev_pos_p))+0.5_dp))
+    prev_pos_p = at%pos
+  end subroutine undo_pbc_jumps
 
 end module atoms_module
