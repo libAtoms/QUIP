@@ -2366,7 +2366,7 @@ contains
    ! Centre_Of_Mass
    !
    !% Calculate the centre of mass of an atoms object, using the closest images to the origin atom,
-   !% or first atom if this is not specified.
+   !% or first atom if this is not specified.  If origin is zero, use actual position, not minimum image.
    !% If an index_list is present, just calculate it for that subset of atoms (then the origin atom is
    !% the first in this list unless it is specified separately).
    !%
@@ -2395,7 +2395,7 @@ contains
      endif
 
      if (present(origin)) then
-        if (origin > at%N .or. origin < 1) then
+        if (origin > at%N .or. origin < 0) then
            RAISE_ERROR('Centre_Of_Mass: Invalid origin atom', error)
         end if
         my_origin = origin
@@ -2429,7 +2429,11 @@ contains
            if (index_list(i) > at%N .or. index_list(i) < 1) then
               RAISE_ERROR('Centre_Of_Mass: Invalid atom in index_list', error)
            end if
-           CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
+	   if (my_origin > 0) then
+	      CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
+	   else
+	      CoM = CoM + at%mass(index_list(i)) * at%pos(:,index_list(i))
+	   endif
            M_Tot = M_Tot + at%mass(index_list(i))
         end do
 
@@ -2437,7 +2441,11 @@ contains
 
         do i = 1, at%N
            if (mask(i)) then
-              CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+	      if (my_origin > 0) then
+		 CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+	      else
+		 CoM = CoM + at%mass(i) * at%pos(:,i)
+	      endif
               M_Tot = M_Tot + at%mass(i)
            endif
         end do
@@ -2445,14 +2453,20 @@ contains
      else
 
         do i = 1, at%N
-           CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+	   if (my_origin > 0) then
+	      CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+	   else
+	      CoM = CoM + at%mass(i) * at%pos(:,i)
+	   endif
            M_Tot = M_Tot + at%mass(i)
         end do
 
      end if
 
      CoM = CoM / M_Tot
-     CoM = CoM + at%pos(:,my_origin)
+     if (my_origin > 0) then
+	CoM = CoM + at%pos(:,my_origin)
+     endif
 
    end function centre_of_mass
 
