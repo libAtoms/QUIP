@@ -381,7 +381,7 @@ module Atoms_types_module
   ! (linearalgebra?)
   public :: map_into_cell
   interface map_into_cell
-    module procedure vec_map_into_cell
+    module procedure vec_map_into_cell, array_map_into_cell
   end interface
 
   public :: cell_volume
@@ -1433,6 +1433,17 @@ contains
     real(dp)            :: bond_length
     bond_length = ElementCovRad(z1) + ElementCovRad(z2)
   end function bond_length
+
+  subroutine array_map_into_cell(pos, lattice, g)
+    real(dp), intent(inout) :: pos(:,:)
+    real(dp), intent(in) :: lattice(3,3), g(3,3)
+
+    integer :: i
+
+    do i=1, size(pos, 2)
+      call map_into_cell(pos(:,i), lattice, g)
+    end do
+  end subroutine array_map_into_cell
 
   subroutine vec_map_into_cell(pos, lattice, g, shift, mapped)
     real(dp), intent(inout) :: pos(3)
