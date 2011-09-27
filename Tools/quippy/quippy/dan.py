@@ -24,7 +24,7 @@ import numpy as np
 
 class DanWriter(object):
 
-    def __init__(self, out, graph=None, atom_type=None, value=None,
+    def __init__(self, out, pos_field='pos', graph=None, atom_type=None, value=None,
                  vector=None, bond_by_cutoff=None, post_config_command=None,
                  post_file_command=None, end_command=None):
         self.out = out
@@ -33,6 +33,7 @@ class DanWriter(object):
             self.graph_min=[1.0e38]*len(self.graph)
             self.graph_max=[-1.0e38]*len(self.graph)
         self.atom_type = atom_type
+        self.pos_field = pos_field
         self.value = value
         self.graph = graph
         self.vector = vector
@@ -91,7 +92,10 @@ class DanWriter(object):
                         else:
                             raise ValueError("Can't find z, species, or type for atom type")
 
-            self.out.write("atom %f %f %f %s" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], getattr(at,atom_type)[i_at]))
+	    px=getattr(at,self.pos_field)[1,i_at]
+	    py=getattr(at,self.pos_field)[2,i_at]
+	    pz=getattr(at,self.pos_field)[3,i_at]
+            self.out.write("atom %f %f %f %s" % (px, py, pz, getattr(at,atom_type)[i_at]))
 
             if self.value is not None:
 	        if (type(self.value) is StringType):
@@ -102,7 +106,7 @@ class DanWriter(object):
 
             if self.vector is not None:
                 if hasattr(at,self.vector):
-                    self.out.write("vector %f %f %f   %f %f %f\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at],
+                    self.out.write("vector %f %f %f   %f %f %f\n" % (px, py, pz,
                                                                      getattr(at,self.vector)[1,i_at],
                                                                      getattr(at,self.vector)[2,i_at],
                                                                      getattr(at,self.vector)[3,i_at]))
