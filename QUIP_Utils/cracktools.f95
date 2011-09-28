@@ -1709,6 +1709,7 @@ contains
        call crack_find_tip_percolation(at, params, crack_tips)
 
     else if (trim(params%crack_tip_method) == 'local_energy') then
+       call crack_find_surface_atoms(at)
        call crack_find_tip_local_energy(at, params)
 
        if (.not. assign_pointer(at, 'crack_front', crack_front)) &
@@ -1726,6 +1727,21 @@ contains
        crack_tip = crack_tip / real(n, dp)
        call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
        
+    else if (trim(params%crack_tip_method) == 'alpha_shape') then
+#ifdef HAVE_CGAL
+       call crack_find_surface_atoms(at)
+       call crack_front_alpha_shape(at, params%crack_front_alpha, &
+            params%crack_front_angle_threshold)
+#else
+       call system_abort('crack_find_tip: method="alpha_shape" but compiled without CGAL support')
+#endif
+       
+       if (.not. get_value(at%params, 'CrackPosx', crack_tip(1))) &
+            call system_abort('crack_find_tip: CrackPosx param missing')
+       if (.not. get_value(at%params, 'CrackPosy', crack_tip(2))) &
+            call system_abort('crack_find_tip: CrackPosy param missing')
+       call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
+
     else
        call system_abort('crack_find_tip: unknown tip_method '//trim(params%crack_tip_method))
 
@@ -2171,36 +2187,25 @@ contains
   end subroutine crack_find_tip_percolation
 
 
-  subroutine crack_find_tip_local_energy(at, params)
+  subroutine crack_find_surface_atoms(at)
     type(Atoms), intent(inout) :: at
-    type(CrackParams), intent(in) :: params
 
     real(dp), allocatable, dimension(:,:) :: filtered_local_energy
-    real(dp), allocatable, dimension(:) :: surface_x, surface_z, surface_x_band, front_z
     real(dp), pointer, dimension(:) :: local_energy
-    integer, pointer, dimension(:) :: edge_mask
-    integer, allocatable, dimension(:) :: surface_i, surface_i_band, assign, front_i, idx
+    integer, pointer, dimension(:) :: edge_mask, assign
     logical, pointer, dimension(:) :: crack_surface, crack_front
     logical, allocatable, dimension(:) :: filtered_surface
-    real(dp) :: z, means(2,1)
-    integer :: i, n, surface_cluster(1)
-    type(Table) :: candidates
+    real(dp) :: means(2,1)
+    integer surface_cluster(1)
 
     if (.not. assign_pointer(at, 'local_energy', local_energy)) &
          call system_abort('crack_find_tip_local_energy: local_energy property missing from atoms')
-
-    if (.not. assign_pointer(at, 'crack_front', crack_front)) &
-         call system_abort('crack_find_tip_local_energy: crack_front property missing from atoms')
 
     if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
          call system_abort('crack_find_tip_local_energy: edge_mask property missing from atoms')
 
     if (.not. assign_pointer(at, 'crack_surface', crack_surface)) &
          call system_abort('crack_find_tip_local_energy: crack_surface property missing from atoms')
-
-    ! **************************************************************************
-    ! Phase 1 - identify crack surface atoms
-    ! **************************************************************************
 
     ! Carry out k-means clustering by the filtered local energies:
     ! will give two clusters one for bulk and other for surface.
@@ -2218,12 +2223,27 @@ contains
     crack_surface = unpack(filtered_surface, edge_mask == 0, .false.)
     deallocate(filtered_local_energy, assign, filtered_surface)
 
-    call print('crack_find_tip_local_energy: found '//count(crack_surface)//' surface atoms.')
+    call print('crack_find_surface_atoms: found '//count(crack_surface)//' surface atoms.')
 
+  end subroutine crack_find_surface_atoms
 
-    ! **************************************************************************
-    ! Phase 2: identify crack front
-    ! **************************************************************************
+  subroutine crack_find_tip_local_energy(at, params)
+    type(Atoms), intent(inout) :: at
+    type(CrackParams), intent(in) :: params
+
+    real(dp), allocatable, dimension(:) :: surface_x, surface_z, surface_x_band
+    real(dp), pointer, dimension(:) :: local_energy
+    integer, pointer, dimension(:) :: edge_mask
+    integer, allocatable, dimension(:) :: surface_i, surface_i_band, front_i, idx
+    logical, pointer, dimension(:) :: crack_surface, crack_front
+    real(dp) z
+    integer i, n
+
+    if (.not. assign_pointer(at, 'crack_surface', crack_surface)) &
+         call system_abort('crack_find_tip_local_energy: crack_surface property missing from atoms')
+
+    if (.not. assign_pointer(at, 'crack_front', crack_front)) &
+         call system_abort('crack_find_tip_local_energy: crack_front property missing from atoms')
 
     crack_front(:) = .false.
 
@@ -2309,7 +2329,7 @@ contains
     x(:) = pack(at%pos(1,:), crack_surface)
     z(:) = pack(at%pos(3,:), crack_surface)
     
-    n_front = size(x)
+    n_front = n_surf
     allocate(front(n_front))
     front(:) = 0
 
@@ -2317,16 +2337,16 @@ contains
     c_angle_threshold = angle_threshold
 
     call c_crack_front_alpha_shape(n_surf, x, z, c_alpha, c_angle_threshold, n_front, front, error)
-
-    crack_front(:) = surf(front)
-
-    call print('front=')
-    do i=1,n_front
-       write (*,*) front(i)
-    end do
     PASS_ERROR(error)
 
+    front(1:n_front) = front(1:n_front) + 1 ! convert to Fortran indexing
+    crack_front(:) = .false.
+    crack_front(surf(front(1:n_front))) = .true.
+
     deallocate(x, z, surf, front)
+
+    call set_value(at%params, 'CrackPosx', sum(x(front(1:n_front))/real(n_front,dp)))
+    call set_value(at%params, 'CrackPosy', 0.0_dp)
 
   end subroutine crack_front_alpha_shape
 #endif
