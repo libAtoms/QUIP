@@ -1271,6 +1271,11 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	  // found index file, but does not match current file contents so let's remove it
 	  if (got_index) unlink(indexname);
 	}
+
+	if (got_index) {
+	  free(frames);
+	  free(atoms);
+	}
       }
     } else
       fflush(out);
