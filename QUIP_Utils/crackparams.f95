@@ -211,7 +211,7 @@ module CrackParams_module
      logical ::  crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
      real(dp) :: crack_tip_grid_size       !% Size (in A) of grid used for locating crack tips
      real(dp) :: crack_tip_min_separation  !% Minimum seperation (in A) between a pair of crack tips for them to be considered distinct
-     character(FIELD_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation' or 'local_e'
+     character(FIELD_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation', 'local_energy' or 'alpha_shape'
      logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
      real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
      logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
@@ -223,6 +223,8 @@ module CrackParams_module
      real(dp) :: crack_initial_velocity_field_dx, crack_initial_velocity_field_dt
      logical :: crack_curved_front !% If true, initialise slab with a curved crack front
      real(dp) :: crack_curvature !% Curvature used when crack_curved_front=T
+     real(dp) :: crack_front_alpha !% Value of alpha to use when tip_method=alpha_shape
+     real(dp) :: crack_front_angle_threshold !% Maximum bearing for segments to be included in crack front
  
      ! Simulation parameters
      character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -479,6 +481,8 @@ contains
 
     this%crack_curved_front = .false.
     this%crack_curvature = -0.001_dp
+    this%crack_front_alpha = 100.0_dp
+    this%crack_front_angle_threshold = 100.0_dp ! degrees
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -1070,6 +1074,16 @@ contains
        call QUIP_FoX_get_value(attributes, "curvature", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_curvature
+       end if
+
+       call QUIP_FoX_get_value(attributes, "front_alpha", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_front_alpha
+       end if
+
+       call QUIP_FoX_get_value(attributes, "front_angle_threshold", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_front_angle_threshold
        end if
 
     elseif (parse_in_crack .and. name == 'simulation') then
@@ -1771,6 +1785,8 @@ contains
     call Print('     thermostat_ramp_max_tau = '//this%crack_thermostat_ramp_max_tau//' fs', file=file)
     call Print('     curved_front          = '//this%crack_curved_front, file=file)
     call Print('     curvature             = '//this%crack_curvature, file=file)
+    call Print('     front_alpha           = '//this%crack_front_alpha, file=file)
+    call Print('     front_angle_threshold = '//this%crack_front_angle_threshold, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
