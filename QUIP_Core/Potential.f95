@@ -814,7 +814,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
 
   function potential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, external_pressure, use_precond, hook_print_interval, error)
+       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, fire_minim_dt0, lattice_fix, external_pressure, use_precond, hook_print_interval, error)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
     character(*), intent(in)    :: method !% passed to minim()
@@ -830,6 +830,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), intent(in), optional :: eps_guess !% eps_guess argument to pass to minim
     logical, intent(in), optional :: use_n_minim !% if true, use n_minim instead of minim
     logical, intent(in), optional :: use_fire   !% if true, use fire_minim instead of minim
+    real(dp), intent(in), optional :: fire_minim_dt0 !% if using fire minim, initial value for time step
     logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
     real(dp), dimension(3,3), optional :: external_pressure
     logical, intent(in), optional :: use_precond
@@ -845,6 +846,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     logical done
     real(dp) :: my_eps_guess
     logical my_use_n_minim, my_use_fire
+    real(dp) :: my_fire_minim_dt0
 
     real(dp) :: initial_E, final_E, mass
     type(potential_minimise) am
@@ -862,6 +864,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     my_use_n_minim = optional_default(.false., use_n_minim)
     my_use_fire = optional_default(.false., use_fire)
+    my_fire_minim_dt0 = optional_default(1.0_dp, fire_minim_dt0)
 
     my_eps_guess = optional_default(1.0e-2_dp/at%N, eps_guess)
     if (my_eps_guess .feq. 0.0_dp) my_eps_guess = 1.0e-2_dp/at%N
@@ -949,7 +952,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        else
           mass = ElementMass(at%Z(1))
        end if
-       n_iter = fire_minim(x, mass, dummy_energy_func, gradient_func, 1.0_dp, convergence_tol, max_steps, &
+       n_iter = fire_minim(x, mass, dummy_energy_func, gradient_func, my_fire_minim_dt0, convergence_tol, max_steps, &
             print_hook, hook_print_interval=hook_print_interval, data=am_data, status=status)
     else
        n_iter = minim(x, energy_func, gradient_func, method, convergence_tol, max_steps, linminroutine, &
