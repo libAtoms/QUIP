@@ -951,54 +951,6 @@ contains
   !X
   !X BONDLENGTH:
   !X
-  !% Constrain a bond length.
-  !% 'data' should contain the required bond length
-  !% The minimum image convention is used.
-  !%
-  !% The function used is $C = |\mathbf{r}_1 - \mathbf{r}_2| - d$
-  !X
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  subroutine BONDLENGTH(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
-
-    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
-    real(dp),                       intent(in)  :: t
-    real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
-    real(dp),                       intent(out) :: dC_dt, Z_coll
-    real(dp),                       intent(out) :: target_v
-    !local variables                             
-    real(dp)                        :: r(3), d
-    integer                         :: i
-
-    if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom positions must be specified')
-    if(size(velo) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
-    if(size(mass) /= 2) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
-    if(size(data) /= 1) call system_abort('BONDLENGTH: "data" must contain exactly one value')
-
-    r = pos(1:3)-pos(4:6)
-    d = data(1)
-
-    C = norm(r) - d
-    target_v = d
-
-    dC_dr(1:3) = r/norm(r)
-    dC_dr(4:6) = -r/norm(r)
-
-    dC_dt = dC_dr .dot. velo
-
-    dcoll_dr(1:6) = dC_dr(1:6)
-    Z_coll = 0._dp
-    do i=1,2
-       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
-    enddo
-
-  end subroutine BONDLENGTH
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !X
-  !X RELAX_BONDLENGTH:
-  !X
   !% Exponentially decay a bond length towards a final value.
   !%
   !% \begin{itemize}
@@ -1015,7 +967,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BONDLENGTH(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+  subroutine BONDLENGTH(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
@@ -1027,10 +979,10 @@ contains
     real(dp)                                    :: r(3), d, diff, efact
     integer                         :: i
 
-    if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
-    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
-    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
-    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH: "data" must contain exactly four values')
+    if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(data) /= 4) call system_abort('BONDLENGTH: "data" must contain exactly four values')
 
     r = pos(1:3)-pos(4:6)
     diff = data(1) - data(2)
@@ -1051,111 +1003,11 @@ contains
        Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
-  end subroutine RELAX_BONDLENGTH
-
+  end subroutine BONDLENGTH
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
   !X BONDLENGTH_SQ:
-  !X
-  !% Constrain a square of a bond length.
-  !% 'data' should contain the required bond length
-  !% The minimum image convention is used.
-  !%
-  !% The function used is $C = |\mathbf{r}_1 - \mathbf{r}_2|^2 - d^2$
-  !X
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  subroutine BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
-
-    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
-    real(dp),                       intent(in)  :: t
-    real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
-    real(dp),                       intent(out) :: dC_dt, Z_coll
-    real(dp),                       intent(out) :: target_v
-    !local variables                             
-    real(dp), dimension(3)                       :: d
-    integer                         :: i
-
-    if(size(pos) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom positions must be specified')
-    if(size(velo) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom velocities must be specified')
-    if(size(mass) /= 2) call system_abort('BONDLENGTH_SQ: Exactly 2 atom velocities must be specified')
-    if(size(data) /= 1) call system_abort('BONDLENGTH_SQ: "data" must contain exactly one value')
-
-    d = pos(1:3)-pos(4:6)
-
-    C = normsq(d) - data(1)*data(1)
-    target_v = data(1)*data(1)
-
-    dC_dr(1:3) = 2.0_dp * d
-    dC_dr(4:6) = -2.0_dp * d
-
-    dC_dt = dC_dr .dot. velo
-
-    dcoll_dr(1:6) = dC_dr(1:6)
-    Z_coll = 0._dp
-    do i=1,2
-       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
-    enddo
-
-  end subroutine BONDLENGTH_SQ
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !X
-  !X BONDLENGTH_DEV_POW:
-  !X
-  !% Constrain an arbitrary power of the difference between a bond length and some target value.
-  !% \begin{itemize}
-  !% \item data(1) = bond length
-  !% \item data(2) = exponent
-  !% \end{itemize}
-  !% The minimum image convention is used.
-  !%
-  !% The function used is $C = (|\mathbf{r}_1 - \mathbf{r}_2| - d)^p$
-  !X
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  subroutine BONDLENGTH_DEV_POW(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
-
-    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
-    real(dp),                       intent(in)  :: t
-    real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
-    real(dp),                       intent(out) :: dC_dt, Z_coll
-    real(dp),                       intent(out) :: target_v
-
-    !local variables                             
-    real(dp)                       :: dr(3), norm_dr
-    integer                         :: i
-
-    if(size(pos) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom positions must be specified')
-    if(size(velo) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom velocities must be specified')
-    if(size(mass) /= 2) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atom velocities must be specified')
-    if(size(data) /= 2) call system_abort('BONDLENGTH_DEV_POW: "data" must contain exactly two values')
-
-    dr = pos(1:3)-pos(4:6)
-    norm_dr = norm(dr)
-
-    C = (norm_dr-data(1))**data(2)
-    target_v = data(1)
-
-    dC_dr(1:3) = data(2)*(norm_dr-data(1))**(data(2)-1.0_dp)*dr/norm_dr
-    dC_dr(4:6) = -data(2)*(norm_dr-data(1))**(data(2)-1.0_dp)*dr/norm_dr
-
-    dC_dt = dC_dr .dot. velo
-
-    dcoll_dr(1:6) = dC_dr(1:6)
-    Z_coll = 0._dp
-    do i=1,2
-       Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
-    enddo
-
-  end subroutine BONDLENGTH_DEV_POW
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !X
-  !X RELAX_BONDLENGTH_SQ:
   !X
   !% Exponentially decay a bond length towards a final value.
   !%
@@ -1173,7 +1025,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+  subroutine BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
@@ -1185,10 +1037,10 @@ contains
     real(dp)                                    :: r(3), d, diff, efact
     integer                         :: i
 
-    if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
-    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
-    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
-    if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH_SQ: "data" must contain exactly four values')
+    if(size(pos) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(data) /= 4) call system_abort('BONDLENGTH_SQ: "data" must contain exactly four values')
 
     r = pos(1:3)-pos(4:6)
     diff = data(1) - data(2)
@@ -1207,11 +1059,11 @@ contains
        Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
-  end subroutine RELAX_BONDLENGTH_SQ
+  end subroutine BONDLENGTH_SQ
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
-  !X RELAX_BONDLENGTH_DEV_POW:
+  !X BONDLENGTH_DEV_POW:
   !X
   !% Exponentially decay an arbitrary power of the deviation of a bond length towards a final value.
   !%
@@ -1230,7 +1082,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BONDLENGTH_DEV_POW(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+  subroutine BONDLENGTH_DEV_POW(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
@@ -1243,10 +1095,10 @@ contains
     real(dp)                                    :: dr(3), cur_d, diff, efact, norm_dr
     integer                         :: i
 
-    if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
-    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
-    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
-    if(size(data) /= 5) call system_abort('RELAX_BONDLENGTH_DEV_POW: "data" must contain exactly five values')
+    if(size(pos) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH_DEV_POW: Exactly 2 atoms must be specified')
+    if(size(data) /= 5) call system_abort('BONDLENGTH_DEV_POW: "data" must contain exactly five values')
 
     ri = data(1)
     rf = data(2)
@@ -1272,7 +1124,7 @@ contains
        Z_coll = 1/mass(i) * normsq(dcoll_dr(i*3-2:i*3))
     enddo
 
-  end subroutine RELAX_BONDLENGTH_DEV_POW
+  end subroutine BONDLENGTH_DEV_POW
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X

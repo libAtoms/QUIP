@@ -2446,17 +2446,19 @@ contains
    end subroutine constrain_bondanglecos
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bondlength(this,i,j,d,restraint_k,bound,tol,print_summary)
+   subroutine constrain_bondlength(this,i,j,d,di,t0,tau,restraint_k,bound,tol,print_summary)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     real(dp),              intent(in)    :: d
+     real(dp), optional,    intent(in)    :: di, t0, tau
+     real(dp), optional,    intent(in)    :: restraint_k, tol
      integer,  optional,    intent(in)    :: bound
      logical,  optional,    intent(in)    :: print_summary
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
-     real(dp)                             :: use_d
+     real(dp)                             :: use_di
 
      !Do nothing for i==j
      if (i==j) then
@@ -2470,6 +2472,11 @@ contains
                                  ': Atom out of range (N='//this%N//')')
      end if
 
+     if (count( (/ present(di), present(t0), present(tau) /) ) /= 3 .and. &
+         count( (/ present(di), present(t0), present(tau) /) ) /= 0) then
+       call system_abort("constrain_bondlength needs all or none of di, t0, and tau for relaxing bond length to final value")
+     endif
+
      !Register the constraint function if this is the first call
      if (first_call) then
         BOND_FUNC = register_constraint(BONDLENGTH)
@@ -2477,86 +2484,19 @@ contains
      end if
 
      !Add the constraint
-     use_d = optional_default(distance_min_image(this%atoms,i,j), d)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     if (present(di)) then
+       ! relaxing bond length to final value
+       if (di < 0.0_dp) then
+	  use_di = distance_min_image(this%atoms,i,j)
+       else
+	  use_di = di
+       endif
+       call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,d,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     else ! constant restraint
+       call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/d,d,0.0_dp,1.0_dp/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     endif
 
    end subroutine constrain_bondlength
-
-   !% Constrain the bond between atoms i and j
-   subroutine constrain_relax_bondlength(this,i,j,t0,tau,df,di,restraint_k,bound,tol,print_summary)
-
-     type(DynamicalSystem), intent(inout) :: this
-     integer,               intent(in)    :: i,j
-     real(dp),              intent(in)    :: t0, tau, df
-     real(dp), optional,    intent(in)    :: di, restraint_k, tol
-     integer,  optional,    intent(in)    :: bound
-     logical,  optional,    intent(in)    :: print_summary
-
-     logical, save                        :: first_call = .true.
-     integer, save                        :: BOND_FUNC
-     real(dp)                             :: use_di
-
-     !Do nothing for i==j
-     if (i==j) then
-        call print_warning('Constrain_relax_bondlength: Tried to constrain bond '//i//'--'//j)
-        return
-     end if
-
-     !Report bad atom indices
-     if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
-        call system_abort('Constrain_relax_bondlength: Cannot constrain bond '//i//'--'//j//&
-                                 ': Atom out of range (N='//this%N//')')
-     end if
-
-     !Register the constraint function if this is the first call
-     if (first_call) then
-        BOND_FUNC = register_constraint(RELAX_BONDLENGTH)
-        first_call = .false.
-     end if
-
-     !Add the constraint
-     use_di = optional_default(distance_min_image(this%atoms,i,j), di)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
-
-   end subroutine constrain_relax_bondlength
-
-   !% Constrain the bond between atoms i and j
-   subroutine constrain_relax_bondlength_dev_pow(this,i,j,t0,tau,p,df,di,restraint_k,bound,tol,print_summary)
-
-     type(DynamicalSystem), intent(inout) :: this
-     integer,               intent(in)    :: i,j
-     real(dp),              intent(in)    :: t0, tau, p, df
-     real(dp), optional,    intent(in)    :: di, restraint_k, tol
-     integer,  optional,    intent(in)    :: bound
-     logical,  optional,    intent(in)    :: print_summary
-
-     logical, save                        :: first_call = .true.
-     integer, save                        :: BOND_FUNC
-     real(dp)                             :: use_di
-
-     !Do nothing for i==j
-     if (i==j) then
-        call print_warning('Constrain_relax_bondlength_dev_pow: Tried to constrain bond '//i//'--'//j)
-        return
-     end if
-
-     !Report bad atom indices
-     if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
-        call system_abort('Constrain_relax_bondlength_dev_pow: Cannot constrain bond '//i//'--'//j//&
-                                 ': Atom out of range (N='//this%N//')')
-     end if
-
-     !Register the constraint function if this is the first call
-     if (first_call) then
-        BOND_FUNC = register_constraint(RELAX_BONDLENGTH_DEV_POW)
-        first_call = .false.
-     end if
-
-     !Add the constraint
-     use_di = optional_default(distance_min_image(this%atoms,i,j), di)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,p,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
-
-   end subroutine constrain_relax_bondlength_dev_pow
 
    !% Constrain the bond between atoms i and j
    subroutine constrain_bondlength_sq(this,i,j,d,restraint_k,bound,tol,print_summary)
@@ -2596,18 +2536,19 @@ contains
    end subroutine constrain_bondlength_sq
 
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bondlength_dev_pow(this,i,j,p,d,restraint_k,bound,tol,print_summary)
+   subroutine constrain_bondlength_dev_pow(this,i,j,p,d,di,t0,tau,restraint_k,bound,tol,print_summary)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
-     real(dp),              intent(in)    :: p
-     real(dp), optional,    intent(in)    :: d, restraint_k, tol
+     real(dp),              intent(in)    :: p, d
+     real(dp), optional,    intent(in)    :: di, t0, tau
+     real(dp), optional,    intent(in)    :: restraint_k, tol
      integer,  optional,    intent(in)    :: bound
      logical,  optional,    intent(in)    :: print_summary
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
-     real(dp)                             :: use_d
+     real(dp)                             :: use_di
 
      !Do nothing for i==j
      if (i==j) then
@@ -2621,6 +2562,11 @@ contains
                                  ': Atom out of range (N='//this%N//')')
      end if
 
+     if (count( (/ present(di), present(t0), present(tau) /) ) /= 3 .and. &
+         count( (/ present(di), present(t0), present(tau) /) ) /= 0) then
+       call system_abort("constrain_bondlength_dev_pow needs all or none of di, t0, and tau for relaxing bond length to final value")
+     endif
+
      !Register the constraint function if this is the first call
      if (first_call) then
         BOND_FUNC = register_constraint(BONDLENGTH_DEV_POW)
@@ -2628,8 +2574,17 @@ contains
      end if
 
      !Add the constraint
-     use_d = optional_default(distance_min_image(this%atoms,i,j), d)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d, p/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     if (present(di)) then
+       ! relaxing bond length to final value
+       if (di < 0.0_dp) then
+	  use_di = distance_min_image(this%atoms,i,j)
+       else
+	  use_di = di
+       endif
+       call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,d,p,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     else
+       call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/d,d,p,0.0_dp,1.0_dp/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     endif
 
    end subroutine constrain_bondlength_dev_pow
 

@@ -365,7 +365,7 @@ program qmmm_md
          call print('  Langevin_Tau ' // Langevin_Tau)
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
 	 if (.not.open_Langevin) then
-	    call system_abort("Without open langevin and Nose_Hoover_Tau > 0, just use regular Langevin Thermostat_Type=1")
+	    call system_abort("Thermostat_Type=8 makes sense only for open langevin and Nose_Hoover_Tau > 0, otherwise just use regular Langevin Thermostat_Type=1")
 	 endif
       else
 	 call print('  Thermostat_Type '//thermostat_type//' unknown')
