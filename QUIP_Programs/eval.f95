@@ -59,7 +59,8 @@ implicit none
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
-  logical :: use_n_minim, do_torque, precond_n_minim
+  logical :: use_n_minim, do_torque, precond_n_minim, use_fire_minim
+  real(dp) :: fire_minim_dt0
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
@@ -158,6 +159,8 @@ implicit none
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
+  call param_register(cli_params, 'use_fire_minim', 'F', use_fire_minim, help_string="do relaxation using FIRE minim routine")
+  call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'use_n_minim', 'F', use_n_minim, help_string="do relaxation using Noam's minim routine")
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (ignored in use_n_minim=T)")
@@ -285,15 +288,15 @@ implicit none
 	endif
         if (len(trim(relax_print_file)) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
-           n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
-                print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA, &
-		use_precond=precond_n_minim)
+	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+		eps_guess=relax_eps, use_n_minim = use_n_minim, use_fire=use_fire_minim, &
+		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
            call finalise(relax_io)
         else
-           n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, &
-		external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
+	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
+		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, &
+		use_fire=use_fire_minim, fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
         endif
         call write(at,'stdout', prefix='RELAXED_POS')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
