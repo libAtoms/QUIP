@@ -86,106 +86,96 @@ contains
 
 	 if (name == 'bond_length') then
 	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length "// &
+	      trim(type_str))
 	    read (value, *) atom_1
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length "// &
+	      trim(type_str))
 	    read (value, *) atom_2
-
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in bond_length "//trim(type_str))
+	    read (value, *) d
+
+	    tau = -1.0_dp
+	    di = -1.0_dp
+	    call QUIP_FoX_get_value(attributes, "tau", value, status)
 	    if (status == 0) then
-	       read (value, *) d
+	       read (value, *) tau
+	    endif
+	    call QUIP_FoX_get_value(attributes, "di", value, status)
+	    if (status == 0) then
+	       read (value, *) di
+	    endif
+	    call QUIP_FoX_get_value(attributes, "t0", value, status)
+	    if (status == 0) then
+	       read (value, *) t0
+	    endif
+	    if ((status == 0 .and. (tau <= 0.0_dp .or. di < 0.0_dp)) .or. &
+	        (status /= 0 .and. (tau > 0.0_dp .or. di >= 0.0_dp))) then 
+	      call system_abort("got t0, but tau or di is missing or invalid")
+	    endif
+
+	    if (tau > 0.0_dp) then
+	       if (parse_in_restraints) then
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, di=di, t0=t0, tau=tau, restraint_k=k, bound=bound, print_summary=print_summary)
+	       else
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, di=di, t0=t0, tau=tau, tol=tol, print_summary=print_summary)
+	       endif
+	    else
 	       if (parse_in_restraints) then
 		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
 		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, tol=tol, print_summary=print_summary)
 	       endif
-	    else
-	       if (parse_in_restraints) then
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, tol=tol, print_summary=print_summary)
-	       endif
 	    endif
 
-	 else if (name == 'relax_bond_length') then
+	 else if (name == 'bond_length_dev_pow') then
 	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in relax_bond_length "// &
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length_dev_pow "// &
 	      trim(type_str))
 	    read (value, *) atom_1
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in relax_bond_length "// &
-	      trim(type_str))
-	    read (value, *) atom_2
-	    call QUIP_FoX_get_value(attributes, "t0", value, status)
-	    if (status /= 0) then
-	       call print("restraint_startElement_handler failed to read t0 in relax_bond_length "//trim(type_str)// &
-			  ", defaulting to 0", PRINT_ALWAYS)
-	       t0 = 0.0_dp
-	    else
-	       read (value, *) t0
-	    endif
-	    call QUIP_FoX_get_value(attributes, "tau", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read tau in relax_bond_length "//trim(type_str))
-	    read (value, *) tau
-	    call QUIP_FoX_get_value(attributes, "df", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in relax_bond_length "//trim(type_str))
-	    read (value, *) df
-	    call QUIP_FoX_get_value(attributes, "di", value, status)
-	    if (status == 0) then
-	       read (value, *) di
-	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, tol=tol, print_summary=print_summary)
-	       endif
-	    else
-	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, tol=tol, print_summary=print_summary)
-	       endif
-	    endif
-
-	 else if (name == 'relax_bond_length_dev_pow') then
-	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in relax_bond_length_dev_pow "// &
-	      trim(type_str))
-	    read (value, *) atom_1
-	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in relax_bond_length_dev_pow "// &
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length_dev_pow "// &
 	      trim(type_str))
 	    read (value, *) atom_2
 	    call QUIP_FoX_get_value(attributes, "p", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read p in relax_bond_length_dev_pow "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read p in bond_length_dev_pow "//trim(type_str))
 	    read (value, *) p
-	    call QUIP_FoX_get_value(attributes, "t0", value, status)
-	    if (status /= 0) then
-	       call print("restraint_startElement_handler failed to read t0 in relax_bond_length_dev_pow "//trim(type_str)// &
-			  ", defaulting to 0", PRINT_ALWAYS)
-	       t0 = 0.0_dp
-	    else
-	       read (value, *) t0
-	    endif
+	    call QUIP_FoX_get_value(attributes, "d", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read d in bond_length_dev_pow "//trim(type_str))
+	    read (value, *) d
+
+	    tau = -1.0_dp
+	    di = -1.0_dp
 	    call QUIP_FoX_get_value(attributes, "tau", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read tau in relax_bond_length_dev_pow "//trim(type_str))
-	    read (value, *) tau
-	    call QUIP_FoX_get_value(attributes, "df", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in relax_bond_length_dev_pow "//trim(type_str))
-	    read (value, *) df
+	    if (status == 0) then
+	       read (value, *) tau
+	    endif
 	    call QUIP_FoX_get_value(attributes, "di", value, status)
 	    if (status == 0) then
 	       read (value, *) di
+	    endif
+	    call QUIP_FoX_get_value(attributes, "t0", value, status)
+	    if (status == 0) then
+	       read (value, *) t0
+	    endif
+	    if ((status == 0 .and. (tau <= 0.0_dp .or. di < 0.0_dp)) .or. &
+	        (status /= 0 .and. (tau > 0.0_dp .or. di >= 0.0_dp))) then 
+	      call system_abort("got t0, but tau or di is missing or invalid")
+	    endif
+
+	    if (tau > 0.0_dp) then
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, restraint_k=k, bound=bound, print_summary=print_summary)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, di=di, t0=t0, tau=tau, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, di, tol=tol, print_summary=print_summary)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, di=di, t0=t0, tau=tau, tol=tol, print_summary=print_summary)
 	       endif
 	    else
 	       if (parse_in_restraints) then
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, restraint_k=k, bound=bound, print_summary=print_summary)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
-		  call constrain_relax_bondlength_dev_pow(parse_ds, atom_1, atom_2, t0, tau, p, df, tol=tol, print_summary=print_summary)
+		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
@@ -210,33 +200,6 @@ contains
 		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
 		  call constrain_bondlength_sq(parse_ds, atom_1, atom_2, tol=tol, print_summary=print_summary)
-	       endif
-	    endif
-
-	 else if (name == 'bond_length_dev_pow') then
-
-	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length_dev_pow "//trim(type_str))
-	    read (value, *) atom_1
-	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length_dev_pow "//trim(type_str))
-	    read (value, *) atom_2
-	    call QUIP_FoX_get_value(attributes, "p", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read p in bond_length_dev_pow "//trim(type_str))
-	    read (value, *) p
-	    call QUIP_FoX_get_value(attributes, "d", value, status)
-	    if (status == 0) then
-	       read (value, *) d
-	       if (parse_in_restraints) then
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, d, tol=tol, print_summary=print_summary)
-	       endif
-	    else
-	       if (parse_in_restraints) then
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_bondlength_dev_pow(parse_ds, atom_1, atom_2, p, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
