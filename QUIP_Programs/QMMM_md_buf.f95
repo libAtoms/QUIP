@@ -102,7 +102,7 @@ program qmmm_md
   real(dp)                    :: Outer_Buffer_Radius         !          region selection
   real(dp)                    :: Inner_QM_Region_Radius, Inner_QM_Core_Region_Radius
   real(dp)                    :: Outer_QM_Region_Radius, Outer_QM_Core_Region_Radius
-  real(dp)                    :: Connect_Cutoff
+  real(dp)                    :: Min_Connect_Cutoff
   real(dp)                    :: Simulation_Temperature
   character(len=FIELD_LENGTH) :: coord_file
   character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
@@ -188,7 +188,7 @@ program qmmm_md
       call param_register(params_in, 'Outer_QM_Region_Radius', '0.0', Outer_QM_Region_Radius, help_string="The outer radius of the QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Inner_QM_Core_Region_Radius', '0.0', Inner_QM_Core_Region_Radius, help_string="The inner radius of the core QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Outer_QM_Core_Region_Radius', '0.0', Outer_QM_Core_Region_Radius, help_string="The outer radius of the core QM region (around an atom list or a point in space).")
-      call param_register(params_in, 'Connect_Cutoff', '0.0', Connect_cutoff, help_string="Minimum value for connection calculation cutoff.  Useful for making sure that QM region is reachable by neighbour hops when QM atoms are far apart.")
+      call param_register(params_in, 'Min_Connect_Cutoff', '0.0', Min_Connect_cutoff, help_string="Minimum value for connection calculation cutoff.  Useful for making sure that QM region is reachable by neighbour hops when QM atoms are far apart.")
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature, help_string="Simulation temperature in K.")
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -378,7 +378,7 @@ program qmmm_md
       call print('  max_n_steps '//max_n_steps)
       call print('  Inner_Buffer_Radius '//round(Inner_Buffer_Radius,3))
       call print('  Outer_Buffer_Radius '//round(Outer_Buffer_Radius,3))
-      call print('  Connect_Cutoff '//round(Connect_cutoff,3))
+      call print('  Min_Connect_Cutoff '//round(Min_Connect_cutoff,3))
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
       call print('  coord_file '//coord_file) 
       call print('  latest_coord_file '//latest_coord_file) 
@@ -506,9 +506,8 @@ program qmmm_md
 
   !CALC. CONNECTIONS
 
-!    call set_cutoff(ds%atoms,Connect_Cutoff)
 !    call set_cutoff(ds%atoms,0._dp) !use the covalent radii to determine bonds
-    use_cutoff = max(Connect_Cutoff, Outer_Buffer_Radius)
+    use_cutoff = max(Min_Connect_Cutoff, Outer_Buffer_Radius)
     use_cutoff = max(use_cutoff, Outer_QM_Region_Radius)
     if (distance_ramp) use_cutoff = max(use_cutoff, distance_ramp_outer_radius)
     if (have_silica_potential) use_cutoff = max(SILICA_2BODY_CUTOFF, Outer_Buffer_Radius)
