@@ -3,7 +3,8 @@
 # find size of pointer to Fortran derived type
 # used by quippy and AtomEye for Fortran<->C interoperability
 
-cat > Makefile.tmp <<EOF
+
+cat > build.${QUIP_ARCH}/Makefile.tmp <<EOF
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
@@ -13,6 +14,7 @@ include Makefile.inc
 include Makefile.rules
 EOF
 
+cd build.${QUIP_ARCH}
 F90=$(make -f Makefile.tmp -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} -I ${QUIP_ROOT} -p 2> /dev/null | grep '^F90'| awk '{print $3}')
 rm Makefile.tmp
 
