@@ -123,7 +123,7 @@ def VASPReader(poscar, outcar=None, species=None):
 
 class VaspWriter(object):
 
-   def __init__(self, out):
+   def __init__(self, out, species_list=None):
       self.out=out
       self.opened = False
       if type(self.out) == type(''):
@@ -132,12 +132,58 @@ class VaspWriter(object):
 	 else:
 	    self.out = open(self.out, 'w')
 	    self.opened = True
+      if species_list is not None:
+	 self.species_list = species_list
 
    def close(self):
       if self.opened:
 	 self.out.close()
 
    def write(self, at):
+
+      # find numbers of atoms of each type, property name and value to match, and property labels to print above numbers
+      atnums = []
+      prop_vals = []
+      prop_vals_map = {}
+      labels = []
+      if (hasattr(self, 'species_list')):
+	 if (not hasattr(at, 'species')):
+	    sys.stderr.write("VASP writer needs species property when species_list is specified")
+	    sys.exit(1)
+	 property='species'
+	 for s in self.species_list:
+	    labels.append(s)
+	    prop_vals.append(s)
+	    prop_vals_map[s] = 1
+	    atnums.append((at.species[:].stripstrings() == s).count())
+      else:
+	 property='Z'
+	 atnums_map = {}
+	 for i_at in frange(at.n):
+	    try:
+	       atnums_map["%d" % at.Z[i_at]] += 1
+	    except:
+	       atnums_map["%d" % at.Z[i_at]] = 1
+
+	 for Z_s in sorted(atnums_map.keys(), key = lambda entry: int(entry)):
+	    prop_vals.append(int(Z_s))
+	    prop_vals_map[int(Z_s)] = 1
+	    labels.append(quippy.ElementName[int(Z_s)])
+	    atnums.append(int(atnums_map[Z_s]))
+
+      # check that every atom has a valid type
+      for i_at in frange(at.n):
+	 try:
+	    prop = getattr(at,property)[i_at].stripstrings()
+	 except:
+	    prop = getattr(at,property)[i_at]
+
+	 if not prop in prop_vals_map:
+	    # should probably handle situation when prop isn't a string, but that should never happen
+	    sys.stderr.write("Failed to find property %s in prop_vals_map dictionary" % prop)
+	    sys.exit(1)
+
+      # Comment
       try:
 	 self.out.write(at.params['VASP_Comment']+"\n")
       except:
@@ -146,44 +192,36 @@ class VaspWriter(object):
 	 except:
 	    self.out.write("\n")
 
+      # Lattice
       self.out.write("1.0\n")
       self.out.write("%f %f %f\n" % (at.lattice[1,1], at.lattice[2,1], at.lattice[3,1]))
       self.out.write("%f %f %f\n" % (at.lattice[1,2], at.lattice[2,2], at.lattice[3,2]))
       self.out.write("%f %f %f\n" % (at.lattice[1,3], at.lattice[2,3], at.lattice[3,3]))
 
-      atnums = {}
-      for i_at in frange(at.n):
-	 try:
-	    atnums["%d" % at.Z[i_at]] += 1
-	 except:
-	    atnums["%d" % at.Z[i_at]] = 1
+      # Numbers of atoms and type labels
+      self.out.write(" ".join(labels)+"\n")
+      self.out.write(" ".join([("%d" % Z) for Z in atnums])+"\n")
 
-      # print atnums
-      Zs_sorted = sorted(atnums.keys(), key=lambda entry: int(entry))
-      # print Zs_sorted
-      for i in range(len(Zs_sorted)):
-	 Z_i = int(Zs_sorted[i])
-	 self.out.write ("%s " % quippy.ElementName[Z_i])
-      self.out.write ("\n")
-      for i in range(len(Zs_sorted)):
-	 Z_i = int(Zs_sorted[i])
-	 self.out.write ("%d " % atnums["%d" % Z_i])
-      self.out.write ("\n")
-
-      self.out.write("Selective Dynamics\n")
-      self.out.write("Cartesian\n")
-      for i in range(len(Zs_sorted)):
-	 Z_i = int(Zs_sorted[i])
+      # Positions
+      for i in range(len(prop_vals)):
 	 for i_at in frange(at.n):
-	    if (at.Z[i_at] == Z_i):
+	    try:
+	       match = getattr(at,property)[i_at].stripstrings() == prop_vals[i]
+	    except:
+	       match = getattr(at,property)[i_at] == prop_vals[i]
+	    if (match):
 	       self.out.write("%f %f %f   T T T\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at]))
 
+      # Velocities
       if (hasattr(at, 'velo')):
 	 self.out.write("\n")
-	 for i in range(len(Zs_sorted)):
-	    Z_i = int(Zs_sorted[i])
+	 for i in range(len(prop_vals)):
 	    for i_at in frange(at.n):
-	       if (at.Z[i_at] == Z_i):
+	       try:
+		  match = getattr(at,property)[i_at].stripstrings() == prop_vals[i]
+	       except:
+		  match = getattr(at,property)[i_at] == prop_vals[i]
+	       if (match):
 		  self.out.write("%f %f %f\n" % (at.velo[1,i_at], at.velo[2,i_at], at.velo[3,i_at]))
 
 
