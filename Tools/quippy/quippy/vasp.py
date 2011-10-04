@@ -16,14 +16,11 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+import quippy
 from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
 from quippy.farray import fzeros,frange
-from StringIO import StringIO
-import sys, string, os, operator, itertools, logging, glob, re
-
 import numpy as np
-import time, os, itertools, sys
-import re
+import re, sys
 
 @atoms_reader('vasp')
 @atoms_reader('POSCAR')
@@ -75,8 +72,6 @@ def VASPReader(poscar, outcar=None, species=None):
    lat[:,3] = a3[0:3]
 
    at = Atoms(n=n, lattice=lat)
-   if (len(comment) == 0):
-      comment="-NONE-"
    at.params['VASP_Comment'] = comment
 
    coord_direct=re.compile("^\s*d", re.IGNORECASE).match(coord_type);
@@ -126,44 +121,72 @@ def VASPReader(poscar, outcar=None, species=None):
                at_cur.pos[:,i] = at.pos[:,i] - dr
             yield at_cur
 
+class VaspWriter(object):
 
-class VASPWriter(object): 
-    def __init__(self, pos=None, species_map={'O':1, 'Si':2}):
-	if pos == 'stdout':
-		pos = sys.stdout 
-	
-	self.pos = pos
-	self.species_map = species_map
+   def __init__(self, out):
+      self.out=out
+      self.opened = False
+      if type(self.out) == type(''):
+	 if self.out == 'stdout':
+	    self.out = sys.stdout
+	 else:
+	    self.out = open(self.out, 'w')
+	    self.opened = True
 
-	if isinstance(self.pos, str): self.pos = open(self.pos, 'w')
+   def close(self):
+      if self.opened:
+	 self.out.close()
 
-    def write(self, at):
-        self.pos.write('System\n')# % (self.step_name, self.it))
+   def write(self, at):
+      try:
+	 self.out.write(at.params['VASP_Comment']+"\n")
+      except:
+	 try:
+	    self.out.write(at.params['comment']+"\n")
+	 except:
+	    self.out.write("\n")
 
-#Lattice
-        self.pos.write('%20.10f\n' % 1.0)
-        for i in (1,2,3):
-            L = at.lattice[:,i].copy()
-            self.pos.write('%20.10f%20.10f%20.10f\n' % (L[1], L[2], L[3]))
+      self.out.write("1.0\n")
+      self.out.write("%f %f %f\n" % (at.lattice[1,1], at.lattice[2,1], at.lattice[3,1]))
+      self.out.write("%f %f %f\n" % (at.lattice[1,2], at.lattice[2,2], at.lattice[3,2]))
+      self.out.write("%f %f %f\n" % (at.lattice[1,3], at.lattice[2,3], at.lattice[3,3]))
 
-#Count and print the atomic species sorted according to map_species
-        nat = [0]*len(self.species_map.keys())
-        sorted_species = [' ']*len(self.species_map.keys())
+      atnums = {}
+      for i_at in frange(at.n):
+	 try:
+	    atnums["%d" % at.Z[i_at]] += 1
+	 except:
+	    atnums["%d" % at.Z[i_at]] = 1
 
-        for i,key in enumerate(sorted(self.species_map, key=self.species_map.get)):
-                sorted_species[i] = key
-		nat[i] = ( at.species[:].stripstrings()==key ).count() 
-        self.pos.write(' '.join([str(n) for n in nat])+'\n')
+      # print atnums
+      Zs_sorted = sorted(atnums.keys(), key=lambda entry: int(entry))
+      # print Zs_sorted
+      for i in range(len(Zs_sorted)):
+	 Z_i = int(Zs_sorted[i])
+	 self.out.write ("%s " % quippy.ElementName[Z_i])
+      self.out.write ("\n")
+      for i in range(len(Zs_sorted)):
+	 Z_i = int(Zs_sorted[i])
+	 self.out.write ("%d " % atnums["%d" % Z_i])
+      self.out.write ("\n")
 
-        self.pos.write('Selective Dynamics\n')
-        self.pos.write('Cartesian\n')
+      self.out.write("Selective Dynamics\n")
+      self.out.write("Cartesian\n")
+      for i in range(len(Zs_sorted)):
+	 Z_i = int(Zs_sorted[i])
+	 for i_at in frange(at.n):
+	    if (at.Z[i_at] == Z_i):
+	       self.out.write("%f %f %f   T T T\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at]))
 
-#Positions
-        for j in range(len(sorted_species)):
-              for i in frange(at.n):
-                  if str(at.species[i].stripstrings()) == sorted_species[j] :
-                  	p = at.pos[:,i].copy()
-                  	self.pos.write('%20.10f%20.10f%20.10f T  T  T\n' % (p[1], p[2], p[3]))
+      if (hasattr(at, 'velo')):
+	 self.out.write("\n")
+	 for i in range(len(Zs_sorted)):
+	    Z_i = int(Zs_sorted[i])
+	    for i_at in frange(at.n):
+	       if (at.Z[i_at] == Z_i):
+		  self.out.write("%f %f %f\n" % (at.velo[1,i_at], at.velo[2,i_at], at.velo[3,i_at]))
 
 
-AtomsWriters['vasp'] = VASPWriter
+AtomsWriters['vasp'] = VaspWriter
+AtomsWriters['VASP'] = VaspWriter
+AtomsWriters['POSCAR'] = VaspWriter
