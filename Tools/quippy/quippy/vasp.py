@@ -72,7 +72,8 @@ def VASPReader(poscar, outcar=None, species=None):
    lat[:,3] = a3[0:3]
 
    at = Atoms(n=n, lattice=lat)
-   at.params['VASP_Comment'] = comment
+   if (len(comment) > 0):
+      at.params['VASP_Comment'] = comment
 
    coord_direct=re.compile("^\s*d", re.IGNORECASE).match(coord_type);
 
