@@ -114,7 +114,7 @@ program qmmm_md
   type(Extendable_Str)        :: restraint_constraint_xml_es
   integer                     :: Charge
   real(dp)                    :: Langevin_Tau, Nose_Hoover_Tau
-  logical                     :: open_Langevin
+  logical                     :: adaptive_Langevin
   logical                     :: Buffer_general, do_general
   logical                     :: Continue_it
   logical                     :: reinitialise_qm_region
@@ -198,7 +198,7 @@ program qmmm_md
       call param_register(params_in, 'Charge', '0', Charge, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Langevin_Tau', '500.0', Langevin_Tau, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params_in, 'Open_Langevin', 'F', open_Langevin, help_string="If true and Thermostat_Type uses Langevin, use Nose_Hoover_tau to make it open Langevin (Jones & Leimkuhler)")
+      call param_register(params_in, 'Adaptive_Langevin', 'F', adaptive_Langevin, help_string="If true and Thermostat_Type uses Langevin, use Nose_Hoover_tau to make it adaptive Langevin (Jones & Leimkuhler)")
       call param_register(params_in, 'Buffer_general', 'F', Buffer_general, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Continue', 'F', Continue_it, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -334,9 +334,9 @@ program qmmm_md
       elseif (Thermostat_Type.eq.1) then
          call print('  Thermostat_Type 1: Langevin everywhere')
          call print('  Langevin_Tau '//Langevin_Tau)
-         call print('  open Langevin '//open_Langevin)
-	 if (open_Langevin) then
-	    call print('  Open Langevin, Nose_Hoover_Tau '//Nose_Hoover_Tau)
+         call print('  adaptive Langevin '//adaptive_Langevin)
+	 if (adaptive_Langevin) then
+	    call print('  Adaptive Langevin, Nose_Hoover_Tau '//Nose_Hoover_Tau)
 	 endif
       elseif (Thermostat_Type.eq.2) then
          call print('  Thermostat_Type 1: Nose-Hoover everywhere')
@@ -361,11 +361,11 @@ program qmmm_md
          call print('                   each with its own Nose-Hoover thermostat')
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.8) then
-         call print('  Thermostat_Type 8: separate Langevin for each atom, useful only for open Langevin')
+         call print('  Thermostat_Type 8: separate Langevin for each atom, useful only for adaptive Langevin')
          call print('  Langevin_Tau ' // Langevin_Tau)
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
-	 if (.not.open_Langevin) then
-	    call system_abort("Thermostat_Type=8 makes sense only for open langevin and Nose_Hoover_Tau > 0, otherwise just use regular Langevin Thermostat_Type=1")
+	 if (.not.adaptive_Langevin) then
+	    call system_abort("Thermostat_Type=8 makes sense only for adaptive langevin and Nose_Hoover_Tau > 0, otherwise just use regular Langevin Thermostat_Type=1")
 	 endif
       else
 	 call print('  Thermostat_Type '//thermostat_type//' unknown')
@@ -1532,9 +1532,9 @@ contains
       case(0)
 	call print("No thermostat, NVE!!", PRINT_ALWAYS)
       case(1)
-	if (open_Langevin) then
+	if (adaptive_Langevin) then
 	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp)
-	   call print('Added single open Langevin Thermostat')
+	   call print('Added single adaptive Langevin Thermostat')
 	else
 	   Nose_Hoover_Tau = -1.0_dp
 	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau)
