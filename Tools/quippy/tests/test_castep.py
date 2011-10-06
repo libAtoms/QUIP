@@ -562,7 +562,7 @@ class TestReadGeom(QuippyTestCase):
 
    def testspecies(self):
       self.assert_(all(self.at.species.stripstrings() == 'Si'))
-      self.assertEqual((self.at.species.stripstrings() == 'Si').count(), 28)
+      self.assertEqual((self.at.species.stripstrings() == 'Si').sum(), 28)
       self.assertEqual(self.at.n, 28)
 
    def testatomsread(self):

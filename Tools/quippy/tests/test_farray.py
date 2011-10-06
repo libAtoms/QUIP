@@ -317,8 +317,8 @@ class TestFortranArray(QuippyTestCase):
       self.assert_((self.f2[(self.f2 > 1).nonzero()] == self.f2[self.f2 > 1]).all())
 
    def testcount(self):
-      self.assertEqual((self.f2 > 1).count(), 5)
-      self.assertEqual((self.f2 == 1).count(), 1)
+      self.assertEqual((self.f2 > 1).sum(), 5)
+      self.assertEqual((self.f2 == 1).sum(), 1)
 
    def testinteq(self):
       la = self.f2 == 1

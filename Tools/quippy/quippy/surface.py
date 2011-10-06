@@ -38,12 +38,12 @@ def surface_energy(pot, bulk, surface, dir=2):
         bulk.calc_connect()
         pot.calc(bulk, energy=True, force=True)
 
-    bulk_energy_per_sio2 = bulk.energy/(bulk.z == 14).count()
+    bulk_energy_per_sio2 = bulk.energy/(bulk.z == 14).sum()
 
     surface.calc_connect()
     pot.calc(surface, energy=True, force=True)
 
     area = surface.cell_volume()/surface.lattice[dir,dir]
 
-    return (surface.energy - (surface.z == 14).count()*bulk_energy_per_sio2)/(2.0*area)
+    return (surface.energy - (surface.z == 14).sum()*bulk_energy_per_sio2)/(2.0*area)
 

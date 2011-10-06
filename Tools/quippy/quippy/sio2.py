@@ -246,8 +246,8 @@ def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3
 def get_quartz_params(at):
 
     assert at.n == 9
-    assert (at.z == 14).count() == 3
-    assert (at.z == 8).count() == 6
+    assert (at.z == 14).sum() == 3
+    assert (at.z == 8).sum() == 6
 
     from quippy import get_lattice_params
 

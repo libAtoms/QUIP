@@ -16,7 +16,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""Defintion of the Atoms class
+"""Definition of the Atoms class
 
 This module defines the quippy.Atoms class which stores and
 manipulates a collection of atoms"""
@@ -523,7 +523,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         """
         if mask is not None:
             mask = farray(mask)
-            out = self.__class__(n=mask.count(), lattice=self.lattice, properties={}, params={})
+            out = self.__class__(n=mask.sum(), lattice=self.lattice, properties={}, params={})
             _atoms.Atoms.select(out, self, mask=mask, orig_index=orig_index)
         elif list is not None:
             list = farray(list)
