@@ -24,6 +24,7 @@ import re, sys
 
 @atoms_reader('vasp')
 @atoms_reader('POSCAR')
+@atoms_reader('CONTCAR')
 def VASPReader(poscar, outcar=None, species=None):
    """Read a configuration from a VASP POSCAR file.
 
@@ -202,6 +203,8 @@ class VaspWriter(object):
       # Numbers of atoms and type labels
       self.out.write(" ".join(labels)+"\n")
       self.out.write(" ".join([("%d" % Z) for Z in atnums])+"\n")
+      self.out.write("Selective Dynamics\n")
+      self.out.write("Cartesian\n")
 
       # Positions
       for i in range(len(prop_vals)):
