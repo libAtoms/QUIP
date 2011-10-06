@@ -321,7 +321,7 @@ all_configs = AtomsReader(infiles, start=opt.range.start, stop=opt.range.stop, s
 
 try:
    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 
-except IndexError:
+except AttributeError:
    show_progress = False
 
 if show_progress:
