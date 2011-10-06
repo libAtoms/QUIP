@@ -217,6 +217,26 @@ X
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 HJtext
 
+$headers{"_F90WRAP"} = ["HF", <<'HJtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   f90wrap: F90 to Python interface generator with derived type support
+X
+X   Copyright James Kermode 2011
+X
+X   These portions of the source code are released under the GNU General
+X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+X
+X   If you would like to license the source code under different terms,
+X   please contact James Kermode, james.kermode@gmail.com
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.jrkermode.co.uk/f90wrap
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HJtext
+
 
 foreach my $file (@ARGV) {
   if (-f $file) {
