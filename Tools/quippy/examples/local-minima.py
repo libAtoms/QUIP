@@ -75,7 +75,7 @@ def find_local_minima(a, pot_zero=None, shallow_threshold=None):
       a_trans[tuple(x0)] = a[min]
       basin_volume[local_minima.index(min)] += 1
 
-   total_volume = float((a != 0).count())
+   total_volume = float((a != 0).sum())
    
    if shallow_threshold is not None:
       for min in local_minima:

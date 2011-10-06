@@ -47,8 +47,8 @@ from quippy import *
 ##             except StopIteration:
 ##                pass
 
-##    print 'alive', (v == 2).count()
-##    return (v == 2).count() != 0
+##    print 'alive', (v == 2).sum()
+##    return (v == 2).sum() != 0
 
 cmap_data = {'red':   ((0, 0., 0.),(0.365079, 1.000000, 1.000000),(1.0, 1.0, 1.0)),
              'green': ((0, 0., 0.),(0.365079, 0.000000, 0.000000),(0.746032, 1.000000, 1.000000),(1.0, 1.0, 1.0)),

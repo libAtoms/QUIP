@@ -111,8 +111,8 @@ for pot_file in args:
 
     if opt.sparse_points:
         subplot(n_plots, 1, i)
-        n_sparse = float(sum([at.sparse.count() for at in configs]))
-        plot([at.sparse.count()/float(at.n) for at in configs])
+        n_sparse = float(sum([at.sparse.sum() for at in configs]))
+        plot([at.sparse.sum()/float(at.n) for at in configs])
         xlim(0,len(configs)-1)
         ylabel('N_sparse / N_at')
     

@@ -299,12 +299,6 @@ class FortranArray(numpy.ndarray):
         """Return the one-based indices of the elements of a which are not zero."""
         return tuple(a + 1 for a in numpy.ndarray.nonzero(self))
 
-    def count(self):
-        """Number of nonzero elemnts of this FortranArray.
-
-        Equivalent to len(self[self.nonzero()])."""
-        return len(self[self.nonzero()])
-
     def argmin(self, axis=None, out=None):
         """Return one-based indices of the minimum values along the given  axis of `a`.
 

@@ -790,7 +790,7 @@ class TestCluster_CrackTip(QuippyTestCase):
       self.assertEqual(self.cluster1.n, 97)
 
    def test_cluster_n_term(self):
-      self.assertEqual((self.cluster1.z == 1).count(), 40)
+      self.assertEqual((self.cluster1.z == 1).sum(), 40)
 
    def test_cluster_lattice_x(self):
       self.assertAlmostEqual(self.cluster1.lattice[1,1], 28.0)
@@ -2592,16 +2592,16 @@ O              -5.37614588     -6.61994820      1.11336788       8       4      
 
       def test_cluster1_composition(self):
             descr = self.t1.str[1,:].stripstrings()
-            self.assertEqual([(descr == 'h_active').count(),
-                              (descr == 'term').count()],
+            self.assertEqual([(descr == 'h_active').sum(),
+                              (descr == 'term').sum()],
                              [22,17])
             
       def test_cluster2_composition(self):
             descr = self.t2.str[1,:].stripstrings()
-            self.assertEqual([(descr == 'h_active').count(),
-                              (descr == 'tetra').count(),
-                              (descr == 'n_cut_bond').count(),
-                              (descr == 'term').count()],
+            self.assertEqual([(descr == 'h_active').sum(),
+                              (descr == 'tetra').sum(),
+                              (descr == 'n_cut_bond').sum(),
+                              (descr == 'term').sum()],
                              [22,18,1,15])
             
 

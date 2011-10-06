@@ -133,7 +133,7 @@ def makecrack_main(params, stem):
                              (abs(crack_slab.pos[1,:]-minx) < params.crack_edge_fix_tol)] = 0
 
 
-    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
+    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.sum()))
 
     print_title('Setting edge mask')
 
@@ -315,9 +315,9 @@ def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=Non
     strip_width = at.pos[1,strip].max() - at.pos[1,strip].min()
     strip_height = at.pos[2,strip].max() - at.pos[2,strip].min()
     strip_volume = strip_width*strip_height*strip_depth
-    print 'Strip contains', strip.count(), 'atoms', 'width', strip_width, 'height', strip_height, 'volume', strip_volume
+    print 'Strip contains', strip.sum(), 'atoms', 'width', strip_width, 'height', strip_height, 'volume', strip_volume
 
-    strain_energy_density = (at.local_energy[strip].sum() - bulk.energy/bulk.n*strip.count())/strip_volume
+    strain_energy_density = (at.local_energy[strip].sum() - bulk.energy/bulk.n*strip.sum())/strip_volume
 
     print 'Strain energy density in strip', strain_energy_density, 'eV/A**3'
 
