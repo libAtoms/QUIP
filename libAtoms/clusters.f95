@@ -950,6 +950,84 @@ end function cluster_in_out_in
 
   end function cluster_keep_whole_silica_tetrahedra
 
+  !% keep whole octahedra for titania that is, for each Ti atom, keep all it's oxygen nearest neighbours but the O atoms with only 1 neighbour.
+  function cluster_keep_whole_titania_octahedra(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+
+    call print('doing cluster_keep_whole_titania_octahedra', PRINT_NERD)
+
+    cluster_changed = .false.
+    n = 0
+    do while (n < cluster_info%N)
+      n = n + 1
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (this%z(i) /= 22) then
+         ! Consider only Ti atoms, which form centres of tetrahedra
+         cycle  
+      end if
+
+      call print('cluster_keep_whole_titania_octahedra: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+        j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+        if (this%z(j) /= 8) then
+          call print("cluster_keep_whole_titania_octahedra:   j = "//j//" ["//jshift//"] is not oxygen ", PRINT_ANAL)
+          cycle
+        endif
+        if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+          call print("cluster_keep_whole_titania_octahedra:   j = "//j//" ["//jshift//"] is in cluster",PRINT_ANAL)
+          cycle
+        end if
+        if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+          call print("cluster_keep_whole_titania_octahedra:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
+          cycle
+        end if
+
+        !check if the oxygen has more than 1 neighbour in the cluster.
+!       neigh_O = 0
+!       do l=1,atoms_n_neighbours(this, j, alt_connect=use_connect)
+!           k = atoms_neighbour(this, j, l, distance=rdist, shift=kshift, alt_connect=use_connect)
+!           if(find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
+!             call print(" j : "// j // " Z(j) :" // this%Z(j) // ' shift ' // jshift)
+!             call print(" k : "// k // " Z(k) :" // this%Z(k) // ' shift ' // kshift)
+!             call print(" i : "// i // " Z(i) :" // this%Z(i) // ' shift ' // ishift)
+!             call print('distance between k and j '// rdist)
+!             call print("cluster_keep_whole_titania_octahedra:   k = "//k//" ["//kshift//"] is not in cluster",PRINT_ANAL)
+!             cycle
+!           end if
+!           if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, l, alt_connect=use_connect))) then
+!             call print(" j : "// j // " Z(j) :" // this%Z(j) // ' shift ' // jshift)
+!             call print(" k : "// k // " Z(k) :" // this%Z(k) // ' shift ' // kshift)
+!             call print(" i : "// i // " Z(i) :" // this%Z(i) // ' shift ' // ishift)
+!             call print('distance between k and j '// rdist)
+!             call print("cluster_keep_whole_titania_octahedra:   k = "//k//" ["//kshift//"] not nearest neighbour",PRINT_ANAL)
+!             cycle
+!           end if
+!           neigh_O = neigh_O + 1 
+!       end do ! l
+
+        call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"octa      "/) )
+        cluster_changed = .true.
+        call print('cluster_keep_whole_titania_octahedra  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+        
+      end do ! m
+
+
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_titania_octahedra: Finished checking',PRINT_NERD)
+    call print("cluster_keep_whole_titania_octahedra: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+
+  end function cluster_keep_whole_titania_octahedra
 
   !% adding each neighbour outside atom if doing so immediately reduces the number of cut bonds
   function cluster_reduce_n_cut_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
@@ -1723,7 +1801,7 @@ end function cluster_in_out_in
          even_electrons, do_periodic(3), cluster_nneighb_only, &
          cluster_allow_modification, hysteretic_connect, same_lattice, &
          fix_termination_clash, keep_whole_residues, keep_whole_subgroups, keep_whole_prolines, keep_whole_proline_sidechains, &
-	 keep_whole_silica_tetrahedra, reduce_n_cut_bonds, in_out_in, &
+	 keep_whole_silica_tetrahedra, keep_whole_titania_octahedra, terminate_octahedra,reduce_n_cut_bonds, in_out_in, &
          protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
 	 combined_protein_heuristics
     character(FIELD_LENGTH) :: in_out_in_mode
@@ -1736,12 +1814,14 @@ end function cluster_in_out_in
     integer :: prev_cluster_info_n
     integer, allocatable, dimension(:) :: uniqed, tmp_index
 
-    type(Table)                              :: n_term, sorted_n_term
-    integer                                  :: m, n, p
+    type(Table)                              :: n_term, in_n_term, sorted_n_term
+    integer                                  :: m, n, p, p_in, in_n
 
     real(dp)                                 :: H1(3)
     real(dp)                                 :: dhat_ij(3), d(3)
     real(dp)                                 :: r_ij, rescale
+    real(dp)                                 :: orig_length
+    real(dp), dimension(3)                   :: bond1, bond2, new_bond 
     integer                                  :: ishift(3), jshift(3), oldN, most_hydrogens
     logical                                  :: atom_mask(6)
     integer, allocatable, dimension(:) :: idx
@@ -1790,6 +1870,10 @@ end function cluster_in_out_in
       help_string="Apply heuristic keeping identified subgroups within a residue whole")
     call param_register(params, 'keep_whole_silica_tetrahedra','F', keep_whole_silica_tetrahedra,&
       help_string="Apply heureistic keeping SiO2 tetrahedra whole")
+    call param_register(params, 'keep_whole_titania_octahedra','F', keep_whole_titania_octahedra,&
+      help_string="Apply heureistic keeping TiO2 tetragonal structure whole")
+    call param_register(params, 'terminate_octahedra','F', terminate_octahedra,&
+      help_string="Apply heureistic terminating TiO2 octahedra")
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds,&
       help_string="Apply heuristic that adds atoms if doing so reduces number of broken bonds")
     call param_register(params, 'in_out_in', 'F', in_out_in, &
@@ -2045,6 +2129,8 @@ end function cluster_in_out_in
                ' keep_whole_proline_sidechains ' // keep_whole_proline_sidechains // &
                ' keep_whole_subgroups ' // keep_whole_subgroups // &
                ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
+               ' keep_whole_titania_octahedra ' // keep_whole_titania_octahedra // &
+               ' terminate_octahedra ' // terminate_octahedra // &
                ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
                ' in_out_in ' // in_out_in // &
                ' in_out_in_mode ' // in_out_in_mode // &
@@ -2070,6 +2156,9 @@ end function cluster_in_out_in
           if (reduce_n_cut_bonds) then
              cluster_changed = cluster_changed .or. cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
+          if (keep_whole_titania_octahedra) then
+             cluster_changed = cluster_changed .or. cluster_keep_whole_titania_octahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+          end if
           if (in_out_in) then
              cluster_changed = cluster_changed .or. cluster_in_out_in(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, in_out_in_mode)
           endif
@@ -2103,10 +2192,11 @@ end function cluster_in_out_in
 
     !So now cluster_info contains all the atoms that are going to be in the cluster.
     !If terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
-    if (terminate) then
+    if (terminate.or.terminate_octahedra) then
        call print('create_cluster: Terminating cluster with hydrogens',PRINT_NERD)
 
        call table_allocate(n_term, 5, 0, 0, 0)
+       call table_allocate(in_n_term, 5, 0, 0, 0)
        oldN = cluster_info%N
 
        !Loop over atoms in the cluster
@@ -2114,6 +2204,7 @@ end function cluster_in_out_in
 
           i = cluster_info%int(1,n)
           ishift = cluster_info%int(2:4,n)
+          if(terminate_octahedra .and. at%z(i).ne.8 ) cycle 
           !Loop over atom i's neighbours
           do m = 1, atoms_n_neighbours(at,i, alt_connect=use_connect)
 
@@ -2136,7 +2227,7 @@ end function cluster_in_out_in
                 ! Label term atom with indices into original atoms structure.
                 ! j is atom it's generated from and n is index into cluster table of atom it's attached to
                 call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
-
+                 
                 ! Keep track of how many termination atoms each cluster atom has
                 p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
                 if (p == 0) then
@@ -2154,9 +2245,60 @@ end function cluster_in_out_in
                    call print(line, PRINT_NERD)
                 end if
              end if
+
+             ! Keep track of how many other neighbours has
+             if (terminate_octahedra.and.find(cluster_info,(/j,ishift+jshift,at%Z(j),0/), atom_mask) /= 0 .and. &
+                  (hysteretic_connect .or. is_nearest_neighbour(at, i, m, alt_connect=use_connect))) then
+                p_in = find_in_array(int_part(in_n_term,(/1,2,3,4/)),(/n,ishift/))
+                if (p_in == 0) then
+                   call append(in_n_term, (/n,ishift,1/))
+                else
+                   in_n_term%int(5,p_in) = in_n_term%int(5,p_in) + 1
+                end if
+             endif
           end do
 
        end do
+
+       !If terminate octahedra is set we have to adjust how many H atoms are added to the oxygens.
+       !Since with Ti, the oxygens are threefold coordinated, we have to remove some of the added O
+       !to restore the correct twofold coordination.
+       if(terminate_octahedra) then
+
+          j = cluster_info%N 
+          do i=n_term%n,1,-1
+             n = n_term%int(1,i) !Reference atom
+             in_n = find_in_array(int_part(in_n_term,(/1/)),(/n/))
+             ishift = n_term%int(2:4,i)
+
+             if (n_term%int(5,i) .eq. 2) then
+               if (all(cluster_info%int(2:6,j) == (/ishift,1,n/))) then
+                 bond1 = cluster_info%real(1:3,j)   - cluster_info%real(1:3,n)
+                 bond2 = cluster_info%real(1:3,j-1) - cluster_info%real(1:3,n)
+                 orig_length = sqrt(sum(bond1 * bond1))
+                 
+                 new_bond = bond1 + bond2 
+                 new_bond = new_bond / sqrt(sum(new_bond*new_bond))
+                 new_bond = new_bond * orig_length 
+                 call delete(cluster_info, j) !Delete second H atom
+                 call print('create_cluster: removed one of atom '//cluster_info%int(1,n)//" "//maxval(int_part(n_term,5))// &
+                     ' terminating hydrogens ', PRINT_VERBOSE)
+                 cluster_info%real(1:3,j-1) = cluster_info%real(1:3,n) + new_bond 
+               endif
+               j = j - 2
+             elseif (n_term%int(5,i) .eq. 1 .and. in_n_term%int(5,in_n) .le. 1) then  !Do not remove the H atom
+               j = j - 1
+             elseif (n_term%int(5,i) .eq. 1 .and. in_n_term%int(5,in_n) .gt. 1) then  !Remove the H atom
+               if (all(cluster_info%int(2:6,j) == (/ishift,1,n/))) then
+                 call delete(cluster_info, j)
+                 call print('create_cluster: removed one of atom '//cluster_info%int(1,n)//" "//maxval(int_part(n_term,5))// &
+                     ' terminating hydrogens ', PRINT_VERBOSE)
+               endif
+               j = j - 1
+             endif
+          end do
+
+       endif
 
        ! Do we need to remove a hydrogen atom to ensure equal n_up and n_down electrons?
        if (even_electrons .and. mod(sum(int_part(cluster_info,5)),2) == 1) then
