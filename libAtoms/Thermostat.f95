@@ -36,7 +36,7 @@
 !% Each thermostat has its own section in the 'thermostat_pre_vel1-4' subroutines,
 !% which interleave the usual velocity verlet steps.
 !%
-!% All Langevin variants with Q > 0 are open Langevin, from Jones & Leimkuhler 
+!% All Langevin variants with Q > 0 are open Langevin, from Jones \& Leimkuhler 
 !% preprint "Adaptive Stochastic Methods for Nonequilibrium Sampling"
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
