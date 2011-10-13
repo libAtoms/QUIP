@@ -59,11 +59,10 @@ module Atoms_types_module
   real(dp), parameter :: DEFAULT_NNEIGHTOL = 1.2_dp    !% Default value for 'atoms%nneightol'
 
   public :: DD_WRAP_TO_CELL, DD_WRAP_TO_DOMAIN
-  !% All particles, including ghosts, are wrapped into the cell
-  integer, parameter  :: DD_WRAP_TO_CELL    = 1
-  !% Particles are wrapped into the domain, ghost particles are located
-  !% next to the domain.
-  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2
+
+  integer, parameter  :: DD_WRAP_TO_CELL    = 1   !% All particles, including ghosts, are wrapped into the cell
+  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2   !% Particles are wrapped into the domain, ghost particles are 
+                                                  !% located next to the domain.
 
   public :: Table_pointer
   type Table_pointer
@@ -97,7 +96,7 @@ module Atoms_types_module
      !%
      !% \begin{tabular}{|c|c|}
      !% \hline
-     !% \multicolumn{2}{|c|}{'neighbour2(i)%int}' \\
+     !% \multicolumn{2}{|c|}{'neighbour2(i)%int'} \\
      !% \hline
      !% 1 & 2 \\
      !% \hline
