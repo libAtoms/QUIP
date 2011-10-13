@@ -116,7 +116,7 @@ use IPModel_Brenner_2002_module
 #ifdef HAVE_ASAP
 use IPModel_ASAP_module
 #endif
-use IPModel_ASAP2_module
+use IPModel_TS_module
 use IPModel_Glue_module
 use IPModel_PartridgeSchwenke_module
 use IPModel_Einstein_module
@@ -140,7 +140,7 @@ private
 
 integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
-     FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
+     FF_Brenner_2002 = 12, FF_ASAP = 13, FF_TS = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, &! Add new IPs here
      FF_Template = 99
@@ -166,7 +166,7 @@ type IP_type
 #ifdef HAVE_ASAP
   type(IPModel_ASAP) ip_ASAP
 #endif
-  type(IPModel_ASAP2) ip_ASAP2
+  type(IPModel_TS) ip_TS
   type(IPModel_Glue) ip_Glue
   type(IPModel_PartridgeSchwenke) ip_PartridgeSchwenke
   type(IPModel_Einstein) ip_Einstein
@@ -287,7 +287,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_Template, is_SW_VP, is_WaterDimer_Gillan
   ! Add new IPs here
 
@@ -315,7 +315,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 #else
   is_ASAP = .false.
 #endif
-  call param_register(params, 'ASAP2', 'false', is_ASAP2, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'TS', 'false', is_TS, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'Glue', 'false', is_Glue, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'PartridgeSchwenke', 'false', is_PartridgeSchwenke, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'Einstein', 'false', is_Einstein, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -341,7 +341,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call finalise(params)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,&       ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
@@ -394,9 +394,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
     this%functional_form = FF_ASAP
     call Initialise(this%ip_ASAP, args_str, param_str) 
 #endif
-  else if (is_ASAP2) then
-    this%functional_form = FF_ASAP2
-    call Initialise(this%ip_ASAP2, args_str, param_str) 
+  else if (is_TS) then
+    this%functional_form = FF_TS
+    call Initialise(this%ip_TS, args_str, param_str) 
   else if (is_Glue) then
     this%functional_form = FF_GLUE
     call Initialise(this%ip_Glue, args_str, param_str) 
@@ -482,8 +482,8 @@ subroutine IP_Finalise(this)
     case (FF_ASAP)
       call Finalise(this%ip_ASAP)
 #endif
-    case (FF_ASAP2)
-      call Finalise(this%ip_ASAP2)
+    case (FF_TS)
+      call Finalise(this%ip_TS)
     case (FF_GLUE)
       call Finalise(this%ip_Glue)
    case (FF_PartridgeSchwenke)
@@ -554,8 +554,8 @@ function IP_cutoff(this)
   case (FF_ASAP)
      IP_cutoff = maxval(this%ip_asap%cutoff)*BOHR
 #endif
-  case (FF_ASAP2)
-     IP_cutoff = max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR
+  case (FF_TS)
+     IP_cutoff = max(this%ip_TS%cutoff_ms, this%ip_TS%cutoff_coulomb)*BOHR
   case (FF_GLUE)
      IP_cutoff = this%ip_Glue%cutoff
   case (FF_PartridgeSchwenke)
@@ -595,8 +595,8 @@ subroutine IP_setup_atoms(this, at)
   type(Atoms), intent(inout) :: at
 
   select case (this%functional_form)
-  case (FF_ASAP2)
-     call setup_atoms(this%ip_asap2, at)
+  case (FF_TS)
+     call setup_atoms(this%ip_TS, at)
   end select
 
 end subroutine IP_setup_atoms
@@ -652,8 +652,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
     case (FF_ASAP)
       call calc(this%ip_asap, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
 #endif
-    case (FF_ASAP2)
-      call calc(this%ip_asap2, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+    case (FF_TS)
+      call calc(this%ip_TS, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_GLUE)
       call calc(this%ip_Glue, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_PartridgeSchwenke)
@@ -734,8 +734,8 @@ subroutine IP_Print(this, file, error)
     case (FF_ASAP)
       call Print(this%ip_asap, file=file)
 #endif
-    case (FF_ASAP2)
-      call Print(this%ip_asap2, file=file)
+    case (FF_TS)
+      call Print(this%ip_TS, file=file)
     case (FF_GLUE)
       call Print(this%ip_Glue, file=file)
    case (FF_PartridgeSchwenke)

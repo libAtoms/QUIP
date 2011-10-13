@@ -9,7 +9,7 @@ if test_electrostatic_embed:
   class TestDimer(QuippyTestCase):
 
     def setUp(self):
-       self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
+       self.pot = Potential('IP TS', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
        self.pot.print_()
        self.at = Atoms(n=2, lattice=numpy.diag([10.0, 10.0, 5.0]))
        half_cell = numpy.diag(self.at.lattice)/2.0
@@ -47,7 +47,7 @@ if test_electrostatic_embed:
   class TestCluster(QuippyTestCase):
 
     def setUp(self):
-       self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
+       self.pot = Potential('IP TS', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
 
     def test_cluster(self):
        from quippy.structure_tools import rotation_matrix, orthorhombic_slab

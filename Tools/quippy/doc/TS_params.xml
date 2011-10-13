@@ -1,4 +1,4 @@
-<ASAP_params 
+<TS_params 
     betapol="0.75" 
     cutoff_coulomb="20.0" 
     cutoff_ms="18.0" 
@@ -17,5 +17,5 @@
    <per_pair_data C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
    <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
 
-</ASAP_params>
+</TS_params>
 

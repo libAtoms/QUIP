@@ -820,7 +820,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   integer ti, tj, Zi, Zj
 
-  if (name == 'ASAP_params') then ! new ASAP stanza
+  if (name == 'TS_params') then ! new ASAP stanza
 
     if (parse_matched_label) return ! we already found an exact match for this label
 
@@ -847,7 +847,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       if (status == 0) then
         read (val, *), parse_ip%n_types
       else
-        call system_abort("Can't find n_types in ASAP_params")
+        call system_abort("Can't find n_types in TS_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -989,7 +989,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
-    if (name == 'ASAP_params') then
+    if (name == 'TS_params') then
       parse_in_ip = .false.
     end if
   endif

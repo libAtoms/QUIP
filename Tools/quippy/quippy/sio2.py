@@ -397,7 +397,7 @@ def timing_test():
 
     alpha = 0.0
 
-    xml = """<ASAP_params cutoff="4.0" n_types="2">
+    xml = """<TS_params cutoff="4.0" n_types="2">
     <per_type_data type="1" atomic_num="8" />
     <per_type_data type="2" atomic_num="14" />
     <params>
@@ -495,7 +495,7 @@ def timing_test():
     *************Yukawa***************
     %f 10.0 .t.
     </params>
-    </ASAP_params>"""
+    </TS_params>"""
 
 
     reps = (1, 2, 3, 4, 5, 6)
@@ -855,7 +855,7 @@ def param_to_xml(params, encoding='iso-8859-1'):
     xml = XMLGenerator(output, encoding)
     xml.startDocument()
 
-    xml.startElement('ASAP_params', {'cutoff': ' '.join([str(x) for x in params['rcut']]),
+    xml.startElement('TS_params', {'cutoff': ' '.join([str(x) for x in params['rcut']]),
                                      'n_types': str(params['nspecies']),
                                      'betapol': str(params['betapol']),
                                      'maxipol': str(params['maxipol']),
@@ -899,7 +899,7 @@ def param_to_xml(params, encoding='iso-8859-1'):
                                                })
             xml.endElement('per_pair_data')
 
-    xml.endElement('ASAP_params')
+    xml.endElement('TS_params')
     xml.endDocument()
     return output.getvalue()
 

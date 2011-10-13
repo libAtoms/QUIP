@@ -255,7 +255,7 @@ command line QUIP `eval` program. You will need the file `quartz.xyz`
 you made earlier, as well as an :download:`XML file <TS_params.xml>`
 containing the parameters of the classical potential::
  
- $ eval init_args="IP ASAP2" at_file=quartz.xyz param_file=TS_params.xml cij
+ $ eval init_args="IP TS" at_file=quartz.xyz param_file=TS_params.xml cij
 
 Here `init_args` describes the kind of potential to use, `at_file` is
 the file containing the unit cell and `param_file` is the potential
@@ -297,7 +297,7 @@ If you like, you could try using the following `quippy` code to
 evaluate :math:`C` taking the cystal symmetry into account to see how
 the results differ from those obtained with `eval`. ::
 
-   p = Potential('IP ASAP2', param_filename='TS_params.xml')
+   p = Potential('IP TS', param_filename='TS_params.xml')
    C = elastic_constants(p, aq, graphics=False, sym='trigonal_low')
 
 Which components are most different? Why do you think this is? Think
@@ -396,7 +396,7 @@ the surface energy? (use the `relax` argument to the `eval`
 program, or the :meth:`~Potential.minim` function in `quippy`). What
 happens if you anneal the surface using the `md` program? ::
 
-  $ md pot_init_args="IP ASAP2" params_in_file=TS_params.xml \
+  $ md pot_init_args="IP TS" params_in_file=TS_params.xml \
       atoms_in_file=quartz_0001.xyz dt=0.5 N_steps=1000
 
 Which surface energy do you think is more relevant for predicting the
@@ -579,7 +579,7 @@ Extension tasks
    direction, and compute the stress using the classical potential,
    using code based on the following::
 
-      p = Potential('IP ASAP2', param_filename='TS_params.xml')
+      p = Potential('IP TS', param_filename='TS_params.xml')
       ...
       T = numpy.diag([1., 1+.eps_yy, 1.])            # matrix for strain in y
       aqr_t = transform(aqr, T)                      # apply transformation
