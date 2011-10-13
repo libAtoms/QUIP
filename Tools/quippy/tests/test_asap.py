@@ -29,12 +29,12 @@ if hasattr(quippy, 'Potential'):
       got_asap1 = False
 
    try:
-      p2 = Potential('IP ASAP2', param_str='')
+      p2 = Potential('IP TS', param_str='')
       got_asap2 = True
    except RuntimeError:
       got_asap2 = False
 
-   # If True, validate ASAP2 against original ASAP potential.
+   # If True, validate TS against original ASAP potential.
    # Otherwise, we compare to reference data in this file.
    do_compare_p1_p2 = False
 
@@ -3039,7 +3039,7 @@ if hasattr(quippy, 'Potential'):
 
 
          def setUp(self):
-            self.xml = """<ASAP_params 
+            self.xml = """<TS_params 
         betapol="0.75" 
         cutoff="20.0 18.0 18.0 18.0"
         cutoff_ms="18.0"
@@ -3062,11 +3062,11 @@ if hasattr(quippy, 'Potential'):
         <per_pair_data atnum_i="8"  atnum_j="8"  C_pol="0.46009932"  D_ms="0.00018650185" gamma_ms="11.642637" B_pol="0.87357114" R_ms="8.0465068" />
         <per_pair_data atnum_i="8"  atnum_j="14" C_pol="-1.5091142"  D_ms="0.0053600978"  gamma_ms="10.405794" B_pol="1.977039"   R_ms="4.193651"  />
         <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="-0.0021645401" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
-      </ASAP_params>
+      </TS_params>
       """
             if do_compare_p1_p2:
                self.p1 = Potential('IP ASAP', param_str=self.xml)
-            self.p2 = Potential('IP ASAP2', param_str=self.xml)
+            self.p2 = Potential('IP TS', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -5099,7 +5099,7 @@ if hasattr(quippy, 'Potential'):
 
 
          def setUp(self):
-            self.xml = """<ASAP_params 
+            self.xml = """<TS_params 
         betapol="0.75" 
         cutoff="20.0 18.0 18.0 18.0"
         cutoff_ms="18.0"
@@ -5122,11 +5122,11 @@ if hasattr(quippy, 'Potential'):
         <per_pair_data atnum_i="8"  atnum_j="8"  C_pol="0.46009932"  D_ms="0.0" gamma_ms="11.642637" B_pol="0.87357114" R_ms="8.0465068" />
         <per_pair_data atnum_i="8"  atnum_j="14" C_pol="-1.5091142"  D_ms="0.0" gamma_ms="10.405794" B_pol="1.977039"   R_ms="4.193651"  />
         <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
-      </ASAP_params>
+      </TS_params>
       """
             if do_compare_p1_p2:
                self.p1 = Potential('IP ASAP', param_str=self.xml)
-            self.p2 = Potential('IP ASAP2', param_str=self.xml)
+            self.p2 = Potential('IP TS', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -7158,7 +7158,7 @@ if hasattr(quippy, 'Potential'):
 
 
          def setUp(self):
-            self.xml = """<ASAP_params 
+            self.xml = """<TS_params 
         betapol="0.75" 
         cutoff="20.0 18.0 18.0 18.0"
         cutoff_ms="18.0"
@@ -7182,11 +7182,11 @@ if hasattr(quippy, 'Potential'):
         <per_pair_data atnum_i="8"  atnum_j="8"  C_pol="0.46009932"  D_ms="0.0" gamma_ms="11.642637" B_pol="0.87357114" R_ms="8.0465068" />
         <per_pair_data atnum_i="8"  atnum_j="14" C_pol="-1.5091142"  D_ms="0.0" gamma_ms="10.405794" B_pol="1.977039"   R_ms="4.193651"  />
         <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
-      </ASAP_params>
+      </TS_params>
       """
             if do_compare_p1_p2:
                self.p1 = Potential('IP ASAP', param_str=self.xml)
-            self.p2 = Potential('IP ASAP2', param_str=self.xml)
+            self.p2 = Potential('IP TS', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -9217,7 +9217,7 @@ if hasattr(quippy, 'Potential'):
 
 
          def setUp(self):
-            self.xml = """<ASAP_params 
+            self.xml = """<TS_params 
         betapol="0.75" 
         cutoff="20.0 18.0 18.0 18.0"
         cutoff_ms="18.0"
@@ -9241,11 +9241,11 @@ if hasattr(quippy, 'Potential'):
         <per_pair_data atnum_i="8"  atnum_j="8"  C_pol="0.46009932"  D_ms="0.0" gamma_ms="11.642637" B_pol="0.87357114" R_ms="8.0465068" />
         <per_pair_data atnum_i="8"  atnum_j="14" C_pol="-1.5091142"  D_ms="0.0" gamma_ms="10.405794" B_pol="1.977039"   R_ms="4.193651"  />
         <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
-      </ASAP_params>
+      </TS_params>
       """
             if do_compare_p1_p2:
                self.p1 = Potential('IP ASAP', param_str=self.xml)
-            self.p2 = Potential('IP ASAP2', param_str=self.xml)
+            self.p2 = Potential('IP TS', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -9254,7 +9254,7 @@ if hasattr(quippy, 'Potential'):
          class TestMD(QuippyTestCase):
 
             def setUp(self):
-               self.xml = """<ASAP_params 
+               self.xml = """<TS_params 
            betapol="0.75" 
            cutoff="20.0 18.0 18.0 18.0"
            cutoff_ms="18.0"
@@ -9278,11 +9278,11 @@ if hasattr(quippy, 'Potential'):
            <per_pair_data C_pol="0.44302622" atnum_j="8" atnum_i="8" D_ms="0.00030700577" gamma_ms="12.165654" B_pol="1.1221903" R_ms="7.0252019" />
            <per_pair_data C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
            <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
-         </ASAP_params>
+         </TS_params>
          """
                if do_compare_p1_p2:
                   self.p1 = Potential('IP ASAP', param_str=self.xml)
-               self.p2 = Potential('IP ASAP2', param_str=self.xml)
+               self.p2 = Potential('IP TS', param_str=self.xml)
 
                self.p1.print_()
                self.p2.print_()
@@ -9368,7 +9368,7 @@ if hasattr(quippy, 'Potential'):
 class TestPseudise(QuippyTestCase):
 
    def setUp(self):
-      self.xml = """<ASAP_params label="screened_LDA" betapol="0.75" cutoff="20.0 20.0 18.0 0.0" cutoff_coulomb="20.0" cutoff_ms="18.0" tolpol="1e-10" yuksmoothlength="10.0" iesr="-1 -1 -1" a_ew="1e-06" n_types="2" gcut="0.0" pred_order="2" maxipol="60" raggio="0.0" tewald="F" yukalpha="0.1">
+      self.xml = """<TS_params label="screened_LDA" betapol="0.75" cutoff="20.0 20.0 18.0 0.0" cutoff_coulomb="20.0" cutoff_ms="18.0" tolpol="1e-10" yuksmoothlength="10.0" iesr="-1 -1 -1" a_ew="1e-06" n_types="2" gcut="0.0" pred_order="2" maxipol="60" raggio="0.0" tewald="F" yukalpha="0.1">
 
      <per_type_data pseudise_sigma="1.0" atomic_num="8" pol="14.131863" z="-1.4295594" type="1" />
      <per_type_data pseudise_sigma="1.0" atomic_num="14" pol="0.0" z="2.8591188" type="2" />
@@ -9377,7 +9377,7 @@ class TestPseudise(QuippyTestCase):
      <per_pair_data C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
      <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
 
-     </ASAP_params>"""
+     </TS_params>"""
 
       self.energy_ref = -173.214019568
       self.force_ref = farray([[  8.61080094e-03, -1.49143447e-02, -4.14564379e-15],
@@ -9393,7 +9393,7 @@ class TestPseudise(QuippyTestCase):
                                       -10.54706909, -10.54706909, -10.54706909, -10.54706909])
 
    def test_pseudise_alpha_quartz(self):
-      p = Potential('IP ASAP2', param_str=self.xml)
+      p = Potential('IP TS', param_str=self.xml)
       a = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
       a.set_cutoff(p.cutoff())
       a.calc_connect()

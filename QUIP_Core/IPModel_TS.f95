@@ -29,9 +29,9 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_ASAP2
+!X IPModel_TS
 !X
-!% Reimplementation of ASAP potential:
+!% Reimplementation of TS potential:
 !% P. Tangney and S. Scandolo,
 !% An ab initio parametrized interatomic force field for silica
 !% J. Chem. Phys, 117, 8898 (2002). 
@@ -41,7 +41,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #include "error.inc"
 
-module IPModel_ASAP2_module
+module IPModel_TS_module
 
 use libatoms_module
 use functions_module
@@ -53,8 +53,8 @@ private
 
 include 'IPModel_interface.h'
 
-public :: IPModel_ASAP2
-type IPModel_ASAP2
+public :: IPModel_TS
+type IPModel_TS
   integer :: n_types = 0
   real(dp) :: betapol, tolpol, yukalpha, yuksmoothlength
   integer :: maxipol, pred_order
@@ -67,37 +67,37 @@ type IPModel_ASAP2
   character(len=FIELD_LENGTH) :: label
   logical :: initialised, tdip_sr
 
-end type IPModel_ASAP2
+end type IPModel_TS
 
 logical, private :: parse_in_ip, parse_matched_label
-type(IPModel_ASAP2), private, pointer :: parse_ip
+type(IPModel_TS), private, pointer :: parse_ip
 
 interface Initialise
-  module procedure IPModel_ASAP2_Initialise_str
+  module procedure IPModel_TS_Initialise_str
 end interface Initialise
 
 interface Finalise
-  module procedure IPModel_ASAP2_Finalise
+  module procedure IPModel_TS_Finalise
 end interface Finalise
 
 interface Print
-  module procedure IPModel_ASAP2_Print
+  module procedure IPModel_TS_Print
 end interface Print
 
 public :: setup_atoms
 interface setup_atoms
-   module procedure IPModel_ASAP2_setup_atoms
+   module procedure IPModel_TS_setup_atoms
 end interface
 
 interface Calc
-  module procedure IPModel_ASAP2_Calc
+  module procedure IPModel_TS_Calc
 end interface Calc
 
 contains
 
 
-subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str)
-  type(IPModel_ASAP2), intent(inout) :: this
+subroutine IPModel_TS_Initialise_str(this, args_str, param_str)
+  type(IPModel_TS), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
 
   type(Dictionary) :: params
@@ -109,18 +109,18 @@ subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str)
   call initialise(params)
   this%label=''
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Initialise_str args_str')) then
-    call system_abort("IPModel_ASAP2_Initialise_str failed to parse label from args_str="//trim(args_str))
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_TS_Initialise_str args_str')) then
+    call system_abort("IPModel_TS_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
 
-  call IPModel_ASAP2_read_params_xml(this, param_str)
+  call IPModel_TS_read_params_xml(this, param_str)
   this%initialised = .true.
   
-end subroutine IPModel_ASAP2_Initialise_str
+end subroutine IPModel_TS_Initialise_str
 
-subroutine IPModel_ASAP2_Finalise(this)
-  type(IPModel_ASAP2), intent(inout) :: this
+subroutine IPModel_TS_Finalise(this)
+  type(IPModel_TS), intent(inout) :: this
 
   this%initialised = .false.
 
@@ -136,10 +136,10 @@ subroutine IPModel_ASAP2_Finalise(this)
   if (allocated(this%pseudise_sigma)) deallocate(this%pseudise_sigma)
   this%n_types = 0
   this%label = ''
-end subroutine IPModel_ASAP2_Finalise
+end subroutine IPModel_TS_Finalise
 
 subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
-  type(IPModel_ASAP2), intent(inout) :: this
+  type(IPModel_TS), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), dimension(:), intent(in) :: charge
   real(dp), dimension(:,:), intent(out) :: dip_sr
@@ -227,7 +227,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 #ifdef _OPENMP
    use omp_lib
 #endif
-   type(IPModel_ASAP2), intent(inout):: this
+   type(IPModel_TS), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
@@ -369,8 +369,8 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 
 end subroutine asap_morse_stretch
 
-subroutine IPModel_ASAP2_setup_atoms(this, at)
-  type(IPModel_ASAP2), intent(in):: this
+subroutine IPModel_TS_setup_atoms(this, at)
+  type(IPModel_TS), intent(in):: this
   type(Atoms), intent(inout)      :: at
 
   logical :: dummy
@@ -398,10 +398,10 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
   ! Increment at%cutoff if necessary
   call set_cutoff_minimum(at, max(this%cutoff_ms, this%cutoff_coulomb)*BOHR)
   
-end subroutine IPModel_ASAP2_setup_atoms
+end subroutine IPModel_TS_setup_atoms
 
-subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
-   type(IPModel_ASAP2), intent(inout):: this
+subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
+   type(IPModel_TS), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
@@ -452,11 +452,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
       call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
-      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
-         RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_TS_Calc args_str')) then
+         RAISE_ERROR("IPModel_TS_Calc failed to parse args_str="//trim(args_str), error)
       endif
       if (do_rescale_r .or. do_rescale_E) then
-         RAISE_ERROR("IPModel_ASAP2_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+         RAISE_ERROR("IPModel_TS_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
       end if
       call finalise(params)
    else
@@ -474,35 +474,35 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
    if (present(e)) e = 0.0_dp
    if (present(local_e)) then
-      call check_size('Local_E',local_e,(/at%N/),'IPModel_ASAP2_Calc', error)
+      call check_size('Local_E',local_e,(/at%N/),'IPModel_TS_Calc', error)
       local_e = 0.0_dp
    endif
 
    if (present(f)) then
-      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_ASAP2_Calc', error)
+      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_TS_Calc', error)
       f = 0.0_dp
    end if
    if (present(virial)) virial = 0.0_dp
    if (present(local_virial)) then
-      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_ASAP2_Calc', error)
+      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_TS_Calc', error)
       local_virial = 0.0_dp
-      RAISE_ERROR("IPModel_ASAP2_Calc: local_virial calculation requested but not supported yet.", error)
+      RAISE_ERROR("IPModel_TS_Calc: local_virial calculation requested but not supported yet.", error)
    endif
 
    allocate(efield_charge(3,at%n), efield_dipole(3,at%n))
 
    ! Assign pointers
    if (.not. assign_pointer(at, efield_name, efield)) then
-      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(efield_name)//'" property', error)
+      RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "'//trim(efield_name)//'" property', error)
    endif
 
    if (.not. assign_pointer(at, dipoles_name, dipoles)) then
-      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(dipoles_name)//'" property', error)
+      RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "'//trim(dipoles_name)//'" property', error)
    endif
 
    if (save_dipole_velo .and. maxval(abs(dipoles)) > 0.0_dp) then
       if (.not. assign_pointer(at, 'dip_velo', dip_velo)) then
-           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer ot "dip_velo" property', error)
+           RAISE_ERROR('IPModel_TS_calc failed to assign pointer ot "dip_velo" property', error)
       endif
       do i=1,at%n
          dip_velo(:,i) = -dipoles(:,i)
@@ -511,24 +511,24 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
    if (applied_efield) then
       if (.not. assign_pointer(at, 'ext_efield', ext_efield)) then
-           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "ext_efield" property', error)
+           RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "ext_efield" property', error)
       endif
    end if
 
    if (.not. assign_pointer(at, 'charge', charge)) then
-        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+        RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "charge" property', error)
       endif
    if (.not. assign_pointer(at, 'fixdip', fixdip)) then
-        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "fixdip" property', error)
+        RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "fixdip" property', error)
       endif
    if (.not. assign_pointer(at, 'efield_old1', efield_old1)) then
-        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property', error)
+        RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "efield_old1" property', error)
       endif
    if (.not. assign_pointer(at, 'efield_old2', efield_old2)) then
-        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old2" property', error)
+        RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "efield_old2" property', error)
       endif
    if (.not. assign_pointer(at, 'efield_old3', efield_old3)) then
-        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old3" property', error)
+        RAISE_ERROR('IPModel_TS_calc failed to assign pointer to "efield_old3" property', error)
       endif
 
    if (.not. get_value(at%params, 'n_efield_old', n_efield_old)) n_efield_old = 0
@@ -590,7 +590,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
       
       if (maxval(abs(this%pol)) > 0.0_dp .and. .not. all(fixdip)) then
 
-         call print('Entering ASAP2 Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', PRINT_VERBOSE)
+         call print('Entering TS Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', PRINT_VERBOSE)
 
          ! Self-consistent determination of dipole moments
          diff_old = 1.0_dp
@@ -644,7 +644,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
             
             if (diff > difftol) then
                call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
-               RAISE_ERROR('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff, error)
+               RAISE_ERROR('IPModel_TS_calc: Polarisation diverges - diff='//diff, error)
             end if
       
             if (abs(diff - diff_old) < this%tolpol) exit
@@ -653,7 +653,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
             npol = npol + 1
             if (npol >= this%maxipol)  then
                call write(at, 'ipmodel_asap_polarisation_not_converged.xyz')
-               RAISE_ERROR('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff, error)
+               RAISE_ERROR('IPModel_TS_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff, error)
             endif
 
          end do
@@ -696,40 +696,40 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
    call system_timer('asap_calc')
 
-end subroutine IPModel_ASAP2_Calc
+end subroutine IPModel_TS_Calc
 
 
-subroutine IPModel_ASAP2_Print(this, file)
-  type(IPModel_ASAP2), intent(in) :: this
+subroutine IPModel_TS_Print(this, file)
+  type(IPModel_TS), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
   integer :: ti, tj
 
-  call Print("IPModel_ASAP2 : ASAP2 Potential", file=file)
-  call Print("IPModel_ASAP2 : n_types = " // this%n_types, file=file)
-  call Print("IPModel_ASAP2 : betapol = "//this%betapol//" maxipol = "//this%maxipol//" tolpol = "//this%tolpol//" pred_order = "//this%pred_order, file=file)
-  call Print("IPModel_ASAP2 : yukalpha = "//this%yukalpha//" yuksmoothlength = "//this%yuksmoothlength, file=file)
+  call Print("IPModel_TS : TS Potential", file=file)
+  call Print("IPModel_TS : n_types = " // this%n_types, file=file)
+  call Print("IPModel_TS : betapol = "//this%betapol//" maxipol = "//this%maxipol//" tolpol = "//this%tolpol//" pred_order = "//this%pred_order, file=file)
+  call Print("IPModel_TS : yukalpha = "//this%yukalpha//" yuksmoothlength = "//this%yuksmoothlength, file=file)
 
   do ti=1, this%n_types
-    call Print ("IPModel_ASAP2 : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
-    call Print ("IPModel_ASAP2 : pol = "//this%pol(ti), file=file)
-    call Print ("IPModel_ASAP2 : z   = "//this%z(ti), file=file)
-    call Print ("IPModel_ASAP2 : pseudise_sigma = "//this%pseudise_sigma(ti), file=file)
+    call Print ("IPModel_TS : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
+    call Print ("IPModel_TS : pol = "//this%pol(ti), file=file)
+    call Print ("IPModel_TS : z   = "//this%z(ti), file=file)
+    call Print ("IPModel_TS : pseudise_sigma = "//this%pseudise_sigma(ti), file=file)
    call verbosity_push_decrement()
     do tj =1,this%n_types
-       call Print ("IPModel_ASAP2 : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) //&
+       call Print ("IPModel_TS : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) //&
             " " // this%atomic_num(tj), file=file)
-       call Print ("IPModel_ASAP2 : pair " // this%D_ms(ti,tj) // " " // this%gamma_ms(ti,tj) // " " &
+       call Print ("IPModel_TS : pair " // this%D_ms(ti,tj) // " " // this%gamma_ms(ti,tj) // " " &
             // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj), file=file)
 
     end do
    call verbosity_pop()
   end do
 
-end subroutine IPModel_ASAP2_Print
+end subroutine IPModel_TS_Print
 
-subroutine IPModel_ASAP2_read_params_xml(this, param_str)
-  type(IPModel_ASAP2), intent(inout), target :: this
+subroutine IPModel_TS_read_params_xml(this, param_str)
+  type(IPModel_TS), intent(inout), target :: this
   character(len=*), intent(in) :: param_str
 
   integer :: ti
@@ -748,7 +748,7 @@ subroutine IPModel_ASAP2_read_params_xml(this, param_str)
   call close_xml_t(fxml)
 
   if (this%n_types == 0) then
-    call system_abort("IPModel_ASAP2_read_params_xml parsed file, but n_types = 0")
+    call system_abort("IPModel_TS_read_params_xml parsed file, but n_types = 0")
   endif
 
   ! pseudise_sigma defaults to covalent radii
@@ -758,7 +758,7 @@ subroutine IPModel_ASAP2_read_params_xml(this, param_str)
      end if
   end do
 
-end subroutine IPModel_ASAP2_read_params_xml
+end subroutine IPModel_TS_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X 
@@ -776,7 +776,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   integer ti, tj, Zi, Zj
 
-  if (name == 'ASAP_params') then ! new ASAP stanza
+  if (name == 'TS_params') then ! new ASAP stanza
 
     if (parse_matched_label) return ! we already found an exact match for this label
 
@@ -803,7 +803,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       if (status == 0) then
         read (value, *), parse_ip%n_types
       else
-        call system_abort("Can't find n_types in ASAP_params")
+        call system_abort("Can't find n_types in TS_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -827,11 +827,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%C_pol = 0.0_dp
 
       call QUIP_FoX_get_value(attributes, "cutoff_coulomb", value, status)
-      if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find cutoff_coulomb")
+      if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find cutoff_coulomb")
       read (value, *) parse_ip%cutoff_coulomb
 
       call QUIP_FoX_get_value(attributes, "cutoff_ms", value, status)
-      if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find cutoff_ms")
+      if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find cutoff_ms")
       read (value, *) parse_ip%cutoff_ms
 
       call QUIP_FoX_get_value(attributes, "betapol", value, status)
@@ -861,19 +861,19 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   elseif (parse_in_ip .and. name == 'per_type_data') then
 
     call QUIP_FoX_get_value(attributes, "type", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find type")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find type")
     read (value, *) ti
 
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find atomic_num")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find atomic_num")
     read (value, *) parse_ip%atomic_num(ti)
 
     call QUIP_FoX_get_value(attributes, "pol", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find pol")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find pol")
     read (value, *) parse_ip%pol(ti)
 
     call QUIP_FoX_get_value(attributes, "z", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find z")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find z")
     read (value, *) parse_ip%z(ti)
 
     call QUIP_FoX_get_value(attributes, "pseudise_sigma", value, status)
@@ -902,19 +902,19 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     tj = get_type(parse_ip%type_of_atomic_num,Zj)
 
     call QUIP_FoX_get_value(attributes, "D_ms", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find D_ms")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find D_ms")
     read (value, *) parse_ip%D_ms(ti,tj)
     call QUIP_FoX_get_value(attributes, "gamma_ms", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find gamma_ms")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find gamma_ms")
     read (value, *) parse_ip%gamma_ms(ti,tj)
     call QUIP_FoX_get_value(attributes, "R_ms", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find R_ms")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find R_ms")
     read (value, *) parse_ip%R_ms(ti,tj)
     call QUIP_FoX_get_value(attributes, "B_pol", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find B_pol")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find B_pol")
     read (value, *) parse_ip%B_pol(ti,tj)
     call QUIP_FoX_get_value(attributes, "C_pol", value, status)
-    if (status /= 0) call system_abort ("IPModel_ASAP2_read_params_xml cannot find C_pol")
+    if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find C_pol")
     read (value, *) parse_ip%C_pol(ti,tj)
 
     if (ti /= tj) then
@@ -935,11 +935,11 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
-    if (name == 'ASAP_params') then
+    if (name == 'TS_params') then
       parse_in_ip = .false.
     end if
   endif
 
 end subroutine IPModel_endElement_handler
 
-end module IPModel_ASAP2_module
+end module IPModel_TS_module

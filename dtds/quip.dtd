@@ -1,6 +1,6 @@
 
-<!ELEMENT ASAP_params (comment|per_type_data|per_pair_data)*>
-<!ATTLIST ASAP_params
+<!ELEMENT TS_params (comment|per_type_data|per_pair_data)*>
+<!ATTLIST TS_params
   betapol CDATA #IMPLIED
   cutoff_coulomb CDATA #IMPLIED
   cutoff_ms CDATA #IMPLIED
@@ -510,6 +510,6 @@
   overlap_zero_limit CDATA #IMPLIED
 >
 
-<!ENTITY % QUIP_params "ASAP_params|BOP_params|Brenner_params|Brenner_2002_params|Brenner_Screened_params|Coulomb_params|EAM_ErcolAd_params|Einstein_params|FB_params|FC_params|FS_params|GAP_params|Glue_params|LJ_params|Morse_params|SW_params|Si_MEAM_params|Template_params|Tersoff_params|Potential|DFTB_params|GSP_params|NRL_TB_params|self_consistency|dipole_model|spin_orbit_coupling|KPoints">
+<!ENTITY % QUIP_params "TS_params|BOP_params|Brenner_params|Brenner_2002_params|Brenner_Screened_params|Coulomb_params|EAM_ErcolAd_params|Einstein_params|FB_params|FC_params|FS_params|GAP_params|Glue_params|LJ_params|Morse_params|SW_params|Si_MEAM_params|Template_params|Tersoff_params|Potential|DFTB_params|GSP_params|NRL_TB_params|self_consistency|dipole_model|spin_orbit_coupling|KPoints">
 
 <!ELEMENT QUIP_params (%QUIP_params;)*>
