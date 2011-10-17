@@ -236,6 +236,8 @@ def process(at, frame):
       
    # Do the writing
    if opt.extract_params:
+      if frame == 0:
+         print '#' + ' '.join(at.params.keys())
       for k in at.params.keys():
          if opt.extract_format:
             print(opt.extract_format % at.params[k]),
