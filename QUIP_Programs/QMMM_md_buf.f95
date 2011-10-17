@@ -48,7 +48,7 @@ program qmmm_md
   type(DynamicalSystem)               :: ds
   type(Atoms)                         :: my_atoms
   integer                             :: i, n
-  character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
+  character(len=FIELD_LENGTH)         :: Run_Type_array(6)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
   type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
@@ -90,7 +90,7 @@ program qmmm_md
   !Input parameters
   type(Dictionary)            :: params_in
   character(len=FIELD_LENGTH) :: Run_Type1               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
-  character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, or QMMM_CORE
+  character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, QMMM_CORE or MM_INTERNAL
   integer                     :: IO_Rate                 !print coordinates at every n-th step
   integer                     :: Thermostat_Type         !_0_ none, 1 Langevin
   real(dp)                    :: Thermostat_7_rs(2)
@@ -137,6 +137,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
   character(len=FIELD_LENGTH) :: extra_calc_args                 ! extra args to mm and qm calcs (like FilePot_log)
   character(len=FIELD_LENGTH) :: filepot_program
+  character(len=FIELD_LENGTH) :: mm_internal_init_args, mm_internal_param_filename
 
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
@@ -255,6 +256,8 @@ program qmmm_md
       call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor, help_string="velocities of nonhydrogen atoms will be multiplied by this every time step")
       call param_register(params_in, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
       call param_register(params_in, 'copy_latest_every', '-1', copy_latest_every, help_string="if >0, the copy the latest.xyz and the wfn files from the run directory /tmp/cp2k_run_$tmp_run_dir_i$ back to the home at this frequency -- only active when $tmp_run_dir_i$>0")
+      call param_register(params_in, 'mm_internal_init_args', '', mm_internal_init_args, help_string="init args for internal MM potential, used when Run_Type2==MM_INTERNAL")
+      call param_register(params_in, 'mm_internal_param_filename', '', mm_internal_param_filename, help_string="XML filename for internal MM potential, used when Run_Type2==MM_INTERNAL")
 
       if (.not. param_read_args(params_in)) then
         call system_abort('could not parse argument line')
@@ -288,19 +291,21 @@ program qmmm_md
       Run_Type_array(3) ='QMMM_CORE'
       Run_Type_array(4) ='MM'
       Run_Type_array(5) ='NONE'
+      Run_Type_array(6) = 'MM_INTERNAL'
+
       if (.not.any(Run_Type1.eq.Run_Type_array(1:4))) &
          call system_abort('Run_Type1 must be one of "QS", "MM", "QMMM_CORE", "QMMM_EXTENDED"')
-      if (.not.any(Run_Type2.eq.Run_Type_array(3:5))) &
-         call system_abort('Run_Type1 must be one of "NONE", "MM", "QMMM_CORE"')
+      if (.not.any(Run_Type2.eq.Run_Type_array(3:6))) &
+         call system_abort('Run_Type1 must be one of "NONE", "MM", "QMMM_CORE", "MM_INTERNAL"')
       if ( (trim(Run_Type1).eq.trim(Run_Type2) .or. &
             any(trim(Run_Type1).eq.(/'MM','QS'/))) .and. &
           trim(Run_Type2).ne.'NONE' ) then
          Run_Type2 = 'NONE'
          call print('RunType2 set to NONE')
       endif
-      if ((trim(Run_Type1)).eq.'QMMM_EXTENDED' .and..not.any(trim(Run_Type2).eq.Run_Type_array(3:5))) &
+      if ((trim(Run_Type1)).eq.'QMMM_EXTENDED' .and..not.any(trim(Run_Type2).eq.Run_Type_array(3:6))) &
 	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
-      if ((trim(Run_Type1)).eq.'QMMM_CORE' .and..not.any(trim(Run_Type2).eq.Run_Type_array(4:5))) &
+      if ((trim(Run_Type1)).eq.'QMMM_CORE' .and..not.any(trim(Run_Type2).eq.Run_Type_array(4:6))) &
 	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
 
 !check PSF printing
@@ -589,7 +594,7 @@ program qmmm_md
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
 	  call print("SETUP_POT EVBSUB_POT")
-          call setup_pot(evbsub_pot, Run_Type1, filepot_program, tmp_run_dir_i)
+          call setup_pot(evbsub_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
@@ -597,12 +602,12 @@ program qmmm_md
 	  call print("INITIALISE_POT EVB")
        else
 	  call print("SETUP_POT POT")
-          call setup_pot(pot, Run_Type1, filepot_program, tmp_run_dir_i)
+          call setup_pot(pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
        ! set up mm only pot, in case we need it for empty QM core
        if (EVB) then
 	  call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
-          call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
+          call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(empty_qm_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
@@ -610,13 +615,13 @@ program qmmm_md
 	  call print("INITIALISE_POT EVB")
        else
 	  call print("SETUP_POT EMPTY_QM_POT")
-          call setup_pot(empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i)
+          call setup_pot(empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
     else ! doing force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
           call print("WARNING: Force Mixing with MM as the slow potential!")
 	  call print("SETUP_POT EVBSUB_CP2K_SLOW_POT")
-          call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
+          call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(cp2k_slow_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
@@ -624,11 +629,11 @@ program qmmm_md
 	  call print("INITIALISE_POT EVB")
        else
 	  call print("SETUP_POT CP2K_SLOW_POT")
-          call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i)
+          call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
        if (EVB.and.trim(Run_Type2)=='MM') then
 	  call print("SETUP_POT EVBSUB_CP2K_FAST_POT")
-          call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
+          call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(cp2k_fast_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
@@ -636,7 +641,14 @@ program qmmm_md
 	  call print("INITIALISE_POT EVB")
        else
 	  call print("SETUP_POT CP2K_FAST_POT")
-          call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i)
+          call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
+          ! recalculate connectivity since cutoff of mm_internal
+          if (cutoff(cp2k_fast_pot) > use_cutoff) then
+             use_cutoff = cutoff(cp2k_fast_pot)
+             call set_cutoff(ds%atoms,use_cutoff+calc_connect_buffer)
+             call calc_connect(ds%atoms)
+             if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
+          end if
        endif
        if (distance_ramp) then
 	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
@@ -671,7 +683,7 @@ program qmmm_md
        if (trim(Run_Type2) == 'MM') then
           if (EVB) then
 	     call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
-             call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
+             call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
              call initialise(empty_qm_pot,args_str='EVB=T',  &
                 !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
                 !' form_bond={1 2} break_bond={2 6} ', &
@@ -679,7 +691,7 @@ program qmmm_md
 	     call print("INITIALISE_POT EVB")
           else
 	     call print("SETUP_POT EMPTY_QM_POT")
-             call setup_pot(empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i)
+             call setup_pot(empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           endif
        endif
     endif
@@ -1495,9 +1507,9 @@ contains
     endif
   end function cp2k_driver_run_type_args
 
-  subroutine setup_pot(pot, Run_Type, filepot_program, tmp_run_dir_i)
+  subroutine setup_pot(pot, Run_Type, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
     type(Potential), intent(inout) :: pot
-    character(len=*), intent(in) :: Run_Type, filepot_program
+    character(len=*), intent(in) :: Run_Type, filepot_program, mm_internal_init_args, mm_internal_param_filename
     integer, intent(in) :: tmp_run_dir_i
     character(len=FIELD_LENGTH) :: filename
 
@@ -1518,6 +1530,9 @@ contains
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
        call print('INITIALISE_POT QMMM_EXTENDED FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds_extended min_cutoff=0.0')
        call initialise(pot,'FilePot filename='//trim(filename)//' command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds_extended min_cutoff=0.0')
+    else if (trim(Run_Type) == 'MM_INTERNAL') then
+       call print('INITIALISE_POT MM '//mm_internal_init_args)
+       call potential_filename_initialise(pot, mm_internal_init_args, param_filename=mm_internal_param_filename)
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
