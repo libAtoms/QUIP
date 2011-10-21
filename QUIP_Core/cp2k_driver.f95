@@ -102,7 +102,7 @@ contains
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
 
     integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
-    logical :: dummy, have_silica_potential
+    logical :: dummy, have_silica_potential, have_titania_potential
     integer :: res_num_silica !lam81
     type(Table) :: intrares_impropers
 
@@ -163,6 +163,7 @@ contains
       call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum, help_string="amount of vacuum to add to size of qm region in hybrid (and nonperiodic?) runs")
       call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn, help_string="if true, try to reuse previous wavefunction file")
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential, help_string="if true, use 2.8A SILICA_CUTOFF for the connectivities")
+      call param_register(cli, 'have_titania_potential', 'F', have_titania_potential, help_string="if true, use 2.8A TITANIA_CUTOFF for the connectivities")
       call param_register(cli, 'res_num_silica', '1', res_num_silica, help_string="residue number for silica residue") !lam81
       call param_register(cli, 'auto_centre', 'F', auto_centre, help_string="if true, automatically center configuration.  May cause energy/force fluctuations.  Mutually exclusive with centre_pos")
       call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos, help_string="position to center around, mutually exclusive with auto_centre")
@@ -210,6 +211,7 @@ contains
     call print("  max_force_warning " // max_force_warning)
     call print("  qm_vacuum " // qm_vacuum)
     call print("  try_reuse_wfn " // try_reuse_wfn)
+    call print('  have_titania_potential '//have_titania_potential)
     call print('  have_silica_potential '//have_silica_potential)
     if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
     call print('  auto_centre '//auto_centre)
@@ -405,6 +407,8 @@ contains
     if (use_MM) then
       if (have_silica_potential) then
         call set_cutoff(at,SILICA_2body_CUTOFF)
+      elseif (have_titania_potential) then
+        call set_cutoff(at,TITANIA_2body_CUTOFF)
       else
         call set_cutoff(at,0._dp)
       endif
@@ -423,7 +427,7 @@ contains
 	if (persistent_already_started) then
 	  RAISE_ERROR("Trying to rewrite PSF file with persistent_already_started.  Can't change connectivity during persistent cp2k run", error)
 	endif
-	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
+	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential, have_titania_potential=have_titania_potential, form_bond=form_bond,break_bond=break_bond)
       end if
     end if
 
