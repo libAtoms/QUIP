@@ -154,7 +154,7 @@ program qmmm_md
 
   real(dp) :: max_move_since_calc_connect
   real(dp) :: calc_connect_buffer
-  logical :: have_silica_potential
+  logical :: have_silica_potential, have_titania_potential
   integer :: res_num_silica ! lam81
   integer :: stat
 
@@ -241,6 +241,7 @@ program qmmm_md
       call param_register(params_in, 'core_create_cluster_info_args', '', core_create_cluster_info_args, help_string="Arguments to pass to create_cluster_info for QM core, if used by update_QM_region")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
+      call param_register(params_in, 'have_titania_potential', 'F', have_titania_potential, help_string="Whether there is a TiO2 unit in the system")
       call param_register(params_in, 'res_num_silica', '1', res_num_silica, help_string="residue number of silica") !lam81
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
 
@@ -435,6 +436,7 @@ program qmmm_md
       call print('  Print forces at t=0? '//print_forces_at0)
       call print('  carve_cluster '//do_carve_cluster)
       call print('  have_silica_potential '//have_silica_potential)
+      call print('  have_titania_potential '//have_titania_potential)
       if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
       call print('  evb_args_str '//trim(evb_args_str))
       call print('  cp2k_calc_args '//trim(cp2k_calc_args))
@@ -516,6 +518,7 @@ program qmmm_md
     use_cutoff = max(use_cutoff, Outer_QM_Region_Radius)
     if (distance_ramp) use_cutoff = max(use_cutoff, distance_ramp_outer_radius)
     if (have_silica_potential) use_cutoff = max(SILICA_2BODY_CUTOFF, Outer_Buffer_Radius)
+    if (have_titania_potential) use_cutoff = max(TITANIA_2BODY_CUTOFF, Outer_Buffer_Radius)
     call set_cutoff(ds%atoms,use_cutoff+calc_connect_buffer)
     call calc_connect(ds%atoms)
     if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
@@ -544,7 +547,7 @@ program qmmm_md
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
-          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
+          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential, have_titania_potential=have_titania_potential)
           call check_topology(ds%atoms)
        endif
     endif
@@ -667,6 +670,7 @@ program qmmm_md
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
           //' have_silica_potential='//have_silica_potential// ' res_num_silica'//res_num_silica & !lam81
+          //' have_titania_potential='//have_titania_potential & 
 	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
 	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
        call print('INITIALISE_POT ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
@@ -1864,7 +1868,7 @@ contains
       call add_property(ds_atoms,'cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
       call add_property(ds_atoms,'old_cluster_mark'//trim(mark_postfix),HYBRID_NO_MARK)
 !lam81     call add_property(ds_atoms,'cut_bonds'//trim(mark_postfix), 0, n_cols=4) !MAX_CUT_BONDS)
-      call add_property(ds_atoms,'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
+      call add_property(ds_atoms,'cut_bonds', 0, n_cols=6) !MAX_CUT_BONDS)
     endif
 
     if (qm_region_pt_ctr) then
