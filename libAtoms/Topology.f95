@@ -82,8 +82,10 @@ public :: next_motif, find_motif_backbone
 
   real(dp), parameter, public :: SILICON_2BODY_CUTOFF = 3.8_dp  !Si-Si 2body interaction
   real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 7.5_dp !Si-O, O-O 2body interaction
+  real(dp), parameter, public :: TITANIA_2BODY_CUTOFF = 7.5_dp !Si-O, O-O 2body interaction
   real(dp), parameter, public :: SILICON_3BODY_CUTOFF = 3.8_dp !Si-Si-Si, Si-Si-O 3body cutoff
   real(dp), parameter, public :: SILICA_3BODY_CUTOFF = 3.6_dp !Si-O-Si, O-Si-O, Si-O-H 3body cutoff
+  real(dp), parameter, public :: TITANIA_3BODY_CUTOFF = 7.5_dp !Si-O, O-O 2body interaction
 !  real(dp), parameter, public :: SILICON_2BODY_CUTOFF = 2.8_dp  !Si-Si 2body interaction
 !  real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 5.5_dp !Si-O, O-O 2body interaction
 !  real(dp), parameter, public :: SILICON_3BODY_CUTOFF = 2.8_dp !Si-Si-Si, Si-Si-O 3body cutoff
@@ -106,11 +108,11 @@ contains
 
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
-  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential,pos_field_for_connectivity,form_bond,break_bond,error)
+  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential, have_titania_potential,pos_field_for_connectivity,form_bond,break_bond,error)
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
-    logical,     optional, intent(in)    :: have_silica_potential
+    logical,     optional, intent(in)    :: have_silica_potential, have_titania_potential
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
     integer, optional, intent(in) :: form_bond(2), break_bond(2)
     integer, optional, intent(out) :: error
@@ -118,7 +120,7 @@ contains
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
-    logical :: do_have_silica_potential
+    logical :: do_have_silica_potential, do_have_titania_potential
     logical :: use_pos_is_pos
 
     logical :: bond_exists
@@ -147,12 +149,15 @@ contains
     endif
 
     do_have_silica_potential = optional_default(.false.,have_silica_potential)
-
+    do_have_titania_potential = optional_default(.false.,have_titania_potential)
+  
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_have_silica_potential) then
-      call set_cutoff(at_copy,SILICA_2body_CUTOFF)
+      call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
+    elseif (do_have_titania_potential) then
+      call set_cutoff(at_copy,1.3*bond_length(22, 8))
     else
       call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
     endif
@@ -162,9 +167,9 @@ contains
     PASS_ERROR(error)
 
     ! now create labels using this connectivity object
-    if (do_have_silica_potential) then
+    if (do_have_silica_potential.or.do_have_titania_potential) then
        ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, error=error)
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, have_titania_potential=do_have_titania_potential,error=error)
     else
        ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
        call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, error=error)
@@ -183,7 +188,7 @@ contains
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential, error) !, hysteretic_neighbours)
+  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential, have_titania_potential, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -191,11 +196,13 @@ contains
     logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical,     optional, intent(in)    :: have_silica_potential
+    logical,     optional, intent(in)    :: have_titania_potential
     integer, optional, intent(out) :: error
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
     character(*), parameter  :: me = 'create_residue_labels_pos_internal: '
     logical :: remove_Si_H_silica_bonds = .true.
+    logical :: remove_Ti_H_titania_bonds = .true.
 
     type(Inoutput)                       :: lib
     character(4)                         :: cha_res_name(MAX_KNOWN_RESIDUES), Cres_name
@@ -221,19 +228,20 @@ contains
     integer, allocatable                 :: imp_atoms(:,:)
     real(dp)                             :: mol_charge_sum
     logical                              :: found_residues
-    type(Table)                          :: atom_Si, atom_SiO, SiOH_list
+    type(Table)                          :: atom_Si, atom_SiO, SiOH_list, atom_Ti, atom_TiO, TiOH_list
     real(dp), dimension(:), allocatable  :: charge
 integer :: j,atom_i, ji
 !logical :: silanol
-    type(Table) :: bondH,bondSi
-    integer :: bond_H,bond_Si
+    type(Table) :: bondH,bondSi, bondTi
+    integer :: bond_H,bond_Si, bond_Ti
 !    integer                             :: qm_flag_index, pos_indices(3)
 !    logical                             :: do_qmmm
     type(Connection), pointer :: use_connect
 !    logical :: use_hysteretic_neighbours
-type(Table) :: O_atom, O_neighb
-integer :: hydrogen
-logical :: silica_potential
+    type(Table) :: O_atom, O_neighb
+    integer :: hydrogen
+    logical :: silica_potential
+    logical :: titania_potential
 
 !    integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
@@ -244,6 +252,7 @@ logical :: silica_potential
     call system_timer('create_residue_labels_pos_internal')
 
     silica_potential = optional_default(.false.,have_silica_potential)
+    titania_potential = optional_default(.false.,have_titania_potential)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -281,6 +290,149 @@ logical :: silica_potential
     if (present(intrares_impropers)) call initialise(intrares_impropers,4,0,0,0,0)
     call allocate(residue_type,1,0,0,0,1000)
     call print('Identifying atoms...')
+
+!!!!!!!!!!!  TITANIA POTENTIAL  !!!!!!!!!!
+    if (titania_potential) then
+  ! TIO residue if Ti atom is present in the atoms structure 
+       if (any(at%Z(1:at%N).eq.22)) then
+          call print('|-Looking for TIO residue, not from the library...')
+          call print('| |-Found... will be treated as 1 molecule, 1 residue...')
+          !all this bulk will be 1 residue
+          n = n + 1
+          cha_res_name(n) = 'TIO2'
+          pdb_res_name(n) = '' !not used
+          call append(residue_type,(/n/))
+          nres = nres + 1
+
+          !Add Ti atoms
+          call initialise(atom_Ti,4,0,0,0,0)
+          do i = 1,at%N
+             if (at%Z(i).eq.22) then
+                call append(atom_Ti,(/i,0,0,0/))
+             endif
+          enddo
+          call print(atom_Ti%N//' Ti atoms found in total')
+          !Add O atoms
+          call bfs_step(at,atom_Ti,atom_TiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+          call print(atom_TiO%N//' O atoms found in total')
+!          if (any(at%Z(atom_TiO%int(1,1:atom_TiO%N)).eq.1)) call system_abort('Ti-H bond')
+          if (remove_Ti_H_titania_bonds) then
+             do i=1,atom_TiO%N !check Hs bonded to Ti. There shouldn't be any,removing the bond.
+                 if (at%Z(atom_TiO%int(1,i)).eq.1) then
+                    call print('WARNING! Ti and H are very close',verbosity=PRINT_ALWAYS)
+                    bond_H = atom_TiO%int(1,i)
+                    call initialise(bondH,4,0,0,0,0)
+                    call append(bondH,(/bond_H,0,0,0/))
+                    call bfs_step(at,bondH,bondTi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+                    do j = 1,bondTi%N
+                       if (at%Z(bondTi%int(1,i)).eq.22) then
+                          bond_Ti = bondTi%int(1,i)
+                          call print('WARNING! Remove Ti '//bond_Ti//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Ti)//')',verbosity=PRINT_ALWAYS)
+                          call remove_bond(use_connect,bond_H,bond_Ti)
+                       endif
+                    enddo
+                 endif
+             enddo
+          endif
+
+      !Add H atoms -- if .not.remove_Ti_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
+          call add_cut_hydrogens(at,atom_TiO,nneighb_only=.true.,alt_connect=use_connect)
+          call print(atom_TiO%N//' O/H atoms found in total')
+
+!check if none of these atoms are identified yet
+          if (any(.not.unidentified(atom_Ti%int(1,1:atom_Ti%N)))) then
+             RAISE_ERROR('already identified atoms found again.', error)
+          endif
+          if (any(.not.unidentified(atom_TiO%int(1,1:atom_TiO%N)))) then
+!             call system_abort('already identified atoms found again.')
+             do i = 1,atom_TiO%N,-1
+                if (.not.unidentified(atom_TiO%int(1,i))) then
+                   call print('delete from TiO2 list already identified atom '//atom_TiO%int(1,1:atom_TiO%N))
+                   call delete(atom_TiO,i)
+                endif
+             enddo
+          endif
+          unidentified(atom_Ti%int(1,1:atom_Ti%N)) = .false.
+          unidentified(atom_TiO%int(1,1:atom_TiO%N)) = .false.
+
+          !add atom, residue and molecule names
+          !TIO
+          do i = 1, atom_Ti%N                              !atom_Ti  only has Ti atoms
+             atom_i = atom_Ti%int(1,i)
+             atom_name(atom_i) = 'TIO'
+             atom_name_PDB(atom_i) = 'TIO'
+          enddo
+
+          !OTB, OTI & HTI
+          do i = 1, atom_TiO%N                             !atom_TiO only has O,H atoms
+             atom_i = atom_TiO%int(1,i)
+             !OTB & OTI
+             if (at%Z(atom_i).eq.8) then
+                call initialise(O_neighb,4,0,0,0)
+                call initialise(O_atom,4,0,0,0)
+                call append(O_atom,(/atom_i,0,0,0/))
+                call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+                !check nearest neighbour number = 3
+                if (O_neighb%N.ne.3) then
+                   call print('WARNING! titania O '//atom_i//'has '//O_neighb%N//'/=3 nearest neighbours',PRINT_ALWAYS)
+                   call print('neighbours: '//O_neighb%int(1,1:O_neighb%N))
+                endif
+                !check if it has a H nearest neighbour
+                hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
+                if (hydrogen.ne.0) then
+                   atom_name(atom_i) = 'OTI' !silanol O
+                   atom_name_PDB(atom_i) = 'OTI' !silanol O
+!                   call print('Found OH silanol oxygen.'//atom_TiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
+                   !check if it has only 1 H nearest neighbour
+                   if (hydrogen.lt.O_neighb%N) then
+                      if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N)),1).gt.0) then
+                         RAISE_ERROR('More than 1 H neighbours of O '//atom_i, error)
+                      endif
+                   endif
+                else
+                   atom_name(atom_i) = 'OTB' !bridging O
+                   atom_name_PDB(atom_i) = 'OTB' !bridging O
+!                   call print('Found OB bridging oxygen.'//atom_TiO%int(1,i))
+                endif
+                call finalise(O_atom)
+                call finalise(O_neighb)
+             !HSI
+             elseif (at%Z(atom_TiO%int(1,i)).eq.1) then
+                atom_name(atom_TiO%int(1,i)) = 'HTI'
+                atom_name_PDB(atom_TiO%int(1,i)) = 'HTI'
+             else
+                RAISE_ERROR('Non O/H atom '//atom_i//'!?', error)
+             endif
+          enddo
+          
+          !Add all the titanium atoms together
+          call initialise(TiOH_list,4,0,0,0,0)
+          call append (TiOH_list,atom_Ti)
+          call append (TiOH_list,atom_TiO)
+
+          !Residue numbers
+          residue_number(TiOH_list%int(1,1:TiOH_list%N)) = nres
+
+          !Charges
+          !call create_pos_dep_charges(at,TiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+          atom_charge = 1.2_dp
+          do i=1,at%n
+             if(at%Z(i).eq.8) atom_charge(i) = -0.6_dp 
+             call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANAL)
+          enddo
+          call print("overall titania charge: "//sum(atom_charge(TiOH_list%int(1,1:TiOH_list%N))))
+
+          call finalise(atom_Ti)
+          call finalise(atom_TiO)
+          call finalise(TiOH_list)
+
+       else
+          call print('WARNING! have_titania_potential is true, but found no Ti atoms in the atoms object!',PRINT_ALWAYS)
+       endif
+
+    endif
+!!!!!!!!!!!!!! END TITANIA POTENTIAL !!!!!!!!!!!!!!!!
+    
 
 !!!!!!!!!!!!!!! DANNY POTENTIAL !!!!!!!!!!!!!!!!
     if (silica_potential) then
@@ -487,7 +639,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 	     atom_subgroup(list%int(:,m)) = at_subgroups
              atom_name(list%int(:,m)) = at_names
              atom_name_PDB(list%int(:,m)) = at_names_PDB
-             if (my_do_charmm) then
+             if (my_do_charmm) then 
                 atom_charge(list%int(:,m)) = at_charges
                ! intraresidual IMPROPERs
                 if (present(intrares_impropers)) then
@@ -1024,7 +1176,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_add_silica_23body) then
-      call set_cutoff(at_copy,SILICA_2body_CUTOFF)
+      call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
     else
       call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
     endif
@@ -1092,7 +1244,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     do_add_silica_23body = optional_default(.false.,add_silica_23body)
     if (do_add_silica_23body) then !!xxx there must be a SIO2 residue?
-       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+       if (at%cutoff.lt.SILICA_2BODY_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
     endif
 
     my_run_type_string = optional_default('',run_type_string)
@@ -1309,7 +1461,7 @@ call print('PSF| '//impropers%n//' impropers')
 
 
     if (add_silica_23body) then
-       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+       if (at%cutoff.lt.SILICA_2BODY_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
        if (.not. assign_pointer(at, 'atom_mol_name', atom_mol_name)) &
             call system_abort('Cannot assign pointer to "atom_mol_name" property.')
     endif
