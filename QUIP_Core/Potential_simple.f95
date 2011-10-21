@@ -63,7 +63,7 @@ module Potential_simple_module
   use FilePot_module
   use CallbackPot_module
 
-#define MAX_CUT_BONDS 4
+#define MAX_CUT_BONDS 6
 
   implicit none
   private
