@@ -25,7 +25,7 @@ contains
       character(len=1024) :: bound_str
       integer :: bound
       real(dp) :: c
-      real(dp) :: d, plane_n(3), di, df, p
+      real(dp) :: d, plane_n(3), di, p
       real(dp) :: t0, tau
       real(dp) :: egap
       real(dp) :: tol
@@ -94,7 +94,7 @@ contains
 	      trim(type_str))
 	    read (value, *) atom_2
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read d in bond_length "//trim(type_str))
 	    read (value, *) d
 
 	    tau = -1.0_dp
