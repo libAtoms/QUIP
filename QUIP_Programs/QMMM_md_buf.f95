@@ -154,7 +154,8 @@ program qmmm_md
 
   real(dp) :: max_move_since_calc_connect
   real(dp) :: calc_connect_buffer
-  logical :: have_silica_potential, have_titania_potential
+  logical :: have_silica_potential, have_titania_potential, silica_pos_dep_charges, silica_add_23_body
+  real(dp) :: silica_charge_transfer
   integer :: res_num_silica ! lam81
   integer :: stat
 
@@ -241,7 +242,10 @@ program qmmm_md
       call param_register(params_in, 'core_create_cluster_info_args', '', core_create_cluster_info_args, help_string="Arguments to pass to create_cluster_info for QM core, if used by update_QM_region")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
-      call param_register(params_in, 'have_titania_potential', 'F', have_titania_potential, help_string="Whether there is a TiO2 unit in the system")
+      call param_register(params_in, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
+      call param_register(params_in, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
+      call param_register(params_in, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
+
       call param_register(params_in, 'res_num_silica', '1', res_num_silica, help_string="residue number of silica") !lam81
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
 
@@ -547,7 +551,9 @@ program qmmm_md
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
-          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential, have_titania_potential=have_titania_potential)
+          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,&
+               find_silica_residue=have_silica_potential,silica_pos_dep_charges=silica_pos_dep_charges, &
+               silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential)
           call check_topology(ds%atoms)
        endif
     endif

@@ -108,24 +108,30 @@ contains
 
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
-  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential, have_titania_potential,pos_field_for_connectivity,form_bond,break_bond,error)
+  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
+       form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, error)
+
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
-    logical,     optional, intent(in)    :: have_silica_potential, have_titania_potential
+    logical,     optional, intent(in)    :: find_silica_residue
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
     integer, optional, intent(in) :: form_bond(2), break_bond(2)
+    logical,     optional, intent(in)    :: silica_pos_dep_charges
+    real(dp), intent(in), optional :: silica_charge_transfer
+    logical, intent(in), optional :: have_titania_potential
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
-    logical :: do_have_silica_potential, do_have_titania_potential
+    logical :: do_find_silica_residue, do_have_titania_potential
     logical :: use_pos_is_pos
 
     logical :: bond_exists
     integer :: shift(3)
     real(dp) :: form_bond_dist
+
     integer :: ji, j
 
     INIT_ERROR(error)
@@ -148,13 +154,13 @@ contains
       use_pos_is_pos = .true.
     endif
 
-    do_have_silica_potential = optional_default(.false.,have_silica_potential)
+    do_find_silica_residue = optional_default(.false.,find_silica_residue)
     do_have_titania_potential = optional_default(.false.,have_titania_potential)
   
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
-    if (do_have_silica_potential) then
+    if (do_find_silica_residue) then
       call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
     elseif (do_have_titania_potential) then
       call set_cutoff(at_copy,1.3*bond_length(22, 8))
@@ -167,12 +173,16 @@ contains
     PASS_ERROR(error)
 
     ! now create labels using this connectivity object
-    if (do_have_silica_potential.or.do_have_titania_potential) then
+    if (do_find_silica_residue) then
        ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, have_titania_potential=do_have_titania_potential,error=error)
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect, &
+            find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
+            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, error=error)
     else
        ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, error=error)
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,&
+            find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
+            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, error=error)
     endif
     PASS_ERROR(error)
     call finalise(t_connect)
@@ -188,14 +198,16 @@ contains
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential, have_titania_potential, error) !, hysteretic_neighbours)
+  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect, &
+       find_silica_residue, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
     logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
-    logical,     optional, intent(in)    :: have_silica_potential
+    logical,     optional, intent(in)    :: find_silica_residue, silica_pos_dep_charges
+    real(dp), optional, intent(in) :: silica_charge_transfer
     logical,     optional, intent(in)    :: have_titania_potential
     integer, optional, intent(out) :: error
 !    logical, optional, intent(in) :: hysteretic_neighbours
@@ -238,10 +250,10 @@ integer :: j,atom_i, ji
 !    logical                             :: do_qmmm
     type(Connection), pointer :: use_connect
 !    logical :: use_hysteretic_neighbours
-    type(Table) :: O_atom, O_neighb
-    integer :: hydrogen
-    logical :: silica_potential
-    logical :: titania_potential
+type(Table) :: O_atom, O_neighb
+integer :: hydrogen
+logical :: find_silica, titania_potential, do_silica_pos_dep_charges
+real(dp) :: do_silica_charge_transfer
 
 !    integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
@@ -251,7 +263,9 @@ integer :: j,atom_i, ji
 
     call system_timer('create_residue_labels_pos_internal')
 
-    silica_potential = optional_default(.false.,have_silica_potential)
+    find_silica = optional_default(.false.,find_silica_residue)
+    do_silica_pos_dep_charges = optional_default(.true., silica_pos_dep_charges)
+    do_silica_charge_transfer = optional_default(2.4_dp, silica_charge_transfer)
     titania_potential = optional_default(.false.,have_titania_potential)
 
     if (present(alt_connect)) then
@@ -435,7 +449,7 @@ integer :: j,atom_i, ji
     
 
 !!!!!!!!!!!!!!! DANNY POTENTIAL !!!!!!!!!!!!!!!!
-    if (silica_potential) then
+    if (find_silica) then
 
    ! SIO residue for Danny potential if Si atom is present in the atoms structure
        if (any(at%Z(1:at%N).eq.14)) then
@@ -558,22 +572,27 @@ integer :: j,atom_i, ji
           residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
 
           !Charges
-          call create_pos_dep_charges(at,SiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
-          atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
-          atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
-call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_list%N))))
-          call print('Atomic charges: ',PRINT_ANAL)
-          call print('   ATOM     CHARGE',PRINT_ANAL)
-          do i=1,at%N
-             call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANAL)
-          enddo
+          if (do_silica_pos_dep_charges) then
+             call create_pos_dep_charges(at,SiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+             atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
+             atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
+             call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_list%N))))
+             call print('Atomic charges: ',PRINT_ANAL)
+             call print('   ATOM     CHARGE',PRINT_ANAL)
+             do i=1,at%N
+                call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANAL)
+             enddo
+          else
+             where (at%z == 8) atom_charge = -do_silica_charge_transfer/2.0_dp
+             where (at%z ==14) atom_charge = do_silica_charge_transfer
+          end if
 
           call finalise(atom_Si)
           call finalise(atom_SiO)
           call finalise(SiOH_list)
 
        else
-          call print('WARNING! have_silica_potential is true, but found no silicon atoms in the atoms object!',PRINT_ALWAYS)
+          call print('WARNING! find_silica_residue is true, but found no silicon atoms in the atoms object!',PRINT_ALWAYS)
        endif
 
     endif
@@ -723,7 +742,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
        do i=1, size(molecules)
 	 if (allocated(molecules(i)%i_a)) then
            ! special case for silica molecule
-           if (silica_potential .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
+           if (find_silica .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
 	     atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
 	   ! special case for single atoms
 	   elseif (size(molecules(i)%i_a) == 1) then

@@ -102,7 +102,9 @@ contains
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
 
     integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
-    logical :: dummy, have_silica_potential, have_titania_potential
+    logical :: dummy, have_silica_potential, have_titania_potential, silica_add_23_body
+    logical :: silica_pos_dep_charges
+    real(dp) :: silica_charge_transfer, silicon_charge, oxygen_charge, hydrogen_charge
     integer :: res_num_silica !lam81
     type(Table) :: intrares_impropers
 
@@ -177,6 +179,9 @@ contains
       call param_register(cli, 'MM_param_file', '', MM_param_filename, help_string="If tmp_run_dir>0, where to find MM parameter file to copy it to the cp2k run dir on /tmp.") !charmm.pot
       call param_register(cli, 'QM_potential_file', '', QM_pot_filename, help_string="If tmp_run_dir>0, where to find QM POTENTIAL file to copy it to the cp2k run dir on /tmp.") !POTENTIAL
       call param_register(cli, 'QM_basis_file', '', QM_basis_filename, help_string="If tmp_run_dir>0, where to find QM BASIS_SET file to copy it to the cp2k run dir on /tmp.") !BASIS_SET
+      call param_register(cli, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
+      call param_register(cli, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
+      call param_register(cli, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) then
 	RAISE_ERROR('cp2k_driver could not parse argument line', error)
@@ -190,6 +195,14 @@ contains
       call do_cp2k_calc_fake(at, f, e, do_calc_virial, args_str)
       return
     endif
+
+    if (have_silica_potential) then
+       ! compute silicon_charge and oxygen_charge from silica_charge_transfer such that SiO2 is neutral
+       silicon_charge = silica_charge_transfer
+       oxygen_charge = -silicon_charge/2.0_dp
+       ! compute hydrogen_charge from silicon_charge and oxygen_charge such that Si(OH)_4 is neutral
+       hydrogen_charge = -(silicon_charge + 4.0_dp*oxygen_charge)/4.0_dp
+    end if
 
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
@@ -213,7 +226,15 @@ contains
     call print("  try_reuse_wfn " // try_reuse_wfn)
     call print('  have_titania_potential '//have_titania_potential)
     call print('  have_silica_potential '//have_silica_potential)
-    if(have_silica_potential) call print('  res_num_silica '//res_num_silica) !lam81
+    if(have_silica_potential) then
+       call print('  res_num_silica '//res_num_silica) !lam81
+       call print('  silica_add_23_body '//silica_add_23_body)
+       call print('  silica_pos_dep_charges '//silica_pos_dep_charges)
+       call print('  silica_charge_transfer '//silica_charge_transfer)
+       call print('  silicon_charge '//silicon_charge)
+       call print('  oxygen_charge '//oxygen_charge)
+       call print('  hydrogen_charge '//hydrogen_charge)
+    end if
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
     call print('  cp2k_calc_fake '//cp2k_calc_fake)
@@ -427,7 +448,10 @@ contains
 	if (persistent_already_started) then
 	  RAISE_ERROR("Trying to rewrite PSF file with persistent_already_started.  Can't change connectivity during persistent cp2k run", error)
 	endif
-	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential, have_titania_potential=have_titania_potential, form_bond=form_bond,break_bond=break_bond)
+	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+               find_silica_residue=have_silica_potential,form_bond=form_bond,break_bond=break_bond, &
+               silica_pos_dep_charges=silica_pos_dep_charges, silica_charge_transfer=silica_charge_transfer, &
+               have_titania_potential=have_titania_potential)
       end if
     end if
 
@@ -442,11 +466,11 @@ contains
 	! we should fail for persistent_already_started=T, but this should have been dealt with above
 	if (has_property(at, 'avgpos')) then
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
+	    add_silica_23body=have_silica_potential .and. silica_add_23_body,form_bond=form_bond,break_bond=break_bond)
 	else if (has_property(at, 'pos')) then
 	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos',form_bond=form_bond,break_bond=break_bond)
+	    add_silica_23body=have_silica_potential .and. silica_add_23_body, pos_field_for_connectivity='pos',form_bond=form_bond,break_bond=break_bond)
 	else
 	  RAISE_ERROR("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos", error)
 	endif
@@ -681,9 +705,10 @@ contains
 	   !insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	   !call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 	 endif
-   !     call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error) !lam81
-	 call calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error=error) !lam81
+         call calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen=cut_bonds%N, &
+              hydrogen_charge=hydrogen_charge, error=error)
 	 PASS_ERROR(error)
+         call print('Setting DFT charge to '//charge//' and LSD to '//do_lsd)
 	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 if (do_lsd) then
 	    call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -691,6 +716,10 @@ contains
 	 if (len_trim(calc_qm_charges) > 0) then
 	    call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 endif
+        if (have_silica_potential .and. .not. silica_pos_dep_charges) then
+           call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+           call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+        end if
        endif ! use_QM
 
        ! put in unit cell
@@ -1303,27 +1332,34 @@ contains
 
   end function qmmm_qm_abc
 
-  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, have_silica_potential, res_num_silica, error) !lam81
+  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, skip_residues, n_hydrogen, hydrogen_charge, error) !lam81
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
-    logical, intent(in) :: have_silica_potential !lam81
-    integer, intent(in) :: res_num_silica        !lam81
     integer, intent(out) :: charge
     logical, intent(out) :: do_lsd
+    integer, intent(in), optional :: skip_residues(:)
+    integer, intent(in), optional :: n_hydrogen
+    real(dp), intent(in), optional :: hydrogen_charge
     integer, intent(out), optional :: error
 
     real(dp), pointer :: atom_charge(:)
-    integer :: i                                 !lam81
-    integer, pointer :: atom_res_number(:)       !lam81
+    integer :: i                          
+    integer, pointer :: atom_res_number(:)
     integer, pointer  :: Z_p(:)
     integer           :: sum_Z
     integer           :: l_error
+    real(dp) :: sum_charge
 
     INIT_ERROR(error)
 
     if (.not. assign_pointer(at, "Z", Z_p)) then
 	RAISE_ERROR("calc_charge_lsd could not find Z property", error)
     endif
+
+    if (present(n_hydrogen) .and. .not. present(hydrogen_charge) .or. &
+         .not.(present(n_hydrogen) .and. present(hydrogen_charge))) then
+       RAISE_ERROR("either both or none of n_hydrogen and hydrogen_charge should be present", error)
+    end if
 
     if (size(qm_list_a) > 0) then
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) then
@@ -1333,26 +1369,31 @@ contains
         RAISE_ERROR("calc_charge_lsd could not find atom_res_number", error) !lam81
       endif                                                                  !lam81
 
-      if(.not. have_silica_potential) then
-       charge = nint(sum(atom_charge(qm_list_a)))
+      if(.not. present(skip_residues)) then
+       sum_charge = sum(atom_charge(qm_list_a))
       else
-       charge = 0
+       sum_charge = 0.0_dp
        do i=1, size(qm_list_a)
-        if(atom_res_number(qm_list_a(i)) == res_num_silica) cycle
-        charge = charge + atom_charge(qm_list_a(i))
+        if(find_in_array(skip_residues, atom_res_number(qm_list_a(i))) /= 0) cycle
+        sum_charge = sum_charge + atom_charge(qm_list_a(i))
        enddo
       endif
-
+      sum_charge = sum_charge + n_hydrogen*hydrogen_charge ! terminating hydrogens
+      call print('sum_charge = '//sum_charge)
+      charge = nint(sum_charge)
+      
       !check if we have an odd number of electrons
-      if(.not. have_silica_potential) then
+      if(.not. present(skip_residues)) then
        sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
       else
        sum_Z = 0
        do i=1, size(qm_list_a)
-        if(atom_res_number(qm_list_a(i)) == res_num_silica) cycle
+        if(find_in_array(skip_residues, atom_res_number(qm_list_a(i))) /= 0) cycle
         sum_Z = sum_Z +Z_p(qm_list_a(i))
        enddo
       endif
+      sum_Z = sum_Z + n_hydrogen ! include terminating hydrogens
+      call print('sum_Z = '//sum_Z)
       do_lsd = (mod(sum_Z-charge,2) /= 0)
     else
       sum_Z = sum(Z_p)
