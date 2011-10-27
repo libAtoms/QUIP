@@ -59,7 +59,7 @@ implicit none
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
-  logical :: use_n_minim, do_torque, precond_n_minim, use_fire_minim
+  logical :: do_torque, precond_n_minim
   real(dp) :: fire_minim_dt0
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
@@ -159,12 +159,10 @@ implicit none
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
-  call param_register(cli_params, 'use_fire_minim', 'F', use_fire_minim, help_string="do relaxation using FIRE minim routine")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
-  call param_register(cli_params, 'use_n_minim', 'F', use_n_minim, help_string="do relaxation using Noam's minim routine")
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
-  call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (ignored in use_n_minim=T)")
-  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, cg, pcg, lbfgs (ignored in use_n_minim=T)")
+  call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
+  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, cg, pcg, lbfgs, cg_n, fire")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
@@ -187,7 +185,7 @@ implicit none
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim]", PRINT_ALWAYS)
     call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
     call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
@@ -290,13 +288,13 @@ implicit none
            call initialise(relax_io, relax_print_file, OUTPUT)
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-		eps_guess=relax_eps, use_n_minim = use_n_minim, use_fire=use_fire_minim, &
+		eps_guess=relax_eps, &
 		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
            call finalise(relax_io)
         else
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, &
-		use_fire=use_fire_minim, fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
+		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
+		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
         endif
         call write(at,'stdout', prefix='RELAXED_POS')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
@@ -308,11 +306,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false., relax_tol=relax_tol)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
         else if (do_c0ij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=.false., relax_tol=relax_tol)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
         else
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=.false., relax_tol=relax_tol)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
