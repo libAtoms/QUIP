@@ -125,12 +125,12 @@ program ts_main
           call calc_connect(ds_in%Atoms)
           steps = minim(classicalpot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
-             do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
+             do_pos=.true., do_lat=.false., do_print=.false., &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
         else
           steps = minim(hybrid_pot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
-             do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
+             do_pos=.true., do_lat=.false., do_print=.false., &
              eps_guess=params%minim_end_eps_guess)
         end if
 
@@ -139,12 +139,12 @@ program ts_main
           call calc_connect(ds_in%Atoms)
           steps = minim(classicalpot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
-             do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
+             do_pos=.true., do_lat=.false., do_print=.false., &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
         else
           steps = minim(hybrid_pot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
-             do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
+             do_pos=.true., do_lat=.false., do_print=.false., &
              eps_guess=params%minim_end_eps_guess)
         end if
      endif

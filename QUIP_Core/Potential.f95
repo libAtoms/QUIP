@@ -814,7 +814,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
 
   function potential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, fire_minim_dt0, lattice_fix, external_pressure, use_precond, hook_print_interval, error)
+       do_pos, do_lat, args_str, eps_guess, fire_minim_dt0, lattice_fix, external_pressure, use_precond, hook_print_interval, error)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
     character(*), intent(in)    :: method !% passed to minim()
@@ -828,8 +828,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     logical, optional :: do_pos, do_lat !% do relaxation w.r.t. positions and/or lattice (is neither is included, do both)
     character(len=*), intent(in), optional :: args_str !% arguments to pass to calc()
     real(dp), intent(in), optional :: eps_guess !% eps_guess argument to pass to minim
-    logical, intent(in), optional :: use_n_minim !% if true, use n_minim instead of minim
-    logical, intent(in), optional :: use_fire   !% if true, use fire_minim instead of minim
     real(dp), intent(in), optional :: fire_minim_dt0 !% if using fire minim, initial value for time step
     logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
     real(dp), dimension(3,3), optional :: external_pressure
@@ -838,6 +836,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
     integer::potential_minim
 
+    character(len=100) :: use_method
+
     logical :: my_use_precond
     integer n_iter, n_iter_tot
     real(dp), allocatable :: x(:)
@@ -845,7 +845,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     logical my_do_print
     logical done
     real(dp) :: my_eps_guess
-    logical my_use_n_minim, my_use_fire
     real(dp) :: my_fire_minim_dt0
 
     real(dp) :: initial_E, final_E, mass
@@ -862,8 +861,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
-    my_use_n_minim = optional_default(.false., use_n_minim)
-    my_use_fire = optional_default(.false., use_fire)
+    use_method = trim(method)
+
     my_fire_minim_dt0 = optional_default(1.0_dp, fire_minim_dt0)
 
     my_eps_guess = optional_default(1.0e-2_dp/at%N, eps_guess)
@@ -902,9 +901,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        & (am%external_pressure(2,3) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
-          if( .not. my_use_fire ) then
+          if(trim(use_method) /= 'fire') then
              call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
-             my_use_fire = .true.
+             use_method = 'fire'
           endif
        endif
     endif
@@ -942,11 +941,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
     am_data = transfer(am, am_data)
-    if (my_use_n_minim) then
+    if (trim(use_method) == 'cg_n') then
        n_iter = n_minim(x, both_func, my_use_precond, apply_precond_func, initial_E, final_E, my_eps_guess, max_steps, convergence_tol, print_hook, &
             hook_print_interval=hook_print_interval, data=am_data, error=error)
        PASS_ERROR(error)
-    else if (my_use_fire) then
+    else if (trim(use_method) == 'fire') then
        if (has_property(at, 'mass')) then
           mass = at%mass(1)
        else
@@ -955,7 +954,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        n_iter = fire_minim(x, mass, dummy_energy_func, gradient_func, my_fire_minim_dt0, convergence_tol, max_steps, &
             print_hook, hook_print_interval=hook_print_interval, data=am_data, status=status)
     else
-       n_iter = minim(x, energy_func, gradient_func, method, convergence_tol, max_steps, linminroutine, &
+       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
             print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
     endif
     call print("minim relax w.r.t. both n_iter " // n_iter, PRINT_VERBOSE)

@@ -84,7 +84,6 @@
     call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
     ! Parameters for do_reference_bulk calculation, init time only
@@ -129,7 +128,6 @@
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_pos')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_lat')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_print')
-    call remove_value(this%create_hybrid_weights_params, 'minim_mm_use_n_minim')
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_args_str')
     call remove_value(this%create_hybrid_weights_params, 'minimise_bulk')
     call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
@@ -225,7 +223,6 @@
     call Print(' minim_mm_do_pos='//this%minim_mm_do_pos,file=file)
     call Print(' minim_mm_do_lat='//this%minim_mm_do_lat,file=file)
     call Print(' minim_mm_do_print='//this%minim_mm_do_print,file=file)
-    call Print(' minim_mm_use_n_minim='//this%minim_mm_use_n_minim,file=file)
     call Print(' minim_mm_args_str='//trim(this%minim_mm_args_str),file=file)
     call Print('',file=file)
     call Print(' create_hybrid_weights_params '//write_string(this%create_hybrid_weights_params), file=file)
@@ -316,7 +313,6 @@
     call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
     ! lotf parameters, calc time only
@@ -369,7 +365,6 @@
     call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_pos')
     call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_lat')
     call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_print')
-    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_use_n_minim')
     call remove_value(calc_create_hybrid_weights_params, 'minim_mm_args_str')
     call remove_value(calc_create_hybrid_weights_params, 'lotf_do_init')
     call remove_value(calc_create_hybrid_weights_params, 'lotf_do_map')
@@ -446,7 +441,7 @@
     if (minimise_mm) then
        call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
             this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
-            this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_mm_use_n_minim, this%minim_inoutput_movie, &
+            this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_inoutput_movie, &
             this%minim_cinoutput_movie, find(hybrid_mark == HYBRID_ACTIVE_MARK))
     endif
 

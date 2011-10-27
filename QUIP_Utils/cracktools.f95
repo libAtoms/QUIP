@@ -726,7 +726,7 @@ contains
             ! Geometry optimise
              steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-               do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+               do_pos=.true.,do_lat=.false., &
                print_cinoutput=movie)
           end if
 
@@ -745,7 +745,7 @@ contains
             ! Geometry optimise
              steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-               do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+               do_pos=.true.,do_lat=.false., &
                print_cinoutput=movie)
           endif
 
@@ -792,7 +792,7 @@ contains
               ! now relax
             steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-                 do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+                 do_pos=.true.,do_lat=.false., &
                  print_cinoutput=movie)
          end if
          relaxed_pos = crack_slab%pos  
@@ -846,7 +846,7 @@ contains
          if (params%crack_relax_loading_field) then
             steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-                 do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+                 do_pos=.true.,do_lat=.false., &
                  print_cinoutput=movie)
          end if
          relaxed_pos = crack_slab%pos  
@@ -893,7 +893,7 @@ contains
           ! now re-relax
            steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-               do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+               do_pos=.true.,do_lat=.false., &
                print_cinoutput=movie)
        end if
     

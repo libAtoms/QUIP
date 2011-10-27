@@ -67,6 +67,7 @@ implicit none
       f_int_err_sq(i+1) = f_int_err_sq(i) + t_err_sq
    end do
 
+   call print("# col_val err  grad_val err int_val err")
    do i=1, N
       call print(v(i)//" "//v_err(i)//" "//f(i)//" "//f_err(i)//" "//f_int(i)//" "//sqrt(f_int_err_sq(i)))
    end do

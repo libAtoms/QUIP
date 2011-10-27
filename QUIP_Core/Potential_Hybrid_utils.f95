@@ -66,7 +66,7 @@
        ! Minimise initial cell
        call verbosity_push_decrement()
        steps = minim(pot, at0, 'cg', 1e-6_dp, 100, &
-            'FAST_LINMIN', do_pos=.true.,do_lat=.true., do_print=.false., args_str=args_str, use_n_minim=.true.)
+            'FAST_LINMIN', do_pos=.true.,do_lat=.true., do_print=.false., args_str=args_str)
        call verbosity_pop()
     end if
 
@@ -81,7 +81,7 @@
           ! Minimise positions with lattice fixed
           call verbosity_push_decrement()
           steps = minim(pot, at1, 'cg', 1e-6_dp, 100, &
-               'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false., args_str=args_str, use_n_minim=.true.)
+               'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false., args_str=args_str)
           call verbosity_pop()
        end if
 
@@ -232,7 +232,7 @@
 
   subroutine do_minimise_mm(relax_pot, at, minim_mm_method, minim_mm_tol, minim_mm_max_steps, &
       minim_mm_linminroutine, minim_mm_do_pos, minim_mm_do_lat, minim_mm_do_print, & 
-      minim_mm_args_str, minim_mm_eps_guess, minim_mm_use_n_minim, minim_inoutput_movie,  &
+      minim_mm_args_str, minim_mm_eps_guess, minim_inoutput_movie,  &
       minim_cinoutput_movie, &
       constrained_list)
     type(Potential), intent(inout) :: relax_pot
@@ -244,7 +244,6 @@
     logical, intent(in) :: minim_mm_do_pos, minim_mm_do_lat, minim_mm_do_print
     character(len=*), intent(in) :: minim_mm_args_str
     real(dp), intent(in) :: minim_mm_eps_guess
-    logical, intent(in) :: minim_mm_use_n_minim
     type(Inoutput), intent(inout) :: minim_inoutput_movie
     type(CInoutput), intent(inout) ::  minim_cinoutput_movie
     integer, intent(in) :: constrained_list(:)
@@ -274,7 +273,7 @@
     mm_steps = minim(relax_pot, at, minim_mm_method, minim_mm_tol, minim_mm_max_steps, &
 	linminroutine=minim_mm_linminroutine, do_pos=minim_mm_do_pos, do_lat=minim_mm_do_lat, &
 	do_print=minim_mm_do_print, args_str=minim_mm_args_str, &
-	eps_guess=minim_mm_eps_guess, use_n_minim=minim_mm_use_n_minim, print_inoutput=minim_inoutput_movie, &
+	eps_guess=minim_mm_eps_guess, print_inoutput=minim_inoutput_movie, &
         print_cinoutput=minim_cinoutput_movie)
     mainlog%prefix=""
     call verbosity_pop()
