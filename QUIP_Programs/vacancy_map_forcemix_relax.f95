@@ -51,7 +51,7 @@ implicit none
   integer vac_i
   character(len=1024) :: comment, in_file
   type(Dictionary) :: cli_params, comment_params
-  logical :: doing_restart, use_n_minim
+  logical :: doing_restart
   real(dp) :: eps_guess
   character(len=1024) :: lotf_args_str
   integer :: buffer_hops
@@ -67,21 +67,19 @@ implicit none
   in_file=''
   lotf_args_str=''
   call param_register(cli_params, 'restart', 'F', doing_restart, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, 'use_n_minim', 'F', use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'in_file', 'stdin', in_file, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'vac_i', '0', vac_i, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'lotf_args_str', '', lotf_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_args(cli_params)) then
-    call system_abort("Usage: vacancy_map_forcemix_relax [ restart=L(F) ] [ use_n_minim=L(F) ] [ vac_i=n(0) ] [ in_file=filename(stdin) ] [ buffer_hops=n(3) ] [ lotf_args_str=args ]")
+    call system_abort("Usage: vacancy_map_forcemix_relax [ restart=L(F) ] [ vac_i=n(0) ] [ in_file=filename(stdin) ] [ buffer_hops=n(3) ] [ lotf_args_str=args ]")
     call system_abort("Confused by CLI argument")
   endif
   call finalise(cli_params)
 
   call print("in_file = "//trim(in_file))
   call print("restart = "//doing_restart)
-  call print("use_n_minim = "//use_n_minim)
   call print("vac_i = "//vac_i)
   call print("lotf_args_str = "//trim(lotf_args_str))
 
@@ -140,7 +138,7 @@ implicit none
   call verbosity_push_increment(5)
   call setup_parallel(pot2, at, e=e, f=f)
   it = minim(lotfpot, at, 'cg', 0.001_dp, 500, 'LINMIN_DERIV', do_print = .true., print_inoutput = out, &
-    do_pos = .true., eps_guess = eps_guess, use_n_minim=use_n_minim)
+    do_pos = .true., eps_guess = eps_guess)
   call verbosity_pop()
   call print_xyz(at, out, comment=trim(comment)//" Relaxed_hybrid_disloc", all_properties=.true.)
   call calc_dists(at)

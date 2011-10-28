@@ -251,7 +251,6 @@ module CrackParams_module
      integer  :: minim_mm_max_steps       !% Maximum number of cg cycles for MM minimisation
      character(FIELD_LENGTH) :: minim_mm_linminroutine !% Linmin routine for MM minimisation
      character(FIELD_LENGTH) :: minim_mm_args_str   !% Args string to be passed to MM calc() routine
-     logical  :: minim_mm_use_n_minim     !% Whether or not to use n_minim for MM minimisation
 
 
      ! I/O parameters
@@ -552,7 +551,6 @@ contains
     this%minim_mm_max_steps      = 1000     ! number
     this%minim_mm_linminroutine  = 'FAST_LINMIN'
     this%minim_mm_args_str       = ''
-    this%minim_mm_use_n_minim    = .false.
 
     ! I/O parameters
     this%io_verbosity            = PRINT_NORMAL
@@ -1312,12 +1310,6 @@ contains
           parse_cp%minim_mm_args_str = value
        end if
 
-       call QUIP_FoX_get_value(attributes, "mm_use_n_minim", value, status)
-       if (status == 0) then
-          read (value, *) parse_cp%minim_mm_use_n_minim
-       end if
-
-
     elseif (parse_in_crack .and. name == 'io') then
        
        call QUIP_FoX_get_value(attributes, "verbosity", value, status)
@@ -1840,7 +1832,6 @@ contains
     call Print('     mm_max_steps          = '//this%minim_mm_max_steps,file=file)
     call Print('     mm_linminroutine      = '//trim(this%minim_mm_linminroutine),file=file)
     call Print('     mm_args_str           = '//trim(this%minim_mm_args_str),file=file)
-    call Print('     mm_use_n_minim        = '//this%minim_mm_use_n_minim,file=file)
     call Print('',file=file)
     call Print('  I/O parameters:',file=file)
     call Print('     verbosity             = '//trim(verbosity_to_str(this%io_verbosity)),file=file)

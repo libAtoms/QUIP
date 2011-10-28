@@ -50,7 +50,7 @@ implicit none
   integer vac_i
   character(len=1024) :: comment, in_file
   type(Dictionary) :: cli_params, comment_params
-  logical :: doing_restart, use_n_minim
+  logical :: doing_restart
   real(dp) :: eps_guess
   character(len=1024) :: hybrid_args_str
 
@@ -61,7 +61,6 @@ implicit none
   in_file=''
   hybrid_args_str=''
   call param_register(cli_params, 'restart', 'F', doing_restart, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, 'use_n_minim', 'F', use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'in_file', 'stdin', in_file, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'vac_i', '0', vac_i, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'hybrid_args_str', '', hybrid_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -74,7 +73,6 @@ implicit none
 
   call print("in_file = "//trim(in_file))
   call print("restart = "//doing_restart)
-  call print("use_n_minim = "//use_n_minim)
   call print("vac_i = "//vac_i)
   call print("hybrid_args_str = "//trim(hybrid_args_str))
 
@@ -117,7 +115,7 @@ implicit none
   call verbosity_push_increment(5)
   call setup_parallel(pot2, at, e=e, f=f)
   it = minim(hybridpot, at, 'cg', 0.001_dp, 500, 'NR_LINMIN', do_print = .true., print_inoutput = out, &
-    do_pos = .true., eps_guess = eps_guess, use_n_minim=use_n_minim)
+    do_pos = .true., eps_guess = eps_guess)
   call verbosity_pop()
   call print_xyz(at, out, comment=trim(comment)//" Relaxed_hybrid_disloc", all_properties=.true.)
   call calc_dists(at)

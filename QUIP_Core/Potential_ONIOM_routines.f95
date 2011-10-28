@@ -70,7 +70,6 @@
     call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_initialise args_str') ) then
@@ -268,7 +267,7 @@
 	dummy = assign_pointer(cluster, 'index', index)
 	call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
 	  this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
-	  this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_mm_use_n_minim, this%minim_inoutput_movie, &
+	  this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_inoutput_movie, &
           this%minim_cinoutput_movie, index)
       endif
     endif

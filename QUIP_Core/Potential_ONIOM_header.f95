@@ -52,7 +52,7 @@
      integer       :: minim_mm_max_steps
      character(FIELD_LENGTH) :: minim_mm_linminroutine 
      logical       :: minim_mm_do_pos, minim_mm_do_lat
-     logical       :: minim_mm_do_print, minim_mm_use_n_minim
+     logical       :: minim_mm_do_print
      character(FIELD_LENGTH) :: minim_mm_args_str
 
       type(Inoutput), pointer :: minim_inoutput_movie
