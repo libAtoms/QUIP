@@ -429,7 +429,6 @@ program crack
      call set_value(pot_params, 'minim_mm_max_steps', params%minim_mm_max_steps)
      call set_value(pot_params, 'minim_mm_linminroutine', trim(params%minim_mm_linminroutine))
      call set_value(pot_params, 'minim_mm_args_str', trim(params%minim_mm_args_str) )
-     call set_value(pot_params, 'minim_mm_use_n_minim', params%minim_mm_use_n_minim)
      call set_value(pot_params, 'lotf_spring_hops', params%fit_spring_hops)
      call set_value(pot_params, 'do_rescale_r', params%qm_rescale_r)
      call set_value(pot_params, 'minimise_bulk', params%qm_rescale_r)
