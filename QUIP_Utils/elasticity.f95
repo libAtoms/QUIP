@@ -76,7 +76,7 @@ contains
     my_relax_tol = optional_default(1e-8_dp, relax_tol)
     my_relax_initial = optional_default(.true., relax_initial)
     my_return_relaxed = optional_default(.false., return_relaxed)
-    my_relax_method = trim(optional_default('cg', relax_method))
+    my_relax_method = trim(optional_default('cg_n', relax_method))
 
     at_bulk = at
     call set_cutoff(at_bulk, cutoff(this))
