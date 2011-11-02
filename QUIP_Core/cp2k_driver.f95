@@ -1049,11 +1049,13 @@ contains
     integer, intent(out), optional :: error
 
     real(dp), pointer :: qm_charges_p(:)
+    real(dp) :: at_net_charge
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
-    integer :: i, ti
+    integer :: i, at_i
     type(inoutput) :: t_io
-    character(len=FIELD_LENGTH) :: species, t_line
+    character(len=FIELD_LENGTH) :: at_species, t_line
+    integer :: at_kind
     integer :: use_out_i
     real(dp) :: virial(3,3)
     character :: tx, ty, tz
@@ -1072,12 +1074,13 @@ contains
       endif
       call initialise(t_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1_'//use_out_i//'.mulliken',action=INPUT, error=error)
       PASS_ERROR_WITH_INFO("cp2k_driver read_output() failed to open qmcharges file", error)
-      do i=1, 3
+      t_line=''
+      do while (index(adjustl(t_line),"#") <= 0)
 	t_line = read_line(t_io)
       end do
       do i=1, at%N
 	t_line = read_line(t_io)
-	read (unit=t_line,fmt=*) ti, species, qm_charges_p(i)
+	read (unit=t_line,fmt=*) at_i, at_species, at_kind, qm_charges_p(i), at_net_charge
       end do
       call finalise(t_io)
     endif
