@@ -618,33 +618,33 @@ contains
 	 call set_value(at%params, "QM_cell"//trim(qm_name_suffix), cur_qmmm_qm_abc)
 	  call print('set_value QM_cell'//trim(qm_name_suffix)//' '//cur_qmmm_qm_abc)
 
-	 !check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
-   !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
-   !       if (qm_list_changed) can_reuse_wfn = .false.
-   !      endif
+	  ! check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
+	  ! if no old_cluster_mark, assumed it's changed just to be safe
+	  qm_list_changed = .false.
 	  if (.not.has_property(at, 'cluster_mark'//trim(qm_name_suffix))) then
 	    RAISE_ERROR('no cluster_mark'//trim(qm_name_suffix)//' found in atoms object',error)
 	  endif
 	  if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_suffix))) then
-	    RAISE_ERROR('no old_cluster_mark'//trim(qm_name_suffix)//' found in atoms object',error)
+	    qm_list_changed = .true.
 	  endif
-	  dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
 	  dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p)
 
-	  qm_list_changed = .false.
-	  do i=1,at%N
-	     if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
-		 if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
-		   if (any((/old_cluster_mark_p(i),cluster_mark_p(i)/) == HYBRID_NO_MARK)) qm_list_changed = .true.
-		 else ! CORE, check for transitions between ACTIVE/TRANS and other
-		   if ( ( any(old_cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
-			  all(cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) .or. &
-			( any(cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
-			  all(old_cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) ) qm_list_changed = .true.
-		 endif
-		 if (qm_list_changed) exit
-	     endif
-	  enddo
+	  if (.not. qm_list_changed) then
+	     dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
+	     do i=1,at%N
+		if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
+		    if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
+		      if (any((/old_cluster_mark_p(i),cluster_mark_p(i)/) == HYBRID_NO_MARK)) qm_list_changed = .true.
+		    else ! CORE, check for transitions between ACTIVE/TRANS and other
+		      if ( ( any(old_cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+			     all(cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) .or. &
+			   ( any(cluster_mark_p(i)  == (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) .and. &
+			     all(old_cluster_mark_p(i) /= (/ HYBRID_ACTIVE_MARK, HYBRID_TRANS_MARK /)) ) ) qm_list_changed = .true.
+		    endif
+		    if (qm_list_changed) exit
+		endif
+	     enddo
+	  endif
 	  call set_value(at%params,'QM_list_changed',qm_list_changed)
 	  call print('set_value QM_list_changed '//qm_list_changed)
 
