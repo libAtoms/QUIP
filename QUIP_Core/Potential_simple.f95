@@ -515,7 +515,7 @@ contains
        endif
 
        if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-            RAISE_ERROR('Potential_Simple_calc: single_cluster cannot assign pointer to hybrid_mark property ', error)
+            RAISE_ERROR('Potential_Simple_calc: single_cluster cannot assign pointer to hybrid_mark'//trim(hybrid_mark_postfix)//' property ', error)
        endif
 
        if (.not. any(hybrid_mark == HYBRID_ACTIVE_MARK)) then
