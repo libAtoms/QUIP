@@ -95,7 +95,7 @@ class DanWriter(object):
 	    px=getattr(at,self.pos_field)[1,i_at]
 	    py=getattr(at,self.pos_field)[2,i_at]
 	    pz=getattr(at,self.pos_field)[3,i_at]
-            self.out.write("atom %f %f %f %s" % (px, py, pz, getattr(at,atom_type)[i_at]))
+            self.out.write("atom %f %f %f %s" % (px, py, pz, getattr(at,atom_type)[i_at].stripstrings()))
 
             if self.value is not None:
 	        if (type(self.value) is StringType):
