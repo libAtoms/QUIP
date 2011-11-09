@@ -79,19 +79,19 @@ contains
 
     character(len=FIELD_LENGTH) :: run_dir
 
-    type(Table) :: qm_list
-    type(Table) :: cut_bonds
-    integer, pointer :: cut_bonds_p(:,:)
-    integer, allocatable :: qm_list_a(:)
-    integer, allocatable :: link_list_a(:)
+    type(Table) :: qm_list, old_qm_list
+    type(Table) :: cut_bonds, old_cut_bonds
+    integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
+    integer, allocatable :: qm_list_a(:), old_qm_list_a(:)
+    integer, allocatable :: link_list_a(:), old_link_list_a(:)
     integer, allocatable :: qm_and_link_list_a(:)
     integer :: i_inner, i_outer
     integer :: counter
 
-    integer :: charge
-    logical :: do_lsd
+    integer :: charge, old_charge
+    logical :: do_lsd, old_do_lsd
 
-    logical :: can_reuse_wfn, qm_list_changed
+    logical :: can_reuse_wfn, qm_list_changed, qm_link_list_changed
     character(len=FIELD_LENGTH) :: qm_name_suffix
 
     logical :: use_QM, use_MM, use_QMMM
@@ -482,8 +482,9 @@ contains
     endif
     call system_timer('do_cp2k_calc/make_psf')
 
-    allocate(qm_list_a(0))
+    allocate(qm_list_a(0), old_qm_list_a(0))
     allocate(link_list_a(0))
+    allocate(old_link_list_a(0))
     allocate(qm_and_link_list_a(0))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. persistent_already_started) then
@@ -537,14 +538,19 @@ contains
        if (use_QMMM) then
 	 if (use_buffer) then
 	   call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	   call get_hybrid_list(at, old_qm_list, all_but_term=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
 	 else
 	   call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	   call get_hybrid_list(at, old_qm_list, active_trans_only=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
 	 endif
 	 if (allocated(qm_list_a)) deallocate(qm_list_a)
+         if (allocated(old_qm_list_a)) deallocate(old_qm_list_a)
 	 if (allocated(link_list_a)) deallocate(link_list_a)
+	 if (allocated(old_link_list_a)) deallocate(old_link_list_a)
 	 if (allocated(qm_and_link_list_a)) deallocate(qm_and_link_list_a)
-	 allocate(qm_list_a(qm_list%N))
+	 allocate(qm_list_a(qm_list%N), old_qm_list_a(old_qm_list%N))
 	 if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
+         if (old_qm_list%N > 0) old_qm_list_a = int_part(old_qm_list,1)
 	 !get link list
 
 	  if (assign_pointer(at,'cut_bonds'//trim(qm_name_suffix),cut_bonds_p)) then
@@ -571,6 +577,18 @@ contains
 	     allocate(qm_and_link_list_a(size(qm_list_a)))
 	     if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
 	  endif
+
+          call initialise(old_cut_bonds,2,0,0,0,0)
+          if(assign_pointer(at, 'old_cut_bonds'//trim(qm_name_suffix), old_cut_bonds_p)) then
+	     do i_inner=1,at%N
+		do j=1,size(old_cut_bonds_p,1) !MAX_CUT_BONDS
+		   if (old_cut_bonds_p(j,i_inner) == 0) exit
+		   ! correct for new atom indices resulting from sorting of atoms
+		   i_outer = rev_sort_index(old_cut_bonds_p(j,i_inner))
+		   call append(old_cut_bonds,(/i_inner,i_outer/))
+		enddo
+	     enddo
+          end if
 
 	  !If needed, read QM/MM link_template_file
 	  if (size(link_list_a) > 0) then
@@ -630,7 +648,7 @@ contains
 	  dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p)
 
 	  if (.not. qm_list_changed) then
-	     dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
+             dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
 	     do i=1,at%N
 		if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
 		    if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
@@ -688,6 +706,19 @@ contains
 	       enddo
 	    enddo
 	    call finalise(cp2k_input_tmp_io)
+
+            ! check if set of cut bonds has changed
+            qm_link_list_changed = .false.
+            if (cut_bonds%N > 0 .and. old_cut_bonds%N > 0) then
+               do i=1,at%N
+                  if (any(cut_bonds_p(:,i) /= old_cut_bonds_p(:,i))) then
+                     qm_link_list_changed = .true.
+                     exit
+                  end if
+               end do
+               if (qm_link_list_changed) can_reuse_wfn = .false.
+            end if
+
 	 endif ! size(link_list_a) > 0
        endif ! use_QMMM
 
@@ -696,6 +727,25 @@ contains
        call print("@SET DO_DFT_QM_CHARGES 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        ! put in things needed for QM
        if (use_QM) then
+         call calc_charge_lsd(at, old_qm_list_a, old_charge, old_do_lsd, n_hydrogen=old_cut_bonds%N, &
+              hydrogen_charge=hydrogen_charge, error=error)
+         PASS_ERROR(error)
+         call calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen=cut_bonds%N, &
+              hydrogen_charge=hydrogen_charge, error=error)
+	 PASS_ERROR(error)
+         if (old_do_lsd .neqv. do_lsd) can_reuse_wfn = .false.
+         call print('Setting DFT charge to '//charge//' and LSD to '//do_lsd)
+	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 if (do_lsd) then
+	    call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 endif
+	 if (len_trim(calc_qm_charges) > 0) then
+	    call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	 endif
+         if (have_silica_potential .and. .not. silica_pos_dep_charges) then
+            call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+            call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+         end if
 	 if (try_reuse_wfn .and. can_reuse_wfn) then 
 	   if (persistent) then
 	      call print("@SET WFN_FILE_NAME quip-RESTART.wfn", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -705,21 +755,6 @@ contains
 	   !insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	   !call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 	 endif
-         call calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen=cut_bonds%N, &
-              hydrogen_charge=hydrogen_charge, error=error)
-	 PASS_ERROR(error)
-         call print('Setting DFT charge to '//charge//' and LSD to '//do_lsd)
-	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	 if (do_lsd) then
-	    call print("@SET DO_DFT_LSD 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	 endif
-	 if (len_trim(calc_qm_charges) > 0) then
-	    call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-	 endif
-        if (have_silica_potential .and. .not. silica_pos_dep_charges) then
-           call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-           call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-        end if
        endif ! use_QM
 
        ! put in unit cell
