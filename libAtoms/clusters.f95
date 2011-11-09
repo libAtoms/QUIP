@@ -51,12 +51,14 @@ integer, parameter :: &
    HYBRID_BUFFER_OUTER_LAYER_MARK = 5, &
    HYBRID_ELECTROSTATIC_MARK = 6, &
    HYBRID_NO_MARK = 0
-
 !   HYBRID_FIT_MARK = 6, &
 
 public :: HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK, HYBRID_TRANS_MARK, HYBRID_TERM_MARK, &
    HYBRID_BUFFER_OUTER_LAYER_MARK, HYBRID_ELECTROSTATIC_MARK, HYBRID_NO_MARK
 ! HYBRID_FIT_MARK
+
+integer, parameter :: MAX_CUT_BONDS = 6
+public :: MAX_CUT_BONDS
 
 character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
   (/ "h_none    ", &
@@ -2409,23 +2411,23 @@ end function cluster_in_out_in
 ! only one set of defaults now, not one in args_str and one in arg list 
     call initialise(params)
     call param_register(params, 'hybrid_mark_postfix', '', hybrid_mark_postfix, help_string="string to append to hyrbid_mark for proper mark property name")
-    call param_register(params, 'transition_hops', '0', transition_hops, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'weight_interpolation', 'hop_ramp', weight_interpolation, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'distance_ramp_inner_radius', '0', distance_ramp_inner_radius, has_value_target=has_distance_ramp_inner_radius, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'distance_ramp_outer_radius', '0', distance_ramp_outer_radius, has_value_target=has_distance_ramp_outer_radius, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'distance_ramp_center', '0 0 0', distance_ramp_center, has_value_target=has_distance_ramp_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'nneighb_only', 'T', nneighb_only, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'min_images_only', 'F', min_images_only, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'mark_buffer_outer_layer', 'T', mark_buffer_outer_layer, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', hysteretic_buffer_inner_radius, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', hysteretic_buffer_outer_radius, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_connect_cluster_radius', '1.2', hysteretic_connect_cluster_radius, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'hysteretic_connect_outer_factor', '1.5', hysteretic_connect_outer_factor, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'transition_hops', '0', transition_hops, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'weight_interpolation', 'hop_ramp', weight_interpolation, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'distance_ramp_inner_radius', '0', distance_ramp_inner_radius, has_value_target=has_distance_ramp_inner_radius, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'distance_ramp_outer_radius', '0', distance_ramp_outer_radius, has_value_target=has_distance_ramp_outer_radius, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'distance_ramp_center', '0 0 0', distance_ramp_center, has_value_target=has_distance_ramp_center, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'nneighb_only', 'T', nneighb_only, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'min_images_only', 'F', min_images_only, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'mark_buffer_outer_layer', 'T', mark_buffer_outer_layer, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', hysteretic_buffer_inner_radius, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', hysteretic_buffer_outer_radius, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_connect_cluster_radius', '1.2', hysteretic_connect_cluster_radius, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'hysteretic_connect_outer_factor', '1.5', hysteretic_connect_outer_factor, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
     call param_register(params, 'have_silica_potential', 'F', have_silica_potential, help_string="No help yet.") !lam81
     call param_register(params, 'res_num_silica', '1', res_num_silica, help_string="No help yet.") !lam81
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights_args_str args_str') ) then

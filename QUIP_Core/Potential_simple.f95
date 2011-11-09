@@ -63,8 +63,6 @@ module Potential_simple_module
   use FilePot_module
   use CallbackPot_module
 
-#define MAX_CUT_BONDS 6
-
   implicit none
   private
 
@@ -197,12 +195,12 @@ contains
     call Finalise(this)
 
     call initialise(params)
-    call param_register(params, 'TB', 'false', is_TB, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'IP', 'false', is_IP, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'FilePot', 'false', is_FilePot, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'wrapper', 'false', is_wrapper, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'TB', 'false', is_TB, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'IP', 'false', is_IP, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'FilePot', 'false', is_FilePot, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'wrapper', 'false', is_wrapper, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
     call param_register(params, 'force_using_fd', 'F', this%force_using_fd, &
       help_string="If true, and if 'force' is also present in the calc argument list, calculate forces using finite difference.")
 
@@ -334,7 +332,7 @@ contains
     real(dp), pointer, dimension(:,:) :: f_cluster
     logical :: do_carve_cluster
     type(Table) :: cluster_info, cut_bonds, t
-    integer, pointer :: cut_bonds_p(:,:)
+    integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
     integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
     character(len=FIELD_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial
@@ -615,11 +613,15 @@ contains
 	 endif
 
          !save cut bonds in cut_bonds property
+         call add_property(at, 'old_cut_bonds'//trim(hybrid_mark_postfix), 0, n_cols=MAX_CUT_BONDS)
+	 if (.not. assign_pointer(at, 'old_cut_bonds'//trim(hybrid_mark_postfix), old_cut_bonds_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
+	 endif
 	 call add_property(at, 'cut_bonds'//trim(hybrid_mark_postfix), 0, n_cols=MAX_CUT_BONDS)
 	 if (.not. assign_pointer(at, 'cut_bonds'//trim(hybrid_mark_postfix), cut_bonds_p)) then
 	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
 	 endif
-         !zero it
+         old_cut_bonds_p = cut_bonds_p
          cut_bonds_p = 0
 	 do i=1, cut_bonds%N
 	   i_inner = cut_bonds%int(1,i)
@@ -1108,8 +1110,8 @@ contains
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
        RAISE_ERROR("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'", error)
     endif
