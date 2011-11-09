@@ -497,34 +497,32 @@ contains
   !
   !% Rotate a vector using the given quaternion
   !
-  function rotate_vect(v,qr) result(res)
+  subroutine rotate_vect(v,qr)
 
-    real(dp), dimension(3), intent(in) :: v
-    type(Quaternion),       intent(in) :: qr
-    real(dp), dimension(3)             :: res
+    real(dp), dimension(3), intent(inout) :: v
+    type(Quaternion),       intent(in)    :: qr
     !local variables
-    type(Quaternion)                   :: qv
+    type(Quaternion)                      :: qv
 
     qv = v
-    qv = rotate_quat(qv,qr)
-    res = qv
+    call rotate_quat(qv,qr)
+    v = qv
 
-  end function rotate_vect
+  end subroutine rotate_vect
 
   !
   !% Rotate a vector represented as a quaternion ('qv'), using a given rotation quaternion ('qr')
   !% This assumes that the rotation quaternion is properly normalised
   !%
   !% 'qv = qr * qv * (.conj.qr)'
-  function rotate_quat(qv,qr) result(res)
+  subroutine rotate_quat(qv,qr)
 
-    type(Quaternion), intent(in)  :: qv
-    type(Quaternion), intent(in)  :: qr
-    type(Quaternion)              :: res
+    type(Quaternion), intent(inout)  :: qv
+    type(Quaternion), intent(in)     :: qr
 
-    res = qr * qv * (.conj. qr)
+    qv = qr * qv * (.conj. qr)
 
-  end function rotate_quat
+  end subroutine rotate_quat
 
   !
   !% Given two vectors ('a1' and 'b1'), calculate the rotation quaternion 
@@ -586,7 +584,8 @@ contains
     r1 = Rotation(n,theta)
 
     !Acting on b1 with r1 will take it to a new position, b3
-    b3_hat = Rotate(b1_hat,r1)
+    b3_hat = b1_hat
+    call Rotate(b3_hat,r1)
 
     !Now figure out the angle which we need to rotate around a2 (or -a2) to take b3 to b2
     ! -> Construct vectors perpendicular to a2, in the a2-b3 and a2-b2 planes, then find angle between them   
@@ -716,14 +715,15 @@ contains
     call Print('q2:')
     call Print(q2)
     call Print('Rotating...')
-    q3 = Rotate(q1,q2)
+    call Rotate(q1,q2)
+    q3 = q1
     call Print(q3)
     v3 = q3
     call Print('Rotated vector:')
     call Print(v3)
     call Print('')
     call Print('Rotating this by a further 90deg around z axis')
-    v3 = Rotate(v3,q2)
+    call Rotate(v3,q2)
     call Print('Rotated vector:')
     call Print(v3)
     call Print('')
@@ -737,7 +737,8 @@ contains
     v3 = random_unit_vector()
     call Print(v3)
     call Print('Rotating with quaternion...')
-    a = Rotate(v3,q1)
+    a = v3
+    call Rotate(a,q1)
     call Print(a)
     call Print('Rotating with matrix...')
     b = M .mult. v3
@@ -758,8 +759,10 @@ contains
     q1 = Rotation(random_unit_vector(),ran_uniform()*PI)
     call Print(q1)
     call Print('Rotating random vectors with random quaternion...')
-    c = Rotate(a,q1)
-    d = Rotate(b,q1)
+    c = a
+    call Rotate(c,q1)
+    d = b
+    call Rotate(d,q1)
     call Print('a -> c:')
     call Print(c)
     call Print('b -> d:')

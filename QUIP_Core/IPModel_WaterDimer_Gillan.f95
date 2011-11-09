@@ -169,22 +169,22 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
 
    !get rotation axis
    axis = (at%pos(:,4)-at%pos(:,1)) .cross. (/0.0_dp,0.0_dp,1.0_dp/)
+   atpos(1,1,:) = at%pos(:,1)-at%pos(:,1)
+   atpos(1,2,:) = at%pos(:,2)-at%pos(:,1)
+   atpos(1,3,:) = at%pos(:,3)-at%pos(:,1)
+   atpos(2,1,:) = at%pos(:,4)-at%pos(:,1)
+   atpos(2,2,:) = at%pos(:,5)-at%pos(:,1)
+   atpos(2,3,:) = at%pos(:,6)-at%pos(:,1)
+
    if(axis .fne. (/0.0_dp,0.0_dp,0.0_dp/)) then
       quat = orientation(at%pos(:,4)-at%pos(:,1), axis, (/0.0_dp,0.0_dp,1.0_dp/), axis)
 
-      atpos(1,1,:) = rotate(at%pos(:,1)-at%pos(:,1), quat)
-      atpos(1,2,:) = rotate(at%pos(:,2)-at%pos(:,1), quat)
-      atpos(1,3,:) = rotate(at%pos(:,3)-at%pos(:,1), quat)
-      atpos(2,1,:) = rotate(at%pos(:,4)-at%pos(:,1), quat)
-      atpos(2,2,:) = rotate(at%pos(:,5)-at%pos(:,1), quat)
-      atpos(2,3,:) = rotate(at%pos(:,6)-at%pos(:,1), quat)
-   else
-      atpos(1,1,:) = at%pos(:,1)-at%pos(:,1)
-      atpos(1,2,:) = at%pos(:,2)-at%pos(:,1)
-      atpos(1,3,:) = at%pos(:,3)-at%pos(:,1)
-      atpos(2,1,:) = at%pos(:,4)-at%pos(:,1)
-      atpos(2,2,:) = at%pos(:,5)-at%pos(:,1)
-      atpos(2,3,:) = at%pos(:,6)-at%pos(:,1)
+      call rotate(atpos(1,1,:), quat)
+      call rotate(atpos(1,2,:), quat)
+      call rotate(atpos(1,3,:), quat)
+      call rotate(atpos(2,1,:), quat)
+      call rotate(atpos(2,2,:), quat)
+      call rotate(atpos(2,3,:), quat)
    end if
 
    ! make that call

@@ -159,7 +159,7 @@ contains
                     (/1.0_dp,0.0_dp,0.0_dp/),(/0.0_dp,1.0_dp,0.0_dp/),.true.)!... to the x and y axes
 
     do i = 1, this%at%N
-       this%at%pos(:,i) = Rotate(this%at%pos(:,i),q)
+       call rotate(this%at%pos(:,i),q)
     end do
 
     !Find two non-parallel reference directions within the structure
