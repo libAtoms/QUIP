@@ -87,7 +87,7 @@
 !X MPI BCAST errors
 !X
 !X Extension of error handling macros to MPI cases where processes
-!X peform different tasks. If an error occurs on one process it will
+!X perform different tasks. If an error occurs on one process it will
 !X be broadcast to all others before the error is propagated
 !X upwards. Replace RAISE_ERROR with BCAST_RAISE_ERROR and PASS_ERROR
 !X with BCAST_PASS_ERROR. Additionally, BCAST_CHECK_ERROR must be
