@@ -215,11 +215,9 @@ subroutine ft_rotate(field, axis, angle, origin)
 
   do i=1, N
     if (present(origin)) then
-      dr = field(:,i)-origin
-    else
-      dr = field(:,i)
+      field(:,i) = field(:,i)-origin
     endif
-    field(:,i) = rotate(dr, Q)
+    call rotate(field(:,i), Q)
   end do
 end subroutine ft_rotate
 
