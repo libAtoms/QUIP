@@ -19,7 +19,7 @@
 
 from quippy import *
 from numpy import *
-import sys, optparse, shutil, os
+import sys, optparse, shutil, os, itertools
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
