@@ -217,6 +217,7 @@ import quippy.netcdf
 import quippy.imd
 import quippy.vasp
 import quippy.dan
+import quippy.cp2k
 
 try:
     import quippy.castep
