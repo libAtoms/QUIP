@@ -745,6 +745,7 @@ contains
          if (have_silica_potential .and. .not. silica_pos_dep_charges) then
             call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
             call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+            call print("@SET HSI_CHARGE "//hydrogen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
          end if
 	 if (try_reuse_wfn .and. can_reuse_wfn) then 
 	   if (persistent) then
