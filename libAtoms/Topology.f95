@@ -583,6 +583,7 @@ real(dp) :: do_silica_charge_transfer
                 call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANAL)
              enddo
           else
+             where (at%z == 1) atom_charge = do_silica_charge_transfer/4.0_dp
              where (at%z == 8) atom_charge = -do_silica_charge_transfer/2.0_dp
              where (at%z ==14) atom_charge = do_silica_charge_transfer
           end if
