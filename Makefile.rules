@@ -86,9 +86,12 @@ ifeq (${HAVE_ASAP},1)
   DEFINES += -DHAVE_ASAP
 endif
 ifeq (${HAVE_KIM},1)
-  SYSLIBS += ${KIM_API_PATH}/KIMservice.o ${KIM_API_PATH}/KIMserviceC.o ${KIM_API_PATH}/KIMserviceF.o $(addprefix ${KIM_MODEL_PATH}/,${KIM_MODEL_OBJS})
-  INCLUDES += -I${KIM_API_PATH} -fcray-pointer
+  SYSLIBS += ${KIM_DIR}/MODEL_DRIVERs/*/*.a ${KIM_DIR}/MODELs/*/*.a ${KIM_DIR}/KIM_API/libkim.a  -lstdc++
+  INCLUDES += -I${KIM_DIR}/KIM_API -fcray-pointer
   DEFINES += -DHAVE_KIM
+  ifeq (${KIM_NO_AUTOGENERATE_TEST_KIM},1)
+    DEFINES += -DKIM_NO_AUTOGENERATE_TEST_KIM
+  endif
 endif
 ifeq (${HAVE_GP_TEACH},1)
   DEFINES += -DHAVE_GP_TEACH
