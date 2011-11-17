@@ -350,6 +350,30 @@ check that all the libraries you're linking against are correct. You
 can used `ldd` on Linux of `otool -L` on Mac OS X to check which
 libraries the :file:`_quippy.so` Python extension is linked against.
 
+Possible problems installing atomeye module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you get an :exc:`ImportError` with a message 
+::
+   >>> import atomeye
+   ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: _Config_load_libatoms
+   Referenced from: /Users/silvia/lib/python/_atomeye.so
+   Expected in: flat namespace
+   in /Users/silvia/lib/python/_atomeye.so
+
+be sure that you have set QUIP_ROOT variable before starting the compilation.
+If not make clean and recompile again
+
+If you get an :exc:`ImportError` with a message
+::
+   >>> import atomeye
+   ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: __gfortran_adjustl
+   Referenced from: /Users/silvia/lib/python/_atomeye.so
+   Expected in: flat namespace
+   in /Users/silvia/lib/python/_atomeye.so
+
+be sure that the gfortran librarie are properly set in ATOMEYE_LIBS in Makefile.atomeye 
+
 
 Installing the ipython profile
 ------------------------------
