@@ -192,22 +192,27 @@ pure function extendable_str_len(this)
   extendable_str_len = this%len
 end function extendable_str_len
 
-subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
+subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: str
-  logical, intent(in), optional :: keep_lf, add_lf_if_missing
+  logical, intent(in), optional :: keep_lf, add_lf_if_missing, no_trim
 
   character, allocatable :: t(:)
   integer str_len
   integer add_len, new_len
   integer i
-  logical my_keep_lf, my_add_lf_if_missing
+  logical my_keep_lf, my_add_lf_if_missing, my_no_trim
   logical :: add_lf
 
   my_keep_lf = optional_default(.true., keep_lf)
   my_add_lf_if_missing = optional_default(.false., add_lf_if_missing)
+  my_no_trim = optional_default(.false., no_trim)
 
-  str_len = len_trim(str)
+  if (my_no_trim) then
+      str_len = len(str)
+  else
+      str_len = len_trim(str)
+  endif
   add_lf = .false.
   if (str_len > 0) then
      if (my_add_lf_if_missing .and. str(str_len:str_len) /= quip_new_line) add_lf = .true.
