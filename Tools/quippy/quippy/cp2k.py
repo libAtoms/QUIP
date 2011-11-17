@@ -108,7 +108,7 @@ def CP2KOutputReader(fh, module='QUICKSTEP', type_map=None, kind_map=None):
     if module == 'FIST':
         at.add_property('type', ' '*TABLE_STRING_LENGTH)
         at.add_property('qm', False)
-        at.qm[:] = (at.type.stripstrings() == '_QM_') | (at.type.stripstrings() == '_LNK'))
+        at.qm[:] = (at.type.stripstrings() == '_QM_') | (at.type.stripstrings() == '_LNK')
         at.type[...] = s2a(types, TABLE_STRING_LENGTH)
         at.add_property('qeff', qeffs)
     else:
