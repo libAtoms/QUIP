@@ -606,11 +606,11 @@ class test(Command):
 
 
         if self.debug is not None:
-           from IPython.Shell import IPShellEmbed
-           ipshell = IPShellEmbed(['-pdb','-pi1','debug In <\\#>: ','-pi2','debug    .\\D.: ',
-                                   '-po','debug Out<\\#>: ','-nosep'])
-           tests.debug()
-           ipshell()
+            import sys
+            from IPython.core import ultratb
+            sys.excepthook = ultratb.FormattedTB(mode='Verbose',
+                                                 color_scheme='LightBG', call_pdb=1)
+            tests.debug()
         else:
            print 'Running tests with verbosity %d' % self.verbosity
            runner = TextTestRunner(verbosity=self.verbosity)
@@ -652,9 +652,9 @@ class interact(Command):
         old_path = sys.path[:]
 
         # start embedded ipython shell
-        from IPython.Shell import IPShellEmbed
-        ipshell = IPShellEmbed(['-pdb', '-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
-                                '-po','interact Out<\\#>: ','-nosep'])
+        from IPython import embed
+        #ipshell = IPShellEmbed(['-pdb', '-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
+        #                        '-po','interact Out<\\#>: ','-nosep'])
 
         # extend sys.path
         sys.path.insert(0, self.build_purelib)
@@ -667,7 +667,7 @@ class interact(Command):
            exec(self.execute)
         if self.execfile is not None:
            execfile(self.execfile)
-        ipshell()
+        embed()
 
         # restore sys.path
         sys.path = old_path[:]
