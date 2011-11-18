@@ -826,18 +826,14 @@ class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
    def test_equiv(self):
       at_h = self.at.copy()
       at_h.calc_connect_hysteretic()
-
-      self.assertEqual([[n.j for n in self.at.neighbours[i]] for i in frange(self.at.n)],
-                       [[n.j for n in at_h.neighbours[i]] for i in frange(at_h.n)] )
+      self.assertEqual(self.at.neighbours, at_h.neighbours)
 
    def test_move_atom(self):
       move_atom = 66
       at_move = self.at.copy()
       at_move.pos[2,move_atom] -= 0.5
       at_move.calc_connect()
-
-      self.assertNotEqual([[n.j for n in self.at.neighbours[i]] for i in frange(self.at.n)],
-                          [[n.j for n in at_move.neighbours[i]] for i in frange(at_move.n)])
+      self.assertNotEqual(self.at.neighbours, at_move.neighbours)
 
    def test_move_atom_hysteretic(self):
       move_atom = 66
@@ -848,8 +844,8 @@ class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
       at_h.pos[2,move_atom] -= 0.5
       at_h.calc_connect_hysteretic()
 
-      self.assertEqual([[n.j for n in self.at.neighbours[i]] for i in frange(self.at.n)],
-                       [[n.j for n in at_h.neighbours[i]] for i in frange(at_h.n)] )
+      self.assertEqual(self.at.neighbours, at_h.neighbours)
+
 
    def test_move_atom_hysteretic_alt_connect(self):
       move_atom = 66
@@ -860,8 +856,7 @@ class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
       at_h.pos[2,move_atom] -= 0.5
       at_h.calc_connect_hysteretic(at_h.hysteretic_connect)
 
-      self.assertEqual([[n.j for n in self.at.neighbours[i]] for i in frange(self.at.n)],
-                       [[n.j for n in at_h.hysteretic_neighbours[i]] for i in frange(at_h.n)])
+      self.assertEqual(self.at.neighbours, at_h.hysteretic_neighbours)
 
    def test_move_atom_hysteretic_origin_extent(self):
       move_atom = 66
@@ -966,7 +961,7 @@ class TestGeometry(QuippyTestCase):
       dia = diamond(5.44, 14)
       dia.add_property('mass', [ElementMass[z] for z in dia.z])
       self.assertArrayAlmostEqual(dia.centre_of_mass(),
-                                  farray([dia.diff_min_image(1,i) for i in frange(dia.n)]).T.mean(axis=2))
+                                  farray([dia.diff_min_image(1,i) for i in dia.indices]).T.mean(axis=2))
       
 
 if __name__ == '__main__':
