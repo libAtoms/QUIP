@@ -120,6 +120,27 @@ class Neighbours(object):
         self.atref = weakref.ref(at)
         self.hysteretic = hysteretic
 
+    def is_neighbour(self, i, j):
+        return (i,j) in self.pairs()
+
+    def pairs(self):
+        """Iterate over pairs of atoms (i,j) which are neighbours"""
+        at = self.atref()
+        for i, neighbour_list in zip(at.indices, self.iterneighbours()):
+            for neighb in neighbour_list:
+                yield (i,neighb.j)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        # Neighbours are considered to be equal if *topology* matches,
+        # not distances, displacement vectors and shifts.
+        return sorted(self.pairs()) == sorted(other.pairs())
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self):
         return self.iterneighbours()
 
