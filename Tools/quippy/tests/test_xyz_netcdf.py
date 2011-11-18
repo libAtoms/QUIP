@@ -23,6 +23,7 @@ import unittest, itertools, sys, quippy
 import numpy as np
 from quippytest import *
 import os
+import glob
 
 have_netcdf = True
 try:
@@ -129,6 +130,8 @@ class TestCInOutput(QuippyTestCase):
       if os.path.exists('quartz.xyz.idx'): os.remove('quartz.xyz.idx')
       if os.path.exists('quartz.nc'): os.remove('quartz.nc')
       if os.path.exists('empty.xyz'): os.remove('empty.xyz')
+      for t in glob.glob('test*.xyz*'):
+         os.remove(t)
 
    def testsinglexyz(self):
       self.at.write('test.xyz')
@@ -463,6 +466,21 @@ H 0. 0. 0.
 Properties="species:S:1:pos:R:3" Lattice="10. 0 0 0 10.0 0 0 0 10"  State=""
 H 0. 0. 0.
 """)
+
+   def test_one_frame_per_file_low_level(self):
+      cio = CInOutput('test00000.xyz', action=OUTPUT, one_frame_per_file=True)
+      self.al.write(cio)
+      cio = CInOutput('test00000.xyz', action=INPUT, one_frame_per_file=True)
+      al = [cio.read() for i in range(cio.n_frame)]
+      self.assertEqual(al, list(self.al))
+
+   def test_one_frame_per_file_high_level(self):
+      self.al.write('test00000.xyz', one_frame_per_file=True)
+      al = AtomsList('test00000.xyz', one_frame_per_file=True)
+      al2 = AtomsList('test0000*.xyz', no_compute_index=True)
+      self.assertEqual(al, self.al)
+      self.assertEqual(al, al2)
+
       
 
 class TestPythonNetCDF(QuippyTestCase):

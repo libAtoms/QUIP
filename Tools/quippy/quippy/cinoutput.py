@@ -31,9 +31,9 @@ class CInOutput(_cinoutput.CInOutput):
     __doc__ = _cinoutput.CInOutput.__doc__
 
     def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
-                 frame=None, mpi=None, zero=False, range=None, fpointer=None, finalise=True):
+                 frame=None, one_frame_per_file=None, mpi=None, zero=False, range=None, fpointer=None, finalise=True):
         _cinoutput.CInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
-                                      frame, mpi, fpointer=fpointer, finalise=finalise)
+                                      frame, one_frame_per_file, mpi, fpointer=fpointer, finalise=finalise)
         self.zero = zero
         self.range = range
 
@@ -72,13 +72,15 @@ FortranDerivedTypes['type(cinoutput)'] = CInOutput
 class CInOutputReader(object):
     """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
 
-    def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, zero=False):
-        if isinstance(source, str):
+    def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
+                 zero=False, one_frame_per_file=False):
+        if isinstance(source, basestring):
             self.opened = True
-            self.source = CInOutput(source, action=INPUT, append=False, zero=zero, range=range)
+            self.source = CInOutput(source, action=INPUT, append=False, zero=zero, range=range,
+                                    no_compute_index=no_compute_index, one_frame_per_file=one_frame_per_file)
             try:
                 self.netcdf_file = netcdf_file(source)
-            except (RuntimeError, AssertionError):
+            except (RuntimeError, AssertionError, IOError):
                 self.netcdf_file = None
         else:
             self.opened = False
@@ -137,13 +139,14 @@ def CInOutputStdinReader(source='stdin'):
 class CInOutputWriter(object):
     """Class to write atoms sequentially to a CInOutput stream"""
 
-    def __init__(self, dest, append=False, netcdf4=True, **write_kwargs):
+    def __init__(self, dest, append=False, netcdf4=True, one_frame_per_file=False, **write_kwargs):
         self.opened = False
         self.write_kwargs = {}
         self.write_kwargs.update(write_kwargs)
         if isinstance(dest, basestring):
             self.opened = True
-            self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
+            self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4,
+                                  one_frame_per_file=one_frame_per_file)
         else:
             self.dest = dest
 
