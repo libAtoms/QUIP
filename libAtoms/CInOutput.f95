@@ -127,17 +127,19 @@ module CInOutput_module
 
   type CInOutput
      logical :: initialised = .false.
-     character(len=1024) :: filename
+     character(len=1024) :: filename, basename, extension
      integer :: action
      integer :: format
      logical :: got_index
      logical :: netcdf4
      logical :: append
+     logical :: one_frame_per_file
      integer :: current_frame
      integer :: n_frame
      integer :: n_atom
      integer :: n_label
      integer :: n_string
+     integer :: n_digit
      type(MPI_Context) :: mpi
   end type CInOutput
 
@@ -189,7 +191,7 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, frame, mpi, error)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, frame, one_frame_per_file, mpi, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
@@ -197,11 +199,14 @@ contains
     logical, intent(in), optional :: append
     logical, optional, intent(in) :: netcdf4
     logical, optional, intent(in) :: no_compute_index
+    logical, optional, intent(in) :: one_frame_per_file
     integer, optional, intent(in) :: frame
     type(MPI_context), optional, intent(in) :: mpi
     integer, intent(out), optional :: error
 
-    integer :: compute_index
+    character(len=1024) :: my_filename
+    character(len=100) :: fmt
+    integer :: compute_index, n_file, dot_index
     logical :: file_exists
 
     INIT_ERROR(error)
@@ -210,18 +215,40 @@ contains
     this%append = optional_default(.false., append)
     this%netcdf4 = optional_default(.true., netcdf4)
     this%filename = optional_default('', filename)
-
+    this%one_frame_per_file = optional_default(.false., one_frame_per_file)
     compute_index = 1
     if (present(no_compute_index)) then
        if (no_compute_index) compute_index = 0
     end if
     if (present(mpi)) this%mpi = mpi
 
+    dot_index = index(filename,'.',.true.)
+    if (dot_index == 0) then
+       this%basename = this%filename
+       this%extension = ''
+    else
+       this%basename = filename(:dot_index-1)
+       this%extension = filename(dot_index:)
+    end if
+    this%n_digit = 0
+    if (this%one_frame_per_file) then
+       compute_index = 0
+       do
+          if (this%filename(dot_index-1-this%n_digit:dot_index-1-this%n_digit) /= '0') exit
+          this%n_digit = this%n_digit + 1
+          this%basename = this%filename(:dot_index-1-this%n_digit)
+       end do
+       if (this%n_digit == 0) then
+          RAISE_ERROR("one_frame_per_file=T but no zeros found in filename - use e.g. file_00000.xyz", error)
+       end if
+       fmt = '(a,i'//this%n_digit//'.'//this%n_digit//',a)'
+    end if
+
     ! Guess format from file extension
     if (trim(filename) == '') then
        this%format = XYZ_FORMAT
     else
-       if (filename(len_trim(filename)-2:) == '.nc') then
+       if (trim(this%extension) == '.nc') then
           this%format = NETCDF_FORMAT
        else
           this%format = XYZ_FORMAT
@@ -237,15 +264,29 @@ contains
 
     ! Should we do an initial query to count number of frames/atoms?
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
-       inquire(file=this%filename, exist=file_exists)
+       if (this%one_frame_per_file) then
+          n_file = 0
+          do 
+             write (my_filename, fmt) trim(this%basename), n_file, trim(this%extension)
+             inquire(file=my_filename, exist=file_exists)
+             if (.not. file_exists) exit
+             n_file = n_file + 1
+          end do
+          write (my_filename, fmt) trim(this%basename), 0, trim(this%extension) ! do query on frame 0
+          file_exists = n_file > 0
+       else
+          my_filename = this%filename
+          inquire(file=my_filename, exist=file_exists)
+       end if
+       my_filename = trim(my_filename)//C_NULL_CHAR
        if (file_exists) then
           if (this%format == NETCDF_FORMAT) then
-             call query_netcdf(trim(this%filename)//C_NULL_CHAR, this%n_frame, this%n_atom, this%n_label, this%n_string, error)
+             call query_netcdf(my_filename, this%n_frame, this%n_atom, this%n_label, this%n_string, error)
              BCAST_PASS_ERROR(error, this%mpi)
              this%got_index = .true.
           else
              if (this%action /= OUTPUT .and. trim(this%filename) /= 'stdin' .and. trim(this%filename) /= 'stdout') then
-                call query_xyz(trim(this%filename)//C_NULL_CHAR, compute_index, this%current_frame, this%n_frame, this%n_atom, error)
+                call query_xyz(my_filename, compute_index, this%current_frame, this%n_frame, this%n_atom, error)
                 BCAST_PASS_ERROR(error, this%mpi)
                 this%got_index = .false.
                 if (compute_index == 1) this%got_index = .true.
@@ -254,6 +295,7 @@ contains
              end if
           end if
        end if
+       if (this%one_frame_per_file) this%n_frame = n_file
     end if
 
     if (this%mpi%active) then
@@ -307,7 +349,8 @@ contains
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(SIZEOF_FORTRAN_T) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
-    character(len=100) :: tmp_properties_array(100)
+    character(len=100) :: tmp_properties_array(100), fmt
+    character(len=1024) :: filename
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
 
     real, parameter :: vacuum = 10.0_dp ! amount of vacuum to add if no lattice found in file
@@ -339,7 +382,7 @@ contains
 
        do_frame = optional_default(this%current_frame, frame)
 
-       if (this%got_index) then
+       if (this%n_frame /= 0) then
           if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
           if (do_frame < 0 .or. do_frame >= this%n_frame) then
              BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error, this%mpi)
@@ -398,10 +441,19 @@ contains
        properties_ptr_i = transfer(properties_ptr, properties_ptr_i)
        selected_properties_ptr_i = transfer(selected_properties_ptr, selected_properties_ptr_i)
 
+       if (this%one_frame_per_file) then
+          fmt = '(a,i'//this%n_digit//'.'//this%n_digit//',a)'
+          write (filename, fmt) trim(this%basename), do_frame, trim(this%extension)
+          do_frame = 0
+       else
+          filename = this%filename
+       end if
+       filename = trim(filename)//C_NULL_CHAR
+
        if (this%format == NETCDF_FORMAT) then
           i_rep = 0
           r_rep = 0.0_dp
-          call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+          call read_netcdf(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                orig_lattice, cell_lengths, cell_angles, cell_rotated, n_atom, do_frame, do_zero, do_range, i_rep, r_rep, error)
        else
           do_compute_index = 1
@@ -413,7 +465,7 @@ contains
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, error)
           else
-             call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+             call read_xyz(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   at%lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, error)
           end if
        end if
@@ -544,7 +596,8 @@ contains
     integer :: i
     integer(C_INT) :: do_frame, n_label, n_string, do_netcdf4, do_update_index
     type(Dictionary), target :: selected_properties, tmp_params
-    character(len=100) :: do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format
+    character(len=100) :: do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, fmt
+    character(len=1024) :: filename
     integer(C_INT) :: do_shuffle, do_deflate, do_deflate_level, append
     character(len=100) :: tmp_properties_array(at%properties%n)
     integer n_properties
@@ -584,7 +637,7 @@ contains
 
     append = 0
     inquire(file=this%filename, exist=file_exists)
-    if (file_exists .and. this%append .or. this%current_frame /= 0) append = 1
+    if (file_exists .and. this%append .or. (.not. this%one_frame_per_file .and. this%current_frame /= 0)) append = 1
 
     do_netcdf4 = 0
     if (this%netcdf4) do_netcdf4 = 1
@@ -645,9 +698,19 @@ contains
     n_label = 10
     n_string = 1024
 
+    if (this%one_frame_per_file) then
+       fmt = '(a,i'//this%n_digit//'.'//this%n_digit//',a)'
+       write (filename, fmt) trim(this%basename), do_frame, trim(this%extension)
+       do_frame = 0
+       do_update_index = 0
+    else
+       filename = this%filename
+    end if
+    filename = trim(filename)//C_NULL_CHAR
+
     if (this%format == NETCDF_FORMAT) then
 
-       call write_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+       call write_netcdf(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
             orig_lattice, cell_lengths, cell_angles, cell_rotated, at%n, n_label, n_string, do_frame, &
             do_netcdf4, append, do_shuffle, do_deflate, do_deflate_level, error)
        PASS_ERROR(error)
@@ -670,7 +733,7 @@ contains
           call write_xyz(''//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 1, estr_ptr_i, 0, error)
        else
-          call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+          call write_xyz(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 0, estr_ptr_i, &
                do_update_index, error)
        end if
