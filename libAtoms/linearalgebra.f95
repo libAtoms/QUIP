@@ -69,6 +69,10 @@ module linearalgebra_module
     module procedure LA_Matrix_Initialise
   endinterface Initialise
 
+  interface assignment(=)
+     module procedure LA_Matrix_Initialise
+  end interface assignment(=)
+
   interface Finalise
     module procedure LA_Matrix_Finalise
   endinterface Finalise
@@ -1917,9 +1921,6 @@ CONTAINS
 
      if(this%initialised) call finalise(this)
 
-     !if( .not. is_square(matrix) ) &
-     !& call system_abort('LA_Matrix_Initialise: matrix not square')
-
      this%n = size(matrix,1)
      this%m = size(matrix,2)
      allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
@@ -1975,17 +1976,24 @@ CONTAINS
 
   endsubroutine LA_Matrix_Finalise
 
-  subroutine LA_Matrix_Factorise(this,factor,info)
+  subroutine LA_Matrix_Factorise(this,factor,error)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out), optional :: factor
-     integer, optional, intent(out) :: info
+     integer, optional, intent(out) :: error
 
-     integer :: i, j, my_info
+     integer :: i, j, info
      real(dp) :: scond, amax
 
-     if(.not. this%initialised) call system_abort('LA_Matrix_Factorise: Initialise first')
-     if( this%n /= this%m ) call system_abort('LA_Matrix_Factorise: matrix not square')
+     INIT_ERROR(error)
+
+     if(.not. this%initialised) then
+        RAISE_ERROR('LA_Matrix_Factorise: object not initialised',error)
+     endif
+
+     if( this%n /= this%m ) then
+        RAISE_ERROR('LA_Matrix_Factorise: matrix not square',error)
+     endif
 
      this%s = 1.0_qp
 
@@ -2006,9 +2014,9 @@ CONTAINS
      endif
 
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-     call qpotrf(this%factor,my_info)
+     call qpotrf(this%factor,info)
 #else
-     call dpotrf('L', this%n, this%factor, this%n, my_info)
+     call dpotrf('L', this%n, this%factor, this%n, info)
      do i = 2, this%n
         do j = 1, i
            this%factor(j,i) = this%factor(i,j)
@@ -2016,14 +2024,11 @@ CONTAINS
      enddo
 #endif
 
-     if( present(info) ) then
-        info = my_info
-     else
-        if( my_info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, PRINT_ALWAYS: '//my_info)
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_Factorise: cannot factorise, error: '//info, error)
      endif
 
      if( present(factor) ) then
-        !call check_size('factor',factor,shape(this%matrix),'LA_Matrix_Factorise')
         if( this%equilibrated ) then
            factor = 0.0_qp
            do i = 1, this%n
@@ -2112,33 +2117,36 @@ CONTAINS
 
   endsubroutine qpotrf
 
-  subroutine LA_Matrix_Inverse(this,inverse,info)
+  subroutine LA_Matrix_Inverse(this,inverse,error)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out) :: inverse
-     integer, optional, intent(out) :: info
+     integer, optional, intent(out) :: error
 
-     integer :: i, j, my_info
+     integer :: i, j, info
+
+     INIT_ERROR(error)
 
      if( this%factorised == NOT_FACTORISED ) then
-        call LA_Matrix_Factorise(this, info=info)
+        call LA_Matrix_Factorise(this, error=error)
      elseif( this%factorised /= CHOLESKY ) then
-        call system_abort('LA_Matrix_Inverse: matrix not Cholesky-factorised')
+        RAISE_ERROR('LA_Matrix_Inverse: matrix not Cholesky-factorised',error)
      endif
 
-     if( present(info) ) then
-        if( info /= 0 ) return
-     endif
-
-     !call check_size('inverse',inverse,shape(this%matrix),'LA_Matrix_Inverse')
+     call check_size('inverse',inverse,shape(this%factor),'LA_Matrix_Inverse',error=error)
+     PASS_ERROR(error)
 
      inverse = this%factor
 
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-     call qpotri(inverse,my_info)
+     call qpotri(inverse,info)
 #else
-     call dpotri('U', this%n, inverse, this%n, my_info)
+     call dpotri('U', this%n, inverse, this%n, info)
 #endif
+
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_Inverse: cannot invert, error: '//info, error)
+     endif
 
      do i = 1, this%n
         do j = i+1, this%n
@@ -2176,58 +2184,54 @@ CONTAINS
      
   endsubroutine qpotri
 
-  subroutine LA_Matrix_Solve_Vector(this,b,x,refine,info)
+  subroutine LA_Matrix_Solve_Vector(this,b,x,refine,error)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:), intent(in) :: b
      real(qp), dimension(:), intent(out) :: x
      logical, intent(in), optional :: refine
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
      real(qp), dimension(:,:), allocatable :: my_x
 
-     if( (size(b) /= this%n) .or. (size(x) /= this%n) ) &
-     & call system_abort('LA_Matrix_Solve_Vector: length of b or x is not n')
+     INIT_ERROR(error)
+
+     if( (size(b) /= this%n) .or. (size(x) /= this%n) ) then
+        RAISE_ERROR('LA_Matrix_Solve_Vector: length of b or x is not n',error)
+     endif
 
      allocate(my_x(this%n,1))
-     call LA_Matrix_Solve_Matrix(this,reshape(b,(/this%n,1/)),my_x,refine,info)
-     if( present(info) ) then
-        if( info /= 0 ) return
-     endif
+     call LA_Matrix_Solve_Matrix(this,reshape(b,(/this%n,1/)),my_x,refine,error)
      x = my_x(:,1)
      deallocate(my_x)
 
   endsubroutine LA_Matrix_Solve_Vector
 
-  subroutine LA_Matrix_Solve_Matrix(this,b,x,refine,info)
+  subroutine LA_Matrix_Solve_Matrix(this,b,x,refine,error)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(in) :: b
      real(qp), dimension(:,:), intent(out) :: x
      logical, intent(in), optional :: refine
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
      real(qp), dimension(:,:), allocatable :: my_b, my_x
-     integer :: i, m, my_info
+     integer :: i, m, info
 
      logical :: my_refine
 
-     !call check_size('solution vector', b, shape(x), 'LA_Matrix_Solve_Matrix')
+     INIT_ERROR(error)
 
-     if( size(b,1) /= this%n ) &
-     & call system_abort('LA_Matrix_Solve_Matrix: first dimension of b is not n')
+     if( size(b,1) /= this%n ) then
+        RAISE_ERROR('LA_Matrix_Solve_Matrix: first dimension of b is not n',error)
+     endif
      
      my_refine = optional_default(.false.,refine)
 
      if( this%factorised == NOT_FACTORISED ) then
-        call LA_Matrix_Factorise(this,info=info)
-        if( present(info) ) then
-           if( info /= 0 ) return
-        endif
+        call LA_Matrix_Factorise(this,error=error)
      elseif( this%factorised /= CHOLESKY ) then
         call system_abort('LA_Matrix_Solve_Matrix: matrix not Cholesky-factorised')
-     else
-        if( present(info) ) info = 0
      endif
 
      m = size(b,2)
@@ -2244,9 +2248,9 @@ CONTAINS
      endif
 
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-     call qpotrs( this%factor, my_x, my_info )
+     call qpotrs( this%factor, my_x, info )
 #else
-     call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, my_info )
+     call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, info )
 #endif
 
      if( this%equilibrated ) then
@@ -2257,7 +2261,9 @@ CONTAINS
         x = my_x
      endif
 
-     if( my_info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, PRINT_ALWAYS: '//info)
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_Solve_Matrix: cannot solve, error: '//info, error)
+     endif
      deallocate(my_x,my_b)
 
   endsubroutine LA_Matrix_Solve_Matrix
@@ -2290,20 +2296,17 @@ CONTAINS
 
   endsubroutine qpotrs
 
-  function LA_Matrix_LogDet(this,info)
+  function LA_Matrix_LogDet(this,error)
 
      type(LA_Matrix), intent(inout) :: this         
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
      real(qp) :: LA_Matrix_LogDet
      integer :: i
 
+     INIT_ERROR(error)
+
      if( this%factorised == NOT_FACTORISED ) then
-        call LA_Matrix_Factorise(this,info=info)
-        if( present(info) ) then
-           if( info /= 0 ) return
-        endif
-     else
-        if( present(info) ) info = 0
+        call LA_Matrix_Factorise(this,error=error)
      endif
 
      LA_Matrix_LogDet = 0.0_qp
@@ -2318,25 +2321,22 @@ CONTAINS
      elseif( this%factorised == QR ) then
         LA_Matrix_LogDet = LA_Matrix_LogDet*1
      else
-        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised')
+        RAISE_ERROR('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised',error)
      endif
 
   endfunction LA_Matrix_LogDet
 
-  function LA_Matrix_Det(this,info)
+  function LA_Matrix_Det(this,error)
 
      type(LA_Matrix), intent(inout) :: this         
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
      real(qp) :: LA_Matrix_Det
      integer :: i
 
+     INIT_ERROR(error)
+
      if( this%factorised == NOT_FACTORISED ) then
-        call LA_Matrix_Factorise(this,info=info)
-        if( present(info) ) then
-           if( info /= 0 ) return
-        endif
-     else
-        if( present(info) ) info = 0
+        call LA_Matrix_Factorise(this,error=error)
      endif
 
      LA_Matrix_Det = 1.0_qp
@@ -2351,147 +2351,148 @@ CONTAINS
      elseif( this%factorised == QR ) then
         LA_Matrix_Det = LA_Matrix_Det*1
      else
-        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised')
+        RAISE_ERROR('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised',error)
      endif
 
   endfunction LA_Matrix_Det
 
-  subroutine LA_Matrix_QR_Factorise(this,q,r,info)
+  subroutine LA_Matrix_QR_Factorise(this,q,r,error)
      type(LA_Matrix), intent(inout) :: this         
      real(qp), dimension(:,:), intent(out), optional :: q, r
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
-     integer :: my_info
+     integer :: info
 #ifndef HAVE_QP
      real(dp), dimension(:), allocatable :: work
      integer :: lwork
 #endif
+
+     INIT_ERROR(error)
 
      this%factor = this%matrix
 
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-     call qgeqrf(this%factor,this%tau,my_info)
+     call qgeqrf(this%factor,this%tau,info)
 #else
 
      allocate(work(1))
      lwork = -1
-     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, info)
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
-     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, info)
      deallocate(work)
 #endif
 
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_QR_Factorise: '//(-info)//'-th parameter had an illegal value.',error)
+     endif
+
      this%factorised = QR
 
-     if( present(q) .or. present(r) ) call LA_Matrix_GetQR(this,q,r,info)
-
-     if( present(info) ) then
-        info = my_info
-     elseif( my_info /= 0 ) then
-        call system_abort('LA_Matrix_QR_Factorise: '//(-my_info)//'-th parameter had an illegal value.')
-     endif
+     if( present(q) .or. present(r) ) call LA_Matrix_GetQR(this,q,r,error)
 
   endsubroutine LA_Matrix_QR_Factorise
 
-  subroutine LA_Matrix_GetQR(this,q,r,info)
+  subroutine LA_Matrix_GetQR(this,q,r,error)
      type(LA_Matrix), intent(inout) :: this         
      real(qp), dimension(:,:), intent(out), optional :: q, r
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
-     integer :: j, my_info
+     integer :: j, info
 #ifndef HAVE_QP
      real(dp), dimension(:), allocatable :: work
      integer :: lwork
 #endif
 
-     my_info = 0
+     INIT_ERROR(error)
 
-     if( this%factorised /= QR ) &
-     & call system_abort('LA_Matrix_GetQR: not QR-factorised, call LA_Matrix_QR_Factorise first.')
+     if( this%factorised /= QR ) then
+        RAISE_ERROR('LA_Matrix_GetQR: not QR-factorised, call LA_Matrix_QR_Factorise first.',error)
+     endif
 
      if(present(q)) then
-        call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR')
+        call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR',error)
         q = this%factor
 
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-        call qorgqr(this%factor,this%tau,q,my_info)
+        call qorgqr(this%factor,this%tau,q,info)
 #else
         allocate(work(1))
         lwork = -1
-        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
+        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, info)
         lwork = nint(work(1))
         deallocate(work)
 
         allocate(work(lwork))
-        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
+        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, info)
         deallocate(work)
 #endif
      endif
 
      if(present(r)) then
-        call check_size('r', r, (/this%m,this%m/),'LA_Matrix_GetQR')
+        call check_size('r', r, (/this%m,this%m/),'LA_Matrix_GetQR',error)
         r = this%factor(1:this%m,1:this%m)
         do j = 1, this%m - 1
            r(j+1:this%m,j) = 0.0_dp
         enddo
      endif
 
-     if( present(info) ) then
-        info = my_info
-     elseif( my_info /= 0 ) then
-        call system_abort('LA_Matrix_QR_Factorise: '//(-my_info)//'-th parameter had an illegal value.')
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_QR_Factorise: '//(info)//'-th parameter had an illegal value.',error)
      endif
 
   endsubroutine LA_Matrix_GetQR
 
-  subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,info)
+  subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,error)
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(in) :: matrix
      real(qp), dimension(:,:), intent(out) :: result
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
      real(qp), dimension(:,:), allocatable :: my_result
-     integer :: my_info, i, j, n, o
+     integer :: info, i, j, n, o
 #ifndef HAVE_QP
      real(dp), dimension(:), allocatable :: work
      integer :: lwork
 #endif
 
+     INIT_ERROR(error)
+
      if(this%factorised == NOT_FACTORISED) then
-        call LA_Matrix_QR_Factorise(this,info=info)
+        call LA_Matrix_QR_Factorise(this,error=error)
      elseif(this%factorised /= QR) then
-        call system_abort('LA_Matrix_QR_Solve_Matrix: matrix not QR-factorised')
+        RAISE_ERROR('LA_Matrix_QR_Solve_Matrix: matrix not QR-factorised',error)
      endif
 
      n = size(matrix,1)
      o = size(matrix,2)
-     call check_size('result', result, (/this%m,o/),'LA_Matrix_QR_Solve_Matrix')
+     call check_size('result', result, (/this%m,o/),'LA_Matrix_QR_Solve_Matrix',error)
 
-     if( n /= this%n ) call  system_abort('LA_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.')
+     if( n /= this%n ) then
+        RAISE_ERROR('LA_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.',error)
+     endif
 
      allocate(my_result(n,o))
      my_result = matrix
 #if defined(HAVE_QP) || defined(ALBERT_LAPACK)
-     call qormqr(this%factor, this%tau, my_result, my_info)
+     call qormqr(this%factor, this%tau, my_result, info)
 #else
      lwork = -1
      allocate(work(1))
-     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, info)
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
-     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, info)
      deallocate(work)
 #endif
 
-     if( present(info) ) then
-        info = my_info
-     elseif( my_info /= 0 ) then
-        call system_abort('LA_Matrix_QR_QR_Solve_Matrix: '//(-my_info)//'-th parameter had an illegal value.')
+     if( info /= 0 ) then
+        RAISE_ERROR('LA_Matrix_QR_QR_Solve_Matrix: '//(-info)//'-th parameter had an illegal value.',error)
      endif
 
      do i = 1, o
@@ -2507,26 +2508,77 @@ CONTAINS
 
   endsubroutine LA_Matrix_QR_Solve_Matrix
 
-  subroutine LA_Matrix_QR_Solve_Vector(this,vector,result,info)
+  subroutine LA_Matrix_QR_Solve_Vector(this,vector,result,error)
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:), intent(in) :: vector
      real(qp), dimension(:), intent(out) :: result
-     integer, intent(out), optional :: info
+     integer, intent(out), optional :: error
 
      real(qp), dimension(:,:), allocatable :: my_result
      integer :: n, m
+
+     INIT_ERROR(error)
 
      n = size(vector)
      m = size(result)
 
      allocate(my_result(m,1))
 
-     call LA_Matrix_QR_Solve_Matrix(this,reshape(vector,(/n,1/)),my_result,info)
+     call LA_Matrix_QR_Solve_Matrix(this,reshape(vector,(/n,1/)),my_result,error=error)
      result = my_result(:,1)
 
      deallocate(my_result)
 
   endsubroutine LA_Matrix_QR_Solve_Vector
+
+  subroutine LA_Matrix_QR_Inverse(this,inverse,error)
+    type(LA_Matrix), intent(inout) :: this
+    real(dp), dimension(:,:), intent(out) :: inverse
+    integer, optional, intent(out) :: error
+
+    real(dp), allocatable, dimension(:,:) :: Q, R, R_inv, Q_T
+    integer i,j,k
+
+    INIT_ERROR(error)
+
+    if (this%n /= this%m) then
+       RAISE_ERROR('LA_Matrix_QR_inverse: cannot invert non-square matrix',error)
+    endif
+
+    call check_size('inverse',inverse,shape(this%factor),'LA_Matrix_QR_Inverse',error=error)
+    PASS_ERROR(error)
+   
+    allocate(Q(this%n, this%n), R(this%n, this%n), R_inv(this%n, this%n), Q_T(this%n, this%n))
+
+    if( this%factorised == NOT_FACTORISED ) then
+       call LA_Matrix_QR_Factorise(this, error=error)
+    elseif( this%factorised /= QR ) then
+       RAISE_ERROR('LA_Matrix_QR_Inverse: matrix not QR-factorised',error)
+    endif
+
+    call LA_Matrix_GetQR(this, Q, R)
+
+    ! inversion of upper triangular matrix R
+    R_inv(:,:) = 0.0_dp
+    do j=1,this%n
+       do i=1,j-1
+          do k=1,j-1
+             R_inv(i,j) = R_inv(i,j) + R_inv(i,k)*R(k,j)
+          end do
+       end do
+       do k=1,j-1
+          R_inv(k,j) = -R_inv(k,j)/R(j,j)
+       end do
+       R_inv(j,j) = 1.0_dp/R(j,j)
+    end do
+
+    ! A^-1 = (QR)^-1 = R^-1 Q^-1 = R^-1 Q^T
+    Q_T = transpose(Q)
+    inverse = matmul(R_inv, Q_T)
+
+    deallocate(Q, R, R_inv, Q_T)
+
+  end subroutine LA_Matrix_QR_inverse
 
   subroutine house_qp(x,v,beta)
      real(qp), dimension(:), intent(in) :: x
@@ -4653,8 +4705,8 @@ CONTAINS
    end subroutine sort_array_i
 
 
-   !% Sort an array of reals into ascending order (slow: scales as N$^2$).
-   !% i_data/r_data is an accompanying array of integers/reals on which the same reordering is performed
+   !% Sort an array of integers into ascending order (slow: scales as N$^2$).
+   !% i_data is an accompanying array of integers on which the same reordering is performed
    subroutine sort_array_r(array, i_data,r_data)
 
       real(dp), dimension(:), intent(inout) :: array
@@ -5809,6 +5861,5 @@ CONTAINS
      TrapezoidIntegral = sum((x(2:n)-x(1:n-1))*(y(2:n)+y(1:n-1)))/2.0_dp
   
   endfunction TrapezoidIntegral
-
 
 end module linearalgebra_module
