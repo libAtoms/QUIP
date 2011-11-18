@@ -180,9 +180,6 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
     this%atomTypeOfZ(Z_i) = kim_at_type_code
   end do
 
-  call print("atomTypeOfZ")
-  call print(this%atomTypeOfZ)
-
   ! register the neighbor list iterator
   kim_error = kim_api_set_data_f(this%pkim, "get_full_neigh", int(1,8), loc(quip_neighbour_iterator))
   if(kim_error /= KIM_STATUS_OK) then
@@ -224,8 +221,6 @@ function quip_neighbour_iterator(pkim, iterator_mode, request, atom, nneigh, p_n
   p_neigh_rij = loc(neigh_rij(1,1))
   p_neigh_list = loc(neigh_list(1))
 
-!!NB call print("quip_neighbour_iterator")
-!!NB call print("got mode " // iterator_mode // " request " // request)
   if (iterator_mode == 1) then ! locator mode
     if (request < 1 .or. request > kim_at%N) then
       outval = KIM_STATUS_NEIGH_INVALID_REQUEST
@@ -253,16 +248,10 @@ function quip_neighbour_iterator(pkim, iterator_mode, request, atom, nneigh, p_n
     return
   endif
 
-!!NB call print("atom is "//atom)
   nneigh = atoms_n_neighbours(kim_at, atom)
-!!NB call print("nneigh is  "//nneigh)
   do ji=1, nneigh
-!!NB call print("trying to do atom ji "//ji)
-!!NB call print("test memory " // neigh_rij(1:3,ji))
       neigh_list(ji) = atoms_neighbour(kim_at, atom, ji, diff = neigh_rij(1:3,ji))
-!!NB call print("   got "//neigh_list(ji) // " rij " // neigh_rij(1:3,ji))
   end do
-  !!NB neigh_rij(1:3,1:nneigh) = -neigh_rij(1:3,1:nneigh)
 
   outval = KIM_STATUS_OK
 
@@ -522,11 +511,8 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
 
     call initialise(test_kim_es)
     do i=1, str_len
-      !! call print("TEST KIM str "//model_str_stub(i))
       call concat(test_kim_es, model_str_stub(i), no_trim=.true.)
     end do
-
-    !! call print(test_kim_es)
 
     !NB need to rewrite kim_es MODEL_NAME into TEST_NAME
 
