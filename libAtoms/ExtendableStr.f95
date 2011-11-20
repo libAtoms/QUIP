@@ -71,6 +71,11 @@ interface substr
    module procedure extendable_str_substr
 end interface substr
 
+public :: substr_replace
+interface substr_replace
+   module procedure extendable_str_substr_replace
+end interface substr_replace
+
 public :: read
 interface read
   module procedure extendable_str_read_unit, extendable_str_read_file
@@ -158,7 +163,9 @@ subroutine extendable_str_finalise(this)
   type(extendable_str), intent(inout) :: this
 
   if (allocated(this%s)) deallocate(this%s)
+  this%cur = 0
   this%len = 0
+  this%increment = EXTENDABLE_STRING_LENGTH_INCREMENT
 end subroutine extendable_str_finalise
 
 subroutine extendable_str_zero(this)
@@ -294,12 +301,15 @@ function extendable_str_substr(this, start, end, error)
 
   INIT_ERROR(error)
   
-  if (start < 1) then
-     RAISE_ERROR('extendable_str_substr: start('//start//') < 1', error)
+  if (start < 1 .or. start > this%len) then
+     RAISE_ERROR('extendable_str_substr: start('//start//') < 1 or > thi%len="//this%len', error)
   end if
-  if (end > this%len) then
-     RAISE_ERROR('extendable_str_substr: end('//end//') > len('//this%len//')', error)
+  if (end < 1 .or. end > this%len) then
+     RAISE_ERROR('extendable_str_substr: end('//end//') < 1 or > thi%len="//this%len', error)
   end if
+  if (end < start) then
+     RAISE_ERROR('extendable_str_substr: end('//end//') < start('//start//')', error)
+  endif
 
   j = 1
   do i=start, end
@@ -309,6 +319,72 @@ function extendable_str_substr(this, start, end, error)
 
 end function extendable_str_substr
 
+subroutine extendable_str_substr_replace(this, start, end, replace, error)
+  type(extendable_str), intent(inout) :: this
+  integer, intent(in) :: start, end
+  character(len=*), intent(in) :: replace
+  integer, optional, intent(out) :: error
+
+  integer :: j, old_len, substr_len
+
+  INIT_ERROR(error)
+  
+  if (start < 0 .or. start > this%len+1) then
+     RAISE_ERROR('extendable_str_substr_replace: start('//start//') < 1 or > thi%len="//this%len', error)
+  end if
+  if (end < 0 .or. end > this%len+1) then
+     RAISE_ERROR('extendable_str_substr_replace: end('//end//') < 1 or > thi%len="//this%len', error)
+  end if
+  if (end < start) then
+     RAISE_ERROR('extendable_str_substr_replace: end('//end//') < start('//start//')', error)
+  endif
+
+  if ((start == 0 .and. end /= 0) .or. (end == 0 .and. start /= 0)) then
+     RAISE_ERROR('extendable_str_substr_replace: start('//start//') == 0 and end('//end//') /= 0, or vice versa', error)
+  endif
+  if ((start == this%len+1 .and. end /= this%len+1) .or. (end == this%len+1 .and. start /= this%len+1)) then
+     RAISE_ERROR('extendable_str_substr_replace: start('//start//') < n+1 and end('//end//') /= n+1, or vice versa', error)
+  endif
+
+  if (start == 0 .or. start == this%len+1) then
+    substr_len = 0
+  else
+    substr_len = end-start+1
+  endif
+
+  if (len(replace) <= substr_len) then ! no need to extend length
+    ! do replacement
+    do j=start, start+len(replace)-1
+	this%s(j) = replace(j-start+1:j-start+1)
+    end do
+    ! move rest of string back if needed
+    if (len(replace) < substr_len) then ! 
+	do j=1, this%len-end+1
+	    this%s(start+len(replace)-1+j) = this%s(end+j)
+	end do
+	this%len = this%len - (substr_len - len(replace))
+    endif
+  else ! need to extend length
+    old_len = this%len
+    ! extend length
+    call concat(this, replace(1:len(replace)-substr_len))
+    ! move trailing part of string
+    do j=1, old_len - end
+	this%s(this%len-j+1) = this%s(old_len-j+1)
+    end do
+    ! replace
+    if (start == 0) then
+      do j=1, len(replace)
+	this%s(j) = replace(j:j)
+      end do
+    else
+      do j=start, start+len(replace)-1
+	  this%s(j) = replace(j-start+1:j-start+1)
+      end do
+    endif
+  endif
+
+end subroutine extendable_str_substr_replace
 
 subroutine extendable_str_read_file(this, file, convert_to_string, mpi_comm, keep_lf)
   type(extendable_str), intent(inout) :: this
