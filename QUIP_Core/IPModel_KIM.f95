@@ -316,7 +316,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   atomTypes(1:at%N) = this%atomTypeOfZ(at%Z(1:at%N))
   if (any(atomTypes < 0)) then
     bad_i = minloc(atomTypes)
-    RAISE_ERROR("Some Z mapped to an invalid atom type, e.g. atom "//bad_i(1)//" Z "//at%Z(bad_i(i)), error)
+    RAISE_ERROR("Some Z mapped to an invalid atom type, e.g. atom "//bad_i(1)//" Z "//at%Z(bad_i(1)), error)
   endif
 
   kim_error = kim_api_set_data_f(this%pkim, "atomTypes", int(at%N,8), loc(atomTypes(1)))
@@ -501,7 +501,7 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
     integer :: str_len
     character(len=1) :: model_str_stub(1); pointer(p_model_str, model_str_stub)
 
-    integer i
+    integer i, conventions_i, model_input_i
 
     p_model_str = kim_api_get_model_kim_str_f(trim(model_name), str_len, kim_error)
     if (kim_error /= KIM_STATUS_OK) then
@@ -514,7 +514,24 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
       call concat(test_kim_es, model_str_stub(i), no_trim=.true.)
     end do
 
-    !NB need to rewrite kim_es MODEL_NAME into TEST_NAME
+    ! set conventions section to QUIP's restrictions
+
+    conventions_i = index(test_kim_es, "CONVENTIONS:")
+    if (conventions_i <= 0) then
+	call system_abort("write_test_kim_file failed to find CONVENTIONS section")
+    endif
+
+    model_input_i = index(test_kim_es, "MODEL_INPUT:")
+    if (model_input_i <= 0) then
+	call system_abort("write_test_kim_file failed to find MODEL_INPUT section")
+    endif
+
+    call substr_replace(test_kim_es, conventions_i, model_input_i-2, &
+	"CONVENTIONS:"//quip_new_line// &
+	"OneBasedLists dummy"//quip_new_line// &
+	"Neigh_LocaAccess dummy"//quip_new_line// &
+	"NEIGH-RVEC-F dummy"//quip_new_line//quip_new_line// &
+	"################################################################################")
 
 end subroutine write_test_kim_file
 
