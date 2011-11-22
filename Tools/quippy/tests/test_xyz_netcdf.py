@@ -477,7 +477,7 @@ H 0. 0. 0.
    def test_one_frame_per_file_high_level(self):
       self.al.write('test00000.xyz', one_frame_per_file=True)
       al = AtomsList('test00000.xyz', one_frame_per_file=True)
-      al2 = AtomsList('test0000*.xyz', no_compute_index=True)
+      al2 = AtomsList('test0000*.xyz', no_compute_index=False)
       self.assertEqual(al, self.al)
       self.assertEqual(al, al2)
 
