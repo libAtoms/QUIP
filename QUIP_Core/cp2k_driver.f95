@@ -117,13 +117,15 @@ contains
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
+    real(dp) :: d
+    integer shift(3)
 
     character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
     character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
     character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
-    logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists
+    logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels
     integer :: persistent_run_i, persistent_frc_size
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
@@ -182,6 +184,7 @@ contains
       call param_register(cli, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
       call param_register(cli, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
       call param_register(cli, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
+      call param_register(cli, 'create_residue_labels', 'T', create_residue_labels, help_string="If true, recreate residue labels each time PSF file is generated (default T)")
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) then
 	RAISE_ERROR('cp2k_driver could not parse argument line', error)
@@ -444,7 +447,7 @@ contains
     call system_timer('do_cp2k_calc/make_psf')
     ! if writing PSF file, calculate residue labels, before sort
     if (run_type /= "QS") then
-      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .and. create_residue_labels) then
 	if (persistent_already_started) then
 	  RAISE_ERROR("Trying to rewrite PSF file with persistent_already_started.  Can't change connectivity during persistent cp2k run", error)
 	endif
@@ -598,7 +601,7 @@ contains
 	     call initialise(link_template_io, trim(link_template_file), INPUT)
 	     call read_file(link_template_io, link_template_a, link_template_n_lines)
 	     call finalise(link_template_io)
-	  endif
+          end if
        endif
 
        if (qm_list%N == at%N) then
@@ -845,6 +848,19 @@ contains
       at%pos(1,:) = at%pos(1,:) + cp2k_box_centre_pos(1)
       at%pos(2,:) = at%pos(2,:) + cp2k_box_centre_pos(2)
       at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
+    endif
+
+    if (size(link_list_a) > 0) then
+       ! assert that no links cross a periodic boundary since
+       ! if they did, CP2K would place terminating hydrogens incorrectly
+       do i=1,cut_bonds%N
+          i_inner = cut_bonds%int(1,i)
+          i_outer = cut_bonds%int(2,i)
+          d = distance_min_image(at, i_inner, i_outer, shift=shift)
+          if (any(shift /= 0)) then
+             RAISE_ERROR("QM/MM link "//i_inner//"--"//i_outer//" has non-zero shift ("//shift//"). This is not allowed!", error)
+          end if
+       enddo
     endif
 
     ! prepare xyz file for input to cp2k
