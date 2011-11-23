@@ -178,8 +178,8 @@ program qmmm_md
       call param_register(params_in, 'Run_Type1', 'MM', Run_Type1, help_string="Type of run1 (or only run if Run_Type2=NONE) QS, MM, QMMM_CORE, QMMM_EXTENDED")
       call param_register(params_in, 'Run_Type2', 'NONE', Run_Type2, help_string="Type of run1 (or only run if Run_Type2=NONE) QS, MM, QMMM_CORE, QMMM_EXTENDED")
       call param_register(params_in, 'IO_Rate', '1', IO_Rate, help_string="Frequency of output printing (every IO_Rate steps).")
-      call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Thermostat_7_rs', '0.0 0.0', Thermostat_7_rs, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Thermostat_7_rs', '0.0 0.0', Thermostat_7_rs, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print, help_string="when to print PSF file: NO_PSF, EVERY_#, DRIVER_PRINT_AT_0, USE_EXISTING_PSF")
       call param_register(params_in, 'Time_Step', '0.5', Time_Step, help_string="Time step in fs.")
       call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time, help_string="Equilibration time in fs.")
@@ -192,20 +192,20 @@ program qmmm_md
       call param_register(params_in, 'Outer_QM_Core_Region_Radius', '0.0', Outer_QM_Core_Region_Radius, help_string="The outer radius of the core QM region (around an atom list or a point in space).")
       call param_register(params_in, 'Min_Connect_Cutoff', '0.0', Min_Connect_cutoff, help_string="Minimum value for connection calculation cutoff.  Useful for making sure that QM region is reachable by neighbour hops when QM atoms are far apart.")
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature, help_string="Simulation temperature in K.")
-      call param_register(params_in, 'coord_file', 'coord.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'traj_file', 'movie.xyz',traj_file, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'restraint_constraint_xml_file', '', restraint_constraint_xml_file, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Charge', '0', Charge, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Langevin_Tau', '500.0', Langevin_Tau, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'coord_file', 'coord.xyz',coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'traj_file', 'movie.xyz',traj_file, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'restraint_constraint_xml_file', '', restraint_constraint_xml_file, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Charge', '0', Charge, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Langevin_Tau', '500.0', Langevin_Tau, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'Adaptive_Langevin', 'F', adaptive_Langevin, help_string="If true and Thermostat_Type uses Langevin, use Nose_Hoover_tau to make it adaptive Langevin (Jones & Leimkuhler)")
-      call param_register(params_in, 'Buffer_general', 'F', Buffer_general, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'Continue', 'F', Continue_it, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'Buffer_general', 'F', Buffer_general, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'Continue', 'F', Continue_it, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'avg_time', '10.0', avg_time, help_string="Averaging time for the calculation of averaged coordinates to smooth out bond vibrations for the topology calculation")
-      call param_register(params_in, 'Seed', '-1', Seed, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'Seed', '-1', Seed, help_string="No help yet.  This source file was $LastChangedBy$")
 
       call param_register(params_in, 'qm_list_filename', '', qm_list_filename,  &
 	help_string="Filename containing list of atoms for (extended) QM region (in funny format).  Mutually exclusive with qm_region_pt_ctr and qm_region_atom_ctr")
@@ -222,7 +222,7 @@ program qmmm_md
       call param_register(params_in, 'qm_core_region_atom_ctr', '0', qm_core_region_atom_ctr, &
 	help_string="Atom to center core QM region about.  Mutually exclusive with qm_core_region_pt_ctr and qm_core_list_filename")
 
-      call param_register(params_in, 'print_prop', 'all', print_prop, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'print_prop', 'all', print_prop, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'print_forces', 'T', print_forces, help_string="whether to print forces at time>0 on the mainlog")
       call param_register(params_in, 'print_forces_at0', 'T', print_forces_at0, help_string="whether to print forces at time=0 on the mainlog")
       call param_register(params_in, 'nneightol', '1.2', nneightol, help_string="Nearest neighbour tolerance factor.  Two atoms are bonded if d(a1,a2)<[CovRad(a1)+CovRad(a2)]*Neighbour_Tolerance.")
@@ -234,13 +234,13 @@ program qmmm_md
       call param_register(params_in, 'max_n_steps', '-1', max_n_steps, help_string="Maximum number of time steps to run")
       call param_register(params_in, 'update_QM_region_interval', '1', update_QM_region_interval, help_string="interval between updates of QM region")
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args, help_string="calc args for cp2k_filepot")
-      call param_register(params_in, 'evb_args_str', '', evb_args_str, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'evb_args_str', '', evb_args_str, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'extra_calc_args', '', extra_calc_args, help_string="Extra args for mm and qm calc(), for things like FilePot_log, and arguments for buffer create_cluster_info")
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program, help_string="Filepot program.")
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster, help_string="If true, carve cluster instead of doing QM/MM.  Untested")
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="If true, use cluster_create_inf() to create core, which does things like residue completing heuristics")
       call param_register(params_in, 'core_create_cluster_info_args', '', core_create_cluster_info_args, help_string="Arguments to pass to create_cluster_info for QM core, if used by update_QM_region")
-      call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
       call param_register(params_in, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
       call param_register(params_in, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
@@ -249,9 +249,9 @@ program qmmm_md
       call param_register(params_in, 'res_num_silica', '1', res_num_silica, help_string="residue number of silica") !lam81
       call param_register(params_in, 'EVB', 'F', EVB, help_string="Whether to use the EVB MM potential instead of a simple MM.")
 
-      call param_register(params_in, 'distance_ramp', 'F', distance_ramp, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
-      call param_register(params_in, 'distance_ramp_outer_radius', '4.0', distance_ramp_outer_radius, help_string="No help yet.  This source file was $LastChangedBy: jrk33 $")
+      call param_register(params_in, 'distance_ramp', 'F', distance_ramp, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius, help_string="No help yet.  This source file was $LastChangedBy$")
+      call param_register(params_in, 'distance_ramp_outer_radius', '4.0', distance_ramp_outer_radius, help_string="No help yet.  This source file was $LastChangedBy$")
 
       call param_register(params_in, 'H_extra_heat_ctr', '0.0 0.0 0.0', H_extra_heat_ctr, help_string="spherical centre of the spherical shell where extra heating is introduced on hydrogen atoms")
       call param_register(params_in, 'H_extra_heat_r', '0.0 -1.0', H_extra_heat_r, help_string="inner and outer radii of the spherical shell where extra heating is introduced on hydrogen atoms")
@@ -1418,7 +1418,7 @@ contains
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	      ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
 	  endif
-          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+          !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
             args_str = trim(args_str) // ' hybrid_mark_postfix=_extended'
           elseif (trim(Run_Type1) == 'QMMM_CORE') then
@@ -1448,11 +1448,11 @@ contains
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
-         !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_extended hybrid_mark_postfix=_extended'
+           slow_args_str = trim(slow_args_str) // ' hybrid_mark_postfix=_extended'
          elseif (trim(Run_Type1) == 'QMMM_CORE') then
-           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_core hybrid_mark_postfix=_core'
+           slow_args_str = trim(slow_args_str) // ' hybrid_mark_postfix=_core'
          endif
        endif
 
@@ -1469,7 +1469,7 @@ contains
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
-         !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
            fast_args_str = trim(fast_args_str) // ' hybrid_mark_postfix=_extended'
          elseif (trim(Run_Type2) == 'QMMM_CORE') then
