@@ -639,7 +639,7 @@ contains
 	 call set_value(at%params, "QM_cell"//trim(qm_name_suffix), cur_qmmm_qm_abc)
 	  call print('set_value QM_cell'//trim(qm_name_suffix)//' '//cur_qmmm_qm_abc)
 
-	  ! check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
+	  ! check if QM list changed: compare cluster_mark and old_cluster_mark[_suffix]
 	  ! if no old_cluster_mark, assumed it's changed just to be safe
 	  qm_list_changed = .false.
 	  if (.not.has_property(at, 'cluster_mark'//trim(qm_name_suffix))) then
