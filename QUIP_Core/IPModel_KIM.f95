@@ -127,24 +127,20 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
 #ifndef KIM_NO_AUTOGENERATE_TEST_KIM
   if (trim(this%KIM_Test_name) == '-') then
       ! create KIM test file string from model kim string
-      call write_test_kim_file(test_kim_es, this%KIM_Test_name, this%KIM_Model_name)
+      call write_test_kim_file_from_model(test_kim_es, this%KIM_Test_name, this%KIM_Model_name)
 
       ! KIM routines to initialise pkim based on this%KIM_Test_name string
       kim_error = KIM_API_init_str_testname_f(this%pkim, string(test_kim_es)//char(0), this%KIM_Model_name)
-      if (kim_error /= KIM_STATUS_OK) then
-	call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_str_testname_f failed", kim_error)
+      if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_str_testname_f failed", kim_error) /= KIM_STATUS_OK) &
 	call system_abort("IPModel_KIM_Initialise_str: kim_api_init_str_testname_f with Test='"//trim(this%KIM_Test_name)// &
 	  "' and Model='"//trim(this%KIM_Model_name)//"' failed")
-      endif
    else
 #endif
     ! KIM routines to initialise pkim based on this%KIM_Test_name
     kim_error = KIM_API_init_f(this%pkim, this%KIM_Test_name, this%KIM_Model_name)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_f failed", kim_error)
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_f failed", kim_error) /= KIM_STATUS_OK) &
       call system_abort("IPModel_KIM_Initialise_str: kim_api_init_f with Test='"//trim(this%KIM_Test_name)// &
 	"' and Model='"//trim(this%KIM_Model_name)//"' failed")
-    endif
 #ifndef KIM_NO_AUTOGENERATE_TEST_KIM
   endif
 #endif
@@ -159,6 +155,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   allocate(this%atomTypeOfZ(size(ElementName)))
   this%atomTypeOfZ(:) = -1
   do at_type_i=1, n_atom_types
+    ! replace null termination with space padding (C -> Fortran)
     do j=1, KEY_CHAR_LENGTH
 	if (atom_types_list(at_type_i)(j:j) == char(0)) then
 	    do k=j, KEY_CHAR_LENGTH
@@ -168,13 +165,11 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
 	endif
     end do
     kim_at_type_code = kim_api_get_atypecode_f(this%pkim, trim(atom_types_list(at_type_i)), kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-       call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_atypecode_f failed", kim_error)
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_atypecode_f failed", kim_error) /= KIM_STATUS_OK) &
        call system_abort("failed to find name of atom type "//at_type_i//" '"//trim(atom_types_list(at_type_i))//"' in pkim")
-    endif
     Z_i = find_in_array(ElementName, trim(atom_types_list(at_type_i)))
     if (Z_i < 1) then
-       call system_abort("failed to match name of atom type "//at_type_i//" '"//trim(atom_types_list(at_type_i))//"'")
+       call system_abort("failed to find atomic number for name of atom type "//at_type_i//" '"//trim(atom_types_list(at_type_i))//"'")
     endif
     Z_i = Z_i - 1
     this%atomTypeOfZ(Z_i) = kim_at_type_code
@@ -182,23 +177,18 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
 
   ! register the neighbor list iterator
   kim_error = kim_api_set_data_f(this%pkim, "get_full_neigh", int(1,8), loc(quip_neighbour_iterator))
-  if(kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f failed", kim_error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f failed", kim_error) /= KIM_STATUS_OK) &
     call system_abort("IPModel_KIM_Initialise_str failed to register quip_neighbour_iterator in kim")
-  endif
 
+  ! register the cutoff
   kim_error = kim_api_set_data_f(this%pkim, "cutoff", int(1,8), loc(this%cutoff))
-  if(kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f failed", kim_error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f failed", kim_error) /= KIM_STATUS_OK) &
     call system_abort("IPModel_KIM_Initialise_str failed to register cutoff in kim")
-  endif
 
   ! initialize the model
   kim_error = KIM_API_model_init_f(this%pkim)
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_init_f failed", kim_error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_init_f failed", kim_error) /= KIM_STATUS_OK) &
     call system_abort("IPModel_KIM_Initialise_str: kim_api_model_init_f failed")
-  endif
 
 end subroutine IPModel_KIM_Initialise_str
 
@@ -305,106 +295,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   INIT_ERROR(error)
 
-  ! register pos, atom types
-  kim_error = kim_api_set_data_f(this%pkim, "coordinates", int(3*at%N,8), loc(at%pos(1,1)))
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for pos failed", kim_error)
-    RAISE_ERROR("Failed to register coordinates field in pkim", error)
-  endif
-
-  allocate(atomTypes(at%N))
-  atomTypes(1:at%N) = this%atomTypeOfZ(at%Z(1:at%N))
-  if (any(atomTypes < 0)) then
-    bad_i = minloc(atomTypes)
-    RAISE_ERROR("Some Z mapped to an invalid atom type, e.g. atom "//bad_i(1)//" Z "//at%Z(bad_i(1)), error)
-  endif
-
-  kim_error = kim_api_set_data_f(this%pkim, "atomTypes", int(at%N,8), loc(atomTypes(1)))
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for atom types failed", kim_error)
-    RAISE_ERROR("Failed to register atomTypes field in pkim", error)
-  endif
-
-  if (present(e)) then
-    kim_error = kim_api_set_data_f(this%pkim, "energy", int(1,8), loc(e))
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for energy failed", kim_error)
-      RAISE_ERROR("Failed to create energy field in pkim", error)
-    endif
-    ! call set_compute energy...
-    call kim_api_set2_compute_f(this%pkim,"energy", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for energy failed", kim_error)
-      RAISE_ERROR("Failed to create energy field in pkim", error)
-    endif
-  else
-    call kim_api_set2_donotcompute_f(this%pkim,"energy", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for energy failed", kim_error)
-      RAISE_ERROR("Failed to create energy field in pkim", error)
-    endif
-  endif
-
-  if (present(local_e)) then
-    kim_error = kim_api_set_data_f(this%pkim, "energyPerAtom", int(at%N,8), loc(local_e(1)))
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for energyPerAtom failed", kim_error)
-      RAISE_ERROR("Failed to create energyPerAtom field in pkim", error)
-    endif
-    ! call set_compute energyPerAtom...
-    call kim_api_set2_compute_f(this%pkim,"energyPerAtom", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for energyPerAtom failed", kim_error)
-      RAISE_ERROR("Failed to create energyPerAtom field in pkim", error)
-    endif
-  else
-    call kim_api_set2_donotcompute_f(this%pkim,"energyPerAtom", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for energyPerAtom failed", kim_error)
-      RAISE_ERROR("Failed to create energyPerAtom field in pkim", error)
-    endif
-  endif
-
-  if (present(f)) then
-    kim_error = kim_api_set_data_f(this%pkim, "forces", int(3*at%N,8), loc(f(1,1)))
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for forces failed", kim_error)
-      RAISE_ERROR("Failed to create forces field in pkim", error)
-    endif
-    ! call set_compute forces...
-    call kim_api_set2_compute_f(this%pkim,"forces", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for forces failed", kim_error)
-      RAISE_ERROR("Failed to create forces field in pkim", error)
-    endif
-  else
-    call kim_api_set2_donotcompute_f(this%pkim,"forces", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for forces failed", kim_error)
-      RAISE_ERROR("Failed to create forces field in pkim", error)
-    endif
-  endif
-
-  if (present(virial)) then
-    kim_error = kim_api_set_data_f(this%pkim, "virialGlobal", int(6,8), loc(virial_sym(1)))
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for virial failed", kim_error)
-      RAISE_ERROR("Failed to create virial field in pkim", error)
-    endif
-    ! call set_compute virial...
-    call kim_api_set2_compute_f(this%pkim,"virial", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for virial failed", kim_error)
-      RAISE_ERROR("Failed to create virial field in pkim", error)
-    endif
-  else
-    call kim_api_set2_donotcompute_f(this%pkim,"virial", kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set2_compute_f for virial failed", kim_error)
-      RAISE_ERROR("Failed to create virial field in pkim", error)
-    endif
-  endif
-
+  ! check for unsupported output quantities
   if (present(local_virial)) then
     RAISE_ERROR("IPModel_KIM_Calc can't handle local_virial yet", error)
   endif
@@ -417,28 +308,58 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
     endif
   endif
 
-  kim_error = kim_api_set_data_f(this%pkim, "numberOfAtoms", int(1,8), loc(at%N))
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for numberOfAtoms failed", kim_error)
-    RAISE_ERROR("Failed to create numberOfAtoms field in pkim", error)
+  ! allocate atomTypes array for conversion from atomic number to atom type
+  allocate(atomTypes(at%N))
+  atomTypes(1:at%N) = this%atomTypeOfZ(at%Z(1:at%N))
+  if (any(atomTypes < 0)) then
+    bad_i = minloc(atomTypes)
+    RAISE_ERROR("Some Z mapped to an invalid atom type, e.g. atom "//bad_i(1)//" Z "//at%Z(bad_i(1)), error)
   endif
+
+  ! register config input information
+  call kim_api_set_data_multiple_f(this%pkim, kim_error, &
+    "numberOfAtoms", int(1,8), loc(at%N), &
+    "coordinates", int(3*at%N,8), loc(at%pos(1,1)), &
+    "atomTypes", int(3*at%N,8), loc(atomTypes(1)))
   ! deal with ghost atoms later (numberOfContributingAtoms)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_multiple_f for inputs failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  endif
+
+  ! register config output information
+  call kim_api_set_data_multiple_f(this%pkim, kim_error, &
+    "energy", int(1,8), loc(e), &
+    "energyPerAtom", int(at%N,8), loc(local_e(1)), &
+    "forces", int(3*at%N,8), loc(f(1,1)), &
+    "virialGlobal", int(6,8), loc(virial_sym(6)))
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_multiple_f for output failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  endif
+
+  ! set compute for config output information
+  call kim_api_set_compute_multiple_f(this%pkim, kim_error, &
+    "energy", kim_compute_of_logical(present(e)), &
+    "energyPerAtom", kim_compute_of_logical(present(local_e)), &
+    "forces", kim_compute_of_logical(present(f)), &
+    "virialGlobal", kim_compute_of_logical(present(virial)))
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_compute_multiple_f for outputs failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  endif
+
+  ! set data for neighbor stuff
 
   kim_at => at
 
   kim_error = kim_api_set_data_f(this%pkim, "neighObject", int(1,8), loc(at%N))
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for neighObject failed", kim_error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f for neighObject failed", kim_error) /= KIM_STATUS_OK) then
     RAISE_ERROR("Failed to create neighObject field in pkim", error)
   endif
 
   call kim_api_model_compute_f(this%pkim, kim_error)
-  if (kim_error /= KIM_STATUS_OK) then
-    call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_compute_f failed", kim_error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_compute_f failed", kim_error) /= KIM_STATUS_OK) then
     RAISE_ERROR("Failed to compute with KIM Model", error)
   endif
-
-  !!!!!NB  Need to convert from virial_sym to virial
+ 
   if (present(virial)) then
     virial(1,1) = virial_sym(1)
     virial(2,2) = virial_sym(2)
@@ -493,7 +414,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
 
 end function parse_extra_calcs
 
-subroutine write_test_kim_file(test_kim_es, test_name, model_name)
+subroutine write_test_kim_file_from_model(test_kim_es, test_name, model_name)
     type(Extendable_Str) :: test_kim_es
     character(len=*), intent(in) :: test_name, model_name
 
@@ -504,10 +425,8 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
     integer i, conventions_i, model_input_i
 
     p_model_str = kim_api_get_model_kim_str_f(trim(model_name), str_len, kim_error)
-    if (kim_error /= KIM_STATUS_OK) then
-      call KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_kim_str failed", kim_error)
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_kim_str failed", kim_error) /= KIM_STATUS_OK) &
       call system_abort("Failed to get model .kim string")
-    endif
 
     call initialise(test_kim_es)
     do i=1, str_len
@@ -518,12 +437,12 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
 
     conventions_i = index(test_kim_es, "CONVENTIONS:")
     if (conventions_i <= 0) then
-	call system_abort("write_test_kim_file failed to find CONVENTIONS section")
+	call system_abort("write_test_kim_file_from_model failed to find CONVENTIONS section")
     endif
 
     model_input_i = index(test_kim_es, "MODEL_INPUT:")
     if (model_input_i <= 0) then
-	call system_abort("write_test_kim_file failed to find MODEL_INPUT section")
+	call system_abort("write_test_kim_file_from_model failed to find MODEL_INPUT section")
     endif
 
     call substr_replace(test_kim_es, conventions_i, model_input_i-2, &
@@ -533,6 +452,17 @@ subroutine write_test_kim_file(test_kim_es, test_name, model_name)
 	"NEIGH-RVEC-F dummy"//quip_new_line//quip_new_line// &
 	"################################################################################")
 
-end subroutine write_test_kim_file
+end subroutine write_test_kim_file_from_model
+
+function kim_compute_of_logical(v)
+   logical, intent(in) :: v
+   integer :: kim_compute_of_logical
+
+   if (v) then
+      kim_compute_of_logical = KIM_COMPUTE
+   else
+      kim_compute_of_logical = KIM_NOT_COMPUTE
+   endif
+end function kim_compute_of_logical
 
 end module IPModel_KIM_module
