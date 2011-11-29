@@ -18,7 +18,7 @@ contains
       type(dictionary_t), intent(in) :: attributes
 
       character(len=1024) :: value
-      integer :: status
+      integer :: status, di_status, tau_status, t0_status
       integer :: n
       integer :: atom_1, atom_2, atom_3
       real(dp) :: k
@@ -242,18 +242,31 @@ contains
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_3 in bond_length_diff "//trim(type_str))
 	    read (value, *) atom_3
 	    call QUIP_FoX_get_value(attributes, "d", value, status)
-	    if (status == 0) then
-	       read (value, *) d
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read d in bond_length_diff "//trim(type_str))
+	    read (value, *) d
+
+	    call QUIP_FoX_get_value(attributes, "di", value, di_status)
+	    if (di_status /= 0) read (value, *) di
+	    call QUIP_FoX_get_value(attributes, "tau", value, tau_status)
+	    if (tau_status /= 0) read (value, *) tau
+	    call QUIP_FoX_get_value(attributes, "t0", value, t0_status)
+	    if (t0_status /= 0) read (value, *) t0
+	    if (count( (/ di_status, tau_status, t0_status /) == 0) /= 0 .and. &
+	        count( (/ di_status, tau_status, t0_status /) == 0) /= 3) then
+	       call system_abort("restraint_startElement_handler needs either all or none of di, tau, t0")
+	    endif
+
+	    if (di_status == 0) then ! relax target value with time
+	       if (parse_in_restraints) then
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, di=di, tau=tau, t0=t0, restraint_k=k, bound=bound, print_summary=print_summary)
+	       else
+		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, di=di, tau=tau, t0=t0, tol=tol, print_summary=print_summary)
+	       endif
+	    else ! fixed target value
 	       if (parse_in_restraints) then
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, restraint_k=k, bound=bound, print_summary=print_summary)
 	       else
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, d, tol=tol, print_summary=print_summary)
-	       endif
-	    else
-	       if (parse_in_restraints) then
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, restraint_k=k, bound=bound, print_summary=print_summary)
-	       else
-		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
 
