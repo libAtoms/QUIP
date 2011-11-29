@@ -2592,22 +2592,21 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the difference of bond length between atoms i--j and j--k
-   subroutine constrain_bondlength_diff(this,i,j,k,d,restraint_k,bound,tol,print_summary)
+   subroutine constrain_bondlength_diff(this,i,j,k,d,di,t0,tau,restraint_k,bound,tol,print_summary)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
-     real(dp), optional,    intent(in)    :: d
+     real(dp),              intent(in)    :: d
+     real(dp), optional,    intent(in)    :: di, t0, tau
      real(dp), optional,    intent(in)    :: restraint_k, tol
      integer,  optional,    intent(in)    :: bound
      logical,  optional,    intent(in)    :: print_summary
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_DIFF_FUNC
-     real(dp)                             :: use_d
 
      !Do nothing for i==j or i==k or j==k
      if (i==j.or.i==k.or.j==k) then
-        
         call print_warning('Constrain_bondlength_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
         return
      end if
@@ -2617,16 +2616,24 @@ contains
         call system_abort('Constrain_bondlength_Diff: Cannot constrain bond '//i//'--'//j//'--'//k//&
                                  ': Atom out of range (N='//this%N//')')
      end if
-     
+
+     if (count( (/ present(di), present(t0), present(tau) /) ) /= 3 .and. &
+         count( (/ present(di), present(t0), present(tau) /) ) /= 0) then
+       call system_abort("constrain_bondlength_diff needs all or none of di, t0, and tau for relaxing bond length to final value")
+     endif
+
      !Register the constraint function if this is the first call
      if (first_call) then
         BOND_DIFF_FUNC = register_constraint(BONDLENGTH_DIFF)
         first_call = .false.
      end if
-     
+
      !Add the constraint
-     use_d = optional_default(abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k)),d)
-     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/use_d/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     if (present(di)) then
+	call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/di,d,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     else
+	call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d,d,0.0_dp,1.0_dp/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     endif
 
    end subroutine constrain_bondlength_diff
 

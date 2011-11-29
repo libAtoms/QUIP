@@ -1269,11 +1269,12 @@ contains
     real(dp), dimension(3)                      :: d1, d2
     real(dp)                                    :: norm_d1,norm_d2
     integer                         :: i
+    real(dp) :: target_dd, target_dd_i, target_dd_f, t0, tau, efact
 
     if(size(pos) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
     if(size(velo) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
     if(size(mass) /= 3) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
-    if(size(data) /= 1) call system_abort('BONDLENGTH_DIFF: "data" must contain exactly one value')
+    if(size(data) /= 4) call system_abort('BONDLENGTH_DIFF: "data" must contain exactly four values')
 
     d1 = pos(1:3)-pos(4:6)
     d2 = pos(7:9)-pos(4:6)
@@ -1281,14 +1282,21 @@ contains
     norm_d1 = norm(d1)
     norm_d2 = norm(d2)
 
-    C = norm_d1 - norm_d2 - data(1)
-    target_v = data(1)
+    target_dd_i = data(1)
+    target_dd_f = data(2)
+    t0 = data(3)
+    tau = data(4)
+    efact = exp(-(t-t0)/tau)
+    target_dd = target_dd_i + (target_dd_f-target_dd_i)*efact
+
+    C = norm_d1 - norm_d2 - target_dd
+    target_v = target_dd
 
     dC_dr(1:3) = d1(1:3) / norm_d1
     dC_dr(7:9) = - d2(1:3) / norm_d2
     dC_dr(4:6) =  - dC_dr(1:3) - dC_dr(7:9)
 
-    dC_dt = dC_dr .dot. velo
+    dC_dt = dC_dr .dot. velo + (target_dd_f-target_dd_i)*efact/tau
 
     dcoll_dr(1:9) = dC_dr(1:9)
     Z_coll = 0._dp
