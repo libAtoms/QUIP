@@ -246,11 +246,11 @@ contains
 	    read (value, *) d
 
 	    call QUIP_FoX_get_value(attributes, "di", value, di_status)
-	    if (di_status /= 0) read (value, *) di
+	    if (di_status == 0) read (value, *) di
 	    call QUIP_FoX_get_value(attributes, "tau", value, tau_status)
-	    if (tau_status /= 0) read (value, *) tau
+	    if (tau_status == 0) read (value, *) tau
 	    call QUIP_FoX_get_value(attributes, "t0", value, t0_status)
-	    if (t0_status /= 0) read (value, *) t0
+	    if (t0_status == 0) read (value, *) t0
 	    if (count( (/ di_status, tau_status, t0_status /) == 0) /= 0 .and. &
 	        count( (/ di_status, tau_status, t0_status /) == 0) /= 3) then
 	       call system_abort("restraint_startElement_handler needs either all or none of di, tau, t0")

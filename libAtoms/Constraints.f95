@@ -1287,7 +1287,7 @@ contains
     t0 = data(3)
     tau = data(4)
     efact = exp(-(t-t0)/tau)
-    target_dd = target_dd_i + (target_dd_f-target_dd_i)*efact
+    target_dd = target_dd_f + (target_dd_i-target_dd_f)*efact
 
     C = norm_d1 - norm_d2 - target_dd
     target_v = target_dd
@@ -1296,7 +1296,7 @@ contains
     dC_dr(7:9) = - d2(1:3) / norm_d2
     dC_dr(4:6) =  - dC_dr(1:3) - dC_dr(7:9)
 
-    dC_dt = dC_dr .dot. velo + (target_dd_f-target_dd_i)*efact/tau
+    dC_dt = dC_dr .dot. velo + (target_dd_i-target_dd_f)*efact/tau
 
     dcoll_dr(1:9) = dC_dr(1:9)
     Z_coll = 0._dp
