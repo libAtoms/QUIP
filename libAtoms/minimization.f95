@@ -119,9 +119,13 @@ CONTAINS
     tmpa=x0
     y=x0
 
+#ifndef _OPENMP
     call verbosity_push_decrement()
+#endif
     Ea=func(tmpa,data)
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
     call print("  Linmin: Ea = " // Ea // " a = " // 0.0_dp, PRINT_NORMAL)
     Eb= Ea + 1.0_dp !just to start us off
 
@@ -137,9 +141,13 @@ CONTAINS
        b=b*0.5_dp
        tmpb(:)= x0(:)+b*xdir(:)
 
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        Eb=func(tmpb,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        call print("  Linmin: Eb = " // Eb // " b = " // b, PRINT_VERBOSE)
        it = it+1
 
@@ -178,9 +186,13 @@ CONTAINS
 
     c = b + GOLD*b   !first guess for c */
     tmpc = x0 + c*xdir
+#ifndef _OPENMP
     call verbosity_push_decrement()
+#endif
     Ec = func(tmpc,data)
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
     call print("  Linmin: Ec = " // Ec // " c = " // c, PRINT_VERBOSE)
     it = it + 1
     !    ! does it work in fortran?
@@ -225,9 +237,13 @@ CONTAINS
           write(line,*)"b < u < c" ; call print(line,PRINT_VERBOSE)
           
           tmpu = x0 + u*xdir
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           Eu = func(tmpu,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
 	  call print("linmin got one Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
@@ -247,9 +263,13 @@ CONTAINS
 
           u = c + GOLD*(c-b)
           tmpu = x0 + u*xdir
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           Eu = func(tmpu,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
 	  call print("linmin got second Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
@@ -257,9 +277,13 @@ CONTAINS
 
           write(line,*) "  c < u < ulim= ", ulim; call print(line,PRINT_VERBOSE)
           tmpu = x0 + u*xdir
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           Eu = func(tmpu,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
 	  call print("linmin got one(2) Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
@@ -270,9 +294,13 @@ CONTAINS
              Eb = Ec
              Ec = Eu
              tmpu = x0 + u*xdir
+#ifndef _OPENMP
              call verbosity_push_decrement()
+#endif
              Eu = func(tmpu,data)
+#ifndef _OPENMP
              call verbosity_pop()
+#endif
 	     call print("linmin got second(2) Eu " // Eu // " " // u, PRINT_NERD)
              it = it + 1
           end if
@@ -281,9 +309,13 @@ CONTAINS
           write(line,*) "  ulim=",ulim," < u or u garbage"; call print(line,PRINT_VERBOSE)
           u = ulim
           tmpu = x0 + u*xdir
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           Eu = func(tmpu,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
           it = it + 1
 	  call print("linmin got one(3) Eu " // Eu // " " // u, PRINT_NERD)
        end if
@@ -299,9 +331,13 @@ CONTAINS
 
           if(abs(c*xdir(i)) .GT. DXLIM)then
              tmpb = x0+b*xdir
+#ifndef _OPENMP
              call verbosity_push_decrement()
+#endif
              Eb = func(tmpb,data)
+#ifndef _OPENMP
              call verbosity_pop()
+#endif
 	     call print("linmin got new Eb " // Eb // " " // b, PRINT_NERD)
              it = it + 1
              y = tmpb
@@ -310,7 +346,6 @@ CONTAINS
              write(line,'("I= ",I4," C= ",F16.12," xdir(i)= ",F16.12," DXLIM =",F16.12)')&
                   i, c, xdir(i), DXLIM 
              call print(line, PRINT_VERBOSE)
-
 
              epsilon = b
 
@@ -396,9 +431,13 @@ CONTAINS
        if((abs(x-xm) < tol2-0.5_dp*(b-a)) .OR.(sizeflag.gt.0)) then
           tmpa = x0 + x*xdir
           y = tmpa
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           Ex = func(y,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
 	  call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
 
           if(sizeflag.gt.0) call print('Linmin: DXlim exceeded')
@@ -409,9 +448,13 @@ CONTAINS
              x = fallback
              epsilon = fallback
              tmpa = x0 + x*xdir
+#ifndef _OPENMP
              call verbosity_push_decrement()
+#endif
              Ex = func(tmpa,data)
+#ifndef _OPENMP
              call verbosity_pop()
+#endif
 	     call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
              y = tmpa
           else
@@ -474,9 +517,13 @@ CONTAINS
 
        ! evaluate function
        tmpa = u*xdir
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        Eu = func(x0+tmpa,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        call print('  Linmin: new point u= '//u//' Eu= '//Eu, PRINT_VERBOSE)
        if(any(abs(tmpa) > DXLIM)) then
           if(sizeflag .EQ. 0) then
@@ -582,10 +629,14 @@ CONTAINS
        xb = x0+b*xdir
        xc = x0+c*xdir
 
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        fxb = func(xb,data)
        fxc = func(xc,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
 
        write(line,*) "      abc = ", a, b, c; call print(line, PRINT_NORMAL)
        write(line,*) "      f   = ",fx0, fxb, fxc; call print(line, PRINT_NORMAL)
@@ -710,9 +761,13 @@ CONTAINS
 
     do while(abs(dirdx1) > abs(dirdx0))
        x1 = x0+new_eps*xdir
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        dx1 = dfunc(x1,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        dirdx1 = xdir .DOT. dx1
 
        if(abs(dirdx1) > abs(dirdx0)) then ! this eps leads to a point with larger abs gradient
@@ -784,9 +839,13 @@ CONTAINS
           new_eps = 1.0e-5_dp
           do i=1,50
              xn = x0 + new_eps*xdir
+#ifndef _OPENMP
              call verbosity_push_decrement()
+#endif
              dxn = dfunc(xn,data)
+#ifndef _OPENMP
              call verbosity_pop()
+#endif
              dirdx_new = xdir .DOT. dxn
           
              call print(new_eps//' '//dirdx_new//' <-- LS', PRINT_NORMAL)
@@ -813,9 +872,13 @@ CONTAINS
     do while ( (abs(eps1-eps2) > TOL*abs(eps1)) .and. extrap_steps < max_extrap_steps) 
        do
           xn = x0 + new_eps*xdir
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           dxn = dfunc(xn,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
           dirdx_new = xdir .DOT. dxn
 
           linmin = linmin + 1
@@ -840,9 +903,13 @@ CONTAINS
                    eps11 = eps1+step
                    call print("Trying to bring in eps1: "//eps11, PRINT_NORMAL)
                    xn = x0 + eps11*xdir
+#ifndef _OPENMP
                    call verbosity_push_decrement()
+#endif
                    dxn = dfunc(xn,data)
+#ifndef _OPENMP
                    call verbosity_pop()
+#endif
                    dirdx1 = xdir .DOT. dxn
                    step = step/2.0_dp
                 end do
@@ -880,9 +947,13 @@ CONTAINS
                       eps11 = eps2-step
                       call print("Trying to bring in eps2: "//eps11, PRINT_NORMAL)
                       xn = x0 + eps11*xdir
+#ifndef _OPENMP
                       call verbosity_push_decrement()
+#endif
                       dxn = dfunc(xn,data)
+#ifndef _OPENMP
                       call verbosity_pop()
+#endif
                       dirdx2 = xdir .DOT. dxn
                       step = step/2.0_dp
                    end do
@@ -919,9 +990,13 @@ CONTAINS
                    call print("abs(dirdx_new) > abs(dirdx1) but dirdx2 > 0, should only happen when new_eps is converged. try to bring in eps2", PRINT_NORMAL)
                    eps2 = 0.5_dp*(new_eps+eps2)
                    xn = x0 + eps2*xdir
+#ifndef _OPENMP
                    call verbosity_push_decrement()
+#endif
                    dxn = dfunc(xn,data)
+#ifndef _OPENMP
                    call verbosity_pop()
+#endif
                    dirdx2 = xdir .DOT. dxn
                    exit
                 endif
@@ -990,9 +1065,13 @@ CONTAINS
           new_eps = 1.0e-5_dp
           do i=1,50
              xn = x0 + new_eps*xdir
+#ifndef _OPENMP
              call verbosity_push_decrement()
+#endif
              dxn = dfunc(xn,data)
+#ifndef _OPENMP
              call verbosity_pop()
+#endif
              dirdx_new = xdir .DOT. dxn
              
              call print(new_eps//' '//dirdx_new, PRINT_NORMAL)
@@ -1022,9 +1101,13 @@ CONTAINS
 
     do while ( (abs(old_eps-new_eps) > TOL*abs(new_eps)) .and. extrap_steps < max_extrap_steps) 
        xn = x0 + new_eps*xdir
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        dxn = dfunc(xn,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        dirdx_new = xdir .DOT. dxn
        
        linmin = linmin + 1
@@ -1176,9 +1259,13 @@ CONTAINS
     write(line,*)"damping = ", damp            ; call print(line)
 
     velo=0.0_dp
+#ifndef _OPENMP
     call verbosity_push_decrement()
+#endif
     acc = -dfunc(x,data)/mass
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
 
 
     dt = sqrt(max_change/maxval(abs(acc)))
@@ -1186,9 +1273,13 @@ CONTAINS
 
     do I=0,max_steps
        velo(:)=velo(:) + (0.5*dt)*acc(:)
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        force(:)= -dfunc(X,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        df2=normsq(force)
        if(df2 .LT. tol) then
           write(line,*) I," force^2 =",df2 ; call print(line)
@@ -1204,9 +1295,13 @@ CONTAINS
        x(:)=x(:)+dt*velo(:)
        x(:)=x(:)+0.5*dt*dt*acc(:)
 
+#ifndef _OPENMP
        call verbosity_push_decrement()
+#endif
        f = func(x,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
        call print("f=" // f, PRINT_VERBOSE)
        call print(x, PRINT_NERD)
 
@@ -1402,16 +1497,24 @@ CONTAINS
 
     ! initial function calls
     if (.not. do_linmin_deriv)  then
+#ifndef _OPENMP
        call verbosity_push_decrement(2)
+#endif
        f = func(x,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
     else
        f = 0.0_dp
     end if
 
+#ifndef _OPENMP
     call verbosity_push_decrement(2)
+#endif
     grad_f = dfunc(x,data)
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
 
     if (my_hook_print_interval > 0) then
       if (present(hook)) then 
@@ -1485,12 +1588,16 @@ CONTAINS
        !**********************************************************************/
 
 
+#ifndef _OPENMP
        if (my_hook_print_interval == 1 .or. mod(main_counter,my_hook_print_interval) == 1) call verbosity_push_increment()
+#endif
        call print(trim(method)//" iter = "//main_counter//" df^2 = "//normsqgrad_f//" f = "//f// &
             ' max(abs(df)) = '//maxval(abs(grad_f)),PRINT_VERBOSE)
        if(.not. do_lbfgs) &
             call print(" dcos = "//dcosine//" q = " //linmin_quality,PRINT_VERBOSE)
+#ifndef _OPENMP
        if (my_hook_print_interval == 1 .or. mod(main_counter,my_hook_print_interval) == 1) call verbosity_pop()
+#endif
 
        ! call the hook function
        if (present(hook)) then 
@@ -1533,7 +1640,9 @@ CONTAINS
           oldeps = eps
           ! no output from linmin unless level >= PRINT_VERBOSE
 	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           if(do_fast_linmin) then
              lsteps = linmin_fast(x, f, hdir, y, eps, func,data)
              if (lsteps .EQ.0) then
@@ -1548,7 +1657,9 @@ CONTAINS
           if ((oldeps .fne. my_eps_guess) .and. (eps > oldeps*2.0_dp)) then
             eps = oldeps*2.0_dp
           endif
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
 	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
 
           !**********************************************************************
@@ -1559,7 +1670,9 @@ CONTAINS
           
           if(lsteps .EQ. 0) then ! something very bad happenned, gradient is bad?
              call print("*** LINMIN returned 0, RESETTING CG CYCLE and eps  at step " // main_counter)
+#ifndef _OPENMP
              call verbosity_push_increment()
+#endif
              extra_report = extra_report + 1
              hdir = -1.0 * grad_f
              eps = my_eps_guess
@@ -1588,9 +1701,13 @@ CONTAINS
        
 
        if (.not. do_linmin_deriv) then
+#ifndef _OPENMP
           call verbosity_push_decrement(2)
+#endif
           f_new = func(y,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
        else
           f_new = 0.0_dp
        end if
@@ -1621,7 +1738,9 @@ CONTAINS
              ! everything is fine, clear some monitoring flags
              bad_iter_counter = 0
              do i=1, extra_report
+#ifndef _OPENMP
                 call verbosity_pop()
+#endif
              end do
              extra_report = 0
              
@@ -1673,10 +1792,12 @@ CONTAINS
           
              call print("*** Minim is stuck at step " // main_counter // ", trying to unstick", PRINT_VERBOSE)
           
+#ifndef _OPENMP
              if (current_verbosity() >= PRINT_NORMAL) then
                 call verbosity_push_increment()
                 extra_report = extra_report + 1
              end if
+#endif
       
 	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              !**********************************************************************
@@ -1726,9 +1847,13 @@ CONTAINS
        if(.not. do_lbfgs) hdirgrad_before = hdir.DOT.grad_f  
 
        grad_f_old = grad_f
+#ifndef _OPENMP
        call verbosity_push_decrement(2)
+#endif
        grad_f = dfunc(x,data)
+#ifndef _OPENMP
        call verbosity_pop()
+#endif
 
        if(.not. do_lbfgs) then
           hdirgrad_after = hdir.DOT.grad_f 
@@ -1844,9 +1969,11 @@ CONTAINS
     end if
 
     ! just in case extra pushes weren't popped
+#ifndef _OPENMP
     do i=1, extra_report
        call verbosity_pop()
     end do
+#endif
 
     call system_timer("minim")
 
@@ -1924,17 +2051,25 @@ CONTAINS
        write(line, *) "Calling func(x)"; call print(line)
     end if
     !f0 = param_penalty(x_0);
+#ifndef _OPENMP
     call verbosity_push_decrement()
+#endif
     f0 = func(x,data)
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
     !!//logger("f0: %24.16f\n", f0);
 
     if(printit) then
        write(line, *) "Calling dfunc(x)"; call print(line)
     end if
+#ifndef _OPENMP
     call verbosity_push_decrement()
+#endif
     dx = dfunc(x,data)
+#ifndef _OPENMP
     call verbosity_pop()
+#endif
     !!//dx = param_penalty_deriv(x);
 
     allocate(my_dir(N))
@@ -1974,9 +2109,13 @@ CONTAINS
           x = x_0 + eps*my_dir
           !//logger("x:  "); x.print(logger_stream);
           !//f = param_penalty(x);
+#ifndef _OPENMP
           call verbosity_push_decrement()
+#endif
           f = func(x,data)
+#ifndef _OPENMP
           call verbosity_pop()
+#endif
           !//logger("f: %24.16f\n", f);
           previous_ratio = ratio
           ratio = (f-f0)/(eps*tmp)
@@ -2799,10 +2938,14 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
   new_eps = 1.0e-5_dp
   do i=1,50
      xn = x0 + new_eps*xdir
+#ifndef _OPENMP
      call verbosity_push_decrement()
+#endif
      if (use_func) fn = func(xn,data)
      dxn = dfunc(xn,data)
+#ifndef _OPENMP
      call verbosity_pop()
+#endif
      dirdx_new = xdir .DOT. dxn
 
      call print('LINE_SCAN ' // new_eps//' '//fn// ' '//dirdx_new, PRINT_NORMAL)
