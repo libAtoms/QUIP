@@ -285,7 +285,7 @@ contains
              BCAST_PASS_ERROR(error, this%mpi)
              this%got_index = .true.
           else
-             if (this%action /= OUTPUT .and. trim(this%filename) /= 'stdin' .and. trim(this%filename) /= 'stdout') then
+             if (this%action /= OUTPUT .and. trim(this%filename) /= '' .and. trim(this%filename) /= 'stdin' .and. trim(this%filename) /= 'stdout') then
                 call query_xyz(my_filename, compute_index, this%current_frame, this%n_frame, this%n_atom, error)
                 BCAST_PASS_ERROR(error, this%mpi)
                 this%got_index = .false.
