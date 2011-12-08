@@ -55,7 +55,7 @@ implicit none
   character(len=FIELD_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
 	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
-             & do_fine_phonons
+             & do_fine_phonons, do_cij_relax_initial
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
@@ -64,7 +64,7 @@ implicit none
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
-  integer relax_iter
+  integer relax_iter, relax_print_interval
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
   type(CInOutput) :: infile
@@ -134,6 +134,7 @@ implicit none
   call param_register(cli_params, 'cij', 'F', do_cij, help_string="Calculate relaxed elastic constants")
   call param_register(cli_params, 'c0ij', 'F', do_c0ij, help_string="Calculate unrelaxed elastic constants")
   call param_register(cli_params, 'cij_dx', '0.01', cij_dx, help_string="Cartesian displacement size to use for elastic constant calculations")
+  call param_register(cli_params, 'cij_relax_initial', 'F', do_cij_relax_initial, help_string="Relax initial configuration for elastic constant calculations")
   call param_register(cli_params, 'torque', 'F', do_torque, help_string="Calculate torque")
   call param_register(cli_params, 'phonons', 'F', do_phonons, help_string="Calculate phonons")
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
@@ -155,6 +156,7 @@ implicit none
   call param_register(cli_params, 'relax_iter', '1000', relax_iter, help_string="max number of iterations for relaxation")
   call param_register(cli_params, 'relax_tol', '0.001', relax_tol, help_string="tolerance for convergence of relaxation")
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps, help_string="estimate of energy reduction for first step of relaxation")
+  call param_register(cli_params, 'relax_print_interval', '1', relax_print_interval, help_string="Frequency for printing trajectory")
   call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
@@ -289,12 +291,12 @@ implicit none
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
 		eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
+		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval)
            call finalise(relax_io)
         else
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
 		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
+		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval)
         endif
         call write(at,'stdout', prefix='RELAXED_POS')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
@@ -306,11 +308,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         else if (do_c0ij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         else
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=.false., relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
