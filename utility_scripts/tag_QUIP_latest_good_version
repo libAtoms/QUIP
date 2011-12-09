@@ -186,7 +186,16 @@ test_version HEAD
 status_no_Failed $make_status; make_ok=$?
 status_no_Failed $quippy_status; quippy_ok=$?
 
-cd QUIP_test; cur_rev=`svnversion -n`; cd ..
+if [ -d QUIP_test ]; then
+   cd QUIP_test; cur_rev=`svnversion -n`; cd ..
+else
+   rm -f mail_msg.txt
+   (echo "testing of HEAD version failed to even create a QUIP_test directory"; echo "ls -l"; ls -l) > mail_msg.txt
+   mutt -s "QUIP autobuild failed" `for f in $failed_list; do echo "-a $f "; done` `for c in $failed_mails; do echo "-c $c "; done` ${MAILS} < mail_msg.txt
+   rm -f $LOCKFILE
+   exit 4
+fi
+
 HEAD_rev=${cur_rev}
 echo "HEAD($cur_rev) make $make_status quippy test $quippy_status"
 echo "HEAD($cur_rev) make $make_status quippy test $quippy_status" > ${REPORT_FILE}

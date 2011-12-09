@@ -53,29 +53,47 @@ def coord_transform_d(x):
 # def coord_transform_d(x):
 #    return 1.0
 
-# non-periodic kernels
-def ffkernel(x1,x2,fvar,l2):
-    k = fvar*exp(-0.5*(x2-x1)**2/l2)
-    return k
-def dfkernel(x1,x2,fvar,l2):
-    k = (x2-x1)/l2*ffkernel(x1,x2,fvar,l2)
-    return k
-def fdkernel(x1,x2,fvar,l2):
-    k = -(x2-x1)/l2*ffkernel(x1,x2,fvar,l2)
-    return k
-def ddkernel(x1,x2,fvar,l2): 
-    k = (1-(x1-x2)**2/l2)/l2*ffkernel(x1,x2,fvar,l2)
-    return k
+class GP_Gaussian_kernel:
+   def __init__(self):
+      return
+
+   def copy(self):
+      return self
+
+   # non-periodic kernels
+   def ffkernel(self, x1,x2,fvar,l2):
+       k = fvar*exp(-0.5*(x2-x1)**2/l2)
+       return k
+   def dfkernel(self, x1,x2,fvar,l2):
+       k = (x2-x1)/l2*self.ffkernel(x1,x2,fvar,l2)
+       return k
+   def fdkernel(self, x1,x2,fvar,l2):
+       k = -(x2-x1)/l2*self.ffkernel(x1,x2,fvar,l2)
+       return k
+   def ddkernel(self, x1,x2,fvar,l2): 
+       k = (1-(x1-x2)**2/l2)/l2*self.ffkernel(x1,x2,fvar,l2)
+       return k
 
 class GP:
    from numpy import empty, linalg
 
-   def __init__(self):
+   def __init__(self, kernel=None):
+      if (kernel is not None):
+	 self.kernel = kernel.copy()
+      else:
+	 self.kernel = None
       return
 
-   def teach(self, func_r = array([]), func_val = array([]), func_noise = array([]), 
+   def teach(self, kernel=None, func_r = array([]), func_val = array([]), func_noise = array([]), 
                    deriv_r = array([]), deriv_val = array([]), deriv_noise = array([]), 
 		   len_scale=0.0, fvar=0.0):
+
+      if (kernel is None):
+	 if (self.kernel is None):
+	    sys.stderr.write("GP.teach got no kernel, and no kernel is set")
+	    sys.exit(1)
+      else:
+	 self.kernel = kernel.copy()
 
       if ((len(func_r) != len(func_val)) or (len(func_r) != len(func_noise))):
 	 sys.stderr.write("mismatching func_r, func_val, func_noise, sizes in teach\n")
@@ -98,27 +116,27 @@ class GP:
       self.Cmat = empty((self.n_teach, self.n_teach))
       # f vs. f, d
       for i_f in range(self.n_f):
-	 self.Cmat[i_f,0:self.n_f]                 = ffkernel(func_r[i_f], func_r[0:self.n_f], self.fvar, self.l2)
-	 self.Cmat[i_f,self.n_f:self.n_f+self.n_d] = fdkernel(func_r[i_f], deriv_r[0:self.n_d], self.fvar, self.l2)
+	 self.Cmat[i_f,0:self.n_f]                 = kernel.ffkernel(func_r[i_f], func_r[0:self.n_f], self.fvar, self.l2)
+	 self.Cmat[i_f,self.n_f:self.n_f+self.n_d] = kernel.fdkernel(func_r[i_f], deriv_r[0:self.n_d], self.fvar, self.l2)
 	 self.Cmat[i_f,i_f] += func_noise[i_f]
       # d vs. f, d
       for i_d in range(self.n_d):
-	 self.Cmat[self.n_f+i_d,0:self.n_f]                 = dfkernel(deriv_r[i_d], func_r[0:self.n_f], self.fvar, self.l2)
-	 self.Cmat[self.n_f+i_d,self.n_f:self.n_f+self.n_d] = ddkernel(deriv_r[i_d], deriv_r[0:self.n_d], self.fvar, self.l2)
+	 self.Cmat[self.n_f+i_d,0:self.n_f]                 = kernel.dfkernel(deriv_r[i_d], func_r[0:self.n_f], self.fvar, self.l2)
+	 self.Cmat[self.n_f+i_d,self.n_f:self.n_f+self.n_d] = kernel.ddkernel(deriv_r[i_d], deriv_r[0:self.n_d], self.fvar, self.l2)
 	 self.Cmat[self.n_f+i_d,self.n_f+i_d] += deriv_noise[i_d]
       concat_func_deriv_val = concatenate((func_val, deriv_val))
       self.vec = linalg.solve(self.Cmat, concat_func_deriv_val)
       return self
 
    def predict_f(self, r):
-      k = concatenate(( ffkernel(self.func_r[0:self.n_f], r,  self.fvar, self.l2),  
-                        dfkernel(self.deriv_r[0:self.n_d], r, self.fvar, self.l2) ))
+      k = concatenate(( self.kernel.ffkernel(self.func_r[0:self.n_f], r,  self.fvar, self.l2),  
+                        self.kernel.dfkernel(self.deriv_r[0:self.n_d], r, self.fvar, self.l2) ))
       est = dot(k, self.vec)
       return est
 
    def predict_var(self, r):
-      k = concatenate(( ffkernel(self.func_r[0:self.n_f], r,  self.fvar, self.l2),  
-                        dfkernel(self.deriv_r[0:self.n_d], r, self.fvar, self.l2) ))
+      k = concatenate(( self.kernel.ffkernel(self.func_r[0:self.n_f], r,  self.fvar, self.l2),  
+                        self.kernel.dfkernel(self.deriv_r[0:self.n_d], r, self.fvar, self.l2) ))
       Cmat_inv_k = linalg.solve(self.Cmat, k)
       est = self.fvar - dot(k, Cmat_inv_k)
       return est
@@ -169,7 +187,8 @@ transformed_len_scale = len_scale*coord_transform_d(min_collective+len_scale/2.0
 fvar = variance_prior
 
 sys.stderr.write("teach d_from_d_gp\n")
-d_from_d_gp = GP().teach(func_r = coord_transform(collective_vec), func_val = dE_dcollective_vec, func_noise = noise_variance_vec, 
+d_from_d_gp = GP().teach(kernel=GP_Gaussian_kernel(),
+   func_r = coord_transform(collective_vec), func_val = dE_dcollective_vec, func_noise = noise_variance_vec, 
    len_scale=transformed_len_scale, fvar = variance_prior)
 sys.stderr.write("done\n")
 
@@ -181,7 +200,8 @@ print "# zero found at f(%f)=%f" % (xmin, fmin)
 
 # learn function of transformed coord from transformed gradients
 sys.stderr.write("teach func_from_d_gp\n")
-func_from_d_gp = GP().teach(func_r = coord_transform( array( [ xmin ] ) ), 
+func_from_d_gp = GP().teach(kernel=GP_Gaussian_kernel(),
+                            func_r = coord_transform( array( [ xmin ] ) ), 
 			    func_val = array( [ 0.0 ] ),
 			    func_noise = array ( [ 0.0 ] ),
 			    deriv_r = coord_transform(collective_vec),
