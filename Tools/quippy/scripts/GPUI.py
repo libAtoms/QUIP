@@ -54,11 +54,9 @@ def coord_transform_d(x):
 #    return 1.0
 
 class GP_Gaussian_kernel:
-   def __init__(self):
-      return
 
    def copy(self):
-      return self
+      return GP_Gaussian_kernel()
 
    # non-periodic kernels
    def ffkernel(self, x1,x2,fvar,l2):
@@ -75,18 +73,31 @@ class GP_Gaussian_kernel:
        return k
 
 class GP:
-   from numpy import empty, linalg
+
+   import numpy as np
 
    def __init__(self, kernel=None):
       if (kernel is not None):
 	 self.kernel = kernel.copy()
       else:
 	 self.kernel = None
-      return
 
-   def teach(self, kernel=None, func_r = array([]), func_val = array([]), func_noise = array([]), 
-                   deriv_r = array([]), deriv_val = array([]), deriv_noise = array([]), 
+   def teach(self, kernel=None, func_r = None, func_val = None, func_noise = None, 
+                   deriv_r = None, deriv_val = None, deriv_noise = None, 
 		   len_scale=0.0, fvar=0.0):
+
+      if (func_r is None):
+	 func_r = GP.np.array([])
+      if (func_val is None):
+	 func_val = GP.np.array([])
+      if (func_noise is None):
+	 func_noise = GP.np.array([])
+      if (deriv_r is None):
+	 deriv_r = GP.np.array([])
+      if (deriv_val is None):
+	 deriv_val = GP.np.array([])
+      if (deriv_noise is None):
+	 deriv_noise = GP.np.array([])
 
       if (kernel is None):
 	 if (self.kernel is None):
@@ -113,7 +124,7 @@ class GP:
       self.n_teach = self.n_f + self.n_d
       self.func_r = func_r.copy()
       self.deriv_r = deriv_r.copy()
-      self.Cmat = empty((self.n_teach, self.n_teach))
+      self.Cmat = GP.np.empty((self.n_teach, self.n_teach))
       # f vs. f, d
       for i_f in range(self.n_f):
 	 self.Cmat[i_f,0:self.n_f]                 = kernel.ffkernel(func_r[i_f], func_r[0:self.n_f], self.fvar, self.l2)
