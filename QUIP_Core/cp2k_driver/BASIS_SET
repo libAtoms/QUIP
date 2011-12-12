@@ -1,3 +1,7 @@
+# Info from csilla Varnai e-mail 12/9/2011:
+# BASIS_SET file from cp2k/tests/QS, ~2008
+# basis sets documented in J. VandeVondele et al., Computer Physics Communications 167 (2005) 103–128, Sec 5.
+#
 ################################################################################
 #
 # Basis set data base file for Quickstep
