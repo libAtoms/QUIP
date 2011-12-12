@@ -204,7 +204,10 @@ class VaspWriter(object):
       self.out.write(" ".join(labels)+"\n")
       self.out.write(" ".join([("%d" % Z) for Z in atnums])+"\n")
       self.out.write("Selective Dynamics\n")
-      self.out.write("Cartesian\n")
+      if (hasattr(at, 'VASP_Pos_Format')):
+	 self.out.write(at.params['VASP_Pos_Format']+"\n")
+      else:
+	 self.out.write("Cartesian\n")
 
       # Positions
       for i in range(len(prop_vals)):
