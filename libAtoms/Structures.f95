@@ -2995,4 +2995,87 @@ contains
    torsion_angle = acos((v21.dot.v34)/(norm(v21)*norm(v34)))
   end function torsion_angle
 
+  ! find a smaller unit cell, Int. Tables for Crystallography A, Sec 9.1.8
+  function delaunay_reduce(lat) result(reduced_lat)
+    real(dp), intent(in) :: lat(3,3)
+    real(dp) :: reduced_lat(3,3)
+
+    real(dp) :: m(3,4), inner_products(4,4), m_new(3,4), inner_products_new(4,4), m_aug(3,7), norms_aug(7)
+    real(dp) :: norm_sum, norm_sum_new
+    integer :: i, j, k, min_norm(1)
+    logical :: any_accepted
+    real(dp) :: orig_lattice_inv(3,3)
+
+    call inverse(lat, orig_lattice_inv)
+
+    ! create initial basis vectors from lattice and  -(a1+a2+a3)
+    m(1:3,1:3) = lat(1:3,1:3)
+    m(1:3,4) = - (lat(:,1) + lat(:,2) + lat(:,3))
+    inner_products = matmul(transpose(m),m)
+    norm_sum = inner_products(1,1) + inner_products(2,2) + inner_products(3,3) + inner_products(4,4)
+    inner_products(1,1) = -1.0_dp
+    inner_products(2,2) = -1.0_dp
+    inner_products(3,3) = -1.0_dp
+    inner_products(4,4) = -1.0_dp
+
+    ! while any i /= j inner products are positive
+    any_accepted = .true.
+    do while (any(inner_products > NUMERICAL_ZERO) .and. any_accepted)
+      any_accepted = .false.
+      do i=1, 4
+	 do j=1, 4
+	    if (inner_products(i,j) > NUMERICAL_ZERO) then
+	       ! i.j is negative, try to flip i
+	       do k=1, 4
+		  if (k == i) then
+		     m_new(:,k) = -1.0_dp * m(:,k)
+		  else if (k == j) then
+		     m_new(:,k) = m(:,k)
+		  else
+		     m_new(:,k) = m(:,k) + m(:,i)
+		  endif
+	       end do
+	       inner_products_new = matmul(transpose(m_new),m_new)
+	       norm_sum_new = inner_products_new(1,1) + inner_products_new(2,2) + inner_products_new(3,3) + inner_products_new(4,4)
+	       inner_products_new(1,1) = -1.0_dp; inner_products_new(2,2) = -1.0_dp; inner_products_new(3,3) = -1.0_dp; inner_products_new(4,4) = -1.0_dp
+	       if (norm_sum_new < norm_sum) then ! improvement, accept
+		  m = m_new
+		  inner_products = inner_products_new
+		  norm_sum = norm_sum_new
+		  any_accepted = .true.
+	       endif
+	    endif ! inner_products(i,j) > NUMERICAL_ZERO
+	  end do
+       end do
+    end do
+
+    if (.not. any_accepted) then 
+      call system_abort("Did a whole scan and failed to accept a trial lattice change")
+    endif
+
+    ! basis is contained by 4 vectors and a1+a2, a2+a3, a3+1
+    m_aug(1:3,1:4) = m(1:3,1:4)
+    m_aug(1:3,5) = m(1:3,1) + m(1:3,2)
+    m_aug(1:3,6) = m(1:3,2) + m(1:3,3)
+    m_aug(1:3,7) = m(1:3,3) + m(1:3,1)
+
+    do i=1, 7
+      norms_aug(i) = sum(m_aug(1:3,i)**2)
+    end do
+    ! find first 2 PBC vectors
+    do i=1,2
+      min_norm = minloc(norms_aug)
+      reduced_lat(1:3,i) = m_aug(1:3,min_norm(1))
+      norms_aug(min_norm(1)) = HUGE(1.0_dp)
+    end do
+    ! find third that's independent (cell_volume > 0)
+    reduced_lat(1:3,3) = 0.0_dp
+    do while (cell_volume(reduced_lat) .feq. 0.0_dp)
+      min_norm = minloc(norms_aug)
+      reduced_lat(1:3,3) = m_aug(1:3,min_norm(1))
+      norms_aug(min_norm(1)) = HUGE(1.0_dp)
+    end do
+
+   end function delaunay_reduce
+
 end module structures_module
