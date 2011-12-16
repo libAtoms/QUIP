@@ -185,14 +185,29 @@ class VaspWriter(object):
 	    sys.stderr.write("Failed to find property %s in prop_vals_map dictionary" % prop)
 	    sys.exit(1)
 
+      swapped_a1_a2 = False
+      vol = np.dot(at.lattice[:,1],np.cross(at.lattice[:,2],at.lattice[:,3]))
+      if (vol < 0.0):
+	 t_a1 = at.lattice[:,1].copy()
+	 at.lattice[:,1] = at.lattice[:,2]
+	 at.lattice[:,2] = t_a1[:]
+	 swapped_a1_a2 = True
+	 sys.stderr.write("WARNING: swapped a1 and a2 to get positive scalar triple product\n")
+
       # Comment
       try:
-	 self.out.write(at.params['VASP_Comment']+"\n")
+	 self.out.write(at.params['VASP_Comment'])
+	 if (swapped_a1_a2):
+	    self.out.write(" a1 and a2 swapped relative to input to get positive volume")
+	 self.out.write("\n")
       except:
 	 try:
-	    self.out.write(at.params['comment']+"\n")
+	    self.out.write(at.params['comment'])
 	 except:
-	    self.out.write("\n")
+	    self.out.write('')
+	 if (swapped_a1_a2):
+	    self.out.write(" a1 and a2 swapped relative to input to get positive volume")
+	 self.out.write("\n")
 
       # Lattice
       self.out.write("1.0\n")
@@ -206,6 +221,10 @@ class VaspWriter(object):
       self.out.write("Selective Dynamics\n")
       if (hasattr(at, 'VASP_Pos_Format')):
 	 self.out.write(at.params['VASP_Pos_Format']+"\n")
+	 if ((at.params['VASP_Pos_Format'][0] == 'd' or at.params['VASP_Pos_Format'][0] == 'D') and swapped_a1_a2):
+	    t_p1 = at.pos[1,:].copy()
+	    at.pos[1,:] = at.pos[2,:]
+	    at.pos[2,:] = t_p1[:]
       else:
 	 self.out.write("Cartesian\n")
 
