@@ -1303,18 +1303,20 @@ contains
     end if
 
     num_qm_atoms = string_to_int(fields(1))
-    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=PRINT_ALWAYS)
+    if (num_qm_atoms < 1 .or. num_qm_atoms > my_atoms%N) call print('WARNING! read_qmlist: bad number of QM atoms ('//num_qm_atoms//') in qm_list , possible bad QM list file',verbosity=PRINT_ALWAYS)
     call print('Number of QM atoms: '//num_qm_atoms)
     call allocate(qm_list,4,0,0,0,num_qm_atoms)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
 
-    do while (status==0)
-       testline = read_line(qmlistfile,status)
-       !print *,testline
-       if (testline(1:4)=='list') exit
-    enddo
+    testline = read_line(qmlistfile,status)
+    if (testline(1:4) /= 'list') then
+      call system_abort("Got qm_list file '"//trim(qmlistfilename)//"' without 'list' keyword after number of atoms")
+    endif
    ! Reading and storing QM list...
     do n=1,num_qm_atoms
        call parse_line(qmlistfile,' ',fields,num_fields,status)
+       if (status /= 0) then
+	 call system_abort("Failed to read qm_list atom #"//n//", I/O error "//status)
+       endif
        qmatom = string_to_int(fields(1))
        if (my_verbose) call print(n//'th quantum atom is: '//qmatom)
        call append(qm_list,(/qmatom,0,0,0/))
