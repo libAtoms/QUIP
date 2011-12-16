@@ -485,6 +485,27 @@ contains
     endif
     call system_timer('do_cp2k_calc/make_psf')
 
+    if (auto_centre) then
+      if (qm_list%N > 0) then
+	centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
+      else
+	centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
+      endif
+      call print("centering got automatic center " // centre_pos, PRINT_VERBOSE)
+    endif
+    ! move specified centre to origin (centre is already 0 if not specified)
+    at%pos(1,:) = at%pos(1,:) - centre_pos(1)
+    at%pos(2,:) = at%pos(2,:) - centre_pos(2)
+    at%pos(3,:) = at%pos(3,:) - centre_pos(3)
+    ! move origin into center of CP2K box (0.5 0.5 0.5 lattice coords)
+    call map_into_cell(at)
+    if (.not. at_periodic) then
+      cp2k_box_centre_pos(1:3) = 0.5_dp*sum(at%lattice,2)
+      at%pos(1,:) = at%pos(1,:) + cp2k_box_centre_pos(1)
+      at%pos(2,:) = at%pos(2,:) + cp2k_box_centre_pos(2)
+      at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
+    endif
+
     allocate(qm_list_a(0), old_qm_list_a(0))
     allocate(link_list_a(0))
     allocate(old_link_list_a(0))
@@ -828,27 +849,6 @@ contains
        call finalise(cp2k_input_io)
     endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    if (auto_centre) then
-      if (qm_list%N > 0) then
-	centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
-      else
-	centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
-      endif
-      call print("centering got automatic center " // centre_pos, PRINT_VERBOSE)
-    endif
-    ! move specified centre to origin (centre is already 0 if not specified)
-    at%pos(1,:) = at%pos(1,:) - centre_pos(1)
-    at%pos(2,:) = at%pos(2,:) - centre_pos(2)
-    at%pos(3,:) = at%pos(3,:) - centre_pos(3)
-    ! move origin into center of CP2K box (0.5 0.5 0.5 lattice coords)
-    call map_into_cell(at)
-    if (.not. at_periodic) then
-      cp2k_box_centre_pos(1:3) = 0.5_dp*sum(at%lattice,2)
-      at%pos(1,:) = at%pos(1,:) + cp2k_box_centre_pos(1)
-      at%pos(2,:) = at%pos(2,:) + cp2k_box_centre_pos(2)
-      at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
-    endif
 
     if (size(link_list_a) > 0) then
        ! assert that no links cross a periodic boundary since
