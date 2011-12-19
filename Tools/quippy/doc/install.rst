@@ -298,6 +298,21 @@ system (this will probably be something like
 
 to install somewhere else.
 
+
+Installing the ipython profile
+------------------------------
+
+If you use `ipython`_ and have installed `matplotlib`_, there's a
+special quippy profile you can install. Copy the files
+:file:`quippy_load.py` and :file:`ipythonrc-quippy` from
+:file:`${QUIP_ROOT}/Tools/quippy` to your :file:`~/.ipython` directory.
+Invoking ipython as ``ipython -p quippy`` sets up matplotlib and
+imports all the quippy functionality when you start ipython. This is
+equivalent to ``ipython -pylab`` followed by ``from quippy import *``.
+
+I use a shell alias which maps ``ipythonq`` to ``ipython -p quippy``
+to save typing.
+
 Common Problems
 ---------------
 
@@ -372,17 +387,70 @@ If you get an :exc:`ImportError` with a message ::
 
 be sure that the gfortran libraries are properly set in :makevar:`ATOMEYE_LIBS` in Makefile.atomeye 
 
+Error compiling IPModel_GAP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Installing the ipython profile
-------------------------------
+If you get the following error during compilation::
 
-If you use `ipython`_ and have installed `matplotlib`_, there's a
-special quippy profile you can install. Copy the files
-:file:`quippy_load.py` and :file:`ipythonrc-quippy` from
-:file:`${QUIP_ROOT}/Tools/quippy` to your :file:`~/.ipython` directory.
-Invoking ipython as ``ipython -p quippy`` sets up matplotlib and
-imports all the quippy functionality when you start ipython. This is
-equivalent to ``ipython -pylab`` followed by ``from quippy import *``.
+   /QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
+   
+   use descriptors_module
+                         1
+   Fatal Error: Can't open module file 'descriptors_module.mod' for reading at (1): No such file or directory
 
-I use a shell alias which maps ``ipythonq`` to ``ipython -p quippy``
-to save typing.
+The `GAP_predict` module is not publicly available, so the
+:file:`Makefile.inc` must contain :makevar:`HAVE_GP_PREDICT` = 0, and
+:makevar:`HAVE_GP_TEACH` = 0.
+
+
+Warning about :mod:`quippy.castep` when importing quippy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you get the following warning message when importin quippy::
+   
+   $ python
+   >>> from quippy import *
+   WARNING:root:quippy.castep import quippy.failed.
+
+then don't worry, the quippy.castep module is not redistributed with
+the main code. The rest of quippy works fine without it.
+
+
+Internal compiler error with `ifort`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you see an error like the following when using the Intel fortran compiler::
+
+   fortcom: Severe: **Internal compiler error: internal abort** Please
+   report this error along with the circumstances in which it occurred
+   in a Software Problem Report. 
+    Note: File and line given may not be explicit cause of this error.
+
+   ifort: error #10014: problem during multi-file optimization compilation (code 3)
+   backend signals
+
+Then the problem is due to bugs in the compiler. As a workaround,
+setting :makevar:`QUIPPY_NO_CRACK` =1 in Makefile.inc should solve the
+problem, at the cost of excluding the fracture utilities from quippy.
+
+
+Linking error on Mac OS X Lion (10.7)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When recompiling quippy on top of a previous compilation, you may see
+errors like this::
+
+   collect2: ld returned 1 exit status ld: in
+   /QUIP/build.darwin_x86_64_gfortran/libquiputils.a, malformed
+   archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies, 
+   offset 1769103734 is beyond end of file 1254096
+
+This seems to be a Mac OS X Lion problem with rebuilding static
+libraries (.a files). Removing the static libraries with `rm
+../../build.${QUIP_ARCH}/*.a` and recompiling should solve the
+problem.
+
+
+
+
+
