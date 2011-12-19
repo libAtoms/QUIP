@@ -235,7 +235,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
    def test_remove_atoms_1(self):
       cp = self.dia.copy()
       cp.remove_atoms(1)
-      self.assertDictionariesEqual(cp.get_atom(1), self.dia.get_atom(8), ['index', 'atoms'])
+      self.assertDictionariesEqual(cp.get_atom(1), self.dia.get_atom(8), ['_index', 'atoms'])
 
    def test_remove_atoms_2(self):
       cp1 = self.dia.copy()
@@ -496,7 +496,7 @@ class TestAtoms_Extras(QuippyTestCase):
 
    def test_get_atom(self):
       d = self.at.get_atom(1)
-      self.assertDictionariesEqual(d, {'Z': 14, 'pos': [0.0, 0.0, 0.0], 'species': 'Si'}, ['index','atoms'])
+      self.assertDictionariesEqual(d, {'Z': 14, 'pos': [0.0, 0.0, 0.0], 'species': 'Si'}, ['_index','atoms'])
 
    def test_eq1(self):
       cp = self.at.copy()
@@ -529,24 +529,24 @@ class TestAtoms_Extras(QuippyTestCase):
 
    def test_select_mask_one(self):
       sub_at = self.at.select(mask=[1,0,0,0,0,0,0,0], orig_index=False)
-      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(1), ['index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(1), ['_index','atoms'])
 
    def test_select_list(self):
       sub_at = self.at.select(list=[2], orig_index=False)
-      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['_index','atoms'])
 
    def test_select_list_array(self):
       sub_at = self.at.select(list=array([2]), orig_index=False)
-      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['_index','atoms'])
 
    def test_select_list_farray(self):
       sub_at = self.at.select(list=farray([2]), orig_index=False)
-      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['_index','atoms'])
 
    def test_select_list_2(self):
       sub_at = self.at.select(list=[2,3], orig_index=False)
-      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['index','atoms'])
-      self.assertDictionariesEqual(sub_at.get_atom(2), self.at.get_atom(3), ['index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(1), self.at.get_atom(2), ['_index','atoms'])
+      self.assertDictionariesEqual(sub_at.get_atom(2), self.at.get_atom(3), ['_index','atoms'])
 
    def check_property(self, name, type, n_cols=None):
       t, l, (l1,l2) = self.at.properties.get_type_and_size(name)
