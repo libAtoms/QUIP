@@ -72,7 +72,6 @@ contains
 
     character(len=128) :: method
 
-    type(Inoutput) :: link_template_io
     integer :: link_template_n_lines
     character(len=FIELD_LENGTH), allocatable :: link_template_a(:)
     integer :: i_line
@@ -98,7 +97,7 @@ contains
     logical :: cp2k_calc_fake
 
     integer, pointer :: isolated_atom(:)
-    integer i, j, at_Z, insert_pos
+    integer i, at_Z, insert_pos
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
 
     integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
@@ -485,6 +484,28 @@ contains
     endif
     call system_timer('do_cp2k_calc/make_psf')
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    allocate(qm_list_a(0), old_qm_list_a(0))
+    allocate(link_list_a(0))
+    allocate(old_link_list_a(0))
+    allocate(qm_and_link_list_a(0))
+   if (use_QMMM) then
+      call get_qm_list(at, use_buffer, trim(qm_name_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
+		       link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
+		       link_template_a, link_template_n_lines, error)
+      PASS_ERROR(error)
+   endif
+
+    if (qm_list%N == at%N) then
+      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", PRINT_ALWAYS)
+      run_type='QS'
+      use_QM = .true.
+      use_MM = .false.
+      use_QMMM = .false.
+      method = 'QS'
+    endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     if (auto_centre) then
       if (qm_list%N > 0) then
 	centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
@@ -506,10 +527,6 @@ contains
       at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
     endif
 
-    allocate(qm_list_a(0), old_qm_list_a(0))
-    allocate(link_list_a(0))
-    allocate(old_link_list_a(0))
-    allocate(qm_and_link_list_a(0))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. persistent_already_started) then
        call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
@@ -557,82 +574,6 @@ contains
 
        ! put in method
        call print("@SET FORCE_EVAL_METHOD "//trim(method), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-
-       ! get qm_list and link_list
-       if (use_QMMM) then
-	 if (use_buffer) then
-	   call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
-	   call get_hybrid_list(at, old_qm_list, all_but_term=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
-	 else
-	   call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
-	   call get_hybrid_list(at, old_qm_list, active_trans_only=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
-	 endif
-	 if (allocated(qm_list_a)) deallocate(qm_list_a)
-         if (allocated(old_qm_list_a)) deallocate(old_qm_list_a)
-	 if (allocated(link_list_a)) deallocate(link_list_a)
-	 if (allocated(old_link_list_a)) deallocate(old_link_list_a)
-	 if (allocated(qm_and_link_list_a)) deallocate(qm_and_link_list_a)
-	 allocate(qm_list_a(qm_list%N), old_qm_list_a(old_qm_list%N))
-	 if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
-         if (old_qm_list%N > 0) old_qm_list_a = int_part(old_qm_list,1)
-	 !get link list
-
-	  if (assign_pointer(at,'cut_bonds'//trim(qm_name_suffix),cut_bonds_p)) then
-	     call initialise(cut_bonds,2,0,0,0,0)
-	     do i_inner=1,at%N
-		do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
-		   if (cut_bonds_p(j,i_inner) == 0) exit
-		   ! correct for new atom indices resulting from sorting of atoms
-		   i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
-		   call append(cut_bonds,(/i_inner,i_outer/))
-		enddo
-	     enddo
-	     if (cut_bonds%N > 0) then
-		call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
-		allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
-		qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
-		qm_and_link_list_a(size(qm_list_a)+1:size(qm_list_a)+size(link_list_a)) = link_list_a(1:size(link_list_a))
-	     else
-		allocate(link_list_a(0))
-		allocate(qm_and_link_list_a(size(qm_list_a)))
-		if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
-	     endif
-	  else
-	     allocate(qm_and_link_list_a(size(qm_list_a)))
-	     if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
-	  endif
-
-          call initialise(old_cut_bonds,2,0,0,0,0)
-          if(assign_pointer(at, 'old_cut_bonds'//trim(qm_name_suffix), old_cut_bonds_p)) then
-	     do i_inner=1,at%N
-		do j=1,size(old_cut_bonds_p,1) !MAX_CUT_BONDS
-		   if (old_cut_bonds_p(j,i_inner) == 0) exit
-		   ! correct for new atom indices resulting from sorting of atoms
-		   i_outer = rev_sort_index(old_cut_bonds_p(j,i_inner))
-		   call append(old_cut_bonds,(/i_inner,i_outer/))
-		enddo
-	     enddo
-          end if
-
-	  !If needed, read QM/MM link_template_file
-	  if (size(link_list_a) > 0) then
-	     if (trim(link_template_file).eq."") then
-	       RAISE_ERROR("There are QM/MM links, but qmmm_link_template is not defined.",error)
-	     endif
-	     call initialise(link_template_io, trim(link_template_file), INPUT)
-	     call read_file(link_template_io, link_template_a, link_template_n_lines)
-	     call finalise(link_template_io)
-          end if
-       endif
-
-       if (qm_list%N == at%N) then
-	 call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", PRINT_ALWAYS)
-	 run_type='QS'
-	 use_QM = .true.
-	 use_MM = .false.
-	 use_QMMM = .false.
-	 method = 'QS'
-       endif
 
        can_reuse_wfn = .true.
 
@@ -1562,5 +1503,91 @@ contains
 
   end subroutine do_cp2k_calc_fake
 
+
+   subroutine get_qm_list(at, use_buffer, qm_name_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
+			  link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
+			  link_template_a, link_template_n_lines, error)
+      type(Atoms), intent(inout) :: at
+      logical, intent(in) :: use_buffer
+      character(len=*), intent(in) :: qm_name_suffix, link_template_file
+      type(Table), intent(inout) :: qm_list, old_qm_list
+      integer, allocatable, intent(inout) :: qm_list_a(:), old_qm_list_a(:), link_list_a(:), old_link_list_a(:), qm_and_link_list_a(:)
+      integer, intent(in) :: rev_sort_index(:)
+      type(Table), intent(inout) :: cut_bonds, old_cut_bonds
+      integer, pointer, intent(inout) :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
+      character(len=FIELD_LENGTH), allocatable, intent(inout) :: link_template_a(:)
+      integer, intent(inout) :: link_template_n_lines
+      integer, intent(out), optional :: error
+
+      integer :: i_inner, i_outer, j
+      type(Inoutput) :: link_template_io
+
+      INIT_ERROR(error)
+
+      ! get qm_list and link_list
+      if (use_buffer) then
+	call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	call get_hybrid_list(at, old_qm_list, all_but_term=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
+      else
+	call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
+	call get_hybrid_list(at, old_qm_list, active_trans_only=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
+      endif
+      if (allocated(qm_list_a)) deallocate(qm_list_a)
+      if (allocated(old_qm_list_a)) deallocate(old_qm_list_a)
+      if (allocated(link_list_a)) deallocate(link_list_a)
+      if (allocated(old_link_list_a)) deallocate(old_link_list_a)
+      if (allocated(qm_and_link_list_a)) deallocate(qm_and_link_list_a)
+      allocate(qm_list_a(qm_list%N), old_qm_list_a(old_qm_list%N))
+      if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
+      if (old_qm_list%N > 0) old_qm_list_a = int_part(old_qm_list,1)
+      !get link list
+
+       if (assign_pointer(at,'cut_bonds'//trim(qm_name_suffix),cut_bonds_p)) then
+	  call initialise(cut_bonds,2,0,0,0,0)
+	  do i_inner=1,at%N
+	     do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
+		if (cut_bonds_p(j,i_inner) == 0) exit
+		! correct for new atom indices resulting from sorting of atoms
+		i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
+		call append(cut_bonds,(/i_inner,i_outer/))
+	     enddo
+	  enddo
+	  if (cut_bonds%N > 0) then
+	     call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
+	     allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
+	     qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
+	     qm_and_link_list_a(size(qm_list_a)+1:size(qm_list_a)+size(link_list_a)) = link_list_a(1:size(link_list_a))
+	  else
+	     allocate(link_list_a(0))
+	     allocate(qm_and_link_list_a(size(qm_list_a)))
+	     if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
+	  endif
+       else
+	  allocate(qm_and_link_list_a(size(qm_list_a)))
+	  if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
+       endif
+
+       call initialise(old_cut_bonds,2,0,0,0,0)
+       if(assign_pointer(at, 'old_cut_bonds'//trim(qm_name_suffix), old_cut_bonds_p)) then
+	  do i_inner=1,at%N
+	     do j=1,size(old_cut_bonds_p,1) !MAX_CUT_BONDS
+		if (old_cut_bonds_p(j,i_inner) == 0) exit
+		! correct for new atom indices resulting from sorting of atoms
+		i_outer = rev_sort_index(old_cut_bonds_p(j,i_inner))
+		call append(old_cut_bonds,(/i_inner,i_outer/))
+	     enddo
+	  enddo
+       end if
+
+       !If needed, read QM/MM link_template_file
+       if (size(link_list_a) > 0) then
+	  if (trim(link_template_file).eq."") then
+	    RAISE_ERROR("There are QM/MM links, but qmmm_link_template is not defined.",error)
+	  endif
+	  call initialise(link_template_io, trim(link_template_file), INPUT)
+	  call read_file(link_template_io, link_template_a, link_template_n_lines)
+	  call finalise(link_template_io)
+       end if
+   end subroutine get_qm_list
 
 end module cp2k_driver_template_module
