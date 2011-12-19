@@ -527,7 +527,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         return res
 
     def show(self, *args, **kwargs):
-        """Show this Atoms object in AtomEye."""
         try:
             import atomeye
             atomeye.show(self, *args, **kwargs)
@@ -535,7 +534,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             raise RuntimeError('AtomEye not available')
 
     def select(self, mask=None, list=None, orig_index=None):
-        """Select a subset of the atoms in an atoms object
+        """Select a subset of the atoms in an Atoms object
 
         Use either a logical mask array or a list of atom indices to include.
 
@@ -676,7 +675,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             (not self.fortran_indexing and (i < 0 or i > self.n-1)):
             raise IndexError('Atoms index out of range')
         atom = {}
-        atom['index'] = i
+        atom['_index'] = i
         atom['atoms'] = self
         for k in self.properties.keys():
             v = self.properties[k][...,i]
@@ -691,10 +690,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def print_atom(self, i):
         """Pretty-print the properties of the atom with index `i`"""
         at = self.get_atom(i)
-        title = 'Atom %d' % at['index']
+        title = 'Atom %d' % at['_index']
         title = title + '\n' + '-'*len(title)+'\n\n'
         fields = ['%-15s =  %s' % (k,at[k]) for k in sorted(at.keys())
-                                            if k not in ['index', 'atoms']]
+                                            if k not in ['_index', 'atoms']]
         print title+'\n'.join(fields)
 
     def density(self):
