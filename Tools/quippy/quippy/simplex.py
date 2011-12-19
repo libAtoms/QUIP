@@ -53,7 +53,7 @@ class DownhillSimplex(object):
 
         Sets minimisation tolerance to *ftol*, as a fraction of the
         function value (default 1e-6) and maximum number of function
-        evaluations to *nmax* (default 5000). *tiny* is estiamte of
+        evaluations to *nmax* (default 5000). *tiny* is estimate of
         machine precision (default 1e-10).
         """
         self.func = func
