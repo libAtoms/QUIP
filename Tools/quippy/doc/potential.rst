@@ -87,40 +87,42 @@
       you're doing MD you'll want to use a slightly larger cutoff so
       that new neighbours don't drift in between connectivity updates.
 
-   .. method:: calc(at[, e, local_e, f, df, virial, calc_energy, calc_force, calc_local_e, calc_df, calc_virial, args_str])
+   .. method:: calc(at[, energy, local_energy, force, virial, local_virial, args_str])
 
       Apply this Potential to the Atoms object `at`, which must have
       connectivity information (i.e. :meth:`Atoms.calc_connect` should
-      have been called). The optional arguments determine what should be
-      calculated and how it will be returned. Each physical quantity
-      has two correspond optional arguments. The first should be an array of
-      the correct shape to receive the quantity in question, as set out
-      in the table below. 
+      have been called). The optional arguments determine what should
+      be calculated and how it will be returned. Each physical
+      quantity has a corresponding optional argument, which can either
+      be an `True` to store the result inside the Atoms object
+      (i.e. in :attr:`Atoms.params` or in :attr:`Atoms.properties`) with
+      the default name, a string to specify a different property or
+      parameter name, or an array of the the correct shape to receive
+      the quantity in question, as set out in the table below.
 
-	================ =================== ============= ===========
-	Array argument   Logical argument    Quantity      Shape
-	================ =================== ============= ===========
-	`e`              `calc_energy`	     Energy        ``()``
-	`local_e`        `calc_local_e`	     Local energy  ``(at.n,)``
-	`f`              `calc_force`	     Force         ``(3,at.n)``
-	`virial`         `calc_virial`       Virial tensor ``(3,3)``
-	================ =================== ============= ===========
+	================  ============= =============== ================================
+	Array argument    Quantity      Shape           Default	storage location
+	================  ============= =============== ================================
+	`energy`          Energy        ``()``  	`energy` param
+	`local_energy`    Local energy  ``(at.n,)``     `local_energy` property
+	`force`           Force         ``(3,at.n)``    `force` property
+	`virial`          Virial tensor ``(3,3)``       `virial` param
+	`local_virial`    Local virial   ``(3,3,at.n)`` `local_virial` property
+	================  ============= =============== ================================
 
-      Note that for the energy `e`, a rank-0 array is required to
-      store the results of this calculation. This is necessary since
-      the underlying Fortran argument is both ``optional`` and
-      ``intent(out)``. We can avoid this inconvenience using the
-      `calc_energy` argument which returns the result in the `energy`
-      parameter of the Atoms object `at`. The same is true for the
-      other `calc` logical arguments listed in the table above.
+      For the energy, a rank-0 array is required to store the results
+      of this calculation. This is necessary since the underlying
+      Fortran argument is both ``optional`` and ``intent(out)``. We
+      can avoid this inconvenience by passing `energy=True` argument
+      which returns the result in the `energy` parameter of the Atoms
+      object `at`.
 
       The `args_str` argument can be a string or dictionary containing
       additional arguments which depend on the particular Potential
       being used. As mentioned in the documentation of
       :meth:`oo_fortran.FortranDerivedType._runroutine`, as a special
       case unexpected keyword arguments will be converted to
-      additional `args_str` options (in fact this is how the
-      `calc_energy` etc.  arguments are implemented).
+      additional `args_str` options.
 
       Not all Potentials support all of these quantities: a
       :exc:`RuntimeError` will be raised if you ask for something that
