@@ -38,7 +38,7 @@ def make_test(script, env=None):
                 print 'Predicate %s is false, skipping test' % predicate
                 return
             
-        exitcode = os.system(script)
+        exitcode = os.system("/bin/bash %s" % script)
         if exitcode != 0:
             self.fail()
 
