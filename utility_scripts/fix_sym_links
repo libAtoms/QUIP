@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Workaround for viewvc tarball export bug which loses symbolic links
+# (see http://viewvc.tigris.org/issues/show_bug.cgi?id=487)
+
+for file in $(find . -type f); do
+
+    # link files contain exactly one line and start with link, followed by source
+    if awk 'BEGIN {link = 0} NR == 1 && $1 == "link" {link=1} END { if (link==1 && NR==1) exit 1 }' $file; then
+	continue
+    fi
+	 
+    dir=$(dirname $file)
+    target=$(basename $file)
+    source=$(awk '{print $2}' $file)
+    (cd $dir; rm $target; ln -s $source $target)
+
+done
+echo FIXED_SYM_LINKS=1
