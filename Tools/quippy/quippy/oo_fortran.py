@@ -1028,6 +1028,13 @@ class FortranDerivedTypeArray(object):
 
     indices = property(iterindices)
 
+    def iteritems(self):
+        for idx in self.indices:
+            yield self[idx]
+
+    def __iter__(self):
+        return self.iteritems()
+
     def __len__(self):
         p = self.parent()
         if p is None:
