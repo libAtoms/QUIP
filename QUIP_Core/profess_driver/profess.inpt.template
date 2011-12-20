@@ -1,0 +1,18 @@
+ecut 600                    # The kinetic energy cutoff
+meth stn 
+KINE WGC 
+parameter lambda 1 
+parameter mu 1 
+parameter alpha 1.2060113295832982827348622781219
+parameter beta 0.46065533708336838393180438854479
+#parameter rho0 0.191917673799676
+#parameter rhoS 0.191917673799676
+exch lda 
+geometryfile Al4.ion
+print minimizer density 2   # Print lots of detail about electronic minimization 
+calc for
+calc str
+tran on
+
+rhof test.0.den
+prin den

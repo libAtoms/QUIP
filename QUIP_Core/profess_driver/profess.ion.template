@@ -1,0 +1,4 @@
+%BLOCK SPECIES_POT
+   Al al_HC.lda.recpot  
+%END BLOCK SPECIES_POT
+
