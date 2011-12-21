@@ -206,7 +206,11 @@ class PropertiesWrapper(DictMixin):
 
     def __getitem__(self, key):
         at = self.atref()
-        return at.properties[at.name_map.get(key, key)].view(np.ndarray).T
+        res = at.properties[at.name_map.get(key, key)].view(np.ndarray).T
+        if res.dtype == 'int32':   # convert dtype int32 -> int
+            warnings.warn('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
+            res = res.astype(int)
+        return res
 
     def __setitem__(self, key, value):
         at = self.atref()
