@@ -3004,9 +3004,6 @@ contains
     real(dp) :: norm_sum, norm_sum_new
     integer :: i, j, k, min_norm(1)
     logical :: any_accepted
-    real(dp) :: orig_lattice_inv(3,3)
-
-    call inverse(lat, orig_lattice_inv)
 
     ! create initial basis vectors from lattice and  -(a1+a2+a3)
     m(1:3,1:3) = lat(1:3,1:3)
