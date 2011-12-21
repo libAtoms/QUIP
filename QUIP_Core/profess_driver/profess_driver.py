@@ -21,13 +21,29 @@ else:
 infile=args[0]
 outfile=args[1]
 
-do_forces=False
+do_force=False
 do_virial=False
 for i in range(2,len(args)):
-   if args[i] == "force":
-      do_forces=True
-   if args[i] == "virial":
+   m=re.match("force=?(\S+)?", args[i])
+   if m is not None:
+      do_force=True
+      if m.group(1) is not None:
+	 force_field=m.group(1)
+      else:
+	 force_field="force"
+   m=re.match("virial=?(\S+)?", args[i])
+   if m is not None:
       do_virial=True
+      if m.group(1) is not None:
+	 virial_field=m.group(1)
+      else:
+	 virial_field="virial"
+   m=re.match("energy=?(\S+)?", args[i])
+   if m is not None:
+      if m.group(1) is not None:
+	 energy_field=m.group(1)
+      else:
+	 energy_field="energy"
 
 if do_virial:
    sys.stderr.write("No support for virial yet\n")
@@ -58,7 +74,7 @@ for l in f_inpt_template:
 f_inpt_template.close()
 
 f_inpt_out.write("geometryfile profess_driver.ion\n")
-if (do_forces):
+if (do_force):
    f_inpt_out.write("calc for\n")
 if (do_virial):
    f_inpt_out.write("calc str\n")
@@ -97,7 +113,6 @@ just_got_species_pot=False
 in_species_pot=False
 in_no_print=False
 for l in f_ion_template:
-   # print "l %s" % l.strip()
    if re.match("\s*%BLOCK\s+(LATTICE|POSITIONS)",l):
 	 in_no_print=True
    if re.match("\s*%END\s+BLOCK\s+(LATTICE|POSITIONS)",l):
@@ -113,7 +128,6 @@ for l in f_ion_template:
       in_species_pot=True
    elif (in_species_pot):
       fields=l.split()
-      # print "'%s' '%s'" % (fields[0].strip(), fields[1].strip())
       if not re.search('/', fields[1].strip()):
 	 os.system("cp ../%s %s" % (fields[1].strip(), fields[1].strip()))
 f_ion_template.close()
@@ -124,22 +138,22 @@ os.system(profess+" profess_driver")
 f_profess_out=open("profess_driver.trans")
 profess_out_ls=f_profess_out.readlines()
 energy=float(profess_out_ls[0].strip())
-forces_str=[]
-if (do_forces):
+force_str=[]
+if (do_force):
    for i in range(N_at):
-      forces_str.append(profess_out_ls[2+i].strip())
+      force_str.append(profess_out_ls[2+i].strip())
 
 f_pos_output=open("../"+args[1],"w")
 f_pos_output.write("%d\n" % N_at)
-f_pos_output.write("%s Energy=%f Properties=species:S:1:pos:R:3" % (lattice_str, energy))
-if (do_forces):
-   f_pos_output.write("forces:R:3")
+f_pos_output.write("%s %s=%f Properties=species:S:1:pos:R:3" % (lattice_str, energy_field, energy))
+if (do_force):
+   f_pos_output.write(":%s:R:3" % force_field)
 if (do_virial):
-   f_pos_output.write(" Virial=\"%f %f %f   %f %f %f   %f %f %f\"")
+   f_pos_output.write(" %s=\"%f %f %f   %f %f %f   %f %f %f\"" % virial_field)
 f_pos_output.write("\n")
 for i in range(N_at):
    f_pos_output.write(pos_lines[2+i])
-   if (do_forces):
-      f_pos_output.write(" "+forces_str[i])
+   if (do_force):
+      f_pos_output.write(" "+force_str[i])
    f_pos_output.write("\n")
 f_pos_output.close()
