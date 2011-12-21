@@ -2846,6 +2846,8 @@ contains
     call finalise(tmp_key)
     if (tmp_entry%type == T_CHAR) call finalise(tmp_entry%s)
 
+    this%key_cache_invalid = 1
+
   end subroutine dictionary_swap
 
   subroutine dictionary_bcast(mpi, dict, error)
