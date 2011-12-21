@@ -23,6 +23,7 @@ outfile=args[1]
 
 do_force=False
 do_virial=False
+energy_field="energy"
 for i in range(2,len(args)):
    m=re.match("force=?(\S+)?", args[i])
    if m is not None:
