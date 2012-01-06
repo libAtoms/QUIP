@@ -1263,7 +1263,7 @@ contains
     do while (.not. converged .and. (n_tries < max_n_tries))
       n_tries = n_tries + 1
 
-      cp2k_run_command = 'cd ' // trim(run_dir)//'; '//trim(cp2k_program)//' cp2k_input.inp >> cp2k_output.out'
+      cp2k_run_command = 'cd ' // trim(run_dir)//'; '//trim(cp2k_program)//' cp2k_input.inp >> cp2k_output.out 2>&1'
       call print("Doing '"//trim(cp2k_run_command)//"'")
       call system_timer('cp2k_run_command')
       call system_command(trim(cp2k_run_command), status=stat)
