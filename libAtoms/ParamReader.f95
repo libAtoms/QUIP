@@ -941,6 +941,8 @@ module paramreader_module
             status = .false.
             if (present(missing_keys)) then
                missing_keys = trim(missing_keys)//' '//string(dict%keys(i))
+            else
+               call print('missing mandatory parameter '//string(dict%keys(i)))
             endif
          end if
       end do
