@@ -520,6 +520,7 @@ contains
     at%pos(3,:) = at%pos(3,:) - centre_pos(3)
     ! move origin into center of CP2K box (0.5 0.5 0.5 lattice coords)
     call map_into_cell(at)
+    if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
     if (.not. at_periodic) then
       cp2k_box_centre_pos(1:3) = 0.5_dp*sum(at%lattice,2)
       at%pos(1,:) = at%pos(1,:) + cp2k_box_centre_pos(1)
@@ -554,7 +555,6 @@ contains
        endif
 
        ! set variables having to do with periodic configs
-       if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
        insert_pos = 0
        if (at_periodic) then
 	 call print("@SET PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
