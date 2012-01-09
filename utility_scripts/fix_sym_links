@@ -3,6 +3,10 @@
 # Workaround for viewvc tarball export bug which loses symbolic links
 # (see http://viewvc.tigris.org/issues/show_bug.cgi?id=487)
 
+if [[ $(svnversion) != "exported" ]]; then
+    exit 0
+fi
+
 for file in $(find . -type f); do
 
     # link files contain exactly one line and start with link, followed by source
