@@ -1272,13 +1272,15 @@ contains
       call system_command("fgrep -i 'warning' "//trim(run_dir)//"/cp2k_output.out")
       call system_command("fgrep -i 'error' "//trim(run_dir)//"/cp2k_output.out", status=error_stat)
       if (stat /= 0) then
-	RAISE_ERROR('cp2k_run_command has non zero return status ' // stat //'. check output file '//trim(run_dir)//'/cp2k_output.out', error)
+	! RAISE_ERROR('cp2k_run_command has non zero return status ' // stat //'. check output file '//trim(run_dir)//'/cp2k_output.out', error)
+	call print('WARNING: cp2k_run_command has non zero return status ' // stat //'. check output file '//trim(run_dir)//'/cp2k_output.out', error)
       endif
       if (error_stat == 0) then
-	RAISE_ERROR('cp2k_run_command generated ERROR message in output file '//trim(run_dir)//'/cp2k_output.out', error)
+	! RAISE_ERROR('cp2k_run_command generated ERROR message in output file '//trim(run_dir)//'/cp2k_output.out', error)
+	call print('WARNING: cp2k_run_command generated ERROR message in output file '//trim(run_dir)//'/cp2k_output.out', error)
       endif
 
-      call system_command('egrep "FORCE_EVAL.* QS " '//trim(run_dir)//'/cp2k_output.out',status=stat)
+      call system_command('egrep "QS" '//trim(run_dir)//'/cp2k_output.out',status=stat)
       if (stat == 0) then ! QS or QMMM run
 	call system_command('grep "FAILED to converge" '//trim(run_dir)//'/cp2k_output.out',status=stat)
 	if (stat == 0) then
