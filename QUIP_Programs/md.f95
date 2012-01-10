@@ -134,6 +134,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
+    call print("WARNING: md reading parameters from 'md_params' file, ignoring anything on command line", PRINT_ALWAYS)
     call initialise(es)
     call read(es, 'md_params', convert_to_string=.true., mpi_comm=mpi_glob%communicator)
     if (.not. param_read_line(md_params_dict, string(es))) then
@@ -141,12 +142,12 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
       call system_abort("Error reading params from md_params file")
     endif
     call finalise(es)
+  else
+     if (.not. param_read_args(md_params_dict)) then
+       call param_print_help(md_params_dict)
+       call system_abort("Error reading params from command line")
+     endif
   end if
-
-  if (.not. param_read_args(md_params_dict)) then
-    call param_print_help(md_params_dict)
-    call system_abort("Error reading params from command line")
-  endif
 
   if (len(trim(params%pot_init_args)) == 0) then
      call param_print_help(md_params_dict)
