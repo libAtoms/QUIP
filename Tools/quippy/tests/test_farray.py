@@ -411,6 +411,14 @@ class TestFortranArray(QuippyTestCase):
       self.assert_((self.f2 == 1).any())
       self.assertEqual(list((self.f2 >= 1).any(axis=1)), [True, True])
       self.assertEqual(list((self.f2 > 2).any(axis=2)), [True, True, True])      
+
+
+   def testincrement_in_place(self):
+      # test bug caused by not checking if indx is a custom integer class
+      # isinstance(indx, np.integer) in FortranArray.__setitem__()
+      f = fzeros((3,10), dtype=int)
+      f[numpy.int32(2)] += [1,2,3]
+      self.assert_(list(f[1]) ==  [0,0,0] and list(f[2]) ==  [1,2,3])
       
       
 if __name__ == '__main__':

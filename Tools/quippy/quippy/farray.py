@@ -266,7 +266,7 @@ class FortranArray(numpy.ndarray):
             if any([isinstance(x,numpy.ndarray) for x in indx]): doext = True
             if any([isinstance(x,list) for x in indx]): doext = True
             if len(indx) != len(self.shape): domap = False
-        elif isinstance(indx, int):
+        elif isinstance(indx, int) or isinstance(indx, numpy.integer):
             if len(self.shape) != 1:
                 domap = False
                 indx = (Ellipsis, indx)
