@@ -24,7 +24,7 @@ from quippy.mockndarray import mockNDarray
 from quippy.farray import *
 import numpy as np
 
-__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList']
+__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList', 'read_dataset']
 
 class AtomsReaderMixin(object):
     def __repr__(self):
@@ -107,32 +107,35 @@ class AtomsReader(AtomsReaderMixin):
         self.opened = False
         self.reader = source
 
-        if format is None:
-            if isinstance(self.reader, str):
-                self.opened = True
-                if self.reader in AtomsReaders:
+        if isinstance(self.reader, str):
+            self.opened = True
+            if self.reader in AtomsReaders:
+                if format is None:
                     format = self.reader
+            elif format != 'string':
+                self.reader = os.path.expanduser(self.reader)
+                glob_list = sorted(glob.glob(self.reader))
+                if (len(glob_list) == 0):
+                    raise IOError("input file '%s' not found" % self.reader)
+                if len(glob_list) > 1:
+                    self.reader = glob_list
                 else:
-                    self.reader = os.path.expanduser(self.reader)
-                    glob_list = sorted(glob.glob(self.reader))
-                    if (len(glob_list) == 0):
-                        raise IOError("input file '%s' not found" % self.reader)
-                    if len(glob_list) > 1:
-                        self.reader = glob_list
-                    else:
-                        self.reader = glob_list[0]
-                        filename, self.reader, format = infer_format(self.reader, format, AtomsReaders)
+                    self.reader = glob_list[0]
+                    filename, self.reader, new_format = infer_format(self.reader, format, AtomsReaders)
+                    if format is None:
+                        format = new_format
 
         if format is None:
             format = self.reader.__class__
 
-        if format in AtomsReaders:
-            self.reader = AtomsReaders[format](self.reader, **kwargs)
 
         # special case if source is a list or tuple of filenames or glob patterns
         if isinstance(self.reader, list) or isinstance(self.reader, tuple):
             if all(isinstance(item, str) for item in self.reader):
-                self.reader = AtomsSequenceReader(self.reader, **kwargs)
+                self.reader = AtomsSequenceReader(self.reader, format=format, **kwargs)
+        else:
+            if format in AtomsReaders:
+                self.reader = AtomsReaders[format](self.reader, **kwargs)
 
         if isinstance(self.reader, str):
             raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
@@ -380,3 +383,15 @@ class AtomsSequenceReader:
             for at in reader:
                 yield at
 
+
+def read_dataset(dirs, pattern):
+    """
+    Read atomic configurations matching glob `pattern` from each of
+    the directories in `dir` in turn.
+
+    Returns an dictionary mapping directories to AtomsList instances.
+    """
+    dataset = {}
+    for dir in dirs:
+        dataset[dir] = AtomsList(os.path.join(dir, pattern))
+    return dataset
