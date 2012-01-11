@@ -244,6 +244,9 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, local_vir
   call set_value(at_copy%params, 'calc_local_virial', calc_local_virial)
   call set_value(at_copy%params, 'callback_id', this%callback_id)
   call set_value(at_copy%params, 'label', this%label)
+  if (present(args_str)) then
+     call set_value(at_copy%params, 'calc_args_str', args_str)
+  end if
 
   at_ptr%p => at_copy
   at_ptr_i = transfer(at_ptr, at_ptr_i)
