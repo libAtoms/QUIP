@@ -135,6 +135,7 @@ def quip_xml_parameters(name, label=None):
 
 def is_interactive_shell():
     """Return True if we're running in an interactive shell (including IPython)"""
+
     if hasattr(sys, 'ps1'):
         return True
     try:
@@ -143,3 +144,24 @@ def is_interactive_shell():
         return False
     else:
         return True
+
+
+def read_text_file(fh):
+    """
+    Read all lines of text from a file
+
+    fh can be a file, file-like object or filename. If `fh` is a
+    filename, file is automatically opened and closed.
+
+    Returns a tuple (filename, lines).
+    """
+
+    opened = False
+    filename = fh
+    if isinstance(fh, basestring):
+        fh = open(fh, 'r')
+        opened = True
+    lines = [line for line in fh]
+    if opened:
+        fh.close()
+    return filename, lines
