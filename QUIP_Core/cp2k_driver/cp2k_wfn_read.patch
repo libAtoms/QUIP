@@ -1,0 +1,29 @@
+Index: qs_initial_guess.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/qs_initial_guess.F,v
+retrieving revision 1.108
+diff -u -r1.108 qs_initial_guess.F
+--- qs_initial_guess.F	26 May 2011 16:43:08 -0000	1.108
++++ qs_initial_guess.F	12 Jan 2012 15:24:55 -0000
+@@ -56,7 +56,7 @@
+                                              section_vals_type
+   USE kinds,                           ONLY: default_path_length,&
+                                              dp
+-  USE message_passing,                 ONLY: mp_sum
++  USE message_passing,                 ONLY: mp_sum, mp_bcast
+   USE particle_types,                  ONLY: get_particle_set,&
+                                              particle_type
+   USE qs_collocate_density,            ONLY: collocate_atomic_charge_density
+@@ -223,7 +223,11 @@
+     ! in sync with read_mo_set_from_restart
+     id_nr=0
+     IF (density_guess == restart_guess) THEN
+-        CALL wfn_restart_file_name(file_name,exist,dft_section,logger,error=error)
++CALL wfn_restart_file_name(file_name,exist,dft_section,logger,error=error)
++print *, "WARNING: calculate_first_density_matrix exist ", exist, qs_env%para_env%mepos
++	if (qs_env%para_env%ionode) &
++	   CALL wfn_restart_file_name(file_name,exist,dft_section,logger,error=error)
++	call mp_bcast(exist, qs_env%para_env%source, qs_env%para_env%group)
+         IF (.NOT.exist) THEN
+            CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
+                 "User requested to restart the wavefunction from the file named: "//&
