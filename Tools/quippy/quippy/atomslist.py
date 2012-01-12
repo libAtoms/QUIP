@@ -107,7 +107,7 @@ class AtomsReader(AtomsReaderMixin):
         self.opened = False
         self.reader = source
 
-        if isinstance(self.reader, str):
+        if isinstance(self.reader, basestring):
             self.opened = True
             if self.reader in AtomsReaders:
                 if format is None:
@@ -125,19 +125,24 @@ class AtomsReader(AtomsReaderMixin):
                     if format is None:
                         format = new_format
 
-        if format is None:
-            format = self.reader.__class__
+        # special case if source is a list or tuple of filenames
+        is_filename_sequence = False
+        if (isinstance(self.reader, list) or isinstance(self.reader, tuple)):
+            for item in self.reader:
+                if not isinstance(item, basestring) or not os.path.exists(item):
+                    break
+            else:
+                is_filename_sequence = True
 
-
-        # special case if source is a list or tuple of filenames or glob patterns
-        if isinstance(self.reader, list) or isinstance(self.reader, tuple):
-            if all(isinstance(item, str) for item in self.reader):
-                self.reader = AtomsSequenceReader(self.reader, format=format, **kwargs)
+        if is_filename_sequence:
+            self.reader = AtomsSequenceReader(self.reader, format=format, **kwargs)
         else:
+            if format is None:
+                format = self.reader.__class__
             if format in AtomsReaders:
                 self.reader = AtomsReaders[format](self.reader, **kwargs)
 
-        if isinstance(self.reader, str):
+        if isinstance(self.reader, basestring):
             raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
 
         if not hasattr(self.reader, '__iter__'):
@@ -197,7 +202,7 @@ class AtomsReader(AtomsReaderMixin):
         if not self.random_access:
             raise IndexError('This AtomsReader does not support random access')
 
-        if isinstance(frame, int):
+        if isinstance(frame, int) or isinstance(frame, np.integer):
             source_len = self._source_len or len(self.reader)
             if self.start is not None or self.stop is not None or self.step is not None:
                 frame = range(*slice(self.start, self.stop, self.step).indices(source_len))[frame]
@@ -361,7 +366,7 @@ class AtomsSequenceReader:
         if None in self.lengths:
             raise IndexError('One or more sources in %r do not support random access' % self.sources)
 
-        if isinstance(index,int):
+        if isinstance(index,int) or isinstance(index, np.integer):
             if index < 0: index = index + sum(self.lengths)
 
             idx = 0
