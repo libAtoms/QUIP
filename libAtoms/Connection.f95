@@ -125,7 +125,7 @@ module Connection_module
      module procedure connection_neighbour_minimal
   endinterface
 
-  public :: add_bond, remove_bond, cell_of_pos, connection_cells_initialise
+  public :: add_bond, remove_bond, remove_bonds, cell_of_pos, connection_cells_initialise
   public :: connection_fill, divide_cell, fit_box_in_cell, get_min_max_images
   public :: max_cutoff, partition_atoms, cell_n
 
@@ -692,6 +692,37 @@ contains
     end do ! while r_index /= 0
 
   end subroutine remove_bond
+
+  
+   !% Remove all bonds listed in the Table `bonds` from connectivity 
+   subroutine remove_bonds(this, at, bonds, error)
+     type(Connection), intent(inout) :: this
+     type(Atoms), intent(in) :: at
+     type(Table), intent(in) :: bonds
+     integer, intent(out), optional :: error
+
+     logical :: bond_exists
+     integer :: i, j, ji
+     integer :: shift(3)
+
+     INIT_ERROR(error)
+
+     do i=1,bonds%N
+        bond_exists = .false.
+        do ji=1, n_neighbours(this,bonds%int(1,i))
+           j = neighbour(this, at, bonds%int(1,i), ji, shift=shift)
+           if (j == bonds%int(2,i)) then
+              bond_exists = .true.
+              exit
+           endif
+        end do
+        if (bond_exists) then
+           call remove_bond(this, bonds%int(1,i), bonds%int(2,i), shift, error=error)
+           PASS_ERROR(error)
+        endif
+     end do
+   end subroutine remove_bonds
+
 
 
   !%  As for 'calc_connect', but perform the connectivity update
