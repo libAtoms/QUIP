@@ -5,6 +5,7 @@ MANDATORY patches for cp2k source:
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
 
 RECOMMENDED patches:
+  cp2k_wfn_read.patch (makes cp2k only check for wfn existence on ionode)
   cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
   cp2k_fft_lib.patch (fixes dependencies for MKL fft library)
   cp2k_reftraj.patch (enables &REFTRAJ&WAIT in cp2k, which QUIP uses for cp2k_filepot persistent connections)
