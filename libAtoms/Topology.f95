@@ -109,7 +109,7 @@ contains
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
   subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
-       form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, error)
+       form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, bonds_to_remove, error)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -120,6 +120,7 @@ contains
     logical,     optional, intent(in)    :: silica_pos_dep_charges
     real(dp), intent(in), optional :: silica_charge_transfer
     logical, intent(in), optional :: have_titania_potential
+    type(Table), optional, intent(in) :: bonds_to_remove
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -171,6 +172,11 @@ contains
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
+
+    if (present(bonds_to_remove)) then
+       call remove_bonds(t_connect, at, bonds_to_remove, error=error)
+       PASS_ERROR(error)
+    end if
 
     ! now create labels using this connectivity object
     if (do_find_silica_residue) then
@@ -1155,7 +1161,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
   end subroutine write_cp2k_pdb_file
 
   subroutine write_psf_file_arb_pos(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,&
-                                    pos_field_for_connectivity,form_bond,break_bond, error)
+                                    pos_field_for_connectivity,form_bond,break_bond, bonds_to_remove, error)
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(inout) :: at
     character(len=*), optional, intent(in) :: run_type_string
@@ -1164,6 +1170,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     logical,          optional, intent(in) :: add_silica_23body
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
     integer, optional, intent(in) :: form_bond(2), break_bond(2)
+    type(Table), optional, intent(in) :: bonds_to_remove
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -1204,6 +1211,11 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
+
+    if (present(bonds_to_remove)) then
+       call remove_bonds(t_connect, at, bonds_to_remove, error=error)
+       PASS_ERROR(error)
+    end if
 
     ! now create labels using this connectivity object
     ! if cutoff is set to 0, nneighb_only doesn't matter
@@ -2424,6 +2436,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
   endsubroutine find_AB_monomer
 
+       
    subroutine break_form_bonds(at, conn, form_bond, break_bond, error)
       type(Atoms), intent(in) :: at
       type(Connection), intent(inout) :: conn
