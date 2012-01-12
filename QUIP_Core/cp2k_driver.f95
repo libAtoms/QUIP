@@ -58,7 +58,8 @@ contains
     integer, intent(out), optional :: error
 
     type(Dictionary) :: cli
-    character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
+    character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
+         topology_suffix, qmmm_link_type, qmmm_link_qm_kind
     logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer, persistent
     integer :: clean_up_keep_n, persistent_restart_interval
     integer :: max_n_tries
@@ -79,18 +80,19 @@ contains
     character(len=FIELD_LENGTH) :: run_dir
 
     type(Table) :: qm_list, old_qm_list
-    type(Table) :: cut_bonds, old_cut_bonds
+    type(Table) :: cut_bonds, old_cut_bonds, bonds_to_remove
     integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
     integer, allocatable :: qm_list_a(:), old_qm_list_a(:)
-    integer, allocatable :: link_list_a(:), old_link_list_a(:)
+    integer, allocatable :: link_list_a(:), old_link_list_a(:), inner_link_list_a(:)
     integer, allocatable :: qm_and_link_list_a(:)
-    integer :: i_inner, i_outer
+    integer :: i_inner, i_outer, shift(3)
     integer :: counter
 
     integer :: charge, old_charge
     logical :: do_lsd, old_do_lsd
 
-    logical :: can_reuse_wfn, qm_list_changed, qm_link_list_changed
+    logical :: can_reuse_wfn, qm_list_changed, qmmm_link_list_changed, &
+         qmmm_same_lattice, qmmm_use_mm_charges, qmmm_link_fix_pbc
     character(len=FIELD_LENGTH) :: qm_name_suffix
 
     logical :: use_QM, use_MM, use_QMMM
@@ -107,7 +109,7 @@ contains
     integer :: res_num_silica !lam81
     type(Table) :: intrares_impropers
 
-    integer, pointer :: sort_index_p(:)
+    integer, pointer :: sort_index_p(:), mol_id_p(:)
     integer, allocatable :: rev_sort_index(:)
     type(Inoutput) :: rev_sort_index_io, persistent_run_i_io, persistent_cell_file_io, persistent_traj_io
     character(len=1024) :: l
@@ -116,8 +118,7 @@ contains
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
-    real(dp) :: d
-    integer shift(3)
+    real(dp) :: disp(3)
 
     character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
     character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
@@ -125,7 +126,8 @@ contains
     character(len=FIELD_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
     logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels
-    integer :: persistent_run_i, persistent_frc_size
+    integer :: persistent_run_i, persistent_frc_size, qm_mol_id, n_hydrogen, old_n_hydrogen, n_extra_electrons, old_n_extra_electrons
+    integer :: qmmm_link_n_electrons
 
     type(inoutput) :: cp2k_input_io, cp2k_input_tmp_io
     real(dp) :: wait_time, persistent_max_wait_time
@@ -184,6 +186,13 @@ contains
       call param_register(cli, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
       call param_register(cli, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
       call param_register(cli, 'create_residue_labels', 'T', create_residue_labels, help_string="If true, recreate residue labels each time PSF file is generated (default T)")
+      call param_register(cli, 'qmmm_link_type', 'IMOMM', qmmm_link_type, help_string="Type of QMMM links to create: one of IMOMM, PSEUDO or QM_KIND. Default IMOMM")
+      call param_register(cli, 'qmmm_link_qm_kind', '', qmmm_link_qm_kind, help_string="QM kind to use for inner boundary atoms when qmmm_link_type=QM_KIND")
+      call param_register(cli, 'qmmm_link_n_electrons', '1', qmmm_link_n_electrons, help_string="Number of electrons to add per QM-MM link when qmmm_link_type=QM_KIND")
+      call param_register(cli, 'qmmm_same_lattice', 'F', qmmm_same_lattice, help_string="If true, use full original MM lattice for QM calculation")
+      call param_register(cli, 'qmmm_use_mm_charges', 'T', qmmm_use_mm_charges, help_string="If true (default) use classical point charges of atoms in QM region to calculate total DFT charge")
+      call param_register(cli, 'qmmm_link_fix_pbc', 'T', qmmm_link_fix_pbc, help_string="If true (default) move outer atoms in any QM links which straddle a periodic boundary so link is continous")
+
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) then
 	RAISE_ERROR('cp2k_driver could not parse argument line', error)
@@ -249,6 +258,13 @@ contains
     call print('  MM_param_file '//trim(MM_param_filename))
     call print('  QM_potential_file '//trim(QM_pot_filename))
     call print('  QM_basis_file '//trim(QM_basis_filename))
+    call print('  create_residue_labels '//create_residue_labels)
+    call print('  qmmm_link_type '//trim(qmmm_link_type))
+    call print('  qmmm_link_qm_kind '//trim(qmmm_link_qm_kind))
+    call print('  qmmm_link_n_electrons '//qmmm_link_n_electrons)
+    call print('  qmmm_same_lattice '//qmmm_same_lattice)
+    call print('  qmmm_use_mm_charges '//qmmm_use_mm_charges)
+    call print('  qmmm_link_fix_pbc '//qmmm_link_fix_pbc)
 
     if (auto_centre .and. has_centre_pos) then
       RAISE_ERROR("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin", error)
@@ -457,32 +473,34 @@ contains
       end if
     end if
 
+    if (trim(qmmm_link_type) /= 'IMOMM' .and. &
+        trim(qmmm_link_type) /= 'PSEUDO' .and. &
+        trim(qmmm_link_type) /= 'QM_KIND') then
+       RAISE_ERROR("Unknown value for qmmm_link_type "//trim(qmmm_link_type)//" - should be one of IMOMM, PSEUDO, QM_KIND", error)
+    end if
+
+    if (trim(qmmm_link_type) == "QM_KIND") then
+       if (trim(qmmm_link_qm_kind) == '') then
+          RAISE_ERROR("qmmm_link_type == QM_KIND, but qmmm_link_qm_kind not specified", error)
+       end if
+
+       ! If we remove the QM-MM link bonds then QM and MM regions will be disconnected.
+       ! We need to make QM region a separate molecule so that CP2K doesn't complain
+       ! about discontigous molecules.
+
+       call assign_property_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p, error=error)
+       PASS_ERROR(error)
+       call assign_property_pointer(at, 'mol_id', mol_id_p, error=error)
+       PASS_ERROR(error)
+       qm_mol_id = maxval(mol_id_p) + 1
+       do i=1,at%n
+          if (cluster_mark_p(i) /= HYBRID_NO_MARK) mol_id_p(i) = qm_mol_id
+       end do
+    end if
+
     call do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
       tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error=error)
     PASS_ERROR_WITH_INFO("Failed to sort atoms in do_cp2k_calc", error)
-
-
-    ! write PSF file, if requested
-    if (run_type /= "QS") then
-      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	! we should fail for persistent_already_started=T, but this should have been dealt with above
-	if (has_property(at, 'avgpos')) then
-	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential .and. silica_add_23_body,form_bond=form_bond,break_bond=break_bond)
-	else if (has_property(at, 'pos')) then
-	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
-	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential .and. silica_add_23_body, pos_field_for_connectivity='pos',form_bond=form_bond,break_bond=break_bond)
-	else
-	  RAISE_ERROR("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos", error)
-	endif
-	! write sort order
-	call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=OUTPUT)
-	call print(rev_sort_index, file=rev_sort_index_io)
-	call finalise(rev_sort_index_io)
-      endif
-    endif
-    call system_timer('do_cp2k_calc/make_psf')
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     allocate(qm_list_a(0), old_qm_list_a(0))
@@ -492,7 +510,7 @@ contains
    if (use_QMMM) then
       call get_qm_list(at, use_buffer, trim(qm_name_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 		       link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-		       link_template_a, link_template_n_lines, error)
+		       link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
       PASS_ERROR(error)
    endif
 
@@ -505,6 +523,29 @@ contains
       method = 'QS'
     endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    ! write PSF file, if requested
+    if (run_type /= "QS") then
+      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	! we should fail for persistent_already_started=T, but this should have been dealt with above
+	if (has_property(at, 'avgpos')) then
+	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
+	    add_silica_23body=have_silica_potential .and. silica_add_23_body, form_bond=form_bond,break_bond=break_bond, bonds_to_remove=bonds_to_remove)
+	else if (has_property(at, 'pos')) then
+	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
+	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
+	    add_silica_23body=have_silica_potential .and. silica_add_23_body, pos_field_for_connectivity='pos',  &
+            form_bond=form_bond,break_bond=break_bond, bonds_to_remove=bonds_to_remove)
+	else
+	  RAISE_ERROR("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos", error)
+	endif
+	! write sort order
+	call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=OUTPUT)
+	call print(rev_sort_index, file=rev_sort_index_io)
+	call finalise(rev_sort_index_io)
+      endif
+    endif
+    call system_timer('do_cp2k_calc/make_psf')
 
     if (auto_centre) then
       if (qm_list%N > 0) then
@@ -520,6 +561,7 @@ contains
     at%pos(3,:) = at%pos(3,:) - centre_pos(3)
     ! move origin into center of CP2K box (0.5 0.5 0.5 lattice coords)
     call map_into_cell(at)
+
     if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
     if (.not. at_periodic) then
       cp2k_box_centre_pos(1:3) = 0.5_dp*sum(at%lattice,2)
@@ -587,7 +629,16 @@ contains
 	 call print('WARNING! Please check if your cell is centreed around the QM region!',PRINT_ALWAYS)
 	 call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',PRINT_ALWAYS)
 	 call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',PRINT_ALWAYS)
-	 cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
+         if (qmmm_same_lattice) then
+            if (.not. at%is_orthorhombic) then
+               RAISE_ERROR("qmmm_same_lattice=T but original at%lattice is not orthorhombic", error)
+            end if
+            cur_qmmm_qm_abc(1) = at%lattice(1,1)
+            cur_qmmm_qm_abc(2) = at%lattice(2,2)
+            cur_qmmm_qm_abc(3) = at%lattice(3,3)
+         else
+            cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
+         end if
 	 call print("@SET QMMM_ABC_X "//cur_qmmm_qm_abc(1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 call print("@SET QMMM_ABC_Y "//cur_qmmm_qm_abc(2), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 call print("@SET QMMM_ABC_Z "//cur_qmmm_qm_abc(3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -637,11 +688,26 @@ contains
 	 call print("@SET QMMM_QM_KIND_FILE cp2k_input.qmmm_qm_kind", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 !Add QM atoms
 	 counter = 0
+         if (trim(qmmm_link_type) == "QM_KIND") then
+            ! get unique list of inner link atoms - these are the atoms at boundary of QM region
+            call uniq(cut_bonds%int(1,1:cut_bonds%N), inner_link_list_a)
+            call print("&QM_KIND "//trim(qmmm_link_qm_kind), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+            do i=1,size(inner_link_list_a)
+               call print("  MM_INDEX "//inner_link_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+               counter = counter + 1
+            end do
+            call print("&END QM_KIND", file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
+            deallocate(inner_link_list_a)
+         end if
 	 do at_Z=minval(at%Z), maxval(at%Z)
 	   if (any(at%Z(qm_list_a) == at_Z)) then
 	     call print("&QM_KIND "//trim(ElementName(at_Z)), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 	     do i=1, size(qm_list_a)
 	       if (at%Z(qm_list_a(i)) == at_Z) then
+                 if (trim(qmmm_link_type) == "QM_KIND") then
+                    ! skip inner link atoms
+                    if (is_in_array(cut_bonds%int(1,1:cut_bonds%N), qm_list_a(i))) cycle
+                 end if
 		 call print("  MM_INDEX "//qm_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
 		 counter = counter + 1
 	       endif
@@ -655,7 +721,7 @@ contains
 	 endif
 
 	 !Add link sections from template file for each link
-	 if (size(link_list_a).gt.0) then
+	 if (size(link_list_a).gt.0 .and. trim(qmmm_link_type) /= "QM_KIND") then
 	    call print("@SET DO_QMMM_LINK 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	    call print("@SET QMMM_LINK_FILE cp2k_input.link", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	    call initialise(cp2k_input_tmp_io, trim(run_dir)//'/cp2k_input.link',OUTPUT)
@@ -673,15 +739,15 @@ contains
 	    call finalise(cp2k_input_tmp_io)
 
             ! check if set of cut bonds has changed
-            qm_link_list_changed = .false.
+            qmmm_link_list_changed = .false.
             if (cut_bonds%N > 0 .and. old_cut_bonds%N > 0) then
                do i=1,at%N
                   if (any(cut_bonds_p(:,i) /= old_cut_bonds_p(:,i))) then
-                     qm_link_list_changed = .true.
+                     qmmm_link_list_changed = .true.
                      exit
                   end if
                end do
-               if (qm_link_list_changed) can_reuse_wfn = .false.
+               if (qmmm_link_list_changed) can_reuse_wfn = .false.
             end if
 
 	 endif ! size(link_list_a) > 0
@@ -692,12 +758,28 @@ contains
        call print("@SET DO_DFT_QM_CHARGES 0", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
        ! put in things needed for QM
        if (use_QM) then
-         call calc_charge_lsd(at, old_qm_list_a, old_charge, old_do_lsd, n_hydrogen=old_cut_bonds%N, &
-              hydrogen_charge=hydrogen_charge, error=error)
-         PASS_ERROR(error)
-         call calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen=cut_bonds%N, &
-              hydrogen_charge=hydrogen_charge, error=error)
-	 PASS_ERROR(error)
+          
+          if (trim(qmmm_link_type) == "QM_KIND") then
+             old_n_hydrogen = 0
+             n_hydrogen = 0
+             old_n_extra_electrons = qmmm_link_n_electrons*old_cut_bonds%N
+             n_extra_electrons = qmmm_link_n_electrons*cut_bonds%N
+          else
+             old_n_hydrogen = old_cut_bonds%N
+             n_hydrogen = cut_bonds%N
+             old_n_extra_electrons = 0
+             n_extra_electrons = 0
+          end if
+
+          call calc_charge_lsd(at, old_qm_list_a, old_charge, old_do_lsd, n_hydrogen=old_n_hydrogen, &
+               hydrogen_charge=hydrogen_charge, n_extra_electrons=old_n_extra_electrons, &
+               use_mm_charges=qmmm_use_mm_charges, error=error)
+          PASS_ERROR(error)
+          call calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen=n_hydrogen, &
+               hydrogen_charge=hydrogen_charge, n_extra_electrons=n_extra_electrons, &
+               use_mm_charges=qmmm_use_mm_charges, error=error)
+          PASS_ERROR(error)
+
          if (old_do_lsd .neqv. do_lsd) can_reuse_wfn = .false.
          call print('Setting DFT charge to '//charge//' and LSD to '//do_lsd)
 	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -711,6 +793,7 @@ contains
             call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
             call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
             call print("@SET HSI_CHARGE "//hydrogen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+            call print("@SET OSTAR_CORE_CORRECTION "//(1.0_dp - silicon_charge/4.0_dp), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
          end if
 	 if (try_reuse_wfn .and. can_reuse_wfn) then 
 	   if (persistent) then
@@ -791,17 +874,20 @@ contains
     endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    if (size(link_list_a) > 0) then
-       ! assert that no links cross a periodic boundary since
+    if (at_periodic .and. size(link_list_a) > 0 .and. qmmm_link_fix_pbc) then
+       ! correct position of OUTER atoms so no links cross a periodic boundary since
        ! if they did, CP2K would place terminating hydrogens incorrectly
+       
        do i=1,cut_bonds%N
           i_inner = cut_bonds%int(1,i)
           i_outer = cut_bonds%int(2,i)
-          d = distance_min_image(at, i_inner, i_outer, shift=shift)
+          
+          disp = diff_min_image(at, i_inner, i_outer, shift=shift)
           if (any(shift /= 0)) then
-             RAISE_ERROR("QM/MM link "//i_inner//"--"//i_outer//" has non-zero shift ("//shift//"). This is not allowed!", error)
+             call print('Unwrapping QM/MM link '//i_inner//'-'//i_outer//' by shift '//shift)
+             at%pos(:,i_outer) = at%pos(:,i_outer) + (at%lattice .mult. shift) 
           end if
-       enddo
+       end do
     endif
 
     ! prepare xyz file for input to cp2k
@@ -1000,7 +1086,8 @@ contains
 	  sorted = .true.
        endif
     endif
-
+    
+    if (allocated(rev_sort_index)) deallocate(rev_sort_index)
     allocate(rev_sort_index(at%N))
     do at_i=1, at%N
        rev_sort_index(sort_index_p(at_i)) = at_i
@@ -1127,7 +1214,7 @@ contains
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
     call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p,error=error)
-    PASS_ERROR_WITH_INFO("cp2k_driver read_output failed to reorder atmos", error)
+    PASS_ERROR_WITH_INFO("cp2k_driver read_output failed to reorder atoms", error)
 
     call print('')
     call print('The energy of the system: '//e)
@@ -1330,19 +1417,19 @@ contains
 
   end function qmmm_qm_abc
 
-  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, skip_residues, n_hydrogen, hydrogen_charge, error) !lam81
+  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen, hydrogen_charge, &
+       n_extra_electrons, use_mm_charges, error) !lam81
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     integer, intent(out) :: charge
     logical, intent(out) :: do_lsd
-    integer, intent(in), optional :: skip_residues(:)
-    integer, intent(in), optional :: n_hydrogen
-    real(dp), intent(in), optional :: hydrogen_charge
+    integer, intent(in) :: n_hydrogen
+    real(dp), intent(in) :: hydrogen_charge
+    integer, intent(in) :: n_extra_electrons
+    logical, intent(in) :: use_mm_charges
     integer, intent(out), optional :: error
 
     real(dp), pointer :: atom_charge(:)
-    integer :: i                          
-    integer, pointer :: atom_res_number(:)
     integer, pointer  :: Z_p(:)
     integer           :: sum_Z
     integer           :: l_error
@@ -1354,42 +1441,25 @@ contains
 	RAISE_ERROR("calc_charge_lsd could not find Z property", error)
     endif
 
-    if (present(n_hydrogen) .and. .not. present(hydrogen_charge) .or. &
-         .not.(present(n_hydrogen) .and. present(hydrogen_charge))) then
-       RAISE_ERROR("either both or none of n_hydrogen and hydrogen_charge should be present", error)
-    end if
-
     if (size(qm_list_a) > 0) then
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) then
 	RAISE_ERROR("calc_charge_lsd could not find atom_charge", error)
       endif
-      if (.not. assign_pointer(at, "atom_res_number", atom_res_number)) then !lam81
-        RAISE_ERROR("calc_charge_lsd could not find atom_res_number", error) !lam81
-      endif                                                                  !lam81
-
-      if(.not. present(skip_residues)) then
-       sum_charge = sum(atom_charge(qm_list_a))
-      else
-       sum_charge = 0.0_dp
-       do i=1, size(qm_list_a)
-        if(find_in_array(skip_residues, atom_res_number(qm_list_a(i))) /= 0) cycle
-        sum_charge = sum_charge + atom_charge(qm_list_a(i))
-       enddo
-      endif
-      sum_charge = sum_charge + n_hydrogen*hydrogen_charge ! terminating hydrogens
+      sum_charge = 0.0_dp
+      if (use_mm_charges) then
+         sum_charge = sum(atom_charge(qm_list_a))
+      end if
+      call print('sum_charge before correction = '//sum_charge)
+      if (use_mm_charges) then
+         call print('n_hydrogen = '//n_hydrogen//', n_extra_electrons = '//n_extra_electrons)
+         sum_charge = sum_charge + n_hydrogen*hydrogen_charge ! terminating hydrogens
+      end if
+      sum_charge = sum_charge - n_extra_electrons
       call print('sum_charge = '//sum_charge)
       charge = nint(sum_charge)
       
       !check if we have an odd number of electrons
-      if(.not. present(skip_residues)) then
-       sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
-      else
-       sum_Z = 0
-       do i=1, size(qm_list_a)
-        if(find_in_array(skip_residues, atom_res_number(qm_list_a(i))) /= 0) cycle
-        sum_Z = sum_Z +Z_p(qm_list_a(i))
-       enddo
-      endif
+      sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
       sum_Z = sum_Z + n_hydrogen ! include terminating hydrogens
       call print('sum_Z = '//sum_Z)
       do_lsd = (mod(sum_Z-charge,2) /= 0)
@@ -1508,14 +1578,14 @@ contains
 
    subroutine get_qm_list(at, use_buffer, qm_name_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 			  link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-			  link_template_a, link_template_n_lines, error)
+			  link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
       type(Atoms), intent(inout) :: at
       logical, intent(in) :: use_buffer
-      character(len=*), intent(in) :: qm_name_suffix, link_template_file
+      character(len=*), intent(in) :: qm_name_suffix, link_template_file, qmmm_link_type
       type(Table), intent(inout) :: qm_list, old_qm_list
       integer, allocatable, intent(inout) :: qm_list_a(:), old_qm_list_a(:), link_list_a(:), old_link_list_a(:), qm_and_link_list_a(:)
       integer, intent(in) :: rev_sort_index(:)
-      type(Table), intent(inout) :: cut_bonds, old_cut_bonds
+      type(Table), intent(inout) :: cut_bonds, old_cut_bonds, bonds_to_remove
       integer, pointer, intent(inout) :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
       character(len=FIELD_LENGTH), allocatable, intent(inout) :: link_template_a(:)
       integer, intent(inout) :: link_template_n_lines
@@ -1581,8 +1651,14 @@ contains
 	  enddo
        end if
 
+       ! list of bonds to be removed from the topology
+       call initialise(bonds_to_remove, 2, 0, 0, 0)
+       if (trim(qmmm_link_type) == "QM_KIND") then
+          call append(bonds_to_remove, cut_bonds)
+       end if
+
        !If needed, read QM/MM link_template_file
-       if (size(link_list_a) > 0) then
+       if (size(link_list_a) > 0 .and. trim(qmmm_link_type) /= "QM_KIND") then
 	  if (trim(link_template_file).eq."") then
 	    RAISE_ERROR("There are QM/MM links, but qmmm_link_template is not defined.",error)
 	  endif
