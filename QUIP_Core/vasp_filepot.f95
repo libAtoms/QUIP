@@ -274,20 +274,37 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
 end subroutine write_vasp_potcar
 
 subroutine write_vasp_poscar(at, run_dir, error)
-   type(Atoms), intent(in) :: at
+   type(Atoms), intent(inout) :: at
    character(len=*), intent(in) :: run_dir
    integer, intent(out), optional :: error
 
    integer, allocatable :: uniq_Z(:), n_Z(:)
    integer :: i
+   logical :: swapped_a1_a2
+   real(dp) :: vol, t_lat(3)
 
    type(inoutput) :: io
 
    INIT_ERROR(error)
 
+   vol = scalar_triple_product(at%lattice(:,1), at%lattice(:,2), at%lattice(:,3))
+   if (vol < 0.0_dp) then
+      t_lat(:) = at%lattice(:,1)
+      at%lattice(:,1) = at%lattice(:,2)
+      at%lattice(:,2) = t_lat(:)
+      swapped_a1_a2 = .true.
+   else
+      swapped_a1_a2 = .false.
+   endif
+
    call initialise(io, trim(run_dir)//"/POSCAR",action=OUTPUT)
-   call print("QUIP VASP run "//trim(run_dir), file=io)
+   if (swapped_a1_a2) then
+      call print("QUIP VASP run "//trim(run_dir)//" swapped a1 and a2", file=io)
+   else
+      call print("QUIP VASP run "//trim(run_dir), file=io)
+   endif
    call print("1.00 ! scale factor", file=io)
+
    call print(at%lattice(:,1), file=io)
    call print(at%lattice(:,2), file=io)
    call print(at%lattice(:,3), file=io)
@@ -406,6 +423,8 @@ subroutine read_vasp_incar_dict(incar_dict, incar_template_file, error)
    integer :: i, j
 
    INIT_ERROR(error)
+
+   call system_command("fgrep -i 'error' vasp.stdout")
 
    call initialise(incar_io, trim(incar_template_file), INPUT)
    call read_file(incar_io, incar_a, incar_n_lines)

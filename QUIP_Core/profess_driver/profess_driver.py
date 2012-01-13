@@ -156,15 +156,31 @@ if m is None:
    sys.stderr.write("Failed to parse Lattice from %s\n" % infile)
    sys.exit(2)
 lattice_str=m.group(0)
-f_ion_out.write("%BLOCK LATTICE_CART\n")
-f_ion_out.write("%s %s %s\n" % (m.group(1), m.group(2), m.group(3)))
-f_ion_out.write("%s %s %s\n" % (m.group(4), m.group(5), m.group(6)))
-f_ion_out.write("%s %s %s\n" % (m.group(7), m.group(8), m.group(9)))
-f_ion_out.write("%END BLOCK LATTICE_CART\n")
+
 lattice=[
    [ float(m.group(1)), float(m.group(4)), float(m.group(7)) ],
    [ float(m.group(2)), float(m.group(5)), float(m.group(8)) ],
    [ float(m.group(3)), float(m.group(6)), float(m.group(9)) ] ]
+# make right handed
+vol = scalar_triple_product( [ lattice[0][0], lattice[1][0], lattice[2][0] ], [ lattice[0][1], lattice[1][1], lattice[2][1] ], [ lattice[0][2], lattice[1][2], lattice[2][2] ] )
+if (vol < 0):
+   t_00 = lattice[0][0]
+   t_10 = lattice[1][0]
+   t_20 = lattice[2][0]
+   lattice[0][0] = lattice[0][1]
+   lattice[1][0] = lattice[1][1]
+   lattice[2][0] = lattice[2][1]
+   lattice[0][1] = t_00
+   lattice[1][1] = t_10
+   lattice[2][1] = t_20
+# now proceed
+
+f_ion_out.write("%BLOCK LATTICE_CART\n")
+f_ion_out.write("%s %s %s\n" % (lattice[0][0], lattice[1][0], lattice[2][0]))
+f_ion_out.write("%s %s %s\n" % (lattice[0][1], lattice[1][1], lattice[2][1]))
+f_ion_out.write("%s %s %s\n" % (lattice[0][2], lattice[1][2], lattice[2][2]))
+f_ion_out.write("%END BLOCK LATTICE_CART\n")
+
 lattice_inv=inverse_3x3(
    float(m.group(1)), float(m.group(2)), float(m.group(3)),
    float(m.group(4)), float(m.group(5)), float(m.group(6)),
