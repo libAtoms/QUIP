@@ -389,14 +389,15 @@ class AtomsSequenceReader:
                 yield at
 
 
-def read_dataset(dirs, pattern):
+def read_dataset(dirs, pattern, **kwargs):
     """
     Read atomic configurations matching glob `pattern` from each of
-    the directories in `dir` in turn.
+    the directories in `dir` in turn. All kwargs are passed along
+    to AtomsList constructor.
 
     Returns an dictionary mapping directories to AtomsList instances.
     """
     dataset = {}
     for dir in dirs:
-        dataset[dir] = AtomsList(os.path.join(dir, pattern))
+        dataset[dir] = AtomsList(os.path.join(dir, pattern), **kwargs)
     return dataset
