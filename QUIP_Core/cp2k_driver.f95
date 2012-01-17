@@ -47,6 +47,8 @@ integer, parameter, private :: CP2K_LINE_LENGTH = 1024 !Max line length to be pr
 
 public :: do_cp2k_calc
 
+public :: read_output, qmmm_qm_abc, calc_charge_lsd
+
 
 contains
 
@@ -935,12 +937,13 @@ contains
 	  endif
        end do ! waiting for frc file
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
-	 do_calc_virial, out_i=persistent_run_i, error=error)
+            do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
        PASS_ERROR(error)
     else
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), do_calc_virial, error=error)
+       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, &
+            trim(calc_qm_charges), do_calc_virial, save_reordering_index=.false., error=error)
        PASS_ERROR(error)
     endif
 
@@ -1116,7 +1119,8 @@ contains
 
   end subroutine do_cp2k_atoms_sort
 
-  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, do_calc_virial, out_i, error)
+  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, do_calc_virial, &
+       save_reordering_index, out_i, error)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
@@ -1124,10 +1128,11 @@ contains
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
     character(len=*) :: calc_qm_charges
-    logical :: do_calc_virial
+    logical :: do_calc_virial, save_reordering_index
     integer, intent(in), optional :: out_i
     integer, intent(out), optional :: error
 
+    integer, pointer :: reordering_index_p(:)
     real(dp), pointer :: qm_charges_p(:)
     real(dp) :: at_net_charge
     type(Atoms) :: f_xyz, p_xyz
@@ -1211,10 +1216,18 @@ contains
     endif
     f = force_p
 
+    nullify(reordering_index_p)
+    if (save_reordering_index) then
+       if (.not. assign_pointer(at, "reordering_index", reordering_index_p)) then
+          call add_property(at, "reordering_index", 0, ptr=reordering_index_p)
+       endif
+    end if
+
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
-    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p,error=error)
-    PASS_ERROR_WITH_INFO("cp2k_driver read_output failed to reorder atoms", error)
+    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p, &
+         reordering_index_p, error=error)
+    PASS_ERROR_WITH_INFO("cp2k_driver read_output failed to reorder atmos", error)
 
     call print('')
     call print('The energy of the system: '//e)
@@ -1229,13 +1242,15 @@ contains
 
   end subroutine read_output
 
-  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f, qm_charges_p,error)
+  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f, qm_charges_p, &
+       reordering_index_p, error)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: qmmm_qm_abc(3)
     real(dp), intent(in) :: new_p(:,:)
     real(dp), intent(inout) :: new_f(:,:)
     real(dp), intent(inout), pointer :: qm_charges_p(:)
+    integer, intent(out), pointer :: reordering_index_p(:)
     integer, optional, intent(out) :: error
 
     real(dp) :: shift(3)
@@ -1274,6 +1289,13 @@ contains
 	 exit
       endif
     end do
+
+    if (associated(reordering_index_p)) then
+       if (size(reordering_index_p) < size(reordering_index)) then
+          RAISE_ERROR("save_reordering_index too small", error)
+       end if
+       reordering_index_p(1:size(reordering_index)) = reordering_index
+    end if
 
     new_f(1,reordering_index(:)) = new_f(1,:)
     new_f(2,reordering_index(:)) = new_f(2,:)

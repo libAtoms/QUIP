@@ -217,12 +217,16 @@ import quippy.netcdf
 import quippy.imd
 import quippy.vasp
 import quippy.dan
-import quippy.cp2k
+
+if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:
+    import quippy.cp2k
+    from quippy.cp2k import *
+    __all__.extend(quippy.cp2k.__all__)
 
 try:
     import quippy.castep
 except ImportError:
-    logging.warning('quippy.castep import quippy.failed.')
+    logging.debug('quippy.castep import quippy.failed.')
 
 if 'atomeye' in available_modules:
     import atomeye

@@ -275,6 +275,9 @@ def find_wrap_sources(makefile, quip_root):
     if do_crack:
         wrap_sources += [os.path.join(quip_utils_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
         wrap_types += ['crackparams', 'crackmdparams']
+
+    if 'HAVE_CP2K' in makefile and int(makefile['HAVE_CP2K']) == 1:
+        wrap_sources.append(os.path.join(quip_core_dir, 'cp2k_driver.f95'))
         
     return source_dirs, wrap_sources, wrap_types, libraries, targets
 
