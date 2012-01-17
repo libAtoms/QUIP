@@ -16,51 +16,152 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+import sys
+import os
+import numpy as np
+from quippy.system import verbosity_push, verbosity_pop, PRINT_SILENT
 from quippy.atoms import Atoms, atoms_reader
-from quippy.farray import fzeros, s2a, farray
+from quippy.farray import fzeros, s2a, farray, fenumerate
 from quippy.table import TABLE_STRING_LENGTH
-from quippy.units import MASSCONVERT
+from quippy.units import MASSCONVERT, HARTREE, BOHR
+from quippy.clusters import HYBRID_NO_MARK
+from quippy.potential import Potential
+from quippy.ordereddict import OrderedDict
+from quippy.util import read_text_file
+from quippy.cp2k_driver_template import do_cp2k_calc, read_output, qmmm_qm_abc
 
-__all__ = ['CP2KOutputReader']
+__all__ = ['CP2KPotential', 'CP2KInputHeader']
 
+class CP2KPotential(Potential):
+    """
+    QUIP Potential interface to the CP2K code.
+
+    Calls do_cp2k_calc() in QUIP_Core/cp2k_driver.f95 to do the heavy lifting
+    """
+    def __init__(self, fortran_indexing=True,
+                 fpointer=None, finalise=True,
+                 error=None):
+        Potential.__init__(self, callback=self.do_cp2k_calc)
+
+    def do_cp2k_calc(self, at):
+        args_str = at.params.get('calc_args_str', '')
+        cp2k_force, cp2k_energy = do_cp2k_calc(at, args_str, 3, at.n)
+        at.add_property('force', cp2k_force, overwrite=True)
+        at.params['energy'] = cp2k_energy
+
+
+class CP2KInputHeader(OrderedDict):
+    """
+    Read a cp2k_input.inp.header file and parse into an ordered dictionary.
+    """
+
+    def __init__(self, filename=None):
+        OrderedDict.__init__(self)
+        if filename is not None:
+            self.read(filename)
+
+    def read(self, filename):
+        filename, lines = read_text_file(filename)
+        for line in lines:
+            dummy, key, value = line.split()
+            self[key] = value
+
+    def write(self, filename=None):
+        if filename is None:
+            filename = sys.stdout
+        if isinstance(filename, basestring):
+            file = open(filename, 'w')
+        else:
+            file = filename
+    
+        for (key, value) in self.iteritems():
+            file.write('@SET %s %s\n' % (key, value))
+            
+        if isinstance(filename, basestring):            
+            file.close()
+
+
+def cp2k_run_type(cp2k_output=None, cp2k_input_header=None):
+    """
+    Find the run type of the CP2K calculation.
+
+    Either `cp2k_output` or `cp2k_input_header` should be present.
+    When both are givenm we check output is consistent with input,
+    raising a ValueError if not.
+
+    Returns one of 'QS', 'MM' or 'QMMM'.
+    """
+
+    if cp2k_output is None and cp2k_input_header is None:
+        raise ValueError("atlest one of cp2k_output and cp2k_input_header must be present")
+
+    if cp2k_output is not None:
+        got_fist = " MODULE FIST:  ATOMIC COORDINATES IN angstrom\n" in cp2k_output
+        got_qs   = " MODULE QUICKSTEP:  ATOMIC COORDINATES IN angstrom\n" in cp2k_output
+        got_qmmm = " MODULE QM/MM:  ATOMIC COORDINATES IN angstrom\n" in cp2k_output
+        got_modules = (got_fist, got_qs, got_qmmm)
+
+    if cp2k_input_header is not None:
+        do_fist = int(cp2k_input_header['DO_MM'])
+        do_qs = int(cp2k_input_header['DO_DFT'])
+        do_qmmm = int(cp2k_input_header['DO_QMMM'])
+        got_modules = (do_fist, do_qs, do_qmmm)
+
+    if cp2k_output is not None and cp2k_input_header is not None:
+        if (do_fist != got_fist or do_qs != got_qs or do_qmmm != got_qmmm):
+            raise ValueError("CP2K output inconsitent with cp2k input header")
+
+    if got_modules == (True, True, True):
+        return "QMMM"
+    elif got_modules == (True, False, False):
+        return "MM"
+    elif got_modules == (False, True, False):
+        return "QS"
+    else:
+        raise ValueError("Got inconsistent set of modules got_fist=%s, got_qs=%s, got_qmmm+%s" % got_modules)
+    
+
+@atoms_reader('cp2k_output.out')
 @atoms_reader('cp2k_output')
-def CP2KOutputReader(fh, module='QUICKSTEP', type_map=None, kind_map=None):
+def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None):
+
+    # mapping from run type to (default module index, list of available module)
+    run_types = {
+        'QS':   ['QUICKSTEP'],
+        'QMMM': ['FIST', 'QM/MM', 'QUICKSTEP'],
+        'MM' :  ['FIST']
+        }
+
+    filename, lines = read_text_file(fh)
+    run_type = cp2k_run_type(cp2k_output=lines)
+    
     if type_map is None:
         type_map = {}
     if kind_map is None:
         kind_map = {}
 
-    if module == 'QS': module = 'QUICKSTEP'
-    if module not in ('FIST', 'QUICKSTEP', 'QM/MM'):
-        raise ValueError('Unknown CP2K module %s' % module)
-    
-    opened = False
-    filename = fh
-    if type(fh) == type(''):
-        fh = open(fh, 'r')
-        opened = True
-    lines = fh.readlines()
-    if opened:
-        fh.close()
+    try:
+        available_modules = run_types[run_type]
+    except KeyError:
+        raise ValueError('Unknown CP2K run type %s' % run_type)
+
+    if module is None:
+        module = available_modules[0]
+
+    try:
+        cell_index = available_modules.index(module)
+    except IndexError:
+        raise ValueError("Don't know how to read module %s from file %s" % (module, filename))
 
     cell_lines = [i for i,line in enumerate(lines) if line.startswith(" CELL| Vector a")]
     if cell_lines == []:
         raise ValueError("Cannot find cell in file %s" % filename)
 
-    if module == 'FIST':
-        cell_line = cell_lines[0]
-    elif module == 'QM/MM':
-        try:
-            cell_line = cell_lines[1]
-        except IndexError:
-            raise ValueError("Cannot file QMMM cell in file %s" % filename)
-    elif module == 'QUICKSTEP':
-        try:
-            cell_line = cell_lines[2]
-        except IndexError:
-            raise ValueError("Cannot file QUICKSTEP cell in file %s" % filename)
-    else:
-        raise ValueError("Don't know how to find cell for module %s" % module)
+    try:
+        cell_line = cell_lines[cell_index]
+    except IndexError:
+        raise ValueError("Cannot find cell with index %d in file %s for module %s" %
+                         (cell_index, filename, module))
 
     lattice = fzeros((3,3))
     for i in [0,1,2]:
@@ -116,3 +217,75 @@ def CP2KOutputReader(fh, module='QUICKSTEP', type_map=None, kind_map=None):
         at.add_property('zeff', Zeffs)
 
     yield at
+
+
+@atoms_reader('cp2k_run_dir')
+def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
+                        calc_virial=False, out_i=None, qm_vacuum=6.0, qm_name_suffix='_extended'):
+    if at_ref is None:
+        filepot_xyz = os.path.join(run_dir, 'filepot.xyz')
+        if not os.path.exists(filepot_xyz):
+            # try looking up one level 
+            filepot_xyz = os.path.join(run_dir, '../filepot.xyz')
+
+        if os.path.exists(filepot_xyz):
+            at_ref = Atoms(filepot_xyz)
+        else:
+            at_ref = Atoms(os.path.join(run_dir, 'cp2k_output.out'),
+                           format='cp2k_output')
+
+    at = at_ref.copy()
+
+    cp2k_output_filename, cp2k_output = read_text_file(os.path.join(run_dir, 'cp2k_output.out'))
+    cp2k_params = CP2KInputHeader(os.path.join(run_dir, 'cp2k_input.inp.header'))
+    at.params.update(cp2k_params)
+
+    run_type = cp2k_run_type(cp2k_output=cp2k_output, cp2k_input_header=cp2k_params)
+
+    try:
+        cluster_mark = getattr(at, 'cluster_mark'+qm_name_suffix)
+        qm_list_a = ((cluster_mark != HYBRID_NO_MARK).nonzero()[0]).astype(np.int32)
+    except AttributeError:
+        qm_list_a = fzeros(0, dtype=np.int32)
+
+    if calc_qm_charges is None:
+        calc_qm_charges = ''
+
+    try:
+        cur_qmmm_qm_abc = [float(cp2k_params['QMMM_ABC_X']),
+                           float(cp2k_params['QMMM_ABC_Y']),
+                           float(cp2k_params['QMMM_ABC_Z'])]
+    except KeyError:
+        if 'QM_cell'+qm_name_suffix in at.params:
+            cur_qmmm_qm_abc = at.params['QM_cell'+qm_name_suffix]
+        else:
+            cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
+
+    verbosity_push(PRINT_SILENT)
+    cp2k_energy, cp2k_force = read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj,
+                                          calc_qm_charges, calc_virial, True, 3, at.n, out_i)
+    verbosity_pop()
+
+    qm_list = None
+    if os.path.exists('%s/cp2k_input.qmmm_qm_kind' % run_dir):
+        qm_kind_grep_cmd = "grep MM_INDEX %s/cp2k_input.qmmm_qm_kind | awk '{print $2}'" % run_dir
+        qm_list = [int(i) for i in os.popen(qm_kind_grep_cmd).read().split()]
+
+    if qm_list is not None:
+        if run_type == 'QMMM':
+            reordering_index = getattr(at, 'reordering_index', None)
+
+            at.add_property('qm', False, overwrite=True)
+            if reordering_index is not None:
+                qm_list = reordering_index[qm_list]
+            at.qm[qm_list] = True
+        elif run_type == 'QS':
+            at.add_property('qm_orig_index', 0, overwrite=True)
+            for i, qm_at in fenumerate(qm_list):
+                at.qm_orig_index[i] = qm_at
+
+    at.add_property('force', cp2k_force, overwrite=True)
+    at.params['energy'] = cp2k_energy
+    yield at
+
+
