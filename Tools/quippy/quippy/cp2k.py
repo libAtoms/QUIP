@@ -267,7 +267,7 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
     verbosity_pop()
 
     qm_list = None
-    if os.path.exists('%s/cp2k_input.qmmm_qm_kind' % run_dir):
+    if os.path.exists(os.path.join(run_dir, 'cp2k_input.qmmm_qm_kind')):
         qm_kind_grep_cmd = "grep MM_INDEX %s/cp2k_input.qmmm_qm_kind | awk '{print $2}'" % run_dir
         qm_list = [int(i) for i in os.popen(qm_kind_grep_cmd).read().split()]
 
@@ -280,12 +280,53 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
                 qm_list = reordering_index[qm_list]
             at.qm[qm_list] = True
         elif run_type == 'QS':
+
+            # check for a reverse sort index, and apply to qm_list if found
+            rev_sort_index_file = os.path.join(run_dir, 'quip_rev_sort_index')
+            if os.path.exists(rev_sort_index_file):
+                rev_sort_index = farray(np.loadtxt(rev_sort_index_file))
+                rev_sort_index = rev_sort_index.reshape(rev_sort_index.size).astype(int)
+                sort_index = rev_sort_index.argsort()
+            else:
+                sort_index = farray(np.arange(1, at.n+1))
+            
             at.add_property('qm_orig_index', 0, overwrite=True)
             for i, qm_at in fenumerate(qm_list):
-                at.qm_orig_index[i] = qm_at
+                at.qm_orig_index[i] = sort_index[qm_at]
+
+            
+        
 
     at.add_property('force', cp2k_force, overwrite=True)
     at.params['energy'] = cp2k_energy
     yield at
 
 
+
+def read_cp2k_qm_kind(fh):
+    """
+    Read a file in cp2k_input.qmmm_qm_kind
+
+    This is the format produced by the QUIP cp2k_driver.
+    Returns a list of tuples (qm_kind, atom_indices).
+    """
+    
+    filename, lines = read_text_file(fh)
+    qm_kinds = []
+    current_qm_kind = None
+    current_indices = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith('&QM_KIND'):
+            current_qm_kind = line.split()[1]
+            current_indices = []
+        elif line.startswith('&END QM_KIND'):
+            qm_kinds.append((current_qm_kind,current_indices))
+        elif line.startswith('MM_INDEX'):
+            index = int(line.split()[1])
+            current_indices.append(index)
+        else:
+            raise ValueError('Unexpected line %r' % line)
+
+    return qm_kinds
+    
