@@ -1,4 +1,4 @@
 2
-Lattice="0.5 0.5 0.0   0.5 0.0 0.5  0.0 0.5 0.5" Properties=Z:I:1:pos:R:3 Z_values='6'
+Lattice="0.5 0.5 0.0   0.5 0.0 0.5  0.0 0.5 0.5" Properties=Z:I:1:pos:R:3 Z_values='S 6'
 1 0.0 0.0 0.0
 1 0.25 0.25 0.25

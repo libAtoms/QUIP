@@ -1916,12 +1916,11 @@ contains
     type(Atoms) :: cell
     real(dp) :: vol, scale
     integer :: stat
-    logical :: cell_has_Z_values, args_have_Z_values
-    integer :: Z_values_i
+    character(len=FIELD_LENGTH) :: Z_values_str_use
+    character(len=FIELD_LENGTH), allocatable :: Z_values_a(:)
     integer, allocatable :: Z_values(:), new_Z(:)
-    integer :: i, n_types
+    integer :: i, n_types, n_fields
     real(dp) :: u_vol_per_atom, u_vol_per_unit_cell
-    type(Dictionary) :: Z_values_params
     integer :: l_error
 
     INIT_ERROR(error)
@@ -1960,38 +1959,34 @@ contains
       call print("  $QUIP_STRUCTS_DIR", PRINT_ALWAYS)
       call print("  $QUIP_ROOT/structures", PRINT_ALWAYS)
       call print("  $HOME/share/quip_structures", PRINT_ALWAYS)
-      RAISE_ERROR("file not found", error)
+      RAISE_ERROR("file '"//trim(struct_file)//"' not found", error)
     endif
 
     n_types=maxval(cell%Z)-minval(cell%Z) + 1
     allocate(Z_values(n_types))
     allocate(new_Z(cell%N))
 
-    if (n_types == 1) then
-      cell_has_Z_values = get_value(cell%params, "z_values", Z_values_i)
-      Z_values(1) = Z_values_i
-    else
-      cell_has_Z_values = get_value(cell%params, "z_values", Z_values)
-    endif
-    args_have_Z_values = .false.
     if (present(Z_values_str)) then
-      if (len_trim(Z_values_str) > 0) then
-	call initialise(Z_values_params)
-	if (n_types == 1) then
-	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values_i, help_string="No help yet.  This source file was $LastChangedBy$")
-	else
-	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values, help_string="No help yet.  This source file was $LastChangedBy$")
-	endif
-	if (.not. param_read_line(Z_values_params, 'Z_values="'//trim(Z_values_str)//'"', ignore_unknown=.true.)) then
-	  call system_abort("Z_values '"//trim(Z_values_str)//"' specified on command line, but can't be parsed to find "//n_types//" Z values")
-	else ! succeeded in parsing
-	  if (n_types == 1) Z_values(1) = Z_values_i
-	endif
-	call finalise(Z_values_params)
+      Z_values_str_use = trim(Z_values_str)
+    endif
+    if (len_trim(Z_values_str_use) <= 0) then
+      if (.not. get_value(cell%params, "z_values", Z_values_str_use)) then
+	RAISE_ERROR("structure_from_file: no appropriate Z values in cell file or Z_values_str argument", error)
       endif
     endif
-    if (.not. cell_has_Z_values .and. .not. args_have_Z_values) &
-      call system_abort("structure_from_file could not find appropriate Z values in cell file or Z_values_str argument")
+
+    allocate(Z_values_a(n_types+1))
+    call split_string_simple(trim(Z_values_str_use), Z_values_a, n_fields, " ", error)
+    PASS_ERROR(error)
+
+    if (n_fields /= n_types+1) then
+      RAISE_ERROR("structure_from_file: got n_types="//n_types//" but n_types+1 /= n_fields="//n_fields, error)
+    endif
+
+    do i=1, n_types
+      read (unit=Z_values_a(i+1),fmt=*) Z_values(i)
+    end do
+    deallocate(Z_values_a)
 
     do i=1, n_types
       where (cell%Z == i)
@@ -2004,7 +1999,7 @@ contains
     if (u_vol_per_atom > 0.0_dp) then
       scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * (cell%N*u_vol_per_atom)**(1.0_dp/3.0_dp)
     else
-      scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * u_vol_per_atom**(1.0_dp/3.0_dp)
+      scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * u_vol_per_unit_cell**(1.0_dp/3.0_dp)
     endif
     call set_lattice(cell, cell%lattice*scale, scale_positions=.true.)
     call supercell(dup_cell, cell, repeat(1), repeat(2), repeat(3))

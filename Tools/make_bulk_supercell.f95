@@ -21,7 +21,7 @@ implicit none
   if (.not. param_read_args(cli_params)) then
     call print("Usage: make_bulk_supercell struct=[struct_name] outfile=[filename](stdout)", PRINT_ALWAYS)
     call print("       [ vol_per_atom=volume | vol_per_unit_cell=volume ] [ repeat='n1 n2 n3'(1 1 1) ]", PRINT_ALWAYS)
-    call print("       [ Z_values='Z1 Z2 ...' ]", PRINT_ALWAYS)
+    call print("       [ Z_values='S Z1 Z2 ...' ]", PRINT_ALWAYS)
     call print("In addition, struct names that do not begin with . or / will be searched for", PRINT_ALWAYS)
     call print("  in $QUIP_DIR/structures/ or $HOME/share/quip_structures/, in that order", PRINT_ALWAYS)
     call system_abort("Failed to parse command line arguments")
