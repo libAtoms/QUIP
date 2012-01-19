@@ -782,6 +782,7 @@ contains
                use_mm_charges=qmmm_use_mm_charges, error=error)
           PASS_ERROR(error)
 
+         if (old_charge /= charge) can_reuse_wfn = .false.
          if (old_do_lsd .neqv. do_lsd) can_reuse_wfn = .false.
          call print('Setting DFT charge to '//charge//' and LSD to '//do_lsd)
 	 call print("@SET DFT_CHARGE "//charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
@@ -797,7 +798,8 @@ contains
             call print("@SET HSI_CHARGE "//hydrogen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
             call print("@SET OSTAR_CORE_CORRECTION "//(1.0_dp - silicon_charge/4.0_dp), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
          end if
-	 if (try_reuse_wfn .and. can_reuse_wfn) then 
+	 if (try_reuse_wfn .and. can_reuse_wfn) then            
+           call print('Reusing wavefunction from last time')
 	   if (persistent) then
 	      call print("@SET WFN_FILE_NAME quip-RESTART.wfn", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	   else
