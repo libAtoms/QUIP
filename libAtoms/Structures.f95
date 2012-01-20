@@ -3070,4 +3070,40 @@ contains
 
    end function delaunay_reduce
 
+   function map_nearest_atoms(at1, at2, types)
+      type(Atoms), intent(inout) :: at1, at2
+      integer, intent(in) :: types(:)
+      real(dp) :: map_nearest_atoms
+
+      integer, pointer :: mapping1(:), mapping2(:)
+      integer :: i, j, min_j
+      real(dp) :: dist, min_dist
+
+      call add_property(at1, "mapping", 0, ptr=mapping1, overwrite=.true.)
+      call add_property(at2, "mapping", 0, ptr=mapping2, overwrite=.true.)
+
+      map_nearest_atoms = 0.0_dp
+
+      do i=1, at1%N
+	 if (mapping1(i) > 0) cycle
+	 if (find_in_array(types, at1%Z(i)) <= 0) cycle
+
+	 min_dist = huge(1.0_dp)
+	 do j=1, at2%N
+	    if (mapping2(j) > 0) cycle
+	    if (at1%Z(i) /= at2%Z(j)) cycle
+	    if (find_in_array(types, at2%Z(j)) <= 0) cycle
+
+	    dist = distance_min_image(at1, i, at2%pos(:,j))
+	    if (dist < min_dist) then
+	       min_dist = dist
+	       min_j = j
+	    end if
+	 end do
+	 mapping1(i) = min_j
+	 mapping2(min_j) = i
+	 map_nearest_atoms = map_nearest_atoms + min_dist**2
+      end do
+   end function map_nearest_atoms
+
 end module structures_module
