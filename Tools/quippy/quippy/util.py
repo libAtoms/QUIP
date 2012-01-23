@@ -19,10 +19,11 @@
 """Utility functions which will be imported into top-level quippy namespace"""
 
 import sys, os, xml.dom.minidom
+from dictmixin import PuPyDictionary
 
 __all__ = ['infer_format', 'args_str', 'parse_slice',
            'parse_comma_colon_list', 'loadstring',
-           'quip_xml_parameters', 'is_interactive_shell']
+           'quip_xml_parameters', 'is_interactive_shell', 'parse_params']
 
 def infer_format(file, format, lookup):
     """Infer the correct format to read from or write to `file`
@@ -51,7 +52,6 @@ def infer_format(file, format, lookup):
 
 def args_str(D):
     """Construct args string from file, string or mapping object"""
-    from dictmixin import PuPyDictionary
     return str(PuPyDictionary(D))
 
 def parse_slice(S):
@@ -62,6 +62,12 @@ def parse_slice(S):
             return idx
 
     return eval('SliceParser()[%s]' % S)
+
+def parse_params(s):
+   """Read key=value pairs from a string or list of string and return a standard Python dictionary"""
+   p = PuPyDictionary(s)
+   return dict(p)
+   
 
 def parse_comma_colon_list(L):
     """Parse a comma or colon seperated string into a list, converting each entry to lower-case."""
