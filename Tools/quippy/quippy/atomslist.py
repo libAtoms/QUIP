@@ -90,6 +90,9 @@ class AtomsReader(AtomsReaderMixin):
     def __init__(self, source, format=None, start=None, stop=None, step=None,
                  cache_mem_limit=0, **kwargs):
 
+        def file_exists(f):
+            return f == "stdin" or os.path.exists(f)
+
         self.source = source
         self.format = format
         self.start = start
@@ -129,7 +132,7 @@ class AtomsReader(AtomsReaderMixin):
         is_filename_sequence = False
         if (isinstance(self.reader, list) or isinstance(self.reader, tuple)):
             for item in self.reader:
-                if not isinstance(item, basestring) or not os.path.exists(item):
+                if not isinstance(item, basestring) or not file_exists(item):
                     break
             else:
                 is_filename_sequence = True
