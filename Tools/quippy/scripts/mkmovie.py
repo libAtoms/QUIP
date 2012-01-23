@@ -161,7 +161,7 @@ if opt.merge is not None:
    for k in opt.merge_properties:
       a0.add_property(k, getattr(merge_config, k))
 
-view = atomeye.AtomEyeView(nowindow=opt.nowindow)
+view = atomeye.AtomEyeViewer(nowindow=opt.nowindow)
 view.show(a0, property=opt.property, arrows=opt.arrows)
 
 if opt.load_view is not None:
