@@ -78,7 +78,11 @@ def fortran_equivalent_type(t):
     if type(t).__name__ in tmap:
         return (tmap[type(t).__name__], 'scalar', 1)
     elif isinstance(t, FortranDerivedType):
-        return ('type(%s)' % t.__class__.__name__.lower(), 'scalar', 1)
+        for typename,cls in FortranDerivedTypes.iteritems():
+            if isinstance(t, cls):
+                return (typename, 'scalar', 1)
+        else:
+            raise TypeError('Unknown derived type %s' % t)
     elif hasattr(t,'__iter__') or hasattr(t,'dtype'):
         a = np.array(t)
         if a.dtype.kind in numpy_to_fortran:
