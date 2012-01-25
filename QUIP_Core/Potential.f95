@@ -605,7 +605,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     use_calc_energy = trim(calc_energy)
     if (present(energy) .and. len_trim(calc_energy) == 0) then ! have optional and no args_str - make new name for param
        use_calc_energy = "energy"
-       do while (lookup_entry_i(at%params, trim(calc_energy)) > 0)
+       do while (lookup_entry_i(at%params, trim(use_calc_energy)) > 0)
 	 use_calc_energy = "T"//trim(use_calc_energy)
        end do
        extra_args_str = trim(extra_args_str) // " energy="//trim(use_calc_energy)
@@ -631,7 +631,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     use_calc_virial = trim(calc_virial) ! have optional and no args_str - make new name for param
     if (present(virial) .and. len_trim(calc_virial) == 0) then
        use_calc_virial = "virial"
-       do while (lookup_entry_i(at%params, trim(calc_virial)) > 0)
+       do while (lookup_entry_i(at%params, trim(use_calc_virial)) > 0)
 	 use_calc_virial = "T"//trim(use_calc_virial)
        end do
        extra_args_str = trim(extra_args_str) // " virial="//trim(use_calc_virial)
