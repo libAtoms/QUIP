@@ -94,7 +94,8 @@ def VASPReader(poscar, outcar=None, species=None):
    else:
       at.Z[:] = [ int("".join(n)) for n in at.species[:] ]
 
-   yield at
+   if (outcar is None):
+      yield at
 
    at_cur = at.copy()
    lat_cur = at_cur.lattice.copy()
