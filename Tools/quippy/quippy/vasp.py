@@ -110,9 +110,13 @@ def VASPReader(poscar, outcar=None, species=None):
             lat_cur[:,lat_i] = [ float(r) for r in l.replace("-"," -").split()[0:3] ]
             lat_i += 1
          if (at_i >= 1 and at_i <= at_cur.n):
-            at_cur.pos[:,at_i] = [ float(r) for r in l.replace("-"," -").split()[0:3] ]
+	    pos_force = [ float(r) for r in l.replace("-"," -").split()[0:6] ]
+            at_cur.pos[:,at_i] = pos_force[0:3]
+            at_cur.force[:,at_i] = pos_force[3:6]
             at_i += 1
          if (l.find("TOTAL-FORCE (eV/Angst)") >= 0):
+	    if (not hasattr(at_cur, "force")):
+	       at_cur.add_property("force", 0.0, n_cols=3)
             at_i=1
             p.next()
          if (l.find("direct lattice vectors") >= 0):
