@@ -109,7 +109,8 @@ contains
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
   subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
-       form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, bonds_to_remove, error)
+       form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
+       find_molecules, bonds_to_remove, error)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -120,6 +121,7 @@ contains
     logical,     optional, intent(in)    :: silica_pos_dep_charges
     real(dp), intent(in), optional :: silica_charge_transfer
     logical, intent(in), optional :: have_titania_potential
+    logical, intent(in), optional :: find_molecules
     type(Table), optional, intent(in) :: bonds_to_remove
     integer, optional, intent(out) :: error
 
@@ -183,12 +185,14 @@ contains
        ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
        call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect, &
             find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
-            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, error=error)
+            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
+            find_molecules=find_molecules, error=error)
     else
        ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
        call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,&
             find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
-            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, error=error)
+            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
+            find_molecules=find_molecules, error=error)
     endif
     PASS_ERROR(error)
     call finalise(t_connect)
@@ -205,7 +209,8 @@ contains
   !% alt_connect were the same as at%cutoff(_break).
   !%
   subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect, &
-       find_silica_residue, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, error) !, hysteretic_neighbours)
+       find_silica_residue, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
+       find_molecules, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -215,6 +220,7 @@ contains
     logical,     optional, intent(in)    :: find_silica_residue, silica_pos_dep_charges
     real(dp), optional, intent(in) :: silica_charge_transfer
     logical,     optional, intent(in)    :: have_titania_potential
+    logical, optional, intent(in) :: find_molecules
     integer, optional, intent(out) :: error
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
@@ -258,10 +264,10 @@ integer :: j,atom_i, ji
 !    logical :: use_hysteretic_neighbours
 type(Table) :: O_atom, O_neighb
 integer :: hydrogen
-logical :: find_silica, titania_potential, do_silica_pos_dep_charges
+logical :: find_silica, titania_potential, do_silica_pos_dep_charges, do_find_molecules
 real(dp) :: do_silica_charge_transfer
 
-!    integer, pointer :: mol_id(:)
+    integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
     integer :: i_motif_at
 
@@ -273,6 +279,7 @@ real(dp) :: do_silica_charge_transfer
     do_silica_pos_dep_charges = optional_default(.true., silica_pos_dep_charges)
     do_silica_charge_transfer = optional_default(2.4_dp, silica_charge_transfer)
     titania_potential = optional_default(.false.,have_titania_potential)
+    do_find_molecules = optional_default(.true., find_molecules)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -744,36 +751,49 @@ real(dp) :: do_silica_charge_transfer
     end do
 
     if (my_do_charmm) then
-       allocate(molecules(at%N))
-       call find_molecule_ids(at,molecules,nneighb_only=nneighb_only,alt_connect=alt_connect)
-       do i=1, size(molecules)
-	 if (allocated(molecules(i)%i_a)) then
-           ! special case for silica molecule
-           if (find_silica .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
-	     atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
-	   ! special case for single atoms
-	   elseif (size(molecules(i)%i_a) == 1) then
-             atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
-	   ! special case for H2O
-	   else if (size(molecules(i)%i_a) == 3) then
-	     if (count(at%Z(molecules(i)%i_a) == 8) == 1 .and. &
-	         count(at%Z(molecules(i)%i_a) == 1) == 2) then
-	       atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
-	     else ! default
-call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
-               do j=1,size(molecules(i)%i_a)
-                  atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
-               end do
-	     endif
-	   else ! default
-call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
-             do j=1,size(molecules(i)%i_a)
-                atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
-             end do
-	   endif
-	 end if ! allocated(molecules)
-       end do ! i=1,size(molecules)
-       deallocate(molecules)
+       if (do_find_molecules) then
+          allocate(molecules(at%N))
+          call find_molecule_ids(at,molecules,nneighb_only=nneighb_only,alt_connect=alt_connect)
+          do i=1, size(molecules)
+             if (allocated(molecules(i)%i_a)) then
+                ! special case for silica molecule
+                if (find_silica .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
+                   atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
+                   ! special case for single atoms
+                elseif (size(molecules(i)%i_a) == 1) then
+                   atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
+                   ! special case for H2O
+                else if (size(molecules(i)%i_a) == 3) then
+                   if (count(at%Z(molecules(i)%i_a) == 8) == 1 .and. &
+                        count(at%Z(molecules(i)%i_a) == 1) == 2) then
+                      atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
+                   else ! default
+                      call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
+                      do j=1,size(molecules(i)%i_a)
+                         atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
+                      end do
+                   endif
+                else ! default
+                   call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
+                   do j=1,size(molecules(i)%i_a)
+                      atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
+                   end do
+                endif
+             end if ! allocated(molecules)
+          end do ! i=1,size(molecules)
+          deallocate(molecules)
+       else 
+          ! find_molecules is F, assume we have just one molecule
+          ! we set molecule name to residue name of first atom
+
+          call add_property(at,'mol_id',0,overwrite=.true.)
+          if (.not. assign_pointer(at,'mol_id',mol_id)) &
+               call system_abort("create_residue_labels_internal can't assign mol_id")
+          mol_id(:) = 1
+          do i=1, at%N
+             atom_mol_name(:,i) = atom_res_name(:,1)
+          end do
+       end if
        atom_charge_ptr(1:at%N) = atom_charge(1:at%N)
     endif
 
