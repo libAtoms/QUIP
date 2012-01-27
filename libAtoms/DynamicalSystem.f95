@@ -60,7 +60,7 @@ module dynamicalsystem_module
    use linearalgebra_module
    use table_module
    use periodictable_module
-   use paramreader_module, only: STRING_LENGTH
+   use dictionary_module, only: STRING_LENGTH
    use atoms_module
    use rigidbody_module
    use group_module
