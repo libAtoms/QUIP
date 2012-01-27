@@ -216,6 +216,7 @@ import quippy.xyz
 import quippy.netcdf
 import quippy.imd
 import quippy.vasp
+import quippy.vasp_OUTCAR
 import quippy.dan
 
 if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:
