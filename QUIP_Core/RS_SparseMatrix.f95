@@ -2065,7 +2065,7 @@ subroutine check_sparse_layout(l)
       end if
 
       if (.not. any(l%col(l%row_indices(j):l%row_indices(j+1)-1) == i)) then
-	print ("ERROR row "//i//" col "//j//" has no transpose match")
+	call print ("ERROR row "//i//" col "//j//" has no transpose match")
 	call print(l%col(l%row_indices(j):l%row_indices(j+1)-1))
       end if
 
