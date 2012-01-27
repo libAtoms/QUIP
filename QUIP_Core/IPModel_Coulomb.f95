@@ -87,7 +87,7 @@ type IPModel_Coulomb
 
   real(dp) :: dsf_alpha = 0.0_dp
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 endtype IPModel_Coulomb
 
@@ -168,7 +168,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
 
    integer :: i
 
-   character(len=FIELD_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
+   character(len=STRING_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
 
    INIT_ERROR(error)
 
@@ -312,7 +312,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   integer ti
 

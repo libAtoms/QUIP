@@ -46,7 +46,7 @@ implicit none
   type(Dictionary) :: cli_params
 
   character(len=100) verbosity
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file
+  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file
 
   real(dp) :: E0
   real(dp), allocatable :: local_E_p(:), local_E_m(:), local_N_p(:), local_N_m(:)

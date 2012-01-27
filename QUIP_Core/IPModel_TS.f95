@@ -64,7 +64,7 @@ type IPModel_TS
 
   real(dp) :: cutoff_coulomb, cutoff_ms
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
   logical :: initialised, tdip_sr
 
 end type IPModel_TS
@@ -421,7 +421,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
    real(dp) :: diff, diff_old
    integer :: n_efield_old
    integer :: i, npol, ti, vv
-   character(len=FIELD_LENGTH) :: efield_name, dipoles_name, atom_mask_name, source_mask_name
+   character(len=STRING_LENGTH) :: efield_name, dipoles_name, atom_mask_name, source_mask_name
    logical :: pseudise
    real(dp) :: grid_size
    real(dp) :: r_scale, E_scale
@@ -772,7 +772,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   integer ti, tj, Zi, Zj
 

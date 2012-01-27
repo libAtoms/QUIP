@@ -34,7 +34,7 @@ use potential_module
 implicit none
   type(Atoms) :: cluster_qm, cluster_mm
   type(Inoutput) :: io
-  character(len=FIELD_LENGTH) :: init_args, calc_args
+  character(len=STRING_LENGTH) :: init_args, calc_args
   real(dp) :: g_width, vacuum, lx, spacing, px, charge_scale
   integer :: n_qm
   type(Potential) :: pot

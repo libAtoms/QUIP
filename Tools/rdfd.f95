@@ -57,11 +57,11 @@ program RDFD
 
     !Input
     type(Dictionary)                      :: params_in
-    character(FIELD_LENGTH)               :: xyzfilename, datafilename
+    character(STRING_LENGTH)               :: xyzfilename, datafilename
     real(dp)                              :: d_cutoff, d_binwidth
     real(dp)                              :: rdf_cutoff, rdf_binwidth
     real(dp), dimension(3)                :: centre
-    character(FIELD_LENGTH)               :: mask1, mask2
+    character(STRING_LENGTH)               :: mask1, mask2
     integer                               :: IO_Rate
     integer                               :: decimation
     integer                               :: from, to

@@ -48,18 +48,18 @@ program extract_EVB
   real(dp)                                 :: time_passed
   real(dp)                                 :: energy1, energy2
   !real(dp), allocatable                    :: f1(:,:)
-  character(len=FIELD_LENGTH), allocatable :: output_lines(:)
+  character(len=STRING_LENGTH), allocatable :: output_lines(:)
   integer                                  :: lines_used, i
 
   type(Potential)                          :: pot
   type(Potential)                          :: evbpot
   character(len=STRING_LENGTH)             :: args_str
-  character(FIELD_LENGTH)                  :: mm_args_str
+  character(STRING_LENGTH)                  :: mm_args_str
                                            
   !Input parameters                        
   type(Dictionary)                         :: params_in
-  character(len=FIELD_LENGTH)              :: coord_filename, out_filename
-  character(len=FIELD_LENGTH)              :: PSF_file1, PSF_file2, &
+  character(len=STRING_LENGTH)              :: coord_filename, out_filename
+  character(len=STRING_LENGTH)              :: PSF_file1, PSF_file2, &
                                               filepot_program, cp2k_program !, Residue_Library
   integer                                  :: last_frame
   real(dp)                                 :: time_step

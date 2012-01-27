@@ -37,7 +37,7 @@ private
 
   public :: md_params
   type md_params
-    character(len=FIELD_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file
+    character(len=STRING_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
@@ -47,9 +47,9 @@ private
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, all_purpose_thermostat_massive, nose_hoover_thermostat, barostat_const_T
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
-    character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
+    character(len=STRING_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
-    character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
+    character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_initial_velocity 
     real(dp) :: rescale_initial_velocity_T
@@ -74,7 +74,7 @@ subroutine get_params(params, mpi_glob)
   type(Dictionary) :: md_params_dict
   type(Extendable_Str) :: es
   logical :: md_params_exist
-  character(len=FIELD_LENGTH) :: print_property_list_str
+  character(len=STRING_LENGTH) :: print_property_list_str
   integer :: n_print_property_list
   logical :: has_N_steps
   logical p_ext_is_present

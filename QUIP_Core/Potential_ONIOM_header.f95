@@ -45,15 +45,15 @@
 
      type(Potential) :: relax_pot
 
-     character(FIELD_LENGTH) :: hybrid_mark_postfix
+     character(STRING_LENGTH) :: hybrid_mark_postfix
      logical       :: minimise_mm 
-     character(FIELD_LENGTH) :: minim_mm_method 
+     character(STRING_LENGTH) :: minim_mm_method 
      real(dp)      :: minim_mm_tol, minim_mm_eps_guess
      integer       :: minim_mm_max_steps
-     character(FIELD_LENGTH) :: minim_mm_linminroutine 
+     character(STRING_LENGTH) :: minim_mm_linminroutine 
      logical       :: minim_mm_do_pos, minim_mm_do_lat
      logical       :: minim_mm_do_print
-     character(FIELD_LENGTH) :: minim_mm_args_str
+     character(STRING_LENGTH) :: minim_mm_args_str
 
       type(Inoutput), pointer :: minim_inoutput_movie
       type(CInoutput), pointer :: minim_cinoutput_movie

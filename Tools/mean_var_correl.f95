@@ -323,7 +323,7 @@ implicit none
   integer :: histogram_n_bins
   real(dp) :: histogram_min_v, histogram_max_v, histogram_cur_min_v, histogram_cur_max_v, histogram_extra_width, histogram_bin_width
   logical :: do_histogram_effective_N, do_histogram_correl
-  character(len=FIELD_LENGTH) :: infile_name, outfile_name
+  character(len=STRING_LENGTH) :: infile_name, outfile_name
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
@@ -331,7 +331,7 @@ implicit none
   integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_var_effective_N_long_lag, sliding_window_effective_N_max_k, summed_ac_effective_N_max_lag
   logical :: over_bins, over_time
   real(dp), allocatable :: correlation_var_effective_N(:), summed_ac_effective_N(:), sliding_window_effective_N(:), binning_effective_N(:), histogram_effective_N(:,:)
-  character(len=FIELD_LENGTH) :: verbosity_str
+  character(len=STRING_LENGTH) :: verbosity_str
 
   call system_initialise()
 

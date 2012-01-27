@@ -44,7 +44,7 @@ implicit none
   logical:: lattice_pull, lattice_pull1, lattice_pull2, lattice_pull3, scale_positions, dryrun, no_11, no_12, no_13, no_22, no_23, no_33
   integer :: i
   type(Dictionary) :: cli
-  character(len=FIELD_LENGTH) :: infile, outfile, pot_init_args
+  character(len=STRING_LENGTH) :: infile, outfile, pot_init_args
   integer :: rng_seed, n_configs
 
   call system_initialise(enable_timing=.true.)

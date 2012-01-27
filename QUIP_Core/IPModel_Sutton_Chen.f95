@@ -60,7 +60,7 @@ type IPModel_Sutton_Chen
   integer, dimension(:), allocatable  :: m, n
   real(dp) :: cutoff = 0.0_dp
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Sutton_Chen
 
@@ -153,7 +153,7 @@ subroutine IPModel_Sutton_Chen_Calc(this, at, e, local_e, f, virial, local_viria
    type(Dictionary) :: params
    logical, dimension(:), pointer :: atom_mask_pointer
    logical :: has_atom_mask_name
-   character(FIELD_LENGTH) :: atom_mask_name
+   character(STRING_LENGTH) :: atom_mask_name
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
 
@@ -334,7 +334,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   integer ti
 

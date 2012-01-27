@@ -2,7 +2,7 @@ program make_bulk_supercell
 use libatoms_module
 implicit none
 
-  character(len=FIELD_LENGTH) :: struct, outfile, Z_values_str
+  character(len=STRING_LENGTH) :: struct, outfile, Z_values_str
   real(dp) :: vol_per_atom, vol_per_unit_cell
   integer :: repeat(3)
   type(Dictionary) :: cli_params

@@ -34,7 +34,7 @@ use potential_module
 implicit none
   type(Atoms) :: at, cluster_qm, cluster_mm
   type(Inoutput) :: io
-  character(len=FIELD_LENGTH) :: infile, init_args, calc_args
+  character(len=STRING_LENGTH) :: infile, init_args, calc_args
   real(dp) :: rqm, rmm, g_width
   type(Potential) :: pot
   type(Dictionary) :: cli

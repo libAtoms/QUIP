@@ -60,7 +60,7 @@ contains
     integer, intent(out), optional :: error
 
     type(Dictionary) :: cli
-    character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
+    character(len=STRING_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
          topology_suffix, qmmm_link_type, qmmm_link_qm_kind
     logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer, persistent
     integer :: clean_up_keep_n, persistent_restart_interval
@@ -70,16 +70,16 @@ contains
     real(dp) :: centre_pos(3), cp2k_box_centre_pos(3)
     logical :: auto_centre, has_centre_pos
     logical :: try_reuse_wfn
-    character(len=FIELD_LENGTH) :: calc_qm_charges, calc_virial
+    character(len=STRING_LENGTH) :: calc_qm_charges, calc_virial
     logical :: do_calc_virial
 
     character(len=128) :: method
 
     integer :: link_template_n_lines
-    character(len=FIELD_LENGTH), allocatable :: link_template_a(:)
+    character(len=STRING_LENGTH), allocatable :: link_template_a(:)
     integer :: i_line
 
-    character(len=FIELD_LENGTH) :: run_dir
+    character(len=STRING_LENGTH) :: run_dir
 
     type(Table) :: qm_list, old_qm_list
     type(Table) :: cut_bonds, old_cut_bonds, bonds_to_remove
@@ -95,7 +95,7 @@ contains
 
     logical :: can_reuse_wfn, qm_list_changed, qmmm_link_list_changed, &
          qmmm_same_lattice, qmmm_use_mm_charges, qmmm_link_fix_pbc
-    character(len=FIELD_LENGTH) :: qm_name_suffix
+    character(len=STRING_LENGTH) :: qm_name_suffix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -122,10 +122,10 @@ contains
     integer :: form_bond(2), break_bond(2)
     real(dp) :: disp(3)
 
-    character(len=FIELD_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
-    character(len=FIELD_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
+    character(len=STRING_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
+    character(len=STRING_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
-    character(len=FIELD_LENGTH) :: dir, tmp_run_dir
+    character(len=STRING_LENGTH) :: dir, tmp_run_dir
     integer :: tmp_run_dir_i, stat
     logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels
     integer :: persistent_run_i, persistent_frc_size, qm_mol_id, n_hydrogen, old_n_hydrogen, n_extra_electrons, old_n_extra_electrons
@@ -1141,7 +1141,7 @@ contains
     integer :: m
     integer :: i, at_i
     type(inoutput) :: t_io
-    character(len=FIELD_LENGTH) :: at_species, t_line
+    character(len=STRING_LENGTH) :: at_species, t_line
     integer :: at_kind
     integer :: use_out_i
     real(dp) :: virial(3,3)
@@ -1343,7 +1343,7 @@ contains
     character(len=*), intent(in) :: cp2k_program, run_dir
     integer, optional, intent(out) :: error
 
-    character(len=FIELD_LENGTH) :: cp2k_run_command
+    character(len=STRING_LENGTH) :: cp2k_run_command
     integer :: stat
 
     INIT_ERROR(error)
@@ -1363,7 +1363,7 @@ contains
 
     integer :: n_tries
     logical :: converged
-    character(len=FIELD_LENGTH) :: cp2k_run_command
+    character(len=STRING_LENGTH) :: cp2k_run_command
     integer :: stat, error_stat
 
     INIT_ERROR(error)
@@ -1517,7 +1517,7 @@ contains
     type(inoutput) :: last_run_io
     type(inoutput) :: stress_io
     type(cinoutput) :: force_cio
-    character(len=FIELD_LENGTH) :: last_run_s
+    character(len=STRING_LENGTH) :: last_run_s
     integer :: this_run_i
     integer :: stat
     type(Atoms) :: for
@@ -1611,7 +1611,7 @@ contains
       integer, intent(in) :: rev_sort_index(:)
       type(Table), intent(inout) :: cut_bonds, old_cut_bonds, bonds_to_remove
       integer, pointer, intent(inout) :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
-      character(len=FIELD_LENGTH), allocatable, intent(inout) :: link_template_a(:)
+      character(len=STRING_LENGTH), allocatable, intent(inout) :: link_template_a(:)
       integer, intent(inout) :: link_template_n_lines
       integer, intent(out), optional :: error
 

@@ -50,9 +50,9 @@ program cp2k_filepot_template
     real(dp), pointer             :: forces_p(:,:)
     type(CInoutput)                :: xyz_io
 
-    character(len=FIELD_LENGTH)  :: infile, outfile
+    character(len=STRING_LENGTH)  :: infile, outfile
     character(len=STRING_LENGTH) :: args_str
-    character(len=FIELD_LENGTH)  :: arg
+    character(len=STRING_LENGTH)  :: arg
     integer :: i, index_insert
 
     call system_initialise(verbosity=PRINT_SILENT,enable_timing=.true.)

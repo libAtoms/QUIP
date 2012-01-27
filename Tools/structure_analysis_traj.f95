@@ -41,12 +41,12 @@ implicit none
 private
 
 type analysis
-  character(len=FIELD_LENGTH) :: type ! type of analysis, used to fill in list of logicals
+  character(len=STRING_LENGTH) :: type ! type of analysis, used to fill in list of logicals
   logical :: density_radial, density_grid, KE_density_radial, rdfd, integrated_rdfd, adfd, & !water
              KEdf_radial, propdf_radial, geometry, & !general
              density_axial_silica, num_hbond_silica, water_orientation_silica !silica-water interface
-  character(len=FIELD_LENGTH) :: outfilename
-  character(len=FIELD_LENGTH) :: mask_str
+  character(len=STRING_LENGTH) :: outfilename
+  character(len=STRING_LENGTH) :: mask_str
 
   integer :: n_configs = 0
 
@@ -82,7 +82,7 @@ type analysis
   ! rdfd stuff
   real(dp) :: rdfd_zone_center(3)
   integer :: rdfd_zone_atom_center
-  character(FIELD_LENGTH) :: rdfd_center_mask_str, rdfd_neighbour_mask_str
+  character(STRING_LENGTH) :: rdfd_center_mask_str, rdfd_neighbour_mask_str
   real(dp) :: rdfd_zone_width, rdfd_bin_width
   integer :: rdfd_n_zones, rdfd_n_bins
   logical :: rdfd_gaussian_smoothing
@@ -92,7 +92,7 @@ type analysis
 
   ! adfd stuff
   real(dp) :: adfd_zone_center(3)
-  character(FIELD_LENGTH) :: adfd_center_mask_str, adfd_neighbour_1_mask_str, adfd_neighbour_2_mask_str
+  character(STRING_LENGTH) :: adfd_center_mask_str, adfd_neighbour_1_mask_str, adfd_neighbour_2_mask_str
   real(dp) :: adfd_neighbour_1_max_dist
   real(dp) :: adfd_zone_width, adfd_dist_bin_width
   integer :: adfd_n_zones, adfd_n_dist_bins, adfd_n_angle_bins
@@ -100,7 +100,7 @@ type analysis
   real(dp), allocatable :: adfd_zone_pos(:), adfd_dist_bin_pos(:), adfd_angle_bin_pos(:)
 
   ! r-dep KE distribution
-  character(FIELD_LENGTH) :: KEdf_radial_mask_str
+  character(STRING_LENGTH) :: KEdf_radial_mask_str
   real(dp) :: KEdf_radial_gaussian_sigma
   real(dp) :: KEdf_radial_zone_center(3)
   integer :: KEdf_radial_zone_center_at
@@ -109,22 +109,22 @@ type analysis
   real(dp), allocatable :: KEdf_radial_bin_pos(:), KEdf_radial_zone_pos(:), KEdf_radial_histograms(:,:,:)
 
   ! r-dep |F| distribution
-  character(FIELD_LENGTH) :: propdf_radial_mask_str
+  character(STRING_LENGTH) :: propdf_radial_mask_str
   real(dp) :: propdf_radial_gaussian_sigma
   real(dp) :: propdf_radial_zone_center(3)
   integer :: propdf_radial_zone_center_at
   real(dp) :: propdf_radial_zone_width, propdf_radial_bin_width
   integer :: propdf_radial_n_zones, propdf_radial_n_bins
   real(dp), allocatable :: propdf_radial_bin_pos(:), propdf_radial_zone_pos(:), propdf_radial_histograms(:,:,:)
-  character(len=FIELD_LENGTH) :: propdf_radial_property
+  character(len=STRING_LENGTH) :: propdf_radial_property
 
   !geometry
-  character(FIELD_LENGTH) :: geometry_filename
+  character(STRING_LENGTH) :: geometry_filename
   type(Table) :: geometry_params
   integer :: geometry_central_atom
   real(dp), allocatable :: geometry_histograms(:,:)
   real(dp), allocatable :: geometry_pos(:)
-  character(FIELD_LENGTH), allocatable :: geometry_label(:)
+  character(STRING_LENGTH), allocatable :: geometry_label(:)
 
   !uniaxial density - for silica-water interface
   integer :: density_axial_axis !x:1,y:2,z:3
@@ -147,7 +147,7 @@ type analysis
   real(dp), allocatable :: integrated_num_hbond_histograms(:,:)
   integer, allocatable :: num_hbond_type_code(:)
   real(dp), allocatable :: num_hbond_bin_pos(:)
-  character(FIELD_LENGTH), allocatable :: num_hbond_type_label(:)
+  character(STRING_LENGTH), allocatable :: num_hbond_type_label(:)
 
   !silica_water_orientation - water orientation distribution for silica-water interface
   integer :: water_orientation_axis !x:1,y:2,z:3
@@ -182,7 +182,7 @@ subroutine analysis_read(this, prev, args_str)
 
   type(Dictionary) :: params
   integer :: dummy_i_1
-  character(len=FIELD_LENGTH) :: dummy_c_1, dummy_c_2
+  character(len=STRING_LENGTH) :: dummy_c_1, dummy_c_2
   logical :: dummy_l_1, dummy_l_2
 
   call initialise(params)
@@ -1707,7 +1707,7 @@ subroutine read_geometry_params(this,filename)
   character(20), dimension(10) :: fields
   integer :: num_fields, status
   integer :: num_geom, i, geom_type
-  character(FIELD_LENGTH) :: comment
+  character(STRING_LENGTH) :: comment
 
   call initialise(this%geometry_params,5,0,0,0,0) !type, atom1, atom2, atom3, atom4
 
@@ -1786,7 +1786,7 @@ subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_
   type(Table), intent(in) :: geometry_params
   integer, intent(in) :: central_atom
   real(dp), intent(out), optional :: geometry_pos(:)
-  character(FIELD_LENGTH), intent(out), optional :: geometry_label(:)
+  character(STRING_LENGTH), intent(out), optional :: geometry_label(:)
 
   integer :: i, j, geom_type
   integer :: atom1, atom2, atom3, atom4
@@ -2041,7 +2041,7 @@ subroutine num_hbond_calc(histogram, at, axis, silica_center_i,n_bins, gaussian_
   character(len=*),        optional, intent(in)    :: mask_str
   real(dp),                optional, intent(out)   :: num_hbond_pos(:)
   integer,                 optional, intent(out)   :: num_hbond_type_code(:)
-  character(FIELD_LENGTH), optional, intent(out)   :: num_hbond_type_label(:)
+  character(STRING_LENGTH), optional, intent(out)   :: num_hbond_type_label(:)
   logical,                 optional, intent(in)    :: accumulate
 
   logical :: my_accumulate
@@ -2411,14 +2411,14 @@ implicit none
 
   type(Dictionary) :: cli_params
 
-  character(len=FIELD_LENGTH) :: infilename
+  character(len=STRING_LENGTH) :: infilename
   integer :: decimation
   type(Inoutput) :: list_infile
   type (CInoutput) :: infile
   logical :: infile_is_list
   logical :: quiet
 
-  character(len=FIELD_LENGTH) :: commandfilename
+  character(len=STRING_LENGTH) :: commandfilename
   type(Inoutput) :: commandfile
 
   character(len=10240) :: args_str, myline

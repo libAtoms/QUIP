@@ -169,7 +169,7 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
-    character(len=FIELD_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: hybrid_mark_postfix
 
     INIT_ERROR(error)
 
@@ -236,7 +236,7 @@
     character(STRING_LENGTH) :: cc_args_str
 
     real(dp), pointer :: local_e_pot1(:), local_e_pot2(:)
-    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, local_energy_args_str, local_energy_name, hybrid_mark_postfix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, local_energy_args_str, local_energy_name, hybrid_mark_postfix
 
     INIT_ERROR(error)
 

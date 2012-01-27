@@ -74,7 +74,7 @@ type IPModel_Brenner_Screened
   integer, allocatable, dimension(:)  :: bptr
   integer     :: bptr_num
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Brenner_Screened
 
@@ -104,7 +104,7 @@ subroutine IPModel_Brenner_Screened_Initialise_str(this, args_str, param_str)
   character(len=*), intent(in) :: args_str, param_str
 
   type(Dictionary) :: params
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
   call Finalise(this)
 
@@ -159,7 +159,7 @@ subroutine IPModel_Brenner_Screened_Calc(this, at, e, local_e, f, virial, local_
 
    type(Dictionary)                :: params
    logical :: has_atom_mask_name
-   character(FIELD_LENGTH) :: atom_mask_name
+   character(STRING_LENGTH) :: atom_mask_name
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
 
@@ -315,7 +315,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   logical shifted
   integer ti, tj

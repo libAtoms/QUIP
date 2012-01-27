@@ -36,7 +36,7 @@ implicit none
   type(Atoms) :: at
   integer :: i, n, error
   type(dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: infilename, outfilename
+  character(len=STRING_LENGTH) :: infilename, outfilename
   type(cinoutput) :: infile_io, outfile_io
 
   call system_initialise(verbosity=PRINT_SILENT)

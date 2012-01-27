@@ -5,10 +5,10 @@
 
      type(Potential), pointer :: pot1 => null()    !% The underlying MM potential, pot1 and pot2
 
-     character(FIELD_LENGTH) :: mm_args_str        !% Args string to be passed to 'calc' method of pot1 and pot2
+     character(STRING_LENGTH) :: mm_args_str        !% Args string to be passed to 'calc' method of pot1 and pot2
 
-     character(FIELD_LENGTH) :: topology_suffix1   !% Suffix in topology filename, to be added to mm_args_str of pot1
-     character(FIELD_LENGTH) :: topology_suffix2   !% Suffix in topology filename, to be added to mm_args_str of pot2
+     character(STRING_LENGTH) :: topology_suffix1   !% Suffix in topology filename, to be added to mm_args_str of pot1
+     character(STRING_LENGTH) :: topology_suffix2   !% Suffix in topology filename, to be added to mm_args_str of pot2
 
      integer :: form_bond(2)                       !% Atom pair that is bonded in EVB1 only
      integer :: break_bond(2)                      !% Atom pair that is bonded in EVB2 only

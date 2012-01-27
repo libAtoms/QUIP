@@ -132,7 +132,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name, do_one_body, do_two_body
-  character(FIELD_LENGTH) :: atom_mask_name, one_body_name, two_body_name
+  character(STRING_LENGTH) :: atom_mask_name, one_body_name, two_body_name
 
   integer, dimension(:,:), allocatable :: water_monomer_index
   real(dp), allocatable :: one_body_energy(:), one_body_force(:,:), two_body_force(:,:)

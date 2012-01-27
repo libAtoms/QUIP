@@ -5,9 +5,9 @@ implicit none
 
    type(Atoms) :: at
 
-   character(len=FIELD_LENGTH) :: infile, outfile
+   character(len=STRING_LENGTH) :: infile, outfile
    character(len=STRING_LENGTH) :: args_str
-   character(len=FIELD_LENGTH)  :: arg
+   character(len=STRING_LENGTH)  :: arg
    integer :: i, index_insert
    type(CInOutput) :: outfile_io
 
@@ -63,13 +63,13 @@ subroutine do_vasp_calc(at, args_str, error)
    character(len=*), intent(in) :: args_str
    integer, intent(out), optional :: error
 
-   character(len=FIELD_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
-   character(len=FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+   character(len=STRING_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
+   character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
    logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy
    logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
    type(Dictionary) :: incar_dict, cli
 
-   character(len=FIELD_LENGTH) :: run_dir
+   character(len=STRING_LENGTH) :: run_dir
    type(Inoutput) :: io
 
    integer :: at_i, stat
@@ -243,7 +243,7 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
    integer, intent(out), optional :: error
 
    integer :: i, Z_i, potcar_files_n_fields
-   character(len=FIELD_LENGTH) :: potcar_files_fields(128), potcar_files_a(128)
+   character(len=STRING_LENGTH) :: potcar_files_fields(128), potcar_files_a(128)
    integer, allocatable :: uniq_Z(:)
 
    INIT_ERROR(error)
@@ -333,7 +333,7 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
    type(inoutput) :: outcar_io
    integer :: stat
    character(len=STRING_LENGTH) :: line
-   character(len=FIELD_LENGTH)  :: fields(100), t_s
+   character(len=STRING_LENGTH)  :: fields(100), t_s
    integer :: n_fields, line_i
 
    real(dp) :: energy, virial(3,3), t_pos(3)
@@ -418,7 +418,7 @@ subroutine read_vasp_incar_dict(incar_dict, incar_template_file, error)
    integer, intent(out), optional :: error
 
    type(Inoutput) :: incar_io
-   character(len=FIELD_LENGTH), allocatable :: incar_a(:), incar_line_fields(:), incar_field_fields(:)
+   character(len=STRING_LENGTH), allocatable :: incar_a(:), incar_line_fields(:), incar_field_fields(:)
    integer :: incar_n_lines, incar_line_n_fields, incar_field_n_fields
    integer :: i, j
 

@@ -43,7 +43,7 @@ program density
 
     !Input
     type(Dictionary)                      :: params_in
-    character(FIELD_LENGTH)               :: xyzfilename, datafilename
+    character(STRING_LENGTH)               :: xyzfilename, datafilename
     integer                               :: numbins
     integer                               :: IO_Rate
     integer                               :: decimation

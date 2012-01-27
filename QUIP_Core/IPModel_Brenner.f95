@@ -63,7 +63,7 @@ type IPModel_Brenner
   real(dp), allocatable :: delta(:,:), Re(:,:), a0(:,:,:), c0(:,:,:), d0(:,:,:) !% IP parameters
   real(dp), allocatable :: shift(:,:)                                 
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Brenner
 
@@ -163,7 +163,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 

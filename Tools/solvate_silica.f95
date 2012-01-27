@@ -44,7 +44,7 @@ program solvate_silica
 
   type(Atoms)                 :: at, wat, at2
   type(dictionary)            :: cli_params
-  character(len=FIELD_LENGTH) :: filename, waterfilename
+  character(len=STRING_LENGTH) :: filename, waterfilename
   integer                     :: i, j, stat
 
   !solvation of solvent

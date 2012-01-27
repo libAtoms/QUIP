@@ -50,9 +50,6 @@ module paramreader_module
 
   implicit none
 
-  integer, parameter :: VALUE_LENGTH = 1024  !% Length of parameter value strings
-  integer, parameter :: FIELD_LENGTH = 1024  !% Maximum field width during parsing
-  integer, parameter :: STRING_LENGTH = 10240 !% Maximum length of string parameters
   integer, parameter, private :: MAX_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   integer, parameter :: PARAM_NO_VALUE = 0 !% Special parameter type that doesn't get parsed
@@ -68,20 +65,20 @@ module paramreader_module
   type ParamEntry
      !% OMIT
 
-     character(len=VALUE_LENGTH):: value
+     character(len=STRING_LENGTH):: value
      integer :: N, param_type
 
      real(dp), pointer :: real => null()
      integer, pointer :: integer => null()
      logical, pointer :: logical => null()
-     character(len=FIELD_LENGTH), pointer :: string => null()
+     character(len=STRING_LENGTH), pointer :: string => null()
 
      real(dp), dimension(:), pointer :: reals => null()
      integer, dimension(:), pointer :: integers => null()
 
      logical, pointer :: has_value
 
-     character(len=FIELD_LENGTH) :: help_string
+     character(len=STRING_LENGTH) :: help_string
 
   end type ParamEntry
 
@@ -192,9 +189,9 @@ module paramreader_module
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      if (len(adjustr(char_target)) /= FIELD_LENGTH) &
+      if (len(adjustr(char_target)) /= STRING_LENGTH) &
 	call system_abort('param_register_single_string called for "'//trim(key)// &
-	 '" has char_target(len='//len(adjustr(char_target))//'), must be called with char_target(len=FIELD_LENGTH)')
+	 '" has char_target(len='//len(adjustr(char_target))//'), must be called with char_target(len=STRING_LENGTH)')
 
       call param_register_main(dict, key, value, 1, PARAM_STRING, help_string=help_string, &
 	 char_target=char_target, has_value_target=has_value_target)
@@ -234,7 +231,7 @@ module paramreader_module
       type(ParamEntry) :: entry
       type(DictData) :: data
 
-      if (len_trim(value) > VALUE_LENGTH) &
+      if (len_trim(value) > STRING_LENGTH) &
            call system_abort("Param_Register: Value "//trim(value)//" too long")
 
       entry%value = value
@@ -348,10 +345,10 @@ module paramreader_module
       character(len=*), intent(in), optional :: task
       logical :: status
 
-      character(len=FIELD_LENGTH) :: field
+      character(len=STRING_LENGTH) :: field
       integer equal_pos
-      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: final_fields
-      character(len=FIELD_LENGTH) :: key, value
+      character(len=STRING_LENGTH), dimension(MAX_N_FIELDS) :: final_fields
+      character(len=STRING_LENGTH) :: key, value
       integer :: i, num_pairs
       type(ParamEntry) :: entry
       type(DictData) :: data
@@ -401,7 +398,7 @@ module paramreader_module
 	  value = field(equal_pos+1:len(trim(field)))
 	 endif
 	 call print("param_read_line key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
-         if (len_trim(value) > VALUE_LENGTH) then
+         if (len_trim(value) > STRING_LENGTH) then
             call print("param_read_line: value "//trim(value)//" too long")
             status = .false.
             return
@@ -513,7 +510,7 @@ module paramreader_module
       logical :: status
 
       integer :: i, nargs
-      character(len=FIELD_LENGTH) :: this_arg
+      character(len=STRING_LENGTH) :: this_arg
       character(len=STRING_LENGTH) :: my_command_line
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
@@ -839,7 +836,7 @@ module paramreader_module
       character(len=*), optional :: key
       logical :: status
 
-      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: fields
+      character(len=STRING_LENGTH), dimension(MAX_N_FIELDS) :: fields
       integer :: num_fields, j
 
       if (entry%param_type == PARAM_NO_VALUE .or. &

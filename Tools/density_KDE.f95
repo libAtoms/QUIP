@@ -57,10 +57,10 @@ program density_KDE
 
     !Input
     type(Dictionary)                      :: params_in
-    character(FIELD_LENGTH)               :: xyzfilename, datafilename
+    character(STRING_LENGTH)               :: xyzfilename, datafilename
     logical                               :: xyzfile_is_list
     real(dp)                              :: cutoff, bin_width
-    character(FIELD_LENGTH)               :: mask
+    character(STRING_LENGTH)               :: mask
     integer                               :: IO_Rate, Density_Time_Evolution_Rate
     integer                               :: decimation
     integer                               :: from, to

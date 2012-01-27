@@ -81,7 +81,7 @@ module Potential_module
   public :: Potential
   type Potential
      type(MPI_context) :: mpi
-     character(len=FIELD_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
+     character(len=STRING_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
 
      logical :: is_simple = .false.
      type(Potential_simple) :: simple
@@ -548,8 +548,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
     type(Dictionary) :: params
-    character(len=FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
-    character(len=FIELD_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
+    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
+    character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale
     integer i
@@ -1744,7 +1744,7 @@ end subroutine pack_pos_dg
      type(dictionary_t), intent(in) :: attributes
    
      integer :: status
-     character(len=FIELD_LENGTH) :: value
+     character(len=STRING_LENGTH) :: value
 
      if(name == 'Potential') then ! new Potential stanza
 

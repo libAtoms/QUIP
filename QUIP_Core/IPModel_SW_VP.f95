@@ -69,7 +69,7 @@ type IPModel_SW_VP
   real(dp), allocatable :: lambda(:,:,:), d1(:,:,:), d2(:,:,:), gamma1(:,:,:), gamma2(:,:,:), eps3(:,:,:), costheta0(:,:,:) !% IP parameters
 
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_SW_VP
 
@@ -180,7 +180,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   logical, dimension(:), pointer :: atom_mask_pointer
 
 #ifdef _OPENMP

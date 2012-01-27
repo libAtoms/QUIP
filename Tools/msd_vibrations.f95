@@ -30,7 +30,7 @@
 
 program msd
 use libatoms_module
-  character(len=FIELD_LENGTH) :: infile_name
+  character(len=STRING_LENGTH) :: infile_name
   type(inoutput) :: infile
   type(Atoms) :: current, mean, prev
   type(Dictionary) :: cli_params

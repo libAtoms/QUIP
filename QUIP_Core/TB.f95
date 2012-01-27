@@ -538,7 +538,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
   real(dp) :: my_energy
   logical :: my_use_Fermi_E
   real(dp) :: my_Fermi_E, my_Fermi_T, my_band_width
-  character(len=FIELD_LENGTH) :: solver_arg
+  character(len=STRING_LENGTH) :: solver_arg
   logical :: noncollinear, use_prev_charge, do_evecs
   type(ApproxFermi) :: my_AF
   logical :: do_at_local_N
@@ -546,7 +546,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
 
   type(Dictionary) :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 

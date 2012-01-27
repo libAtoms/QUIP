@@ -36,15 +36,15 @@ use libatoms_module
 implicit none
 
   type(Dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: infilename
+  character(len=STRING_LENGTH) :: infilename
   logical :: infile_is_list
-  character(len=FIELD_LENGTH) :: outfilename
+  character(len=STRING_LENGTH) :: outfilename
   type(CInOutput) :: outfile
   integer :: decimation
   real(dp) :: min_time, max_time
   logical :: sort_Time, no_Time_dups, quiet, no_compute_index
   real(dp) :: scale_lattice, scale_pos
-  character(len=FIELD_LENGTH) :: properties
+  character(len=STRING_LENGTH) :: properties
 
   type(Atoms_ll) :: structure_ll
   type(Atoms_ll_entry), pointer :: entry

@@ -66,7 +66,7 @@ type IPModel_Si_MEAM
   real(dp), dimension(:,:), allocatable :: r_cut_rho
   real(dp), dimension(:,:), allocatable :: r_cut_f
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 endtype IPModel_Si_MEAM
 
 interface Initialise
@@ -171,7 +171,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 

@@ -60,7 +60,7 @@ module IPModel_BornMayer_module
 
      real(dp) :: cutoff = 0.0_dp
 
-     character(len=FIELD_LENGTH) :: label
+     character(len=STRING_LENGTH) :: label
 
   end type IPModel_BornMayer
 
@@ -139,7 +139,7 @@ contains
 
     type(Dictionary) :: params
     logical :: has_atom_mask_name
-    character(FIELD_LENGTH) :: atom_mask_name
+    character(STRING_LENGTH) :: atom_mask_name
     logical, dimension(:), pointer :: atom_mask_pointer
 
     real(dp) :: r_scale, E_scale
@@ -429,7 +429,7 @@ contains
     logical :: energy_shift, linear_force_shift
 
     integer :: status
-    character(len=FIELD_LENGTH) :: value
+    character(len=STRING_LENGTH) :: value
 
     integer ti, tj, Zi, Zj
 

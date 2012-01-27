@@ -62,7 +62,7 @@ implicit none
   real(dp), allocatable :: ke_proj(:)
   real(dp) :: vel_mag, ke_tot, p(3), L(3), mode_vel
   real(dp) :: MoI(3,3), MoI_evecs(3,3), MoI_evals(3), MoI_evecs_orig(3,3), R(3,3)
-  character(len=FIELD_LENGTH) phonons_file
+  character(len=STRING_LENGTH) phonons_file
   logical :: fix_rotation, regular_eigenproblem
   type(dictionary) :: cli_params
 
