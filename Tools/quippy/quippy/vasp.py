@@ -25,7 +25,7 @@ import re, sys
 @atoms_reader('vasp')
 @atoms_reader('POSCAR')
 @atoms_reader('CONTCAR')
-def VASPReader(poscar, outcar=None, species=None):
+def VASP_POSCAR_Reader(poscar, species=None):
    """Read a configuration from a VASP POSCAR file.
 
    Following POSCAR, optionally also read a trajectory from an OUTCAR file."""
@@ -94,39 +94,7 @@ def VASPReader(poscar, outcar=None, species=None):
    else:
       at.Z[:] = [ int("".join(n)) for n in at.species[:] ]
 
-   if (outcar is None):
-      yield at
-
-   at_cur = at.copy()
-   lat_cur = at_cur.lattice.copy()
-   at_i = -1
-   lat_i = -1
-
-   if outcar is not None:
-      p = open(outcar, 'r')
-      for lr in p:
-         l=lr.rstrip()
-         if (lat_i >= 1 and lat_i <= 3):
-            lat_cur[:,lat_i] = [ float(r) for r in l.replace("-"," -").split()[0:3] ]
-            lat_i += 1
-         if (at_i >= 1 and at_i <= at_cur.n):
-	    pos_force = [ float(r) for r in l.replace("-"," -").split()[0:6] ]
-            at_cur.pos[:,at_i] = pos_force[0:3]
-            at_cur.force[:,at_i] = pos_force[3:6]
-            at_i += 1
-         if (l.find("TOTAL-FORCE (eV/Angst)") >= 0):
-	    if (not hasattr(at_cur, "force")):
-	       at_cur.add_property("force", 0.0, n_cols=3)
-            at_i=1
-            p.next()
-         if (l.find("direct lattice vectors") >= 0):
-            lat_i=1
-         if (at_i == at_cur.n):
-            at_cur.set_lattice(lat_cur, False)
-            for i in frange(at_cur.n):
-               dr = at_cur.diff_min_image(i, at.pos[:,i])
-               at_cur.pos[:,i] = at.pos[:,i] - dr
-            yield at_cur
+   yield at
 
 class VaspWriter(object):
 
