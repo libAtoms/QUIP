@@ -48,7 +48,7 @@ program qmmm_md
   type(DynamicalSystem)               :: ds
   type(Atoms)                         :: my_atoms
   integer                             :: i, n
-  character(len=FIELD_LENGTH)         :: Run_Type_array(6)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
+  character(len=STRING_LENGTH)         :: Run_Type_array(6)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
   type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
@@ -78,23 +78,23 @@ program qmmm_md
   !Output XYZ
   type(CInoutput)                      :: traj_xyz, latest_xyz
 !  type(CInoutput)                      :: xyz
-  character(len=FIELD_LENGTH)         :: backup_coord_file          !output XYZ file
+  character(len=STRING_LENGTH)         :: backup_coord_file          !output XYZ file
   integer                             :: backup_i
 
   !Topology
-  character(len=FIELD_LENGTH)         :: driver_PSF_Print
+  character(len=STRING_LENGTH)         :: driver_PSF_Print
   integer                             :: Topology_Print_rate     !_-1_ never, 0 print one at the 0th time step and use that
                                                                  ! n>0 print at 0th and then every n-th step
   type(Table)                         :: intrares_impropers
 
   !Input parameters
   type(Dictionary)            :: params_in
-  character(len=FIELD_LENGTH) :: Run_Type1               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
-  character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, QMMM_CORE or MM_INTERNAL
+  character(len=STRING_LENGTH) :: Run_Type1               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
+  character(len=STRING_LENGTH) :: Run_Type2               !_NONE_, MM, QMMM_CORE or MM_INTERNAL
   integer                     :: IO_Rate                 !print coordinates at every n-th step
   integer                     :: Thermostat_Type         !_0_ none, 1 Langevin
   real(dp)                    :: Thermostat_7_rs(2)
-  character(len=FIELD_LENGTH) :: PSF_Print               !_NO_PSF_, DRIVER_AT_0, DRIVER_EVERY_#, USE_EXISTING_PSF
+  character(len=STRING_LENGTH) :: PSF_Print               !_NO_PSF_, DRIVER_AT_0, DRIVER_EVERY_#, USE_EXISTING_PSF
   real(dp)                    :: Time_Step
   real(dp)                    :: Equilib_Time
   real(dp)                    :: Run_Time
@@ -104,13 +104,13 @@ program qmmm_md
   real(dp)                    :: Outer_QM_Region_Radius, Outer_QM_Core_Region_Radius
   real(dp)                    :: Min_Connect_Cutoff
   real(dp)                    :: Simulation_Temperature
-  character(len=FIELD_LENGTH) :: coord_file
-  character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
-  character(len=FIELD_LENGTH) :: traj_file          !output XYZ file
-  character(len=FIELD_LENGTH) :: qm_list_filename, qm_core_list_filename        !QM list file with a strange format
+  character(len=STRING_LENGTH) :: coord_file
+  character(len=STRING_LENGTH) :: latest_coord_file          !output XYZ file
+  character(len=STRING_LENGTH) :: traj_file          !output XYZ file
+  character(len=STRING_LENGTH) :: qm_list_filename, qm_core_list_filename        !QM list file with a strange format
   type(Table)                 :: qm_seed_extended, qm_seed_core
-  character(len=FIELD_LENGTH) :: Residue_Library
-  character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
+  character(len=STRING_LENGTH) :: Residue_Library
+  character(len=STRING_LENGTH) :: restraint_constraint_xml_file
   type(Extendable_Str)        :: restraint_constraint_xml_es
   integer                     :: Charge
   real(dp)                    :: Langevin_Tau, Nose_Hoover_Tau
@@ -122,7 +122,7 @@ program qmmm_md
   integer                     :: Seed
   logical                     :: qm_region_pt_ctr, qm_core_region_pt_ctr
   integer                     :: qm_region_atom_ctr, qm_core_region_atom_ctr
-  character(len=FIELD_LENGTH) :: print_prop
+  character(len=STRING_LENGTH) :: print_prop
   logical                     :: print_forces
   logical                     :: print_forces_at0
   real(dp)                    :: nneightol
@@ -133,15 +133,15 @@ program qmmm_md
   logical                     :: use_spline
   integer                     :: max_n_steps
   integer                     :: update_QM_region_interval
-  character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
-  character(len=FIELD_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
-  character(len=FIELD_LENGTH) :: extra_calc_args                 ! extra args to mm and qm calcs (like FilePot_log)
-  character(len=FIELD_LENGTH) :: filepot_program
-  character(len=FIELD_LENGTH) :: mm_internal_init_args, mm_internal_param_filename
+  character(len=STRING_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
+  character(len=STRING_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
+  character(len=STRING_LENGTH) :: extra_calc_args                 ! extra args to mm and qm calcs (like FilePot_log)
+  character(len=STRING_LENGTH) :: filepot_program
+  character(len=STRING_LENGTH) :: mm_internal_init_args, mm_internal_param_filename
 
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
-  character(len=FIELD_LENGTH) :: core_create_cluster_info_args
+  character(len=STRING_LENGTH) :: core_create_cluster_info_args
   real(dp) :: qm_region_ctr(3), qm_core_region_ctr(3)
   real(dp) :: use_cutoff
   real(dp) :: H_extra_heat_ctr(3), H_extra_heat_r(2), H_extra_heat_velo_factor
@@ -1523,7 +1523,7 @@ contains
     type(Potential), intent(inout) :: pot
     character(len=*), intent(in) :: Run_Type, filepot_program, mm_internal_init_args, mm_internal_param_filename
     integer, intent(in) :: tmp_run_dir_i
-    character(len=FIELD_LENGTH) :: filename
+    character(len=STRING_LENGTH) :: filename
 
     if (tmp_run_dir_i > 0) then
        filename="/tmp/cp2k_run_"//tmp_run_dir_i//"/filepot"
@@ -1832,7 +1832,7 @@ contains
      real(dp), intent(in) :: time_step
      logical, intent(in) :: first
      real(dp), pointer :: v(:,:),f(:,:)
-     character(len=FIELD_LENGTH) :: output_line
+     character(len=STRING_LENGTH) :: output_line
      integer :: i,j
      nullify(v)
      if (.not. assign_pointer(ds%atoms, 'velo', v)) call system_abort("Could not find velo property.")

@@ -37,16 +37,16 @@ use libatoms_module
 implicit none
 
   type(Dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: infilename
+  character(len=STRING_LENGTH) :: infilename
   logical :: infile_is_list
-  character(len=FIELD_LENGTH) :: outfilename
+  character(len=STRING_LENGTH) :: outfilename
   type(Inoutput) :: outfile
-  character(len=FIELD_LENGTH) :: commandfilename
+  character(len=STRING_LENGTH) :: commandfilename
   type(Inoutput) :: commandfile
   character(len=1024) :: args_str
 
-  character(len=FIELD_LENGTH) :: mask_str
-  character(len=FIELD_LENGTH) :: mask_center
+  character(len=STRING_LENGTH) :: mask_str
+  character(len=STRING_LENGTH) :: mask_center
   integer :: decimation
   real(dp) :: min_time, max_time
   logical :: gaussian_smoothing
@@ -305,7 +305,7 @@ contains
     logical, intent(inout) :: autocorrelation
     integer, intent(inout) :: autocorrelation_max_lag
     logical, intent(inout) :: quiet
-    character(len=FIELD_LENGTH) :: t_field
+    character(len=STRING_LENGTH) :: t_field
 
 
     if (initial) then

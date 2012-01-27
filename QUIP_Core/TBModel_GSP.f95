@@ -53,7 +53,7 @@ include 'TBModel_interface.h'
 public :: TBModel_GSP
 type TBModel_GSP
   integer :: n_types = 0
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
   real(dp) :: cutoff = 0.0_dp
   real(dp) :: cutoff_H = 0.0_dp

@@ -71,10 +71,10 @@ type IPModel_FC
   real(dp), allocatable :: r0(:,:,:), phi2(:,:,:), phi3(:,:,:), phi4(:,:,:) !% IP parameters.
   integer, allocatable :: n_fcs(:,:)
 
-  character(len=FIELD_LENGTH) :: ideal_struct_file
+  character(len=STRING_LENGTH) :: ideal_struct_file
   type(Atoms) :: ideal_struct
 
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
 end type IPModel_FC
 
@@ -228,7 +228,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 
@@ -669,7 +669,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=*), intent(out) :: extra_calcs_list(:)
   integer :: n_extra_calcs
 
-  character(len=FIELD_LENGTH) :: extra_calcs_str
+  character(len=STRING_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
 
   n_extra_calcs = 0

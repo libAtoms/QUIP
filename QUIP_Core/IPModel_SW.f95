@@ -63,7 +63,7 @@ type IPModel_SW
   real(dp), allocatable :: a(:,:), AA(:,:), BB(:,:), p(:,:), q(:,:), sigma(:,:), eps2(:,:) !% IP parameters
   real(dp), allocatable :: lambda(:,:,:), gamma(:,:,:), eps3(:,:,:) !% IP parameters
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_SW
 
@@ -163,7 +163,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   logical, dimension(:), pointer :: atom_mask_pointer
 
   real(dp) :: r_scale, E_scale

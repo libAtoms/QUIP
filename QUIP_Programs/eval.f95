@@ -52,7 +52,7 @@ implicit none
 
   type(Dictionary) :: cli_params
 
-  character(len=FIELD_LENGTH) verbosity, test_dir_field
+  character(len=STRING_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
 	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
              & do_fine_phonons, do_cij_relax_initial
@@ -62,8 +62,8 @@ implicit none
   logical :: do_torque, precond_n_minim
   real(dp) :: fire_minim_dt0
   real(dp) :: tau(3)
-  character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
+  character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
+  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
   integer relax_iter, relax_print_interval
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io

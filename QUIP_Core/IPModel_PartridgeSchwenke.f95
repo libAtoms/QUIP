@@ -494,7 +494,7 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, local
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 

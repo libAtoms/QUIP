@@ -70,13 +70,13 @@ program cp2k_filepot
     !Input
     type(Dictionary)              :: params_in
     character(len=STRING_LENGTH)  :: args_str
-    character(len=FIELD_LENGTH)   :: Run_Type
-    character(len=FIELD_LENGTH)   :: Print_PSF
-    character(len=FIELD_LENGTH)   :: coord_file
-    character(len=FIELD_LENGTH)   :: new_coord_file
-    character(len=FIELD_LENGTH)   :: cp2k_program
-    character(len=FIELD_LENGTH)   :: fileroot_str
-    character(len=FIELD_LENGTH)   :: basis_set_file, potential_file, dft_file, global_file, cell_file
+    character(len=STRING_LENGTH)   :: Run_Type
+    character(len=STRING_LENGTH)   :: Print_PSF
+    character(len=STRING_LENGTH)   :: coord_file
+    character(len=STRING_LENGTH)   :: new_coord_file
+    character(len=STRING_LENGTH)   :: cp2k_program
+    character(len=STRING_LENGTH)   :: fileroot_str
+    character(len=STRING_LENGTH)   :: basis_set_file, potential_file, dft_file, global_file, cell_file
   logical                               :: clean_up_files
 !  logical                     :: Delete_Metal_Connections
     type(Table) :: intrares_impropers

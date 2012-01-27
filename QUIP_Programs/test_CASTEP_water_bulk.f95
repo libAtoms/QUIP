@@ -34,7 +34,7 @@ use potential_module
 implicit none
   type(Atoms) :: cluster_qm, cluster_mm, bulk
   type(Inoutput) :: io
-  character(len=FIELD_LENGTH) :: init_args, calc_args, infile
+  character(len=STRING_LENGTH) :: init_args, calc_args, infile
   real(dp) :: g_width_O, g_width_H, vacuum, charge_scale
   integer :: qm_center_i, qm_center_i_cluster
   real(dp) :: r_qm, r

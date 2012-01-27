@@ -159,10 +159,10 @@ module CrackParams_module
   type CrackParams
 
      ! Crack parameters (used only by makecrack)
-     character(FIELD_LENGTH) :: crack_structure !% Structure: so far 'diamond' and 'graphene' are supported
-     character(FIELD_LENGTH) :: crack_element !% Element to make slab from. Supported so far: Si, C, SiC, SiO
+     character(STRING_LENGTH) :: crack_structure !% Structure: so far 'diamond' and 'graphene' are supported
+     character(STRING_LENGTH) :: crack_element !% Element to make slab from. Supported so far: Si, C, SiC, SiO
      integer :: crack_z(2)  !% Initialised automatically from crack element
-     character(FIELD_LENGTH) :: crack_name !% Crack name, in format '(abc)[def]' with negative indices 
+     character(STRING_LENGTH) :: crack_name !% Crack name, in format '(abc)[def]' with negative indices 
                                           !% denoted by a trailing 'b' (for bar), e.g. '(111)[11b0]'.
      real(dp) :: crack_lattice_guess      !% Guess at bulk lattice parameter, used to obtain accurate result. Unit:~\AA{}.
      real(dp) :: crack_lattice_a, crack_lattice_c, crack_lattice_u, crack_lattice_x, crack_lattice_y, crack_lattice_z
@@ -172,7 +172,7 @@ module CrackParams_module
      logical  :: crack_apply_initial_load !% If 'true', apply initial loading field to crack slab
      real(dp) :: crack_strain             !% Initial applied strain
      real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$ (override strain)
-     character(FIELD_LENGTH) :: crack_loading !% 'uniform' for constant load, 
+     character(STRING_LENGTH) :: crack_loading !% 'uniform' for constant load, 
                                                !% 'ramp' for linearly decreasing load along $x$, 
                                                !% 'kfield' for Irwin plane strain K-field,
                                                !% 'interp_kfield_uniform' to linearly interpolate between k-field 
@@ -200,8 +200,8 @@ module CrackParams_module
      real(dp) :: crack_graphene_theta        !% Rotation angle of graphene plane, in radians.
      real(dp) :: crack_graphene_notch_width  !% Width of graphene notch. Unit:~\AA{}.
      real(dp) :: crack_graphene_notch_height !% Height of graphene notch. Unit:~\AA{}.
-     character(FIELD_LENGTH) :: crack_slab_filename !% Input file to use instead of generating slabs.
-     character(FIELD_LENGTH) :: crack_bulk_filename  !% Input file containing primitive cell
+     character(STRING_LENGTH) :: crack_slab_filename !% Input file to use instead of generating slabs.
+     character(STRING_LENGTH) :: crack_bulk_filename  !% Input file containing primitive cell
      logical :: crack_relax_bulk !% If true (default) relax bulk cell using classical potential
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
      logical  :: crack_check_surface_coordination !% Checking of the surface coordination before generating the crack seed
@@ -211,7 +211,7 @@ module CrackParams_module
      logical ::  crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
      real(dp) :: crack_tip_grid_size       !% Size (in A) of grid used for locating crack tips
      real(dp) :: crack_tip_min_separation  !% Minimum seperation (in A) between a pair of crack tips for them to be considered distinct
-     character(FIELD_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation', 'local_energy' or 'alpha_shape'
+     character(STRING_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation', 'local_energy' or 'alpha_shape'
      logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
      real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
      logical  :: crack_fix_sides !% If true fix atoms close to left and right edges of slab
@@ -227,30 +227,30 @@ module CrackParams_module
      real(dp) :: crack_front_angle_threshold !% Maximum bearing for segments to be included in crack front
  
      ! Simulation parameters
-     character(FIELD_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
+     character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
      integer  :: simulation_seed          !% Random number seed. Use zero for a random seed, or a particular value to repeat a previous run.
      logical  :: simulation_classical     !% Perform a purely classical simulation
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
-     character(FIELD_LENGTH) :: simulation_initial_state !% Initial state. Overrides value read from input atoms structure
+     character(STRING_LENGTH) :: simulation_initial_state !% Initial state. Overrides value read from input atoms structure
 
 
      ! Minimisation parameters
-     character(FIELD_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
+     character(STRING_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
                                               !% See 'minim()' in 'libAtoms/minimisation.f95' for details.
      real(dp) :: minim_tol                !% Target force tolerance - geometry optimisation is considered to be 
                                           !% converged when $|\mathbf{f}|^2 <$ 'tol'
      real(dp) :: minim_eps_guess          !% Initial guess for line search step size $\epsilon$.
      integer  :: minim_max_steps          !% Maximum number of minimisation steps.
      integer  :: minim_print_output       !% Number of steps between XYZ confgurations printed
-     character(FIELD_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
+     character(STRING_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
                                                      !% 'LINMIN_DERIV' when doing a LOTF hybrid simulation and only forces are available.
      logical :: minim_minimise_mm         !% Should we minimise classical degrees of freedom before each QM force evaluation
-     character(FIELD_LENGTH) :: minim_mm_method !% Minim method for MM minimisation, e.g. 'cg' for conjugate gradients
+     character(STRING_LENGTH) :: minim_mm_method !% Minim method for MM minimisation, e.g. 'cg' for conjugate gradients
      real(dp) :: minim_mm_tol             !% Target force tolerance for MM minimisation
      real(dp) :: minim_mm_eps_guess       !% Initial guess for line search $\epsilon$ for MM minimisation
      integer  :: minim_mm_max_steps       !% Maximum number of cg cycles for MM minimisation
-     character(FIELD_LENGTH) :: minim_mm_linminroutine !% Linmin routine for MM minimisation
-     character(FIELD_LENGTH) :: minim_mm_args_str   !% Args string to be passed to MM calc() routine
+     character(STRING_LENGTH) :: minim_mm_linminroutine !% Linmin routine for MM minimisation
+     character(STRING_LENGTH) :: minim_mm_args_str   !% Args string to be passed to MM calc() routine
 
 
      ! I/O parameters
@@ -260,9 +260,9 @@ module CrackParams_module
      real(dp) :: io_print_interval        !% Interval between movie XYZ frames, in fs.
      logical  :: io_print_all_properties  !% If true, print all atom properties to movie file. This will generate large
                                           !% files but is useful for debugging.
-     character(FIELD_LENGTH), allocatable :: io_print_properties(:) !% List of properties to print to movie file.
+     character(STRING_LENGTH), allocatable :: io_print_properties(:) !% List of properties to print to movie file.
      real(dp) :: io_checkpoint_interval   !% Interval between writing checkpoint files, in fs.
-     character(FIELD_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing 
+     character(STRING_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing 
                                                     !%lots of I/O to a network drive. Default is current directory.
      logical :: io_mpi_print_all !% Print output on all nodes. Useful for debugging. Default .false.
      logical :: io_backup  !% If true, create backups of check files
@@ -270,7 +270,7 @@ module CrackParams_module
 
      ! Selection parameters
      integer  :: selection_max_qm_atoms   !% Maximum number of QM atoms to select
-     character(FIELD_LENGTH) :: selection_method !% One of 'static', 'coordination', 'crack_front'
+     character(STRING_LENGTH) :: selection_method !% One of 'static', 'coordination', 'crack_front'
      real(dp) :: selection_ellipse(3)     !% Principal radii of selection ellipse along $x$, $y$ and $z$ in \AA{}.
      real(dp) :: selection_ellipse_bias   !% Shift applied to ellipses, expressed as fraction of ellipse radius in $x$ direction.
      real(dp) :: selection_ellipse_buffer !% Difference in size between inner and outer selection ellipses, i.e. amount of hysteresis.
@@ -280,13 +280,13 @@ module CrackParams_module
      real(dp) :: selection_update_interval!% intervals between QM selection updates, defaults to 0.0_dp meaning 'every step'
 
      ! Classical parameters
-     character(FIELD_LENGTH) :: classical_args !% Arguments used to initialise classical potential
-     character(FIELD_LENGTH) :: classical_args_str !% Arguments used by Calc Potential
+     character(STRING_LENGTH) :: classical_args !% Arguments used to initialise classical potential
+     character(STRING_LENGTH) :: classical_args_str !% Arguments used by Calc Potential
      real(dp) :: classical_force_reweight !% Factor by which to reduce classical forces in the embed region. Default is unity.
 
      ! QM parameters
-     character(FIELD_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
-     character(FIELD_LENGTH) :: qm_args_str  !% Arguments used by QM potential
+     character(STRING_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
+     character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
      logical :: qm_clusters               !% Should we carve clusters? Default true.
      logical :: qm_little_clusters        !% One big cluster or lots of little ones?
      integer :: qm_buffer_hops            !% Number of bond hops used for buffer region
@@ -310,7 +310,7 @@ module CrackParams_module
      ! Fit parameters
      integer :: fit_hops                  !% Number of hops used to generate fit region from embed region
      integer :: fit_spring_hops           !% Number of hops used when creating list of springs
-     character(FIELD_LENGTH) :: fit_method !% Method to use for force mixing: should be one of
+     character(STRING_LENGTH) :: fit_method !% Method to use for force mixing: should be one of
      !% \begin{itemize}
      !%  \item 'lotf_adj_pot_svd' --- LOTF using SVD to optimised the Adj Pot
      !%  \item 'lotf_adj_pot_minim' --- LOTF using conjugate gradients to optimise the Adj Pot
@@ -328,7 +328,7 @@ module CrackParams_module
      !% 
 
      ! Force intergration parameters
-     character(FIELD_LENGTH) :: force_integration_end_file  !% XYZ file containing ending configuration for force integration.
+     character(STRING_LENGTH) :: force_integration_end_file  !% XYZ file containing ending configuration for force integration.
      integer  :: force_integration_n_steps !% Number of steps to take in force integration
 
      ! Quasi-static loading parameters

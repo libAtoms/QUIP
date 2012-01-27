@@ -335,12 +335,12 @@ contains
     integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
     integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
-    character(len=FIELD_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial
+    character(len=STRING_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial
     logical :: do_calc_force, do_calc_energy, do_calc_local_energy, do_calc_virial, do_calc_local_virial
 
     integer, pointer :: cluster_mark_p(:)
     integer, pointer :: old_cluster_mark_p(:)
-    character(len=FIELD_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: hybrid_mark_postfix
     logical :: force_using_fd
     real(dp) :: force_fd_delta
 
@@ -1105,7 +1105,7 @@ contains
     real(dp) :: e                   
     real(dp), allocatable :: f(:,:)              
     type(Dictionary) :: params
-    character(FIELD_LENGTH) :: calc_energy, calc_force
+    character(STRING_LENGTH) :: calc_energy, calc_force
 
     INIT_ERROR(error)
 

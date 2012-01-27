@@ -37,8 +37,8 @@ use libatoms_module
 implicit none
 
   type(Dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: infilename
-  character(len=FIELD_LENGTH) :: outfilename
+  character(len=STRING_LENGTH) :: infilename
+  character(len=STRING_LENGTH) :: outfilename
   logical :: netcdf4
   type(CInOutput) :: infile, outfile
   type(Atoms) :: at

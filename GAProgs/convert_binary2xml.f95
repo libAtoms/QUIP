@@ -10,7 +10,7 @@ program convert
 
   integer :: i
   type(Dictionary) :: params, my_dictionary
-  character(len=FIELD_LENGTH) :: binary_file, xml_file
+  character(len=STRING_LENGTH) :: binary_file, xml_file
 
   logical :: has_xml_file
   integer :: quip_string_start, bracket_start, bracket_end, other_bracket_start

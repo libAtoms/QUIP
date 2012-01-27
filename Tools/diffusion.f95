@@ -48,7 +48,7 @@ use libatoms_module
 
     !Input
     type(Dictionary)                      :: params_in
-    character(FIELD_LENGTH)               :: xyzfilename, datafilename
+    character(STRING_LENGTH)               :: xyzfilename, datafilename
     integer                               :: from, to
     integer                               :: IO_Rate
     integer                               :: one_atom

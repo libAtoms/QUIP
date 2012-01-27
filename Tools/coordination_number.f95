@@ -49,7 +49,7 @@ program coordination_number
   type(Atoms)                   :: at
   type(CInoutput)               :: coord_file
   type(InOutput)                :: out_file
-  character(len=FIELD_LENGTH), allocatable :: output_lines(:)
+  character(len=STRING_LENGTH), allocatable :: output_lines(:)
   integer                       :: lines_used
   integer                       :: iframe, step_nr
   real(dp)                      :: time_passed
@@ -57,8 +57,8 @@ program coordination_number
 
   !Input parameters
   type(Dictionary)              :: params_in
-  character(len=FIELD_LENGTH)   :: coord_filename
-  character(len=FIELD_LENGTH)   :: out_filename
+  character(len=STRING_LENGTH)   :: coord_filename
+  character(len=STRING_LENGTH)   :: out_filename
   integer                       :: last_frame
   real(dp)                      :: time_step
   integer                       :: restart_every
@@ -66,7 +66,7 @@ program coordination_number
   logical                       :: skip_extra_firsts
 real(dp) :: dist, coord_num
 logical, allocatable :: mask_a(:)
-character(FIELD_LENGTH) :: mask_str
+character(STRING_LENGTH) :: mask_str
 real(dp) :: kappa, cutoff
 integer :: iatom, center_atom
 logical :: no_smoothing

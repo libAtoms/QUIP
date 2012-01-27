@@ -51,7 +51,7 @@ include 'TBModel_interface.h'
 public :: TBModel_DFTB
 type TBModel_DFTB
   integer :: n_types = 0
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
   real(dp) :: cutoff = 0.0_dp
   logical :: is_orthogonal = .false.

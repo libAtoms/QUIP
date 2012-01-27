@@ -66,7 +66,7 @@ type IPModel_Morse
 
   real(dp), allocatable :: D(:,:), alpha(:,:), r0(:,:), cutoff_a(:,:) !% IP parameters.
 
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
 end type IPModel_Morse
 
@@ -159,7 +159,7 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 
@@ -544,7 +544,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=*), intent(out) :: extra_calcs_list(:)
   integer :: n_extra_calcs
 
-  character(len=FIELD_LENGTH) :: extra_calcs_str
+  character(len=STRING_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
 
   n_extra_calcs = 0

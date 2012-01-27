@@ -44,21 +44,21 @@ program teach_sparse_program
   type(Dictionary) :: params
   type(gp_sparse) :: gp_sp
 
-  character(len=FIELD_LENGTH) :: verbosity
-  character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
+  character(len=STRING_LENGTH) :: verbosity
+  character(len=STRING_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
   theta_file, sparse_file, bispectrum_file, config_type_hypers_string, tmp
   real(dp) :: mem_required, mem_total, mem_free, z0_ratio
   logical :: has_e0, has_f0, has_theta_file, has_sparse_file, has_bispectrum_file, test_gp_gradient_result
 
-  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, config_type_hypers_fields
+  character(len=STRING_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, config_type_hypers_fields
   character(len=SPARSE_LENGTH) :: sparse_string
-  character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
+  character(len=STRING_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
-  character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
+  character(len=STRING_LENGTH), dimension(:), allocatable :: theta_string_array
   integer :: i, j, k, l, o, dd, dt, config_type_hypers_num_fields, i_default, m_total, li, ui, gp_teach_memory
   integer, dimension(:), allocatable :: type_indices, sparse_points
   integer, dimension(:,:), allocatable :: permutation
-  character(len=FIELD_LENGTH) :: gp_file
+  character(len=STRING_LENGTH) :: gp_file
   real(dp), dimension(:), allocatable :: theta
 
   call system_initialise(verbosity=PRINT_NORMAL)

@@ -105,8 +105,8 @@
 
     real(dp) :: gap, term1
     type(Dictionary)        :: params
-    character(FIELD_LENGTH) :: mm_args_str
-    character(FIELD_LENGTH) :: topology_suffix1, topology_suffix2
+    character(STRING_LENGTH) :: mm_args_str
+    character(STRING_LENGTH) :: topology_suffix1, topology_suffix2
     integer                 :: form_bond(2), break_bond(2), atom1, atom3
     logical                 :: have_form_bond, have_break_bond
 
@@ -118,9 +118,9 @@
     logical                 :: no_coupling, dummy
     character(STRING_LENGTH) :: extra_calc_args
 
-    character(FIELD_LENGTH) :: psf_print
-    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, calc_EVB_gap
-    character(FIELD_LENGTH) :: use_calc_energy
+    character(STRING_LENGTH) :: psf_print
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, calc_EVB_gap
+    character(STRING_LENGTH) :: use_calc_energy
     character(STRING_LENGTH) :: new_args_str
 
     INIT_ERROR(error)

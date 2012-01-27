@@ -322,8 +322,8 @@ program crack
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, last_update_selection_time, last_stanza_change_time, last_update_crack_tip_time
-  character(FIELD_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
-  character(FIELD_LENGTH) :: state_string
+  character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
+  character(STRING_LENGTH) :: state_string
 
   real(dp) :: time_elapsed, total_time_elapsed
 

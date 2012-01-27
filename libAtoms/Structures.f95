@@ -1911,13 +1911,13 @@ contains
     integer, intent(out), optional :: error
     type(Atoms) :: dup_cell
 
-    character(len=FIELD_LENGTH) :: struct_file
-    character(len=FIELD_LENGTH) :: quip_structs_dir
+    character(len=STRING_LENGTH) :: struct_file
+    character(len=STRING_LENGTH) :: quip_structs_dir
     type(Atoms) :: cell
     real(dp) :: vol, scale
     integer :: stat
-    character(len=FIELD_LENGTH) :: Z_values_str_use
-    character(len=FIELD_LENGTH), allocatable :: Z_values_a(:)
+    character(len=STRING_LENGTH) :: Z_values_str_use
+    character(len=STRING_LENGTH), allocatable :: Z_values_a(:)
     integer, allocatable :: Z_values(:), new_Z(:)
     integer :: i, n_types, n_fields
     real(dp) :: u_vol_per_atom, u_vol_per_unit_cell

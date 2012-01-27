@@ -44,7 +44,7 @@
 module IPModel_ASAP_module
 
 use error_module
-use libatoms_module, only: dp, FIELD_LENGTH
+use libatoms_module, only: dp, STRING_LENGTH
 use mpi_context_module
 use QUIP_Common_module
 
@@ -69,7 +69,7 @@ type IPModel_ASAP
 
   real(dp) :: cutoff(4)
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
   logical :: initialised
 
 end type IPModel_ASAP
@@ -313,7 +313,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    integer nesr
 
    logical :: has_atom_mask_name
-   character(FIELD_LENGTH) :: atom_mask_name
+   character(STRING_LENGTH) :: atom_mask_name
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
 
@@ -816,7 +816,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: val
+  character(len=STRING_LENGTH) :: val
 
   integer ti, tj, Zi, Zj
 

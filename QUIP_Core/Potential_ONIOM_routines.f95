@@ -150,7 +150,7 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
-    character(len=FIELD_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: hybrid_mark_postfix
 
     INIT_ERROR(error)
 
@@ -221,7 +221,7 @@
     logical :: dummy
     integer i
 
-    character(FIELD_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
 
     INIT_ERROR(error)
 

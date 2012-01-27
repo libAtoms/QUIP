@@ -67,7 +67,7 @@ type IPModel_LJ
 
   real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:) !% IP parameters.
 
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
 end type IPModel_LJ
 
@@ -162,7 +162,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 
@@ -559,7 +559,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=*), intent(out) :: extra_calcs_list(:)
   integer :: n_extra_calcs
 
-  character(len=FIELD_LENGTH) :: extra_calcs_str
+  character(len=STRING_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
 
   n_extra_calcs = 0

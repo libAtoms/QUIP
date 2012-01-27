@@ -63,7 +63,7 @@ type IPModel_Tersoff
   real(dp), allocatable :: n(:), c(:), d(:), h(:), R(:), S(:)     !% IP parameters dimensioned as \texttt{n_types}
   real(dp), allocatable :: chi(:,:)                               !% IP parameter depending on the pair interaction (mixing hentalpy), dimensioned as \texttt{(n_types,n_types)}
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Tersoff
 
@@ -180,7 +180,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
 
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E

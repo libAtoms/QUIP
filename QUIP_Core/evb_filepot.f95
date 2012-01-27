@@ -56,18 +56,18 @@ program EVB_filepot_template
     type(Dictionary)        :: cli_params
     type(Dictionary)        :: params
     character(STRING_LENGTH) :: evb_params_line
-    character(FIELD_LENGTH) :: posfilename
-    character(FIELD_LENGTH) :: xyz_template_filename
-    character(FIELD_LENGTH) :: outfilename
+    character(STRING_LENGTH) :: posfilename
+    character(STRING_LENGTH) :: xyz_template_filename
+    character(STRING_LENGTH) :: outfilename
     logical                 :: only_GAP
-    character(FIELD_LENGTH) :: psf_file1
-    character(FIELD_LENGTH) :: psf_file2
-    character(FIELD_LENGTH) :: filepot_program
-    character(FIELD_LENGTH) :: cp2k_calc_args
-    character(FIELD_LENGTH) :: evb_params_filename
-    character(FIELD_LENGTH) :: mm_args_str
-    character(FIELD_LENGTH) :: topology_suffix1
-    character(FIELD_LENGTH) :: topology_suffix2
+    character(STRING_LENGTH) :: psf_file1
+    character(STRING_LENGTH) :: psf_file2
+    character(STRING_LENGTH) :: filepot_program
+    character(STRING_LENGTH) :: cp2k_calc_args
+    character(STRING_LENGTH) :: evb_params_filename
+    character(STRING_LENGTH) :: mm_args_str
+    character(STRING_LENGTH) :: topology_suffix1
+    character(STRING_LENGTH) :: topology_suffix2
     integer                 :: form_bond(2), break_bond(2)
     real(dp)                :: diagonal_dE2, &
                                offdiagonal_A12, &
@@ -78,7 +78,7 @@ program EVB_filepot_template
                                save_energy
     type(Inoutput)          :: evb_params_file
     logical                 :: exists
-    character(len=FIELD_LENGTH) :: filename
+    character(len=STRING_LENGTH) :: filename
     integer                        :: tmp_run_dir_i
 
 

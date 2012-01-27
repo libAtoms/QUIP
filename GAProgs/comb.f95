@@ -10,7 +10,7 @@ program comb
 
   integer  :: i, n
   
-  character(len=FIELD_LENGTH) :: in_file, out_file
+  character(len=STRING_LENGTH) :: in_file, out_file
 
   call system_initialise(verbosity=PRINT_SILENT)
 

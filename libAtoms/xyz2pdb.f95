@@ -46,7 +46,7 @@ program xyz2pdb
                                      set_value
   use linearalgebra_module,    only: find_in_array
   use paramreader_module,      only: param_register, param_read_args, &
-                                     FIELD_LENGTH, PARAM_MANDATORY
+                                     STRING_LENGTH, PARAM_MANDATORY
   use periodictable_module,    only: ElementCovRad
   use system_module,           only: dp, inoutput, &
                                      system_initialise, system_finalise, &
@@ -69,7 +69,7 @@ program xyz2pdb
     type(Table)                 :: intrares_impropers
 
     type(Dictionary)            :: params_in
-    character(len=FIELD_LENGTH) :: Library, &
+    character(len=STRING_LENGTH) :: Library, &
                                    xyz_file
     real(dp)                    :: Neighbour_Tolerance
     logical                     :: Delete_Metal_Connections

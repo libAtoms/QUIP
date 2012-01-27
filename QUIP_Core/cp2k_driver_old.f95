@@ -112,7 +112,7 @@ module cp2k_driver_module
                                      print, operator(.feq.), &
                                      check_size
   use paramreader_module,      only: param_register, param_read_line, &
-                                     FIELD_LENGTH
+                                     STRING_LENGTH
   use periodictable_module,    only: ElementName, ElementCovRad, ElementMass
   use structures_module,       only: find_motif
   use system_module,           only: dp, inoutput, initialise, finalise, &
@@ -779,12 +779,12 @@ contains
   type(Dictionary)                      :: params
   integer                               :: run_type
   integer                               :: PSF_print
-  character(len=FIELD_LENGTH)           :: cp2k_program
-  character(len=FIELD_LENGTH)           :: run_type_str, psf_print_str
-  character(len=FIELD_LENGTH)           :: fileroot_str
-  character(len=FIELD_LENGTH)           :: basis_set_file, potential_file, dft_file, cell_file,global_file
+  character(len=STRING_LENGTH)           :: cp2k_program
+  character(len=STRING_LENGTH)           :: run_type_str, psf_print_str
+  character(len=STRING_LENGTH)           :: fileroot_str
+  character(len=STRING_LENGTH)           :: basis_set_file, potential_file, dft_file, cell_file,global_file
 
-  character(len=FIELD_LENGTH)            :: run_command='', &
+  character(len=STRING_LENGTH)            :: run_command='', &
                                            fin_command=''
   logical                               :: clean_up_files, save_output_files
   integer                               :: status, error_status
@@ -1313,7 +1313,7 @@ call print('Added '//count(my_atoms%data%int(qm_flag_index,1:my_atoms%N).eq.1)//
                                      PSF_print
     logical, optional, intent(in) :: have_silica_potential
     type(Table), optional, intent(in) :: intrares_impropers
-    character(len=FIELD_LENGTH)   :: run_type_string
+    character(len=STRING_LENGTH)   :: run_type_string
 logical :: do_have_silica_potential
 type(InOutput) :: exyz
 

@@ -57,7 +57,7 @@ type IPModel_Template
 
   real(dp) :: cutoff = 0.0_dp
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Template
 
@@ -207,7 +207,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   integer ti
 

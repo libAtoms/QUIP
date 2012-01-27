@@ -61,10 +61,9 @@ module dictionary_module
   integer, parameter :: &
        PROPERTY_INT = 1, PROPERTY_REAL = 2, PROPERTY_STR = 3, PROPERTY_LOGICAL = 4
 
-  public :: C_KEY_LEN, DICT_FIELD_LENGTH, DICT_N_FIELDS
+  public :: C_KEY_LEN, STRING_LENGTH, DICT_N_FIELDS
   integer, parameter :: C_KEY_LEN = 256
-  integer, parameter :: DICT_FIELD_LENGTH = 1024  !% Maximum field width during parsing
-  integer, parameter :: DICT_STRING_LENGTH = 20480  !% Maximum string width during parsing, should be greater than the paramreader's string_length
+  integer, parameter :: STRING_LENGTH = 10240     !% Maximum string length
   integer, parameter :: DICT_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   public :: dictdata
@@ -2107,11 +2106,11 @@ contains
     integer, intent(out), optional :: error
 
     logical :: do_append
-    character(len=DICT_FIELD_LENGTH) :: field
+    character(len=STRING_LENGTH) :: field
     integer equal_pos
-    character(len=DICT_FIELD_LENGTH), dimension(dict_n_fields) :: final_fields
+    character(len=STRING_LENGTH), dimension(dict_n_fields) :: final_fields
     character(len=C_KEY_LEN) :: key
-    character(len=DICT_FIELD_LENGTH) :: value
+    character(len=STRING_LENGTH) :: value
     integer :: i, num_pairs
 
     INIT_ERROR(error);
@@ -2156,7 +2155,7 @@ contains
     character(1), optional, intent(in) :: char_a_sep
     logical :: status
 
-    character(len=DICT_FIELD_LENGTH), dimension(dict_n_fields) :: fields
+    character(len=STRING_LENGTH), dimension(dict_n_fields) :: fields
     character(len=len(strvalue)) :: datastr, shapestr, myvalue
     integer :: num_fields, i, j
     real(dp) :: r
@@ -2370,7 +2369,7 @@ contains
     character(1), optional, intent(in) :: entry_sep !% Entry seperator, default is single space
     character(1), optional, intent(in) :: char_a_sep !% Output separator for character arrays, default is ','
     type(extendable_str) :: str
-    character(len=DICT_STRING_LENGTH) :: dictionary_write_string
+    character(len=STRING_LENGTH) :: dictionary_write_string
     integer, intent(out), optional :: error
 
     integer :: i, j, k
@@ -3005,7 +3004,7 @@ contains
 
     integer s, e, save_cur
     character(len=C_KEY_LEN) :: key
-    character(len=DICT_FIELD_LENGTH) :: val
+    character(len=STRING_LENGTH) :: val
     character(len=63), parameter :: valid_chars =  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
     logical got_brace
 

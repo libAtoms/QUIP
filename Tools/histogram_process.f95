@@ -39,7 +39,7 @@ use libatoms_module
 implicit none
 
   !input
-  character(len=FIELD_LENGTH) :: infile1_name, infile2_name, outfile_name, listfilename
+  character(len=STRING_LENGTH) :: infile1_name, infile2_name, outfile_name, listfilename
   logical                     :: file_is_list
   integer                     :: n_data
   logical                     :: KL_divergence, gaussian_fit, UI_unbias
@@ -48,7 +48,7 @@ implicit none
   !reading in infiles
   type(Dictionary)              :: cli_params
   type(InOutput)                :: list_file
-  character(FIELD_LENGTH)       :: inline
+  character(STRING_LENGTH)       :: inline
   character(1024), dimension(2) :: fields
   integer                       :: num_fields,status
   logical                       :: read_more

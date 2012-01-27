@@ -57,11 +57,11 @@ type IPModel_Einstein
   real(dp), dimension(:), allocatable :: spring_constant
 
   type(atoms) :: ref
-  character(len=FIELD_LENGTH) :: ref_file
+  character(len=STRING_LENGTH) :: ref_file
 
   real(dp) :: cutoff = 0.0_dp
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_Einstein
 
@@ -142,7 +142,7 @@ subroutine IPModel_Einstein_Calc(this, at, e, local_e, f, virial, local_virial, 
    type(Dictionary) :: params
    logical, dimension(:), pointer :: atom_mask_pointer
    logical :: has_atom_mask_name
-   character(FIELD_LENGTH) :: atom_mask_name
+   character(STRING_LENGTH) :: atom_mask_name
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
 
@@ -272,7 +272,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=STRING_LENGTH) :: value
 
   integer ti
 

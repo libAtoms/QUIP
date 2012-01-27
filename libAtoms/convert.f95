@@ -38,7 +38,7 @@ implicit none
 
   type(Atoms) at
   type(CInOutput) :: infile, outfile
-  character(len=FIELD_LENGTH) :: infilename, outfilename
+  character(len=STRING_LENGTH) :: infilename, outfilename
   integer error
 
   call system_initialise(verbosity=PRINT_SILENT)

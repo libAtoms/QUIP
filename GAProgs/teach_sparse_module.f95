@@ -35,13 +35,13 @@ module teach_sparse_mod
   implicit none
 
   type sparse_types
-     character(len=FIELD_LENGTH) :: type
+     character(len=STRING_LENGTH) :: type
      integer :: m
      real(dp), dimension(3) :: sgm
   endtype sparse_types
 
   type teach_sparse
-     character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
+     character(len=STRING_LENGTH) :: at_file='', ip_args = '', &
      energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name, mark_sparse_atoms = '', mask_name = ''
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
@@ -270,7 +270,7 @@ contains
     integer :: i, j, n, k, l, jx, jn, ii, jj
 
     integer :: it, n_config_type
-    character(len=FIELD_LENGTH) :: config_type
+    character(len=STRING_LENGTH) :: config_type
 
     select case(trim(this%coordinates))
     case('qw')
@@ -754,7 +754,7 @@ contains
      type(xmlf_t) :: xf
      integer :: i
      type(extendable_str) :: gap_string
-     character(len=FIELD_LENGTH) :: gp_tmp_file, gp_label
+     character(len=STRING_LENGTH) :: gp_tmp_file, gp_label
      type(inoutput) :: gp_inout
      integer, dimension(8) :: values
 

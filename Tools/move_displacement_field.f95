@@ -37,7 +37,7 @@ implicit none
   real(dp) :: cutoff, dist_tol
   real(dp), allocatable :: new_pos(:,:)
   type(Atoms) :: config, ref_config
-  character(len=FIELD_LENGTH) :: config_filename, ref_config_filename
+  character(len=STRING_LENGTH) :: config_filename, ref_config_filename
   type(CInoutput) :: config_io, ref_config_io
   type(Dictionary) :: cli_params
   real(dp) :: cur_displacement(3)

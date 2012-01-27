@@ -1806,7 +1806,7 @@ end function cluster_in_out_in
 	 keep_whole_silica_tetrahedra, keep_whole_titania_octahedra, terminate_octahedra,reduce_n_cut_bonds, in_out_in, &
          protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
 	 combined_protein_heuristics
-    character(FIELD_LENGTH) :: in_out_in_mode
+    character(STRING_LENGTH) :: in_out_in_mode
     logical :: keep_whole_residues_has_value, keep_whole_subgroups_has_value, keep_whole_prolines_has_value, keep_whole_proline_sidechains_has_value, &
                protect_double_bonds_has_value, protect_peptide_bonds_has_value, keep_whole_molecules_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale, termination_clash_factor
@@ -2379,7 +2379,7 @@ end function cluster_in_out_in
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
-    character(FIELD_LENGTH) :: weight_interpolation, hybrid_mark_postfix
+    character(STRING_LENGTH) :: weight_interpolation, hybrid_mark_postfix
     logical :: construct_buffer_use_only_heavy_atoms
 
     integer, pointer :: hybrid_mark(:)

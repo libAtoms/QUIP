@@ -5,7 +5,7 @@ implicit none
   type(KPoints) :: kp
   integer :: i
   type(Dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: outfile
+  character(len=STRING_LENGTH) :: outfile
   type(inoutput) :: out_io
   integer :: mesh(3)
   logical :: monkhorst_pack

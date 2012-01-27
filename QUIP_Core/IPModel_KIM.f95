@@ -61,7 +61,7 @@ type IPModel_KIM
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
-  character(len=FIELD_LENGTH) KIM_Model_name, KIM_Test_name
+  character(len=STRING_LENGTH) KIM_Model_name, KIM_Test_name
 
   logical :: kim_is_initialised = .false.
 
@@ -282,7 +282,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-  character(len=FIELD_LENGTH) :: extra_calcs_list(10)
+  character(len=STRING_LENGTH) :: extra_calcs_list(10)
   integer :: n_extra_calcs
   integer*8 :: ppos, pf, pe, pN, pNlocal
   integer*8 :: Nstub
@@ -399,7 +399,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=*), intent(out) :: extra_calcs_list(:)
   integer :: n_extra_calcs
 
-  character(len=FIELD_LENGTH) :: extra_calcs_str
+  character(len=STRING_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
 
   n_extra_calcs = 0

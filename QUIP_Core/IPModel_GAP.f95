@@ -97,7 +97,7 @@ type IPModel_GAP
 
   character(len=256) :: coordinates             !% Coordinate system used in GAP database
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 #ifdef HAVE_GP_PREDICT
   type(gp) :: my_gp
@@ -235,7 +235,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps, do_fast_gap, do_fast_gap_dgemv, force_calc_new_x_star, new_x_star
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 

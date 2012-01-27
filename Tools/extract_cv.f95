@@ -49,7 +49,7 @@ program extract_cv
   type(InOutput)                :: out_file
   type(Table)                   :: colvar_atoms
   real(dp),       pointer       :: f(:,:), v(:,:)
-  character(len=FIELD_LENGTH), allocatable :: output_lines(:)
+  character(len=STRING_LENGTH), allocatable :: output_lines(:)
   integer                       :: lines_used
   integer                       :: iframe, step_nr
   real(dp)                      :: time_passed
@@ -57,11 +57,11 @@ program extract_cv
 
   !Input parameters
   type(Dictionary)              :: params_in
-  character(len=FIELD_LENGTH)   :: coord_filename
-  character(len=FIELD_LENGTH)   :: velo_filename
-  character(len=FIELD_LENGTH)   :: force_filename
-  character(len=FIELD_LENGTH)   :: out_filename
-  character(len=FIELD_LENGTH)   :: colvar_filename
+  character(len=STRING_LENGTH)   :: coord_filename
+  character(len=STRING_LENGTH)   :: velo_filename
+  character(len=STRING_LENGTH)   :: force_filename
+  character(len=STRING_LENGTH)   :: out_filename
+  character(len=STRING_LENGTH)   :: colvar_filename
   integer                       :: last_frame
   real(dp)                      :: time_step
   integer                       :: restart_every

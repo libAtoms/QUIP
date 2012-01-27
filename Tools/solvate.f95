@@ -44,7 +44,7 @@ program solvate
   type(Atoms)                 :: at, wat, at2
   integer                     :: i, j, stat
   type(dictionary)            :: cli_params
-  character(len=FIELD_LENGTH) :: filename, waterfilename, solvated_filename
+  character(len=STRING_LENGTH) :: filename, waterfilename, solvated_filename
 !  type(inoutput)              :: xyzfile, waterfile
   real(dp)                    :: xmin, xmax, ymin, ymax, zmin, zmax, exclusion, security_zone
   logical                     :: add_molec

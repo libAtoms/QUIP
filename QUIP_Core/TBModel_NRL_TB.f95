@@ -56,7 +56,7 @@ type TBModel_NRL_TB
   integer :: n_types = 0, n_mag = 0
   logical :: is_orthogonal = .true., is_magnetic = .false., has_pair_repulsion = .false., &
 	     overlap_zero_limit = .true., force_harrison_signs = .false.
-  character(len=FIELD_LENGTH) label
+  character(len=STRING_LENGTH) label
 
   real(dp) :: cutoff = 0.0_dp
 

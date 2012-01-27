@@ -64,7 +64,7 @@ type IPModel_FS
   real(dp), allocatable :: c(:,:), c0(:,:), c1(:,:), c2(:,:)
   real(dp), allocatable :: A(:,:), beta(:,:), d(:,:)
 
-  character(len=FIELD_LENGTH) :: label
+  character(len=STRING_LENGTH) :: label
 
 end type IPModel_FS
 
@@ -155,7 +155,7 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
-  character(FIELD_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
   ! private variables for open-mp 

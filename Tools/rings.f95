@@ -41,7 +41,7 @@ program rings
   integer, parameter  :: MAX_GROUPS       = 20
 
   type(Dictionary) :: cli_params
-  character(len=FIELD_LENGTH) :: infilename
+  character(len=STRING_LENGTH) :: infilename
   type(CInOutput) :: infile
   type(Atoms) :: at
   integer i
