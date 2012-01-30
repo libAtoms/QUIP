@@ -257,7 +257,7 @@ implicit none
         did_something=.true.
         if (do_test) then
            call verbosity_set_minimum(PRINT_NERD)
-           if (len(trim(test_dir_field)) > 0) then
+           if (len_trim(test_dir_field)) > 0) then
               test_ok = test_gradient(pot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
            else
               test_ok = test_gradient(pot, at, do_F, do_V, args_str = calc_args)
@@ -266,7 +266,7 @@ implicit none
            call print ("test is OK? " // test_ok)
         endif
         if (do_n_test) then
-           if (len(trim(test_dir_field)) > 0) then
+           if (len_trim(test_dir_field)) > 0) then
               call n_test_gradient(pot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
            else
               call n_test_gradient(pot, at, do_F, do_V, args_str = calc_args)
@@ -286,7 +286,7 @@ implicit none
 	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
 	   HANDLE_ERROR(error)
 	endif
-        if (len(trim(relax_print_file)) > 0) then
+        if (len_trim(relax_print_file)) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
