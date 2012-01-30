@@ -50,6 +50,8 @@ parameters "Lattice" and "Properties" which are always written.
 The original order of parameters in the input file is preserved.""")
 p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz
 Supported formats: %s.""" % ', '.join([s for s in AtomsWriters.keys() if isinstance(s, str)]))
+p.add_option('-I', '--in-format', action='store', help="""Explicitly specify input format, e.g. --in-format=xyz
+Supported formats: %s.""" % ', '.join([s for s in AtomsReaders.keys() if isinstance(s, str)]))
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
 p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
 p.add_option('-g', '--merge-params', action='store_true', help="""Merge params from MERGE file into output file.""", default=False)
@@ -60,9 +62,10 @@ available as `at`, and do_print is set to True. If the user-supplied code sets d
 p.add_option('-E', '--exec-code-file', action='store', help="""File with python code to execute, just like -e/--exec-code.""")
 p.add_option('-B', '--exec-before', action='store', help="""Python code to execute after looping over frames""")
 p.add_option('-A', '--exec-after', action='store', help="""Python code to execute after looping over frames""")
-p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
+p.add_option('--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
+p.add_option('-R', '--remove', action='append', help="Remove a property or param. Can appear multiple times")
 p.add_option('-s', '--select', action='store', help="""Output only a subset of the atoms in input file. Argument should resolve to logical mask.""")
 p.add_option('--int-format', action='store', help="""Format string to use when writing integers in XYZ format.""")
 p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
@@ -88,28 +91,28 @@ p.add_option('--param-template', action='store', help='Template .param file, to 
 opt, args = p.parse_args()
 
 if opt.extract_params:
-   opt.no_print_at = True
+    opt.no_print_at = True
 
-# check for conflicts with -o|--output 
+# check for conflicts with -o|--output
 if opt.no_print_at:
-   if opt.output is not None:
-       p.error('--no_print_at can not coexist with --output')
-   if len(args) < 1:
-       p.error('At least one input file must be specified')
-   infiles = args
+    if opt.output is not None:
+        p.error('--no_print_at can not coexist with --output')
+    if len(args) < 1:
+        p.error('At least one input file must be specified')
+    infiles = args
 else: # didn't specify no_print_at
-   if opt.output is None:
-      if len(args) != 2:
-	 p.error('With no --output, exactly one input and one output file must be specified (use /dev/null or NONE for no output).')
-      outfile = args.pop()
-      infiles = args
-   else:
-      outfile = opt.output
-      infiles = args
+    if opt.output is None:
+        if len(args) != 2:
+            p.error('With no --output, exactly one input and one output file must be specified (use /dev/null or NONE for no output).')
+        outfile = args.pop()
+        infiles = args
+    else:
+        outfile = opt.output
+        infiles = args
 
 # make no-output outfile name standard
 if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
-   outfile = None
+    outfile = None
 
 # convert - to stdin/stdout
 infiles = [ f == '-' and 'stdin' or f for f in infiles ]
@@ -117,162 +120,172 @@ if outfile == '-': outfile = 'stdout'
 
 # check for existing outfile
 if opt.output is None and not opt.no_print_at:
-   if os.path.exists(outfile):
-      p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
+    if os.path.exists(outfile):
+        p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
 
 # check for proper format of --range
 if opt.range is not None:
-   try:
-      opt.range = parse_slice(opt.range)
-   except:
-      p.error('Cannot parse slice "%s" - should be in format [start]:[stop][:step]')
+    try:
+        opt.range = parse_slice(opt.range)
+    except:
+        p.error('Cannot parse slice "%s" - should be in format [start]:[stop][:step]')
 else:
-   # Default is all frames
-   opt.range = slice(0, None, None)
+    # Default is all frames
+    opt.range = slice(0, None, None)
 
 if isinstance(opt.range, int):
-   if opt.range >= 0:
-      opt.range = slice(opt.range, opt.range+1,+1)
-   else:
-      opt.range = slice(opt.range, opt.range-1,-1)
+    if opt.range >= 0:
+        opt.range = slice(opt.range, opt.range+1,+1)
+    else:
+        opt.range = slice(opt.range, opt.range-1,-1)
 
 
 if opt.lattice is not None:
-   opt.lattice = [ float(x) for x in opt.lattice.split() ]
-   if len(opt.lattice) == 9:
-      opt.lattice = farray(opt.lattice).reshape((3,3),order='F').T
-   elif len(opt.lattice) == 3:
-      opt.lattice = farray(diag(opt.lattice))
-   elif len(opt.lattice) == 1:
-      opt.lattice = opt.lattice*fidentity(3)
-   else:
-      p.error('LATTICE should consist of 1, 3 or 9 numbers -- got %r' % opt.lattice)
+    opt.lattice = [ float(x) for x in opt.lattice.split() ]
+    if len(opt.lattice) == 9:
+        opt.lattice = farray(opt.lattice).reshape((3,3),order='F').T
+    elif len(opt.lattice) == 3:
+        opt.lattice = farray(diag(opt.lattice))
+    elif len(opt.lattice) == 1:
+        opt.lattice = opt.lattice*fidentity(3)
+    else:
+        p.error('LATTICE should consist of 1, 3 or 9 numbers -- got %r' % opt.lattice)
 
 
 print_same_properties=False
 if opt.properties is not None:
-   if opt.properties == 'SAME':
-      print_same_properties=True
-   else:
-      opt.properties = parse_comma_colon_list(opt.properties)
+    if opt.properties == 'SAME':
+        print_same_properties=True
+    else:
+        opt.properties = parse_comma_colon_list(opt.properties)
 
 if opt.params is not None:
-   opt.params = parse_comma_colon_list(opt.params)
+    opt.params = parse_comma_colon_list(opt.params)
 
 if opt.atoms_ref is not None:
-   opt.atoms_ref = Atoms(opt.atoms_ref)
+    opt.atoms_ref = Atoms(opt.atoms_ref)
 
 if opt.merge is not None:
-   if opt.atoms_ref is not None:
-      merge_configs = AtomsReader(opt.merge, atoms_ref=opt.atoms_ref)
-   else:
-      merge_configs = AtomsReader(opt.merge)
+    if opt.atoms_ref is not None:
+        merge_configs = AtomsReader(opt.merge, atoms_ref=opt.atoms_ref)
+    else:
+        merge_configs = AtomsReader(opt.merge)
 
-   if opt.merge_properties is not None:
-      opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
-   else:
-      at_merge = merge_configs[0]
-      opt.merge_properties = at_merge.properties.keys()
+    if opt.merge_properties is not None:
+        opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
+    else:
+        at_merge = merge_configs[0]
+        opt.merge_properties = at_merge.properties.keys()
 
 def process(at, frame):
-   if print_same_properties:
-      write_args['properties'] = at.properties.keys()
+    if print_same_properties:
+        write_args['properties'] = at.properties.keys()
 
-   # filter atoms
-   if opt.select is not None:
-      at2 = at.select(mask=eval(opt.select))
-      at = at2
-   
-   # Override lattice
-   if opt.lattice is not None:
-      at.set_lattice(opt.lattice, False)
+    # filter atoms
+    if opt.select is not None:
+        at2 = at.select(mask=eval(opt.select))
+        at = at2
 
-   # Merge from merge_config
-   if opt.merge:
-      try:
-         at_merge = merge_configs[frame]
-      except IndexError:
-         at_merge = merge_configs[0]
-      for k in opt.merge_properties:
-         at.add_property(k, at_merge.properties[k], property_type=at_merge.properties.get_type(k), overwrite=True)
+    # Override lattice
+    if opt.lattice is not None:
+        at.set_lattice(opt.lattice, False)
 
-      if opt.merge_params is not None:
-         at.params.update(at_merge.params)
+    # Merge from merge_config
+    if opt.merge:
+        try:
+            at_merge = merge_configs[frame]
+        except IndexError:
+            at_merge = merge_configs[0]
+        for k in opt.merge_properties:
+            at.add_property(k, at_merge.properties[k], property_type=at_merge.properties.get_type(k), overwrite=True)
 
-   # Execute user code
-   do_print = True
-   if opt.exec_code_file is not None:
-      execfile(opt.exec_code_file)
-   if opt.exec_code is not None:
-      exec(opt.exec_code)
+        if opt.merge_params is not None:
+            at.params.update(at_merge.params)
 
-   if opt.centre is not None:
-      write_args['centre'] = eval(opt.centre)
+    # Execute user code
+    do_print = True
+    if opt.exec_code_file is not None:
+        execfile(opt.exec_code_file)
+    if opt.exec_code is not None:
+        exec(opt.exec_code)
 
-   # Filter parameters
-   if opt.params is not None:
-      for k in at.params.keys():
-         k = k.lower()
-         if not k in opt.params:
-            del at.params[k]
+    if opt.centre is not None:
+        write_args['centre'] = eval(opt.centre)
 
-   # Rename properties and parameters
-   if opt.rename is not None:
-      for (old, new) in opt.rename:
-          if old not in at.properties and old not in at.params:
-              raise AttributeError('No property or parameter named "%s" exists' % old)
-          if old in at.properties:
-              at.properties[new] = at.properties[old]
-              del at.properties[old]
-          if old in at.params:
-              at.params[new] = at.params[old]
-              del at.params[old]
+    # Filter parameters
+    if opt.params is not None:
+        for k in at.params.keys():
+            k = k.lower()
+            if not k in opt.params:
+                del at.params[k]
 
-   # Verbose output
-   if opt.verbose and frame == 0:
-      print 'N_ATOMS', at.n
-      print 'PROPERTIES:', at.properties.keys()
-      print 'PARAMS:', at.params.keys()
-      
-   # Do the writing
-   if opt.extract_params:
-      if frame == 0:
-         print '#' + ' '.join(at.params.keys())
-      for k in at.params.keys():
-         if opt.extract_format:
-            print(opt.extract_format % at.params[k]),
-         else:
-            print at.params[k],
-               
-      print
-   elif do_print and outfile is not None:
+    # Rename properties and parameters
+    if opt.rename is not None:
+        for (old, new) in opt.rename:
+            if old in at.properties:
+                at.properties[new] = at.properties[old]
+                del at.properties[old]
+            elif old in at.params:
+                at.params[new] = at.params[old]
+                del at.params[old]
+            else:
+                raise AttributeError('Cannont rename: no property or parameter named "%s" exists' % old)
 
-      if opt.format in ('eps', 'png', 'jpg') and isinstance(opt.range, slice):
-         write_args['frame'] = frame
+    # Remove properties and parameters
+    if opt.remove is not None:
+        for remove in opt.remove:
+            if remove in at.properties:
+                del at.properties[remove]
+            elif remove in at.params:
+                del at.params[remove]
+            else:
+                raise AttributeError('Cannot remove: no property or parameter named "%s" exists' % old)
 
-      if opt.format == 'cell':
-         write_args['cell_template'] = opt.cell_template
-         write_args['param_template'] = opt.param_template
-      
-      if opt.properties is None:
-         outfile.write(at, **write_args)
-      else:
+    # Verbose output
+    if opt.verbose and frame == 0:
+        print 'N_ATOMS', at.n
+        print 'PROPERTIES:', at.properties.keys()
+        print 'PARAMS:', at.params.keys()
 
-         # Convert from frac_pos to pos
-         if 'frac_pos' in opt.properties and not at.has_property('frac_pos'):
-            at.add_property('frac_pos', 0.0, n_cols=3)
-            at.frac_pos[:] = dot(at.g, at.pos)
+    # Do the writing
+    if opt.extract_params:
+        if frame == 0:
+            print '#' + ' '.join(at.params.keys())
+        for k in at.params.keys():
+            if opt.extract_format:
+                print(opt.extract_format % at.params[k]),
+            else:
+                print at.params[k],
 
-         # or vice-versa
-         if 'pos' in opt.properties and not at.has_property('pos'):
-            at.add_property('pos', 0.0, n_cols=3)
-            at.pos[:] = dot(at.lattice, at.frac_pos)
+        print
+    elif do_print and outfile is not None:
 
-         try:
-            # Try to do the filtering at the writing stage
+        if opt.format in ('eps', 'png', 'jpg') and isinstance(opt.range, slice):
+            write_args['frame'] = frame
+
+        if opt.format == 'cell':
+            write_args['cell_template'] = opt.cell_template
+            write_args['param_template'] = opt.param_template
+
+        if opt.properties is None:
             outfile.write(at, **write_args)
-         except TypeError:
-            p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
+        else:
+
+            # Convert from frac_pos to pos
+            if 'frac_pos' in opt.properties and not at.has_property('frac_pos'):
+                at.add_property('frac_pos', 0.0, n_cols=3)
+                at.frac_pos[:] = dot(at.g, at.pos)
+
+            # or vice-versa
+            if 'pos' in opt.properties and not at.has_property('pos'):
+                at.add_property('pos', 0.0, n_cols=3)
+                at.pos[:] = dot(at.lattice, at.frac_pos)
+
+            try:
+                # Try to do the filtering at the writing stage
+                outfile.write(at, **write_args)
+            except TypeError:
+                p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
 # Build dictionaries of arguments for AtomsWriter constructor
@@ -280,74 +293,78 @@ def process(at, frame):
 init_arg_rename = {'view': 'script'}
 init_args = {}
 for arg in ('width', 'height', 'aspect', 'view'):
-   if getattr(opt, arg) is not None:
-      initarg = init_arg_rename.get(arg, arg)
-      init_args[initarg] = getattr(opt, arg)
+    if getattr(opt, arg) is not None:
+        initarg = init_arg_rename.get(arg, arg)
+        init_args[initarg] = getattr(opt, arg)
 write_arg_rename = {}
 write_args = {}
 for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
-   if getattr(opt, arg) is not None:
-      writearg = write_arg_rename.get(arg, arg)
-      write_args[writearg] = getattr(opt, arg)
+    if getattr(opt, arg) is not None:
+        writearg = write_arg_rename.get(arg, arg)
+        write_args[writearg] = getattr(opt, arg)
 
 if opt.extra_args is not None:
-   init_args.update(eval('dict(%s)' % opt.extra_args))
-   
+    init_args.update(eval('dict(%s)' % opt.extra_args))
+
 if opt.write_args is not None:
-   write_args.update(eval('dict(%s)' % opt.write_args))
+    write_args.update(eval('dict(%s)' % opt.write_args))
 
 if opt.format is None and outfile is not None:
-   opt.format = os.path.splitext(outfile)[1][1:]
+    opt.format = os.path.splitext(outfile)[1][1:]
 
 if opt.format is None or opt.format == '':
-   opt.format = 'xyz'
+    opt.format = 'xyz'
 
 if opt.aspect is None:
-   opt.aspect = 0.75
+    opt.aspect = 0.75
 
 stdout = False
 if outfile is not None:
-   stdout = outfile == 'stdout'
-   try:
-      outfile = AtomsWriter(outfile, format=opt.format, **init_args)
-   except RuntimeError, re:
-      p.error(str(re))
+    stdout = outfile == 'stdout'
+    try:
+        outfile = AtomsWriter(outfile, format=opt.format, **init_args)
+    except RuntimeError, re:
+        p.error(str(re))
 
 read_args = {}
 if opt.atoms_ref is not None:
-   read_args['atoms_ref'] = opt.atoms_ref
+    read_args['atoms_ref'] = opt.atoms_ref
 if opt.read_args is not None:
-   read_args.update(eval("dict(%s)" % opt.read_args))
+    read_args.update(eval("dict(%s)" % opt.read_args))
 
-all_configs = AtomsReader(infiles, start=opt.range.start, stop=opt.range.stop, step=opt.range.step, **read_args)
+all_configs = AtomsReader(infiles,
+                          format=opt.in_format,
+                          start=opt.range.start,
+                          stop=opt.range.stop,
+                          step=opt.range.step,
+                          **read_args)
 
 try:
-   show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 
+    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1
 except AttributeError:
-   show_progress = False
+    show_progress = False
 
 if show_progress:
-   from quippy.progbar import ProgressBar
-   pb = ProgressBar(0,len(all_configs),80,showValue=True)
+    from quippy.progbar import ProgressBar
+    pb = ProgressBar(0,len(all_configs),80,showValue=True)
 
 if opt.exec_before is not None:
-   exec(opt.exec_before)
+    exec(opt.exec_before)
 for i, at in enumerate(all_configs):
-   try:
-      process(at, i)
-   except (IndexError, ValueError, RuntimeError), re:
-      p.error(str(re))
-   if show_progress: pb(i)
+    try:
+        process(at, i)
+    except (IndexError, ValueError, RuntimeError), re:
+        p.error(str(re))
+    if show_progress: pb(i)
 
 if show_progress:
-   print
+    print
 
 if opt.exec_after is not None:
-   exec(opt.exec_after)
-                    
-if outfile is not None:
-   try:
-      outfile.close()
-   except AttributeError:
-      pass
+    exec(opt.exec_after)
 
+if outfile is not None:
+    try:
+        outfile.close()
+    except AttributeError:
+        pass
