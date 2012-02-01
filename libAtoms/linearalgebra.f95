@@ -147,9 +147,9 @@ module linearalgebra_module
   ! matrix*diag(vector)
   !% Matrix product with the diagonal matrix constructed from a vector. For example,
   !% 'B = A .multd. d' is equivalent to 'B = A .mult. diag(d)'
-  private :: matrix_product_vect_asdiagonal
+  private :: matrix_product_vect_asdiagonal_dd, matrix_product_vect_asdiagonal_zz
   interface operator(.multd.)
-     module procedure matrix_product_vect_asdiagonal
+     module procedure matrix_product_vect_asdiagonal_dd, matrix_product_vect_asdiagonal_zz
   end interface
 
   !% Matrix product with the diagonal matrix constructed from a vector in subroutine form,
@@ -233,6 +233,10 @@ module linearalgebra_module
   interface diagonalise
      module procedure matrix_diagonalise, matrix_diagonalise_generalised
      module procedure matrix_z_diagonalise, matrix_z_diagonalise_generalised
+  end interface
+
+  interface nonsymmetric_diagonalise
+     module procedure matrix_nonsymmetric_diagonalise
   end interface
 
   !% Calculate the inverse of a matrix in-place. Uses \textsc{lapack} to compute the inverse.
@@ -440,6 +444,11 @@ module linearalgebra_module
   interface update_exponential_average
      module procedure update_exponential_average_s, update_exponential_average_v, update_exponential_average_d2
   end interface update_exponential_average
+
+  private :: matrix_exp_d
+  interface matrix_exp
+     module procedure matrix_exp_d
+  end interface matrix_exp
 
 CONTAINS
 
@@ -751,14 +760,26 @@ CONTAINS
    ! m(:,:) .multd. v(:)
    !
    ! returns product of matrix and vector as diagonal of another matrix
-   function matrix_product_vect_asdiagonal(matrix,vect) result (prodmatrix)
+   function matrix_product_vect_asdiagonal_dd(matrix,vect) result (prodmatrix)
      real(dp),intent(in), dimension(:) :: vect
      real(dp),dimension(size(vect),size(vect))::prodmatrix
      real(dp),intent(in),dimension(:,:)::matrix
 
      call matrix_product_vect_asdiagonal_sub(prodmatrix, matrix, vect)
 
-   end function matrix_product_vect_asdiagonal
+   end function matrix_product_vect_asdiagonal_dd
+
+   ! m(:,:) .multd. v(:)
+   !
+   ! returns product of matrix and vector as diagonal of another matrix
+   function matrix_product_vect_asdiagonal_zz(matrix,vect) result (prodmatrix)
+     complex(dp),intent(in), dimension(:) :: vect
+     complex(dp),dimension(size(vect),size(vect))::prodmatrix
+     complex(dp),intent(in),dimension(:,:)::matrix
+
+     call matrix_product_vect_asdiagonal_sub(prodmatrix, matrix, vect)
+
+   end function matrix_product_vect_asdiagonal_zz
 
    ! multiply a matrix by a vector, interepreted as a diagonal matrix, on 
    ! the left and right hand sides, weighted by 0.5
@@ -1623,30 +1644,79 @@ CONTAINS
 
   end subroutine matrix_z_diagonalise_generalised
 
-  subroutine matrix_nonsymmetric_diagonalise(this,eval)
+  subroutine matrix_nonsymmetric_diagonalise(this, eval, l_evects, r_evects, error)
      real(dp), dimension(:,:), intent(in) :: this
      complex(dp), dimension(:), intent(out) :: eval
+     complex(dp), dimension(:,:), intent(out), optional, target :: l_evects, r_evects
+     integer, optional, intent(out) :: error
 
      real(dp), dimension(:), allocatable :: wr, wi, work
-     real(dp), dimension(:,:), allocatable :: a, vl, vr
-     integer :: n, lwork, info
+     real(dp), dimension(:,:), allocatable :: a
+     real(dp), dimension(:,:), allocatable :: vl, vr
+     integer :: n, lwork, info, i
+     character(len=1) :: cl, cr
+     integer :: ldvl, ldvr
+
+     INIT_ERROR(error)
 
      n = size(this,1)
-     allocate(a(n,n), wr(n), wi(n), vr(n,n), vl(n,n) )
+     allocate(a(n,n), wr(n), wi(n))
+     if (present(r_evects)) then
+	allocate(vr(n,n))
+	cr = 'V'
+	ldvr = n
+     else
+	allocate(vr(1,1))
+	cr ='N'
+	ldvr = 1
+     endif
+     if (present(l_evects)) then
+        allocate(vl(n,n))
+	cl='V'
+	ldvl = n
+     else
+	allocate(vl(1,1))
+	cl='N'
+	ldvl = 1
+     endif
      a = this
 
      allocate(work(1))
      lwork = -1
-     call dgeev('N', 'N', n, a, n, wr, wi, vl, n, vr, n, work, lwork, info)
+     call dgeev(cl, cr, n, a, n, wr, wi, vl, ldvl, vr, ldvr, work, lwork, info)
+     if (info /= 0) then
+        RAISE_ERROR("matrix_nonsymmetric_diagonalise first dgeev call (determine lwork) failed with INFO="//info, error)
+     endif
      lwork = ceiling(work(1))
      deallocate(work)
      allocate(work(lwork))
-     call dgeev('N', 'N', n, a, n, wr, wi, vl, n, vr, n, work, lwork, info)
-     !do i = 1, n
-     !   eval(i) = cmplx(wr(i),wi(i))
-     !enddo
+     call dgeev(cl, cr, n, a, n, wr, wi, vl, ldvl, vr, ldvr, work, lwork, info)
+     if (info /= 0) then
+        RAISE_ERROR("matrix_nonsymmetric_diagonalise second dgeev call (actual calculation) failed with INFO="//info, error)
+     endif
+
      eval = cmplx(wr,wi)
-     deallocate( a, wr, wi, vr, vl, work )
+     if (present(l_evects) .or. present(r_evects)) then
+	i = 1
+	do while (i <= n)
+	 if (wi(i) == 0) then
+	    if (present(l_evects)) l_evects(:,i) = vl(:,i)
+	    if (present(r_evects)) r_evects(:,i) = vr(:,i)
+	 else
+	    if (present(l_evects)) l_evects(:,i) = cmplx(vl(:,i), vl(:,i+1))
+	    if (present(l_evects)) l_evects(:,i+1) = cmplx(vl(:,i), -vl(:,i+1))
+	    if (present(r_evects)) r_evects(:,i) = cmplx(vr(:,i), vr(:,i+1))
+	    if (present(r_evects)) r_evects(:,i+1) = cmplx(vr(:,i), -vr(:,i+1))
+	    i = i + 1
+	 endif
+	 i = i + 1
+      end do
+     endif
+
+     deallocate( a, wr, wi, work )
+     if (.not. present(l_evects)) deallocate(vl)
+     if (.not. present(r_evects)) deallocate(vr)
+
 
   endsubroutine matrix_nonsymmetric_diagonalise
 
@@ -4802,7 +4872,7 @@ CONTAINS
        ! ---
 
        logical  :: done
-       integer  :: maxchild, temp2
+       integer  :: maxchild
 
        ! ---
 
@@ -4900,7 +4970,7 @@ CONTAINS
        ! ---
 
        logical  :: done
-       integer  :: maxchild, temp2
+       integer  :: maxchild
 
        ! ---
 
@@ -5861,5 +5931,26 @@ CONTAINS
      TrapezoidIntegral = sum((x(2:n)-x(1:n-1))*(y(2:n)+y(1:n-1)))/2.0_dp
   
   endfunction TrapezoidIntegral
+
+  function matrix_exp_d(a)
+     real(dp), intent(in) :: a(:,:)
+     real(dp) :: matrix_exp_d(size(a,1),size(a,2))
+
+     integer :: n
+     complex(dp), allocatable :: rv(:,:)
+     complex(dp), allocatable :: ev(:), rv_inv(:,:)
+
+     if (size(a,1) /= size(a,2)) call system_abort("matrix_exp_d needs a square matrix, not "//size(a,1)//"x"//size(a,2))
+
+     n = size(a,1)
+     allocate(rv(n,n), rv_inv(n,n), ev(n))
+
+     call nonsymmetric_diagonalise(a, ev, r_evects=rv)
+     call inverse(rv, rv_inv)
+
+     matrix_exp_d = ((rv .multd. exp(ev)) .mult. rv_inv)
+
+     deallocate(rv, rv_inv, ev)
+   end function matrix_exp_d
 
 end module linearalgebra_module
