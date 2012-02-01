@@ -434,7 +434,6 @@ contains
        !TIME_PROPAG_TEX 100
        !TIME_PROPAG_TEX 100 after all Verlet and thermostat steps (barostat\_post\_vel2)
        !TIME_PROPAG_TEX 100
-       !TIME_PROPAG_TEX 100 $$ (r,h) = (r,h) \exp\left( (\tau/2) \epsilon_v \right) $$
        !TIME_PROPAG_TEX 100 $$ v = v \exp \left(  -(\tau/2) (1 + 3/N_d) \epsilon_v \right) $$
        !TIME_PROPAG_TEX 100 $$ \epsilon_f = \left( Tr[\mathrm{vir}] + \sum_i m_i \left|v_i\right|^2 - 3 V P\right) + 3/N_d \sum_i m_i \left| v_i \right|^2 + \sqrt{2 k_B T \gamma_\epsilon W_\epsilon/\tau} r $$
        !TIME_PROPAG_TEX 100 $$ \epsilon_v = \epsilon_v +  (\tau/2) \epsilon_f/W_\epsilon $$
