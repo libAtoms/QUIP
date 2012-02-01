@@ -56,6 +56,26 @@ def skip_time_duplicates(seq, initial_time=-1.0):
          yield at
          cur_time = at.params['Time']
 
+def open_sources(opt, args):
+   if len(args) == 1:
+      atomseq = AtomsReader(args[0], start=opt.range.start,
+                            stop=opt.range.stop, step=opt.range.step)
+      nframes = len(atomseq)
+      sources = [atomseq]
+   else:
+      sources = [AtomsReader(f) for f in args]
+
+      # Try to count total number of frames
+      nframes = sum([len(s) for s in sources])
+      nframes = len(range(*opt.range.indices(nframes)))
+
+      # Build a chain of iterators over all input files, skipping frames as appropriate
+      atomseq = itertools.islice(itertools.chain.from_iterable(sources),
+                                 opt.range.start, opt.range.stop, opt.range.step)
+
+   return nframes, atomsseq, sources
+
+
 p = optparse.OptionParser(usage='%prog [options] <input file>...')
 
 p.add_option('-r', '--range', action='store', help='Range of frames to include in output movie')
@@ -104,12 +124,7 @@ else:
 if opt.outfile is None:
    opt.outfile = os.path.splitext(args[0])[0] + '.mp4'
 
-sources = [AtomsReader(f) for f in args]
-
-# Try to count number of frames
-nframes = sum([len(s) for s in sources])
-nframes = len(range(*opt.range.indices(nframes)))
-
+nframes, atomseq, sources = open_sources(opt, args)
 ndigit = 5
 basename, ext = os.path.splitext(opt.outfile)
 out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
@@ -127,16 +142,11 @@ if opt.update:
    else:
       opt.range = slice(opt.range.start + restart_frame/opt.range.step, opt.range.stop, opt.range.step)
 
-   nframes = sum([len(s) for s in sources])
-   nframes = len(range(*opt.range.indices(nframes)))
+   # Re-open the sources starting at restart_frame
+   nframes, atomseq, sources = open_sources(opt, args)
    img_offset = restart_frame
 else:
    img_offset = 0
-
-
-# Build a chain of iterators over all input files, skipping frames as appropriate
-atomseq = itertools.islice(itertools.chain.from_iterable(sources),
-                           opt.range.start, opt.range.stop, opt.range.step)
 
 if opt.skip_bad_frames:
    atomseq = skip_bad_frames(atomseq)
