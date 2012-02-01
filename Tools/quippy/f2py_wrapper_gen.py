@@ -553,6 +553,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           if  dim_list != []:
               if mytype.startswith('type'):
                  tname = strip_type(t.name)
+                 uses.add(type_map[typename].lower())
 
                  if len(dim_list) != 1: continue
 
