@@ -37,17 +37,18 @@ include Makefile.inc
 include Makefile.rules
 
 PROGRAMS = evb_driver
+EVB_OBJS =
 
 evb_driver : % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${EVB_OBJS} ${LIBS}  ${LINKOPTS}
 
 ifeq ($(HAVE_CP2K), 1)
-   PROGRAMS += cp2k_filepot
-   CP2K_OBJS = cp2k_driver.o
-cp2k_filepot : % :  ${CP2K_OBJS} %.o ${LIBFILES}
+   PROGRAMS += cp2k_driver
+   CP2K_OBJS = 
+cp2k_driver : % :  ${CP2K_OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CP2K_OBJS} ${LIBS}  ${LINKOPTS}
 else
-cp2k_filepot:
+cp2k_driver:
 	echo "CP2K support not active" 1>&2 && exit 1
 endif
 ifeq ($(HAVE_VASP), 1)
@@ -66,7 +67,6 @@ LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
-
 
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}

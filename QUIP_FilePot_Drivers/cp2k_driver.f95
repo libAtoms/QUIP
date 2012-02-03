@@ -30,34 +30,92 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X cp2k_driver_template_module
+!X cp2k_driver_template program
 !X
-!% Driver for CP2K code using a template input file
+!% filepot program for CP2K driver using input file template
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 #include "error.inc"
-module cp2k_driver_template_module
+program cp2k_driver_template
 use libatoms_module
-use topology_module
 implicit none
 
-private
-integer, parameter, private :: CP2K_LINE_LENGTH = 1024 !Max line length to be printed into the CP2K input files
+    integer, parameter :: CP2K_LINE_LENGTH = 1024 !Max line length to be printed into the CP2K input files
 
-public :: do_cp2k_calc
+    type(Atoms)                   :: my_atoms
+    real(dp)                      :: energy
+    real(dp), allocatable         :: f0(:,:)
+    real(dp), pointer             :: forces_p(:,:)
+    type(CInoutput)                :: xyz_io
 
-public :: read_output, qmmm_qm_abc, calc_charge_lsd
+    character(len=STRING_LENGTH)  :: infile, outfile
+    character(len=STRING_LENGTH) :: args_str
+    character(len=STRING_LENGTH)  :: arg
+    integer :: i, index_insert
 
+    integer :: error = ERROR_NONE
+
+    call system_initialise(verbosity=PRINT_SILENT,enable_timing=.true.)
+    call verbosity_push(PRINT_NORMAL)
+    call system_timer('cp2k_driver_template')
+
+    if (cmd_arg_count() < 2) &
+      call system_abort("Usage: cp2k_driver_template infile outfile [ other_cli_arg1=v1 other_cli_arg2=v2 ...]")
+
+    call get_cmd_arg(1, infile)
+    call get_cmd_arg(2, outfile)
+    args_str = ""
+    if (cmd_arg_count() > 2) then
+      do i=3, cmd_arg_count()
+	call get_cmd_arg(i, arg)
+        !add {} if there is space in the arg
+        if (index(trim(arg)," ").ne.0) then
+            index_insert = index(trim(arg),"=")
+            arg(index_insert+1:len_trim(arg)+2) = "{"//arg(index_insert+1:len_trim(arg))//"}"
+            call print('arg: '//trim(arg),PRINT_SILENT)
+        endif
+	args_str = trim(args_str) // " " // trim(arg)
+      end do
+    endif
+
+    !call CP2K
+    call do_cp2k_calc(at=my_atoms, f=f0, e=energy, infile=infile, args_str=trim(args_str), error=error)
+    HANDLE_ERROR(error)
+
+    !momentum conservation
+    call sum0(f0)
+
+    !write energy and forces
+    call set_value(my_atoms%params,'energy',energy)
+    call add_property(my_atoms,'force', 0.0_dp, n_cols=3)
+    if (.not. assign_pointer(my_atoms, 'force', forces_p)) then
+       call system_abort("filepot_read_output needed forces, but couldn't find force in my_atoms ")
+    endif
+    forces_p = f0
+
+    call initialise(xyz_io,outfile,action=OUTPUT)
+    call write(my_atoms,xyz_io,real_format='%20.13f')
+    call finalise(xyz_io)
+
+    deallocate(f0)
+    call finalise(my_atoms)
+    call system_timer('cp2k_driver_template')
+    mainlog%prefix=""
+    call verbosity_push(PRINT_SILENT)
+    call system_finalise
 
 contains
 
-
-  subroutine do_cp2k_calc(at, f, e, args_str, error)
+  subroutine do_cp2k_calc(at, f, e, infile, args_str, error)
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out) :: f(:,:), e
+    real(dp), allocatable, intent(out) :: f(:,:)
+    real(dp), intent(out) :: e
+    character(len=*) :: infile
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
+
 
     type(Dictionary) :: cli
     character(len=STRING_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
@@ -126,6 +184,7 @@ contains
     character(len=STRING_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
     character(len=STRING_LENGTH) :: dir, tmp_run_dir
+    character(len=1024) :: log_sys_command_str
     integer :: tmp_run_dir_i, stat
     logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels
     integer :: persistent_run_i, persistent_frc_size, qm_mol_id, n_hydrogen, old_n_hydrogen, n_extra_electrons, old_n_extra_electrons
@@ -196,12 +255,21 @@ contains
       call param_register(cli, 'qmmm_link_fix_pbc', 'T', qmmm_link_fix_pbc, help_string="If true (default) move outer atoms in any QM links which straddle a periodic boundary so link is continous")
 
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
-      if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_filepot_template args_str')) then
+      if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_driver_template args_str')) then
 	RAISE_ERROR('cp2k_driver could not parse argument line', error)
       endif
     call finalise(cli)
-
     do_calc_virial = len_trim(calc_virial) > 0
+
+    mainlog%prefix="CP2K_DRIVER"
+
+    call print('cp2k_driver_template args_str '//trim(args_str), PRINT_ALWAYS)
+
+
+    call read(at,infile)
+
+    allocate(f(3,at%N))
+
 
     if (cp2k_calc_fake) then
       call print("do_fake cp2k calc calculation")
@@ -352,8 +420,8 @@ contains
     endif ! tmp_run_dir
     call system_timer('do_cp2k_calc/run_dir')
 
-    call system_timer('do_cp2k_calc/get_persistent_i')
     if (persistent) then
+       call system_timer('do_cp2k_calc/get_persistent_i')
        inquire(file="persistent_run_i", exist=persistent_already_started)
 
        if (.not. persistent_already_started) then
@@ -397,8 +465,8 @@ contains
        call initialise(persistent_run_i_io, "persistent_run_i", OUTPUT)
        call print(""//persistent_run_i, file=persistent_run_i_io, verbosity=PRINT_ALWAYS)
        call finalise(persistent_run_i_io)
+       call system_timer('do_cp2k_calc/get_persistent_i')
     endif
-    call system_timer('do_cp2k_calc/get_persistent_i')
 
     call system_timer('do_cp2k_calc/copy_templ')
     if (.not. persistent_already_started) then
@@ -976,19 +1044,22 @@ contains
 
     if (save_output_files) then
       if (persistent) then
-	 call system_command(&
-	   ' if [ ! -f cp2k_input_log ]; then cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log; fi;' // &
-	   ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_'//persistent_run_i//'.stress_tensor'// ' >> cp2k_stress_file_log')
+	 log_sys_command_str=' if [ ! -f cp2k_input_log ]; then cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log; fi;' // &
+	   ' cat filepot.0.xyz >> cp2k_driver_in_log.xyz;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_'//persistent_run_i//'.xyz'// ' >> cp2k_force_file_log;'
+	 if (do_calc_virial) then
+	    log_sys_command_str = trim(log_sys_command_str) //' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_'//persistent_run_i//'.stress_tensor'// ' >> cp2k_stress_file_log'
+	 endif
       else
-	 call system_command(&
-	   ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
+	 log_sys_command_str= ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
 	   ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
-	   ' cat filepot.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_0.xyz'// ' >> cp2k_force_file_log;'// &
-	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_0.stress_tensor'// ' >> cp2k_stress_file_log')
+	   ' cat filepot.xyz >> cp2k_driver_in_log.xyz;' // &
+	   ' cat '//trim(run_dir)//'/'//trim(proj)//'-frc-1_0.xyz'// ' >> cp2k_force_file_log;'
+	 if (do_calc_virial) then
+	    log_sys_command_str = trim(log_sys_command_str) // ' cat '//trim(run_dir)//'/'//trim(proj)//'-stress-1_0.stress_tensor'// ' >> cp2k_stress_file_log'
+	 endif
       endif
+      call system_command(trim(log_sys_command_str))
     endif
 
     ! clean up
@@ -1692,4 +1763,42 @@ contains
        end if
    end subroutine get_qm_list
 
-end module cp2k_driver_template_module
+
+  !momentum conservation
+  !   weighing function: 1 (simply subtract sumF/n)
+  !?!   weighing function: m (keeping same acceleration on the atoms)
+  subroutine sum0(force)
+
+    real(dp), dimension(:,:), intent(inout) :: force
+    integer   :: i
+    real(dp)  :: sumF(3)
+
+    do i = 1, size(force,2)
+       sumF(1) = sum(force(1,1:size(force,2)))
+       sumF(2) = sum(force(2,1:size(force,2)))
+       sumF(3) = sum(force(3,1:size(force,2)))
+    enddo
+
+    if ((sumF(1).feq.0.0_dp).and.(sumF(2).feq.0.0_dp).and.(sumF(3).feq.0.0_dp)) then
+       call print('cp2k_driver: Sum of the forces are zero.')
+       return
+    endif
+
+    call print('cp2k_driver: Sum of the forces was '//sumF(1:3))
+    sumF = sumF / size(force,2)
+
+    do i = 1, size(force,2)
+       force(1:3,i) = force(1:3,i) - sumF(1:3)
+    enddo
+
+    do i = 1, size(force,2)
+       sumF(1) = sum(force(1,1:size(force,2)))
+       sumF(2) = sum(force(2,1:size(force,2)))
+       sumF(3) = sum(force(3,1:size(force,2)))
+    enddo
+    call print('cp2k_driver: Sum of the forces after mom.cons.: '//sumF(1:3))
+
+  end subroutine sum0
+
+
+end program cp2k_driver_template
