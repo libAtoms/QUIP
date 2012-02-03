@@ -46,7 +46,7 @@ endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
-MODULES = ThirdParty libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
+MODULES = ThirdParty libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
 GP = 
 
 ifeq (${HAVE_GP_PREDICT},1)
@@ -100,6 +100,7 @@ endif
 QUIP_Core: libAtoms/libatoms.a ${FOX} ${GP}
 QUIP_Util: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a
 QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils 
+QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils 
 Tests: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
 
 ifeq (${HAVE_GP_PREDICT},1)
@@ -120,6 +121,11 @@ GAProgs/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
 	rm ${BUILDDIR}/Makefile
 endif
+
+QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
+	ln -sf ${PWD}/QUIP_FilePot_Drivers/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_FilePot_Drivers -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_FilePot_Drivers/}
+	rm ${BUILDDIR}/Makefile
 
 QUIP_Programs/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile

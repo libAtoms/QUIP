@@ -425,7 +425,7 @@ subroutine write_test_kim_file_from_model(test_kim_es, test_name, model_name)
     integer i, conventions_i, model_input_i
 
     p_model_str = kim_api_get_model_kim_str_f(trim(model_name), str_len, kim_error)
-    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_kim_str failed", kim_error) /= KIM_STATUS_OK) &
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_model_kim_str failed", kim_error) /= KIM_STATUS_OK) &
       call system_abort("Failed to get model .kim string")
 
     call initialise(test_kim_es)
