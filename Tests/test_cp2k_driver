@@ -15,11 +15,11 @@ fi
 mydir=`dirname $0`
 bindir=$mydir/../build.$QUIP_ARCH
 
-if [ ! -x $bindir/cp2k_filepot ]; then
-   (cd $QUIP_ROOT && make QUIP_Core/cp2k_filepot) || exit 2
+if [ ! -x $bindir/cp2k_driver ]; then
+   (cd $QUIP_ROOT && make QUIP_FilePot_Drivers/cp2k_driver) || exit 2
 fi
 
-TEST=test_cp2k_filepot
+TEST=test_cp2k_driver
 
 cat<<EOF_LIB > $TEST.all_res.CHARMM.lib
 %residue H2O1 TIP3 WAT
@@ -42,16 +42,16 @@ EOF_IN
 cat<<EOF_CP2K > $TEST.cp2k
 #!/bin/bash
 
-cp quip_cp2k.xyz quip-pos-1_0.xyz
-sed -e 's/pos/frc/' -e 's/\(Prop.*\)/\\1 E=42.0/' < quip-pos-1_0.xyz > quip-frc-1_0.xyz
+cp quip_cp2k.xyz quip-pos-1_1.xyz
+sed -e 's/pos/frc/' -e 's/\(Prop.*\)/\\1 E=42.0/' < quip-pos-1_1.xyz > quip-frc-1_1.xyz
 
 EOF_CP2K
 
 chmod +x $TEST.cp2k
 
-cp $QUIP_ROOT/QUIP_Core/cp2k_driver/cp2k_input.template $TEST.cp2k_input.template
+cp $QUIP_ROOT/QUIP_FilePot_Drivers/cp2k_driver/cp2k_input.template $TEST.cp2k_input.template
 
-$bindir/cp2k_filepot $TEST.in.xyz $TEST.out.xyz Run_Type=MM cp2k_program=../$TEST.cp2k PSF_print=DRIVER_PRINT_AND_SAVE cp2k_template_file=$TEST.cp2k_input.template
+$bindir/cp2k_driver $TEST.in.xyz $TEST.out.xyz Run_Type=MM cp2k_program=../$TEST.cp2k PSF_print=DRIVER_PRINT_AND_SAVE cp2k_template_file=$TEST.cp2k_input.template
 
 
 cat<<EOF_OUT > $TEST.out.ref.xyz
@@ -80,4 +80,4 @@ else
    echo "OK? F"
 fi
 
-rm -r $TEST.* cp2k_run_* cp2k_filepot_in_log.xyz cp2k_output_log cp2k_input_log cp2k_force_file_log quip_rev_sort_index quip_cp2k.psf
+rm -r $TEST.* cp2k_run_* cp2k_driver_in_log.xyz cp2k_output_log cp2k_input_log cp2k_force_file_log quip_rev_sort_index quip_cp2k.psf
