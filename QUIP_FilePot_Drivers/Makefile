@@ -36,6 +36,11 @@ endif
 include Makefile.inc
 include Makefile.rules
 
+all: ${PROGRAMS}
+
+LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
+LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
+
 PROGRAMS = evb_driver
 EVB_OBJS =
 
@@ -44,9 +49,11 @@ evb_driver : % :  %.o ${LIBFILES}
 
 ifeq ($(HAVE_CP2K), 1)
    PROGRAMS += cp2k_driver
-   CP2K_OBJS = cp2k_driver_module.o
-cp2k_driver : % :  ${CP2K_OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} ${CP2K_OBJS} $@.o ${LIBS}  ${LINKOPTS}
+   CP2K_LIB_OBJS = cp2k_driver_module.o
+libcp2k_driver.a: ${CP2K_LIB_OBJS}
+	${AR} ${AR_ADD} libcp2k_driver.a ${CP2K_LIB_OBJS}
+cp2k_driver : % :  libcp2k_driver.a %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o -lcp2k_driver ${LIBS} ${LINKOPTS}
 else
 cp2k_driver:
 	echo "CP2K support not active" 1>&2 && exit 1
@@ -60,11 +67,6 @@ else
 vasp_driver:
 	echo "VASP support not active" 1>&2 && exit 1
 endif
-
-all: ${PROGRAMS}
-
-LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
-LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
 

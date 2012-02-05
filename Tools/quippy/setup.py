@@ -280,6 +280,7 @@ def find_wrap_sources(makefile, quip_root):
 	quip_filepot_drivers_dir = os.path.join(quip_root, 'QUIP_FilePot_Drivers')
 	source_dirs.append(quip_filepot_drivers_dir)
         wrap_sources.append(os.path.join(quip_filepot_drivers_dir, 'cp2k_driver_module.f95'))
+	libraries = ['cp2k_driver'] + libraries
         
     return source_dirs, wrap_sources, wrap_types, libraries, targets
 

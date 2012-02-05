@@ -30,9 +30,9 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X cp2k_driver_template program
+!X cp2k_driver_module
 !X
-!% filepot program for CP2K driver using input file template
+!% guts of cp2k driver from template
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -52,12 +52,10 @@ contains
 
   subroutine do_cp2k_calc(at, f, e, infile, args_str, error)
     type(Atoms), intent(inout) :: at
-    real(dp), allocatable, intent(out) :: f(:,:)
-    real(dp), intent(out) :: e
+    real(dp), intent(out) :: f(:,:), e
     character(len=*) :: infile
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
-
 
     type(Dictionary) :: cli
     character(len=STRING_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
