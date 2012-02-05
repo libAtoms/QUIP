@@ -44,9 +44,9 @@ evb_driver : % :  %.o ${LIBFILES}
 
 ifeq ($(HAVE_CP2K), 1)
    PROGRAMS += cp2k_driver
-   CP2K_OBJS = 
+   CP2K_OBJS = cp2k_driver_module.o
 cp2k_driver : % :  ${CP2K_OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CP2K_OBJS} ${LIBS}  ${LINKOPTS}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} ${CP2K_OBJS} $@.o ${LIBS}  ${LINKOPTS}
 else
 cp2k_driver:
 	echo "CP2K support not active" 1>&2 && exit 1
