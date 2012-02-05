@@ -42,8 +42,8 @@ EOF_IN
 cat<<EOF_CP2K > $TEST.cp2k
 #!/bin/bash
 
-cp quip_cp2k.xyz quip-pos-1_1.xyz
-sed -e 's/pos/frc/' -e 's/\(Prop.*\)/\\1 E=42.0/' < quip-pos-1_1.xyz > quip-frc-1_1.xyz
+cp quip_cp2k.xyz quip-pos-1_0.xyz
+sed -e 's/pos/frc/' -e 's/\(Prop.*\)/\\1 E=42.0/' < quip-pos-1_0.xyz > quip-frc-1_0.xyz
 
 EOF_CP2K
 
