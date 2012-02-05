@@ -28,7 +28,7 @@ from quippy.clusters import HYBRID_NO_MARK
 from quippy.potential import Potential
 from quippy.ordereddict import OrderedDict
 from quippy.util import read_text_file
-from quippy.cp2k_driver_template import do_cp2k_calc, read_output, qmmm_qm_abc
+from quippy.cp2k_driver import do_cp2k_calc, read_output, qmmm_qm_abc
 
 __all__ = ['CP2KPotential', 'CP2KInputHeader']
 
