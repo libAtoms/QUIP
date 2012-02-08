@@ -36,20 +36,21 @@ endif
 include Makefile.inc
 include Makefile.rules
 
-all: ${PROGRAMS}
+default: all
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 PROGRAMS = evb_driver
-EVB_OBJS =
 
 evb_driver : % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${EVB_OBJS} ${LIBS}  ${LINKOPTS}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
 ifeq ($(HAVE_CP2K), 1)
    PROGRAMS += cp2k_driver
    CP2K_LIB_OBJS = cp2k_driver_module.o
+   CLEAN_OBJS += ${CP2K_LIB_OBJS}
+   CLEAN_LIBS += libcp2k_driver.a
 libcp2k_driver.a: ${CP2K_LIB_OBJS}
 	${AR} ${AR_ADD} libcp2k_driver.a ${CP2K_LIB_OBJS}
 cp2k_driver : % :  libcp2k_driver.a %.o ${LIBFILES}
@@ -58,11 +59,11 @@ else
 cp2k_driver:
 	echo "CP2K support not active" 1>&2 && exit 1
 endif
+
 ifeq ($(HAVE_VASP), 1)
    PROGRAMS += vasp_driver
-   VASP_OBJS = 
-vasp_driver : % :  ${VASP_OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${VASP_OBJS} ${LIBS}  ${LINKOPTS}
+vasp_driver : % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 else
 vasp_driver:
 	echo "VASP support not active" 1>&2 && exit 1
@@ -70,8 +71,10 @@ endif
 
 .PHONY: clean allclean test
 
+all: ${PROGRAMS}
+
 clean:	
-	-rm -f *.mod *.o ${PROGRAMS}
+	-rm -f ${CLEAN_OBJS} ${CLEAN_LIBS} ${PROGRAMS} ${addsuffix .o, ${PROGRAMS}}
 
 allclean : clean
 
