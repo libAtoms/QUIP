@@ -616,7 +616,7 @@ end function cluster_in_out_in
 
 	    call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
 	    cluster_changed = .true.
-	    call print('cluster_fix_termination_clash:  Atom '//j//' added to cluster. Atoms = '//cluster_info%N, PRINT_NERD)
+	    call print('cluster_fix_termination_clash:  Atom '//j//'with shift '//(ishift+jshift)//' added to cluster. Atoms = '//cluster_info%N, PRINT_NERD)
 	    ! j is now included in the cluster, so we can exit this do loop (over p)
 	    exit
 	  end if 
@@ -1979,9 +1979,11 @@ end function cluster_in_out_in
        do 
           call wipe(nextlist)
           if (hysteretic_connect) then
-             call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
+             call BFS_step(at, currentlist, nextlist, nneighb_only=cluster_nneighb_only, &
+                  min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
           else
-             call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice)
+             call BFS_step(at, currentlist, nextlist, nneighb_only=cluster_nneighb_only, &
+                  min_images_only = any(do_periodic) .or. same_lattice)
           endif
           do j=1,nextlist%N
              jj = nextlist%int(1,j)
@@ -2135,7 +2137,7 @@ end function cluster_in_out_in
                ' terminate_octahedra ' // terminate_octahedra // &
                ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
                ' in_out_in ' // in_out_in // &
-               ' in_out_in_mode ' // in_out_in_mode // &
+               ' in_out_in_mode ' // trim(in_out_in_mode) // &
                ' protect_X_H_bonds ' // protect_X_H_bonds // &
                ' protect_double_bonds ' // protect_double_bonds // &
                ' protect_peptide_bonds ' // protect_peptide_bonds // &
@@ -2543,9 +2545,9 @@ end function cluster_in_out_in
        hybrid_number = 1
        do while (hybrid_number .ne. 0)
           if (hysteretic_connect) then
-            call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
+            call BFS_step(at, currentlist, nextlist, nneighb_only=nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
           else
-            call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, property=hybrid_mark)
+            call BFS_step(at, currentlist, nextlist, nneighb_only=nneighb_only, min_images_only = min_images_only, property=hybrid_mark)
           endif
           hybrid_number = 0 
           do j=1,nextlist%N
