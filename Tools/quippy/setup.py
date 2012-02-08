@@ -270,7 +270,8 @@ def find_wrap_sources(makefile, quip_root):
         targets.append((quip_root, 'QUIP_Utils'))
 
     if do_tools:
-        wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95']]
+        wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95', 'real_space_covariance.f95']]
+        wrap_types += ['realspacecovariance']
 
     if do_crack:
         wrap_sources += [os.path.join(quip_utils_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
