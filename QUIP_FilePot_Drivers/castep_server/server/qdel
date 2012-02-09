@@ -1,0 +1,42 @@
+#!/bin/bash
+
+KILL_CASTEP="killall castep"
+
+cd `dirname $0`/..
+
+if [[ $# -ne 1 ]]; then
+    echo Usage: qdel JOB_ID
+    exit 1
+fi
+
+JOB_ID=$1
+JOB_STATUS=`./bin/get_job_status $JOB_ID`
+
+if [[ $JOB_STATUS == "NOJOB" ]]; then
+    echo qdel: job $JOB_ID does not exist on this server
+    exit 1
+fi
+
+if [[ ! ($JOB_STATUS == "PENDING" || $JOB_STATUS == "RUNNING" || $JOB_STATUS == "RESUMING") ]]; then
+    echo qdel: Can\'t delete job $JOB_ID since status is $JOB_STATUS
+    exit 1
+fi
+
+if [[ $JOB_STATUS == "PENDING" ]]; then
+    awk -F'/' '{ if($1 == '$JOB_ID') {} else {print}}'\
+	cs_queue > cs_queue.tmp
+    mv cs_queue.tmp cs_queue
+    echo qdel: Removing pending job $JOB_ID
+else
+    if [[ ! -e cs_lock ]]; then
+	awk -F'/' '{ if($1 == '$JOB_ID') { print $1"/KILLED/"$3 } else {print}}'\
+	    cs_queue > cs_queue.tmp
+	mv cs_queue.tmp cs_queue
+	echo qdel: Server down, removing job $JOB_ID from queue
+    else
+	echo qdel: Killing running job $JOB_ID
+	touch $JOB_ID/killed
+	eval $KILL_CASTEP
+    fi
+fi
+

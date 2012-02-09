@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+
+kill `cat cs_lock`
+kill -CONT `cat cs_lock`

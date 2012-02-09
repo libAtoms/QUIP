@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CS_RSH=ssh
+CS_HOME=/scratch/jrk33/castep_server
+CS_HOST=$1
+JOB_ID=$2
+
+$CS_RSH $CS_HOST $CS_HOME/bin/qdel $JOB_ID
+

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+CS_HOME=`pwd`
+LOCK_FILE=$CS_HOME/cs_lock
+
+if [[ -f $LOCK_FILE ]]; then
+    if [[ $(ps -P $(cat $LOCK_FILE) | tail -1 | awk '{print $4}') == "T" ]]; then
+	echo UP_IDLE
+	exit 0
+    else
+	echo UP_BUSY
+	exit 0
+    fi
+else
+    echo DOWN
+    exit 1
+fi
+

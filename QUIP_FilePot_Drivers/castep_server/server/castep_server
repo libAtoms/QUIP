@@ -1,0 +1,152 @@
+#!/bin/bash
+
+trap cleanup EXIT
+
+cd `dirname $0`/..
+CS_HOME=`pwd`
+RUN_CASTEP="nice -15 $CS_HOME/bin/castep"
+
+LOCK_FILE=$CS_HOME/cs_lock
+Q_FILE=$CS_HOME/cs_queue
+JOB_ID_FILE=$CS_HOME/cs_job_id
+
+cleanup()
+{
+   # Wait till no-one else is writing
+   while lsof | grep -q ~/etc/cs_active; do
+       usleep $((RANDOM*100))
+   done
+   awk '!/'`hostname -s`'/{print}' ~/etc/cs_active > ~/etc/cs_active.tmp
+   mv ~/etc/cs_active.tmp ~/etc/cs_active
+
+   echo Terminating CASTEP server
+   rm -f $LOCK_FILE
+
+   exit 0
+}
+
+cont()
+{
+    echo Continuing. Looking for pending jobs
+    RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
+
+    if [[ RUNNABLE_JOBS != 0 ]]; then
+	JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
+	run_castep_job
+    fi
+    kill -TSTP $$
+}
+
+run_castep_job()
+{
+    cd $CS_HOME/$JOB_ID
+    cp job.cell run.cell
+    cp job.param run.param
+
+    if [[ -e run.check ]]; then
+	echo Resuming job $JOB_ID at `date`
+	echo continuation: default >> run.param
+	JOB_STATUS="RESUMING"
+    else
+	echo Starting job $JOB_ID  at `date`
+	JOB_STATUS="RUNNING"
+    fi
+
+    # If species counts of this job match previous then copy .check file to speed up calculation
+    if [[ -d ../$(($JOB_ID-1)) ]]; then
+	if [[ (`$CS_HOME/bin/species_count job.cell` == \
+	    `$CS_HOME/bin/species_count ../$(($JOB_ID-1))/job.cell`) \
+	    && (-e ../$(($JOB_ID-1))/run.check) \
+	    && (! -e run.check ) ]]; then
+
+	    echo Reusing check file from previous job $(($JOB_ID-1)) for job $JOB_ID
+	    echo reuse: default >> run.param
+	    cp ../$((JOB_ID-1))/run.check run.check
+	fi
+    fi
+
+    cd $CS_HOME
+    awk -F'/' '{ if($1 == '$JOB_ID') { print '$JOB_ID'"/'$JOB_STATUS'/" $3} else {print}}' \
+	$Q_FILE > cs_queue.tmp
+    mv cs_queue.tmp $Q_FILE
+    cd $CS_HOME/$JOB_ID
+   
+    rm -f run.*.err
+    $RUN_CASTEP run
+    echo Job $JOB_ID exited at `date`
+    if [[ -s run.0001.err ]]; then
+	echo Error encountered while running CASTEP job $JOB_ID
+	JOB_STATUS="ERROR"
+	cd ..
+    else
+	if [[ `tail -1 run.castep | cut -d' ' -f1-2` == "Total time" ]]; then
+	    echo Job $JOB_ID completed succesfully
+	    JOB_STATUS="SUCCESS"
+	elif [[ -e killed ]]; then
+	    echo Job $JOB_ID killed.
+	    JOB_STATUS="KILLED"
+	else
+	    echo Job $JOB_ID not completed, more time needed
+	    JOB_STATUS="TIMEOUT"
+	fi
+    fi
+    cd $CS_HOME
+    awk -F'/' '{ if($1 == '$JOB_ID') { print '$JOB_ID' "/'$JOB_STATUS'/" $3} else {print}}' \
+	$Q_FILE > cs_queue.tmp
+    mv cs_queue.tmp $Q_FILE
+    # Notify qsubw if it's waiting for job to finish
+    if [[ -e $JOB_ID/notify ]]; then
+	kill -CONT `cat $JOB_ID/notify`
+    fi
+
+    if [[ $JOB_STATUS == "TIMEOUT" ]]; then
+	echo Ran out of time running job, terminating server now
+	exit 0
+    fi
+}
+
+cd $CS_HOME
+
+if [[ -f $LOCK_FILE ]]; then
+    echo CASTEP server already running on this host, aborting
+    exit 1
+fi
+
+# Wait till no-one else is writing
+while lsof | grep -q ~/etc/cs_active; do
+    usleep $((RANDOM*100))
+done
+echo `hostname -s` >> ~/etc/cs_active
+
+echo CASTEP server started at `date`
+echo $$ > $LOCK_FILE
+
+[[ ! -f $Q_FILE ]] && touch $Q_FILE
+[[ ! -f $JOB_ID_FILE ]] && echo 1 > $JOB_ID_FILE
+
+echo Checking for new jobs or jobs to be resumed
+
+RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING" || $2 == "RUNNING" || $2 == "TIMEOUT") {npend++} END {print npend}' $Q_FILE`
+
+if [[ $RUNNABLE_JOBS != 0 ]]; then
+    JOB_ID=`awk -F'/' ' ($2 == "PENDING" || $2 == "RUNNING" || $2 == "TIMEOUT") { print $1; exit }' $Q_FILE`
+    echo Resuming with job $JOB_ID
+    run_castep_job
+fi
+
+while true; do
+
+    # Suspend while we wait for a job
+    echo Nothing to be done for now, suspending
+    kill -STOP $$
+
+    RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
+    while [[ $RUNNABLE_JOBS != 0 ]]; do
+	JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
+	run_castep_job
+	RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
+    done
+
+done
+
+

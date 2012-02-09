@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source ~/etc/cs_config
+
+echo "Host:      " $CS_HOST 
+echo "Directory: " $CS_HOME
+echo "Status:    " `$CS_RSH $CS_HOST $CS_HOME/bin/status`
+
+echo
+$CS_RSH $CS_HOST $CS_HOME/bin/qstat
+echo

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+CS_RSH=ssh
+CS_RCP=scp
+CS_HOME=/scratch/jrk33/castep_server
+CS_ACTIVE=~/etc/cs_active
+
+long_out=0
+busy_only=0
+sorted=0
+
+while getopts ":lbs" Option
+do
+  case $Option in
+    l     ) long_out=1;;
+    b     ) busy_only=1;;
+    s     ) sorted=1;;
+    *     ) echo "Unimplemented option chosen."; exit 1;;
+  esac
+done
+
+# Schwartian transform to sort by PC number
+[[ $sorted == 1 ]] && hosts=`awk '
+{ 
+   match($0,/tcmpc([0-9]+)/,a); 
+   print a[1], $0
+}' $CS_ACTIVE | sort -g | awk '{print $2}' ` || hosts=`cat $CS_ACTIVE`
+
+
+for CS_HOST in $hosts; do
+
+    status=`$CS_RSH $CS_HOST $CS_HOME/bin/status`
+    
+    if [[ $busy_only == 0 || ($busy_only  == 1 && $status == "UP_BUSY") ]]; then
+	printf "%-7s %s\n" $CS_HOST $status
+
+	if [[ $long_out == 1 ]]; then
+	    echo 
+	    $CS_RSH $CS_HOST $CS_HOME/bin/qstat
+	    echo
+	fi
+    fi
+
+done

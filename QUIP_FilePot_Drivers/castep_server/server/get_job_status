@@ -1,0 +1,6 @@
+#!/bin/bash
+
+JOB_ID=$1
+cd `dirname $0`/..
+
+awk -F'/' 'BEGIN {status="NOJOB"} $1=='$JOB_ID'{status=$2} END { print status }' cs_queue

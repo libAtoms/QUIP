@@ -1,0 +1,18 @@
+#!/bin/bash
+
+source ~/etc/cs_config
+
+CS_BASE=$1
+
+echo CASTEP server on host $CS_HOST in directory $CS_HOME is `$CS_RSH $CS_HOST $CS_HOME/bin/status`
+
+JOB_ID=`$CS_RSH $CS_HOST $CS_HOME/bin/get_new_job_id`
+
+$CS_RSH $CS_HOST mkdir $CS_HOME/$JOB_ID
+echo Copying files to $CS_HOST...
+$CS_RCP ${CS_BASE}.cell $CS_HOST:$CS_HOME/$JOB_ID/job.cell
+$CS_RCP ${CS_BASE}.param $CS_HOST:$CS_HOME/$JOB_ID/job.param
+$CS_RCP *.usp $CS_HOST:$CS_HOME/$JOB_ID
+
+($CS_RSH $CS_HOST $CS_HOME/bin/qsub $JOB_ID) && echo "Job submitted succesfully" \
+    || echo "Error submitting job"

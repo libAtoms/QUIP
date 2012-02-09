@@ -1,0 +1,22 @@
+#!/bin/awk -f
+
+BEGIN { active=0 } 
+
+/%BLOCK POSITIONS/ { active=1 }
+
+/^[^%]/{ 
+  if (active) { 
+     if ($1 in count) 
+        count[$1]++; 
+     else 
+        count[$1] = 1; 
+  } 
+}
+
+/%ENDBLOCK POSITIONS/ { active=0 }
+
+END {
+  for (k in count) 
+     printf "%2s %d\n",  k, count[k] 
+}
+

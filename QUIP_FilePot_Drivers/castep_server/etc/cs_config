@@ -1,0 +1,11 @@
+# CASTEP_server client config file
+
+CS_RSH=ssh
+CS_RCP=scp
+CS_HOST=romulus
+CS_HOME=/btmp/mw/lucio/james/castep_server
+
+cs_start()
+{
+    $CS_RSH $CS_HOST $CS_HOME/bin/submit
+}
