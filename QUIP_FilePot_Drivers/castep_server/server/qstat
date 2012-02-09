@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+
+if test -s cs_queue; then
+    perl -e 'print reverse <>' cs_queue | ./bin/qstat.awk
+else
+    echo No jobs
+fi

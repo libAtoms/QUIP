@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+read JOB_ID < cs_job_id
+echo $((JOB_ID+1)) > cs_job_id
+echo $JOB_ID

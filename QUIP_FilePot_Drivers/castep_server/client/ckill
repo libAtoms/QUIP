@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source ~/etc/cs_config
+
+JOB_ID=$1
+
+echo CASTEP server on host $CS_HOST in directory $CS_HOME is `$CS_RSH $CS_HOST $CS_HOME/bin/status`
+
+$CS_RSH $CS_HOST $CS_HOME/bin/qdel $JOB_ID
+

@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Usage: crun_tcm <host> <stem>
+
+CS_RSH=ssh
+CS_RCP=scp
+CS_HOST=$1
+CS_HOME=/scratch/jrk33/castep_server
+CS_BASE=$2
+CS_IMAGE_HOST=tcmpc4
+CS_IMAGE_HOME=/scratch/jrk33/castep_server.image
+
+if ! $CS_RSH $CS_HOST test -d $CS_HOME || \
+    (( `$CS_RSH $CS_IMAGE_HOST stat -c %Y $CS_IMAGE_HOME` > `$CS_RSH $CS_HOST stat -c %Y $CS_HOME` )) ; then
+    echo crun_tcm: Copying CASTEP server to host $CS_HOST
+    $CS_RSH $CS_HOST test -d $CS_HOME || $CS_RSH $CS_HOST mkdir -p $CS_HOME
+    $CS_RCP -r $CS_IMAGE_HOST:$CS_IMAGE_HOME/bin $CS_HOST:$CS_HOME
+fi
+
+if ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; then
+    echo crun_tcm: Server is currently down, trying to restart it...
+    $CS_RSH $CS_HOST "cd $CS_HOME; ./bin/castep_server >> out.log 2>> err.log &"
+    while ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; do
+	sleep 10
+    done
+fi
+
+JOB_ID=`$CS_RSH $CS_HOST $CS_HOME/bin/get_new_job_id`
+
+$CS_RSH $CS_HOST mkdir $CS_HOME/$JOB_ID
+echo crun_tcm: Copying files to $CS_HOST...
+$CS_RCP ${CS_BASE}.cell $CS_HOST:$CS_HOME/$JOB_ID/job.cell
+$CS_RCP ${CS_BASE}.param $CS_HOST:$CS_HOME/$JOB_ID/job.param
+$CS_RCP *.usp $CS_HOST:$CS_HOME/$JOB_ID
+
+if ! $CS_RSH $CS_HOST "$CS_HOME/bin/qsubw $JOB_ID"; then
+    echo "crun_tcm: Error submitting job"; 
+    exit 1
+fi
+
+JOB_STATUS=`$CS_RSH $CS_HOST $CS_HOME/bin/get_job_status $JOB_ID`
+
+if [[ $JOB_STATUS == "KILLED" ]]; then
+    echo crun_tcm: Job killed
+    exit 1
+fi
+
+if [[ $JOB_STATUS == "ERROR" ]]; then
+    echo crun_tcm: Error when running job
+    $CS_RCP $CS_HOST:$CS_HOME/$JOB_ID/run.castep ./$CS_BASE.castep
+    $CS_RCP $CS_HOST:$CS_HOME/$JOB_ID/run.*.err .
+    exit 1
+fi
+
+if [[ $JOB_STATUS == "TIMEOUT" ]]; then
+    echo crun_tcm: Ran out of time running job
+    exit 1
+fi
+
+if [[ $JOB_STATUS == "SUCCESS" ]]; then
+    echo crun_tcm: Job finished successfully
+    $CS_RCP $CS_HOST:$CS_HOME/$JOB_ID/run.castep ./$CS_BASE.castep
+    exit 0
+fi
+

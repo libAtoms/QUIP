@@ -1,0 +1,38 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+
+NAME=`basename $0`
+JOB_ID=$1
+
+if [[ ! -d ./$JOB_ID ]]; then
+    echo $NAME: Directory for job $JOB_ID does not exist
+    exit 1
+fi
+
+if [[ ! -e ./$JOB_ID/job.cell ]]; then
+    echo $NAME: CASTEP cell file for job $JOB_ID does not exist
+    exit 1
+fi
+
+if [[ ! -e ./$JOB_ID/job.param ]]; then
+    echo $NAME: CASTEP param file for job $JOB_ID does not exist
+    exit 1
+fi
+
+echo $NAME: Enqueuing job $JOB_ID at `date`
+echo $JOB_ID"/"PENDING"/"`date` >> cs_queue
+
+# If server is up, send it a wake up call
+if [[ -e cs_lock ]]; then
+    sleep 1
+    kill -CONT `cat cs_lock`
+fi
+
+if [[ $NAME == "qsubw" ]]; then
+    
+    echo $NAME: Waiting for job to complete
+    echo $$ > $JOB_ID/notify
+
+    kill -STOP $$
+fi

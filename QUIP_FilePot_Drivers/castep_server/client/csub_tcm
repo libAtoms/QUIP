@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Usage csub_tcm <host> <stem>
+
+CS_RSH=ssh
+CS_RCP=scp
+
+CS_HOME=/scratch/jrk33/castep_server
+CS_HOST=$1
+CS_IMAGE_HOST=tcmpc4
+CS_IMAGE_HOME=/scratch/jrk33/castep_server.image
+CS_BASE=$2
+
+echo CASTEP server on host $CS_HOST in directory $CS_HOME is `$CS_RSH $CS_HOST $CS_HOME/bin/status`
+
+if ! $CS_RSH $CS_HOST test -d $CS_HOME || \
+    (( `$CS_RSH $CS_IMAGE_HOST stat -c %Y $CS_IMAGE_HOME` > `$CS_RSH $CS_HOST stat -c %Y $CS_HOME` )) ; then
+    echo Copying CASTEP server to host $CS_HOST
+    $CS_RSH $CS_HOST rm -rf $CS_HOME
+    $CS_RCP -r $CS_IMAGE_HOST:$CS_IMAGE_HOME $CS_HOST:$CS_HOME
+fi
+
+if ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; then
+    echo Server is currently down, trying to restart it...
+    $CS_RSH $CS_HOST "cd $CS_HOME; ./bin/castep_server >> out.log 2>> err.log &"
+    while ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; do
+	sleep 10
+    done
+fi
+
+
+JOB_ID=`$CS_RSH $CS_HOST $CS_HOME/bin/get_new_job_id`
+
+$CS_RSH $CS_HOST mkdir $CS_HOME/$JOB_ID
+echo Copying files to $CS_HOST...
+$CS_RCP ${CS_BASE}.cell $CS_HOST:$CS_HOME/$JOB_ID/job.cell
+$CS_RCP ${CS_BASE}.param $CS_HOST:$CS_HOME/$JOB_ID/job.param
+$CS_RCP *.usp $CS_HOST:$CS_HOME/$JOB_ID
+
+($CS_RSH $CS_HOST $CS_HOME/bin/qsub $JOB_ID) && echo "Job submitted succesfully" \
+    || echo "Error submitting job"

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source /usr/local/lsf/conf/profile.lsf
+
+cd `dirname $0`/..
+
+if (( $? == 1 )); then
+    NCPU=$1
+else
+    RUN=`bhosts | tail -1 | awk '{ print $6 }'`
+    MAX=`bhosts | tail -1 | awk '{ print $4 }'`
+    ((NCPU=MAX-RUN))
+    echo $NCPU CPUs currently unused
+fi
+
+if (( $NCPU < 8 )); then
+    echo Waiting in queue until at least 8 CPUs become available
+    NCPU=8
+fi
+
+if (( $NCPU > 32 )); then
+    QUEUE=long
+    WTIME=1440
+else
+    QUEUE=special
+    WTIME=300
+fi
+
+echo Submitting $NCPU CPU job to queue $QUEUE
+bsub -q $QUEUE -P platin -W $WTIME -c `echo "$NCPU*$WTIME" | bc -l` -o out -e err -n $NCPU -E ./bin/server_down ./bin/castep_server
