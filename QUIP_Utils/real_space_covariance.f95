@@ -880,7 +880,7 @@ module real_space_covariance_module
 
      ! (1) align all learning set to cold crystal
 
-     !$omp parallel default(none) shared(test, this)
+     !$omp parallel default(none) shared(test, crystal, this)
      !$omp do
      do i=1,size(this%data)
         this%q_min(:,i) = align(this, crystal, this%data(i), reshape(this%q_min(:,i), (/1,4/)))
@@ -895,7 +895,7 @@ module real_space_covariance_module
      call print('q_Tk = '//q_Tk)
      QQ_Tk = q_Tk
 
-     !$omp parallel default(none) shared(this, test, rho2_2) private(j, rot, rot_force_ptr, d2, rho1_2, rho_12)
+     !$omp parallel default(none) shared(this, test, rho2_2, QQ_Tk) private(j, rot, rot_force_ptr, d2, rho1_2, rho_12, QQ_Ci, QQ_Ti, q_Ti, QQ_Cj, QQ_Tj, q_Tj, QQ_ij, q_ij)
      !$omp do
      do i=1,size(this%data)
         
