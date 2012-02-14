@@ -285,8 +285,10 @@ contains
       ! Update pointers in this%atoms so we can use this%atoms%velo etc.
       call atoms_repoint(this%atoms)
 
-      ! Set mass
-      this%atoms%mass = ElementMass(this%atoms%Z)
+      ! Set mass - unless already specified
+      if (maxval(abs(this%atoms%mass)) < 1e-5_dp) then
+         this%atoms%mass = ElementMass(this%atoms%Z)
+      end if
 
       ! The input arrays must have 3N components if they are present
       ! if not, local arrays are set to zero
