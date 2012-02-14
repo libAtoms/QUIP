@@ -703,7 +703,6 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             if line.startswith(' Atomic calculation performed'):
                 if got_header:
                     got_param = True
-                    break
                 else:
                     got_header = True
 
