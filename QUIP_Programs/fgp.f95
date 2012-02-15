@@ -6,8 +6,8 @@ program force_gaussian_prediction
    type(Atoms)                                  :: at_in
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
-   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh
-   real(dp), parameter                          :: TOL_REAL = 1e-7_dp, SCALE_IVS = 100.0_dp
+   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh, sigma_error
+   real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh
    real(dp)                                     :: force(3), z_inv(3,3)
    real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, covariance_predict, force_proj_ivs_predict
@@ -15,7 +15,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: z_matrix_normalised_predict, z_matrix_predict
    real(dp), dimension(:,:), pointer            :: force_ptr
-   logical                                      :: spherical_cluster_teach, spherical_cluster_predict 
+   logical                                      :: spherical_cluster_teach, spherical_cluster_predict, do_gp 
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -28,8 +28,10 @@ program force_gaussian_prediction
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covraince Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
+   call param_register(params, 'sigma_error', '0.01', sigma_error, "the noise assumed for the teaching data")
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
+   call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the central atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_predict', 'T', spherical_cluster_predict, "only the central atom in the cluster are considered when doing predicting")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
@@ -140,6 +142,13 @@ program force_gaussian_prediction
              covariance(i,j) = cov(z_matrix(:,:,i), z_matrix(:,:,j), z_matrix_normalised(:,:,i), z_matrix_normalised(:,:,j), sigma, k) 
       enddo
   enddo
+
+! if doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
+  if (do_gp) then 
+  do i=1, n
+      covariance(i,i) = covariance(i,i) + sigma_error 
+  enddo
+  endif
   
   do i=1, n
      write(*,*) "Covariance:", covariance(i,2), force_proj_ivs(3,i)-force_proj_ivs(3,2)
@@ -147,9 +156,13 @@ program force_gaussian_prediction
 
  allocate(inv_covariance(n,n))
 
-! before inverse operations on the covariance matrix, do SVD
-! Sigular Value Decomposition (SVD): A = U*SIGMA*VT
- inv_covariance = inverse_svd_threshold(covariance, n, thresh)
+ if (do_gp) then
+     call inverse(covariance, inv_covariance)
+ else
+     ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
+     inv_covariance = inverse_svd_threshold(covariance, n, thresh)
+ endif
+ 
  write(*,*) "MAX and MIN components of inverse_covariance:", maxval(inv_covariance(2,:)), minval(inv_covariance(2,:))
 
  deallocate(covariance)
@@ -190,11 +203,13 @@ program force_gaussian_prediction
        force_proj_ivs_predict(:) = matmul(covariance_predict, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
        write(*,*) "The predicted force in IVs space:", force_proj_ivs_predict
        ! using least-squares to restore the force in the External Cartesian Space  
-       z_inv = inverse_svd_threshold(matmul(transpose(z_matrix_normalised_predict), z_matrix_normalised_predict), 3, thresh)  
+       call inverse(matmul(transpose(z_matrix_normalised_predict), z_matrix_normalised_predict), z_inv)  
        force = z_inv .mult. transpose(z_matrix_normalised_predict) .mult. force_proj_ivs_predict
        call print("the force in external space:"//force//"  the original force:"//force_ptr(:, at_n))  
        call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force)))
-       call print("predicted error :"//(1.0_dp - covariance_predict .dot. matmul(inv_covariance, covariance_predict)))
+       if (do_gp) then
+           call print("predicted error :"//( 1.0_dp + sigma_error - covariance_predict .dot. matmul(inv_covariance, covariance_predict)))
+       endif   
     enddo  ! loop over postions
   enddo    ! loop over frames
 
