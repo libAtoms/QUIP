@@ -1373,7 +1373,7 @@ contains
     integer :: n_tries
     logical :: converged
     character(len=STRING_LENGTH) :: cp2k_run_command
-    integer :: stat, error_stat
+    integer :: stat, stat2, error_stat
 
     INIT_ERROR(error)
 
@@ -1407,8 +1407,9 @@ contains
 	  call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
 	  converged = .false.
 	else
-	  call system_command('grep "outer SCF loop converged" '//trim(run_dir)//'/cp2k_output.out',status=stat)
-	  if (stat == 0) then
+	  call system_command('grep "outer SCF loop converged" '//trim(run_dir)//'/cp2k_output.out',status=stat) ! OT mode
+	  call system_command('grep "SCF run converged" '//trim(run_dir)//'/cp2k_output.out',status=stat2)       ! density mixing mode
+	  if (stat == 0 .or. stat2 == 0) then
 	    converged = .true.
 	  else
 	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",PRINT_ALWAYS)
