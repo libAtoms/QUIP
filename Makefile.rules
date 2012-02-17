@@ -156,4 +156,6 @@ FPP_PRE_TARGET_STRING ?= >
 .f95.fpp:
 	${FPP}  ${F95FLAGS} ${F95_PRE_FILENAME_FLAG} $< ${FPP_PRE_TARGET_STRING} $@
 
+%.o : %.mod
+
 -include Makefiles/Makefile.rules.${QUIP_ARCH}
