@@ -355,9 +355,6 @@ contains
 
        if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
 
-!mainlog%prefix="pre_vel1"
-!call print("initial epsilon_v")
-!call print(this%epsilon_v)
        ! half step epsilon_v drag 
        this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_epsilon)
        ! half step epsilon_v force (from last step) parts 
@@ -366,19 +363,12 @@ contains
        ! half step barostat drag part of v
        decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
        at%velo = at%velo*decay
-!call print("vel_decay")
-!call print(exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v)))
 
        ! half step position affine defomration
        lattice_p = at%lattice
        call set_lattice(at, lattice_p*exp(0.5_dp*dt*this%epsilon_v), scale_positions=.false.)
        at%pos = at%pos*exp(0.5_dp*dt*this%epsilon_v)
-!call print("pos_scale")
-!call print(exp(0.5_dp*dt*this%epsilon_v))
-!call print("final epsilon_v")
-!call print(this%epsilon_v)
 
-!mainlog%prefix=""
 
     end select
 
@@ -454,44 +444,15 @@ contains
 
        call system_resync_rng()
 
-!mainlog%prefix="post_vel2"
-!call print("initial epsilon_v")
-!call print(this%epsilon_v)
        !Decay the velocities for dt/2 again barostat part
        decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
        at%velo(:,:) = at%velo(:,:)*decay
-!call print("decay")
-!call print(decay)
 
        ! calc epsilon force
        volume_p = cell_volume(at)
        rand_f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_epsilon*this%W_epsilon/dt)*ran_normal()
-!call print("rand_f_cell factor")
-!call print(sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_epsilon*this%W_epsilon/dt))
-!call print("rand_f_cell")
-!call print(rand_f_cell)
-!call print("virial")
-!call print(virial)
-!call print("trace(virial)")
-!call print(trace(virial))
-!call print("kinetic_virial")
-!call print(sum(at%mass*sum(at%velo**2,dim=1)))
-!call print("applied p")
-!call print (this%p_ext)
-!call print("3.0*volume_p*applied p")
-!call print (3.0_dp*volume_p*this%p_ext)
-!call print("volume_p")
-!call print (volume_p)
-!call print("first term")
-!call print ((trace(virial)+sum(at%mass*sum(at%velo**2,dim=1))-3.0_dp*volume_p*this%p_ext))
-!call print("second term")
-!call print(3.0_dp/this%Ndof*sum(at%mass*sum(at%velo**2,dim=1)))
-!call print("third term")
-!call print(rand_f_cell)
        this%epsilon_f = (trace(virial)+sum(at%mass*sum(at%velo**2,dim=1))-3.0_dp*volume_p*this%p_ext) + &
 	  3.0_dp/this%Ndof*sum(at%mass*sum(at%velo**2,dim=1)) + rand_f_cell
-!call print("epsilon_f")
-!call print(this%epsilon_f)
 
        ! half step with epsilon force
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_epsilon
@@ -499,9 +460,6 @@ contains
        this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_epsilon)
 
        call print("BAROSTAT_KE "//(0.5_dp*this%W_epsilon*this%epsilon_v**2))
-!call print("final epsilon_v")
-!call print(this%epsilon_v)
-!mainlog%prefix=""
 
     end select
 
