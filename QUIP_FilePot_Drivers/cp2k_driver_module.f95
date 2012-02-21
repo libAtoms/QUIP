@@ -50,10 +50,9 @@ public :: read_output, qmmm_qm_abc, calc_charge_lsd
 
 contains
 
-  subroutine do_cp2k_calc(at, f, e, infile, args_str, error)
+  subroutine do_cp2k_calc(at, f, e, args_str, error)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
-    character(len=*) :: infile
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
