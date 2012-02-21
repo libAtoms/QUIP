@@ -91,7 +91,7 @@ implicit none
     endif
 
     !call CP2K
-    call do_cp2k_calc(at=my_atoms, f=f0, e=energy, infile=infile, args_str=trim(args_str), error=error)
+    call do_cp2k_calc(at=my_atoms, f=f0, e=energy, args_str=trim(args_str), error=error)
     HANDLE_ERROR(error)
 
     !momentum conservation
