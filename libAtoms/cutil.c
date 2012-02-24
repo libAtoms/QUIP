@@ -49,6 +49,7 @@
 #include <mach/task.h>
 #endif
 
+#include "libatoms.h"
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //X
@@ -125,13 +126,22 @@ void fusleep_(int *amt) {
 
 // Call system(3) from fortran
 
-void system_command_(char* command, int* status, int len)
+
+#define SYSTEM_COMMAND_LEN 2048
+
+void system_command_(char* command, int* status, int *error, int len)
 {
-  char c_command[1025];
+  char c_command[SYSTEM_COMMAND_LEN+1];
   int ret;
 
-  strncpy(c_command, command, (len < 1024) ? len : 1024);
-  c_command[ len < 1024 ? len : 1024] = 0;
+  INIT_ERROR;
+
+  if (len > SYSTEM_COMMAND_LEN) {
+    RAISE_ERROR("command passed to system_command() exceeds maximum length of SYSTEM_COMMAND_LEN=%d", SYSTEM_COMMAND_LEN);
+  }
+
+  strncpy(c_command, command, (len < SYSTEM_COMMAND_LEN) ? len : SYSTEM_COMMAND_LEN);
+  c_command[ len < SYSTEM_COMMAND_LEN ? len : SYSTEM_COMMAND_LEN] = 0;
   ret = system(c_command);
   fflush(stdout);
   if (status) *status = ret;
