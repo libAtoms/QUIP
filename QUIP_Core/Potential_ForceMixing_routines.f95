@@ -271,7 +271,7 @@
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, run_suffix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, run_suffix, qm_run_suffix
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
@@ -484,6 +484,16 @@
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
+
+       if (get_value(params, 'run_suffix', qm_run_suffix)) then
+          ! if args_str and qm_args_str both defin a run_suffix, then assert that they match
+          if (trim(run_suffix) /= trim(qm_run_suffix)) then
+             RAISE_ERROR('Potential_FM_calc: run_suffix args_str ('//trim(run_suffix)//') does not match qm_args_str value ('//trim(qm_run_suffix)//')', error)
+          end if
+       else
+          ! copy run_suffix from our args_str to qm_args_str
+          call set_value(params, 'run_suffix', run_suffix)
+       end if
 
        if (this%do_rescale_r) call set_value(params, 'r_scale', this%r_scale_pot1)
        if (this%do_rescale_E) call set_value(params, 'E_scale', this%E_scale_pot1)
