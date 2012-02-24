@@ -235,9 +235,10 @@ module system_module
      !% \begin{description}
      !%   \item['character' --- character(*)]
      !% \end{description}
-     subroutine system_command(command,status)
+     subroutine system_command(command,status,error)
        character(*), intent(in) :: command
-       integer, optional,intent(out) :: status
+       integer, optional, intent(out) :: status
+       integer, optional, intent(out) :: error
      end subroutine system_command
   end interface
 
