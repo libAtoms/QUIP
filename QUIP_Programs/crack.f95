@@ -1009,7 +1009,7 @@ program crack
                  extra_args = "run_suffix=_extrap"
                  extra_qm_args = "run_suffix=_extrap"
 #ifdef HAVE_CP2K
-                 call cp2k_state_change(ds%atoms, '_extrap', (/'_interp', '_lotf'/))
+                 call cp2k_state_change(ds%atoms, '_extrap', (/'_interp', '_lotf  '/))
 #else
                  call system_abort('qm_cp2k=T but CP2K support not compiled in!')
 #endif
@@ -1112,7 +1112,7 @@ program crack
                     extra_args = 'run_suffix=_interp'
                     extra_qm_args = 'run_suffix=_interp'
 #ifdef HAVE_CP2K
-                    call cp2k_state_change(ds%atoms, '_interp', (/'_interp', '_lotf'/))
+                    call cp2k_state_change(ds%atoms, '_interp', (/'_interp', '_lotf  '/))
 #else
                     call system_abort('qm_cp2k=T but no CP2K support compiled in!')
 #endif
