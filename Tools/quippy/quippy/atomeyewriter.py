@@ -41,7 +41,7 @@ class AtomEyeWriter(object):
     def write(self, at, centre=None, frame=None, *showargs, **showkwargs):
         if self.first_config:
             # If it's the first time, create an AtomEye viewer
-            self.view = atomeye.AtomEyeView(nowindow=self.nowindow, echo=True, block=True)
+            self.view = atomeye.AtomEyeViewer(nowindow=self.nowindow, echo=True, block=True)
 
         self.view.show(at, *showargs, **showkwargs)
 
