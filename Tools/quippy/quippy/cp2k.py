@@ -36,7 +36,7 @@ class CP2KPotential(Potential):
     """
     QUIP Potential interface to the CP2K code.
 
-    Calls do_cp2k_calc() in QUIP_Core/cp2k_driver.f95 to do the heavy lifting
+    Calls do_cp2k_calc() in QUIP_FilePot_Drivers/cp2k_driver_module.f95 to do the heavy lifting
     """
     def __init__(self, fortran_indexing=True,
                  fpointer=None, finalise=True,
@@ -45,7 +45,7 @@ class CP2KPotential(Potential):
 
     def do_cp2k_calc(self, at):
         args_str = at.params.get('calc_args_str', '')
-        cp2k_force, cp2k_energy = do_cp2k_calc(at, args_str, 3, at.n)
+        cp2k_force, cp2k_energy = do_cp2k_calc(at, infile='', args_str=args_str, n0=3, n1=at.n)
         at.add_property('force', cp2k_force, overwrite=True)
         at.params['energy'] = cp2k_energy
 
