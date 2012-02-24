@@ -46,7 +46,7 @@ use libatoms_module
 private
 
 public :: do_cp2k_calc
-public :: read_output, qmmm_qm_abc, calc_charge_lsd
+public :: read_output, qmmm_qm_abc, calc_charge_lsd, cp2k_state_change
 
 contains
 
@@ -1701,5 +1701,49 @@ contains
        end if
    end subroutine get_qm_list
 
+
+   subroutine cp2k_state_change(at, to, from_list, ignore_failure, error)
+     type(Atoms), intent(inout) :: at
+     character(len=*), intent(in) :: to, from_list(:)
+     logical, optional, intent(in) :: ignore_failure
+     integer, optional, intent(out) :: error
+     
+     character(STRING_LENGTH) :: from
+     integer, pointer :: cluster_mark_from(:), cut_bonds_from(:,:)
+     integer i
+     real(dp) QM_cell(3)
+     logical found, do_ignore_failure
+
+     INIT_ERROR(error)
+     do_ignore_failure = optional_default(.false., ignore_failure)
+
+     found = .false.
+     do i=1, size(from_list)
+        if (assign_pointer(at, 'cluster_mark'//trim(from_list(i)), cluster_mark_from)) then
+           from = from_list(i)
+           found = .true.
+           exit
+        end if
+     end do
+     if (.not. do_ignore_failure .and. .not. found) then
+        RAISE_ERROR('cp2k_state_change cannot find any previous states in from_list', error)
+     end if
+
+     call print('cp2k_state_change changing CP2K saved state from '//trim(from)//' to '//trim(to))
+     call print('cp2k_state_change copying property cluster_mark'//trim(from)//' to cluster_mark'//trim(to))
+     call add_property(at, 'cluster_mark'//trim(to), cluster_mark_from, overwrite=.true.)
+     if (.not. assign_pointer(at, 'cut_bonds'//trim(from), cut_bonds_from)) then
+        RAISE_ERROR('cp2k_state_change found cluster_mark'//trim(from)//'but not cut_bonds'//trim(from)//' - inconsistent!', error)
+     end if
+     call print('cp2k_state_change copying property cut_bonds'//trim(from)//' to cut_bonds'//trim(to))
+     call add_property(at, 'cut_bonds'//trim(to), cut_bonds_from, overwrite=.true.)
+     if (get_value(at%params, 'QM_cell'//trim(from), QM_cell)) then
+        call print('cp2k_state_change set_value QM_cell'//trim(to)//' '//QM_cell)
+        call set_value(at%params, 'QM_cell'//trim(to), QM_cell)
+     end if
+     call print('cp2k_state_change executing "if [ -f wfn.restart.wfn'//trim(from)//' ] ; then cp wfn.restart.wfn'//trim(from)//' wfn.restart.wfn'//trim(to)//' ; fi "')
+     call system_command('if [ -f wfn.restart.wfn'//trim(from)//' ] ; then cp wfn.restart.wfn'//trim(from)//' wfn.restart.wfn'//trim(to)//' ; fi')
+
+   end subroutine cp2k_state_change
 
 end module cp2k_driver_module
