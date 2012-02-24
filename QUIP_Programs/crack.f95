@@ -1086,8 +1086,8 @@ program crack
                  call system_timer('force computation')
 
                  if (params%qm_cp2k) then
-                    extra_qm_args = "hybrid_mark_postfix=_lotf"
-                    extra_args = "hybrid_mark_postfix=_lotf"
+                    extra_qm_args = "run_suffix=_lotf"
+                    extra_args = "run_suffix=_lotf"
                     call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
                  end if
 

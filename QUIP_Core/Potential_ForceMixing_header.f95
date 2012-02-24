@@ -61,7 +61,7 @@
      !%    centre of mass of core region (shorthand for 'method=force_mixing weight_interpolation=distance_ramp')
      !% \end{itemize}
      !% Default method is 'conserve_momentum'.
-     character(STRING_LENGTH) :: hybrid_mark_postfix   !% string to append to 'hybrid_mark' for actual hybrid_mark property
+     character(STRING_LENGTH) :: run_suffix   !% string to append to 'hybrid_mark' for actual hybrid_mark property
      real(dp) :: mm_reweight      !% Factor by which to reweight classical forces in embed zone
      character(STRING_LENGTH) :: conserve_momentum_weight_method   !% Weight method to use with 'method=conserve_momentum'. Should be one of
                                                                   !% 'uniform' (default), 'mass', 'mass^2' or 'user',

@@ -1172,7 +1172,7 @@ end subroutine undo_travel
 
          if (am%minim_pot%is_forcemixing) then
 	    !NB This should really be an arbitrary field name, but no obvious way to pass print_hook info on what 
-	    !NB the name is (no hybrid_mark_postfix args_str argument, for example)
+	    !NB the name is (no run_suffix args_str argument, for example)
             if (assign_pointer(am%minim_at, 'hybrid_mark', hybrid_mark)) then 
                if (.not. am%minim_pot%forcemixing%minimise_mm) then
                   call set_value(am%minim_at%params, 'QM_MaxForce', &

@@ -150,7 +150,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call param_register(params, 'command', PARAM_MANDATORY, command, help_string="system command to execute that should read the structure file, run the model and deposit the output file")
   call param_register(params, 'property_list', 'species:pos', property_list, help_string="list of properties to print with the structure file")
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="names of extra properties to read from filepot.out files")
-  call param_register(params, 'property_list_prefixes', '', property_list_prefixes, help_string="list of prefixes to which hybrid_mark_postfix will be applied during calc()")
+  call param_register(params, 'property_list_prefixes', '', property_list_prefixes, help_string="list of prefixes to which run_suffix will be applied during calc()")
   call param_register(params, 'filename', 'filepot', filename, help_string="seed name for directory and structure files to be used")
   call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="if the unit cell does not fit into this cutoff, it is periodically replicated so that it does")
   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
@@ -223,7 +223,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
 
-  character(len=STRING_LENGTH)  :: xyzfile, outfile, filename, hybrid_mark_postfix
+  character(len=STRING_LENGTH)  :: xyzfile, outfile, filename, run_suffix
   character(len=STRING_LENGTH) :: my_args_str
   integer :: nx, ny, nz, i
   type(Atoms) :: sup
@@ -245,7 +245,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="if True, save logfile of all the filepot.xyz and filepot.out")
   call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read from filepot.out. Overrides init_args version.")
-  call param_register(cli, "hybrid_mark_postfix", '', hybrid_mark_postfix, help_string="suffix to apply to property names in this%property_list_prefixes")
+  call param_register(cli, "run_suffix", '', run_suffix, help_string="suffix to apply to property names in this%property_list_prefixes")
   call param_register(cli, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
 
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
@@ -291,7 +291,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
      if (len_trim(this%property_list_prefixes) /= 0) then
         call parse_string(this%property_list_prefixes, ':', tmp_properties_array, n_properties, error=error)
         do i=1, n_properties
-           property_list = trim(property_list)//':'//trim(tmp_properties_array(i))//hybrid_mark_postfix
+           property_list = trim(property_list)//':'//trim(tmp_properties_array(i))//run_suffix
         end do
      end if
 

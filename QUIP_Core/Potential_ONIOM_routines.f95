@@ -50,7 +50,7 @@
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", "", this%hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", "", this%run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
 
     call param_register(params, "r_scale", "1.0", this%r_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "E_scale", "1.0", this%E_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -150,7 +150,7 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
-    character(len=STRING_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: run_suffix
 
     INIT_ERROR(error)
 
@@ -159,7 +159,7 @@
     endif
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", trim(this%hybrid_mark_postfix), hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", trim(this%run_suffix), run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "calc_weights", "F", calc_weights, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "core_hops", "0", core_hops, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_Calc args_str') ) then
@@ -168,13 +168,13 @@
     call finalise(params)
     if (calc_weights) then
       call print("Potential_ONIOM_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
-      call add_property(at, "weight_region1"//trim(hybrid_mark_postfix), 0.0_dp)
-      call add_property(at, "hybrid_mark"//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
-      if (.not. assign_pointer(at, "hybrid"//trim(hybrid_mark_postfix), hybrid)) then
-        RAISE_ERROR("QC_QUIP_calc at doesn't have hybrid"//trim(hybrid_mark_postfix)//" property and calc_weights was specified", error)
+      call add_property(at, "weight_region1"//trim(run_suffix), 0.0_dp)
+      call add_property(at, "hybrid_mark"//trim(run_suffix), HYBRID_NO_MARK)
+      if (.not. assign_pointer(at, "hybrid"//trim(run_suffix), hybrid)) then
+        RAISE_ERROR("QC_QUIP_calc at doesn't have hybrid"//trim(run_suffix)//" property and calc_weights was specified", error)
       endif
-      if (.not. assign_pointer(at, "hybrid_mark"//trim(hybrid_mark_postfix), hybrid_mark)) then
-        RAISE_ERROR("QC_QUIP_calc Failed to add hybrid_mark"//trim(hybrid_mark_postfix)//" property to at", error)
+      if (.not. assign_pointer(at, "hybrid_mark"//trim(run_suffix), hybrid_mark)) then
+        RAISE_ERROR("QC_QUIP_calc Failed to add hybrid_mark"//trim(run_suffix)//" property to at", error)
       endif
 
       call calc_connect(at)
@@ -221,14 +221,14 @@
     logical :: dummy
     integer i
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, hybrid_mark_postfix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, run_suffix
 
     INIT_ERROR(error)
 
     call system_timer("calc_oniom")
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", trim(this%hybrid_mark_postfix), hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", trim(this%run_suffix), run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -244,8 +244,8 @@
     end if
 
     ! Check for a compatible hybrid_mark property. It must be present.
-    if (.not.assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-       RAISE_ERROR('calc_oniom: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)//'" property', error)
+    if (.not.assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
+       RAISE_ERROR('calc_oniom: atoms structure has no "hybrid_mark'//trim(run_suffix)//'" property', error)
     endif
 
     ! if hybrid is active, carve cluster and do minimisation if necessary

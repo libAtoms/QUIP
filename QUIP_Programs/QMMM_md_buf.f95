@@ -1420,11 +1420,11 @@ contains
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	      ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
 	  endif
-          !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+          !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-            args_str = trim(args_str) // ' hybrid_mark_postfix=_extended'
+            args_str = trim(args_str) // ' run_suffix=_extended'
           elseif (trim(Run_Type1) == 'QMMM_CORE') then
-            args_str = trim(args_str) // ' hybrid_mark_postfix=_core'
+            args_str = trim(args_str) // ' run_suffix=_core'
           endif
 	endif
 	if (Run_Type1(1:4) == 'QMMM' .and. trim(Run_Type2)=="NONE") then
@@ -1450,11 +1450,11 @@ contains
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
-         !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-           slow_args_str = trim(slow_args_str) // ' hybrid_mark_postfix=_extended'
+           slow_args_str = trim(slow_args_str) // ' run_suffix=_extended'
          elseif (trim(Run_Type1) == 'QMMM_CORE') then
-           slow_args_str = trim(slow_args_str) // ' hybrid_mark_postfix=_core'
+           slow_args_str = trim(slow_args_str) // ' run_suffix=_core'
          endif
        endif
 
@@ -1471,15 +1471,15 @@ contains
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
-         !hybrid_mark_postfix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
-           fast_args_str = trim(fast_args_str) // ' hybrid_mark_postfix=_extended'
+           fast_args_str = trim(fast_args_str) // ' run_suffix=_extended'
          elseif (trim(Run_Type2) == 'QMMM_CORE') then
-           fast_args_str = trim(fast_args_str) // ' hybrid_mark_postfix=_core'
+           fast_args_str = trim(fast_args_str) // ' run_suffix=_core'
          endif
        endif
 
-       args_str='qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} hybrid_mark_postfix=_extended'
+       args_str='qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} run_suffix=_extended'
        if (distance_ramp) then
 	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
        endif
@@ -1512,9 +1512,9 @@ contains
     else ! QMMM
       cp2k_driver_run_type_args = "Run_Type=QMMM"
       if (run_type(1:9) == 'QMMM_CORE') then
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F qm_name_suffix=_core'
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F run_suffix=_core'
       else
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T qm_name_suffix=_extended'
+	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T run_suffix=_extended'
       endif
     endif
   end function cp2k_driver_run_type_args

@@ -340,7 +340,7 @@ contains
 
     integer, pointer :: cluster_mark_p(:)
     integer, pointer :: old_cluster_mark_p(:)
-    character(len=STRING_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: run_suffix
     logical :: force_using_fd
     real(dp) :: force_fd_delta
 
@@ -361,7 +361,7 @@ contains
     call initialise(params)
     call param_register(params, 'single_cluster', 'F', single_cluster, &
       help_string="If true, calculate all active/transition atoms with a single big cluster")
-    call param_register(params, 'hybrid_mark_postfix', '', hybrid_mark_postfix, &
+    call param_register(params, 'run_suffix', '', run_suffix, &
       help_string="suffix to append to hybrid_mark field used")
     call param_register(params, 'carve_cluster', 'T', do_carve_cluster, &
       help_string="If true, calculate active region atoms by carving out a cluster")
@@ -432,7 +432,7 @@ contains
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
  
-       if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
+       if (.not. assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
             RAISE_ERROR('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ', error)
        endif
 
@@ -445,8 +445,8 @@ contains
        allocate(hybrid_mark_saved(at%N))
        hybrid_mark_saved = hybrid_mark
 
-       if (has_property(at, 'weight_region1'//trim(hybrid_mark_postfix))) then
-          dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
+       if (has_property(at, 'weight_region1'//trim(run_suffix))) then
+          dummy = assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)
           allocate(weight_region1_saved(at%N))
           weight_region1_saved = weight_region1
        end if
@@ -466,16 +466,16 @@ contains
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, cluster_args_str)
-          cluster_info = create_cluster_info_from_mark(at, cluster_args_str,mark_name='hybrid_mark'//trim(hybrid_mark_postfix),error=error)
+          cluster_info = create_cluster_info_from_mark(at, cluster_args_str,mark_name='hybrid_mark'//trim(run_suffix),error=error)
 	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
 	  call carve_cluster(at, cluster_args_str, cluster_info, cluster)
 	  call finalise(cluster_info)
 
           ! Reassign pointers - create_cluster_info_from_mark() might have broken them
-          if (has_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix))) &
-               dummy = assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)
-          if (has_property(at, 'weight_region1'//trim(hybrid_mark_postfix))) &
-               dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
+          if (has_property(at, 'hybrid_mark'//trim(run_suffix))) &
+               dummy = assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)
+          if (has_property(at, 'weight_region1'//trim(run_suffix))) &
+               dummy = assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)
 
 	  if (current_verbosity() >= PRINT_NERD) then
 	    call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
@@ -512,8 +512,8 @@ contains
           RAISE_ERROR('Potential_Simple_calc: single_cluster option only supports calculation of forces, not energies, local energies or virials', error)
        endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-            RAISE_ERROR('Potential_Simple_calc: single_cluster cannot assign pointer to hybrid_mark'//trim(hybrid_mark_postfix)//' property ', error)
+       if (.not. assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
+            RAISE_ERROR('Potential_Simple_calc: single_cluster cannot assign pointer to hybrid_mark'//trim(run_suffix)//' property ', error)
        endif
 
        if (.not. any(hybrid_mark == HYBRID_ACTIVE_MARK)) then
@@ -544,7 +544,7 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, cluster_args_str, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 cluster_info = create_cluster_info_from_mark(at, cluster_args_str, mark_name='hybrid_mark'//trim(run_suffix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
@@ -555,7 +555,7 @@ contains
 	 endif
          call finalise(t)
 
-	 call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(run_suffix), error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
@@ -578,8 +578,8 @@ contains
          if (do_rescale_E)  f_cluster = f_cluster*E_scale
 
          ! Reassign pointers - create_cluster_info_from_mark() might have broken them
-         if (has_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix))) &
-              dummy = assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)
+         if (has_property(at, 'hybrid_mark'//trim(run_suffix))) &
+              dummy = assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)
 
 	 ! copy forces for all active and transition atoms
 	 at_force_ptr = 0.0_dp
@@ -593,32 +593,32 @@ contains
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, trim(cluster_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(hybrid_mark_postfix), error=error)
+	 cluster_info = create_cluster_info_from_mark(at, trim(cluster_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(run_suffix), error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
-	 call add_property(at, 'cluster_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
-	 call add_property(at, 'old_cluster_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
-	 if (.not. assign_pointer(at, 'cluster_mark'//trim(hybrid_mark_postfix), cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(hybrid_mark_postfix)//" pointer", error)
+	 call add_property(at, 'cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
+	 call add_property(at, 'old_cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
+	 if (.not. assign_pointer(at, 'cluster_mark'//trim(run_suffix), cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(run_suffix)//" pointer", error)
 	 endif
-	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(hybrid_mark_postfix), old_cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark"//trim(hybrid_mark_postfix)//" pointer", error)
+	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(run_suffix), old_cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark"//trim(run_suffix)//" pointer", error)
 	 endif
 	 old_cluster_mark_p = cluster_mark_p
 	 cluster_mark_p = HYBRID_NO_MARK
-	 if (.not. assign_pointer(at, 'modified_hybrid_mark'//trim(hybrid_mark_postfix), modified_hybrid_mark)) then
+	 if (.not. assign_pointer(at, 'modified_hybrid_mark'//trim(run_suffix), modified_hybrid_mark)) then
 	   cluster_mark_p = hybrid_mark
 	 else
 	   cluster_mark_p = modified_hybrid_mark
 	 endif
 
          !save cut bonds in cut_bonds property
-         call add_property(at, 'old_cut_bonds'//trim(hybrid_mark_postfix), 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'old_cut_bonds'//trim(hybrid_mark_postfix), old_cut_bonds_p)) then
+         call add_property(at, 'old_cut_bonds'//trim(run_suffix), 0, n_cols=MAX_CUT_BONDS)
+	 if (.not. assign_pointer(at, 'old_cut_bonds'//trim(run_suffix), old_cut_bonds_p)) then
 	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
 	 endif
-	 call add_property(at, 'cut_bonds'//trim(hybrid_mark_postfix), 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'cut_bonds'//trim(hybrid_mark_postfix), cut_bonds_p)) then
+	 call add_property(at, 'cut_bonds'//trim(run_suffix), 0, n_cols=MAX_CUT_BONDS)
+	 if (.not. assign_pointer(at, 'cut_bonds'//trim(run_suffix), cut_bonds_p)) then
 	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
 	 endif
          old_cut_bonds_p = cut_bonds_p
