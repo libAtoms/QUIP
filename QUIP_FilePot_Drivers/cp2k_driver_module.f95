@@ -92,7 +92,7 @@ contains
 
     logical :: can_reuse_wfn, qm_list_changed, qmmm_link_list_changed, &
          qmmm_same_lattice, qmmm_use_mm_charges, qmmm_link_fix_pbc
-    character(len=STRING_LENGTH) :: qm_name_suffix
+    character(len=STRING_LENGTH) :: run_suffix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -150,7 +150,7 @@ contains
     call initialise(cli)
       call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type, help_string="Type of run QS, MM, or QMMM")
       call param_register(cli, 'use_buffer', 'T', use_buffer, help_string="If true, use buffer as specified in relevant hybrid_mark")
-      call param_register(cli, 'qm_name_suffix', '', qm_name_suffix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
+      call param_register(cli, 'run_suffix', '', run_suffix, help_string="String to append to various marks and saved info to indicate distinct sets of calculations or QM/MM QM regions")
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file, help_string="filename for cp2k input template")
       call param_register(cli, "qmmm_link_template_file", "", link_template_file, help_string="filename for cp2k link atoms template file")
       call param_register(cli, 'PSF_print', 'NO_PSF', psf_print, help_string="when to print PSF file: NO_PSF, DRIVER_PRINT_AND_SAVE, USE_EXISTING_PSF")
@@ -225,7 +225,7 @@ contains
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
     call print("  use_buffer " // use_buffer)
-    call print("  qm_name_suffix " // qm_name_suffix)
+    call print("  run_suffix " // run_suffix)
     call print("  cp2k_template_file " // cp2k_template_file)
     call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
@@ -495,7 +495,7 @@ contains
        ! We need to make QM region a separate molecule so that CP2K doesn't complain
        ! about discontigous molecules.
 
-       call assign_property_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p, error=error)
+       call assign_property_pointer(at, 'cluster_mark'//trim(run_suffix), cluster_mark_p, error=error)
        PASS_ERROR(error)
        call assign_property_pointer(at, 'mol_id', mol_id_p, error=error)
        PASS_ERROR(error)
@@ -515,7 +515,7 @@ contains
     allocate(old_link_list_a(0))
     allocate(qm_and_link_list_a(0))
    if (use_QMMM) then
-      call get_qm_list(at, use_buffer, trim(qm_name_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
+      call get_qm_list(at, use_buffer, trim(run_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 		       link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
 		       link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
       PASS_ERROR(error)
@@ -651,27 +651,27 @@ contains
 	 call print("@SET QMMM_ABC_Z "//cur_qmmm_qm_abc(3), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 call print("@SET QMMM_PERIODIC XYZ", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 
-	 if (get_value(at%params, "QM_cell"//trim(qm_name_suffix), old_qmmm_qm_abc)) then
+	 if (get_value(at%params, "QM_cell"//trim(run_suffix), old_qmmm_qm_abc)) then
 	   if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
 	 else
 	   can_reuse_wfn = .false.
 	 endif
-	 call set_value(at%params, "QM_cell"//trim(qm_name_suffix), cur_qmmm_qm_abc)
-	  call print('set_value QM_cell'//trim(qm_name_suffix)//' '//cur_qmmm_qm_abc)
+	 call set_value(at%params, "QM_cell"//trim(run_suffix), cur_qmmm_qm_abc)
+	  call print('set_value QM_cell'//trim(run_suffix)//' '//cur_qmmm_qm_abc)
 
 	  ! check if QM list changed: compare cluster_mark and old_cluster_mark[_suffix]
 	  ! if no old_cluster_mark, assumed it's changed just to be safe
 	  qm_list_changed = .false.
-	  if (.not.has_property(at, 'cluster_mark'//trim(qm_name_suffix))) then
-	    RAISE_ERROR('no cluster_mark'//trim(qm_name_suffix)//' found in atoms object',error)
+	  if (.not.has_property(at, 'cluster_mark'//trim(run_suffix))) then
+	    RAISE_ERROR('no cluster_mark'//trim(run_suffix)//' found in atoms object',error)
 	  endif
-	  if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_suffix))) then
+	  if (.not.has_property(at, 'old_cluster_mark'//trim(run_suffix))) then
 	    qm_list_changed = .true.
 	  endif
-	  dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_suffix), cluster_mark_p)
+	  dummy = assign_pointer(at, 'cluster_mark'//trim(run_suffix), cluster_mark_p)
 
 	  if (.not. qm_list_changed) then
-             dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_suffix), old_cluster_mark_p)
+             dummy = assign_pointer(at, 'old_cluster_mark'//trim(run_suffix), old_cluster_mark_p)
 	     do i=1,at%N
 		if (old_cluster_mark_p(i) /= cluster_mark_p(i)) then ! mark changed.  Does it matter?
 		    if (use_buffer) then ! EXTENDED, check for transitions to/from HYBRID_NO_MARK
@@ -808,7 +808,7 @@ contains
 	   if (persistent) then
 	      call print("@SET WFN_FILE_NAME quip-RESTART.wfn", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	   else
-	      call print("@SET WFN_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_suffix), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+	      call print("@SET WFN_FILE_NAME ../wfn.restart.wfn"//trim(run_suffix), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	   endif
 	   !insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	   !call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
@@ -973,9 +973,9 @@ contains
     ! save output
 
     if (use_QM) then
-      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_suffix))
+      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(run_suffix))
       if (save_output_wfn_files) then
-	call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn run_'//run_dir_i//'_end.wfn.restart.wfn'//trim(qm_name_suffix))
+	call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn run_'//run_dir_i//'_end.wfn.restart.wfn'//trim(run_suffix))
       endif
     endif
 
@@ -1609,12 +1609,12 @@ contains
   end subroutine do_cp2k_calc_fake
 
 
-   subroutine get_qm_list(at, use_buffer, qm_name_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
+   subroutine get_qm_list(at, use_buffer, run_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 			  link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
 			  link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
       type(Atoms), intent(inout) :: at
       logical, intent(in) :: use_buffer
-      character(len=*), intent(in) :: qm_name_suffix, link_template_file, qmmm_link_type
+      character(len=*), intent(in) :: run_suffix, link_template_file, qmmm_link_type
       type(Table), intent(inout) :: qm_list, old_qm_list
       integer, allocatable, intent(inout) :: qm_list_a(:), old_qm_list_a(:), link_list_a(:), old_link_list_a(:), qm_and_link_list_a(:)
       integer, intent(in) :: rev_sort_index(:)
@@ -1631,11 +1631,11 @@ contains
 
       ! get qm_list and link_list
       if (use_buffer) then
-	call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
-	call get_hybrid_list(at, old_qm_list, all_but_term=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
+	call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(run_suffix))
+	call get_hybrid_list(at, old_qm_list, all_but_term=.true.,int_property="old_cluster_mark"//trim(run_suffix))
       else
-	call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_suffix))
-	call get_hybrid_list(at, old_qm_list, active_trans_only=.true.,int_property="old_cluster_mark"//trim(qm_name_suffix))
+	call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(run_suffix))
+	call get_hybrid_list(at, old_qm_list, active_trans_only=.true.,int_property="old_cluster_mark"//trim(run_suffix))
       endif
       if (allocated(qm_list_a)) deallocate(qm_list_a)
       if (allocated(old_qm_list_a)) deallocate(old_qm_list_a)
@@ -1647,7 +1647,7 @@ contains
       if (old_qm_list%N > 0) old_qm_list_a = int_part(old_qm_list,1)
       !get link list
 
-       if (assign_pointer(at,'cut_bonds'//trim(qm_name_suffix),cut_bonds_p)) then
+       if (assign_pointer(at,'cut_bonds'//trim(run_suffix),cut_bonds_p)) then
 	  call initialise(cut_bonds,2,0,0,0,0)
 	  do i_inner=1,at%N
 	     do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
@@ -1673,7 +1673,7 @@ contains
        endif
 
        call initialise(old_cut_bonds,2,0,0,0,0)
-       if(assign_pointer(at, 'old_cut_bonds'//trim(qm_name_suffix), old_cut_bonds_p)) then
+       if(assign_pointer(at, 'old_cut_bonds'//trim(run_suffix), old_cut_bonds_p)) then
 	  do i_inner=1,at%N
 	     do j=1,size(old_cut_bonds_p,1) !MAX_CUT_BONDS
 		if (old_cut_bonds_p(j,i_inner) == 0) exit

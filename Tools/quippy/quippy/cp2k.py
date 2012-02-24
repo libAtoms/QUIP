@@ -221,7 +221,7 @@ def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None):
 
 @atoms_reader('cp2k_run_dir')
 def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
-                        calc_virial=False, out_i=None, qm_vacuum=6.0, qm_name_suffix='_extended'):
+                        calc_virial=False, out_i=None, qm_vacuum=6.0, run_suffix='_extended'):
     if at_ref is None:
         filepot_xyz = os.path.join(run_dir, 'filepot.xyz')
         if not os.path.exists(filepot_xyz):
@@ -243,7 +243,7 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
     run_type = cp2k_run_type(cp2k_output=cp2k_output, cp2k_input_header=cp2k_params)
 
     try:
-        cluster_mark = getattr(at, 'cluster_mark'+qm_name_suffix)
+        cluster_mark = getattr(at, 'cluster_mark'+run_suffix)
         qm_list_a = ((cluster_mark != HYBRID_NO_MARK).nonzero()[0]).astype(np.int32)
     except AttributeError:
         qm_list_a = fzeros(0, dtype=np.int32)
@@ -256,8 +256,8 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
                            float(cp2k_params['QMMM_ABC_Y']),
                            float(cp2k_params['QMMM_ABC_Z'])]
     except KeyError:
-        if 'QM_cell'+qm_name_suffix in at.params:
-            cur_qmmm_qm_abc = at.params['QM_cell'+qm_name_suffix]
+        if 'QM_cell'+run_suffix in at.params:
+            cur_qmmm_qm_abc = at.params['QM_cell'+run_suffix]
         else:
             cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
 

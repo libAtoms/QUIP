@@ -50,7 +50,7 @@
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", "", this%hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", "", this%run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "r_scale", "1.0", this%r_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "E_scale", "1.0", this%E_scale_pot1, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "terminate", "T", this%terminate, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -78,7 +78,7 @@
 
     call initialise(this%create_hybrid_weights_params)
     call read_string(this%create_hybrid_weights_params, args_str)
-    call remove_value(this%create_hybrid_weights_params, 'hybrid_mark_postfix')
+    call remove_value(this%create_hybrid_weights_params, 'run_suffix')
     call remove_value(this%create_hybrid_weights_params, 'r_scale')
     call remove_value(this%create_hybrid_weights_params, 'E_scale')
     call remove_value(this%create_hybrid_weights_params, 'terminate')
@@ -169,7 +169,7 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
-    character(len=STRING_LENGTH) :: hybrid_mark_postfix
+    character(len=STRING_LENGTH) :: run_suffix
 
     INIT_ERROR(error)
 
@@ -177,7 +177,7 @@
       call system_abort("Potential_Local_E_Mix_calc: this%pot_region1 or this%pot_region2 not initialised")
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", trim(this%hybrid_mark_postfix), hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", trim(this%run_suffix), run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "calc_weights", "F", calc_weights, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, "core_hops", "0", core_hops, help_string="No help yet.  This source file was $LastChangedBy$")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix_Calc args_str') ) &
@@ -187,10 +187,10 @@
     if (calc_weights) then
       call print("Potential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
-      call add_property(at, "hybrid_mark"//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
-      if (.not. assign_pointer(at, "hybrid"//trim(hybrid_mark_postfix), hybrid)) &
+      call add_property(at, "hybrid_mark"//trim(run_suffix), HYBRID_NO_MARK)
+      if (.not. assign_pointer(at, "hybrid"//trim(run_suffix), hybrid)) &
         call system_abort("QC_QUIP_calc at doesn't have hybrid property and calc_weights was specified")
-      if (.not. assign_pointer(at, "hybrid_mark"//trim(hybrid_mark_postfix), hybrid_mark)) &
+      if (.not. assign_pointer(at, "hybrid_mark"//trim(run_suffix), hybrid_mark)) &
         call system_abort("QC_QUIP_calc Failed to add hybrid_mark property to at")
 
       call calc_connect(at)
@@ -236,7 +236,7 @@
     character(STRING_LENGTH) :: cc_args_str
 
     real(dp), pointer :: local_e_pot1(:), local_e_pot2(:)
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, local_energy_args_str, local_energy_name, hybrid_mark_postfix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, local_energy_args_str, local_energy_name, run_suffix
 
     INIT_ERROR(error)
 
@@ -249,7 +249,7 @@
     call system_timer("calc_local_energy_mix")
 
     call initialise(params)
-    call param_register(params, "hybrid_mark_postfix", trim(this%hybrid_mark_postfix), hybrid_mark_postfix, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, "run_suffix", trim(this%run_suffix), run_suffix, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'energy', '', calc_energy, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'force', '', calc_force, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'local_energy', '', calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -273,10 +273,10 @@
       weight_saved = weight
     endif
     ! check for a compatible hybrid and weight_region1 property. they must be present
-    if (.not.assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) &
-       call system_abort('hybrid_calc_energy_mix: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)//'" property')
-    if (.not.assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)) &
-       call system_abort('hybrid_calc_energy_mix: atoms structure has no "weight_region1'//trim(hybrid_mark_postfix)//'" property')
+    if (.not.assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) &
+       call system_abort('hybrid_calc_energy_mix: atoms structure has no "hybrid_mark'//trim(run_suffix)//'" property')
+    if (.not.assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)) &
+       call system_abort('hybrid_calc_energy_mix: atoms structure has no "weight_region1'//trim(run_suffix)//'" property')
 
     if(.not. all(hybrid_mark == HYBRID_NO_MARK)) then
       if(len_trim(calc_virial) > 0 .or. len_trim(calc_local_virial) > 0) then

@@ -2381,7 +2381,7 @@ end function cluster_in_out_in
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
-    character(STRING_LENGTH) :: weight_interpolation, hybrid_mark_postfix
+    character(STRING_LENGTH) :: weight_interpolation, run_suffix
     logical :: construct_buffer_use_only_heavy_atoms
 
     integer, pointer :: hybrid_mark(:)
@@ -2412,7 +2412,7 @@ end function cluster_in_out_in
 
 ! only one set of defaults now, not one in args_str and one in arg list 
     call initialise(params)
-    call param_register(params, 'hybrid_mark_postfix', '', hybrid_mark_postfix, help_string="string to append to hyrbid_mark for proper mark property name")
+    call param_register(params, 'run_suffix', '', run_suffix, help_string="string to append to hyrbid_mark for proper mark property name")
     call param_register(params, 'transition_hops', '0', transition_hops, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
     call param_register(params, 'buffer_hops', '3', buffer_hops, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
     call param_register(params, 'weight_interpolation', 'hop_ramp', weight_interpolation, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
@@ -2468,16 +2468,16 @@ end function cluster_in_out_in
     call print('  hysteretic_connect_inner_factor='//hysteretic_connect_inner_factor //' hysteretic_connect_outer_factor='//hysteretic_connect_outer_factor, PRINT_VERBOSE)
 
     ! check to see if atoms has a 'weight_region1' property already, if so, check that it is compatible, if not present, add it
-    if(assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)) then
+    if(assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)) then
        weight_region1 = 0.0_dp
     else
-       call add_property(at, 'weight_region1'//trim(hybrid_mark_postfix), 0.0_dp)
-       dummy = assign_pointer(at, 'weight_region1'//trim(hybrid_mark_postfix), weight_region1)
+       call add_property(at, 'weight_region1'//trim(run_suffix), 0.0_dp)
+       dummy = assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)
     end if
 
     ! check for a compatible hybrid_mark property. it must be present
-    if(.not.assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-       RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark'//trim(hybrid_mark_postfix)//'" property', error)
+    if(.not.assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
+       RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark'//trim(run_suffix)//'" property', error)
     endif
 
     ! Fast implementation of trivial case where buffer_hops=0 and transition_hops=0
