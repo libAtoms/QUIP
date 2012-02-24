@@ -302,10 +302,10 @@ function extendable_str_substr(this, start, end, error)
   INIT_ERROR(error)
   
   if (start < 1 .or. start > this%len) then
-     RAISE_ERROR('extendable_str_substr: start('//start//') < 1 or > thi%len="//this%len', error)
+     RAISE_ERROR('extendable_str_substr: start('//start//') < 1 or > this%len='//this%len, error)
   end if
   if (end < 1 .or. end > this%len) then
-     RAISE_ERROR('extendable_str_substr: end('//end//') < 1 or > thi%len="//this%len', error)
+     RAISE_ERROR('extendable_str_substr: end('//end//') < 1 or > this%len='//this%len, error)
   end if
   if (end < start) then
      RAISE_ERROR('extendable_str_substr: end('//end//') < start('//start//')', error)
