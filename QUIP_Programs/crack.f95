@@ -278,6 +278,9 @@ program crack
   ! Crack includes
   use CrackTools_module
   use CrackParams_module
+#ifdef HAVE_CP2K
+  use cp2k_driver_module
+#endif
 
   implicit none
 
@@ -323,7 +326,7 @@ program crack
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, last_update_selection_time, last_stanza_change_time, last_update_crack_tip_time
   character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
-  character(STRING_LENGTH) :: state_string
+  character(STRING_LENGTH) :: state_string, qm_args_str, mm_args_str, extra_qm_args, extra_mm_args, extra_args
 
   real(dp) :: time_elapsed, total_time_elapsed
 
@@ -402,7 +405,8 @@ program crack
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk_cell)
+     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, &
+          xmlfile, mpi_obj=mpi_glob, bulk_scale=bulk_cell)
      call finalise(xmlfile)
      call Print(qmpot)
   end if
@@ -432,6 +436,7 @@ program crack
      call set_value(pot_params, 'lotf_spring_hops', params%fit_spring_hops)
      call set_value(pot_params, 'do_rescale_r', params%qm_rescale_r)
      call set_value(pot_params, 'minimise_bulk', params%qm_rescale_r)
+     call set_value(pot_params, 'min_images_only', periodic_clusters(3))
      call set_value(pot_params, 'hysteretic_buffer', params%qm_hysteretic_buffer)
      call set_value(pot_params, 'hysteretic_buffer_inner_radius', params%qm_hysteretic_buffer_inner_radius)
      call set_value(pot_params, 'hysteretic_buffer_outer_radius', params%qm_hysteretic_buffer_outer_radius)
@@ -442,43 +447,46 @@ program crack
      call set_value(pot_params, 'hysteretic_connect_inner_factor', params%qm_hysteretic_connect_inner_factor)
      call set_value(pot_params, 'hysteretic_connect_outer_factor', params%qm_hysteretic_connect_outer_factor)
 
-
-     call set_value(pot_params, 'mm_args_str', params%classical_args_str)
-
-     call set_value(pot_params, 'qm_args_str', &
-          ' little_clusters='//(params%qm_clusters .and. params%qm_little_clusters)// &
-          ' single_cluster='//(params%qm_clusters .and. .not. params%qm_little_clusters)// &
-          ' terminate='//params%qm_terminate// &
-          ' even_electrons='//params%qm_even_electrons// &
-          ' cluster_vacuum='//params%qm_vacuum_size// &
-          ' cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
-          ' cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
-          ' buffer_hops='//params%qm_buffer_hops//&
-          ' transition_hops='//params%qm_transition_hops//&
-          ' randomise_buffer='//params%qm_randomise_buffer//&
-          ' hysteretic_connect='//params%qm_hysteretic_connect//&
-          ' nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-          ' cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-	  ' '//trim(params%qm_args_str))
-
      call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
           pot1=classicalpot, pot2=qmpot, bulk_scale=bulk_cell, mpi_obj=mpi_glob)
 
      call print_title('Hybrid Potential')
      call print(hybrid_pot)
 
-     call set_value(pot_params, 'method', 'force_mixing')
-     if (params%qm_rescale_r) then
-        call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
-             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk_cell, mpi_obj=mpi_glob)
-        call finalise(bulk_cell)
-     else
-        call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
-             pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
-     end if
-     call finalise(pot_params)
+     ! calc_args
+     mm_args_str = params%classical_args_str
+     qm_args_str=' little_clusters='//(params%qm_clusters .and. params%qm_little_clusters)// &
+                 ' single_cluster='//(params%qm_clusters .and. .not. params%qm_little_clusters)// &
+                 ' terminate='//params%qm_terminate// &
+                 ' even_electrons='//params%qm_even_electrons// &
+                 ' cluster_vacuum='//params%qm_vacuum_size// &
+                 ' cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
+                 ' cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
+                 ' buffer_hops='//params%qm_buffer_hops//&
+                 ' transition_hops='//params%qm_transition_hops//&
+                 ' randomise_buffer='//params%qm_randomise_buffer//&
+                 ' hysteretic_connect='//params%qm_hysteretic_connect//&
+                 ' nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+                 ' cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+                 ' '//trim(params%qm_args_str)
+     extra_qm_args = ''
+     extra_mm_args = ''
+     extra_args = ''
 
+     if (params%qm_calc_force_error) then
+        call set_value(pot_params, 'method', 'force_mixing')
+        if (params%qm_rescale_r) then
+           call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
+                pot1=classicalpot, pot2=qmpot, bulk_scale=bulk_cell, mpi_obj=mpi_glob)
+        else
+           call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
+                pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
+        end if
+        call finalise(pot_params)
+     end if
   end if
+
+  call finalise(bulk_cell)
 
   ! Look for input file. Check for the following, in order
   ! <stem>_check.nc
@@ -846,7 +854,13 @@ program crack
 
         ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
         if (params%md(params%md_stanza)%extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
-           call calc(hybrid_pot, ds%atoms, args_str="force=force")
+           if (params%qm_cp2k) then
+              extra_args = "run_suffix=_lotf"
+              extra_qm_args = "run_suffix=_lotf"
+              call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
+           end if
+           call calc(hybrid_pot, ds%atoms, args_str="force=force "//&
+                crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
         end if
 
         call system_timer('md_initialisation', time_elapsed=time_elapsed)
@@ -990,18 +1004,34 @@ program crack
                  call system_timer('md_time')
               end if
 
+
+              if (params%qm_cp2k) then
+                 extra_args = "run_suffix=_extrap"
+                 extra_qm_args = "run_suffix=_extrap"
+#ifdef HAVE_CP2K
+                 call cp2k_state_change(ds%atoms, '_extrap', (/'_interp', '_lotf'/))
+#else
+                 call system_abort('qm_cp2k=T but CP2K support not compiled in!')
+#endif
+                 call add_property(ds%atoms, 'hybrid_extrap', hybrid, overwrite=.true.)
+              end if
+
               do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
                  if (params%simulation_classical) then
-                    call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' energy=energy force=force')
+                    call calc(classicalpot, ds%atoms, energy=energy, args_str='energy=energy force=force '//&
+                         crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
                  else
-                    if (i== 1) then
-                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
+                    if (i == 1) then
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=T lotf_do_map=T "// &
+                            crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     else
-                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F")
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F "// &
+                            crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     end if
-                    if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
-
+                    if (params%qm_calc_force_error) &
+                         call calc(forcemix_pot, ds%atoms, force=f_fm, args_str= &
+                              crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     if (params%hack_qm_zero_z_force) then
                        ! Zero z forces in embed region
                        force(3,find(hybrid == 1)) = 0.0_dp 
@@ -1018,7 +1048,9 @@ program crack
                  else
                     call ds_print_status(ds, 'E')
                  end if
-                 if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
+                 if (params%qm_calc_force_error) call print('E err '//ds%t//' '// &
+                      rms_diff(force(:, find(hybrid == 1)), f_fm(:, find(hybrid == 1)))//' '// &
+                      maxval(abs(f_fm(:, find(hybrid == 1)) - force(:, find(hybrid == 1)))))
 
                  if (state == STATE_MD_LOADING) then
                     ! increment the load
@@ -1052,7 +1084,15 @@ program crack
 
                  call print_title('Computation of forces')
                  call system_timer('force computation')
-                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
+
+                 if (params%qm_cp2k) then
+                    extra_qm_args = "hybrid_mark_postfix=_lotf"
+                    extra_args = "hybrid_mark_postfix=_lotf"
+                    call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
+                 end if
+
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T "//&
+                      crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                  call system_timer('force computation')
 
 
@@ -1068,13 +1108,28 @@ program crack
                  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
                       old_nn, hybrid, hybrid_mark, force)
 
+                 if (params%qm_cp2k) then
+                    extra_args = 'run_suffix=_interp'
+                    extra_qm_args = 'run_suffix=_interp'
+#ifdef HAVE_CP2K
+                    call cp2k_state_change(ds%atoms, '_interp', (/'_interp', '_lotf'/))
+#else
+                    call system_abort('qm_cp2k=T but no CP2K support compiled in!')
+#endif
+                    call add_property(ds%atoms, 'hybrid_interp', hybrid, overwrite=.true.)
+                 end if
+
                  do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
                     call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
-                         //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp)))
+                         //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp))//' '// &
+                         crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
 
-                    if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
-
+                    if (params%qm_calc_force_error) then
+                       call calc(forcemix_pot, ds%atoms, force=f_fm, args_str= &
+                            crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+                    end if
+                         
                     if (params%hack_qm_zero_z_force) then
                        ! Zero z forces in embed region
                        force(3,find(hybrid == 1)) = 0.0_dp 
@@ -1084,7 +1139,9 @@ program crack
                     ! advance the dynamics
                     call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
                     call ds_print_status(ds, 'I')
-                    if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(force, f_fm)//' '//maxval(abs(f_fm-force)))
+                    if (params%qm_calc_force_error) call print('I err '//ds%t//' '// &
+                         rms_diff(force(:, find(hybrid == 1)), f_fm(:, find(hybrid == 1)))//' '// &
+                         maxval(abs(f_fm(:, find(hybrid == 1)) - force(:, find(hybrid == 1)))))
 
                     if (trim(params%simulation_task) == 'damped_md') then
                        do j=1,ds%atoms%n
@@ -1138,9 +1195,11 @@ program crack
               call print_title('Force Computation')
               call system_timer('force computation/optimisation')
               if (params%simulation_classical) then
-                 call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' energy=energy force=force')
+                 call calc(classicalpot, ds%atoms, energy=energy, args_str='energy=energy force=force '//&
+                      crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
               else
-                 call calc(hybrid_pot, ds%atoms, args_str="force=force")
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force "//&
+                      crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
               end if
               call system_timer('force computation/optimisation')
 
@@ -1298,10 +1357,12 @@ program crack
         ds%atoms%pos = fd_start%pos + dr*real(i,dp)
         call calc_connect(ds%atoms, store_is_min_image=.true.)
         if (params%simulation_classical) then
-           call calc(classicalpot, ds%atoms, energy=energy, args_str=trim(params%classical_args_str)//' force=force')
+           call calc(classicalpot, ds%atoms, energy=energy, args_str='force=force '//&
+                crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
            if (i == 0) fd_e0 = energy
         else
-           call calc(hybrid_pot, ds%atoms, args_str='force=force')
+           call calc(hybrid_pot, ds%atoms, args_str='force=force '//&
+                crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
         end if
 
         f_dr = force .dot. dr
@@ -1436,9 +1497,7 @@ program crack
   call finalise(forcemix_pot)
   call finalise(classicalpot)
   call finalise(qmpot)
-
   if (allocated(f_fm)) deallocate(f_fm)
-
   call system_finalise()
 
 end program crack

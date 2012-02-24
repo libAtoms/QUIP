@@ -287,6 +287,7 @@ module CrackParams_module
      ! QM parameters
      character(STRING_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
      character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
+     logical :: qm_cp2k                   !% Enable CP2K mode. Default false.
      logical :: qm_clusters               !% Should we carve clusters? Default true.
      logical :: qm_little_clusters        !% One big cluster or lots of little ones?
      integer :: qm_buffer_hops            !% Number of bond hops used for buffer region
@@ -589,6 +590,7 @@ contains
      ! QM parameters
     this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
     this%qm_args_str              = ''
+    this%qm_cp2k                  = .false.
     this%qm_clusters              = .true.
     this%qm_little_clusters       = .false.
     this%qm_buffer_hops           = 3        ! Number
@@ -1471,6 +1473,11 @@ contains
           parse_cp%qm_args_str = value
        end if
 
+       call QUIP_FoX_get_value(attributes, "cp2k", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_cp2k
+       end if
+
        call QUIP_FoX_get_value(attributes, "clusters", value, status)
        if (status == 0) then
           read (value, *) parse_cp%qm_clusters
@@ -1869,6 +1876,7 @@ contains
     call Print('  QM parameters:',file=file)
     call Print('     args                  = '//trim(this%qm_args),file=file)
     call Print('     args_str              = '//trim(this%qm_args_str),file=file)
+    call Print('     cp2k                  = '//this%qm_cp2k,file=file)
     call Print('     clusters              = '//this%qm_clusters,file=file)
     call Print('     little_clusters       = '//this%qm_little_clusters,file=file)
     call Print('     buffer_hops           = '//this%qm_buffer_hops,file=file)

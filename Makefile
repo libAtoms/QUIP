@@ -99,8 +99,8 @@ endif
 
 QUIP_Core: libAtoms/libatoms.a ${FOX} ${GP}
 QUIP_Util: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a
-QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils 
 QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils 
+QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 Tests: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
 
 ifeq (${HAVE_GP_PREDICT},1)
