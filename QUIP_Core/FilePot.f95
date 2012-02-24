@@ -88,6 +88,7 @@ type FilePot_type
   character(len=STRING_LENGTH) :: command
   character(len=STRING_LENGTH) :: property_list
   character(len=STRING_LENGTH) :: read_extra_property_list
+  character(len=STRING_LENGTH) :: property_list_prefixes
   character(len=STRING_LENGTH) :: filename
   real(dp)            :: min_cutoff
 
@@ -136,7 +137,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   integer, intent(out), optional :: error
 
   type(Dictionary) ::  params
-  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, filename
+  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, property_list_prefixes, filename
   real(dp) :: min_cutoff
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
@@ -148,7 +149,8 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call initialise(params)
   call param_register(params, 'command', PARAM_MANDATORY, command, help_string="system command to execute that should read the structure file, run the model and deposit the output file")
   call param_register(params, 'property_list', 'species:pos', property_list, help_string="list of properties to print with the structure file")
-  call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="names of extra properties to read from filepot.out files")
+  call param_register(params, 'property_list_prefixes', '', property_list_prefixes, help_string="list of prefixes to which hybrid_mark_postfix will be applied during calc()")
   call param_register(params, 'filename', 'filepot', filename, help_string="seed name for directory and structure files to be used")
   call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="if the unit cell does not fit into this cutoff, it is periodically replicated so that it does")
   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
@@ -165,6 +167,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   this%command = command
   this%property_list = property_list
   this%read_extra_property_list = read_extra_property_list
+  this%property_list_prefixes = property_list_prefixes
   this%min_cutoff = min_cutoff
   this%filename = filename
   if (present(mpi)) this%mpi = mpi
@@ -205,6 +208,7 @@ subroutine FilePot_Print(this, file)
        "' filename='"//trim(this%filename)//&
        "' property_list='"//trim(this%property_list)//&
        "' read_extra_property_list='"//trim(this%read_extra_property_list)//&
+       "' property_list_prefixes='"//trim(this%property_list_prefixes)//&
        "' min_cutoff="//this%min_cutoff,file=file)
 
 end subroutine FilePot_Print
@@ -219,14 +223,12 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
 
-  character(len=STRING_LENGTH)  :: xyzfile, outfile, filename
+  character(len=STRING_LENGTH)  :: xyzfile, outfile, filename, hybrid_mark_postfix
   character(len=STRING_LENGTH) :: my_args_str
-  integer :: nx, ny, nz
+  integer :: nx, ny, nz, i
   type(Atoms) :: sup
-  integer :: my_err
-  integer :: status
-
-  character(len=STRING_LENGTH) :: read_extra_property_list
+  integer :: status, n_properties, my_err
+  character(len=STRING_LENGTH) :: read_extra_property_list, property_list, tmp_properties_array(100)
   type(Dictionary) :: cli
   logical :: FilePot_log, filename_override
   
@@ -241,8 +243,9 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   if (present(args_str)) my_args_str = args_str
 
   call initialise(cli)
-  call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="if True, save logfile of all the filepot.xyz and filepot.out")
+  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read from filepot.out. Overrides init_args version.")
+  call param_register(cli, "hybrid_mark_postfix", '', hybrid_mark_postfix, help_string="suffix to apply to property names in this%property_list_prefixes")
   call param_register(cli, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
 
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
@@ -284,19 +287,27 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
         nx = 1; ny = 1; nz = 1
      end if
 
+     property_list = this%property_list
+     if (len_trim(this%property_list_prefixes) /= 0) then
+        call parse_string(this%property_list_prefixes, ':', tmp_properties_array, n_properties, error=error)
+        do i=1, n_properties
+           property_list = trim(property_list)//':'//trim(tmp_properties_array(i))//hybrid_mark_postfix
+        end do
+     end if
+
      if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
         call Print('FilePot: replicating cell '//nx//'x'//ny//'x'//nz//' times.')
         call supercell(sup, at, nx, ny, nz)
-        call write(sup, xyzfile, properties=this%property_list)
+        call write(sup, xyzfile, properties=property_list)
      else
-        call write(at, xyzfile, properties=this%property_list)
+        call write(at, xyzfile, properties=property_list)
      end if
 
      if (FilePot_log) then
        if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
-          call write(sup, "FilePot_pos_log.xyz", properties=this%property_list,append=.true.)
+          call write(sup, "FilePot_pos_log.xyz", properties=property_list,append=.true.)
         else
-          call write(at, "FilePot_pos_log.xyz", properties=this%property_list,append=.true.)
+          call write(at, "FilePot_pos_log.xyz", properties=property_list,append=.true.)
         endif
      endif
 
@@ -430,22 +441,20 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   endif
 
   !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*
-  QM_cell = 0._dp
-  if (get_value(at_out%params,'QM_cell',QM_cell)) then
-     call set_value(at%params,'QM_cell',QM_cell)
-  endif
-  QM_cell = 0._dp
-  if (get_value(at_out%params,'QM_cell_extended',QM_cell)) then
-     call set_value(at%params,'QM_cell_extended',QM_cell)
-  endif
-  QM_cell = 0._dp
-  if (get_value(at_out%params,'QM_cell_core',QM_cell)) then
-     call set_value(at%params,'QM_cell_core',QM_cell)
-  endif
+  do i=1,at_out%params%n
+     if (len(at_out%params%keys(i)) >= 7) then
+        if (substr(at_out%params%keys(i), 1, 7) == 'QM_cell') then
+           if (.not. get_value(at_out%params, string(at_out%params%keys(i)), QM_cell)) then
+              RAISE_ERROR("Found QM_cell param key '"//string(at_out%params%keys(i))//"' but value is not a 3-vector", error)
+           end if
+           call set_value(at%params, string(at_out%params%keys(i)), QM_cell)
+        end if
+     end if
+  end do
 
-   if (my_filepot_log) then
+  if (my_filepot_log) then
      call write(at_out, "FilePot_force_log.xyz", append=.true.)
-   endif
+  endif
 
   call finalise(at_out)
 
