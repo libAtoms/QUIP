@@ -222,6 +222,14 @@ contains
        hydrogen_charge = -(silicon_charge + 4.0_dp*oxygen_charge)/4.0_dp
     end if
 
+    if (trim(qmmm_link_type) /= 'IMOMM' .and. &
+        trim(qmmm_link_type) /= 'PSEUDO' .and. &
+        trim(qmmm_link_type) /= 'QM_KIND') then
+       RAISE_ERROR("Unknown value for qmmm_link_type "//trim(qmmm_link_type)//" - should be one of IMOMM, PSEUDO, QM_KIND", error)
+    end if
+    ! Link fixing across periodic boundaries only applies to IMOMM
+    qmmm_link_fix_pbc = qmmm_link_fix_pbc .and. trim(qmmm_link_type) == 'IMOMM'
+
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
     call print("  use_buffer " // use_buffer)
@@ -478,12 +486,6 @@ contains
                silica_pos_dep_charges=silica_pos_dep_charges, silica_charge_transfer=silica_charge_transfer, &
                have_titania_potential=have_titania_potential)
       end if
-    end if
-
-    if (trim(qmmm_link_type) /= 'IMOMM' .and. &
-        trim(qmmm_link_type) /= 'PSEUDO' .and. &
-        trim(qmmm_link_type) /= 'QM_KIND') then
-       RAISE_ERROR("Unknown value for qmmm_link_type "//trim(qmmm_link_type)//" - should be one of IMOMM, PSEUDO, QM_KIND", error)
     end if
 
     if (trim(qmmm_link_type) == "QM_KIND") then
