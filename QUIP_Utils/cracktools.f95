@@ -1592,13 +1592,11 @@ contains
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
-    integer :: p, i, j, surface, age
-    type(Table) :: old_embed, tmp_select, embedlist, temptable, crack_tips
+    integer :: i, surface
+    type(Table) :: old_embed, tmp_select, embedlist
     integer, allocatable, dimension(:,:) :: selectmask
-    real(dp), allocatable, dimension(:) :: sorted, tip_dist
     real(dp), dimension(2,3) :: selection_ellipse
     real(dp) :: ellipse_bias(3)
-    integer :: dislo_seed, temp_N
 
     integer, pointer, dimension(:) :: hybrid
     logical, pointer, dimension(:) :: crack_front
@@ -1763,7 +1761,7 @@ contains
     real(dp), dimension(2) :: crack_pos
     integer, intent(out), optional :: n_tip_atoms, tip_indices(:)
 
-    integer :: i, crack_tip_atom, ti, n_tip
+    integer :: i, ti, n_tip
     integer, pointer, dimension(:) :: nn, edge_mask, orig_index
     integer, allocatable :: eqm_coord(:)
     real(dp) :: tip_pos
@@ -1884,7 +1882,7 @@ contains
     integer :: start_i, start_j, start_k, i, j, k, nstep, d_i, d_j, grid_i, u, v, w, grid_factor
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
     integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_slab
-    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), sum, occ_mu, occ_sigma, grid_size
+    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), occ_mu, occ_sigma, grid_size
     logical :: duplicate
     integer, pointer, dimension(:) :: horz_slice, vert_slice
     integer, pointer, dimension(:,:,:) :: n_cell_slab
@@ -2193,7 +2191,7 @@ contains
     real(dp), allocatable, dimension(:,:) :: filtered_local_energy
     real(dp), pointer, dimension(:) :: local_energy
     integer, pointer, dimension(:) :: edge_mask, assign
-    logical, pointer, dimension(:) :: crack_surface, crack_front
+    logical, pointer, dimension(:) :: crack_surface
     logical, allocatable, dimension(:) :: filtered_surface
     real(dp) :: means(2,1)
     integer surface_cluster(1)
@@ -2232,12 +2230,10 @@ contains
     type(CrackParams), intent(in) :: params
 
     real(dp), allocatable, dimension(:) :: surface_x, surface_z, surface_x_band
-    real(dp), pointer, dimension(:) :: local_energy
-    integer, pointer, dimension(:) :: edge_mask
-    integer, allocatable, dimension(:) :: surface_i, surface_i_band, front_i, idx
+    integer, allocatable, dimension(:) :: surface_i, surface_i_band
     logical, pointer, dimension(:) :: crack_surface, crack_front
     real(dp) z
-    integer i, n
+    integer i
 
     if (.not. assign_pointer(at, 'crack_surface', crack_surface)) &
          call system_abort('crack_find_tip_local_energy: crack_surface property missing from atoms')
@@ -2828,6 +2824,26 @@ contains
   end subroutine crack_check_coordination_boundaries
 
 
+  function crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args_str)
+    character(len=*), intent(in) ::   mm_args_str, extra_mm_args, extra_args_str
+    character(len=len_trim(mm_args_str)+len(" ")+len(extra_mm_args)+len(" ")+len_trim(extra_args_str)) :: crack_mm_calc_args
+
+    crack_mm_calc_args = trim(mm_args_str)//" "//trim(extra_mm_args)//" "//trim(extra_args_str)
+    call print("crack_mm_calc_args "//crack_mm_calc_args, PRINT_VERBOSE)
+
+  end function crack_mm_calc_args
+
+
+  function crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args_str)
+    character(len=*), intent(in) ::  qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args_str
+    character(len=len("qm_args_str={")+len_trim(qm_args_str)+len(" ")+len_trim(extra_qm_args)+&
+         len("} mm_args_str={")+len_trim(mm_args_str)+len(" ")+len(extra_mm_args)+len("} ")+len_trim(extra_args_str)) :: crack_hybrid_calc_args
+
+    crack_hybrid_calc_args = "qm_args_str={"//trim(qm_args_str)//" "//trim(extra_qm_args)//&
+         "} mm_args_str={"//trim(mm_args_str)//" "//trim(extra_mm_args)//"} "//trim(extra_args_str)
+    call print("crack_hybrid_calc_args "//crack_hybrid_calc_args, PRINT_VERBOSE)
+
+  end function crack_hybrid_calc_args
 
 
 end module CrackTools_module

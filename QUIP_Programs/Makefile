@@ -52,7 +52,10 @@ endif
 
 all: ${PROGRAMS}
 
-LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
+LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty 
+ifeq (${HAVE_CP2K},1)
+  LIBS += -lcp2k_driver
+endif
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test

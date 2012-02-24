@@ -119,6 +119,9 @@ endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif
+ifeq (${HAVE_CP2K},1)
+  DEFINES += -DHAVE_CP2K
+endif
 ifeq (${HAVE_ONIOM},1)
   DEFINES += -DHAVE_ONIOM
 endif
