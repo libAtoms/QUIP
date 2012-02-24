@@ -19,12 +19,20 @@
 
 from quippy import *
 from numpy import *
-import sys, optparse, shutil, os, itertools
-
+import sys
+import optparse
+import shutil
+import os
+import itertools
+import select
+import time
+import atomeye
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from quippy.progbar import ProgressBar
-import atomeye
+
+
+default_rcut_patches = [('Si', 'Si', 0.5)]
 
 def skip_bad_frames(seq):
    it = iter(seq)
@@ -56,10 +64,10 @@ def skip_time_duplicates(seq, initial_time=-1.0):
          yield at
          cur_time = at.params['Time']
 
-def open_sources(opt, args):
+def open_sources(args, range):
    if len(args) == 1:
-      atomseq = AtomsReader(args[0], start=opt.range.start,
-                            stop=opt.range.stop, step=opt.range.step)
+      atomseq = AtomsReader(args[0], start=range.start,
+                            stop=range.stop, step=range.step)
       nframes = len(atomseq)
       sources = [atomseq]
    else:
@@ -67,22 +75,71 @@ def open_sources(opt, args):
 
       # Try to count total number of frames
       nframes = sum([len(s) for s in sources])
-      nframes = len(range(*opt.range.indices(nframes)))
+      nframes = len(range(*range.indices(nframes)))
 
       # Build a chain of iterators over all input files, skipping frames as appropriate
       atomseq = itertools.islice(itertools.chain.from_iterable(sources),
-                                 opt.range.start, opt.range.stop, opt.range.step)
+                                 range.start, range.stop, range.step)
 
-   return nframes, atomsseq, sources
+   return nframes, atomseq, sources
 
+
+def add_plot(at, i, filename):
+   l1.set_data(xdata[:i], ydata[:i])
+   if opt.y2data is not None:
+      l2.set_data(xdata[:i], y2data[:i])
+
+   basename, ext = os.path.splitext(filename)
+
+   try:
+      fig.savefig(basename+'.1.png')
+      os.system('montage -geometry +0+0 -tile 1x2 %s %s %s' % (filename, basename+'.1.png', basename+'.2.jpg'))
+      shutil.move(basename+'.2.jpg', filename)
+   finally:
+      os.remove(basename+'.1.png')
+
+
+def add_text(at, i, filename):
+   s = eval(opt.text)
+   os.system('mogrify -gravity SouthWest -annotate 0x0+0+0 "%s" -font Helvetica -pointsize 32 %s' % (s, filename))
+
+
+def block_until_more_frames(filenames, current_length, poll_in§<terval=30.0):
+   idx_files = []
+   for filename in filenames:
+      if not filename.endswith('.xyz'):
+         raise IOError('block_until_more_frames() only works with .xyz files')
+
+      idx_file = filename+'.idx'
+      if not os.path.exists(idx_file):
+         raise IOError('Index file %s not found' % idx_file)
+      idx_files.append(idx_file)
+
+   while True:
+      length = 0
+      for idx_file in idx_files:
+         try:
+            f = open(idx_file, 'r')
+            length += int(f.readline())
+         except IOError:
+            time.sleep(poll_interval)
+            continue
+         finally:
+            f.close()
+      if length > current_length:
+         return
+      time.sleep(poll_interval)
+
+   
 
 p = optparse.OptionParser(usage='%prog [options] <input file>...')
 
 p.add_option('-r', '--range', action='store', help='Range of frames to include in output movie')
 p.add_option('-o', '--outfile', action='store', help='Movie output file')
 p.add_option('-n', '--nowindow', action='store_true', help='Disable AtomEye viewer window', default=False)
+p.add_option('-N', '--nomovie', action='store_true', help='Do not make a movie, just render frames', default=False)
 p.add_option('-E', '--encoder', action='store', help='Movie encoder command', default='ffmpeg -i %s -r 25 -b 30M %s')
-p.add_option('-P', '--player', action='store', help='Movie player command', default='mplayer %s')
+p.add_option('-P', '--player', action='store', help='Movie player command', default='open %s')
 p.add_option('-l', '--load-view', action='store', help='Load view from AtomEye command script')
 p.add_option('-s', '--save-view', action='store', help='Save view to AtomEye command script')
 p.add_option('-g', '--graph', action='store_true', help='Enable graph plotting')
@@ -106,6 +163,8 @@ p.add_option('-W', '--width', action='store', help="""Width of output movie, in 
 p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
 p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
 p.add_option('-R', '--rcut', action='append', help="""Following three arguments should be SYM1 SYM2 INCREMENT, to increment cutoff distance for SYM1-SYM2 bonds.""", nargs=3)
+p.add_option('-w', '--watch', action='store_true', help="""When completed, keep watching for new frames to be written to input stream. Implies -u, -k and -N.""")
+p.add_option('-L', '--latest', action='store', help="""Copy latest snapshot image to this file""")
 
 opt, args = p.parse_args()
 
@@ -121,169 +180,186 @@ else:
    # Default is all frames
    opt.range = slice(0, None, None)
 
+orig_range = opt.range
+
 if opt.outfile is None:
    opt.outfile = os.path.splitext(args[0])[0] + '.mp4'
 
-nframes, atomseq, sources = open_sources(opt, args)
-ndigit = 5
-basename, ext = os.path.splitext(opt.outfile)
-out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
-
-# Look for existing JPEGs, so we can continue a previous run
-if opt.update:
+if opt.watch:
+   if sys.platform != 'darwin':
+      p.error('-w/--watch mode only implemented on Mac OS X so far')
+   opt.update = True
    opt.keep_images = True
-   
-   existing_frames = [ os.path.exists(out_fmt % i) for i in range(nframes) ]
-   restart_frame = existing_frames.index(False)
-   
-   print 'Restarting from frame %d' % restart_frame
-   if opt.range.step is None:
-      opt.range = slice(opt.range.start + restart_frame, opt.range.stop, opt.range.step)
+   opt.nomovie = True
+
+if opt.nomovie:
+   opt.encoder = None
+   opt.player = None
+
+view = None
+
+# outer loop for opt.watch
+while True:
+
+   nframes, atomseq, sources = open_sources(args, orig_range)
+   print 'Found %d frames' % nframes
+   orig_nframes = nframes
+   ndigit = 5
+   basename, ext = os.path.splitext(opt.outfile)
+   out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
+
+   # Look for existing JPEGs, so we can continue a previous run
+   if opt.update:
+      opt.keep_images = True
+
+      existing_frames = [ os.path.exists(out_fmt % i) for i in range(nframes) ]
+      if False in existing_frames:
+         restart_frame = existing_frames.index(False)
+      else:
+         p.error("no new frames after %d for -u/--update mode to process" % nframes)
+
+      print 'Restarting from frame %d' % restart_frame
+      if opt.range.step is None:
+         opt.range = slice(orig_range.start + restart_frame, orig_range.stop, orig_range.step)
+      else:
+         opt.range = slice(orig_range.start + restart_frame/orig_range.step, orig_range.stop, orig_range.step)
+
+      # Re-open the sources starting at restart_frame
+      nframes, atomseq, sources = open_sources(args, opt.range)
+      img_offset = restart_frame
    else:
-      opt.range = slice(opt.range.start + restart_frame/opt.range.step, opt.range.stop, opt.range.step)
+      img_offset = 0
 
-   # Re-open the sources starting at restart_frame
-   nframes, atomseq, sources = open_sources(opt, args)
-   img_offset = restart_frame
-else:
-   img_offset = 0
+   if opt.skip_bad_frames:
+      atomseq = skip_bad_frames(atomseq)
 
-if opt.skip_bad_frames:
-   atomseq = skip_bad_frames(atomseq)
+   if opt.skip_bad_times:
+      atomseq = skip_bad_times(atomseq)
 
-if opt.skip_bad_times:
-   atomseq = skip_bad_times(atomseq)
+   if opt.skip_time_duplicates:
+      atomseq = skip_time_duplicates(atomseq)
 
-if opt.skip_time_duplicates:
-   atomseq = skip_time_duplicates(atomseq)
+   if opt.merge is not None:
+      merge_config = Atoms(opt.merge)
 
-if opt.merge is not None:
-   merge_config = Atoms(opt.merge)
+      if opt.merge_properties is not None:
+         opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
+      else:
+         opt.merge_properties = merge_config.properties.keys()
 
-   if opt.merge_properties is not None:
-      opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
-   else:
-      opt.merge_properties = merge_config.properties.keys()
+   a0 = Atoms(args[0], frame=opt.range.start)
 
-a0 = Atoms(args[0], frame=opt.range.start)
+   if opt.merge is not None:
+      for k in opt.merge_properties:
+         a0.add_property(k, getattr(merge_config, k))
 
-if opt.merge is not None:
-   for k in opt.merge_properties:
-      a0.add_property(k, getattr(merge_config, k))
+   if view is None:
+      view = atomeye.AtomEyeViewer(nowindow=opt.nowindow, verbose=False)
+      view.show(a0, property=opt.property, arrows=opt.arrows)
+      if opt.load_view is not None:
+         view.run_script(opt.load_view)
+         view.show()
 
-view = atomeye.AtomEyeViewer(nowindow=opt.nowindow)
-view.show(a0, property=opt.property, arrows=opt.arrows)
+      rcut_patches = default_rcut_patches
+      if opt.rcut is not None:
+         rcut_patches.extend(opt.rcut)
+      for (sym1, sym2, rcut) in rcut_patches:
+         view.rcut_patch(sym1, sym2, float(rcut))
 
-if opt.load_view is not None:
-   view.run_script(opt.load_view)
-   view.show()
+      if opt.width is not None or opt.height is not None:
+         print 'width', opt.width, 'height', opt.height, 'aspect', opt.aspect
+         if opt.width  is None: opt.width = int(opt.height/opt.aspect)
+         if opt.height is None: opt.height = int(opt.width*opt.aspect)
+         view.resize(opt.width, opt.height)
 
-if opt.rcut is not None:
-   for (sym1, sym2, rcut) in opt.rcut:
-      view.rcut_patch(sym1, sym2, float(rcut))
+      if not opt.nowindow:
+         raw_input('Arrange AtomEye view then press enter...')
 
-if opt.width is not None or opt.height is not None:
-   print 'width', opt.width, 'height', opt.height, 'aspect', opt.aspect
-   if opt.width  is None: opt.width = int(opt.height/opt.aspect)
-   if opt.height is None: opt.height = int(opt.width*opt.aspect)
-   view.resize(opt.width, opt.height)
+      if opt.save_view is not None:
+         view.save(opt.save_view)
 
-if not opt.nowindow:
-   raw_input('Arrange AtomEye view then press enter...')
+      view.wait()
 
-if opt.save_view is not None:
-   view.save(opt.save_view)
+   postprocess = None
 
-postprocess = None
-
-if opt.graph is not None:
-
-   def add_plot(at, i, filename):
-
-      l1.set_data(xdata[:i], ydata[:i])
+   if opt.graph is not None:
+      postprocess = add_plot
+      if opt.xdata == 'frame':
+         xdata = farray(range(nframes))
+      else:
+         xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
+      ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
       if opt.y2data is not None:
-         l2.set_data(xdata[:i], y2data[:i])
+         y2data = hstack([getattr(s,opt.y2data) for s in sources])[opt.range]
 
-      basename, ext = os.path.splitext(filename)
+      fig = Figure(figsize=(8,2))
+      canvas = FigureCanvas(fig)
 
-      try:
-         fig.savefig(basename+'.1.png')
-         os.system('montage -geometry +0+0 -tile 1x2 %s %s %s' % (filename, basename+'.1.png', basename+'.2.jpg'))
-         shutil.move(basename+'.2.jpg', filename)
-      finally:
-         os.remove(basename+'.1.png')
-   
-   postprocess = add_plot
-   if opt.xdata == 'frame':
-      xdata = farray(range(nframes))
+      ax1 = fig.add_axes([0.1,0.2,0.8,0.65])
+      ax1.set_xlim(xdata.min(), xdata.max())
+      ax1.set_ylim(ydata.min(), ydata.max())
+      l1, = ax1.plot([], [], 'b-', scalex=False, scaley=False, label='Temp')
+      ax1.set_xlabel(opt.xdata)
+      ax1.set_ylabel(opt.ydata)
+
+      if opt.y2data is not None:
+         ax2 = ax1.twinx()
+         ax2.set_ylim(y2data.min(), y2data.max())
+         ax2.yaxis.tick_right()
+         l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
+         ax2.set_ylabel(opt.y2data)
+
+   if opt.text is not None:
+      postprocess = add_text
+
+   progress = nframes is not None
+   imgs = []
+   if progress: pb = ProgressBar(0,nframes,80,showValue=True)
+   try:
+      if progress: print 'Rendering frames...'
+      for i, at in enumerate(atomseq):
+         filename = out_fmt % (i + img_offset)
+
+         if opt.merge:
+            for k in opt.merge_properties:
+               at.add_property(k, getattr(merge_config, k))
+
+         if opt.exec_code is not None:
+            exec(opt.exec_code)
+
+         view.show(at, property=opt.property, arrows=opt.arrows)
+         view.capture(filename)
+         view.wait()
+         if postprocess is not None:
+             postprocess(at, i, filename)
+         imgs.append(filename)
+         if progress: pb(i+1)
+      if progress: print
+
+      if opt.encoder is not None:
+         if progress: print 'Encoding movie'
+         os.system(opt.encoder % (out_fmt, opt.outfile))
+
+      if opt.player is not None:
+         if progress: print 'Playing movie'
+         os.system(opt.player % opt.outfile)
+
+      if opt.latest is not None:
+         shutil.copyfile(imgs[-1], opt.latest)
+
+   finally:
+      if not opt.keep_images:
+         view.wait()
+         for img in imgs:
+            if os.path.exists(img): os.remove(img)
+            if os.path.exists(img+'.cmap.eps'): os.remove(img+'.cmap.eps')
+
+   if opt.watch:
+      print "Waiting for new frames..."
+      block_until_more_frames(args, orig_nframes)
    else:
-      xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
-   ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
-   if opt.y2data is not None:
-      y2data = hstack([getattr(s,opt.y2data) for s in sources])[opt.range]
+      break
+   
 
-   fig = Figure(figsize=(8,2))
-   canvas = FigureCanvas(fig)
-
-   ax1 = fig.add_axes([0.1,0.2,0.8,0.65])
-   ax1.set_xlim(xdata.min(), xdata.max())
-   ax1.set_ylim(ydata.min(), ydata.max())
-   l1, = ax1.plot([], [], 'b-', scalex=False, scaley=False, label='Temp')
-   ax1.set_xlabel(opt.xdata)
-   ax1.set_ylabel(opt.ydata)
-
-   if opt.y2data is not None:
-      ax2 = ax1.twinx()
-      ax2.set_ylim(y2data.min(), y2data.max())
-      ax2.yaxis.tick_right()
-      l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
-      ax2.set_ylabel(opt.y2data)
-
-if opt.text is not None:
-
-   def add_text(at, i, filename):
-      s = eval(opt.text)
-      os.system('mogrify -gravity SouthWest -annotate 0x0+0+0 "%s" -font Helvetica -pointsize 32 %s' % (s, filename))
-
-   postprocess = add_text
-
-progress = nframes is not None
-imgs = []
-if progress: pb = ProgressBar(0,nframes,80,showValue=True)
-try:
-   if progress: print 'Rendering frames...'
-   for i, at in enumerate(atomseq):
-      filename = out_fmt % (i + img_offset)
-
-      if opt.merge:
-         for k in opt.merge_properties:
-            at.add_property(k, getattr(merge_config, k))
-
-      if opt.exec_code is not None:
-         exec(opt.exec_code)
-     
-      view.show(at, property=opt.property, arrows=opt.arrows)
-      view.capture(filename)
-      view.wait()
-      if postprocess is not None:
-          postprocess(at, i, filename)
-      imgs.append(filename)
-      if progress: pb(i+1)
-   if progress: print
-
-   if opt.encoder is not None:
-      if progress: print 'Encoding movie'
-      os.system(opt.encoder % (out_fmt, opt.outfile))
-
-   if opt.player is not None:
-      if progress: print 'Playing movie'
-      os.system(opt.player % opt.outfile)
-
-finally:
-   if not opt.keep_images:
-      view.wait()
-      for img in imgs:
-         if os.path.exists(img): os.remove(img)
-         if os.path.exists(img+'.cmap.eps'): os.remove(img+'.cmap.eps')
 
 
