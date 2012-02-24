@@ -402,11 +402,11 @@
             call add_property(at, 'hybrid_mark'//trim(hybrid_mark_postfix), HYBRID_NO_MARK)
 
        if (.not. assign_pointer(at, "hybrid"//trim(hybrid_mark_postfix), hybrid)) then
-            RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified", error)
+            RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid"//trim(hybrid_mark_postfix)//" property and calc_weights was specified", error)
        endif
 
        if (.not. assign_pointer(at, 'hybrid_mark'//trim(hybrid_mark_postfix), hybrid_mark)) then
-            RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+            RAISE_ERROR('Potential_FM_Calc: hybrid_mark'//trim(hybrid_mark_postfix)//' property missing', error)
        endif
 
        if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) then
@@ -550,8 +550,8 @@
              if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
                   call add_cut_hydrogens(at,this%fitlist)
              endif
-          end if
 
+          end if
        endif
 
        ! Make some convenient arrays of embed and fit list
