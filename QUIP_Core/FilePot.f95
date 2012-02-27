@@ -442,7 +442,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*
   do i=1,at_out%params%n
-     if (len(at_out%params%keys(i)) >= 7) then
+     if (at_out%params%keys(i)%len >= 7) then
         if (substr(at_out%params%keys(i), 1, 7) == 'QM_cell') then
            if (.not. get_value(at_out%params, string(at_out%params%keys(i)), QM_cell)) then
               RAISE_ERROR("Found QM_cell param key '"//string(at_out%params%keys(i))//"' but value is not a 3-vector", error)
