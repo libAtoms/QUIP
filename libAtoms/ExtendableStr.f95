@@ -101,10 +101,10 @@ interface print
   module procedure extendable_str_print
 end interface print
 
-public :: len
-interface len
-   module procedure extendable_str_len
-endinterface
+!public :: len
+!interface len
+!   module procedure extendable_str_len
+!endinterface
 
 public :: read_line
 interface read_line
@@ -618,7 +618,7 @@ pure function sumlen(this)
   integer :: sumlen, i
   sumlen = 0
   do i = lbound(this, 1), ubound(this, 1)
-     sumlen = sumlen + len(this(i))
+     sumlen = sumlen + this(i)%len
   enddo
 endfunction sumlen
 
@@ -631,9 +631,9 @@ function string_cat_extendable_str_array(str, this)
   string_cat_extendable_str_array = str
   c = max(1,len(str)+1)
   do i = lbound(this, 1), ubound(this, 1)
-     call print("i = " // i // ", c = " // c // ", len(str) = " // len(this(i)) // ", str = " // this(i))
-     string_cat_extendable_str_array(c:c+len(this(i))+2) = "'" // string(this(i)) // "'"
-     c = c+len(this(i))+3
+     call print("i = " // i // ", c = " // c // ", len(str) = " // this(i)%len // ", str = " // this(i))
+     string_cat_extendable_str_array(c:c+this(i)%len+2) = "'" // string(this(i)) // "'"
+     c = c+this(i)%len+3
   enddo
 end function string_cat_extendable_str_array
 

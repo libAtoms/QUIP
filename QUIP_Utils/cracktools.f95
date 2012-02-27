@@ -2826,7 +2826,7 @@ contains
 
   function crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args_str)
     character(len=*), intent(in) ::   mm_args_str, extra_mm_args, extra_args_str
-    character(len=len_trim(mm_args_str)+len(" ")+len(extra_mm_args)+len(" ")+len_trim(extra_args_str)) :: crack_mm_calc_args
+    character(len=len_trim(mm_args_str)+len_trim(" ")+len_trim(extra_mm_args)+1+len_trim(extra_args_str)) :: crack_mm_calc_args
 
     crack_mm_calc_args = trim(mm_args_str)//" "//trim(extra_mm_args)//" "//trim(extra_args_str)
     call print("crack_mm_calc_args "//crack_mm_calc_args, PRINT_VERBOSE)
@@ -2836,8 +2836,8 @@ contains
 
   function crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args_str)
     character(len=*), intent(in) ::  qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args_str
-    character(len=len("qm_args_str={")+len_trim(qm_args_str)+len(" ")+len_trim(extra_qm_args)+&
-         len("} mm_args_str={")+len_trim(mm_args_str)+len(" ")+len(extra_mm_args)+len("} ")+len_trim(extra_args_str)) :: crack_hybrid_calc_args
+    character(len=len("qm_args_str={")+len_trim(qm_args_str)+1+len_trim(extra_qm_args)+&
+         len("} mm_args_str={")+len_trim(mm_args_str)+1+len(extra_mm_args)+len("} ")+len_trim(extra_args_str)) :: crack_hybrid_calc_args
 
     crack_hybrid_calc_args = "qm_args_str={"//trim(qm_args_str)//" "//trim(extra_qm_args)//&
          "} mm_args_str={"//trim(mm_args_str)//" "//trim(extra_mm_args)//"} "//trim(extra_args_str)

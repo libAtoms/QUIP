@@ -3019,7 +3019,7 @@ contains
           call concat(out, substr(in, in%cur, in%len))
           exit
        end if
-       if (s > len(in)-1) then
+       if (s > in%len-1) then
           RAISE_ERROR('dictionary_expand_string: $ found at end of input string "'//in//'"', error)
        end if
 
@@ -3036,7 +3036,7 @@ contains
           e = s+1
           do while (all(verify(in%s(e:e), valid_chars) == 0))
              e = e + 1
-             if (e > len(in)) exit
+             if (e > in%len) exit
           end do
           e = e - 1
           key = substr(in, s+1, e, error)
