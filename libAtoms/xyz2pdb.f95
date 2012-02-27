@@ -190,10 +190,10 @@ program xyz2pdb
     call set_value(my_atoms%params,'Library',trim(Library))
     if (use_avgpos) then
        call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	have_silica_potential=have_silica_potential,pos_field_for_connectivity="avgpos")
+	find_silica_residue=have_silica_potential,pos_field_for_connectivity="avgpos")
     else !use actual positions
        call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	have_silica_potential=have_silica_potential,pos_field_for_connectivity="pos")
+	find_silica_residue=have_silica_potential,pos_field_for_connectivity="pos")
     endif
 
     if (do_sort) then
