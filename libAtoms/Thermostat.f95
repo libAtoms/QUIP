@@ -1092,10 +1092,18 @@ contains
     case(THERMOSTAT_ALL_PURPOSE)
        !TIME_PROPAG_TEX 10 before first Verlet velocity step (thermostat\_pre\_vel1) 
        !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10 $\chi$ Nose Hoover extended DOF (also part of open Langevin)
+       !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10 $\gamma$ Langevin decay rate = 1/time constant (also part of open Langevin)
+       !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10 $\xi$ Nose Hoover Langevin extended DOF
+       !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10
        !TIME_PROPAG_TEX 10 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$
        !TIME_PROPAG_TEX 10 $$ \chi = \chi + (\tau/2) \Delta K/Q $$
        !TIME_PROPAG_TEX 10 $$ \xi = \xi + (\tau/2) \Delta K/\mu $$
        !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
+       !TIME_PROPAG_TEX 10 $r.v.$ is normal random variable, variance 1
        !TIME_PROPAG_TEX 10 $$ \xi = \xi \exp\left( -(\tau/2) \gamma_\mathrm{NHL} \right) + \sqrt{k_B T \frac{1-\exp(-\tau \gamma_\mathrm{NHL})}{\mu}}~r.v. $$
        !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
        !TIME_PROPAG_TEX 10 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$

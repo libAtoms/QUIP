@@ -839,10 +839,11 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_set_barostat(this,type,p_ext,tau_epsilon,W_epsilon,T)
+   subroutine ds_set_barostat(this,type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,W_epsilon,T)
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
      real(dp),              intent(in)    :: p_ext
+     logical,              intent(in)    :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
      real(dp),              intent(in)    :: tau_epsilon
      real(dp), optional,    intent(in)    :: W_epsilon, T
 
@@ -854,7 +855,9 @@ contains
         gamma_epsilon = 0.0_dp
      endif
 
-     call initialise(this%barostat, type=type, p_ext=p_ext, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T)
+     call initialise(this%barostat, type=type, p_ext=p_ext, hydrostatic_strain=hydrostatic_strain, diagonal_strain=diagonal_strain, &
+        finite_strain_formulation=finite_strain_formulation, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, &
+	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T)
 
    end subroutine ds_set_barostat
 
@@ -1027,7 +1030,7 @@ contains
      real(dp), optional,    intent(in)    :: p, T
 
      if (.not. present(p)) call system_abort("ds_upadte_barostat needs p")
-     call update_barostat(this%barostat, p, barostat_mass(p, cell_volume(this%atoms), this%Ndof, this%barostat%gamma_epsilon, T))
+     call update_barostat(this%barostat, p_ext=p, W_epsilon=barostat_mass(p, cell_volume(this%atoms), this%Ndof, this%barostat%gamma_epsilon, T))
    end subroutine ds_update_barostat
 
 

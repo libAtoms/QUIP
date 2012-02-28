@@ -42,6 +42,7 @@ private
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
     real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau
+    logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
@@ -101,6 +102,9 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'T_increment', '10.0', params%T_increment, help_string="Temperature increments for variable_T")
   call param_register(md_params_dict, 'T_increment_time', '10.0', params%T_increment_time, help_string="time to wait between increments of T")
   call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure (GPa), enables const_P if set explicitly", has_value_target=p_ext_is_present)
+  call param_register(md_params_dict, 'hydrostatic_strain', 'T', params%hydrostatic_strain, help_string="If true, and using all purpose thermostat/barostat, force hydrostatic strain only")
+  call param_register(md_params_dict, 'diagonal_strain', 'T', params%diagonal_strain, help_string="If true, and using all purpose thermostat/barostat, force diagonal strain only")
+  call param_register(md_params_dict, 'finite_strain_formulation', 'F', params%finite_strain_formulation, help_string="If true, use finite strain formulation from Tadmor & Miller book")
 call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="use NPT_NB algorithm for constant P")
   call param_register(md_params_dict, 'damping', 'F', params%damping, help_string="if true, do damping")
   call param_register(md_params_dict, 'damping_tau', '10.0', params%damping_tau, help_string="time constant for damped MD")
@@ -235,6 +239,9 @@ subroutine print_params(params)
 
   call print("md_params%const_P=" // params%const_P)
   call print("md_params%p_ext=" // params%p_ext)
+  call print("md_params%hydrostatic_strain=" // params%hydrostatic_strain)
+  call print("md_params%diagonal_strain=" // params%diagonal_strain)
+  call print("md_params%finite_strain_formulation=" // params%finite_strain_formulation)
   call print("md_params%calc_virial=" // params%calc_virial)
   call print("md_params%calc_energy=" // params%calc_energy)
   call print("md_params%summary_interval=" // params%summary_interval)
@@ -333,10 +340,11 @@ end subroutine
 
 subroutine print_summary(params, ds, e)
   type(md_params), intent(in) :: params
-  type(DynamicalSystem), intent(in) :: ds
+  type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
 
   real(dp) :: mu(3), virial(3,3)
+  real(dp) :: lat0_inv(3,3), F(3,3), strain(3,3)
 
   if (params%extra_heat > 0.0_dp) then
     call print("EH "//ds%t//" "//temperature(ds, property="extra_heat_mask", value=1, instantaneous=.true.)//" "//temperature(ds, property="extra_heat_mask", value=0, instantaneous=.true.))
@@ -346,8 +354,20 @@ subroutine print_summary(params, ds, e)
     call print("MU " // ds%t // " " // mu)
   endif
   if (params%calc_virial) then
+    if (.not. get_value(ds%atoms%params, "orig_lattice_inv", lat0_inv)) then
+      call matrix3x3_inverse(ds%atoms%lattice, lat0_inv)
+      call set_value(ds%atoms%params, "orig_lattice_inv", lat0_inv)
+    endif
+    F = matmul(ds%atoms%lattice, lat0_inv)
+    strain = matmul(transpose(F),F)
+    strain(1,1) = strain(1,1) - 1.0_dp
+    strain(2,2) = strain(2,2) - 1.0_dp
+    strain(3,3) = strain(3,3) - 1.0_dp
+    strain = 0.5_dp*strain
     call get_param_value(ds%atoms, "virial", virial)
-    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa   VOL " // cell_volume(ds%atoms)// " A^3")
+    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa "//&
+               "VOL " // cell_volume(ds%atoms)// " A^3 "// &
+	       "STRAIN "//reshape(strain, (/9/)))
   endif
 
 end subroutine print_summary
@@ -416,9 +436,11 @@ subroutine initialise_md_thermostat(ds, params)
       if (params%all_purpose_thermostat) then
 	 if (params%const_P) then
 	    if (params%const_T .and. params%barostat_const_T) then
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, tau_epsilon=params%barostat_tau, T=params%T_cur)
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur)
 	    else
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, tau_epsilon=params%barostat_tau)
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau)
 	    endif
 	 endif
 	 if (params%const_T) then
