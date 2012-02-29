@@ -2391,8 +2391,7 @@ contains
           call concat(str, my_entry_sep//string(this%keys(i)))
        end if
 
-       !if (this%entries(i)%type /= T_NONE)
-       call concat(str, '=')
+       if (this%entries(i)%type /= T_NONE) call concat(str, '=')
        
        select case(this%entries(i)%type)
 
