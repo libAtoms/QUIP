@@ -38,6 +38,9 @@
 !%
 !% All Langevin variants with Q > 0 are open Langevin, from Jones \& Leimkuhler 
 !% preprint "Adaptive Stochastic Methods for Nonequilibrium Sampling"
+!%
+!% Langevin steps for THERMOSTAT_ALL_PURPOSE use Ornstein-Uhlenbeck steps as
+!% recommended by B. Leimkuhler, private comm.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -75,6 +78,12 @@ module thermostat_module
   !% {\bfseries 120} 11432
 
   !% Nose-Hoover-Langevin thermostat --- me!
+
+  !% all-purpose adaptive Langevin
+  !% Jones and Leimkuhler, \emph{J. Chem. Phys.} {\bfseries 135}, 084125 (2011).
+
+  !% all-purpose Nose-Hoover-Langevin
+  !% Leimkuhler private communication (?)
 
   type thermostat
 
@@ -753,7 +762,7 @@ contains
     integer,          intent(in)    :: value
     real(dp), dimension(3,3), intent(in), optional :: virial
 
-    real(dp) :: decay, K, volume_p
+    real(dp) :: decay, K, volume_p, rv_mag, OU_dv(3)
     real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
     real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i
@@ -1098,20 +1107,21 @@ contains
        !TIME_PROPAG_TEX 10
        !TIME_PROPAG_TEX 10 $\xi$ Nose Hoover Langevin extended DOF
        !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10 $r.v.$ is normal random variable, variance 1
        !TIME_PROPAG_TEX 10
+       !TIME_PROPAG_TEX 10 $$ v = v \exp(-(\tau/2) \gamma) + \sqrt{k_B T \frac{1-\exp(-\tau\gamma)}{m}}~r.v.$$
        !TIME_PROPAG_TEX 10 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$
        !TIME_PROPAG_TEX 10 $$ \chi = \chi + (\tau/2) \Delta K/Q $$
        !TIME_PROPAG_TEX 10 $$ \xi = \xi + (\tau/2) \Delta K/\mu $$
-       !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
-       !TIME_PROPAG_TEX 10 $r.v.$ is normal random variable, variance 1
+       !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\chi + \xi)) $$
        !TIME_PROPAG_TEX 10 $$ \xi = \xi \exp\left( -(\tau/2) \gamma_\mathrm{NHL} \right) + \sqrt{k_B T \frac{1-\exp(-\tau \gamma_\mathrm{NHL})}{\mu}}~r.v. $$
-       !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
+       !TIME_PROPAG_TEX 10 $$ v = v \exp(-0.25 \tau (\chi + \xi)) $$
        !TIME_PROPAG_TEX 10 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$
        !TIME_PROPAG_TEX 10 $$ \xi = \xi + (\tau/2) \Delta K/\mu $$
        !TIME_PROPAG_TEX 10 $$ \chi = \chi + (\tau/2) \Delta K/Q $$
        !TIME_PROPAG_TEX 10
 
-       if (this%NHL_gamma > 0.0_dp .and. this%NHL_mu > 0.0_dp) call system_resync_rng()
+       if (this%gamma > 0.0_dp .or. (this%NHL_gamma > 0.0_dp .and. this%NHL_mu > 0.0_dp)) call system_resync_rng()
 
        if (.not. allocated(this%chi_a)) then
 	  if (this%massive) then
@@ -1124,6 +1134,21 @@ contains
 	  this%chi_a = 0.0_dp
 	  this%xi_a = 0.0_dp
        endif
+
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
+     
+       if (this%gamma > 0.0_dp) then
+	  ! Do the Ornstein-Uhlenbeck half step
+	  decay=exp(-0.5_dp*this%gamma*dt)
+	  rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
+	  do i = 1, at%N
+	     if (prop_ptr(i) /= value) cycle
+	     OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
+	     at%velo(:,i) = decay*at%velo(:,i) + OU_dv
+	  end do
+       end if 
 
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
@@ -1149,11 +1174,11 @@ contains
        if (this%massive) then
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(i)+this%xi_a(i)))
+	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
 	     at%velo(:,i) = at%velo(:,i)*decay
 	  end do
        else
-	  decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(1)+this%xi_a(1)))
+	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
 	     at%velo(:,i) = at%velo(:,i)*decay
@@ -1176,11 +1201,11 @@ contains
        if (this%massive) then
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(i)+this%xi_a(i)))
+	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
 	     at%velo(:,i) = at%velo(:,i)*decay
 	  end do
        else
-	  decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(1)+this%xi_a(1)))
+	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
 	     at%velo(:,i) = at%velo(:,i)*decay
@@ -1362,25 +1387,6 @@ contains
 	  this%eta = this%eta + dt*2.0_dp*delta_K/this%Q
        endif
 
-    case(THERMOSTAT_ALL_PURPOSE)
-       !TIME_PROPAG_TEX 70 after force calc, before second Verlet velocity step (thermostat\_post\_calc\_pre\_vel2) 
-       !TIME_PROPAG_TEX 70
-       !TIME_PROPAG_TEX 70 $$ f = f + \sqrt{2 \gamma k_B T m/ \tau}~r.v. $$
-       !TIME_PROPAG_TEX 70
-     
-       ! Add the random acceleration
-       R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
-
-       ! Random numbers may have been used at different rates on different MPI processes:
-       ! we must resync the random number if we want the same numbers on each process.
-       call system_resync_rng()
-
-       do i = 1, at%N
-          if (prop_ptr(i) /= value) cycle
-          a = sqrt(R/at%mass(i))*ran_normal3()
-          at%acc(:,i) = at%acc(:,i) + a
-       end do
-
     end select
 
   end subroutine thermostat_post_calc_pre_vel2
@@ -1394,7 +1400,7 @@ contains
     integer,          intent(in)    :: value
     real(dp), dimension(3,3), intent(in), optional :: virial
 
-    real(dp) :: decay, K, volume_p, f_cell
+    real(dp) :: decay, K, volume_p, f_cell, rv_mag, OU_dv(3)
     real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
     real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i
@@ -1726,18 +1732,19 @@ contains
     case(THERMOSTAT_ALL_PURPOSE)
        !TIME_PROPAG_TEX 90 after second Verlet velocity step (thermostat\_post\_vel2)
        !TIME_PROPAG_TEX 90
-       !TIME_PROPAG_TEX 90 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$
+       !TIME_PROPAG_TEX 90 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right)~r.v.$$
        !TIME_PROPAG_TEX 90 $$ \chi = \chi + (\tau/2) \Delta K/Q $$
        !TIME_PROPAG_TEX 90 $$ \xi = \xi + (\tau/2) \Delta K/\mu $$
-       !TIME_PROPAG_TEX 90 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
+       !TIME_PROPAG_TEX 90 $$ v = v \exp(-0.25 \tau (\chi + \xi)) $$
        !TIME_PROPAG_TEX 90 $$ \xi = \xi \exp\left( -(\tau/2) \gamma_\mathrm{NHL} \right) + \sqrt{k_B T \frac{1-\exp(-\tau \gamma_\mathrm{NHL})}{\mu}}~r.v. $$
-       !TIME_PROPAG_TEX 90 $$ v = v \exp(-0.25 \tau (\gamma + \chi + \xi)) $$
+       !TIME_PROPAG_TEX 90 $$ v = v \exp(-0.25 \tau (\chi + \xi)) $$
        !TIME_PROPAG_TEX 90 $$ \Delta K = 1/2 \left( \sum_i m_i \left| v_i \right|^2 - N_d k_B T \right) $$
        !TIME_PROPAG_TEX 90 $$ \xi = \xi + (\tau/2) \Delta K/\mu $$
        !TIME_PROPAG_TEX 90 $$ \chi = \chi + (\tau/2) \Delta K/Q $$
+       !TIME_PROPAG_TEX 90 $$ v = v \exp(-(\tau/2) \gamma) + \sqrt{k_B T \frac{1-\exp(-\tau\gamma)}{m}} $$
        !TIME_PROPAG_TEX 90
 
-       if (this%NHL_gamma > 0.0_dp .and. this%NHL_mu > 0.0_dp) call system_resync_rng()
+       if (this%gamma > 0.0_dp .or. (this%NHL_gamma > 0.0_dp .and. this%NHL_mu > 0.0_dp)) call system_resync_rng()
 
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
@@ -1763,11 +1770,11 @@ contains
        if (this%massive) then
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(i)+this%xi_a(i)))
+	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
 	     at%velo(:,i) = at%velo(:,i)*decay
 	  end do
        else
-	  decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(1)+this%xi_a(1)))
+	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
 	     at%velo(:,i) = at%velo(:,i)*decay
@@ -1790,11 +1797,11 @@ contains
        if (this%massive) then
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(i)+this%xi_a(i)))
+	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
 	     at%velo(:,i) = at%velo(:,i)*decay
 	  end do
        else
-	  decay = exp(-0.25_dp*dt*(this%gamma+this%chi_a(1)+this%xi_a(1)))
+	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
 	  do i = 1, at%N
 	     if (prop_ptr(i) /= value) cycle
 	     at%velo(:,i) = at%velo(:,i)*decay
@@ -1817,6 +1824,17 @@ contains
 	     if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
 	  endif
        endif
+
+       if (this%gamma > 0.0_dp) then
+	  ! Do the Ornstein-Uhlenbeck half step
+	  decay=exp(-0.5_dp*this%gamma*dt)
+	  rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
+	  do i = 1, at%N
+	     if (prop_ptr(i) /= value) cycle
+	     OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
+	     at%velo(:,i) = decay*at%velo(:,i) + OU_dv
+	  end do
+       end if
 
     end select
 
