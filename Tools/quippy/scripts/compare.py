@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from quippy import *
 import itertools
 import sys
