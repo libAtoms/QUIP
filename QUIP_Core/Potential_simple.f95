@@ -417,6 +417,7 @@ contains
        ! modified args_str options for create_cluster_info() and carve_cluster()
        call initialise(params)
        call read_string(params, my_args_str)
+       call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
        if (do_rescale_r) call set_value(params, 'do_rescale_r', .true.)
        cluster_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
@@ -426,6 +427,7 @@ contains
        ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call initialise(params)
        call read_string(params, my_args_str)
+       call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
        call remove_value(params, 'little_clusters')
        call remove_value(params, 'r_scale')
        call remove_value(params, 'E_scale')
@@ -524,6 +526,7 @@ contains
        ! modified args_str options for create_cluster_info() and carve_cluster()
        call initialise(params)
        call read_string(params, my_args_str)
+       call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
        if (do_rescale_r) call set_value(params, 'do_rescale_r', .true.)
        cluster_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
@@ -533,6 +536,7 @@ contains
        ! We rescale cluster explicity, so remove from args_str so that underlying potential doesn't do it
        call initialise(params)
        call read_string(params, my_args_str)
+       call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
        call remove_value(params, 'single_cluster')
        call remove_value(params, 'r_scale')
        call remove_value(params, 'E_scale')
@@ -1018,6 +1022,7 @@ contains
           ! must remove 'force_using_fd' from args_str if it's there (and the rest, or properties get overwritten)
           call initialise(params)
           call read_string(params, my_args_str)
+          call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
           call remove_value(params, 'force_using_fd')
           call remove_value(params, trim(calc_force))
           call remove_value(params, trim(calc_energy))
