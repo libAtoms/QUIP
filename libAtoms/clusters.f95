@@ -3270,7 +3270,7 @@ type(inoutput), optional :: debugfile
     integer                             :: cur_hop
     real(dp), pointer                   :: use_pos(:,:)
     integer                             ::  shift_i(3)
-    logical :: do_have_silica_potential
+    logical :: do_have_silica_potential, got_atom_res_number
 
     integer, pointer :: atom_res_number(:) !lam81
     logical,     optional, intent(in)  :: have_silica_potential !lam81
@@ -3286,9 +3286,7 @@ type(inoutput), optional :: debugfile
       RAISE_ERROR("construct_region: atoms has no Z property", error)
     endif
 
-    if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) then
-      RAISE_ERROR("BLABLA", error)
-    endif
+    got_atom_res_number = assign_pointer(at, 'atom_res_number', atom_res_number)
 
     do_use_avgpos = optional_default(.false.,  use_avgpos)
 
@@ -3385,7 +3383,7 @@ type(inoutput), optional :: debugfile
 	    if (do_add_only_heavy_atoms) then
 	      if (at%Z(i) == 1) cycle
 	    endif
-	    if (have_silica_potential) then     ! lam81
+	    if (have_silica_potential .and. got_atom_res_number) then     ! lam81
                if (atom_res_number(i) == res_num_silica) cycle ! lam81
 	    endif
 	    if (present(debugfile)) call print("  i " // i // " is heavy or all atoms requested", file=debugfile)
