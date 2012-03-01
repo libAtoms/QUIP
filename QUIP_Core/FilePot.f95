@@ -88,6 +88,7 @@ type FilePot_type
   character(len=STRING_LENGTH) :: command
   character(len=STRING_LENGTH) :: property_list
   character(len=STRING_LENGTH) :: read_extra_property_list
+  character(len=STRING_LENGTH) :: read_extra_param_list
   character(len=STRING_LENGTH) :: property_list_prefixes
   character(len=STRING_LENGTH) :: filename
   real(dp)            :: min_cutoff
@@ -137,7 +138,8 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   integer, intent(out), optional :: error
 
   type(Dictionary) ::  params
-  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, property_list_prefixes, filename
+  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, &
+       read_extra_param_list, property_list_prefixes, filename
   real(dp) :: min_cutoff
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
@@ -151,6 +153,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call param_register(params, 'property_list', 'species:pos', property_list, help_string="list of properties to print with the structure file")
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="names of extra properties to read from filepot.out files")
   call param_register(params, 'property_list_prefixes', '', property_list_prefixes, help_string="list of prefixes to which run_suffix will be applied during calc()")
+  call param_register(params, 'read_extra_param_list', 'QM_cell', read_extra_param_list, help_string="list of extra params (comment line in XYZ) to read from filepot.out files. Default is 'QM_cell'")
   call param_register(params, 'filename', 'filepot', filename, help_string="seed name for directory and structure files to be used")
   call param_register(params, 'min_cutoff', '0.0', min_cutoff, help_string="if the unit cell does not fit into this cutoff, it is periodically replicated so that it does")
   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
@@ -167,6 +170,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   this%command = command
   this%property_list = property_list
   this%read_extra_property_list = read_extra_property_list
+  this%read_extra_param_list = read_extra_param_list
   this%property_list_prefixes = property_list_prefixes
   this%min_cutoff = min_cutoff
   this%filename = filename
@@ -187,6 +191,7 @@ subroutine FilePot_Wipe(this)
   this%command=""
   this%property_list=""
   this%read_extra_property_list=""
+  this%read_extra_param_list=""
   this%min_cutoff = 0.0_dp
   this%filename = ""
 
@@ -208,6 +213,7 @@ subroutine FilePot_Print(this, file)
        "' filename='"//trim(this%filename)//&
        "' property_list='"//trim(this%property_list)//&
        "' read_extra_property_list='"//trim(this%read_extra_property_list)//&
+       "' read_extra_param_list='"//trim(this%read_extra_param_list)//&
        "' property_list_prefixes='"//trim(this%property_list_prefixes)//&
        "' min_cutoff="//this%min_cutoff,file=file)
 
@@ -228,7 +234,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   integer :: nx, ny, nz, i
   type(Atoms) :: sup
   integer :: status, n_properties, my_err
-  character(len=STRING_LENGTH) :: read_extra_property_list, property_list, tmp_properties_array(100)
+  character(len=STRING_LENGTH) :: read_extra_property_list, read_extra_param_list, property_list, tmp_properties_array(100)
   type(Dictionary) :: cli
   logical :: FilePot_log, filename_override
   
@@ -245,6 +251,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="if True, save logfile of all the filepot.xyz and filepot.out")
   call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read from filepot.out. Overrides init_args version.")
+  call param_register(cli, "read_extra_param_list", trim(this%read_extra_param_list), read_extra_param_list, help_string="extra params to read from filepot.out. Overrides init_args version.")
   call param_register(cli, "run_suffix", '', run_suffix, help_string="suffix to apply to property names in this%property_list_prefixes")
   call param_register(cli, 'filename', 'filepot', filename, has_value_target=filename_override, help_string="seed name for directory and structure files to be used")
 
@@ -322,7 +329,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
      call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command
-     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, read_extra_property_list, filepot_log=FilePot_log, error=error)
+     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, &
+          read_extra_property_list, read_extra_param_list, run_suffix, filepot_log=FilePot_log, error=error)
      PASS_ERROR_WITH_INFO("Filepot_Calc reading output", error)
   end if
 
@@ -340,7 +348,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
 
 end subroutine FilePot_calc
 
-subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, read_extra_property_list, filepot_log, error)
+subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, local_virial, &
+     read_extra_property_list, read_extra_param_list, run_suffix, filepot_log, error)
   character(len=*), intent(in) :: outfile
   type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
@@ -348,16 +357,16 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp), intent(out), target, optional :: local_e(:)
   real(dp), intent(out), optional :: forces(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
-  character(len=*), intent(in) :: read_extra_property_list
+  character(len=*), intent(in) :: read_extra_property_list, read_extra_param_list, run_suffix
   logical, intent(in), optional :: filepot_log
   integer, intent(out), optional :: error
 
-  integer :: i
+  character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
+  integer :: i, n_params, n_copy
   type(atoms) :: at_out, primitive
   integer, pointer :: Z_p(:)
   real(dp) :: virial_1d(9)
   real(dp), pointer :: local_e_p(:), forces_p(:,:), local_virial_p(:,:)
-  real(dp),dimension(3)          :: QM_cell
   logical :: my_filepot_log
 
   INIT_ERROR(error)
@@ -439,18 +448,26 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (len_trim(read_extra_property_list) > 0) then
      call copy_properties(at, at_out, trim(read_extra_property_list))
   endif
+  
+  if (len_trim(read_extra_param_list) > 0) then
+     call parse_string(read_extra_param_list, ':', tmp_params_array, n_params, error=error)
+     PASS_ERROR(error)
 
-  !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*
-  do i=1,at_out%params%n
-     if (at_out%params%keys(i)%len >= 7) then
-        if (substr(at_out%params%keys(i), 1, 7) == 'QM_cell') then
-           if (.not. get_value(at_out%params, string(at_out%params%keys(i)), QM_cell)) then
-              RAISE_ERROR("Found QM_cell param key '"//string(at_out%params%keys(i))//"' but value is not a 3-vector", error)
-           end if
-           call set_value(at%params, string(at_out%params%keys(i)), QM_cell)
+     n_copy = 0
+     do i=1,n_params
+        if (has_key(at_out%params, trim(tmp_params_array(i)))) then
+           n_copy = n_copy + 1
+           copy_keys(n_copy) = tmp_params_array(i)
+           call print("FilePot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+        else if  (has_key(at_out%params, trim(tmp_params_array(i))//trim(run_suffix))) then
+           n_copy = n_copy + 1
+           copy_keys(n_copy) =  trim(tmp_params_array(i))//trim(run_suffix)
+           call print("FilePot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
         end if
-     end if
-  end do
+     end do
+     
+     call subset(at_out%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
+  end if
 
   if (my_filepot_log) then
      call write(at_out, "FilePot_force_log.xyz", append=.true.)
