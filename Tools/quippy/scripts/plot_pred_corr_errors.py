@@ -7,17 +7,21 @@ import optparse
 from quippy.util import is_interactive_shell
 from matplotlib import rc
 
-rc('text', usetex=True)
-rc('font',**{'family':'serif','serif':['Computer Modern']})
-
 p = optparse.OptionParser(usage='%prog [options] <input file>...')
 
 p.add_option('-l', '--label', action='append', help='Labels for figure legend. One per input filename')
 p.add_option('-o', '--output', action='store', help='Output file', default='pred-corr-errors.pdf')
-p.add_option('-N', '--no-display', action='store_false', help='Do not display figure with "open" command')
+p.add_option('-D', '--no-display', action='store_false', help='Do not display figure with "open" command')
 p.add_option('-t', '--title', action='store', help='Title for plot', default='Predictor-corrector Force Errors')
+p.add_option('-T', '--tex', action='store_true', help='Use LaTeX to render all text')
+p.add_option('-n', '--n-cycles', action='store_true', help='Show the number of predictor-corrector cycles in legend')
 
 opt, filenames = p.parse_args()
+
+if opt.tex:
+    print 'Using LaTeX fonts'
+    rc('text', usetex=True)
+    rc('font',**{'family':'serif','serif':['Computer Modern']})
 
 titles = np.array([['RMS error - extrapolation', 'RMS error - interpolation'],
                    ['Max error - extrapolation', 'Max error - interpolation']])
@@ -51,7 +55,7 @@ for filename, label, color in zip(filenames, opt.label, colors):
 
     for col, (data, cycle_label) in enumerate(zip((extrap_data, interp_data),
                                                   ("extrap", "interp"))):
-        time = data[:extrap_steps,0]
+        time = data[:extrap_steps,0] - data[0,0]
 
         cycles = []
         for start in np.arange(0,len(data),extrap_steps):
@@ -79,7 +83,9 @@ for filename, label, color in zip(filenames, opt.label, colors):
 
             if row == 0 and col == 0:
                 leg_lines.append(mean_plt[0])
-                leg_text.append('%s (%d cycles)' % (label, len(cycles)))
+                if opt.n_cycles:
+                    label += ' (%d cycles)' % len(cycles)
+                leg_text.append(label)
 
             ax.set_title(titles[row,col], size='medium')
 
@@ -91,7 +97,7 @@ for filename, label, color in zip(filenames, opt.label, colors):
 
     print
 
-fig.subplots_adjust(top=0.87, bottom=0.2, hspace=0.24)
+fig.subplots_adjust(top=0.87, bottom=0.05+0.05*len(leg_lines)/2, hspace=0.24)
 leg = fig.legend(leg_lines, leg_text, 'lower center', ncol=2, prop={'size':'small'})
 leg.draw_frame(False)
 
