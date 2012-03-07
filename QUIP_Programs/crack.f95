@@ -854,6 +854,10 @@ program crack
 
         ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
         if (params%md(params%md_stanza)%extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
+           if (trim(params%fit_method) /= 'lotf_adj_pot_svd') then
+              call system_abort('extrapolate_steps /= 1 and fit_method /= lotf_adj_pot_svd') 
+           end if
+
            if (params%qm_cp2k) then
               extra_args = "run_suffix=_lotf"
               extra_qm_args = "run_suffix=_lotf"
