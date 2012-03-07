@@ -1358,7 +1358,9 @@ call print('PSF| '//at%n//' atoms')
 call print('PSF| '//bonds%n//' bonds')
 
    ! ANGLE section
-    call create_angle_list(at,bonds,angles,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
+    call create_angle_list(at,bonds,angles,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+         remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
+
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
@@ -1370,14 +1372,16 @@ call print('PSF| '//bonds%n//' bonds')
 call print('PSF| '//angles%n//' angles')
 
    ! DIHEDRAL section
-    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
+    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+         remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
        call system_abort('write_psf_file_pos: element(s) of dihedrals not within (0;at%N]')
     call write_psf_section(data_table=dihedrals,psf=psf,section='PHI',int_format=int_format,title_format=title_format)
 call print('PSF| '//dihedrals%n//' dihedrals')
 
    ! IMPROPER section
-    call create_improper_list(at,angles,impropers,intrares_impropers=intrares_impropers)
+    call create_improper_list(at,angles,impropers,intrares_impropers=intrares_impropers, & !why not alt_connect?
+         remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     if (any(impropers%int(1:4,1:impropers%N).le.0) .or. any(impropers%int(1:4,1:impropers%N).gt.at%N)) &
        call system_abort('write_psf_file_pos: element(s) of impropers not within (0;at%N]')
     call write_psf_section(data_table=impropers,psf=psf,section='IMPHI',int_format=int_format,title_format=title_format)
@@ -1578,8 +1582,10 @@ call print('PSF| '//impropers%n//' impropers')
 
              if (do_remove_qmmm_link_bonds) then
                 ! skip bond if it is a QM-MM link
-                if ((cluster_mark(i) == HYBRID_NO_MARK) .neqv. (cluster_mark(atom_j) == HYBRID_NO_MARK)) &
-                     add_bond = .false.
+                if ((cluster_mark(i) == HYBRID_NO_MARK) .neqv. (cluster_mark(atom_j) == HYBRID_NO_MARK)) then
+                   call print('create_bond_list: removing QM/MM link bond '//i//'--'//atom_j, PRINT_VERBOSE)
+                   add_bond = .false.
+                end if
              end if
 
              if (add_bond) then
@@ -1689,25 +1695,36 @@ call print('PSF| '//impropers%n//' impropers')
   !% for the corresponding 3 body cutoff.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_angle_list(at,bonds,angles,add_silica_23body,nneighb_only,alt_connect)
+  subroutine create_angle_list(at,bonds,angles,add_silica_23body,nneighb_only,alt_connect, &
+       remove_qmmm_link_bonds, run_suffix)
 
-  type(Atoms), intent(in)  :: at
-  type(Table), intent(in)  :: bonds
-  type(Table), intent(out) :: angles
-  logical,     intent(in)  :: add_silica_23body
-  logical,     intent(in), optional  :: nneighb_only
-  type(Connection), intent(in), optional, target :: alt_connect
-
+    type(Atoms), intent(in)  :: at
+    type(Table), intent(in)  :: bonds
+    type(Table), intent(out) :: angles
+    logical,     intent(in)  :: add_silica_23body
+    logical,     intent(in), optional  :: nneighb_only
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical, intent(in), optional :: remove_qmmm_link_bonds
+    character(len=*), intent(in), optional :: run_suffix
     character(*), parameter  :: me = 'create_angle_list: '
+    integer, pointer, dimension(:) :: cluster_mark
 
-  integer     :: i,j
-  type(Table) :: atom_a, atom_b
-  integer     :: atom_j, atom_1, atom_2
-  logical     :: add_angle
-  character, pointer, dimension(:,:) :: atom_mol_name, atom_type
+
+    integer     :: i,j
+    type(Table) :: atom_a, atom_b
+    integer     :: atom_j, atom_1, atom_2
+    logical     :: add_angle, do_remove_qmmm_link_bonds
+    character, pointer, dimension(:,:) :: atom_mol_name, atom_type
+    character(STRING_LENGTH) :: my_run_suffix
 
     call system_timer('create_angle_list')
 
+    do_remove_qmmm_link_bonds = optional_default(.false., remove_qmmm_link_bonds)
+    my_run_suffix = optional_default('', run_suffix)
+
+    if (do_remove_qmmm_link_bonds) then
+       call assign_property_pointer(at, 'cluster_mark'//trim(my_run_suffix), cluster_mark)
+    end if
 
     if (add_silica_23body) then
        if (.not. assign_pointer(at, 'atom_type', atom_type)) &
@@ -1765,6 +1782,14 @@ call print('PSF| '//impropers%n//' impropers')
              endif
           endif
 
+          if (do_remove_qmmm_link_bonds) then
+             ! skip angle if it spans the QM-MM boundary
+             if ( .not. (all(cluster_mark( (/atom_j, atom_1, atom_2/) ) == HYBRID_NO_MARK) .or. &
+                         all(cluster_mark( (/atom_j, atom_1, atom_2/) ) /= HYBRID_NO_MARK))) then
+                call print('create_angle_list: removing QM/MM spanning angle '//(/atom_j, atom_1, atom_2/), PRINT_VERBOSE)
+                add_angle = .false.
+             end if
+          end if
 
 !          if (add_angle.and.(atom_j.lt.atom_2)) &
           if (add_angle) & !.and.(atom_j.lt.atom_2)) &
@@ -1816,6 +1841,15 @@ call print('PSF| '//impropers%n//' impropers')
              endif
           endif
 
+          if (do_remove_qmmm_link_bonds) then
+             ! skip angle if it spans the QM-MM boundary
+             if ( .not. (all(cluster_mark( (/atom_j, atom_1, atom_2/) ) == HYBRID_NO_MARK) .or. &
+                         all(cluster_mark( (/atom_j, atom_1, atom_2/) ) /= HYBRID_NO_MARK))) then
+                call print('create_angle_list: removing QM/MM spanning angle '//(/atom_j, atom_1, atom_2/), PRINT_VERBOSE)
+                add_angle = .false.
+             end if
+          end if
+
 !          if (add_angle.and.(atom_j.lt.atom_1)) &
           if (add_angle) & !.and.(atom_j.lt.atom_1)) &
              call append(angles,(/atom_1,atom_2,atom_j/))
@@ -1843,7 +1877,8 @@ call print('PSF| '//impropers%n//' impropers')
   !% skip any dihedrals with Si atoms, as there are only 2 and 3 body terms.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,nneighb_only, alt_connect)
+  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,nneighb_only, alt_connect, &
+       remove_qmmm_link_bonds, run_suffix)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: angles
@@ -1851,14 +1886,26 @@ call print('PSF| '//impropers%n//' impropers')
   logical,     intent(in)  :: add_silica_23body
   logical,     intent(in), optional  :: nneighb_only
   type(Connection), intent(in), optional, target :: alt_connect
+  logical, intent(in), optional :: remove_qmmm_link_bonds
+  character(len=*), intent(in), optional :: run_suffix
+  character(*), parameter  :: me = 'create_angle_list: '
 
-    character(*), parameter  :: me = 'create_angle_list: '
+  logical     :: do_remove_qmmm_link_bonds
+  character(STRING_LENGTH) :: my_run_suffix
+  integer, pointer, dimension(:) :: cluster_mark
 
   integer     :: i,j
   type(Table) :: atom_a, atom_b
   integer     :: atom_j
 
     call system_timer('create_dihedral_list')
+
+    do_remove_qmmm_link_bonds = optional_default(.false., remove_qmmm_link_bonds)
+    my_run_suffix = optional_default('', run_suffix)
+
+    if (do_remove_qmmm_link_bonds) then
+       call assign_property_pointer(at, 'cluster_mark'//trim(my_run_suffix), cluster_mark)
+    end if
 
 
     call initialise(dihedrals,4,0,0,0,0)
@@ -1881,6 +1928,16 @@ call print('PSF| '//impropers%n//' impropers')
                 if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
                    if (at%Z(atom_j).eq.14) cycle
                 endif
+                
+                if (do_remove_qmmm_link_bonds) then
+                   ! skip angle if it spans the QM-MM boundary
+                   if ( .not. (all(cluster_mark( (/atom_j, angles%int(1:3,i)/) ) == HYBRID_NO_MARK) .or. &
+                               all(cluster_mark( (/atom_j, angles%int(1:3,i)/) ) /= HYBRID_NO_MARK))) then
+                      call print('create_dihedral_list: removing QM/MM spanning dihedral '//(/atom_j, angles%int(1:3,i)/), PRINT_VERBOSE)
+                      cycle
+                   end if
+                end if
+          
                 call append(dihedrals,(/atom_j,angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
              endif
           endif
@@ -1900,6 +1957,16 @@ call print('PSF| '//impropers%n//' impropers')
                 if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
                    if (at%Z(atom_j).eq.14) cycle
                 endif
+
+                if (do_remove_qmmm_link_bonds) then
+                   ! skip angle if it spans the QM-MM boundary
+                   if ( .not. (all(cluster_mark( (/atom_j, angles%int(1:3,i)/) ) == HYBRID_NO_MARK) .or. &
+                               all(cluster_mark( (/atom_j, angles%int(1:3,i)/) ) /= HYBRID_NO_MARK))) then
+                      call print('create_dihedral_list: removing QM/MM spanning dihedral '//(/atom_j, angles%int(1:3,i)/), PRINT_VERBOSE)
+                      cycle
+                   end if
+                end if
+
                 call append(dihedrals,(/angles%int(1,i),angles%int(2,i),angles%int(3,i),atom_j/))
              endif
           endif
@@ -1920,13 +1987,18 @@ call print('PSF| '//impropers%n//' impropers')
   !% For intraresidual impropers, use the input table,
   !% the backbone residues can be calculated.
   !
-  subroutine create_improper_list(at,angles,impropers,intrares_impropers)
+  subroutine create_improper_list(at,angles,impropers,intrares_impropers, &
+       remove_qmmm_link_bonds, run_suffix)
 
   type(Atoms),           intent(in)  :: at
   type(Table),           intent(in)  :: angles
   type(Table),           intent(out) :: impropers
   type(Table), optional, intent(in)  :: intrares_impropers
-
+  logical, intent(in), optional :: remove_qmmm_link_bonds  
+  character(len=*), intent(in), optional :: run_suffix
+  
+  logical do_remove_qmmm_link_bonds  
+  character(STRING_LENGTH) :: my_run_suffix
   integer, dimension(4) :: imp_atoms
   integer               :: nn,mm
   logical               :: cont
@@ -1936,9 +2008,16 @@ call print('PSF| '//impropers%n//' impropers')
   integer               :: i_pro, tmp_atoms(3)
   logical               :: reordered
   character, dimension(:,:), pointer   :: atom_res_name, atom_type
-  integer, pointer :: atom_res_number(:)
+  integer, pointer :: atom_res_number(:), cluster_mark(:)
 
     call system_timer('create_improper_list')
+
+    do_remove_qmmm_link_bonds = optional_default(.false., remove_qmmm_link_bonds)
+    my_run_suffix = optional_default('', run_suffix)
+
+    if (do_remove_qmmm_link_bonds) then
+       call assign_property_pointer(at, 'cluster_mark'//trim(my_run_suffix), cluster_mark)
+    end if
 
     if (.not. at%connect%initialised) &
        call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
@@ -2108,6 +2187,17 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 !                     trim(a2s(atom_type(:,imp_atoms(3))))//imp_atoms(3)//'--'// &
 !                     trim(a2s(atom_type(:,imp_atoms(4))))/imp_atoms(4))
       endif
+
+      if (do_remove_qmmm_link_bonds) then
+         ! skip improper if it spans the QM-MM boundary
+         if ( .not. (all(cluster_mark(imp_atoms) == HYBRID_NO_MARK) .or. &
+                     all(cluster_mark(imp_atoms) /= HYBRID_NO_MARK))) then
+            call print('create_improper_list: removing QM/MM spanning improper '//imp_atoms)
+            cycle
+         end if
+      end if
+
+
       call append(impropers,imp_atoms(1:4))
 !      call print('Added backbone improper '// &
 !                  trim(ElementName(at%Z(imp_atoms(1))))//imp_atoms(1)//'--'// &
