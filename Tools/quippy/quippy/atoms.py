@@ -124,11 +124,12 @@ class Neighbours(object):
         return (i,j) in self.pairs()
 
     def pairs(self):
-        """Iterate over pairs of atoms (i,j) which are neighbours"""
+        """Yield pairs of atoms (i,j) with i < j which are neighbours"""
         at = self.atref()
         for i, neighbour_list in zip(at.indices, self.iterneighbours()):
             for neighb in neighbour_list:
-                yield (i,neighb.j)
+                if i < neighb.j:
+                    yield (i,neighb.j)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
