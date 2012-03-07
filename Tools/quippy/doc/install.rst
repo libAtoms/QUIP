@@ -104,6 +104,11 @@ module::
    If you've previously compiled AtomEye as an exectuable, you should do
    a `make clean` first.
 
+   It's important that the :envvar:`QUIP_ROOT` is correctly set so that AtomEye
+   can find the rest of QUIP, e.g. ::
+
+     export QUIP_ROOT=~/QUIP/
+
 Again, if you don't have an account you can download a `snapshot
 <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye?view=tar>`_
 (~ 2MB) which you should extract under :file:`${QUIP_ROOT}/Tools`
