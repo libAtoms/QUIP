@@ -1115,11 +1115,6 @@ program crack
                  if (params%qm_cp2k) then
                     extra_args = 'run_suffix=_interp'
                     extra_qm_args = 'run_suffix=_interp'
-#ifdef HAVE_CP2K
-                    call cp2k_state_change(ds%atoms, '_interp', (/'_interp', '_lotf  '/))
-#else
-                    call system_abort('qm_cp2k=T but no CP2K support compiled in!')
-#endif
                     call add_property(ds%atoms, 'hybrid_interp', hybrid, overwrite=.true.)
                  end if
 
