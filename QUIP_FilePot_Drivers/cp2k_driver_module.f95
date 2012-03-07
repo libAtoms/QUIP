@@ -79,7 +79,7 @@ contains
     character(len=STRING_LENGTH) :: run_dir
 
     type(Table) :: qm_list, old_qm_list
-    type(Table) :: cut_bonds, old_cut_bonds, bonds_to_remove
+    type(Table) :: cut_bonds, old_cut_bonds
     integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
     integer, allocatable :: qm_list_a(:), old_qm_list_a(:)
     integer, allocatable :: link_list_a(:), old_link_list_a(:), inner_link_list_a(:)
@@ -519,7 +519,7 @@ contains
    if (use_QMMM) then
       call get_qm_list(at, use_buffer, trim(run_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 		       link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-		       link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
+		       link_template_a, link_template_n_lines, qmmm_link_type, error)
       PASS_ERROR(error)
    endif
 
@@ -539,12 +539,13 @@ contains
 	! we should fail for persistent_already_started=T, but this should have been dealt with above
 	if (has_property(at, 'avgpos')) then
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
-	    add_silica_23body=have_silica_potential .and. silica_add_23_body, form_bond=form_bond,break_bond=break_bond, bonds_to_remove=bonds_to_remove)
+	    add_silica_23body=have_silica_potential .and. silica_add_23_body, form_bond=form_bond,break_bond=break_bond, &
+            remove_qmmm_link_bonds=trim(qmmm_link_type) == 'QM_KIND', run_suffix=run_suffix)
 	else if (has_property(at, 'pos')) then
 	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
 	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
 	    add_silica_23body=have_silica_potential .and. silica_add_23_body, pos_field_for_connectivity='pos',  &
-            form_bond=form_bond,break_bond=break_bond, bonds_to_remove=bonds_to_remove)
+            form_bond=form_bond,break_bond=break_bond, remove_qmmm_link_bonds=trim(qmmm_link_type) == 'QM_KIND', run_suffix=run_suffix)
 	else
 	  RAISE_ERROR("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos", error)
 	endif
@@ -1613,14 +1614,14 @@ contains
 
    subroutine get_qm_list(at, use_buffer, run_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 			  link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-			  link_template_a, link_template_n_lines, qmmm_link_type, bonds_to_remove, error)
+			  link_template_a, link_template_n_lines, qmmm_link_type, error)
       type(Atoms), intent(inout) :: at
       logical, intent(in) :: use_buffer
       character(len=*), intent(in) :: run_suffix, link_template_file, qmmm_link_type
       type(Table), intent(inout) :: qm_list, old_qm_list
       integer, allocatable, intent(inout) :: qm_list_a(:), old_qm_list_a(:), link_list_a(:), old_link_list_a(:), qm_and_link_list_a(:)
       integer, intent(in) :: rev_sort_index(:)
-      type(Table), intent(inout) :: cut_bonds, old_cut_bonds, bonds_to_remove
+      type(Table), intent(inout) :: cut_bonds, old_cut_bonds
       integer, pointer, intent(inout) :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
       character(len=STRING_LENGTH), allocatable, intent(inout) :: link_template_a(:)
       integer, intent(inout) :: link_template_n_lines
@@ -1684,12 +1685,6 @@ contains
 		call append(old_cut_bonds,(/i_inner,i_outer/))
 	     enddo
 	  enddo
-       end if
-
-       ! list of bonds to be removed from the topology
-       call initialise(bonds_to_remove, 2, 0, 0, 0)
-       if (trim(qmmm_link_type) == "QM_KIND") then
-          call append(bonds_to_remove, cut_bonds)
        end if
 
        !If needed, read QM/MM link_template_file
