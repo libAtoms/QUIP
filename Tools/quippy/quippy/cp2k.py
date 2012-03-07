@@ -330,3 +330,39 @@ def read_cp2k_qm_kind(fh):
 
     return qm_kinds
     
+
+def read_psf_bonds(psf, rev_sort_index=None):
+    """
+    Read BONDS section from a PSF topology file and return a list of pairs (i,j)
+    """
+    
+    lines = open(psf).readlines()
+    i = (i for i,line in enumerate(lines) if line.endswith('!NBOND\n')).next()
+    nbond = int(lines[i].split()[0])
+    bonds = []
+    while i < len(lines) and len(bonds) < nbond:
+        i += 1
+        fields = lines[i].split()
+        for a, b in zip(fields[::2], fields[1::2]):
+            a = int(a)
+            b = int(b)
+            if rev_sort_index is not None:
+                a = rev_sort_index[a]
+                b = rev_sort_index[b]
+            bonds.append((a,b))
+
+    return bonds
+
+def reproduce_cp2k_sort_order(at, rev_sort_index_filename='quip_rev_sort_index'):
+    """Reorder atoms in `at` so that they match rev_sort_index read from file.
+
+       Returns sort_index and rev_sort_index arrays."""
+    
+    rev_sort_index = loadtxt(rev_sort_index_filename).astype(np.int32).reshape(at.n)
+    rev_sort_index_copy = rev_sort_index.copy()
+    sort_index = farray(frange(at.n), dtype=np.int32)
+    insertion_sort(rev_sort_index_copy, sort_index)
+    at.add_property('rev_sort_index', rev_sort_index)
+    at.sort('rev_sort_index')
+
+    return sort_index, rev_sort_index
