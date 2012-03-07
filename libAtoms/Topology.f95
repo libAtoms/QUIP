@@ -110,7 +110,7 @@ contains
   !%
   subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
        form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
-       find_molecules, bonds_to_remove, error)
+       find_molecules, error)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -122,7 +122,6 @@ contains
     real(dp), intent(in), optional :: silica_charge_transfer
     logical, intent(in), optional :: have_titania_potential
     logical, intent(in), optional :: find_molecules
-    type(Table), optional, intent(in) :: bonds_to_remove
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -174,11 +173,6 @@ contains
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
-
-    if (present(bonds_to_remove)) then
-       call remove_bonds(t_connect, at, bonds_to_remove, error=error)
-       PASS_ERROR(error)
-    end if
 
     ! now create labels using this connectivity object
     if (do_find_silica_residue) then
@@ -1181,16 +1175,17 @@ real(dp) :: do_silica_charge_transfer
   end subroutine write_cp2k_pdb_file
 
   subroutine write_psf_file_arb_pos(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,&
-                                    pos_field_for_connectivity,form_bond,break_bond, bonds_to_remove, error)
+                                    pos_field_for_connectivity,form_bond,break_bond, remove_qmmm_link_bonds, &
+                                    run_suffix, error)
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(inout) :: at
     character(len=*), optional, intent(in) :: run_type_string
     type(Table),      optional, intent(in) :: intrares_impropers
     character(80),    optional, intent(in) :: imp_filename
     logical,          optional, intent(in) :: add_silica_23body
-    character(len=*), optional, intent(in) :: pos_field_for_connectivity
+    character(len=*), optional, intent(in) :: pos_field_for_connectivity, run_suffix
     integer, optional, intent(in) :: form_bond(2), break_bond(2)
-    type(Table), optional, intent(in) :: bonds_to_remove
+    logical, optional, intent(in) :: remove_qmmm_link_bonds
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -1232,21 +1227,18 @@ real(dp) :: do_silica_charge_transfer
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
 
-    if (present(bonds_to_remove)) then
-       call remove_bonds(t_connect, at, bonds_to_remove, error=error)
-       PASS_ERROR(error)
-    end if
-
     ! now create labels using this connectivity object
     ! if cutoff is set to 0, nneighb_only doesn't matter
     ! if cutoff is large, then nneighb_only must be true
     !    so might as well pass true
     if (do_add_silica_23body) then
        ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
-       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect)
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect,&
+            remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     else
        ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
-       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect)
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect,&
+            remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     endif
     PASS_ERROR(error)
     call finalise(t_connect)
@@ -1255,7 +1247,8 @@ real(dp) :: do_silica_charge_transfer
   !% Writes PSF topology file, to be used with the PDB coordinate file.
   !% PSF contains the list of atoms, bonds, angles, impropers, dihedrals.
   !
-  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect, error)
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect, &
+       remove_qmmm_link_bonds, run_suffix, error)
 
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(in) :: at
@@ -1265,6 +1258,8 @@ real(dp) :: do_silica_charge_transfer
     logical,          optional, intent(in) :: add_silica_23body
     logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
+    character(len=*), optional, intent(in) :: run_suffix
+    logical, optional, intent(in) :: remove_qmmm_link_bonds
     integer, intent(out), optional :: error
 
     type(Inoutput)          :: psf
@@ -1355,7 +1350,8 @@ real(dp) :: do_silica_charge_transfer
     call print('',file=psf)
 call print('PSF| '//at%n//' atoms')
    ! BOND section
-    call create_bond_list(at,bonds,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
+    call create_bond_list(at,bonds,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+         remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     if (any(bonds%int(1:2,1:bonds%N).le.0) .or. any(bonds%int(1:2,1:bonds%N).gt.at%N)) &
        call system_abort('write_psf_file_pos: element(s) of bonds not within (0;at%N]')
     call write_psf_section(data_table=bonds,psf=psf,section='BOND',int_format=int_format,title_format=title_format)
@@ -1490,13 +1486,16 @@ call print('PSF| '//impropers%n//' impropers')
   !% atom pairs that have SIO2 molecule type up to the silica_cutoff distance.
   !% Optionally use hysteretic_connect, if it is passed as alt_connect.
   !
-  subroutine create_bond_list(at,bonds,add_silica_23body,nneighb_only,alt_connect)
+  subroutine create_bond_list(at,bonds,add_silica_23body,nneighb_only,alt_connect, &
+       remove_qmmm_link_bonds, run_suffix)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(out) :: bonds
   logical,     intent(in)  :: add_silica_23body
   logical, intent(in), optional :: nneighb_only
   type(Connection), intent(in), optional, target :: alt_connect
+  logical, intent(in), optional :: remove_qmmm_link_bonds
+  character(len=*), intent(in), optional :: run_suffix
 
     character(*), parameter  :: me = 'create_bond_list: '
 
@@ -1506,11 +1505,19 @@ call print('PSF| '//impropers%n//' impropers')
 !  logical              :: do_qmmm
 !  integer,dimension(3) :: pos_indices
 !  integer              :: qm_flag_index
+  character(STRING_LENGTH) :: my_run_suffix
   character, pointer, dimension(:,:) :: atom_mol_name
-  logical :: add_bond
+  integer, pointer, dimension(:) :: cluster_mark
+  logical :: add_bond, do_remove_qmmm_link_bonds
 
     call system_timer('create_bond_list')
 
+    do_remove_qmmm_link_bonds = optional_default(.false., remove_qmmm_link_bonds)
+    my_run_suffix = optional_default('', run_suffix)
+
+    if (do_remove_qmmm_link_bonds) then
+       call assign_property_pointer(at, 'cluster_mark'//trim(my_run_suffix), cluster_mark)
+    end if
 
     if (add_silica_23body) then
        if (at%cutoff.lt.SILICA_2BODY_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
@@ -1568,6 +1575,12 @@ call print('PSF| '//impropers%n//' impropers')
                    if (.not.(is_nearest_neighbour_abs_index(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
                 endif
              endif
+
+             if (do_remove_qmmm_link_bonds) then
+                ! skip bond if it is a QM-MM link
+                if ((cluster_mark(i) == HYBRID_NO_MARK) .neqv. (cluster_mark(atom_j) == HYBRID_NO_MARK)) &
+                     add_bond = .false.
+             end if
 
              if (add_bond) then
                 call append(bonds,(/i,atom_j/))
