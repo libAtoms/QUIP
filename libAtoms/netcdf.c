@@ -399,18 +399,23 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 
   // Have we been asked to read only a specific range of atom indices?
   if (range[0] != 0 && range[1] != 0) {
-    if (range[0] < 1) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
+    if (range[0] == -1 && range[1] == -1) {
+      // special range  of [-1, -1] means don't read any atoms, only params and lattice
+      *n_atom = 0;
+    } else {
+      if (range[0] < 1) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
+      }
+      if (range[1] > *n_atom) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+      }
+      if (range[1] <= range[0]) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+      }
+      *n_atom = range[1] - range[0] + 1;
+      at_start = range[0]-1;
+      at_end = range[1]-1;
     }
-    if (range[1] > *n_atom) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be <= %d", range[1], *n_atom);
-    }
-    if (range[1] <= range[0]) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
-    }
-    *n_atom = range[1] - range[0] + 1;
-    at_start = range[0]-1;
-    at_end = range[1]-1;
   }
   else {
     at_start = 0;
