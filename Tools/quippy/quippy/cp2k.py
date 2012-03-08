@@ -30,7 +30,9 @@ from quippy.ordereddict import OrderedDict
 from quippy.util import read_text_file
 from quippy.cp2k_driver import do_cp2k_calc, read_output, qmmm_qm_abc
 
-__all__ = ['CP2KPotential', 'CP2KInputHeader']
+__all__ = ['CP2KPotential', 'CP2KInputHeader', 'read_cp2k_qm_kind',
+           'read_psf', 'apply_cp2k_sort_order', 'bonds_from_avgpos',
+           'qmmm_link_bonds']
 
 class CP2KPotential(Potential):
     """
@@ -330,13 +332,7 @@ def read_cp2k_qm_kind(fh):
 
     return qm_kinds
     
-
-def read_psf_bonds(psf, rev_sort_index=None):
-    """
-    Read BONDS section from a PSF topology file and return a list of pairs (i,j)
-    """
-    
-    lines = open(psf).readlines()
+def read_psf_bonds(lines, rev_sort_index=None):
     i = (i for i,line in enumerate(lines) if line.endswith('!NBOND\n')).next()
     nbond = int(lines[i].split()[0])
     bonds = []
@@ -353,7 +349,43 @@ def read_psf_bonds(psf, rev_sort_index=None):
 
     return bonds
 
-def reproduce_cp2k_sort_order(at, rev_sort_index_filename='quip_rev_sort_index'):
+def read_psf_angles(lines, rev_sort_index=None):
+    i = (i for i,line in enumerate(lines) if line.endswith('!NTHETA\n')).next()
+    nangle = int(lines[i].split()[0])
+
+    fields = []
+    angles = []
+    while i < len(lines) and len(fields) < 3*nangle:
+        i += 1
+        fields.extend(lines[i].split())
+        
+    for a, b, c in zip(fields[::3], fields[1::3], fields[2::3]):
+        a = int(a)
+        b = int(b)
+        c = int(c)
+        if rev_sort_index is not None:
+            a = rev_sort_index[a]
+            b = rev_sort_index[b]
+            c = rev_sort_index[c]
+        angles.append((a,b,c))
+
+    return angles
+
+def read_psf(psf, rev_sort_index=None):
+    """Read the PSF topology file from the filename `psf`.
+
+       Returns a pair of lists `(bonds, angles)`. `bonds` is a list
+       of pairs of bonded atom indices `(i, j)` and `angles` is a list
+       of triplets `(i, j, k)`. Order is same as that in PSF file
+    """
+    lines  = open(psf).readlines()
+    bonds  = read_psf_bonds(lines, rev_sort_index)
+    angles = read_psf_angles(lines, rev_sort_index)
+
+    return bonds, angles
+
+
+def apply_cp2k_sort_order(at, rev_sort_index_filename='quip_rev_sort_index'):
     """Reorder atoms in `at` so that they match rev_sort_index read from file.
 
        Returns sort_index and rev_sort_index arrays."""
@@ -366,3 +398,33 @@ def reproduce_cp2k_sort_order(at, rev_sort_index_filename='quip_rev_sort_index')
     at.sort('rev_sort_index')
 
     return sort_index, rev_sort_index
+
+
+def bonds_from_avgpos(at):
+    """
+    Compute connectivity of `at` using `avgpos` positions.
+
+    A copy of `at` is made to avoid changing its connect
+    object. Returns list of bonds as a set.
+    """
+    
+    at_avg = at.copy()
+    at_avg.pos[...] = at_avg.avgpos[...]
+    at_avg.set_cutoff_factor(1.2)
+    at_avg.calc_connect()
+    return set(at_avg.neighbours.pairs())
+
+
+def qmmm_link_bonds(at, run_suffix=""):
+    """
+    Return the set of QM/MM link bonds in `at`.
+
+    Bonds are computed from average positions using `bonds_from_avgpos()`.
+    `run_suffix` is used to find the relevant `cluster_mark` property.
+    """
+
+    bonds = bonds_from_avgpos(at)
+    mark = getattr(at, 'cluster_mark'+run_suffix)
+    cut_bonds = [ (i,j) for (i,j) in bonds if (mark[i] == 0) != (mark[j] == 0) ]
+
+    return set(cut_bonds)
