@@ -51,6 +51,8 @@ class CInOutput(_cinoutput.CInOutput):
     def read(self, properties=None, properties_array=None, frame=None,
              zero=None, range=None, str=None, estr=None):
         at = Atoms()
+        if range == 0 or range == 'empty':
+            range = [-1,-1]
         _cinoutput.CInOutput.read(self, at, properties=properties,
                                   properties_array=properties_array, frame=frame,
                                   zero=zero, range=range, str=str, estr=estr)
