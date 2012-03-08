@@ -39,7 +39,7 @@
 program qmmm_md
 
   use libatoms_module
-  use cp2k_driver_template_module
+  use cp2k_driver_module
   use potential_module
   use restraints_constraints_xml_module
 
