@@ -55,8 +55,8 @@ Supported formats: %s.""" % ', '.join([s for s in AtomsReaders.keys() if isinsta
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
 p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
 p.add_option('-g', '--merge-params', action='store_true', help="""Merge params from MERGE file into output file.""", default=False)
-p.add_option('-x', '--extract-params', action='store_true', help="""Instead of printing the output frames, produce a table of parameters, one line per frame""", default=False)
-p.add_option('-F', '--extract-format', action='store', help="""Format used to print parameters if the --extract-params option is used.""")
+p.add_option('-x', '--extract-params', action='store_true', help="""Read only the parameters from input files. If -N is not given, prints a table of params, one frame per line.""", default=False)
+p.add_option('-F', '--extract-format', action='store', help="""Format string used to print parameters if the --extract-params option is used.""")
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`, and do_print is set to True. If the user-supplied code sets do_print to False, the frame is not printed.""")
 p.add_option('-E', '--exec-code-file', action='store', help="""File with python code to execute, just like -e/--exec-code.""")
@@ -74,6 +74,10 @@ p.add_option('-o', '--output', action='store', help="""File to output to (requir
 p.add_option('--extra-args', action='store', help="""Extra arguments to be passed when constructing AtomsWriter""")
 p.add_option('--write-args', action='store', help="""Extra arguments to be passed to write() routine.""")
 p.add_option('--read-args', action='store', help="""Extra arguments to be passed to read() routine.""")
+p.add_option('-a', '--atom-range', action='store', help="""Range of atoms to include: should be followed by two arguments, min
+and max 1-based atom indices. Using a reduced atom range dramatically
+speeds up reading of large XYZ trajectories.""", nargs=2)
+
 
 # Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
@@ -90,13 +94,10 @@ p.add_option('--param-template', action='store', help='Template .param file, to 
 
 opt, args = p.parse_args()
 
-if opt.extract_params:
-    opt.no_print_at = True
-
 # check for conflicts with -o|--output
-if opt.no_print_at:
+if opt.no_print_at or opt.extract_params:
     if opt.output is not None:
-        p.error('--no_print_at can not coexist with --output')
+        p.error('--no_print_at/--extract-params can not coexist with --output')
     if len(args) < 1:
         p.error('At least one input file must be specified')
     infiles = args
@@ -111,7 +112,7 @@ else: # didn't specify no_print_at
         infiles = args
 
 # make no-output outfile name standard
-if opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
+if opt.extract_params or opt.no_print_at or outfile.upper() == 'NONE' or outfile == '/dev/null' or outfile == 'dev_null':
     outfile = None
 
 # convert - to stdin/stdout
@@ -119,7 +120,7 @@ infiles = [ f == '-' and 'stdin' or f for f in infiles ]
 if outfile == '-': outfile = 'stdout'
 
 # check for existing outfile
-if opt.output is None and not opt.no_print_at:
+if opt.output is None and not (opt.no_print_at or opt.extract_params):
     if os.path.exists(outfile):
         p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
 
@@ -249,15 +250,18 @@ def process(at, frame):
 
     # Do the writing
     if opt.extract_params:
-        if frame == 0:
-            print '#' + ' '.join(at.params.keys())
-        for k in at.params.keys():
-            if opt.extract_format:
-                print(opt.extract_format % at.params[k]),
-            else:
-                print at.params[k],
+        if not opt.no_print_at:
+            if frame == 0:
+                print '#' + ' '.join(at.params.keys())
+            for k in at.params.keys():
+                if opt.extract_format:
+                    print(opt.extract_format % at.params[k]),
+                else:
+                    print at.params[k],
 
-        print
+            print
+        else:
+            pass
     elif do_print and outfile is not None:
 
         if opt.format in ('eps', 'png', 'jpg') and isinstance(opt.range, slice):
@@ -329,6 +333,10 @@ if outfile is not None:
 read_args = {}
 if opt.atoms_ref is not None:
     read_args['atoms_ref'] = opt.atoms_ref
+if opt.atom_range is not None:
+    read_args['range'] = opt.atom_range
+if opt.extract_params is not None:
+    read_args['range'] = [-1,-1]
 if opt.read_args is not None:
     read_args.update(eval("dict(%s)" % opt.read_args))
 
