@@ -5,16 +5,16 @@ program force_gaussian_prediction
    type(Atoms)                                  :: at_in
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
-   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh, sigma_error
+   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh, sigma_error, cutoff_len_ivs
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector
    real(dp)                                     :: force(3), z_inv(3,3)
-   real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_predict, force_proj_ivs_predict
+   real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_predict, force_proj_ivs_predict, force_proj_tmp
    real(dp), dimension(:,:,:), allocatable      :: z_matrix_normalised, z_matrix
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: z_matrix_normalised_predict, z_matrix_predict
-   real(dp), dimension(:,:), pointer            :: force_ptr
-   logical                                      :: spherical_cluster_teach, spherical_cluster_predict, do_gp 
+   real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
+   logical                                      :: spherical_cluster_teach, spherical_cluster_predict, do_gp, fix_sigma 
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -25,17 +25,19 @@ program force_gaussian_prediction
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
+   call param_register(params, 'cutoff_len_ivs', '0.2', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
-   call param_register(params, 'add_vector', '0', add_vector, "number of vectors you like to add to the internal representation")
+   call param_register(params, 'add_vector', '0', add_vector, "the number of vectors you like to add into the internal_vector representation")
    call param_register(params, 'sigma_error', '0.01', sigma_error, "the noise assumed on the teaching data")
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
-   call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the central atom in the cluster are considered when doing teaching")
-   call param_register(params, 'spherical_cluster_predict', 'T', spherical_cluster_predict, "only the central atom in the cluster are considered when doing predicting")
+   call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
+   call param_register(params, 'spherical_cluster_predict', 'T', spherical_cluster_predict, "only the first atom in the cluster are considered when doing predicting")
+   call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
-   call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of r0 and m")
+   call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
 
   if (.not. param_read_args(params, task="fgp command line params")) then
@@ -88,6 +90,7 @@ program force_gaussian_prediction
  do i=1, in%n_frame
         call read(in, at_in)
         call assign_property_pointer(at_in, 'force', ptr=force_ptr)
+        call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
         call print('the frame: '//i)
 
         ! Including the symmetry images
@@ -116,7 +119,7 @@ program force_gaussian_prediction
 
         if (add_vector >0 ) then
            do j=k-add_vector+1, k
-                z_matrix(j,:,t) = force_ptr(:,at_n)
+                z_matrix(j,:,t) = force_ptr_mm(:,at_n)
                 z_len = norm(z_matrix(j,:,t))
                 if (z_len < TOL_REAL)   z_len=1.0_dp
                 z_matrix_normalised(j,:,t) = z_matrix(j,:,t) / z_len
@@ -140,17 +143,22 @@ program force_gaussian_prediction
  allocate(sigma(k))
  allocate(theta_array(k))
 
- theta_array=theta
- 
- do t = 1, k 
-   do i = 1, n
+if (fix_sigma) then
+     open(unit=1, file='sigma.dat')
+     read(1, *) sigma
+     close(unit=1)
+else 
+  theta_array=theta
+  do t = 1, k 
+    do i = 1, n
         do j=1, n
               distance_ivs(i,j) = distance_bent_space(z_matrix(t,:,i), z_matrix(t,:,j), z_matrix_normalised(:,:,i), z_matrix_normalised(:,:,j)) 
         enddo
-   enddo
-   sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
-   if  (abs(sigma(t))<TOL_REAL)  sigma(t)=TOL_REAL
- enddo
+    enddo
+    sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
+    if  (abs(sigma(t))<TOL_REAL)  sigma(t)=TOL_REAL
+  enddo
+endif
  call print('sigma is:  '//sigma)
 
 ! to establish the Covariance Matrix
@@ -192,11 +200,13 @@ program force_gaussian_prediction
  allocate(z_matrix_predict(k,3))
  allocate(z_matrix_normalised_predict(k,3))
  allocate(force_proj_ivs_predict(k))
+ allocate(force_proj_tmp(k))
 
  call initialise(in, test_file, INPUT)
  do i=1, in%n_frame 
    call read(in, at_in)
    call assign_property_pointer(at_in, 'force', ptr=force_ptr)
+   call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
    call set_cutoff(at_in, r_cut)
    call calc_connect(at_in)
    if (spherical_cluster_predict) then
@@ -217,7 +227,7 @@ program force_gaussian_prediction
 
        if (add_vector > 0) then
            do j = k-add_vector+1, k
-              z_matrix_predict(j,:) = force_ptr(:, at_n)
+              z_matrix_predict(j,:) = force_ptr_mm(:, at_n)
               z_len = norm(z_matrix_predict(j,:))
               if (z_len < TOL_REAL)   z_len=1.0_dp
               z_matrix_normalised_predict(j,:) = z_matrix_predict(j,:)/z_len
@@ -228,19 +238,26 @@ program force_gaussian_prediction
 
        do t= 1,n
              covariance_predict(t) = cov(z_matrix_predict, z_matrix(:,:,t), z_matrix_normalised_predict(:,:), z_matrix_normalised(:,:,t), sigma, k)
-             write(*,*) "the predicted covariance", covariance_predict(t) 
+ !           write(*,*) "the predicted covariance", covariance_predict(t) 
        enddo
    
        force_proj_ivs_predict(:) = matmul(covariance_predict, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
 
-       do j=1, k 
-               write(*,*) "The predicted force in IVs space:", force_proj_ivs_predict(j)
-       enddo
+      do j=1, k
+            force_proj_tmp(j) = dot_product(z_matrix_normalised_predict(j,:), force_ptr(:,at_n))
+      enddo   
+
+   
+      do j=1, k 
+            call print("Force in IV space"//j//": "//force_proj_ivs_predict(j)//": "//force_proj_tmp(j)//": "//abs(force_proj_ivs_predict(j)-force_proj_tmp(j)))
+            !  predicted force: real force: absolute difference 
+      enddo
 
        ! using least-squares to restore the force in the External Cartesian Space  
        call inverse(matmul(transpose(z_matrix_normalised_predict), z_matrix_normalised_predict), z_inv)  
        force = z_inv .mult. transpose(z_matrix_normalised_predict) .mult. force_proj_ivs_predict
-       call print("the force in external space:"//force//"  the original force:"//force_ptr(:, at_n))  
+       call print("force in external space:"//force)
+       call print("the original force:"//force_ptr(:, at_n))
        call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force)))
 
        if (do_gp) then
@@ -261,6 +278,7 @@ program force_gaussian_prediction
  deallocate(sigma)
  deallocate(theta_array)
  deallocate(force_proj_ivs)
+ deallocate(force_proj_tmp)
  deallocate(inv_covariance) 
  deallocate(covariance_predict)
  call system_finalise()
@@ -335,7 +353,7 @@ program force_gaussian_prediction
   do i = 1, m_mesh     ! to know the value of k
      do j = 1, r_mesh
          ivs  = internal_vector(at, r_point(j),  m_point(i), 1)*SCALE_IVS
-         if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (dot_product(ivs, ivs) > 0.0004_dp) )   k = k + 1
+         if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (norm(ivs) > cutoff_len_ivs) )  k = k + 1
      enddo
   enddo
 
@@ -349,7 +367,7 @@ program force_gaussian_prediction
          write(*,*) "IVs using ",  r_point(j), m_point(i),"------", ivs                             
          write(*,*) "IVs_dr:   ",  internal_vector_dm(at, r_point(j), m_point(i), 1)*SCALE_IVS           
          write(*,*) "cutoff m:",   cutoff_m(r_cut, r_point(j), preci)
-         if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (dot_product(ivs, ivs) > 0.0004_dp) )   then
+         if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (norm(ivs) > cutoff_len_ivs))   then
              k = k + 1
              r_grid(k) = r_point(j) 
              m_grid(k) = m_point(i)  
@@ -430,7 +448,6 @@ program force_gaussian_prediction
 
  endfunction inverse_svd_threshold
 
- 
  function  distance_bent_space(vect1, vect2, bent_space1, bent_space2)
 
     real(dp), intent(in)                    :: vect1(3), vect2(3), bent_space1(:,:), bent_space2(:,:)
