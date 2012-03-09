@@ -192,7 +192,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if (present(virial)) virial = 0.0_dp
 
   if (present(local_virial)) then
-     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_GAP_Calc', error)
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_SW_Calc', error)
      local_virial = 0.0_dp
   endif
 
