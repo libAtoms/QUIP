@@ -2410,7 +2410,8 @@ CONTAINS
 
 subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 		  new_x, new_neg_gradient, new_E, &
-		  max_step_size, accuracy, N_evals, max_N_evals, hook,data, error)
+		  max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, &
+		  data, error)
     real(dp), intent(inout) :: x(:)
     real(dp), intent(in) :: neg_gradient(:)
     interface 
@@ -2443,9 +2444,11 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	 character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
+    integer, intent(in), optional :: hook_print_interval
     character(len=1),optional::data(:)
     integer, intent(out), optional :: error
 
+    logical :: do_print
     real(dp) search_dir_mag
     real(dp) p0_dot, p1_dot, new_p_dot
     real(dp), allocatable :: p0(:), p1(:), p0_ng(:), p1_ng(:), new_p(:), new_p_ng(:), t_projected(:)
@@ -2461,6 +2464,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     real(dp) est_step_size
 
     INIT_ERROR(error)
+
+    do_print = .false.
 
     allocate(p0(size(x)))
     allocate(p1(size(x)))
@@ -2514,7 +2519,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	N_evals = N_evals + 1
 	l_error=0
 	call bothfunc(p1, p1_e, p1_ng, data, error=l_error); p1_ng = -p1_ng
-	if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
+	if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
+	if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
 	if (l_error .ne. 0) then
 	    call print("cg_n " // p1_pos // " " // p1_e // " " // 0.0_dp // " " // &
 		       0.0_dp // " " // N_evals // " bracket first step ERROR", PRINT_ALWAYS)
@@ -2564,7 +2570,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	    N_evals = N_evals + 1
 	    l_error = 0
 	    call bothfunc (p1, p1_E, p1_ng, data, error=l_error); p1_ng = -p1_ng
-	    if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
+	    if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
+	    if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
 	    if (done) then
 	      call print("hook reported done", PRINT_NERD)
 	      search_dir = search_dir * search_dir_mag
@@ -2828,7 +2835,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	l_error = ERROR_NONE
 	call n_linmin(x_i, bothfunc, g_i, E_i, h_i, &
 		      x_ip1, g_ip1, E_ip1, &
-		      max_step_size, accuracy, N_evals, max_N_evals, hook,data, l_error)
+		      max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, data, l_error)
 	if (l_error == ERROR_MINIM_NOT_CONVERGED) then
 	   if (N_evals > max_N_evals) then
 	     final_E = E_i

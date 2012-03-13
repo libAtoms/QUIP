@@ -231,16 +231,16 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	read *, abcd(ABCD_D,SPD_D,i,i,i_mag)
 
 	read *, t_d
-	if (abcd(ABCD_A,SPD_D,i,i,i_mag) /= t_d) &
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_A,SPD_D,i,i,i_mag) /= t_d) &
 	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_A,SPD_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (abcd(ABCD_B,SPD_D,i,i,i_mag) /= t_d) &
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_B,SPD_D,i,i,i_mag) /= t_d) &
 	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPD_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (abcd(ABCD_C,SPD_D,i,i,i_mag) /= t_d) &
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_C,SPD_D,i,i,i_mag) /= t_d) &
 	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPD_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (abcd(ABCD_D,SPD_D,i,i,i_mag) /= t_d) &
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_D,SPD_D,i,i,i_mag) /= t_d) &
 	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPD_D,i,i,i_mag) // " " // t_d)
     end do
 
