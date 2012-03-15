@@ -2546,7 +2546,7 @@ contains
              call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'anatase') then
              call print_title('TiO2 Anatase Crack')
-             call anatase(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
+             call anatase_cubic(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
              call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'rutile') then
              call print_title('TiO2 Rutile Crack')
