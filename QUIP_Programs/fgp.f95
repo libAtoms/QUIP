@@ -1,20 +1,20 @@
-program force_gaussian_prediction
+program force_gaussian_predion
    use libatoms_module
    implicit none
 
    type(Atoms)                                  :: at_in
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
-   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh, sigma_error, cutoff_len_ivs
+   real(dp)                                     :: r_cut, r_min, m_min, m_max, z_len, theta, thresh, sigma_error, cutoff_len_ivs, distance_confs
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector
    real(dp)                                     :: force(3), z_inv(3,3)
-   real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_predict, force_proj_ivs_predict, force_proj_tmp
-   real(dp), dimension(:,:,:), allocatable      :: z_matrix_normalised, z_matrix
+   real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_tmp
+   real(dp), dimension(:,:,:), allocatable      :: feature_matr_normalised, feature_matr
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
-   real(dp), dimension(:,:), allocatable        :: z_matrix_normalised_predict, z_matrix_predict
+   real(dp), dimension(:,:), allocatable        :: feature_matr_normalised_pred, feature_matr_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   logical                                      :: spherical_cluster_teach, spherical_cluster_predict, do_gp, fix_sigma 
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma 
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -34,7 +34,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
-   call param_register(params, 'spherical_cluster_predict', 'T', spherical_cluster_predict, "only the first atom in the cluster are considered when doing predicting")
+   call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing preding")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
@@ -82,8 +82,8 @@ program force_gaussian_prediction
   call initialise(in, teaching_file, INPUT)
   call print('Got '//in%n_frame//' input configurations.')
 
-  allocate(z_matrix(k,3,n))   
-  allocate(z_matrix_normalised(k,3, n))
+  allocate(feature_matr(k,3,n))   
+  allocate(feature_matr_normalised(k,3, n))
   allocate(force_proj_ivs(k, n))
 
  t = 0 ! counter for loop the atomic configurations
@@ -110,26 +110,36 @@ program force_gaussian_prediction
           call print("The atom:"//at_n)
 
         do j=1, k-add_vector
-           z_matrix(j, :, t) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
-           z_len = norm(z_matrix(j,:, t))
-           if (z_len < TOL_REAL)    z_len=1.0_dp
-           z_matrix_normalised(j,:,t) = z_matrix(j,:, t)/z_len
-           write(*,*) "internal vectors (", r_grid(j), m_grid(j), ")", z_matrix(j,1,t), z_matrix(j,2,t), z_matrix(j,3,t) 
+           feature_matr(j, :, t) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
+           z_len = norm(feature_matr(j,:, t))
+
+           if (z_len < TOL_REAL)   then
+                   z_len=1.0_dp
+                   call print("WARNNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs") 
+           endif
+
+           feature_matr_normalised(j,:,t) = feature_matr(j,:, t)/z_len
+           write(*,*) "internal vectors (", r_grid(j), m_grid(j), ")", feature_matr(j,1,t), feature_matr(j,2,t), feature_matr(j,3,t) 
         enddo
 
         if (add_vector >0 ) then
            do j=k-add_vector+1, k
-                z_matrix(j,:,t) = force_ptr_mm(:,at_n)
-                z_len = norm(z_matrix(j,:,t))
-                if (z_len < TOL_REAL)   z_len=1.0_dp
-                z_matrix_normalised(j,:,t) = z_matrix(j,:,t) / z_len
-                write(*,*) "internal vectors (", "                )", z_matrix(j,1,t), z_matrix(j,2,t), z_matrix(j,3,t)
+                feature_matr(j,:,t) = force_ptr_mm(:,at_n)
+                z_len = norm(feature_matr(j,:,t))
+
+                if (z_len < TOL_REAL)  then
+                    z_len=1.0_dp
+                    call print("WARNNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs")
+                endif
+
+                feature_matr_normalised(j,:,t) = feature_matr(j,:,t) / z_len
+                write(*,*) "internal vectors (", "                )", feature_matr(j,1,t), feature_matr(j,2,t), feature_matr(j,3,t)
            enddo
         endif
 
         ! store the force info. for every configuration
         do j=1, k
-            force_proj_ivs(j,t) = dot_product(z_matrix_normalised(j,:,t), force) 
+            force_proj_ivs(j,t) = dot_product(feature_matr_normalised(j,:,t), force) 
             call print("Force projection on IV"//j//" is:  "//force_proj_ivs(j,t))
         enddo   
      enddo   ! loop over the atoms
@@ -149,23 +159,26 @@ if (fix_sigma) then
      close(unit=1)
 else 
   theta_array=theta
-  do t = 1, k 
+ do t = 1, k 
     do i = 1, n
         do j=1, n
-              distance_ivs(i,j) = distance_bent_space(z_matrix(t,:,i), z_matrix(t,:,j), z_matrix_normalised(:,:,i), z_matrix_normalised(:,:,j)) 
+              distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) 
         enddo
     enddo
     sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
-    if  (abs(sigma(t))<TOL_REAL)  sigma(t)=TOL_REAL
-  enddo
+    if  (abs(sigma(t))<TOL_REAL) then
+              sigma(t)=TOL_REAL
+              call print("WARNNING: SIGMA, encountered the decimal limit in the getting Sigma from Theta")
+    endif
+ enddo
 endif
- call print('sigma is:  '//sigma)
+ call print('sigma is:    '//sigma)
 
 ! to establish the Covariance Matrix
   allocate(covariance(n,n))
   do i = 1, n
       do j=1, n
-            covariance(i,j) = cov(z_matrix(:,:,i), z_matrix(:,:,j), z_matrix_normalised(:,:,i), z_matrix_normalised(:,:,j), sigma, k) 
+            covariance(i,j) = cov(feature_matr(:,:,i), feature_matr(:,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j), sigma, k) 
       enddo
   enddo
 
@@ -194,12 +207,12 @@ endif
  deallocate(covariance)
  deallocate(distance_ivs)
 
- call print_title('starting the predicting process')
+ call print_title('starting the preding process')
 
- allocate(covariance_predict(n))
- allocate(z_matrix_predict(k,3))
- allocate(z_matrix_normalised_predict(k,3))
- allocate(force_proj_ivs_predict(k))
+ allocate(covariance_pred(n))
+ allocate(feature_matr_pred(k,3))
+ allocate(feature_matr_normalised_pred(k,3))
+ allocate(force_proj_ivs_pred(k))
  allocate(force_proj_tmp(k))
 
  call initialise(in, test_file, INPUT)
@@ -209,7 +222,7 @@ endif
    call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
    call set_cutoff(at_in, r_cut)
    call calc_connect(at_in)
-   if (spherical_cluster_predict) then
+   if (spherical_cluster_pred) then
         n_loop = 1
    else
         n_loop = at_in%N
@@ -218,51 +231,63 @@ endif
    do at_n=1, n_loop
 
        do j= 1, k-add_vector
-            z_matrix_predict(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
-            write(*,*) "internal vectors (",r_grid(j), m_grid(j),"):   ",z_matrix_predict(j,1), z_matrix_predict(j,2), z_matrix_predict(j,3)
-            z_len = norm(z_matrix_predict(j,:))
-            if (z_len < TOL_REAL)    z_len=1.0_dp
-            z_matrix_normalised_predict(j,:) = z_matrix_predict(j,:)/z_len
-       enddo
+            feature_matr_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
+            write(*,*) "internal vectors (",r_grid(j), m_grid(j),"):   ",feature_matr_pred(j,1), feature_matr_pred(j,2), feature_matr_pred(j,3)
+            z_len = norm(feature_matr_pred(j,:))
 
-       if (add_vector > 0) then
+            if (z_len < TOL_REAL)  then
+                   z_len=1.0_dp
+                   call print("WARNNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
+            endif  
+
+            feature_matr_normalised_pred(j,:) = feature_matr_pred(j,:)/z_len
+      enddo
+
+      if (add_vector > 0) then
            do j = k-add_vector+1, k
-              z_matrix_predict(j,:) = force_ptr_mm(:, at_n)
-              z_len = norm(z_matrix_predict(j,:))
-              if (z_len < TOL_REAL)   z_len=1.0_dp
-              z_matrix_normalised_predict(j,:) = z_matrix_predict(j,:)/z_len
-              write(*,*) "internal vectors (","                         ):",z_matrix_predict(j,1), z_matrix_predict(j,2), z_matrix_predict(j,3)
+              feature_matr_pred(j,:) = force_ptr_mm(:, at_n)
+              z_len = norm(feature_matr_pred(j,:))
+
+              if (z_len < TOL_REAL) then
+                   z_len=1.0_dp
+                   call print("WARNNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
+              endif
+
+              feature_matr_normalised_pred(j,:) = feature_matr_pred(j,:)/z_len
+              write(*,*) "internal vectors (","                         ):",feature_matr_pred(j,1), feature_matr_pred(j,2), feature_matr_pred(j,3)
            enddo
-       endif
+      endif
 
 
-       do t= 1,n
-             covariance_predict(t) = cov(z_matrix_predict, z_matrix(:,:,t), z_matrix_normalised_predict(:,:), z_matrix_normalised(:,:,t), sigma, k)
- !           write(*,*) "the predicted covariance", covariance_predict(t) 
-       enddo
+      do t= 1,n
+         covariance_pred(t) = cov(feature_matr_pred, feature_matr(:,:,t), feature_matr_normalised_pred(:,:), feature_matr_normalised(:,:,t), sigma, k, distance=distance_confs)
+         call print("covariance wrt the last conf in teaching database:   "//covariance_pred(t))
+         call print("distance wrt the last conf in teaching database:     "//distance_confs)
+      enddo
    
-       force_proj_ivs_predict(:) = matmul(covariance_predict, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
+      force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
 
       do j=1, k
-            force_proj_tmp(j) = dot_product(z_matrix_normalised_predict(j,:), force_ptr(:,at_n))
+            force_proj_tmp(j) = dot_product(feature_matr_normalised_pred(j,:), force_ptr(:,at_n))
       enddo   
 
    
       do j=1, k 
-            call print("Force in IV space"//j//": "//force_proj_ivs_predict(j)//": "//force_proj_tmp(j)//": "//abs(force_proj_ivs_predict(j)-force_proj_tmp(j)))
-            !  predicted force: real force: absolute difference 
+            call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_tmp(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_tmp(j)))
+            !  preded force: real force: absolute difference 
       enddo
 
        ! using least-squares to restore the force in the External Cartesian Space  
-       call inverse(matmul(transpose(z_matrix_normalised_predict), z_matrix_normalised_predict), z_inv)  
-       force = z_inv .mult. transpose(z_matrix_normalised_predict) .mult. force_proj_ivs_predict
+       call inverse(matmul(transpose(feature_matr_normalised_pred), feature_matr_normalised_pred), z_inv)  
+       force = z_inv .mult. transpose(feature_matr_normalised_pred) .mult. force_proj_ivs_pred
        call print("force in external space:"//force)
        call print("the original force:"//force_ptr(:, at_n))
        call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force)))
 
        if (do_gp) then
-           call print("predicted error :"//( 1.0_dp + sigma_error - covariance_predict .dot. matmul(inv_covariance, covariance_predict)))
-       endif   
+           call print("preded error :"//( 1.0_dp + sigma_error - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))
+       endif  
+ 
     enddo  ! loop over postions
   enddo    ! loop over frames
 
@@ -270,17 +295,17 @@ endif
 
  deallocate(m_grid)
  deallocate(r_grid)
- deallocate(force_proj_ivs_predict)
- deallocate(z_matrix_normalised)
- deallocate(z_matrix_normalised_predict)
- deallocate(z_matrix)
- deallocate(z_matrix_predict)
+ deallocate(force_proj_ivs_pred)
+ deallocate(feature_matr_normalised)
+ deallocate(feature_matr_normalised_pred)
+ deallocate(feature_matr)
+ deallocate(feature_matr_pred)
  deallocate(sigma)
  deallocate(theta_array)
  deallocate(force_proj_ivs)
  deallocate(force_proj_tmp)
  deallocate(inv_covariance) 
- deallocate(covariance_predict)
+ deallocate(covariance_pred)
  call system_finalise()
 
  contains 
@@ -381,24 +406,27 @@ endif
  end subroutine grid_m_r0
 
 
- function cov(z_matrix1, z_matrix2, bent_space1, bent_space2, sigma, k)
+ function cov(feature_matr1, feature_matr2, bent_space1, bent_space2, sigma, k, distance)
 
-    real(dp), intent(in)                  ::        z_matrix1(:,:), z_matrix2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:)
+    real(dp), intent(in)                  ::        feature_matr1(:,:), feature_matr2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:)
+    real(dp), intent(out), optional        ::        distance
     real(dp)                              ::        cov, d_sq
     integer                               ::        i
     integer, intent(in)                   ::        k
  
     d_sq = 0.0_dp    
     do i=1, k
-          d_sq = d_sq + (distance_bent_space(z_matrix1(i,:), z_matrix2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /2.0_dp
+          d_sq = d_sq + (distance_bent_space(feature_matr1(i,:), feature_matr2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /2.0_dp
     enddo
+
+    if (present(distance))  distance=sqrt(d_sq)
     cov = exp(-1.0_dp * d_sq)
 
  endfunction cov
 
 
- function inverse_svd_threshold(in_matrix, n, thresh)
-   real(dp), intent(in)                  ::         in_matrix(:,:), thresh
+ function inverse_svd_threshold(in_matr, n, thresh)
+   real(dp), intent(in)                  ::         in_matr(:,:), thresh
    integer,  intent(in)                  ::         n
    real(dp)                              ::         w(n), sigmainv(n,n), u(n,n), vt(n,n), inverse_svd_threshold(n,n)
    real(dp), allocatable                 ::         work(:)
@@ -408,19 +436,19 @@ endif
    call print('entering inverse_svd_threshold')
 
    if (n <= 3) then
-      call print('in_matrix')
-      call print(in_matrix)
+      call print('in_matr')
+      call print(in_matr)
    end if
 
    lwork = -1
    allocate(work(1))
-   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n,n,in_matr,n,w,u,n,vt,n, work, lwork, info)
 
    lwork = work(1) 
    deallocate(work)
    allocate(work(lwork))
 
-   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n,n,in_matr,n,w,u,n,vt,n, work, lwork, info)
    write (*,*) "DGESVD finished with exit code", info
    deallocate(work)
    if (info /= 0) then
@@ -457,4 +485,4 @@ endif
  
  endfunction distance_bent_space
 
-end program force_gaussian_prediction
+end program force_gaussian_predion
