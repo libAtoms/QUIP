@@ -13,25 +13,32 @@ if (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
 
 ar = AtomsReader(sys.argv[1])
 a0 = None
-for a_in in ar:
+for a in ar:
    if (a0 is None):
       # first iteration
-      a0 = a_in.copy()
-      a = a_in.copy()
+      a0 = a.copy()
       if (not hasattr(a, 'mass')):
-	 a.add_property('mass', 0.0, n_cols=1)
-	 a.set_atoms(a.Z[:])
-      if (not hasattr(a, 'orig_pos')):
-	 a.add_property('orig_pos', a0.pos)
-	 a.params['orig_CoM'] = a.centre_of_mass(origin=0)
-	 orig_CoM = a.params['orig_CoM']
-      if (not hasattr(a, 'msd_displ')):
-	 a.add_property('msd_displ', 0.0, n_cols=3)
-      delta_CoM = fzeros( (3,a.n) )
+	 a0.add_property('mass', 0.0, n_cols=1)
+	 a0.set_atoms(a0.Z[:])
+      if (not hasattr(a0, 'orig_pos')):
+	 a0.add_property('orig_pos', a0.pos)
+      a0.params['orig_CoM'] = a0.centre_of_mass(origin=0)
+      orig_CoM = a0.params['orig_CoM']
+      delta_CoM = fzeros( (3,a0.n) )
+   else:
+      if (hasattr(a, 'prev_pos')):
+	 a.prev_pos[:,:] = prev_pos[:,:]
+      else:
+	 a.add_property('prev_pos', prev_pos)
 
-   # copy from read in struct to persistent struct
-   a.pos[:,:] = a_in.pos[:,:]
-   a.set_lattice (a_in.lattice, False)
+   if (hasattr(a, 'orig_pos')):
+      a.orig_pos[:,:] = a0.orig_pos[:,:]
+   else:
+      a.add_property('orig_pos', a0.orig_pos)
+   a.params['orig_CoM'] = orig_CoM
+
+   if (not hasattr(a, 'msd_displ')):
+      a0.add_property('msd_displ', 0.0, n_cols=3)
 
    # undo pbc jumps
    a.undo_pbc_jumps()
@@ -49,3 +56,6 @@ for a_in in ar:
    a.params['msd'] = msd
 
    a.write("stdout")
+
+   # save prev_pos
+   prev_pos = a.prev_pos.copy()
