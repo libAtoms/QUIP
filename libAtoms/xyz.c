@@ -45,6 +45,7 @@
 #include <ctype.h>
 #include <float.h>
 #include <libgen.h>
+#include <limits.h>
 
 #include "libatoms.h"
 
@@ -422,7 +423,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
 #define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error); PASS_ERROR;
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int *error)
+	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
@@ -439,6 +440,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   void *data, *tmp_data;
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
+  int *mask;
 
   INIT_ERROR;
 
@@ -516,6 +518,10 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   // Have we been asked to read only a specific range of atom indices?
   if (range[0] != 0 && range[1] != 0) {
+    if (n_index != -1) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: range and n_index argument cannot both be present");
+    }
+
     if (range[0] == -1 && range[1] == -1) {
       // special range  of [-1, -1] means don't read any atoms, only params and lattice
       *n_atom = 0;
@@ -538,6 +544,29 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     at_start = 0;
     at_end = *n_atom-1;
   }
+
+  if (n_index != -1) {
+    if (range[0] != 0 || range[1] != 0) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: range and n_index argument cannot both be present");
+    }
+    debug("got n_index=%d\n", n_index);
+    debug("allocting mask array with size %d\n", (*n_atom)*sizeof(int));
+    mask = malloc((*n_atom)*sizeof(int));
+    memset(mask, 0, (*n_atom)*sizeof(int)); // initialise mask to all zeros
+    at_start = INT_MAX;
+    at_end = INT_MIN;
+    for (i=0; i < n_index; i++) {
+      if (indices[i] < 1 || indices[i] > *n_atom) {
+	free(mask);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: indices(%d)=%d out of range 1 <= index <= %d", i+1, indices[i], *n_atom);
+      }
+      mask[indices[i]-1] = 1;
+      if (indices[i]-1 < at_start) at_start = indices[i]-1;
+      if (indices[i]-1 > at_end)   at_end   = indices[i]-1;
+    }
+    *n_atom = n_index;
+  }
+
   if (n_buffer < *n_atom)
       n_buffer = *n_atom;
 
@@ -896,6 +925,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     GET_LINE("premature file ending");
 
     if (atidx < at_start || atidx > at_end) continue;
+    if (n_index != -1 && !mask[atidx]) continue;
 
     k = 0;
     p = linebuffer;
@@ -969,6 +999,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     n++;
   }
+  if (n_index != -1) free(mask);
   if (!string && in != stdin) fclose(in);
 }
 

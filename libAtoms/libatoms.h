@@ -155,7 +155,7 @@ void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double ce
 /* xyz.c */
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int *error);
+	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error);
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
 		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
