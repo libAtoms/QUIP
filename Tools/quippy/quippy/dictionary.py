@@ -193,7 +193,9 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         for key in self:
             v1, v2 = self[key], other[key]
             if isinstance(v1, np.ndarray) and isinstance(v2, np.ndarray):
-                if v1.dtype.kind != 'f':
+                if v1.size == 0 and v2.size == 0:
+                    continue
+                elif v1.dtype.kind != 'f':
                     if (v1 != v2).any():
                         logging.debug('mismatch key=%s v1=%s v2=%s' % (key, v1, v2))
                         return False
