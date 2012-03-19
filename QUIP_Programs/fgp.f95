@@ -5,7 +5,7 @@ program force_gaussian_prediction
    type(Atoms)                                  :: at_in, at
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
-   real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs
+   real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_factor
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
    integer, dimension(:), allocatable           :: distance_index
@@ -22,6 +22,7 @@ program force_gaussian_prediction
 
    call initialise(params)
    call param_register(params, 'theta',  '2.5', theta, "the correlation length of the data")
+   call param_register(params, 'sigma_factor', '1.0', sigma_factor, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'r_min',  '0.5', r_min, "the minimum radius for the spherical atomic environment")
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
@@ -35,7 +36,7 @@ program force_gaussian_prediction
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
-   call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuratio filtering")
+   call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuration  filtering")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
@@ -159,10 +160,11 @@ program force_gaussian_prediction
 if (fix_sigma) then
      open(unit=1, file='sigma.dat')
      read(1, *) sigma
-     close(unit=1)
+     close(unit=1) 
+     sigma = sigma * sigma_factor
 else 
   theta_array=theta
- do t = 1, k 
+  do t = 1, k 
     do i = 1, n
         do j=1, n
               distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) 
@@ -175,7 +177,7 @@ else
     endif
  enddo
 endif
- call print('sigma is:    '//sigma)
+call print('sigma is:    '//sigma)
 
   ! to establish the Covariance Matrix
   allocate(covariance(n,n))
@@ -192,9 +194,9 @@ endif
   enddo
   endif
   
-  do i=1, n
-     write(*,*) "Covariance:", covariance(i,2), force_proj_ivs(3,i)-force_proj_ivs(3,2)
-  enddo
+!  do i=1, n
+!     write(*,*) "Covariance:", covariance(i,2), force_proj_ivs(3,i)-force_proj_ivs(3,2)
+!  enddo
 
  allocate(inv_covariance(n,n))
 
@@ -263,12 +265,11 @@ endif
 
       allocate(distance_confs(n))
       allocate(distance_index(n))
-
       do t= 1,n
          covariance_pred(t) = cov(feature_matr_pred, feature_matr(:,:,t), feature_matr_normalised_pred(:,:), feature_matr_normalised(:,:,t), sigma, k, distance = distance_confs(t))
       enddo
      
-  
+      distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
       call insertion_sort(distance_confs, idx=distance_index)   
       write(*,*) "DISTANCE:", distance_confs(1), distance_confs(n), distance_index(1), distance_index(n)
       deallocate(distance_confs)
@@ -281,8 +282,9 @@ endif
           enddo
           call finalise(at)
           close(100)
-       endif 
- 
+      endif 
+      deallocate(distance_index)
+
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
 
       do j=1, k
@@ -320,7 +322,6 @@ endif
  deallocate(feature_matr_pred)
  deallocate(sigma)
  deallocate(theta_array)
- deallocate(distance_index)
  deallocate(force_proj_ivs)
  deallocate(force_proj_tmp)
  deallocate(inv_covariance) 
