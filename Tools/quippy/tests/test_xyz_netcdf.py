@@ -317,8 +317,14 @@ class TestCInOutput(QuippyTestCase):
 
    def test_read_xyz_range_subset(self):
       self.at.write('test.xyz')
-      at = Atoms('test.xyz', range=[1,32])
-      sub = self.at.select(list=frange(1,32), orig_index=False)
+      at = Atoms('test.xyz', range=[2,32])
+      sub = self.at.select(list=frange(2,32), orig_index=False)
+      self.assertEqual(at, sub)
+
+   def test_read_xyz_range_empty(self):
+      self.at.write('test.xyz')
+      at = Atoms('test.xyz', range='empty')
+      sub = self.at.select(list=[], orig_index=False)
       self.assertEqual(at, sub)
 
    if have_netcdf:
@@ -329,8 +335,14 @@ class TestCInOutput(QuippyTestCase):
 
       def test_read_nc_range_subset(self):
          self.at.write('test.nc')
-         at = Atoms('test.nc', range=[1,32])
-         sub = self.at.select(list=frange(1,32), orig_index=False)
+         at = Atoms('test.nc', range=[2,32])
+         sub = self.at.select(list=frange(2,32), orig_index=False)
+         self.assertEqual(at, sub)
+
+      def test_read_nc_range_empty(self):
+         self.at.write('test.nc')
+         at = Atoms('test.nc', range='empty')
+         sub = self.at.select(list=[], orig_index=False)
          self.assertEqual(at, sub)
 
    def test_write_ext_string(self):
@@ -481,7 +493,31 @@ H 0. 0. 0.
       self.assertEqual(al, self.al)
       self.assertEqual(al, al2)
 
+   def test_read_xyz_indices_all(self):
+      self.at.write('test.xyz')
+      at = Atoms('test.xyz', indices=frange(self.at.n))
+      self.assertEqual(at, self.at)
       
+   def test_read_xyz_indices_subset(self):
+      self.at.write('test.xyz')
+      at = Atoms('test.xyz', indices=[1,5,10])
+      sub = self.at.select(list=[1,5,10], orig_index=False)
+      self.assertEqual(at, sub)
+
+   def test_read_xyz_indices_empty(self):
+      self.at.write('test.xyz')
+      at = Atoms('test.xyz', indices=[])
+      sub = self.at.select(list=[], orig_index=False)
+      self.assertEqual(at, sub)
+      
+   def test_read_xyz_bad_indices(self):
+      self.at.write('test.xyz')
+      self.assertRaises(RuntimeError, Atoms, 'test.xyz', indices=[self.at.n+1])
+
+   def test_read_nc_indices(self):
+      self.at.write('test.nc')
+      self.assertRaises(RuntimeError, Atoms, 'test.nc', indices=[])
+           
 
 class TestPythonNetCDF(QuippyTestCase):
    def setUp(self):

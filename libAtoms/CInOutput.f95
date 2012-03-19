@@ -88,7 +88,8 @@ module CInOutput_module
        integer(kind=C_INT), intent(out) :: error
      end subroutine query_netcdf
 
-     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, range, string, string_length, error) bind(c)
+     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, range, &
+          string, string_length, n_index, indices, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties
@@ -96,6 +97,8 @@ module CInOutput_module
        integer(kind=C_INT), intent(inout) :: n_atom
        integer(kind=C_INT), intent(in), value :: compute_index, frame, string, string_length
        integer(kind=C_INT), intent(in) :: range(2)
+       integer(kind=C_INT), intent(in), value :: n_index
+       integer(kind=C_INT), intent(in), dimension(n_index) :: indices
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_xyz
 
@@ -327,7 +330,7 @@ contains
   end subroutine cinoutput_finalise
 
 
-  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, indices, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(inout) :: at
@@ -338,12 +341,14 @@ contains
     integer, optional, intent(in) :: range(2)
     character(*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
+    integer, dimension(:), intent(in), optional :: indices
     integer, intent(out), optional :: error
 
     type(Dictionary) :: empty_dictionary
     type(Dictionary), target :: selected_properties, tmp_params
     integer :: i, j, k, n_properties
-    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2), cell_rotated
+    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2), cell_rotated, n_index
+    integer(C_INT), dimension(:), allocatable :: c_indices
     real(C_DOUBLE) :: r_rep
     real(dp) :: lattice(3,3), maxlen(3), sep(3), cell_lengths(3), cell_angles(3), orig_lattice(3,3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
@@ -405,6 +410,17 @@ contains
           n_atom = this%n_atom
        endif
 
+       n_index = -1
+       if (present(indices)) then
+          if (this%format == NETCDF_FORMAT) then
+             RAISE_ERROR('cinoutput_read: indices argument not yet supported for NetCDF files', error)
+          end if
+          
+          n_index = size(indices)
+          allocate(c_indices(n_index))
+          c_indices(:) = indices
+       end if
+
        call initialise(selected_properties)
        if (present(properties) .or. present(properties_array)) then
           if (present(properties_array)) then
@@ -460,13 +476,16 @@ contains
           if (.not. this%got_index) do_compute_index = 0
           if (present(str)) then
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), &
+                  n_index, c_indices, error)
           else if(present(estr)) then
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, &
+                  n_index, c_indices, error)
           else
              call read_xyz(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, &
+                  n_index, c_indices, error)
           end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
@@ -571,6 +590,10 @@ contains
        call comm_atoms_to_all(at%domain, at, error=error)
        PASS_ERROR(error)
     endif
+
+    if (present(indices)) then
+       deallocate(c_indices)
+    end if
 
   end subroutine cinoutput_read
 

@@ -64,14 +64,14 @@ def skip_time_duplicates(seq, initial_time=-1.0):
          yield at
          cur_time = at.params['Time']
 
-def open_sources(args, range):
+def open_sources(args, range, indices):
    if len(args) == 1:
       atomseq = AtomsReader(args[0], start=range.start,
-                            stop=range.stop, step=range.step)
+                            stop=range.stop, step=range.step, indices=indices)
       nframes = len(atomseq)
       sources = [atomseq]
    else:
-      sources = [AtomsReader(f) for f in args]
+      sources = [AtomsReader(f, indices=indices) for f in args]
 
       # Try to count total number of frames
       nframes = sum([len(s) for s in sources])
@@ -104,7 +104,7 @@ def add_text(at, i, filename):
    os.system('mogrify -gravity SouthWest -annotate 0x0+0+0 "%s" -font Helvetica -pointsize 32 %s' % (s, filename))
 
 
-def block_until_more_frames(filenames, current_length, poll_in§<terval=30.0):
+def block_until_more_frames(filenames, current_length, poll_interval=30.0):
    idx_files = []
    for filename in filenames:
       if not filename.endswith('.xyz'):
@@ -165,6 +165,7 @@ p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if onl
 p.add_option('-R', '--rcut', action='append', help="""Following three arguments should be SYM1 SYM2 INCREMENT, to increment cutoff distance for SYM1-SYM2 bonds.""", nargs=3)
 p.add_option('-w', '--watch', action='store_true', help="""When completed, keep watching for new frames to be written to input stream. Implies -u, -k and -N.""")
 p.add_option('-L', '--latest', action='store', help="""Copy latest snapshot image to this file""")
+p.add_option('-F', '--fix-indices', action='store_true', help="""Fix the set of atoms loaded from each frame to those visible in viewer window in first frame""")
 
 opt, args = p.parse_args()
 
@@ -197,63 +198,25 @@ if opt.nomovie:
    opt.player = None
 
 view = None
+indices = None
 
 # outer loop for opt.watch
 while True:
 
-   nframes, atomseq, sources = open_sources(args, orig_range)
+   nframes, atomseq, sources = open_sources(args, orig_range, indices)
    print 'Found %d frames' % nframes
    orig_nframes = nframes
    ndigit = 5
    basename, ext = os.path.splitext(opt.outfile)
    out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
 
-   # Look for existing JPEGs, so we can continue a previous run
-   if opt.update:
-      opt.keep_images = True
-
-      existing_frames = [ os.path.exists(out_fmt % i) for i in range(nframes) ]
-      if False in existing_frames:
-         restart_frame = existing_frames.index(False)
-      else:
-         p.error("no new frames after %d for -u/--update mode to process" % nframes)
-
-      print 'Restarting from frame %d' % restart_frame
-      if opt.range.step is None:
-         opt.range = slice(orig_range.start + restart_frame, orig_range.stop, orig_range.step)
-      else:
-         opt.range = slice(orig_range.start + restart_frame/orig_range.step, orig_range.stop, orig_range.step)
-
-      # Re-open the sources starting at restart_frame
-      nframes, atomseq, sources = open_sources(args, opt.range)
-      img_offset = restart_frame
-   else:
-      img_offset = 0
-
-   if opt.skip_bad_frames:
-      atomseq = skip_bad_frames(atomseq)
-
-   if opt.skip_bad_times:
-      atomseq = skip_bad_times(atomseq)
-
-   if opt.skip_time_duplicates:
-      atomseq = skip_time_duplicates(atomseq)
-
-   if opt.merge is not None:
-      merge_config = Atoms(opt.merge)
-
-      if opt.merge_properties is not None:
-         opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
-      else:
-         opt.merge_properties = merge_config.properties.keys()
-
-   a0 = Atoms(args[0], frame=opt.range.start)
-
-   if opt.merge is not None:
-      for k in opt.merge_properties:
-         a0.add_property(k, getattr(merge_config, k))
-
    if view is None:
+      a0 = Atoms(args[0], frame=opt.range.start)
+
+      if opt.merge is not None:
+         for k in opt.merge_properties:
+            a0.add_property(k, getattr(merge_config, k))
+
       view = atomeye.AtomEyeViewer(nowindow=opt.nowindow, verbose=False)
       view.show(a0, property=opt.property, arrows=opt.arrows)
       if opt.load_view is not None:
@@ -279,6 +242,50 @@ while True:
          view.save(opt.save_view)
 
       view.wait()
+
+      if opt.fix_indices:
+         indices = view.get_visible()
+         print 'Restricing atom indices to the %d visible atoms' % len(indices)
+         nframes, atomseq, sources = open_sources(args, orig_range, indices)
+
+   # Look for existing JPEGs, so we can continue a previous run
+   if opt.update:
+      opt.keep_images = True
+
+      existing_frames = [ os.path.exists(out_fmt % i) for i in range(nframes) ]
+      if False in existing_frames:
+         restart_frame = existing_frames.index(False)
+      else:
+         p.error("no new frames after %d for -u/--update mode to process" % nframes)
+
+      print 'Restarting from frame %d' % restart_frame
+      if opt.range.step is None:
+         opt.range = slice(orig_range.start + restart_frame, orig_range.stop, orig_range.step)
+      else:
+         opt.range = slice(orig_range.start + restart_frame/orig_range.step, orig_range.stop, orig_range.step)
+
+      # Re-open the sources starting at restart_frame
+      nframes, atomseq, sources = open_sources(args, opt.range, indices)
+      img_offset = restart_frame
+   else:
+      img_offset = 0
+
+   if opt.skip_bad_frames:
+      atomseq = skip_bad_frames(atomseq)
+
+   if opt.skip_bad_times:
+      atomseq = skip_bad_times(atomseq)
+
+   if opt.skip_time_duplicates:
+      atomseq = skip_time_duplicates(atomseq)
+
+   if opt.merge is not None:
+      merge_config = Atoms(opt.merge)
+
+      if opt.merge_properties is not None:
+         opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
+      else:
+         opt.merge_properties = merge_config.properties.keys()
 
    postprocess = None
 
