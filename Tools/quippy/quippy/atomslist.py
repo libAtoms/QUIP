@@ -39,7 +39,7 @@ class AtomsReaderMixin(object):
     def show(self, *args, **kwargs):
         try:
             import atomeye
-            atomeye.show(self, *args, **kwargs)
+            return atomeye.show(self, *args, **kwargs)
         except ImportError:
             raise RuntimeError('AtomEye not available')
 
