@@ -525,6 +525,10 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     start[1] = 0;
     start[2] = 0;
 
+    if (is_property) {
+      start[1] = at_start;
+    }
+
     count[0] = 1;
     // If it's a 2D array we need to transpose shape
     if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A || type == T_CHAR) {
