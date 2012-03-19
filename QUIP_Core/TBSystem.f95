@@ -1564,9 +1564,9 @@ subroutine TB_Spin_Orbit_Coupling_Finalise(this)
 
 end subroutine TB_Spin_Orbit_Coupling_Finalise
 
-subroutine TBSystem_scf_set_atomic_n_mom(this, atomic_n, atomic_mom)
+subroutine TBSystem_scf_set_atomic_n_mom(this, atomic_n, atomic_mom, atomic_pot)
   type(TBSystem), intent(inout) :: this
-  real(dp), intent(in), pointer :: atomic_n(:), atomic_mom(:,:)
+  real(dp), intent(in), pointer :: atomic_n(:), atomic_mom(:,:), atomic_pot(:)
 
   integer :: i_term, i_at, i_man
 
@@ -1594,7 +1594,14 @@ subroutine TBSystem_scf_set_atomic_n_mom(this, atomic_n, atomic_mom)
 	this%scf%terms(i_term)%manifold_mom = 0.0_dp
       endif
     end if ! manifold_mom is allocated
-  end do
+    if (allocated(this%scf%terms(i_term)%atomic_local_pot)) then
+      if (associated(atomic_pot)) then
+	this%scf%terms(i_term)%atomic_local_pot = atomic_pot
+      else
+	this%scf%terms(i_term)%atomic_local_pot = 0.0_dp
+      endif
+    end if
+  end do ! atomic_local_pot is allocated
 end subroutine TBSystem_scf_set_atomic_n_mom
 
 subroutine TBSystem_scf_set_global_N(this, global_at_weight, global_N)
@@ -1617,12 +1624,12 @@ subroutine TBSystem_scf_set_global_N(this, global_at_weight, global_N)
   end do
 end subroutine TBSystem_scf_set_global_N
 
-subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom)
+subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom, atomic_pot)
   type(TBSystem), intent(inout) :: this
-  real(dp), intent(out), pointer :: atomic_n(:), atomic_mom(:,:)
+  real(dp), intent(out), pointer :: atomic_n(:), atomic_mom(:,:), atomic_pot(:)
 
   integer i_term, i_at, i_man
-  logical got_atomic_n, got_manifold_mom
+  logical got_atomic_n, got_manifold_mom, got_atomic_pot
 
   if (associated(atomic_n)) then
     atomic_n = 0.0_dp
@@ -1658,6 +1665,23 @@ subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom)
     if (.not. got_manifold_mom) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_mom but didn't find " // &
 		"manifold_mom allocated in any terms", PRINT_ALWAYS)
+  end if
+
+  if (associated(atomic_pot)) then
+    atomic_pot = 0.0_dp
+    got_atomic_pot = .false.
+    do i_term=1, size(this%scf%terms)
+      if (allocated(this%scf%terms(i_term)%atomic_local_pot)) then
+	if (got_atomic_pot) &
+	  call system_abort("TBSystem_scf_get_atomic_n_mom found atomic_pot allocated in more than 1 term")
+	atomic_pot = this%scf%terms(i_term)%atomic_local_pot
+	got_atomic_pot = .true.
+      end if
+    end do
+
+    if (.not. got_atomic_pot) &
+      call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_pot but didn't find " // &
+		 "atomic_pot allocated in any terms", PRINT_ALWAYS)
   end if
 
 end subroutine TBSystem_scf_get_atomic_n_mom

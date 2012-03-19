@@ -362,7 +362,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
   real(dp), pointer :: scf_orbital_n(:), scf_orbital_m(:,:)
   real(dp) :: global_N
-  real(dp), pointer :: local_N(:), local_mom(:,:)
+  real(dp), pointer :: local_N(:), local_mom(:,:), local_pot(:)
   logical do_evecs
 
   integer diag_error
@@ -409,7 +409,13 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
       else
 	call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", PRINT_ALWAYS)
       endif
-      call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom)
+      if (assign_pointer(this%at, 'local_pot', local_pot)) then
+	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_pot", PRINT_VERBOSE)
+      else
+	call print("TB_solve_diag got use_prev_charge, but no local_pot value is defined", PRINT_ALWAYS)
+      endif
+
+      call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
 
       if (get_value(this%at%params, 'global_N', global_N)) then
 	call print("TB_solve_diag calling set_global_N(this%tbsys%scf from this%at:global_N", PRINT_VERBOSE)
@@ -422,7 +428,8 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
     else
       nullify(local_N)
       nullify(local_mom)
-      call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom)
+      nullify(local_pot)
+      call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
       call scf_set_global_N(this%tbsys, w_n)
     endif
   endif
@@ -489,8 +496,10 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (current_verbosity() >= PRINT_VERBOSE) then
       if (this%tbsys%scf%active) then
-	if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom)) &
-	   call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom)
+	if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom) .or. &
+	    assign_pointer(this%at, 'local_pot', local_pot)) then
+	   call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
+	endif
 	if (get_value(this%at%params, 'global_N', global_N)) then
 	  call scf_get_global_N(this%tbsys, global_N)
 	  call set_value(this%at%params, 'global_N', global_N)
@@ -502,8 +511,10 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   end do
 
   if (this%tbsys%scf%active) then
-    if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom)) &
-       call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom)
+    if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom) .or. &
+        assign_pointer(this%at, 'local_pot', local_pot)) then
+       call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
+    endif
     if (get_value(this%at%params, 'global_N', global_N)) then
       call scf_get_global_N(this%tbsys, global_N)
       call set_value(this%at%params, 'global_N', global_N)
@@ -688,6 +699,10 @@ subroutine copy_atoms_fields(from_at, to_at)
   endif
   if (assign_pointer(from_at, 'local_E', from_R1) .and. &
       assign_pointer(to_at, 'local_E', to_R1)) then
+    to_R1 = from_R1
+  endif
+  if (assign_pointer(from_at, 'local_pot', from_R1) .and. &
+      assign_pointer(to_at, 'local_pot', to_R1)) then
     to_R1 = from_R1
   endif
 
