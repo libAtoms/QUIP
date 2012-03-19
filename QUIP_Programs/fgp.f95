@@ -2,7 +2,7 @@ program force_gaussian_prediction
    use libatoms_module
    implicit none
 
-   type(Atoms)                                  :: at_in
+   type(Atoms)                                  :: at_in, at
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
    real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs
@@ -15,7 +15,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matr_normalised_pred, feature_matr_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma 
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -26,7 +26,7 @@ program force_gaussian_prediction
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
-   call param_register(params, 'n_relavant_confs', n_relavant_confs, "the number of relavant confs you'd like to teach")  
+   call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you'd like to teach")  
    call param_register(params, 'cutoff_len_ivs', '0.2', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
@@ -35,6 +35,7 @@ program force_gaussian_prediction
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
+   call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuratio filtering")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
@@ -262,14 +263,25 @@ endif
 
       allocate(distance_confs(n))
       allocate(distance_index(n))
+
       do t= 1,n
          covariance_pred(t) = cov(feature_matr_pred, feature_matr(:,:,t), feature_matr_normalised_pred(:,:), feature_matr_normalised(:,:,t), sigma, k, distance = distance_confs(t))
       enddo
-   
+     
+  
       call insertion_sort(distance_confs, idx=distance_index)   
       write(*,*) "DISTANCE:", distance_confs(1), distance_confs(n), distance_index(1), distance_index(n)
       deallocate(distance_confs)
 
+      if (do_conf_filter) then
+          open(unit=100, file='data_embed.xyz', status='replace')
+          do t=1, n_relavant_confs
+              call read(at, teaching_file, frame=distance_index(t)-1)
+              call write(at, 'data_embed.xyz', append=.true.)
+          enddo
+          call finalise(at)
+          close(100)
+       endif 
  
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
 
