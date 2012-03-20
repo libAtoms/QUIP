@@ -58,12 +58,10 @@ class CInOutput(_cinoutput.CInOutput):
         if range == 0 or range == 'empty':
             range = [-1,-1]
 
-        error=farray(0,dtype=np.int32)
         _cinoutput.CInOutput.read(self, at, properties=properties,
                                   properties_array=properties_array, frame=frame,
                                   zero=zero, range=range, str=str, estr=estr,
-                                  indices=indices, error=error)
-        print 'error=', error
+                                  indices=indices)
         return at
 
     def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
