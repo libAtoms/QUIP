@@ -455,6 +455,7 @@ exts = [arraydata_ext, quippy_ext]
 
 setup(name='quippy',
       packages = ['quippy'],
+      py_modules=['qlab'],
       ext_modules = exts,
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext, 'interact': interact},

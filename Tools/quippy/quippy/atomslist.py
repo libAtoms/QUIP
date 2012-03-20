@@ -33,7 +33,7 @@ class AtomsReaderMixin(object):
         except:
             len_self = None
         return '<%s source=%r format=%r start=%r stop=%r step=%r random_access=%r len=%r>' % \
-               (self.__class__.__name__, self.source, self.format, self.start, self.stop, self.step,
+               (self.__class__.__name__, self.source, self.format, self._start, self._stop, self._step,
                 self.random_access, len_self)
 
     def show(self, *args, **kwargs):
@@ -95,9 +95,9 @@ class AtomsReader(AtomsReaderMixin):
 
         self.source = source
         self.format = format
-        self.start = start
-        self.stop = stop
-        self.step = step
+        self._start = start
+        self._stop = stop
+        self._step = step
 
         self.cache_mem_limit = cache_mem_limit
         logging.debug('AtomsReader memory limit %r' % self.cache_mem_limit)
@@ -153,10 +153,10 @@ class AtomsReader(AtomsReaderMixin):
 
     def __len__(self):
         if self._source_len is not None:
-            return len(range(*slice(self.start, self.stop, self.step).indices(self._source_len)))
+            return len(range(*slice(self._start, self._stop, self._step).indices(self._source_len)))
         elif hasattr(self.reader, '__len__') and hasattr(self.reader, '__getitem__'):
             try:
-                return len(range(*slice(self.start, self.stop, self.step).indices(len(self.reader))))
+                return len(range(*slice(self._start, self._stop, self._step).indices(len(self.reader))))
             except:
                 raise AttributeError('This AtomsReader does not support random access')
         else:
@@ -207,8 +207,8 @@ class AtomsReader(AtomsReaderMixin):
 
         if isinstance(frame, int) or isinstance(frame, np.integer):
             source_len = self._source_len or len(self.reader)
-            if self.start is not None or self.stop is not None or self.step is not None:
-                frame = range(*slice(self.start, self.stop, self.step).indices(source_len))[frame]
+            if self._start is not None or self._stop is not None or self._step is not None:
+                frame = range(*slice(self._start, self._stop, self._step).indices(source_len))[frame]
             if frame < 0: frame = frame + len(self)
 
             if not self._cache_fetch(frame):
@@ -240,9 +240,9 @@ class AtomsReader(AtomsReaderMixin):
             frames = itertools.count()
             atoms = iter(self.reader)
 
-            if self.start is not None or self.stop is not None or self.step is not None:
-                frames = itertools.islice(frames, self.start or 0, self.stop or None, self.step or 1)
-                atoms  = itertools.islice(atoms, self.start or 0, self.stop or None, self.step or 1)
+            if self._start is not None or self._stop is not None or self._step is not None:
+                frames = itertools.islice(frames, self._start or 0, self._stop or None, self._step or 1)
+                atoms  = itertools.islice(atoms, self._start or 0, self._stop or None, self._step or 1)
 
             n_frames = 0
             last_frame = 0
@@ -268,9 +268,9 @@ class AtomsList(AtomsReaderMixin, list):
     def __init__(self, source=[], format=None, start=None, stop=None, step=None, **kwargs):
         self.source = source
         self.format = format
-        self.start  = start
-        self.stop   = stop
-        self.step   = step
+        self._start  = start
+        self._stop   = stop
+        self._step   = step
         tmp_ar = AtomsReader(source, format, start, stop, step, **kwargs)
         list.__init__(self, list(iter(tmp_ar)))
         tmp_ar.close()
