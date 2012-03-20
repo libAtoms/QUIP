@@ -25,13 +25,6 @@ from quippytest import *
 import os
 import glob
 
-have_netcdf = True
-try:
-   diamond(5.44, 14).write('test.nc')
-   os.remove('test.nc')
-except RuntimeError:
-   have_netcdf = False
-
 class TestCInOutput(QuippyTestCase):
 
    def setUp(self):
@@ -157,7 +150,7 @@ class TestCInOutput(QuippyTestCase):
       at = Atoms('test.xyz')
       self.assertEqual(type(at.bad_neg), type(''))
 
-   if have_netcdf:
+   if 'netcdf' in available_modules:
       def testsinglenc(self):
          self.at.write('test.nc')
          at = Atoms('test.nc')
@@ -175,7 +168,7 @@ class TestCInOutput(QuippyTestCase):
       lines = open('test.xyz').readlines()
       self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
 
-   if have_netcdf:
+   if 'netcdf' in available_modules:
       def testmultinc(self):
          self.al.write('test.nc')
          al = AtomsList('test.nc')
@@ -269,7 +262,7 @@ class TestCInOutput(QuippyTestCase):
       aq2 = Atoms('quartz.xyz')
       self.assertEqual(aq1, aq2)
 
-   if have_netcdf:
+   if 'netcdf' in available_modules:
       def test_non_orthorhombic_nc(self):
          from quippy.sio2 import quartz_params
          aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
@@ -327,7 +320,7 @@ class TestCInOutput(QuippyTestCase):
       sub = self.at.select(list=[], orig_index=False)
       self.assertEqual(at, sub)
 
-   if have_netcdf:
+   if 'netcdf' in available_modules:
       def test_read_nc_range_all(self):
          self.at.write('test.nc')
          at = Atoms('test.nc', range=[1,64])
@@ -514,9 +507,11 @@ H 0. 0. 0.
       self.at.write('test.xyz')
       self.assertRaises(RuntimeError, Atoms, 'test.xyz', indices=[self.at.n+1])
 
-   def test_read_nc_indices(self):
-      self.at.write('test.nc')
-      self.assertRaises(RuntimeError, Atoms, 'test.nc', indices=[])
+   if 'netcdf' in available_modules:
+
+      def test_read_nc_indices(self):
+         self.at.write('test.nc')
+         self.assertRaises(RuntimeError, Atoms, 'test.nc', indices=[])
            
 
 class TestPythonNetCDF(QuippyTestCase):
