@@ -23,6 +23,7 @@ from quippy import netcdf_file
 from quippy.system import INPUT, OUTPUT, INOUT
 from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from quippy.farray import farray, padded_str_array
+import numpy as np
 
 __all__ = _cinoutput.__all__
 
@@ -46,6 +47,7 @@ class CInOutput(_cinoutput.CInOutput):
 
     def __getitem__(self, index):
         return self.read(frame=index, zero=self.zero, range=self.range, indices=self.indices)
+        return res
 
     def __setitem__(self, index, value):
         self.write(value, frame=index)
@@ -55,10 +57,13 @@ class CInOutput(_cinoutput.CInOutput):
         at = Atoms()
         if range == 0 or range == 'empty':
             range = [-1,-1]
+
+        error=farray(0,dtype=np.int32)
         _cinoutput.CInOutput.read(self, at, properties=properties,
                                   properties_array=properties_array, frame=frame,
                                   zero=zero, range=range, str=str, estr=estr,
-                                  indices=indices)
+                                  indices=indices, error=error)
+        print 'error=', error
         return at
 
     def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,

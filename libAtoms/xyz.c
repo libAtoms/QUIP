@@ -442,6 +442,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   void *property_data[MAX_ENTRY_COUNT];
   int *mask;
 
+  debug("entered read_xyz()\n");
+
   INIT_ERROR;
 
   if (strcmp(filename, "stdout") == 0) {
