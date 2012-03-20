@@ -402,6 +402,8 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     if (range[0] == -1 && range[1] == -1) {
       // special range  of [-1, -1] means don't read any atoms, only params and lattice
       *n_atom = 0;
+      at_start = 0;
+      at_end = 0;
     } else {
       if (range[0] < 1) {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
@@ -421,6 +423,9 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     at_start = 0;
     at_end = *n_atom-1;
   }
+
+  debug("read_netcdf: range=[%d %d]\n", range[0], range[1]);
+  debug("read_netcdf: at_start=%d at_end=%d n_atom=%d\n", at_start, at_end, *n_atom);
 
   n_selected = 0;
   if (selected_properties != NULL) dictionary_get_n(selected_properties, &n_selected);
