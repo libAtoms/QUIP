@@ -47,7 +47,6 @@ class CInOutput(_cinoutput.CInOutput):
 
     def __getitem__(self, index):
         return self.read(frame=index, zero=self.zero, range=self.range, indices=self.indices)
-        return res
 
     def __setitem__(self, index, value):
         self.write(value, frame=index)
