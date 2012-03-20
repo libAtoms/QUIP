@@ -1,5 +1,7 @@
 from quippy import *
 from atomeye import *
+import numpy as np
+from quippy.cinoutput import CInOutputReader
 
 class AtomsViewer(AtomsReader, AtomEyeViewer):
 
@@ -11,7 +13,22 @@ class AtomsViewer(AtomsReader, AtomEyeViewer):
         AtomEyeViewer.show(self, self, **showargs)
 
     def clip(self):
-        self.reader.indices = self.get_visible()
+        indices = self.get_visible()
+        if isinstance(self.reader, CInOutputReader):
+            self.reader.source.indices = indices
+        mask = fzeros(len(self.current_atoms), dtype=np.bool)
+        mask[:] = True
+        mask[indices] = False
+        self._unclipped_atoms = current_atoms
+        self.current_atoms.remove_atoms(mask=mask)
+        self.show()
+
+    def unclip(self):
+        if hasattr(self, '_unclipped_atoms');
+            self.current_atoms = self._unclipped_atoms
+        if isinstance(self.reader, CInOutputReader):
+            self.reader.source.indices = None
+        self.show()
 
 
 def at(source):
