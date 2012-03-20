@@ -19,12 +19,12 @@ class AtomsViewer(AtomsReader, AtomEyeViewer):
         mask = fzeros(len(self.current_atoms), dtype=np.bool)
         mask[:] = True
         mask[indices] = False
-        self._unclipped_atoms = current_atoms
+        self._unclipped_atoms = self.current_atoms
         self.current_atoms.remove_atoms(mask=mask)
         self.show()
 
     def unclip(self):
-        if hasattr(self, '_unclipped_atoms');
+        if hasattr(self, '_unclipped_atoms'):
             self.current_atoms = self._unclipped_atoms
         if isinstance(self.reader, CInOutputReader):
             self.reader.source.indices = None

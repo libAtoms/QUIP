@@ -552,7 +552,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: range and n_index argument cannot both be present");
     }
     debug("got n_index=%d\n", n_index);
-    debug("allocting mask array with size %d\n", (*n_atom)*sizeof(int));
+    debug("allocating mask array with size %d\n", (*n_atom)*sizeof(int));
     mask = malloc((*n_atom)*sizeof(int));
     memset(mask, 0, (*n_atom)*sizeof(int)); // initialise mask to all zeros
     at_start = INT_MAX;
