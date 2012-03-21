@@ -559,6 +559,7 @@ contains
     endif
     call system_timer('do_cp2k_calc/make_psf')
 
+    call system_timer('do_cp2k_calc/centre_cell')
     if (auto_centre) then
       if (qm_list%N > 0) then
 	centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
@@ -581,8 +582,10 @@ contains
       at%pos(2,:) = at%pos(2,:) + cp2k_box_centre_pos(2)
       at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
     endif
+    call system_timer('do_cp2k_calc/centre_cell')
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call system_timer('do_cp2k_calc/write_cp2k_input')
     if (.not. persistent_already_started) then
        call initialise(cp2k_input_io, trim(run_dir)//'/cp2k_input.inp.header',OUTPUT,append=.true.)
 
@@ -886,8 +889,10 @@ contains
 
        call finalise(cp2k_input_io)
     endif
+    call system_timer('do_cp2k_calc/write_cp2k_input')
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    call system_timer('do_cp2k_calc/write_xyz')
     if (at_periodic .and. size(link_list_a) > 0 .and. qmmm_link_fix_pbc) then
        ! correct position of OUTER atoms so no links cross a periodic boundary since
        ! if they did, CP2K would place terminating hydrogens incorrectly
@@ -922,9 +927,11 @@ contains
     else
        call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
     endif
+    call system_timer('do_cp2k_calc/write_xyz')
 
     ! actually run cp2k
     if (persistent) then
+       call system_timer('do_cp2k_calc/run_cp2k')
        if (persistent_start_cp2k) then
 	  call start_cp2k_program_background(trim(cp2k_program), trim(run_dir), error=error)
 	  PASS_ERROR(error)
@@ -948,17 +955,25 @@ contains
 	     RAISE_ERROR("Failed to get forces after waiting at least "//persistent_max_wait_time//" s", error)
 	  endif
        end do ! waiting for frc file
+       call system_timer('do_cp2k_calc/run_cp2k')
+       call system_timer('do_cp2k_calc/read_output')
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
             do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
        PASS_ERROR(error)
+       call system_timer('do_cp2k_calc/read_output')
     else
+       call system_timer('do_cp2k_calc/run_cp2k')
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)
+       call system_timer('do_cp2k_calc/run_cp2k')
+       call system_timer('do_cp2k_calc/read_output')
        call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, &
             trim(calc_qm_charges), do_calc_virial, save_reordering_index=.false., error=error)
        PASS_ERROR(error)
+       call system_timer('do_cp2k_calc/read_output')
     endif
 
+    call system_timer('do_cp2k_calc/process_output')
     at%pos(1,:) = at%pos(1,:) + centre_pos(1) - cp2k_box_centre_pos(1)
     at%pos(2,:) = at%pos(2,:) + centre_pos(2) - cp2k_box_centre_pos(2)
     at%pos(3,:) = at%pos(3,:) + centre_pos(3) - cp2k_box_centre_pos(3)
@@ -1003,9 +1018,10 @@ contains
       endif
       call system_command(trim(log_sys_command_str))
     endif
+    call system_timer('do_cp2k_calc/process_output')
 
     ! clean up
-
+    call system_timer('do_cp2k_calc/cleanup')
     if (tmp_run_dir_i>0) then
       if (clean_up_files) then
          !only delete files that need recreating, keep basis, potentials, psf
@@ -1035,9 +1051,8 @@ contains
 	 endif
        endif
     endif
-
     if (allocated(rev_sort_index)) deallocate(rev_sort_index)
-
+    call system_timer('do_cp2k_calc/cleanup')
     call system_timer('do_cp2k_calc')
 
   end subroutine do_cp2k_calc
