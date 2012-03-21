@@ -263,10 +263,15 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
         else:
             cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
 
-    verbosity_push(PRINT_SILENT)
-    cp2k_energy, cp2k_force = read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj,
+    quip_cp2k_at = Atoms(os.path.join(run_dir, 'quip_cp2k.xyz'))
+
+    rev_sort_index_file = os.path.join(run_dir, '../quip_rev_sort_index')
+    fields = [int(x) for x in open(rev_sort_index_file).read().split() ]
+    rev_sort_index = farray(fields, dtype=np.int32)
+    #verbosity_push(PRINT_SILENT)
+    cp2k_energy, cp2k_force = read_output(quip_cp2k_at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj,
                                           calc_qm_charges, calc_virial, True, 3, at.n, out_i)
-    verbosity_pop()
+    #verbosity_pop()
 
     qm_list = None
     if os.path.exists(os.path.join(run_dir, 'cp2k_input.qmmm_qm_kind')):
@@ -282,16 +287,6 @@ def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
                 qm_list = reordering_index[qm_list]
             at.qm[qm_list] = True
         elif run_type == 'QS':
-
-            # check for a reverse sort index, and apply to qm_list if found
-            rev_sort_index_file = os.path.join(run_dir, 'quip_rev_sort_index')
-            if os.path.exists(rev_sort_index_file):
-                rev_sort_index = farray(np.loadtxt(rev_sort_index_file))
-                rev_sort_index = rev_sort_index.reshape(rev_sort_index.size).astype(int)
-                sort_index = rev_sort_index.argsort()
-            else:
-                sort_index = farray(np.arange(1, at.n+1))
-            
             at.add_property('qm_orig_index', 0, overwrite=True)
             for i, qm_at in fenumerate(qm_list):
                 at.qm_orig_index[i] = sort_index[qm_at]
