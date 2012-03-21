@@ -43,6 +43,8 @@ module cp2k_driver_module
 
 use libatoms_module
 
+implicit none
+
 private
 
 public :: do_cp2k_calc
