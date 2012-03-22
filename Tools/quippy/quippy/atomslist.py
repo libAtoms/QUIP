@@ -111,6 +111,7 @@ class AtomsReader(AtomsReaderMixin):
         self.reader = source
 
         if isinstance(self.reader, basestring):
+            self.filename = self.reader
             self.opened = True
             if self.reader in AtomsReaders:
                 if format is None:
@@ -220,6 +221,9 @@ class AtomsReader(AtomsReaderMixin):
             return self.__class__([self[f] for f in range(*frame.indices(len(self))) ])
         else:
             raise TypeError('frame should be either an integer or a slice')
+
+    def __setitem__(self, frame, at):
+        self._cache_store(frame, at)
 
     def iterframes(self, reverse=False):
         if self.random_access:
