@@ -392,7 +392,6 @@ contains
           if (do_frame < 0 .or. do_frame >= this%n_frame) then
              BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error, this%mpi)
           end if
-          call print('cinoutoput_read: frame '//do_frame, PRINT_VERBOSE)
        end if
 
        do_zero = 0
@@ -410,7 +409,6 @@ contains
                /)
           n_atom = this%n_atom
        endif
-       call print('cinoutoput_read: range '//do_range, PRINT_VERBOSE)
 
        n_index = -1
        if (present(indices)) then
@@ -422,7 +420,6 @@ contains
           allocate(c_indices(n_index))
           c_indices(:) = indices
        end if
-       call print('cinoutoput_read: n_index '//n_index, PRINT_VERBOSE)
 
        call initialise(selected_properties)
        if (present(properties) .or. present(properties_array)) then
@@ -469,36 +466,27 @@ contains
        end if
        filename = trim(filename)//C_NULL_CHAR
 
-       call print('cinoutput_read: filename '//filename, PRINT_VERBOSE)
-
        if (this%format == NETCDF_FORMAT) then
           i_rep = 0
           r_rep = 0.0_dp
 
-          call print('cinoutoput_read: calling read_netcdf', PRINT_VERBOSE)
           call read_netcdf(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                orig_lattice, cell_lengths, cell_angles, cell_rotated, n_atom, do_frame, do_zero, do_range, i_rep, r_rep, error)
-          call print('cinoutoput_read:  read_netcdf done', PRINT_VERBOSE)
        else
           do_compute_index = 1
           if (.not. this%got_index) do_compute_index = 0
           if (present(str)) then
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), &
+                  orig_lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), &
                   n_index, c_indices, error)
           else if(present(estr)) then
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, &
+                  orig_lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, &
                   n_index, c_indices, error)
           else
-             call print('cinoutput_read: calling read_xyz ', PRINT_VERBOSE)
-             call print('cinoutput_read: present(error)='//present(error), PRINT_VERBOSE)
-             call print('cinoutput_read: params_ptr_i='//params_ptr_i, PRINT_VERBOSE)
-             call print('cinoutput_read: properties_ptr_i='//properties_ptr_i, PRINT_VERBOSE)
              call read_xyz(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, &
+                  orig_lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, &
                   n_index, c_indices, error)
-             call print('cinoutoput_read: read_xyz done', PRINT_VERBOSE)
           end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
@@ -534,6 +522,7 @@ contains
        call atoms_repoint(at)
 
        if (this%format == XYZ_FORMAT) then
+          at%lattice = orig_lattice
           ! read_xyz() sets all lattice components to 0.0 if no lattice was present
 
           if (all(abs(at%lattice) < 1e-5_dp)) then
