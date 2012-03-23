@@ -27,7 +27,7 @@ from quippy._atoms import *
 import os, weakref, warnings, copy, sys
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
-from quippy.util import infer_format
+from quippy.util import infer_format, parse_slice
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import available_modules, FortranDerivedTypes
 from math import pi
@@ -473,6 +473,16 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         Returns a new Atoms instance; to read into an existing Atoms
         object, use the read_from() method."""
 
+        if isinstance(source, basestring) and '@' in source:
+            source, frame = source.split('@')
+            frame = parse_slice(frame)
+            if 'frame' in kwargs:
+                raise ValueError("Conflicting frame references given: kwarg frame=%d and @-reference %d" %
+                                 kwargs['frame'], frame)
+            if not isinstance(frame, int):
+                raise ValueError("Frame @-reference %r does not resolve to single frame" % frame)
+            kwargs['frame'] = frame
+
         filename, source, format = infer_format(source, format, AtomsReaders)
 
         opened = False
@@ -530,13 +540,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if opened and hasattr(dest, 'close'):
             dest.close()
         return res
-
-    def show(self, *args, **kwargs):
-        try:
-            import atomeye
-            return atomeye.show(self, *args, **kwargs)
-        except ImportError:
-            raise RuntimeError('AtomEye not available')
 
     def select(self, mask=None, list=None, orig_index=None):
         """Select a subset of the atoms in an Atoms object

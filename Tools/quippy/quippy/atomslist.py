@@ -19,7 +19,7 @@
 import sys, os, fnmatch, re, itertools, glob, operator, warnings, math, logging
 from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from quippy.system import mem_info
-from quippy.util import infer_format
+from quippy.util import infer_format, parse_slice
 from quippy.mockndarray import mockNDarray
 from quippy.farray import *
 import numpy as np
@@ -35,13 +35,6 @@ class AtomsReaderMixin(object):
         return '<%s source=%r format=%r start=%r stop=%r step=%r random_access=%r len=%r>' % \
                (self.__class__.__name__, self.source, self.format, self._start, self._stop, self._step,
                 self.random_access, len_self)
-
-    def show(self, *args, **kwargs):
-        try:
-            import atomeye
-            return atomeye.show(self, *args, **kwargs)
-        except ImportError:
-            raise RuntimeError('AtomEye not available')
 
     def write(self, dest=None, format=None, properties=None, prefix=None,
               progress=False, progress_width=80, update_interval=None,
@@ -111,6 +104,20 @@ class AtomsReader(AtomsReaderMixin):
         self.reader = source
 
         if isinstance(self.reader, basestring):
+            if '@' in self.reader:
+                self.reader, frames = self.reader.split('@')
+                frames = parse_slice(frames)
+                if start is not None or stop is not None or step is not None:
+                    raise ValueError('Conflicting frame references start=%r stop=%r step=%r and @-sytnax %r' %
+                                     (start, stop, step, frames))
+                if isinstance(frames, int):
+                    if frames >= 0:
+                        frames = slice(frames, frames+1,+1)
+                    else:
+                        frames = slice(frames, frames-1,-1)
+
+                self._start, self._stop, self._step = frames.start, frames.stop, frames.step
+                
             self.filename = self.reader
             self.opened = True
             if self.reader in AtomsReaders:
@@ -126,6 +133,7 @@ class AtomsReader(AtomsReaderMixin):
                 else:
                     self.reader = glob_list[0]
                     filename, self.reader, new_format = infer_format(self.reader, format, AtomsReaders)
+                    
                     if format is None:
                         format = new_format
 
