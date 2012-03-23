@@ -1251,7 +1251,6 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
   real(dp) :: n, quant, r, bin_ctr
   logical :: has_mass
   logical :: doing_KE
-  character(len=100) :: use_property
   real(dp), pointer :: prop_a(:), prop_3a(:,:)
   logical :: prop_is_scalar
 
@@ -1574,6 +1573,14 @@ subroutine is_in_mask(mask_a, at, mask_str)
   type(Table) :: atom_indices
   character(len=4) :: species(128)
   integer :: n_species
+  character(len=len(mask_str)) :: fields(2)
+  integer :: n_fields
+
+  integer :: i_val
+  logical :: l_val
+
+  integer, pointer :: p_i(:)
+  logical, pointer :: p_l(:)
 
   if (.not. present(mask_str)) then
     mask_a = .true.
@@ -1586,14 +1593,25 @@ subroutine is_in_mask(mask_a, at, mask_str)
   endif
 
   mask_a = .false.
-  if (mask_str(1:1)=='@') then
+  if (mask_str(1:1)=='@') then ! list of indices
     call parse_atom_mask(mask_str,atom_indices)
     do i_at=1, atom_indices%N
       mask_a(atom_indices%int(1,i_at)) = .true.
     end do
-  else if (scan(mask_str,'=')/=0) then
-    call system_abort("property type mask not supported yet")
-  else
+  else if (scan(mask_str,'=')/=0) then ! arbitrary property
+    call split_string(mask_str,'=','""', fields,n_fields)
+    if (assign_pointer(at, trim(fields(1)), p_i)) then 
+       ! integer match
+       read (unit=fields(2), fmt=*) i_val
+       mask_a = (p_i == i_val)
+    else if (assign_pointer(at, trim(fields(1)), p_l)) then 
+       ! integer match
+       read (unit=fields(2), fmt=*) l_val
+       mask_a = (p_l .eqv. l_val)
+    else
+       call system_abort("mask is arbitrary property match, but apparently not integer or logical, so unsupported")
+    endif
+  else ! species (via atomic number)
     call split_string(mask_str, ' ,', '""', species, n_species)
     do i_Z=1, n_species
       Zmask = Atomic_Number(species(i_Z))
@@ -1882,7 +1900,7 @@ subroutine shift_silica_to_edges(at, axis, silica_center_i, mask_str)
   integer, intent(in) :: silica_center_i
   character(len=*), optional, intent(in) :: mask_str
 
-  logical, allocatable :: mask_a(:), mask_silica(:)
+  logical, allocatable :: mask_silica(:)
   integer :: i
   integer :: counter
   integer, allocatable :: Si_atoms(:)
@@ -1938,7 +1956,7 @@ subroutine density_axial_calc(histogram, at, axis, silica_center_i,n_bins, gauss
   logical :: my_accumulate
   real(dp) :: ax_sample_r, dist, r, exp_arg
   logical, allocatable :: mask_a(:)
-  integer at_i, ax_sample_i, i
+  integer at_i, ax_sample_i
   real(dp) :: bin_width
 
   my_accumulate = optional_default(.false., accumulate)
@@ -2212,7 +2230,7 @@ subroutine water_orientation_calc(histogram, at, axis, silica_center_i,n_pos_bin
 
   logical :: my_accumulate
   real(dp) :: sample_r, sample_angle, r
-  logical, allocatable :: mask_a(:)
+  ! logical, allocatable :: mask_a(:)
   integer :: sample_i
   real(dp) :: pos_bin_width, angle_bin_width
   real(dp) :: sum_w
