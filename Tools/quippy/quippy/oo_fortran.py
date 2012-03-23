@@ -262,6 +262,7 @@ class FortranDerivedType(object):
         call_init = True
         self._fpointer = None
         self._finalise = True
+        self._update_hooks = []
         self._subobjs_cache = {}
 
         if 'fpointer' in kwargs:
@@ -414,13 +415,17 @@ class FortranDerivedType(object):
     def _update(self):
         logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))
         if self._fpointer is None: return
-        self._update_hook()
+        for hook in self._update_hooks:
+            hook(self)
+
+    def add_hook(self, hook, *args):
+        self._update_hooks.append(hook)
+
+    def remove_hook(self, hook, *args):
+        self._update_hooks.remove(hook)
 
     def _get_array_shape(self, name):
         return None
-
-    def _update_hook(self):
-        pass
 
     def _runroutine(self, name, *args, **kwargs):
         if not name.startswith('__init__') and self._fpointer is None:
