@@ -3141,4 +3141,44 @@ subroutine anatase(at, a, c, u)
       end do
    end function map_nearest_atoms
 
+   ! characterization from Demkowicz and Argon PRB _72_ 245205 (2005)
+   ! definition of "liquid-like" approximation of line in Fig. 6
+   subroutine bond_angle_mean_dev(at)
+      type(Atoms), intent(inout) :: at
+
+      real(dp), pointer :: ba_mean(:), ba_dev(:)
+      logical, pointer :: liquid_like(:)
+      real(dp) :: ba, ba_sum, ba_sum_sq
+      real(dp) :: i_rv(3), j_rv(3)
+      real(dp) :: n_angles
+      integer :: i, n_nn, i_nn, j_nn, ii
+
+      if (.not. assign_pointer(at, "bond_angle_mean", ba_mean)) &
+	 call add_property(at, "bond_angle_mean", 0.0_dp, ptr=ba_mean, overwrite=.true.)
+      if (.not. assign_pointer(at, "bond_angle_dev", ba_dev)) &
+	 call add_property(at, "bond_angle_dev", 0.0_dp, ptr=ba_dev, overwrite=.true.)
+      if (.not. assign_pointer(at, "liquid_like", ba_dev)) &
+	 call add_property(at, "liquid_like", .false., ptr=liquid_like, overwrite=.true.)
+
+      do i=1, at%N
+	 ba_sum = 0.0_dp
+	 ba_sum_sq = 0.0_dp
+	 n_nn = atoms_n_neighbours(at,i)
+	 do i_nn=1, n_nn
+	    ii = atoms_neighbour(at, i, i_nn, cosines=i_rv)
+	    do j_nn=i_nn+1, n_nn
+	       ii = atoms_neighbour(at, i, j_nn, cosines=j_rv)
+	       ba = DEGREES_PER_RADIAN*acos(sum(i_rv*j_rv))
+	       ba_sum = ba_sum + ba
+	       ba_sum_sq = ba_sum_sq + ba**2
+	    end do
+	 end do
+	 n_angles = n_nn*(n_nn-1)/2
+	 ba_mean(i) = ba_sum/n_angles
+	 ba_dev(i) = sqrt(ba_sum_sq/n_angles-ba_mean(i)**2)
+	 liquid_like(i) = (ba_mean(i) < 97.6_dp+(111.5_dp-97.6_dp)/35.0_dp*ba_dev(i))
+      end do
+
+   end subroutine bond_angle_mean_dev
+
 end module structures_module
