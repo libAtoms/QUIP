@@ -32,8 +32,6 @@ from matplotlib.figure import Figure
 from quippy.progbar import ProgressBar
 
 
-default_rcut_patches = [('Si', 'Si', 0.5)]
-
 def skip_bad_frames(seq):
    it = iter(seq)
    i = -1
@@ -223,7 +221,7 @@ while True:
          view.run_script(opt.load_view)
          view.show()
 
-      rcut_patches = default_rcut_patches
+      rcut_patches = []
       if opt.rcut is not None:
          rcut_patches.extend(opt.rcut)
       for (sym1, sym2, rcut) in rcut_patches:
