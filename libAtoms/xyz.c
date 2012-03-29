@@ -274,7 +274,7 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
     }
 
     (*atoms)[nframes] = natoms;
-    debug("update %ld %d\n", (*frames)[i], (*atoms)[i]);
+    debug("update %ld %d\n", (*frames)[nframes], (*atoms)[nframes]);
     nframes++;
 
     // Skip the whole frame, as quickly as possible
@@ -528,7 +528,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       // special range  of [-1, -1] means don't read any atoms, only params and lattice
       *n_atom = 0;
       at_start = 0;
-      at_end = 0;
+      at_end = -1;
     } else {
       if (range[0] < 1) {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: lower limit of range (%d) must be >= 1", range[0]);
@@ -895,6 +895,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       CLEAR_ERROR;
     }
     if (tmp_error == ERROR_NONE) {
+      debug("adding property %s type %d shape [%d %d]\n", fields[3*i], type, shape[0], shape[1]);
       dictionary_add_key(properties, fields[3*i], &type, shape, &data, error, strlen(fields[3*i]));
       if (data != NULL) {
 	if (type == T_CHAR_A) memset(data, ' ', shape[0]*shape[1]); // Zero string data
@@ -903,6 +904,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     n_property++;
   }
+
 
   // Read lattice
   memset(param_key, ' ', LINESIZE);
@@ -924,6 +926,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   }
 
   // Now it's just one line per atom
+  if (*n_atom > 0 || !got_index) {
   n = 0;
   for (atidx=0; atidx < nxyz; atidx++) {
     GET_LINE("premature file ending");
@@ -1003,6 +1006,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     n++;
   }
+  }
+
   if (n_index != -1) free(mask);
   if (!string && in != stdin) fclose(in);
 }
