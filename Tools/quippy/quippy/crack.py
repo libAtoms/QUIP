@@ -225,14 +225,39 @@ def makecrack_main(params, stem):
     return crack_slab
 
 
-def crack_rescale_homogeneous_xy(at, params, new_strain):
+def crack_measure_g(crack, YoungsModulus=None, PoissonRatio_yx=None, OrigHeight=None):
+    if YoungsModulus is None:
+        YoungsModulus = crack.YoungsModulus
+    if PoissonRatio_yx is None:
+        PoissonRatio_yx = crack.PoissonRatio_yx
+    if OrigHeight is None:
+        OrigHeight = crack.OrigHeight
+    return quippy.cracktools.crack_measure_g(crack, YoungsModulus, PoissonRatio_yx, OrigHeight)
+
+try:
+    import functools
+    crack_measure_g = functools.update_wrapper(crack_measure_g, quippy.cracktools.crack_measure_g)
+except ImportError:
+    pass
+
+def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
+    if strain is None and G is None:
+       raise ValueError('either strain or G must be present')
+
     h0 = at.OrigHeight
     h = at.pos[2,:].max() - at.pos[2,:].min()
 
+    print 'Original height %.4f A' % h0
+    print 'Initial measured height %.4f A' % h
+
+    if strain is None:
+       strain = crack_g_to_strain(G, at.YoungsModulus, at.PoissonRatio_yx, h0)
+    
     eps0 = (h - h0)/h0
-    eps1 = new_strain
+    eps1 = strain
 
     print 'Initial strain %.4f' % eps0
+    print 'Initial G %.4f J/m^2' % crack_strain_to_g(eps0, at.YoungsModulus, at.PoissonRatio_yx, h0)
 
     t = np.diag([(1+eps1)/(1+eps0), (1+eps1)/(1+eps0), 1.0])
 
@@ -242,6 +267,8 @@ def crack_rescale_homogeneous_xy(at, params, new_strain):
     print 'Final strain % .4f' % ((h1 - h0)/h0)
 
     b.params['G'] = crack_measure_g(b, b.YoungsModulus, b.PoissonRatio_yx, h0)
+
+    print 'Final G %.4f J/m^2' % b.params['G']
 
     crack_update_connect(b, params)
 
