@@ -22,12 +22,11 @@ program force_gaussian_prediction
 
    call initialise(params)
    call param_register(params, 'theta',  '2.5', theta, "the correlation length of the data")
-   call param_register(params, 'sigma_factor', '1.0', sigma_factor, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'r_min',  '0.5', r_min, "the minimum radius for the spherical atomic environment")
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
-   call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you'd like to teach")  
+   call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you'd like to teach with")  
    call param_register(params, 'cutoff_len_ivs', '0.2', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
@@ -40,6 +39,7 @@ program force_gaussian_prediction
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
+   call param_register(params, 'sigma_factor', '1.0', sigma_factor, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
@@ -151,6 +151,7 @@ program force_gaussian_prediction
 
  call finalise(in)
 
+
  call print_title('starting the teaching process')
 
  allocate(distance_ivs(n,n))
@@ -168,18 +169,21 @@ else
     do i = 1, n
         do j=1, n
               distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) 
+              if (i >= j) then
+                 write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t 
+              endif
         enddo
     enddo
     sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
     if  (abs(sigma(t))<TOL_REAL) then
               sigma(t)=TOL_REAL
-              call print("WARNNING: SIGMA, encountered the decimal limit in the getting Sigma from Theta")
+              call print("WARNNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
     endif
  enddo
 endif
 call print('sigma is:    '//sigma)
 
-  ! to establish the Covariance Matrix
+! to establish the Covariance Matrix
   allocate(covariance(n,n))
   do i = 1, n
       do j=1, n
@@ -187,7 +191,7 @@ call print('sigma is:    '//sigma)
       enddo
   enddo
 
-  ! if doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
+! if doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
   if (do_gp) then 
   do i=1, n
       covariance(i,i) = covariance(i,i) + sigma_error 
@@ -203,7 +207,7 @@ call print('sigma is:    '//sigma)
  if (do_gp) then
      call inverse(covariance, inv_covariance)
  else
-     ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
+! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
      inv_covariance = inverse_svd_threshold(covariance, n, thresh)
  endif
  
@@ -211,6 +215,7 @@ call print('sigma is:    '//sigma)
 
  deallocate(covariance)
  deallocate(distance_ivs)
+
 
  call print_title('starting the predicting process')
 
@@ -302,7 +307,7 @@ call print('sigma is:    '//sigma)
        force = feature_inv .mult. transpose(feature_matr_normalised_pred) .mult. force_proj_ivs_pred
        call print("force in external space:"//force)
        call print("the original force:"//force_ptr(:, at_n))
-       call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force)))
+       call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force))//" norm  error :  "//norm(force_ptr(:,at_n)-force))
 
        if (do_gp) then
            call print("predicted error :"//( 1.0_dp + sigma_error - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))
