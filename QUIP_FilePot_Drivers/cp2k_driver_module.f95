@@ -957,7 +957,7 @@ contains
        end do ! waiting for frc file
        call system_timer('do_cp2k_calc/run_cp2k')
        call system_timer('do_cp2k_calc/read_output')
-       if (trim(mmm_link_type) == 'QM_KIND') then
+       if (trim(qmmm_link_type) == 'QM_KIND') then
           call read_output(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
                do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
        else
@@ -972,7 +972,7 @@ contains
        PASS_ERROR(error)
        call system_timer('do_cp2k_calc/run_cp2k')
        call system_timer('do_cp2k_calc/read_output')
-       if (trim(mmm_link_type) == 'QM_KIND') then
+       if (trim(qmmm_link_type) == 'QM_KIND') then
           call read_output(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
                do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
        else
