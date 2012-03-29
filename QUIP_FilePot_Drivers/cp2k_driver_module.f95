@@ -957,8 +957,13 @@ contains
        end do ! waiting for frc file
        call system_timer('do_cp2k_calc/run_cp2k')
        call system_timer('do_cp2k_calc/read_output')
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
-            do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
+       if (trim(mmm_link_type) == 'QM_KIND') then
+          call read_output(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
+               do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
+       else
+          call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
+               do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
+       end if
        PASS_ERROR(error)
        call system_timer('do_cp2k_calc/read_output')
     else
@@ -967,8 +972,13 @@ contains
        PASS_ERROR(error)
        call system_timer('do_cp2k_calc/run_cp2k')
        call system_timer('do_cp2k_calc/read_output')
-       call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, &
-            trim(calc_qm_charges), do_calc_virial, save_reordering_index=.false., error=error)
+       if (trim(mmm_link_type) == 'QM_KIND') then
+          call read_output(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
+               do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
+       else
+          call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), trim(proj), e, f, trim(calc_qm_charges), &
+               do_calc_virial,  save_reordering_index=.false., out_i=persistent_run_i, error=error)
+       end if
        PASS_ERROR(error)
        call system_timer('do_cp2k_calc/read_output')
     endif
@@ -1297,16 +1307,25 @@ contains
       end do
     endif
     allocate(reordering_index(at%N))
+    call print('trying to reorder with shift='//shift)
+    call system_timer('reorder_if_necessary/check_reordering_1')
     call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+    call system_timer('reorder_if_necessary/check_reordering_1')
     if (any(reordering_index == 0)) then
       ! try again with shift of a/2 b/2 c/2 in case TOPOLOGY%CENTER_COORDINATES is set
       shift = sum(at%lattice(:,:),2)/2.0_dp - &
 	      (minval(at%pos(:,:),2)+maxval(at%pos(:,:),2))/2.0_dp
+      call print('trying to reorder with shift='//shift)
+      call system_timer('reorder_if_necessary/check_reordering_2')
       call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+      call system_timer('reorder_if_necessary/check_reordering_2')
       if (any(reordering_index == 0)) then
 	! try again with uniform shift (module periodic cell)
 	shift = new_p(:,1) - at%pos(:,1)
+        call print('trying to reorder with shift='//shift)
+        call system_timer('reorder_if_necessary/check_reordering_3')
 	call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+        call system_timer('reorder_if_necessary/check_reordering_3')
 	if (any(reordering_index == 0)) then
 	  RAISE_ERROR("Could not match original and read in atom objects",error)
 	endif
