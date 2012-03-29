@@ -33,7 +33,7 @@ for s in sources:
     # to explicitly load all frames from the file.
     try:
         nframes += len(s)
-    except ValueError:
+    except AttributeError:
         for at in s:
             nframes += 1
 
