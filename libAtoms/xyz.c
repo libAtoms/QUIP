@@ -527,6 +527,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     if (range[0] == -1 && range[1] == -1) {
       // special range  of [-1, -1] means don't read any atoms, only params and lattice
       *n_atom = 0;
+      at_start = 0;
+      at_end = 0;
     } else {
       if (range[0] < 1) {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: lower limit of range (%d) must be >= 1", range[0]);
