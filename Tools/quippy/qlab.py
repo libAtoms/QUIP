@@ -186,12 +186,9 @@ class AtomsListViewer(AtomsList, AtomEyeViewerMixin):
         AtomsList.__init__(self, source, **kwargs)
         AtomEyeViewerMixin.__init__(self, source)
         
-def atoms(filename, single=False, loadall=False, **kwargs):
+def atoms(filename, loadall=False, **kwargs):
     """
-    Read atoms from `filename` and create a viewer for it.
-
-    If single=False (default) file is treated as a trajectory. Otherwise
-    only a single frame is loaded.
+    Read atoms from `filename` and open in an AtomEye viewer window.
 
     If loadall=False (the default) we use an AtomsReader to load the
     frames from the trajectory lazily (i.e., as required). Otherwise
@@ -199,7 +196,9 @@ def atoms(filename, single=False, loadall=False, **kwargs):
 
     A new variable is inserted into the parent frame.
     """
-    if single:
+    tmp_reader = AtomsReader(filename, **kwargs)
+
+    if tmp_reader.random_access and len(tmp_reader) == 1:
         a = AtomsViewer(filename, **kwargs)
     else:
         if loadall:
