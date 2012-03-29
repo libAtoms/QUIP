@@ -22,7 +22,7 @@ viewers = []
 for filename in opt.single:
     viewers.append(atoms(filename), single=True)
 for filename in args:
-    viewers.append(atoms(filename), loadall=opt.loadall)
+    viewers.append(atoms(filename, loadall=opt.loadall))
 
 if opt.frame is None:
     opt.frame = [-1 for viewer in viewers]
