@@ -6,6 +6,7 @@ program force_gaussian_prediction
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
    real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_factor
+   real(dp)                                     :: max_value, mean_value, deviation_value
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
    integer, dimension(:), allocatable           :: distance_index
@@ -15,7 +16,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matr_normalised_pred, feature_matr_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter, print_indiv_dist
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -36,6 +37,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuration  filtering")
+   call param_register(params, 'print_indiv_dist', 'F', print_indiv_dist, "set true to print out the distance on every individual dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
@@ -163,14 +165,30 @@ if (fix_sigma) then
      read(1, *) sigma
      close(unit=1) 
      sigma = sigma * sigma_factor
+     if (print_indiv_dist) then
+       do t = 1, k
+          do i = 1, n
+            do j=1, n
+                 distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j))
+                 if (i >= j) then
+                    write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t
+                 endif
+            enddo
+          enddo
+          call matrix_statistics(distance_ivs, max_value, mean_value, deviation_value, n)
+          call print("Statistics max value: "//max_value//" mean value: "//mean_value//" deviation_value: "//deviation_value)
+       enddo
+     endif         ! print individue distance
 else 
   theta_array=theta
   do t = 1, k 
     do i = 1, n
         do j=1, n
               distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) 
-              if (i >= j) then
-                 write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t 
+              if (print_indiv_dist) then  
+                 if (i >= j) then
+                    write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t 
+                 endif
               endif
         enddo
     enddo
@@ -179,6 +197,8 @@ else
               sigma(t)=TOL_REAL
               call print("WARNNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
     endif
+    call matrix_statistics(distance_ivs, max_value, mean_value, deviation_value, n)
+    call print("Statistics max value: "//max_value//" mean value: "//mean_value//" deviation_value: "//deviation_value)
  enddo
 endif
 call print('sigma is:    '//sigma)
@@ -207,7 +227,7 @@ call print('sigma is:    '//sigma)
  if (do_gp) then
      call inverse(covariance, inv_covariance)
  else
-! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
+     ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
      inv_covariance = inverse_svd_threshold(covariance, n, thresh)
  endif
  
@@ -509,5 +529,34 @@ call print('sigma is:    '//sigma)
     distance_bent_space = norm( (bent_space1 .mult. vect1) - (bent_space2 .mult. vect2))  
  
  endfunction distance_bent_space
+
+
+ subroutine matrix_statistics(in_matrix, max_value, mean_value, deviation_value, n)
+
+    real(dp), intent(in)                    :: in_matrix(:,:)
+    integer, intent(in)                     ::  n
+    integer                                 ::  i, j, t
+    real(dp), intent(out)                   ::  max_value, mean_value, deviation_value
+    real(dp), allocatable                   :: data_array(:)
+    allocate(data_array(n*(n-1)/2))
+    t=0
+    do i=1, n
+       do j=1,n
+          if (i>j) then
+             t=t+1
+             data_array(t) = in_matrix(i,j)  
+          endif
+       enddo
+    enddo
+    mean_value = sum(data_array)/real(size(data_array))
+    max_value  = maxval(data_array)
+    
+    do i=1, size(data_array)
+       deviation_value = deviation_value + ( (data_array(i) - mean_value)**2 )
+    enddo
+    deviation_value = sqrt(deviation_value/size(data_array))
+    deallocate(data_array)
+
+ end subroutine  matrix_statistics
 
 end program force_gaussian_prediction
