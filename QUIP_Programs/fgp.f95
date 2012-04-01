@@ -5,8 +5,8 @@ program force_gaussian_prediction
    type(Atoms)                                  :: at_in, at
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
-   real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_factor
-   real(dp)                                     :: max_value, mean_value, deviation_value
+   real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_factor, dist_primitive, distance_ivs_stati
+   real(dp), dimension(:), allocatable          :: max_value, mean_value, deviation_value
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
    integer, dimension(:), allocatable           :: distance_index
@@ -16,7 +16,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matr_normalised_pred, feature_matr_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter, print_indiv_dist
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter, print_dist_stati
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
 
    call system_initialise(enable_timing=.true.)
@@ -37,7 +37,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuration  filtering")
-   call param_register(params, 'print_indiv_dist', 'F', print_indiv_dist, "set true to print out the distance on every individual dimension of the IVs space")
+   call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every individual dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
@@ -160,12 +160,19 @@ program force_gaussian_prediction
  allocate(sigma(k))
  allocate(theta_array(k))
 
+! allocate the variables for statistics
+ allocate(mean_value(k))
+ allocate(max_value(k))
+ allocate(deviation_value(k)) 
+
 if (fix_sigma) then
      open(unit=1, file='sigma.dat')
      read(1, *) sigma
      close(unit=1) 
      sigma = sigma * sigma_factor
-     if (print_indiv_dist) then
+
+     if (print_dist_stati) then
+       dist_primitive=0.0_dp
        do t = 1, k
           do i = 1, n
             do j=1, n
@@ -173,35 +180,79 @@ if (fix_sigma) then
                  if (i >= j) then
                     write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t
                  endif
-            enddo
-          enddo
-          call matrix_statistics(distance_ivs, max_value, mean_value, deviation_value, n)
-          call print("Statistics max value: "//max_value//" mean value: "//mean_value//" deviation_value: "//deviation_value)
+            enddo  ! i
+          enddo    ! j
+
+          call matrix_statistics(distance_ivs, max_value(t), mean_value(t), deviation_value(t), n)
+          call print("Statistics max value: "//max_value(t)//" mean value: "//mean_value(t)//" deviation_value: "//deviation_value(t))
+          dist_primitive = dist_primitive + (mean_value(t)/deviation_value(t)/2.0_dp)**2 
        enddo
-     endif         ! print individue distance
+
+       dist_primitive = sqrt(dist_primitive/k) 
+       call print("primitive_distance : "//dist_primitive)
+
+       ! normalised distance with statistical parameters       
+          do i=1,n
+            do j=1,n
+               distance_ivs_stati = 0.0_dp   
+               do t=1, k                 
+                  distance_ivs_stati = distance_ivs_stati + &
+                        ( distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) / 2.0_dp/deviation_value(t) ) **2  
+                  distance_ivs_stati = sqrt(distance_ivs_stati)   
+               enddo
+               if (i>j)   write(*,*)  "Normalisd Dimensional Distance: ",distance_ivs_stati, "Normalised Value: ", distance_ivs_stati/dist_primitive
+            enddo  
+          enddo  
+     endif         ! print  distance statistics
 else 
   theta_array=theta
+  dist_primitive=0.0_dp
   do t = 1, k 
     do i = 1, n
         do j=1, n
               distance_ivs(i,j) = distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) 
-              if (print_indiv_dist) then  
+              if (print_dist_stati) then  
                  if (i >= j) then
                     write(*,*)  "Dimensional Distance: ", distance_ivs(i, j), "dimension: ", t 
                  endif
               endif
         enddo
     enddo
+    ! dealing with simgma
     sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
     if  (abs(sigma(t))<TOL_REAL) then
               sigma(t)=TOL_REAL
               call print("WARNNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
     endif
-    call matrix_statistics(distance_ivs, max_value, mean_value, deviation_value, n)
-    call print("Statistics max value: "//max_value//" mean value: "//mean_value//" deviation_value: "//deviation_value)
- enddo
+     
+    ! statistically tackling of the distance 
+    call matrix_statistics(distance_ivs, max_value(t), mean_value(t), deviation_value(t), n)
+    call print("Statistics max value: "//max_value(t)//" mean value: "//mean_value(t)//" deviation_value: "//deviation_value(t))
+    dist_primitive = dist_primitive + ( mean_value(t)/deviation_value(t)/2.0_dp )**2
+  enddo
+  dist_primitive = sqrt(dist_primitive/k)
+  call print("primitive distance : "//dist_primitive)
+
+   ! normalised distance with statistical parameters       
+   do i=1,n
+            do j=1,n
+               distance_ivs_stati = 0.0_dp
+               do t=1, k
+                  distance_ivs_stati = distance_ivs_stati + &
+                        ( distance_bent_space(feature_matr(t,:,i), feature_matr(t,:,j), feature_matr_normalised(:,:,i), feature_matr_normalised(:,:,j)) / 2.0_dp/deviation_value(t) ) **2
+                  distance_ivs_stati = sqrt(distance_ivs_stati)
+               enddo
+            if (i>j)    write(*,*)  "Normalisd Dimensional Distance: ",distance_ivs_stati, "Normalised Value: ", distance_ivs_stati/dist_primitive
+            enddo
+    enddo
+  
 endif
 call print('sigma is:    '//sigma)
+
+ deallocate(mean_value)
+ deallocate(max_value)
+ deallocate(deviation_value)
+  
 
 ! to establish the Covariance Matrix
   allocate(covariance(n,n))
@@ -538,7 +589,9 @@ call print('sigma is:    '//sigma)
     integer                                 ::  i, j, t
     real(dp), intent(out)                   ::  max_value, mean_value, deviation_value
     real(dp), allocatable                   :: data_array(:)
+
     allocate(data_array(n*(n-1)/2))
+
     t=0
     do i=1, n
        do j=1,n
@@ -551,10 +604,12 @@ call print('sigma is:    '//sigma)
     mean_value = sum(data_array)/real(size(data_array))
     max_value  = maxval(data_array)
     
+    deviation_value = 0.0_dp
     do i=1, size(data_array)
        deviation_value = deviation_value + ( (data_array(i) - mean_value)**2 )
     enddo
     deviation_value = sqrt(deviation_value/size(data_array))
+
     deallocate(data_array)
 
  end subroutine  matrix_statistics
