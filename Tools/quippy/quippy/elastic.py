@@ -49,8 +49,6 @@
 from quippy import available_modules
 if 'scipy' in available_modules:
     from scipy import stats
-if 'pylab' in available_modules:
-    import pylab
 from farray import *
 import numpy as np
 
@@ -285,6 +283,7 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
                 print 'Correlation coefficient :    ',r, '     <----- WARNING'
 
         if graphics:
+            import pylab
             # position this plot in a 6x6 grid
             sp = pylab.subplot(6,6,6*(index1-1)+index2)
             sp.set_axis_on()
@@ -337,6 +336,7 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
     stress = fzeros((N_pattern, N_steps, 6))
 
     if graphics:
+        import pylab
         fig = pylab.figure(num=1, figsize=(9.5,8),facecolor='white')
         fig.clear()
         fig.subplots_adjust(left=0.07,right=0.97,top=0.97,bottom=0.07,wspace=0.5,hspace=0.5)

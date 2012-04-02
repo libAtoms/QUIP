@@ -5,12 +5,12 @@ pylab-style interface to quippy and AtomEye, designed for interactive use
 """
 
 from numpy import *
-from pylab import *
 from quippy import *
 from atomeye import *
 
 from quippy.cinoutput import CInOutputReader
 import os
+import sys
 import inspect
 
 _viewers = {}
@@ -66,15 +66,15 @@ class AtomEyeViewerMixin(AtomEyeViewer):
 
         return auxprop
 
-    def _enter_hook(self, atoms):
-        def hook(at):
-            if self.is_alive:
-                self.redraw()
-        atoms.update_redraw_hook = hook
-        atoms.add_hook(atoms.update_redraw_hook)
+    # def _enter_hook(self, atoms):
+    #     def hook(at):
+    #         if self.is_alive:
+    #             self.redraw()
+    #     atoms.update_redraw_hook = hook
+    #     atoms.add_hook(atoms.update_redraw_hook)
 
-    def _exit_hook(self, atoms):
-        atoms.remove_hook(atoms.update_redraw_hook)
+    # def _exit_hook(self, atoms):
+    #     atoms.remove_hook(atoms.update_redraw_hook)
 
     def _close_hook(self):
         global _viewers, _current_viewer
@@ -164,13 +164,16 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         Render a movie for the trajectory. Not yet implemented.
         """
         raise NotImplementedError
+
+    def copy(self):
+        return atoms(self, recycle=False, inject=False)
         
 
 class AtomsViewer(Atoms, AtomEyeViewerMixin):
     """
     Subclass of Atoms and AtomEyeViewer
     """
-    def __init__(self, source, name=None, **kwargs):
+    def __init__(self, source=None, name=None, **kwargs):
         Atoms.__init__(self, source, **kwargs)
         AtomEyeViewerMixin.__init__(self, name)
 
@@ -182,7 +185,7 @@ class AtomsReaderViewer(AtomsReader, AtomEyeViewerMixin):
     """
     Subclass of AtomsReader and AtomEyeViewer
     """
-    def __init__(self, source, name=None, cache=True, **kwargs):
+    def __init__(self, source=None, name=None, cache=True, **kwargs):
         if cache:
             total_mem, free_mem = mem_info()
             kwargs['cache_mem_limit'] = 0.5*free_mem
@@ -201,7 +204,7 @@ class AtomsListViewer(AtomsList, AtomEyeViewerMixin):
     """
     Subclass of AtomsList and AtomEyeViewer
     """
-    def __init__(self, source, name=None, **kwargs):
+    def __init__(self, source=None, name=None, **kwargs):
         AtomsList.__init__(self, source, **kwargs)
         AtomEyeViewerMixin.__init__(self, name)
 
@@ -238,21 +241,22 @@ def find_viewer(source, name=None, recycle=True):
         print 'Creating viewer named %s for file %s' % (name, source)
         return (name, None)
         
-def atoms(source, name=None, recycle=True, loadall=False, **kwargs):
+def atoms(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
     """
     Read atoms from `source` and open in an AtomEye viewer window.
 
     If not present, `name` is derived from the filename of `source`.
 
-    If recycle=True (default), try to reuse an exising viewer window
+    If recycle is true (default), try to reuse an exising viewer window
     with the same name. Otherwise the name is made unique if necesary
     by appending a number.
 
-    If loadall=False (the default) we use an AtomsReader to load the
+    If loadall is false (default) we use an AtomsReader to load the
     frames from the trajectory lazily (i.e., as required). Otherwise
     the entire file is read into an AtomsList.
 
-    A new variable called `name` inserted into the parent stack frame.
+    If inject is true (default), a new variable called `name` is injected
+    into the parent stack frame.
     """
 
     name, viewer = find_viewer(source, name, recycle)
@@ -270,8 +274,9 @@ def atoms(source, name=None, recycle=True, loadall=False, **kwargs):
     else:
         viewer.update_source(source, **kwargs)
 
-    parent_frame = inspect.currentframe().f_back
-    parent_frame.f_globals[viewer.name] = viewer
+    if inject:
+        parent_frame = inspect.currentframe().f_back
+        parent_frame.f_globals[viewer.name] = viewer
     return viewer
 
 def gcv():
@@ -314,71 +319,4 @@ for name, method in inspect.getmembers(AtomEyeViewerMixin, inspect.ismethod):
     setattr(sys.modules[__name__], name, current_viewer_method_wrapper(method))
 
 del name, method, current_viewer_method_wrapper
-
-if __name__ == '__main__':
-    import optparse
-
-    p = optparse.OptionParser(usage='%prog [options] <trajectory file>...')
-
-    p.add_option('-f', '--frame', action='append', help='Initial frame to show. Can be given separately for each trajectory file. Default is last frame in file.', type=int)
-    p.add_option('-p', '--property', action='append', help='Property to show. Can be given separately for each trajectory file')
-    p.add_option('-a', '--arrows', action='append', help='Property to use to draw arrows. Can be given separately for each trajectory file')
-    p.add_option('-l', '--load-view', action='store', help='Load view from AtomEye command script')
-    p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
-    p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
-    p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
-    p.add_option('-R', '--rcut', action='append', help="""Following three arguments should be SYM1 SYM2 INCREMENT, to increment cutoff distance for SYM1-SYM2 bonds.""", nargs=3)
-    p.add_option('-s', '--single', action='append', help="""Read next argument as a single frame, not a trajectory""", default=[])
-    p.add_option('-L', '--loadall', action='store_true', help="""Load all frames from all trajectories into memory on startup.""")
-
-    opt, args = p.parse_args()
-
-    viewers = []
-    for filename in opt.single:
-        viewers.append(atoms(filename), single=True)
-    for filename in args:
-        viewers.append(atoms(filename, loadall=opt.loadall))
-
-    if opt.frame is None:
-        opt.frame = [-1 for viewer in viewers]
-
-    show_args_list = [{} for viewer in viewers]
-    for arg in ['frame', 'property', 'arrows']:
-        values = getattr(opt, arg)
-        if values is None:
-            continue
-        if len(values) == 1:
-            values = [values[0] for traj in viewers]
-
-        if len(values) != len(viewers):
-            p.error('Number of -%s/--%s options does not match number of trajectory files' % (arg[0], arg))
-
-        for show_args, value in zip(show_args_list, values):
-            show_args[arg] = value
-
-    for traj, show_args in zip(viewers, show_args_list):
-        if opt.load_view is not None:
-            print 'Loading view script %s' % opt.load_view
-            traj.load_script(opt.load_view)
-
-        if opt.rcut is not None:
-            print 'Applying rcut patches %r' % opt.rcut
-            for (sym1, sym2, rcut) in opt.rcut:
-                traj.rcut_patch(sym1, sym2, float(rcut))
-
-        if opt.width is not None or opt.height is not None:
-            if opt.width  is None: opt.width = int(opt.height/opt.aspect)
-            if opt.height is None: opt.height = int(opt.width*opt.aspect)
-            print 'Setting viewer size to %d x %d pixels' % (opt.width, opt.height)
-            traj.resize(opt.width, opt.height)
-
-        if len(show_args) != 0:
-            print 'Applying show_args=%r to trajectory %s' % (show_args, traj.name)
-            traj.show(**show_args)
-
-    del traj, show_args, filename, viewers, show_args_list, p, opt, args, arg, optparse
-
-    from IPython import embed
-    embed()
-
 
