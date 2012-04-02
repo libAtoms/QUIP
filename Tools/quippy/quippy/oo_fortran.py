@@ -371,9 +371,9 @@ class FortranDerivedType(object):
     def __eq__(self, other):
         import logging
 
-        # Class name must match
-        if self.__class__ != other.__class__:
-            logging.debug('class mismatch %s != %s')
+        # Class must agree
+        if not issubclass(self.__class__, other.__class__) and not issubclass(other.__class__, self.__class__):
+            logging.debug('class mismatch %s not subclass of %s (or vice versa)' % (self.__class__.__name__, other.__class__.__name__))
             return False
 
         # Don't compare uninitialised objects

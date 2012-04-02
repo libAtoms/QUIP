@@ -604,10 +604,13 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def read_from(self, source, **readargs):
         """Replace contents of this Atoms object with file `source`"""
-        tmp = Atoms.read(source, **readargs)
-        self.shallow_copy_from(tmp)
-        # tmp goes out of scope here, but reference counting
-        # prevents it from being free'd.
+        if isinstance(source, self.__class__):
+            self.copy_from(source)
+        else:
+            tmp = Atoms.read(source, **readargs)
+            self.shallow_copy_from(tmp)
+            # tmp goes out of scope here, but reference counting
+            # prevents it from being free'd.
 
     def __len__(self):
         return self.n

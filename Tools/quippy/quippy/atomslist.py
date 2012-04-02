@@ -137,17 +137,23 @@ class AtomsReader(AtomsReaderMixin):
                     if format is None:
                         format = new_format
 
-        # special case if source is a list or tuple of filenames
+        # special cases if source is a list or tuple of filenames or Atoms objects
         is_filename_sequence = False
-        if (isinstance(self.reader, list) or isinstance(self.reader, tuple)):
+        is_list_of_atoms = False
+        if isinstance(self.reader, list) or isinstance(self.reader, tuple):
+            is_filename_sequence = True
+            is_list_of_atoms = True
             for item in self.reader:
                 if not isinstance(item, basestring) or not file_exists(item):
-                    break
-            else:
-                is_filename_sequence = True
+                    is_filename_sequence = False
+                if not isinstance(item, Atoms):
+                    is_list_of_atoms = False
 
         if is_filename_sequence:
             self.reader = AtomsSequenceReader(self.reader, format=format, **kwargs)
+        elif is_list_of_atoms:
+            # dummy reader which copies from an existing list or tuple of Atoms objects
+            self.reader = [ at.copy() for at in self.reader ]
         else:
             if format is None:
                 format = self.reader.__class__
@@ -157,8 +163,12 @@ class AtomsReader(AtomsReaderMixin):
         if isinstance(self.reader, basestring):
             raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
 
+        if isinstance(self.reader, AtomsReader):
+            self.reader = AtomsReaderCopier(self.reader)
+
         if not hasattr(self.reader, '__iter__'):
-            self.reader = [self.reader]
+            # call Atoms constructor - this has beneficial side effect of making a copy
+            self.reader = [Atoms(self.reader)]
 
     def __len__(self):
         if self._source_len is not None:
@@ -357,7 +367,7 @@ def AtomsWriter(dest, format=None, **kwargs):
 
 
 
-class AtomsSequenceReader:
+class AtomsSequenceReader(object):
     """Read Atoms from a list of sources"""
 
     def __init__(self, sources, **kwargs):
@@ -403,6 +413,27 @@ class AtomsSequenceReader:
             for at in reader:
                 yield at
 
+
+class AtomsReaderCopier(object):
+    def __init__(self, source):
+        self.source = source
+
+    def __len__(self):
+        return len(self.source)
+
+    def __iter__(self):
+        for item in self.source:
+            yield item.copy()
+
+    def __getitem__(self, index):
+        if isinstance(index, int) or isinstance(index, np.integer):
+            return self.source[index].copy()
+        elif isinstance(index, slice):
+            return [at.copy() for at in self.source[index]]
+        else:
+            raise IndexError('indexing object should be either int or slice')            
+
+    
 
 def read_dataset(dirs, pattern, **kwargs):
     """
