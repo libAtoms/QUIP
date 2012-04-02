@@ -225,20 +225,23 @@ def makecrack_main(params, stem):
     return crack_slab
 
 
-def crack_measure_g(crack, YoungsModulus=None, PoissonRatio_yx=None, OrigHeight=None):
-    if YoungsModulus is None:
-        YoungsModulus = crack.YoungsModulus
-    if PoissonRatio_yx is None:
-        PoissonRatio_yx = crack.PoissonRatio_yx
-    if OrigHeight is None:
-        OrigHeight = crack.OrigHeight
-    return quippy.cracktools.crack_measure_g(crack, YoungsModulus, PoissonRatio_yx, OrigHeight)
-
 try:
-    import functools
-    crack_measure_g = functools.update_wrapper(crack_measure_g, quippy.cracktools.crack_measure_g)
+   from quippy.cracktools import crack_measure_g as _crack_measure_g
+   
+   def crack_measure_g(crack, YoungsModulus=None, PoissonRatio_yx=None, OrigHeight=None):
+       if YoungsModulus is None:
+           YoungsModulus = crack.YoungsModulus
+       if PoissonRatio_yx is None:
+           PoissonRatio_yx = crack.PoissonRatio_yx
+       if OrigHeight is None:
+           OrigHeight = crack.OrigHeight
+       return _crack_measure_g(crack, YoungsModulus, PoissonRatio_yx, OrigHeight)
+
+   import functools
+   crack_measure_g = functools.update_wrapper(crack_measure_g, quippy.cracktools.crack_measure_g)
+
 except ImportError:
-    pass
+   pass
 
 def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
     if strain is None and G is None:
