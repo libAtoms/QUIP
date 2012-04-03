@@ -305,7 +305,6 @@ subroutine do_vasp_calc(at, args_str, error)
       end do
    else ! not persistent, just run vasp
       call print("running vasp", PRINT_VERBOSE)
-call system_command("cp -a "//trim(run_dir)//" "//trim(run_dir)//".pre_run")
       call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1")
       call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1", status=stat)
       if (stat /= 0) then
