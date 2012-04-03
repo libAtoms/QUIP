@@ -103,6 +103,9 @@
 @IF ${MM} == CHARMM
       PARMTYPE CHM
       PARM_FILE_NAME ../charmm.pot
+# any particular MM needs proper scaling factors for
+# 1-4 and vdW interactions
+@INCLUDE ../charmm.pot.nonbonded_1_4_scale
 @ENDIF
 @IF ${MM} == BKS
       IGNORE_MISSING_CRITICAL_PARAMS
