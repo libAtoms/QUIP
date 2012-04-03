@@ -417,8 +417,10 @@ contains
           end if
           
           n_index = size(indices)
-          allocate(c_indices(n_index))
-          c_indices(:) = indices
+          if (n_index /= 0) then
+             allocate(c_indices(n_index))
+             c_indices(:) = indices
+          end if
        end if
 
        call initialise(selected_properties)
@@ -594,7 +596,7 @@ contains
     endif
 
     if (present(indices)) then
-       deallocate(c_indices)
+       if (n_index /= 0) deallocate(c_indices)
     end if
 
   end subroutine cinoutput_read
