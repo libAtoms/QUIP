@@ -1,0 +1,20 @@
+diff -Nu vasp.5.lib.orig/unlink_.c vasp.5.lib/unlink_.c
+--- vasp.5.lib.orig/unlink_.c	1969-12-31 19:00:00.000000000 -0500
++++ vasp.5.lib/unlink_.c	2012-04-02 17:23:06.000000000 -0400
+@@ -0,0 +1,5 @@
++#include <unistd.h>
++
++void unlink_(char *file, int len) {
++   unlink(file);
++}
+diff -Nu vasp.5.lib.orig/usleep_.c vasp.5.lib/usleep_.c
+--- vasp.5.lib.orig/usleep_.c	1969-12-31 19:00:00.000000000 -0500
++++ vasp.5.lib/usleep_.c	2012-04-02 22:14:13.000000000 -0400
+@@ -0,0 +1,7 @@
++#include <unistd.h>
++
++void usleep_(int *useconds_f) {
++   unsigned int useconds_c;
++   useconds_c = *useconds_f;
++   usleep(useconds_c);
++}
