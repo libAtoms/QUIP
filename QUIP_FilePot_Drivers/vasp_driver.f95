@@ -158,7 +158,11 @@ subroutine do_vasp_calc(at, args_str, error)
    else if (.not. do_calc_virial) then
       call set_value(incar_dict, "ISIF", 0)
    else
-      call set_value(incar_dict, "ISIF", 2)
+      if (persistent) then
+	 call set_value(incar_dict, "ISIF", 3)
+      else
+	 call set_value(incar_dict, "ISIF", 2)
+      endif
    endif
 
    force_run_dir_i = -1
@@ -196,6 +200,7 @@ subroutine do_vasp_calc(at, args_str, error)
 	 endif
       endif
       if (force_constant_basis) then
+	 ! 3 is faster, but not tested
 	 call set_value(incar_dict, "ISTART", 2)
       else
 	 call set_value(incar_dict, "ISTART", 1)
