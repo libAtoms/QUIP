@@ -140,6 +140,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("  persistent_max_wait_time " // persistent_max_wait_time, PRINT_VERBOSE)
    endif
 
+   call system_timer('vasp_filepot/prep')
    ! check for local energy
    if (do_calc_local_energy) then
       RAISE_ERROR("do_vasp_calc can't do local_energy", error)
@@ -154,7 +155,7 @@ subroutine do_vasp_calc(at, args_str, error)
    ! check for stress, set ISIF
    if (.not. do_calc_energy .and. .not. do_calc_force .and. .not. do_calc_virial) then
       return
-   else if (.not. persistent .and. .not. do_calc_virial) then
+   else if (.not. do_calc_virial) then
       call set_value(incar_dict, "ISIF", 0)
    else
       call set_value(incar_dict, "ISIF", 2)
@@ -252,8 +253,10 @@ subroutine do_vasp_calc(at, args_str, error)
       call write_vasp_poscar(at, trim(run_dir), error=error)
       PASS_ERROR(error)
    endif
+   call system_timer('vasp_filepot/prep')
 
    if (persistent) then ! restart VASP if needed, write to REFTRAJCAR if needed, initiate calc
+      call system_timer('vasp_filepot/start_restart')
       if (mod(persistent_run_i, persistent_restart_interval) == 0) then ! start or restart VASP
 	 call print("starting or restarting VASP", PRINT_VERBOSE)
 	 if (persistent_already_started) then ! tell currently running vasp to quit
@@ -275,6 +278,8 @@ subroutine do_vasp_calc(at, args_str, error)
 	 endif
 	 persistent_already_started = .true.
       endif
+      call system_timer('vasp_filepot/start_restart')
+      call system_timer('vasp_filepot/write_reftrajcar')
       if (mod(persistent_run_i,persistent_restart_interval) /= 0) then ! need to write current coords to REFTRAJCAR
 	 call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
 	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
@@ -291,6 +296,8 @@ subroutine do_vasp_calc(at, args_str, error)
 	 call print("-", file=persistent_io)
 	 call finalise(persistent_io)
       endif
+      call system_timer('vasp_filepot/write_reftrajcar')
+      call system_timer('vasp_filepot/wait_reftraj_step_done')
       call print("waiting for output REFTRAJ_STEP_DONE", PRINT_VERBOSE)
       ! wait for output to be ready
       inquire(file=trim(run_dir)//"/REFTRAJ_STEP_DONE", exist=persistent_calc_done)
@@ -303,7 +310,9 @@ subroutine do_vasp_calc(at, args_str, error)
 	    RAISE_ERROR("error waiting too long for calculation to be done", error)
 	 endif
       end do
+      call system_timer('vasp_filepot/wait_reftraj_step_done')
    else ! not persistent, just run vasp
+      call system_timer('vasp_filepot/run_vasp')
       call print("running vasp", PRINT_VERBOSE)
       call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1")
       call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1", status=stat)
@@ -311,12 +320,14 @@ subroutine do_vasp_calc(at, args_str, error)
 	 RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
       endif
       call system_command("cat vasp.stdout."//run_dir_i//" >> vasp.stdout")
+      call system_timer('vasp_filepot/run_vasp')
    endif
 
    ! look for errors in stdout and runtime in OUTCAR
    call system_command("fgrep -i 'error' vasp.stdout."//run_dir_i)
    call system_command("fgrep -i 'total cpu time used' "//trim(run_dir)//"/OUTCAR | tail -1; fgrep -c 'LOOP:' "//trim(run_dir)//"/OUTCAR | tail -1")
 
+   call system_timer('vasp_filepot/read_output')
    if (persistent) then ! read REFTRAJ output
       call print("reading output REFTRAJ_OUTPUT", PRINT_VERBOSE)
       ! read output
@@ -331,7 +342,9 @@ subroutine do_vasp_calc(at, args_str, error)
       call read_vasp_output(trim(run_dir), do_calc_energy, do_calc_force, do_calc_virial, converged, error=error)
       PASS_ERROR(error)
    endif
+   call system_timer('vasp_filepot/read_output')
 
+   call system_timer('vasp_filepot/end')
    if (.not. converged) then
       call print("WARNING: failed to find sign of convergence in OUTCAR", verbosity=PRINT_ALWAYS)
       if (.not. ignore_convergence) then
@@ -356,6 +369,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("cleaning up", PRINT_VERBOSE)
       call system_command("rm -rf "//trim(run_dir))
    endif
+   call system_timer('vasp_filepot/end')
 
    call verbosity_pop()
 
