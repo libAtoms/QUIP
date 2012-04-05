@@ -2249,7 +2249,7 @@ CONTAINS
 
   !% FIRE MD minimizer from Bitzek et al., \emph{Phys. Rev. Lett.} {\bfseries 97} 170201.
   !% Beware, this algorithm is patent pending in the US.
-  function fire_minim(x, mass, func, dfunc, dt0, tol, max_steps, hook, hook_print_interval, data, status)
+  function fire_minim(x, mass, func, dfunc, dt0, tol, max_steps, hook, hook_print_interval, data, dt_max, status)
     real(dp), intent(inout), dimension(:) :: x
     real(dp), intent(in) :: mass
     interface 
@@ -2283,13 +2283,14 @@ CONTAINS
     end interface
     integer, optional :: hook_print_interval
     character(len=1),optional::data(:)
+    real(dp), intent(in), optional :: dt_max
     integer, optional, intent(out) :: status
     integer :: fire_minim
 
     integer  :: my_hook_print_interval
 
     real(dp), allocatable, dimension(:) :: velo, acc, force
-    real(dp) :: f, df2, alpha_start, alpha, P, dt, dt_max
+    real(dp) :: f, df2, alpha_start, alpha, P, dt, my_dt_max
     integer :: i, Pcount
     logical :: done
 
@@ -2308,7 +2309,7 @@ CONTAINS
     alpha_start = 0.1_dp
     alpha = alpha_start
     dt = dt0
-    dt_max = 20.0_dp*dt
+    my_dt_max = optional_default(20.0_dp*dt, dt_max)
     Pcount = 0
 
     call Print('Welcome to fire_minim', PRINT_NORMAL)
@@ -2351,7 +2352,7 @@ CONTAINS
        velo = (1.0_dp-alpha)*velo + (alpha*norm(velo)/norm(force))*force
        if (P > 0) then
           if(Pcount > 5) then
-             dt = min(dt*1.1_dp, dt_max)
+             dt = min(dt*1.1_dp, my_dt_max)
              alpha = alpha*0.99_dp
           else
              Pcount = Pcount + 1

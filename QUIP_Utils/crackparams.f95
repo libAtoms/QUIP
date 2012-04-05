@@ -244,6 +244,8 @@ module CrackParams_module
      integer  :: minim_print_output       !% Number of steps between XYZ confgurations printed
      character(STRING_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
                                                      !% 'LINMIN_DERIV' when doing a LOTF hybrid simulation and only forces are available.
+     real(dp) :: minim_fire_dt0 !% If using fire_minim, the initial step size
+     real(dp) :: minim_fire_dt_max !% If using fire_minim, the maximum step size
      logical :: minim_minimise_mm         !% Should we minimise classical degrees of freedom before each QM force evaluation
      character(STRING_LENGTH) :: minim_mm_method !% Minim method for MM minimisation, e.g. 'cg' for conjugate gradients
      real(dp) :: minim_mm_tol             !% Target force tolerance for MM minimisation
@@ -545,6 +547,8 @@ contains
     this%minim_max_steps         = 1000     ! number
     this%minim_print_output      = 10       ! number
     this%minim_linminroutine     = 'LINMIN_DERIV'
+    this%minim_fire_dt0          = 1.0_dp   ! fs
+    this%minim_fire_dt_max       = 10.0_dp  ! fs
     this%minim_minimise_mm       = .false.
     this%minim_mm_method         = 'cg'
     this%minim_mm_tol            = 1e-6_dp  ! normsq(force) eV/A
@@ -1277,6 +1281,16 @@ contains
           parse_cp%minim_linminroutine = value
        end if
 
+       call QUIP_FoX_get_value(attributes, "fire_dt0", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%minim_fire_dt0
+       end if
+
+       call QUIP_FoX_get_value(attributes, "fire_dt_max", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%minim_fire_dt_max
+       end if
+
        call QUIP_FoX_get_value(attributes, "minimise_mm", value, status)
        if (status == 0) then
           read (value, *) parse_cp%minim_minimise_mm
@@ -1832,6 +1846,8 @@ contains
     call Print('     max_steps             = '//this%minim_max_steps,file=file)
     call Print('     print_output          = '//this%minim_print_output,file=file)
     call Print('     linminroutine         = '//trim(this%minim_linminroutine),file=file)
+    call Print('     fire_dt0              = '//this%minim_fire_dt0//' fs',file=file)
+    call Print('     fire_dt_max           = '//this%minim_fire_dt_max//' fs',file=file)
     call Print('     minimise_mm           = '//this%minim_minimise_mm,file=file)
     call Print('     mm_method             = '//trim(this%minim_mm_method),file=file)
     call Print('     mm_tol                = '//this%minim_mm_tol// ' (eV/A)^2',file=file)
