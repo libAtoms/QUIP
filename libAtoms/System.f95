@@ -2998,4 +2998,33 @@ end function pad
      call c_mem_info(total_mem, free_mem)
    end subroutine mem_info
 
+   subroutine wait_for_file_to_exist(filename, max_wait_time, cycle_time, error)
+      character(len=*) filename
+      real(dp) :: max_wait_time
+      real(dp), optional :: cycle_time
+      integer, intent(out), optional :: error
+
+      real(dp) :: total_wait_time, use_cycle_time
+      integer :: usleep_cycle_time
+      logical :: file_exists
+
+      INIT_ERROR(error)
+
+      use_cycle_time = optional_default(0.1_dp, cycle_time)
+      usleep_cycle_time = int(use_cycle_time*1000000)
+
+      inquire(file=filename, exist=file_exists)
+      total_wait_time = 0.0_dp
+      do while (.not. file_exists)
+	 call fusleep(usleep_cycle_time)
+	 total_wait_time = total_wait_time + use_cycle_time
+	 inquire(file=filename, exist=file_exists)
+	 if (.not. file_exists .and. total_wait_time > max_wait_time) then
+	    RAISE_ERROR("error waiting too long for '"//trim(filename)//"' to exist", error)
+	 endif
+      end do
+
+   end subroutine wait_for_file_to_exist
+
+
 end module system_module

@@ -72,9 +72,8 @@ subroutine do_vasp_calc(at, args_str, error)
    type(Dictionary) :: incar_dict, cli
 
    integer :: persistent_run_i
-   logical :: persistent_already_started = .false., persistent_calc_done
+   logical :: persistent_already_started = .false.
    type(inoutput) :: persistent_io
-   real(dp) :: wait_time
 
    integer :: run_dir_i, force_run_dir_i
 
@@ -271,13 +270,20 @@ subroutine do_vasp_calc(at, args_str, error)
 	    call initialise(persistent_io, trim(run_dir)//"/REFTRAJ_READY", action=OUTPUT)
 	    call print("-", file=persistent_io)
 	    call finalise(persistent_io)
-	    call fusleep(5000000)
+	    ! wait for signal that it's finished
+	    call system_command("echo 'before wait'; ps auxw | egrep 'vasp|mpi'")
+	    call wait_for_file_to_exist(trim(run_dir)//"/vasp.done", max_wait_time=60.0_dp, error=error)
+	    call system_command("echo 'after wait'; ls -l "//trim(run_dir))
+	    call system_command("echo 'after wait'; ps auxw | egrep 'vasp|mpi'")
+	    PASS_ERROR(error)
+	    ! clean up
+	    call unlink(trim(run_dir)//"/vasp.done")
 	    call system_command("cd "//trim(run_dir)//"; rm -f REFTRAJCAR REFTRAJ_READY OUTCAR CONTCAR OSZICAR")
 	    call system_command("cat vasp.stdout."//run_dir_i//" >> vasp.stdout")
 	 endif
 	 ! start vasp in background
-	 call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1 &")
-	 call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1 &", status=stat)
+	 call          print("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &")
+	 call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &", status=stat)
 	 if (stat /= 0) then
 	    RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
 	 endif
@@ -305,16 +311,8 @@ subroutine do_vasp_calc(at, args_str, error)
       call system_timer('vasp_filepot/wait_reftraj_step_done')
       call print("waiting for output REFTRAJ_STEP_DONE", PRINT_VERBOSE)
       ! wait for output to be ready
-      inquire(file=trim(run_dir)//"/REFTRAJ_STEP_DONE", exist=persistent_calc_done)
-      wait_time = 0.0_dp
-      do while (.not. persistent_calc_done)
-	 call fusleep(100000)
-	 wait_time = wait_time + 100000_dp/1.0e6_dp
-	 inquire(file=trim(run_dir)//"/REFTRAJ_STEP_DONE", exist=persistent_calc_done)
-	 if (.not. persistent_calc_done .and. wait_time > persistent_max_wait_time) then
-	    RAISE_ERROR("error waiting too long for calculation to be done", error)
-	 endif
-      end do
+      call wait_for_file_to_exist(trim(run_dir)//"/REFTRAJ_STEP_DONE", persistent_max_wait_time, cycle_time=0.1_dp, error=error)
+      PASS_ERROR(error)
       call system_timer('vasp_filepot/wait_reftraj_step_done')
    else ! not persistent, just run vasp
       call system_timer('vasp_filepot/run_vasp')
