@@ -1409,14 +1409,17 @@ program crack
         steps = minim(classicalpot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., &
-             print_cinoutput=movie, eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output, args_str=crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
+             print_cinoutput=movie, eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output, &
+             args_str=crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args), &
+             fire_minim_dt0=params%minim_fire_dt0, fire_minim_dt_max=params%minim_fire_dt_max)
      else
         steps = minim(hybrid_pot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., &
              print_cinoutput=movie, &
              eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output, &
-             args_str=crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+             args_str=crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args), &
+             fire_minim_dt0=params%minim_fire_dt0, fire_minim_dt_max=params%minim_fire_dt_max)
      end if
 
      if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
@@ -1458,14 +1461,16 @@ program crack
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, &
                 args_str=crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args), &
-                eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
+                eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output, &
+                fire_minim_dt0=params%minim_fire_dt0, fire_minim_dt_max=params%minim_fire_dt_max)
         else
            steps = minim(hybrid_pot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
                 max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, eps_guess=params%minim_eps_guess, &
                 hook_print_interval=params%minim_print_output, &
-                args_str=crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+                args_str=crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args), &
+                fire_minim_dt0=params%minim_fire_dt0, fire_minim_dt_max=params%minim_fire_dt_max)
         end if
 
         call crack_update_connect(ds%atoms, params)
