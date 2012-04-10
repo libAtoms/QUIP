@@ -1,136 +1,161 @@
-diff vasp.5.2.12.orig/main.F vasp.5.2.12/main.F
-2952,2954c2952,2954
-<         CALL STEP(DYN%INIT,ISCALE,T_INFO%NIONS,LATT_CUR%A,LATT_CUR%ANORM,DYN%D2C,DYN%SMASS,DYN%POSION,DYN%POSIOC, &
-<              DYN%POTIM,T_INFO%POMASS,T_INFO%NTYP,T_INFO%ITYP,DYN%TEMP,DYN%VEL,DYN%D2,DYN%D3,DYN%SNOSE, &
-<              EKIN,EPS,ES,DISMAX,NDEGREES_OF_FREEDOM, IO%IU6)
----
-> 	CALL STEP(DYN%INIT,ISCALE,T_INFO%NIONS,LATT_CUR%A,LATT_CUR%ANORM,DYN%D2C,DYN%SMASS,DYN%POSION,DYN%POSIOC, &
-> 	     DYN%POTIM,T_INFO%POMASS,T_INFO%NTYP,T_INFO%ITYP,DYN%TEMP,DYN%VEL,DYN%D2,DYN%D3,DYN%SNOSE, &
-> 	     EKIN,EPS,ES,DISMAX,NDEGREES_OF_FREEDOM, IO%IU6)
-3320c3320,3322
-<         ENDIF
----
->         ELSE IF (DYN%IBRION==12) THEN
->            CALL REFTRAJ(LATT_CUR, T_INFO, DYN, TOTEN, TSIF, TIFOR, NSTEP, IO%IU0, INFO%LSTOP, WDES%COMM)
-> 	ENDIF
-3333a3336,3339
-> ! for IBRION==12, more like  MD IBRION==0
-> 	if (DYN%IBRION==12) then
-> 	   PRED%INIPRE=0
-> 	else
-3335,3345c3341,3352
-<         PRED%INIPRE=3
-<         IF ( PRED%IWAVPR >=12 .AND. &
-<              &     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
-<            CALL WAVPRE_NOIO(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
-<                 CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
-< 
-<         ELSE IF ( PRED%IWAVPR >=2 .AND. PRED%IWAVPR <10   .AND. &
-<              &     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
-<            CALL WAVPRE(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
-<                 CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
-<         ENDIF
----
-> 	   PRED%INIPRE=3
-> 	   IF ( PRED%IWAVPR >=12 .AND. &
-> 		&     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
-> 	      CALL WAVPRE_NOIO(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
-> 		   CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
-> 
-> 	   ELSE IF ( PRED%IWAVPR >=2 .AND. PRED%IWAVPR <10   .AND. &
-> 		&     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
-> 	      CALL WAVPRE(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
-> 		   CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
-> 	   ENDIF
-> 	endif
-diff vasp.5.2.12.orig/poscar.F vasp.5.2.12/poscar.F
-673a674,762
-> !=======================================================================
-> !
-> ! read positions from REFTRAJCAR file when it's ready
-> !
-> !=======================================================================
->       SUBROUTINE REFTRAJ(LATT_CUR, T_INFO, DYN, TOTEN, TSIF, TIFOR, NSTEP, IU0, LSTOP, MYCOMM)
->       USE prec
->       USE lattice
->       USE main_mpi
->       IMPLICIT NONE
-> 
->       TYPE (latt)::       LATT_CUR
->       TYPE (type_info) :: T_INFO
->       TYPE (dynamics)  :: DYN
->       REAL(q) TOTEN, TSIF(3,3), TIFOR(:,:)
->       INTEGER :: NSTEP
->       INTEGER :: IU0
->       LOGICAL :: LSTOP
->       TYPE (communic) :: MYCOMM
->     ! local
->       INTEGER I, NI, IERROR 
->       LOGICAL exists
-> 
->       LSTOP = .false.
-> 
->       ! save POSIOC just for fun
->       DYN%POSIOC = DYN%POSION
-> 
-> #if defined(MPI)
->       if (MYCOMM%IONODE == MYCOMM%NODE_ME) then ! on head node, do the I/O
-> #endif
-> 	 open(file="REFTRAJ_OUTPUT", unit=100, status="UNKNOWN")
-> 	 write(unit=100,fmt=*) T_INFO%NIONS
-> 	 write(unit=100,fmt='(F25.16)') TOTEN
-> 	 do I=1, T_INFO%NIONS
-> 	    write(unit=100,fmt='(3F25.16)') TIFOR(1,I), TIFOR(2,I), TIFOR(3,I)
-> 	 end do
-> 	 write(unit=100,fmt='(6F25.16)') TSIF(1,1), TSIF(2,2), TSIF(3,3), TSIF(1,2), TSIF(2,3), TSIF(3,1)
-> 	 close(unit=100)
-> 
-> 	 open(file="REFTRAJ_STEP_DONE", unit=100, status="UNKNOWN")
-> 	 write(unit=100,fmt=*) NSTEP
-> 	 close(unit=100)
-> 
-> 	 ! wait for REFTRAJ_READY to exist
-> 	 exists = .false.
-> 	 do while (.not. exists)
-> 	    INQUIRE(file="REFTRAJ_READY", EXIST=exists)
-> 	    call usleep(100000)
-> 	 end do
-> 	 call unlink("REFTRAJ_READY"//char(0))
-> 	 ! read REFTRAJCAR
-> 	 open (unit=100, FILE="REFTRAJCAR", STATUS="OLD")
-> 	 read (unit=100, fmt=*) NI
-> 	 ! check for NI=0, or invalid NI
-> 	 if (NI /= 0 .and. NI == T_INFO%NIONS) then
-> 	    read (unit=100, fmt=*) LATT_CUR%A(1,1:3)
-> 	    read (unit=100, fmt=*) LATT_CUR%A(2,1:3)
-> 	    read (unit=100, fmt=*) LATT_CUR%A(3,1:3)
-> 	    do I=1, NI
-> 	       read (unit=100, fmt=*) DYN%POSION(1:3,I)
-> 	    end do
-> 	 endif
-> 	 close (unit=100)
-> #if defined(MPI)
->       else ! other nodes
-> 	 NI = 0
-> 	 LATT_CUR%A = 0.0
-> 	 DYN%POSION = 0.0
->       endif
->       ! coalesce values onto all nodes
->       CALLMPI( M_sum_i(MYCOMM, NI, 1))
->       CALLMPI( M_sum_d(MYCOMM, LATT_CUR%A(1,1), 3*3))
->       CALLMPI( M_sum_d(MYCOMM, DYN%POSION(1,1), T_INFO%NIONS*3))
-> #endif
->       if (NI == 0) then
-> 	 if (IU0 >= 0) write(iu0,'(A)') "REFTRAJ got NIONS = 0, quitting"
-> 	 LSTOP = .true.
->       else if (NI /= T_INFO%NIONS) then
-> 	 if (IU0 >= 0) write(iu0,'(A,2I6)') "REFTRAJ got mismatched atom number ", NI, T_INFO%NIONS
-> 	 stop
->       endif
-> 
->       ! fix reciprocal lattice and stuff, just in case
->       CALL LATTIC(LATT_CUR)
-> 
->       END SUBROUTINE REFTRAJ
-> 
-> 
+diff -Nu vasp.5.2.12.orig/main.F vasp.5.2.12/main.F
+--- vasp.5.2.12.orig/main.F	2011-10-13 12:49:52.000000000 -0400
++++ vasp.5.2.12/main.F	2012-04-04 17:11:41.000000000 -0400
+@@ -2949,9 +2949,9 @@
+             write(g_io%REPORT,ADVANCE='NO',FMT='(/)')
+           ENDIF
+ #else
+-        CALL STEP(DYN%INIT,ISCALE,T_INFO%NIONS,LATT_CUR%A,LATT_CUR%ANORM,DYN%D2C,DYN%SMASS,DYN%POSION,DYN%POSIOC, &
+-             DYN%POTIM,T_INFO%POMASS,T_INFO%NTYP,T_INFO%ITYP,DYN%TEMP,DYN%VEL,DYN%D2,DYN%D3,DYN%SNOSE, &
+-             EKIN,EPS,ES,DISMAX,NDEGREES_OF_FREEDOM, IO%IU6)
++	CALL STEP(DYN%INIT,ISCALE,T_INFO%NIONS,LATT_CUR%A,LATT_CUR%ANORM,DYN%D2C,DYN%SMASS,DYN%POSION,DYN%POSIOC, &
++	     DYN%POTIM,T_INFO%POMASS,T_INFO%NTYP,T_INFO%ITYP,DYN%TEMP,DYN%VEL,DYN%D2,DYN%D3,DYN%SNOSE, &
++	     EKIN,EPS,ES,DISMAX,NDEGREES_OF_FREEDOM, IO%IU6)
+ #endif
+         TEIN = 2*EKIN/BOLKEV/NDEGREES_OF_FREEDOM
+ 
+@@ -3317,7 +3317,9 @@
+ !-----------------------------------------------------------------------
+         ELSE IF (DYN%IBRION==11) THEN
+            CALL INPOS(LATT_CUR, T_INFO, DYN, IO%IU6, IO%IU0, INFO%LSTOP, WDES%COMM)
+-        ENDIF
++        ELSE IF (DYN%IBRION==12) THEN
++           CALL REFTRAJ(LATT_CUR, T_INFO, DYN, TOTEN, TSIF, TIFOR, NSTEP, IO%IU0, INFO%LSTOP, WDES%COMM)
++	ENDIF
+ 
+ ! restrict volume for constant volume relaxation
+         IF (DYN%ISIF==4 .OR. DYN%ISIF==5) THEN
+@@ -3331,18 +3333,23 @@
+            ENDDO
+         ENDIF
+         CALL LATTIC(LATT_CUR)
++! for IBRION==12, more like  MD IBRION==0
++	if (DYN%IBRION==12) then
++	   PRED%INIPRE=0
++	else
+ !  reinitialize the prediction algorithm for the wavefunction if needed
+-        PRED%INIPRE=3
+-        IF ( PRED%IWAVPR >=12 .AND. &
+-             &     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
+-           CALL WAVPRE_NOIO(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
+-                CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
+-
+-        ELSE IF ( PRED%IWAVPR >=2 .AND. PRED%IWAVPR <10   .AND. &
+-             &     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
+-           CALL WAVPRE(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
+-                CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
+-        ENDIF
++	   PRED%INIPRE=3
++	   IF ( PRED%IWAVPR >=12 .AND. &
++		&     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
++	      CALL WAVPRE_NOIO(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
++		   CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
++
++	   ELSE IF ( PRED%IWAVPR >=2 .AND. PRED%IWAVPR <10   .AND. &
++		&     (ABS(TOTEN-TOTENG)/T_INFO%NIONS>1.0_q .OR. IFLAG==1)) THEN
++	      CALL WAVPRE(GRIDC,P,PRED,T_INFO,W,WDES,LATT_CUR,IO%LOPEN, &
++		   CHTOT,RHOLM,N_MIX_PAW, CSTRF, LMDIM,CQIJ,INFO%LOVERL,IO%IU0)
++	   ENDIF
++	endif
+ 
+         ! use forces as stopping criterion if EDIFFG<0
+         IF (DYN%EDIFFG<0) INFO%LSTOP=LSTOP2
+diff -Nu vasp.5.2.12.orig/poscar.F vasp.5.2.12/poscar.F
+--- vasp.5.2.12.orig/poscar.F	2011-07-21 02:37:14.000000000 -0400
++++ vasp.5.2.12/poscar.F	2012-04-05 14:51:30.000000000 -0400
+@@ -671,6 +671,95 @@
+       END SUBROUTINE INPOS
+ 
+ 
++!=======================================================================
++!
++! read positions from REFTRAJCAR file when it's ready
++!
++!=======================================================================
++      SUBROUTINE REFTRAJ(LATT_CUR, T_INFO, DYN, TOTEN, TSIF, TIFOR, NSTEP, IU0, LSTOP, MYCOMM)
++      USE prec
++      USE lattice
++      USE main_mpi
++      IMPLICIT NONE
++
++      TYPE (latt)::       LATT_CUR
++      TYPE (type_info) :: T_INFO
++      TYPE (dynamics)  :: DYN
++      REAL(q) TOTEN, TSIF(3,3), TIFOR(:,:)
++      INTEGER :: NSTEP
++      INTEGER :: IU0
++      LOGICAL :: LSTOP
++      TYPE (communic) :: MYCOMM
++    ! local
++      INTEGER I, NI, IERROR 
++      LOGICAL exists
++
++      LSTOP = .false.
++
++      ! save POSIOC just for fun
++      DYN%POSIOC = DYN%POSION
++
++#if defined(MPI)
++      if (MYCOMM%IONODE == MYCOMM%NODE_ME) then ! on head node, do the I/O
++#endif
++	 open(file="REFTRAJ_OUTPUT", unit=100, status="UNKNOWN")
++	 write(unit=100,fmt=*) T_INFO%NIONS
++	 write(unit=100,fmt='(F25.16)') TOTEN
++	 do I=1, T_INFO%NIONS
++	    write(unit=100,fmt='(3F25.16)') TIFOR(1,I), TIFOR(2,I), TIFOR(3,I)
++	 end do
++	 write(unit=100,fmt='(6F25.16)') TSIF(1,1), TSIF(2,2), TSIF(3,3), TSIF(1,2), TSIF(2,3), TSIF(3,1)
++	 close(unit=100)
++
++	 open(file="REFTRAJ_STEP_DONE", unit=100, status="UNKNOWN")
++	 write(unit=100,fmt=*) NSTEP
++	 close(unit=100)
++
++	 ! wait for REFTRAJ_READY to exist
++	 exists = .false.
++	 do while (.not. exists)
++	    INQUIRE(file="REFTRAJ_READY", EXIST=exists)
++	    call usleep(100000)
++	 end do
++	 call unlink("REFTRAJ_READY"//char(0))
++	 ! read REFTRAJCAR
++	 open (unit=100, FILE="REFTRAJCAR", STATUS="OLD")
++	 read (unit=100, fmt=*) NI
++	 ! check for NI=0, or invalid NI
++	 if (NI /= 0 .and. NI == T_INFO%NIONS) then
++	    read (unit=100, fmt=*) LATT_CUR%A(1,1:3)
++	    read (unit=100, fmt=*) LATT_CUR%A(2,1:3)
++	    read (unit=100, fmt=*) LATT_CUR%A(3,1:3)
++	    do I=1, NI
++	       read (unit=100, fmt=*) DYN%POSION(1:3,I)
++	    end do
++	 endif
++	 close (unit=100)
++#if defined(MPI)
++      else ! other nodes
++	 NI = 0
++	 LATT_CUR%A = 0.0
++	 DYN%POSION = 0.0
++      endif
++      ! coalesce values onto all nodes
++      CALLMPI( M_sum_i(MYCOMM, NI, 1))
++      CALLMPI( M_sum_d(MYCOMM, LATT_CUR%A(1,1), 3*3))
++      CALLMPI( M_sum_d(MYCOMM, DYN%POSION(1,1), T_INFO%NIONS*3))
++#endif
++      if (NI == 0) then
++	 if (IU0 >= 0) write(iu0,'(A)') "REFTRAJ got NIONS = 0, quitting"
++	 LSTOP = .true.
++      else if (NI /= T_INFO%NIONS) then
++	 if (IU0 >= 0) write(iu0,'(A,2I6)') "REFTRAJ got mismatched atom number ", NI, T_INFO%NIONS
++	 stop
++      endif
++
++      ! fix reciprocal lattice and stuff, just in case
++      CALL LATTIC(LATT_CUR)
++
++      END SUBROUTINE REFTRAJ
++
++
+ 
+ !*************************SUBROUTINE OUTPOS_TRAIL  *********************
+ ! write trailer for CONTCAR file
