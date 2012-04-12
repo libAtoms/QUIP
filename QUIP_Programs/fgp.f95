@@ -1,4 +1,5 @@
 program force_gaussian_prediction
+
    use libatoms_module
    implicit none
 
@@ -197,11 +198,13 @@ if (fix_sigma) then
               distance_ivs_stati = distance_ivs_stati + &
                   (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
             enddo
-            distance_ivs_stati = sqrt(distance_ivs_stati)          ! to take the square root and get a normalised distance 
+            distance_ivs_stati = sqrt(distance_ivs_stati/k)          ! to take the square root and get a normalised distance 
             if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
           enddo  
        enddo  
-       sigma = deviation_value * sigma_factor                      ! sigma derived from the statistical analysis on each single dimension of the IVs space
+
+       ! to write the derived sigma vector into file "sigma.dat" for later use
+       sigma = deviation_value * sigma_factor                        ! sigma derived from the statistical deviation on each single dimension of the IVs space
        open(unit=1, file='sigma.dat')
        write(1, *) sigma
        close(unit=1)
@@ -220,7 +223,7 @@ else
         enddo
     enddo
 
-    !  dealing with simgma
+    ! dealing with simgma
     sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
     if  (abs(sigma(t))<TOL_REAL) then
               sigma(t)=TOL_REAL
@@ -236,18 +239,18 @@ else
   dist_primitive = sqrt(dist_primitive/k)
   call print("primitive distance : "//dist_primitive)
 
-   ! normalised distance with statistical parameters       
-   do i=1,n
+  ! normalised distance with statistical parameters       
+  do i=1,n
        do j=1,n
          distance_ivs_stati = 0.0_dp
          do t=1, k
-             distance_ivs_stati = distance_ivs_stati + &
-                (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
+            distance_ivs_stati = distance_ivs_stati + &
+               (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
          enddo
-         distance_ivs_stati = sqrt(distance_ivs_stati)
+         distance_ivs_stati = sqrt(distance_ivs_stati/k)
          if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
        enddo
-    enddo
+   enddo
 endif          ! doing fix_sigma or using theta
 call print('sigma is:    '//sigma)
 
@@ -260,7 +263,7 @@ call print('sigma is:    '//sigma)
   allocate(covariance(n,n))
   do i = 1, n
       do j=1, n
-            covariance(i,j) = cov(feature_matrix(:,:,i), feature_matrix(:,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j), sigma, k) 
+          covariance(i,j) = cov(feature_matrix(:,:,i), feature_matrix(:,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j), sigma, k) 
       enddo
   enddo
 
@@ -349,7 +352,7 @@ call print('sigma is:    '//sigma)
       allocate(distance_index(n))
       do t= 1,n
          covariance_pred(t)=cov(feature_matrix_pred, feature_matrix(:,:,t), feature_matrix_normalised_pred(:,:), feature_matrix_normalised(:,:,t), sigma, k, distance=distance_confs(t))
-         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t))
+         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t)//" normalised: "//distance_confs(t)/dist_primitive)
       enddo
      
       distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
@@ -522,7 +525,7 @@ call print('sigma is:    '//sigma)
           d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /(2.0_dp**2)
     enddo
 
-    if (present(distance))  distance=sqrt(d_sq)
+    if (present(distance))  distance=sqrt(d_sq/k)     ! normalised by the number of dimensions of the Internal Space
     cov = exp(-1.0_dp * d_sq)
 
  endfunction cov
