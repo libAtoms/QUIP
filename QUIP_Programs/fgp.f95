@@ -28,7 +28,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
    call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you would like to teach with")  
-   call param_register(params, 'cutoff_len_ivs', '0.2', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
+   call param_register(params, 'cutoff_len_ivs', '0.04', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
    call param_register(params, 'add_vector', '0', add_vector, "the number of vectors you like to add into the internal_vector representation")
@@ -37,7 +37,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuration  filtering")
-   call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every individual dimension of the IVs space")
+   call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
@@ -142,7 +142,7 @@ program force_gaussian_prediction
            enddo
         endif
 
-        ! store the force info. for every configuration
+        ! store the force info for every configuration
         do j=1, k
              force_proj_ivs(j,t) = dot_product(feature_matrix_normalised(j,:,t), force) 
              call print("Force projection on IV"//j//" is:  "//force_proj_ivs(j,t))
@@ -158,7 +158,7 @@ program force_gaussian_prediction
  allocate(sigma(k))
  allocate(theta_array(k))
 
-!the parameters for doing statistics of distance matrix
+!the parameters for doing statistics on the distance matrix
  allocate(mean_value(k))
  allocate(max_value(k))
  allocate(deviation_value(k)) 
@@ -178,8 +178,8 @@ if (fix_sigma) then
             do j=1, n
                  distance_ivs(i,j) = distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))
                  if (i>j)  call print("Dimensional Distance : "//distance_ivs(i, j)//"  dimension : "//t)
-            enddo  ! i
-          enddo    ! j
+            enddo   ! i
+          enddo     ! j
 
           call matrix_statistics(distance_ivs, max_value(t), mean_value(t), deviation_value(t), n)
           call print("Statistics max value: "//max_value(t)//" mean value: "//mean_value(t)//" deviation_value: "//deviation_value(t))
@@ -189,24 +189,24 @@ if (fix_sigma) then
        dist_primitive = sqrt(dist_primitive/k) 
        call print("primitive_distance : "//dist_primitive)
 
-       ! normalised distance with statistical parameters       
+       ! normalised distance with hyperparameters derived from statistics analysis      
        do i=1,n
           do j=1,n
           distance_ivs_stati = 0.0_dp   
             do t=1, k                 
               distance_ivs_stati = distance_ivs_stati + &
                   (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
-              distance_ivs_stati = sqrt(distance_ivs_stati)   
             enddo
+            distance_ivs_stati = sqrt(distance_ivs_stati)          ! to take the square root and get a normalised distance 
             if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
           enddo  
        enddo  
-       sigma = deviation_value*sigma_factor    ! sigma derived from the statistical analysis on every dimension
+       sigma = deviation_value * sigma_factor                      ! sigma derived from the statistical analysis on each single dimension of the IVs space
        open(unit=1, file='sigma.dat')
        write(1, *) sigma
        close(unit=1)
 
-     endif                                     ! do statistics on the distance matrix
+     endif                                                         ! do statistics on the distance matrix
 else 
   theta_array=theta
   dist_primitive=0.0_dp
@@ -239,16 +239,16 @@ else
    ! normalised distance with statistical parameters       
    do i=1,n
        do j=1,n
-       distance_ivs_stati = 0.0_dp
+         distance_ivs_stati = 0.0_dp
          do t=1, k
              distance_ivs_stati = distance_ivs_stati + &
                 (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
-             distance_ivs_stati = sqrt(distance_ivs_stati)
          enddo
-       if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
+         distance_ivs_stati = sqrt(distance_ivs_stati)
+         if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
        enddo
     enddo
-endif           ! doing fix_sigma or using theta
+endif          ! doing fix_sigma or using theta
 call print('sigma is:    '//sigma)
 
  deallocate(mean_value)
@@ -331,7 +331,7 @@ call print('sigma is:    '//sigma)
 
       if (add_vector > 0) then
            do j = k-add_vector+1, k
-              feature_matrix_pred(j,:) = force_ptr_mm(:, at_n)
+              feature_matrix_pred(j,:)=force_ptr_mm(:, at_n)
               feature_len = norm(feature_matrix_pred(j,:))
 
               if (feature_len < TOL_REAL) then
@@ -348,12 +348,13 @@ call print('sigma is:    '//sigma)
       allocate(distance_confs(n))
       allocate(distance_index(n))
       do t= 1,n
-         covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,t), feature_matrix_normalised_pred(:,:), feature_matrix_normalised(:,:,t), sigma, k, distance = distance_confs(t))
+         covariance_pred(t)=cov(feature_matrix_pred, feature_matrix(:,:,t), feature_matrix_normalised_pred(:,:), feature_matrix_normalised(:,:,t), sigma, k, distance=distance_confs(t))
+         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t))
       enddo
      
       distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
       call insertion_sort(distance_confs, idx=distance_index)   
-      call print("DISTANCE wrt to the testing conf: "//distance_confs(1)//distance_confs(n)//distance_index(1)//distance_index(n))
+      call print("Max and Min DISTANCE with Index after Sorting: "//distance_confs(1)//" "//distance_confs(n)//" "//distance_index(1)//" "//distance_index(n))
       deallocate(distance_confs)
 
       if (do_conf_filter) then
@@ -379,7 +380,7 @@ call print('sigma is:    '//sigma)
             ! predicted force: real force: absolute difference 
       enddo
 
-       ! using least-squares to restore the force in the External Cartesian Space  
+       ! using least-squares to restore the target force in the External Cartesian Space  
        call inverse(matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred), feature_inv)  
        force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
        call print("force in external space:"//force)
@@ -511,14 +512,14 @@ call print('sigma is:    '//sigma)
  function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, k, distance)
 
     real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:)
-    real(dp), intent(out), optional        ::        distance
+    real(dp), intent(out), optional       ::        distance
     real(dp)                              ::        cov, d_sq
     integer                               ::        i
     integer, intent(in)                   ::        k
  
     d_sq = 0.0_dp    
     do i=1, k
-          d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /2.0_dp
+          d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /(2.0_dp**2)
     enddo
 
     if (present(distance))  distance=sqrt(d_sq)
@@ -571,6 +572,7 @@ call print('sigma is:    '//sigma)
             j = j + 1
        else
            sigmainv(i,i) = 1.0_dp/w(i)
+           write(*,*) "valid: ", i
        end if
    end do
    call print("the number of zero singular values:"//j)
