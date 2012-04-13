@@ -195,12 +195,12 @@ contains
     call Finalise(this)
 
     call initialise(params)
-    call param_register(params, 'TB', 'false', is_TB, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, 'IP', 'false', is_IP, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, 'FilePot', 'false', is_FilePot, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, 'wrapper', 'false', is_wrapper, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, 'TB', 'false', is_TB, help_string="If true, a tight-binding model")
+    call param_register(params, 'IP', 'false', is_IP, help_string="If true, an interatomic potential model")
+    call param_register(params, 'FilePot', 'false', is_FilePot, help_string="If true, a potential that interacts with another executable by reading/writing files")
+    call param_register(params, 'wrapper', 'false', is_wrapper, help_string="If true, a hardcoded wrapper function")
+    call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="If true, a callback potential (calls arbitrary passed by user)")
+    call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="If true, uses little cluster, calculate forces only")
     call param_register(params, 'force_using_fd', 'F', this%force_using_fd, &
       help_string="If true, and if 'force' is also present in the calc argument list, calculate forces using finite difference.")
 
@@ -1115,8 +1115,8 @@ contains
     INIT_ERROR(error)
 
     call initialise(params)
-    call param_register(params, "energy", "", calc_energy, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
-    call param_register(params, "force", "", calc_force, help_string="No help yet.  This source file was $LastChangedBy: sc578 $")
+    call param_register(params, "energy", "", calc_energy, help_string="If present, calculate energy.  Also name of parameter to put energy into")
+    call param_register(params, "force", "", calc_force, help_string="If present, calculate forces.  Also name of property to put forces into")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
        RAISE_ERROR("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'", error)
     endif

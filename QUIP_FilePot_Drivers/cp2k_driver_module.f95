@@ -413,6 +413,8 @@ contains
        call print(""//persistent_run_i, file=persistent_run_i_io, verbosity=PRINT_ALWAYS)
        call finalise(persistent_run_i_io)
        call system_timer('do_cp2k_calc/get_persistent_i')
+    else
+      persistent_run_i = 0
     endif
 
     call system_timer('do_cp2k_calc/copy_templ')
@@ -966,7 +968,7 @@ contains
        end if
        PASS_ERROR(error)
        call system_timer('do_cp2k_calc/read_output')
-    else
+    else ! not persistent
        call system_timer('do_cp2k_calc/run_cp2k')
        call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries, error=error)
        PASS_ERROR(error)

@@ -667,7 +667,7 @@ program qmmm_md
        endif
        call initialise(pot,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
 	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
-	  ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
 	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
 	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
 	  ' weight_interpolation='//trim(weight_interpolation)// &
@@ -681,7 +681,7 @@ program qmmm_md
 	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
        call print('INITIALISE_POT ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
 	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
-	  ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
 	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
 	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
 	  ' weight_interpolation='//trim(weight_interpolation)// &
@@ -1417,7 +1417,7 @@ contains
 	    return
 	  else
 	    args_str = trim(args_str) // &
-	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
+	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
 	      ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
 	  endif
           !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
@@ -1448,7 +1448,7 @@ contains
        endif
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
-           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
@@ -1469,7 +1469,7 @@ contains
        endif
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
-           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
@@ -1935,7 +1935,7 @@ contains
        !extend QM region around seed atoms
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
-	 add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true., &
+	 add_only_heavy_atoms=(.not. buffer_general),hopping_nneighb_only=.false.,heuristics_nneighb_only=.true.,min_images_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,create_cluster_info_args=create_cluster_info_args, &
 	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix))
