@@ -352,15 +352,14 @@ call print('sigma is:    '//sigma)
       allocate(distance_index(n))
       do t= 1,n
          covariance_pred(t)=cov(feature_matrix_pred, feature_matrix(:,:,t), feature_matrix_normalised_pred(:,:), feature_matrix_normalised(:,:,t), sigma, k, distance=distance_confs(t))
-         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t)//" normalised: "//distance_confs(t)/dist_primitive)
+         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t))
       enddo
-     
-      distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
-      call insertion_sort(distance_confs, idx=distance_index)   
-      call print("Max and Min DISTANCE with Index after Sorting: "//distance_confs(1)//" "//distance_confs(n)//" "//distance_index(1)//" "//distance_index(n))
-      deallocate(distance_confs)
 
       if (do_conf_filter) then
+          distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
+          call insertion_sort(distance_confs, idx=distance_index)
+          call print("Max and Min DISTANCE with Index after Sorting: "//distance_confs(1)//" "//distance_confs(n)//" "//distance_index(1)//" "//distance_index(n))
+
           open(unit=100, file='data_embed.xyz', status='replace')
           do t=1, n_relavant_confs
               call read(at, teaching_file, frame=distance_index(t)-1)
@@ -369,6 +368,8 @@ call print('sigma is:    '//sigma)
           call finalise(at)
           close(100)
       endif 
+
+      deallocate(distance_confs)
       deallocate(distance_index)
 
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
@@ -522,7 +523,7 @@ call print('sigma is:    '//sigma)
  
     d_sq = 0.0_dp    
     do i=1, k
-          d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(sigma(i)**2) /(2.0_dp**2)
+          d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*sigma(i))**2
     enddo
 
     if (present(distance))  distance=sqrt(d_sq/k)     ! normalised by the number of dimensions of the Internal Space
