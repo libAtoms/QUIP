@@ -167,7 +167,7 @@ contains
     elseif (do_have_titania_potential) then
       call set_cutoff(at_copy,1.3*bond_length(22, 8))
     else
-      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
+      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
     endif
     call calc_connect(at_copy, alt_connect=t_connect)
 
@@ -176,14 +176,14 @@ contains
 
     ! now create labels using this connectivity object
     if (do_find_silica_residue) then
-       ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect, &
+       ! cutoff is large, must do heuristics_nneighb_only=.true., but EVB form bond won't work
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=.true.,alt_connect=t_connect, &
             find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
             silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
             find_molecules=find_molecules, error=error)
     else
-       ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,&
+       ! cutoff is set to 0, all bonds are already heuristics_nneighb_only except extra EVB form_bond bonds
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=.false.,alt_connect=t_connect,&
             find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
             silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
             find_molecules=find_molecules, error=error)
@@ -202,14 +202,14 @@ contains
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect, &
+  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, heuristics_nneighb_only,alt_connect, &
        find_silica_residue, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
        find_molecules, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
-    logical, intent(in), optional :: nneighb_only
+    logical, intent(in), optional :: heuristics_nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical,     optional, intent(in)    :: find_silica_residue, silica_pos_dep_charges
     real(dp), optional, intent(in) :: silica_charge_transfer
@@ -357,7 +357,7 @@ real(dp) :: do_silica_charge_transfer
           endif
 
       !Add H atoms -- if .not.remove_Ti_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
-          call add_cut_hydrogens(at,atom_TiO,nneighb_only=.true.,alt_connect=use_connect)
+          call add_cut_hydrogens(at,atom_TiO,heuristics_nneighb_only=.true.,alt_connect=use_connect)
           call print(atom_TiO%N//' O/H atoms found in total')
 
 !check if none of these atoms are identified yet
@@ -502,7 +502,7 @@ real(dp) :: do_silica_charge_transfer
           endif
           !Add H atoms -- if .not.remove_Si_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
       !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
-          call add_cut_hydrogens(at,atom_SiO,nneighb_only=.true.,alt_connect=use_connect)
+          call add_cut_hydrogens(at,atom_SiO,heuristics_nneighb_only=.true.,alt_connect=use_connect)
           call print(atom_SiO%N//' O/H atoms found in total')
 
           !check if none of these atoms are identified yet
@@ -635,7 +635,7 @@ real(dp) :: do_silica_charge_transfer
 
        ! Search the atom structure for this residue
        call print('|-Looking for '//cres_name//'...',verbosity=PRINT_ANAL)
-       call find_motif(at,motif,list,mask=unidentified,nneighb_only=nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
+       call find_motif(at,motif,list,mask=unidentified,nneighb_only=heuristics_nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
           
@@ -747,7 +747,7 @@ real(dp) :: do_silica_charge_transfer
     if (my_do_charmm) then
        if (do_find_molecules) then
           allocate(molecules(at%N))
-          call find_molecule_ids(at,molecules,nneighb_only=nneighb_only,alt_connect=alt_connect)
+          call find_molecule_ids(at,molecules,heuristics_nneighb_only=heuristics_nneighb_only,alt_connect=alt_connect)
           do i=1, size(molecules)
              if (allocated(molecules(i)%i_a)) then
                 ! special case for silica molecule
@@ -813,10 +813,10 @@ real(dp) :: do_silica_charge_transfer
 
   end subroutine create_residue_labels_internal
 
-  subroutine find_molecule_ids(at,molecules,nneighb_only,alt_connect)
+  subroutine find_molecule_ids(at,molecules,heuristics_nneighb_only,alt_connect)
     type(Atoms), intent(inout) :: at
     type(allocatable_array_pointers), optional :: molecules(:)
-    logical, intent(in), optional :: nneighb_only
+    logical, intent(in), optional :: heuristics_nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
 
     integer, pointer :: mol_id(:)
@@ -844,7 +844,7 @@ real(dp) :: do_silica_charge_transfer
 	! look for neighbours
 	do while (added_something)
 	   call initialise(next_atoms)
-	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = nneighb_only, min_images_only = .true., alt_connect=alt_connect)
+	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = heuristics_nneighb_only, min_images_only = .true., alt_connect=alt_connect)
 	   if (next_atoms%N > 0) then
 	    added_something = .true.
 	    call append(cur_molec, next_atoms)
@@ -1220,7 +1220,7 @@ real(dp) :: do_silica_charge_transfer
     if (do_add_silica_23body) then
       call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
     else
-      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
+      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
     endif
     call calc_connect(at_copy, alt_connect=t_connect)
 
@@ -1228,16 +1228,16 @@ real(dp) :: do_silica_charge_transfer
     PASS_ERROR(error)
 
     ! now create labels using this connectivity object
-    ! if cutoff is set to 0, nneighb_only doesn't matter
-    ! if cutoff is large, then nneighb_only must be true
+    ! if cutoff is set to 0, heuristics_nneighb_only doesn't matter
+    ! if cutoff is large, then heuristics_nneighb_only must be true
     !    so might as well pass true
     if (do_add_silica_23body) then
-       ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
-       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect,&
+       ! cutoff is large, must do heuristics_nneighb_only=.true., but EVB form bond won't work
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,heuristics_nneighb_only=.true.,alt_connect=t_connect,&
             remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     else
-       ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
-       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect,&
+       ! cutoff is set to 0, all bonds are already heuristics_nneighb_only except extra EVB form_bond bonds
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,heuristics_nneighb_only=.false.,alt_connect=t_connect,&
             remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     endif
     PASS_ERROR(error)
@@ -1247,7 +1247,7 @@ real(dp) :: do_silica_charge_transfer
   !% Writes PSF topology file, to be used with the PDB coordinate file.
   !% PSF contains the list of atoms, bonds, angles, impropers, dihedrals.
   !
-  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect, &
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,heuristics_nneighb_only,alt_connect, &
        remove_qmmm_link_bonds, run_suffix, error)
 
     character(len=*),           intent(in) :: psf_file
@@ -1256,7 +1256,7 @@ real(dp) :: do_silica_charge_transfer
     type(Table),      optional, intent(in) :: intrares_impropers
     character(80),    optional, intent(in) :: imp_filename
     logical,          optional, intent(in) :: add_silica_23body
-    logical, intent(in), optional :: nneighb_only
+    logical, intent(in), optional :: heuristics_nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     character(len=*), optional, intent(in) :: run_suffix
     logical, optional, intent(in) :: remove_qmmm_link_bonds
@@ -1350,7 +1350,7 @@ real(dp) :: do_silica_charge_transfer
     call print('',file=psf)
 call print('PSF| '//at%n//' atoms')
    ! BOND section
-    call create_bond_list(at,bonds,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+    call create_bond_list(at,bonds,do_add_silica_23body,heuristics_nneighb_only,alt_connect=alt_connect, &
          remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     if (any(bonds%int(1:2,1:bonds%N).le.0) .or. any(bonds%int(1:2,1:bonds%N).gt.at%N)) &
        call system_abort('write_psf_file_pos: element(s) of bonds not within (0;at%N]')
@@ -1358,7 +1358,7 @@ call print('PSF| '//at%n//' atoms')
 call print('PSF| '//bonds%n//' bonds')
 
    ! ANGLE section
-    call create_angle_list(at,bonds,angles,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+    call create_angle_list(at,bonds,angles,do_add_silica_23body,heuristics_nneighb_only,alt_connect=alt_connect, &
          remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
 
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
@@ -1372,7 +1372,7 @@ call print('PSF| '//bonds%n//' bonds')
 call print('PSF| '//angles%n//' angles')
 
    ! DIHEDRAL section
-    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,nneighb_only,alt_connect=alt_connect, &
+    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,heuristics_nneighb_only,alt_connect=alt_connect, &
          remove_qmmm_link_bonds=remove_qmmm_link_bonds, run_suffix=run_suffix)
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
        call system_abort('write_psf_file_pos: element(s) of dihedrals not within (0;at%N]')
@@ -1490,13 +1490,13 @@ call print('PSF| '//impropers%n//' impropers')
   !% atom pairs that have SIO2 molecule type up to the silica_cutoff distance.
   !% Optionally use hysteretic_connect, if it is passed as alt_connect.
   !
-  subroutine create_bond_list(at,bonds,add_silica_23body,nneighb_only,alt_connect, &
+  subroutine create_bond_list(at,bonds,add_silica_23body,heuristics_nneighb_only,alt_connect, &
        remove_qmmm_link_bonds, run_suffix)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(out) :: bonds
   logical,     intent(in)  :: add_silica_23body
-  logical, intent(in), optional :: nneighb_only
+  logical, intent(in), optional :: heuristics_nneighb_only
   type(Connection), intent(in), optional, target :: alt_connect
   logical, intent(in), optional :: remove_qmmm_link_bonds
   character(len=*), intent(in), optional :: run_suffix
@@ -1543,7 +1543,7 @@ call print('PSF| '//impropers%n//' impropers')
        if (add_silica_23body) then
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=heuristics_nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
@@ -1695,14 +1695,14 @@ call print('PSF| '//impropers%n//' impropers')
   !% for the corresponding 3 body cutoff.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_angle_list(at,bonds,angles,add_silica_23body,nneighb_only,alt_connect, &
+  subroutine create_angle_list(at,bonds,angles,add_silica_23body,heuristics_nneighb_only,alt_connect, &
        remove_qmmm_link_bonds, run_suffix)
 
     type(Atoms), intent(in)  :: at
     type(Table), intent(in)  :: bonds
     type(Table), intent(out) :: angles
     logical,     intent(in)  :: add_silica_23body
-    logical,     intent(in), optional  :: nneighb_only
+    logical,     intent(in), optional  :: heuristics_nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical, intent(in), optional :: remove_qmmm_link_bonds
     character(len=*), intent(in), optional :: run_suffix
@@ -1748,7 +1748,7 @@ call print('PSF| '//impropers%n//' impropers')
 !call system_abort('stop!')
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=heuristics_nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
 
        do j = 1,atom_b%N
@@ -1807,7 +1807,7 @@ call print('PSF| '//impropers%n//' impropers')
        if (add_silica_23body) then
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=heuristics_nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
 
        do j = 1,atom_b%N
@@ -1877,14 +1877,14 @@ call print('PSF| '//impropers%n//' impropers')
   !% skip any dihedrals with Si atoms, as there are only 2 and 3 body terms.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,nneighb_only, alt_connect, &
+  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,heuristics_nneighb_only, alt_connect, &
        remove_qmmm_link_bonds, run_suffix)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: angles
   type(Table), intent(out) :: dihedrals
   logical,     intent(in)  :: add_silica_23body
-  logical,     intent(in), optional  :: nneighb_only
+  logical,     intent(in), optional  :: heuristics_nneighb_only
   type(Connection), intent(in), optional, target :: alt_connect
   logical, intent(in), optional :: remove_qmmm_link_bonds
   character(len=*), intent(in), optional :: run_suffix
@@ -1919,7 +1919,7 @@ call print('PSF| '//impropers%n//' impropers')
       ! look for one more to the beginning: ??--1--2--3
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(1,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=heuristics_nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
@@ -1948,7 +1948,7 @@ call print('PSF| '//impropers%n//' impropers')
       ! look for one more to the end: 1--2--3--??
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(3,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=heuristics_nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
