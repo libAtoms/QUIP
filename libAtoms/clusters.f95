@@ -4035,6 +4035,9 @@ type(inoutput), optional :: debugfile
    if (my_use_create_cluster_info) then
       call add_property(my_atoms, "hybrid_region_core_tmp", HYBRID_NO_MARK, ptr=hybrid_region_core_tmp_p)
       hybrid_region_core_tmp_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
+      if (present(create_cluster_info_args) .and. (present(hopping_nneighb_only) .or. present(heuristics_nneighb_only))) then
+	 RAISE_ERROR("Got both create_cluster_info_args and (do_hopping_nneighb_only or do_heuristics_nneighb_only), but these conflict", error)
+      endif
       my_create_cluster_info_args = optional_default("terminate=F cluster_hopping_nneighb_only="//do_hopping_nneighb_only// &
 	 " cluster_heuristics_nneighb_only="//do_heuristics_nneighb_only//" cluster_allow_modification", create_cluster_info_args)
       padded_cluster_info = create_cluster_info_from_mark(my_atoms, my_create_cluster_info_args, mark_name="hybrid_region_core_tmp")
