@@ -2209,7 +2209,7 @@ if hasattr(quippy, 'Potential'):
       -0.9099268121      -0.4814231815       0.4761962741"""))
 
       def test_force_mixing_distance_ramp(self):
-         pot = Potential('ForceMixing method=force_mixing_super_smooth transition_hops=2 cluster_nneighb_only=T buffer_hops=0 qm_args_str={single_cluster=T cluster_calc_connect=T}',
+         pot = Potential('ForceMixing method=force_mixing_super_smooth transition_hops=2 cluster_hopping_nneighb_only=T cluster_heuristics_nneighb_only=T buffer_hops=0 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
          pot.calc(self.at, force=f)

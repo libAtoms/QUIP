@@ -718,20 +718,20 @@ class TestCluster_Surface_FCC(QuippyTestCase):
       embed = self.at.bfs_grow_single(1, n=1, nneighb_only=False)
       self.at.hybrid_mark[:] = HYBRID_NO_MARK
       self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
-      self.t = create_cluster_info_from_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.t = create_cluster_info_from_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F")
       self.cluster1 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
 
       embed = self.at.bfs_grow_single(1, n=2, nneighb_only=False)
       self.at.hybrid_mark[:] = HYBRID_NO_MARK
       self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
-      self.t = create_cluster_info_from_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.t = create_cluster_info_from_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F")
       self.cluster2 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
 
       hollow_atom = 28
       embed.delete(hollow_atom)
       self.at.hybrid_mark[:] = HYBRID_NO_MARK
       self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
-      self.t = create_cluster_info_from_mark(self.at, "cluster_allow_modification=T reduce_n_cut_bonds=T cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.t = create_cluster_info_from_mark(self.at, "cluster_allow_modification=T reduce_n_cut_bonds=T cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F")
       self.cluster2h = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
 
       # self.at.print_xyz("tmp_at.xyz", all_properties=True)
@@ -777,10 +777,10 @@ class TestCluster_CrackTip(QuippyTestCase):
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
       self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
 
-      self.t1 = create_cluster_info_from_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=F cluster_allow_modification=F")
+      self.t1 = create_cluster_info_from_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F cluster_allow_modification=F")
       self.cluster1 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t1)
 
-      self.t2 = create_cluster_info_from_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=T cluster_allow_modification=F")
+      self.t2 = create_cluster_info_from_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F cluster_allow_modification=F")
       self.cluster2 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t2)
 
       #AtomsList([self.at,self.cluster1,self.cluster2]).show()
@@ -841,7 +841,8 @@ class TestCluster_HystereticConnect_Equiv(QuippyTestCase):
       self.args_hysteretic = {'terminate' :True,
                               'randomise_buffer' : False,
                               'hysteretic_connect': True,
-                              'cluster_nneighb_only': False}
+                              'cluster_hopping_nneighb_only': False,
+                              'cluster_heuristics_nneighb_only': False}
       self.t_hysteretic = create_cluster_info_from_mark(self.at, args_str(self.args_hysteretic))
       self.cluster_hysteretic = carve_cluster(self.at, args_str(self.args_hysteretic), cluster_info=self.t_hysteretic)
 
@@ -890,7 +891,8 @@ class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
       self.args_hysteretic = {'terminate' :True,
                               'randomise_buffer' : False,
                               'hysteretic_connect': True,
-                              'cluster_nneighb_only': False}
+                              'cluster_hopping_nneighb_only': False,
+                              'cluster_heuristics_nneighb_only': False}
       self.t_hysteretic = create_cluster_info_from_mark(self.at_hysteretic, args_str(self.args_hysteretic))
       self.cluster_hysteretic = carve_cluster(self.at_hysteretic, args_str(self.args_hysteretic), cluster_info=self.t_hysteretic)
 
