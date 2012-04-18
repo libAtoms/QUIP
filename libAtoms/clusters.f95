@@ -2379,7 +2379,7 @@ end function cluster_in_out_in
     type(Dictionary) :: params
     logical :: has_distance_ramp_inner_radius, has_distance_ramp_outer_radius, has_distance_ramp_center
     real(dp) :: distance_ramp_inner_radius, distance_ramp_outer_radius, distance_ramp_center(3)
-    logical :: min_images_only, mark_buffer_outer_layer, hopping_nneighb_only, heuristics_nneighb_only, hysteretic_buffer, hysteretic_connect
+    logical :: min_images_only, mark_buffer_outer_layer, hopping_nneighb_only, hysteretic_buffer, hysteretic_connect
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
@@ -2421,8 +2421,7 @@ end function cluster_in_out_in
     call param_register(params, 'distance_ramp_inner_radius', '0', distance_ramp_inner_radius, has_value_target=has_distance_ramp_inner_radius, help_string="If distance_ramp, inner radius to start reducing weight from 1")
     call param_register(params, 'distance_ramp_outer_radius', '0', distance_ramp_outer_radius, has_value_target=has_distance_ramp_outer_radius, help_string="If distance_ramp, outer radius by which to reach weight of 0")
     call param_register(params, 'distance_ramp_center', '0 0 0', distance_ramp_center, has_value_target=has_distance_ramp_center, help_string="If present, origin for distances of distance ramp (otherwise cluster center of mass)")
-    call param_register(params, 'hopping_nneighb_only', 'F', hopping_nneighb_only, help_string="If true, only hop to atom pairs that are is_nearest_neighbor().")
-    call param_register(params, 'heuristics_nneighb_only', 'T', heuristics_nneighb_only, help_string="If true, only consider connected (for heuristics) atom pairs that are is_nearest_neighbor().")
+    call param_register(params, 'hopping_nneighb_only', 'T', hopping_nneighb_only, help_string="If true, only hop to atom pairs that are is_nearest_neighbor().")
     call param_register(params, 'min_images_only', 'F', min_images_only, help_string="If true, consider only minimum images, not multiple periodic images")
     call param_register(params, 'mark_buffer_outer_layer', 'T', mark_buffer_outer_layer, help_string="If true, mark outermost buffer layer")
     call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer, help_string="If true, do hysteretic buffer")
@@ -2451,7 +2450,7 @@ end function cluster_in_out_in
     end if
 
     call print('create_hybrid_weights: transition_hops='//transition_hops//' buffer_hops='//buffer_hops//' weight_interpolation='//weight_interpolation, PRINT_VERBOSE)
-    call print('  hopping_nneighb_only='//hopping_nneighb_only//' heuristics_nneighb_only='//heuristics_nneighb_only//' min_images_only='//min_images_only//' mark_buffer_outer_layer='//mark_buffer_outer_layer, PRINT_VERBOSE)
+    call print('  hopping_nneighb_only='//hopping_nneighb_only//' min_images_only='//min_images_only//' mark_buffer_outer_layer='//mark_buffer_outer_layer, PRINT_VERBOSE)
     call print('  hysteretic_buffer='//hysteretic_buffer//' hysteretic_buffer_inner_radius='//hysteretic_buffer_inner_radius, PRINT_VERBOSE)
     call print('  hysteretic_buffer_outer_radius='//hysteretic_buffer_outer_radius, PRINT_VERBOSE)
     call print('  hysteretic_connect='//hysteretic_connect//' hysteretic_connect_cluster_radius='//hysteretic_connect_cluster_radius, PRINT_VERBOSE)
