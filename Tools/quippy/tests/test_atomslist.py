@@ -46,7 +46,7 @@ class TestAtomsList(QuippyTestCase):
 
    def testgetitemnegindex(self):
       last = self.listal[-1]
-      self.assert_(self.listsrc[-1] is last)
+      self.assert_(self.listsrc[-1] == last)
 
    def testdelitem(self):
       del self.listal[0]
