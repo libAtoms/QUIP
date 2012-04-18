@@ -19,6 +19,7 @@
 
 import numpy as np
 import quippy.atoms
+import logging
 from quippy import _potential
 from quippy._potential import *
 from quippy.util import quip_xml_parameters
@@ -202,7 +203,7 @@ class Potential(_potential.Potential):
                     'stresses':        'local_virial'}
 
         args_str = ' '.join([args_map[quantity] for quantity in quantities])
-        print 'calling Potential.calc with args_str %s' % args_str
+        logging.debug('calling Potential.calc with args_str %s' % args_str)
         self.calc(self.atoms, args_str=args_str)
 
         if 'energy' in quantities:
