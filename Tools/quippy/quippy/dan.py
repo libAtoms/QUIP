@@ -69,7 +69,10 @@ class DanWriter(object):
 
     def write(self, at):
         if self.first_config and self.graph is not None:
-            self.out.write("n_graphs %d" % len(self.graph) + "\n")
+	    if (type(self.graph) is StringType):
+	       self.out.write("n_graphs 1\n")
+	    else:
+	       self.out.write("n_graphs %d" % len(self.graph) + "\n")
             self.first_config=False
         self.out.write("new_configuration" + "\n")
         
