@@ -65,7 +65,10 @@ class DanWriter(object):
 
     def write(self, at):
 	if "dan_graph" in at.params:
-	    graph_vals = at.params["dan_graph"].split()
+	    if type(at.params["dan_graph"]) is StringType:
+	       graph_vals = at.params["dan_graph"].split()
+	    else:
+	       graph_vals = [ at.params["dan_graph"] ]
 	    self.n_graphs = len(graph_vals)
 
         if self.first_config:

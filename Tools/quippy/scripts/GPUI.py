@@ -1,13 +1,62 @@
 #!/usr/bin/env python
 
 from numpy import *
-from scipy.special import erf
+# from scipy.special import erf
 import sys
 
 if (len(sys.argv) != 10):
    sys.stderr.write(("Usage: %s collective_val_column dE_dcollective_column noise_variance_column\n"% sys.argv[0])+
                     "       len_scale variance_prior min_collective max_collective n_collective min_bracket\n" )
    sys.exit(1)
+
+def p_erf(xi):
+   # save the sign of x
+   # sign = 1 if x >= 0 else -1
+   if (rank(xi) > 0):
+      xr=zeros((len(xi)))
+      for i in range(len(xi)):
+	 x = xi[i]
+	 if x >= 0:
+	    sign = 1
+	 else:
+	    sign = -1
+	 x = abs(x)
+
+	 # constants
+	 a1 =  0.254829592
+	 a2 = -0.284496736
+	 a3 =  1.421413741
+	 a4 = -1.453152027
+	 a5 =  1.061405429
+	 p  =  0.3275911
+
+	 # A&S formula 7.1.26
+	 t = 1.0/(1.0 + p*x)
+	 y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x)
+	 xr[i] = sign*y
+      # return sign*y # erf(-x) = -erf(x)
+      return xr
+   else:
+      x = xi
+      if x >= 0:
+	 sign = 1
+      else:
+	 sign = -1
+      x = abs(x)
+
+      # constants
+      a1 =  0.254829592
+      a2 = -0.284496736
+      a3 =  1.421413741
+      a4 = -1.453152027
+      a5 =  1.061405429
+      p  =  0.3275911
+
+      # A&S formula 7.1.26
+      t = 1.0/(1.0 + p*x)
+      y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x)
+      return sign*y
+
 
 # read command line (should use getopt?)
 collective_val_col=int(sys.argv[1])
@@ -45,7 +94,8 @@ noise_variance_vec = array(noise_variance_list)
 
 # map 1.0 (minimum) to 0, and transition to new slope around 1.25??
 def coord_transform(x):
-     return (erf((x-1.0)*4.0)+0.5*x)
+     #NB return (erf((x-1.0)*4.0)+0.5*x)
+     return (p_erf((x-1.0)*4.0)+0.5*x)
 def coord_transform_d(x):
      return ((2.0*4.0/sqrt(3.1415965358979))*exp(-(4.0**2)*(x-1.0)**2) + 0.5)
 # def coord_transform(x):
