@@ -24,18 +24,14 @@ import numpy as np
 
 class DanWriter(object):
 
-    def __init__(self, out, pos_field='pos', graph=None, atom_type=None, value=None,
+    def __init__(self, out, pos_field='pos', atom_type=None, value=None,
                  vector=None, bond_by_cutoff=None, post_config_command=None,
                  post_file_command=None, end_command=None):
         self.out = out
-        self.graph = graph
-        if self.graph is not None:
-            self.graph_min=[1.0e38]*len(self.graph)
-            self.graph_max=[-1.0e38]*len(self.graph)
+        self.n_graphs = 0
         self.atom_type = atom_type
         self.pos_field = pos_field
         self.value = value
-        self.graph = graph
         self.vector = vector
         self.bond_by_cutoff = bond_by_cutoff
         self.post_config_command = post_config_command
@@ -61,18 +57,22 @@ class DanWriter(object):
 	        self.end_command=[self.end_command]
             for cmd in self.end_command:
                 self.out.write(cmd + "\n")
-        if self.graph is not None:
-            for ig in range(len(self.graph)):
+        if self.n_graphs > 0:
+            for ig in range(self.n_graphs):
                 self.out.write("graph_range %d %f %f" % (ig, self.graph_min[ig], self.graph_max[ig]) + "\n")
         if self.opened:
             self.out.close()
 
     def write(self, at):
-        if self.first_config and self.graph is not None:
-	    if (type(self.graph) is StringType):
-	       self.out.write("n_graphs 1\n")
-	    else:
-	       self.out.write("n_graphs %d" % len(self.graph) + "\n")
+	if "dan_graph" in at.params:
+	    graph_vals = at.params["dan_graph"].split()
+	    self.n_graphs = len(graph_vals)
+
+        if self.first_config:
+	    if self.n_graphs > 0:
+	       self.out.write("n_graphs %d\n" % self.n_graphs)
+	       self.graph_min = [1.0e38] * self.n_graphs
+	       self.graph_max = [-1.0e38] * self.n_graphs
             self.first_config=False
         self.out.write("new_configuration" + "\n")
         
@@ -117,17 +117,16 @@ class DanWriter(object):
                                                                      getattr(at,self.vector)[2,i_at],
                                                                      getattr(at,self.vector)[3,i_at]))
                         
-        if self.graph is not None:
-	    if (type(self.graph) is StringType):
-		self.graph=[self.graph]
-            for ig in range(len(self.graph)):
-                graph_val = getattr(at, self.graph[ig])
-                self.out.write("graph_value %d %f\n" % (ig, graph_val))
-                if (graph_val < self.graph_min[ig]):
-                    self.graph_min[ig] = graph_val
-                if (graph_val > self.graph_max[ig]):
-                    self.graph_max[ig] = graph_val
-                    
+        if self.n_graphs > 0:
+	    for ig in range(len(graph_vals)):
+	       val = graph_vals[ig]
+	       self.out.write("graph_value %d %f\n" % (ig, float(val)))
+	       f_val = float(val)
+	       if (f_val < self.graph_min[ig]):
+		  self.graph_min[ig] = f_val
+	       if (f_val > self.graph_max[ig]):
+		  self.graph_max[ig] = f_val
+		       
         if self.bond_by_cutoff:
             self.out.write("bond_by_cutoff\n")
             
