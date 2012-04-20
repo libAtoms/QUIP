@@ -240,6 +240,7 @@ program qmmm_md
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core, help_string="If true, use cluster_create_inf() to create core, which does things like residue completing heuristics")
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential (implemented in CP2K).")
+      call param_register(params_in, 'have_titania_potential', 'F', have_titania_potential, help_string="Whether there is a titania unit in the system to be treated with the Danny potential (implemented in CP2K).")
       call param_register(params_in, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
       call param_register(params_in, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
       call param_register(params_in, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
@@ -1485,7 +1486,8 @@ contains
          endif
        endif
 
-       args_str='qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} run_suffix=_extended'
+       ! cluster_hopping_nneighb_only=F so that create_hybrid_weights will be able to find all the atoms
+       args_str='cluster_hopping_nneighb_only=F qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} run_suffix=_extended'
        if (distance_ramp) then
 	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
        endif
@@ -1896,7 +1898,7 @@ contains
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
 	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
-	 hopping_nneighb_only=.false., heuristics_nneighb_only=.true., &
+	 cluster_hopping_nneighb_only=.false., cluster_heuristics_nneighb_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,&
 	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)
@@ -1945,7 +1947,7 @@ contains
        !extend QM region around seed atoms
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
-	 add_only_heavy_atoms=(.not. buffer_general),hopping_nneighb_only=.false.,heuristics_nneighb_only=.true.,min_images_only=.true., &
+	 add_only_heavy_atoms=(.not. buffer_general),cluster_hopping_nneighb_only=.false.,cluster_heuristics_nneighb_only=.true.,min_images_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,&
 	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)

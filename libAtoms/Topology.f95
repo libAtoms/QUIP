@@ -107,10 +107,11 @@ contains
 
 
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
+  !% if EVB is being used, must pass exact connectivity object and set evb_nneighb_only to false
   !%
   subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
        form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
-       find_molecules, error)
+       find_molecules, evb_nneighb_only, error)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -122,6 +123,7 @@ contains
     real(dp), intent(in), optional :: silica_charge_transfer
     logical, intent(in), optional :: have_titania_potential
     logical, intent(in), optional :: find_molecules
+    logical, intent(in), optional :: evb_nneighb_only
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -130,13 +132,15 @@ contains
     logical :: do_find_silica_residue, do_have_titania_potential
     logical :: use_pos_is_pos
 
-    logical :: bond_exists
+    logical :: bond_exists, do_nneighb_only
     integer :: shift(3)
     real(dp) :: form_bond_dist
 
     integer :: ji, j
 
     INIT_ERROR(error)
+
+    do_nneighb_only = optional_default(.true., evb_nneighb_only)
 
     ! save a copy
     at_copy = at
@@ -175,19 +179,10 @@ contains
     PASS_ERROR(error)
 
     ! now create labels using this connectivity object
-    if (do_find_silica_residue) then
-       ! cutoff is large, must do heuristics_nneighb_only=.true., but EVB form bond won't work
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=.true.,alt_connect=t_connect, &
-            find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
-            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
-            find_molecules=find_molecules, error=error)
-    else
-       ! cutoff is set to 0, all bonds are already heuristics_nneighb_only except extra EVB form_bond bonds
-       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=.false.,alt_connect=t_connect,&
-            find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
-            silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
-            find_molecules=find_molecules, error=error)
-    endif
+    call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=do_nneighb_only,alt_connect=t_connect,&
+	 find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
+	 silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
+	 find_molecules=find_molecules, error=error)
     PASS_ERROR(error)
     call finalise(t_connect)
 
