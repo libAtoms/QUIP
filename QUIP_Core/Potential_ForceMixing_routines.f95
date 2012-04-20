@@ -556,7 +556,7 @@
 !             endif
           else
              call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
-                  hopping_nneighb_only=lotf_nneighb_only, min_images_only=.true., mark_name='hybrid_mark'//trim(run_suffix))
+                  cluster_hopping_nneighb_only=lotf_nneighb_only, min_images_only=.true., mark_name='hybrid_mark'//trim(run_suffix))
              if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
                   call add_cut_hydrogens(at,this%fitlist)
              endif
