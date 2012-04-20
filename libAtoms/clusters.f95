@@ -1533,8 +1533,8 @@ end function cluster_in_out_in
 
     type(Dictionary) :: params
     logical :: do_rescale_r
-    real(dp) :: r_scale, cluster_vacuum
-    logical :: terminate, randomise_buffer, print_clusters, do_calc_connect, do_same_lattice
+    real(dp) :: r_scale, cluster_vacuum, cluster_fix_lattice(3), cluster_round_lattice
+    logical :: terminate, randomise_buffer, print_clusters, do_calc_connect, do_same_lattice, do_fix_lattice
     logical :: hysteretic_connect
     integer :: i, j, k, m
     real(dp) :: maxlen(3), sep(3), lat_maxlen(3), lat_sep(3)
@@ -1574,6 +1574,11 @@ end function cluster_in_out_in
       help_string="run calc_connect before doing stuff (passivation, etc)")
     call param_register(params, 'cluster_same_lattice', 'F', do_same_lattice,&
       help_string="Don't modify cluster cell vectors from incoming cell vectors")
+    call param_register(params, 'cluster_fix_lattice', '0. 0. 0.', cluster_fix_lattice, &
+      has_value_target=do_fix_lattice, &
+      help_string="fix the cluster lattice to be cubic with given 3 lengths. useful with DFT codes where one doesn't pay for vacuum.")
+    call param_register(params, 'cluster_round_lattice', '3.0', cluster_round_lattice, &
+      help_string="distance to which to round cluster lattice (default is 3.0 A)")
     call param_register(params, 'cluster_periodic_x', 'F', do_periodic(1),&
       help_string="do not add vaccum along x, so as to make cluster's cell vectors periodic")
     call param_register(params, 'cluster_periodic_y', 'F', do_periodic(2),&
@@ -1636,16 +1641,22 @@ end function cluster_in_out_in
       lat_maxlen(k) = lat_maxlen(k) * norm(cluster%lattice(:,k))
     end do
 
-    ! Round up maxlen to be divisible by 3 A, so that it does not fluctuate too much
-    forall (k=1:3) maxlen(k) = 3.0_dp*ceiling(maxlen(k)/3.0_dp)
-    forall (k=1:3) lat_maxlen(k) = 3.0_dp*ceiling(lat_maxlen(k)/3.0_dp)
+    ! Round up maxlen to be divisible by cluster_round_lattice (default 3 A), so that it does not fluctuate too much
+    forall (k=1:3) maxlen(k) = cluster_round_lattice*ceiling(maxlen(k)/cluster_round_lattice)
+    forall (k=1:3) lat_maxlen(k) = cluster_round_lattice*ceiling(lat_maxlen(k)/cluster_round_lattice)
 
-    ! vacuum pad cluster (if didn't set do_same_lattice)
+    ! vacuum pad cluster (if didn't set do_same_lattice or cluster_fix_lattice)
     ! if not periodic at all, just do vacuum padding
+    ! if cluster_fix_lattice was given, just set the diagonal lattice elements to those values
     ! if periodic along some dir, keep supercell vector directions, and set
     !    extent in each direction to lesser of cluster extent + vacuum or original extent
     if (do_same_lattice) then
       cluster%lattice = at%lattice
+    else if (do_fix_lattice) then
+      cluster%lattice = 0.0_dp
+      do k=1,3
+         cluster%lattice(k,k) = cluster_fix_lattice(k)
+      end do
     else
       if (any(do_periodic)) then
 	do k=1,3
@@ -1689,9 +1700,11 @@ end function cluster_in_out_in
 
     ! rescale cluster positions and lattice 
     if (do_rescale_r) then
-       call print('carve_cluster: rescaling cluster positions and lattice by factor '//r_scale, PRINT_VERBOSE)
+       call print('carve_cluster: rescaling cluster positions (and lattice if not fixed) by factor '//r_scale, PRINT_VERBOSE)
        cluster%pos = r_scale * cluster%pos
-       call set_lattice(cluster, r_scale * cluster%lattice, scale_positions=.false.)
+       if (.not. do_fix_lattice) then
+          call set_lattice(cluster, r_scale * cluster%lattice, scale_positions=.false.)
+       end if
     end if
 
     if (randomise_buffer .and. .not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) &
