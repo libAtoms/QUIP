@@ -28,6 +28,7 @@ import os, weakref, warnings, copy, sys
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format, parse_slice
+from quippy.extendable_str import Extendable_str
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import available_modules, FortranDerivedTypes
 from math import pi
@@ -337,7 +338,9 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             cell = self.lattice.T.view(np.ndarray)
         if symbols is None and pbc is None:
             pbc = self.get_pbc()
-
+        if charges is None and hasattr(self, 'charge'):
+            charges = self.charge.view(np.ndarray)
+            
         ase.Atoms.__init__(self, symbols, positions, numbers,
                            tags, momenta, masses, magmoms, charges,
                            scaled_positions, cell, pbc, constraint,
@@ -477,8 +480,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             source, frame = source.split('@')
             frame = parse_slice(frame)
             if 'frame' in kwargs:
-                raise ValueError("Conflicting frame references given: kwarg frame=%d and @-reference %d" %
-                                 kwargs['frame'], frame)
+                raise ValueError("Conflicting frame references given: kwarg frame=%r and @-reference %r" %
+                                 (kwargs['frame'], frame))
             if not isinstance(frame, int):
                 raise ValueError("Frame @-reference %r does not resolve to single frame" % frame)
             kwargs['frame'] = frame
@@ -784,6 +787,14 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             if new_property or overwrite:
                 getattr(self, name.lower())[:] = value
 
+    def __getstate__(self):
+        es = Extendable_str()
+        self.write('', estr=es, format='xyz')
+        return str(es)
+
+    def __setstate__(self, state):
+        es = Extendable_str(state)
+        self.read_from('', estr=es, format='xyz')
 
     def mem_estimate(self):
         """Estimate memory usage of this Atoms object, in bytes"""
@@ -797,6 +808,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             mem += c.cell_heads.size*c.cell_heads.itemsize # cell data
 
         return mem
+
+
 
 FortranDerivedTypes['type(atoms)'] = Atoms
 
