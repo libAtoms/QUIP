@@ -23,6 +23,7 @@ from quippy import netcdf_file
 from quippy.system import INPUT, OUTPUT, INOUT
 from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from quippy.farray import farray, padded_str_array
+from quippy.extendable_str import Extendable_str
 import numpy as np
 
 __all__ = _cinoutput.__all__
@@ -32,13 +33,14 @@ class CInOutput(_cinoutput.CInOutput):
     __doc__ = _cinoutput.CInOutput.__doc__
 
     def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
-                 frame=None, one_frame_per_file=None, mpi=None, zero=False, range=None, indices=None,
+                 frame=None, one_frame_per_file=None, mpi=None, zero=False, range=None, indices=None, prefix=None,
                  fpointer=None, finalise=True):
         _cinoutput.CInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
                                       frame, one_frame_per_file, mpi, fpointer=fpointer, finalise=finalise)
         self.zero = zero
         self.range = range
         self.indices = indices
+        self.prefix = prefix
 
     __init__.__doc__ = _cinoutput.CInOutput.__init__.__doc__
 
@@ -46,13 +48,13 @@ class CInOutput(_cinoutput.CInOutput):
         return int(self.n_frame)
 
     def __getitem__(self, index):
-        return self.read(frame=index, zero=self.zero, range=self.range, indices=self.indices)
+        return self.read(frame=index, zero=self.zero, range=self.range, indices=self.indices, prefix=self.prefix)
 
     def __setitem__(self, index, value):
         self.write(value, frame=index)
 
     def read(self, properties=None, properties_array=None, frame=None,
-             zero=None, range=None, str=None, estr=None, indices=None):
+             zero=None, range=None, str=None, estr=None, indices=None, prefix=None):
         at = Atoms()
         if range == 0 or range == 'empty':
             range = [-1,-1]
@@ -60,7 +62,7 @@ class CInOutput(_cinoutput.CInOutput):
         _cinoutput.CInOutput.read(self, at, properties=properties,
                                   properties_array=properties_array, frame=frame,
                                   zero=zero, range=range, str=str, estr=estr,
-                                  indices=indices)
+                                  indices=indices, prefix=prefix)
         return at
 
     def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
@@ -80,12 +82,12 @@ class CInOutputReader(object):
     """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
 
     def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
-                 zero=False, one_frame_per_file=False, indices=None):
+                 zero=False, one_frame_per_file=False, indices=None, prefix=None):
         if isinstance(source, basestring):
             self.opened = True
             self.source = CInOutput(source, action=INPUT, append=False, zero=zero, range=range,
                                     no_compute_index=no_compute_index, one_frame_per_file=one_frame_per_file,
-                                    indices=indices)
+                                    indices=indices, prefix=prefix)
             try:
                 self.netcdf_file = netcdf_file(source)
             except (RuntimeError, AssertionError, IOError):
@@ -166,3 +168,5 @@ class CInOutputWriter(object):
         self.dest.close()
 
 AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
+
+    

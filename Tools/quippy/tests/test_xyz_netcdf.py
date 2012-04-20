@@ -163,10 +163,15 @@ class TestCInOutput(QuippyTestCase):
       self.assertEqual(len(self.al), len(al))
       self.assertEqual(list(self.al), list(al))
 
-   def testmultixyzprefix(self):
+   def testmultixyz_prefix_write(self):
       self.al.write('test.xyz', prefix='PREFIX')
       lines = open('test.xyz').readlines()
       self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
+
+   def testmultixyz_prefix_read(self):
+      self.al.write('test.xyz', prefix='PREFIX')
+      al = AtomsList('test.xyz', prefix='PREFIX')
+      self.assertEqual(list(self.al), list(al))
 
    if 'netcdf' in available_modules:
       def testmultinc(self):
