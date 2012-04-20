@@ -18,6 +18,10 @@ _current_viewer = None
 
 class AtomEyeViewerMixin(AtomEyeViewer):
     """quippy-specific extensions to AtomEyeViewer"""
+
+    _fields = ['verbose', 'echo', 'fortran_indexing',
+               'filename', 'source', 'frame', 'name',
+               'cache_mem_limit', 'block']
     
     def __init__(self, name):
         global _viewers, _current_viewer
@@ -43,8 +47,8 @@ class AtomEyeViewerMixin(AtomEyeViewer):
                 _show = auxprop
 
             if at.has_property('_show'):
-                at.remove_auxprop('_show')
-            at.add_property('_show', _show)
+                del at.properties['_show']
+            at.add_property('_show', _show, overwrite=True)
             auxprop = '_show'
 
         # Ensure auxprop is one of the first AUX_PROPERTY_COLORING
@@ -167,7 +171,22 @@ class AtomEyeViewerMixin(AtomEyeViewer):
 
     def copy(self):
         return atoms(self, recycle=False, inject=False)
-        
+
+    def __getinitargs__(self):
+        if hasattr(self.atoms, 'filename'):
+            return (self.atoms.filename,)
+        elif hasattr(self.atoms, 'source'):
+            return (self.atoms.source)
+        else:
+            raise ValueError("can't work out how to pickle Atoms")
+
+    def __getstate__(self):
+        state = AtomEyeViewer.__getstate__(self)
+        return state
+
+    def __setstate__(self, state):
+        AtomEyeViewer.__setstate__(self, state) 
+    
 
 class AtomsViewer(Atoms, AtomEyeViewerMixin):
     """
