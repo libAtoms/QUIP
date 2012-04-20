@@ -72,7 +72,7 @@ class Potential(_potential.Potential):
 
     def __init__(self, args_str=None, pot1=None, pot2=None, param_str=None,
                  param_filename=None, bulk_scale=None, mpi_obj=None,
-                 callback=None, calculator=None,
+                 callback=None, calculator=None, inplace=False,
                  fortran_indexing=True, fpointer=None, finalise=True,
                  error=None):
         """Typically a Potential is constructed from an initialisation
@@ -102,6 +102,8 @@ class Potential(_potential.Potential):
         self.stress = None
         self.stresses = None
         self.numeric_forces = None
+
+        self.inplace = inplace
 
         if callback is not None or calculator is not None:
             if args_str is None:
@@ -159,8 +161,12 @@ class Potential(_potential.Potential):
         if self.atoms is not None and self.atoms.equivalent(atoms):
             return
 
-        # store a copy of `atoms` as a quippy.atoms.Atoms instance
-        self.atoms = quippy.atoms.Atoms(atoms)
+        if isinstance(atoms, quippy.Atoms) and self.inplace:
+           # store a reference
+           self.atoms = atoms
+        else:
+           # store a copy of `atoms` as a quippy.atoms.Atoms instance
+           self.atoms = quippy.atoms.Atoms(atoms)
 
         # build neighbour list
         self.atoms.set_cutoff(self.cutoff())
