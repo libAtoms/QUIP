@@ -395,7 +395,7 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 
 
 char* get_line(char *linebuffer, int string, int string_length, char *orig_stringp, char *stringp, char **prev_stringp,
-		FILE *in, char *info, int *error)
+	       FILE *in, char *info, int *error)
 {
   INIT_ERROR;
 
@@ -420,14 +420,14 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
   }
 }
 
-#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error); PASS_ERROR;
+#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error); PASS_ERROR; linep = linebuffer+line_offset;
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error)
+	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, char *prefix, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
-  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE];
+  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], *linep;
   char fields[MAX_FIELD_COUNT][LINESIZE], subfields[MAX_FIELD_COUNT][LINESIZE],
     finalfields[MAX_FIELD_COUNT][LINESIZE];
   char *p, *p1, tmp_logical, *orig_stringp, *prev_stringp, *stringp;
@@ -436,7 +436,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   int n_frame, n_selected;
   long *frames;
   int *atoms, type, shape[2], tmp_error, tmp_type, tmp_shape[2];
-  int frames_array_size, got_index, n_buffer;
+  int frames_array_size, got_index, n_buffer, line_offset;
   void *data, *tmp_data;
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
@@ -491,13 +491,18 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
+  if (strlen(prefix) != 0)
+    line_offset = strlen(prefix)+1;
+  else
+    line_offset = 0;
+
   if (!got_index && frame != 0 && in != stdin) {
     debug("read_xyz: skipping to frame %d\n", frame);
 
     for (i=0; i<frame; i++) {
       GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
-      if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-  	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms when skipping frame %d", linebuffer, i);
+      if (sscanf(linep, "%d", &nxyz) != 1) {
+  	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms when skipping frame %d", linep, i);
       }
       GET_LINE("read_xyz: premature end when skipping, expecting comment line");
       for (j=0; j<nxyz; j++)
@@ -507,8 +512,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   GET_LINE("read_xyz: premature end, expecting number of atoms");
 
-  if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms", linebuffer);
+  if (sscanf(linep, "%d", &nxyz) != 1) {
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms", linep);
   }
 
   if (got_index) {
@@ -577,12 +582,12 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
   GET_LINE("premature end - expecting comment line");
 
-  if (!stristr(linebuffer, "lattice=")) {
+  if (!stristr(linep, "lattice=")) {
     // It's not an extended XYZ file. Try to guess what's going on.
     // If comment line contains nine or more fields, assume last nine are
     // lattice in cartesian coordinates.
 
-    p = linebuffer;
+    p = linep;
     k = 0;
     while ((p1 = strsep(&p, " \t")) != NULL) {
       if (*p1 == '\0') continue;
@@ -598,32 +603,32 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	  break;
 	}
 
-      if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-      if ((p = strstr(linebuffer, "\r")) != NULL) *p = '\0';
+      if ((p = strstr(linep, "\n")) != NULL) *p = '\0';
+      if ((p = strstr(linep, "\r")) != NULL) *p = '\0';
       if (!error_occured) {
 	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
-	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+	strncat(linep, tmpbuf, LINESIZE-strlen(linep)-1);
 
       } else {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linebuffer);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linep);
       }
     } else {
       // Put in a bogus lattice
       sprintf(tmpbuf, " Lattice=\"0 0 0 0 0 0 0 0 0\"");
-      strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+      strncat(linep, tmpbuf, LINESIZE-strlen(linep)-1);
     }
   }
 
-  if (!stristr(linebuffer, "properties=")) {
+  if (!stristr(linep, "properties=")) {
     // No Properties key. Add a default one.
-    if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-    if ((p = strstr(linebuffer, "\r")) != NULL) *p = '\0';
-    strncat(linebuffer, " Properties=species:S:1:pos:R:3",LINESIZE-strlen(linebuffer)-1);
+    if ((p = strstr(linep, "\n")) != NULL) *p = '\0';
+    if ((p = strstr(linep, "\r")) != NULL) *p = '\0';
+    strncat(linep, " Properties=species:S:1:pos:R:3",LINESIZE-strlen(linep)-1);
   }
 
   // Parse parameters. First split on ", ', { or }
-  p = linebuffer;
+  p = linep;
   k = 0;
   while ((p1 = strsep(&p, "\"'{}")) != NULL) {
     if (*p1 == '\0') continue;
@@ -651,33 +656,33 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   // Finally, split on '=' to get key/value pairs
   for (i=0; i<nfields; i++) {
-    strncpy(linebuffer, finalfields[i], LINESIZE);
-    if ((p = strchr(linebuffer,'=')) == NULL) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Badly formed key/value pair %s\n", linebuffer);
+    strncpy(linep, finalfields[i], LINESIZE);
+    if ((p = strchr(linep,'=')) == NULL) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Badly formed key/value pair %s\n", linep);
     }
 
     *p = '\0';
-    strncpy(param_key, linebuffer, PARAM_STRING_LENGTH);
+    strncpy(param_key, linep, PARAM_STRING_LENGTH);
     strncpy(param_value, p+1, PARAM_STRING_LENGTH);
     // Now we have key in 'param_key' and value in 'param_value'
 
     //if (strcasecmp(param_key, "Lattice") == 0 ||
     //strcasecmp(param_key, "Properties") == 0) continue;
 
-    strncpy(linebuffer, param_value, LINESIZE);
+    strncpy(linep, param_value, LINESIZE);
     k = 0;
-    p = linebuffer;
+    p = linep;
     while ((p1 = strsep(&p, " ")) != NULL) {
       if (*p1 == '\0') continue;
       strncpy(fields[k++], p1, LINESIZE);
     }
     
     if (k == 0) {
-      if (strlen(linebuffer) == 0) {
+      if (strlen(linep) == 0) {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
       }
       k = 1;
-      strncpy(fields[0], linebuffer, LINESIZE);
+      strncpy(fields[0], linep, LINESIZE);
     }
 
     debug("read_xyz: param key=%s value=%s k=%d\n", param_key, param_value, k);
@@ -816,12 +821,12 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   strncpy(param_key, "Properties", strlen("Properties"));
   dictionary_query_key(params, param_key, &type, shape, &data, error, strlen("Properties"));
   PASS_ERROR;
-  strncpy(linebuffer, (char *)data, shape[0]);
-  linebuffer[shape[0]] = '\0';
+  strncpy(linep, (char *)data, shape[0]);
+  linep[shape[0]] = '\0';
 
-  debug("properties string %s\n", linebuffer);
+  debug("properties string %s\n", linep);
 
-  p = linebuffer;
+  p = linep;
   k = 0;
   while ((p1 = strsep(&p, ":")) != NULL) {
     if (k >= MAX_FIELD_COUNT) {
@@ -839,7 +844,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     debug("read_xyz: got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
 
     if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad column count %s line=%s\n", fields[3*i+2], linebuffer);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad column count %s line=%s\n", fields[3*i+2], linep);
     }
 
     entry_count += ncols;
@@ -935,14 +940,14 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     if (n_index != -1 && !mask[atidx]) continue;
 
     k = 0;
-    p = linebuffer;
+    p = linep;
     while ((p1 = strsep(&p, " \t\n")) != NULL) {
       if (*p1 == '\0') continue;
       strncpy(fields[k++], p1, LINESIZE);
     }
     if (k != entry_count) {
       for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linebuffer);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linep);
     }
 
     k = 0;
