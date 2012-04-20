@@ -62,10 +62,10 @@ def skip_time_duplicates(seq, initial_time=-1.0):
          yield at
          cur_time = at.params['Time']
 
-def open_sources(args, range, indices):
+def open_sources(args, frames, indices):
    if len(args) == 1:
-      atomseq = AtomsReader(args[0], start=range.start,
-                            stop=range.stop, step=range.step, indices=indices)
+      atomseq = AtomsReader(args[0], start=frames.start,
+                            stop=frames.stop, step=frames.step, indices=indices)
       nframes = len(atomseq)
       sources = [atomseq]
    else:
@@ -73,11 +73,11 @@ def open_sources(args, range, indices):
 
       # Try to count total number of frames
       nframes = sum([len(s) for s in sources])
-      nframes = len(range(*range.indices(nframes)))
+      nframes = len(range(*frames.indices(nframes)))
 
       # Build a chain of iterators over all input files, skipping frames as appropriate
       atomseq = itertools.islice(itertools.chain.from_iterable(sources),
-                                 range.start, range.stop, range.step)
+                                 frames.start, frames.stop, frames.step)
 
    return nframes, atomseq, sources
 
@@ -209,7 +209,10 @@ while True:
    out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
 
    if view is None:
-      a0 = Atoms(args[0], frame=opt.range.start)
+      if opt.range.start != 0:
+         a0 = Atoms(args[0], frame=opt.range.start)
+      else:
+         a0 = AtomsReader(args[0])[0]
 
       if opt.merge is not None:
          for k in opt.merge_properties:
