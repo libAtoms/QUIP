@@ -144,6 +144,8 @@ class AtomsReader(AtomsReaderMixin):
             is_filename_sequence = True
             is_list_of_atoms = True
             for item in self.reader:
+                if '@' in item:
+                    item = item[:item.index('@')]
                 if not isinstance(item, basestring) or not file_exists(item):
                     is_filename_sequence = False
                 if not isinstance(item, Atoms):
