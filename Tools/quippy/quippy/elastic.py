@@ -568,6 +568,9 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
                 E[:,2] = (n2 + n3 - n1)/a
                 E[:,3] = (n3 + n1 - n2)/a
 
+                if all(E[:,1] == 0) or all(E[:,2] == 0) or all(E[:,3]) == 0:
+                    continue
+
             elif (system == 'anatase' and len(neighb) == 6):
 
                 if(c_vector==None):
@@ -668,7 +671,7 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
                 at.stress[:,i] = stress_vector(RsigRt)
 
                 at.strain_energy_density[i] = 0.5*np.dot(at.strain[:,i], at.stress[:,i])
-                print at.strain[:, i]
+                #print at.strain[:, i]
 
                 compute_stress_eig(i)
 
