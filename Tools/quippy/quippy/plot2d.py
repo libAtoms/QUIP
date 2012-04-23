@@ -19,14 +19,16 @@
 
 from quippy import available_modules
 from quippy.system import print_title
-from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines
+from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text
 from quippy.farray import convert_farray_to_ndarray
 import numpy as np
+import itertools
 
 __all__ = ['plot', 'plot_energy_error', 'plot_max_force_error',
            'plot_rms_force_error', 'plot_max_stress_error',
            'plot_rms_stress_error', 'scatter_force_error',
-           'force_error_statistics', 'plot_force_error']
+           'force_error_statistics', 'plot_force_error',
+           'neb_plot', 'neb_plot_multiple']
 
 # Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)
@@ -200,3 +202,131 @@ def label_axes_with_config_types(config_types):
         tick.label1.set_rotation(90)
 
     draw()
+
+
+if 'ase' in available_modules:
+
+    from ase.neb import fit
+    from ase.constraints import FixAtoms
+    from ase.calculators.singlepoint import SinglePointCalculator
+
+    def neb_plot(images, normalize=False, smin=0., smax=1., dE=0., plot_images=True,
+                 plot_forces=True, plot_ts=True, Efac=1.0, color='k', label=None):
+        s, E, Sfit, Efit, lines = fit(images)
+
+        if normalize:
+            s = np.array(s)
+            E = (E + dE)*Efac
+            Efit = (Efit + dE)*Efac
+            max_s = s.max()
+            s = (smax-smin)*s/max_s + smin
+            Sfit = (smax-smin)*Sfit/max_s + smin
+            lines = [ ((smax-smin)*x/max_s + smin, y*Efac + dE) for (x, y) in lines ]
+        else:
+            smin = np.min(s)
+            smax = np.max(s)
+
+        if plot_images:
+            plot(s[1:-1], E[1:-1], color+'x')
+        plot (Sfit, Efit, color+'-', label=label)
+        if plot_forces:
+            for x,y in lines:
+                plot(x, y, 'g-')
+        plot([s[0]], [E[0]], color+'o')
+        plot([s[-1]], [E[-1]], color+'o')
+        if plot_ts:
+            plot([Sfit[Efit.argmax()]], [Efit.max()], 'ro')
+        xlabel('Reaction coordinate $s$')
+        ylabel(r'$\Delta E$ / eV')
+        xlim(smin-0.05*(smax-smin), smax+0.05*(smax-smin))
+        return s, E, Sfit, Efit, lines
+
+
+    def neb_plot_multiple(filenames=None, images_list=None, offset=0, dE=0.0, Efac=1.0, cascade=False,
+                          plot_barrier_E=False, barrier_xfunc=None, barrier_xlabel='', barrier_polydegree=1,
+                          label_func=None, **plot_args):
+        barrier_E = []
+        atoms = []
+
+        if (filenames is None) + (images_list is None) != 1:
+            raise ValueError('either filenames or images must be present, but not both')
+
+        if filenames is not None:
+            images_list = [ AtomsList(filename) for filename in filenames ]
+
+        if plot_barrier_E:
+            if barrier_xfunc is None:
+                raise ValueError('xfunc must be present to plot barrier_E')
+            subplot(121)
+
+        colors = itertools.cycle(['r','g','b','c','m','y','k'])
+        for i, (images, color) in enumerate(zip(images_list,colors)):
+            initial = images[0]
+            constraint = FixAtoms(mask=np.logical_not(initial.move_mask.view(np.ndarray)))
+
+            for image in images:
+                energy = image.energy
+                forces = image.force.view(np.ndarray).T
+                image.set_calculator(SinglePointCalculator(energy, forces, None, None, image))
+                image.set_constraint(constraint)
+
+            smin, smax = offset, 1. + offset
+            if cascade:
+                smin += i
+                smax += i
+
+            label = None
+            if label_func is not None:
+                label = label_func(images[0])
+            s, E, Sfit, Efit, lines = neb_plot(images,
+                                               True,
+                                               smin=smin,
+                                               smax=smax,
+                                               dE=dE,
+                                               Efac=Efac,
+                                               color=color,
+                                               label=label,
+                                               **plot_args)
+            if cascade:
+                dE = E[-1]
+            draw()
+            barrier_E.append(Efit.max())
+
+        if label_func is not None:
+            legend(loc='upper left')
+
+        if plot_barrier_E:
+            subplot(122)
+            barrier_x = np.array([ barrier_xfunc(images[0]) for images in images_list ])
+            barrier_E = np.array(barrier_E)
+            
+            plot(barrier_x, barrier_E, 'o')
+
+            p = np.polyfit(barrier_x, barrier_E, barrier_polydegree)
+            r = np.roots(p)
+            print 'Polynomial fit of degree', barrier_polydegree, p
+            print 'Roots', r
+
+            r_0 = r[r > barrier_x.max()].min() # first root after data
+            
+            xFit = np.linspace(barrier_x.min(), r_0*1.1)
+            Efit = np.polyval(p, xFit)
+            plot(xFit, Efit, 'k-')
+
+            ylim(-barrier_E.max()*0.1)
+
+            name, unit = barrier_xlabel.split('/',1)
+            name = name.strip()
+            unit = unit.strip()
+            text(r_0, 
+                 barrier_E.max()*0.05,
+                 r'%s$^{(0)}$ = %.2f % s' % (name, r_0, unit),
+                 horizontalalignment='left')
+
+            xlabel(barrier_xlabel)
+            ylabel(r'$\Delta E_\mathrm{act}$ / eV')
+            x_min, x_max = xlim()
+            hlines(0., x_min, x_max, linestyle='dashed')
+            xlim(x_min, x_max)
+
+        return images_list
