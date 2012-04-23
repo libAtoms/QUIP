@@ -3,22 +3,24 @@ program force_gaussian_prediction
    use libatoms_module
    implicit none
 
-   type(Atoms)                                  :: at_in, at
+   type(Atoms)                                  :: at_in
    type(CInOutput)                              :: in
    type(Dictionary)                             :: params
    real(dp)                                     :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_factor, dist_primitive, distance_ivs_stati
    real(dp), dimension(:), allocatable          :: max_value, mean_value, deviation_value
-   real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
-   integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
-   integer, dimension(:), allocatable           :: distance_index
-   real(dp)                                     :: force(3), feature_inv(3,3)
    real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_tmp, distance_confs
+   real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
+   real(dp)                                     :: force(3), feature_inv(3,3)
    real(dp), dimension(:,:,:), allocatable      :: feature_matrix_normalised, feature_matrix
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
+   integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
+   integer, dimension(:), allocatable           :: distance_index
    logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma, do_conf_filter, print_dist_stati
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
+ 
+ 
 
    call system_initialise(enable_timing=.true.)
 
@@ -28,7 +30,6 @@ program force_gaussian_prediction
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maxmium m for calculating the atomic environment")
-   call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you would like to teach with")  
    call param_register(params, 'cutoff_len_ivs', '0.04', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Sigular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
@@ -38,6 +39,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'do_conf_filter', 'F', do_conf_filter, "true for doing configuration  filtering")
+   call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you would like to do machine learning with")
    call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
@@ -47,10 +49,10 @@ program force_gaussian_prediction
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
 
-  if (.not. param_read_args(params, task="fgp command line params")) then
-      call print("Usage: fgp [options]")
-      call system_abort("Confused by command line arguments")
-  end if
+   if (.not. param_read_args(params, task="fgp command line params")) then
+        call print("Usage: fgp [options]")
+        call system_abort("Confused by command line arguments")
+   end if
 
    call print_title('params')
    call param_print(params)
@@ -159,10 +161,7 @@ program force_gaussian_prediction
  allocate(sigma(k))
  allocate(theta_array(k))
 
-!the parameters for doing statistics on the distance matrix
- allocate(mean_value(k))
- allocate(max_value(k))
- allocate(deviation_value(k)) 
+! the parameters for doing statistics on the distance matrix
 
 if (fix_sigma) then
    if (.not. print_dist_stati) then
@@ -172,12 +171,16 @@ if (fix_sigma) then
      sigma = sigma * sigma_factor
    endif
 
-     if (print_dist_stati) then
+   if (print_dist_stati) then
+       allocate(mean_value(k))
+       allocate(max_value(k))
+       allocate(deviation_value(k))
+       
        dist_primitive=0.0_dp
        do t = 1, k
           do i = 1, n
             do j=1, n
-                 distance_ivs(i,j) = distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))
+                 distance_ivs(i,j) = distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))
                  if (i>j)  call print("Dimensional Distance : "//distance_ivs(i, j)//"  dimension : "//t)
             enddo   ! i
           enddo     ! j
@@ -196,7 +199,7 @@ if (fix_sigma) then
           distance_ivs_stati = 0.0_dp   
             do t=1, k                 
               distance_ivs_stati = distance_ivs_stati + &
-                  (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
+                  (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
             enddo
             distance_ivs_stati = sqrt(distance_ivs_stati/k)          ! to take the square root and get a normalised distance 
             if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
@@ -204,32 +207,38 @@ if (fix_sigma) then
        enddo  
 
        ! to write the derived sigma vector into file "sigma.dat" for later use
-       sigma = deviation_value * sigma_factor                        ! sigma derived from the statistical deviation on each single dimension of the IVs space
+       sigma = deviation_value * sigma_factor   ! sigma derived from the statistical deviation on each single dimension of the IVs space
        open(unit=1, file='sigma.dat')
        write(1, *) sigma
        close(unit=1)
-
-     endif                                                         ! do statistics on the distance matrix
+       deallocate(mean_value)
+       deallocate(max_value)
+       deallocate(deviation_value)
+   endif                                                            ! do statistics on the distance matrix
 else 
   theta_array=theta
-  dist_primitive=0.0_dp
-  do t = 1, k 
-    do i = 1, n
-        do j=1, n
-         distance_ivs(i,j) = distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j)) 
+  sigma(t) = maxval(distance_ivs(:,:))/theta_array(t)
+  if  (abs(sigma(t))<TOL_REAL) then
+              sigma(t)=TOL_REAL
+              call print("WARNNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
+  endif
+
+  if (print_dist_stati) then
+       allocate(mean_value(k))
+       allocate(max_value(k))
+       allocate(deviation_value(k))
+
+   dist_primitive=0.0_dp
+   do t = 1, k 
+     do i = 1, n
+         do j=1, n
+         distance_ivs(i,j) = distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j)) 
          if (print_dist_stati) then  
             if (i>j)  call print("Dimensional Distance : "//distance_ivs(i, j)//"  dimension : "//t)
          endif
         enddo
     enddo
 
-    ! dealing with simgma
-    sigma(t) = maxval(distance_ivs(:,:))/theta_array(t) 
-    if  (abs(sigma(t))<TOL_REAL) then
-              sigma(t)=TOL_REAL
-              call print("WARNNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
-    endif
-     
     ! statistically tackling of the distance matrix
     call matrix_statistics(distance_ivs, max_value(t), mean_value(t), deviation_value(t), n)
     call print("Statistics max value: "//max_value(t)//" mean value: "//mean_value(t)//" deviation_value: "//deviation_value(t))
@@ -245,59 +254,52 @@ else
          distance_ivs_stati = 0.0_dp
          do t=1, k
             distance_ivs_stati = distance_ivs_stati + &
-               (distance_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
+               (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
          enddo
          distance_ivs_stati = sqrt(distance_ivs_stati/k)
          if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
        enddo
-   enddo
+  enddo
+  deallocate(mean_value)
+  deallocate(max_value)
+  deallocate(deviation_value)
+ endif         ! doing print_dist_stati   
 endif          ! doing fix_sigma or using theta
 call print('sigma is:    '//sigma)
+deallocate(distance_ivs)
 
- deallocate(mean_value)
- deallocate(max_value)
- deallocate(deviation_value)
-  
+
 
 ! to establish the Covariance Matrix
   allocate(covariance(n,n))
   do i = 1, n
       do j=1, n
-          covariance(i,j) = cov(feature_matrix(:,:,i), feature_matrix(:,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j), sigma, k) 
+          covariance(i,j) = cov(feature_matrix(:,:,i), feature_matrix(:,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j), sigma) 
       enddo
   enddo
 
 ! doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
   if (do_gp) then 
   do i=1, n
-      covariance(i,i) = covariance(i,i) + sigma_error 
+      covariance(i,i) = covariance(i,i) + sigma_error**2 
   enddo
   endif
 
-!if (true) then  testing the correlation between Covariance and Force difference  
-!    do i=1, n
-!        write(*,*) "Covariance:", covariance(i,2), force_proj_ivs(3,i)-force_proj_ivs(3,2)
-!    end
-!endif
- 
 
  allocate(inv_covariance(n,n))
-
  if (do_gp) then
      call inverse(covariance, inv_covariance)
  else
      ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
      inv_covariance = inverse_svd_threshold(covariance, n, thresh)
  endif
- 
  call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
-
  deallocate(covariance)
- deallocate(distance_ivs)
 
 
  call print_title('starting the predicting process')
 
+ n=n_relavant_confs
  allocate(covariance_pred(n))
  allocate(feature_matrix_pred(k,3))
  allocate(feature_matrix_normalised_pred(k,3))
@@ -347,30 +349,35 @@ call print('sigma is:    '//sigma)
            enddo
       endif
 
-      !  sorting the database to get most close configurations
-      allocate(distance_confs(n))
-      allocate(distance_index(n))
-      do t= 1,n
-         covariance_pred(t)=cov(feature_matrix_pred, feature_matrix(:,:,t), feature_matrix_normalised_pred(:,:), feature_matrix_normalised(:,:,t), sigma, k, distance=distance_confs(t))
-         call print("DISTANCE of Conf in Database wrt Testing Conf : "//distance_confs(t))
+      ! do the sorting and selection
+      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, distance_confs, distance_index)
+  
+      ! to establish the Covariance Matrix
+      allocate(covariance(n,n))
+      do t = 1, n
+         do j=1, n
+            covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
+                              feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma)
+         enddo
       enddo
 
-      if (do_conf_filter) then
-          distance_index(:) = (/ (t, t=1,size(distance_index) ) /)
-          call insertion_sort(distance_confs, idx=distance_index)
-          call print("Max and Min DISTANCE with Index after Sorting: "//distance_confs(1)//" "//distance_confs(n)//" "//distance_index(1)//" "//distance_index(n))
+     !  doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
+     if (do_gp) then
+     do t=1, n
+          covariance(t,t) = covariance(t,t) + sigma_error**2
+     enddo
+     endif
 
-          open(unit=100, file='data_embed.xyz', status='replace')
-          do t=1, n_relavant_confs
-              call read(at, teaching_file, frame=distance_index(t)-1)
-              call write(at, 'data_embed.xyz', append=.true.)
-          enddo
-          call finalise(at)
-          close(100)
-      endif 
 
-      deallocate(distance_confs)
-      deallocate(distance_index)
+     allocate(inv_covariance(n,n))
+     if (do_gp) then
+        call inverse(covariance, inv_covariance)
+     else
+        ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
+        inv_covariance = inverse_svd_threshold(covariance, n, thresh)
+     endif
+     deallocate(covariance)
+     call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
 
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs(:,:)) )) 
 
@@ -513,18 +520,26 @@ call print('sigma is:    '//sigma)
  end subroutine grid_m_r0
 
 
- function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, k, distance)
+ function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, distance)
 
-    real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:)
+    real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:) 
+    real(dp), intent(in), optional        ::        sigma(:)
     real(dp), intent(out), optional       ::        distance
     real(dp)                              ::        cov, d_sq
-    integer                               ::        i
-    integer, intent(in)                   ::        k
- 
-    d_sq = 0.0_dp    
-    do i=1, k
-          d_sq = d_sq + (distance_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*sigma(i))**2
-    enddo
+    integer                               ::        i, k
+
+    k=size(feature_matrix1(1,:))    
+    if (present(sigma)) then
+       d_sq = 0.0_dp    
+       do i=1, k
+               d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*sigma(i))**2
+       enddo
+    else             ! if no sigma is provided, sigma=1.0_dp for every dimension
+       d_sq = 0.0_dp
+       do i=1, k
+             d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*1.0_dp)**2
+       enddo
+    endif
 
     if (present(distance))  distance=sqrt(d_sq/k)     ! normalised by the number of dimensions of the Internal Space
     cov = exp(-1.0_dp * d_sq)
@@ -532,8 +547,9 @@ call print('sigma is:    '//sigma)
  endfunction cov
 
 
- function inverse_svd_threshold(in_matr, n, thresh)
-   real(dp), intent(in)                  ::         in_matr(:,:), thresh
+ function inverse_svd_threshold(in_matrix, n, thresh)
+
+   real(dp), intent(in)                  ::         in_matrix(:,:), thresh
    integer,  intent(in)                  ::         n
    real(dp)                              ::         w(n), sigmainv(n,n), u(n,n), vt(n,n), inverse_svd_threshold(n,n)
    real(dp), allocatable                 ::         work(:)
@@ -543,19 +559,19 @@ call print('sigma is:    '//sigma)
    call print('entering inverse_svd_threshold')
 
    if (n <= 3) then
-      call print('in_matr')
-      call print(in_matr)
+      call print('in_matrix')
+      call print(in_matrix)
    end if
 
    lwork = -1
    allocate(work(1))
-   call DGESVD('A','A',n,n,in_matr,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
 
    lwork = work(1) 
    deallocate(work)
    allocate(work(lwork))
 
-   call DGESVD('A','A',n,n,in_matr,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
    call print("DGESVD finished with exit code "//info)
    deallocate(work)
    if (info /= 0) then
@@ -584,14 +600,14 @@ call print('sigma is:    '//sigma)
 
  endfunction inverse_svd_threshold
 
- function  distance_bent_space(vect1, vect2, bent_space1, bent_space2)
+ function  distance_in_bent_space(vect1, vect2, bent_space1, bent_space2)
 
     real(dp), intent(in)                    :: vect1(3), vect2(3), bent_space1(:,:), bent_space2(:,:)
-    real(dp)                                :: distance_bent_space
+    real(dp)                                :: distance_in_bent_space
 
-    distance_bent_space = norm( (bent_space1 .mult. vect1) - (bent_space2 .mult. vect2))  
+    distance_in_bent_space = norm( (bent_space1 .mult. vect1) - (bent_space2 .mult. vect2))  
  
- endfunction distance_bent_space
+ endfunction distance_in_bent_space
 
 
  subroutine matrix_statistics(in_matrix, max_value, mean_value, deviation_value, n)
@@ -625,5 +641,37 @@ call print('sigma is:    '//sigma)
     deallocate(data_array)
 
  end subroutine  matrix_statistics
+
+ subroutine normal_squared_matrix(in_matrix, out_matrix, k) 
+
+  real(dp), intent(in)                      ::  in_matrix(:,:)
+  real(dp), intent(inout)                   ::  out_matrix(:,:)
+  integer, intent(in)                       ::  k
+  integer                                   ::  i 
+   
+  do i = 1, k
+       out_matrix(:,i) = in_matrix(:,i)/norm(in_matrix(:,i))
+  enddo
+
+ end subroutine normal_squared_matrix
+
+
+ subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, distance_confs, distance_index)
+ 
+    real(dp), intent(in)                      ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:)
+    real(dp), intent(inout), optional         ::  distance_confs(:)
+    integer, intent(inout)                    ::  distance_index(:)
+    real(dp)                                  ::  cov_tmp  
+    integer                                   ::  i
+    
+    do i=1, size(matrix_data(1,1,:)) 
+        cov_tmp=cov(matrix_predict, matrix_data(:,:,t), matrix_predict_norm(:,:),matrix_data_norm(:,:,t), distance=distance_confs(t))
+    enddo
+
+    call insertion_sort(distance_confs, idx=distance_index)
+    call print("Max and Min DISTANCE with Index after Sorting: "//distance_confs(1)//" "// &
+                  distance_confs(size(matrix_data(1,1,:)))//" "//distance_index(1)//" "//distance_index(size(matrix_data(1,1,:))))
+
+ end subroutine sorting_configuration
 
 end program force_gaussian_prediction
