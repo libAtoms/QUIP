@@ -41,7 +41,9 @@ except ImportError:
    warnings.warn('crack utilities not available')
 
 __all__.extend(['crack_rescale_homogeneous_xy',
-                 'makecrack', 'crack_strain_energy_release_rate'])
+                'makecrack',
+                'crack_strain_energy_release_rate',
+                'stress_intensity_factor'])
 
 def makecrack_main(params, stem):
     """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
@@ -242,6 +244,14 @@ try:
 
 except ImportError:
    pass
+
+def stress_intensity_factor(at):
+    """
+    Returns stress instensity factor for mode I loading (K_I) in MPa \sqrt(m)
+    """
+
+    G = crack_measure_g(at)
+    return crack_g_to_k(G, at.YoungsModulus, at.PoissonRatio_yx, 'plane strain')/1.0e6       
 
 def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
     if strain is None and G is None:
