@@ -77,6 +77,9 @@ subroutine do_vasp_calc(at, args_str, error)
 
    integer :: run_dir_i, force_run_dir_i
 
+   integer :: i_charge
+   real(dp) :: nelect, nelect_of_elem(size(ElementName)), r_charge
+
    character(len=STRING_LENGTH) :: run_dir
    type(Inoutput) :: io
 
@@ -206,24 +209,6 @@ subroutine do_vasp_calc(at, args_str, error)
       endif
    endif
 
-   if (.not. persistent_already_started) then
-      ! write INCAR
-      call print("writing INCAR", PRINT_VERBOSE)
-      call initialise(io, trim(run_dir)//"/INCAR", action=OUTPUT, error=error)
-      PASS_ERROR(error)
-      call print(write_string(incar_dict, entry_sep=quip_new_line), file=io)
-      call finalise(io)
-
-      ! write KPOINTS if needed
-      if (trim(kpoints_file) /= "_NONE_") then
-	 call print("writing KPOINTS", PRINT_VERBOSE)
-	 call system_command("cp "//trim(kpoints_file)//" "//trim(run_dir)//"/KPOINTS", status=stat)
-	 if (stat /= 0) then
-	    RAISE_ERROR("do_vasp_calc copying kpoints_file "//trim(kpoints_file)//" into "//trim(run_dir), error)
-	 endif
-      endif
-   endif
-
    call print("doing sorting", PRINT_VERBOSE)
    call add_property(at, "sort_index", 0, n_cols=1, ptr=sort_index_p, error=error)
    PASS_ERROR(error)
@@ -248,8 +233,40 @@ subroutine do_vasp_calc(at, args_str, error)
 
    if (.not. persistent_already_started) then
       call print("writing POTCAR", PRINT_VERBOSE)
-      call write_vasp_potcar(at, trim(run_dir), trim(potcar_files), error=error)
+      call write_vasp_potcar(at, trim(run_dir), trim(potcar_files), nelect_of_elem, error=error)
       PASS_ERROR(error)
+   endif
+
+   ! total number of electrons for each element from POTCAR files
+   nelect = sum(nelect_of_elem(at%Z))
+   ! get Charge from xyz file
+   r_charge = 0.0_dp
+   if (get_value(at%params, 'Charge', r_charge)) then
+      nelect = nelect - r_charge
+   else if (get_value(at%params, 'Charge', i_charge)) then
+      r_charge = i_charge
+      nelect = nelect - i_charge
+   endif
+   if (r_charge .fne. 0.0_dp) then ! set total number of electrons
+      call set_value(incar_dict, "NELECT", nelect)
+   endif
+
+   if (.not. persistent_already_started) then
+      ! write INCAR
+      call print("writing INCAR", PRINT_VERBOSE)
+      call initialise(io, trim(run_dir)//"/INCAR", action=OUTPUT, error=error)
+      PASS_ERROR(error)
+      call print(write_string(incar_dict, entry_sep=quip_new_line), file=io)
+      call finalise(io)
+
+      ! write KPOINTS if needed
+      if (trim(kpoints_file) /= "_NONE_") then
+	 call print("writing KPOINTS", PRINT_VERBOSE)
+	 call system_command("cp "//trim(kpoints_file)//" "//trim(run_dir)//"/KPOINTS", status=stat)
+	 if (stat /= 0) then
+	    RAISE_ERROR("do_vasp_calc copying kpoints_file "//trim(kpoints_file)//" into "//trim(run_dir), error)
+	 endif
+      endif
    endif
 
    if (.not. persistent_already_started .or. mod(persistent_run_i, persistent_restart_interval) == 0) then
@@ -378,14 +395,20 @@ subroutine do_vasp_calc(at, args_str, error)
 
 end subroutine do_vasp_calc
 
-subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
+subroutine write_vasp_potcar(at, run_dir, potcar_files, nelect_of_elem, error)
    type(Atoms), intent(in) :: at
    character(len=*), intent(in) :: run_dir, potcar_files
+   real(dp), intent(out) :: nelect_of_elem(:)
    integer, intent(out), optional :: error
 
    integer :: i, Z_i, potcar_files_n_fields
    character(len=STRING_LENGTH) :: potcar_files_fields(128), potcar_files_a(128)
    integer, allocatable :: uniq_Z(:)
+
+   integer :: stat, t_Z
+   real(dp) :: t_nelect
+   character(len=STRING_LENGTH) :: line
+   type(inoutput) :: io
 
    INIT_ERROR(error)
 
@@ -404,6 +427,7 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
       potcar_files_a(Z_i) = trim(potcar_files_fields(i+1))
    end do
 
+   call system_command("rm -f nelect_summary; touch nelect_summary")
    call system_command("rm -f "//trim(run_dir)//"/POTCAR")
    do Z_i=1, size(uniq_Z)
       if (uniq_Z(Z_i) == 0) exit
@@ -411,7 +435,25 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
 	 RAISE_ERROR("write_vasp_potcar could not find a potcar for Z="//uniq_Z(Z_i), error)
       endif
       call system_command("cat "//trim(potcar_files_a(uniq_Z(Z_i)))//" >> "//trim(run_dir)//"/POTCAR")
+      call system_command("(echo -n '"//uniq_Z(Z_i)//" '; cat "//trim(potcar_files_a(uniq_Z(Z_i)))//" | fgrep ZVAL | sed -e 's/.*ZVAL[ ]*=[ ]*//' -e 's/ .*//') >> nelect_summary")
    end do
+
+   ! read back nelect_summary
+   call initialise(io, "nelect_summary")
+   do Z_i=1, size(uniq_Z)
+      line = read_line(io, stat)
+      read (unit=line, fmt=*) t_Z, t_nelect
+      if (t_Z <= 0 .or. t_Z > size(nelect_of_elem)) then
+	 RAISE_ERROR("write_vasp_potcar got value out of range reading nelect_summary value t_Z="//t_Z, error)
+      endif
+      if (t_Z /= uniq_Z(Z_i)) then
+	 RAISE_ERROR("write_vasp_potcar got mismatch reading nelect_summary value t_Z="//t_Z//&
+	    " uniq_Z("//Z_i//"="//uniq_Z(Z_i), error)
+      endif
+      nelect_of_elem(t_Z) = t_nelect
+   end do
+   call finalise(io)
+
 end subroutine write_vasp_potcar
 
 subroutine write_vasp_poscar(at, run_dir, error)
