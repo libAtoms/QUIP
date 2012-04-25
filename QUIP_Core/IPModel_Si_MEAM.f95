@@ -166,7 +166,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
   
   real(dp) :: r_ij, r_ik, n_i, f_ij, f_ik, theta_jik, g_jik, U_i, phi_ij, &
             & dphi_ij, df_ij, df_ik, dg_jik, dU_i, drho_ij
-  real(dp), dimension(3)  :: u_ij, u_ik, dn_i, dn_j, dn_i_dr_ij
+  real(dp), dimension(3)  :: u_ij, u_ik, dn_i, dn_j, dn_i_dr_ij, diff_ij, diff_ik
   real(dp), dimension(3,3) :: dn_i_drij_outer_rij
 
   type(Dictionary)                :: params
@@ -227,7 +227,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
      !Loop over neighbours
      do n = 1, atoms_n_neighbours(at,i)
 
-        j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij) ! nth neighbour of atom i
+        j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
         tj = get_type(this%type_of_atomic_num, at%Z(j))
 
         if( r_ij < this%r_cut_phi(ti,tj) ) then
@@ -257,13 +257,14 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
         do nn = 1, atoms_n_neighbours(at,i)
 
-           k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik)
+           k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
            tk = get_type(this%type_of_atomic_num, at%Z(k))
 
-           if( j>=k ) cycle
+           !if( j>=k ) cycle
+           if( norm(diff_ij-diff_ik) .feq. 0.0_dp ) cycle
            if( r_ik >= this%r_cut_f(ti,tk) ) cycle
 
-           theta_jik = cosine( at, i, j, k )
+           theta_jik = dot_product(u_ij,u_ik) !cosine( at, i, j, k )
 
            f_ik = calc_y(this%f(ti,tk),r_ik)
            if(present(f) .or. present(virial)) df_ik = calc_dy(this%f(ti,tk),r_ik)
@@ -271,23 +272,23 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
            g_jik = calc_y(this%g(ti,tj,tk),theta_jik)
            if(present(f) .or. present(virial)) dg_jik = calc_dy(this%g(ti,tj,tk),theta_jik)
 
-           n_i = n_i + f_ij * f_ik * g_jik
+           n_i = n_i + 0.5_dp * f_ij * f_ik * g_jik
 
            if( present(f) ) &
-               & dn_i = dn_i + g_jik * &
+               & dn_i = dn_i + 0.5_dp * ( g_jik * &
                & ( df_ij * f_ik * u_ij + &
                &   df_ik * f_ij * u_ik ) + &
                & f_ij * f_ik * dg_jik * &
                & ( u_ij / r_ik + u_ik / r_ij - &
-               & theta_jik * ( u_ij / r_ij + u_ik / r_ik ) )
+               & theta_jik * ( u_ij / r_ij + u_ik / r_ik ) ) )
 
            if( present(virial) ) &
                & dn_i_drij_outer_rij = dn_i_drij_outer_rij + &
-               & g_jik * ( df_ij * f_ik * (u_ij.outer.u_ij) * r_ij + &
+               & 0.5_dp * ( g_jik * ( df_ij * f_ik * (u_ij.outer.u_ij) * r_ij + &
                            df_ik * f_ij * (u_ik.outer.u_ik) * r_ik ) + &
                & f_ij * f_ik * dg_jik * &
                & ( (u_ij .outer. u_ik) - theta_jik * (u_ij .outer. u_ij) + &
-               &   (u_ik .outer. u_ij) - theta_jik * (u_ik .outer. u_ik) )
+               &   (u_ik .outer. u_ij) - theta_jik * (u_ik .outer. u_ik) ) )
         enddo
 
      enddo
@@ -302,7 +303,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
      if(present(f)) then
         do n = 1, atoms_n_neighbours(at,i)  !cross-terms
 
-           j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij) ! nth neighbour of atom i
+           j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
 
            tj = get_type(this%type_of_atomic_num, at%Z(j))
            if( (r_ij >= this%r_cut_rho(ti,tj)).or.(r_ij >= this%r_cut_f(ti,tj)) ) cycle
@@ -318,13 +319,13 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
            do nn = 1, atoms_n_neighbours(at,i)
 
-              k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik)
+              k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
               tk = get_type(this%type_of_atomic_num, at%Z(k))
 
-              if( j==k ) cycle
+              if( norm(diff_ij-diff_ik) .feq. 0.0_dp ) cycle
               if( r_ik >= this%r_cut_f(ti,tk) ) cycle
 
-              theta_jik = cosine( at, i, j, k )
+              theta_jik = dot_product(u_ij,u_ik) !cosine( at, i, j, k )
 
               f_ik = calc_y(this%f(ti,tk),r_ik)
               df_ik = calc_dy(this%f(ti,tk),r_ik)
@@ -332,13 +333,12 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
               g_jik = calc_y(this%g(ti,tj,tk),theta_jik)
               dg_jik = calc_dy(this%g(ti,tj,tk),theta_jik)
 
-              dn_j = dn_j + df_ij * f_ik * g_jik * u_ij + &
+              dn_j = dn_j +  df_ij * f_ik * g_jik * u_ij + &
                    & f_ij * f_ik * dg_jik * ( u_ik / r_ij - theta_jik * u_ij / r_ij )
 
            enddo
 
            f(:,j) = f(:,j) - dU_i * dn_j
-
         enddo
      endif
   enddo
