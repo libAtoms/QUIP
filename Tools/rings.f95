@@ -35,7 +35,7 @@ program rings
 
   implicit none
 
-  real(DP), parameter :: CC_cutoff = 1.80_DP
+  real(DP) :: CC_cutoff 
   integer, parameter  :: MAX_RING_LEN     = 20
   integer, parameter  :: DIST_CUTOFF      = MAX_RING_LEN+1
   integer, parameter  :: MAX_GROUPS       = 20
@@ -58,6 +58,7 @@ program rings
 
   call initialise(cli_params)
   call param_register(cli_params, 'infile', 'stdin', infilename, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'CC_cutoff', PARAM_MANDATORY, CC_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params)) then
     call system_abort('could not parse argument line')
   end if
@@ -83,9 +84,10 @@ program rings
   ring_stat = 0
 
   allocate(mask(at%N))
+  mask=.true.
 
   !mask = (at%Z == 6) .and. (at%pos(3, :) > 11.0_DP)
-  mask = (at%Z == 6)
+  !mask = (at%Z == 6)
 
   call distance_map(at, dist, mask=mask, diameter=diameter)
   call print("# Graph diameter: " // diameter)
