@@ -115,6 +115,7 @@ module system_module
   type(inoutput),target,save      :: errorlog           !% error output, connected to 'stderr' by default
   type(inoutput),target,save      :: mpilog             !% MPI output, written to by each mpi process
   integer,private                  :: idum               ! used in the random generator
+  !$omp threadprivate(idum)
   real(dp),parameter               :: NUMERICAL_ZERO = 1.0e-14_dp
 
   ! system dependent variables 
@@ -1983,12 +1984,21 @@ contains
   end function date_and_time_string
 
   subroutine system_set_random_seeds(seed)
+#ifdef _OPENMP
+    use omp_lib
+#endif
     integer, intent(in) :: seed
 
     integer :: n
     integer, allocatable :: seed_a(:)
 
+#ifdef _OPENMP
+    !$omp parallel
+    idum=seed*(omp_get_thread_num()+1)
+    !$omp end parallel
+#else
     idum=seed              !gabor generator
+#endif
 
     call random_seed(size=n)
     allocate(seed_a(n))
@@ -2062,13 +2072,34 @@ contains
 
   subroutine system_resync_rng
 #ifdef _MPI
+#ifdef _OPENMP
+    use omp_lib
+#endif
     integer :: PRINT_ALWAYS
+#ifdef _OPENMP
+    integer :: idum_buf(omp_get_num_threads())
+#endif
     include "mpif.h"    
     call print('Resyncronising random number generator', PRINT_VERBOSE)
 
+#ifdef _OPENMP
+    ! Collect all seeds into continuous buffer
+    !$omp parallel
+    idum_buf(omp_get_thread_num()+1) = idum
+    !$omp end parallel
+    ! Broadcast seed from process 0 to all others
+    call MPI_Bcast(idum_buf, omp_get_num_threads(), MPI_INTEGER, 0, &
+         MPI_COMM_WORLD, PRINT_ALWAYS)
+    call abort_on_mpi_error(PRINT_ALWAYS, 'system_resync_rng')
+    ! Set seeds on individual threads
+    !$omp parallel
+    idum = idum_buf(omp_get_thread_num()+1)
+    !$omp end parallel
+#else
     ! Broadcast seed from process 0 to all others
     call MPI_Bcast(idum, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, PRINT_ALWAYS)
     call abort_on_mpi_error(PRINT_ALWAYS, 'system_resync_rng')
+#endif
 #endif
   end subroutine system_resync_rng
 
