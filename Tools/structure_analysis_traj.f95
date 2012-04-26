@@ -1006,6 +1006,60 @@ subroutine print_analyses(a)
   end do
 end subroutine print_analyses
 
+subroutine is_in_mask(mask_a, at, mask_str)
+  type(Atoms), intent(in) :: at
+  logical, intent(out) :: mask_a(at%N)
+  character(len=*), intent(in) :: mask_str
+
+  integer :: i_at, i_Z
+  integer :: Zmask
+  type(Table) :: atom_indices
+  character(len=4) :: species(128)
+  integer :: n_species
+  character(len=len(mask_str)) :: fields(2)
+  integer :: n_fields
+
+  integer :: i_val
+  logical :: l_val
+
+  integer, pointer :: p_i(:)
+  logical, pointer :: p_l(:)
+
+  if (len_trim(mask_str) == 0) then
+    mask_a = .true.
+    return
+  endif
+
+  mask_a = .false.
+  if (mask_str(1:1)=='@') then ! list of indices
+    call parse_atom_mask(mask_str,atom_indices)
+    do i_at=1, atom_indices%N
+      mask_a(atom_indices%int(1,i_at)) = .true.
+    end do
+  else if (scan(mask_str,'=')/=0) then ! arbitrary property
+    call split_string(mask_str,'=','""', fields,n_fields)
+    if (assign_pointer(at, trim(fields(1)), p_i)) then 
+       ! integer match
+       read (unit=fields(2), fmt=*) i_val
+       mask_a = (p_i == i_val)
+    else if (assign_pointer(at, trim(fields(1)), p_l)) then 
+       ! integer match
+       read (unit=fields(2), fmt=*) l_val
+       mask_a = (p_l .eqv. l_val)
+    else
+       call system_abort("mask is arbitrary property match, but apparently not integer or logical, so unsupported")
+    endif
+  else ! species (via atomic number)
+    call split_string(mask_str, ' ,', '""', species, n_species)
+    do i_Z=1, n_species
+      Zmask = Atomic_Number(species(i_Z))
+      do i_at=1, at%N
+        if (at%Z(i_at) == Zmask) mask_a(i_at) = .true.
+      end do
+    end do
+  end if
+end subroutine is_in_mask
+
 subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, mask_str, radial_pos, accumulate, quantity)
   real(dp), intent(inout) :: histogram(:)
   type(Atoms), intent(inout) :: at
@@ -1562,65 +1616,6 @@ subroutine density_bin_rectilinear_mesh(histogram, at, min_p, bin_width, n_bins,
   deallocate(mask_a)
 
 end subroutine density_bin_rectilinear_mesh
-
-subroutine is_in_mask(mask_a, at, mask_str)
-  type(Atoms), intent(in) :: at
-  logical, intent(out) :: mask_a(at%N)
-  character(len=*), optional, intent(in) :: mask_str
-
-  integer :: i_at, i_Z
-  integer :: Zmask
-  type(Table) :: atom_indices
-  character(len=4) :: species(128)
-  integer :: n_species
-  character(len=len(mask_str)) :: fields(2)
-  integer :: n_fields
-
-  integer :: i_val
-  logical :: l_val
-
-  integer, pointer :: p_i(:)
-  logical, pointer :: p_l(:)
-
-  if (.not. present(mask_str)) then
-    mask_a = .true.
-    return
-  endif
-
-  if (len_trim(mask_str) == 0) then
-    mask_a = .true.
-    return
-  endif
-
-  mask_a = .false.
-  if (mask_str(1:1)=='@') then ! list of indices
-    call parse_atom_mask(mask_str,atom_indices)
-    do i_at=1, atom_indices%N
-      mask_a(atom_indices%int(1,i_at)) = .true.
-    end do
-  else if (scan(mask_str,'=')/=0) then ! arbitrary property
-    call split_string(mask_str,'=','""', fields,n_fields)
-    if (assign_pointer(at, trim(fields(1)), p_i)) then 
-       ! integer match
-       read (unit=fields(2), fmt=*) i_val
-       mask_a = (p_i == i_val)
-    else if (assign_pointer(at, trim(fields(1)), p_l)) then 
-       ! integer match
-       read (unit=fields(2), fmt=*) l_val
-       mask_a = (p_l .eqv. l_val)
-    else
-       call system_abort("mask is arbitrary property match, but apparently not integer or logical, so unsupported")
-    endif
-  else ! species (via atomic number)
-    call split_string(mask_str, ' ,', '""', species, n_species)
-    do i_Z=1, n_species
-      Zmask = Atomic_Number(species(i_Z))
-      do i_at=1, at%N
-        if (at%Z(i_at) == Zmask) mask_a(i_at) = .true.
-      end do
-    end do
-  end if
-end subroutine is_in_mask
 
 subroutine reallocate_data_1d(data, n, n_bins)
   real(dp), allocatable, intent(inout) :: data(:,:)
