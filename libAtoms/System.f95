@@ -2081,24 +2081,26 @@ contains
 #endif
     integer :: PRINT_ALWAYS
 #ifdef _OPENMP
-    integer :: idum_buf(omp_get_num_threads())
+    integer, allocatable :: idum_buf(:)
 #endif
     include "mpif.h"    
     call print('Resyncronising random number generator', PRINT_VERBOSE)
 
 #ifdef _OPENMP
+    allocate(idum_buf(omp_get_max_threads()))
     ! Collect all seeds into continuous buffer
-    !$omp parallel
+    !$omp parallel default(none) shared(idum_buf)
     idum_buf(omp_get_thread_num()+1) = idum
     !$omp end parallel
     ! Broadcast seed from process 0 to all others
-    call MPI_Bcast(idum_buf, omp_get_num_threads(), MPI_INTEGER, 0, &
+    call MPI_Bcast(idum_buf, omp_get_max_threads(), MPI_INTEGER, 0, &
          MPI_COMM_WORLD, PRINT_ALWAYS)
     call abort_on_mpi_error(PRINT_ALWAYS, 'system_resync_rng')
     ! Set seeds on individual threads
-    !$omp parallel
+    !$omp parallel default(none) shared(idum_buf)
     idum = idum_buf(omp_get_thread_num()+1)
     !$omp end parallel
+    deallocate(idum_buf)
 #else
     ! Broadcast seed from process 0 to all others
     call MPI_Bcast(idum, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, PRINT_ALWAYS)
