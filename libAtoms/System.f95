@@ -2019,6 +2019,7 @@ contains
     integer:: actual_seed, i, ran_dummy
     integer:: values(20) ! for time inquiry function
     logical :: use_common_seed
+    integer :: np=1, myp=0
 #ifdef _MPI
     integer :: PRINT_ALWAYS
     include "mpif.h"    
@@ -2042,7 +2043,10 @@ contains
     if(present(seed)) then
        actual_seed = seed
     else
-       actual_seed=1 + values(8)+values(5)+values(6)+values(7) !hour+minute+seconds+millisecond
+#ifdef _MPI
+       call get_mpi_size_rank(MPI_COMM_WORLD, np, myp)
+#endif
+       actual_seed= (1 + values(8)+values(5)+values(6)+values(7))*(myp+1) ! (hour+minute+seconds+millisecond)*(mpi_rank+1)
        use_common_seed = .true.
        if (present(common_seed)) use_common_seed = common_seed
 #ifdef _MPI
