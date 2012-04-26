@@ -1818,7 +1818,7 @@ end function cluster_in_out_in
          fix_termination_clash, keep_whole_residues, keep_whole_subgroups, keep_whole_prolines, keep_whole_proline_sidechains, &
 	 keep_whole_silica_tetrahedra, keep_whole_titania_octahedra, terminate_octahedra,reduce_n_cut_bonds, in_out_in, &
          protect_X_H_bonds, protect_double_bonds, protect_peptide_bonds, keep_whole_molecules, has_termination_rescale, &
-	 combined_protein_heuristics
+	 combined_protein_heuristics, force_no_fix_termination_clash
     character(STRING_LENGTH) :: in_out_in_mode
     logical :: keep_whole_residues_has_value, keep_whole_subgroups_has_value, keep_whole_prolines_has_value, keep_whole_proline_sidechains_has_value, &
                protect_double_bonds_has_value, protect_peptide_bonds_has_value, keep_whole_molecules_has_value
@@ -1875,6 +1875,8 @@ end function cluster_in_out_in
       help_string="Don't modify cluster cell vectors from incoming cell vectors")
     call param_register(params, 'fix_termination_clash','T', fix_termination_clash,&
       help_string="Apply termination clash (terimnation H too close together) heureistic")
+    call param_register(params, 'force_no_fix_termination_clash','F', force_no_fix_termination_clash,&
+      help_string="Overrides values of (terminate .or. termination_clash) to explicitly disable termination clash heuristic")
     call param_register(params, 'combined_protein_heuristics','F', combined_protein_heuristics, &
       help_string="Apply heuristics for proteins: overrides keep_whole_molecules=F, keep_whole_residues=F, keep_whole_subgroups=T, keep_whole_prolines=T, keep_whole_proline_sidechains=F, protect_double_bonds=F, protect_peptide_bonds=T")
     call param_register(params, 'keep_whole_residues','T', keep_whole_residues, has_value_target=keep_whole_residues_has_value,&
@@ -2156,7 +2158,8 @@ end function cluster_in_out_in
                ' protect_X_H_bonds ' // protect_X_H_bonds // &
                ' protect_double_bonds ' // protect_double_bonds // &
                ' protect_peptide_bonds ' // protect_peptide_bonds // &
-               ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=PRINT_NERD)
+               ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash) // &
+               ' force_no_fix_termination_clash '// force_no_fix_termination_clash, verbosity=PRINT_NERD)
           if (keep_whole_proline_sidechains) then
              cluster_changed = cluster_changed .or. cluster_keep_whole_proline_sidechains(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_proline_sidechains_has_value)
           endif
@@ -2190,7 +2193,7 @@ end function cluster_in_out_in
           if (protect_peptide_bonds) then
              cluster_changed = cluster_changed .or. cluster_protect_peptide_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_peptide_bonds_has_value)
           endif
-          if (terminate .or. fix_termination_clash) then
+          if ((terminate .or. fix_termination_clash) .and. .not. force_no_fix_termination_clash) then
              cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, termination_clash_factor)
           endif
           if (keep_whole_molecules) then
@@ -2419,8 +2422,7 @@ end function cluster_in_out_in
     logical :: add_this_atom, more_hops
     integer :: cur_trans_hop
     real(dp) :: bond_len, d
-
-    logical :: have_silica_potential ! lam81
+    logical :: have_silica_potential, hysteretic_buffer_remove_isolated_atoms
     integer :: res_num_silica ! lam81
 
     INIT_ERROR(error)
@@ -2447,6 +2449,7 @@ end function cluster_in_out_in
     call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms, help_string="If true, use only non-H atoms for constructing buffer")
     call param_register(params, 'have_silica_potential', 'F', have_silica_potential, help_string="If true, do special things for silica") !lam81
     call param_register(params, 'res_num_silica', '1', res_num_silica, help_string="Residue number for silica") !lam81
+    call param_register(params, 'hysteretic_buffer_remove_isolated_atoms', 'F', hysteretic_buffer_remove_isolated_atoms, help_string="If true, remove isolated atoms from hysteretic buffer")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights args_str') ) then
       RAISE_ERROR("create_hybrid_weights failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -2733,8 +2736,21 @@ end function cluster_in_out_in
 
           ! check that cluster is still growing
           if (bufferlist%N == old_n) then
-               RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split buffer region', error)
-	  endif
+             if (hysteretic_buffer_remove_isolated_atoms) then
+                do i=1,at%n
+                   if (hybrid_mark(i) == HYBRID_NO_MARK) cycle
+                   if (find_in_array(bufferlist%int(1,1:bufferlist%n), i) == 0) then
+                      call print('atom '//i//' removed from buffer')
+                      hybrid_mark(i) = HYBRID_NO_MARK
+                   end if
+                end do
+                call print('WARNING: create_hybrid_weights_args ignoring split buffer region')
+                call print('         removed '//(n_region2 - bufferlist%N)//' isolated atoms from buffer', PRINT_ALWAYS)
+                exit
+             else	
+                RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split buffer region', error)
+             endif
+          end if
           old_n = bufferlist%N
        end do
 
