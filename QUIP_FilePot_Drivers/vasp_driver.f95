@@ -447,8 +447,7 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, nelect_of_elem, error)
 	 RAISE_ERROR("write_vasp_potcar got value out of range reading nelect_summary value t_Z="//t_Z, error)
       endif
       if (t_Z /= uniq_Z(Z_i)) then
-	 RAISE_ERROR("write_vasp_potcar got mismatch reading nelect_summary value t_Z="//t_Z//&
-	    " uniq_Z("//Z_i//"="//uniq_Z(Z_i), error)
+	 RAISE_ERROR("write_vasp_potcar got mismatch reading nelect_summary value t_Z="//t_Z//" uniq_Z("//Z_i//")="//uniq_Z(Z_i), error)
       endif
       nelect_of_elem(t_Z) = t_nelect
    end do
