@@ -50,9 +50,24 @@ program test_ran
 
   call system_initialise(PRINT_NORMAL)
 
-  call print("Start generating random numbers...")
+  call print("Start generating random numbers on proc 0...")
 
-!$omp parallel default(none) private(i, n, d)
+  if (mpi_id() == 0) then
+     !$omp parallel default(none) private(i, n, d)
+     do i = 1, nrand
+        d = ran_normal()
+     enddo
+     !$omp end parallel
+  endif
+
+  call print("...done")
+
+  call print("Synching rngs.")
+  call system_resync_rng
+
+  call print("Start generating random numbers on all procs...")
+
+  !$omp parallel default(none) private(i, n, d)
   call initialise(h, 1000, -10.0_DP, 10.0_DP)
 
   do i = 1, nrand
@@ -65,11 +80,13 @@ program test_ran
   n = 0
 #endif
 
-  call write(h, "normal_"//n//".out")
-!  call finalise(h)
-!$omp end parallel
+  call write(h, "normal_"//mpi_id()//"_"//n//".out")
+  call finalise(h)
+  !$omp end parallel
 
   call print("...done")
+
+  call print("Please check that all normal_*_1.out are identical.")
 
   call system_finalise()
 
