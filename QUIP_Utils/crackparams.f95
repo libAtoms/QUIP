@@ -304,6 +304,7 @@ module CrackParams_module
      logical :: qm_hysteretic_buffer      !% If true, manage the buffer region hysteritcally
      real(dp) :: qm_hysteretic_buffer_inner_radius !% Inner radius used for hystertic buffer region
      real(dp) :: qm_hysteretic_buffer_outer_radius !% Outer radius used for hystertic buffer region
+     logical :: qm_hysteretic_buffer_nneighb_only !% Should hysteretic buffer be formed by nearest neighbor hopping?
 
      logical :: qm_hysteretic_connect !% Enable hysteretic connectivity 
      real(dp) :: qm_hysteretic_connect_inner_factor !% Inner bond factor. Default 1.2
@@ -609,6 +610,7 @@ contains
     this%qm_hysteretic_buffer     = .false.
     this%qm_hysteretic_buffer_inner_radius = 5.0_dp
     this%qm_hysteretic_buffer_outer_radius = 7.0_dp
+    this%qm_hysteretic_buffer_nneighb_only = .true.
     this%qm_hysteretic_connect    = .false.
     this%qm_hysteretic_connect_inner_factor = 1.2_dp
     this%qm_hysteretic_connect_outer_factor = 1.5_dp
@@ -1574,6 +1576,11 @@ contains
           read (value, *) parse_cp%qm_hysteretic_buffer_outer_radius
        end if
 
+       call QUIP_FoX_get_value(attributes, "hysteretic_buffer_nneighb_only", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_hysteretic_buffer_nneighb_only
+       end if
+
        call QUIP_FoX_get_value(attributes, "hysteretic_connect", value, status)
        if (status == 0) then
           read (value, *) parse_cp%qm_hysteretic_connect
@@ -1907,6 +1914,7 @@ contains
     call Print('     hysteretic_buffer     = '//this%qm_hysteretic_buffer, file=file)
     call Print('     hysteretic_buffer_inner_radius = '//this%qm_hysteretic_buffer_inner_radius//' A', file=file)
     call Print('     hysteretic_buffer_outer_radius = '//this%qm_hysteretic_buffer_outer_radius//' A', file=file)
+    call Print('     hysteretic_buffer_nneighb_only = '//this%qm_hysteretic_buffer_nneighb_only, file=file)
     call Print('     hysteretic_connect    = '//this%qm_hysteretic_connect, file=file)
     call Print('     hysteretic_connect_inner_factor = '//this%qm_hysteretic_connect_inner_factor, file=file)
     call Print('     hysteretic_connect_outer_factor = '//this%qm_hysteretic_connect_outer_factor, file=file)

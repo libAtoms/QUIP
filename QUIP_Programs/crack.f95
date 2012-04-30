@@ -440,6 +440,7 @@ program crack
      call set_value(pot_params, 'hysteretic_buffer', params%qm_hysteretic_buffer)
      call set_value(pot_params, 'hysteretic_buffer_inner_radius', params%qm_hysteretic_buffer_inner_radius)
      call set_value(pot_params, 'hysteretic_buffer_outer_radius', params%qm_hysteretic_buffer_outer_radius)
+     call set_value(pot_params, 'hysteretic_buffer_nneighb_only', params%qm_hysteretic_buffer_nneighb_only)
 
      call set_value(pot_params, 'hysteretic_connect', params%qm_hysteretic_connect)
      call set_value(pot_params, 'nneighb_only', (.not. params%qm_hysteretic_connect))

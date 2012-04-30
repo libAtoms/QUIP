@@ -2395,7 +2395,7 @@ end function cluster_in_out_in
     type(Dictionary) :: params
     logical :: has_distance_ramp_inner_radius, has_distance_ramp_outer_radius, has_distance_ramp_center
     real(dp) :: distance_ramp_inner_radius, distance_ramp_outer_radius, distance_ramp_center(3)
-    logical :: min_images_only, mark_buffer_outer_layer, cluster_hopping_nneighb_only, hysteretic_buffer, hysteretic_connect
+    logical :: min_images_only, mark_buffer_outer_layer, cluster_hopping_nneighb_only, hysteretic_buffer, hysteretic_connect, hysteretic_buffer_nneighb_only
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
@@ -2442,6 +2442,7 @@ end function cluster_in_out_in
     call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer, help_string="If true, do hysteretic buffer")
     call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', hysteretic_buffer_inner_radius, help_string="Inner radius for hysteretic buffer")
     call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', hysteretic_buffer_outer_radius, help_string="Outer radius for hysteretic buffer")
+    call param_register(params, 'hysteretic_buffer_nneighb_only', 'F', hysteretic_buffer_nneighb_only, help_string="If true, only hop to nearest neighbour pairs when constructing hysteretic buffer")
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect, help_string="If true, use hysteretic connect object")
     call param_register(params, 'hysteretic_connect_cluster_radius', '1.2', hysteretic_connect_cluster_radius, help_string="If using hysteretic connect, use as cluster radius for origin and extent estimates")
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor, help_string="Inner factor (multiplier for covalent bond distance) for hysteretic connect")
@@ -2465,9 +2466,9 @@ end function cluster_in_out_in
     end if
 
     call print('create_hybrid_weights: transition_hops='//transition_hops//' buffer_hops='//buffer_hops//' weight_interpolation='//weight_interpolation, PRINT_VERBOSE)
-    call print('  cluster_hopping_nneighb_only='//cluster_hopping_nneighb_only//' min_images_only='//min_images_only//' mark_buffer_outer_layer='//mark_buffer_outer_layer, PRINT_VERBOSE)
+    call print('  cluster_hopping_nneighb_only='//cluster_hopping_nneighb_only//'  min_images_only='//min_images_only//' mark_buffer_outer_layer='//mark_buffer_outer_layer, PRINT_VERBOSE)
     call print('  hysteretic_buffer='//hysteretic_buffer//' hysteretic_buffer_inner_radius='//hysteretic_buffer_inner_radius, PRINT_VERBOSE)
-    call print('  hysteretic_buffer_outer_radius='//hysteretic_buffer_outer_radius, PRINT_VERBOSE)
+    call print('  hysteretic_buffer_outer_radius='//hysteretic_buffer_outer_radius//' hysteretic_buffer_nneighb_only='//hysteretic_buffer_nneighb_only, PRINT_VERBOSE)
     call print('  hysteretic_connect='//hysteretic_connect//' hysteretic_connect_cluster_radius='//hysteretic_connect_cluster_radius, PRINT_VERBOSE)
     call print('  hysteretic_connect_inner_factor='//hysteretic_connect_inner_factor //' hysteretic_connect_outer_factor='//hysteretic_connect_outer_factor, PRINT_VERBOSE)
 
@@ -2753,14 +2754,16 @@ end function cluster_in_out_in
 	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=PRINT_NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
-	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, min_images_only=min_images_only, &
+	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, &
+           force_hopping_nneighb_only=hysteretic_buffer_nneighb_only, min_images_only=min_images_only, &
 	   alt_connect=at%hysteretic_connect, &
            have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB, debugfile=mainlog) lam81
        else
 	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=PRINT_NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
-	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, min_images_only=min_images_only, &
+	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, &
+           force_hopping_nneighb_only=hysteretic_buffer_nneighb_only, min_images_only=min_images_only, &
            have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, error=error) !NB, debugfile=mainlog) lam81
        endif
 
@@ -3149,7 +3152,8 @@ end function cluster_in_out_in
   !% Optionally use the time averaged positions.
   !% Optionally use only heavy atom selection.
   !
-  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,cluster_hopping_nneighb_only,min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
+  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,cluster_hopping_nneighb_only, &
+                                         force_hopping_nneighb_only, min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
 
     type(Table),           intent(inout) :: region
     type(Atoms),           intent(in)    :: at
@@ -3161,6 +3165,7 @@ end function cluster_in_out_in
     logical,     optional, intent(in)    :: use_avgpos
     logical,     optional, intent(in)    :: add_only_heavy_atoms
     logical,     optional, intent(in)  :: cluster_hopping_nneighb_only
+    logical,     optional, intent(in)  :: force_hopping_nneighb_only
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
     type(inoutput), optional :: debugfile
@@ -3193,6 +3198,7 @@ end function cluster_in_out_in
     if (present(debugfile)) call print("   constructing inner region", file=debugfile)
     call construct_region(region=inner_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
       radius=inner_radius,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, &
+      force_hopping_nneighb_only=force_hopping_nneighb_only, &
       min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile, &
       have_silica_potential=have_silica_potential, res_num_silica=res_num_silica) !lam81
     if (no_hysteresis) then
@@ -3202,6 +3208,7 @@ end function cluster_in_out_in
     if (present(debugfile)) call print("   constructing outer region", file=debugfile)
        call construct_region(region=outer_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
 	radius=outer_radius, use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,cluster_hopping_nneighb_only=cluster_hopping_nneighb_only, &
+        force_hopping_nneighb_only=force_hopping_nneighb_only, &
 	min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile, &
         have_silica_potential=have_silica_potential, res_num_silica=res_num_silica) ! lam81
     endif
@@ -3248,7 +3255,8 @@ end function cluster_in_out_in
   !% Optionally use a heavy atom based selection (applying to both the core and the region atoms).
   !% Alternatively use the hysteretic connection, only nearest neighbours and/or min_images (only for the n_connectivity_hops).
   !
-  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,cluster_hopping_nneighb_only,min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
+  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,cluster_hopping_nneighb_only,&
+                              force_hopping_nneighb_only, min_images_only,alt_connect,debugfile, have_silica_potential, res_num_silica, error) !lam81
 
     type(Table),           intent(out) :: region
     type(Atoms),           intent(in)  :: at
@@ -3260,6 +3268,7 @@ end function cluster_in_out_in
     logical,     optional, intent(in)  :: use_avgpos
     logical,     optional, intent(in)  :: add_only_heavy_atoms
     logical,     optional, intent(in)  :: cluster_hopping_nneighb_only
+    logical,     optional, intent(in)  :: force_hopping_nneighb_only
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
 type(inoutput), optional :: debugfile
@@ -3268,7 +3277,7 @@ type(inoutput), optional :: debugfile
     logical                             :: do_use_avgpos
     logical                             :: do_loop_atoms_no_connectivity
     logical                             :: do_add_only_heavy_atoms
-    logical                             :: do_hopping_nneighb_only
+    logical                             :: do_hopping_nneighb_only, do_force_hopping_nneighb_only
     logical                             :: do_min_images_only
     integer                             :: i, j, ii, ij
     type(Table)                         :: nextlist
@@ -3360,6 +3369,7 @@ type(inoutput), optional :: debugfile
       if (present(debugfile)) call print("   present cluster_hopping_nneighb_only " // present(cluster_hopping_nneighb_only), file=debugfile)
       if (present(debugfile) .and. present(cluster_hopping_nneighb_only)) call print("   cluster_hopping_nneighb_only " // cluster_hopping_nneighb_only, file=debugfile)
       do_hopping_nneighb_only = optional_default(.true., cluster_hopping_nneighb_only)
+      do_force_hopping_nneighb_only = optional_default(.false., force_hopping_nneighb_only)
       do_min_images_only = optional_default(.true., min_images_only)
       if (do_use_avgpos) then
 	RAISE_ERROR("can't use avgpos with connectivity hops - make sure your connectivity is based on pos instead", error)
@@ -3379,7 +3389,8 @@ type(inoutput), optional :: debugfile
 	if (present(debugfile)) call print('   doing hop ' // cur_hop, file=debugfile)
 	if (present(debugfile)) call print('   cutoffs ' // at%cutoff // ' ' // at%use_uniform_cutoff, file=debugfile)
 	more_hops = .false.
-	call bfs_step(at, region, nextlist, nneighb_only=do_hopping_nneighb_only .and. .not. present(radius), min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect, debugfile=debugfile)
+	call bfs_step(at, region, nextlist, nneighb_only=(do_hopping_nneighb_only .and. .not. present(radius)) .or. do_force_hopping_nneighb_only, &
+                      min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect, debugfile=debugfile)
 	if (present(debugfile)) call print("   bfs_step returned nextlist%N " // nextlist%N, file=debugfile)
 	if (present(debugfile)) call print(nextlist, file=debugfile)
 	if (nextlist%N /= 0) then ! go over things in next hop
@@ -3407,7 +3418,7 @@ type(inoutput), optional :: debugfile
 	      end do ! ij
 	    endif ! present(radius)
 	    if (add_i) then
-	      if (present(debugfile)) call print("  actually adding i")
+	      if (present(debugfile)) call print("  actually adding i", file=debugfile)
 	      more_hops = .true.
 	      call append(region, nextlist%int(1:4,ii))
 	    endif
