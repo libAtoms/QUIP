@@ -38,17 +38,27 @@ p.add_option('-L', '--loadall', action='store_true', help="""Load all frames fro
 p.add_option('-n', '--no-interactive', action='store_true', help="""Exit when done, without starting an interactive shell.""")
 p.add_option('-e', '--exec-code', action='append', help="""Python statements to execute on startup""")
 p.add_option('-c', '--chain', action='store_true', help="""Chain all input files together""")
+p.add_option('--read-args', action='store', help="""Extra arguments to be passed to read() routine.""")
+p.add_option('--atom-range', action='store', help="""Range of atoms to include: should be followed by two arguments, min
+and max 1-based atom indices. Using a reduced atom range dramatically
+speeds up reading of large XYZ trajectories.""", nargs=2)
 
 opt, args = p.parse_args()
 
+read_args = {}
+if opt.atom_range is not None:
+    read_args['range'] = opt.atom_range
+if opt.read_args is not None:
+    read_args.update(eval("dict(%s)" % opt.read_args))
+
 viewers = []
 if opt.chain:
-    v = atoms(args, loadall=opt.loadall, name='chain')
+    v = atoms(args, loadall=opt.loadall, name='chain', **read_args)
     __all__.append('chain')
     viewers.append(v)
 else:
     for filename in args:
-        v = atoms(filename, loadall=opt.loadall)
+        v = atoms(filename, loadall=opt.loadall, **read_args)
         __all__.append(v.name)
         viewers.append(v)
 
