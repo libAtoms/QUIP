@@ -2320,7 +2320,7 @@ CONTAINS
     do i = 1, max_steps
 
        velo = velo + (0.5_dp*dt)*acc
-       force = -dfunc(x,data)
+       force = dfunc(x,data)  ! keep original sign of gradient for now as hook() expects gradient, not force
 
        df2 = normsq(force)
 
@@ -2336,7 +2336,7 @@ CONTAINS
           write (line, '(i4,a,e24.16,a,e24.16,a,f0.3)') i,' f=',f,' df^2=',df2,' dt=', dt
           call Print(line, PRINT_NORMAL)
 
-          if(present(hook)) then 
+          if(present(hook)) then
              call hook(x, force, f, done, (mod(i-1,my_hook_print_interval) == 0), data)
              if (done) then
                 call print('hook reports that fire_minim is finished, exiting.', PRINT_NORMAL)
@@ -2345,6 +2345,7 @@ CONTAINS
           end if
        end if
 
+       force = -force ! convert from gradient of energy to force
        acc = force/mass
        velo = velo + (0.5_dp*dt)*acc
 
