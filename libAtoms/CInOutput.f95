@@ -89,17 +89,17 @@ module CInOutput_module
      end subroutine query_netcdf
 
      subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, range, &
-          string, string_length, n_index, indices, prefix, error) bind(c)
+          string, string_length, n_index, indices, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(SIZEOF_FORTRAN_T), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(inout) :: n_atom
        integer(kind=C_INT), intent(in), value :: compute_index, frame, string, string_length
+
        integer(kind=C_INT), intent(in) :: range(2)
        integer(kind=C_INT), intent(in), value :: n_index
        integer(kind=C_INT), intent(in), dimension(n_index) :: indices
-       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_xyz
 
@@ -331,7 +331,7 @@ contains
   end subroutine cinoutput_finalise
 
 
-  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, indices, prefix, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, indices, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(inout) :: at
@@ -343,7 +343,6 @@ contains
     character(*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
     integer, dimension(:), intent(in), optional :: indices
-    character(*), intent(in), optional :: prefix
     integer, intent(out), optional :: error
 
     type(Dictionary) :: empty_dictionary
@@ -356,7 +355,7 @@ contains
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(SIZEOF_FORTRAN_T) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
-    character(len=100) :: tmp_properties_array(100), fmt, do_prefix
+    character(len=100) :: tmp_properties_array(100), fmt
     character(len=1024) :: filename
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
 
@@ -411,8 +410,6 @@ contains
                /)
           n_atom = this%n_atom
        endif
-
-       do_prefix = trim(optional_default('', prefix))//C_NULL_CHAR
 
        n_index = -1
        if (present(indices)) then
@@ -484,15 +481,15 @@ contains
           if (present(str)) then
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   orig_lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), &
-                  n_index, c_indices, do_prefix, error)
+                  n_index, c_indices, error)
           else if(present(estr)) then
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   orig_lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, &
-                  n_index, c_indices, do_prefix, error)
+                  n_index, c_indices, error)
           else
              call read_xyz(filename, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   orig_lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, &
-                  n_index, c_indices, do_prefix, error)
+                  n_index, c_indices, error)
           end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
