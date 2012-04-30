@@ -108,6 +108,9 @@ module Potential_module
      type(Potential_ONIOM), pointer :: oniom => null()
 #endif
 
+     logical :: is_cluster = .false.
+     type(Potential_Cluster), pointer :: cluster => null()
+
      logical :: do_rescale_r, do_rescale_E
      real(dp) :: r_scale, E_scale
 
@@ -198,6 +201,7 @@ module Potential_module
 #ifdef HAVE_ONIOM
 #include "Potential_ONIOM_header.f95"
 #endif
+#include "Potential_Cluster_header.f95"
 
   ! Public interfaces from Potential_Hybrid_utils.f95
 
@@ -311,6 +315,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
   call param_register(params, 'ONIOM', 'false', this%is_oniom, help_string="Potential from ONIOM mixing of two other potential energies")
 #endif /* HAVE_ONIOM */
+  call param_register(params, 'Cluster', 'false', this%is_cluster, help_string="Potential evaluated using clusters")
   call param_register(params, 'do_rescale_r', 'F', this%do_rescale_r, help_string="If true, rescale distances by factor r_scale.")
   call param_register(params, 'r_scale', '1.0', this%r_scale, has_value_target=has_r_scale, help_string="Recaling factor for distances. Default 1.0.")
   call param_register(params, 'do_rescale_E', 'F', this%do_rescale_E, help_string="If true, rescale energy by factor E_scale.")
@@ -363,6 +368,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
   , this%is_oniom  &
 #endif
+  , this%is_cluster &
   /) )
 
   if (count( (/this%is_simple, this%is_sum, this%is_forcemixing, this%is_evb &
@@ -372,6 +378,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
           , this%is_oniom &
 #endif /* HAVE_ONIOM */
+          , this%is_cluster &
           /) ) /= 1) then
      RAISE_ERROR("Potential_initialise found too few or two many Potential types args_str='"//trim(my_args_str)//"'", error)
   end if
@@ -435,6 +442,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call initialise(this%oniom, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing oniom", error)
 #endif /* HAVE_ONIOM */
+
+  else if (this%is_cluster) then
+     allocate(this%cluster)
+     call initialise(this%cluster, my_args_str, u_pot1, mpi_obj, error=error)
+     PASS_ERROR_WITH_INFO("Initializing Cluster", error)
   end if
 
   if (this%is_simple .and. (this%do_rescale_r .or. this%do_rescale_E)) then
@@ -515,6 +527,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        call finalise(this%oniom)
        deallocate(this%oniom)
 #endif /* HAVE_ONIOM */
+    else if (this%is_cluster) then
+       call finalise(this%cluster)
+       deallocate(this%cluster)
     end if
 
     if (associated(this%l_mpot1)) call finalise(this%l_mpot1)
@@ -532,6 +547,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
     this%is_oniom = .false.
 #endif
+    this%is_cluster = .false.
 
   end subroutine potential_finalise
 
@@ -696,6 +712,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
       call Calc(this%oniom, at, trim(args_str)//" "//trim(extra_args_str), error=error)
       PASS_ERROR(error)
 #endif /* HAVE_ONIOM */
+    else if (this%is_cluster) then
+       call Calc(this%cluster, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       PASS_ERROR(error)
     else
       RAISE_ERROR('Potential_Calc: no potential type is set',error)
     endif
@@ -770,6 +789,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (this%is_oniom) then
        call Print(this%oniom, file=file)
 #endif /* HAVE_oniom */
+    else if (this%is_cluster) then
+       call Print(this%cluster, file=file)
     else
        RAISE_ERROR('Potential_Print: no potential type is set', error)
     end if
@@ -799,6 +820,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (this%is_oniom) then
        potential_cutoff = cutoff(this%oniom)
 #endif /* HAVE_ONIOM */
+    else if (this%is_cluster) then
+       potential_cutoff = cutoff(this%cluster)
     else
        RAISE_ERROR('Potential_Cutoff: no potential type if set', error)
     end if
@@ -1823,6 +1846,7 @@ end subroutine pack_pos_dg
 #include "Potential_ONIOM_routines.f95"
 #endif
 
+#include "Potential_Cluster_routines.f95"
 #include "Potential_Hybrid_utils.f95"
 
   subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str, error)
