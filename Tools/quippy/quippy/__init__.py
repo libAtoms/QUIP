@@ -131,7 +131,7 @@ merge_modules = {'atoms': ('atoms_types', 'atoms', 'connection', 'domaindecompos
 # List of Fortran modules which have Python wrappers in this package
 python_wrappers = ['periodictable', 'table', 'potential',
                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
-                   'extendable_str']
+                   'extendable_str', 'structures']
 modules_name_map = {}
 for mod in python_wrappers:
     if mod in wrap_modules:
@@ -209,7 +209,7 @@ import quippy.util
 from quippy.util import *
 __all__.extend(quippy.util.__all__)
 
-import quippy.sio2
+import quippy.asap
 import quippy.povray
 import quippy.cube
 import quippy.xyz
@@ -251,9 +251,9 @@ import quippy.surface
 from quippy.surface import *
 __all__.extend(quippy.surface.__all__)
 
-import quippy.structure_tools
-from quippy.structure_tools import *
-__all__.extend(quippy.structure_tools.__all__)
+import quippy.structures
+from quippy.structures import *
+__all__.extend(quippy.structures.__all__)
 
 import quippy.crack
 from quippy.crack import *

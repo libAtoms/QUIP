@@ -18,7 +18,8 @@
 
 import numpy as np
 from quippy.atoms import *
-from quippy.structures import *
+import quippy._structures
+from quippy._structures import *
 from quippy.farray import fidentity, fzeros, frange, farray
 
 import numpy as np
@@ -27,7 +28,10 @@ try:
 except ImportError:
     pass
 
-__all__ = ['orthorhombic_slab', 'rotation_matrix']
+__all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
+                                        'quartz_params', 'alpha_quartz', 'get_bulk_params',
+                                        'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths']
+
 
 def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=None, periodicity=None, vacuum=None, shift=None, verbose=True):
     """Try to construct an orthorhombic cell equivalent to the
@@ -303,3 +307,161 @@ def rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
 
     # Rotation matrix is transpose of axes matrix
     return axes.T
+
+
+quartz_params = {'experiment': {'a': 4.9160,
+                                'c': 5.4054,
+                                'u': 0.4697,
+                                'x': 0.4135,
+                                'y': 0.2669,
+                                'z': 0.1191},
+                 'CASTEP_LDA': {'a': 4.87009,
+                                'c': 5.36255,
+                                'u': 0.46699,
+                                'x': 0.41289,
+                                'y': 0.27198,
+                                'z': 0.11588},
+                 'CASTEP_GGA': {'a': 5.02836,
+                                'c': 5.51193,
+                                'u': 0.48128,
+                                'x': 0.41649,
+                                'y': 0.24661,
+                                'z': 0.13594},
+                 'ASAP_JRK': {'a': 4.8403809707320216,
+                              'c': 5.3285240037002248,
+                              'u': 0.46417561617105912,
+                              'x': 0.41174271054205958,
+                              'y': 0.27872745399831672,
+                              'z': 0.10973603276909905}
+                 }
+
+def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3.0):
+    """Primitive 9-atom orthorhombic alpha quartz cell"""
+
+    from math import sqrt
+
+    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
+    a2 = farray((0.5*a,  0.5*sqrt(3.0)*a, 0.0))
+    a3 = farray((0.0,    0.0,             c))
+
+    lattice = fzeros((3,3))
+    lattice[:,1] = a1
+    lattice[:,2] = a2
+    lattice[:,3] = a3
+
+    at = Atoms(n=9,lattice=lattice)
+
+    at.set_atoms((14,14,14,8,8,8,8,8,8))
+
+    z += 2.0/3.0
+
+    at.pos[:,1] =  u*a1 + 2.0/3.0*a3
+    at.pos[:,2] =  u*a2 + 1.0/3.0*a3
+    at.pos[:,3] = -u*a1 - u*a2
+    at.pos[:,4] =  x*a1 + y*a2 + z*a3
+    at.pos[:,5] = -y*a1 + (x-y)*a2  + (2.0/3.0 + z)*a3
+    at.pos[:,6] = (y-x)*a1 - x*a2   + (1.0/3.0 + z)*a3
+    at.pos[:,7] = y*a1 + x*a2 - z*a3
+    at.pos[:,8] = -x*a1 + (y-x)*a2 + (2.0/3.0 - z)*a3
+    at.pos[:,9] = (x - y)*a1 - y*a2 + (1.0/3.0 - z)*a3
+
+    return at
+
+def get_quartz_params(at):
+
+    assert at.n == 9
+    assert (at.z == 14).sum() == 3
+    assert (at.z == 8).sum() == 6
+
+    from quippy import get_lattice_params
+
+    lat_params = get_lattice_params(at.lattice)
+    a, c = lat_params[0], lat_params[2]
+    print 'a      = ', a
+    print 'c      = ', c
+    print 'c/a    = ', c/a
+    print 'V      = ', at.cell_volume()
+    print 'V/SiO2 = ', at.cell_volume()/3.0
+
+    frac_pos = numpy.dot(at.g, at.pos)
+    u = frac_pos[1,1]
+    x,y,z = frac_pos[:,4]
+    z -= 2.0/3.0
+    if z < 0.0: z += 1.0
+    if z > 1.0: z -- 1.0
+
+    print 'u      = ', u
+    print 'x      = ', x
+    print 'y      = ', y
+    print 'z      = ', z
+
+    return {'a':a, 'c':c, 'u':u, 'x':x, 'y':y, 'z':z}
+
+
+def alpha_quartz_cubic(*args, **kwargs):
+    """Non-primitive 18-atom cubic quartz cell."""
+
+    from quippy import supercell
+
+    a0 = alpha_quartz(*args, **kwargs)
+    at = supercell(a0, 4, 4, 1)
+    at.map_into_cell()
+
+    lattice = fzeros((3,3))
+    lattice[1,1] = a0.lattice[1,1]*2.0
+    lattice[2,2] = a0.lattice[2,2]*2.0
+    lattice[3,3] = a0.lattice[3,3]
+
+    g = numpy.linalg.inv(lattice)
+    t = numpy.dot(g, at.pos)
+    cubic = at.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
+    cubic.set_lattice(lattice)
+    return cubic
+
+
+def get_bond_lengths(at):
+    """Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths"""
+    at.calc_connect()
+    r_ij = farray(0.0)
+    res = {}
+    for i in frange(at.n):
+        for n in frange(at.n_neighbours(i)):
+            j = at.neighbour(i, n, distance=r_ij)
+            print i, j, at.z[i], at.z[j], r_ij
+            minij, maxij = min((i,j)), max((i,j))
+            key = (at.species[minij].stripstrings(), at.species[maxij].stripstrings())
+            if not key in res: res[key] = []
+            res[key].append(r_ij.astype(float))
+    print res
+    return dict((k,farray(v)) for (k,v) in res.iteritems())
+
+def get_bulk_params(bulk, lat_type, verbose=True):
+    """Return 6-tuple of lattice parameters a, c, u, x, y, z for
+       cell `bulk` of lattice type `lat_type`"""
+    a, b, c, alpha, beta, gamma = get_lattice_params(bulk.lattice)
+    del b, alpha, beta, gamma
+    u, x, y, z = (None, None, None, None)
+
+    if lat_type in ('diamond', 'bcc', 'fcc'):
+        if verbose:
+            print '%s lattice, a=%.3f' % (lat_type, a)
+    elif lat_type == 'anatase':
+        u = bulk.pos[3, 5]/c
+        if verbose:
+            print 'anatase lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+    elif lat_type == 'rutile':
+        u = bulk.pos[1, 3]/a
+        if verbose:
+            print 'rutile lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
+    elif lat_type == 'alpha_quartz':
+        qz = get_quartz_params(bulk)
+        a, c, u, x, y, z = (qz['a'], qz['c'], qz['u'],
+                            qz['x'], qz['y'], qz['z'])
+        if verbose:
+            print 'alpha_quartz lattice, ',
+            print ('a=%.3f c=%.3f u=%.3f x=%.3f y=%.3f z=%.3f'
+                   % (a, c, u, x, y ,z))
+    else:
+        raise ValueError('Unknown latttice type %s' % lat_type)
+
+    return (a, c, u, x, y, z)

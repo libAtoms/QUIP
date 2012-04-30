@@ -34,8 +34,7 @@ from quippy import available_modules, FortranDerivedTypes
 from math import pi
 import numpy as np
 
-__all__ = _atoms.__all__ + ['get_bulk_params',
-                            'AtomsReaders',
+__all__ = _atoms.__all__ + ['AtomsReaders',
                             'AtomsWriters',
                             'atoms_reader']
                                    
@@ -55,38 +54,6 @@ get_lattice_params.__doc__ = """Wrapper around _atoms.get_lattice_params()
 Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
 
 """ + _atoms.get_lattice_params.__doc__
-
-def get_bulk_params(bulk, lat_type, verbose=True):
-    """Return 6-tuple of lattice parameters a, c, u, x, y, z for
-       cell `bulk` of lattice type `lat_type`"""
-    a, b, c, alpha, beta, gamma = get_lattice_params(bulk.lattice)
-    del b, alpha, beta, gamma
-    u, x, y, z = (None, None, None, None)
-
-    if lat_type in ('diamond', 'bcc', 'fcc'):
-        if verbose:
-            print '%s lattice, a=%.3f' % (lat_type, a)
-    elif lat_type == 'anatase':
-        u = bulk.pos[3, 5]/c
-        if verbose:
-            print 'anatase lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
-    elif lat_type == 'rutile':
-        u = bulk.pos[1, 3]/a
-        if verbose:
-            print 'rutile lattice, a=%.3f c=%.3f u=%.3f' % (a, c, u)
-    elif lat_type == 'alpha_quartz':
-        from quippy.sio2 import get_quartz_params
-        qz = get_quartz_params(bulk)
-        a, c, u, x, y, z = (qz['a'], qz['c'], qz['u'],
-                            qz['x'], qz['y'], qz['z'])
-        if verbose:
-            print 'alpha_quartz lattice, ',
-            print ('a=%.3f c=%.3f u=%.3f x=%.3f y=%.3f z=%.3f'
-                   % (a, c, u, x, y ,z))
-    else:
-        raise ValueError('Unknown latttice type %s' % lat_type)
-
-    return (a, c, u, x, y, z)
 
 class NeighbourInfo(object):
     """Store information about a single neighbour of an atom"""

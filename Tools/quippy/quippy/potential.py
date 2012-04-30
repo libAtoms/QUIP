@@ -26,7 +26,7 @@ from quippy._potential import *
 from quippy.util import quip_xml_parameters
 from quippy.elastic import stress_matrix
 
-__all__ = _potential.__all__
+__all__ = _potential.__all__ + ['force_test']
 
 def calculator_callback_factory(calculator):
     """Return a Python function which can be used as a quippy
@@ -259,3 +259,23 @@ class Potential(_potential.Potential):
 
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
+
+
+def force_test(at, p, dx=1e-4):
+    analytic_f = fzeros((3,at.n))
+    p.calc(at, force=analytic_f)
+    num_f = fzeros((3,at.n))
+    ep, em = farray(0.0), farray(0.0)
+
+    for i in frange(at.n):
+        for j in (1,2,3):
+            ap = at.copy()
+            ap.pos[j,i] += dx
+            p.calc(ap, energy=ep)
+            print 'e+', j,i,ep
+            ap.pos[j,i] -= 2.0*dx
+            p.calc(ap, energy=em)
+            print 'e-', j,i,em
+            num_f[j,i] = -(ep - em)/(2*dx)
+
+    return analytic_f, num_f, analytic_f - num_f

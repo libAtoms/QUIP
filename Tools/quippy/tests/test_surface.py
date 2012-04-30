@@ -18,8 +18,8 @@
 
 from quippy import *
 from numpy import *
-from quippy.structure_tools import * 
-import quippy.sio2
+from quippy.structures import * 
+import quippy.structures
 import unittest
 from quippytest import *
 
@@ -41,7 +41,7 @@ class TestSurfaceSilicon(QuippyTestCase):
 class TestSurfaceQuartz(QuippyTestCase):
 
     def setUp(self):
-        self.aq = alpha_quartz(**quippy.sio2.quartz_params['ASAP_JRK'])
+        self.aq = alpha_quartz(**quippy.structures.quartz_params['ASAP_JRK'])
         self.h = 10.0
         self.d = 15.0
 

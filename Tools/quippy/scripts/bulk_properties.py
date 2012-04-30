@@ -2,7 +2,7 @@
 
 from quippy import *
 from quippy.surface import *
-from quippy.structure_tools import *
+from quippy.structures import *
 from quippy.elastic import *
 import optparse
 
