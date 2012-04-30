@@ -170,7 +170,10 @@ class TestCInOutput(QuippyTestCase):
 
    def testmultixyz_prefix_read(self):
       self.al.write('test.xyz', prefix='PREFIX')
-      al = AtomsList('test.xyz', prefix='PREFIX')
+      al = AtomsList('test.xyz')
+      self.assert_(al[0].xyz_prefix == 'PREFIX')
+      for at in al:
+         del at.params['xyz_prefix']
       self.assertEqual(list(self.al), list(al))
 
    if 'netcdf' in available_modules:
