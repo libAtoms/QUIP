@@ -279,7 +279,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
         ElementMass, massconvert, initialise, param_read_line, finalise, &
         ElementName, print, operator(//), cell_volume, has_property, &
         assign_pointer, add_property, system_abort, fit_box_in_cell, &
-        param_register, check_size
+        param_register, check_size, operator(.fne.), assign_property_pointer
 	
    type(IPModel_ASAP), intent(inout):: this
    type(myAtoms), intent(inout)      :: at
@@ -297,7 +297,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    real*8 rarec,gcrec,rcrec,root2	 
    real*8 raggio_in,rcut_in,gcut_in	 
    real(dp), allocatable :: asap_f(:,:)	 
-   real(dp), pointer :: dipoles_ptr(:,:)	 
+   real(dp), pointer :: dipoles_ptr(:,:), ext_efield_ptr(:,:)
    integer :: i, ti, tj	 
    logical :: do_restart, calc_dipoles	 
    integer at0, atf	 
@@ -312,7 +312,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    logical tpow,tgmin	 
    integer nesr
 
-   logical :: has_atom_mask_name
+   logical :: has_atom_mask_name, applied_efield
    character(STRING_LENGTH) :: atom_mask_name
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
@@ -342,10 +342,12 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    call initialise(params)
    this%label=''
    call param_register(params, 'restart', 'F', do_restart, help_string="No help yet.  This source file was $LastChangedBy$")
-   call param_register(params, 'calc_dipoles', 'F', calc_dipoles, help_string="No help yet.  This source file was $LastChangedBy$")
+   call param_register(params, 'calc_dipoles', 'T', calc_dipoles, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
    call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
    call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+   call param_register(params, 'applied_efield', 'F', applied_efield, help_string="No help yet.  This source file was $LastChangedBy$")
+
 
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP_Calc args_str')) then
       call system_abort("IPModel_ASAP_Initialise_str failed to parse args_str="//trim(args_str))
@@ -683,6 +685,24 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    ht = transpose(at%lattice/BOHR) 
    restart = do_restart   ! reset electric field
    
+   if (applied_efield) then
+      call assign_property_pointer(at, 'ext_efield', ext_efield_ptr, error)
+      PASS_ERROR(error)
+
+      ! check electric field is constant
+      if (maxval(abs(sum(ext_efield_ptr,2)/real(size(ext_efield_ptr,2),dp) - ext_efield_ptr(:,1))) > 1.0e-6_dp) then
+         RAISE_ERROR('IPModel_ASAP_calc: external efield must be constant (same for all atoms)', error)
+      end if
+
+      telectric = .true.
+      tfieldion = .true.
+      e_applied = ext_efield_ptr(:,1)/(HARTREE/BOHR) ! external applied electric field
+   else
+      telectric = .false.
+      tfieldion = .false.
+      e_applied(:) = 0.0_dp
+   end if
+
    objind = 1
    numobj(1) = nat
    ntype = 1
@@ -738,13 +758,14 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
 
    if (calc_dipoles .and. tpol) then
       if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
-      if (.not. assign_pointer(at, 'dipoles', dipoles_ptr)) call system_abort('IPModel_ASAP_calc: assign_pointer dipoles failed')
-      dipoles_ptr = dip
+      call assign_property_pointer(at, 'dipoles', dipoles_ptr, error)
+      PASS_ERROR(error)
+      dipoles_ptr = dip*BOHR
    end if
    
    deallocate(asap_f)
 #else
-  call system_abort('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1')
+  RAISE_ERROR('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1', error)
 #endif
 
 end subroutine IPModel_ASAP_Calc
