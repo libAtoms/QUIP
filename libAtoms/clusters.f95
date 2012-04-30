@@ -2422,8 +2422,8 @@ end function cluster_in_out_in
     logical :: add_this_atom, more_hops
     integer :: cur_trans_hop
     real(dp) :: bond_len, d
-    logical :: have_silica_potential, hysteretic_buffer_remove_isolated_atoms
-    integer :: res_num_silica ! lam81
+    logical :: have_silica_potential
+    integer :: res_num_silica
 
     INIT_ERROR(error)
 
@@ -2449,7 +2449,6 @@ end function cluster_in_out_in
     call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms, help_string="If true, use only non-H atoms for constructing buffer")
     call param_register(params, 'have_silica_potential', 'F', have_silica_potential, help_string="If true, do special things for silica") !lam81
     call param_register(params, 'res_num_silica', '1', res_num_silica, help_string="Residue number for silica") !lam81
-    call param_register(params, 'hysteretic_buffer_remove_isolated_atoms', 'F', hysteretic_buffer_remove_isolated_atoms, help_string="If true, remove isolated atoms from hysteretic buffer")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights args_str') ) then
       RAISE_ERROR("create_hybrid_weights failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -2471,6 +2470,7 @@ end function cluster_in_out_in
     call print('  hysteretic_buffer_outer_radius='//hysteretic_buffer_outer_radius, PRINT_VERBOSE)
     call print('  hysteretic_connect='//hysteretic_connect//' hysteretic_connect_cluster_radius='//hysteretic_connect_cluster_radius, PRINT_VERBOSE)
     call print('  hysteretic_connect_inner_factor='//hysteretic_connect_inner_factor //' hysteretic_connect_outer_factor='//hysteretic_connect_outer_factor, PRINT_VERBOSE)
+
 
     ! check to see if atoms has a 'weight_region1' property already, if so, check that it is compatible, if not present, add it
     if(assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)) then
@@ -2736,20 +2736,7 @@ end function cluster_in_out_in
 
           ! check that cluster is still growing
           if (bufferlist%N == old_n) then
-             if (hysteretic_buffer_remove_isolated_atoms) then
-                do i=1,at%n
-                   if (hybrid_mark(i) == HYBRID_NO_MARK) cycle
-                   if (find_in_array(bufferlist%int(1,1:bufferlist%n), i) == 0) then
-                      call print('atom '//i//' removed from buffer')
-                      hybrid_mark(i) = HYBRID_NO_MARK
-                   end if
-                end do
-                call print('WARNING: create_hybrid_weights_args ignoring split buffer region')
-                call print('         removed '//(n_region2 - bufferlist%N)//' isolated atoms from buffer', PRINT_ALWAYS)
-                exit
-             else	
-                RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split buffer region', error)
-             endif
+             RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split QM or buffer region', error)
           end if
           old_n = bufferlist%N
        end do
