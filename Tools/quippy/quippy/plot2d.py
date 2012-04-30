@@ -21,6 +21,7 @@ from quippy import available_modules
 from quippy.system import print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text
 from quippy.farray import convert_farray_to_ndarray
+from quippy.atomslist import AtomsList
 import numpy as np
 import itertools
 
