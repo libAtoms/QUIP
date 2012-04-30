@@ -152,7 +152,7 @@ def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None):
 
     try:
         cell_index = available_modules.index(module)
-    except IndexError:
+    except ValueError:
         raise ValueError("Don't know how to read module %s from file %s" % (module, filename))
 
     cell_lines = [i for i,line in enumerate(lines) if line.startswith(" CELL| Vector a")]
