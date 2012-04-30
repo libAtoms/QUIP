@@ -467,7 +467,7 @@ program crack
                  ' randomise_buffer='//params%qm_randomise_buffer//&
                  ' hysteretic_connect='//params%qm_hysteretic_connect//&
                  ' nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-                 ' cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+                 ' cluster_hopping_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
                  ' '//trim(params%qm_args_str)
      extra_qm_args = ''
      extra_mm_args = ''
