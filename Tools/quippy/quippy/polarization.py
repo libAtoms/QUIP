@@ -103,3 +103,14 @@ def screened_effective_charge(born, eps):
                screened[i,j,k,l] = born[i,j]/np.sqrt(eps[k,l])
 
    return screened
+
+def dipole_moment(at):
+    return np.dot(at.pos.T, at.charge)
+
+
+def silica_dipole_moment(at, mask=None, q_si=1.0):
+    if mask is None:
+        mask = [True for i in at.indices]
+    return q_si*(at.pos[:,(at.z == 14) & mask].sum(axis=2) -
+                 0.5*at.pos[:,(at.z == 8) & mask].sum(axis=2) +
+                 0.25*at.pos[:,(at.z == 1) & mask].sum(axis=2))
