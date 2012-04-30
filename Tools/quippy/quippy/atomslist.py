@@ -235,7 +235,12 @@ class AtomsReader(AtomsReaderMixin):
             if not self._cache_fetch(frame):
                 self._cache_store(frame, self.reader[frame])
 
-            return self._cache_dict[frame]
+            at = self._cache_dict[frame]
+            if not hasattr(at, 'source'):
+                at.source = self.source
+            if not hasattr(at, 'frame'):
+                at.frame = frame
+            return at
 
         elif isinstance(frame, slice):
             return self.__class__([self[f] for f in range(*frame.indices(len(self))) ])
@@ -274,6 +279,10 @@ class AtomsReader(AtomsReaderMixin):
                 self._cache_store(frame, at)
                 n_frames += 1
                 last_frame = frame
+                if not hasattr(at, 'source'):
+                    at.source = self.source
+                if not hasattr(at, 'frame'):
+                    at.frame = frame
                 yield at
 
             # once iteration is finished, random access will be possible if all frames fitted inside cache
@@ -328,7 +337,10 @@ class AtomsList(AtomsReaderMixin, list):
                 raise IndexError("Array used for fancy indexing must be of type integer or bool")
             if idx.dtype.kind == 'b':
                 idx = idx.nonzero()[0]
-            res = [list.__getitem__(self,i) for i in idx]
+            res = []
+            for i in idx:
+                at = list.__getitem__(self,i)
+                res.append(at)
         else:
             res = list.__getitem__(self, idx)
         if isinstance(res, list):
@@ -397,9 +409,11 @@ class AtomsSequenceReader(object):
             if index < 0: index = index + sum(self.lengths)
 
             idx = 0
-            for len, src in zip(self.lengths, self.readers):
+            for len, reader, source in zip(self.lengths, self.readers, self.sources):
                 if index >= idx and index < idx+len:
-                    return src[index-idx]
+                    at = reader[index-idx]
+                    at.source = source 
+                    return at
                 idx = idx+len
 
             raise IndexError('index %d out of range 0..%d' % (index, sum(self.lengths)))
@@ -411,8 +425,9 @@ class AtomsSequenceReader(object):
 
 
     def __iter__(self):
-        for reader in self.readers:
+        for source, reader in zip(self.sources, self.readers):
             for at in reader:
+                at.source = source
                 yield at
 
 
@@ -449,3 +464,27 @@ def read_dataset(dirs, pattern, **kwargs):
     for dir in dirs:
         dataset[dir] = AtomsList(os.path.join(dir, pattern), **kwargs)
     return dataset
+
+
+def time_ordered_series(source):
+
+    revsource = reversed(AtomsReader(filename))
+    last = revsource.next()
+    current_time = last.time
+    print current_time, last.source, last.frame
+    
+    # yield at0
+    for i, at in enumerate(revsource):
+        if at.time >= current_time:
+            continue
+
+        #yield at
+        current_time = at.time
+        print current_time, at.source, at.frame
+        show(at)
+            
+
+    
+
+        
+    
