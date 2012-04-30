@@ -395,10 +395,11 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 
 
 char* get_line(char *linebuffer, int string, int string_length, char *orig_stringp, char *stringp, char **prev_stringp,
-	       FILE *in, char *info, int *error)
+	       FILE *in, char *info, int strip_prefix, int *line_offset, int *error)
 {
   INIT_ERROR;
 
+  *line_offset = 0;
   if (string) {
     if (*stringp == '\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) {
       RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
@@ -409,25 +410,41 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
     linebuffer[stringp-*prev_stringp] = '\0';
     //debug("line = <%s>\n", linebuffer);
     if (*stringp == '\n') stringp++;
+    if (strip_prefix) {
+      if (strchr(linebuffer, ' ') != NULL) {
+	*line_offset = strchr(linebuffer, ' ')+1-linebuffer;
+      } else {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+      }
+    }
     return stringp;
   } else {
     if (!fgets(linebuffer,LINESIZE,in)) {
       RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
     }
     linebuffer[strlen(linebuffer)-1] = '\0';
-    //debug("line = <%s>\n", linebuffer);
+    if (strip_prefix) {
+      if (strchr(linebuffer, ' ') != NULL) {
+	*line_offset = strchr(linebuffer, ' ')+1-linebuffer;
+      } else {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+      }
+      //debug("line = <%s>\n", linebuffer);
+    }
     return NULL;
   }
 }
 
-#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error); PASS_ERROR; linep = linebuffer+line_offset;
+#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, strip_prefix, &line_offset, error); \
+  PASS_ERROR; \
+  linep = linebuffer+line_offset;
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, char *prefix, int *error)
+	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
-  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], *linep;
+  char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], prefix[LINESIZE], *linep;
   char fields[MAX_FIELD_COUNT][LINESIZE], subfields[MAX_FIELD_COUNT][LINESIZE],
     finalfields[MAX_FIELD_COUNT][LINESIZE];
   char *p, *p1, tmp_logical, *orig_stringp, *prev_stringp, *stringp;
@@ -441,6 +458,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
   int *mask;
+  int strip_prefix;
 
   debug("entered read_xyz()\n");
 
@@ -491,11 +509,6 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
-  if (strlen(prefix) != 0)
-    line_offset = strlen(prefix)+1;
-  else
-    line_offset = 0;
-
   if (!got_index && frame != 0 && in != stdin) {
     debug("read_xyz: skipping to frame %d\n", frame);
 
@@ -510,10 +523,15 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
   }
 
+  strip_prefix = 0;
   GET_LINE("read_xyz: premature end, expecting number of atoms");
-
   if (sscanf(linep, "%d", &nxyz) != 1) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms", linep);
+    // Try stripping prefix string from beginning of each line
+    if (sscanf(linep, "%s %d", prefix, &nxyz) == 2) {
+      strip_prefix = 1;
+    } else {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms (optionally preceeded by a prefix string)", linep);
+    }
   }
 
   if (got_index) {
@@ -814,6 +832,18 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     default:
       RAISE_ERROR_WITH_KIND(ERROR_IO, "Unknown param type %d\n", type);
     }
+  }
+
+  if (strip_prefix) {
+    // Add special param entry for prefix stripped from all lines in this frame
+    strcpy(param_key, "xyz_prefix");
+    type = T_CHAR;
+    shape[0] = strlen(prefix);
+    shape[1] = 0;
+    fprintf(stderr, "read_xyz: adding key %s type=%d shape=[%d %d] value %s\n", param_key, type, shape[0], shape[1], prefix);
+    dictionary_add_key(params, param_key, &type, shape, &data, error, strlen(param_key));
+    PASS_ERROR;
+    strncpy(CHAR(data), prefix, strlen(prefix));
   }
 
   // Now parse Properties string
