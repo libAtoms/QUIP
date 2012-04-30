@@ -71,6 +71,9 @@ module  atoms_module
 
   logical :: printed_stack_warning = .false.   !% OMIT
 
+  real(dp), allocatable, target, private, save :: save_prev_pos(:,:), save_orig_pos(:,:)
+  real(dp), allocatable, private, save :: save_orig_CoM(:)
+
   private :: ess_max_len
 
   private :: atoms_initialise
@@ -3677,17 +3680,131 @@ contains
    end do
   end subroutine atoms_set_Zs
 
-  subroutine undo_pbc_jumps(at)
+  !% undo pbc jumps, assuming nearest periodic image, with or without persistent atoms object
+  !% without persistent atoms object, global storage is used, and calling on multiple trajcetories
+  !% interspersed will not work
+  subroutine undo_pbc_jumps(at, persistent)
     type(Atoms), intent(inout) :: at
+    logical, optional :: persistent
+
+    logical :: my_persistent
     real(dp), pointer :: prev_pos_p(:,:)
 
-    if (.not. assign_pointer(at, 'prev_pos', prev_pos_p)) then
-       call add_property(at, 'prev_pos', 0.0_dp, n_cols=3, ptr2=prev_pos_p)
-       prev_pos_p = at%pos
-    endif
+    my_persistent = optional_default(.true., persistent)
+    if (.not. my_persistent) then
+       if (.not. allocated(save_prev_pos)) then
+	 allocate(save_prev_pos(3, at%N))
+	 save_prev_pos = at%pos
+       else
+	 if (size(save_prev_pos,2) /= at%N) then
+	    call system_abort("undo_pbc_jumps got not persistent, but shape(save_prev_pos) "//shape(save_prev_pos)//" does not match shape(at%pos) "//shape(at%pos))
+	 endif
+       endif
+       prev_pos_p => save_prev_pos
+    else
+       if (.not. assign_pointer(at, 'prev_pos', prev_pos_p)) then
+	  call add_property(at, 'prev_pos', 0.0_dp, n_cols=3, ptr2=prev_pos_p)
+	  prev_pos_p = at%pos
+       endif
+    end if
 
     at%pos = at%pos - (at%lattice .mult. floor((at%g .mult. (at%pos-prev_pos_p))+0.5_dp))
     prev_pos_p = at%pos
   end subroutine undo_pbc_jumps
+
+  !% undo center of mass motion, with or without persistent atoms object
+  !% without persistent atoms object, global storage is used, and calling on multiple trajcetories
+  !% interspersed will not work
+  subroutine undo_CoM_motion(at, persistent)
+    type(Atoms), intent(inout) :: at
+    logical, optional :: persistent
+
+    integer :: i
+    real(dp) :: orig_CoM(3), CoM(3), delta_CoM(3)
+    logical :: my_persistent
+
+    my_persistent = optional_default(.true., persistent)
+
+    ! calc current CoM
+    if (.not. has_property(at, 'mass')) then
+       call add_property(at, 'mass', 0.0_dp)
+       at%mass = ElementMass(at%Z)
+    endif
+    CoM = centre_of_mass(at)
+
+    if (my_persistent) then
+      ! get orig_CoM from at%params
+      if (.not. get_value(at%params, 'orig_CoM', orig_CoM)) then
+	 orig_CoM = CoM
+	 call set_value(at%params, 'orig_CoM', orig_CoM)
+      endif
+    else
+      ! get orig_CoM from save_orig_CoM
+      if (.not. allocated(save_orig_CoM)) then
+	 allocate(save_orig_CoM(3))
+	 save_orig_CoM = CoM
+	 orig_CoM = CoM
+      else
+	 orig_CoM = save_orig_CoM
+      endif
+    endif
+
+    delta_CoM = orig_CoM - CoM
+    do i=1, at%N
+      at%pos(:,i) = at%pos(:,i) + delta_CoM
+    end do
+
+  end subroutine undo_CoM_motion
+
+  !% calculate mean squared displacement, with or without persistent atoms object
+  !% without persistent atoms object, global storage is used, and calling on multiple trajcetories
+  !% interspersed will not work.
+  !% usually desirable to call undo_pbc_jumps and undo_CoM_motion first
+  subroutine calc_msd(at, mask, reset_msd, persistent)
+    type(Atoms), intent(inout) :: at
+    logical, optional :: mask(:), reset_msd, persistent
+
+    logical :: my_reset_msd, my_persistent
+    real(dp), pointer :: orig_pos_p(:,:), msd_displ_p(:,:), msd_displ_mag_p(:)
+
+    my_reset_msd = optional_default(.false., reset_msd)
+    my_persistent = optional_default(.true., persistent)
+
+    ! get/save orig_pos
+    if (.not. my_persistent) then
+       if (.not. allocated(save_orig_pos)) then
+	 allocate(save_orig_pos(3, at%N))
+	 save_orig_pos = at%pos
+       else
+	 if (size(save_orig_pos,2) /= at%N) then
+	    call system_abort("calc_msd got not persistent, but shape(save_orig_pos) "//shape(save_orig_pos)//" does not match shape(at%pos) "//shape(at%pos))
+	 endif
+       endif
+       orig_pos_p => save_orig_pos
+    else
+       if (.not. assign_pointer(at, 'orig_pos', orig_pos_p)) then
+	  call add_property(at, 'orig_pos', 0.0_dp, n_cols=3, ptr2=orig_pos_p)
+	  orig_pos_p = at%pos
+       endif
+    end if
+    if (my_reset_msd) orig_pos_p = at%pos
+
+    if (.not. assign_pointer(at, 'msd_displ', msd_displ_p)) then
+      call add_property(at, 'msd_displ', 0.0_dp, n_cols=3, ptr2 = msd_displ_p)
+    endif
+    if (.not. assign_pointer(at, 'msd_displ_mag', msd_displ_mag_p)) then
+      call add_property(at, 'msd_displ_mag', 0.0_dp, n_cols=1, ptr = msd_displ_mag_p)
+    endif
+
+    msd_displ_p = at%pos - orig_pos_p
+    msd_displ_mag_p = sum(msd_displ_p**2, 1)
+
+    if (present(mask)) then
+      call set_value(at%params, 'msd', sum(msd_displ_mag_p,mask=mask)/real(count(mask),dp))
+    else
+      call set_value(at%params, 'msd', sum(msd_displ_mag_p)/real(at%N,dp))
+    endif
+
+  end subroutine calc_msd
 
 end module atoms_module
