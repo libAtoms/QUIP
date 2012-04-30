@@ -18,7 +18,7 @@
 
 from quippy import *
 from quippy.surface import *
-from quippy.structure_tools import *
+from quippy.structures import *
 
 def add_asap_props(at):
    at.add_property('efield', 0.0, n_cols=3)

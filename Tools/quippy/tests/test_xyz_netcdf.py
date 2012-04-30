@@ -261,7 +261,7 @@ class TestCInOutput(QuippyTestCase):
          self.assertEqual(list(at.z), list(at_ref.z))
 
    def test_non_orthorhombic_xyz(self):
-      from quippy.sio2 import quartz_params
+      from quippy.structures import quartz_params
       aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
       aq1.write('quartz.xyz')
       aq2 = Atoms('quartz.xyz')
@@ -269,7 +269,7 @@ class TestCInOutput(QuippyTestCase):
 
    if 'netcdf' in available_modules:
       def test_non_orthorhombic_nc(self):
-         from quippy.sio2 import quartz_params
+         from quippy.structures import quartz_params
          aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
          aq1.write('quartz.nc', netcdf4=False)
          aq2 = Atoms('quartz.nc')

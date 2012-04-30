@@ -16,16 +16,20 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+
+"""
+This module contains utility functions for use with the ASAP code, which is developed
+by Paul Tangney and Sandro Scandolo.
+"""
+
 from math import ceil
 import time, os, itertools, sys
 from StringIO import StringIO
 from farray import *
 
-from quippy.atoms import AtomsReaders, AtomsWriters, atoms_reader
+from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from quippy.periodictable import ElementMass, atomic_number
 from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
-
-__all__ = ['alpha_quartz', 'get_quartz_params']
 
 class PosCelWriter(object):
 
@@ -71,7 +75,7 @@ class PosCelWriter(object):
             p = at.pos[:,i].copy()
             if not self.pos_angstrom: p /= BOHR
             self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], 
-                           self.species_map[str(at.species[i].stripstrings())], objind))
+                           self.species_map[at.species[i].stripstrings()], objind))
 
         self.cel.write(' %s %d\n' % (self.step_name, self.it))
         for i in (1,2,3):
@@ -91,7 +95,7 @@ class PosCelWriter(object):
                 f = at.force[i].copy()
                 if self.rydberg:
                     f /= (RYDBERG/BOHR)
-                self.force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], self.species_map[str(at.species[i])], objind))
+                self.force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], self.species_map[at.species[i].stripstrings()], objind))
 
         if self.dostress:
             self.stress.write('(kbar)\n')
@@ -157,7 +161,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
         if not cel_angstrom: lattice *= BOHR
 
         at = Atoms(n=len(poslines), lattice=lattice)
-        at.pos[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in poslines ])
+        at.pos[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in poslines ]).T
         if not pos_angstrom: at.pos[:] *= BOHR
         species = [ rev_species_map[int(L.split()[3])] for L in poslines ]
         elements = [ not el.isdigit() and atomic_number(el) or el for el in species ]
@@ -179,358 +183,11 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
             force_lines = list(itertools.takewhile(lambda L: L.strip() != '', force))
             if len(force_lines) != at.n:
                 raise ValueError("len(force_lines) (%d) != at.n (%d)" % (len(force_lines), at.n))
-            at.force[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in force_lines ])
+            at.force[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in force_lines ]).T
             if rydberg:
                 at.force[:] *= RYDBERG/BOHR
 
         yield at
-
-quartz_params = {'experiment': {'a': 4.9160,
-                                'c': 5.4054,
-                                'u': 0.4697,
-                                'x': 0.4135,
-                                'y': 0.2669,
-                                'z': 0.1191},
-                 'CASTEP_LDA': {'a': 4.87009,
-                                'c': 5.36255,
-                                'u': 0.46699,
-                                'x': 0.41289,
-                                'y': 0.27198,
-                                'z': 0.11588},
-                 'CASTEP_GGA': {'a': 5.02836,
-                                'c': 5.51193,
-                                'u': 0.48128,
-                                'x': 0.41649,
-                                'y': 0.24661,
-                                'z': 0.13594},
-                 'ASAP_JRK': {'a': 4.8403809707320216,
-                              'c': 5.3285240037002248,
-                              'u': 0.46417561617105912,
-                              'x': 0.41174271054205958,
-                              'y': 0.27872745399831672,
-                              'z': 0.10973603276909905}
-                 }
-
-def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3.0):
-    """Primitive 9-atom orthorhombic alpha quartz cell"""
-
-    from math import sqrt
-
-    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
-    a2 = farray((0.5*a,  0.5*sqrt(3.0)*a, 0.0))
-    a3 = farray((0.0,    0.0,             c))
-
-    lattice = fzeros((3,3))
-    lattice[:,1] = a1
-    lattice[:,2] = a2
-    lattice[:,3] = a3
-
-    at = Atoms(n=9,lattice=lattice)
-
-    at.set_atoms((14,14,14,8,8,8,8,8,8))
-
-    z += 2.0/3.0
-
-    at.pos[:,1] =  u*a1 + 2.0/3.0*a3
-    at.pos[:,2] =  u*a2 + 1.0/3.0*a3
-    at.pos[:,3] = -u*a1 - u*a2
-    at.pos[:,4] =  x*a1 + y*a2 + z*a3
-    at.pos[:,5] = -y*a1 + (x-y)*a2  + (2.0/3.0 + z)*a3
-    at.pos[:,6] = (y-x)*a1 - x*a2   + (1.0/3.0 + z)*a3
-    at.pos[:,7] = y*a1 + x*a2 - z*a3
-    at.pos[:,8] = -x*a1 + (y-x)*a2 + (2.0/3.0 - z)*a3
-    at.pos[:,9] = (x - y)*a1 - y*a2 + (1.0/3.0 - z)*a3
-
-    return at
-
-def get_quartz_params(at):
-
-    assert at.n == 9
-    assert (at.z == 14).sum() == 3
-    assert (at.z == 8).sum() == 6
-
-    from quippy import get_lattice_params
-
-    lat_params = get_lattice_params(at.lattice)
-    a, c = lat_params[0], lat_params[2]
-    print 'a      = ', a
-    print 'c      = ', c
-    print 'c/a    = ', c/a
-    print 'V      = ', at.cell_volume()
-    print 'V/SiO2 = ', at.cell_volume()/3.0
-
-    frac_pos = numpy.dot(at.g, at.pos)
-    u = frac_pos[1,1]
-    x,y,z = frac_pos[:,4]
-    z -= 2.0/3.0
-    if z < 0.0: z += 1.0
-    if z > 1.0: z -- 1.0
-
-    print 'u      = ', u
-    print 'x      = ', x
-    print 'y      = ', y
-    print 'z      = ', z
-
-    return {'a':a, 'c':c, 'u':u, 'x':x, 'y':y, 'z':z}
-
-
-def alpha_quartz_cubic(*args, **kwargs):
-    """Non-primitive 18-atom cubic quartz cell."""
-
-    from quippy import supercell
-
-    a0 = alpha_quartz(*args, **kwargs)
-    at = supercell(a0, 4, 4, 1)
-    at.map_into_cell()
-
-    lattice = fzeros((3,3))
-    lattice[1,1] = a0.lattice[1,1]*2.0
-    lattice[2,2] = a0.lattice[2,2]*2.0
-    lattice[3,3] = a0.lattice[3,3]
-
-    g = numpy.linalg.inv(lattice)
-    t = numpy.dot(g, at.pos)
-    cubic = at.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
-    cubic.set_lattice(lattice)
-    return cubic
-
-def get_bond_lengths(at):
-    """Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths"""
-    at.calc_connect()
-    r_ij = farray(0.0)
-    res = {}
-    for i in frange(at.n):
-        for n in frange(at.n_neighbours(i)):
-            j = at.neighbour(i, n, distance=r_ij)
-            print i, j, at.z[i], at.z[j], r_ij
-            minij, maxij = min((i,j)), max((i,j))
-            key = (str(at.species[minij]), str(at.species[maxij]))
-            if not key in res: res[key] = []
-            res[key].append(r_ij.astype(float))
-    print res
-    return dict((k,farray(v)) for (k,v) in res.iteritems())
-
-def bracket(func, x1, x2, max_iter=50, factor=1.6, **kwargs):
-    f1 = func(x1, **kwargs)
-    f2 = func(x2, **kwargs)
-    for j in range(max_iter):
-        if f1*f2 < 0.0:
-            return (x1, x2)
-        if abs(f1) < abs(f2):
-            x1 += factor*(x1 - x2)
-            f1 = func(x1, **kwargs)
-        else:
-            x2 += factor*(x2 - x1)
-            f2 = func(x2, **kwargs)
-    raise ValueError('Maximum number of iterations exceeded.')
-
-def bisect(func, x1, x2, err=1e-5, max_iter=50, **kwargs):
-    f = func(x1, **kwargs)
-    fmid = func(x2, **kwargs)
-    if f*fmid >= 0.0:
-        raise ValueError("Root not bracketed")
-
-    if f < 0.0:
-        dx = x2 - x1
-        rtb = x1
-    else:
-        dx = x1 - x2
-        rtb = x2
-
-    for j in range(max_iter):
-        xmid = rtb + dx
-        dx *= 0.5
-        fmid = func(xmid, **kwargs)
-        if fmid < 0:
-            rtb = xmid
-        if abs(dx) < err or fmid == 0.0:
-            return rtb
-    raise ValueError('Maximum number of iterations exceeded.')
-
-def newton_raphson(func, dfunc, x1, x2, err=1e-5, max_iter=20, **kwargs):
-    x = 0.5*(x1 + x2)
-    for j in range(max_iter):
-        f = func(x, **kwargs)
-        df = dfunc(x, **kwargs)
-        dx = f/df
-        x = x - dx
-        print j, x
-        if (x1 - x)*(x - x2) < 0.0:
-            raise ValueError('Jumped out of brackets')
-        if abs(dx) < err:
-            return x
-    raise ValueError('Maximum number of iterations exceeded.')
-
-def rcut_func(r, alpha, eps):
-    return exp(-alpha*r)/r - eps
-
-def rcut_dfunc(r, alpha, eps):
-    return -alpha*exp(-alpha*r)/r - exp(-alpha*r)/r**2
-
-def rcut(alpha, eps=1.0/40.0, min=1.0, max=100.0):
-    min, max = bracket(rcut_func, min, max, alpha=alpha, eps=eps)
-    return bisect(rcut_func, min, max, alpha=alpha, eps=eps)
-
-
-def force_test(at, p, dx=1e-4):
-    analytic_f = fzeros((3,at.n))
-    p.calc(at, force=analytic_f)
-    num_f = fzeros((3,at.n))
-    ep, em = farray(0.0), farray(0.0)
-
-    for i in frange(at.n):
-        for j in (1,2,3):
-            ap = at.copy()
-            ap.pos[j,i] += dx
-            p.calc(ap, energy=ep)
-            print 'e+', j,i,ep
-            ap.pos[j,i] -= 2.0*dx
-            p.calc(ap, energy=em)
-            print 'e-', j,i,em
-            num_f[j,i] = -(ep - em)/(2*dx)
-
-    return analytic_f, num_f, analytic_f - num_f
-
-
-def timing_test():
-    times = {}
-
-    alpha = 0.0
-
-    xml = """<TS_params cutoff="4.0" n_types="2">
-    <per_type_data type="1" atomic_num="8" />
-    <per_type_data type="2" atomic_num="14" />
-    <params>
-    15.9994 28.086
-    O Si
-    48 24
-    .f. 0.0 1.d-9  0.0 1 1 1 %f 21.0 18.0 0.0 0.0 raggio,A_ew,gcut,iesr,rcut
-     -1.38257 2.76514
-     -------------Alphaij---------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     -------------Bij--------------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------------Cij------------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     -----------------Dij----------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------------Eij------------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------------Nij------------------
-     0.0000000E+00   8.0000000E+00
-     0.0000000E+00
-     ---------Tang-Toennies-------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------Tang-Toennies-------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------Tang-Toennies-------------
-     0.0000000E+00   0.0000000E+00
-     0.0000000E+00
-     ---------------D_ms----------------
-     2.4748d-4   1.9033d-3
-    -2.0846d-3
-     ---------------Gamma_ms------------
-     12.07092 11.15230
-     10.45517
-     ----------------R_ms---------------
-     7.17005 4.63710
-     5.75038
-     --------------Polarization---------
-     8.89378       0.0d0
-     0.70,  60,  1.0000000001E-7 2
-     ---------------Bpol----------------
-     0.0000000E+00   2.02989
-     0.00000000000
-     ---------------Cpol----------------
-     0.0000000E+00  -1.50435
-     0.00000000
-     --------Aspherical-Ion-Model-------
-     F,  F,  7.,  8.
-     -----------Adist-------------------
-     0.0000000E+00   2.0170894E+00
-     2.4232942E+00
-     ---------------Bdist---------------
-     0.0000000E+00   7.6306646E+01
-     1.5861246E+03
-     ---------------Cdist---------------
-     0.0000000E+00  -1.2069760E-02
-     --------------Ddist----------------
-     0.0000000E+00  -4.0995369E-02
-     2.2483367E-02
-     -------------Sigma1----------------
-     0.0000000E+00  -1.4410513E+07
-     -------------Sigma2----------------
-     0.0000000E+00  -5.1477595E+00
-     ------------Sigma3-----------------
-     0.0000000E+00   1.1143606E+08
-     -------------Sigma4----------------
-     0.0000000E+00   7.2089861E+00
-     -------------Bu1-------------------
-     4.1063828E+12   1.8240403E+02
-    -2.7852429E+04
-     --------------Alphau1--------------
-     7.2970202E+00   2.2221123E+00
-     2.9876383E+00
-     ---------------Bu2-----------------
-    -3.4880044E+13  -2.0079894E+03
-     4.0014253E+03
-     --------------Alphau2--------------
-     7.8085212E+00   3.7185181E+00
-     2.4488279E+00
-    ***********Spring Constant*********
-     1.0 1.0
-     1.0
-    ***********Spring Cutoff***********
-     3.60 2.30
-       3.8
-    **********Smoothing***************
-    0.0 0.0 .f.
-    *************Yukawa***************
-    %f 10.0 .t.
-    </params>
-    </TS_params>"""
-
-
-    reps = (1, 2, 3, 4, 5, 6)
-    alphas = (0.0, 0.05, 0.1, 0.5)
-
-    times = {}
-    fvar('e')
-    at = alpha_quartz_cubic()
-    for rep in reps:
-        aa = supercell(at, rep, rep, rep)
-        for alpha in alphas:
-            p = Potential('IP ASAP', xml % (rcut(alpha), alpha))
-
-            t1 = time.time()
-            p.calc(aa, energy=e)
-            t2 = time.time()
-
-            times[(rep,alpha)] = (aa.n, t2-t1)
-
-
-    ax = gca()
-    ax.set_xscale('log')
-
-    for alpha in alphas:
-        x = []
-        y = []
-        for rep in reps:
-            n, t = times[(rep,alpha)]
-            x.append(n)
-            y.append(t)
-        plot(x,y, 'o-')
-
-    legend([r'$\alpha=%.2f$ Bohr$^{-1}$ $R=%.2f$ Bohr' % (a, R) for (a,R) in zip(alphas, vectorize(rcut)(alphas))],2)
-
-#################
 
 logical = lambda x:  x in (1, True, '1', 'True', 't', 'T', '.t.', '.T')
 real = lambda s: float(s.replace('d', 'e'))

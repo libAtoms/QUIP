@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
-import quippy.sio2 as sio2
+from quippy.structures import quartz_params
 import unittest, quippy, numpy
 from quippytest import *
 
@@ -130,7 +130,7 @@ if hasattr(quippy, 'Potential'):
                self.compare_ref(trimer, self.trimer_ref)
 
          def test_quartz(self):
-            quartz = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
+            quartz = alpha_quartz(**quartz_params['CASTEP_LDA'])
             quartz.set_cutoff(self.cutoff)
             if do_compare_p1_p2:
                self.compare_p1_p2(quartz, debug=self.debug)
@@ -142,7 +142,7 @@ if hasattr(quippy, 'Potential'):
                If two atoms' positions differ by exactly half a unit cell, i.e. |s_i - s_j| = 0.5,
                then conversion from scaled to absolute coordinates is unstable.
                (short_range.f:229, nnlist.f:48)"""
-            quartz = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
+            quartz = alpha_quartz(**quartz_params['CASTEP_LDA'])
             bigquartz = supercell(quartz, 2, 1, 1)
             bigquartz.set_cutoff(self.cutoff)
 
@@ -152,7 +152,7 @@ if hasattr(quippy, 'Potential'):
                self.compare_ref(bigquartz, self.bigquartz_ref)
 
          def test_bigquartz_randomise(self):
-            quartz = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
+            quartz = alpha_quartz(**quartz_params['CASTEP_LDA'])
             bigquartz = supercell(quartz, 2, 1, 1)
             numpy.random.seed(1)
             bigquartz.pos += numpy.random.uniform(-0.1,0.1,size=3*bigquartz.n).reshape(3,bigquartz.n)
@@ -9287,7 +9287,7 @@ if hasattr(quippy, 'Potential'):
                self.p1.print_()
                self.p2.print_()
 
-               self.at = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
+               self.at = alpha_quartz(**quartz_params['CASTEP_LDA'])
                self.at.cutoff = 20.0*BOHR
 
                self.ds1 = DynamicalSystem(self.at)
@@ -9394,7 +9394,7 @@ class TestPseudise(QuippyTestCase):
 
    def test_pseudise_alpha_quartz(self):
       p = Potential('IP TS', param_str=self.xml)
-      a = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
+      a = alpha_quartz(**quartz_params['ASAP_JRK'])
       a.set_cutoff(p.cutoff())
       a.calc_connect()
       p.calc(a, force=True)

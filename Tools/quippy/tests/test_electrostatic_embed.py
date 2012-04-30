@@ -50,7 +50,7 @@ if test_electrostatic_embed:
        self.pot = Potential('IP TS', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
 
     def test_cluster(self):
-       from quippy.structure_tools import rotation_matrix, orthorhombic_slab
+       from quippy.structures import rotation_matrix, orthorhombic_slab
 
        aq = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
        unit_slab = orthorhombic_slab(aq, rot=rotation_matrix(aq,(0,0,0,1),z=(-1,0,0)),verbose=False)
