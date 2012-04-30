@@ -19,11 +19,14 @@
 """Utility functions which will be imported into top-level quippy namespace"""
 
 import sys, os, xml.dom.minidom
+import glob
 from dictmixin import PuPyDictionary
 
 __all__ = ['infer_format', 'args_str', 'parse_slice',
            'parse_comma_colon_list', 'loadstring',
-           'quip_xml_parameters', 'is_interactive_shell', 'parse_params']
+           'quip_xml_parameters', 'is_interactive_shell',
+           'parse_params', 'most_recent_file',
+           'most_recent_files']
 
 def infer_format(file, format, lookup):
     """Infer the correct format to read from or write to `file`
@@ -171,3 +174,18 @@ def read_text_file(fh):
     if opened:
         fh.close()
     return filename, lines
+
+
+def most_recent_file(pattern):
+    """
+    Find the most recent file matching glob `pattern`
+    """
+
+    return sorted(glob.glob(pattern), key=lambda f: os.stat(f).st_mtime)[-1]
+
+
+def most_recent_files(dir_pattern, file_pattern, suffix=''):
+    """
+    Find the most recent file matching file_pattern in each of the directories matching dir_pattern
+    """
+    return [most_recent_file(os.path.join(dir, file_pattern))+suffix for dir in glob.glob(dir_pattern)]
