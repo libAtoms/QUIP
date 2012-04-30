@@ -1212,19 +1212,38 @@ contains
   !% Principal radii of ellipse in $x$,$y$ and $z$ directions
   !% are given by the components of the vector 'ellipse'
   !% 'ellipse_bias' shifts ellipse, positive values forward
-  !% On exit 'list' contains indexes of selected atoms.
+  !% On exit 'list' contains indexes of selected atoms, which
+  !% are also reachable by nearest neighbour  bond hopping starting from c.
   subroutine select_ellipse(at, ellipse, ellipse_bias, list, c)
     type(Atoms), intent(in) :: at
     real(dp), intent(in) :: ellipse(3), ellipse_bias(3)
     type(Table), intent(inout) :: list
     integer, intent(in) :: c
-    integer i
+    integer i, old_n
+    type(Table) :: ellipselist, nextlist
     
-    call allocate(list, Nint=4, Nreal=0, Nstr=0, Nlogical=0)
-
+    call allocate(ellipselist, Nint=1, Nreal=0, Nstr=0, Nlogical=0)
     do i=1,at%N
-       if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(list, (/i, 0, 0, 0/))
+       if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(ellipselist, i)
     end do
+
+    ! include entries in ellipse which can be reached by nearest neighbour bond hopping starting from c
+    call allocate(list, Nint=4, Nreal=0, Nstr=0, Nlogical=0)
+    call append(list, (/c, 0, 0, 0/))
+    old_n = 1
+    do while (list%n < ellipselist%n)
+       call BFS_step(at, list, nextlist, nneighb_only=.true., min_images_only=.true.)
+
+       ! add entries from nextlist if they are also in ellipse
+       do i=1,nextlist%N
+          if (find_in_array(ellipselist%int(1,1:ellipselist%n), nextlist%int(1,i)) /= 0) call append(list, nextlist%int(:,i))
+       end do
+
+       ! check that list is still growing
+       if (list%N == old_n) exit
+       old_n = list%n
+    end do
+    call print('select_ellipse: selected '//(list%n)//'/'//(ellipselist%n)//' atoms centered on '//c, PRINT_VERBOSE)
 
   end subroutine select_ellipse
 
@@ -1369,6 +1388,9 @@ contains
 
     else if  (trim(params%selection_method) == 'crack_front') then
        call crack_update_selection_crack_front(at, params)
+
+    else if (trim(params%selection_method) == 'static') then
+       call print('crack_update_selection: selection_method=static, no action required.')
 
     else
        call system_abort('crack_update_selection: unknown selection_method '//trim(params%selection_method))
