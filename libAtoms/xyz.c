@@ -840,7 +840,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     type = T_CHAR;
     shape[0] = strlen(prefix);
     shape[1] = 0;
-    fprintf(stderr, "read_xyz: adding key %s type=%d shape=[%d %d] value %s\n", param_key, type, shape[0], shape[1], prefix);
+    debug("read_xyz: adding key %s type=%d shape=[%d %d] value %s\n", param_key, type, shape[0], shape[1], prefix);
     dictionary_add_key(params, param_key, &type, shape, &data, error, strlen(param_key));
     PASS_ERROR;
     strncpy(CHAR(data), prefix, strlen(prefix));
