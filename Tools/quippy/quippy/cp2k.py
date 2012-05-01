@@ -384,8 +384,9 @@ def apply_cp2k_sort_order(at, rev_sort_index_filename='quip_rev_sort_index'):
     """Reorder atoms in `at` so that they match rev_sort_index read from file.
 
        Returns sort_index and rev_sort_index arrays."""
-    
-    rev_sort_index = loadtxt(rev_sort_index_filename).astype(np.int32).reshape(at.n)
+
+    fields = [int(x) for x in open(rev_sort_index_filename).read().split() ]
+    rev_sort_index = farray(fields, dtype=np.int32)
     rev_sort_index_copy = rev_sort_index.copy()
     sort_index = farray(frange(at.n), dtype=np.int32)
     insertion_sort(rev_sort_index_copy, sort_index)
