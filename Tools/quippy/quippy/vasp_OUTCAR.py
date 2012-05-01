@@ -26,7 +26,10 @@ import re, sys
 def VASP_POSCAR_Reader(outcar, species=None):
    """Read a configuration from a VASP OUTCAR file."""
    
-   p = open(outcar, 'r')
+   if (outcar == 'stdin' or outcar == '-'):
+      p = sys.stdin
+   else:
+      p = open(outcar, 'r')
 
    re_comment = re.compile("\s*POSCAR:\s*(.+)")
    re_potcar = re.compile("\s*POTCAR:\s*\S+\s+(\S+)")
