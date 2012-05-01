@@ -71,7 +71,7 @@ module  atoms_module
 
   logical :: printed_stack_warning = .false.   !% OMIT
 
-  real(dp), allocatable, target, private, save :: save_prev_pos(:,:), save_orig_pos(:,:)
+  real(dp), allocatable, target, private, save :: save_prev_pos(:,:), save_orig_pos(:,:), save_smooth_pos(:,:)
   real(dp), allocatable, private, save :: save_orig_CoM(:)
 
   private :: ess_max_len
@@ -3685,7 +3685,7 @@ contains
   !% interspersed will not work
   subroutine undo_pbc_jumps(at, persistent)
     type(Atoms), intent(inout) :: at
-    logical, optional :: persistent
+    logical, optional, intent(in) :: persistent
 
     logical :: my_persistent
     real(dp), pointer :: prev_pos_p(:,:)
@@ -3717,7 +3717,7 @@ contains
   !% interspersed will not work
   subroutine undo_CoM_motion(at, persistent)
     type(Atoms), intent(inout) :: at
-    logical, optional :: persistent
+    logical, optional, intent(in) :: persistent
 
     integer :: i
     real(dp) :: orig_CoM(3), CoM(3), delta_CoM(3)
@@ -3762,7 +3762,7 @@ contains
   !% usually desirable to call undo_pbc_jumps and undo_CoM_motion first
   subroutine calc_msd(at, mask, reset_msd, persistent)
     type(Atoms), intent(inout) :: at
-    logical, optional :: mask(:), reset_msd, persistent
+    logical, optional, intent(in) :: mask(:), reset_msd, persistent
 
     logical :: my_reset_msd, my_persistent
     real(dp), pointer :: orig_pos_p(:,:), msd_displ_p(:,:), msd_displ_mag_p(:)
@@ -3806,5 +3806,37 @@ contains
     endif
 
   end subroutine calc_msd
+
+  subroutine fake_smooth_pos(at, mix, persistent)
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(in) :: mix
+    logical, optional, intent(in) :: persistent
+
+    logical :: my_persistent
+    real(dp), pointer :: smooth_pos_p(:,:)
+
+    my_persistent = optional_default(.true., persistent)
+
+    if (.not. my_persistent) then
+       if (.not. allocated(save_smooth_pos)) then
+	 allocate(save_smooth_pos(3, at%N))
+	 save_smooth_pos = at%pos
+       else
+	 if (size(save_smooth_pos,2) /= at%N) then
+	    call system_abort("calc_msd got not persistent, but shape(save_smooth_pos) "//shape(save_smooth_pos)//" does not match shape(at%pos) "//shape(at%pos))
+	 endif
+       endif
+       smooth_pos_p => save_smooth_pos
+       call add_property_from_pointer(at, 'smooth_pos', smooth_pos_p)
+    else
+       if (.not. assign_pointer(at, 'smooth_pos', smooth_pos_p)) then
+	  call add_property(at, 'smooth_pos', 0.0_dp, n_cols=3, ptr2=smooth_pos_p)
+	  smooth_pos_p = at%pos
+       endif
+    end if
+
+    smooth_pos_p = (1.0_dp-mix)*smooth_pos_p + mix*at%pos
+
+  end subroutine fake_smooth_pos
 
 end module atoms_module
