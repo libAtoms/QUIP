@@ -163,11 +163,27 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         self.verbose = saved_verbose
         return indices
 
-    def render_movie(self, moviefilename):
+    def render_movie(self, moviefile, start=None, stop=None, step=None,
+                     encoder='ffmpeg -i %s -r 25 -b 30M %s'):
         """
-        Render a movie for the trajectory. Not yet implemented.
+        Render a movie for the trajectory.
         """
-        raise NotImplementedError
+
+        if start is not None or stop is not None or step is not None:
+            frames = range(*slice(start, stop, step).indices(len(self)))
+        else:
+            frames = range(len(self))
+
+        basename, ext = os.path.splitext(moviefile)
+        out_fmt = '%s%%05d.jpg' % basename
+        
+        for frame in frames:
+            self.show(frame=frame)
+            self.capture(out_fmt % frame)
+            self.wait()
+
+        print 'Encoding movie...'
+        os.system(encoder % (out_fmt, moviefile))
 
     def copy(self):
         return atoms(self, recycle=False, inject=False)
@@ -255,6 +271,7 @@ def find_viewer(source, name=None, recycle=True):
 
     if name in _viewers:
         print 'Reusing viewer named %s for file %s' % (name, source)
+        scv(_viewers[name])
         return (name, _viewers[name])
     else:
         print 'Creating viewer named %s for file %s' % (name, source)
