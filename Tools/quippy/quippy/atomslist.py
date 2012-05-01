@@ -24,7 +24,7 @@ from quippy.mockndarray import mockNDarray
 from quippy.farray import *
 import numpy as np
 
-__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList', 'read_dataset']
+__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList', 'read_dataset', 'time_ordered_series']
 
 class AtomsReaderMixin(object):
     def __repr__(self):
@@ -466,22 +466,54 @@ def read_dataset(dirs, pattern, **kwargs):
     return dataset
 
 
+
+def slice_to_at_reference(sl):
+    return '@%s:%s:%s' % (sl.start is not None and sl.start or '',
+                          sl.stop  is not None and sl.stop  or '',
+                          sl.step  is not None and sl.step  or '')
+
 def time_ordered_series(source):
 
-    revsource = reversed(AtomsReader(filename))
+    if not isinstance(source, AtomsReader):
+        source = AtomsReader(source, range='empty')
+
+    revsource = reversed(source)
     last = revsource.next()
     current_time = last.time
-    print current_time, last.source, last.frame
+
+    revorder = [(last.source, last.frame, current_time)]
     
-    # yield at0
     for i, at in enumerate(revsource):
         if at.time >= current_time:
             continue
-
-        #yield at
         current_time = at.time
-        print current_time, at.source, at.frame
-        show(at)
+        revorder.append((at.source, at.frame, current_time))
+
+    order = reversed(revorder)
+    current_source, current_frame, current_time = order.next()
+    current_frames = slice(current_frame, None, None)
+    sources = []
+    for (source, frame, time) in order:
+        if source == current_source:
+            if frame == current_frame + 1:
+                current_frames = slice(current_frames.start, frame+1, None)
+            else:
+                sources.append((current_source, current_frames))
+                current_frames = slice(frame, None, None)
+        else:
+            sources.append((current_source, current_frames))
+            current_frames = slice(frame, None, None)
+
+        current_source = source
+        current_frame = frame
+    sources.append((current_source, current_frames))
+
+    filenames = []
+    for (filename, frames) in sources:
+        filenames.append('%s%s' % (filename, slice_to_at_reference(frames)))
+
+    return filenames
+    
             
 
     
