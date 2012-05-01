@@ -88,8 +88,8 @@ def VASP_POSCAR_Reader(outcar, species=None):
 	    energy_i = 1
 	    p.next()
 	 elif (energy_i == 1):
-	    print "energy(sigma->0) line"
-	    print l.split()
+	    # print "energy(sigma->0) line"
+	    # print l.split()
 	    at_cur.params['Energy_sigma_to_zero'] = float(l.split()[6])
 	    energy_i += 1
             yield at_cur
