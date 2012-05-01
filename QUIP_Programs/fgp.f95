@@ -69,7 +69,7 @@ program force_gaussian_prediction
    call  finalise(in)
 
   if (add_vector > 0)   k = k + add_vector   
-  call print('The number of valid (r0, m) pair :  '//k)
+  call print('The number of valid  Internal Vectors :  '//k)
    
   ! to know the total number of teaching confs: n
   call initialise(in, teaching_file, INPUT)
@@ -87,7 +87,7 @@ program force_gaussian_prediction
  
   ! the main work starts
   call initialise(in, teaching_file, INPUT)
-  call print('Got '//in%n_frame//' input configurations.')
+  call print('Got '//in%n_frame//' input frames.')
 
   allocate(feature_matrix(k,3,n))   
   allocate(feature_matrix_normalised(k,3, n))
@@ -117,7 +117,7 @@ program force_gaussian_prediction
           call print("The atom:"//at_n)
 
         do j=1, k-add_vector
-           feature_matrix(j, :, t) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
+           feature_matrix(j,:,t) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
            feature_len = norm(feature_matrix(j,:, t))
 
            if (feature_len < TOL_REAL)  then
@@ -336,6 +336,7 @@ call print_title('starting the predicting process')
       call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, distance_confs, distance_index)
       call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
                   distance_confs(n_relavant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relavant_confs))
+
       call system_timer('Sorting the DATABASE')
 
        
@@ -664,8 +665,7 @@ call print_title('starting the predicting process')
     integer                                   ::  i
     
     do i=1, size(matrix_data(1,1,:)) 
-        cov_tmp=cov(matrix_predict, matrix_data(:,:,t), matrix_predict_norm(:,:), matrix_data_norm(:,:,t), distance=distance_confs(t))   
-       ! sigma = 1.0_dp
+        cov_tmp=cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm(:,:), matrix_data_norm(:,:,i), distance=distance_confs(i))   
     enddo
 
     call insertion_sort(distance_confs, idx=distance_index)
