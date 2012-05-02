@@ -712,8 +712,7 @@ contains
             call print("&QM_KIND "//trim(qmmm_link_qm_kind), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
             do i=1,size(inner_link_list_a)
                if (at%z(inner_link_list_a(i)) /= qmmm_link_qm_kind_z) then
-                  RAISE_ERROR("QM_KIND boundary atom "//inner_link_list_a(i)//" has atomic number Z="// &
-                              at%z(inner_link_list_a(i))//" != qmmm_link_qm_kind_z="//qmmm_link_qm_kind_z, error)
+                  RAISE_ERROR("QM_KIND boundary atom "//inner_link_list_a(i)//" has atomic number Z="//at%z(inner_link_list_a(i))//" != qmmm_link_qm_kind_z="//qmmm_link_qm_kind_z, error)
                end if
                call print("  MM_INDEX "//inner_link_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
                counter = counter + 1
