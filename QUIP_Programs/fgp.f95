@@ -99,7 +99,7 @@ program force_gaussian_prediction
  do i=1, in%n_frame
         call read(in, at_in)
         call assign_property_pointer(at_in, 'force', ptr=force_ptr)
-        call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
+        if (add_vector > 0)  call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
         call print('the frame: '//i)
 
         ! Including the symmetry images
@@ -163,6 +163,9 @@ program force_gaussian_prediction
  allocate(distance_ivs(n,n))
  allocate(sigma(k))
  allocate(theta_array(k))
+ allocate(mean_value(k))
+ allocate(max_value(k))
+ allocate(deviation_value(k))
 
 ! the parameters for doing statistics on the distance matrix
 call system_timer('Getting Hyper-parameters from the DATABASE')
@@ -176,10 +179,7 @@ if (fix_sigma) then
    endif
 
    if (print_dist_stati) then
-       allocate(mean_value(k))
-       allocate(max_value(k))
-       allocate(deviation_value(k))
-       
+ 
        dist_primitive=0.0_dp
        do t = 1, k
           do i = 1, n
@@ -215,9 +215,6 @@ if (fix_sigma) then
        open(unit=1, file='sigma.dat')
        write(1, *) sigma
        close(unit=1)
-       deallocate(mean_value)
-       deallocate(max_value)
-       deallocate(deviation_value)
    endif                                                            ! do statistics on the distance matrix
 else 
   theta_array=theta
@@ -228,9 +225,6 @@ else
   endif
 
   if (print_dist_stati) then
-       allocate(mean_value(k))
-       allocate(max_value(k))
-       allocate(deviation_value(k))
 
    dist_primitive=0.0_dp
    do t = 1, k 
@@ -264,20 +258,24 @@ else
          if (i>j)   call print("Normalisd Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
        enddo
   enddo
-  deallocate(mean_value)
-  deallocate(max_value)
-  deallocate(deviation_value)
+
  endif         ! doing print_dist_stati   
 endif          ! doing fix_sigma or using theta
 
 call print('sigma is:    '//sigma)
 deallocate(distance_ivs)
 deallocate(theta_array)
+deallocate(mean_value)
+deallocate(max_value)
+deallocate(deviation_value)
+
 
 call system_timer('Getting hyper-parameters from the DATABASE')
 
 
 call print_title('starting the predicting process')
+
+ if (n_relavant_confs > n)  call system_abort("Trying to select more confs than the database")
 
  allocate(covariance_pred(n_relavant_confs))
  allocate(feature_matrix_pred(k,3))
@@ -295,7 +293,7 @@ call print_title('starting the predicting process')
  do i=1, in%n_frame 
    call read(in, at_in)
    call assign_property_pointer(at_in, 'force', ptr=force_ptr)
-   call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
+   if (add_vector > 0) call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)
    call set_cutoff(at_in, r_cut)
    call calc_connect(at_in)
    if (spherical_cluster_pred) then
@@ -306,7 +304,7 @@ call print_title('starting the predicting process')
 
    do at_n=1, n_loop
 
-       do j= 1, k-add_vector
+      do j= 1, k-add_vector
             feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
             call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
             feature_len = norm(feature_matrix_pred(j,:))
@@ -337,7 +335,7 @@ call print_title('starting the predicting process')
       call system_timer('Sorting the DATABASE')
 
       ! do the sorting and selection
-      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, distance_confs, sigma, distance_index)
+      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, sigma, distance_confs, distance_index)
       call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
                   distance_confs(n_relavant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relavant_confs))
 
@@ -661,14 +659,14 @@ call print_title('starting the predicting process')
 
   subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, sigma, distance_confs, distance_index)
  
-    real(dp), intent(in)                      ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:), sigma(:)
-    real(dp), intent(inout)                   ::  distance_confs(:)
-    integer, intent(inout)                    ::  distance_index(:)
-    real(dp)                                  ::  cov_tmp  
-    integer                                   ::  i
+    real(dp), intent(in)                        ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:), sigma(:)
+    real(dp), intent(inout)                     ::  distance_confs(:)
+    integer,  intent(inout)                     ::  distance_index(:)
+    real(dp)                                    ::  cov_tmp  
+    integer                                     ::  i
     
     do i=1, size(matrix_data(1,1,:)) 
-        cov_tmp=cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm(:,:), matrix_data_norm(:,:,i), sigma, distance=distance_confs(i))   
+        cov_tmp=cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm, matrix_data_norm(:,:,i), sigma, distance=distance_confs(i))   
     enddo
 
     call insertion_sort(distance_confs, idx=distance_index)
