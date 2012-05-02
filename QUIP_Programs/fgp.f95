@@ -84,6 +84,8 @@ program force_gaussian_prediction
   enddo
   call finalise(in)
   call print("The total number of teaching configurations:    "//n)
+
+  call system_timer('Preparing Information from the DATABASE')
  
   ! the main work starts
   call initialise(in, teaching_file, INPUT)
@@ -153,6 +155,8 @@ program force_gaussian_prediction
  enddo       ! loop over the frames
 
  call finalise(in)
+
+ call system_timer('Preparing Information from the DATABASE')
 
  call print_title('starting the teaching process')
 
@@ -282,8 +286,8 @@ call print_title('starting the predicting process')
  allocate(force_proj_target(k))
  allocate(covariance(n_relavant_confs,n_relavant_confs))
  allocate(inv_covariance(n_relavant_confs,n_relavant_confs))
- allocate(distance_confs(n_relavant_confs))
- allocate(distance_index(n_relavant_confs))
+ allocate(distance_confs(n))
+ allocate(distance_index(n))
  allocate(force_proj_ivs_select(k, n_relavant_confs))
  
 
@@ -333,7 +337,7 @@ call print_title('starting the predicting process')
       call system_timer('Sorting the DATABASE')
 
       ! do the sorting and selection
-      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, distance_confs, distance_index)
+      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, distance_confs, sigma, distance_index)
       call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
                   distance_confs(n_relavant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relavant_confs))
 
@@ -344,7 +348,7 @@ call print_title('starting the predicting process')
       do t = 1, n_relavant_confs
          do j=1, n_relavant_confs
               covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma=sigma)
+                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma)
          enddo
       enddo
 
@@ -356,6 +360,8 @@ call print_title('starting the predicting process')
      endif
 
 
+     call system_timer('Inversing the Covariance Matrix')
+
      if (do_gp) then
         call inverse(covariance, inv_covariance)
      else
@@ -363,6 +369,9 @@ call print_title('starting the predicting process')
         inv_covariance = inverse_svd_threshold(covariance, n_relavant_confs, thresh)
      endif
      call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
+
+     call system_timer('Inversing the Covariance Matrix')
+
 
       do t=1, n_relavant_confs
            force_proj_ivs_select(:,t)=force_proj_ivs(:,distance_index(t))
@@ -372,7 +381,7 @@ call print_title('starting the predicting process')
 
       do t= 1, n_relavant_confs
             covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                                                                                     feature_matrix_normalised(:,:,distance_index(t)), sigma=sigma)
+                                                                                     feature_matrix_normalised(:,:,distance_index(t)), sigma)
       enddo
 
 
@@ -523,25 +532,19 @@ call print_title('starting the predicting process')
 
  function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, distance)
 
-    real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:) 
-    real(dp), intent(in), optional        ::        sigma(:)
+    real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:) 
     real(dp), intent(out), optional       ::        distance
     real(dp)                              ::        cov, d_sq
     integer                               ::        i, k
 
     k=size(feature_matrix1(1,:))    
-    if (present(sigma)) then
-       d_sq = 0.0_dp    
-       do i=1, k
-               d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*sigma(i))**2
-       enddo
-    else                       ! if no sigma is provided, sigma=1.0_dp is assumed for every dimension
-       d_sq = 0.0_dp
-       do i=1, k
-             d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) **2) /(2.0_dp*1.0_dp)**2
-       enddo
-    endif
-    d_sq = d_sq/real(k, dp)      ! normalised by the dimensionality of the Internal Space
+
+    d_sq = 0.0_dp    
+    do i=1, k
+       d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) /2.0_dp/sigma(i))**2
+    enddo
+ 
+    d_sq = d_sq/real(k,dp)      ! normalised by the dimensionality of the Internal Space
 
     if (present(distance))  distance=sqrt(d_sq)     
     cov = exp(-1.0_dp*d_sq)
@@ -656,16 +659,16 @@ call print_title('starting the predicting process')
  end subroutine normal_squared_matrix
 
 
-  subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, distance_confs, distance_index)
+  subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, sigma, distance_confs, distance_index)
  
-    real(dp), intent(in)                      ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:)
+    real(dp), intent(in)                      ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:), sigma(:)
     real(dp), intent(inout)                   ::  distance_confs(:)
     integer, intent(inout)                    ::  distance_index(:)
     real(dp)                                  ::  cov_tmp  
     integer                                   ::  i
     
     do i=1, size(matrix_data(1,1,:)) 
-        cov_tmp=cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm(:,:), matrix_data_norm(:,:,i), distance=distance_confs(i))   
+        cov_tmp=cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm(:,:), matrix_data_norm(:,:,i), sigma, distance=distance_confs(i))   
     enddo
 
     call insertion_sort(distance_confs, idx=distance_index)
