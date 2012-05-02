@@ -2411,10 +2411,10 @@ contains
 
         if (present(mask)) then
            i = 1
-           do while (.not. mask(i) .and. i < at%N)
+           do while (.not. mask(i) .and. i <= at%N)
               i = i+1
            enddo
-           if (i >= at%N) then
+           if (i > at%N) then
               RAISE_ERROR('centre_of_mass: No atoms specified in mask.', error)
            endif
            my_origin = i
@@ -2440,22 +2440,12 @@ contains
            M_Tot = M_Tot + at%mass(index_list(i))
         end do
 
-     else if (present(mask)) then
-
-        do i = 1, at%N
-           if (mask(i)) then
-	      if (my_origin > 0) then
-		 CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
-	      else
-		 CoM = CoM + at%mass(i) * at%pos(:,i)
-	      endif
-              M_Tot = M_Tot + at%mass(i)
-           endif
-        end do
-
      else
 
         do i = 1, at%N
+	   if (present(mask)) then
+	      if (.not. mask(i)) cycle
+	   endif
 	   if (my_origin > 0) then
 	      CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
 	   else
@@ -3730,7 +3720,7 @@ contains
        call add_property(at, 'mass', 0.0_dp)
        at%mass = ElementMass(at%Z)
     endif
-    CoM = centre_of_mass(at)
+    CoM = centre_of_mass(at, origin=0)
 
     if (my_persistent) then
       ! get orig_CoM from at%params
