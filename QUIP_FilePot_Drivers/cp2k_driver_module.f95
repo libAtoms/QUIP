@@ -62,7 +62,7 @@ contains
     character(len=STRING_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, &
          topology_suffix, qmmm_link_type, qmmm_link_qm_kind
     logical :: clean_up_files, save_output_files, save_output_wfn_files, use_buffer, persistent
-    integer :: clean_up_keep_n, persistent_restart_interval
+    integer :: clean_up_keep_n, persistent_restart_interval, qmmm_link_qm_kind_z
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
@@ -189,7 +189,8 @@ contains
       call param_register(cli, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
       call param_register(cli, 'create_residue_labels', 'T', create_residue_labels, help_string="If true, recreate residue labels each time PSF file is generated (default T)")
       call param_register(cli, 'qmmm_link_type', 'IMOMM', qmmm_link_type, help_string="Type of QMMM links to create: one of IMOMM, PSEUDO or QM_KIND. Default IMOMM")
-      call param_register(cli, 'qmmm_link_qm_kind', '', qmmm_link_qm_kind, help_string="QM kind to use for inner boundary atoms when qmmm_link_type=QM_KIND")
+      call param_register(cli, 'qmmm_link_qm_kind', 'OSTAR', qmmm_link_qm_kind, help_string="QM kind to use for inner boundary atoms when qmmm_link_type=QM_KIND")
+      call param_register(cli, 'qmmm_link_qm_kind_z', '8', qmmm_link_qm_kind_z, help_string="Atomic number of QM_KIND species (default 8)")
       call param_register(cli, 'qmmm_link_n_electrons', '1', qmmm_link_n_electrons, help_string="Number of electrons to add per QM-MM link when qmmm_link_type=QM_KIND")
       call param_register(cli, 'qmmm_same_lattice', 'F', qmmm_same_lattice, help_string="If true, use full original MM lattice for QM calculation")
       call param_register(cli, 'qmmm_use_mm_charges', 'T', qmmm_use_mm_charges, help_string="If true (default) use classical point charges of atoms in QM region to calculate total DFT charge")
@@ -710,6 +711,10 @@ contains
             call uniq(cut_bonds%int(1,1:cut_bonds%N), inner_link_list_a)
             call print("&QM_KIND "//trim(qmmm_link_qm_kind), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
             do i=1,size(inner_link_list_a)
+               if (at%z(inner_link_list_a(i)) /= qmmm_link_qm_kind_z) then
+                  RAISE_ERROR("QM_KIND boundary atom "//inner_link_list_a(i)//" has atomic number Z="// &
+                              at%z(inner_link_list_a(i))//" != qmmm_link_qm_kind_z="//qmmm_link_qm_kind_z, error)
+               end if
                call print("  MM_INDEX "//inner_link_list_a(i), file=cp2k_input_tmp_io, verbosity=PRINT_ALWAYS)
                counter = counter + 1
             end do
