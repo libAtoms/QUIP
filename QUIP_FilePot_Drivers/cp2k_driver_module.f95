@@ -1748,7 +1748,7 @@ contains
      integer, optional, intent(out) :: error
      
      character(STRING_LENGTH) :: from
-     integer, pointer :: cluster_mark_from(:), cut_bonds_from(:,:)
+     integer, pointer :: cluster_mark_from(:), cut_bonds_from(:,:), hybrid_mark_from(:)
      integer i
      real(dp) QM_cell(3)
      logical found, do_ignore_failure
@@ -1780,6 +1780,11 @@ contains
         call print('cp2k_state_change set_value QM_cell'//trim(to)//' '//QM_cell)
         call set_value(at%params, 'QM_cell'//trim(to), QM_cell)
      end if
+     if (.not. assign_pointer(at, 'hybrid_mark'//trim(from), hybrid_mark_from)) then
+        RAISE_ERROR('cp2k_state_change found cluster_mark'//trim(from)//'but not hybrid_mark'//trim(from)//' - inconsistent!', error)
+     end if
+     call print('cp2k_state_change copying property hybrid_mark'//trim(from)//' to hybrid_mark'//trim(to))
+     call add_property(at, 'hybrid_mark'//trim(to), hybrid_mark_from, overwrite=.true.)
      call print('cp2k_state_change executing "if [ -f wfn.restart.wfn'//trim(from)//' ] ; then cp wfn.restart.wfn'//trim(from)//' wfn.restart.wfn'//trim(to)//' ; fi "')
      call system_command('if [ -f wfn.restart.wfn'//trim(from)//' ] ; then cp wfn.restart.wfn'//trim(from)//' wfn.restart.wfn'//trim(to)//' ; fi')
 
