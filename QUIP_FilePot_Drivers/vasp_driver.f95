@@ -65,9 +65,9 @@ subroutine do_vasp_calc(at, args_str, error)
 
    character(len=STRING_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
-   logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy, persistent
+   logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy, persistent, persistent_n_atoms_exist
    logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
-   integer :: persistent_restart_interval
+   integer :: persistent_restart_interval, persistent_n_atoms
    real(dp) :: persistent_max_wait_time
    type(Dictionary) :: incar_dict, cli
 
@@ -178,6 +178,21 @@ subroutine do_vasp_calc(at, args_str, error)
 	 call print("-1", file=persistent_io)
 	 call finalise(persistent_io)
       endif
+
+      inquire(file="persistent_n_atoms", exist=persistent_n_atoms_exist)
+      if (persistent_n_atoms_exist) then
+         call initialise(persistent_io, "persistent_n_atoms", action=INPUT)
+         line = read_line(persistent_io)
+         read (unit=line, fmt=*, iostat=stat) persistent_n_atoms
+         call finalise(persistent_io)
+      else
+         persistent_n_atoms = 0
+      end if
+      call print('got old persistent_n_atoms = '//persistent_n_atoms, PRINT_VERBOSE)
+      call print('writing new persistent_n_atoms = '//at%n, PRINT_VERBOSE)
+      call initialise(persistent_io, "persistent_n_atoms", action=OUTPUT)
+      call print(at%n, file=persistent_io)
+      call finalise(persistent_io)
    endif
    run_dir = make_run_directory("vasp_run", force_run_dir_i, run_dir_i)
 
@@ -269,7 +284,7 @@ subroutine do_vasp_calc(at, args_str, error)
       endif
    endif
 
-   if (.not. persistent_already_started .or. mod(persistent_run_i, persistent_restart_interval) == 0) then
+   if (.not. persistent_already_started .or. mod(persistent_run_i, persistent_restart_interval) == 0 .or. at%n /= persistent_n_atoms) then
       call print("writing POSCAR", PRINT_VERBOSE)
       call write_vasp_poscar(at, trim(run_dir), error=error)
       PASS_ERROR(error)
@@ -278,7 +293,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    if (persistent) then ! restart VASP if needed, write to REFTRAJCAR if needed, initiate calc
       call system_timer('vasp_filepot/start_restart')
-      if (mod(persistent_run_i, persistent_restart_interval) == 0) then ! start or restart VASP
+      if (mod(persistent_run_i, persistent_restart_interval) == 0 .or. at%n /= persistent_n_atoms) then ! start or restart VASP
 	 call print("starting or restarting VASP", PRINT_VERBOSE)
 	 if (persistent_already_started) then ! tell currently running vasp to quit
 	    call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
@@ -289,7 +304,7 @@ subroutine do_vasp_calc(at, args_str, error)
 	    call finalise(persistent_io)
 	    ! wait for signal that it's finished
 	    call system_command("echo 'before wait'; ps auxw | egrep 'vasp|mpi'")
-	    call wait_for_file_to_exist(trim(run_dir)//"/vasp.done", max_wait_time=60.0_dp, error=error)
+	    call wait_for_file_to_exist(trim(run_dir)//"/vasp.done", max_wait_time=600.0_dp, error=error)
 	    call system_command("echo 'after wait'; ls -l "//trim(run_dir))
 	    call system_command("echo 'after wait'; ps auxw | egrep 'vasp|mpi'")
 	    PASS_ERROR(error)
@@ -308,7 +323,7 @@ subroutine do_vasp_calc(at, args_str, error)
       endif
       call system_timer('vasp_filepot/start_restart')
       call system_timer('vasp_filepot/write_reftrajcar')
-      if (mod(persistent_run_i,persistent_restart_interval) /= 0) then ! need to write current coords to REFTRAJCAR
+      if (mod(persistent_run_i,persistent_restart_interval) /= 0 .and. at%n == persistent_n_atoms) then ! need to write current coords to REFTRAJCAR
 	 call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
 	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
 	 call print(at%N, file=persistent_io)
@@ -389,6 +404,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("cleaning up", PRINT_VERBOSE)
       call system_command("rm -rf "//trim(run_dir))
    endif
+
    call system_timer('vasp_filepot/end')
 
    call verbosity_pop()
