@@ -285,14 +285,14 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         remove_properties = []
 
         if symbols is None and numbers is None:
-            if hasattr(self, 'z'):
+            if self.has_property('z'):
                 numbers = self.z.view(np.ndarray)
             else:
                 numbers = [0]*len(self)
                 remove_properties.append('Z')
 
         if symbols is None and positions is None:
-            if hasattr(self, 'pos'):
+            if self.has_property('pos'):
                 positions = self.pos.view(np.ndarray).T
             else:
                 remove_properties.append('pos')
@@ -305,7 +305,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             cell = self.lattice.T.view(np.ndarray)
         if symbols is None and pbc is None:
             pbc = self.get_pbc()
-        if charges is None and hasattr(self, 'charge'):
+        if charges is None and self.has_property('charge'):
             charges = self.charge.view(np.ndarray)
             
         ase.Atoms.__init__(self, symbols, positions, numbers,
@@ -682,7 +682,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         """Density in units of :math:`g/m^3`. If `mass` property exists,
            use that, otherwise we use `z` and ElementMass table."""
-        if hasattr(self, 'mass'):
+        if self.has_property('mass'):
             mass = sum(self.mass)/MASSCONVERT/1.0e3
         else:
             mass = sum(ElementMass[z] for z in self.z)/MASSCONVERT/1.0e3
