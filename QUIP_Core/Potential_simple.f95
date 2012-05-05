@@ -344,6 +344,10 @@ contains
     logical :: force_using_fd
     real(dp) :: force_fd_delta
 
+    character(len=STRING_LENGTH) read_extra_param_list
+    character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
+    integer n_copy, n_params
+
     INIT_ERROR(error)
 
     if (at%N <= 0) then
@@ -385,6 +389,8 @@ contains
       help_string="If present, calculate virial and put it in field with this string as name")
     call param_register(params, 'local_virial', '', calc_local_virial, &
       help_string="If present, calculate local_virial and put it in field with this string as name")
+    call param_register(params, "read_extra_param_list", '', read_extra_param_list, help_string="if single_cluster=T and carve_cluster=T, copy extra params to copy back from cluster")
+
 
     if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) then
       RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -594,6 +600,27 @@ contains
 		  at_force_ptr(:,cluster_index(i)) = f_cluster(:,i)
 	 end do
          nullify(f_cluster)
+
+         ! might need to copy some params from cluster to main Atoms object, for compatibility with filepot
+         if (len_trim(read_extra_param_list) > 0) then
+            call parse_string(read_extra_param_list, ':', tmp_params_array, n_params, error=error)
+            PASS_ERROR(error)
+
+            n_copy = 0
+            do i=1,n_params
+               if (has_key(cluster%params, trim(tmp_params_array(i)))) then
+                  n_copy = n_copy + 1
+                  copy_keys(n_copy) = tmp_params_array(i)
+                  call print("Potential_simple calc() copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+               else if  (has_key(cluster%params, trim(tmp_params_array(i))//trim(run_suffix))) then
+                  n_copy = n_copy + 1
+                  copy_keys(n_copy) =  trim(tmp_params_array(i))//trim(run_suffix)
+                  call print("Potential_simple calc() copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+               end if
+            end do
+            call subset(cluster%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
+         end if
+
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
