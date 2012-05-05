@@ -188,13 +188,13 @@ def process_in_args(args, kwargs, inargs, prefix):
 
     # Construct final args_str by merging args_str argument with args_str_kwargs
     if got_args_str:
-        args_str_final = {}
+        args_str_final = ''
         if prefix+'args_str' in newkwargs:
-            args_str_final.update(PuPyDictionary(newkwargs[prefix+'args_str']))
+            args_str_final = args_str_final + newkwargs[prefix+'args_str']
         if args_str_kwargs != {}:
-            args_str_final.update(args_str_kwargs)
-        if args_str_final != {}:
-            newkwargs[prefix+'args_str'] = args_str(args_str_final)
+            args_str_final = args_str_final + args_str(args_str_kwargs)
+        if args_str_final != '':
+            newkwargs[prefix+'args_str'] = args_str_final
 
     return tuple(newargs), newkwargs
 
