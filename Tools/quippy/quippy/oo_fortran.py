@@ -190,7 +190,10 @@ def process_in_args(args, kwargs, inargs, prefix):
     if got_args_str:
         args_str_final = ''
         if prefix+'args_str' in newkwargs:
-            args_str_final = args_str_final + " " + args_str(newkwargs[prefix+'args_str'])
+            if isinstance(newkwargs[prefix+'args_str'], basestring):
+                args_str_final = args_str_final + " " + newkwargs[prefix+'args_str']
+            else:
+                args_str_final = args_str_final + " " + args_str(newkwargs[prefix+'args_str'])
         if args_str_kwargs != {}:
             args_str_final = args_str_final + " " + args_str(args_str_kwargs)
         if args_str_final != '':
