@@ -35,7 +35,7 @@ def write_band(neb, filename):
     if rank != 0: return
     out = AtomsWriter(filename)
     for image in neb.images:
-        out.write(cp)
+        out.write(image)
     out.close()
 
 def callback_calc(at):
