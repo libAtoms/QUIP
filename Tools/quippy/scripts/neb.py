@@ -20,6 +20,7 @@
 
 from quippy import *
 from ase.constraints import FixAtoms
+from ase.calculators import SinglePointCalculator
 from ase.neb import NEB, SingleCalculatorNEB
 from ase.optimize import MDMin
 from ase.optimize.fire import FIRE
@@ -34,9 +35,6 @@ def write_band(neb, filename):
     if rank != 0: return
     out = AtomsWriter(filename)
     for image in neb.images:
-        cp = image.copy()
-        cp.params['energy'] = image.get_potential_energy()
-        cp.add_property('force', image.get_forces().T, overwrite=True)
         out.write(cp)
     out.close()
 
@@ -75,7 +73,6 @@ p.add_option('--minim-max-steps', action='store', type='int', help="Maximum numb
 #p.add_option('--minim-do-pos', action='store', help="If true, relax positions in initial minimisations", default=True)
 #p.add_option('--minim-do-lat', action='store_true', help="If true, relax lattice in initial minimisations", default=False)
 p.add_option('--verbosity', action='store', help="Set QUIP verbosity")
-p.add_option('--callback', action='store_true', help="Use a callback potential")
 p.add_option('--fmax', action='store', type='float', help="Maximum force for NEB convergence")
 p.add_option('--parallel', action='store_true', help="Parallelise over images using MPI")
 
@@ -131,15 +128,8 @@ quip_pot = Potential(opt.init_args, param_filename=opt.param_file)
 if rank == 0:
     quip_pot.print_()
 
-if opt.callback:
-    callback_pot = Potential(callback=callback_calc)
-
 for i, at in enumerate(neb.images):
-
-    if opt.callback:
-        p = callback_pot
-    else:
-        p = quip_pot
+    p = Potential(callback=callback_calc, inplace=True)
     at.params['image'] = i
     at.set_calculator(p)
 
