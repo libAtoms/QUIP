@@ -20,15 +20,18 @@
 
 from quippy import *
 from ase.constraints import FixAtoms
-from ase.neb import SingleCalculatorNEB
+from ase.neb import NEB, SingleCalculatorNEB
 from ase.optimize import MDMin
 from ase.optimize.fire import FIRE
+from ase.parallel import rank, size
 import numpy as np
 import sys
 import os
+import shutil
 import optparse
 
 def write_band(neb, filename):
+    if rank != 0: return
     out = AtomsWriter(filename)
     for image in neb.images:
         cp = image.copy()
@@ -38,22 +41,30 @@ def write_band(neb, filename):
     out.close()
 
 def callback_calc(at):
-    global global_pot, calc_args
+    global quip_pot, op, rank
     # dummy calculator which calls ForceMixing pot and sets energies to zero
     if at.calc_energy:
         at.params['energy'] = 0.0
     if at.calc_force:
-        at.set_cutoff(global_pot.cutoff())
+        at.set_cutoff(quip_pot.cutoff())
         at.calc_connect()
-        print 'Calling global_pot.calc() with args_str=%s' % (calc_args[at.params['image']] + ' force')
-        global_pot.calc(at, args_str=calc_args[at.params['image']]+" force")
+        old_dir = os.getcwd()
+        image_dir = os.path.join(old_dir, 'image-%d' % at.image)
+        print 'rank %d running image %d in dir %s' % (rank, at.image, image_dir)
+        os.chdir(image_dir)
+        calc_args = opt.calc_args + " force"
+        if '%image' in calc_args:
+            calc_args = calc_args.replace('%image', str(at.params['image']))
+        print 'rank %d calling quip_pot.calc() with args_str=%s' % (rank, calc_args)
+        quip_pot.calc(at, args_str=calc_args)
+        os.chdir(old_dir)
 
 p = optparse.OptionParser(usage='%prog [OPTIONS] INFILE')
 p.add_option('-R', '--refine', action='store', type='int', help='Refine NEB pathway by this many steps')
 p.add_option('-I', '--init-args', action='store', help='QUIP Potential init_args string')
 p.add_option('-C', '--calc-args', action='store', help='QUIP Potential calc_args string', default='')
 p.add_option('-p', '--param-file', action='store', help='Read QUIP potential XML from this file.', default='crack.xml')
-p.add_option('-c', '--climb', action='store_true', help='If true, do climbing image NEB', default=False)
+p.add_option('--climb', action='store_true', help='If true, do climbing image NEB', default=False)
 p.add_option('-k', action='store', type='float', help='Spring constant for NEB', default=1.0)
 p.add_option('-O', '--optimizer', action='store', help='Optimizer to use: currently FIRE or MDMin')
 p.add_option('-w', '--write-traj', action='store', type='int', help='Write trajectory every this many steps')
@@ -64,13 +75,17 @@ p.add_option('--minim-max-steps', action='store', type='int', help="Maximum numb
 #p.add_option('--minim-do-pos', action='store', help="If true, relax positions in initial minimisations", default=True)
 #p.add_option('--minim-do-lat', action='store_true', help="If true, relax lattice in initial minimisations", default=False)
 p.add_option('--verbosity', action='store', help="Set QUIP verbosity")
-p.add_option('--run-suffix', action='store', help="run_suffix to be used for each image's calculator. %d will be replaced by number of image")
 p.add_option('--callback', action='store_true', help="Use a callback potential")
+p.add_option('--fmax', action='store', type='float', help="Maximum force for NEB convergence")
+p.add_option('--parallel', action='store_true', help="Parallelise over images using MPI")
 
 opt, args = p.parse_args()
 
-print 'init_args', opt.init_args
-print 'calc_args', opt.calc_args
+print 'MPI rank %d, size %d' % (rank, size)
+
+if rank == 0:
+    print 'init_args', opt.init_args
+    print 'calc_args', opt.calc_args
 
 if opt.verbosity is not None:
     verbosity_push(verbosity_of_str(opt.verbosity))
@@ -101,36 +116,35 @@ have_constraint = hasattr(images[0], 'move_mask')
 if have_constraint:
     constraint = FixAtoms(mask=np.logical_not(images[0].move_mask.view(np.ndarray)))
 
-neb = SingleCalculatorNEB(images, climb=opt.climb, k=opt.k)
-
 if opt.refine:
-    neb.refine(opt.refine)
+    scn = SingleCalculatorNEB(images)
+    scn.refine(opt.refine)
+    images = scn.images
+
+neb = NEB(images, climb=opt.climb, k=opt.k, parallel=opt.parallel)
 
 if have_constraint:
     for image in images:
         image.set_constraint(constraint)
 
+quip_pot = Potential(opt.init_args, param_filename=opt.param_file)    
+if rank == 0:
+    quip_pot.print_()
+
 if opt.callback:
-    global_pot = Potential(opt.init_args, param_filename=opt.param_file)
-    global_pot.print_()
+    callback_pot = Potential(callback=callback_calc)
 
-calculators = []
-calc_args = []
 for i, at in enumerate(neb.images):
-    if opt.callback:
-        p = Potential(callback=callback_calc)
-    else:
-        p = Potential(opt.init_args, param_filename=opt.param_file)
-    calc_args.append(opt.calc_args)
-    if opt.run_suffix is not None:
-        run_suffix = opt.run_suffix % i
-        calc_args[-1] += ' run_suffix=%s' % run_suffix
-        at.add_property('hybrid_mark'+run_suffix, at.hybrid_mark)
-    at.params['image'] = i
-    calculators.append(p)
-neb.set_calculators(calculators)
 
-print 'Starting NEB run with %d images' % len(neb.images)
+    if opt.callback:
+        p = callback_pot
+    else:
+        p = quip_pot
+    at.params['image'] = i
+    at.set_calculator(p)
+
+if rank == 0:
+    print 'Starting NEB run with %d images' % len(neb.images)
 
 # Optimize:
 if opt.optimizer == 'FIRE':
@@ -140,7 +154,7 @@ elif opt.optimizer == 'MDMin':
 else:
     p.error('Unknown optimizer %s' % opt.optimizer)
 
-if opt.write_traj is not None:
+if rank == 0 and opt.write_traj is not None:
     n = 0
     def write_traj():
         global neb, n
@@ -148,5 +162,6 @@ if opt.write_traj is not None:
         n += 1
     optimizer.attach(write_traj, interval=opt.write_traj)
     
-optimizer.run(fmax=0.03)
-write_band(neb, '%s-optimized.xyz' % basename)
+optimizer.run(fmax=opt.fmax)
+if rank == 0:
+    write_band(neb, '%s-optimized.xyz' % basename)
