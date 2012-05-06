@@ -20,7 +20,7 @@
 
 from quippy import *
 from ase.constraints import FixAtoms
-from ase.calculators import SinglePointCalculator
+from ase.calculators.singlepoint import SinglePointCalculator
 from ase.neb import NEB, SingleCalculatorNEB
 from ase.optimize import MDMin
 from ase.optimize.fire import FIRE
@@ -40,6 +40,10 @@ def write_band(neb, filename):
 
 def callback_calc(at):
     global quip_pot, op, rank
+    keys = os.environ.keys()
+    for key in keys:
+        if key.startswith('OMPI_'):
+            del os.environ[key]
     # dummy calculator which calls ForceMixing pot and sets energies to zero
     if at.calc_energy:
         at.params['energy'] = 0.0
