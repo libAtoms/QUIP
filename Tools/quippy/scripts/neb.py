@@ -35,7 +35,10 @@ def write_band(neb, filename):
     if rank != 0: return
     out = AtomsWriter(filename)
     for image in neb.images:
-        out.write(image)
+        cp = image.copy()
+        #cp.add_property('force', image.get_calculator().forces.T)
+        cp.add_property('force', image.get_calculator().atoms.force)
+        out.write(cp)
     out.close()
 
 def callback_calc(at):
@@ -77,7 +80,7 @@ p.add_option('--minim-max-steps', action='store', type='int', help="Maximum numb
 #p.add_option('--minim-do-pos', action='store', help="If true, relax positions in initial minimisations", default=True)
 #p.add_option('--minim-do-lat', action='store_true', help="If true, relax lattice in initial minimisations", default=False)
 p.add_option('--verbosity', action='store', help="Set QUIP verbosity")
-p.add_option('--fmax', action='store', type='float', help="Maximum force for NEB convergence")
+p.add_option('--fmax', action='store', type='float', help="Maximum force for NEB convergence", default=0.03)
 p.add_option('--parallel', action='store_true', help="Parallelise over images using MPI")
 
 opt, args = p.parse_args()
@@ -133,7 +136,7 @@ if rank == 0:
     quip_pot.print_()
 
 for i, at in enumerate(neb.images):
-    p = Potential(callback=callback_calc, inplace=True)
+    p = Potential(callback=callback_calc, inplace=False)
     at.params['image'] = i
     at.set_calculator(p)
 
