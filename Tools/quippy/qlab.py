@@ -99,6 +99,10 @@ class AtomEyeViewerMixin(AtomEyeViewer):
             sys.stdout.flush()
 
     def _redraw_hook(self, atoms):
+        print 'Properties:'
+        for key, value  in atoms.properties.iteritems():
+            print '%-10s shape %r' % (key, value.shape)
+        print '\nParams:'
         for (key, value) in atoms.params.iteritems():
             print '%-20s = %r' % (key, value)
 
@@ -137,6 +141,10 @@ class AtomEyeViewerMixin(AtomEyeViewer):
 
         if hasattr(self, 'reader') and isinstance(self.reader, CInOutputReader):
             self.reader.source.indices = indices
+        elif hasattr(self, 'reader') and hasattr(self.reader, '__iter__'):
+            for r in self.reader.readers:
+                if hasattr(r, 'reader') and isinstance(r.reader, CInOutputReader):
+                    r.reader.source.indices = indices
 
     def select_atoms(self, reset=True, markname='selection_mark', value=True):
         """
@@ -163,7 +171,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         self.verbose = saved_verbose
         return indices
 
-    def render_movie(self, moviefile, start=None, stop=None, step=None,
+    def render_movie(self, moviefile, start=None, stop=None, step=None, hook=None,
                      encoder='ffmpeg -i %s -r 25 -b 30M %s'):
         """
         Render a movie for the trajectory.
@@ -179,6 +187,10 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         
         for frame in frames:
             self.show(frame=frame)
+            if hook is not None:
+                self.wait()
+                hook(self.gca())
+                self.redraw()
             self.capture(out_fmt % frame)
             self.wait()
 
