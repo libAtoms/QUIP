@@ -1357,12 +1357,20 @@ program crack
         ds%atoms%pos = fd_start%pos + dr*real(i,dp)
         call calc_connect(ds%atoms, store_is_min_image=.true.)
         if (params%simulation_classical) then
-           call calc(classicalpot, ds%atoms, energy=energy, args_str='force=force '//&
+           call calc(classicalpot, ds%atoms, args_str='energy=energy force=force '//&
                 crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
+           if (.not. get_value(ds%atoms%params, "energy", energy)) &
+                call system_abort("missing energy!")
            if (i == 0) fd_e0 = energy
         else
-           call calc(hybrid_pot, ds%atoms, args_str='force=force '//&
-                crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+           if (i == 0) then
+              call calc(hybrid_pot, ds%atoms, args_str='force=force calc_weights=T '//&
+                   crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+           else
+              ! ensure QM cluster is the same for each step by not recalculating the weights
+              call calc(hybrid_pot, ds%atoms, args_str='force=force calc_weights=F '//&
+                   crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+           end if
         end if
 
         f_dr = force .dot. dr
