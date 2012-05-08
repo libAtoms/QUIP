@@ -15,7 +15,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   integer                                      :: i,j, k, n, t, at_n, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
+   integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
    integer, dimension(:), allocatable           :: distance_index
    logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
@@ -65,7 +65,7 @@ program force_gaussian_prediction
    call set_cutoff(at_in, r_cut)
    call calc_connect(at_in)
  
-   call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid)
+   call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
    call  finalise(in)
 
   if (add_vector > 0)   k = k + add_vector   
@@ -112,14 +112,14 @@ program force_gaussian_prediction
         n_loop = at_in%N   
      endif
 
-    do at_n =1,  n_loop
+    do n_center_atom =1,  n_loop
           t = t + 1
-          force = force_ptr(:,at_n)
+          force = force_ptr(:,n_center_atom)
           call print("atomic force in real space : "//norm(force))
-          call print("The atom:"//at_n)
+          call print("The atom:"//n_center_atom)
 
         do j=1, k-add_vector
-           feature_matrix(j,:,t) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
+           feature_matrix(j,:,t) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
            feature_len = norm(feature_matrix(j,:, t))
 
            if (feature_len < TOL_REAL)  then
@@ -133,7 +133,7 @@ program force_gaussian_prediction
 
         if (add_vector >0 ) then
            do j=k-add_vector+1, k
-                feature_matrix(j,:,t) = force_ptr_mm(:,at_n)
+                feature_matrix(j,:,t) = force_ptr_mm(:,n_center_atom)
                 feature_len = norm(feature_matrix(j,:,t))
 
                 if (feature_len < TOL_REAL)  then
@@ -175,7 +175,6 @@ if (fix_sigma) then
      open(unit=1, file='sigma.dat')
      read(1, *) sigma
      close(unit=1) 
-     sigma = sigma * sigma_factor
    endif
 
    if (print_dist_stati) then
@@ -211,7 +210,7 @@ if (fix_sigma) then
        enddo  
 
        ! to write the derived sigma vector into file "sigma.dat" for later use
-       sigma = deviation_value * sigma_factor   ! sigma derived from the statistical deviation on each single dimension of the IVs space
+       sigma = deviation_value           ! sigma derived from the statistical deviation on each single dimension of the IVs space
        open(unit=1, file='sigma.dat')
        write(1, *) sigma
        close(unit=1)
@@ -269,7 +268,6 @@ deallocate(mean_value)
 deallocate(max_value)
 deallocate(deviation_value)
 
-
 call system_timer('Getting hyper-parameters from the DATABASE')
 
 
@@ -302,10 +300,10 @@ call print_title('starting the predicting process')
         n_loop = at_in%N
    endif
 
-   do at_n=1, n_loop
+   do n_center_atom=1, n_loop
 
       do j= 1, k-add_vector
-            feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), at_n)*SCALE_IVS
+            feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
             call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
             feature_len = norm(feature_matrix_pred(j,:))
 
@@ -319,7 +317,7 @@ call print_title('starting the predicting process')
 
       if (add_vector > 0) then
            do j = k-add_vector+1, k
-              feature_matrix_pred(j,:)=force_ptr_mm(:, at_n)
+              feature_matrix_pred(j,:)=force_ptr_mm(:, n_center_atom)
               feature_len = norm(feature_matrix_pred(j,:))
 
               if (feature_len < TOL_REAL) then
@@ -346,7 +344,7 @@ call print_title('starting the predicting process')
       do t = 1, n_relavant_confs
          do j=1, n_relavant_confs
               covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma)
+                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma*sigma_factor)
          enddo
       enddo
 
@@ -379,14 +377,14 @@ call print_title('starting the predicting process')
 
       do t= 1, n_relavant_confs
             covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                                                                                     feature_matrix_normalised(:,:,distance_index(t)), sigma)
+                                                                                     feature_matrix_normalised(:,:,distance_index(t)), sigma*sigma_factor)
       enddo
 
 
      force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs_select(:,:)) )) 
 
      do j=1, k
-            force_proj_target(j) = dot_product(feature_matrix_normalised_pred(j,:), force_ptr(:,at_n))
+            force_proj_target(j) = dot_product(feature_matrix_normalised_pred(j,:), force_ptr(:,n_center_atom))
      enddo   
 
    
@@ -399,8 +397,8 @@ call print_title('starting the predicting process')
      call inverse(matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred), feature_inv)  
      force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
      call print("force in external space:"//force)
-     call print("the original force:"//force_ptr(:, at_n))
-     call print("max error :    "//maxval(abs(force_ptr(:,at_n)-force))//" norm  error :  "//norm(force_ptr(:,at_n)-force))
+     call print("the original force:"//force_ptr(:, n_center_atom))
+     call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
 
      if (do_gp) then
            call print("predicted error :"//( 1.0_dp + sigma_error - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))
@@ -432,32 +430,33 @@ call print_title('starting the predicting process')
 
  contains 
 
- function internal_vector(at, r0, m, at_n)
+ function internal_vector(at, r0, m, n_center_atom)
 
       real(dp)                            :: internal_vector(3), delta_r(3), delta_r_len
       real(dp), intent(in)                :: r0, m
       type(Atoms), intent(in)             :: at
-      integer                             :: i, j, at_n
+      integer                             :: i, j, n_center_atom
 
       internal_vector = 0.0_dp
-      do i=1, atoms_n_neighbours(at, at_n)
-          j = atoms_neighbour(at, at_n, i, distance=delta_r_len, diff=delta_r) 
+      do i=1, atoms_n_neighbours(at, n_center_atom)
+          j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r) 
           internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /delta_r_len)
       enddo
  endfunction  internal_vector
 
 
- function internal_vector_dm(at, r0, m, at_n)
+ function internal_vector_dm(at, r0, m, n_center_atom)
 
-      real(dp)                            :: internal_vector_dm, internal_vector_prim(3), delta_r(3), delta_r_len
+      real(dp)                            :: internal_vector_dm, internal_vector_prim(3), delta_r(3), delta_r_len, alpha
       real(dp), intent(in)                :: r0, m
       type(Atoms), intent(in)             :: at
-      integer                             :: i, j, at_n
+      integer                             :: i, j, n_center_atom
 
       internal_vector_prim = 0.0_dp
-      do i=1, atoms_n_neighbours(at, at_n)
-          j = atoms_neighbour(at, at_n, i, distance=delta_r_len, diff=delta_r)
-          internal_vector_prim = internal_vector_prim + (delta_r *exp(-((delta_r_len/r0)**m) *(-m) *log(delta_r_len/r0) ) /delta_r_len)
+      do i=1, atoms_n_neighbours(at, n_center_atom)
+          j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r)
+          alpha = delta_r_len / r0
+          internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) /delta_r_len)
       enddo
       internal_vector_dm = norm(internal_vector_prim)
  endfunction  internal_vector_dm
@@ -472,13 +471,14 @@ call print_title('starting the predicting process')
  endfunction cutoff_m
 
 
- subroutine grid_m_r0(at, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid)
+ subroutine grid_m_r0(at, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
 
   type(Atoms), intent(in), optional                        :: at
   real(dp), dimension(:), intent(out), allocatable         :: r_grid, m_grid
   real(dp), dimension(:), allocatable                      :: r_point, m_point 
-  real(dp), intent(in)                                     :: r_cut, r_min, m_min, m_max
+  real(dp), intent(in)                                     :: r_cut, r_min, m_min, m_max, cutoff_len_ivs
   real(dp)                                                 :: ivs(3)
+  real(dp), parameter                                      :: SCALE_IVS = 100.0_dp
   integer, intent(in)                                      :: r_mesh, m_mesh
   integer                                                  :: i, j
   integer, intent(in)                                      :: preci
@@ -535,14 +535,14 @@ call print_title('starting the predicting process')
     real(dp)                              ::        cov, d_sq
     integer                               ::        i, k
 
-    k=size(feature_matrix1(1,:))    
-
+    k = size(feature_matrix1(:,1))    
     d_sq = 0.0_dp    
     do i=1, k
        d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2) /2.0_dp/sigma(i))**2
     enddo
  
-    d_sq = d_sq/real(k,dp)      ! normalised by the dimensionality of the Internal Space
+    ! normalised with the dimensionality k of the Internal Space
+    d_sq = d_sq/real(k,dp)                            
 
     if (present(distance))  distance=sqrt(d_sq)     
     cov = exp(-1.0_dp*d_sq)
@@ -560,11 +560,6 @@ call print_title('starting the predicting process')
    integer                               ::         info, i, lwork, j
  
    call print('entering inverse_svd_threshold')
-
-   if (n <= 3) then
-      call print('in_matrix')
-      call print(in_matrix)
-   end if
 
    lwork = -1
    allocate(work(1))
@@ -597,7 +592,7 @@ call print_title('starting the predicting process')
            sigmainv(i,i) = 1.0_dp/w(i)
        end if
    end do
-   call print("the number of zero singular values:"//j)
+   call print("the number of zero singular values : "//j)
    inverse_svd_threshold = transpose(vt) .mult. sigmainv .mult. transpose(u)
 
  endfunction inverse_svd_threshold
@@ -657,7 +652,7 @@ call print_title('starting the predicting process')
  end subroutine normal_squared_matrix
 
 
-  subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, sigma, distance_confs, distance_index)
+ subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, sigma, distance_confs, distance_index)
  
     real(dp), intent(in)                        ::  matrix_predict(:,:), matrix_data(:,:,:), matrix_predict_norm(:,:), matrix_data_norm(:,:,:), sigma(:)
     real(dp), intent(inout)                     ::  distance_confs(:)
@@ -671,6 +666,6 @@ call print_title('starting the predicting process')
 
     call insertion_sort(distance_confs, idx=distance_index)
 
-  end subroutine sorting_configuration
+ end subroutine sorting_configuration
 
 end program force_gaussian_prediction
