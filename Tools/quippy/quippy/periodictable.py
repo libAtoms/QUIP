@@ -19,7 +19,7 @@
 from quippy import _periodictable
 from quippy._periodictable import *
 
-__all__ = _periodictable.__all__
+__all__ = _periodictable.__all__ + ['ElementColours']
 
 ElementName = [s.strip() for s in ElementName]
 
