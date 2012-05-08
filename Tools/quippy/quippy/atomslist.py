@@ -19,7 +19,7 @@
 import sys, os, fnmatch, re, itertools, glob, operator, warnings, math, logging
 from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
 from quippy.system import mem_info
-from quippy.util import infer_format, parse_slice
+from quippy.util import infer_format, parse_slice, time_ordered_glob
 from quippy.mockndarray import mockNDarray
 from quippy.farray import *
 import numpy as np
@@ -475,6 +475,8 @@ def slice_to_at_reference(sl):
 def time_ordered_series(source):
 
     if not isinstance(source, AtomsReader):
+        if isinstance(source, basestring):
+            source = time_ordered_glob(source)
         source = AtomsReader(source, range='empty')
 
     revsource = reversed(source)

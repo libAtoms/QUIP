@@ -25,7 +25,7 @@ from dictmixin import PuPyDictionary
 __all__ = ['infer_format', 'args_str', 'parse_slice',
            'parse_comma_colon_list', 'loadstring',
            'quip_xml_parameters', 'is_interactive_shell',
-           'parse_params', 'most_recent_file',
+           'parse_params', 'most_recent_file', 'time_ordered_glob',
            'most_recent_files']
 
 def infer_format(file, format, lookup):
@@ -175,13 +175,19 @@ def read_text_file(fh):
         fh.close()
     return filename, lines
 
+def time_ordered_glob(pattern):
+   """
+   Return a list of files matching `pattern` sorted by modification time
+   """
+   
+   return sorted(glob.glob(pattern), key=lambda f: os.stat(f).st_mtime)
 
 def most_recent_file(pattern):
     """
     Find the most recent file matching glob `pattern`
     """
 
-    return sorted(glob.glob(pattern), key=lambda f: os.stat(f).st_mtime)[-1]
+    return time_ordered_glob(pattern)[-1]
 
 
 def most_recent_files(dir_pattern, file_pattern, suffix=''):
