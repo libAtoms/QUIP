@@ -20,7 +20,6 @@
 
 from quippy import *
 from ase.constraints import FixAtoms
-from ase.calculators.singlepoint import SinglePointCalculator
 from ase.neb import NEB, SingleCalculatorNEB
 from ase.optimize import MDMin
 from ase.optimize.fire import FIRE
@@ -36,8 +35,7 @@ def write_band(neb, filename):
     out = AtomsWriter(filename)
     for image in neb.images:
         cp = image.copy()
-        #cp.add_property('force', image.get_calculator().forces.T)
-        cp.add_property('force', image.get_calculator().atoms.force)
+        cp.force[:] = image.get_calculator().atoms.force
         out.write(cp)
     out.close()
 
