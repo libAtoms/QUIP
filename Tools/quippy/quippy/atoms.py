@@ -574,7 +574,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def read_from(self, source, **readargs):
         """Replace contents of this Atoms object with file `source`"""
-        if isinstance(source, self.__class__):
+        if isinstance(source, Atoms):
             self.copy_from(source)
         else:
             tmp = Atoms.read(source, **readargs)
