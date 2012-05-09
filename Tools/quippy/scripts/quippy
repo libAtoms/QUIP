@@ -38,12 +38,16 @@ p.add_option('-L', '--loadall', action='store_true', help="""Load all frames fro
 p.add_option('-n', '--no-interactive', action='store_true', help="""Exit when done, without starting an interactive shell.""")
 p.add_option('-e', '--exec-code', action='append', help="""Python statements to execute on startup""")
 p.add_option('-c', '--chain', action='store_true', help="""Chain all input files together""")
+p.add_option('-t', '--time-ordered-series', action='store_true', help="""Join all input files, ordering by time and discarding duplicates""")
 p.add_option('--read-args', action='store', help="""Extra arguments to be passed to read() routine.""")
 p.add_option('--atom-range', action='store', help="""Range of atoms to include: should be followed by two arguments, min
 and max 1-based atom indices. Using a reduced atom range dramatically
 speeds up reading of large XYZ trajectories.""", nargs=2)
 
 opt, args = p.parse_args()
+
+if opt.chain and opt.time_ordered_series:
+    p.error('-c/--chain and -t/--time-ordered-series are mutually exclusive')
 
 read_args = {}
 if opt.atom_range is not None:
@@ -53,9 +57,17 @@ if opt.read_args is not None:
 
 viewers = []
 if opt.chain:
-    v = atoms(args, loadall=opt.loadall, name='chain', **read_args)
-    __all__.append('chain')
+    v = atoms(args, loadall=opt.loadall, name='at', **read_args)
+    __all__.append('at')
     viewers.append(v)
+elif opt.time_ordered_series:
+    try:
+        pattern, = args
+    except:
+        p.error('when -t/--time-ordered-series is present, only one argument should be given')
+    v = atoms(time_ordered_series(pattern), loadall=opt.loadall, name='at', **read_args)
+    __all__.append('at')
+    viewers.append(at)    
 else:
     for filename in args:
         v = atoms(filename, loadall=opt.loadall, **read_args)
