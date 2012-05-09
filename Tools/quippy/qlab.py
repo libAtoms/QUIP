@@ -172,7 +172,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         return indices
 
     def render_movie(self, moviefile, start=None, stop=None, step=None, hook=None,
-                     encoder='ffmpeg -i %s -r 25 -b 30M %s'):
+                     offset=0, encoder='ffmpeg -i %s -r 25 -b 30M %s'):
         """
         Render a movie for the trajectory.
         """
@@ -191,7 +191,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
                 self.wait()
                 hook(self.gca())
                 self.redraw()
-            self.capture(out_fmt % frame)
+            self.capture(out_fmt % (frame + offset))
             self.wait()
 
         print 'Encoding movie...'
