@@ -151,9 +151,13 @@ have_constraint = hasattr(images[0], 'move_mask')
 if have_constraint:
     constraint = FixAtoms(mask=np.logical_not(images[0].move_mask.view(np.ndarray)))
 
-neb = FracPosNEB(images, climb=opt.climb, k=opt.k, parallel=opt.parallel)
 if opt.refine is not None:
-    neb.refine(opt.refine)
+   tmp_neb = FracPosNEB(images)
+   tmp_neb.refine(opt.refine)
+   images = tmp_neb.images
+   del tmp_neb
+
+neb = FracPosNEB(images, climb=opt.climb, k=opt.k, parallel=opt.parallel)
 
 if have_constraint:
     for image in images:
