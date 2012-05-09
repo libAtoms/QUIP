@@ -167,9 +167,12 @@ for i, at in enumerate(neb.images):
     pot = Potential(callback=callback_calc, inplace=False)
     at.params['image'] = i
     at.set_calculator(pot)
+    at.map_into_cell()
 
 if rank == 0:
     print 'Starting NEB run with %d images' % len(neb.images)
+
+neb.write('%s-initial.xyz' % basename)
 
 # Optimize:
 if opt.optimizer == 'FIRE':
