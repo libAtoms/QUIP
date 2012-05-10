@@ -163,14 +163,14 @@ if have_constraint:
     for image in images:
         image.set_constraint(constraint)
 
-quip_pot = Potential(opt.init_args, param_filename=opt.param_file)    
+quip_pot = Potential(opt.init_args, param_filename=opt.param_file)
+callback_pot = Potential(callback=callback_calc, inplace=False)
 if rank == 0:
     quip_pot.print_()
 
 for i, at in enumerate(neb.images):
-    pot = Potential(callback=callback_calc, inplace=False)
     at.params['image'] = i
-    at.set_calculator(pot)
+    at.set_calculator(callback_pot)
     at.map_into_cell()
 
 if rank == 0:
