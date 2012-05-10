@@ -454,6 +454,9 @@
        f_mm = 0.0_dp
     end if
 
+    ! Save MM forces if requested to be saved
+    if (save_forces) call add_property(at, 'FM_MM_'//trim(calc_force), f_mm, overwrite=.true.)
+
     !Potential calc could have added properties e.g. old_cluster_mark
     if (.not. assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
          RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
@@ -536,6 +539,9 @@
        ! don't make a cluster, but only compute forces on marked atoms.
        call calc(this%qmpot, at, args_str=qm_args_str, error=error)
        f_qm = at_force_ptr
+
+       ! Save QM forces if requested to be saved
+       if (save_forces)  call add_property(at, 'FM_QM_'//trim(calc_force), f_qm, overwrite=.true.)
 
     end if
 
@@ -738,12 +744,6 @@
        RAISE_ERROR('Potential_FM_calc: unknown method '//trim(method), error)
     end if
        
-    ! Save QM and MM forces if requested to be saved
-    if (save_forces) then
-      call add_property(at, 'FM_QM_'//trim(calc_force), f_qm, overwrite=.true.)
-      call add_property(at, 'FM_MM_'//trim(calc_force), f_mm, overwrite=.true.)
-    end if
-
     deallocate(f_mm,f_qm)
 
     if (allocated(embed)) deallocate(embed)
