@@ -292,6 +292,7 @@ class FortranDerivedType(object):
             elif '__init__' in self._routines:
                 self._fpointer = self._runroutine('__init__', *args, **kwargs)
 
+        logging.debug('Constructing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
         self._update()
 
     def _set_fortran_indexing(self, fortran_indexing):
@@ -329,25 +330,18 @@ class FortranDerivedType(object):
             self.ref_count = self.ref_count + 1
 
     def __del__(self):
-        
-        #print 'del %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise)
+        try:
+            logging.debug('Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
+        except:
+            pass
+            #print 'Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
         if hasattr(self, '_initialised'):
             del self._initialised
         self._subobjs_cache = {}
         if self._fpointer is not None and not (self._fpointer == 0).all() and self._finalise and '__del__' in self._routines:
-            #from quippy import mem_info
-            #mem_total_1, mem_free_1 = mem_info()
-            #params = ''
-            #if hasattr(self, 'params'):
-            #    params = str(self.params)
-            #n = 0
-            #if hasattr(self, 'n'):
-            #    n = self.n
             fobj, doc = self._routines['__del__']
             fobj(self._fpointer)
-            #mem_total_2, mem_free_2 = mem_info()
-            #print 'Freed %s object n=%d params=%s Free mem increasd by %f Mb' % (self.__class__.__name__, n, params, (mem_free_2-mem_free_1)/(1024**2))
             self._fpointer = None
 
 
@@ -372,8 +366,6 @@ class FortranDerivedType(object):
         return '%s(%s)' % (self.__class__.__name__, ',\n'.join(items))
 
     def __eq__(self, other):
-        import logging
-
         # Class must agree
         if not issubclass(self.__class__, other.__class__) and not issubclass(other.__class__, self.__class__):
             logging.debug('class mismatch %s not subclass of %s (or vice versa)' % (self.__class__.__name__, other.__class__.__name__))
@@ -972,7 +964,7 @@ def wrap_array_get(name, reshape=True):
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
             if self.fortran_indexing:
-                a = FortranArray(a,doc)
+                a = FortranArray(a, doc, parent=self)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 a = a[nshape]
@@ -990,7 +982,7 @@ def wrap_array_set(name, reshape=True):
             arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
-            if self.fortran_indexing: a = FortranArray(a,doc)
+            if self.fortran_indexing: a = FortranArray(a, doc)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 a = a[nshape]

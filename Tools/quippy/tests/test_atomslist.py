@@ -1,4 +1,4 @@
-# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+set# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
@@ -19,6 +19,7 @@
 from quippy import *
 import unittest, itertools, sys, quippy
 from quippytest import *
+import os
 
 class TestAtomsList(QuippyTestCase):
 
@@ -28,6 +29,10 @@ class TestAtomsList(QuippyTestCase):
       
       self.gensrc = (diamond(5.44+0.01*x,14) for x in range(5))
       self.genal = AtomsReader(self.gensrc)
+
+   def tearDown(self):
+      if os.path.exists('test.xyz'):
+         os.unlink('test.xyz')
       
    def testgetitem(self):
       a1 = self.listal[0]
@@ -164,6 +169,14 @@ class TestAtomsList(QuippyTestCase):
       ar = AtomsReader(self.genal)
       self.assertEqual(list(ar), list(diamond(5.44+0.01*x,14) for x in range(5)))
 
+   def testatomsreader_out_of_scope(self):
+      self.listal.write('test.xyz')
+      ar = AtomsReader('test.xyz', cache_mem_limit=0)
+      p = ar[0].pos
+      ar[1] # load next frame so ar[0] is free'd
+      del self.listal
+      self.assert_(p.parent() is None)
+      self.assertRaises(RuntimeError, p.__getitem__, 1)
       
 if __name__ == '__main__':
    unittest.main()
