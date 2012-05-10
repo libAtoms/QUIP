@@ -61,6 +61,7 @@ private
     real(dp) :: extra_heat
     logical :: continuation
     logical :: use_fortran_random
+    character(len=STRING_LENGTH) :: verbosity
 logical :: NPT_NB
   end type md_params
 
@@ -135,6 +136,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'continuation', 'F', params%continuation, help_string="if true, this is a continuation of an old run, read initial time and i_step from input config")
   call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
   call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
+  call param_register(md_params_dict, 'verbosity', 'NORMAL', params%verbosity, help_string="verbosity level of run")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -576,6 +578,8 @@ implicit none
   call initialise(mpi_glob)
 
   call get_params(params, mpi_glob)
+
+  call verbosity_push(verbosity_of_str(trim(params%verbosity)))
 
   if (params%do_timing) call enable_timing()
   call system_timer("md_prep")
