@@ -19,8 +19,10 @@
 """Contains :class:`FortranArray` class and utility functions for handling one-based
 array indexing."""
 
-import sys, numpy
-
+import sys
+import numpy
+import weakref
+import logging
 
 __all__ = ['FortranArray', 'frange', 'fenumerate', 'fzeros', 'farray',
            'fidentity', 'fvar', 'f2n', 'n2f', 'unravel_index', 's2a',
@@ -118,12 +120,32 @@ class FortranArray(numpy.ndarray):
     __array_priority__ = 100.0
 
     def __array_finalize__(self, obj):
-        pass
-    
-    def __array_wrap__(self, out, context=None):
-        return out.view(FortranArray)
+        if obj is None:
+            return
+        logging.debug('in __array_finalize__, self.parent=%r, obj.parent=%r' % (getattr(self, 'parent', None),
+                                                                                getattr(obj, 'parent', None)))
+        self.parent = getattr(obj, 'parent', None)
 
-    def __new__(cls, input_array=None, doc=None):
+    def __array_prepare__(self, array, context=None):
+        logging.debug('in __array_prepare__, self.parent=%r, array.parent=%r' % (getattr(self, 'parent', None),
+                                                                                 getattr(array, 'parent', None)))
+        if getattr(self, 'parent', None) is not None and self.parent() is None:
+            raise RuntimeError("array's parent has gone array of scope!")
+        if getattr(array, 'parent', None) is not None and array.parent() is None:
+            raise RuntimeError("array's parent has gone array of scope!")
+        return numpy.ndarray.__array_prepare__(self, array, context)
+        
+    #def __array_wrap__(self, array, context=None):
+    #    print 'in __array_wrap__, self.parent=%r, array.parent=%r' % (getattr(self, 'parent', None),
+    #                                                                getattr(array, 'parent', None))
+    #    if self.parent is not None and self.parent() is None:
+    #        raise RuntimeError("array's parent has gone array of scope!")
+    #    if getattr(array, 'parent', None) is not None and array.parent() is None:
+    #        raise RuntimeError("array's parent has gone array of scope!")
+    #    return numpy.ndarray.__array_wrap__(self, array, context)
+
+
+    def __new__(cls, input_array=None, doc=None, parent=None):
         """Construct a FortanArray from input_array
 
         a = FortranArray(input_array=None, doc=None)
@@ -136,7 +158,13 @@ class FortranArray(numpy.ndarray):
         if doc is not None:
             self.__doc__ = doc
 
+        self.parent = None
+        if parent is not None:
+            self.parent = weakref.ref(parent)
         return self
+
+    #def __del__(self):
+    #    print 'Freeing array shape %r' % self.shape
 
     def __eq__(self, other):
         obj = numpy.ndarray.__eq__(self, other)
@@ -244,6 +272,8 @@ class FortranArray(numpy.ndarray):
 
     def __getitem__(self, indx):
         "Overloaded __getitem__ which accepts one-based indices."
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
         indx = self.mapindices(indx)
         obj = numpy.ndarray.__getitem__(self, indx)
         if isinstance(obj, numpy.ndarray):
@@ -253,6 +283,8 @@ class FortranArray(numpy.ndarray):
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
 
         domap = True
         doext = False
@@ -282,6 +314,9 @@ class FortranArray(numpy.ndarray):
 
     def __getslice__(self, i, j):
         "Overloaded __getslice__ which accepts one-based indices."
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
+
         if i != 0:
             i = FortranArray.map_int(i)
         obj = numpy.ndarray.__getslice__(self, i, j)
@@ -291,6 +326,9 @@ class FortranArray(numpy.ndarray):
 
     def __setslice__(self, i, j, value):
         "Overloaded __setslice__ which accepts one-based indices."
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
+
         if i != 0:
             i = FortranArray.map_int(i)
         numpy.ndarray.__setslice__(self, i, j, value)
@@ -344,6 +382,8 @@ class FortranArray(numpy.ndarray):
                                  values, mode)
 
     def __repr__(self):
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
         s = repr(numpy.asarray(self).view(numpy.ndarray))
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
@@ -351,13 +391,16 @@ class FortranArray(numpy.ndarray):
 
 
     def __str__(self):
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")        
         return str(numpy.asarray(self).view(numpy.ndarray))
 
     def __iter__(self):
         """Iterate over this :class:`FortranArray` treating first dimension as fastest varying.
 
         Calls fast :meth:`ndarray.__iter__` for a 1D array."""
-
+        if getattr(self, 'parent', None) and self.parent() is None:
+            raise RuntimeError("array's parent has gone out of scope!")
         if len(self.shape) > 1:
             return self.col_iter()
         else:

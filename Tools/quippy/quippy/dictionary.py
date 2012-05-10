@@ -18,7 +18,7 @@
 
 from quippy import _dictionary
 from quippy._dictionary import *
-
+import weakref
 import numpy as np
 from dictmixin import DictMixin, ParamReaderMixin
 from farray import *
@@ -108,7 +108,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         if key in self and self.get_type_and_size(key)[0] in Dictionary._array_types:
             a = arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key)
             if self.fortran_indexing:
-                a = a.view(FortranArray)
+                a = FortranArray(a, parent=self)
             return a
         else:
             raise KeyError('Key "%s" does not correspond to an array entry' % key)
