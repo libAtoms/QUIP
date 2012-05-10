@@ -615,7 +615,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
   call system_timer("IP_Calc")
 
   if (this%mpi_glob%active .and. .not. this%mpi_local%active) then
-    call setup_parallel(this, at)
+    call setup_parallel(this, at, energy, local_e, f, virial, local_virial)
   endif
 
   select case (this%functional_form)
@@ -787,11 +787,13 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial,
   prev_time = 1.0e38_dp
   prev_pgroup_size = 0
 
-  call print('setup_parallel timings', PRINT_VERBOSE)
-  call print('group_size  time/sec', PRINT_VERBOSE)
-  
+  call print('IP_Setup_Parallel timings', PRINT_VERBOSE)
+  call print('IP_Setup_Parallel group_size  time/sec', PRINT_VERBOSE)
+
+  call print("IP_Setup_Parallel at%N "//at%N// " present(energy) "//present(energy)// " present(local_e) "//present(local_e)// " present(f) "//present(f)// " present(virial) "//present(virial)// " present(local_virial) "//present(local_virial), PRINT_VERBOSE)
+
   call setup_atoms(this, at)
-  do pgroup_size=1, this%mpi_glob%n_procs
+  do pgroup_size=this%mpi_glob%n_procs, 1, -1
     n_groups = this%mpi_glob%n_procs / pgroup_size
     if (n_groups*pgroup_size == this%mpi_glob%n_procs) then
       call setup_parallel_groups(this, this%mpi_glob, pgroup_size)
@@ -799,7 +801,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial,
       call calc(this, at, energy, local_e, f, virial, local_virial, args_str)
       call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time)
       this_time = max(this%mpi_glob, this_time)
-      call print(pgroup_size//' '//this_time, PRINT_VERBOSE)
+      call print("IP_Setup_Parallel "//pgroup_size//' '//this_time, PRINT_VERBOSE)
       if (this_time > prev_time) then
 	call setup_parallel_groups(this, this%mpi_glob, prev_pgroup_size)
 	exit
