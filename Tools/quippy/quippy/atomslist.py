@@ -81,7 +81,7 @@ class AtomsReader(AtomsReaderMixin):
     """Class to read Atoms frames from source"""
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
-                 cache_mem_limit=0, **kwargs):
+                 cache_mem_limit=-1, **kwargs):
 
         def file_exists(f):
             return f == "stdin" or os.path.exists(f)
@@ -211,6 +211,9 @@ class AtomsReader(AtomsReaderMixin):
         self._cache_dict[frame] = at
 
         if self.cache_mem_limit is not None:
+            if self.cache_mem_limit == -1:
+                self.cache_mem_limit = min(10*at.mem_estimate(), 100*1024**2)
+            
             if self.cache_mem_limit == 0:
                 while len(self._cache_dict) > 1:
                     logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
