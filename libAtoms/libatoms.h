@@ -177,4 +177,8 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error);
 
 
+/* cutil.c */
+
+#define MAX_CALLBACKS 200
+
 #endif

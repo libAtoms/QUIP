@@ -205,7 +205,7 @@ typedef struct{
   void (*sub)(int*);
 } VCALLBACKPOTSUB_TABLE;
 
-VCALLBACKPOTSUB_TABLE callbackpotsub_table[20];
+VCALLBACKPOTSUB_TABLE callbackpotsub_table[MAX_CALLBACKS];
 static int ncallbackpotsub = 0;
 
 void register_callbackpot_sub_(void (*sub)(int*)){
