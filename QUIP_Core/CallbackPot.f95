@@ -42,7 +42,7 @@ use mpi_context_module
 implicit none
 private
 
-integer, parameter :: MAX_CALLBACKS = 20
+integer, parameter :: MAX_CALLBACKS = 200
 integer :: n_callbacks = 0
 
 public :: Callbackpot_type
