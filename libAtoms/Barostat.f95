@@ -363,7 +363,7 @@ contains
     if (use_T <= 0.0_dp) use_T = BAROSTAT_MIN_TEMP
 
     W_epsilon = max( 9.0_dp*abs(p_ext)*cell_volume/((gamma_epsilon*2.0_dp*PI)**2), &
-                     (Ndof+3.0_dp)*BOLTZMANN_K*use_T/((gamma_epsilon*2.0_dp*PI)**2) )
+		     5000.0_dp*(Ndof+3.0_dp)*BOLTZMANN_K*use_T/((gamma_epsilon*2.0_dp*PI)**2) )
 
   end function barostat_mass_real
 
