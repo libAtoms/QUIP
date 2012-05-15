@@ -289,6 +289,7 @@ module CrackParams_module
      ! QM parameters
      character(STRING_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
      character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
+     character(STRING_LENGTH) :: qm_extra_args_str  !% Extra arguments passed to ForceMixing potential
      logical :: qm_cp2k                   !% Enable CP2K mode. Default false.
      logical :: qm_clusters               !% Should we carve clusters? Default true.
      logical :: qm_little_clusters        !% One big cluster or lots of little ones?
@@ -595,6 +596,7 @@ contains
      ! QM parameters
     this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
     this%qm_args_str              = ''
+    this%qm_extra_args_str        = ''
     this%qm_cp2k                  = .false.
     this%qm_clusters              = .true.
     this%qm_little_clusters       = .false.
@@ -1489,6 +1491,12 @@ contains
           parse_cp%qm_args_str = value
        end if
 
+       call QUIP_FoX_get_value(attributes, "extra_args_str", value, status)
+       if (status == 0) then
+          parse_cp%qm_extra_args_str = value
+       end if
+
+
        call QUIP_FoX_get_value(attributes, "cp2k", value, status)
        if (status == 0) then
           read (value, *) parse_cp%qm_cp2k
@@ -1899,6 +1907,7 @@ contains
     call Print('  QM parameters:',file=file)
     call Print('     args                  = '//trim(this%qm_args),file=file)
     call Print('     args_str              = '//trim(this%qm_args_str),file=file)
+    call Print('     extra_args_str        = '//trim(this%qm_extra_args_str),file=file)
     call Print('     cp2k                  = '//this%qm_cp2k,file=file)
     call Print('     clusters              = '//this%qm_clusters,file=file)
     call Print('     little_clusters       = '//this%qm_little_clusters,file=file)
