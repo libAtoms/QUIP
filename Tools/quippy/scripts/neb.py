@@ -1,5 +1,4 @@
-#!/home/kermode/bin/python
-
+#!/usr/bin/env python
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -66,8 +65,12 @@ class FracPosNEB(NEB):
         for image in self.images:
             cp = image.copy()
             calc_at = image.get_calculator().atoms
+            if cp.has_property('force'):
+                cp.remove_property('force')
             if calc_at.has_property('force'):
                 cp.add_property('force', calc_at.force, overwrite=True)
+            else:
+                print 'WARNING: image %d is missing force property' % cp.image
             out.write(cp)
         out.close()
 
@@ -89,10 +92,17 @@ def callback_calc(at):
             os.chdir(image_dir)
             print 'rank %d running image %d in dir %s' % (rank, at.image, image_dir)
         calc_args = opt.calc_args + " force"
+
+        if at.has_property('weight_region1'):
+            calc_args = calc_args + " calc_weights=F"
+        else:
+            calc_args = calc_args + " calc_weights=T"            
+        
         if '%image' in calc_args:
             calc_args = calc_args.replace('%image', str(at.params['image']))
         print 'rank %d calling quip_pot.calc() with args_str=%s' % (rank, calc_args)
         quip_pot.calc(at, args_str=calc_args)
+        at.write('callback_calc_log.xyz', append=True)
         if opt.chdir:
             os.chdir(old_dir)
 
@@ -164,12 +174,15 @@ if have_constraint:
         image.set_constraint(constraint)
 
 quip_pot = Potential(opt.init_args, param_filename=opt.param_file)
-callback_pot = Potential(callback=callback_calc, inplace=False)
+
 if rank == 0:
     quip_pot.print_()
 
 for i, at in enumerate(neb.images):
     at.params['image'] = i
+    if at.has_property('force'):
+        at.remove_property('force')
+    callback_pot = Potential(callback=callback_calc)
     at.set_calculator(callback_pot)
     at.map_into_cell()
 
