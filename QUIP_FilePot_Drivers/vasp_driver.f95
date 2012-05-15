@@ -67,6 +67,7 @@ subroutine do_vasp_calc(at, args_str, error)
    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
    logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy, persistent, persistent_n_atoms_exist
    logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
+   integer :: clean_up_keep_n
    integer :: persistent_restart_interval, persistent_n_atoms
    real(dp) :: persistent_max_wait_time
    type(Dictionary) :: incar_dict, cli
@@ -100,6 +101,7 @@ subroutine do_vasp_calc(at, args_str, error)
    call param_register(cli, "virial", "", calc_virial, help_string="if set, calculate virial and put it in parameter named this")
    call param_register(cli, "local_energy", "", calc_local_energy, help_string="not supported")
    call param_register(cli, "clean_up_files", "T", clean_up_files, help_string="if true, delete run directory when done")
+   call param_register(cli, "clean_up_keep_n", "1", clean_up_keep_n, help_string="if cleaning up, keep this many directories around")
    call param_register(cli, "ignore_convergence", "F", ignore_convergence, help_string="If true, accept result even if failed to converge SCF")
    call param_register(cli, "no_use_WAVECAR", "F", no_use_WAVECAR, help_string="If true, don't reuse previous wavefunction file WAVECAR")
    call param_register(cli, "force_constant_basis", "F", force_constant_basis, help_string="If true, do a restart with the same basis")
@@ -132,6 +134,7 @@ subroutine do_vasp_calc(at, args_str, error)
    call print("  virial " // do_calc_virial, PRINT_VERBOSE)
    call print("  local_energy " // do_calc_local_energy, PRINT_VERBOSE)
    call print("  clean_up_files " // clean_up_files, PRINT_VERBOSE)
+   call print("  clean_up_keep_n " // clean_up_keep_n, PRINT_VERBOSE)
    call print("  ignore_convergence " // ignore_convergence, PRINT_VERBOSE)
    call print("  no_use_WAVECAR " // no_use_WAVECAR, PRINT_VERBOSE)
    call print("  force_constant_basis " // force_constant_basis, PRINT_VERBOSE)
@@ -402,7 +405,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    if (clean_up_files .and. .not. persistent) then
       call print("cleaning up", PRINT_VERBOSE)
-      call system_command("rm -rf "//trim(run_dir))
+      call system_command("rm -rf vasp_run_"//(run_dir_i-clean_up_keep_n))
    endif
 
    call system_timer('vasp_filepot/end')
