@@ -860,7 +860,7 @@ program crack
            end if
 
            if (params%qm_cp2k) then
-              extra_args = trim(params%qm_extra_args_str)//"run_suffix=_lotf"
+              extra_args = trim(params%qm_extra_args_str)//" run_suffix=_lotf"
               extra_qm_args = "run_suffix=_lotf"
               call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
            end if
@@ -1011,7 +1011,7 @@ program crack
 
 
               if (params%qm_cp2k) then
-                 extra_args = trim(params%qm_extra_args_str)//"run_suffix=_extrap"
+                 extra_args = trim(params%qm_extra_args_str)//" run_suffix=_extrap"
                  extra_qm_args = "run_suffix=_extrap"
 #ifdef HAVE_CP2K
                  call cp2k_state_change(ds%atoms, '_extrap', (/'_interp', '_lotf  '/))
@@ -1092,7 +1092,7 @@ program crack
 
                  if (params%qm_cp2k) then
                     extra_qm_args = "run_suffix=_lotf"
-                    extra_args = trim(params%qm_extra_args_str)//"run_suffix=_lotf"
+                    extra_args = trim(params%qm_extra_args_str)//" run_suffix=_lotf"
                     call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
                  end if
 
@@ -1115,7 +1115,7 @@ program crack
 
                  if (params%qm_cp2k) then
                     extra_qm_args = 'run_suffix=_interp'
-                    extra_args = trim(params%qm_extra_args_str)//"run_suffix=_interp"
+                    extra_args = trim(params%qm_extra_args_str)//" run_suffix=_interp"
                     call add_property(ds%atoms, 'hybrid_interp', hybrid, overwrite=.true.)
                  end if
 
