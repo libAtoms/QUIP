@@ -405,7 +405,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    if (clean_up_files .and. .not. persistent) then
       call print("cleaning up", PRINT_VERBOSE)
-      call system_command("rm -rf vasp_run_"//(run_dir_i-clean_up_keep_n))
+      call system_command("rm -rf vasp_run_"//(1+mod(run_dir_i,clean_up_keep_n+1)))
    endif
 
    call system_timer('vasp_filepot/end')
