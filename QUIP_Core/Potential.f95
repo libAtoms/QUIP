@@ -1222,8 +1222,13 @@ end subroutine undo_travel
 
       if (my_do_print) then
          if (associated(am%minim_cinoutput_movie)) then
-            if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
-	       call write(am%minim_cinoutput_movie, am%minim_at, prefix="MINIM")
+	    if (trim(am%minim_cinoutput_movie%filename) == "stdout") then
+	       if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
+		  call write(am%minim_cinoutput_movie, am%minim_at, prefix="MINIM_TRAJ")
+	    else
+	       if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
+		  call write(am%minim_cinoutput_movie, am%minim_at)
+	    end if
          end if
       end if
 
