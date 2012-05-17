@@ -2852,6 +2852,11 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &
 		    normsq(g_ip1) // " " // N_evals // " n_minim post linmin")
 
+	if (E_ip1 > E_i) then
+	  final_E = E_i
+	  RAISE_ERROR("n_minim: n_limin stepped uphill - forces may not be consistent with energy", error)
+	endif
+
 	if (normsq(g_ip1) .lt. accuracy) then
 	    call print("n_minim is converged", PRINT_VERBOSE)
 	    E_i = E_ip1
