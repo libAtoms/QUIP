@@ -3111,11 +3111,14 @@ subroutine anatase(at, a, c, u)
       real(dp) :: map_nearest_atoms
 
       integer, pointer :: mapping1(:), mapping2(:)
+      real(dp), pointer :: mapping_dist1(:), mapping_dist2(:)
       integer :: i, j, min_j
       real(dp) :: dist, min_dist
 
       call add_property(at1, "mapping", 0, ptr=mapping1, overwrite=.true.)
+      call add_property(at1, "mapping_dist", 0.0_dp, ptr=mapping_dist1, overwrite=.true.)
       call add_property(at2, "mapping", 0, ptr=mapping2, overwrite=.true.)
+      call add_property(at2, "mapping_dist", 0.0_dp, ptr=mapping_dist2, overwrite=.true.)
 
       map_nearest_atoms = 0.0_dp
 
@@ -3136,7 +3139,9 @@ subroutine anatase(at, a, c, u)
 	    end if
 	 end do
 	 mapping1(i) = min_j
+	 mapping_dist1(i) = min_dist
 	 mapping2(min_j) = i
+	 mapping_dist2(min_j) = min_dist
 	 map_nearest_atoms = map_nearest_atoms + min_dist**2
       end do
    end function map_nearest_atoms
