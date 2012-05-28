@@ -368,3 +368,31 @@ for name, method in inspect.getmembers(AtomEyeViewerMixin, inspect.ismethod):
 
 del name, method, current_viewer_method_wrapper
 
+
+def highlight_qm_region(at=None, run_suffix=''):
+    """
+    Highlight QM region by replacing Si atoms with Al, and
+    changing colour of Si atoms to dark blue. Can be used as
+    a hook function to render_movie().
+
+    If at is None, uses Atoms associated with current viewer
+    (i.e., at = gca()).
+    """
+    if at is None:
+        at = gca()
+    hybrid_mark = getattr(at, 'hybrid_mark'+run_suffix)
+    at.z[(at.z == 14) & (hybrid_mark == 1)] = 13
+    at.set_atoms(at.z)
+    if highlight_qm_region.first_time:
+        redraw()
+        wait()
+        rcut_patch('Si', 'Si', +0.3)
+        rcut_patch('Al', 'Al', -0.55)
+        run_command('change_normal_color 13 0.0 0.0 0.7 1.2')
+        run_command('change_normal_color 5 0.9 0.4 0 1.5')
+        redraw()
+        wait()
+        highlight_qm_region.first_time = False
+
+
+highlight_qm_region.first_time = True
