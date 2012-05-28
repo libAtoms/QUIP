@@ -1028,7 +1028,7 @@ program crack
                          crack_mm_calc_args(mm_args_str, extra_mm_args, extra_args))
                  else
                     if (i == 1) then
-                       call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=F lotf_do_qm=F lotf_do_init=T lotf_do_map=T "// &
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=T lotf_do_qm=F lotf_do_init=T lotf_do_map=T "// &
                             crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     else
                        call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=F lotf_do_qm=F lotf_do_init=F "// &
@@ -1096,7 +1096,7 @@ program crack
                     call add_property(ds%atoms, 'hybrid_lotf', hybrid, overwrite=.true.)
                  end if
 
-                 call calc(hybrid_pot, ds%atoms, args_str="force=force lotf_do_qm=T lotf_do_init=F lotf_do_fit=T "//&
+                 call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=T lotf_do_qm=T lotf_do_init=F lotf_do_fit=T "//&
                       crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                  call system_timer('force computation')
 
@@ -1121,9 +1121,15 @@ program crack
 
                  do i = 1, params%md(params%md_stanza)%extrapolate_steps
 
-                    call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=F lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
-                         //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp))//' '// &
-                         crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+                    if (i == 1) then
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=T lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                            //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp))//' '// &
+                            crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+                    else
+                       call calc(hybrid_pot, ds%atoms, args_str="force=force calc_weights=F lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                            //(real(i-1,dp)/real(params%md(params%md_stanza)%extrapolate_steps,dp))//' '// &
+                            crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
+                    end if
 
                     if (params%qm_calc_force_error) then
                        call calc(forcemix_pot, ds%atoms, force=f_fm, args_str= &
