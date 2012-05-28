@@ -269,7 +269,7 @@ def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
     eps0 = (h - h0)/h0
     eps1 = strain
 
-    print 'Initial strain %.4f' % eps0
+    print 'Initial strain_yy %.4f' % eps0
     print 'Initial G %.4f J/m^2' % crack_strain_to_g(eps0, at.YoungsModulus, at.PoissonRatio_yx, h0)
 
     t = np.diag([(1+eps1)/(1+eps0), (1+eps1)/(1+eps0), 1.0])
@@ -277,7 +277,7 @@ def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
     b = transform(at, t)
 
     h1 = b.pos[2,:].max() - b.pos[2,:].min()
-    print 'Final strain % .4f' % ((h1 - h0)/h0)
+    print 'Final strain_yy % .4f' % ((h1 - h0)/h0)
 
     b.params['G'] = crack_measure_g(b, b.YoungsModulus, b.PoissonRatio_yx, h0)
 
@@ -287,6 +287,42 @@ def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
 
     return b
 
+ 
+def crack_rescale_uniaxial(at, params, strain=None, G=None):
+    if strain is None and G is None:
+       raise ValueError('either strain or G must be present')
+
+    h0 = at.OrigHeight
+    h = at.pos[2,:].max() - at.pos[2,:].min()
+
+    print 'Original height %.4f A' % h0
+    print 'Initial measured height %.4f A' % h
+
+    if strain is None:
+       strain = crack_g_to_strain(G, at.YoungsModulus, at.PoissonRatio_yx, h0)
+    
+    eps0 = (h - h0)/h0
+    eps1 = strain
+
+    print 'Initial strain %.4f' % eps0
+    print 'Initial G %.4f J/m^2' % crack_strain_to_g(eps0, at.YoungsModulus, at.PoissonRatio_yx, h0)
+
+    t = np.diag([1.0, (1+eps1)/(1+eps0), 1.0])
+
+    b = transform(at, t)
+
+    h1 = b.pos[2,:].max() - b.pos[2,:].min()
+    print 'Final strain_yy % .4f' % ((h1 - h0)/h0)
+
+    b.params['G'] = crack_measure_g(b, b.YoungsModulus, b.PoissonRatio_yx, h0)
+
+    print 'Final G %.4f J/m^2' % b.params['G']
+
+    crack_update_connect(b, params)
+
+    return b
+
+ 
 
 def makecrack_initial_velocity_field(params, stem, advance_step, advance_time):
     crack_slab_1 = makecrack_main(params, stem)
@@ -431,3 +467,152 @@ def crack_make_seed_curved_front(slab, params):
 
    slab.params['CrackPosx'] = crack_center[1] + params.crack_vacuum_size/2.
    slab.params['CrackPosy'] = crack_center[2] + params.crack_vacuum_size/2.
+
+
+def crack_strain(at):
+   """
+   Returns strain of crack specimen
+   """
+   h = at.pos[2,:].max() - at.pos[2,:].min()
+   h0 = at.OrigHeight
+   eps = (h - h0)/h0
+   return eps
+
+def energy_difference(a,b,pot,eps,relax=False):
+   """
+   Compute energy difference between configurations `a` and `b` using
+   `pot`, after the application of a homogenous-xy rescaling to strain
+   `eps`. If `relax`=True, the rescaled confiugrations are
+   structurally optimised.
+   """
+   
+   ap = crack_rescale_homogeneous_xy(a, cp, eps)
+   bp = crack_rescale_homogeneous_xy(b, cp, eps)
+   ap.set_cutoff(pot.cutoff()+1.0)
+   ap.calc_connect()
+   bp.set_cutoff(pot.cutoff()+1.0)
+   bp.calc_connect()
+   if relax:
+      pot.minim(ap, 'cg', 0.1, 100, do_pos=True, do_lat=False)
+      pot.minim(bp, 'cg', 0.1, 100, do_pos=True, do_lat=False)
+   pot.calc(ap, args_str="energy")
+   pot.calc(bp, args_str="energy")
+   print "ENERGY_DIFFERENCE %f %f %f" % (crack_strain(ap), crack_measure_g(ap), ap.energy-bp.energy)
+   return ap.energy-bp.energy
+
+
+def crack_find_griffith_load(a, b, pot, relax=False):
+   """
+   Given two configurations (a, b) which differ by one broken bond,
+   find the Griffith load, that is the load at which `a` and `b` have
+   the same energy accorinding to the model potential `pot`.
+
+   Returns (strain, G, a_rescaled, b_rescaled).
+   """
+
+   eps0 = crack_strain(a)
+
+   def func(x):
+       eps, = x
+       return energy_difference(a,b,p,eps,relax=relax)**2
+
+   ds = DownhillSimplex(func, x0=[eps0], deltas=[0.001], ftol=0.01)
+   eps, = ds.minimise()
+   ap = crack_rescale_homogeneous_xy(a, cp, eps)
+   bp = crack_rescale_homogeneous_xy(b, cp, eps)
+
+   print 'Griffith critical strain = %f' % crack_strain(ap)
+   print 'Griffith critical G = %f J/m^2' % crack_measure_g(ap)
+
+   return (crack_strain(ap), crack_measure_g(ap), ap, bp)
+
+
+def find_mapping(at_in, vectors, lattice_constant, tol=1e-4):
+   """
+   Find a mapping between pairs of atoms displaced by a given vector
+   (or by one of a number of given vectors).
+   """
+
+   class FoundMapping:
+      pass
+
+   mapping = fzeros(at_in.n, dtype=np.int32)
+   at = at_in.copy()
+
+   # cutoff should be larger than all displacment vectors
+   vlen = [farray(vector).norm()*lattice_constant for vector in vectors]
+   at.set_cutoff(max(vlen)+0.5)
+   print 'cutoff = ', at.cutoff
+   at.calc_connect()
+   
+   for i in at.indices:
+      try:
+         for neighb in at.neighbours[i]:
+            for vector in vectors:
+               if ((neighb.diff/lattice_constant - vector)**2).sum() < tol:
+                  print i, neighb.j, vector
+                  mapping[i] = neighb.j
+                  raise FoundMapping
+
+         # corresponding atom is off the edge, so map atom onto itself
+         print i, 'not found!'
+         mapping[i] = i
+      except FoundMapping:
+         continue
+
+   return mapping
+            
+
+crack_advance_table = {
+   'Si(110)[001b]+1':  ([[-1.0/(2*np.sqrt(2)), 0.0,  0.25],
+                        [-1.0/(2*np.sqrt(2)), 0.0, -0.25]],
+                        [[1.0, 0.0,  0.0],
+                         [0.0, 1.0,  0.0],
+                         [0.0, 0.0, -1.0]]),
+   'Si(110)[001b]-1':  ([[1.0/(2*np.sqrt(2)), 0.0,  0.25],
+                        [1.0/(2*np.sqrt(2)), 0.0, -0.25]],
+                        [[1.0, 0.0,  0.0],
+                         [0.0, 1.0,  0.0],
+                         [0.0, 0.0, -1.0]]),
+   'Si(110)[001b]+2':  ([[-1.0/np.sqrt(2), 0.0,  0.0]],
+                        [[1.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [0.0, 0.0, 1.0]]),
+   'Si(110)[001b]-2':  ([[1.0/np.sqrt(2), 0.0,  0.0]],
+                        [[1.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [0.0, 0.0, 1.0]])
+}
+
+
+def crack_unit_advance(slab, at, lattice_constant, vectors=None, transformation=None, system=None):
+   """
+   Given isoatomic slab and crack configurations, return copy with crack advanced by one bond
+   """
+
+   if system is not None:
+      try:
+         vectors, transformation = crack_advance_table[system]
+      except KeyError:
+         raise ValueError("unknown crack system %s" % system)
+
+   if vectors is None:
+      raise ValueError("missing vectors")
+
+   # find mapping from old to new atom indices
+   mapping = find_mapping(slab, vectors, lattice_constant)
+
+   disp = at.pos - slab.pos
+   new_disp = disp[mapping]
+
+   # optionally apply a transformation to the new displacements
+   if transformation is not None:
+      new_disp = np.dot(transformation, new_disp)
+
+   shift = [0.0, 0.0, lattice_constant/2.0]
+
+   result = at.copy()
+   result.pos[...] = slab.pos + new_disp
+   return result
+
+
