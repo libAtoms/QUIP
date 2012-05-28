@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ X
+# HQ X   quippy: Python interface to QUIP atomistic simulation library
+# HQ X
+# HQ X   Copyright James Kermode 2010
+# HQ X
+# HQ X   These portions of the source code are released under the GNU General
+# HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# HQ X
+# HQ X   If you would like to license the source code under different terms,
+# HQ X   please contact James Kermode, james.kermode@gmail.com
+# HQ X
+# HQ X   When using this software, please cite the following reference:
+# HQ X
+# HQ X   http://www.jrkermode.co.uk/quippy
+# HQ X
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 import os
 import sys
 import itertools
@@ -15,6 +34,7 @@ p.add_option('-D', '--no-display', action='store_false', help='Do not display fi
 p.add_option('-t', '--title', action='store', help='Title for plot', default='Predictor-corrector Force Errors')
 p.add_option('-T', '--tex', action='store_true', help='Use LaTeX to render all text')
 p.add_option('-n', '--n-cycles', action='store_true', help='Show the number of predictor-corrector cycles in legend')
+p.add_option('-L', '--legend', action='store_true', help='Draw a figure legend')
 
 opt, filenames = p.parse_args()
 
@@ -97,9 +117,10 @@ for filename, label, color in zip(filenames, opt.label, colors):
 
     print
 
-fig.subplots_adjust(top=0.87, bottom=0.05+0.05*len(leg_lines)/2, hspace=0.24)
-leg = fig.legend(leg_lines, leg_text, 'lower center', ncol=2, prop={'size':'small'})
-leg.draw_frame(False)
+if opt.legend:
+    fig.subplots_adjust(top=0.87, bottom=0.05+0.05*len(leg_lines)/2, hspace=0.24)
+    leg = fig.legend(leg_lines, leg_text, 'lower center', ncol=2, prop={'size':'small'})
+    leg.draw_frame(False)
 
 if is_interactive_shell():
     plt.show()
