@@ -37,6 +37,7 @@ if (major, minor) < (2, 5):
 
 del major, minor
 
+TABLE_STRING_LENGTH = 10
 
 def frange(min,max=None,step=1):
     """Fortran equivalent of :func:`range` builtin.
@@ -631,7 +632,7 @@ def unravel_index(x, dims):
     return tuple([n+1 for n in numpy.unravel_index(x-1, dims)])
 
 
-def s2a(d, pad=None):
+def s2a(d, pad=TABLE_STRING_LENGTH):
     """Convert from list of strings to array of shape (pad, len(d)).
     If pad is not specified, we use the length of longest string in d"""
     if pad is None:
