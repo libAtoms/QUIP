@@ -1393,9 +1393,9 @@ program crack
         call crack_print(ds%atoms, movie, params)
      end do
 
-     write (line, '(a,f15.8,a)') 'Energy difference = ', fd_e0 - energy, ' eV'
+     write (line, '(a,f15.8,a)') 'Change in energy = ', energy - fd_e0, ' eV'
      call print(line)
-     write (line, '(a,f15.8,a)') 'Integrated F.dr   = ', integral, ' eV'
+     write (line, '(a,f15.8,a)') '- Integral F.dr  = ', -integral, ' eV'
      call print(line)
 
      deallocate(dr)
