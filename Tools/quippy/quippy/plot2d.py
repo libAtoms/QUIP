@@ -19,7 +19,7 @@
 
 from quippy import available_modules
 from quippy.system import print_title
-from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text
+from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text, figure
 from quippy.farray import convert_farray_to_ndarray
 from quippy.atomslist import AtomsList
 import numpy as np
@@ -245,7 +245,8 @@ if 'ase' in available_modules:
 
     def neb_plot_multiple(filenames=None, images_list=None, offset=0, dE=0.0, Efac=1.0, cascade=False,
                           plot_barrier_E=False, barrier_xfunc=None, barrier_xlabel='', barrier_polydegree=1,
-                          label_func=None, **plot_args):
+                          label_func=None, pathway_fig=None, barrier_fig=None, barrier_Escale=None, barrier_label=None,
+                          barrier_color='k',**plot_args):
         barrier_E = []
         atoms = []
 
@@ -258,6 +259,10 @@ if 'ase' in available_modules:
         if plot_barrier_E:
             if barrier_xfunc is None:
                 raise ValueError('xfunc must be present to plot barrier_E')
+
+        if pathway_fig is not None:
+            figure(pathway_fig)
+        elif plot_barrier_E:
             subplot(121)
 
         colors = itertools.cycle(['r','g','b','c','m','y','k'])
@@ -294,14 +299,20 @@ if 'ase' in available_modules:
             barrier_E.append(Efit.max())
 
         if label_func is not None:
-            legend(loc='upper left')
+            legend(loc='lower left')
 
         if plot_barrier_E:
-            subplot(122)
+            if barrier_fig is not None:
+                figure(barrier_fig)
+            else:
+                subplot(122)
             barrier_x = np.array([ barrier_xfunc(images[0]) for images in images_list ])
             barrier_E = np.array(barrier_E)
+
+            if barrier_Escale is not None:
+                barrier_E = barrier_E*barrier_Escale
             
-            plot(barrier_x, barrier_E, 'o')
+            plot(barrier_x, barrier_E, barrier_color+'o', mec=barrier_color)
 
             p = np.polyfit(barrier_x, barrier_E, barrier_polydegree)
             r = np.roots(p)
@@ -310,19 +321,19 @@ if 'ase' in available_modules:
 
             r_0 = r[r > barrier_x.max()].min() # first root after data
             
-            xFit = np.linspace(barrier_x.min(), r_0*1.1)
+            xFit = np.linspace(barrier_x.min(), r_0)
             Efit = np.polyval(p, xFit)
-            plot(xFit, Efit, 'k-')
+            plot(xFit, Efit, barrier_color+'-', label=barrier_label)
 
             ylim(-barrier_E.max()*0.1)
 
             name, unit = barrier_xlabel.split('/',1)
             name = name.strip()
             unit = unit.strip()
-            text(r_0, 
-                 barrier_E.max()*0.05,
-                 r'%s$^{(0)}$ = %.2f % s' % (name, r_0, unit),
-                 horizontalalignment='left')
+            #text(r_0, 
+            #     barrier_E.max()*0.05,
+            #     r'%s$^{(0)}$ = %.2f % s' % (name, r_0, unit),
+            #     horizontalalignment='left')
 
             xlabel(barrier_xlabel)
             ylabel(r'$\Delta E_\mathrm{act}$ / eV')
