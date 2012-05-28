@@ -84,7 +84,7 @@ class AtomsReader(AtomsReaderMixin):
                  cache_mem_limit=-1, **kwargs):
 
         def file_exists(f):
-            return f == "stdin" or os.path.exists(f)
+            return f == "stdin" or os.path.exists(f) or len(glob.glob(f)) > 0
 
         self.source = source
         self.format = format
@@ -469,53 +469,45 @@ def read_dataset(dirs, pattern, **kwargs):
     return dataset
 
 
-
-def slice_to_at_reference(sl):
-    return '@%s:%s:%s' % (sl.start is not None and sl.start or '',
-                          sl.stop  is not None and sl.stop  or '',
-                          sl.step  is not None and sl.step  or '')
-
-def time_ordered_series(source):
+def time_ordered_series(source, dt=None):
+    """
+    Given a source of Atoms configurations, return a time ordered list of filename and frame references
+    """
 
     if not isinstance(source, AtomsReader):
         if isinstance(source, basestring):
             source = time_ordered_glob(source)
         source = AtomsReader(source, range='empty')
 
+    # traverse backwards over source, choosing most recently modified version of each frame
     revsource = reversed(source)
     last = revsource.next()
     current_time = last.time
-
-    revorder = [(last.source, last.frame, current_time)]
-    
-    for i, at in enumerate(revsource):
-        if at.time >= current_time:
+    revorder = [(last.source, last.frame)]
+    for at in revsource:
+        try:
+            if (at.time >= current_time) or (dt is not None and current_time - at.time < dt):
+                continue
+        except AttributeError:
             continue
         current_time = at.time
-        revorder.append((at.source, at.frame, current_time))
-
-    order = reversed(revorder)
-    current_source, current_frame, current_time = order.next()
-    current_frames = slice(current_frame, None, None)
-    sources = []
-    for (source, frame, time) in order:
-        if source == current_source:
-            if frame == current_frame + 1:
-                current_frames = slice(current_frames.start, frame+1, None)
-            else:
-                sources.append((current_source, current_frames))
-                current_frames = slice(frame, None, None)
-        else:
-            sources.append((current_source, current_frames))
-            current_frames = slice(frame, None, None)
-
-        current_source = source
-        current_frame = frame
-    sources.append((current_source, current_frames))
+        revorder.append((at.source, at.frame))
 
     filenames = []
-    for (filename, frames) in sources:
-        filenames.append('%s%s' % (filename, slice_to_at_reference(frames)))
+    # group first by filename
+    for key, group in itertools.groupby(reversed(revorder), lambda x: x[0]):
+        # annotate group with stride between frames
+        group_with_stride = []
+        group = list(group)
+        for (s1, f1), (s2, f2) in zip(group, group[1:]):
+            stride = f2 - f1
+            group_with_stride.append((s1, f1, stride))
+        group_with_stride.append(group[-1] + (stride,))
+
+        # now group again by stride
+        for key, group in itertools.groupby(group_with_stride, lambda x: x[2]):
+            group = list(group)
+            filenames.append('%s@%d:%d:%d' % (group[0][0], group[0][1], group[-1][1], group[0][2]))
 
     return filenames
     
