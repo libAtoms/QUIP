@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 from quippy import *
-from ase.constraints import FixAtoms
-from ase.optimize import MDMin
-from ase.optimize.fire import FIRE
-
 import numpy as np
 import sys
 import os
@@ -494,6 +490,7 @@ if __name__ == '__main__':
 
     have_constraint = hasattr(images[0], 'move_mask')
     if have_constraint:
+        from ase.constraints import FixAtoms
         constraint = FixAtoms(mask=np.logical_not(images[0].move_mask.view(np.ndarray)))
 
     if opt.refine is not None:
@@ -541,10 +538,11 @@ if __name__ == '__main__':
             neb.images[i].add_property('f_real', neb.forces['real'][i].T, overwrite=True)
             neb.images[i].add_property('f_spring', neb.forces['spring'][i].T, overwrite=True)
             neb.images[i].add_property('f_neb', neb.forces['neb'][i].T, overwrite=True)
-    else:
-        if rank == 0:
-            print 'Starting NEB run with %d images' % len(neb.images)
-        neb.write('%s-initial.xyz' % basename)
+
+    if rank == 0:
+        print 'Starting NEB run with %d images' % len(neb.images)
+        if not os.path.exists('%s-initial.xyz' % basename):
+            neb.write('%s-initial.xyz' % basename)
 
     if opt.eval:
         # actually evaluate end forces as well
@@ -558,8 +556,10 @@ if __name__ == '__main__':
     if not opt.dry_run:
         # Optimize:
         if opt.optimizer == 'FIRE':
+            from ase.optimize.fire import FIRE
             optimizer = FIRE(neb)
         elif opt.optimizer == 'MDMin':
+            from ase.optimize import MDMin
             optimizer = MDMin(neb)
         else:
             p.error('Unknown optimizer %s' % opt.optimizer)
