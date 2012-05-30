@@ -15,7 +15,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, covariance, inv_covariance, distance_ivs
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
-   integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs
+   integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs, func_type, selector
    integer, dimension(:), allocatable           :: distance_index
    logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
@@ -37,6 +37,7 @@ program force_gaussian_prediction
    call param_register(params, 'sigma_error', '0.01', sigma_error, "the noise assumed on the teaching data")
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
+   call param_register(params, 'func_type', '0', func_type, "which kernel function is used to build the covariance matrix")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
    call param_register(params, 'n_relavant_confs', '200', n_relavant_confs, "the number of relavant confs you would like to do machine learning with")
    call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
@@ -341,10 +342,11 @@ call print_title('starting the predicting process')
 
        
       ! to establish the Covariance Matrix for DATABASE
+      write(*,*) "normalised factor ", distance_confs(1)
       do t = 1, n_relavant_confs
          do j=1, n_relavant_confs
               covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma*sigma_factor)
+                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma*sigma_factor*distance_confs(1)/0.2_dp, func_type=func_type)
          enddo
       enddo
 
@@ -377,7 +379,7 @@ call print_title('starting the predicting process')
 
       do t= 1, n_relavant_confs
             covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                                                                                     feature_matrix_normalised(:,:,distance_index(t)), sigma*sigma_factor)
+                                           feature_matrix_normalised(:,:,distance_index(t)), sigma*sigma_factor*distance_confs(1)/0.2_dp, func_type=func_type)
       enddo
 
 
@@ -528,11 +530,12 @@ call print_title('starting the predicting process')
  end subroutine grid_m_r0
 
 
- function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, distance)
+ function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, sigma, distance, func_type)
 
     real(dp), intent(in)                  ::        feature_matrix1(:,:), feature_matrix2(:,:), bent_space1(:,:), bent_space2(:,:), sigma(:) 
     real(dp), intent(out), optional       ::        distance
     real(dp)                              ::        cov, d_sq
+    integer, intent(in), optional         ::        func_type
     integer                               ::        i, k
 
     k = size(feature_matrix1(:,1))    
@@ -544,8 +547,30 @@ call print_title('starting the predicting process')
     ! normalised with the dimensionality k of the Internal Space
     d_sq = d_sq/real(k,dp)                            
 
-    if (present(distance))  distance=sqrt(d_sq)     
-    cov = exp(-1.0_dp*d_sq)
+    if (present(distance))  distance=sqrt(d_sq)
+
+    if (present(func_type)) then
+         selector=func_type
+    else
+         selector=0
+    endif
+
+    SELECT CASE (selector)
+    CASE (0)
+       cov = exp(-1.0_dp*d_sq)
+    CASE (1)
+       cov = sqrt(d_sq)
+    CASE (2)
+       cov = d_sq
+    CASE (3)
+       cov = (sqrt(d_sq))**3
+    CASE (4)
+       cov = d_sq**2
+    CASE (5)                       ! constant for testing use only
+       cov = 1.0_dp
+    CASE (6)
+      cov = sqrt(sqrt(d_sq))
+    END SELECT
 
  endfunction cov
 
