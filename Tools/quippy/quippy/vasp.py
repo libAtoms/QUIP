@@ -184,9 +184,9 @@ class VaspWriter(object):
 
       # Lattice
       self.out.write("1.0\n")
-      self.out.write("%f %f %f\n" % (at.lattice[1,1], at.lattice[2,1], at.lattice[3,1]))
-      self.out.write("%f %f %f\n" % (at.lattice[1,2], at.lattice[2,2], at.lattice[3,2]))
-      self.out.write("%f %f %f\n" % (at.lattice[1,3], at.lattice[2,3], at.lattice[3,3]))
+      self.out.write("%.12f %.12f %.12f\n" % (at.lattice[1,1], at.lattice[2,1], at.lattice[3,1]))
+      self.out.write("%.12f %.12f %.12f\n" % (at.lattice[1,2], at.lattice[2,2], at.lattice[3,2]))
+      self.out.write("%.12f %.12f %.12f\n" % (at.lattice[1,3], at.lattice[2,3], at.lattice[3,3]))
 
       # Numbers of atoms and type labels
       self.out.write(" ".join(labels)+"\n")
@@ -209,7 +209,7 @@ class VaspWriter(object):
 	    except:
 	       match = getattr(at,property)[i_at] == prop_vals[i]
 	    if (match):
-	       self.out.write("%f %f %f   T T T\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at]))
+	       self.out.write("%.12f %.12f %.12f   T T T\n" % (at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at]))
 
       # Velocities
       if (hasattr(at, 'velo')):
@@ -221,7 +221,7 @@ class VaspWriter(object):
 	       except:
 		  match = getattr(at,property)[i_at] == prop_vals[i]
 	       if (match):
-		  self.out.write("%f %f %f\n" % (at.velo[1,i_at], at.velo[2,i_at], at.velo[3,i_at]))
+		  self.out.write("%.12f %.12f %.12f\n" % (at.velo[1,i_at], at.velo[2,i_at], at.velo[3,i_at]))
 
 
 AtomsWriters['vasp'] = VaspWriter
