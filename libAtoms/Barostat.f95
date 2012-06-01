@@ -521,10 +521,10 @@ contains
        !TIME_PROPAG_TEX 100 \epsilon_f  & = & \left[ 3 \left( \mathrm{vir} + \sum_i m_i v_i \otimes v_i + 
        !TIME_PROPAG_TEX 100                                 3 V \epsilon_r \sigma \epsilon_r^T / \left|\epsilon_r\right|  + 
        !TIME_PROPAG_TEX 100                  3/N_d \sum_i m_i  v_i \otimes v_i  \right) + \right. \\
-       !TIME_PROPAG_TEX 100              &  & s \sqrt{2 k_B T \gamma_\epsilon W_\epsilon/\tau} r.v. \bigg] F^{-T}
+       !TIME_PROPAG_TEX 100              &  & \sqrt{2 k_B T \gamma_\epsilon W_\epsilon/\tau} r.v. \bigg] F^{-T}
        !TIME_PROPAG_TEX 100 \end{eqnarray*}
        !TIME_PROPAG_TEX 100 $$ \epsilon_v = \epsilon_v +  (\tau/2) \epsilon_f/W_\epsilon $$
-       !TIME_PROPAG_TEX 100 $$ \epsilon_v = \exp\left( -(\tau/2) \gamma_\epsilon \right) \epsilon_v $$
+       !TIME_PROPAG_TEX 100 $$ \epsilon_v = \epsilon_v \exp\left( -(\tau/2) \gamma_\epsilon \epsilon_r^{-1}\right)^T$$
        !TIME_PROPAG_TEX 100  }
        !TIME_PROPAG_TEX 100
        if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
