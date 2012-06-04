@@ -1,0 +1,3 @@
+compile cp2k with the silica changes, then run
+
+./run.sh cp2k_program
