@@ -1,0 +1,313 @@
+@SET PROJECT nvt
+@SET RESTART_FILE_NAME restart.rst 
+@SET STEPS 1
+@SET TEMPERATURE 300
+
+@SET CELLA 29.04228582
+@SET CELLB 56.86193653
+@SET CELLC 31.97114400
+@SET GMAXA 30
+@SET GMAXB 60
+@SET GMAXC 32
+
+@SET PARM_FILE_NAME charmm.pot_ext
+@SET COORD_FILE_NAME dopa_A_water_quartz.xyz
+@SET CONN_FILE_NAME dopa_A_water_quartz.psf
+
+@SET INTERVAL 1
+@SET RST_INTERVAL 1
+@SET RST_LOGICAL .TRUE.
+
+&EXT_RESTART
+RESTART_DEFAULT .TRUE.
+RESTART_FILE_NAME $RESTART_FILE_NAME
+RESTART_CELL $RST_LOGICAL
+RESTART_VEL $RST_LOGICAL
+&END EXT_RESTART
+&GLOBAL
+  PROJECT $PROJECT
+  RUN_TYPE MD
+  PRINT_LEVEL LOW
+&END GLOBAL
+&MOTION
+  &PRINT
+    &TRAJECTORY
+      FORMAT XMOL
+      &EACH
+        MD $INTERVAL
+      &END EACH
+    &END TRAJECTORY
+    &VELOCITIES
+      FORMAT XMOL
+      &EACH
+        MD $INTERVAL
+      &END EACH
+    &END VELOCITIES
+    &FORCES
+      FORMAT XMOL
+      &EACH
+        MD $INTERVAL
+      &END EACH
+    &END FORCES
+    &RESTART
+      &EACH
+        MD $RST_INTERVAL
+      &END EACH
+    &END RESTART
+    &RESTART_HISTORY
+      &EACH
+        MD $RST_INTERVAL
+      &END EACH
+    &END RESTART_HISTORY
+  &END PRINT
+  &MD
+    ENSEMBLE NVT
+    STEPS $STEPS
+    TIMESTEP 0.5
+    TEMPERATURE $TEMPERATURE 
+    TEMP_KIND
+    &PRINT
+      &TEMP_KIND
+      &END TEMP_KIND
+    &END PRINT
+    &THERMOSTAT
+      TYPE CSVR
+      &CSVR
+        TIMECON 200.0
+      &END CSVR
+    &END THERMOSTAT
+  &END MD
+&END MOTION
+&FORCE_EVAL
+  STRESS_TENSOR ANALYTICAL
+  METHOD Fist
+  &MM
+    &FORCEFIELD
+      PARMTYPE CHM
+      PARM_FILE_NAME $PARM_FILE_NAME 
+      &SPLINE
+       EMAX_SPLINE 100.0
+      &END SPLINE
+      DANNY T
+      DANNY_CUTOFF 5.5
+      &DANNY_PRINT HIGH
+      &END DANNY_PRINT
+      &DANNY_PRINT_FORCES HIGH
+      &END DANNY_PRINT_FORCES
+      &NONBONDED
+        &LENNARD-JONES
+          ATOMS HSI SIO
+          EPSILON [eV] 0.0033587 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.3163 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI OSB
+          EPSILON [eV] 0.0031267 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.4607 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI OSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7768974933309067 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI HSI
+          EPSILON [eV] 0.0008672 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7818 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT SIO
+          EPSILON [eV] 0.0092592 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.0005 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT OSB
+          EPSILON [eV] 0.0086198 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.1449 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT OSI
+          EPSILON [eV] 0.0065472 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.0451 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT HSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7752938756382539 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT SIO
+          EPSILON [eV] 0.0041135 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.0045 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT OSB
+          EPSILON [eV] 0.0038295 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.1488 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT OSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7768974933309065 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT HSI
+          EPSILON [kcalmol] 0.046 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 0.40001352444501237 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI OSB
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI OSI
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSB SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSB OSB
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS SIO SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+      &END NONBONDED
+    &END FORCEFIELD
+    &POISSON
+      &EWALD
+        EWALD_TYPE spme
+        EWALD_ACCURACY 1.E-6
+        ALPHA 0.35
+        GMAX $GMAXA  $GMAXB  $GMAXC
+      &END EWALD
+    &END POISSON
+  &END MM
+  &SUBSYS
+    &CELL
+      A $CELLA     0.000000 0.000000
+      B 0.000000 $CELLB     0.000000
+      C 0.000000 0.000000   $CELLC
+      PERIODIC XYZ
+    &END CELL
+    &TOPOLOGY
+      &DUMP_PSF
+      &END DUMP_PSF
+      &DUMP_PDB
+      &END DUMP_PDB
+      &GENERATE
+        BONDLENGTH_MAX     5.0
+        REORDER F
+        CREATE_MOLECULES F
+        &ISOLATED_ATOMS
+        &END ISOLATED_ATOMS
+      &END GENERATE
+      CHARGE_EXTENDED
+      COORD_FILE_NAME $COORD_FILE_NAME 
+      COORDINATE EXYZ
+      CONN_FILE_NAME $CONN_FILE_NAME
+      CONN_FILE_FORMAT PSF
+      EXCLUDE_EI 1-3 #full list of those among which we want to exclude some
+      EXCLUDE_EI_14 T
+      &EXCLUDE_EI_LIST #subset of EXCULDE_EI
+        #water
+        BOND HT OT
+        BEND HT HT
+        #amino acid
+        #alifatic extension of amino acids
+      #bond
+        BOND CT2 CA     # CT2 CA
+        BOND CT3 CA     # CT3 CA
+        BOND CA  CA     # CA CA
+        BOND CT2 CT2    # CT2 CT2
+        BOND CT2 CT3    # CT2 CT3
+        BOND CT2 HA     # CT2 HA
+        BOND CT3 HA     # CT3 HA
+        BOND CA  HP     # CA HP
+        BOND CA  OH1    # CA OH1
+        BOND OH1 H      # OH1 H
+      #bend
+        BEND CA  CT2    # CA CT2 CT2
+        BEND CA  CT3    # CA CT2 CT2
+        BEND CT2 CT2    # CT2 CT2 CT2
+        BEND CT2 CT3    # CT2 CT2 CT3
+        BEND CA  CA     # CA CA CA
+        BEND HP  CA     # HP CA CA
+        BEND CA  H      # CA OH1 H
+        BEND HA  CA     # HA CT2 CA
+        BEND HA  CT2    # HA CT2 CT2
+        BEND HA  CT3    # HA CT2 CT3
+        BEND HA  HA     # HA CT2 HA
+        BEND CA  OH1    # CA CA OH1
+        #silica
+        BOND HSI OSI
+      &END EXCLUDE_EI_LIST
+      EXCLUDE_VDW 1-3 #full list of those among which we want to exclude some
+      EXCLUDE_VDW_14 T
+      &EXCLUDE_VDW_LIST #subset of EXCULDE_VDW
+        #water
+        BOND HT OT
+        BEND HT HT
+        #amino acid
+        #alifatic extension of amino acids
+      #bond
+        BOND CT2 CA     # CT2 CA
+        BOND CT3 CA     # CT3 CA
+        BOND CA  CA     # CA CA
+        BOND CT2 CT2    # CT2 CT2
+        BOND CT2 CT3    # CT2 CT3
+        BOND CT2 HA     # CT2 HA
+        BOND CT3 HA     # CT3 HA
+        BOND CA  HP     # CA HP
+        BOND CA  OH1    # CA OH1
+        BOND OH1 H      # OH1 H
+      #bend
+        BEND CA  CT2    # CA CT2 CT2
+        BEND CA  CT3    # CA CT2 CT2
+        BEND CT2 CT2    # CT2 CT2 CT2
+        BEND CT2 CT3    # CT2 CT2 CT3
+        BEND CA  CA     # CA CA CA
+        BEND HP  CA     # HP CA CA
+        BEND CA  H      # CA OH1 H
+        BEND HA  CA     # HA CT2 CA
+        BEND HA  CT2    # HA CT2 CT2
+        BEND HA  CT3    # HA CT2 CT3
+        BEND HA  HA     # HA CT2 HA
+        BEND CA  OH1    # CA CA OH1
+        #silica
+        BOND HSI OSI
+      &END EXCLUDE_VDW_LIST
+    &END TOPOLOGY
+  &END SUBSYS
+&END FORCE_EVAL
