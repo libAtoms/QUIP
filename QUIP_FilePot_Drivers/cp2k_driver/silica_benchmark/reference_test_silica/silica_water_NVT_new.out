@@ -1,0 +1,442 @@
+ cv255@node16 has created process number                             0     17552
+
+  **** **** ******  **  PROGRAM STARTED AT               2010-05-21 15:02:17.273
+ ***** ** ***  *** **   PROGRAM STARTED ON                                node16
+ **    ****   ******    PROGRAM STARTED BY                                 cv255
+ ***** **    ** ** **   PROGRAM PROCESS ID                                 17552
+  **** **  *******  **  PROGRAM STARTED IN /home/cv255/Danny_pot/reference_test_
+                                           silica
+
+ CP2K| version string:                CP2K version 2.1.257 (Development Version)
+ CP2K| is freely available from                          http://cp2k.berlios.de/
+ CP2K| Program compiled at                          Fri May 21 12:41:03 BST 2010
+ CP2K| Program compiled on                                                node16
+ CP2K| Program compiled for                                   Linux-x86-64-intel
+ CP2K| Last CVS entry           xray_diffraction.F/1.31/Fri May 21 09:10:02 2010
+ CP2K| Input file name                                  silica_water_NVT_new.inp
+ 
+ GLOBAL| Force Environment number                                              1
+ GLOBAL| Basis set file name                                           BASIS_SET
+ GLOBAL| Geminal file name                                         BASIS_GEMINAL
+ GLOBAL| Potential file name                                           POTENTIAL
+ GLOBAL| MM Potential file name                                     MM_POTENTIAL
+ GLOBAL| Coordinate file name                                    exyz.CHARMM.xyz
+ GLOBAL| Method name                                                        CP2K
+ GLOBAL| Project name                                       silica_water_NVT_new
+ GLOBAL| Preferred FFT library                                             FFTW3
+ GLOBAL| Run type                                                             MD
+ GLOBAL| All-to-all communication in single precision                          F
+ GLOBAL| FFTs using library dependent lengths                                  F
+ GLOBAL| Global print level                                                  LOW
+ GLOBAL| Total number of message passing processes                             1
+ GLOBAL| Number of threads for this process                                    1
+ GLOBAL| This output is from process                                           0
+
+ MEMORY| system memory details [Kb]
+ MEMORY|                        rank 0           min           max       average
+ MEMORY| MemTotal                    0             0             0             0
+ MEMORY| MemFree                     0             0             0             0
+ MEMORY| Buffers                     0             0             0             0
+ MEMORY| Cached                      0             0             0             0
+ MEMORY| Slab                        0             0             0             0
+ MEMORY| SReclaimable                0             0             0             0
+ MEMORY| MemLikelyFree               0             0             0             0
+
+
+
+                      ************* ******** ***********   
+                     ************* **********************  
+                     ****     **** ****      ***********   
+                     ******** ****  *******     ****       
+                     *******  ****   *******   ****        
+                     ****     ****       ****  ****        
+                     ****     **** **********  ****        
+                      ****     **** ********    ****       
+                     FRONTIERS IN SIMULATION TECHNOLOGY    
+                                                           
+                        C.J. Mundy, S. Balasubramanian,    
+                     Ken Bagchi, J. Hutter, Ari Seitsonen  
+                      IFW Kuo, T. Laino, J. VandeVondele   
+                                 Version 1.0               
+
+                                                           
+
+
+ EWALD| Summation is done by:                                              EWALD
+ EWALD| Alpha parameter [       ANGSTROM^-1]                              0.3500
+ EWALD| Real Space Cutoff [          ANGSTROM]                           11.3097
+ EWALD| G-space max. Miller index                         61        61        61
+ 
+ FORCEFIELD| WARNING: A non Critical ForceField parameter is missing! CP2K GOES!
+ FORCEFIELD| Non critical parameters are:Urey-Bradley,Torsions,Impropers, Opbends and 1-4
+ FORCEFIELD| All missing parameters will not contribute to the potential energy!
+ FORCEFIELD| Activate the print key FF_INFO to have a list of missing parameters
+ 
+ CHARGE_INFO| Total Charge of the Classical System:                     0.000000
+ SPLINE_INFO| Generating: 55 splines due to 10 different atomic kinds
+ ...5
+ ...10
+ ...15
+ ...20
+ ...25
+ ...30
+ ...35
+ ...40
+ ...45
+ ...50
+ ...55
+
+ SPLINE_INFO| Number of unique splines computed:     10
+ SPLINE_INFO| Done
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and OSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and HSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSI and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and HSI OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: HSI and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and SIO OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: SIO and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSB and OSB OVERWRITING!             ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSB and OT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+
+ *** 15:03:08 WARNING in force_fields_all:force_field_pack_sne err=-300   ***
+ *** Multiple NONBONDED declaration: OSB and HT OVERWRITING!              ***
+ *** force_fields_all.F line   2992                                       ***
+ SPLINE_INFO| Generating: 55 splines due to 10 different atomic kinds
+ ...5
+ ...10
+ ...15
+ ...20
+ ...25
+ ...30
+ ...35
+ ...40
+ ...45
+ ...50
+ ...55
+
+ SPLINE_INFO| Number of unique splines computed:     16
+ SPLINE_INFO| Done
+ 
+ MD| Molecular Dynamics Protocol 
+ MD| Ensemble Type                                                           NVT
+ MD| Number of Time Steps                                                      0
+ MD| Time Step [fs]                                                         0.50
+ MD| Temperature [K]                                                      300.00
+ MD| Temperature tolerance [K]                                              0.00
+ MD| Print MD information every                                        1 step(s)
+ MD| File type     Print frequency[steps]                             File names
+ MD| Coordinates          100                     silica_water_NVT_new-pos-1.xyz
+ MD| Velocities           100                     silica_water_NVT_new-vel-1.xyz
+ MD| Energies               1                        silica_water_NVT_new-1.ener
+ MD| Dump                  20                     silica_water_NVT_new-1.restart
+ 
+ ROT| Rotational Analysis Info 
+ ROT| Principal axes and moments of inertia in atomic units:
+ ROT|                                1                 2                 3
+ ROT| EIGENVALUES            0.171463237E+12   0.181402553E+12   0.190839233E+12
+ ROT|      X                     0.044468964       0.835798641      -0.547232256
+ ROT|      Y                    -0.894889644      -0.210162642      -0.393705713
+ ROT|      Z                     0.444066477      -0.507220164      -0.738601834
+ ROT| Numer of Rotovibrational vectors:     6
+
+ Calculation of degrees of freedom
+                                                      Number of atoms:      5187
+                                 Number of Intramolecular constraints:         0
+                                 Number of Intermolecular constraints:         0
+                                  Invariants(translation + rotations):         3
+                                                   Degrees of freedom:     15558
+
+
+ Restraints Information
+                                  Number of Intramolecular restraints:         0
+                                  Number of Intermolecular restraints:         0
+
+ THERMOSTAT| Thermostat Info for PARTICLES
+ THERMOSTAT| Type of thermostat            Canonical Sampling/Velocity Rescaling
+ THERMOSTAT| CSVR time constant [  fs]                                    200.00
+ THERMOSTAT| Initial Kinetic Energy                                     0.000000
+ THERMOSTAT| End of Thermostat Info for PARTICLES
+
+
+ *** 15:03:08 WARNING in thermostat_methods:create_thermostats err=-300   ***
+ *** Thermostat for Barostat has been defined but the ensemble provided   ***
+ *** does not support thermostat for Barostat! Ignoring thermostat        ***
+ *** input.thermostat_methods.F line    365                               ***
+ ************************** Velocities initialization **************************
+ Initial Temperature                                                    301.45 K
+ COM velocity:            0.000000000000      0.000000000000      0.000000000000
+ *******************************************************************************
+
+
+ ENERGY| Total FORCE_EVAL ( FIST ) energy (a.u.):           -244.740859069251002
+
+
+ ENERGY| Total FORCE_EVAL ( FIST ) energy ( eV ):          -6659.737461516737312
+
+ 
+ MD_ENERGIES| Initialization proceeding
+ 
+
+ ******************************** GO CP2K GO! **********************************
+ INITIAL POTENTIAL ENERGY[hartree]     =                     -0.244740859069E+03
+ INITIAL KINETIC ENERGY[hartree]       =                      0.742621277479E+01
+ INITIAL TEMPERATURE[K]                =                                 301.454
+ INITIAL PRESSURE[bar]                 =                     -0.401043194203E+04
+ INITIAL VOLUME[bohr^3]                =                      0.388730345540E+06
+ INITIAL CELL LNTHS[bohr]   =      0.6163531E+02   0.1023268E+03   0.6163531E+02
+ INITIAL CELL ANGLS[deg]    =      0.9000000E+02   0.9000000E+02   0.9000000E+02
+ ******************************** GO CP2K GO! **********************************
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                           R E F E R E N C E S                               -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ 
+ CP2K version 2.1.257 (Development Version), the CP2K developers group (2010).
+ CP2K is freely available from http://cp2k.berlios.de/ .
+
+ Bussi, G; Donadio, D; Parrinello, M. 
+ JOURNAL OF CHEMICAL PHYSICS, 126 (1), 014101 (2007). 
+ Canonical sampling through velocity rescaling.
+ http://dx.doi.org/10.1063/1.2408420
+
+
+ Frigo, M; Johnson, SG. 
+ PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
+ The design and implementation of FFTW3.
+ http://dx.doi.org/10.1109/JPROC.2004.840301
+
+
+ Ewald, PP. ANNALEN DER PHYSIK, 369 (3), 253-287 (1921). 
+ Die Berechnung optischer und elektrostatischer Gitterpotentiale.
+ http://dx.doi.org/10.1002/andp.19213690304
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                                T I M I N G                                  -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ SUBROUTINE                       CALLS  ASD         SELF TIME        TOTAL TIME
+                                              AVERAGE  MAXIMUM  AVERAGE  MAXIMUM
+ CP2K                                 1  1.0    0.015    0.015  136.897  136.897
+ qs_mol_dyn_low                       1  2.0    0.016    0.016   86.302   86.302
+ fist_force_control                   1  3.0    0.004    0.004   84.687   84.687
+ ewald_evaluate                       1  4.0   71.106   71.106   71.106   71.106
+ fist_create_force_env                1  2.0    0.000    0.000   50.571   50.571
+ fist_init                            1  3.0    0.002    0.002   50.571   50.571
+ topology_control                     1  4.0    0.367    0.367   33.899   33.899
+ topology_coordinate_pack             1  5.0    0.000    0.000   31.044   31.044
+ topology_coordinate_pack_89          1  6.0   31.026   31.026   31.026   31.026
+ force_field_control                  1  4.0    0.001    0.001   16.571   16.571
+ force_field_pack                     1  5.0    0.001    0.001   16.220   16.220
+ list_control                         1  4.0    0.004    0.004   11.313   11.313
+ build_fist_neighbor_lists            1  5.0    0.001    0.001   11.309   11.309
+ build_neighbor_lists                 1  6.0    9.763    9.763    9.763    9.763
+ force_field_pack_bend                1  6.0    6.448    6.448    6.448    6.448
+ force_field_unique_bend              1  6.0    2.906    2.906    2.906    2.906
+ force_field_unique_ub                1  6.0    2.887    2.887    2.887    2.887
+ -------------------------------------------------------------------------------
+
+  **** **** ******  **  PROGRAM ENDED AT                 2010-05-21 15:04:34.580
+ ***** ** ***  *** **   PROGRAM RAN ON                                    node16
+ **    ****   ******    PROGRAM RAN BY                                     cv255
+ ***** **    ** ** **   PROGRAM PROCESS ID                                 17552
+  **** **  *******  **  PROGRAM STOPPED IN /home/cv255/Danny_pot/reference_test_
+                                           silica

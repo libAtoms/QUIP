@@ -1,0 +1,185 @@
+&FORCE_EVAL
+  STRESS_TENSOR ANALYTICAL
+  &MM
+    &FORCEFIELD
+      PARMTYPE CHM
+      PARM_FILE_NAME ../charmm.pot
+      DANNY T
+      DANNY_CUTOFF 5.5
+      &DANNY_PRINT HIGH
+      &END DANNY_PRINT
+      &DANNY_PRINT_FORCES HIGH
+      &END DANNY_PRINT_FORCES
+      &NONBONDED
+        &LENNARD-JONES
+          ATOMS HSI SIO
+          EPSILON [eV] 0.0033587 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.3163 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI OSB
+          EPSILON [eV] 0.0031267 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.4607 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI OSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7768974933309067 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HSI HSI
+          EPSILON [eV] 0.0008672 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7818 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT SIO
+          EPSILON [eV] 0.0092592 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.0005 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT OSB
+          EPSILON [eV] 0.0086198 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.1449 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT OSI
+          EPSILON [eV] 0.0065472 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 3.0451 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OT HSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7752938756382539 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT SIO
+          EPSILON [eV] 0.0041135 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.0045 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT OSB
+          EPSILON [eV] 0.0038295 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 2.1488 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT OSI
+          EPSILON [kcalmol] 0.083645681299156144 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 1.7768974933309065 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS HT HSI
+          EPSILON [kcalmol] 0.046 #=sqrt(eps1*eps2)
+          RCUT 10.0
+          SIGMA 0.40001352444501237 #=2^(-1/6)*(sigma1+sigma2)
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI OSB
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSI OSI
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSB SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS OSB OSB
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+        &LENNARD-JONES
+          ATOMS SIO SIO
+          EPSILON 0.0
+          RCUT 10.0
+          SIGMA 0.0
+        &END LENNARD-JONES
+      &END NONBONDED
+    &END FORCEFIELD
+    &POISSON
+      &EWALD
+        EWALD_TYPE ewald
+        EWALD_ACCURACY 1.E-8
+        ALPHA 0.35
+        GMAX 61
+      &END EWALD
+    &END POISSON
+  &END MM
+  &SUBSYS
+    &CELL
+      PERIODIC XYZ
+    &END CELL
+#    &COORD
+#    &END COORD
+#    &VELOCITY
+#    &END VELOCITY
+    &TOPOLOGY
+      &DUMP_PSF
+      &END DUMP_PSF
+      &DUMP_PDB
+      &END DUMP_PDB
+      &GENERATE
+        BONDLENGTH_MAX     5.0
+        &ISOLATED_ATOMS
+        &END ISOLATED_ATOMS
+      &END GENERATE
+      CHARGE_EXTENDED
+    &END TOPOLOGY
+  &END SUBSYS
+&END FORCE_EVAL
+&GLOBAL
+  PRINT_LEVEL LOW
+&END GLOBAL
+&MOTION
+  &PRINT
+    &FORCES
+    &END FORCES
+  &END PRINT
+  &MD
+    TIMESTEP 0.50
+    TEMPERATURE 300.00
+    TEMP_KIND
+    &PRINT
+      &TEMP_KIND
+      &END TEMP_KIND
+    &END PRINT
+    &THERMOSTAT
+      TYPE CSVR
+      &CSVR
+        TIMECON 200.0
+      &END CSVR
+    &END THERMOSTAT
+    &BAROSTAT
+      PRESSURE 1.0
+      TIMECON 1000. #fs
+      &THERMOSTAT
+        TYPE SAME_AS_PARTICLE
+      &END THERMOSTAT
+    &END BAROSTAT
+  &END MD
+&END MOTION
