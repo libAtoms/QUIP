@@ -1,0 +1,380 @@
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_motion/input_constants.F src/input_constants.F
+*** src_motion/input_constants.F	2012-06-04 14:48:55.457680893 +0100
+--- src/input_constants.F	2012-06-04 14:52:19.467024034 +0100
+***************
+*** 332,338 ****
+                                                do_coord_crd=4,&
+                                                do_coord_cif=5,&
+                                                do_coord_xtl=6,&
+!                                               do_coord_cp2k=7
+  
+    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
+                                                do_ff_quartic=1,&
+--- 332,339 ----
+                                                do_coord_crd=4,&
+                                                do_coord_cif=5,&
+                                                do_coord_xtl=6,&
+!                                               do_coord_cp2k=7,&
+!                                               do_coord_exyz=8
+  
+    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
+                                                do_ff_quartic=1,&
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_motion/input_cp2k_subsys.F src/input_cp2k_subsys.F
+*** src_motion/input_cp2k_subsys.F	2012-06-04 14:50:22.992487553 +0100
+--- src/input_cp2k_subsys.F	2012-06-04 14:52:19.550602354 +0100
+***************
+*** 378,383 ****
+--- 378,388 ----
+              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
+         CALL section_add_keyword(print_key,keyword,error=error)
+         CALL keyword_release(keyword,error=error)
++        CALL keyword_create(keyword,"exyz_info",&
++             description="Prints information when parsing EXYZ files.",&
++             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
++        CALL section_add_keyword(print_key,keyword,error=error)
++        CALL keyword_release(keyword,error=error)
+         CALL keyword_create(keyword,"psf_info",&
+              description="Prints information when parsing PSF files.",&
+              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
+***************
+*** 1581,1590 ****
+         CALL keyword_create(keyword, name="COORD_FILE_FORMAT",&
+              variants=s2a("COORDINATE"),&
+              description="Set up the way in which coordinates will be read.",&
+!             usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL|CP2K)", &
+!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL","CP2K"),&
+              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
+!             do_coord_cif,do_coord_xtl,do_coord_cp2k/),&
+              enum_desc=s2a(&
+              "Coordinates read in the &COORD section of the input file",&
+              "Coordinates provided through a PDB file format",&
+--- 1586,1595 ----
+         CALL keyword_create(keyword, name="COORD_FILE_FORMAT",&
+              variants=s2a("COORDINATE"),&
+              description="Set up the way in which coordinates will be read.",&
+!             usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL|CP2K|EXYZ)", &
+!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL","CP2K","EXYZ"),&
+              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
+!             do_coord_cif,do_coord_xtl,do_coord_cp2k,do_coord_exyz/),&
+              enum_desc=s2a(&
+              "Coordinates read in the &COORD section of the input file",&
+              "Coordinates provided through a PDB file format",&
+***************
+*** 1593,1599 ****
+              "Coordinates provided through an AMBER file format",&
+              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
+              "Coordinates provided through a XTL (MSI native) file format",&
+!             "Read the coordinates in CP2K &COORD section format from an external file. "//&
+              "NOTE: This file will be overwritten with the latest coordinates."),&
+              default_i_val=do_coord_off,error=error)
+         CALL section_add_keyword(section,keyword,error=error)
+--- 1598,1605 ----
+              "Coordinates provided through an AMBER file format",&
+              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
+              "Coordinates provided through a XTL (MSI native) file format",&
+!             "Read the coordinates in CP2K &COORD section format from an external file,",&
+!             "Coordinates provided through an EXYZ (QUIP native) file format."//&
+              "NOTE: This file will be overwritten with the latest coordinates."),&
+              default_i_val=do_coord_off,error=error)
+         CALL section_add_keyword(section,keyword,error=error)
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_motion/OBJECTDEFS src/OBJECTDEFS
+*** src_motion/OBJECTDEFS	2012-06-04 14:50:28.695010381 +0100
+--- src/OBJECTDEFS	2012-06-04 15:01:28.885427756 +0100
+***************
+*** 694,699 ****
+--- 694,700 ----
+   topology_util.o\
+   topology_xtl.o\
+   topology_xyz.o\
++  topology_exyz.o\
+   t_sh_p_s_c.o\
+   util.o\
+   velocity_verlet_control.o\
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_motion/topology_exyz.F src/topology_exyz.F
+*** src_motion/topology_exyz.F	1970-01-01 01:00:00.000000000 +0100
+--- src/topology_exyz.F	2012-06-04 14:52:19.655752169 +0100
+***************
+*** 0 ****
+--- 1,241 ----
++ MODULE topology_exyz
++   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
++                                              cp_print_key_unit_nr
++   USE cp_para_types,                   ONLY: cp_para_env_type
++   USE cp_parser_methods,               ONLY: parser_get_next_line,&
++                                              parser_get_object
++   USE cp_parser_types,                 ONLY: cp_parser_type,&
++                                              parser_create,&
++                                              parser_release
++   USE cp_units,                        ONLY: cp_unit_to_cp2k
++   USE f77_blas
++   USE input_section_types,             ONLY: section_vals_type
++   USE kinds,                           ONLY: default_string_length,&
++                                              dp
++   USE memory_utilities,                ONLY: reallocate
++   USE termination,                     ONLY: stop_program
++   USE timings,                         ONLY: timeset,&
++                                              timestop
++   USE string_table,                    ONLY: id2str,&
++                                              s2s,&
++                                              str2id
++   USE topology_types,                  ONLY: atom_info_type,&
++                                              topology_parameters_type
++   USE libatoms_module,                 ONLY: atoms, &
++                                              extendable_str, &
++                                              zero,&
++                                              concat,&
++                                              assign_pointer,&
++                                              initialise,finalise,&
++                                              read,a2s,&
++ 					     system_initialise,system_finalise,PRINT_SILENT
++ #include "cp_common_uses.h"
++ 
++   IMPLICIT NONE
++ 
++   CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'topology_exyz'
++ 
++   PRIVATE
++   PUBLIC :: read_coordinate_exyz
++ 
++ CONTAINS
++ 
++ ! *****************************************************************************
++ !> \author Teodoro Laino
++ ! *****************************************************************************
++   SUBROUTINE read_coordinate_exyz (topology,para_env,subsys_section,error)
++     TYPE(topology_parameters_type)           :: topology
++     TYPE(cp_para_env_type), POINTER          :: para_env
++     TYPE(section_vals_type), POINTER         :: subsys_section
++     TYPE(cp_error_type), INTENT(inout)       :: error
++ 
++     CHARACTER(len=*), PARAMETER :: routineN = 'read_coordinate_exyz', &
++       routineP = moduleN//':'//routineN
++     INTEGER, PARAMETER                       :: nblock_atom = 1000
++ 
++     CHARACTER(LEN=default_string_length)     :: my_default_index
++     INTEGER                                  :: frame, handle, iw, j, natom
++     LOGICAL                                  :: failure, my_end
++     TYPE(atom_info_type), POINTER            :: atom_info
++     TYPE(cp_logger_type), POINTER            :: logger
++     TYPE(cp_parser_type), POINTER            :: parser
++     TYPE(Extendable_Str)                     :: es
++     TYPE(atoms)                              :: at
++     character(len=1), pointer :: atmname(:,:), molname(:,:), resname(:,:), element(:,:)
++     integer, pointer                         :: resid(:)
++     REAL(KIND=dp), pointer                   :: atm_mass(:), atm_charge(:), occup(:), beta(:)
++ 
++     NULLIFY(parser, logger)
++     failure = .FALSE.
++     logger => cp_error_get_logger(error)
++     iw = cp_print_key_unit_nr(logger,subsys_section,"PRINT%TOPOLOGY_INFO/EXYZ_INFO",&
++          extension=".subsysLog",error=error)
++     CALL timeset(routineN,handle)
++ 
++     atom_info => topology%atom_info
++ 
++     IF(iw>0) WRITE(iw,*) "    Reading in EXYZ file ",TRIM(topology%coord_file_name)
++     CALL parser_create(parser,topology%coord_file_name, para_env=para_env, &
++                        parse_white_lines=.TRUE.,error=error)
++ 
++     call system_initialise(verbosity=PRINT_SILENT)
++     call initialise(es)
++ 
++     natom = 0
++     frame = 0
++     CALL parser_get_next_line(parser,1,error=error)
++     Frames: DO
++        ! Atom numbers
++        CALL parser_get_object  (parser,natom,error=error)
++        frame = frame + 1
++        IF (frame == 1) THEN
++           CALL reallocate(atom_info%id_molname, 1,    natom)
++           CALL reallocate(atom_info%id_resname, 1,    natom)
++           CALL reallocate(atom_info%resid,   1,    natom)
++           CALL reallocate(atom_info%id_atmname, 1,    natom)
++           CALL reallocate(atom_info%r,             1,3,1,natom)
++           CALL reallocate(atom_info%atm_mass,      1,    natom)
++           CALL reallocate(atom_info%atm_charge,    1,    natom)
++           CALL reallocate(atom_info%occup,         1,    natom)
++           CALL reallocate(atom_info%beta,          1,    natom)
++           CALL reallocate(atom_info%id_element,       1,    natom)
++        ELSE IF(natom > SIZE(atom_info%id_atmname)) THEN
++           CALL stop_program (routineP, routineN, __LINE__, &
++                "Atom number differs in different frames!")
++        END IF
++ 
++        ! zero Extendable_Str, and concatentate number line
++        call zero(es)
++        es%len = 0 ! work around ifort bug?
++        call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
++ 
++        ! concatentate comment line
++        CALL parser_get_next_line(parser,1,error=error)
++        call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
++ 
++        DO j = 1, natom
++          ! concatentate atom line
++          CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
++          call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
++          IF (my_end) THEN 
++             CALL cp_assert(j==natom,cp_fatal_level,cp_assertion_failed,routineP,&
++                  "Number of lines in EXYZ format not equal to the number of atoms."//&
++                  " Please check the EXYZ file and rerun your job!"//CPSourceFileRef,only_ionode=.TRUE.)
++             EXIT Frames
++          END IF
++        END DO
++ 
++        call read(at, estr=es)
++        if (.not. assign_pointer(at, 'atom_type', atmname)) nullify(atmname)
++        if (.not. assign_pointer(at, 'atom_mol_name', molname)) nullify(molname)
++        if (.not. assign_pointer(at, 'atom_res_name', resname)) nullify(resname)
++        if (.not. assign_pointer(at, 'atom_res_number', resid)) nullify(resid)
++        if (.not. assign_pointer(at, 'element', element)) nullify(element)
++        if (.not. assign_pointer(at, 'atm_mass', atm_mass)) nullify(atm_mass)
++        if (.not. assign_pointer(at, 'atom_charge', atm_charge)) nullify(atm_charge)
++        if (.not. assign_pointer(at, 'occup', occup)) nullify(occup)
++        if (.not. assign_pointer(at, 'beta', beta)) nullify(beta)
++ 
++        DO j = 1, natom
++          if (associated(atmname)) then
++            atom_info%id_atmname(j) = str2id(s2s(trim(a2s(atmname(:,j)))))
++          else if (associated(at%species)) then
++            atom_info%id_atmname(j) = str2id(s2s(trim(a2s(at%species(:,j)))))
++          else if (associated(at%Z)) then
++            WRITE(my_default_index,'(I0)') at%Z(j)   
++            atom_info%id_atmname(j) = str2id(s2s(trim(my_default_index)))
++          else
++            CALL stop_program (routineP, routineN, __LINE__, &
++                "read_coordinate_exyz couldn't find atmname, species, or Z property")
++          endif
++ 
++          WRITE(my_default_index,'(I0)')j   
++          if (associated(at%pos)) then
++            atom_info%r(:,j) = at%pos(:,j)
++          else
++            CALL stop_program (routineP, routineN, __LINE__, &
++                "read_coordinate_exyz couldn't find pos property")
++          endif
++          if (associated(molname)) then
++            atom_info%id_molname(j) = str2id(s2s(trim(a2s(molname(:,j)))))
++          else
++            atom_info%id_molname(j) = str2id(s2s(trim(id2str(atom_info%id_atmname(j))) // TRIM(my_default_index)))
++          endif
++          if (associated(resname)) then
++            atom_info%id_resname(j) = str2id(s2s(trim(a2s(resname(:,j)))))
++          else
++            atom_info%id_resname(j) = str2id(s2s(trim(id2str(atom_info%id_molname(j)))))
++          endif
++          if (associated(resid)) then
++            atom_info%resid(j) = resid(j)
++          else
++            atom_info%resid(j) = 1
++          endif
++          if (associated(element)) then
++            atom_info%id_element(j) = str2id(s2s(trim(a2s(element(:,j)))))
++          else if (associated(at%species)) then
++            atom_info%id_element(j) = str2id(s2s(trim(a2s(at%species(:,j)))))
++          else if (associated(at%Z)) then
++            WRITE(my_default_index,'(I0)') at%Z(j)   
++            atom_info%id_element(j) = str2id(s2s(trim(my_default_index)))
++          else
++            CALL stop_program (routineP, routineN, __LINE__, &
++                "read_coordinate_exyz couldn't find element, species, or Z property")
++          endif
++          if (associated(atm_mass)) then
++            atom_info%atm_mass(j) = atm_mass(j)
++          else
++            atom_info%atm_mass(j) = HUGE(0.0_dp)
++          endif
++          if (associated(atm_charge)) then
++            atom_info%atm_charge(j) = atm_charge(j)
++          else
++            atom_info%atm_charge(j) = -HUGE(0.0_dp)
++          endif
++          if (associated(occup)) then
++            atom_info%occup(j) = occup(j)
++          else
++            atom_info%occup(j) = -HUGE(0.0_dp)
++          endif
++          if (associated(beta)) then
++            atom_info%beta(j) = beta(j)
++          else
++            atom_info%beta(j) = -HUGE(0.0_dp)
++          endif
++          if (topology%charge_occup) atom_info%atm_charge(j) = atom_info%occup(j)
++          if (topology%charge_beta) atom_info%atm_charge(j) = atom_info%beta(j)
++ 
++           IF(iw>0) WRITE(iw,'(T2,"EXYZ_INFO| ",A4,3F8.3,A4,I4)') &
++                TRIM(id2str(atom_info%id_atmname(j))),&
++                atom_info%r(1,j),&
++                atom_info%r(2,j),&
++                atom_info%r(3,j),&
++                TRIM(id2str(atom_info%id_resname(j))),&
++                atom_info%resid(j)
++           atom_info%r(1,j) = cp_unit_to_cp2k(atom_info%r(1,j),"angstrom",error=error)
++           atom_info%r(2,j) = cp_unit_to_cp2k(atom_info%r(2,j),"angstrom",error=error)
++           atom_info%r(3,j) = cp_unit_to_cp2k(atom_info%r(3,j),"angstrom",error=error)
++ 
++        END DO
++ 
++        ! If there's a white line or end of file exit.. otherwise read other available
++        ! snapshots
++        CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
++        my_end = my_end .OR. (LEN_TRIM(parser%input_line)==0)
++        IF (my_end) EXIT Frames
++ 
++     END DO Frames
++     CALL parser_release(parser,error=error)
++ 
++     call finalise(es)
++     call system_finalise()
++ 
++     topology%natoms            = natom
++     topology%molname_generated = .TRUE.
++     CALL timestop(handle)
++     CALL cp_print_key_finished_output(iw,logger,subsys_section,&
++          "PRINT%TOPOLOGY_INFO/EXYZ_INFO",error=error)
++ 
++   END SUBROUTINE read_coordinate_exyz
++ 
++ END MODULE topology_exyz
+diff --new-file --exclude '.#*' --exclude '*.orig' --exclude '*.rej' -C 3 src_motion/topology.F src/topology.F
+*** src_motion/topology.F	2012-06-04 14:48:50.458027670 +0100
+--- src/topology.F	2012-06-04 14:52:19.680529348 +0100
+***************
+*** 27,33 ****
+         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
+         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
+         do_conn_user, do_coord_cif, do_coord_cp2k, do_coord_crd, do_coord_g96, &
+!        do_coord_off, do_coord_pdb, do_coord_xtl, do_coord_xyz
+    USE input_cp2k_binary_restarts,      ONLY: read_binary_coordinates
+    USE input_section_types,             ONLY: section_vals_get,&
+                                               section_vals_get_subs_vals,&
+--- 27,33 ----
+         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
+         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
+         do_conn_user, do_coord_cif, do_coord_cp2k, do_coord_crd, do_coord_g96, &
+!        do_coord_off, do_coord_pdb, do_coord_xtl, do_coord_xyz, do_coord_exyz
+    USE input_cp2k_binary_restarts,      ONLY: read_binary_coordinates
+    USE input_section_types,             ONLY: section_vals_get,&
+                                               section_vals_get_subs_vals,&
+***************
+*** 89,94 ****
+--- 89,95 ----
+                                               topology_set_atm_mass
+    USE topology_xtl,                    ONLY: read_coordinate_xtl
+    USE topology_xyz,                    ONLY: read_coordinate_xyz
++   USE topology_exyz,                   ONLY: read_coordinate_exyz
+  #include "cp_common_uses.h"
+  
+    IMPLICIT NONE
+***************
+*** 567,572 ****
+--- 568,575 ----
+         CALL read_coordinate_pdb (topology,para_env,subsys_section,error)
+      CASE (do_coord_xyz)
+         CALL read_coordinate_xyz (topology,para_env,subsys_section,error)
++     CASE (do_coord_exyz)
++        CALL read_coordinate_exyz (topology,para_env,subsys_section,error)
+      CASE (do_coord_cif)
+         CALL read_coordinate_cif (topology,para_env,subsys_section,error)
+      CASE (do_coord_xtl)

@@ -1,0 +1,7 @@
+compile cp2k with the silica changes, then run
+
+./run.sh cp2k_program
+
+#important, if you have an older version of CP2K than 09/04/2010,
+#your test will fail against *_ref
+#your test results should match *_ref_before2010-04-09
