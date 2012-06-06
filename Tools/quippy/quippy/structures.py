@@ -383,7 +383,7 @@ def get_quartz_params(at):
     print 'V      = ', at.cell_volume()
     print 'V/SiO2 = ', at.cell_volume()/3.0
 
-    frac_pos = numpy.dot(at.g, at.pos)
+    frac_pos = np.dot(at.g, at.pos)
     u = frac_pos[1,1]
     x,y,z = frac_pos[:,4]
     z -= 2.0/3.0
@@ -412,9 +412,9 @@ def alpha_quartz_cubic(*args, **kwargs):
     lattice[2,2] = a0.lattice[2,2]*2.0
     lattice[3,3] = a0.lattice[3,3]
 
-    g = numpy.linalg.inv(lattice)
-    t = numpy.dot(g, at.pos)
-    cubic = at.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
+    g = np.linalg.inv(lattice)
+    t = np.dot(g, at.pos)
+    cubic = at.select(np.logical_and(t >= -0.5, t < 0.5).all(axis=1))
     cubic.set_lattice(lattice)
     return cubic
 
