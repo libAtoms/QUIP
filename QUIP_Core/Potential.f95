@@ -179,7 +179,6 @@ module Potential_module
      real(dp), pointer :: last_connect_x(:) => null()
      type(Potential), pointer :: minim_pot => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
-     logical, dimension(3,3) :: lattice_fix = .false.
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
   end type Potential_minimise
 
@@ -837,7 +836,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
 
   function potential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, fire_minim_dt0, fire_minim_dt_max, lattice_fix, external_pressure, use_precond, &
+       do_pos, do_lat, args_str, eps_guess, fire_minim_dt0, fire_minim_dt_max, external_pressure, use_precond, &
        hook_print_interval, error)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
@@ -854,7 +853,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), intent(in), optional :: eps_guess !% eps_guess argument to pass to minim
     real(dp), intent(in), optional :: fire_minim_dt0 !% if using fire minim, initial value for time step
     real(dp), intent(in), optional :: fire_minim_dt_max !% if using fire minim, max value for time step
-    logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
     real(dp), dimension(3,3), optional :: external_pressure
     logical, intent(in), optional :: use_precond
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
@@ -912,9 +910,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
       am%minim_do_pos = optional_default(.false., do_pos)
       am%minim_do_lat = optional_default(.false., do_lat)
     endif
-
-    am%lattice_fix = .false.
-    if (present(lattice_fix)) am%lattice_fix = lattice_fix
 
     am%external_pressure = 0.0_dp
     if (present(external_pressure)) then
@@ -1406,8 +1401,7 @@ end subroutine undo_travel
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
 
-    ! Zero out components corresponding to fixed lattice elements
-    virial = merge(0.0_dp, virial, am%lattice_fix)
+    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, gradient_func, 1.0_dp/am%pos_lat_preconditioner_factor)
     if (current_verbosity() >= PRINT_NERD) then
@@ -1512,7 +1506,6 @@ max_atom_rij_change = 1.038_dp
     call symmetric_linear_solve(P, g(10:10+am%minim_at%N*3-1), P_g(10:10+am%minim_at%N*3-1))
 
   end subroutine apply_precond_func
-
   ! compute energy and gradient (forces and virial)
   ! x is vectorized version of atomic positions
   ! result is vectorized version of forces
@@ -1632,6 +1625,8 @@ endif
 
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
+
+    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call print ("both_func gradient packed as", PRINT_NERD)
@@ -1917,5 +1912,59 @@ end subroutine pack_pos_dg
     end do
 
   end subroutine DynamicalSystem_run
+
+  subroutine constrain_DG(at, deform_grad)
+    type(Atoms), intent(in) :: at
+    real(dp), intent(inout) :: deform_grad(3,3)
+
+    logical :: minim_constant_volume
+    real(dp) :: scaled_ident(3,3), DG_det
+    integer :: error
+
+    minim_constant_volume = .false.
+    call get_param_value(at, "Minim_Constant_Volume", minim_constant_volume, error=error)
+
+    ! zero out trace component, which changes volume
+    if (minim_constant_volume) then
+      DG_det = matrix3x3_det(deform_grad)
+      scaled_ident = 0.0_dp
+      call add_identity(scaled_ident)
+      scaled_ident = scaled_ident * (DG_det**(-1.0/3.0))
+      deform_grad = matmul(deform_grad, scaled_ident)
+    endif
+  end subroutine constrain_DG
+
+  subroutine constrain_virial_post(at, virial)
+    type(Atoms), intent(in) :: at
+    real(dp), intent(inout) :: virial(3,3)
+
+    integer :: error
+    logical :: minim_hydrostatic_strain
+    logical :: minim_lattice_fix_mask(3,3)
+    real(dp) :: minim_lattice_fix(3,3)
+    real(dp) :: scaled_ident
+
+    real(dp) :: virial_trace
+
+    minim_hydrostatic_strain = .false.
+    call get_param_value(at, "Minim_Hydrostatic_Strain", minim_hydrostatic_strain, error=error)
+    minim_lattice_fix_mask = .false.
+    call get_param_value(at, "Minim_Lattice_Fix", minim_lattice_fix, error=error)
+    minim_lattice_fix_mask = (minim_lattice_fix /= 0.0_dp)
+
+    ! project onto identity
+    if (minim_hydrostatic_strain) then
+      virial_trace = trace(virial)
+      virial = 0.0_dp
+      virial(1,1) = virial_trace/3.0_dp
+      virial(2,2) = virial_trace/3.0_dp
+      virial(3,3) = virial_trace/3.0_dp
+    endif
+    ! Zero out components corresponding to fixed lattice elements
+    if (any(minim_lattice_fix_mask)) then
+       virial = merge(0.0_dp, virial, minim_lattice_fix_mask)
+    end if
+
+  end subroutine constrain_virial_post
 
 end module Potential_module
