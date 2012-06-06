@@ -174,7 +174,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         try:
             self.set_value(k, v)
         except TypeError:
-            self.set_value(k,s2a(v))
+            self.set_value(k,s2a(v,pad=None))
 
     def __delitem__(self, k):
         if not k in self:
