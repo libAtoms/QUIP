@@ -539,7 +539,7 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
 
    real(dp) :: energy, virial(3,3), t_pos(3)
    real(dp), pointer :: force_p(:,:)
-   integer :: force_start_line_i, virial_start_line_i
+   integer :: force_start_line_i, virial_start_line_i, read_err
 
    INIT_ERROR(error)
 
@@ -552,6 +552,7 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
 
    converged = .false.
    force_start_line_i = -1
+   virial_start_line_i = -1
    call initialise(outcar_io, trim(run_dir)//"/OUTCAR")
    stat = 0
    line_i = 1
@@ -586,7 +587,10 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
       endif
       if (do_calc_virial) then
 	 if (virial_start_line_i > 0 .and. line_i == virial_start_line_i) then
-	    read(unit=line,fmt=*) t_s, virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
+	    read(unit=line,fmt=*,iostat=read_err) t_s, virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
+	    if (read_err /= 0) then
+	       RAISE_ERROR ("read_vasp_output failed to read virial from line '"//trim(line)//"'", error)
+	    endif
 	    virial(2,1) = virial(1,2)
 	    virial(3,2) = virial(2,3)
 	    virial(3,1) = virial(1,3)
