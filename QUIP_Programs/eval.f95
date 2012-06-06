@@ -55,7 +55,8 @@ implicit none
   character(len=STRING_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
 	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
-             & do_fine_phonons, do_cij_relax_initial
+             & do_fine_phonons, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
+  real(dp) :: relax_lattice_fix(9)
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
@@ -102,7 +103,7 @@ implicit none
   type(bispectrum_so4) :: bis
 #endif
 
-  logical did_something
+  logical do_calc, did_anything
   logical test_ok
   integer error
 
@@ -160,6 +161,9 @@ implicit none
   call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
+  ! call param_register(cli_params, 'relax_constant_volume', 'F', relax_constant_volume, help_string="if virial and relax are set, constrain to constant volume")
+  call param_register(cli_params, 'relax_hydrostatic_strain', 'F', relax_hydrostatic_strain, help_string="if virial and relax are set, constrain to hydrostatic strain")
+  call param_register(cli_params, 'relax_lattice_fix', '0.0 0.0 0.0   0.0 0.0 0.0   0.0 0.0 0.0', relax_lattice_fix, help_string="if virial and relax are set, constrain lattice parameter matrix where this is /= 0.  Doesn't work as expected in general, although definitely OK for orthogonal lattice vectors aligned with coordinate axes")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
@@ -251,10 +255,11 @@ implicit none
 	at%mass = ElementMass(at%Z)
      endif
 
-     did_something=.false.
-     
+     did_anything=.false.
+     do_calc = .false.
+
      if (do_test .or. do_n_test) then
-        did_something=.true.
+	did_anything = .true.
         if (do_test) then
            call verbosity_set_minimum(PRINT_NERD)
            if (len_trim(test_dir_field) > 0) then
@@ -274,9 +279,14 @@ implicit none
         end if
         call finalise(at)
         cycle
-     end if
-     
+     end if ! do_test
+
      if (do_relax) then
+	did_anything = .true.
+	do_calc = .true.
+	call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
+	! call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
+	call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
 	if (len_trim(pre_relax_calc_args) > 0) then
 	   extra_calc_args = ""
 	   if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
@@ -298,13 +308,13 @@ implicit none
 		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
 		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval)
         endif
-        call write(at,'stdout', prefix='RELAXED_POS')
+        !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
         call calc_connect(at)
      end if
-     
+
      if (do_c0ij .or. do_cij) then
-        did_something=.true.
+	did_anything = .true.
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
@@ -325,18 +335,18 @@ implicit none
            mainlog%prefix=""
         endif
         call print("")
-     endif
-     
+     endif ! do_cij
+
      if (do_dipole_moment) then
         call add_property(at, 'local_dn', 0.0_dp, 1)
-     endif
-     
+     endif ! do_dipole_moment
+
      if (do_phonons) then
-        did_something = .true.
+	did_anything = .true.
         if (do_force_const_mat) then
            allocate(force_const_mat(at%N*3,at%N*3))
         endif
-        
+
         allocate(phonon_evals(at%N*3))
         allocate(phonon_masses(at%N*3))
         allocate(phonon_evecs(at%N*3,at%N*3))
@@ -361,7 +371,7 @@ implicit none
                    do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation)
            endif
         endif
-        
+
         if (do_force_const_mat) then
            call print ("Force constants are usually in eV/A^2")
            mainlog%prefix="FORCE_CONST_MAT"
@@ -375,7 +385,7 @@ implicit none
         endif
 
         call print ("Phonons frequencies are \omega usually in fs^-1")
-        
+
         call add_property(at,"phonon", 0.0_dp, 3)
         if (.not. assign_pointer(at,"phonon", phonon)) &
              call system_abort("Failed to assign pointer for phonon property")
@@ -424,18 +434,23 @@ implicit none
 	call remove_value(at%params, 'phonon_freq')
 	call remove_value(at%params, 'phonon_eff_mass')
 	if (do_dipole_moment) call remove_value(at%params, 'IR_intensity')
-     endif
+     endif ! do phonons
 
      if (do_fine_phonons) then
-        did_something = .true.
+	did_anything = .true.
         call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
              & phonon_supercell=phonon_supercell)
-     endif
-     
-     
-     if (do_E .or. do_F .or. do_V .or. do_local) then
-        did_something=.true.
+     endif ! do_fine_phonons
 
+#ifdef HAVE_TB
+     if (do_absorption) do_calc = .true.
+#endif
+#ifdef HAVE_GP_PREDICT
+     if ( do_print_bispectrum ) do_calc = .true.
+#endif
+
+     if ((.not. did_anything .or. do_calc) .and. (do_E .or. do_F .or. do_V .or. do_local)) then
+	did_anything = .true.
 	extra_calc_args = ""
 	if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
 	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
@@ -455,7 +470,7 @@ implicit none
            call print ("Energy=" // E0)
            call set_value(at%params, 'Energy', "" // E0)
         endif
-        
+
         if (do_dipole_moment) then
            if (.not. assign_pointer(at, "local_dn", local_dn)) &
                 call system_abort("impossible failure to assign pointer for local_dn")
@@ -463,7 +478,7 @@ implicit none
            call print ("Dipole moment " // mu)
            call set_value(at%params, 'Dipole_Moment', ""//mu)
         endif
-        
+
         if (do_V) then
            P0 = V0/cell_volume(at)
            do i=1, 3
@@ -482,26 +497,26 @@ implicit none
               call print("Torque " // tau)
            endif
         endif
-     endif
-     
+     endif ! do_E, F, V, local
+
 #ifdef HAVE_TB
      if (do_absorption) then
         if (.not. associated (pot%simple%tb)) &
              call system_abort("Can only do absorption of TB model")
-        
+
         absorption_polarization = (/ cmplx(absorption_polarization_in(1), absorption_polarization_in(2), dp), &
              cmplx(absorption_polarization_in(3), absorption_polarization_in(4), dp), &
              cmplx(absorption_polarization_in(5), absorption_polarization_in(6), dp) /)
         call print("do absorption: polarization " // absorption_polarization)
         call print("do absorption: freq_range " // absorption_freq_range)
         call print("do absorption: gamma " // absorption_gamma)
-        
+
         allocate(absorption_freqs(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
         allocate(absorption_v(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
         do freq_i=1, size(absorption_freqs)
            absorption_freqs(freq_i) = absorption_freq_range(1) +(freq_i-1)*absorption_freq_range(3)
         end do
-        
+
         call absorption(pot%simple%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
         do freq_i=1, size(absorption_freqs)
            call print("absorption i " // freq_i // " freq " // absorption_freqs(freq_i) // " a " // absorption_v(freq_i))
@@ -513,7 +528,6 @@ implicit none
 
 #ifdef HAVE_GP_PREDICT
      if ( do_print_bispectrum ) then
-        did_something=.true.
         call initialise(f_hat, bispectrum_jmax, 1.2_dp*mycutoff/(PI-0.02_dp), mycutoff)
         allocate(vec(j_max2d(bispectrum_jmax)))
         do i = 1, at%N
@@ -526,13 +540,13 @@ implicit none
         deallocate(vec)
      end if
 #endif
-    
-     if (.not. did_something) call system_abort("Nothing to be calculated")
-          
+
+     if (.not. did_anything) call system_abort("Nothing to be calculated")
+
      call write(at, 'stdout', prefix='AT')
 
      call finalise(at)
-     
+
   enddo
 
   call system_finalise()

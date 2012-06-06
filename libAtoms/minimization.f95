@@ -2826,11 +2826,11 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     do while (N_evals .le. max_N_evals .and. (.not.(done)))
 
 	!! max_step_size = 4.0_dp*expected_reduction / norm(g_i)
-	max_step_size = 4.0_dp*expected_reduction / (g_i .dot. (h_i/norm(h_i))) ! dividing by norm(h_i) because n_linmin will normalize h_i
-	if (max_step_size .gt. 1.0_dp) then
-	    max_step_size = 1.0_dp
-	endif
-	! if (i_am_master_node) print *, "max_step_size ", max_step_size
+	max_step_size = 1.0_dp * expected_reduction / (g_i .dot. (h_i/norm(h_i))) ! dividing by norm(h_i) because n_linmin will normalize h_i
+	! if (max_step_size .gt. 1.0_dp) then
+	    ! max_step_size = 1.0_dp
+	! endif
+	call print("max_step_size "//max_step_size, verbosity=PRINT_VERBOSE)
 
 	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
 		  normsq(g_i) // " " // N_evals // " n_minim pre linmin")
@@ -2854,7 +2854,8 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 
 	if (E_ip1 > E_i) then
 	  final_E = E_i
-	  RAISE_ERROR("n_minim: n_limin stepped uphill - forces may not be consistent with energy", error)
+	  call print("WARNING:n_minim: n_limin stepped uphill - forces may not be consistent with energy", verbosity=PRINT_ALWAYS)
+	  ! RAISE_ERROR("n_minim: n_limin stepped uphill - forces may not be consistent with energy", error)
 	endif
 
 	if (normsq(g_ip1) .lt. accuracy) then
