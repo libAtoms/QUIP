@@ -298,7 +298,7 @@ contains
     type(Atoms) :: cube, at, at2, tube
     real(dp) :: a0, v(3,3), eps(3,3)
     integer :: steps, tube_i, i, n, m
-    logical :: fix(3,3)
+    real(dp) :: fix(3,3)
     integer, parameter :: nx = 2, ny = 3
     real(dp) :: tube_r(12), tube_energy(12), graphene_e_per_atom, radius, energy, c(1), chisq
     
@@ -310,13 +310,15 @@ contains
     call randomise(at%pos, 0.01_dp)
     call calc_connect(at)
 
-    fix = .true.
-    fix(1,1) = .false.
-    fix(2,2) = .false.
+    ! fix lattice in x and y directions
+    fix = 1.0_dp
+    fix(1,1) = 0.0_dp
+    fix(2,2) = 0.0_dp
+    call set_param_value(at, "Minim_Lattice_Fix", fix)
 
     ! Geometry optimise with variable lattice
     steps = minim(pot, at, 'cg', 1e-6_dp, 100, &
-         'FAST_LINMIN', do_pos=.true.,do_lat=.true.,lattice_fix=fix, do_print=.false.)
+         'FAST_LINMIN', do_pos=.true.,do_lat=.true.,do_print=.false.)
 
     ! Set a to average of x and y lattice constants
     a = 0.5_dp*(at%lattice(1,1)/(3.0_dp*nx) + at%lattice(2,2)/(sqrt(3.0_dp)*ny))
@@ -334,13 +336,14 @@ contains
     eps(1,1) = eps(1,1)+0.001_dp
     call set_lattice(at2, eps .mult. at2%lattice, scale_positions=.true.)
 
-    fix = .false.
-    fix(1,1) = .true.
     ! Fix lattice in x direction
+    fix = 1.0_dp
+    fix(1,1) = 0.0_dp
+    call set_param_value(at, "Minim_Lattice_Fix", fix)
 
     ! Geometry optimse, allowing to contract in y direction
     steps = minim(pot, at2, 'cg', 1e-6_dp, 100, &
-         'FAST_LINMIN', do_print=.false., do_pos=.true.,do_lat=.true.,lattice_fix=fix)
+         'FAST_LINMIN', do_print=.false., do_pos=.true.,do_lat=.true.)
 
     poisson = -((at2%lattice(2,2) - at%lattice(2,2))/at%lattice(2,2))/ &
          ((at2%lattice(1,1) - at%lattice(1,1))/at%lattice(1,1))
