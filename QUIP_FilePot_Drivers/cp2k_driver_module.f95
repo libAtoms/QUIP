@@ -127,7 +127,8 @@ contains
     character(len=STRING_LENGTH) :: dir, tmp_run_dir
     character(len=1024) :: log_sys_command_str
     integer :: tmp_run_dir_i, stat
-    logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels
+    logical :: exists, persistent_already_started, persistent_start_cp2k, persistent_frc_exists, create_residue_labels, &
+         remove_Si_H_silica_bonds, remove_Ti_H_titania_bonds
     integer :: persistent_run_i, persistent_frc_size, qm_mol_id, n_hydrogen, old_n_hydrogen, n_extra_electrons, old_n_extra_electrons
     integer :: qmmm_link_n_electrons
 
@@ -187,6 +188,8 @@ contains
       call param_register(cli, 'silica_add_23_body', 'T', silica_add_23_body, help_string="If true and if have_silica_potential is true, add bonds for silica 2- and 3-body terms to PSF")
       call param_register(cli, 'silica_pos_dep_charges', 'T', silica_pos_dep_charges, help_string="If true and if have_silica_potential is true, use variable charges for silicon and oxygen ions in silica residue")
       call param_register(cli, 'silica_charge_transfer', '2.4', silica_charge_transfer, help_string="Amount of charge transferred from Si to O in silica bulk, per formula unit")
+      call param_register(cli, 'remove_Si_H_silica_bonds', 'T', remove_Si_H_silica_bonds, help_string="If true (default) remove any Si-H bonds detected in silica residue")
+      call param_register(cli, 'remove_Ti_H_titania_bonds', 'T', remove_Ti_H_titania_bonds, help_string="If true (default) remove any Ti-H bonds detected in titania residue")
       call param_register(cli, 'create_residue_labels', 'T', create_residue_labels, help_string="If true, recreate residue labels each time PSF file is generated (default T)")
       call param_register(cli, 'qmmm_link_type', 'IMOMM', qmmm_link_type, help_string="Type of QMMM links to create: one of IMOMM, PSEUDO or QM_KIND. Default IMOMM")
       call param_register(cli, 'qmmm_link_qm_kind', 'OSTAR', qmmm_link_qm_kind, help_string="QM kind to use for inner boundary atoms when qmmm_link_type=QM_KIND")
@@ -263,6 +266,8 @@ contains
        call print('  silicon_charge '//silicon_charge)
        call print('  oxygen_charge '//oxygen_charge)
        call print('  hydrogen_charge '//hydrogen_charge)
+       call print('  remove_Si_H_silica_bonds '//remove_Si_H_silica_bonds)
+       call print('  remove_Ti_H_titania_bonds '//remove_Ti_H_titania_bonds)
     end if
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
@@ -489,7 +494,8 @@ contains
 	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
                find_silica_residue=have_silica_potential,form_bond=form_bond,break_bond=break_bond, &
                silica_pos_dep_charges=silica_pos_dep_charges, silica_charge_transfer=silica_charge_transfer, &
-               have_titania_potential=have_titania_potential)
+               have_titania_potential=have_titania_potential, remove_Si_H_silica_bonds=remove_Si_H_silica_bonds, &
+               remove_Ti_H_titania_bonds=remove_Ti_H_titania_bonds)
       end if
     end if
 
