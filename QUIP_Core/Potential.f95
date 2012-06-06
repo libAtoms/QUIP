@@ -822,7 +822,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (this%is_cluster) then
        potential_cutoff = cutoff(this%cluster)
     else
-       RAISE_ERROR('Potential_Cutoff: no potential type if set', error)
+       RAISE_ERROR('Potential_Cutoff: no potential type is set', error)
     end if
   end function potential_cutoff
 
@@ -838,8 +838,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   function potential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str, eps_guess, fire_minim_dt0, fire_minim_dt_max, external_pressure, use_precond, &
        hook_print_interval, error)
-    type(Atoms), intent(inout), target :: at !% starting configuration
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
+    type(Atoms), intent(inout), target :: at !% starting configuration
     character(*), intent(in)    :: method !% passed to minim()
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
                                                     !% 'convergence_tol'. 
