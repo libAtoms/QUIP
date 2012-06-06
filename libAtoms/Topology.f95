@@ -111,7 +111,7 @@ contains
   !%
   subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,find_silica_residue,pos_field_for_connectivity, &
        form_bond,break_bond, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
-       find_molecules, evb_nneighb_only, error)
+       find_molecules, evb_nneighb_only, remove_Si_H_silica_bonds, remove_Ti_H_titania_bonds, error)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -124,6 +124,7 @@ contains
     logical, intent(in), optional :: have_titania_potential
     logical, intent(in), optional :: find_molecules
     logical, intent(in), optional :: evb_nneighb_only
+    logical, optional, intent(in) :: remove_Si_H_silica_bonds, remove_Ti_H_titania_bonds
     integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
@@ -182,7 +183,8 @@ contains
     call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=do_nneighb_only,alt_connect=t_connect,&
 	 find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
 	 silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
-	 find_molecules=find_molecules, error=error)
+	 find_molecules=find_molecules, remove_Si_H_silica_bonds=remove_Si_H_silica_bonds, &
+         remove_Ti_H_titania_bonds=remove_Ti_H_titania_bonds, error=error)
     PASS_ERROR(error)
     call finalise(t_connect)
 
@@ -199,7 +201,7 @@ contains
   !%
   subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, heuristics_nneighb_only,alt_connect, &
        find_silica_residue, silica_pos_dep_charges, silica_charge_transfer, have_titania_potential, &
-       find_molecules, error) !, hysteretic_neighbours)
+       find_molecules, remove_Si_H_silica_bonds, remove_Ti_H_titania_bonds, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -211,11 +213,11 @@ contains
     logical,     optional, intent(in)    :: have_titania_potential
     logical, optional, intent(in) :: find_molecules
     integer, optional, intent(out) :: error
+    logical, optional, intent(in) :: remove_Si_H_silica_bonds, remove_Ti_H_titania_bonds
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
+
     character(*), parameter  :: me = 'create_residue_labels_pos_internal: '
-    logical :: remove_Si_H_silica_bonds = .true.
-    logical :: remove_Ti_H_titania_bonds = .true.
 
     type(Inoutput)                       :: lib
     character(4)                         :: cha_res_name(MAX_KNOWN_RESIDUES), Cres_name
@@ -251,10 +253,11 @@ integer :: j,atom_i, ji
 !    logical                             :: do_qmmm
     type(Connection), pointer :: use_connect
 !    logical :: use_hysteretic_neighbours
-type(Table) :: O_atom, O_neighb
-integer :: hydrogen
-logical :: find_silica, titania_potential, do_silica_pos_dep_charges, do_find_molecules
-real(dp) :: do_silica_charge_transfer
+    type(Table) :: O_atom, O_neighb
+    integer :: hydrogen
+    logical :: find_silica, titania_potential, do_silica_pos_dep_charges, do_find_molecules
+    logical :: do_remove_Si_H_silica_bonds, do_remove_Ti_H_titania_bonds
+    real(dp) :: do_silica_charge_transfer
 
     integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
@@ -269,6 +272,8 @@ real(dp) :: do_silica_charge_transfer
     do_silica_charge_transfer = optional_default(2.4_dp, silica_charge_transfer)
     titania_potential = optional_default(.false.,have_titania_potential)
     do_find_molecules = optional_default(.true., find_molecules)
+    do_remove_Si_H_silica_bonds = optional_default(.true., remove_Si_H_silica_bonds)
+    do_remove_Ti_H_titania_bonds = optional_default(.true., remove_Ti_H_titania_bonds)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -332,7 +337,7 @@ real(dp) :: do_silica_charge_transfer
           call bfs_step(at,atom_Ti,atom_TiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
           call print(atom_TiO%N//' O atoms found in total')
 !          if (any(at%Z(atom_TiO%int(1,1:atom_TiO%N)).eq.1)) call system_abort('Ti-H bond')
-          if (remove_Ti_H_titania_bonds) then
+          if (do_remove_Ti_H_titania_bonds) then
              do i=1,atom_TiO%N !check Hs bonded to Ti. There shouldn't be any,removing the bond.
                  if (at%Z(atom_TiO%int(1,i)).eq.1) then
                     call print('WARNING! Ti and H are very close',verbosity=PRINT_ALWAYS)
@@ -476,17 +481,21 @@ real(dp) :: do_silica_charge_transfer
           call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
           call print(atom_SiO%N//' O atoms found in total')
 !          if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
-          if (remove_Si_H_silica_bonds) then
+          if (do_remove_Si_H_silica_bonds) then
+             call initialise(bondH,4,0,0,0)
+             call initialise(bondSi,4,0,0,0)
+
              do i=1,atom_SiO%N !check Hs bonded to Si. There shouldn't be any,removing the bond.
                  if (at%Z(atom_SiO%int(1,i)).eq.1) then
                     call print('WARNING! Si and H are very close',verbosity=PRINT_ALWAYS)
                     bond_H = atom_SiO%int(1,i)
-                    call initialise(bondH,4,0,0,0,0)
+                    call wipe(bondH)
+                    call wipe(bondSi)
                     call append(bondH,(/bond_H,0,0,0/))
                     call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
                     do j = 1,bondSi%N
-                       if (at%Z(bondSi%int(1,i)).eq.14) then
-                          bond_Si = bondSi%int(1,i)
+                       if (at%Z(bondSi%int(1,j)).eq.14) then
+                          bond_Si = bondSi%int(1,j)
                           call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=PRINT_ALWAYS)
                           call remove_bond(use_connect,bond_H,bond_Si)
                        endif
