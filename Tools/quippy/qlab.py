@@ -390,9 +390,8 @@ def highlight_qm_region(at=None, run_suffix=''):
         rcut_patch('Al', 'Al', -0.55)
         run_command('change_normal_color 13 0.0 0.0 0.7 1.2')
         run_command('change_normal_color 5 0.9 0.4 0 1.5')
-        redraw()
-        wait()
         highlight_qm_region.first_time = False
+    redraw()
 
 
 highlight_qm_region.first_time = True
