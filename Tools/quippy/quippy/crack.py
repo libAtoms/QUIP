@@ -41,6 +41,7 @@ except ImportError:
    warnings.warn('crack utilities not available')
 
 __all__.extend(['crack_rescale_homogeneous_xy',
+                'crack_rescale_uniaxial',
                 'makecrack',
                 'crack_strain_energy_release_rate',
                 'stress_intensity_factor'])
