@@ -1219,32 +1219,52 @@ contains
    end function moment_of_inertia_tensor
 
    !% Return the total kinetic energy $E_k = \sum_{i} \frac{1}{2} m v^2$
-   function DS_kinetic_energy(this, mpi_obj, error) result(ke)    ! sum(0.5mv^2)
+   function DS_kinetic_energy(this, mpi_obj, local_ke, error) result(ke)    ! sum(0.5mv^2)
       type(DynamicalSystem),       intent(in)   :: this
       type(MPI_context), optional, intent(in)   :: mpi_obj
+      logical,           optional, intent(in)   :: local_ke
       integer,           optional, intent(out)  :: error
       real(dp)                                  :: ke
 
       INIT_ERROR(error)
-      ke = kinetic_energy(this%atoms, mpi_obj, error=error)
+      ke = kinetic_energy(this%atoms, mpi_obj, local_ke, error=error)
       PASS_ERROR(error)
     end function DS_kinetic_energy
 
    !% Return the total kinetic energy $E_k = \sum_{i} \frac{1}{2} m v^2$
-   function atoms_kinetic_energy(this, mpi_obj, error) result(ke) ! sum(0.5mv^2)
+   function atoms_kinetic_energy(this, mpi_obj, local_ke, error) result(ke) ! sum(0.5mv^2)
       type(atoms),                 intent(in)   :: this
       type(MPI_context), optional, intent(in)   :: mpi_obj
+      logical,           optional, intent(in)   :: local_ke
       integer,           optional, intent(out)  :: error
       real(dp)                                  :: ke
+
+      real(dp), pointer :: local_ke_p(:)
+
+      logical :: do_local_ke
 
       INIT_ERROR(error)
       if (.not. associated(this%mass)) call system_abort("atoms_kinetic_energy called on atoms without mass property")
       if (.not. associated(this%velo)) call system_abort("atoms_kinetic_energy called on atoms without velo property")
-      ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
 
+      do_local_ke = optional_default(.false., local_ke)
+      if (do_local_ke) then
+	 if (.not. assign_pointer(this, 'local_ke', local_ke_p)) then
+	    RAISE_ERROR("atoms_kinetic_energy got local_ke but no local_ke property", error)
+	 endif
+	 local_ke_p = 0.0_dp
+	 ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain), local_ke_p(1:this%Ndomain))
+      else
+	 ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
+      endif
+      
       if (present(mpi_obj)) then
          call sum_in_place(mpi_obj, ke, error=error)
          PASS_ERROR(error)
+	 if (do_local_ke) then
+	    call sum_in_place(mpi_obj, local_ke_p, error=error)
+	    PASS_ERROR(error)
+	 endif
       endif
     end function atoms_kinetic_energy
 
@@ -1257,11 +1277,15 @@ contains
    end function single_kinetic_energy
 
    !% Return the total kinetic energy given atomic masses and velocities
-   pure function arrays_kinetic_energy(mass, velo) result(ke)
+   function arrays_kinetic_energy(mass, velo, local_ke) result(ke)
      real(dp), intent(in) :: mass(:)
      real(dp), intent(in) :: velo(:,:)
+     real(dp), intent(inout), optional :: local_ke(:)
      real(dp) :: ke
 
+     if (present(local_ke)) then
+       local_ke = sum(velo**2,dim=1)*mass
+     endif
      ke = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
    end function arrays_kinetic_energy
 

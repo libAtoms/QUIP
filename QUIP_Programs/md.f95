@@ -53,6 +53,7 @@ private
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_initial_velocity 
+    logical :: calc_local_ke
     real(dp) :: rescale_initial_velocity_T
     logical :: variable_T, zero_momentum, zero_angular_momentum
     logical :: quiet_calc, do_timing
@@ -137,6 +138,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
   call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
   call param_register(md_params_dict, 'verbosity', 'NORMAL', params%verbosity, help_string="verbosity level of run")
+  call param_register(md_params_dict, 'calc_local_ke', 'F', params%calc_local_ke, help_string="if true, calculate local ke")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -268,6 +270,7 @@ subroutine print_params(params)
   call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
   call print("md_params%extra_heat=" // params%extra_heat)
   call print("md_params%continuation=" // params%continuation)
+  call print("md_params%calc_local_ke=" // params%calc_local_ke)
 end subroutine print_params
 
 subroutine print_usage()
@@ -401,6 +404,15 @@ subroutine print_at(params, ds, e, pot, out)
   real(dp), intent(in) :: e
   type(Potential), intent(in) :: pot
   type(CInOutput), intent(inout) :: out
+
+  real(dp) :: ke
+
+  if (params%calc_local_ke) then
+     if (.not. has_property(ds%atoms, 'local_ke')) then
+        call add_property(ds%atoms, 'local_ke', 0.0_dp, n_cols=1)
+     endif
+     ke = kinetic_energy(ds, local_ke=.true.)
+  endif
 
   if (allocated(params%print_property_list)) then
     call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%18.10f')
