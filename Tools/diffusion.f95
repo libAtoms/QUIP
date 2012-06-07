@@ -38,13 +38,14 @@ use libatoms_module
   implicit none
 
  
-    type(Atoms)                           :: structure, reference
+    type(Atoms)                           :: structure, reference, prev_structure
     type(CInoutput)                       :: xyzfile
     type(Inoutput)                        :: datafile
-    real(dp)                              :: ave_r2, one_r2
+    real(dp)                              :: ave_r2, one_r2, d
     integer                               :: frame_count, frames_processed
-    integer                               :: i
+    integer                               :: i, shift(3)
     integer                               :: error
+    integer, allocatable, dimension(:,:)  :: travel
 
     !Input
     type(Dictionary)                      :: params_in
@@ -84,7 +85,11 @@ use libatoms_module
     call print('Reading data...')
 
     call read(structure, xyzfile, error=error)
-    !reference = structure
+    call map_into_cell(structure)
+
+    prev_structure = structure
+    allocate(travel(3,structure%N))
+    travel = 0
 
     frame_count = 0
     frames_processed = 0
@@ -97,38 +102,48 @@ use libatoms_module
   
        if ((frame_count.gt.to) .and. (to.gt.0)) exit
   
-       write(mainlog%unit,'(a,a,i0,$)') achar(13),'Frame ',frame_count
+       write(mainlog%unit,'(a,a,i0,a,$)') achar(13),'Frame ',frame_count, ' '
   
        if (frame_count.eq.from) then
           call print('Reference structure is at step '//frame_count)
           reference = structure
-          call map_into_cell(reference)
        endif
      
        if (frame_count.ge.from) then
           frames_processed = frames_processed + 1
-  
-          call map_into_cell(structure)
+ 
+
+          ! now detect wrappings
+          do i=1,structure%N
+             if(normsq(structure%pos(:,i)-prev_structure%pos(:,i)) > 1) then
+                ! atom wrapped
+                d = distance_min_image(structure, i, prev_structure%pos(:,i), shift)
+                travel(:,i) = travel(:,i) - shift
+             endif
+          end do
+
           one_r2 = 0._dp
           ave_r2 = 0._dp
           do i = 1, structure%N
-             ave_r2 = ave_r2 + normsq(realpos(reference,i) - realpos(structure,i))
+             ave_r2 = ave_r2 + normsq(reference%pos(:,i) - structure%pos(:,i) - (structure%lattice .mult. travel(:,i)))
           enddo
           ave_r2 = ave_r2 / structure%N
           if (one_atom.ne.0) then
-             one_r2 = normsq(realpos(reference,one_atom) - realpos(structure,one_atom))
+             one_r2 = normsq(reference%pos(:,one_atom) - structure%pos(:,one_atom) - (structure%lattice .mult. travel(:,one_atom)))
           endif
      
           if (mod(frame_count-1,IO_Rate).eq.0) then
              if (one_atom.eq.0) then
-                call print(frame_count//' '//ave_r2,file=datafile)
+                call print(frame_count//' '//ave_r2//' '//(structure%pos(:,19)+(structure%lattice .mult. travel(:,19)))//' '//travel(:,19),file=datafile)
              else
                 call print(frame_count//' '//ave_r2//' '//one_r2,file=datafile)
              endif
           endif
        endif
+       prev_structure=structure
        call read(structure,xyzfile,error=error)
-     
+       call map_into_cell(structure)
+
     end do
   
     call print('')
