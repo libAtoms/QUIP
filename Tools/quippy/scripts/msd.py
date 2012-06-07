@@ -9,12 +9,13 @@ p = optparse.OptionParser(usage='%prog [ options ]')
 p.add_option('-i','--infile', action='store', help="""input file""", default="stdin")
 p.add_option('-o','--outfile', action='store', help="""output file""", default="stdout")
 p.add_option('-s','--min_step', action='store', help="""frame to start from""", type='int', default=0)
+p.add_option('-I','--interval', action='store', help="""interval between calculated configs""", type='int', default=1)
 p.add_option('-m','--mask', action='store', help="""mask of atoms to include (must resolve to python logical array)""", default="")
 p.add_option('-f','--fake_smooth_pos_mixing', action='store', help="""mixing coefficient for fake smooth pos""", type='float', default=-1.0)
 
 opt, args = p.parse_args()
 
-ar = AtomsReader(opt.infile)
+ar = AtomsReader(opt.infile, step=opt.interval)
 aw = AtomsWriter(opt.outfile)
 
 step=0
