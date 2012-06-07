@@ -335,7 +335,7 @@ if opt.atoms_ref is not None:
     read_args['atoms_ref'] = opt.atoms_ref
 if opt.atom_range is not None:
     read_args['range'] = opt.atom_range
-if opt.extract_params:
+if opt.extract_params and 'stdin' not in infiles:
     read_args['range'] = 'empty'
 if opt.read_args is not None:
     read_args.update(eval("dict(%s)" % opt.read_args))
