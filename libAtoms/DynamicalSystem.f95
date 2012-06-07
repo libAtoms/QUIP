@@ -1284,7 +1284,7 @@ contains
      real(dp) :: ke
 
      if (present(local_ke)) then
-       local_ke = sum(velo**2,dim=1)*mass
+       local_ke = 0.5_dp * sum(velo**2,dim=1)*mass
      endif
      ke = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
    end function arrays_kinetic_energy
