@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -28,8 +27,7 @@ import itertools
 __all__ = ['plot', 'plot_energy_error', 'plot_max_force_error',
            'plot_rms_force_error', 'plot_max_stress_error',
            'plot_rms_stress_error', 'scatter_force_error',
-           'force_error_statistics', 'plot_force_error',
-           'neb_plot', 'neb_plot_multiple']
+           'force_error_statistics', 'plot_force_error']
 
 # Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)
@@ -210,6 +208,8 @@ if 'ase' in available_modules:
     from ase.neb import fit
     from ase.constraints import FixAtoms
     from ase.calculators.singlepoint import SinglePointCalculator
+
+    __all__.extend(['neb_plot', 'neb_plot_multiple'])
 
     def neb_plot(images, normalize=False, smin=0., smax=1., dE=0., plot_images=True,
                  plot_forces=True, plot_ts=True, Efac=1.0, color='k', label=None):
