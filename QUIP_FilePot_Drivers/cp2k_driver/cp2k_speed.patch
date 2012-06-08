@@ -99,11 +99,8 @@ diff -b -c -3 -r1.118 pw_grids.F
   ! *****************************************************************************
 Index: ewald_spline_util.F
 ===================================================================
-RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
-retrieving revision 1.28
-diff -c -r1.28 ewald_spline_util.F
-*** ewald_spline_util.F	19 Apr 2011 06:28:35 -0000	1.28
---- ewald_spline_util.F	9 Jun 2011 21:43:10 -0000
+*** ewald_spline_util.F	(revision 12247)
+--- ewald_spline_util.F	(working copy)
 ***************
 *** 152,159 ****
                                                   Term, xs1, xs2, xs3
@@ -165,7 +162,7 @@ diff -c -r1.28 ewald_spline_util.F
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
---- 185,304 ----
+--- 185,308 ----
       ! Used the full symmetry to reduce the evaluation to 1/64th
       !NB parallelization
       iii = 0
@@ -241,9 +238,11 @@ diff -c -r1.28 ewald_spline_util.F
 ! 	 if (k > nzlim) CYCLE
 ! 	 DO j=gbo(1,2), gbo(2,2)
 ! 	   if (j > nylim) CYCLE
-! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
+! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k) - &
+! 	                                 sin_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k)
 ! 	  END DO
-! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
+! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 0.0D0, &
+! 	            grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
          END DO
 ! 
 !        ! do sin(gx) sin(gy+gz) term
@@ -255,9 +254,11 @@ diff -c -r1.28 ewald_spline_util.F
 ! 	 if (k > nzlim) CYCLE
 ! 	 DO j=gbo(1,2), gbo(2,2)
 ! 	   if (j > nylim) CYCLE
-! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k) + sin_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k)
+! 	   rhs(j-gbo(1,2)+1,1:NLg_loc) = cos_gy(Lg_loc_min:Lg_loc_max,j)*sin_gz(Lg_loc_min:Lg_loc_max,k) + &
+! 	                                 sin_gy(Lg_loc_min:Lg_loc_max,j)*cos_gz(Lg_loc_min:Lg_loc_max,k)
 ! 	 END DO
-! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 1.0D0, grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
+! 	 call DGEMM('N', 'T', act_nx, act_ny, NLg_loc, 1.0D0, lhs(1,1), act_nx, rhs(1,1), act_ny, 1.0D0, &
+! 	            grid%cr3d(gbo(1,1),gbo(1,2),k), size(grid%cr3d,1))
 !        END DO
 ! 
 !        !NB deallocate temporaries for DGEMM use
@@ -286,21 +287,6 @@ diff -c -r1.28 ewald_spline_util.F
       CALL mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
-***************
-*** 230,239 ****
---- 326,337 ----
-      !
-      ! Solve for spline coefficients
-      !
-+ 
-      CALL pw_spline_precond_create(precond,precond_kind=aint_precond,&
-           pool=pw_pool,pbc=.TRUE.,transpose=.FALSE.,error=error)
-      CALL pw_spline_do_precond(precond,grid,TabLR,error=error)
-      CALL pw_spline_precond_set_kind(precond,precond_kind,error=error)
-+ 
-      success=find_coeffs(values=grid,coeffs=TabLR,&
-              linOp=spl3_pbc,preconditioner=precond, pool=pw_pool, &
-              eps_r=eps_r,eps_x=eps_x,&
 Index: qmmm_gpw_energy.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/qmmm_gpw_energy.F,v
@@ -1485,11 +1471,8 @@ diff -b -c -3 -r1.25 cp_ddapc_util.F
                        cp_ddapc_env%AmI,SIZE(cp_ddapc_env%AmI,1),tv,SIZE(tv,1),0.0_dp,dqv,SIZE(dqv,1))
 Index: cp_ddapc_methods.F
 ===================================================================
-RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
-retrieving revision 1.44
-diff -b -c -3 -r1.44 cp_ddapc_methods.F
-*** cp_ddapc_methods.F	2 May 2011 10:50:56 -0000	1.44
---- cp_ddapc_methods.F	6 May 2011 14:33:10 -0000
+*** cp_ddapc_methods.F	(revision 12247)
+--- cp_ddapc_methods.F	(working copy)
 ***************
 *** 43,49 ****
               build_b_vector,&
@@ -1691,7 +1674,7 @@ diff -b -c -3 -r1.44 cp_ddapc_methods.F
 !                    factor=-1.0_dp
 !              END IF
 !              rvec_diff=rvec2-rvec1
-! 
+  
 !              !NB precompute sin(g.(r1-r2)) with sin(A+B) formula - perhaps just move this into the loop?
 !              arg1_v_sin(s_dim:igmax) = g_dot_rvec_sin(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_cos(1:igmax-s_dim+1, iparticle1) - &
 !                                        g_dot_rvec_cos(1:igmax-s_dim+1, iparticle2)*g_dot_rvec_sin(1:igmax-s_dim+1, iparticle1)
@@ -1747,7 +1730,7 @@ diff -b -c -3 -r1.44 cp_ddapc_methods.F
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          !!! DEALLOCATE(arg1_v,stat=stat)
          !!! CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
---- 399,467 ----
+--- 399,473 ----
             IF (g2 > gcut2) EXIT
             igmax  = ig
          ENDDO
@@ -1774,15 +1757,18 @@ diff -b -c -3 -r1.44 cp_ddapc_methods.F
 ! 	  do ipp=1, nparticles
 ! 	    iparticle1 = iparticle0 + ipp - 1
 ! 	    do ig=s_dim,igmax
-! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr) * g_dot_rvec_cos(ig-s_dim+1, iparticle1)
+! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * &
+! 		  gfunc(ig,1:Nr) * g_dot_rvec_cos(ig-s_dim+1, iparticle1)
 ! 	    end do
 ! 	  end do ! ipp
 ! 	  ! do main multiply
-! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), Ng, 0.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
+! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), &
+! 		     Ng, 0.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
 ! 	  ! do extra multiplies to compensate for missing factor of 2
 ! 	  do ipp=1, nparticles
 ! 	     iparticle1 = iparticle0 + ipp - 1
-! 	     call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
+! 	     call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), &
+! 	                Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
 ! 	  end do
 ! 	  ! now extra columns to account for factor of 2 in some rhs columns
 !        end do ! icomp
@@ -1799,18 +1785,21 @@ diff -b -c -3 -r1.44 cp_ddapc_methods.F
 ! 	  do ipp=1, nparticles
 ! 	    iparticle1 = iparticle0 + ipp - 1
 ! 	    do ig=s_dim,igmax
-! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr) * g_dot_rvec_sin(ig-s_dim+1, iparticle1)
+! 	       lhs((ipp-1)*Nr+1:(ipp-1)*Nr+Nr,ig-s_dim+1) = w(ig) * rho_tot_g%pw_grid%g(icomp,ig) * gfunc(ig,1:Nr) * &
+! 	          g_dot_rvec_sin(ig-s_dim+1, iparticle1)
 ! 	    end do
 ! 	  enddo
 ! 	  ! do main multiply
-! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), Ng, 1.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
+! 	  call DGEMM('N', 'N', nparticles*Nr, Np*Nr, Ng, 1.0D0, lhs(1,1), nparticles*Nr, rhs(1,1), &
+! 	             Ng, 1.0D0, dAm((iparticle0-1)*Nr+1,1,icomp), Np*Nr)
 ! 	  ! do extra multiples to compensate for missing factor of 2
 ! 	  do ipp=1, nparticles
 ! 	    iparticle1 = iparticle0 + ipp - 1
-! 	    call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
+! 	    call DGEMM('N', 'N', Nr, Nr, Ng, 1.0D0, lhs((ipp-1)*Nr+1,1), nparticles*Nr, rhs(1,(iparticle1-1)*Nr+1), &
+! 	               Ng, 1.0D0, dAm((iparticle1-1)*Nr+1,(iparticle1-1)*Nr+1,icomp), Np*Nr)
 ! 	  end do
 !        end do
-! 
+  
 !        DEALLOCATE(rhs,stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 !        DEALLOCATE(lhs,stat=stat)
@@ -1826,7 +1815,7 @@ diff -b -c -3 -r1.44 cp_ddapc_methods.F
   
     !NB deallocate g_dot_rvec_* arrays
     SUBROUTINE cleanup_g_dot_rvec_sin_cos(g_dot_rvec_sin, g_dot_rvec_cos, error)
---- 469,475 ----
+--- 475,481 ----
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
       END IF
       CALL timestop(handle)
