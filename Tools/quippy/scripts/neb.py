@@ -85,7 +85,7 @@ class SubdirCalculator:
         if '%image' in calc_args:
             calc_args = calc_args.replace('%image', str(at.params['image']))
             
-        print 'rank %d running image %d with args_str=%s' % (rank, at.image, calc_args)
+        #print 'rank %d running image %d with args_str=%s' % (rank, at.image, calc_args)
         self.pot.calc(at, args_str=calc_args)
         #at.write('callback_calc_log.xyz', append=True)
 
@@ -97,7 +97,11 @@ class SubdirCalculator:
 
 
 class NEB:
-    def __init__(self, images, k=1.0, climb=False, parallel=False, integrate_forces=False):
+    def __init__(self, images, k=1.0, climb=False, parallel=False, integrate_forces=False, analyse=False):
+
+        if isinstance(images, basestring):
+            images = list(AtomsList(images))
+        
         self.images = images
 
         # NB: Need support for variable spring constants
@@ -121,6 +125,17 @@ class NEB:
         self.spring_force = 'norm'
 
         self.reset()
+        if analyse:
+            for at in self.images:
+                at.set_calculator(StoredValuesCalculator())
+
+            self.get_forces(all=True)
+            self.fit()
+            for i, at in enumerate(self.images):
+                at.add_property('f_real', self.forces['real'][i].T, overwrite=True)
+                at.add_property('f_spring', self.forces['spring'][i].T, overwrite=True)
+                at.add_property('f_neb', self.forces['neb'][i].T, overwrite=True)
+            
 
     def reset(self):
         # Set up empty arrays to store forces, energies and tangents
@@ -265,6 +280,8 @@ class NEB:
         if all:
             self.forces['real'][0] = images[0].get_forces()
             self.forces['real'][-1] = images[-1].get_forces()
+            self.energies[0] = images[0].get_potential_energy()
+            self.energies[-1] = images[-1].get_potential_energy()
 
         if not self.parallel:
             # Do all images - one at a time:
@@ -472,8 +489,16 @@ if __name__ == '__main__':
     p.add_option('--plot', action='store_true', help="Plot NEB miniumum energy profile")
     p.add_option('--plot-color', action='store', help="Color for plot (default black, k)", default="k")
     p.add_option('--plot-label', action='store', help="Label for plot")
+    p.add_option('--nneightol', action='store', type='float', help='Nearest neighbour tolerance', default=1.3)
+    p.add_option('--exec-code', action='store', help="Python code string to execute on all images before starting minimisation or NEB")
+    p.add_option('--exec-file', action='store', help="Python code file to execute on all images before starting minimisation or NEB")
+    p.add_option('--minim', action='store_true', help="Minimise initial and final states before starting NEB")
+    p.add_option('--basename', action='store', help="Stem used to generate output file names")
 
     opt, args = p.parse_args()
+
+    if len(args) != 1:
+        p.error('exactly 1 input file must be provided')
 
     print 'MPI rank %d, size %d' % (rank, size)
 
@@ -484,7 +509,10 @@ if __name__ == '__main__':
     if opt.verbosity is not None:
         verbosity_push(verbosity_of_str(opt.verbosity))
 
-    basename = os.path.splitext(args[0])[0]
+    if opt.basename is not None:
+        basename = opt.basename
+    else:
+        basename = os.path.splitext(args[0])[0]
     images = AtomsList(args)
     images = list(images) # FIXME -- unclear why we have to convert from AtomsList to list
 
@@ -492,6 +520,33 @@ if __name__ == '__main__':
     if have_constraint:
         from ase.constraints import FixAtoms
         constraint = FixAtoms(mask=np.logical_not(images[0].move_mask.view(np.ndarray)))
+
+    if opt.exec_file is not None:
+        for at in images:
+            execfile(opt.exec_file)
+
+    if opt.exec_code is not None:
+        for at in images:
+            exec(opt.exec_code)
+
+    if opt.minim is not None:
+        relax_pot = Potential(opt.init_args, param_filename=opt.param_file)
+
+        if len(images) != 2:
+            p.error("Number of images should be exactly 2 when --minim option present")
+        for at in images:
+            at.set_cutoff(relax_pot.cutoff() + 1.0)
+            at.calc_connect()
+            relax_pot.minim(at, 'cg', 1e-6, 1000, do_pos=True, do_lat=False, calc_args=opt.calc_args)
+
+        del relax_pot
+
+    if not opt.dry_run:
+        quip_pot = Potential(opt.init_args, param_filename=opt.param_file)
+        if rank == 0:
+            quip_pot.print_()
+        images[0].set_calculator(SubdirCalculator(quip_pot, opt.chdir, opt.calc_args))
+        images[-1].set_calculator(SubdirCalculator(quip_pot, opt.chdir, opt.calc_args))
 
     if opt.refine is not None:
        tmp_neb = NEB(images)
@@ -509,35 +564,23 @@ if __name__ == '__main__':
               climb=opt.climb,
               k=opt.k,
               parallel=opt.parallel,
-              integrate_forces=opt.integrate_forces)
+              integrate_forces=opt.integrate_forces,
+              analyse=opt.dry_run)
 
     if have_constraint:
         for image in images:
             image.set_constraint(constraint)
 
-    if not opt.dry_run:
-        quip_pot = Potential(opt.init_args, param_filename=opt.param_file)
-        if rank == 0:
-            quip_pot.print_()
+    for image in images:
+        image.nneightol = opt.nneightol
 
-    neb.images[0].set_calculator(StoredValuesCalculator())
-    neb.images[-1].set_calculator(StoredValuesCalculator())
 
-    for i in range(1,len(neb.images)-1):
+    for i in range(len(neb.images)):
         at = neb.images[i]
         at.params['image'] = i
 
-        if opt.dry_run:
-            at.set_calculator(StoredValuesCalculator())
-        else:
+        if not opt.dry_run:
             at.set_calculator(SubdirCalculator(quip_pot, opt.chdir, opt.calc_args))
-
-    if opt.dry_run:
-        neb.get_forces(all=True)
-        for i in range(len(neb.images)):
-            neb.images[i].add_property('f_real', neb.forces['real'][i].T, overwrite=True)
-            neb.images[i].add_property('f_spring', neb.forces['spring'][i].T, overwrite=True)
-            neb.images[i].add_property('f_neb', neb.forces['neb'][i].T, overwrite=True)
 
     if rank == 0:
         print 'Starting NEB run with %d images' % len(neb.images)
@@ -546,14 +589,9 @@ if __name__ == '__main__':
 
     if opt.eval:
         # actually evaluate end forces as well
-        neb.images[0].set_calculator(SubdirCalculator(quip_pot, opt.chdir, opt.calc_args))
-        neb.images[0].params['image'] = 0
-        neb.images[-1].set_calculator(SubdirCalculator(quip_pot, opt.chdir, opt.calc_args))
-        neb.images[-1].params['image'] = len(neb.images)-1
         neb.get_forces(all=True)
         neb.write('%s-eval.xyz' % basename)
-
-    if not opt.dry_run:
+    elif not opt.dry_run:
         # Optimize:
         if opt.optimizer == 'FIRE':
             from ase.optimize.fire import FIRE
@@ -574,6 +612,8 @@ if __name__ == '__main__':
             optimizer.attach(write_traj, interval=opt.write_traj)
 
         optimizer.run(fmax=opt.fmax)
+        if os.path.exists('%s-optimized.xyz' % basename):
+            os.unlink('%s-optimized.xyz' % basename)
         neb.write('%s-optimized.xyz' % basename)
 
     if opt.plot:
