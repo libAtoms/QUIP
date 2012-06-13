@@ -263,7 +263,7 @@ module dictionary_module
 #endif
   end interface assignment(=)
 
-  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary_get_array, lookup_entry_i, lower_case
+  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary_get_array, lookup_entry_i
 
 contains
 
@@ -2601,24 +2601,6 @@ contains
     endif
 
   end subroutine extend_entries
-
-  !% Convert a word to lower case
-  function lower_case(word)
-    character(*) , intent(in) :: word
-    character(len(word)) :: lower_case
-
-    integer :: i,ic,nlen
-
-    nlen = len(word)
-    do i=1,nlen
-       ic = ichar(word(i:i))
-       if (ic >= 65 .and. ic <= 90) then
-          lower_case(i:i) = char(ic+32)
-       else
-          lower_case(i:i) = char(ic)
-       end if
-    end do
-  end function lower_case
 
   !% OMIT
   function lookup_entry_i(this, key, case_sensitive)
