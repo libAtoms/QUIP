@@ -848,7 +848,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     logical, optional :: do_print !% if true, print configurations using minim's hook()
     type(inoutput), intent(inout), optional, target :: print_inoutput !% inoutput object to print configs to, needed if do_print is true
     type(cinoutput), intent(inout), optional, target :: print_cinoutput !% cinoutput object to print configs to, needed if do_print is true
-    logical, optional :: do_pos, do_lat !% do relaxation w.r.t. positions and/or lattice (is neither is included, do both)
+    logical, optional :: do_pos, do_lat !% do relaxation w.r.t. positions and/or lattice (if neither is included, do both)
     character(len=*), intent(in), optional :: args_str !% arguments to pass to calc()
     real(dp), intent(in), optional :: eps_guess !% eps_guess argument to pass to minim
     real(dp), intent(in), optional :: fire_minim_dt0 !% if using fire minim, initial value for time step
@@ -1948,8 +1948,10 @@ end subroutine pack_pos_dg
 
     minim_hydrostatic_strain = .false.
     call get_param_value(at, "Minim_Hydrostatic_Strain", minim_hydrostatic_strain, error=error)
-    minim_lattice_fix_mask = .false.
+    CLEAR_ERROR(error)
+    minim_lattice_fix = 0.0_dp
     call get_param_value(at, "Minim_Lattice_Fix", minim_lattice_fix, error=error)
+    CLEAR_ERROR(error)
     minim_lattice_fix_mask = (minim_lattice_fix /= 0.0_dp)
 
     ! project onto identity
