@@ -122,7 +122,7 @@ contains
        return
     else ! not an integer, hopefully an element abbreviation
        do i = 1, 116
-	  if (trim(adjustl(atomic_symbol))==trim(ElementName(i))) then
+	  if (trim(lower_case(adjustl(atomic_symbol)))==trim(lower_case(ElementName(i)))) then
 	     atomic_number_from_symbol = i
 	     return
 	  end if
