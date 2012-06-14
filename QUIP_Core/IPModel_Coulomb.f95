@@ -57,6 +57,7 @@ use QUIP_Common_module
 
 use Yukawa_module
 use IPEwald_module
+use Ewald_module
 
 implicit none
 private
@@ -67,6 +68,7 @@ integer, parameter :: IPCoulomb_Method_Direct = 1
 integer, parameter :: IPCoulomb_Method_Yukawa = 2
 integer, parameter :: IPCoulomb_Method_Ewald  = 3
 integer, parameter :: IPCoulomb_Method_DSF    = 4
+integer, parameter :: IPCoulomb_Method_Ewald_NB  = 5
 
 public :: IPModel_Coulomb
 type IPModel_Coulomb
@@ -117,16 +119,36 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   character(len=*), intent(in) :: args_str, param_str
 
   type(Dictionary) :: params
+  character(len=STRING_LENGTH) :: method_str
 
   call Finalise(this)
 
   call initialise(params)
   this%label=''
+  method_str=''
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'method', '', method_str, help_string="If present, method for Coulomb calculation.  Will be overridden by xml parameters if present")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Initialise_str args_str')) then
     call system_abort("IPModel_Coulomb_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
+
+  if (trim(method_str) /= "") then
+      select case(lower_case(trim(method_str)))
+	 case("direct")
+	    this%method = IPCoulomb_Method_Direct
+	 case("yukawa")
+	    this%method = IPCoulomb_Method_Yukawa
+	 case("ewald")
+	    this%method = IPCoulomb_Method_Ewald
+	 case("ewald_nb")
+	    this%method = IPCoulomb_Method_Ewald_NB
+	 case("dsf")
+	    this%method = IPCoulomb_Method_DSF
+	 case default
+	    call system_abort ("IPModel_Coulomb_Initialise_str: method "//trim(method_str)//" unknown")
+      end select
+  end if
 
   call IPModel_Coulomb_read_params_xml(this, param_str)
 
@@ -165,6 +187,8 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    real(dp), dimension(:), pointer :: charge
    real(dp) :: r_scale, E_scale
    logical :: do_rescale_r, do_rescale_E
+
+   real(dp), allocatable :: gamma_mat(:,:)
 
    integer :: i
 
@@ -231,6 +255,16 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)
    case(IPCoulomb_Method_Ewald)
       call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., error=error)
+   case(IPCoulomb_Method_Ewald_NB)
+      allocate(gamma_mat(at%n,at%n))
+      gamma_mat = 0.0_dp
+      call add_madelung_matrix(at%N, at%lattice(:,1), at%lattice(:,2), at%lattice(:,3), at%pos, gamma_mat, redo_lattice=.true.)
+      if (present(f) .or. present(virial) .or. present(local_virial)) then
+	 RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
+      endif
+      if (present(e)) e = sum(matmul(gamma_mat, charge))
+      if (present(local_e)) local_e = matmul(gamma_mat, charge)
+      deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
       call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
    case default
@@ -257,6 +291,8 @@ subroutine IPModel_Coulomb_Print(this, file)
      call Print("IPModel_Coulomb method: Yukawa")
   case(IPCoulomb_Method_Ewald)
      call Print("IPModel_Coulomb method: Ewald")
+  case(IPCoulomb_Method_Ewald_NB)
+     call Print("IPModel_Coulomb method: Ewald_NB")
   case(IPCoulomb_Method_DSF)
      call Print("IPModel_Coulomb method: Damped Shifted Force Coulomb")
   case default
@@ -365,6 +401,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          parse_ip%method = IPCoulomb_Method_Yukawa
       case("ewald")
          parse_ip%method = IPCoulomb_Method_Ewald
+      case("ewald_nb")
+         parse_ip%method = IPCoulomb_Method_Ewald_NB
       case("dsf")
          parse_ip%method = IPCoulomb_Method_DSF
       case default
