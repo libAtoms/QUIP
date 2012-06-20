@@ -537,12 +537,16 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
     rotXYZ[3,1] = 1.0
     E = fidentity(3)
 
+    n_at=0
 
     # Consider first atoms with four neighbours
     for i in frange(at.n):
         if mask is not None and not mask[i]: continue
 
         neighb = at.neighbours[i]
+
+        if (system == 'anatase' and at.z[i] == 22):
+           print i, len(neighb)
 
         if (system == 'tetrahedric' and len(neighb) == 4) or (system == 'anatase' and len(neighb) == 6):
 
@@ -572,6 +576,10 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
                     continue
 
             elif (system == 'anatase' and len(neighb) == 6):
+                #c_vector indicates the direction of the longest O-O bond (among the ones with Ti as a center of symmetry).
+                #It is necessary to identify the crystal orientation. 
+
+                n_at = n_at + 1
 
                 if(c_vector==None):
                     c_vector = fzeros(3)
@@ -596,6 +604,22 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
                 dd[6] = np.linalg.norm(c_local - neighb[i6].diff)
                 #print dd[5], c_local - neighb[i5].diff
                 ind =  np.argsort(dd)
+               
+                dd2 = fzeros(3)
+                dd2[1] = at.distance_min_image( neighb[ind[2]].j , neighb[ind[3]].j )
+                dd2[2] = at.distance_min_image( neighb[ind[2]].j , neighb[ind[4]].j )
+                dd2[3] = at.distance_min_image( neighb[ind[2]].j , neighb[ind[5]].j )
+                ind2 = np.argsort(dd2) 
+                if  ind2[3] == 2:
+                     a1 = ind[4] 
+                     a2 = ind[3] 
+                     ind[4] = a2 
+                     ind[3] = a1
+                elif ind2[3] == 3:
+                     a1 = ind[5] 
+                     a2 = ind[3] 
+                     ind[5] = a2 
+                     ind[3] = a1
 
                 n1 = neighb[ind[1]].diff - neighb[ind[6]].diff
                 n2 = neighb[ind[2]].diff - neighb[ind[3]].diff
@@ -681,12 +705,17 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
             if mask is not None and not mask[i]: continue
 
             neighb = at.neighbours[i]
-            if len(neighb) == 4 or len(neighb) == 0: continue
+            if at.z[i] != 8 or  len(neighb) == 0 : continue
 
             at.strain[:,i] = at.strain[:,[n.j for n in neighb]].mean(axis=2)
             if cij is not None:
                 at.stress[:,i] = at.stress[:,[n.j for n in neighb]].mean(axis=2)
                 compute_stress_eig(i)
+
+            at.strain_energy_density[i] = 0.5*np.dot(at.strain[:,i], at.stress[:,i])
+
+    if (system == 'anatase'):
+        print 'Ti atoms computed', n_at
 
     # Restore original neighbour cutoff
     at.cutoff, at.use_uniform_cutoff = save_cutoff, save_use_uniform_cutoff
