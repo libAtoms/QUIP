@@ -170,13 +170,8 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
 	n_q = 0
 
 
+	! reciprocal space
 	do while (abs(conv_crit-prev_conv_crit) .gt. 1.0e-14_dp) 
-
-	    ! bmag_a(1) = b1mag*(range_a(1)+1)
-	    ! bmag_a(2) = b2mag*(range_a(2)+1)
-	    ! bmag_a(3) = b3mag*(range_a(3)+1)
-	    ! next_increment = minloc(bmag_a)
-	    ! ni = next_increment(1)
 
 	    !!!!!
 	    do ni=1,3
@@ -207,9 +202,9 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
 			t = Hartree*K_dep_factor*cos(phase)
 			madelung_matrix(i,j) = madelung_matrix(i,j) + 2*t
 
-			if (i .ne. j) madelung_matrix(j,i) = madelung_matrix(j,i) + 2*t
+			if (i /= j) madelung_matrix(j,i) = madelung_matrix(j,i) + 2*t
 
-			if (t .ne. 0 .and. abs((2*t)/madelung_matrix(i,j)) .gt. convf) then
+			if (t /= 0.0_dp .and. abs((2.0_dp*t)/madelung_matrix(i,j)) > convf) then
 ! workaround for buggy Cray MTA compiler
 #ifndef cray_mta
 			    use_this_one = .true.
@@ -235,7 +230,7 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
 	    conv_crit = sum(abs(madelung_matrix))
 	    ! print *, "G conv ", range_a, conv_crit, prev_conv_crit
 
-	end do
+	end do ! while not conv
 	! print *, "nv ", nv
 
 
@@ -244,15 +239,12 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
 	prev_conv_crit = sum(abs(madelung_matrix))
 	conv_crit = prev_conv_crit+1.0_dp
 
+	! real space shift=0
 	a1mag = sqrt(sum(a1**2))
 	a2mag = sqrt(sum(a2**2))
 	a3mag = sqrt(sum(a3**2))
 
-	nv = 0
-	range_a = 0
-
 	tv = 0.0_dp
-
 
 	do i_pair = 1, n_pairs
 	    i = pair_list(1,i_pair)
@@ -275,7 +267,10 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
 	conv_crit = sum(abs(madelung_matrix))
 	! print *, "R conv ", range, conv_crit, prev_conv_crit
 
+	nv = 0
+	range_a = 0
 
+	! real space shift /= 0
 	do while (abs(conv_crit-prev_conv_crit) .gt. 1.0e-14_dp) 
 
 	    ! amag_a(1) = a1mag*(range_a(1)+1)
