@@ -10,14 +10,14 @@ program force_gaussian_prediction
    real(dp), dimension(:), allocatable          :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
-   real(dp)                                     :: force(3), feature_inv(3,3)
+   real(dp)                                     :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
    real(dp), dimension(:,:,:), allocatable      :: feature_matrix_normalised, feature_matrix
-   real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, covariance, inv_covariance, distance_ivs
+   real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, covariance, inv_covariance, distance_ivs, error_factor
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
    integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs, func_type, selector
    integer, dimension(:), allocatable           :: distance_index
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
  
  
@@ -44,11 +44,13 @@ program force_gaussian_prediction
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
+   call param_register(params, 'least_sq',    'T', least_sq, "if true, the internal force components will be tranformed to real force using least squares")
    call param_register(params, 'sigma_factor', '1.0', sigma_factor, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
-
+  
+ 
    if (.not. param_read_args(params, task="fgp command line params")) then
         call print("Usage: fgp [options]")
         call system_abort("Confused by command line arguments")
@@ -285,6 +287,7 @@ call print_title('starting the predicting process')
  allocate(inv_covariance(n_relavant_confs,n_relavant_confs))
  allocate(distance_confs(n))
  allocate(distance_index(n))
+ allocate(error_factor(k,3))
  allocate(force_proj_ivs_select(k, n_relavant_confs))
  
 
@@ -308,7 +311,7 @@ call print_title('starting the predicting process')
             call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
             feature_len = norm(feature_matrix_pred(j,:))
 
-            if (feature_len < TOL_REAL)  then
+            if (feature_len <  TOL_REAL)  then
                    feature_len=1.0_dp
                    call print("WARNNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
             endif  
@@ -340,20 +343,25 @@ call print_title('starting the predicting process')
 
       call system_timer('Sorting the DATABASE')
 
+
+
        
+
       ! to establish the Covariance Matrix for DATABASE
       write(*,*) "normalised factor ", distance_confs(1)
+      if (distance_confs(1) > 0.2_dp)    sigma_factor=sigma_factor*distance_confs(1)/0.2_dp
+
       do t = 1, n_relavant_confs
          do j=1, n_relavant_confs
               covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                          feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma*sigma_factor*distance_confs(1)/0.2_dp, func_type=func_type)
+                       feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma*sigma_factor, func_type=func_type)
          enddo
       enddo
 
      !  doing Gaussian Processes, adding an noise "sigma_error" for the teaching data
      if (do_gp) then
      do t=1, n_relavant_confs
-          covariance(t,t) = covariance(t,t) + sigma_error**2
+         covariance(t,t) = covariance(t,t) + sigma_error**2
      enddo
      endif
 
@@ -372,14 +380,14 @@ call print_title('starting the predicting process')
 
 
       do t=1, n_relavant_confs
-           force_proj_ivs_select(:,t)=force_proj_ivs(:,distance_index(t))
+          force_proj_ivs_select(:,t)=force_proj_ivs(:,distance_index(t))
       enddo
       
       ! the prediction covariance
 
       do t= 1, n_relavant_confs
-            covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                                           feature_matrix_normalised(:,:,distance_index(t)), sigma*sigma_factor*distance_confs(1)/0.2_dp, func_type=func_type)
+          covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
+                                          feature_matrix_normalised(:,:,distance_index(t)), sigma*sigma_factor, func_type=func_type)
       enddo
 
 
@@ -391,28 +399,43 @@ call print_title('starting the predicting process')
 
    
      do j=1, k 
-            call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))
+            call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j))//&
+              " : "//(abs(force_proj_ivs_pred(j)-force_proj_target(j))/abs(force_proj_target(j))))   
             ! predicted force: real force: absolute difference 
      enddo
 
-     ! using least-squares to restore the target force in the External Cartesian Space  
-     call inverse(matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred), feature_inv)  
-     force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
+     ! using least-squares to restore the target force in the External Cartesian Space
+     do j=1, k
+        write(*,*) "the feature_matrix_normalised_pred", feature_matrix_normalised_pred(j,:)
+     enddo  
+     feature_inner_matrix=matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred)
+
+     call inverse(feature_inner_matrix, feature_inv) 
+     if (least_sq) then 
+          force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
+     else
+          call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
+     endif
+
      call print("force in external space:"//force)
      call print("the original force:"//force_ptr(:, n_center_atom))
      call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
 
-     if (do_gp) then
-           call print("predicted error :"//( 1.0_dp + sigma_error - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))
-     endif  
+     kappa =cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, &
+                                                feature_matrix_normalised_pred, sigma*sigma_factor, func_type=func_type)
+    
+     error_factor = feature_matrix_normalised_pred .mult. transpose(feature_inv)
+     write(*,*) "Error Factor in real space : ", sum(abs(error_factor(:,1))), sum(abs(error_factor(:,2))), sum(abs(error_factor(:,3)))
+     call print("predicted error : "//sqrt(abs((kappa + sigma_error**2 - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))))
  
-    enddo  ! loop over postions
+     enddo  ! loop over postions
   enddo    ! loop over frames
 
  call finalise(in)
-
+ 
  deallocate(m_grid)
  deallocate(r_grid)
+ deallocate(error_factor)
  deallocate(force_proj_ivs_pred)
  deallocate(feature_matrix_normalised)
  deallocate(feature_matrix_normalised_pred)
@@ -692,5 +715,43 @@ call print_title('starting the predicting process')
     call insertion_sort(distance_confs, idx=distance_index)
 
  end subroutine sorting_configuration
+ 
+ subroutine  real_expection_sampling_components(ivs_direction_matrix, internal_component_matrix, target_force)
+
+    real(dp), intent(in)                        ::  ivs_direction_matrix(:,:), internal_component_matrix(:)
+    real(dp), intent(out)                       ::  target_force(3)
+    real(dp)                                    ::  converting_matrix(3,3), converting_matrix_inv(3,3), force_value_matrix(3), const
+    integer                                     ::  i, j, t, n_counter
+
+    n_counter=0
+ 
+    target_force=0.0_dp
+
+     do i=1,  size(internal_component_matrix)-2
+       converting_matrix(:,1) = ivs_direction_matrix(:,i)
+       force_value_matrix(1)=internal_component_matrix(i)
+       do j=i, size(internal_component_matrix)-1
+           converting_matrix(:,2) = ivs_direction_matrix(:,j)
+           force_value_matrix(2)=internal_component_matrix(j) 
+           do t=j, size(internal_component_matrix)
+               converting_matrix(:,3)=ivs_direction_matrix(:,t)
+               force_value_matrix(3)=internal_component_matrix(t)
+               ! we need a criteria here to decide if doing inverse nexta
+               const=0.0000001_dp
+               if ( (norm(converting_matrix(:,1) .cross. converting_matrix(:,2)) > const) .and. (norm(converting_matrix(:,2) & 
+                         .cross. converting_matrix(:,3)) > const) .and. (norm(converting_matrix(:,3) .cross. converting_matrix(:,1)) > const) ) then
+                  converting_matrix_inv=inverse_svd_threshold(transpose(converting_matrix), 3, 10.0_dp)    
+                  target_force= (converting_matrix_inv .mult. force_value_matrix) 
+                  if (.true.) call print("Target Foce Distribution : "//target_force(1)//" "//target_force(2)//" "//target_force(3)) 
+                  n_counter = n_counter + 1  
+               endif
+           enddo   
+       enddo
+     enddo
+
+ ! expectation value of force in the real cartesian space.
+ ! target_force=target_force /real(n_counter,dp)     
+
+ end subroutine real_expection_sampling_components
 
 end program force_gaussian_prediction
