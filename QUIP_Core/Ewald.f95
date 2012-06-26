@@ -440,6 +440,7 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
     end do
 
     madelung_matrix = madelung_matrix - Hartree * PI/(vol*epsilon**2)
+madelung_matrix = madelung_matrix + 0.61_dp
 
     deallocate(A)
 
