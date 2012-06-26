@@ -17,8 +17,8 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm
    integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relavant_confs, func_type, selector
    integer, dimension(:), allocatable           :: distance_index
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq
-   character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv
+   character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file, iv_params_file
  
  
 
@@ -49,6 +49,8 @@ program force_gaussian_prediction
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
+   call param_register(params, 'fixed_iv', 'F', fixed_iv, "does a file containing the internal vector parameters exist?")
+   call param_register(params, 'iv_params_file', 'iv_params.csv', iv_params_file, "location of internal vectors parameters file (if necessary)")
   
  
    if (.not. param_read_args(params, task="fgp command line params")) then
@@ -60,17 +62,20 @@ program force_gaussian_prediction
    call param_print(params)
    call finalise(params)
 
-   call print_title('Testing the grid')
-   ! generate the r0_m grids
-   call initialise(in, grid_file, INPUT)
-   call read(in, at_in)
-   ! including the tranlational symmetry images
-   call set_cutoff(at_in, r_cut)
-   call calc_connect(at_in)
- 
-   call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
-   call  finalise(in)
-
+   if (fixed_iv) then
+      call load_iv_params(iv_params_file, r_grid, m_grid, k) 
+   else   
+      call print_title('Testing the grid')
+      ! generate the r0_m grids
+      call initialise(in, grid_file, INPUT)
+      call read(in, at_in)
+      ! including the tranlational symmetry images
+      call set_cutoff(at_in, r_cut)
+      call calc_connect(at_in)
+      call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
+      call  finalise(in)
+   end if
+   
   if (add_vector > 0)   k = k + add_vector   
   call print('The number of valid  Internal Vectors :  '//k)
    
@@ -495,6 +500,31 @@ call print_title('starting the predicting process')
      cutoff_m = log(real(preci,dp)*log(10.0_dp)) / log(r_cut/r0)
  endfunction cutoff_m
 
+
+ subroutine load_iv_params(iv_params_file, r_grid, m_grid, k)
+   ! reads r and m from iv_params file. The first line must contain the number of internal vector, and the following lines should be formatted in two columns with commas as spacers (a common csv file)
+   character(STRING_LENGTH), intent(in)                     :: iv_params_file                           
+   real(dp), dimension(:), intent(out), allocatable         :: r_grid, m_grid
+   integer                                                  :: i
+   integer, intent(out)                                     :: k 
+   
+   open (unit=22, file=iv_params_file, status='old', action='read')
+   read(22,*), k
+   write(*,*) "Number of iv: ", k
+   allocate(r_grid(k))
+   allocate(m_grid(k))
+   
+   write(*,*) "Reading internal vectors parameters from file ", iv_params_file
+   
+   do i=1, k
+      read(22,*) r_grid(i), m_grid(i)
+      !read(22,*) m_grid(i)
+      write(*,*) "Vector", i, ":", r_grid(i), m_grid(i)
+   end do
+
+   close(22)
+   
+ end subroutine load_iv_params
 
  subroutine grid_m_r0(at, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
 
