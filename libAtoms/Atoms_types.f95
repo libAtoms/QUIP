@@ -793,6 +793,10 @@ contains
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
 
+    if (present(ptr) .and. present(ptr2)) then
+      RAISE_ERROR('atoms_add_property_real_a got both ptr and ptr2', error)
+    endif
+
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
     if (i /= -1) then
@@ -805,7 +809,7 @@ contains
        end if       
     end if
     
-    if (use_n_cols == 1) then
+    if (use_n_cols == 1 .and. .not. present(ptr2)) then
        call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
        call add_array(this%properties, name, value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
@@ -831,6 +835,10 @@ contains
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
 
+    if (present(ptr) .and. present(ptr2)) then
+      RAISE_ERROR('atoms_add_property_real_a got both ptr and ptr2', error)
+    endif
+
     if (size(value) /= this%Nbuffer) then
        RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
@@ -847,7 +855,7 @@ contains
        end if       
     end if
     
-    if (use_n_cols == 1) then
+    if (use_n_cols == 1 .and. .not. present(ptr2)) then
        call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
        allocate(tmp_value(n_cols, size(value)))

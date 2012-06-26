@@ -186,11 +186,15 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
    real(dp) :: r_scale, E_scale
-   logical :: do_rescale_r, do_rescale_E
+   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z
+
+   real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
+   integer, allocatable :: Z_s(:), Z_u(:)
+   integer :: n_uniq_Zs
 
    real(dp), allocatable :: gamma_mat(:,:)
 
-   integer :: i
+   integer :: i, i_Z
 
    character(len=STRING_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
 
@@ -218,6 +222,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
       call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+      call param_register(params, 'pairwise_by_Z', 'F',do_pairwise_by_Z, help_string="If true, calculate pairwise contributions to local_e broken down by Z")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
@@ -256,14 +261,39 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    case(IPCoulomb_Method_Ewald)
       call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., error=error)
    case(IPCoulomb_Method_Ewald_NB)
-      allocate(gamma_mat(at%n,at%n))
-      gamma_mat = 0.0_dp
-      call add_madelung_matrix(at%N, at%lattice(:,1), at%lattice(:,2), at%lattice(:,3), at%pos, gamma_mat, redo_lattice=.true.)
       if (present(f) .or. present(virial) .or. present(local_virial)) then
 	 RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
       endif
-      if (present(e)) e = sum(matmul(gamma_mat, charge))
-      if (present(local_e)) local_e = matmul(gamma_mat, charge)
+      allocate(gamma_mat(at%n,at%n))
+      gamma_mat = 0.0_dp
+      call add_madelung_matrix(at%N, at%lattice(:,1), at%lattice(:,2), at%lattice(:,3), at%pos, gamma_mat, redo_lattice=.true.)
+call print("gamma_mat")
+call print(gamma_mat)
+      if (present(e)) e = 0.5_dp*sum(charge*matmul(gamma_mat, charge))
+      if (present(local_e)) local_e = 0.5_dp*charge*matmul(gamma_mat, charge)
+      if (do_pairwise_by_Z) then
+	 allocate(Z_s(at%n))
+	 Z_s = at%Z
+	 call sort_array(Z_s)
+	 call uniq(Z_s, Z_u)
+	 deallocate(Z_s)
+
+call print("local_pot "//matmul(gamma_mat, charge))
+
+	 n_uniq_Zs = size(Z_u)
+	 if (has_property(at, "local_e_pairwise_by_Z")) call remove_property(at, "local_e_pairwise_by_Z")
+	 call add_property(at, "local_e_pairwise_by_Z", 0.0_dp, n_cols=n_uniq_Zs, ptr2 = local_e_by_Z)
+	 allocate(local_e_contrib(at%N))
+	 do i=1, at%N
+	    local_e_contrib = 0.5_dp * gamma_mat(i,:) * charge(:) * charge(i)
+call print("local_e_contrib "//i //" "//local_e_contrib)
+	    do i_Z = 1, n_uniq_Zs
+	       local_e_by_Z(i_Z,i) = sum(local_e_contrib, mask=(at%Z == Z_u(i_Z)))
+	    end do
+	 end do
+	 deallocate(local_e_contrib)
+
+      endif
       deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
       call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
