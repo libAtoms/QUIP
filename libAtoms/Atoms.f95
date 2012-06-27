@@ -72,6 +72,7 @@ module  atoms_module
   logical :: printed_stack_warning = .false.   !% OMIT
 
   real(dp), allocatable, target, private, save :: save_prev_pos(:,:), save_orig_pos(:,:), save_smooth_pos(:,:)
+  real(dp) :: save_smooth_lattice(3,3)
   real(dp), allocatable, private, save :: save_orig_CoM(:)
 
   private :: ess_max_len
@@ -3804,28 +3805,35 @@ contains
 
     logical :: my_persistent
     real(dp), pointer :: smooth_pos_p(:,:)
+    real(dp) :: smooth_lattice(3,3)
 
     my_persistent = optional_default(.true., persistent)
 
     if (.not. my_persistent) then
-       if (.not. allocated(save_smooth_pos)) then
+       if (.not. allocated(save_smooth_pos)) then ! first config
 	 allocate(save_smooth_pos(3, at%N))
 	 save_smooth_pos = at%pos
-       else
+	 save_smooth_lattice = at%lattice
+       else ! later config
 	 if (size(save_smooth_pos,2) /= at%N) then
 	    call system_abort("calc_msd got not persistent, but shape(save_smooth_pos) "//shape(save_smooth_pos)//" does not match shape(at%pos) "//shape(at%pos))
 	 endif
        endif
        smooth_pos_p => save_smooth_pos
        call add_property_from_pointer(at, 'smooth_pos', smooth_pos_p)
-    else
+    else ! persistent
        if (.not. assign_pointer(at, 'smooth_pos', smooth_pos_p)) then
 	  call add_property(at, 'smooth_pos', 0.0_dp, n_cols=3, ptr2=smooth_pos_p)
 	  smooth_pos_p = at%pos
        endif
+       call get_param_value(at, 'smooth_lattice', save_smooth_lattice)
     end if
 
     smooth_pos_p = (1.0_dp-mix)*smooth_pos_p + mix*at%pos
+    smooth_lattice = (1.0_dp-mix)*save_smooth_lattice + mix*at%lattice
+    call set_param_value(at, 'smooth_lattice', smooth_lattice)
+
+    if (.not. my_persistent) save_smooth_lattice = smooth_lattice
 
   end subroutine fake_smooth_pos
 
