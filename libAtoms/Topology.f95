@@ -64,7 +64,8 @@ public :: next_motif, find_motif_backbone
              MM_RUN, &
              QMMM_RUN_CORE, &
              QMMM_RUN_EXTENDED, &
-             find_water_monomer, find_A2_monomer, find_AB_monomer
+             find_water_monomer, find_A2_monomer, find_AB_monomer, &
+	     find_molecule_ids
 
 
 !parameters for Run_Type

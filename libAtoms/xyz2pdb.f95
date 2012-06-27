@@ -55,11 +55,11 @@ program xyz2pdb
                                      operator(//), &
                                      INPUT, OUTPUT, &
                                      PRINT_SILENT, PRINT_NORMAL, PRINT_ANAL, PRINT_NERD
-  use table_module,            only: table, finalise, int_part, delete
+  use table_module,            only: table, finalise, int_part, delete, TABLE_STRING_LENGTH
   use topology_module,         only: create_residue_labels_arb_pos, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
-                                     MM_RUN, silica_2body_cutoff
+                                     MM_RUN, silica_2body_cutoff, find_molecule_ids
   use cinoutput_module,        only : read, write
   use error_module
 
@@ -79,7 +79,7 @@ program xyz2pdb
                                    psf_name, &
                                    xsc_name
     integer                     :: len_name
-    integer                     :: center_atom, i
+    integer                     :: center_atom, i, j
     real(dp)                    :: shift(3)
     logical                     :: ex
     logical                     :: have_silica_potential
@@ -90,6 +90,10 @@ program xyz2pdb
     logical                     :: do_sort, do_sort_3
     integer :: error = ERROR_NONE
     character(80) :: sorted_name
+
+    integer, pointer :: mol_id(:), atom_res_number(:)
+    character(len=1), pointer :: atom_type(:,:), atom_type_PDB(:,:), atom_res_name(:,:), atom_mol_name(:,:)
+    character(len=STRING_LENGTH) t_atom_name
 
     call system_initialise(verbosity=PRINT_silent,enable_timing=.true.)
     call verbosity_push(PRINT_NORMAL)
@@ -105,8 +109,8 @@ program xyz2pdb
     call param_register(params_in, 'Center_atom', '0', center_atom, help_string="Which atom should the system be centered around.  0 means no centering.  This is important for programs that can only treat nonperiodic systems not to cut the molecule in half.")
     call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential, help_string="Whether there is a silica unit in the system to be treated with the Danny potential in CP2K.")
     call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="Whether to use the average positions (avgpos) for the pattern matching rather than the instantaneous positions (pos).")
-    call param_register(params_in, 'sort', 'F', do_sort, help_string="Whether to sort atoms by molecule and/or residue.")
-    call param_register(params_in, 'sort_3', 'F', do_sort_3, help_string="Whether to sort atoms by molecule and/or residue.")
+    call param_register(params_in, 'sort', 'F', do_sort, help_string="Whether to sort atoms by molecule and residue.")
+    call param_register(params_in, 'sort_3', 'F', do_sort_3, help_string="If sorting, whether to sort by atom number within residue as well")
     if (.not. param_read_args(params_in)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -151,10 +155,12 @@ program xyz2pdb
        call print_usage
        call system_abort('Missing xyz File '//xyz_file)
     endif
-    inquire(file=trim(Library),exist=ex)
-    if (.not.ex) then
-       call print_usage
-       call system_abort('Missing Residue_Library '//Library)
+    if (trim(Library) /= '-') then
+       inquire(file=trim(Library),exist=ex)
+       if (.not.ex) then
+	  call print_usage
+	  call system_abort('Missing Residue_Library '//Library)
+       endif
     endif
 
    ! read in XYZ
@@ -187,13 +193,38 @@ program xyz2pdb
 
    ! identify residues
     call print('Identifying residues...')
-    call set_value(my_atoms%params,'Library',trim(Library))
-    if (use_avgpos) then
-       call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	find_silica_residue=have_silica_potential,pos_field_for_connectivity="avgpos")
-    else !use actual positions
-       call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	find_silica_residue=have_silica_potential,pos_field_for_connectivity="pos")
+    if (trim(Library) == "-") then
+       call find_molecule_ids(my_atoms)
+       if (.not. assign_pointer(my_atoms, 'mol_id', mol_id)) &
+	 call system_abort("Failed to find mol_id field after find_molecule_ids!")
+       call add_property(my_atoms, 'atom_charge', 0.0_dp)
+       call add_property(my_atoms, 'atom_res_number', 0, ptr=atom_res_number)
+       call add_property(my_atoms, 'atom_type', '          ', ptr=atom_type)
+       call add_property(my_atoms, 'atom_type_PDB', '          ', ptr=atom_type_PDB)
+       call add_property(my_atoms, 'atom_res_name', '          ', ptr=atom_res_name)
+       call add_property(my_atoms, 'atom_mol_name', '          ', ptr=atom_mol_name)
+       atom_res_number = mol_id
+       atom_type(:,:) = my_atoms%species(:,:)
+       atom_type_PDB(:,:) = my_atoms%species(:,:)
+       do i=1, my_atoms%N
+	 t_atom_name = adjustl("R"//atom_res_number(i))
+	 do j=1, len_trim(t_atom_name)
+	    atom_res_name(j,i) = t_atom_name(j:j)
+	 end do
+	 t_atom_name = adjustl("M"//mol_id(i))
+	 do j=1, len_trim(t_atom_name)
+	    atom_mol_name(j,i) = t_atom_name(j:j)
+	 end do
+       end do
+    else
+       call set_value(my_atoms%params,'Library',trim(Library))
+       if (use_avgpos) then
+	  call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+	   find_silica_residue=have_silica_potential,pos_field_for_connectivity="avgpos")
+       else !use actual positions
+	  call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+	   find_silica_residue=have_silica_potential,pos_field_for_connectivity="pos")
+       endif
     endif
 
     if (do_sort) then
@@ -259,7 +290,7 @@ contains
     call print('Usage: xyz2pdb File=filename.xyz [Residue_Library=library] [Print_XSC] [Delete_Metal_Connections=T] [Neighbour_tolerance=1.2] [Center_atom=num]')
     call print('')
     call print('  File=filename,        where your input file has extension .xyz')
-    call print('  [Residue_Library=library],  optional, default is protein_res.CHARMM.lib')
+    call print('  Residue_Library=library,  where the residue library is, - for no library, just use mol_id based on connectivity')
     call print('  [Print_XSC],          optional, whether to print NAMD cell file, default is false')
     call print('  [Delete_Metal_Connections=T],  optional, default is true, only calculates connection for H,C,N,O,Si,P,S,Cl')
     call print('                        should work fine - only modify if you want bonds with other elements in your structure')
