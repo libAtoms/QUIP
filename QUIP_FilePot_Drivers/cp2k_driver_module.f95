@@ -1186,7 +1186,7 @@ contains
 
     integer, pointer :: reordering_index_p(:)
     real(dp), pointer :: qm_charges_p(:)
-    real(dp) :: at_net_charge
+    real(dp) :: at_population, at_net_charge
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
     integer :: i, at_i
@@ -1217,7 +1217,8 @@ contains
       end do
       do i=1, at%N
 	t_line = read_line(t_io)
-	read (unit=t_line,fmt=*) at_i, at_species, at_kind, qm_charges_p(i), at_net_charge
+	read (unit=t_line,fmt=*) at_i, at_species, at_kind, at_population, at_net_charge
+	qm_charges_p(i) = at_net_charge
       end do
       call finalise(t_io)
     endif
