@@ -2133,7 +2133,7 @@ subroutine anatase(at, a, c, u)
                                 match_indices(:), depth_real(:)
     integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom, ji
     logical                  :: match
-    type(table)              :: neighbours, core, num_species_at, num_species_motif
+    type(table)              :: neighbours, core_raw, core, num_species_at, num_species_motif
     logical, allocatable :: assigned_to_motif(:)
     logical :: do_append
     logical :: do_find_all_possible_matches
@@ -2143,8 +2143,13 @@ subroutine anatase(at, a, c, u)
 !    logical :: use_hysteretic_neighbours
 !    real(dp) :: cutoff
 
+
     call print("find_motif", verbosity=PRINT_ANAL)
     call print(motif, verbosity=PRINT_ANAL)
+    if (present(mask)) then
+      call print("mask", verbosity=PRINT_ANAL)
+      call print(mask, verbosity=PRINT_ANAL)
+    endif
 
     my_nneighb_only = optional_default(.true., nneighb_only)
 
@@ -2210,7 +2215,7 @@ subroutine anatase(at, a, c, u)
     assigned_to_motif = .false.
 
     !Loop over all atoms looking for candidates for the optimum atom 'opt_atom'
-    call allocate(core,4,0,0,0,1)
+    call allocate(core_raw,4,0,0,0,1)
     allocate(neighbour_Z(count(A(opt_atom,:)==1)))
     neighbour_Z = pack(Z,(A(opt_atom,:)==1))
 
@@ -2269,9 +2274,16 @@ subroutine anatase(at, a, c, u)
        !---------------------
 
        ! Grow a cluster around the real atom i which is  max_depth hops deep
-       call wipe(core)
-       call append(core,(/i,0,0,0/))
-       call bfs_grow(at,core,max_depth,nneighb_only = nneighb_only, min_images_only = .true.,alt_connect=alt_connect)
+       call wipe(core_raw)
+       call append(core_raw,(/i,0,0,0/))
+       call bfs_grow(at,core_raw,max_depth,nneighb_only = nneighb_only, min_images_only = .true.,alt_connect=alt_connect)
+       call finalise(core)
+       if (present(mask)) then
+	 call select(core, core_raw, mask(int_part(core_raw,1)))
+       else
+         core = core_raw
+       end if
+      
 
        !XXXXXXXXXXXXXXXXXXXX
        !X ESCAPE ROUTE 3
