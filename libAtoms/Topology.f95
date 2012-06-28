@@ -1049,9 +1049,9 @@ integer :: j,atom_i, ji
     call get_lattice_params(at%lattice, cell_lengths(1), cell_lengths(2), cell_lengths(3), &
 					cell_angles(1), cell_angles(2), cell_angles(3))
     sor=''
-    write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), cell_angles(:), ' P 1           1'
+    write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), DEGREES_PER_RADIAN*cell_angles(:), ' P 1           1'
     call print(sor, file=pdb)
-
+    
 !    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
 !        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
 !       qm_flag_index = get_property(at,'cluster_mark')
