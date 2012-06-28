@@ -43,7 +43,7 @@ PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_ne
   structure_analysis_traj mean_var_correl angle_distr coordination_number \
   make_bulk_supercell \
   extract_cv extract_EVB mean_var_decorrelated_err rings UI_integrate solvate \
-  merge_traj test_ran diffusion
+  merge_traj test_ran diffusion xyz2residue_library
 
 ifeq (${HAVE_TB},1)
   PROGRAMS += make_k_mesh
