@@ -83,7 +83,7 @@ program xyz2pdb
     real(dp)                    :: shift(3)
     logical                     :: ex
     logical                     :: have_silica_potential
-    logical                     :: use_avgpos
+    logical                     :: use_avgpos, Print_PSF
     integer :: at_i, iri_i
     integer, pointer :: sort_index_p(:)
     integer, allocatable :: rev_sort_index(:)
@@ -111,6 +111,7 @@ program xyz2pdb
     call param_register(params_in, 'use_avgpos', 'T', use_avgpos, help_string="Whether to use the average positions (avgpos) for the pattern matching rather than the instantaneous positions (pos).")
     call param_register(params_in, 'sort', 'F', do_sort, help_string="Whether to sort atoms by molecule and residue.")
     call param_register(params_in, 'sort_3', 'F', do_sort_3, help_string="If sorting, whether to sort by atom number within residue as well")
+    call param_register(params_in, 'Print_PSF', 'T', Print_PSF, help_string="Write PSF file")
     if (.not. param_read_args(params_in)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -269,7 +270,9 @@ program xyz2pdb
 
    ! print output PDB and PSF files
     call print('Writing files with CHARMM format...')
-    call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+    if (Print_PSF) then
+       call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+    endif
     call write_brookhaven_pdb_file(my_atoms,trim(pdb_name))
     if (Print_XSC) call write_xsc_file(my_atoms,xsc_file=trim(xsc_name))
     if (do_sort) then
