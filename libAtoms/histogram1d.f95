@@ -98,7 +98,7 @@ module histogram1d_module
      real(DP), allocatable  :: h1(:)      ! histogram with norm 1 (number of values which have been added to each bin)
 
      integer                :: ng
-     real(DP), pointer      :: smoothing_func(:)
+     real(DP), pointer      :: smoothing_func(:) => NULL()
    
   endtype Histogram1D
 
@@ -136,7 +136,7 @@ module histogram1d_module
   interface add
      module procedure histogram1d_add, histogram1d_add_vals, histogram1d_add_vals_norms
      module procedure histogram1d_add_vals_mask, histogram1d_add_vals_norm_mask, histogram1d_add_vals_norms_mask
-     module procedure histogram1d_add_histogram
+     module procedure histogram1d_add_histogram, histogram1d_add_mult_histograms
   endinterface
 
   public :: add_range
@@ -204,12 +204,12 @@ contains
        periodic)
     implicit none
 
-    type(Histogram1D), intent(out)  :: this
-    integer, intent(in)             :: n
-    real(DP), intent(in)            :: min_b
-    real(DP), intent(in)            :: max_b
-    real(DP), intent(in), optional  :: sigma
-    logical, intent(in), optional   :: periodic
+    type(Histogram1D), intent(inout)  :: this
+    integer, intent(in)               :: n
+    real(DP), intent(in)              :: min_b
+    real(DP), intent(in)              :: max_b
+    real(DP), intent(in), optional    :: sigma
+    logical, intent(in), optional     :: periodic
 
     ! ---
 
@@ -257,7 +257,7 @@ contains
 
 
   !% Initialize the histogram
-  elemental subroutine histogram1d_initialise_from_histogram(this, that)
+  subroutine histogram1d_initialise_from_histogram(this, that)
     implicit none
 
     type(Histogram1D), intent(out)  :: this
@@ -377,6 +377,7 @@ contains
 
     ! ---
 
+#if 0
     if (allocated(this%x)) then
        deallocate(this%x)
     endif
@@ -393,6 +394,7 @@ contains
     if (associated(this%smoothing_func)) then
        deallocate(this%smoothing_func)
     endif
+#endif
 
   endsubroutine histogram1d_finalise
 
@@ -1590,6 +1592,32 @@ contains
     endif
 
   endsubroutine histogram1d_add_histogram
+
+
+  !% Add a two vectors of multiple histograms histograms
+  subroutine histogram1d_add_mult_histograms(this, that, fac)
+    implicit none
+
+    type(Histogram1D), intent(inout)  :: this(:)
+    type(Histogram1D), intent(in)     :: that(lbound(this,1):ubound(this,1))
+    real(DP), intent(in), optional    :: fac
+
+    ! ---
+
+    integer  :: i
+
+    ! ---
+
+    do i = lbound(this,1), ubound(this,1)
+       this(i)%h1  = this(i)%h1 + that(i)%h1
+       if (present(fac)) then
+          this(i)%h   = this(i)%h + fac*that(i)%h
+       else
+          this(i)%h   = this(i)%h + that(i)%h
+       endif
+    enddo
+
+  endsubroutine histogram1d_add_mult_histograms
 
 
   !% Compute average value in each bin (does only makes sense if
