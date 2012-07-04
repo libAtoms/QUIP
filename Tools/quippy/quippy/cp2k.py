@@ -21,7 +21,7 @@ import os
 import numpy as np
 from quippy.system import verbosity_push, verbosity_pop, PRINT_SILENT
 from quippy.atoms import Atoms, atoms_reader
-from quippy.farray import fzeros, s2a, farray, fenumerate
+from quippy.farray import fzeros, s2a, farray, fenumerate, frange
 from quippy.table import TABLE_STRING_LENGTH
 from quippy.units import MASSCONVERT, HARTREE, BOHR
 from quippy.clusters import HYBRID_NO_MARK
