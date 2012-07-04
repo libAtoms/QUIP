@@ -313,8 +313,8 @@ program mean_var_correl
 use libatoms_module
 use mean_var_correl_util_mod
 implicit none
-  integer :: n_bins, n_data, i, j, bin_i
-  real(dp), allocatable :: data(:,:)
+  integer :: n_bins, n_data, i, j, bin_i, skip
+  real(dp), allocatable :: data(:,:), dummy(:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_correlation_var_effective_N, do_summed_ac_effective_N, do_sliding_window_effective_N, do_binning_effective_N, do_exp_smoothing
@@ -338,6 +338,7 @@ implicit none
   call initialise(cli_params)
   call param_register(cli_params, "infile", "stdin", infile_name, help_string="input filename")
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
+  call param_register(cli_params, "skip", "0", skip, help_string="skip this many initial frames")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
   call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
   call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
@@ -405,10 +406,19 @@ implicit none
   do i=1, n_bins
     bin_labels(i) = read_line(infile)
   end do
+  if(skip > 0) then
+     allocate(dummy(n_bins))
+     do i=1,skip
+        call read_ascii(infile, dummy(:))
+     end do
+     n_data = n_data-skip
+     deallocate(dummy)
+  end if
   allocate(data(n_bins, n_data))
   do i=1, n_data
     call read_ascii(infile, data(:,i))
   end do
+
 
   sz = size(data, other_index)
   r_sz = size(data, reduction_index)
