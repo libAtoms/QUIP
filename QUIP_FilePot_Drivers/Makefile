@@ -52,7 +52,11 @@ ifeq ($(HAVE_CP2K), 1)
    CLEAN_OBJS += ${CP2K_LIB_OBJS}
    CLEAN_LIBS += libcp2k_driver.a
 libcp2k_driver.a: ${CP2K_LIB_OBJS}
-	${AR} ${AR_ADD} libcp2k_driver.a ${CP2K_LIB_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libcp2k_driver.a ${CP2K_LIB_OBJS}
+else
+	${AR} ${AR_ADD} libcp2k_driver.a $?
+endif
 cp2k_driver : % :  libcp2k_driver.a %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o -lcp2k_driver ${LIBS} ${LINKOPTS}
 else

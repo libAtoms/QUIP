@@ -58,7 +58,11 @@ endif
 
 
 libquiputils.a:  ${QUIP_UTILS_OBJS}
-	${AR} ${AR_ADD} libquiputils.a ${QUIP_UTILS_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libquiputils.a ${QUIP_UTILS_OBJS}
+else
+	${AR} ${AR_ADD} libquiputils.a $?
+endif
 
 clean:
 	rm -f *.o *.mod *.mod.save libquiputils.a

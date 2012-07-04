@@ -106,7 +106,11 @@ LIBATOMS_OBJS = ${LIBATOMS_F77_OBJS} ${LIBATOMS_F95_OBJS} ${LIBATOMS_C_OBJS}
 LIBS = -L. -latoms
 
 libatoms.a: ${LIBATOMS_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libatoms.a ${LIBATOMS_OBJS}
+else
 	${AR} ${AR_ADD} libatoms.a $?
+endif
 
 clean:
 	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
