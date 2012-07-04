@@ -530,7 +530,7 @@ contains
    if (use_QMMM) then
       call get_qm_list(at, use_buffer, trim(run_suffix), trim(link_template_file), qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 		       link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-		       link_template_a, link_template_n_lines, qmmm_link_type, error)
+		       link_template_a, link_template_n_lines, qmmm_link_type, qmmm_link_qm_kind_z, error)
       PASS_ERROR(error)
    endif
 
@@ -1663,7 +1663,7 @@ contains
 
    subroutine get_qm_list(at, use_buffer, run_suffix, link_template_file, qm_list, old_qm_list, qm_list_a, old_qm_list_a, &
 			  link_list_a, old_link_list_a, qm_and_link_list_a, rev_sort_index, cut_bonds, cut_bonds_p, old_cut_bonds, old_cut_bonds_p, &
-			  link_template_a, link_template_n_lines, qmmm_link_type, error)
+			  link_template_a, link_template_n_lines, qmmm_link_type, qmmm_link_qm_kind_z, error)
       type(Atoms), intent(inout) :: at
       logical, intent(in) :: use_buffer
       character(len=*), intent(in) :: run_suffix, link_template_file, qmmm_link_type
@@ -1674,6 +1674,7 @@ contains
       integer, pointer, intent(inout) :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
       character(len=STRING_LENGTH), allocatable, intent(inout) :: link_template_a(:)
       integer, intent(inout) :: link_template_n_lines
+      integer, intent(in) :: qmmm_link_qm_kind_z
       integer, intent(out), optional :: error
 
       integer :: i_inner, i_outer, j
@@ -1706,6 +1707,9 @@ contains
 		if (cut_bonds_p(j,i_inner) == 0) exit
 		! correct for new atom indices resulting from sorting of atoms
 		i_outer = rev_sort_index(cut_bonds_p(j,i_inner))
+
+                ! If we're doing QM_KIND linking, skip bonds which do not originate from the correct species
+                if (trim(qmmm_link_type) == "QM_KIND" .and. at%Z(i_inner) /= qmmm_link_qm_kind_z) cycle
 		call append(cut_bonds,(/i_inner,i_outer/))
 	     enddo
 	  enddo
