@@ -40,7 +40,11 @@ GP_TEACH_F95_OBJS = ${addsuffix .o, ${GP_TEACH_F95_FILES}}
 .PHONY : clean allclean depend doc
 
 libgap_teach.a: ${GP_TEACH_F95_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libgap_teach.a ${GP_TEACH_F95_OBJS}
+else
 	${AR} ${AR_ADD} libgap_teach.a $?
+endif
 
 clean:
 	rm -f *.o *.mod *.mod.save libgap_teach.a

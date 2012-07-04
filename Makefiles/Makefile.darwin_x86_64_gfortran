@@ -48,7 +48,7 @@ F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-un
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
 CFLAGS += -fPIC
 
-AR_ADD = src
+LIBTOOL = libtool -static
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 

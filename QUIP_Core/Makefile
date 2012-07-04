@@ -95,7 +95,11 @@ TARGETS = ${TEST_TARGETS}
 .PHONY : clean allclean depend doc
 
 libquip_core.a: ${QUIP_OBJS}
-	${AR} ${AR_ADD} libquip_core.a ${QUIP_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libquip_core.a ${QUIP_OBJS}
+else
+	${AR} ${AR_ADD} libquip_core.a $?
+endif
 
 Potential.o: \
 	Potential_Hybrid_utils.f95 \

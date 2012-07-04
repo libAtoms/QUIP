@@ -40,7 +40,11 @@ GP_PREDICT_F95_OBJS = ${addsuffix .o, ${GP_PREDICT_F95_FILES}}
 .PHONY : clean allclean depend doc
 
 libgap_predict.a: ${GP_PREDICT_F95_OBJS}
+ifneq (${LIBTOOL},)
+	${LIBTOOL} -o libgap_predict.a ${GP_PREDICT_F95_OBJS}
+else
 	${AR} ${AR_ADD} libgap_predict.a $?
+endif
 
 clean:
 	rm -f *.o *.mod *.mod.save libgap_predict.a
