@@ -313,7 +313,7 @@ program mean_var_correl
 use libatoms_module
 use mean_var_correl_util_mod
 implicit none
-  integer :: n_bins, n_data, i, j, bin_i, skip
+  integer :: n_bins, n_data, i, j, bin_i, skip, max_frame
   real(dp), allocatable :: data(:,:), dummy(:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
@@ -339,6 +339,7 @@ implicit none
   call param_register(cli_params, "infile", "stdin", infile_name, help_string="input filename")
   call param_register(cli_params, "outfile", "stdout", outfile_name, help_string="output filename")
   call param_register(cli_params, "skip", "0", skip, help_string="skip this many initial frames")
+  call param_register(cli_params, "max_frame", "0", max_frame, help_string="stop at this frame. if 0, continue until end")
   call param_register(cli_params, "mean", "F", do_mean, help_string="calculate mean")
   call param_register(cli_params, "exp_smoothing", "F", do_exp_smoothing, help_string="calculate exponentially smoothed data")
   call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
@@ -406,6 +407,9 @@ implicit none
   do i=1, n_bins
     bin_labels(i) = read_line(infile)
   end do
+  if(max_frame > 0 .and. max_frame <= n_data) then
+     n_data = max_frame
+  end if
   if(skip > 0) then
      allocate(dummy(n_bins))
      do i=1,skip
