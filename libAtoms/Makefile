@@ -80,6 +80,7 @@ LIBATOMS_F95_FILES = \
   ringstat \
   histogram1d \
   find_surface_atoms \
+  gp_simple \
   libAtoms \
   libAtoms_misc_utils \
   libAtoms_utils_no_module
