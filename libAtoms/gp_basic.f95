@@ -37,7 +37,7 @@ use system_module
 use linearalgebra_module
 implicit none
 
-public :: gp_basic, initialise, finalise, predict, predict_var, predict_grad
+public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad
 
 type gp_basic
    real(dp) :: l2, f_var
@@ -57,20 +57,20 @@ interface finalise
    module procedure gp_basic_finalise
 end interface finalise
 
-!% predict a function value from a gp
-interface predict
-   module procedure predict_r, predict_rr
-end interface predict
+!% f_predict a function value from a gp
+interface f_predict
+   module procedure f_predict_r, f_predict_rr
+end interface f_predict
 
-!% predict a gradient of a function value from a gp
-interface predict_grad
-   module procedure predict_grad_r
-end interface predict_grad
+!% f_predict a gradient of a function value from a gp
+interface f_predict_grad
+   module procedure f_predict_grad_r
+end interface f_predict_grad
 
-!% predict a function variance from a gp
-interface predict_var
-   module procedure predict_var_r, predict_var_rr
-end interface predict_var
+!% f_predict a function variance from a gp
+interface f_predict_var
+   module procedure f_predict_var_r, f_predict_var_rr
+end interface f_predict_var
 
 interface ff_kernel
    module procedure ff_kernel_r_r, ff_kernel_r_rr
@@ -91,7 +91,6 @@ subroutine gp_basic_initialise(self, f_r, f_v, f_n, len_scale, f_var, error)
    real(dp), allocatable :: Cmat(:,:)
    integer :: i
 
-print *, "init 00"
    INIT_ERROR(error)
 
    call finalise(self)
@@ -131,12 +130,10 @@ print *, "init 00"
    allocate(self%Cmat_inv_k(self%n_teach))
 
    self%initialised = .true.
-print *, "init 100"
 end subroutine gp_basic_initialise
 
 subroutine gp_basic_finalise(self)
    type(gp_basic), intent(inout) :: self !% object for GP
-print *, "fin 00"
 
    if (self%initialised) then
       if (allocated(self%f_r)) deallocate(self%f_r)
@@ -153,88 +150,87 @@ print *, "fin 00"
    self%n_f = 0
    self%n_teach = 0
    self%initialised = .false.
-print *, "fin 100"
 end subroutine gp_basic_finalise
 
-function predict_r(self, r)
+function f_predict_r(self, r)
    type(gp_basic), intent(inout) :: self !% object for GP
-   real(dp), intent(in) :: r !% position at which to predict value
-   real(dp) :: predict_r
+   real(dp), intent(in) :: r !% position at which to f_predict value
+   real(dp) :: f_predict_r
 
    if (.not. self%initialised) then
-      predict_r = 0.0_dp
+      f_predict_r = 0.0_dp
       return
    endif
 
    self%k(:) = ff_kernel(r, self%f_r(:), self%f_var, self%l2)
-   predict_r = dot_product(self%k, self%Cmat_inv_v)
-end function predict_r
+   f_predict_r = dot_product(self%k, self%Cmat_inv_v)
+end function f_predict_r
 
-function predict_rr(self, r)
+function f_predict_rr(self, r)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
-   real(dp) :: predict_rr(size(r))
+   real(dp) :: f_predict_rr(size(r))
 
    integer :: i
 
    if (.not. self%initialised) then
-      predict_rr = 0.0_dp
+      f_predict_rr = 0.0_dp
       return
    endif
 
    do i=1, size(r)
       self%k(:) = ff_kernel(r(i), self%f_r(:), self%f_var, self%l2)
-      predict_rr(i) = dot_product(self%k, self%Cmat_inv_v)
+      f_predict_rr(i) = dot_product(self%k, self%Cmat_inv_v)
    end do
-end function predict_rr
+end function f_predict_rr
 
-function predict_var_r(self, r)
+function f_predict_var_r(self, r)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r
-   real(dp) :: predict_var_r
+   real(dp) :: f_predict_var_r
 
    if (.not. self%initialised) then
-      predict_var_r = 0.0_dp
+      f_predict_var_r = 0.0_dp
       return
    endif
 
    self%k(:) = ff_kernel(r, self%f_r(:), self%f_var, self%l2)
    call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
-   predict_var_r = self%f_var - dot_product(self%k, self%Cmat_inv_k)
-end function predict_var_r
+   f_predict_var_r = self%f_var - dot_product(self%k, self%Cmat_inv_k)
+end function f_predict_var_r
 
-function predict_var_rr(self, r)
+function f_predict_var_rr(self, r)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
-   real(dp) :: predict_var_rr(size(r))
+   real(dp) :: f_predict_var_rr(size(r))
 
    integer :: i
 
    if (.not. self%initialised) then
-      predict_var_rr = 0.0_dp
+      f_predict_var_rr = 0.0_dp
       return
    endif
 
    do i=1, size(r)
       self%k(:) = ff_kernel(r(i), self%f_r(:), self%f_var, self%l2)
       call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
-      predict_var_rr(i) = self%f_var - dot_product(self%Cmat_inv_k, self%Cmat_inv_k)
+      f_predict_var_rr(i) = self%f_var - dot_product(self%Cmat_inv_k, self%Cmat_inv_k)
    end do
-end function predict_var_rr
+end function f_predict_var_rr
 
-function predict_grad_r(self, r)
+function f_predict_grad_r(self, r)
    type(gp_basic), intent(inout) :: self !% object for GP
-   real(dp), intent(in) :: r !% position at which to predict value
-   real(dp) :: predict_grad_r
+   real(dp), intent(in) :: r !% position at which to f_predict value
+   real(dp) :: f_predict_grad_r
 
    if (.not. self%initialised) then
-      predict_grad_r = 0.0_dp
+      f_predict_grad_r = 0.0_dp
       return
    endif
 
    self%k(:) = df_kernel(r, self%f_r(:), self%f_var, self%l2)
-   predict_grad_r = dot_product(self%k, self%Cmat_inv_v)
-end function predict_grad_r
+   f_predict_grad_r = dot_product(self%k, self%Cmat_inv_v)
+end function f_predict_grad_r
 
 
 function ff_kernel_r_r(x1, x2, f_var, l2)
