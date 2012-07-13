@@ -70,5 +70,5 @@ module libAtoms_module
   use ringstat_module
   use histogram1d_module
   use domaindecomposition_module
-  use gp_simple_module
+  use gp_basic_module
 end module libAtoms_module

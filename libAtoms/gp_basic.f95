@@ -32,29 +32,29 @@
 !% A simple Gaussian process module for 1-D functions learned from samples of
 !% their values
 
-module gp_simple_module
+module gp_basic_module
 use system_module
 use linearalgebra_module
 implicit none
 
-public :: gp_simple, initialise, finalise, predict, predict_var, predict_grad
+public :: gp_basic, initialise, finalise, predict, predict_var, predict_grad
 
-type gp_simple
+type gp_basic
    real(dp) :: l2, f_var
    integer  :: n_f, n_teach
    type(LA_Matrix), allocatable :: Cmat(:)
    real(dp), allocatable :: f_r(:), Cmat_inv_v(:), k(:), Cmat_inv_k(:)
    logical :: initialised = .false.
-end type gp_simple
+end type gp_basic
 
-!% initialise (and teach) a gp_simple
+!% initialise (and teach) a gp_basic
 interface initialise
-   module procedure gp_simple_initialise
+   module procedure gp_basic_initialise
 end interface initialise
 
-!% finalise and deallocate a gp_simple
+!% finalise and deallocate a gp_basic
 interface finalise
-   module procedure gp_simple_finalise
+   module procedure gp_basic_finalise
 end interface finalise
 
 !% predict a function value from a gp
@@ -82,8 +82,8 @@ end interface df_kernel
 
 contains
 
-subroutine gp_simple_initialise(self, f_r, f_v, f_n, len_scale, f_var, error)
-   type(gp_simple), intent(inout) :: self !% object to store GP
+subroutine gp_basic_initialise(self, f_r, f_v, f_n, len_scale, f_var, error)
+   type(gp_basic), intent(inout) :: self !% object to store GP
    real(dp), intent(in) :: f_r(:), f_v(:), f_n(:) !% arrays of function positions, values, noise 
    real(dp), intent(in) :: len_scale, f_var !% length scale and variance prior for GP
    integer, optional, intent(out) :: error !% error status
@@ -132,10 +132,10 @@ print *, "init 00"
 
    self%initialised = .true.
 print *, "init 100"
-end subroutine gp_simple_initialise
+end subroutine gp_basic_initialise
 
-subroutine gp_simple_finalise(self)
-   type(gp_simple), intent(inout) :: self !% object for GP
+subroutine gp_basic_finalise(self)
+   type(gp_basic), intent(inout) :: self !% object for GP
 print *, "fin 00"
 
    if (self%initialised) then
@@ -154,10 +154,10 @@ print *, "fin 00"
    self%n_teach = 0
    self%initialised = .false.
 print *, "fin 100"
-end subroutine gp_simple_finalise
+end subroutine gp_basic_finalise
 
 function predict_r(self, r)
-   type(gp_simple), intent(inout) :: self !% object for GP
+   type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r !% position at which to predict value
    real(dp) :: predict_r
 
@@ -171,7 +171,7 @@ function predict_r(self, r)
 end function predict_r
 
 function predict_rr(self, r)
-   type(gp_simple), intent(inout) :: self
+   type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
    real(dp) :: predict_rr(size(r))
 
@@ -189,7 +189,7 @@ function predict_rr(self, r)
 end function predict_rr
 
 function predict_var_r(self, r)
-   type(gp_simple), intent(inout) :: self
+   type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r
    real(dp) :: predict_var_r
 
@@ -204,7 +204,7 @@ function predict_var_r(self, r)
 end function predict_var_r
 
 function predict_var_rr(self, r)
-   type(gp_simple), intent(inout) :: self
+   type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
    real(dp) :: predict_var_rr(size(r))
 
@@ -223,7 +223,7 @@ function predict_var_rr(self, r)
 end function predict_var_rr
 
 function predict_grad_r(self, r)
-   type(gp_simple), intent(inout) :: self !% object for GP
+   type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r !% position at which to predict value
    real(dp) :: predict_grad_r
 
@@ -265,4 +265,4 @@ function df_kernel_r_rr(x1, x2, f_var, l2)
    df_kernel_r_rr(:) = (x2(:)-x1)/l2 * ff_kernel(x1, x2, f_var, l2)
 end function df_kernel_r_rr
 
-end module gp_simple_module
+end module gp_basic_module
