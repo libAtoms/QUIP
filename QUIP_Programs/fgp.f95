@@ -335,7 +335,7 @@ if (fix_sigma) then
       open(unit=1, file='sigma.dat')
       write(1,*) sigma
       close(unit=1)
-   endif                                                            ! do statistics on the distance matrix
+   endif                                !  statistics on the distance matrix
 
 else 
    theta_array=theta
@@ -469,22 +469,24 @@ do i=1, in%n_frame
       call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, sigma, distance_confs, distance_index)
       ! call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
       !     distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
-      call print("Detail on the teaching procedure")
-      do ii = 1, n_relevant_confs
-         call print("Index: "//distance_index(ii)//" Distance: "//distance_confs(ii))
-         call print("Force in IVs space: "//force_proj_ivs(:,distance_index(ii)))
-      enddo
-      
+
+      if (.false.) then   ! massive output, only for testing use
+         call print("Detail on the teaching procedure")
+         do ii = 1, n_relevant_confs
+            call print("Index: "//distance_index(ii)//" Distance: "//distance_confs(ii))
+            call print("Force in IVs space: "//force_proj_ivs(:,distance_index(ii)))
+         enddo
+      endif
       call system_timer('Sorting the DATABASE')
-      
 
       if (local_ml_optim_size > 0) call print("Optimise: "//local_ml_optim_size)
-!!! ML optimisation here: first calculates the necessary input matrices, then optimises
+      !!! ML optimisation here: first calculates the necessary input matrices, then optimises
       if (local_ml_optim_size > 0) then
          call print("Local Maximum Likelihood selected")
          do t = 1, local_ml_optim_size  ! loop to generate the force_cov_mat and the distance_matrix of the restricted subset of the LS
             do j = t, local_ml_optim_size
-               force_covariance_matrix(t,j) = dot_product(force_proj_ivs(:,distance_index(t)), force_proj_ivs(:,distance_index(j))) ! check if possible, may be a wreck because IVs make absolute representation of the force impossible 
+               force_covariance_matrix(t,j) = dot_product(force_proj_ivs(:,distance_index(t)), force_proj_ivs(:,distance_index(j))) 
+               ! check if possible, may be a wreck because IVs make absolute representation of the force impossible 
                force_covariance_matrix(j,t) = force_covariance_matrix(t,j)
                covariance_tiny(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
                     feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type, &
@@ -497,10 +499,10 @@ do i=1, in%n_frame
       endif
       
       
-      
       ! Generate covariance matrix
       do t = 1, n_relevant_confs  ! loop to generate the covariance matrix of the learning set
-         covariance(t,t) = 1.0_dp ! diagonal
+         covariance(t,t) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(t)), &
+                feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
          if (do_gp) covariance(t,t) = covariance(t,t) + sigma_error**2
          do j = t+1, n_relevant_confs ! above diagonal
             covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
@@ -517,7 +519,7 @@ do i=1, in%n_frame
          ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
          inv_covariance = inverse_svd_threshold(covariance, n_relevant_confs, thresh)
       endif
-      !call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
+      ! call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
       
       call system_timer('Inverting the Covariance Matrix')
       
@@ -530,7 +532,7 @@ do i=1, in%n_frame
       
       do t= 1, n_relevant_confs
          covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-              feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
+                feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
       
 
@@ -564,8 +566,8 @@ do i=1, in%n_frame
       call print("the original force:"//force_ptr(:, n_center_atom))
       call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
       
-      kappa = 1.0_dp + sigma_error**2 
-      ! kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type)
+      ! kappa = 1.0_dp + sigma_error**2 
+      kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
       call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
      
@@ -899,45 +901,55 @@ contains
    call insertion_sort(distance_confs, idx=distance_index)
 
  end subroutine sorting_configuration
- 
+
+
  subroutine  real_expection_sampling_components(ivs_direction_matrix, internal_component_matrix, target_force)
 
     real(dp), intent(in)                        ::  ivs_direction_matrix(:,:), internal_component_matrix(:)
     real(dp), intent(out)                       ::  target_force(3)
     real(dp)                                    ::  converting_matrix(3,3), converting_matrix_inv(3,3), force_value_matrix(3), const
-    integer                                     ::  i, j, t, n_counter
+    integer                                     ::  i, j, t, n_counter, s
 
     n_counter=0
- 
+
     target_force=0.0_dp
 
-     do i=1,  size(internal_component_matrix)-2
-       converting_matrix(:,1) = ivs_direction_matrix(:,i)
-       force_value_matrix(1)=internal_component_matrix(i)
-       do j=i, size(internal_component_matrix)-1
-           converting_matrix(:,2) = ivs_direction_matrix(:,j)
-           force_value_matrix(2)=internal_component_matrix(j) 
-           do t=j, size(internal_component_matrix)
-               converting_matrix(:,3)=ivs_direction_matrix(:,t)
+    s=size(internal_component_matrix)
+    write(*,*) s
+
+    do i=1, s
+       do j=1, s
+          do t=1, s
+             if ((i>j) .and. (j>t)) then
+               converting_matrix(:,1)=ivs_direction_matrix(i,:)
+               converting_matrix(:,2)=ivs_direction_matrix(j,:)
+               converting_matrix(:,3)=ivs_direction_matrix(t,:)
+               force_value_matrix(1)=internal_component_matrix(i)
+               force_value_matrix(2)=internal_component_matrix(j)
                force_value_matrix(3)=internal_component_matrix(t)
-               ! we need a criteria here to decide if doing inverse next
-               const=0.0000001_dp
-               if ( (norm(converting_matrix(:,1) .cross. converting_matrix(:,2)) > const) .and. (norm(converting_matrix(:,2) & 
-                         .cross. converting_matrix(:,3)) > const) .and. (norm(converting_matrix(:,3) .cross. converting_matrix(:,1)) > const) ) then
-                  converting_matrix_inv=inverse_svd_threshold(transpose(converting_matrix), 3, 10.0_dp)    
-                  target_force= (converting_matrix_inv .mult. force_value_matrix) 
-                  if (.true.) call print("Target Foce Distribution : "//target_force(1)//" "//target_force(2)//" "//target_force(3)) 
-                  n_counter = n_counter + 1  
-               endif
-           enddo   
+
+               ! a criteria needed here to decide whether or not to do inversing 
+               const=0.01_dp
+
+               if ((norm(converting_matrix(:,1) .cross. converting_matrix(:,2)) > const) .and. (norm(converting_matrix(:,2) &
+                           .cross. converting_matrix(:,3)) > const) .and. (norm(converting_matrix(:,3) .cross. converting_matrix(:,1)) > const)) then
+                  write(*,*) "the converting matrix", converting_matrix
+                  converting_matrix_inv=inverse_svd_threshold(converting_matrix, 3, 10.0_dp)
+                  target_force=transpose(converting_matrix_inv) .mult. force_value_matrix
+                  write(*,*) "the inverse matrix : ", converting_matrix_inv
+                  write(*,*) "the number of sequence of ivs:", i, j, t
+                  if (.true.) call print("Target Force Distribution : "//target_force(1)//" "//target_force(2)//" "//target_force(3))
+                  n_counter = n_counter + 1
+                endif     ! orientational condition
+             endif        ! condition of i<j<t
+           enddo
        enddo
      enddo
 
- ! expectation value of force in the real cartesian space.
- ! target_force=target_force /real(n_counter,dp)     
+  target_force=target_force / real(n_counter,dp)
 
  end subroutine real_expection_sampling_components
-
+ 
 
  subroutine do_optimise_likelihood(sigma_error, sigma_covariance)
 
