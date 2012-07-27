@@ -469,6 +469,8 @@ do i=1, in%n_frame
       call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, sigma, distance_confs, distance_index)
       ! call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
       !     distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
+   
+      if (distance_confs(1) > 0.2_dp)    sigma_factor=sigma_factor*distance_confs(1)/0.2_dp
 
       if (.false.) then   ! massive output, only for testing use
          call print("Detail on the teaching procedure")
@@ -642,7 +644,8 @@ contains
 
 
  subroutine load_iv_params(iv_params_file, r_grid, m_grid, k)
-   ! reads r and m from iv_params file. The first line must contain the number of internal vector, and the following lines should be formatted in two columns with commas as spacers (a common csv file)
+   ! reads r and m from iv_params file. The first line must contain the number
+   ! of internal vector, and the following lines should be formatted in two columns with commas as spacers (a common csv file)
    character(STRING_LENGTH), intent(in)                     :: iv_params_file                           
    real(dp), dimension(:), intent(out), allocatable         :: r_grid, m_grid
    integer                                                  :: i
@@ -658,7 +661,6 @@ contains
    
    do i=1, k
       read(22,*) r_grid(i), m_grid(i)
-      !read(22,*) m_grid(i)
       write(*,*) "Vector", i, ":", r_grid(i), m_grid(i)
    end do
 
@@ -730,7 +732,6 @@ contains
     real(dp)                              ::        cov, d_sq
     integer, intent(in), optional         ::        func_type
     integer                               ::        i, k
-	! Warning: weights(:) is the product of the vector of weights for each IV times the overall sigma_covariance. It works, but the def is messy
     
     k = size(feature_matrix1(:,1))    
     d_sq = 0.0_dp    
@@ -741,7 +742,8 @@ contains
     ! normalised with the dimensionality k of the Internal Space
     d_sq = d_sq/real(k,dp)                            
 
-    if (present(distance))  distance = d_sq ! everywhere in James's code the distance matrix actually contains the values of distance squared
+    if (present(distance))  distance = d_sq 
+    ! everywhere in James's code the distance matrix actually contains the values of distance squared
 
     if (present(func_type)) then
          selector=func_type
