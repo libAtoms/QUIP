@@ -97,7 +97,6 @@ contains
 
    endfunction dlikelihood
 
-
 end module likelihood_optimisation_module
 
 
@@ -107,10 +106,10 @@ program force_gaussian_prediction
    use likelihood_optimisation_module
    implicit none
 
-   type(Atoms)                 :: at_in
-   type(CInOutput)             :: in
-   type(Dictionary)            :: params
-   real(dp)                    :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati
+   type(Atoms)            :: at_in
+   type(CInOutput)        :: in
+   type(Dictionary)       :: params
+   real(dp)               :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati
    real(dp), dimension(:), allocatable          :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
@@ -121,7 +120,7 @@ program force_gaussian_prediction
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
    real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm, force_ptr_tff
    integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
-   integer										:: local_ml_optim_size
+   integer	                 		:: local_ml_optim_size
    integer, dimension(:), allocatable           :: distance_index
    logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv
    character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file, iv_params_file
@@ -212,9 +211,11 @@ program force_gaussian_prediction
  do i=1, in%n_frame
         call read(in, at_in)
         call assign_property_pointer(at_in, 'force', ptr=force_ptr)
-        if (add_vector > 0) call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm)   ! the first vector is labelled mm_force in the input file, and is usually the SW force
-        if (add_vector > 1) call assign_property_pointer(at_in, 'tersoff_f', ptr=force_ptr_tff) ! the second vector is labelled tersoff_f
-        !call print('the frame: '//i)
+        if (add_vector > 0) call assign_property_pointer(at_in, 'mm_force', ptr=force_ptr_mm) 
+        ! the first vector is labelled mm_force in the input file, and is usually the SW force
+        if (add_vector > 1) call assign_property_pointer(at_in, 'tersoff_f', ptr=force_ptr_tff) 
+        ! the second vector is labelled tersoff_f
+        call print('the frame: '//i)
 
         ! Including the symmetry images
         call set_cutoff(at_in, r_cut)
@@ -344,43 +345,7 @@ else
       sigma(t)=TOL_REAL
       call print("WARNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
    endif
-   
-   if (print_dist_stati) then
       
-      dist_primitive=0.0_dp
-      do t = 1, k 
-         do i = 1, n
-            do j=1, n
-               distance_ivs(i,j) = distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j)) 
-               if (print_dist_stati) then  
-                  if (i>j)  call print("Dimensional Distance : "//distance_ivs(i, j)//"  dimension : "//t)
-               endif
-            enddo
-         enddo
-         
-         ! statistically tackling the distance matrix
-         call matrix_statistics(distance_ivs, max_value(t), mean_value(t), deviation_value(t), n)
-         call print("Statistics max value: "//max_value(t)//" mean value: "//mean_value(t)//" deviation_value: "//deviation_value(t))
-         dist_primitive = dist_primitive + ( mean_value(t)/deviation_value(t)/2.0_dp )**2
-      enddo ! loop over the k dimension of ivs space
-      
-      dist_primitive = sqrt(dist_primitive/real(k,dp))
-      call print("primitive distance : "//dist_primitive)
-  
-      ! normalised distance with statistical parameters       
-      do i=1,n
-         do j=1,n
-            distance_ivs_stati = 0.0_dp
-            do t=1, k
-               distance_ivs_stati = distance_ivs_stati + &
-                    (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2
-            enddo
-            distance_ivs_stati = sqrt(distance_ivs_stati/real(k,dp))
-            if (i>j)   call print("Normalised Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
-         enddo
-      enddo
-      
-   endif         ! doing print_dist_stati   
 endif          ! doing fix_sigma or using theta
 
 call print('sigma is:    '//sigma)
@@ -470,9 +435,12 @@ do i=1, in%n_frame
       ! call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
       !     distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
    
-      if (distance_confs(1) > 0.2_dp)    sigma_factor=sigma_factor*distance_confs(1)/0.2_dp
+!      if (distance_confs(1)>0.2_dp) then
+!                sigma_covariance = sigma_covariance*distance_confs(1)/0.2_dp     ! distance scaling
+!                write(*,*) "distance are scaled with factor of 0.2"
+!      endif
 
-      if (.false.) then   ! massive output, only for testing use
+      if (.false.) then        ! massive output, only for testing use
          call print("Detail on the teaching procedure")
          do ii = 1, n_relevant_confs
             call print("Index: "//distance_index(ii)//" Distance: "//distance_confs(ii))
@@ -568,7 +536,7 @@ do i=1, in%n_frame
       call print("the original force:"//force_ptr(:, n_center_atom))
       call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
       
-      ! kappa = 1.0_dp + sigma_error**2 
+      ! kappa = 1.0_dp + sigma_error**2         ! the value 1.0_dp is not applicable to non_exponential kernels 
       kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
       call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
@@ -742,8 +710,7 @@ contains
     ! normalised with the dimensionality k of the Internal Space
     d_sq = d_sq/real(k,dp)                            
 
-    if (present(distance))  distance = d_sq 
-    ! everywhere in James's code the distance matrix actually contains the values of distance squared
+    if (present(distance))  distance = sqrt(d_sq)  ! N.B. distance squared
 
     if (present(func_type)) then
          selector=func_type
@@ -822,24 +789,24 @@ contains
  
  endfunction distance_in_bent_space
 
- function eval_lhood(covariance_matrix,FCM)
-   real(dp), dimension(:,:), intent(in) :: covariance_matrix, FCM
-   real(dp) :: eval_lhood   
-   real(dp), dimension(:,:), allocatable :: ICF
-   type(LA_Matrix) :: LA_covariance
+! function eval_lhood(covariance_matrix,FCM)
+!   real(dp), dimension(:,:), intent(in) :: covariance_matrix, FCM
+!   real(dp) :: eval_lhood   
+!   real(dp), dimension(:,:), allocatable :: ICF
+!   type(LA_Matrix) :: LA_covariance
       
-   LA_covariance = covariance_matrix
-   allocate(ICF(size(FCM,1),size(FCM,1)))
+!   LA_covariance = covariance_matrix
+!   allocate(ICF(size(FCM,1),size(FCM,1)))
    
-   call Matrix_QR_Solve(LA_covariance, FCM, ICF)
+!   call Matrix_QR_Solve(LA_covariance, FCM, ICF)
    !write(*,*) "DEBUG ICF: ", ICF
       
-   eval_lhood = 1.5_dp * LA_Matrix_LogDet(LA_covariance) + 0.5_dp * trace(ICF)
+!   eval_lhood = 1.5_dp * LA_Matrix_LogDet(LA_covariance) + 0.5_dp * trace(ICF)
    
-   call finalise(LA_covariance)
-   if(allocated(ICF)) deallocate(ICF)
+!   call finalise(LA_covariance)
+!   if(allocated(ICF)) deallocate(ICF)
    
- endfunction eval_lhood
+! endfunction eval_lhood
 
 
  subroutine matrix_statistics(in_matrix, max_value, mean_value, deviation_value, n)
@@ -955,16 +922,16 @@ contains
 
  subroutine do_optimise_likelihood(sigma_error, sigma_covariance)
 
-   type(optimise_likelihood) :: am_likelihood ! this variable is a container that points to distance matrix, covariance matrix, force_covariance_matrix and logical value use_qr
-   logical use_qr
-   integer am_data_size
-   character(len=1), dimension(1) :: am_mold
-   character(len=1), allocatable :: am_data(:)
-   real(dp) :: x_sigma(2), covariance_tol
-   real(dp), intent(inout)	:: sigma_error, sigma_covariance
+   type(optimise_likelihood)           :: am_likelihood 
+   logical                             :: use_qr
+   integer                             :: am_data_size
+   character(len=1), dimension(1)      :: am_mold
+   character(len=1), allocatable       :: am_data(:)
+   real(dp)                            :: x_sigma(2), covariance_tol
+   real(dp), intent(inout)             :: sigma_error, sigma_covariance
    
-   use_qr = .true.
    covariance_tol = 1.0e-2
+   use_qr=.true.
 
    am_likelihood%use_qr = use_qr ! filling the am_likelihood container
    am_likelihood%distance_matrix => distance_matrix
@@ -991,7 +958,8 @@ contains
    end if
    x_sigma = (/sigma_error, sigma_covariance/)  ! starting points for the values
    n = minim( x_sigma, likelihood, dlikelihood, method='cg', convergence_tol=covariance_tol, max_steps = 100, data=am_data)
-   ! x_sigma is the input vector, lh is the target function to minimise (using dlh), using conjugate gradient, with that tolerance, with that max number of steps, and using the data contained in am_data
+   ! x_sigma is the input vector, lh is the target function to minimise (using dlh), using conjugate gradient, with that tolerance, 
+   ! with that max number of steps, and using the data contained in am_data
    deallocate(am_data)
 
    sigma_error = x_sigma(1)  
