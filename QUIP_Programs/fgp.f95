@@ -41,7 +41,7 @@ contains
       end if
 
       likelihood = 1.5_dp * LA_Matrix_LogDet(LA_covariance) + 0.5_dp * trace(ICF)
-      write(*,*) "DEBUG Likelihood value: ", likelihood
+!      write(*,*) "DEBUG Likelihood value: ", likelihood
 
       call finalise(LA_covariance)
       if(allocated(ICF)) deallocate(ICF)
@@ -87,7 +87,7 @@ contains
 
       dlikelihood(1) = sigma_error * (3*trace(IC) - sum(IC*ICF) )
       dlikelihood(2) = 1.5_dp * trace(ICDCDS) - 0.5_dp * sum(ICDCDS*transpose(ICF))
-      write(*,*) "DEBUG dlikelihood", dlikelihood(1)**2, dlikelihood(2)**2
+ !     write(*,*) "DEBUG dlikelihood", dlikelihood(1)**2, dlikelihood(2)**2
       
       call finalise(LA_covariance)
       if(allocated(ICF)) deallocate(ICF)
@@ -115,15 +115,15 @@ program force_gaussian_prediction
    real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    real(dp)                                     :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
    real(dp), dimension(:,:,:), allocatable      :: feature_matrix_normalised, feature_matrix
-   real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs
+   real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, force_pred
    real(dp), dimension(:,:), allocatable, target ::  covariance, distance_matrix, force_covariance_matrix, covariance_tiny
    real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
-   real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm, force_ptr_tff
+   real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm, force_ptr_tff, force_pred_ptr
    integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		:: local_ml_optim_size
    integer, dimension(:), allocatable           :: distance_index
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv
-   character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file, iv_params_file
+   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
+   character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
  
    call system_initialise(enable_timing=.true.)
@@ -153,6 +153,8 @@ program force_gaussian_prediction
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
+   call param_register(params, 'out_file', 'out.xyz', out_file, "output configuration file containing the predicted forces")
+   call param_register(params, 'print_at', 'F', print_at, "true for print out the testing configuration with predicted forces")
    call param_register(params, 'fixed_iv', 'F', fixed_iv, "does a file containing the internal vector parameters exist?")
    call param_register(params, 'iv_params_file', 'iv_params.csv', iv_params_file, "location of internal vectors parameters file (if necessary)")
    call param_register(params, 'local_ml_optim_size', '0', local_ml_optim_size, "Optimise sigma_error and sigma_covariance using local_ml_optim_size LS confs. If 0, no optimisation is performed")
@@ -391,9 +393,9 @@ do i=1, in%n_frame
    else
       n_loop = at_in%N
    endif
-   
+   if (print_at) allocate(force_pred(3,n_loop))
+
    do n_center_atom=1, n_loop
-      
       do j= 1, k-add_vector
          feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
          call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
@@ -481,15 +483,6 @@ do i=1, in%n_frame
         enddo
       enddo
        
-      do t=1, n_relevant_confs
-            write(*,*) "COV : ", covariance(t,:)
-      enddo
-
-      do t=1, n_relevant_confs
-         write(*,*) "DIST", distance_confs(t), distance_index(t)
-      enddo
-
-
       call system_timer('Inverting the Covariance Matrix')
       
       if (do_gp) then
@@ -536,7 +529,7 @@ do i=1, in%n_frame
       else
          call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
       endif
-      
+      if (print_at) force_pred(:,n_center_atom)=force 
       call print("force in external space:"//force)
       call print("the original force:"//force_ptr(:, n_center_atom))
       call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
@@ -547,6 +540,15 @@ do i=1, in%n_frame
       call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
      
    enddo  ! loop over positions
+  if (print_at) then 
+      call add_property(at_in, "force", 0.1_dp, n_cols=3, overwrite=.true.)
+      if (.not. assign_pointer(at_in, 'force', force_pred_ptr)) &
+               call system_abort("failed to add force property in the task of outputing the tested configurations with predicted forces")
+      force_pred_ptr = force_pred
+
+      call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
+      deallocate(force_pred)
+   endif
 enddo    ! loop over frames
 
 call finalise(in)
@@ -949,10 +951,11 @@ contains
    else
       call print('doing likelihood optimisation with Cholesky decomposition')
    end if
-   x_sigma = (/sigma_error, sigma_covariance/)  ! starting points for the values
-   n = minim( x_sigma, likelihood, dlikelihood, method='cg', convergence_tol=covariance_tol, max_steps = 100, data=am_data)
+   x_sigma = (/sigma_error, sigma_covariance/)    ! starting points for the values
+!   n = minim( x_sigma, likelihood, dlikelihood, method='cg', convergence_tol=covariance_tol, max_steps = 100, data=am_data)
    ! x_sigma is the input vector, lh is the target function to minimise (using dlh), using conjugate gradient, with that tolerance, 
    ! with that max number of steps, and using the data contained in am_data
+   write(*,*) "Fixed LIKELIHOOD", likelihood(x_sigma, am_data), dlikelihood(x_sigma, am_data)
    deallocate(am_data)
 
    sigma_error = x_sigma(1)  
