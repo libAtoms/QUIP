@@ -215,7 +215,7 @@ program force_gaussian_prediction
         ! the first vector is labelled mm_force in the input file, and is usually the SW force
         if (add_vector > 1) call assign_property_pointer(at_in, 'tersoff_f', ptr=force_ptr_tff) 
         ! the second vector is labelled tersoff_f
-        call print('the frame: '//i)
+        ! call print('the frame: '//i)
 
         ! Including the symmetry images
         call set_cutoff(at_in, r_cut)
@@ -346,7 +346,7 @@ else
       call print("WARNING: SIGMA, encountered the decimal limit in getting Sigma from Theta")
    endif
       
-endif          ! doing fix_sigma or using theta
+endif          ! doing fix_sigma or using sigma derived from theta
 
 call print('sigma is:    '//sigma)
 deallocate(distance_ivs)
@@ -360,7 +360,7 @@ call system_timer('Getting hyper-parameters from the DATABASE')
 
 call print_title('starting the predicting process')
 
-if (n_relevant_confs > n)  call system_abort("Trying to select more confs than the database")
+if (n_relevant_confs > n)  call system_abort("Trying to get more confs than the database has")
 
 allocate(covariance_pred(n_relevant_confs))
 allocate(feature_matrix_pred(k,3))
@@ -477,9 +477,18 @@ do i=1, in%n_frame
          do j = t+1, n_relevant_confs ! above diagonal
             covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
                  feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type)
-            covariance(j,t) = covariance(t,j) ! below diagonal
-         enddo
+            covariance(j,t) = covariance(t,j)  
+        enddo
       enddo
+       
+      do t=1, n_relevant_confs
+            write(*,*) "COV : ", covariance(t,:)
+      enddo
+
+      do t=1, n_relevant_confs
+         write(*,*) "DIST", distance_confs(t), distance_index(t)
+      enddo
+
 
       call system_timer('Inverting the Covariance Matrix')
       
@@ -489,7 +498,6 @@ do i=1, in%n_frame
          ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
          inv_covariance = inverse_svd_threshold(covariance, n_relevant_confs, thresh)
       endif
-      ! call print("MAX and MIN components of inverse_covariance : "//maxval(inv_covariance(2,:))//" "//minval(inv_covariance(2,:)))
       
       call system_timer('Inverting the Covariance Matrix')
       
@@ -520,9 +528,6 @@ do i=1, in%n_frame
       enddo
       
       ! using least-squares to restore the target force in the External Cartesian Space
-      do j=1, k
-         write(*,*) "the feature_matrix_normalised_pred", feature_matrix_normalised_pred(j,:)
-      enddo
       feature_inner_matrix=matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred)
 
       call inverse(feature_inner_matrix, feature_inv) 
@@ -704,13 +709,13 @@ contains
     k = size(feature_matrix1(:,1))    
     d_sq = 0.0_dp    
     do i=1, k
-       d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2)) / (2.0_dp * iv_weights(i)**2) 
+       d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2))**2 / (2.0_dp * (iv_weights(i)**2))
     enddo
  
     ! normalised with the dimensionality k of the Internal Space
     d_sq = d_sq/real(k,dp)                            
 
-    if (present(distance))  distance = sqrt(d_sq)  ! N.B. distance squared
+    if (present(distance))  distance = d_sq  ! N.B. distance squared
 
     if (present(func_type)) then
          selector=func_type
@@ -841,18 +846,6 @@ contains
 
  end subroutine  matrix_statistics
 
- subroutine normal_squared_matrix(in_matrix, out_matrix) 
-
-  real(dp), intent(in)                      ::  in_matrix(:,:)
-  real(dp), intent(inout)                   ::  out_matrix(:,:)
-  integer                                   ::  i 
-   
-  do i = 1, size(in_matrix(1,:))
-       out_matrix(:,i) = in_matrix(:,i)/norm(in_matrix(:,i))
-  enddo
-
- end subroutine normal_squared_matrix
-
 
  subroutine sorting_configuration(matrix_predict, matrix_data, matrix_predict_norm, matrix_data_norm, sigma, distance_confs, distance_index)
  
@@ -862,12 +855,12 @@ contains
    integer,  intent(inout)                     ::  distance_index(:)
    real(dp)                                    ::  cov_tmp  
    integer                                     ::  i
-    
+ 
    do i=1, size(matrix_data(1,1,:)) 
       cov_tmp = cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm, matrix_data_norm(:,:,i), sigma, 1.0_dp, distance=distance_confs(i))   
    enddo
-   
-   call insertion_sort(distance_confs, idx=distance_index)
+
+    call insertion_sort(distance_confs, idx=distance_index)
 
  end subroutine sorting_configuration
 
