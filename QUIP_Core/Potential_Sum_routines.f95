@@ -70,7 +70,7 @@
     real(dp), allocatable :: my_f_1(:,:), my_local_virial_1(:,:)
     real(dp) :: my_virial_1(3,3)
     type(Dictionary) :: params
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, calc_local_virial, calc_args_pot1, calc_args_pot2, my_args_str
 
     INIT_ERROR(error)
 
@@ -80,12 +80,16 @@
     call param_register(params,"virial", "", calc_virial, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params,"local_energy", "", calc_local_energy, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params,"local_virial", "", calc_local_virial, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params,"calc_args_pot1", "", calc_args_pot1, help_string="additional args_str to pass along to pot1")
+    call param_register(params,"calc_args_pot2", "", calc_args_pot2, help_string="additional args_str to pass along to pot2")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Sum_calc args_str')) then
        RAISE_ERROR('Potential_Sum_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
     call finalise(params)
 
-    call calc(this%pot1, at, args_str=args_str, error=error)
+    my_args_str = optional_default("", args_str)
+
+    call calc(this%pot1, at, args_str=trim(my_args_str)//" "//calc_args_pot1, error=error)
     PASS_ERROR(error)
     if (len_trim(calc_energy) > 0) then
        call get_param_value(at, trim(calc_energy), my_e_1)
@@ -109,7 +113,7 @@
     endif
 
 
-    call calc(this%pot2, at, args_str=args_str, error=error)
+    call calc(this%pot2, at, args_str=trim(my_args_str)//" "//calc_args_pot2, error=error)
     PASS_ERROR(error)
     if (len_trim(calc_energy) > 0) then
        call get_param_value(at, trim(calc_energy), energy)
