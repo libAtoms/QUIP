@@ -32,7 +32,9 @@
 
 program example_LJ
 use libAtoms_module
-use QUIP_module
+use potential_module
+use libatoms_misc_utils_module
+
 implicit none
 
   character(len=10240) lj_str
@@ -41,7 +43,7 @@ implicit none
   type(DynamicalSystem) ds
 
   real(dp) :: e
-  real(dp), allocatable :: f(:,:)
+  real(dp), pointer :: f(:,:)
   integer it
 
   integer :: error = ERROR_NONE
@@ -64,21 +66,24 @@ implicit none
   call set_cutoff(ds%atoms, cutoff(pot))
 
 
-  allocate(f(3,ds%atoms%N))
   call rescale_velo(ds, 300.0_dp)
 
   call print(at)
   call print(ds%atoms)
 
-  do it=1, 3
+  do it=1, 20
     if (mod(it,5) == 1) then
       call calc_connect(ds%atoms)
     end if
 
-    call calc(pot, ds%atoms, e = e, f = f)
-
+    call calc(pot, ds%atoms, args_str="energy force --help", error=error)
+    call print(ds%atoms)
+    HANDLE_ERROR(error)
+    call get_param_value(ds%atoms, 'energy', e)
+    call assign_property_pointer(ds%atoms, "force", f)
+	
     call advance_verlet(ds, 1.0_dp, f)
-    call ds_print_status(ds, 'D', e)
+    call ds_print_status(ds, 'S ', e)
   end do
 
   call print(ds%atoms)
