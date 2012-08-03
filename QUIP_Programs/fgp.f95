@@ -1,13 +1,12 @@
-
 module likelihood_optimisation_module
 
   use libAtoms_module
   implicit none
 
-   type optimise_likelihood
+  type optimise_likelihood
       logical use_qr
       real(dp), dimension(:,:), pointer :: distance_matrix, covariance_matrix, force_covariance_matrix
-   endtype optimise_likelihood
+  endtype optimise_likelihood
 
 contains
 
@@ -87,7 +86,7 @@ contains
 
       dlikelihood(1) = sigma_error * (3*trace(IC) - sum(IC*ICF) )
       dlikelihood(2) = 1.5_dp * trace(ICDCDS) - 0.5_dp * sum(ICDCDS*transpose(ICF))
- !     write(*,*) "DEBUG dlikelihood", dlikelihood(1)**2, dlikelihood(2)**2
+ !    write(*,*) "DEBUG dlikelihood", dlikelihood(1)**2, dlikelihood(2)**2
       
       call finalise(LA_covariance)
       if(allocated(ICF)) deallocate(ICF)
@@ -106,24 +105,25 @@ program force_gaussian_prediction
    use likelihood_optimisation_module
    implicit none
 
-   type(Atoms)            :: at_in
-   type(CInOutput)        :: in
-   type(Dictionary)       :: params
-   real(dp)               :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati
-   real(dp), dimension(:), allocatable          :: max_value, mean_value, deviation_value
-   real(dp), dimension(:), allocatable          :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
-   real(dp), parameter                          :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
-   real(dp)                                     :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
-   real(dp), dimension(:,:,:), allocatable      :: feature_matrix_normalised, feature_matrix
-   real(dp), dimension(:,:), allocatable        :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, force_pred
-   real(dp), dimension(:,:), allocatable, target ::  covariance, distance_matrix, force_covariance_matrix, covariance_tiny
-   real(dp), dimension(:,:), allocatable        :: feature_matrix_normalised_pred, feature_matrix_pred
-   real(dp), dimension(:,:), pointer            :: force_ptr, force_ptr_mm, force_ptr_tff, force_pred_ptr
-   integer                                      :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh, add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
-   integer	                 		:: local_ml_optim_size
-   integer, dimension(:), allocatable           :: distance_index
-   logical                                      :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
-   character(STRING_LENGTH)                     :: teaching_file, grid_file, test_file, out_file, iv_params_file
+   type(Atoms)           :: at_in
+   type(CInOutput)       :: in
+   type(Dictionary)      :: params
+   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati
+   real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
+   real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
+   real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
+   real(dp)                                      :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa, feature_len_sum
+   real(dp), dimension(:,:,:), allocatable       :: feature_matrix_normalised, feature_matrix
+   real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, force_pred
+   real(dp), dimension(:,:), allocatable, target :: covariance, distance_matrix, force_covariance_matrix, covariance_tiny
+   real(dp), dimension(:,:), allocatable         :: feature_matrix_normalised_pred, feature_matrix_pred
+   real(dp), dimension(:,:), pointer             :: force_ptr, force_ptr_mm, force_ptr_tff
+   integer                                       :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh 
+   integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
+   integer	                 		 :: local_ml_optim_size
+   integer, dimension(:), allocatable            :: distance_index
+   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
+   character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
  
    call system_initialise(enable_timing=.true.)
@@ -302,7 +302,7 @@ if (fix_sigma) then
    endif
    
    if (print_dist_stati) then
- 
+   
       dist_primitive=0.0_dp
       do t = 1, k
          do i = 1, n
@@ -326,7 +326,7 @@ if (fix_sigma) then
             distance_ivs_stati = 0.0_dp   
             do t=1, k                 
                distance_ivs_stati = distance_ivs_stati + &
-                    (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
+                   (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
             enddo
             distance_ivs_stati = sqrt(distance_ivs_stati/real(k,dp))          ! to take the square root and get a normalised distance 
             if (i>j)   call print("Normalised Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
@@ -350,7 +350,8 @@ else
       
 endif          ! doing fix_sigma or using sigma derived from theta
 
-call print('sigma is:    '//sigma)
+ call print('sigma is:    '//sigma)
+
 deallocate(distance_ivs)
 deallocate(theta_array)
 deallocate(mean_value)
@@ -378,7 +379,6 @@ allocate(distance_confs(n))
 allocate(distance_index(n))
 allocate(force_proj_ivs_select(k, n_relevant_confs))
 
-
 call initialise(in, test_file, INPUT)
 do i=1, in%n_frame 
    call read(in, at_in)
@@ -393,21 +393,22 @@ do i=1, in%n_frame
    else
       n_loop = at_in%N
    endif
-   if (print_at) allocate(force_pred(3,n_loop))
 
    do n_center_atom=1, n_loop
-      do j= 1, k-add_vector
-         feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
-         call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
-         feature_len = norm(feature_matrix_pred(j,:))
-         
-         if (feature_len <  TOL_REAL)  then
+     feature_len_sum=0.0_dp
+     do j= 1, k-add_vector
+        feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
+        call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
+        feature_len = norm(feature_matrix_pred(j,:))
+        feature_len_sum=feature_len_sum + feature_len
+
+        if (feature_len < TOL_REAL)  then
             feature_len=1.0_dp
             call print("WARNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
-         endif
+        endif
 
-         feature_matrix_normalised_pred(j,:) = feature_matrix_pred(j,:)/feature_len
-      enddo
+        feature_matrix_normalised_pred(j,:) = feature_matrix_pred(j,:)/feature_len
+     enddo
 
       if (add_vector > 0) then
          do j = k-add_vector+1, k
@@ -419,7 +420,8 @@ do i=1, in%n_frame
                feature_matrix_pred(j,:)=force_ptr_tff(:, n_center_atom)
             end select
             feature_len = norm(feature_matrix_pred(j,:))
-            
+            feature_len_sum = feature_len_sum + feature_len            
+
             if (feature_len < TOL_REAL) then
                feature_len=1.0_dp
                call print("WARNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
@@ -502,8 +504,8 @@ do i=1, in%n_frame
       ! the test configuration covariance vector
       
       do t= 1, n_relevant_confs
-         covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
+        covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
+                                         feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
       
 
@@ -515,8 +517,8 @@ do i=1, in%n_frame
       
       
       do j=1, k 
-         call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j))//&
-              " : "//(abs(force_proj_ivs_pred(j)-force_proj_target(j))/abs(force_proj_target(j))))   
+         call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  !//&
+             ! " : "//(abs(force_proj_ivs_pred(j)-force_proj_target(j))/abs(force_proj_target(j))))   
          ! predicted force: real force: absolute difference 
       enddo
       
@@ -528,27 +530,26 @@ do i=1, in%n_frame
          force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
       else
          call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
-      endif
-      if (print_at) force_pred(:,n_center_atom)=force 
+      endif 
+
+      if (feature_len_sum < 100.0_dp * TOL_REAL) force=0.0_dp
+
       call print("force in external space:"//force)
       call print("the original force:"//force_ptr(:, n_center_atom))
       call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
-      
+      if (print_at) force_ptr(:,n_center_atom)=force     
+     
       ! kappa = 1.0_dp + sigma_error**2         ! the value 1.0_dp is not applicable to non_exponential kernels 
       kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
       call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
      
    enddo  ! loop over positions
-  if (print_at) then 
-      call add_property(at_in, "force", 0.1_dp, n_cols=3, overwrite=.true.)
-      if (.not. assign_pointer(at_in, 'force', force_pred_ptr)) &
-               call system_abort("failed to add force property in the task of outputing the tested configurations with predicted forces")
-      force_pred_ptr = force_pred
 
+   if (print_at) then 
       call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
-      deallocate(force_pred)
    endif
+
 enddo    ! loop over frames
 
 call finalise(in)
@@ -744,13 +745,14 @@ contains
 
    real(dp), intent(in)                  ::         in_matrix(:,:), thresh
    integer,  intent(in)                  ::         n
-   real(dp)                              ::         w(n), sigmainv(n,n), u(n,n), vt(n,n), inverse_svd_threshold(n,n)
+   real(dp), allocatable                 ::         w(:), sigmainv(:,:), u(:,:), vt(:,:), inverse_svd_threshold(:,:)
    real(dp), allocatable                 ::         work(:)
    real(dp), parameter                   ::         TOL_SVD = 1e-13_dp
    integer                               ::         info, i, lwork, j
  
    call print('entering inverse_svd_threshold')
 
+   allocate(w(n), sigmainv(n,n), u(n,n), vt(n,n))
    lwork = -1
    allocate(work(1))
    call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
@@ -784,6 +786,10 @@ contains
    end do
    call print("the number of zero singular values : "//j)
    inverse_svd_threshold = transpose(vt) .mult. sigmainv .mult. transpose(u)
+   deallocate(w)
+   deallocate(sigmainv)
+   deallocate(u)
+   deallocate(vt)
 
  endfunction inverse_svd_threshold
 
@@ -952,7 +958,7 @@ contains
       call print('doing likelihood optimisation with Cholesky decomposition')
    end if
    x_sigma = (/sigma_error, sigma_covariance/)    ! starting points for the values
-!   n = minim( x_sigma, likelihood, dlikelihood, method='cg', convergence_tol=covariance_tol, max_steps = 100, data=am_data)
+   ! n = minim( x_sigma, likelihood, dlikelihood, method='cg', convergence_tol=covariance_tol, max_steps = 100, data=am_data)
    ! x_sigma is the input vector, lh is the target function to minimise (using dlh), using conjugate gradient, with that tolerance, 
    ! with that max number of steps, and using the data contained in am_data
    write(*,*) "Fixed LIKELIHOOD", likelihood(x_sigma, am_data), dlikelihood(x_sigma, am_data)
@@ -965,4 +971,3 @@ contains
  end subroutine do_optimise_likelihood
 
 end program force_gaussian_prediction
-
