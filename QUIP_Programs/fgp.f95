@@ -112,7 +112,7 @@ program force_gaussian_prediction
    real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
-   real(dp)                                      :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa, feature_len_sum
+   real(dp)                                      :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
    real(dp), dimension(:,:,:), allocatable       :: feature_matrix_normalised, feature_matrix
    real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, force_pred
    real(dp), dimension(:,:), allocatable, target :: covariance, distance_matrix, force_covariance_matrix, covariance_tiny
@@ -395,12 +395,10 @@ do i=1, in%n_frame
    endif
 
    do n_center_atom=1, n_loop
-     feature_len_sum=0.0_dp
      do j= 1, k-add_vector
         feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
         call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
         feature_len = norm(feature_matrix_pred(j,:))
-        feature_len_sum=feature_len_sum + feature_len
 
         if (feature_len < TOL_REAL)  then
             feature_len=1.0_dp
@@ -420,7 +418,6 @@ do i=1, in%n_frame
                feature_matrix_pred(j,:)=force_ptr_tff(:, n_center_atom)
             end select
             feature_len = norm(feature_matrix_pred(j,:))
-            feature_len_sum = feature_len_sum + feature_len            
 
             if (feature_len < TOL_REAL) then
                feature_len=1.0_dp
@@ -508,7 +505,6 @@ do i=1, in%n_frame
                                          feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
       
-
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs_select(:,:)) )) 
 
       do j=1, k
@@ -532,7 +528,10 @@ do i=1, in%n_frame
          call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
       endif 
 
-      if (feature_len_sum < 100.0_dp * TOL_REAL) force=0.0_dp
+      do j=1, 3
+         if (norm(feature_matrix_pred(:,j)) < 100.0_dp*TOL_REAL)  force(j)=0.0_dp 
+         ! making use of the physical relation between force and IVs, which is nessecceary for near high symmetric confs
+      enddo
 
       call print("force in external space:"//force)
       call print("the original force:"//force_ptr(:, n_center_atom))
