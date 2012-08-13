@@ -93,6 +93,11 @@ module linearalgebra_module
      module procedure int_sign, real_sign
   end interface
 
+  private :: k_means_clustering_pick_1d
+  interface k_means_clustering_pick
+     module procedure k_means_clustering_pick_1d
+  end interface
+
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X Interfaces to mathematical operations
@@ -1993,8 +1998,7 @@ CONTAINS
 
      this%n = size(matrix,1)
      this%m = size(matrix,2)
-     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
-     & this%tau(this%m) )
+     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n),this%tau(this%m) )
 
      this%matrix = matrix
      this%initialised = .true.
@@ -2040,6 +2044,7 @@ CONTAINS
      if(allocated(this%matrix) ) deallocate(this%matrix)
      if(allocated(this%factor) ) deallocate(this%factor)
      if(allocated(this%s) ) deallocate(this%s)
+     if(allocated(this%tau) ) deallocate(this%tau)
      this%initialised = .false.
      this%equilibrated = .false.
      this%factorised = NOT_FACTORISED
@@ -5952,5 +5957,117 @@ CONTAINS
 
      deallocate(rv, rv_inv, ev)
    end function matrix_exp_d
+
+   subroutine k_means_clustering_pick_1d(x, k, cluster_indices)
+      real(dp), intent(in) :: x(:)
+      integer, intent(in) :: k
+      integer, intent(out) :: cluster_indices(:)
+
+      real(dp), allocatable :: k_means(:)
+      integer :: n, rv, i, j, closest_i, closest_j
+      real(dp) :: closest_r, r, t_sum
+      integer, allocatable :: a(:), prev_a(:)
+
+! print *, "k_means_clustering_pick_1d ", k, size(cluster_indices)
+! print *, "x ", x
+
+      n = size(x)
+      allocate(k_means(k))
+
+      ! random initial guess
+      cluster_indices = 0
+      do i=1, k
+	 rv = 1+floor(ran_uniform()*n)
+	 do while (any(cluster_indices == rv))
+	    rv = 1+floor(ran_uniform()*n)
+	 end do
+	 cluster_indices(i) = rv
+      end do
+      k_means = x(cluster_indices)
+! print *, "initial k_means ", k_means
+
+      allocate(a(n), prev_a(n))
+
+      ! evaluate initial assignments
+      do j=1, n
+	 closest_i = 0
+	 closest_r = HUGE(1.0_dp)
+	 do i=1, k
+	    r = sqrt((x(j)-k_means(i))**2)
+	    if (r < closest_r) then
+	       closest_r = r
+	       closest_i = i
+	    endif
+	 end do
+	 a(j) = closest_i
+      end do
+
+! print *, "initial assignments ", a
+
+      prev_a = 0
+      do while (any(a /= prev_a))
+! print *, "start loop"
+	 prev_a = a
+
+	 ! update positions
+	 do i=1, k
+	    t_sum = 0.0_dp
+	    do j=1, n
+	       if (a(j) == i) t_sum = t_sum + x(j)
+	    end do
+	    k_means(i) = t_sum / real(count(a == i),dp)
+	 end do
+
+! print *, "new k_means ", k_means
+
+	 ! update assignments
+	 do j=1, n
+	    closest_i = 0
+	    closest_r = HUGE(1.0_dp)
+	    do i=1, k
+	       r = sqrt((x(j)-k_means(i))**2)
+	       if (r < closest_r) then
+		  closest_r = r
+		  closest_i = i
+	       endif
+	    end do
+	    a(j) = closest_i
+	 end do
+! print *, "new assignments ", a
+      end do
+
+! print *, "calculate indices closest to means"
+      do i=1, k
+	 closest_i = 0
+	 closest_r = HUGE(1.0_dp)
+	 do j=1, n
+	    r = sqrt((x(j)-k_means(i))**2)
+	    if (r < closest_r) then
+	       closest_r = r
+	       closest_j = j
+	    endif
+	 end do
+	 cluster_indices(i) = closest_j
+      end do
+! do j=1, n
+!    closest_i = 0
+!    closest_r = HUGE(1.0_dp)
+!    do i=1, k
+!       r = sqrt((x(j)-x(cluster_indices(i)))**2)
+!       if (r < closest_r) then
+! 	 closest_r = r
+! 	 closest_i = i
+!       endif
+!    end do
+!    a(j) = closest_i
+! end do
+! print *, "counts"
+! do i=1, k
+! print *, count(a == i)
+! end do
+
+      deallocate(a, prev_a, k_means)
+
+   end subroutine k_means_clustering_pick_1d
 
 end module linearalgebra_module
