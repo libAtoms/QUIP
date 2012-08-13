@@ -41,10 +41,10 @@ public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_gr
 public :: SE_kernel_r_rr
 
 type gp_basic
-   real(dp) :: l2, f_var
+   real(dp) :: len_scale_sq, f_var
    integer  :: n_f, n_g, n_teach
    type(LA_Matrix), allocatable :: Cmat(:)
-   real(dp), allocatable :: f_r(:), g_r(:), Cmat_inv_v(:), k(:), Cmat_inv_k(:)
+   real(dp), allocatable :: f_r(:), g_r(:), Cmat_inv_v(:), k(:),  Cmat_inv_k(:), kp(:)
    logical :: initialised = .false.
 end type gp_basic
 
@@ -58,20 +58,30 @@ interface finalise
    module procedure gp_basic_finalise
 end interface finalise
 
-!% f_predict a function value from a gp
+!% predict a function value from a gp
 interface f_predict
    module procedure f_predict_r
 end interface f_predict
 
-!% f_predict a gradient of a function value from a gp
+!% predict a gradient of a function value from a gp
 interface f_predict_grad
    module procedure f_predict_grad_r
 end interface f_predict_grad
 
-!% f_predict a function variance from a gp
+!% predict a function variance from a gp
 interface f_predict_var
    module procedure f_predict_var_r
 end interface f_predict_var
+
+!% predict the variance of a gradient of a function from a gp
+interface f_predict_grad_var
+   module procedure f_predict_grad_var_r
+end interface f_predict_grad_var
+
+!% predict the gradient of a function variance from a gp
+interface f_predict_var_grad
+   module procedure f_predict_var_grad_r
+end interface f_predict_var_grad
 
 contains
 
@@ -79,9 +89,9 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    type(gp_basic), intent(inout) :: self !% object to store GP
    real(dp), intent(in) :: len_scale, f_var !% length scale and variance prior for GP
    interface
-      subroutine kernel(x1, x2, f_var, l2, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
 	 use system_module, only : dp
-	 real(dp), intent(in) :: x1, x2(:), f_var, l2
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
 	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
       end subroutine kernel
    end interface
@@ -124,7 +134,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
       endif
    endif
 
-   self%l2 = len_scale**2
+   self%len_scale_sq = len_scale**2
    self%f_var = f_var
 
    if (present(sparse_set)) then
@@ -155,21 +165,21 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    allocate(Cmat(self%n_teach, self%n_teach))
    do i=1, self%n_f
       ! f on f
-      call kernel(self%f_r(i), self%f_r(:), self%f_var, self%l2, f_f=Cmat(i,1:self%n_f))
+      call kernel(self%f_r(i), self%f_r(:), self%f_var, self%len_scale_sq, f_f=Cmat(i,1:self%n_f))
       Cmat(i,i) = Cmat(i,i) + f_n(i)
       if (self%n_g > 0) then
 	 ! f on g
-	 call kernel(self%f_r(i), self%g_r(:), self%f_var, self%l2, f_g=Cmat(i,self%n_f+1:self%n_f+self%n_g))
+	 call kernel(self%f_r(i), self%g_r(:), self%f_var, self%len_scale_sq, f_g=Cmat(i,self%n_f+1:self%n_f+self%n_g))
       endif
    end do
    do i=1, self%n_g
       i_glob = self%n_f + i
       ! g on g
-      call kernel(self%g_r(i), self%g_r(:), self%f_var, self%l2, g_g=Cmat(i_glob,self%n_f+1:self%n_f+self%n_g))
+      call kernel(self%g_r(i), self%g_r(:), self%f_var, self%len_scale_sq, g_g=Cmat(i_glob,self%n_f+1:self%n_f+self%n_g))
       Cmat(i_glob,i_glob) = Cmat(i_glob,i_glob) + g_n(i)
       if (self%n_f > 0) then
 	 ! g on f
-	 call kernel(self%g_r(i), self%f_r(:), self%f_var, self%l2, g_f=Cmat(i_glob,1:self%n_f))
+	 call kernel(self%g_r(i), self%f_r(:), self%f_var, self%len_scale_sq, g_f=Cmat(i_glob,1:self%n_f))
       endif
    end do
 
@@ -185,6 +195,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    deallocate(all_v)
 
    allocate(self%k(self%n_teach))
+   allocate(self%kp(self%n_teach))
    allocate(self%Cmat_inv_k(self%n_teach))
 
    self%initialised = .true.
@@ -198,13 +209,14 @@ subroutine gp_basic_finalise(self)
       if (allocated(self%g_r)) deallocate(self%g_r)
       if (allocated(self%Cmat_inv_v)) deallocate(self%Cmat_inv_v)
       if (allocated(self%k)) deallocate(self%k)
+      if (allocated(self%kp)) deallocate(self%kp)
       if (allocated(self%Cmat_inv_k)) deallocate(self%Cmat_inv_k)
       if (allocated(self%Cmat)) then
 	 call finalise(self%Cmat(1))
 	 deallocate(self%Cmat)
       endif
    endif
-   self%l2 = 0.0_dp
+   self%len_scale_sq = 0.0_dp
    self%f_var = 0.0_dp
    self%n_f = 0
    self%n_g = 0
@@ -216,9 +228,9 @@ function f_predict_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r !% position at which to f_predict value
    interface
-      subroutine kernel(x1, x2, f_var, l2, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
 	 use system_module, only : dp
-	 real(dp), intent(in) :: x1, x2(:), f_var, l2
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
 	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
       end subroutine kernel
    end interface
@@ -229,41 +241,18 @@ function f_predict_r(self, r, kernel)
       return
    endif
 
-   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%l2, f_f=self%k(1:self%n_f))
-   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%l2, f_g=self%k(self%n_f+1:self%n_f+self%n_g))
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, f_g=self%k(self%n_f+1:self%n_f+self%n_g))
    f_predict_r = dot_product(self%k, self%Cmat_inv_v)
 end function f_predict_r
-
-function f_predict_var_r(self, r, kernel)
-   type(gp_basic), intent(inout) :: self
-   real(dp), intent(in) :: r
-   interface
-      subroutine kernel(x1, x2, f_var, l2, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
-	 real(dp), intent(in) :: x1, x2(:), f_var, l2
-	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
-      end subroutine kernel
-   end interface
-   real(dp) :: f_predict_var_r
-
-   if (.not. self%initialised) then
-      f_predict_var_r = 0.0_dp
-      return
-   endif
-
-   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%l2, f_f=self%k(1:self%n_f))
-   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%l2, f_g=self%k(self%n_f+1:self%n_f+self%n_g))
-   call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
-   f_predict_var_r = self%f_var - dot_product(self%k, self%Cmat_inv_k)
-end function f_predict_var_r
 
 function f_predict_grad_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r !% position at which to f_predict value
    interface
-      subroutine kernel(x1, x2, f_var, l2, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
 	 use system_module, only : dp
-	 real(dp), intent(in) :: x1, x2(:), f_var, l2
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
 	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
       end subroutine kernel
    end interface
@@ -274,19 +263,96 @@ function f_predict_grad_r(self, r, kernel)
       return
    endif
 
-   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%l2, g_f=self%k(1:self%n_f))
-   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%l2, g_g=self%k(self%n_f+1:self%n_f+self%n_g))
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, g_f=self%k(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, g_g=self%k(self%n_f+1:self%n_f+self%n_g))
    f_predict_grad_r = dot_product(self%k, self%Cmat_inv_v)
 end function f_predict_grad_r
 
-subroutine SE_kernel_r_rr(x1, x2, f_var, l2, f_f, g_f, f_g, g_g)
-   real(dp), intent(in) :: x1, x2(:), f_var, l2
+function f_predict_var_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: r
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
+	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_var_r
+
+   if (.not. self%initialised) then
+      f_predict_var_r = 0.0_dp
+      return
+   endif
+
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, f_g=self%k(self%n_f+1:self%n_f+self%n_g))
+   call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
+   f_predict_var_r = self%f_var - dot_product(self%k, self%Cmat_inv_k)
+end function f_predict_var_r
+
+function f_predict_grad_var_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: r
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
+	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_grad_var_r
+
+   if (.not. self%initialised) then
+      f_predict_grad_var_r = 0.0_dp
+      return
+   endif
+
+   ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
+   ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, g_f=self%k(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, g_g=self%k(self%n_f+1:self%n_f+self%n_g))
+   ! -k' C^{-1} k'
+   call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
+   ! first term should be second derivative of covariance, but it's hard wired for now
+   f_predict_grad_var_r = self%f_var/self%len_scale_sq - dot_product(self%k, self%Cmat_inv_k)
+end function f_predict_grad_var_r
+
+function f_predict_var_grad_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: r
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
+	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_var_grad_r
+
+   if (.not. self%initialised) then
+      f_predict_var_grad_r = 0.0_dp
+      return
+   endif
+
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, f_g=self%k(self%n_f+1:self%n_f+self%n_g))
+   if (self%n_f > 0) call kernel(r, self%f_r(1:self%n_f), self%f_var, self%len_scale_sq, g_f=self%kp(1:self%n_f))
+   if (self%n_g > 0) call kernel(r, self%g_r(1:self%n_g), self%f_var, self%len_scale_sq, g_g=self%kp(self%n_f+1:self%n_f+self%n_g))
+   call Matrix_QR_Solve(self%Cmat(1), self%k, self%Cmat_inv_k)
+   f_predict_var_grad_r = - dot_product(self%kp, self%Cmat_inv_k)
+   call Matrix_QR_Solve(self%Cmat(1), self%kp, self%Cmat_inv_k)
+   f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%Cmat_inv_k)
+end function f_predict_var_grad_r
+
+subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+   real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
    real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
 
-   if (present(f_f)) f_f(:) = f_var*exp(-0.5_dp*((x2(:)-x1)**2)/l2)
-   if (present(g_f)) g_f(:) = (x2(:)-x1)/l2 * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/l2)
-   if (present(f_g)) f_g(:) = -(x2(:)-x1)/l2 * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/l2)
-   if (present(g_g)) g_g(:) = (1.0_dp-(x1-x2(:))**2/l2)/l2 * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/l2)
+   if (present(f_f)) f_f(:) = f_var*exp(-0.5_dp*((x2(:)-x1)**2)/len_scale_sq)
+   if (present(g_f)) g_f(:) = (x2(:)-x1)/len_scale_sq * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/len_scale_sq)
+   if (present(f_g)) f_g(:) = -(x2(:)-x1)/len_scale_sq * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/len_scale_sq)
+   if (present(g_g)) g_g(:) = (1.0_dp-(x1-x2(:))**2/len_scale_sq)/len_scale_sq * f_var*exp(-0.5_dp*((x2(:)-x1)**2)/len_scale_sq)
 end subroutine SE_kernel_r_rr
 
 end module gp_basic_module
