@@ -43,7 +43,7 @@ public :: SE_kernel_r_rr
 type gp_basic
    real(dp) :: len_scale_sq, f_var
    integer  :: m_f, m_g, m_teach
-   type(LA_Matrix) :: Cmat, shifted_Kmm
+   type(LA_Matrix) :: Cmat, Kmm, noise_Kmm
    real(dp), allocatable :: f_r(:), g_r(:), Cmat_inv_v(:), k(:),  Cmat_inv_k(:), kp(:)
    logical :: sparsified = .false.
    logical :: initialised = .false.
@@ -102,7 +102,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    integer, optional, intent(out) :: error !% error status
 
    integer, pointer :: u_f_sparse_set(:), u_g_sparse_set(:)
-   real(dp), allocatable :: Cmat(:,:), Kmn(:,:), siginvsq_y(:), Kmn_siginvsq_y(:), siginvsq_Knm(:,:)
+   real(dp), allocatable :: Cmat(:,:), Kmn(:,:), siginvsq_y(:), Kmn_siginvsq_y(:), siginvsq_Knm(:,:), Kmm(:,:)
    integer :: i, n_f, n_g, n_tot
 
    INIT_ERROR(error)
@@ -202,32 +202,36 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    n_tot = n_f + n_g
 
    allocate(Cmat(self%m_teach, self%m_teach))
+   allocate(Kmm(self%m_teach, self%m_teach))
    allocate(Kmn(self%m_teach, n_tot))
    allocate(Kmn_siginvsq_y(self%m_teach))
    allocate(siginvsq_Knm(n_tot, self%m_teach))
    allocate(siginvsq_y(n_tot))
 
-   ! set Cmat to shifted_Kmm for now
    call kernel_mat(self%m_f, self%f_r, self%m_g, self%g_r, &
                    self%m_f, self%f_r, self%m_g, self%g_r, &
-                   self%f_var, self%len_scale_sq, kernel, Cmat)
+                   self%f_var, self%len_scale_sq, kernel, Kmm)
    call kernel_mat(self%m_f, self%f_r, self%m_g, self%g_r, & 
 		   n_f, f_r, n_g, g_r, &
                    self%f_var, self%len_scale_sq, kernel, Kmn)
-   ! self%shifted_Kmm is used for variance prediction for non-sparsified GP
-   do i=1, self%m_f
-      Cmat(i,i) = Cmat(i,i) + f_n(u_f_sparse_set(i))
-   end do
-   do i=1, self%m_g
-      Cmat(self%m_f+i,self%m_f+i) = Cmat(self%m_f+i,self%m_f+i) + g_n(u_g_sparse_set(i))
-   end do
-   call initialise(self%shifted_Kmm, Cmat)
-   do i=1, self%m_f
-      Cmat(i,i) = Cmat(i,i) - f_n(u_f_sparse_set(i))
-   end do
-   do i=1, self%m_g
-      Cmat(self%m_f+i,self%m_f+i) = Cmat(self%m_f+i,self%m_f+i) - g_n(u_g_sparse_set(i))
-   end do
+
+   if (self%sparsified) then
+      ! we'll need Kmm^{-1} for variance
+      call initialise(self%Kmm, Kmm)
+   else
+      ! we'll need self%noisE_Kmm, which is Kmm^{-1} shifted by noise, for variance
+      ! Cmat is (for now) Kmm plus diagonal noise
+      Cmat = Kmm
+      do i=1, self%m_f
+	 Cmat(i,i) = Cmat(i,i) + f_n(u_f_sparse_set(i))
+      end do
+      do i=1, self%m_g
+	 Cmat(self%m_f+i,self%m_f+i) = Cmat(self%m_f+i,self%m_f+i) + g_n(u_g_sparse_set(i))
+      end do
+      call initialise(self%noise_Kmm, Cmat)
+      ! set Cmat back to just Kmm
+      Cmat = Kmm
+   endif
 
    if (n_f > 0) siginvsq_y(1:n_f) = f_v(:)/f_n(:)**2
    if (n_g > 0) siginvsq_y(n_f+1:n_f+n_g) = g_v(:)/g_n(:)**2
@@ -242,6 +246,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    end do
 
    call matrix_product_sub(Cmat, Kmn, siginvsq_Knm, lhs_factor=1.0_dp, rhs_factor=1.0_dp)
+   ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
    call initialise(self%Cmat, Cmat)
    ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
@@ -249,8 +254,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    allocate(self%Cmat_inv_v(self%m_teach))
    call Matrix_QR_Solve(self%Cmat, Kmn_siginvsq_y, self%Cmat_inv_v)
 
-   ! for variance prediction we'll need to set this%Cmat to correct thing, whatever it is
-
+   deallocate(Kmm)
    deallocate(Cmat)
    deallocate(Kmn)
    deallocate(Kmn_siginvsq_y)
@@ -310,7 +314,8 @@ subroutine gp_basic_finalise(self)
       if (allocated(self%kp)) deallocate(self%kp)
       if (allocated(self%Cmat_inv_k)) deallocate(self%Cmat_inv_k)
       call finalise(self%Cmat)
-      call finalise(self%shifted_Kmm)
+      call finalise(self%noise_Kmm)
+      call finalise(self%Kmm)
    endif
    self%len_scale_sq = 0.0_dp
    self%f_var = 0.0_dp
@@ -382,13 +387,19 @@ function f_predict_var_r(self, r, kernel)
       return
    endif
 
-if (self%sparsified) call system_abort("no variance for sparsified GP yet")
-
    if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%m_f))
    if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, f_g=self%k(self%m_f+1:self%m_f+self%m_g))
-   ! need to add remaining terms for sparsified GP
-   call Matrix_QR_Solve(self%shifted_Kmm, self%k, self%Cmat_inv_k)
-   f_predict_var_r = self%f_var - dot_product(self%k, self%Cmat_inv_k)
+
+   f_predict_var_r = self%f_var
+   if (self%sparsified) then
+      call Matrix_QR_Solve(self%Kmm, self%k, self%Cmat_inv_k)
+      f_predict_var_r = f_predict_var_r - dot_product(self%k, self%Cmat_inv_k)
+      call Matrix_QR_Solve(self%Cmat, self%k, self%Cmat_inv_k)
+      f_predict_var_r = f_predict_var_r + dot_product(self%k, self%Cmat_inv_k)
+   else
+      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%Cmat_inv_k)
+      f_predict_var_r = f_predict_var_r - dot_product(self%k, self%Cmat_inv_k)
+   endif
 end function f_predict_var_r
 
 function f_predict_grad_var_r(self, r, kernel)
@@ -408,16 +419,27 @@ function f_predict_grad_var_r(self, r, kernel)
       return
    endif
 
-if (self%sparsified) call system_abort("no variance for sparsified GP yet")
-
    ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
    ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
    if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, g_f=self%k(1:self%m_f))
    if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, g_g=self%k(self%m_f+1:self%m_f+self%m_g))
-   ! -k' C^{-1} k'
-   call Matrix_QR_Solve(self%shifted_Kmm, self%k, self%Cmat_inv_k)
-   ! first term should be second derivative of covariance, but it's hard wired for now
-   f_predict_grad_var_r = self%f_var/self%len_scale_sq - dot_product(self%k, self%Cmat_inv_k)
+
+   f_predict_grad_var_r = self%f_var/self%len_scale_sq 
+   if (self%sparsified) then
+      ! -k' K_{mm}^{-1} k'
+      call Matrix_QR_Solve(self%Kmm, self%k, self%Cmat_inv_k)
+      ! first term should be second derivative of covariance, but it's hard wired for now
+      f_predict_grad_var_r = f_predict_grad_var_r - dot_product(self%k, self%Cmat_inv_k)
+      ! -k' C^{-1} k'
+      call Matrix_QR_Solve(self%Cmat, self%k, self%Cmat_inv_k)
+      ! first term should be second derivative of covariance, but it's hard wired for now
+      f_predict_grad_var_r = f_predict_grad_var_r + dot_product(self%k, self%Cmat_inv_k)
+   else
+      ! -k' C^{-1} k'
+      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%Cmat_inv_k)
+      ! first term should be second derivative of covariance, but it's hard wired for now
+      f_predict_grad_var_r = f_predict_grad_var_r - dot_product(self%k, self%Cmat_inv_k)
+   endif
 end function f_predict_grad_var_r
 
 function f_predict_var_grad_r(self, r, kernel)
@@ -437,16 +459,27 @@ function f_predict_var_grad_r(self, r, kernel)
       return
    endif
 
-if (self%sparsified) call system_abort("no variance for sparsified GP yet")
-
    if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%m_f))
    if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, f_g=self%k(self%m_f+1:self%m_f+self%m_g))
    if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, g_f=self%kp(1:self%m_f))
    if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, g_g=self%kp(self%m_f+1:self%m_f+self%m_g))
-   call Matrix_QR_Solve(self%shifted_Kmm, self%k, self%Cmat_inv_k)
-   f_predict_var_grad_r = - dot_product(self%kp, self%Cmat_inv_k)
-   call Matrix_QR_Solve(self%shifted_Kmm, self%kp, self%Cmat_inv_k)
-   f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%Cmat_inv_k)
+
+   f_predict_var_grad_r = 0.0_dp
+   if (self%sparsified) then
+      call Matrix_QR_Solve(self%Kmm, self%k, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%kp, self%Cmat_inv_k)
+      call Matrix_QR_Solve(self%Kmm, self%kp, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%Cmat_inv_k)
+      call Matrix_QR_Solve(self%Cmat, self%k, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r + dot_product(self%kp, self%Cmat_inv_k)
+      call Matrix_QR_Solve(self%Cmat, self%kp, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r + dot_product(self%k, self%Cmat_inv_k)
+   else
+      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%kp, self%Cmat_inv_k)
+      call Matrix_QR_Solve(self%noise_Kmm, self%kp, self%Cmat_inv_k)
+      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%Cmat_inv_k)
+   endif
 end function f_predict_var_grad_r
 
 subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
