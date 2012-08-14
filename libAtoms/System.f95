@@ -1338,25 +1338,39 @@ contains
 
   end subroutine reallocate_int1d
 
-  subroutine reallocate_real1d(array, d1, zero)
+  subroutine reallocate_real1d(array, d1, zero, copy)
     real(dp), allocatable, dimension(:), intent(inout) :: array
-    integer,                             intent(in)    :: d1
-    logical, optional,                   intent(in)    :: zero
+    integer,                            intent(in)    :: d1
+    logical, optional,                  intent(in)    :: zero, copy
+
+    logical :: do_copy
+    real(dp), allocatable :: tmp(:)
 
     if (allocated(array)) then
        if (size(array) /= d1) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array)))
+	    tmp = array
+	  endif
           deallocate(array)
           allocate(array(d1))
+	  if (do_copy) then
+	    array = 0
+	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+	    deallocate(tmp)
+	  endif
        end if
     else
        allocate(array(d1))
     end if
 
     if (present(zero)) then
-       if (zero) array = 0.0_dp
+       if (zero) array = 0
     end if
 
   end subroutine reallocate_real1d
+
 
   subroutine reallocate_int2d(array, d1, d2, zero, copy)
     integer, allocatable, dimension(:,:), intent(inout) :: array
