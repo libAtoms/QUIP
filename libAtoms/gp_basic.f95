@@ -86,7 +86,7 @@ end interface f_predict_var_grad
 
 contains
 
-subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, g_sparse_set, error)
+subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, g_sparse_set, jitter, error)
    type(gp_basic), intent(inout) :: self !% object to store GP
    real(dp), intent(in) :: len_scale, f_var !% length scale and variance prior for GP
    interface
@@ -99,6 +99,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    real(dp), optional, intent(in) :: f_r(:), f_v(:), f_n(:) !% arrays of function positions, values, noise 
    real(dp), optional, intent(in) :: g_r(:), g_v(:), g_n(:) !% arrays of function gradient positions, values, noise 
    integer, optional, target, intent(in) :: f_sparse_set(:), g_sparse_set(:) !% sets of points to use for sparsifcation for values and gradients
+   real(dp), intent(in), optional :: jitter
    integer, optional, intent(out) :: error !% error status
 
    integer, pointer :: u_f_sparse_set(:), u_g_sparse_set(:)
@@ -239,9 +240,11 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
       ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
       ! "jitter" (ABP e-mail 14 Aug)
-      do i=1, size(Cmat,1)
-	 Cmat(i,i) = Cmat(i,i) + 1.0e-8_dp
-      end do
+      if (present(jitter)) then
+	 do i=1, size(Cmat,1)
+	    Cmat(i,i) = Cmat(i,i) + jitter
+	 end do
+      endif
 
       call initialise(self%Cmat, Cmat)
       ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
