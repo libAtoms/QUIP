@@ -102,7 +102,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    integer, optional, intent(out) :: error !% error status
 
    integer, pointer :: u_f_sparse_set(:), u_g_sparse_set(:)
-   real(dp), allocatable :: Cmat(:,:), Kmn(:,:), siginvsq_y(:), Kmn_siginvsq_y(:), siginvsq_Knm(:,:), Kmm(:,:)
+   real(dp), allocatable :: Cmat(:,:), Kmn(:,:), y(:), siginvsq_y(:), Kmn_siginvsq_y(:), siginvsq_Knm(:,:), Kmm(:,:)
    integer :: i, n_f, n_g, n_tot
 
    INIT_ERROR(error)
@@ -207,6 +207,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    allocate(Kmn_siginvsq_y(self%m_teach))
    allocate(siginvsq_Knm(n_tot, self%m_teach))
    allocate(siginvsq_y(n_tot))
+   allocate(y(n_tot))
 
    call kernel_mat(self%m_f, self%f_r, self%m_g, self%g_r, &
                    self%m_f, self%f_r, self%m_g, self%g_r, &
@@ -233,26 +234,34 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
       Cmat = Kmm
    endif
 
-   if (n_f > 0) siginvsq_y(1:n_f) = f_v(:)/f_n(:)**2
-   if (n_g > 0) siginvsq_y(n_f+1:n_f+n_g) = g_v(:)/g_n(:)**2
-   call matrix_product_sub(Kmn_siginvsq_y, Kmn, siginvsq_y)
+   if (self%sparsified) then
+      if (n_f > 0) siginvsq_y(1:n_f) = f_v(:)/f_n(:)**2
+      if (n_g > 0) siginvsq_y(n_f+1:n_f+n_g) = g_v(:)/g_n(:)**2
+      call matrix_product_sub(Kmn_siginvsq_y, Kmn, siginvsq_y)
 
-   siginvsq_Knm = transpose(Kmn)
-   do i=1, n_f
-      siginvsq_Knm(i,:) = siginvsq_Knm(i,:) / f_n(i)**2
-   end do
-   do i=1, n_g
-      siginvsq_Knm(n_f+i,:) = siginvsq_Knm(n_f+i,:) / g_n(i)**2
-   end do
+      siginvsq_Knm = transpose(Kmn)
+      do i=1, n_f
+	 siginvsq_Knm(i,:) = siginvsq_Knm(i,:) / f_n(i)**2
+      end do
+      do i=1, n_g
+	 siginvsq_Knm(n_f+i,:) = siginvsq_Knm(n_f+i,:) / g_n(i)**2
+      end do
 
-   call matrix_product_sub(Cmat, Kmn, siginvsq_Knm, lhs_factor=1.0_dp, rhs_factor=1.0_dp)
-   ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
+      call matrix_product_sub(Cmat, Kmn, siginvsq_Knm, lhs_factor=1.0_dp, rhs_factor=1.0_dp)
+      ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
-   call initialise(self%Cmat, Cmat)
-   ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
+      call initialise(self%Cmat, Cmat)
+      ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
-   allocate(self%Cmat_inv_v(self%m_teach))
-   call Matrix_QR_Solve(self%Cmat, Kmn_siginvsq_y, self%Cmat_inv_v)
+      allocate(self%Cmat_inv_v(self%m_teach))
+      call Matrix_QR_Solve(self%Cmat, Kmn_siginvsq_y, self%Cmat_inv_v)
+   else
+      if (n_f > 0) y(1:n_f) = f_v(:)
+      if (n_g > 0) y(n_f+1:n_f+n_g) = g_v(:)
+
+      allocate(self%Cmat_inv_v(self%m_teach))
+      call Matrix_QR_Solve(self%noise_Kmm, y, self%Cmat_inv_v)
+   endif
 
    deallocate(Kmm)
    deallocate(Cmat)
@@ -260,6 +269,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
    deallocate(Kmn_siginvsq_y)
    deallocate(siginvsq_Knm)
    deallocate(siginvsq_y)
+   deallocate(y)
 
    allocate(self%k(self%m_teach))
    allocate(self%kp(self%m_teach))
