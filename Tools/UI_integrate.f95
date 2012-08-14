@@ -56,14 +56,14 @@ implicit none
    f_int_err_sq(i_zero) = 0.0_dp
    do i=i_zero-1, 1, -1
       f_int(i) = f_int(i+1) - (v(i+1)-v(i))*(f(i+1)+f(i))/2.0_dp
-      t_err_sq = (v(i)*(f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + (v(i+1)*(f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
-	 ((v(i+1)-v(i))*f(i)/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))*f(i+1)/2.0_dp)**2*f_err(i)**2
+      t_err_sq = ((f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + ((f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
+	 ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
       f_int_err_sq(i) = f_int_err_sq(i+1) + t_err_sq
    end do
    do i=i_zero, N-1
       f_int(i+1) = f_int(i) + (v(i+1)-v(i))*(f(i+1)+f(i))/2.0_dp
-      t_err_sq = (v(i)*(f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + (v(i+1)*(f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
-	 ((v(i+1)-v(i))*f(i)/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))*f(i+1)/2.0_dp)**2*f_err(i)**2
+      t_err_sq = ((f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + ((f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
+	 ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
       f_int_err_sq(i+1) = f_int_err_sq(i) + t_err_sq
    end do
 
