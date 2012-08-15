@@ -122,7 +122,7 @@ program force_gaussian_prediction
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size
    integer, dimension(:), allocatable            :: distance_index
-   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
+   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, do_svd, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
    character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
  
@@ -142,7 +142,8 @@ program force_gaussian_prediction
    call param_register(params, 'r_mesh', '6',   r_mesh, "grid finess of r0")
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'func_type', '0', func_type, "which kernel function is used to build the covariance matrix")
-   call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes, instead of SVD")
+   call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes")
+   call param_register(params, 'do_svd',  'F', do_svd, "true for inversing the cov matrix by SVD")
    call param_register(params, 'n_relevant_confs', '200', n_relevant_confs, "the number of relevant confs you would like to do machine learning with")
    call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
@@ -484,11 +485,11 @@ do i=1, in%n_frame
        
       call system_timer('Inverting the Covariance Matrix')
       
-      if (do_gp) then
-         call inverse(covariance, inv_covariance)
-      else
+      if (do_svd) then
          ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
          inv_covariance = inverse_svd_threshold(covariance, n_relevant_confs, thresh)
+      else
+         call inverse(covariance, inv_covariance)
       endif
       
       call system_timer('Inverting the Covariance Matrix')
@@ -529,7 +530,7 @@ do i=1, in%n_frame
       endif 
 
       do j=1, 3
-         if (norm(feature_matrix_pred(:,j)) < 100.0_dp*TOL_REAL)  force(j)=0.0_dp 
+         if (norm(feature_matrix_pred(:,j)) < 10000.0_dp*TOL_REAL)  force(j)=0.0_dp 
          ! making use of the physical relation between force and IVs, which is nessecceary for near high symmetric confs
       enddo
 
