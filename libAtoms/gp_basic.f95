@@ -182,6 +182,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
       self%f_r(:) = f_r(u_f_sparse_set)
       n_f = size(f_r)
    else
+      allocate(self%f_r(1))
       self%m_f = 0
       n_f = 0
    endif
@@ -191,6 +192,7 @@ subroutine gp_basic_initialise(self, len_scale, f_var, kernel, f_r, f_v, f_n, g_
       self%g_r(:) = g_r(u_g_sparse_set)
       n_g = size(g_r)
    else
+      allocate(self%g_r(1))
       self%m_g = 0
       n_g = 0
    endif
@@ -322,6 +324,47 @@ subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_
    end do
 end subroutine
 
+subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, kernel, vec)
+   real(dp), intent(in) :: r
+   integer, intent(in) :: n_f
+   real(dp), intent(in) :: f_r(:)
+   integer, intent(in) :: n_g
+   real(dp), intent(in) :: g_r(:)
+   real(dp), intent(in) :: f_var, len_scale_sq
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
+	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
+      end subroutine kernel
+   end interface
+   real(dp), intent(out) :: vec(:)
+
+   if (n_f > 0) call kernel(r, f_r(1:n_f), f_var, len_scale_sq, f_f=vec(1:n_f))
+   if (n_g > 0) call kernel(r, g_r(1:n_g), f_var, len_scale_sq, f_g=vec(n_f+1:n_f+n_g))
+end subroutine f_kernel_vec
+
+subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, kernel, vec)
+   real(dp), intent(in) :: r 
+   integer, intent(in) :: n_f
+   real(dp), intent(in) :: f_r(:)
+   integer, intent(in) :: n_g
+   real(dp), intent(in) :: g_r(:)
+   real(dp), intent(in) :: f_var, len_scale_sq
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
+	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
+      end subroutine kernel
+   end interface
+   real(dp), intent(out) :: vec(:)
+
+   if (n_f > 0) call kernel(r, f_r(1:n_f), f_var, len_scale_sq, g_f=vec(1:n_f))
+   if (n_g > 0) call kernel(r, g_r(1:n_g), f_var, len_scale_sq, g_g=vec(n_f+1:n_f+n_g))
+end subroutine g_kernel_vec
+
+
 subroutine gp_basic_finalise(self)
    type(gp_basic), intent(inout) :: self !% object for GP
 
@@ -362,8 +405,7 @@ function f_predict_r(self, r, kernel)
       return
    endif
 
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, f_g=self%k(self%m_f+1:self%m_f+self%m_g))
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
    f_predict_r = dot_product(self%k, self%Cmat_inv_v)
 end function f_predict_r
 
@@ -384,8 +426,7 @@ function f_predict_grad_r(self, r, kernel)
       return
    endif
 
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, g_f=self%k(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, g_g=self%k(self%m_f+1:self%m_f+self%m_g))
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
    f_predict_grad_r = dot_product(self%k, self%Cmat_inv_v)
 end function f_predict_grad_r
 
@@ -406,8 +447,7 @@ function f_predict_var_r(self, r, kernel)
       return
    endif
 
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, f_g=self%k(self%m_f+1:self%m_f+self%m_g))
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
 
    f_predict_var_r = self%f_var
    if (self%sparsified) then
@@ -440,8 +480,7 @@ function f_predict_grad_var_r(self, r, kernel)
 
    ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
    ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, g_f=self%k(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, g_g=self%k(self%m_f+1:self%m_f+self%m_g))
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
 
    f_predict_grad_var_r = self%f_var/self%len_scale_sq 
    if (self%sparsified) then
@@ -478,10 +517,8 @@ function f_predict_var_grad_r(self, r, kernel)
       return
    endif
 
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, f_f=self%k(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, f_g=self%k(self%m_f+1:self%m_f+self%m_g))
-   if (self%m_f > 0) call kernel(r, self%f_r(1:self%m_f), self%f_var, self%len_scale_sq, g_f=self%kp(1:self%m_f))
-   if (self%m_g > 0) call kernel(r, self%g_r(1:self%m_g), self%f_var, self%len_scale_sq, g_g=self%kp(self%m_f+1:self%m_f+self%m_g))
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%kp)
 
    f_predict_var_grad_r = 0.0_dp
    if (self%sparsified) then

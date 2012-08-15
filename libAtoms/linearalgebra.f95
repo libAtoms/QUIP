@@ -5958,11 +5958,11 @@ CONTAINS
      deallocate(rv, rv_inv, ev)
    end function matrix_exp_d
 
-   subroutine k_means_clustering_pick_1d(x, k, cluster_indices)
+   subroutine k_means_clustering_pick_1d(x, cluster_indices)
       real(dp), intent(in) :: x(:)
-      integer, intent(in) :: k
       integer, intent(out) :: cluster_indices(:)
 
+      integer :: k
       real(dp), allocatable :: k_means(:)
       integer :: n, rv, i, j, closest_i, closest_j
       real(dp) :: closest_r, r, t_sum
@@ -5971,6 +5971,7 @@ CONTAINS
 ! print *, "k_means_clustering_pick_1d ", k, size(cluster_indices)
 ! print *, "x ", x
 
+      k = size(cluster_indices)
       n = size(x)
       allocate(k_means(k))
 
