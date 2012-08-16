@@ -46,7 +46,8 @@ type gp_basic
    real(dp) :: f_var
    integer  :: n_dof, m_f, m_g, m_teach
    type(LA_Matrix) :: Cmat, Kmm, noise_Kmm
-   real(dp), allocatable :: f_r(:,:), g_r(:,:), Cmat_inv_v(:), k(:),  mat_inv_k(:), kp(:)
+   real(dp), allocatable :: f_r(:,:), g_r(:,:), Cmat_inv_v(:), k(:), mat_inv_k(:)
+   real(dp), allocatable :: k_grad(:,:), mat_inv_k_grad(:,:)
    logical :: sparsified = .false.
    logical :: initialised = .false.
 end type gp_basic
@@ -66,25 +67,25 @@ interface f_predict
    module procedure f_predict_r
 end interface f_predict
 
-!!% predict a gradient of a function value from a gp
-!interface f_predict_grad
-!   module procedure f_predict_grad_r
-!end interface f_predict_grad
+!% predict a gradient of a function value from a gp
+interface f_predict_grad
+   module procedure f_predict_grad_r
+end interface f_predict_grad
 
 !% predict a function variance from a gp
 interface f_predict_var
    module procedure f_predict_var_r
 end interface f_predict_var
 
-!!% predict the variance of a gradient of a function from a gp
-!interface f_predict_grad_var
-!   module procedure f_predict_grad_var_r
-!end interface f_predict_grad_var
-!
-!!% predict the gradient of a function variance from a gp
-!interface f_predict_var_grad
-!   module procedure f_predict_var_grad_r
-!end interface f_predict_var_grad
+!% predict the variance of a gradient of a function from a gp
+interface f_predict_grad_var
+   module procedure f_predict_grad_var_r
+end interface f_predict_grad_var
+
+!% predict the gradient of a function variance from a gp
+interface f_predict_var_grad
+   module procedure f_predict_var_grad_r
+end interface f_predict_var_grad
 
 contains
 
@@ -312,8 +313,9 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 
    deallocate(Kmm)
    allocate(self%k(self%m_teach))
-   allocate(self%kp(self%m_teach))
+   allocate(self%k_grad(self%n_dof, self%m_teach))
    allocate(self%mat_inv_k(self%m_teach))
+   allocate(self%mat_inv_k_grad(self%m_teach, self%n_dof))
 
    if (.not. present(f_sparse_set) .and. present(f_r)) deallocate(u_f_sparse_set)
    if (.not. present(g_sparse_set) .and. present(g_r)) deallocate(u_g_sparse_set)
@@ -329,8 +331,9 @@ subroutine gp_basic_finalise(self)
       if (allocated(self%g_r)) deallocate(self%g_r)
       if (allocated(self%Cmat_inv_v)) deallocate(self%Cmat_inv_v)
       if (allocated(self%k)) deallocate(self%k)
-      if (allocated(self%kp)) deallocate(self%kp)
+      if (allocated(self%k_grad)) deallocate(self%k_grad)
       if (allocated(self%mat_inv_k)) deallocate(self%mat_inv_k)
+      if (allocated(self%mat_inv_k_grad)) deallocate(self%mat_inv_k_grad)
       if (allocated(self%len_scale_sq)) deallocate(self%len_scale_sq)
       if (allocated(self%periodic)) deallocate(self%periodic)
       call finalise(self%Cmat)
@@ -369,26 +372,27 @@ function f_predict_r(self, r, kernel)
    f_predict_r = dot_product(self%k, self%Cmat_inv_v)
 end function f_predict_r
 
-!function f_predict_grad_r(self, r, kernel)
-!   type(gp_basic), intent(inout) :: self !% object for GP
-!   real(dp), intent(in) :: r !% position at which to f_predict value
-!   interface
-!      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
-!	 use system_module, only : dp
-!	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
-!	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
-!      end subroutine kernel
-!   end interface
-!   real(dp) :: f_predict_grad_r
-!
-!   if (.not. self%initialised) then
-!      f_predict_grad_r = 0.0_dp
-!      return
-!   endif
-!
-!   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
-!   f_predict_grad_r = dot_product(self%k, self%Cmat_inv_v)
-!end function f_predict_grad_r
+function f_predict_grad_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self !% object for GP
+   real(dp), intent(in) :: r(:) !% position at which to f_predict value
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
+	 logical, intent(in) :: periodic(:)
+	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_grad_r(size(r))
+
+   if (.not. self%initialised) then
+      f_predict_grad_r = 0.0_dp
+      return
+   endif
+
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+   call matrix_product_sub(f_predict_grad_r, self%k_grad, self%Cmat_inv_v)
+end function f_predict_grad_r
 
 function f_predict_var_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self
@@ -422,82 +426,85 @@ function f_predict_var_r(self, r, kernel)
    endif
 end function f_predict_var_r
 
-!function f_predict_grad_var_r(self, r, kernel)
-!   type(gp_basic), intent(inout) :: self
-!   real(dp), intent(in) :: r
-!   interface
-!      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
-!	 use system_module, only : dp
-!	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
-!	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
-!      end subroutine kernel
-!   end interface
-!   real(dp) :: f_predict_grad_var_r
-!
-!   if (.not. self%initialised) then
-!      f_predict_grad_var_r = 0.0_dp
-!      return
-!   endif
-!
-!   ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
-!   ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
-!   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
-!
-!   f_predict_grad_var_r = self%f_var/self%len_scale_sq 
-!   if (self%sparsified) then
-!      ! -k' K_{mm}^{-1} k'
-!      call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
-!      ! first term should be second derivative of covariance, but it's hard wired for now
-!      f_predict_grad_var_r = f_predict_grad_var_r - dot_product(self%k, self%mat_inv_k)
-!      ! -k' C^{-1} k'
-!      call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
-!      ! first term should be second derivative of covariance, but it's hard wired for now
-!      f_predict_grad_var_r = f_predict_grad_var_r + dot_product(self%k, self%mat_inv_k)
-!   else
-!      ! -k' C^{-1} k'
-!      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%mat_inv_k)
-!      ! first term should be second derivative of covariance, but it's hard wired for now
-!      f_predict_grad_var_r = f_predict_grad_var_r - dot_product(self%k, self%mat_inv_k)
-!   endif
-!end function f_predict_grad_var_r
-!
-!function f_predict_var_grad_r(self, r, kernel)
-!   type(gp_basic), intent(inout) :: self
-!   real(dp), intent(in) :: r
-!   interface
-!      subroutine kernel(x1, x2, f_var, len_scale_sq, f_f, g_f, f_g, g_g)
-!	 use system_module, only : dp
-!	 real(dp), intent(in) :: x1, x2(:), f_var, len_scale_sq
-!	 real(dp), optional :: f_f(:), g_f(:), f_g(:), g_g(:)
-!      end subroutine kernel
-!   end interface
-!   real(dp) :: f_predict_var_grad_r
-!
-!   if (.not. self%initialised) then
-!      f_predict_var_grad_r = 0.0_dp
-!      return
-!   endif
-!
-!   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%k)
-!   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, kernel, self%kp)
-!
-!   f_predict_var_grad_r = 0.0_dp
-!   if (self%sparsified) then
-!      call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%kp, self%mat_inv_k)
-!      call Matrix_QR_Solve(self%Kmm, self%kp, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%mat_inv_k)
-!      call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r + dot_product(self%kp, self%mat_inv_k)
-!      call Matrix_QR_Solve(self%Cmat, self%kp, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r + dot_product(self%k, self%mat_inv_k)
-!   else
-!      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%kp, self%mat_inv_k)
-!      call Matrix_QR_Solve(self%noise_Kmm, self%kp, self%mat_inv_k)
-!      f_predict_var_grad_r = f_predict_var_grad_r - dot_product(self%k, self%mat_inv_k)
-!   endif
-!end function f_predict_var_grad_r
+function f_predict_grad_var_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: r(:)
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
+	 logical, intent(in) :: periodic(:)
+	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_grad_var_r(size(r))
+
+   integer :: ii
+
+   if (.not. self%initialised) then
+      f_predict_grad_var_r = 0.0_dp
+      return
+   endif
+
+   ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
+   ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+
+   ! first term should be second derivative of covariance, but it's hard wired for now
+   f_predict_grad_var_r = self%f_var/self%len_scale_sq 
+   if (self%sparsified) then
+      ! -k' K_{mm}^{-1} k'
+      call Matrix_QR_Solve(self%Kmm, transpose(self%k_grad), self%mat_inv_k_grad)
+      ! first term should be second derivative of covariance, but it's hard wired for now
+      do ii=1, self%n_dof
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+      end do
+      ! -k' C^{-1} k'
+      call Matrix_QR_Solve(self%Cmat, transpose(self%k_grad), self%mat_inv_k_grad)
+      do ii=1, self%n_dof
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) + dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+      end do
+   else
+      ! -k' C^{-1} k'
+      call Matrix_QR_Solve(self%noise_Kmm, transpose(self%k_grad), self%mat_inv_k_grad)
+      do ii=1, self%n_dof
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+      end do
+   endif
+end function f_predict_grad_var_r
+
+function f_predict_var_grad_r(self, r, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: r(:)
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+	 use system_module, only : dp
+	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
+	 logical, intent(in) :: periodic(:)
+	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_var_grad_r(size(r))
+
+   if (.not. self%initialised) then
+      f_predict_var_grad_r = 0.0_dp
+      return
+   endif
+
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+
+   f_predict_var_grad_r = 0.0_dp
+   if (self%sparsified) then
+      call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
+      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=-2.0_dp)
+      call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
+      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=2.0_dp)
+   else
+      call Matrix_QR_Solve(self%noise_Kmm, self%k, self%mat_inv_k)
+      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=-2.0_dp)
+   endif
+end function f_predict_var_grad_r
 
 subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_var, len_scale_sq, periodic, kernel, mat)
    integer, intent(in) :: l_n_f, l_n_g
@@ -599,19 +606,6 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, 
 
    n_dof = size(x1)
    nv = size(x2,2)
-
-if (present(f_f)) then
-if (size(f_f) /= nv) call system_abort("size(f_f) bad "//shape(f_f)//" "//nv//" "//n_dof)
-endif
-if (present(g_f)) then
-if (size(g_f,1) /= n_dof .or. size(g_f,2) /= nv) call system_abort("size(g_f) bad "//shape(g_f)//" "//nv//" "//n_dof)
-endif
-if (present(f_g)) then
-if (size(f_g,1) /= n_dof*nv) call system_abort("size(f_g) bad "//shape(f_g)//" "//nv//" "//n_dof)
-endif
-if (present(g_g)) then
-if (size(g_g,1) /= n_dof .or. size(g_g,2) /= nv*n_dof) call system_abort("size(g_g) bad "//shape(f_g)//" "//nv//" "//n_dof)
-endif
 
    allocate(exp_arg(nv))
    allocate(dexp_arg_i(n_dof,nv))
