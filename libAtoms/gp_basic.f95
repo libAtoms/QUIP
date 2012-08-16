@@ -27,25 +27,37 @@
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-#include "error.inc"
 
-!% A simple Gaussian process module for 1-D functions learned from samples of
-!% their values
+!% A simple Gaussian process module for n-D functions learned from samples of
+!% their values or gradients, with sparsification
 
 module gp_basic_module
-use system_module
-use linearalgebra_module
 implicit none
+private
 
-! public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad
+public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad, f_predict_var_grad, f_predict_grad_var
 public :: SE_kernel_r_rr
+
+integer, parameter :: dp = 8
+
+integer, parameter :: NOT_FACTORISED = 0
+integer, parameter :: QR             = 2
+
+type GP_Matrix
+   real(dp), dimension(:,:), allocatable :: matrix, factor
+   real(dp), dimension(:), allocatable :: s, tau
+   integer :: n, m
+   logical :: initialised = .false.
+   logical :: equilibrated = .false.
+   integer :: factorised = NOT_FACTORISED
+end type GP_Matrix
 
 type gp_basic
    real(dp), allocatable :: len_scale_sq(:)
    logical, allocatable :: periodic(:)
    real(dp) :: f_var
    integer  :: n_dof, m_f, m_g, m_teach
-   type(LA_Matrix) :: Cmat, Kmm, noise_Kmm
+   type(GP_Matrix) :: Cmat, Kmm, noise_Kmm
    real(dp), allocatable :: f_r(:,:), g_r(:,:), Cmat_inv_v(:), k(:), mat_inv_k(:)
    real(dp), allocatable :: k_grad(:,:), mat_inv_k_grad(:,:)
    logical :: sparsified = .false.
@@ -54,12 +66,12 @@ end type gp_basic
 
 !% initialise (and teach) a gp_basic
 interface initialise
-   module procedure gp_basic_initialise_nd
+   module procedure gp_basic_initialise_nd, gp_matrix_initialise
 end interface initialise
 
 !% finalise and deallocate a gp_basic
 interface finalise
-   module procedure gp_basic_finalise
+   module procedure gp_basic_finalise, gp_matrix_finalise
 end interface finalise
 
 !% predict a function value from a gp
@@ -87,16 +99,21 @@ interface f_predict_var_grad
    module procedure f_predict_var_grad_r
 end interface f_predict_var_grad
 
+interface Matrix_QR_Solve
+   module procedure GP_Matrix_QR_Solve_Vector, GP_Matrix_QR_Solve_Matrix
+endinterface Matrix_QR_Solve
+
 contains
 
-subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, g_sparse_set, jitter, error)
+subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, &
+                                  g_sparse_set, jitter)
    type(gp_basic), intent(inout) :: self !% object to store GP
    real(dp), intent(in) :: len_scale(:)
    logical, intent(in) :: periodic(:)
    real(dp), intent(in) :: f_var !% length scale and variance prior for GP
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -106,45 +123,48 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
    real(dp), optional, intent(in) :: g_r(:,:), g_v(:,:), g_n(:,:) !% arrays of function gradient positions, values, noise 
    integer, optional, target, intent(in) :: f_sparse_set(:), g_sparse_set(:) !% sets of points to use for sparsifcation for values and gradients
    real(dp), intent(in), optional :: jitter
-   integer, optional, intent(out) :: error !% error status
 
    integer, pointer :: u_f_sparse_set(:), u_g_sparse_set(:)
    real(dp), allocatable :: Cmat(:,:), Kmn(:,:), y(:), siginvsq_y(:), Kmn_siginvsq_y(:), siginvsq_Knm(:,:), Kmm(:,:)
    integer :: i, n_f, n_g, n_tot, i_glob, ii
 
-   INIT_ERROR(error)
-
    call finalise(self)
 
    if (f_var <= 0.0_dp) then
-      RAISE_ERROR("invalid f_var="//f_var, error)
+      print *,"invalid f_var=",f_var
+      stop
    endif
 
    i = count( (/ present(f_r), present(f_v), present(f_n) /) )
    if (i /= 0 .and. i /= 3) then
-      RAISE_ERROR("got something other than all or none of f_r, f_v, f_n", error)
+      print *,"got something other than all or none of f_r, f_v, f_n"
+      stop
    endif
    i = count( (/ present(g_r), present(g_v), present(g_n) /) )
    if (i /= 0 .and. i /= 3) then
-      RAISE_ERROR("got something other than all or none of g_r, g_v, g_n", error)
+      print *,"got something other than all or none of g_r, g_v, g_n"
+      stop
    endif
 
    ! compare f_r to f_[gn]
    if (present(f_r)) then
       if (size(f_r,2) /= size(f_v) .or. size(f_r,2) /= size(f_n)) then
-	 RAISE_ERROR("size(f_r,2)="//size(f_r,2)//" size(f_v)="//size(f_v)//" size(f_n)="//size(f_n)//" not all equal", error)
+	 print *,"size(f_r,2)=",size(f_r,2)," size(f_v)=",size(f_v)," size(f_n)=",size(f_n)," not all equal"
+	 stop
       endif
    endif
    ! compare g_r to g_[gn]
    if (present(g_r)) then
       if (any(shape(g_r) /= shape(g_v)) .or. any(shape(g_r) /= shape(g_n))) then
-	 RAISE_ERROR("shape(g_r)="//shape(g_r)//" shape(g_v)="//shape(g_v)//" shape(g_n)="//shape(g_n)//" not all equal", error)
+	 print *,"shape(g_r)=",shape(g_r)," shape(g_v)=",shape(g_v)," shape(g_n)=",shape(g_n)," not all equal"
+	 stop
       endif
    endif
    ! compare f_r to g_r
    if (present(f_r) .and. present(g_r)) then
       if (size(f_r,1) /= size(g_r,1)) then
-	 RAISE_ERROR("size(f_r,1)="//size(f_r,1)//" size(g_r,1)="//size(g_r,1)//" not equal", error)
+	 print *,"size(f_r,1)=",size(f_r,1)," size(g_r,1)=",size(g_r,1)," not equal"
+	 stop
       endif
    endif
 
@@ -155,7 +175,8 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
       ! check and if needed point u_[fg]_sparse_set
       if (present(f_sparse_set)) then
 	 if (any(f_sparse_set < 1) .or. any(f_sparse_set > n_f)) then
-	    RAISE_ERROR("some of f_sparse_set out of range "//minval(f_sparse_set)//" "//maxval(f_sparse_set)//" "//n_f, error)
+	    print *,"some of f_sparse_set out of range ",minval(f_sparse_set)," ",maxval(f_sparse_set)," ",n_f
+	    stop
 	 endif
 	 u_f_sparse_set => f_sparse_set
 	 self%sparsified = .true.
@@ -179,7 +200,8 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
       ! check and if needed point u_[fg]_sparse_set
       if (present(g_sparse_set)) then
 	 if (any(g_sparse_set < 1) .or. any(g_sparse_set > n_g)) then
-	    RAISE_ERROR("some of g_sparse_set out of range "//minval(g_sparse_set)//" "//maxval(g_sparse_set)//" "//n_g, error)
+	    print *,"some of g_sparse_set out of range ",minval(g_sparse_set)," ",maxval(g_sparse_set)," ",n_g
+	    stop
 	 endif
 	 u_g_sparse_set => g_sparse_set
 	 self%sparsified = .true.
@@ -199,10 +221,12 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
    endif
 
    if (size(len_scale) /= self%n_dof) then
-      RAISE_ERROR("size(len_scale)="//size(len_scale)//" /= n_dof="//self%n_dof, error)
+      print *,"size(len_scale)=",size(len_scale)," , n_dof=",self%n_dof
+      stop
    endif
    if (size(periodic) /= self%n_dof) then
-      RAISE_ERROR("size(periodic)="//size(periodic)//" /= n_dof="//self%n_dof, error)
+      print *,"size(periodic)=",size(periodic)," /= n_dof=",self%n_dof
+      stop
    endif
 
    allocate(self%len_scale_sq(self%n_dof))
@@ -212,10 +236,12 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
    self%f_var = f_var
 
    if (n_f + n_g == 0) then
-      RAISE_ERROR("no teaching data provided", error)
+      print *,"no teaching data provided"
+      stop
    endif
    if (self%m_f + self%m_g == 0) then
-      RAISE_ERROR("no sparsified teaching data provided", error)
+      print *,"no sparsified teaching data provided"
+      stop
    endif
 
    self%m_teach = self%m_f + self%m_g*self%n_dof
@@ -248,7 +274,8 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 	    siginvsq_y(n_f+(i-1)*self%n_dof+1:n_f+i*self%n_dof) = g_v(:,i)/g_n(:,i)
 	 end do
       endif
-      call matrix_product_sub(Kmn_siginvsq_y, Kmn, siginvsq_y)
+      call dgemv('N', size(Kmn,1), size(Kmn,2), 1.0_dp, Kmn(1,1), size(Kmn,1), &
+	 siginvsq_y(1), 1, 0.0_dp, Kmn_siginvsq_y(1), 1)
 
       siginvsq_Knm = transpose(Kmn)
       do i=1, n_f
@@ -261,7 +288,9 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
       end do
 
       Cmat = Kmm
-      call matrix_product_sub(Cmat, Kmn, siginvsq_Knm, lhs_factor=1.0_dp, rhs_factor=1.0_dp)
+      call dgemm('N', 'N', size(Cmat,1), size(Cmat,2), size(Kmn,2), &
+	 1.0_dp, Kmn(1,1), size(Kmn,1), siginvsq_Knm(1,1), size(siginvsq_Knm,1), &
+	 1.0_dp, Cmat(1,1), size(Cmat,1))
       ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
       ! "jitter" (ABP e-mail 14 Aug)
@@ -355,7 +384,7 @@ function f_predict_r(self, r, kernel)
    real(dp), intent(in) :: r(:) !% position at which to f_predict value
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -363,13 +392,15 @@ function f_predict_r(self, r, kernel)
    end interface
    real(dp) :: f_predict_r
 
+   real(dp), external :: ddot
+
    if (.not. self%initialised) then
       f_predict_r = 0.0_dp
       return
    endif
 
    call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k)
-   f_predict_r = dot_product(self%k, self%Cmat_inv_v)
+   f_predict_r = ddot(size(self%k), self%k(1), 1, self%Cmat_inv_v(1), 1)
 end function f_predict_r
 
 function f_predict_grad_r(self, r, kernel)
@@ -377,7 +408,7 @@ function f_predict_grad_r(self, r, kernel)
    real(dp), intent(in) :: r(:) !% position at which to f_predict value
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -391,7 +422,8 @@ function f_predict_grad_r(self, r, kernel)
    endif
 
    call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
-   call matrix_product_sub(f_predict_grad_r, self%k_grad, self%Cmat_inv_v)
+   call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), 1.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
+      self%Cmat_inv_v(1), 1, 0.0_dp, f_predict_grad_r(1), 1)
 end function f_predict_grad_r
 
 function f_predict_var_r(self, r, kernel)
@@ -399,13 +431,15 @@ function f_predict_var_r(self, r, kernel)
    real(dp), intent(in) :: r(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
    real(dp) :: f_predict_var_r
+
+   real(dp), external :: ddot
 
    if (.not. self%initialised) then
       f_predict_var_r = 0.0_dp
@@ -417,12 +451,12 @@ function f_predict_var_r(self, r, kernel)
    f_predict_var_r = self%f_var
    if (self%sparsified) then
       call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
-      f_predict_var_r = f_predict_var_r - dot_product(self%k, self%mat_inv_k)
+      f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
       call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
-      f_predict_var_r = f_predict_var_r + dot_product(self%k, self%mat_inv_k)
+      f_predict_var_r = f_predict_var_r + ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
    else
       call Matrix_QR_Solve(self%noise_Kmm, self%k, self%mat_inv_k)
-      f_predict_var_r = f_predict_var_r - dot_product(self%k, self%mat_inv_k)
+      f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
    endif
 end function f_predict_var_r
 
@@ -431,7 +465,7 @@ function f_predict_grad_var_r(self, r, kernel)
    real(dp), intent(in) :: r(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -440,6 +474,8 @@ function f_predict_grad_var_r(self, r, kernel)
    real(dp) :: f_predict_grad_var_r(size(r))
 
    integer :: ii
+
+   real(dp), external :: ddot
 
    if (.not. self%initialised) then
       f_predict_grad_var_r = 0.0_dp
@@ -457,18 +493,21 @@ function f_predict_grad_var_r(self, r, kernel)
       call Matrix_QR_Solve(self%Kmm, transpose(self%k_grad), self%mat_inv_k_grad)
       ! first term should be second derivative of covariance, but it's hard wired for now
       do ii=1, self%n_dof
-	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - ddot(size(self%k_grad,2), self%k_grad(ii,1), size(self%k_grad,1), &
+											 self%mat_inv_k_grad(1,ii), 1)
       end do
       ! -k' C^{-1} k'
       call Matrix_QR_Solve(self%Cmat, transpose(self%k_grad), self%mat_inv_k_grad)
       do ii=1, self%n_dof
-	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) + dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) + ddot(size(self%k_grad,2), self%k_grad(ii,1), size(self%k_grad,1), &
+											 self%mat_inv_k_grad(1,ii), 1)
       end do
    else
       ! -k' C^{-1} k'
       call Matrix_QR_Solve(self%noise_Kmm, transpose(self%k_grad), self%mat_inv_k_grad)
       do ii=1, self%n_dof
-	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - dot_product(self%k_grad(ii,:), self%mat_inv_k_grad(:,ii))
+	 f_predict_grad_var_r(ii) = f_predict_grad_var_r(ii) - ddot(size(self%k_grad,2), self%k_grad(ii,1), size(self%k_grad,1), &
+										         self%mat_inv_k_grad(1,ii), 1)
       end do
    endif
 end function f_predict_grad_var_r
@@ -478,7 +517,7 @@ function f_predict_var_grad_r(self, r, kernel)
    real(dp), intent(in) :: r(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -497,12 +536,15 @@ function f_predict_var_grad_r(self, r, kernel)
    f_predict_var_grad_r = 0.0_dp
    if (self%sparsified) then
       call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
-      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=-2.0_dp)
+      call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), -2.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
+	 self%mat_inv_k(1), 1, 1.0_dp, f_predict_var_grad_r(1), 1)
       call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
-      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=2.0_dp)
+      call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), 2.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
+	 self%mat_inv_k(1), 1, 1.0_dp, f_predict_var_grad_r(1), 1)
    else
       call Matrix_QR_Solve(self%noise_Kmm, self%k, self%mat_inv_k)
-      call matrix_product_sub(f_predict_var_grad_r, self%k_grad, self%mat_inv_k, lhs_factor=1.0_dp, rhs_factor=-2.0_dp)
+      call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), -2.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
+	 self%mat_inv_k(1), 1, 1.0_dp, f_predict_var_grad_r(1), 1)
    endif
 end function f_predict_var_grad_r
 
@@ -515,7 +557,7 @@ subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_
    logical, intent(in) :: periodic(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -530,16 +572,20 @@ subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_
 
    do i=1, l_n_f
       ! f on f
-      if (r_n_f > 0) call kernel(l_f_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), f_f=mat(i,1:r_n_f))
+      if (r_n_f > 0) call kernel(l_f_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+				 f_f=mat(i,1:r_n_f))
       ! f on g
-      if (r_n_g > 0) call kernel(l_f_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), f_g=mat(i,r_n_f+1:r_n_f+r_n_g*n_dof))
+      if (r_n_g > 0) call kernel(l_f_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+				 f_g=mat(i,r_n_f+1:r_n_f+r_n_g*n_dof))
    end do
    do i=1, l_n_g
       i_glob = l_n_f + (i-1)*n_dof + 1
       ! g on f
-      if (r_n_f > 0) call kernel(l_g_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), g_f=mat(i_glob:i_glob+n_dof-1,1:r_n_f))
+      if (r_n_f > 0) call kernel(l_g_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+				 g_f=mat(i_glob:i_glob+n_dof-1,1:r_n_f))
       ! g on g
-      if (r_n_g > 0) call kernel(l_g_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), g_g=mat(i_glob:i_glob+n_dof-1,r_n_f+1:r_n_f+r_n_g*n_dof))
+      if (r_n_g > 0) call kernel(l_g_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+				 g_g=mat(i_glob:i_glob+n_dof-1,r_n_f+1:r_n_f+r_n_g*n_dof))
    end do
 end subroutine
 
@@ -553,7 +599,7 @@ subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
    logical, intent(in) :: periodic(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -565,8 +611,10 @@ subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
 
    n_dof=size(r)
 
-   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), f_f=vec(1:n_f))
-   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), f_g=vec(n_f+1:n_f+n_g*n_dof))
+   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+			    f_f=vec(1:n_f))
+   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+			    f_g=vec(n_f+1:n_f+n_g*n_dof))
 end subroutine f_kernel_vec
 
 subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, kernel, vec)
@@ -579,7 +627,7 @@ subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
    logical, intent(in) :: periodic(:)
    interface
       subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
-	 use system_module, only : dp
+	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
 	 logical, intent(in) :: periodic(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
@@ -591,8 +639,10 @@ subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
 
    n_dof = size(r)
 
-   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), g_f=vec(1:n_dof,1:n_f))
-   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), g_g=vec(1:n_dof,n_f+1:n_f+n_g*n_dof))
+   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+			    g_f=vec(1:n_dof,1:n_f))
+   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+			    g_g=vec(1:n_dof,n_f+1:n_f+n_g*n_dof))
 end subroutine g_kernel_vec
 
 subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
@@ -671,5 +721,224 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, 
    deallocate(dexp_arg_j)
 
 end subroutine SE_kernel_r_rr
+
+
+subroutine GP_Matrix_Initialise(this,matrix)
+
+  type(GP_Matrix), intent(inout) :: this
+  real(dp), dimension(:,:), intent(in) :: matrix
+
+  if(this%initialised) call finalise(this)
+
+  this%n = size(matrix,1)
+  this%m = size(matrix,2)
+  allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n),this%tau(this%m) )
+
+  this%matrix = matrix
+  this%initialised = .true.
+
+end subroutine GP_Matrix_Initialise
+
+subroutine GP_Matrix_Update(this,matrix)
+
+  type(GP_Matrix), intent(inout) :: this
+  real(dp), dimension(:,:), intent(in) :: matrix
+
+  integer :: factorised
+
+  factorised = this%factorised
+
+  if(this%initialised) then
+     if( all(shape(matrix) == (/this%n,this%m/)) ) then
+	this%matrix = matrix
+     else
+	call initialise(this,matrix)
+     endif
+  else
+     call initialise(this,matrix)
+  endif
+
+  select case(factorised)
+  case(QR)
+     call GP_Matrix_QR_Factorise(this)
+  endselect
+
+end subroutine GP_Matrix_Update
+
+subroutine GP_Matrix_Finalise(this)
+
+  type(GP_Matrix), intent(inout) :: this
+
+  if(.not. this%initialised) return
+
+  this%n = 0
+  this%m = 0
+  if(allocated(this%matrix) ) deallocate(this%matrix)
+  if(allocated(this%factor) ) deallocate(this%factor)
+  if(allocated(this%s) ) deallocate(this%s)
+  if(allocated(this%tau) ) deallocate(this%tau)
+  this%initialised = .false.
+  this%equilibrated = .false.
+  this%factorised = NOT_FACTORISED
+
+end subroutine GP_Matrix_Finalise
+
+
+subroutine GP_Matrix_QR_Factorise(this,q,r)
+  type(GP_Matrix), intent(inout) :: this         
+  real(dp), dimension(:,:), intent(out), optional :: q, r
+
+  integer :: lwork
+  real(dp), allocatable :: work(:)
+  integer :: info
+
+  this%factor = this%matrix
+
+  allocate(work(1))
+  lwork = -1
+  call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, info)
+  lwork = nint(work(1))
+  deallocate(work)
+
+  allocate(work(lwork))
+  call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, info)
+  deallocate(work)
+
+  if( info /= 0 ) then
+     print *,'GP_Matrix_QR_Factorise: ',(-info),'-th parameter had an illegal value.'
+     stop
+  endif
+
+  this%factorised = QR
+
+  if( present(q) .or. present(r) ) call GP_Matrix_GetQR(this,q,r)
+
+end subroutine GP_Matrix_QR_Factorise
+
+subroutine GP_Matrix_GetQR(this,q,r)
+  type(GP_Matrix), intent(inout) :: this         
+  real(dp), dimension(:,:), intent(out), optional :: q, r
+
+  integer :: lwork
+  real(dp), allocatable :: work(:)
+  integer :: j, info
+
+  if( this%factorised /= QR ) then
+     print *,'GP_Matrix_GetQR: not QR-factorised, call GP_Matrix_QR_Factorise first.'
+     stop
+  endif
+
+  if(present(q)) then
+     if (size(q,1) /= this%n .or. size(q,2) /= this%m) then
+        print *, "GT_Matrix_GetQRshape(q) ",shape(q),"does not match",this%n,this%m
+     endif
+     q = this%factor
+
+     allocate(work(1))
+     lwork = -1
+     call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, info)
+     lwork = nint(work(1))
+     deallocate(work)
+
+     allocate(work(lwork))
+     call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, info)
+     deallocate(work)
+  endif
+
+  if(present(r)) then
+     if (size(r,1) /= this%n .or. size(r,2) /= this%m) then
+        print *, "GP_Matrix_GetQR shape(r) ",shape(r),"does not match",this%n,this%m
+     endif
+     r = this%factor(1:this%m,1:this%m)
+     do j = 1, this%m - 1
+	r(j+1:this%m,j) = 0.0_dp
+     enddo
+  endif
+
+  if( info /= 0 ) then
+     print *,'GP_Matrix_QR_Factorise: ',(info),'-th parameter had an illegal value.'
+     stop
+  endif
+
+end subroutine GP_Matrix_GetQR
+
+subroutine GP_Matrix_QR_Solve_Matrix(this,matrix,result)
+  type(GP_Matrix), intent(inout) :: this
+  real(dp), dimension(:,:), intent(in) :: matrix
+  real(dp), dimension(:,:), intent(out) :: result
+
+  real(dp), dimension(:,:), allocatable :: my_result
+  integer :: info, i, j, n, o
+
+  integer :: lwork
+  real(dp), allocatable :: work(:)
+
+  if(this%factorised == NOT_FACTORISED) then
+     call GP_Matrix_QR_Factorise(this)
+  elseif(this%factorised /= QR) then
+     print *,'GP_Matrix_QR_Solve_Matrix: matrix not QR-factorised'
+     stop
+  endif
+
+  n = size(matrix,1)
+  o = size(matrix,2)
+  if (size(result,1) /= this%m .or. size(result,2) /= o) then
+     print *, "GP_Matrix_GetQR shape(result) ",shape(result),"does not match",this%m,o
+  endif
+
+  if( n /= this%n ) then
+     print *,'GP_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.'
+     stop
+  endif
+
+  allocate(my_result(n,o))
+  my_result = matrix
+  lwork = -1
+  allocate(work(1))
+  call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, info)
+  lwork = nint(work(1))
+  deallocate(work)
+
+  allocate(work(lwork))
+  call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, info)
+  deallocate(work)
+
+  if( info /= 0 ) then
+     print *,'GP_Matrix_QR_QR_Solve_Matrix: ',(-info),'-th parameter had an illegal value.'
+     stop
+  endif
+
+  do i = 1, o
+     do j = this%m, 2, -1
+	my_result(j,i) = my_result(j,i)/this%factor(j,j)
+	my_result(1:j-1,i) = my_result(1:j-1,i) - my_result(j,i)*this%factor(1:j-1,j)
+     enddo
+     my_result(1,i) = my_result(1,i) / this%factor(1,1)
+  enddo
+
+  result = my_result(1:this%m,:)
+  deallocate(my_result)
+
+end subroutine GP_Matrix_QR_Solve_Matrix
+
+subroutine GP_Matrix_QR_Solve_Vector(this,vector,result)
+  type(GP_Matrix), intent(inout) :: this
+  real(dp), dimension(:), intent(in) :: vector
+  real(dp), dimension(:), intent(out) :: result
+
+  real(dp), dimension(:,:), allocatable :: my_result
+  integer :: n, m
+
+  n = size(vector)
+  m = size(result)
+
+  allocate(my_result(m,1))
+
+  call GP_Matrix_QR_Solve_Matrix(this,reshape(vector,(/n,1/)),my_result)
+  result = my_result(:,1)
+
+  deallocate(my_result)
+
+end subroutine GP_Matrix_QR_Solve_Vector
 
 end module gp_basic_module
