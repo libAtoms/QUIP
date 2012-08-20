@@ -66,12 +66,12 @@ end type gp_basic
 
 !% initialise (and teach) a gp_basic
 interface initialise
-   module procedure gp_basic_initialise_nd, gp_matrix_initialise
+   module procedure gp_basic_initialise_nd
 end interface initialise
 
 !% finalise and deallocate a gp_basic
 interface finalise
-   module procedure gp_basic_finalise, gp_matrix_finalise
+   module procedure gp_basic_finalise
 end interface finalise
 
 !% predict a function value from a gp
@@ -266,7 +266,7 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 		      self%f_var, self%len_scale_sq, self%periodic, kernel, Kmn)
 
       ! we'll need Kmm^{-1} for variance
-      call initialise(self%Kmm, Kmm)
+      call gp_matrix_initialise(self%Kmm, Kmm)
 
       if (n_f > 0) siginvsq_y(1:n_f) = f_v(:)/f_n(:)
       if (n_g > 0) then
@@ -300,7 +300,7 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 	 end do
       endif
 
-      call initialise(self%Cmat, Cmat)
+      call gp_matrix_initialise(self%Cmat, Cmat)
       ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
 
 
@@ -326,7 +326,7 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 	    Kmm(i_glob, i_glob)= Kmm(i_glob, i_glob) + g_n(ii,i)
 	 end do
       end do
-      call initialise(self%noise_Kmm, Kmm)
+      call gp_matrix_initialise(self%noise_Kmm, Kmm)
 
       if (n_f > 0) y(1:n_f) = f_v(1:n_f)
       do i=1, n_g
@@ -365,9 +365,9 @@ subroutine gp_basic_finalise(self)
       if (allocated(self%mat_inv_k_grad)) deallocate(self%mat_inv_k_grad)
       if (allocated(self%len_scale_sq)) deallocate(self%len_scale_sq)
       if (allocated(self%periodic)) deallocate(self%periodic)
-      call finalise(self%Cmat)
-      call finalise(self%noise_Kmm)
-      call finalise(self%Kmm)
+      call gp_matrix_finalise(self%Cmat)
+      call gp_matrix_finalise(self%noise_Kmm)
+      call gp_matrix_finalise(self%Kmm)
    endif
    self%f_var = 0.0_dp
    self%m_f = 0
@@ -728,7 +728,7 @@ subroutine GP_Matrix_Initialise(this,matrix)
   type(GP_Matrix), intent(inout) :: this
   real(dp), dimension(:,:), intent(in) :: matrix
 
-  if(this%initialised) call finalise(this)
+  if(this%initialised) call gp_matrix_finalise(this)
 
   this%n = size(matrix,1)
   this%m = size(matrix,2)
@@ -752,10 +752,10 @@ subroutine GP_Matrix_Update(this,matrix)
      if( all(shape(matrix) == (/this%n,this%m/)) ) then
 	this%matrix = matrix
      else
-	call initialise(this,matrix)
+	call gp_matrix_initialise(this,matrix)
      endif
   else
-     call initialise(this,matrix)
+     call gp_matrix_initialise(this,matrix)
   endif
 
   select case(factorised)
