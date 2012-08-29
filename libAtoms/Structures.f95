@@ -213,7 +213,7 @@ contains
     call print("disloc_noam: l_hat " // l_hat, PRINT_VERBOSE)
 
     do i_at = 1, at%N
-      delta_p = at%pos(:,i_at) - p
+      delta_p = diff_min_image(at, p, i_at)
       if (norm(delta_p) .feq. 0.0_dp) then
 	theta = 0.0_dp
       else
