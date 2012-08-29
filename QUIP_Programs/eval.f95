@@ -48,7 +48,7 @@ implicit none
 
   type(Potential) pot
   type(MPI_context) mpi_glob
-  type(Atoms) at
+  type(Atoms) at, bulk_scale
 
   type(Dictionary) :: cli_params
 
@@ -64,7 +64,7 @@ implicit none
   real(dp) :: fire_minim_dt0
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
+  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file
   integer relax_iter, relax_print_interval
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
@@ -86,7 +86,7 @@ implicit none
   real(dp), dimension(3) :: diag_pressure
   real(dp), dimension(9) :: pressure
   real(dp), dimension(3,3) :: external_pressure
-  logical :: has_iso_pressure, has_diag_pressure, has_pressure
+  logical :: has_iso_pressure, has_diag_pressure, has_pressure, has_bulk_scale
 
   real(dp), pointer :: phonon(:,:)
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
@@ -159,6 +159,7 @@ implicit none
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps, help_string="estimate of energy reduction for first step of relaxation")
   call param_register(cli_params, 'relax_print_interval', '1', relax_print_interval, help_string="Frequency for printing trajectory")
   call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
+  call param_register(cli_params, 'bulk_scale', '', bulk_scale_file, help_string="optional bulk structure for calculating space and energy rescaling", has_value_target=has_bulk_scale)
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
   ! call param_register(cli_params, 'relax_constant_volume', 'F', relax_constant_volume, help_string="if virial and relax are set, constrain to constant volume")
@@ -191,7 +192,8 @@ implicit none
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [bulk_scale=file] [calc_args='str'] [pre_relax_calc_args='str']", PRINT_ALWAYS)
+    call print("  [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim]", PRINT_ALWAYS)
     call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
     call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
@@ -205,7 +207,15 @@ implicit none
 
   if(trim(init_args) .ne. '') then
      call print ("Using init args: " // trim(init_args))
-     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     if(has_bulk_scale) then
+        call initialise(infile, trim(bulk_scale_file))
+        call read(bulk_scale, infile, error=error)
+        call finalise(infile)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+        call finalise(bulk_scale)
+     else
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     end if
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)
