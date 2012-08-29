@@ -193,7 +193,7 @@ contains
     l_hat = l/norm(l)
     b_hat = b/norm(b)
 
-    if ((l_hat .dot. b_hat) .feq. 1.0_dp) then ! screw
+    if (abs(l_hat .dot. b_hat) .feq. 1.0_dp) then ! screw
       r1_hat = (/ 1.0_dp, 0.0_dp, 0.0_dp /)
       r1_hat = r1_hat - l_hat * (r1_hat .dot. l_hat)
       if (norm(r1_hat) .feq. 0.0_dp) then
