@@ -43,7 +43,7 @@ implicit none
   real(dp) :: lattice_vec(9), atom_1(3), atom_2(3)
   integer :: Z_1, Z_2
   logical :: has_atom_2
-  character(len=FIELD_LENGTH) :: param_file, init_args
+  character(len=STRING_LENGTH) :: param_file, init_args
   integer :: n_configs, m_max, rng_seed, init_d
   real(dp) :: lattice_delta, atom_delta, e0, t
   integer :: n, d
