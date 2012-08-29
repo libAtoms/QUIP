@@ -420,7 +420,7 @@ subroutine phonons(pot, at, dx, evals, evecs, effective_masses, calc_args, IR_in
 
 end subroutine phonons
 
-subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel)
+subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel, phonons_output_file, phonons_path_start, phonons_path_end, phonons_path_steps)
 
   type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at_in
@@ -428,6 +428,9 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
   character(len=*), intent(in), optional :: calc_args
   logical, intent(in), optional :: do_parallel
   integer, dimension(3), intent(in), optional :: phonon_supercell
+  character(len=*), intent(in), optional :: phonons_output_file
+  real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
+  integer, intent(in), optional :: phonons_path_steps
 
   type(Atoms) :: at
   integer :: i, j, k, alpha, beta, nk, n1, n2, n3, jn
@@ -440,24 +443,38 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
   complex(dp), dimension(:,:), allocatable :: dmft
   complex(dp), dimension(:,:,:), allocatable :: evecs
 
+  type(inoutput) :: phonons_output
+  real(dp), dimension(:,:), allocatable :: frac
+  integer :: do_phonons_path_steps
+
 
   do_phonon_supercell = optional_default((/2,2,2/),phonon_supercell)
 
   call supercell(at,at_in,do_phonon_supercell(1),do_phonon_supercell(2),do_phonon_supercell(3))
 
-  nk = product(do_phonon_supercell)
-  allocate(q(3,nk)) 
+  if (present(phonons_path_start) .and. present(phonons_path_end)) then
+     do_phonons_path_steps = optional_default(3, phonons_path_steps)
+     nk = do_phonons_path_steps + 2
+     allocate(q(3, nk))
 
-  i = 0
-  do n1 = 0, do_phonon_supercell(1)-1
-     do n2 = 0, do_phonon_supercell(2)-1
-        do n3 = 0, do_phonon_supercell(3)-1
-           i = i + 1
+     do i = 1, nk
+        q(:, i) = 2.0_dp * PI * (at_in%g .mult. (phonons_path_start + ((phonons_path_end - phonons_path_start) * (real((i - 1), dp) / real((nk - 1), dp)))))
+     enddo
+  else
+     nk = product(do_phonon_supercell)
+     allocate(q(3,nk))
 
-           q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell ), at_in%g )
+     i = 0
+     do n1 = 0, do_phonon_supercell(1)-1
+        do n2 = 0, do_phonon_supercell(2)-1
+           do n3 = 0, do_phonon_supercell(3)-1
+              i = i + 1
+
+              q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell ), at_in%g )
+           enddo
         enddo
      enddo
-  enddo
+  endif
 
   allocate(evals(at_in%N*3,nk), evecs(at_in%N*3,at_in%N*3,nk)) !, dm(at%N*3,at%N*3))
   allocate(pos0(3,at%N))
@@ -614,6 +631,47 @@ deallocate(dmft)
      !call print(evecs(:,:,k))
      print'('//at_in%N*3//'f15.9)',sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
   enddo
+
+!  if (present(phonons_output_file)) then
+!     call initialise(phonons_output, phonons_output_file, action=OUTPUT)
+!
+!     call print(" BEGIN header", file=phonons_output)
+!     call print(" Number of ions         " // at_in%N, file=phonons_output)
+!     call print(" Number of branches     " // (at_in%N*3), file=phonons_output)
+!     call print(" Number of wavevectors  " // nk, file=phonons_output)
+!     call print(" Frequencies in         fs-1", file=phonons_output)
+!     call print(" Unit cell vectors (A)", file=phonons_output)
+!     do i = 1, 3
+!        call print("    " // at_in%lattice(1, i) // "    " // at_in%lattice(2, i) // "    " // at_in%lattice(3, i), file=phonons_output)
+!     enddo
+!     call print(" Fractional Co-ordinates", file=phonons_output)
+!     allocate(frac(3, at_in%N))
+!     frac = at_in%g .mult. at_in%pos
+!     do i = 1, at_in%N
+!        call print("     " // i // "     " // frac(1, i) // "    " // frac(2, i) // "    " // frac(3, i) &
+!                   & // "   " // ElementName(at_in%Z(i)) // "        " // ElementMass(at_in%Z(i)), file=phonons_output)
+!     enddo
+!     deallocate(frac)
+!     call print(" END header", file=phonons_output)
+!
+!     do i = 1, nk
+!        call print("     q-pt=    " // i // "   " // q(1, i) // " " // q(2, i) // " " // q(3, i) // "      " // (1.0_dp / real(nk, dp)), file=phonons_output)
+!        do j = 1, (at_in%N*3)
+!           call print("       " // j // "    " // (sign(sqrt(abs(evals(j,i))),evals(j,i))/2.0_dp/PI*1000.0_dp), file=phonons_output)
+!        enddo
+!        call print("                        Phonon Eigenvectors", file=phonons_output)
+!        call print("Mode Ion                X                                   Y                                   Z", file=phonons_output)
+!        do j = 1, (at_in%N*3)
+!           do k = 1, at_in%N
+!              call print("   " // j // "   " // k // " " // evecs(j, (3 * (k - 1)) + 1, i) &
+!                                            & // "     " // evecs(j, (3 * (k - 1)) + 2, i) &
+!                                            & // "     " // evecs(j, (3 * (k - 1)) + 3, i), file=phonons_output)
+!           enddo
+!        enddo
+!     enddo
+!
+!     call finalise(phonons_output)
+!  endif
 
   deallocate(q, evals, evecs)
   call finalise(at)
