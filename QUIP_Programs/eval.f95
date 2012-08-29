@@ -60,6 +60,8 @@ implicit none
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
+  real(dp) :: phonons_path_start(3), phonons_path_end(3)
+  integer :: phonons_path_steps
   logical :: do_torque, precond_n_minim
   real(dp) :: fire_minim_dt0
   real(dp) :: tau(3)
@@ -87,6 +89,7 @@ implicit none
   real(dp), dimension(9) :: pressure
   real(dp), dimension(3,3) :: external_pressure
   logical :: has_iso_pressure, has_diag_pressure, has_pressure, has_bulk_scale
+  logical :: has_phonons_path_start, has_phonons_path_end, has_phonons_path_steps
 
   real(dp), pointer :: phonon(:,:)
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
@@ -138,6 +141,9 @@ implicit none
   call param_register(cli_params, 'cij_relax_initial', 'F', do_cij_relax_initial, help_string="Relax initial configuration for elastic constant calculations")
   call param_register(cli_params, 'torque', 'F', do_torque, help_string="Calculate torque")
   call param_register(cli_params, 'phonons', 'F', do_phonons, help_string="Calculate phonons")
+  call param_register(cli_params, 'phonons_path_start', '0.0 0.0 0.0', phonons_path_start, help_string="phonons path start", has_value_target=has_phonons_path_start)
+  call param_register(cli_params, 'phonons_path_end', '0.0 0.0 0.0', phonons_path_end, help_string="phonons path end", has_value_target=has_phonons_path_end)
+  call param_register(cli_params, 'phonons_path_steps', '3', phonons_path_steps, help_string="phonons path steps", has_value_target=has_phonons_path_steps)
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
@@ -448,8 +454,14 @@ implicit none
 
      if (do_fine_phonons) then
 	did_anything = .true.
-        call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-             & phonon_supercell=phonon_supercell)
+        if (has_phonons_path_start .and. has_phonons_path_end) then
+           call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+                & phonon_supercell=phonon_supercell, &
+                & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, phonons_path_steps=phonons_path_steps)
+        else
+           call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+                & phonon_supercell=phonon_supercell)
+        endif
      endif ! do_fine_phonons
 
 #ifdef HAVE_TB
