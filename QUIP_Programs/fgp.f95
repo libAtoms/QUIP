@@ -122,7 +122,7 @@ program force_gaussian_prediction
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size
    integer, dimension(:), allocatable            :: distance_index
-   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, do_svd, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_at
+   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, linear_vectors, do_svd
    character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
  
@@ -143,19 +143,20 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'func_type', '0', func_type, "which kernel function is used to build the covariance matrix")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes")
-   call param_register(params, 'do_svd',  'F', do_svd, "true for inversing the cov matrix by SVD")
    call param_register(params, 'n_relevant_confs', '200', n_relevant_confs, "the number of relevant confs you would like to do machine learning with")
    call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
    call param_register(params, 'least_sq',    'T', least_sq, "if true, the internal force components will be tranformed to real force using least squares")
+   call param_register(params, 'do_svd', 'F', do_svd, "if true, doing inverting by SVD")
    call param_register(params, 'sigma_covariance', '1.0', sigma_covariance, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
    call param_register(params, 'out_file', 'out.xyz', out_file, "output configuration file containing the predicted forces")
    call param_register(params, 'print_at', 'F', print_at, "true for print out the testing configuration with predicted forces")
+   call param_register(params, 'print_ft_matrix_test', 'F', print_ft_matrix_test, "print the feature matrix of the testing conf if true")
    call param_register(params, 'fixed_iv', 'F', fixed_iv, "does a file containing the internal vector parameters exist?")
    call param_register(params, 'iv_params_file', 'iv_params.csv', iv_params_file, "location of internal vectors parameters file (if necessary)")
    call param_register(params, 'local_ml_optim_size', '0', local_ml_optim_size, "Optimise sigma_error and sigma_covariance using local_ml_optim_size LS confs. If 0, no optimisation is performed")
@@ -429,6 +430,16 @@ do i=1, in%n_frame
             call print("added internal vectors : "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
          enddo
       endif
+
+
+     if (print_ft_matrix_test) then
+       do j=1, k 
+          do ii=1, k   
+            call print("ATOM : "//n_center_atom//" feature_matrix: ("//j//" "//ii//") "//dot_product(feature_matrix_pred(j,:), feature_matrix_normalised_pred(ii,:)) )
+          enddo   
+       enddo
+     endif
+
       
       call system_timer('Sorting the DATABASE')
       
@@ -437,10 +448,10 @@ do i=1, in%n_frame
       ! call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
       !     distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
    
-!      if (distance_confs(1)>0.2_dp) then
-!                sigma_covariance = sigma_covariance*distance_confs(1)/0.2_dp     ! distance scaling
-!                write(*,*) "distance are scaled with factor of 0.2"
-!      endif
+      if (distance_confs(1)>0.2_dp) then
+                sigma_covariance = sigma_covariance*distance_confs(1)/0.2_dp     ! distance scaling
+                write(*,*) "distance are scaled with a factor of 0.2"
+      endif
 
       if (.false.) then        ! massive output, only for testing use
          call print("Detail on the teaching procedure")
@@ -485,11 +496,11 @@ do i=1, in%n_frame
        
       call system_timer('Inverting the Covariance Matrix')
       
-      if (do_svd) then
+      if (do_gp) then
+         call inverse(covariance, inv_covariance)
+      else
          ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
          inv_covariance = inverse_svd_threshold(covariance, n_relevant_confs, thresh)
-      else
-         call inverse(covariance, inv_covariance)
       endif
       
       call system_timer('Inverting the Covariance Matrix')
@@ -506,6 +517,7 @@ do i=1, in%n_frame
                                          feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
       
+      ! the predicted force projected on each of the internal directions
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs_select(:,:)) )) 
 
       do j=1, k
@@ -522,24 +534,33 @@ do i=1, in%n_frame
       ! using least-squares to restore the target force in the External Cartesian Space
       feature_inner_matrix=matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred)
 
-      call inverse(feature_inner_matrix, feature_inv) 
+      if (do_svd) then
+            write(*,*)  "feature inner matrix :", feature_inner_matrix
+            feature_inv = inverse_svd_threshold(feature_inner_matrix, 3, thresh)
+      else
+            write(*,*)  "feature_inner_matrix :", feature_inner_matrix
+            call inverse(feature_inner_matrix, feature_inv) 
+      endif
+
       if (least_sq) then 
          force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
       else
          call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
       endif 
 
-      do j=1, 3
-         if (norm(feature_matrix_pred(:,j)) < 10000.0_dp*TOL_REAL)  force(j)=0.0_dp 
-         ! making use of the physical relation between force and IVs, which is nessecceary for near high symmetric confs
-      enddo
+
+      ! a trick to cope with symmetry problem 
+      call internal_vector_linearity(feature_matrix_normalised_pred, linear_vectors, 0.1_dp)
+      if (linear_vectors) then              
+            force=(transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred )/real(k, dp)
+      endif
 
       call print("force in external space:"//force)
       call print("the original force:"//force_ptr(:, n_center_atom))
       call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
+
       if (print_at) force_ptr(:,n_center_atom)=force     
-     
-      ! kappa = 1.0_dp + sigma_error**2         ! the value 1.0_dp is not applicable to non_exponential kernels 
+
       kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
       call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
@@ -919,6 +940,32 @@ contains
   target_force=target_force / real(n_counter,dp)
 
  end subroutine real_expection_sampling_components
+
+
+ subroutine internal_vector_linearity(in_matrix, linear_vectors, TOL)
+
+   real(dp), intent(in)                        ::  in_matrix(:,:), TOL
+   real(dp)                                    ::  x_sin, x_sin_max
+   logical, intent(out)                        ::  linear_vectors
+   integer                                     ::  k_size, i, j
+   k_size = size(in_matrix(:,1))
+
+   x_sin =0.0_dp
+   x_sin_max = x_sin
+   linear_vectors=.false.
+
+   do i=1, k_size-1
+      do j=i+1, k_size
+         x_sin = norm(in_matrix(i,:) .cross. in_matrix(j,:))
+         if (x_sin < TOL) linear_vectors=.true.
+         if (x_sin_max < x_sin) x_sin_max=x_sin
+      enddo
+   enddo
+
+   write(*,*) "the threshold for being linear : ", TOL, linear_vectors
+   write(*,*) "the max sin :", x_sin_max
+  
+  end subroutine internal_vector_linearity
  
 
  subroutine do_optimise_likelihood(sigma_error, sigma_covariance)
