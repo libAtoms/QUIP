@@ -945,25 +945,22 @@ contains
  subroutine internal_vector_linearity(in_matrix, linear_vectors, TOL)
 
    real(dp), intent(in)                        ::  in_matrix(:,:), TOL
-   real(dp)                                    ::  x_sin, x_sin_max
+   real(dp)                                    ::  x_sin
    logical, intent(out)                        ::  linear_vectors
    integer                                     ::  k_size, i, j
    k_size = size(in_matrix(:,1))
 
    x_sin =0.0_dp
-   x_sin_max = x_sin
-   linear_vectors=.false.
+   linear_vectors=.true.
 
    do i=1, k_size-1
       do j=i+1, k_size
          x_sin = norm(in_matrix(i,:) .cross. in_matrix(j,:))
-         if (x_sin < TOL) linear_vectors=.true.
-         if (x_sin_max < x_sin) x_sin_max=x_sin
+         if ( 1.0_dp-TOL > x_sin > TOL) linear_vectors=.false.
       enddo
    enddo
 
    write(*,*) "the threshold for being linear : ", TOL, linear_vectors
-   write(*,*) "the max sin :", x_sin_max
   
   end subroutine internal_vector_linearity
  
