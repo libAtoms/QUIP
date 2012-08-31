@@ -127,7 +127,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         indices = self.get_visible()
         print 'Clipping view to include %d atoms' % len(indices)
 
-        at = self.gca()
+        at = self.gcat()
         mask = fzeros(len(at), dtype=bool)
         mask[:] = True
         mask[indices] = False
@@ -154,7 +154,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         property is `markname` (default "selection_mark") and the value of
         clicked atoms is given by the `value` argument (default True).
         """
-        at = self.gca()
+        at = self.gcat()
         if reset:
             at.add_property(markname, False, overwrite=True)
         self.selection_mark = getattr(at, markname)
@@ -189,7 +189,7 @@ class AtomEyeViewerMixin(AtomEyeViewer):
             self.show(frame=frame)
             if hook is not None:
                 self.wait()
-                hook(self.gca())
+                hook(self.gcat())
                 self.redraw()
             self.capture(out_fmt % (frame + offset))
             self.wait()
@@ -289,7 +289,7 @@ def find_viewer(source, name=None, recycle=True):
         print 'Creating viewer named %s for file %s' % (name, source)
         return (name, None)
         
-def atoms(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
+def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
     """
     Read atoms from `source` and open in an AtomEye viewer window.
 
@@ -326,6 +326,9 @@ def atoms(source, name=None, recycle=True, loadall=False, inject=True, **kwargs)
         parent_frame = inspect.currentframe().f_back
         parent_frame.f_globals[viewer.name] = viewer
     return viewer
+
+# make 'view' a synonym for 'load'
+view = read
 
 def gcv():
     """
@@ -371,17 +374,18 @@ del name, method, current_viewer_method_wrapper
 
 def highlight_qm_region(at=None, run_suffix=''):
     """
-    Highlight QM region by replacing Si atoms with Al, and
-    changing colour of Si atoms to dark blue. Can be used as
+    Highlight QM region by replacing Si atoms with Al,
+    and O atoms with N, and changing colour of QM atoms to dark blue. Can be used as
     a hook function to render_movie().
 
     If at is None, uses Atoms associated with current viewer
-    (i.e., at = gca()).
+    (i.e., at = gcat()).
     """
     if at is None:
-        at = gca()
+        at = gcat()
     hybrid_mark = getattr(at, 'hybrid_mark'+run_suffix)
     at.z[(at.z == 14) & (hybrid_mark == 1)] = 13
+    at.z[(at.z == 8) & (hybrid_mark == 1)] = 7
     at.set_atoms(at.z)
     if highlight_qm_region.first_time:
         redraw()
@@ -390,6 +394,7 @@ def highlight_qm_region(at=None, run_suffix=''):
         rcut_patch('Al', 'Al', -0.55)
         run_command('change_normal_color 13 0.0 0.0 0.7 1.2')
         run_command('change_normal_color 5 0.9 0.4 0 1.5')
+        run_command('change_normal_color 7 0.0 0.7 0.7 0.7')
         highlight_qm_region.first_time = False
     redraw()
 
