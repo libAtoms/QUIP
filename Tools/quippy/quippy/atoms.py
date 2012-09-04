@@ -24,7 +24,7 @@ manipulates a collection of atoms"""
 from quippy import _atoms
 from quippy._atoms import *
 
-import os, weakref, warnings, copy, sys
+import os, weakref, warnings, copy, sys, logging
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format, parse_slice
@@ -177,8 +177,8 @@ class PropertiesWrapper(DictMixin):
         at = self.atref()
         res = at.properties[at.name_map.get(key, key)].view(np.ndarray).T
         if res.dtype == 'int32':   # convert dtype int32 -> int
-            warnings.warn('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
             res = res.astype(int)
+            logging.debug('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
         return res
 
     def __setitem__(self, key, value):
