@@ -82,6 +82,43 @@ from numpy import *
 from quippy import *
 from quippy import castep
 
+# Set up logging
+log = logging.getLogger('castep_driver')
+format = logging.Formatter('%(name)s %(levelname)-10s %(asctime)s %(message)s')
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+handler.setFormatter(format)
+log.addHandler(handler)
+log.propagate = False
+log.level = logging.INFO
+
+def die(message):
+   "Print error message and abort"
+   log.critical(message)
+   os.chdir(orig_dir)
+   sys.exit(1)
+
+class ParamError(Exception):
+   pass
+
+# Save starting directory
+orig_dir = os.getcwd()
+
+if len(sys.argv) < 3:
+   die('Usage: <xyzfile> <outputfile> [KEY=VALUE]...' % sys.argv[0])
+
+xyzfile = sys.argv[1]
+outfile = sys.argv[2]
+
+args_str = ''
+if len(sys.argv) > 3:
+   args_str = ' '.join(sys.argv[3:])
+calc_args_str = parse_params(args_str)
+
+stem = os.path.basename(xyzfile)
+if stem[-4:] == '.xyz': # Remove extension
+   stem = stem[:-4]
+
 #----------------------------------------------------------------
 # Parameters
 #----------------------------------------------------------------
@@ -89,12 +126,18 @@ from quippy import castep
 # Template used for .cell and .param files
 if os.environ.has_key('CASTEP_TEMPLATE'):
    CASTEP_TEMPLATE = os.environ['CASTEP_TEMPLATE']
+elif 'template' in calc_args_str:
+   CASTEP_TEMPLATE = calc_args_str['template']
+   del calc_args_str[''template']
 else:
    CASTEP_TEMPLATE = 'castep'
 
 # Command used to execute castep, with a %s where seed name should go
 if os.environ.has_key('CASTEP'):
    CASTEP = os.environ['CASTEP']
+elif 'castep' in calc_args_str:
+   CASTEP = calc_args_str['castep']
+   del calc_args_str['castep']
 else:
    CASTEP = 'mpiexec -np 64 ../run_castep %s'
 
@@ -119,76 +162,50 @@ if 'CASTEP_SAVE_ALL_INPUT_FILES' in os.environ:
 
 # If set to True, don't actually run CASTEP
 TEST_MODE = False
+if 'test_mode' in calc_args_str:
+   TEST_MODE = calc_args_str['test_mode']
+   del calc_args_str['test_mode']
 
 # If set to True, create a queue of calculations for later execution
 BATCH_QUEUE = False
-
+if 'batch_queue' in calc_args_str:
+   BATCH_QUEUE = calc_args_str['batch_queue']
+   del calc_args_str['batch_queue']
+   
 # If set to True, read from previously calculated queue
 BATCH_READ  = False
+if 'batch_read' in calc_args_str:
+   BATCH_READ = calc_args_str['batch_read']
+   del calc_args_str['batch_read']
 
 # If any force is larger than this threshold, repeat the
 # calculation without checkfile (units: eV/A)
 MAX_FORCE_THRESHOLD = 15.0
+if 'max_force_threshold' in calc_args_str:
+   MAX_FORCE_THRESHOLD = calc_args_str['max_force_threshold']
+   del calc_args_str['max_force_threshold']
 
 # Working directory for CASTEP. Set this to a local scratch
 # directory if network file performance is poor.
 WORKING_DIR = '.'
+if 'working_dir' in calc_args_str:
+   WORKING_DIR = calc_args_str['working_dir']
+   del calc_args_str['working_dir']
 
 # Should we hash cell file and name directory accordingly?
 DO_HASH = False
+if 'do_hash' in calc_args_str:
+   DO_HASH = calc_args_str['do_hash']
+   del calc_args_str['do_hash']
 
 # Number of decimal places to include in hash of cell
 HASH_NDIGITS = 2
+if 'hash_ndigit' in calc_args_str:
+   HASH_NDIGITS = calc_args_str['hash_ndigits']
+   del calc_args_str['hash_ndigits']
 
 #----------------------------------------------------------------
 
-
-# Set up logging
-log = logging.getLogger('castep_driver')
-format = logging.Formatter('%(name)s %(levelname)-10s %(asctime)s %(message)s')
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-handler.setFormatter(format)
-log.addHandler(handler)
-log.propagate = False
-log.level = logging.INFO
-
-def die(message):
-   "Print error message and abort"
-   log.critical(message)
-   os.chdir(orig_dir)
-   sys.exit(1)
-
-class ParamError(Exception):
-   pass
-
-# Save starting directory
-orig_dir = os.getcwd()
-
-if len(sys.argv) < 3:
-   die('Usage: [-t|-q|-r] %s <xyzfile> <outputfile>' % sys.argv[0])
-
-# If first command line option is '-t' set TEST_MODE to true
-if sys.argv[1] == '-t':
-   TEST_MODE = True
-   sys.argv.pop(0)
-
-# If first command line option  is '-q' set BATCH_QUEUE to true
-if sys.argv[1] == '-q':
-   BATCH_QUEUE = True
-   sys.argv.pop(0)
-
-if sys.argv[1] == '-r':
-   BATCH_READ = True
-   sys.argv.pop(0)
-
-xyzfile = sys.argv[1]
-outfile = sys.argv[2]
-
-
-stem = os.path.basename(xyzfile)
-if stem[-4:] == '.xyz': # Remove extension
-   stem = stem[:-4]
 
 params = {}
 
@@ -389,6 +406,9 @@ try:
 
       if 'max_scf_cycles_dm'   in param: del param['max_scf_cycles_dm']
       if 'max_scf_cycles_edft' in param: del param['max_scf_cycles_edft']
+
+      # override template with command line arguments
+      param.update(calc_args_str)
 
       # Run castep
       if not BATCH_READ and not BATCH_QUEUE:
