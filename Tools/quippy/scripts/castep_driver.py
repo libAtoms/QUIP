@@ -80,6 +80,7 @@ from numpy import *
 
 # Quippy package
 from quippy import *
+from quippy import castep
 
 #----------------------------------------------------------------
 # Parameters
@@ -283,7 +284,7 @@ if not BATCH_READ:
 #         log.warn('lattice mismatch with prevous cluster')
 
       if (cluster.n == old_cluster.n):
-         log.info('RMS position difference is %.3f A' % rms_diff2(cluster.pos, old_cluster.pos))
+         log.info('RMS position difference is %.3f A' % rms_diff(cluster.pos, old_cluster.pos))
       else:
          log.warn('number mismatch with previous cluster')
 
@@ -416,7 +417,8 @@ try:
             log.error('error parsing .castep file: %s' % message)
             continue
 
-         log.info('castep completed in %.1f s' % cluster.params['castep_run_time'])
+         if 'castep_run_time' in cluster.params:
+            log.info('castep completed in %.1f s' % cluster.params['castep_run_time'])
 
          norm_f = cluster.force.norm()
          max_force_atom = norm_f.argmax()
