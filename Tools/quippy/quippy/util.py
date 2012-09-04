@@ -105,7 +105,11 @@ def quip_xml_parameters(name, label=None):
 
     param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
 
-    if name.startswith('IP ') or name.startswith('TB '):
+    if name.lower().startswith('filepot') or name.lower().startswith('callbackpot'):
+        # FilePot and CallbackPot don't need XML params
+        return ''
+
+    if name.upper().startswith('IP ') or name.upper().startswith('TB '):
         name = name[3:]
 
     xml_files = [ os.path.join(param_dir, name),
