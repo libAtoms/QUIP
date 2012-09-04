@@ -22,11 +22,11 @@ import sys, os, xml.dom.minidom
 import glob
 from dictmixin import PuPyDictionary
 
-__all__ = ['infer_format', 'args_str', 'parse_slice',
+__all__ = ['infer_format', 'args_str', 'dict_to_args_str', 'parse_slice',
            'parse_comma_colon_list', 'loadstring',
            'quip_xml_parameters', 'is_interactive_shell',
-           'parse_params', 'most_recent_file', 'time_ordered_glob',
-           'most_recent_files']
+           'parse_params', 'args_str_to_dict',
+           'most_recent_file', 'time_ordered_glob', 'most_recent_files']
 
 def infer_format(file, format, lookup):
     """Infer the correct format to read from or write to `file`
@@ -57,6 +57,8 @@ def args_str(D):
     """Construct args string from file, string or mapping object"""
     return str(PuPyDictionary(D))
 
+dict_to_args_str = args_str # synonym for args_str() function
+
 def parse_slice(S):
     """Parse string containing slice in form [start]:[stop]:[range] and return slice instance."""
 
@@ -70,6 +72,8 @@ def parse_params(s):
    """Read key=value pairs from a string or list of string and return a standard Python dictionary"""
    p = PuPyDictionary(s)
    return dict(p)
+
+args_str_to_dict = parse_params # synonym for parse_params() function
    
 
 def parse_comma_colon_list(L):
