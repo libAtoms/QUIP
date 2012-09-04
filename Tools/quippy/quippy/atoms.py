@@ -554,8 +554,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def copy_from(self, other):
         """Replace contents of this Atoms object with data from `other`."""
         self.__class__.__del__(self)
-        self.__init__(n=other.n, lattice=other.lattice,
-                      properties=other.properties, params=other.params)
+        _atoms.Atoms.__init__(self,n=other.n, lattice=other.lattice,
+                              properties=other.properties, params=other.params)
 
         # copy any normal (not Fortran) attributes
         for k, v in other.__dict__.iteritems():
