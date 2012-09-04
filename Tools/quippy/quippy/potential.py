@@ -23,7 +23,7 @@ import quippy.atoms
 import logging
 from quippy import _potential
 from quippy._potential import *
-from quippy.util import quip_xml_parameters
+from quippy.util import quip_xml_parameters, dict_to_args_str
 from quippy.elastic import stress_matrix
 
 __all__ = _potential.__all__ + ['force_test']
@@ -75,7 +75,7 @@ class Potential(_potential.Potential):
                  param_filename=None, bulk_scale=None, mpi_obj=None,
                  callback=None, calculator=None, inplace=False,
                  fortran_indexing=True, fpointer=None, finalise=True,
-                 error=None):
+                 error=None, **kwargs):
         """Typically a Potential is constructed from an initialisation
         args_str and an XML parameter file, e.g.::
 
@@ -127,6 +127,9 @@ class Potential(_potential.Potential):
             # if param_str missing, try to find default set of QUIP params
             if param_str is None and pot1 is None and pot2 is None:
                 param_str = quip_xml_parameters(args_str)
+
+        if kwargs != {}:
+            args_str = args_str + ' ' + dict_to_args_str(kwargs)
 
         _potential.Potential.__init__(self, args_str, pot1=pot1, pot2=pot2,
                                          param_str=param_str,
