@@ -12,6 +12,7 @@ from quippy.cinoutput import CInOutputReader
 import os
 import sys
 import inspect
+import numpy as np
 
 _viewers = {}
 _current_viewer = None
@@ -221,8 +222,9 @@ class AtomsViewer(Atoms, QuippyViewer):
     Subclass of Atoms and AtomEyeViewer
     """
     def __init__(self, source=None, name=None, **kwargs):
-        Atoms.__init__(self, source, **kwargs)
-        QuippyViewer.__init__(self, name)
+        Atoms.__init__(self)
+        self.shallow_copy_from(source)
+        QuippyViewer.__init__(self, name, **kwargs)
 
     def gcat(self, update=False):
         return self
@@ -231,7 +233,7 @@ class AtomsViewer(Atoms, QuippyViewer):
         pass
 
     def update_source(self, source, **kwargs):
-        self.read_from(source, **kwargs)
+        self.shallow_copy_from(source)
         self.redraw()
 
     def copy(self):
@@ -336,7 +338,7 @@ def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
         parent_frame.f_globals[viewer.name] = viewer
     return viewer
 
-# make 'view' a synonym for 'load'
+# make 'view' a synonym for 'read'
 view = read
 
 def gcv():
