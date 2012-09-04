@@ -16,7 +16,7 @@ import inspect
 _viewers = {}
 _current_viewer = None
 
-class AtomEyeViewerMixin(AtomEyeViewer):
+class QuippyViewer(AtomEyeViewer):
     """quippy-specific extensions to AtomEyeViewer"""
 
     _fields = ['verbose', 'echo', 'fortran_indexing',
@@ -216,19 +216,28 @@ class AtomEyeViewerMixin(AtomEyeViewer):
         AtomEyeViewer.__setstate__(self, state) 
     
 
-class AtomsViewer(Atoms, AtomEyeViewerMixin):
+class AtomsViewer(Atoms, QuippyViewer):
     """
     Subclass of Atoms and AtomEyeViewer
     """
     def __init__(self, source=None, name=None, **kwargs):
         Atoms.__init__(self, source, **kwargs)
-        AtomEyeViewerMixin.__init__(self, name)
+        QuippyViewer.__init__(self, name)
+
+    def gcat(self, update=False):
+        return self
+
+    def scat(self, atoms, frame=None):
+        pass
 
     def update_source(self, source, **kwargs):
         self.read_from(source, **kwargs)
         self.redraw()
 
-class AtomsReaderViewer(AtomsReader, AtomEyeViewerMixin):
+    def copy(self):
+        return Atoms.copy(self)
+
+class AtomsReaderViewer(AtomsReader, QuippyViewer):
     """
     Subclass of AtomsReader and AtomEyeViewer
     """
@@ -237,7 +246,7 @@ class AtomsReaderViewer(AtomsReader, AtomEyeViewerMixin):
             total_mem, free_mem = mem_info()
             kwargs['cache_mem_limit'] = 0.5*free_mem
         AtomsReader.__init__(self, source, **kwargs)
-        AtomEyeViewerMixin.__init__(self, name)
+        QuippyViewer.__init__(self, name)
 
     def update_source(self, source, cache=True, **kwargs):
         self.close()
@@ -247,13 +256,13 @@ class AtomsReaderViewer(AtomsReader, AtomEyeViewerMixin):
         AtomsReader.__init__(self, source, **kwargs)
         self.redraw()
 
-class AtomsListViewer(AtomsList, AtomEyeViewerMixin):
+class AtomsListViewer(AtomsList, QuippyViewer):
     """
     Subclass of AtomsList and AtomEyeViewer
     """
     def __init__(self, source=None, name=None, **kwargs):
         AtomsList.__init__(self, source, **kwargs)
-        AtomEyeViewerMixin.__init__(self, name)
+        QuippyViewer.__init__(self, name)
 
     def update_source(self, source, **kwargs):
         del self[:]
@@ -282,11 +291,11 @@ def find_viewer(source, name=None, recycle=True):
         name = new_name
 
     if name in _viewers:
-        print 'Reusing viewer named %s for file %s' % (name, source)
+        print 'Reusing viewer named %s' % name
         scv(_viewers[name])
         return (name, _viewers[name])
     else:
-        print 'Creating viewer named %s for file %s' % (name, source)
+        print 'Creating viewer named %s' % name
         return (name, None)
         
 def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
@@ -312,8 +321,8 @@ def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
     if viewer is None:
         tmp_reader = AtomsReader(source, **kwargs)
 
-        if tmp_reader.random_access and len(tmp_reader) == 1:
-            viewer = AtomsViewer(source, name=name, **kwargs)
+        if isinstance(source, Atoms) or (tmp_reader.random_access and len(tmp_reader) == 1):
+            viewer = AtomsViewer(source, name, **kwargs)
         else:
             if loadall:
                 viewer = AtomsListViewer(source, name=name, **kwargs)
@@ -363,8 +372,8 @@ def current_viewer_method_wrapper(method, *args, **kwargs):
     except ImportError:
         return call
 
-# Bring all AtomEyeViewerMixin methods into the top-level name space
-for name, method in inspect.getmembers(AtomEyeViewerMixin, inspect.ismethod):
+# Bring all QuippyViewer methods into the top-level name space
+for name, method in inspect.getmembers(QuippyViewer, inspect.ismethod):
     if name.startswith('_'):
         continue
     setattr(sys.modules[__name__], name, current_viewer_method_wrapper(method))
