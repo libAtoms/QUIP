@@ -108,20 +108,20 @@ program force_gaussian_prediction
    type(Atoms)           :: at_in
    type(CInOutput)       :: in
    type(Dictionary)      :: params
-   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati
+   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati, dist_shift_factor
    real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
    real(dp)                                      :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
-   real(dp), dimension(:,:,:), allocatable       :: feature_matrix_normalised, feature_matrix
-   real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, force_pred
+   real(dp), dimension(:,:,:), allocatable       :: feature_matrix_norm, feature_matrix
+   real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, out_u, out_vt
    real(dp), dimension(:,:), allocatable, target :: covariance, distance_matrix, force_covariance_matrix, covariance_tiny
-   real(dp), dimension(:,:), allocatable         :: feature_matrix_normalised_pred, feature_matrix_pred
+   real(dp), dimension(:,:), allocatable         :: feature_matrix_norm_pred, feature_matrix_pred, feature_matrix_norm_pred_t
    real(dp), dimension(:,:), pointer             :: force_ptr, force_ptr_mm, force_ptr_tff
    integer                                       :: i,j, k, n, t, n_center_atom, n_loop, preci, r_mesh, m_mesh 
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
-   integer	                 		 :: local_ml_optim_size
-   integer, dimension(:), allocatable            :: distance_index
+   integer	                 		 :: local_ml_optim_size, dimension_mark(3)
+   integer, dimension(:), allocatable            :: distance_index, mark_zero_ivs 
    logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, linear_vectors, do_svd
    character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
@@ -149,7 +149,7 @@ program force_gaussian_prediction
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
    call param_register(params, 'least_sq',    'T', least_sq, "if true, the internal force components will be tranformed to real force using least squares")
-   call param_register(params, 'do_svd', 'F', do_svd, "if true, doing inverting by SVD")
+   call param_register(params, 'do_svd', 'T', do_svd, "if true, doing inverting by SVD")
    call param_register(params, 'sigma_covariance', '1.0', sigma_covariance, "the factor multiplied by sigma when using fix_sigma")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
@@ -208,7 +208,7 @@ program force_gaussian_prediction
   call print('Got '//in%n_frame//' input frames.')
 
   allocate(feature_matrix(k, 3, n))   
-  allocate(feature_matrix_normalised(k, 3, n))
+  allocate(feature_matrix_norm(k, 3, n))
   allocate(force_proj_ivs(k, n))
 
  t = 0 ! counter for loop the atomic configurations
@@ -246,7 +246,7 @@ program force_gaussian_prediction
                    call print("WARNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs") 
            endif
 
-           feature_matrix_normalised(j,:,t) = feature_matrix(j,:, t)/feature_len
+           feature_matrix_norm(j,:,t) = feature_matrix(j,:, t)/feature_len
            !call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ) "//feature_matrix(j,1,t)//" "//feature_matrix(j,2,t)//" "//feature_matrix(j,3,t)) 
         enddo
 
@@ -267,14 +267,14 @@ program force_gaussian_prediction
                  call print("WARNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs")
               endif
               
-              feature_matrix_normalised(j,:,t) = feature_matrix(j,:,t)/feature_len
+              feature_matrix_norm(j,:,t) = feature_matrix(j,:,t)/feature_len
               !call print("added internal vectors :"//feature_matrix(j,1,t)//"  "//feature_matrix(j,2,t)//" "//feature_matrix(j,3,t))
            enddo
         endif
 
         ! store the force info for every configuration
         do j=1, k
-             force_proj_ivs(j,t) = dot_product(feature_matrix_normalised(j,:,t), force) 
+             force_proj_ivs(j,t) = dot_product(feature_matrix_norm(j,:,t), force) 
              !call print("Force projection on IV"//j//" is:  "//force_proj_ivs(j,t))
         enddo   
      enddo   ! loop over the atoms
@@ -309,7 +309,7 @@ if (fix_sigma) then
       do t = 1, k
          do i = 1, n
             do j=1, n
-               distance_ivs(i,j) = distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))
+               distance_ivs(i,j) = distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_norm(:,:,i), feature_matrix_norm(:,:,j))
                if (i>j)  call print("Dimensional Distance : "//distance_ivs(i, j)//"  dimension : "//t)
             enddo   ! i
          enddo     ! j
@@ -322,15 +322,15 @@ if (fix_sigma) then
       dist_primitive = sqrt(dist_primitive / real(k,dp)) 
       call print("primitive_distance : "//dist_primitive)
 
-      ! normalised distance with hyperparameters derived from statistics analysis      
+      ! norm distance with hyperparameters derived from statistics analysis      
       do i=1,n
          do j=1,n
             distance_ivs_stati = 0.0_dp   
             do t=1, k                 
                distance_ivs_stati = distance_ivs_stati + &
-                   (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_normalised(:,:,i), feature_matrix_normalised(:,:,j))/2.0_dp/deviation_value(t))**2  
+                   (distance_in_bent_space(feature_matrix(t,:,i), feature_matrix(t,:,j), feature_matrix_norm(:,:,i), feature_matrix_norm(:,:,j))/2.0_dp/deviation_value(t))**2  
             enddo
-            distance_ivs_stati = sqrt(distance_ivs_stati/real(k,dp))          ! to take the square root and get a normalised distance 
+            distance_ivs_stati = sqrt(distance_ivs_stati/real(k,dp))          ! to take the square root and get a norm distance 
             if (i>j)   call print("Normalised Dimensional Distance : "//distance_ivs_stati//"  Normalised Value : "//distance_ivs_stati/dist_primitive)
          enddo
       enddo
@@ -369,9 +369,10 @@ if (n_relevant_confs > n)  call system_abort("Trying to get more confs than the 
 
 allocate(covariance_pred(n_relevant_confs))
 allocate(feature_matrix_pred(k,3))
-allocate(feature_matrix_normalised_pred(k,3))
+allocate(feature_matrix_norm_pred(k,3))
 allocate(force_proj_ivs_pred(k))
 allocate(force_proj_target(k))
+allocate(mark_zero_ivs(k))
 allocate(covariance(n_relevant_confs,n_relevant_confs)) 
 if (local_ml_optim_size > 0) then 
    allocate(distance_matrix(local_ml_optim_size,local_ml_optim_size), force_covariance_matrix(local_ml_optim_size,local_ml_optim_size), covariance_tiny(local_ml_optim_size,local_ml_optim_size))
@@ -397,6 +398,11 @@ do i=1, in%n_frame
    endif
 
    do n_center_atom=1, n_loop
+
+     do j=1, k                  ! reset the mark for zero internal vectors
+         mark_zero_ivs(j)=1
+     enddo
+
      do j= 1, k-add_vector
         feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
         call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
@@ -404,10 +410,11 @@ do i=1, in%n_frame
 
         if (feature_len < TOL_REAL)  then
             feature_len=1.0_dp
+            mark_zero_ivs(j)=0
             call print("WARNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
         endif
 
-        feature_matrix_normalised_pred(j,:) = feature_matrix_pred(j,:)/feature_len
+        feature_matrix_norm_pred(j,:) = feature_matrix_pred(j,:)/feature_len
      enddo
 
       if (add_vector > 0) then
@@ -423,10 +430,11 @@ do i=1, in%n_frame
 
             if (feature_len < TOL_REAL) then
                feature_len=1.0_dp
+               mark_zero_ivs(j)=0
                call print("WARNING: PREDICTION, encountered the decimal limit in getting the unit direction of IVs")
             endif
             
-            feature_matrix_normalised_pred(j,:) = feature_matrix_pred(j,:)/feature_len
+            feature_matrix_norm_pred(j,:) = feature_matrix_pred(j,:)/feature_len
             call print("added internal vectors : "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
          enddo
       endif
@@ -435,7 +443,7 @@ do i=1, in%n_frame
      if (print_ft_matrix_test) then
        do j=1, k 
           do ii=1, k   
-            call print("ATOM : "//n_center_atom//" feature_matrix: ("//j//" "//ii//") "//dot_product(feature_matrix_pred(j,:), feature_matrix_normalised_pred(ii,:)) )
+            call print("ATOM : "//n_center_atom//" feature_matrix: ("//j//" "//ii//") "//dot_product(feature_matrix_pred(j,:), feature_matrix_norm_pred(ii,:)) )
           enddo   
        enddo
      endif
@@ -444,13 +452,14 @@ do i=1, in%n_frame
       call system_timer('Sorting the DATABASE')
       
       ! do the sorting and selection
-      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_normalised_pred, feature_matrix_normalised, sigma, distance_confs, distance_index)
-      ! call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
-      !     distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
+      call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_norm_pred, feature_matrix_norm, sigma, distance_confs, distance_index)
+      call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
+           distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
    
-      if (distance_confs(1)>0.2_dp) then
-                sigma_covariance = sigma_covariance*distance_confs(1)/0.2_dp     ! distance scaling
-                write(*,*) "distance are scaled with a factor of 0.2"
+     dist_shift_factor = 0.2_dp        ! distance shifted with a given factor
+     if (distance_confs(1)>dist_shift_factor) then  
+                sigma_covariance = sigma_covariance*distance_confs(1)/dist_shift_factor    
+                write(*,*) "distance are shifted with a factor of :", dist_shift_factor
       endif
 
       if (.false.) then        ! massive output, only for testing use
@@ -472,7 +481,7 @@ do i=1, in%n_frame
                ! check if possible, may be a wreck because IVs make absolute representation of the force impossible 
                force_covariance_matrix(j,t) = force_covariance_matrix(t,j)
                covariance_tiny(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                    feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type, &
+                    feature_matrix_norm(:,:,distance_index(t)), feature_matrix_norm(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type, &
                     distance=distance_matrix(t,j))
                covariance_tiny(j,t) = covariance_tiny(t,j)
                distance_matrix(j,t) = distance_matrix(t,j)
@@ -485,11 +494,11 @@ do i=1, in%n_frame
       ! Generate covariance matrix
       do t = 1, n_relevant_confs  ! loop to generate the covariance matrix of the learning set
          covariance(t,t) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(t)), &
-                feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
+                feature_matrix_norm(:,:,distance_index(t)), feature_matrix_norm(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
          if (do_gp) covariance(t,t) = covariance(t,t) + sigma_error**2
          do j = t+1, n_relevant_confs ! above diagonal
             covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
-                 feature_matrix_normalised(:,:,distance_index(t)), feature_matrix_normalised(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type)
+                 feature_matrix_norm(:,:,distance_index(t)), feature_matrix_norm(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type)
             covariance(j,t) = covariance(t,j)  
         enddo
       enddo
@@ -500,7 +509,7 @@ do i=1, in%n_frame
          call inverse(covariance, inv_covariance)
       else
          ! To Do Sigular Value Decomposition (SVD): A = U*SIGMA*VT
-         inv_covariance = inverse_svd_threshold(covariance, n_relevant_confs, thresh)
+         call inverse_svd_threshold(covariance, thresh, result_inv=inv_covariance)
       endif
       
       call system_timer('Inverting the Covariance Matrix')
@@ -513,59 +522,89 @@ do i=1, in%n_frame
       ! the test configuration covariance vector
       
       do t= 1, n_relevant_confs
-        covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_normalised_pred, &
-                                         feature_matrix_normalised(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
+        covariance_pred(t) = cov(feature_matrix_pred, feature_matrix(:,:,distance_index(t)), feature_matrix_norm_pred, &
+                                         feature_matrix_norm(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
       
-      ! the predicted force projected on each of the internal directions
+      ! the predicted force components on each of the internal directions
       force_proj_ivs_pred(:) = matmul(covariance_pred, matmul(inv_covariance, transpose(force_proj_ivs_select(:,:)) )) 
+      ! we need to mannually set the force components to be zero, projected on the zero internal-vector directions
+      do j=1, k
+         force_proj_ivs_pred(j)=force_proj_ivs_pred(j)*real(mark_zero_ivs(j), dp) 
+      enddo
+      
 
       do j=1, k
-         force_proj_target(j) = dot_product(feature_matrix_normalised_pred(j,:), force_ptr(:,n_center_atom))
+         force_proj_target(j) = dot_product(feature_matrix_norm_pred(j,:), force_ptr(:,n_center_atom))
       enddo
       
       
       do j=1, k 
-         call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  !//&
-             ! " : "//(abs(force_proj_ivs_pred(j)-force_proj_target(j))/abs(force_proj_target(j))))   
-         ! predicted force: real force: absolute difference 
+         call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  
       enddo
       
-      ! using least-squares to restore the target force in the External Cartesian Space
-      feature_inner_matrix=matmul(transpose(feature_matrix_normalised_pred), feature_matrix_normalised_pred)
 
-      if (do_svd) then
+  allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
+ 
+  do j=1, k
+      write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
+  enddo
+
+  allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
+  call inverse_svd_threshold(feature_inner_matrix, thresh, u_out=out_u, vt_out=out_vt)
+  allocate(feature_matrix_norm_pred_t(k,3))
+  call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
+
+  feature_matrix_norm_pred_t = feature_matrix_norm_pred .mult. out_u
+  do j=1, k
+     write(*,*) "feature_matrix_pred_t : ", feature_matrix_norm_pred_t(j, :)
+  enddo
+
+  select case (sum(dimension_mark(:)))
+    case(0)
+         force= 0.0_dp
+    case(1)
+         force=(transpose(feature_matrix_norm_pred) .mult. force_proj_ivs_pred )/real(k, dp)
+    case(2) 
+         feature_inner_matrix=transpose(feature_matrix_norm_pred_t) .mult. feature_matrix_norm_pred_t
+         call rank_lowered_inverse(feature_inner_matrix, feature_inv) 
+         force= transpose(out_u) .mult. feature_inv .mult. transpose(feature_matrix_norm_pred_t) .mult. force_proj_ivs_pred 
+    case(3)
+         feature_inner_matrix=transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred
+
+         if (do_svd) then   
             write(*,*)  "feature inner matrix :", feature_inner_matrix
-            feature_inv = inverse_svd_threshold(feature_inner_matrix, 3, thresh)
-      else
+            call inverse_svd_threshold(feature_inner_matrix, thresh, result_inv=feature_inv)
+            write(*,*)  "inverse feature inner matrix :", feature_inv
+         else
             write(*,*)  "feature_inner_matrix :", feature_inner_matrix
-            call inverse(feature_inner_matrix, feature_inv) 
-      endif
+            call inverse(feature_inner_matrix, feature_inv)
+            write(*,*)  "inverse feature inner matrix :", feature_inv
+         endif
 
-      if (least_sq) then 
-         force = feature_inv .mult. transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred
-      else
-         call real_expection_sampling_components(feature_matrix_normalised_pred, force_proj_ivs_pred, force)        
-      endif 
+         if (least_sq) then
+            force = feature_inv .mult. transpose(feature_matrix_norm_pred) .mult. force_proj_ivs_pred
+         else
+            call real_expection_sampling_components(feature_matrix_norm_pred, force_proj_ivs_pred, force)
+         endif
+   end select
+
+  deallocate(out_u)
+  deallocate(out_vt)
+  deallocate(feature_matrix_norm_pred_t)
 
 
-      ! a trick to cope with symmetry problem 
-      call internal_vector_linearity(feature_matrix_normalised_pred, linear_vectors, 0.1_dp)
-      if (linear_vectors) then              
-            force=(transpose(feature_matrix_normalised_pred) .mult. force_proj_ivs_pred )/real(k, dp)
-      endif
+  call print("force in external space:"//force)
+  call print("the original force:"//force_ptr(:, n_center_atom))
+  call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
 
-      call print("force in external space:"//force)
-      call print("the original force:"//force_ptr(:, n_center_atom))
-      call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
+   if (print_at) force_ptr(:,n_center_atom)=force     
 
-      if (print_at) force_ptr(:,n_center_atom)=force     
-
-      kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_normalised_pred, feature_matrix_normalised_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
+   kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_norm_pred, feature_matrix_norm_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
-      call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
+   call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
      
-   enddo  ! loop over positions
+ enddo  ! loop over positions
 
    if (print_at) then 
       call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
@@ -578,10 +617,11 @@ call finalise(in)
 deallocate(m_grid)
 deallocate(r_grid)
 deallocate(force_proj_ivs_pred)
-deallocate(feature_matrix_normalised)
-deallocate(feature_matrix_normalised_pred)
+deallocate(feature_matrix_norm)
+deallocate(feature_matrix_norm_pred)
 deallocate(feature_matrix)
 deallocate(feature_matrix_pred)
+deallocate(mark_zero_ivs)
 deallocate(sigma)
 deallocate(force_proj_ivs)
 deallocate(force_proj_ivs_select)
@@ -736,7 +776,7 @@ contains
        d_sq = d_sq + (distance_in_bent_space(feature_matrix1(i,:), feature_matrix2(i,:), bent_space1, bent_space2))**2 / (2.0_dp * (iv_weights(i)**2))
     enddo
  
-    ! normalised with the dimensionality k of the Internal Space
+    ! norm with the dimensionality k of the Internal Space
     d_sq = d_sq/real(k,dp)                            
 
     if (present(distance))  distance = d_sq  ! N.B. distance squared
@@ -762,29 +802,36 @@ contains
 
  endfunction cov
 
- function inverse_svd_threshold(in_matrix, n, thresh)
+ subroutine inverse_svd_threshold(in_matrix, thresh, result_inv, u_out, vt_out)
 
-   real(dp), intent(in)                  ::         in_matrix(:,:), thresh
-   integer,  intent(in)                  ::         n
-   real(dp), allocatable                 ::         w(:), sigmainv(:,:), u(:,:), vt(:,:), inverse_svd_threshold(:,:)
-   real(dp), allocatable                 ::         work(:)
-   real(dp), parameter                   ::         TOL_SVD = 1e-13_dp
-   integer                               ::         info, i, lwork, j
- 
+   real(dp), intent(in)                                               ::         in_matrix(:,:), thresh
+   real(dp), dimension(:,:), optional, intent(out)                    ::         u_out, vt_out
+   real(dp), intent(out), dimension(:,:), optional                    ::         result_inv
+   real(dp), allocatable                                              ::         w(:), sigmainv(:,:), u(:,:), vt(:,:)
+   real(dp), allocatable                                              ::         work(:)
+   real(dp), parameter                                                ::         TOL_SVD = 1e-13_dp
+   integer                                                            ::         n_dimension, info, i, lwork, j
+
    call print('entering inverse_svd_threshold')
 
-   allocate(w(n), sigmainv(n,n), u(n,n), vt(n,n))
+   n_dimension = size(in_matrix(:,1))
+   call print('Dimension of the Matrix : '//n_dimension)
+
+   allocate(w(n_dimension), sigmainv(n_dimension,n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
    lwork = -1
    allocate(work(1))
-   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n_dimension,n_dimension,in_matrix,n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
 
-   lwork = work(1) 
+   lwork = work(1)
    deallocate(work)
    allocate(work(lwork))
 
-   call DGESVD('A','A',n,n,in_matrix,n,w,u,n,vt,n, work, lwork, info)
+   call DGESVD('A','A',n_dimension, n_dimension, in_matrix, n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
    call print("DGESVD finished with exit code "//info)
    deallocate(work)
+
+ if (present(result_inv)) then
+ 
    if (info /= 0) then
           if (info < 0) then
                  write(line,'(a,i0)')'SVD: Problem with argument ',-info
@@ -797,7 +844,7 @@ contains
    sigmainv = 0.0_dp
    j = 0
 
-   do i=1, n
+   do i=1, n_dimension
        if (w(i) < thresh*TOL_SVD) then
             sigmainv(i,i) = 0.0_dp
             j = j + 1
@@ -805,14 +852,31 @@ contains
            sigmainv(i,i) = 1.0_dp/w(i)
        end if
    end do
+ 
    call print("the number of zero singular values : "//j)
-   inverse_svd_threshold = transpose(vt) .mult. sigmainv .mult. transpose(u)
+
+  if (n_dimension<=3) then  ! DEBUGGING use
+      write(*,*) "u", u
+      write(*,*) "vt", vt
+      write(*,*) "sigmainv", sigmainv
+      write(*,*) sigmainv .mult. transpose(u)
+  endif
+  result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
+
+end if !on condition of matrix inverting  
+
+   if (present(u_out))      u_out=u
+   if (present(vt_out))     vt_out=vt
+
    deallocate(w)
    deallocate(sigmainv)
    deallocate(u)
    deallocate(vt)
 
- endfunction inverse_svd_threshold
+   call print('finished  inverse_svd_threshold')
+
+ end subroutine inverse_svd_threshold
+
 
  function  distance_in_bent_space(vect1, vect2, bent_space1, bent_space2)
 
@@ -925,7 +989,7 @@ contains
                if ((norm(converting_matrix(:,1) .cross. converting_matrix(:,2)) > const) .and. (norm(converting_matrix(:,2) &
                            .cross. converting_matrix(:,3)) > const) .and. (norm(converting_matrix(:,3) .cross. converting_matrix(:,1)) > const)) then
                   write(*,*) "the converting matrix", converting_matrix
-                  converting_matrix_inv=inverse_svd_threshold(converting_matrix, 3, 10.0_dp)
+                  call inverse_svd_threshold(converting_matrix, 10.0_dp, result_inv=converting_matrix_inv)
                   target_force=transpose(converting_matrix_inv) .mult. force_value_matrix
                   write(*,*) "the inverse matrix : ", converting_matrix_inv
                   write(*,*) "the number of sequence of ivs:", i, j, t
@@ -956,7 +1020,10 @@ contains
    do i=1, k_size-1
       do j=i+1, k_size
          x_sin = norm(in_matrix(i,:) .cross. in_matrix(j,:))
-         if ( 1.0_dp-TOL > x_sin > TOL) linear_vectors=.false.
+         if (x_sin > TOL) then 
+                linear_vectors=.false.
+                write(*,*) "x_sin of two vectors : ", x_sin, "i=", i, "j=", j
+         endif 
       enddo
    enddo
 
@@ -964,6 +1031,40 @@ contains
   
   end subroutine internal_vector_linearity
  
+ subroutine internal_dimension_mark(in_matrix, TOL, mark)
+
+    real(dp), intent(in)                ::  in_matrix(:,:), TOL
+    integer, intent(out)                ::  mark(3) 
+    integer                             ::  i
+
+    mark(:)=1
+    do i=1,3
+       if (sum(abs(in_matrix(:,i)))< TOL)    mark(i)=0
+       call print('the '//i//' dimension is zero')
+    enddo
+
+ end subroutine  internal_dimension_mark 
+
+
+ subroutine rank_lowered_inverse(in_matrix, out_inv)
+
+   real(dp), intent(in)               ::    in_matrix(3,3)
+   real(dp), intent(out)              ::    out_inv(3,3)
+   real(dp)                           ::    a, b, c, d, m_factor
+
+   a=in_matrix(1,1)
+   b=in_matrix(1,2)
+   c=in_matrix(2,1)
+   d=in_matrix(2,2)
+   m_factor = a*d-b*c
+   out_inv=0.0_dp
+
+   out_inv(1,1) =  d/m_factor
+   out_inv(1,2) = -b/m_factor
+   out_inv(2,1) = -c/m_factor
+   out_inv(2,2) =  a/m_factor
+ 
+ end subroutine rank_lowered_inverse
 
  subroutine do_optimise_likelihood(sigma_error, sigma_covariance)
 
