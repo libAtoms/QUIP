@@ -99,6 +99,7 @@ contains
 end module likelihood_optimisation_module
 
 
+
 program force_gaussian_prediction
 
    use libatoms_module
@@ -543,19 +544,18 @@ do i=1, in%n_frame
          call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  
       enddo
       
-
-  allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
  
-  do j=1, k
-      write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
-  enddo
+     do j=1, k
+        write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
+     enddo
+   
+     allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
+     call inverse_svd_threshold(transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred, thresh, u_out=out_u, vt_out=out_vt)
+     allocate(feature_matrix_norm_pred_t(k,3))
+     call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
 
-  allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
-  call inverse_svd_threshold(feature_inner_matrix, thresh, u_out=out_u, vt_out=out_vt)
-  allocate(feature_matrix_norm_pred_t(k,3))
-  call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
+     feature_matrix_norm_pred_t = feature_matrix_norm_pred .mult. out_u
 
-  feature_matrix_norm_pred_t = feature_matrix_norm_pred .mult. out_u
   do j=1, k
      write(*,*) "feature_matrix_pred_t : ", feature_matrix_norm_pred_t(j, :)
   enddo
@@ -564,22 +564,22 @@ do i=1, in%n_frame
     case(0)
          force= 0.0_dp
     case(1)
-         force=(transpose(feature_matrix_norm_pred) .mult. force_proj_ivs_pred )/real(k, dp)
+         force=(transpose(feature_matrix_norm_pred) .mult. force_proj_ivs_pred )/real(sum(mark_zero_ivs),dp)
     case(2) 
          feature_inner_matrix=transpose(feature_matrix_norm_pred_t) .mult. feature_matrix_norm_pred_t
          call rank_lowered_inverse(feature_inner_matrix, feature_inv) 
-         force= transpose(out_u) .mult. feature_inv .mult. transpose(feature_matrix_norm_pred_t) .mult. force_proj_ivs_pred 
+         force = transpose(out_u) .mult. feature_inv .mult. transpose(feature_matrix_norm_pred_t) .mult. force_proj_ivs_pred 
     case(3)
-         feature_inner_matrix=transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred
 
+         feature_inner_matrix=transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred
          if (do_svd) then   
-            write(*,*)  "feature inner matrix :", feature_inner_matrix
-            call inverse_svd_threshold(feature_inner_matrix, thresh, result_inv=feature_inv)
-            write(*,*)  "inverse feature inner matrix :", feature_inv
+             write(*,*)  "feature inner matrix :", feature_inner_matrix
+             call inverse_svd_threshold(feature_inner_matrix, thresh, result_inv=feature_inv)
+             write(*,*)  "inverse feature inner matrix :", feature_inv
          else
-            write(*,*)  "feature_inner_matrix :", feature_inner_matrix
-            call inverse(feature_inner_matrix, feature_inv)
-            write(*,*)  "inverse feature inner matrix :", feature_inv
+             write(*,*)  "feature_inner_matrix :", feature_inner_matrix
+             call inverse(feature_inner_matrix, feature_inv)
+             write(*,*)  "inverse feature inner matrix :", feature_inv
          endif
 
          if (least_sq) then
@@ -594,9 +594,9 @@ do i=1, in%n_frame
   deallocate(feature_matrix_norm_pred_t)
 
 
-  call print("force in external space:"//force)
-  call print("the original force:"//force_ptr(:, n_center_atom))
-  call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
+   call print("force in external space:"//force)
+   call print("the original force:"//force_ptr(:, n_center_atom))
+   call print("max error :    "//maxval(abs(force_ptr(:,n_center_atom)-force))//" norm  error :  "//norm(force_ptr(:,n_center_atom)-force))
 
    if (print_at) force_ptr(:,n_center_atom)=force     
 
@@ -815,7 +815,7 @@ contains
    call print('entering inverse_svd_threshold')
 
    n_dimension = size(in_matrix(:,1))
-   call print('Dimension of the Matrix : '//n_dimension)
+!   call print('Dimension of the Matrix : '//n_dimension)
 
    allocate(w(n_dimension), sigmainv(n_dimension,n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
    lwork = -1
@@ -1039,8 +1039,10 @@ end if !on condition of matrix inverting
 
     mark(:)=1
     do i=1,3
-       if (sum(abs(in_matrix(:,i)))< TOL)    mark(i)=0
-       call print('the '//i//' dimension is zero')
+       if (sum(abs(in_matrix(:,i))/size(in_matrix(:,1)))< TOL)  then
+           mark(i)=0
+           call print('the '//i//' dimension is zero')
+       endif 
     enddo
 
  end subroutine  internal_dimension_mark 
