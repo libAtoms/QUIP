@@ -39,7 +39,9 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #include "error.inc"
-#include "KIMstatus.h"
+#include "KIM_API_status.h"
+
+
 
 module IPModel_KIM_module
 
@@ -47,7 +49,7 @@ use libatoms_module
 
 use mpi_context_module
 use QUIP_Common_module
-use KIMservice
+use KIM_API
 
 implicit none
 
@@ -97,7 +99,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   character(len=*), intent(in) :: args_str, param_str
 
   integer :: n_atom_types, kim_at_type_code, Z_i, at_type_i, j, k
-  character(len=KEY_CHAR_LENGTH) atom_types_list(1); pointer(p_atom_types_list, atom_types_list)
+  character(len=KIM_KEY_STRING_LENGTH) atom_types_list(1); pointer(p_atom_types_list, atom_types_list)
 
   type(Dictionary) :: params
   integer :: kim_error
@@ -130,10 +132,12 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
       call write_test_kim_file_from_model(test_kim_es, this%KIM_Test_name, this%KIM_Model_name)
 
       ! KIM routines to initialise pkim based on this%KIM_Test_name string
-      kim_error = KIM_API_init_str_testname_f(this%pkim, string(test_kim_es)//char(0), this%KIM_Model_name)
-      if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_str_testname_f failed", kim_error) /= KIM_STATUS_OK) &
+      kim_error = KIM_API_string_init_f(this%pkim, string(test_kim_es)//char(0), this%KIM_Model_name)
+      if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_str_testname_f failed", kim_error) /= KIM_STATUS_OK) then
+	call print(test_kim_es)
 	call system_abort("IPModel_KIM_Initialise_str: kim_api_init_str_testname_f with Test='"//trim(this%KIM_Test_name)// &
 	  "' and Model='"//trim(this%KIM_Model_name)//"' failed")
+      endif
    else
 #endif
     ! KIM routines to initialise pkim based on this%KIM_Test_name
@@ -150,22 +154,22 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   nullify(kim_at)
 
   ! create array for conversion of atomic numbers to KIM atom type codes
-  p_atom_types_list = KIM_API_get_ListAtomTypes_f(this%pkim, n_atom_types, kim_error)
+  p_atom_types_list = KIM_API_get_model_partcl_typs_f(this%pkim, n_atom_types, kim_error)
 
   allocate(this%atomTypeOfZ(size(ElementName)))
   this%atomTypeOfZ(:) = -1
   do at_type_i=1, n_atom_types
     ! replace null termination with space padding (C -> Fortran)
-    do j=1, KEY_CHAR_LENGTH
+    do j=1, KIM_KEY_STRING_LENGTH
 	if (atom_types_list(at_type_i)(j:j) == char(0)) then
-	    do k=j, KEY_CHAR_LENGTH
+	    do k=j, KIM_KEY_STRING_LENGTH
 		atom_types_list(at_type_i)(k:k) = ' '
 	    end do
 	    exit
 	endif
     end do
-    kim_at_type_code = kim_api_get_atypecode_f(this%pkim, trim(atom_types_list(at_type_i)), kim_error)
-    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_atypecode_f failed", kim_error) /= KIM_STATUS_OK) &
+    kim_at_type_code = KIM_API_get_partcl_type_code_f(this%pkim, trim(atom_types_list(at_type_i)), kim_error)
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_partcl_type_code_f failed", kim_error) /= KIM_STATUS_OK) &
        call system_abort("failed to find name of atom type "//at_type_i//" '"//trim(atom_types_list(at_type_i))//"' in pkim")
     Z_i = find_in_array(ElementName, trim(atom_types_list(at_type_i)))
     if (Z_i < 1) then
@@ -176,7 +180,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   end do
 
   ! register the neighbor list iterator
-  kim_error = kim_api_set_data_f(this%pkim, "get_full_neigh", int(1,8), loc(quip_neighbour_iterator))
+  kim_error = kim_api_set_data_f(this%pkim, "get_neigh", int(1,8), loc(quip_neighbour_iterator))
   if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_f failed", kim_error) /= KIM_STATUS_OK) &
     call system_abort("IPModel_KIM_Initialise_str failed to register quip_neighbour_iterator in kim")
 
@@ -317,33 +321,33 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
   ! register config input information
-  call kim_api_set_data_multiple_f(this%pkim, kim_error, &
-    "numberOfAtoms", int(1,8), loc(at%N), &
-    "coordinates", int(3*at%N,8), loc(at%pos(1,1)), &
-    "atomTypes", int(3*at%N,8), loc(atomTypes(1)))
+  call kim_api_setm_data_f(this%pkim, kim_error, &
+    "numberOfParticles", int(1,8), loc(at%N), KIM_L(.true.), &
+    "coordinates", int(3*at%N,8), loc(at%pos(1,1)), KIM_L(.true.), &
+    "particleTypes", int(3*at%N,8), loc(atomTypes(1)), KIM_L(.true.))
   ! deal with ghost atoms later (numberOfContributingAtoms)
-  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_multiple_f for inputs failed", kim_error) /= KIM_STATUS_OK) then
-    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_setm_data_f for inputs failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to setm_data for numberOfParticles, coordinates, particleTypes fields in pkim", error)
   endif
 
   ! register config output information
-  call kim_api_set_data_multiple_f(this%pkim, kim_error, &
-    "energy", int(1,8), loc(e), &
-    "energyPerAtom", int(at%N,8), loc(local_e(1)), &
-    "forces", int(3*at%N,8), loc(f(1,1)), &
-    "virialGlobal", int(6,8), loc(virial_sym(6)))
-  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_data_multiple_f for output failed", kim_error) /= KIM_STATUS_OK) then
-    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  call kim_api_setm_data_f(this%pkim, kim_error, &
+    "energy", int(1,8), loc(e), KIM_L(present(e)), &
+    "particleEnergy", int(at%N,8), loc(local_e(1)), KIM_L(present(local_e)), &
+    "forces", int(3*at%N,8), loc(f(1,1)), KIM_L(present(f)), &
+    "virial", int(6,8), loc(virial_sym(1)), KIM_L(present(virial)))
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_setm_data_f for output failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to setm_data for energy, particleEnergy, forces, virial  fields in pkim", error)
   endif
 
   ! set compute for config output information
-  call kim_api_set_compute_multiple_f(this%pkim, kim_error, &
-    "energy", kim_compute_of_logical(present(e)), &
-    "energyPerAtom", kim_compute_of_logical(present(local_e)), &
-    "forces", kim_compute_of_logical(present(f)), &
-    "virialGlobal", kim_compute_of_logical(present(virial)))
-  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_set_compute_multiple_f for outputs failed", kim_error) /= KIM_STATUS_OK) then
-    RAISE_ERROR("Failed to create neighObject field in pkim", error)
+  call kim_api_setm_compute_f(this%pkim, kim_error, &
+    "energy", KIM_COMPUTE_L(present(e)), KIM_L(.true.), &
+    "particleEnergy", KIM_COMPUTE_L(present(local_e)), KIM_L(.true.), &
+    "forces", KIM_COMPUTE_L(present(f)), KIM_L(.true.), &
+    "virial", KIM_COMPUTE_L(present(virial)), KIM_L(.true.))
+  if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_setm_compute_f for outputs failed", kim_error) /= KIM_STATUS_OK) then
+    RAISE_ERROR("Failed to setm_compute for energy, particleEnergy, forces, virial field in pkim", error)
   endif
 
   ! set data for neighbor stuff
@@ -355,21 +359,21 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
     RAISE_ERROR("Failed to create neighObject field in pkim", error)
   endif
 
-  call kim_api_model_compute_f(this%pkim, kim_error)
+  kim_error = kim_api_model_compute_f(this%pkim)
   if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_compute_f failed", kim_error) /= KIM_STATUS_OK) then
     RAISE_ERROR("Failed to compute with KIM Model", error)
   endif
- 
+
   if (present(virial)) then
-    virial(1,1) = virial_sym(1)
-    virial(2,2) = virial_sym(2)
-    virial(3,3) = virial_sym(3)
-    virial(2,3) = virial_sym(4)
-    virial(3,2) = virial_sym(4)
-    virial(1,3) = virial_sym(5)
-    virial(3,1) = virial_sym(5)
-    virial(1,2) = virial_sym(6)
-    virial(2,1) = virial_sym(6)
+    virial(1,1) = -virial_sym(1)
+    virial(2,2) = -virial_sym(2)
+    virial(3,3) = -virial_sym(3)
+    virial(2,3) = -virial_sym(4)
+    virial(3,2) = -virial_sym(4)
+    virial(1,3) = -virial_sym(5)
+    virial(3,1) = -virial_sym(5)
+    virial(1,2) = -virial_sym(6)
+    virial(2,1) = -virial_sym(6)
   endif
 
   deallocate(atomTypes)
@@ -447,22 +451,33 @@ subroutine write_test_kim_file_from_model(test_kim_es, test_name, model_name)
 
     call substr_replace(test_kim_es, conventions_i, model_input_i-2, &
 	"CONVENTIONS:"//quip_new_line// &
-	"OneBasedLists dummy"//quip_new_line// &
-	"Neigh_LocaAccess dummy"//quip_new_line// &
-	"NEIGH-RVEC-F dummy"//quip_new_line//quip_new_line// &
+	"OneBasedLists flag"//quip_new_line// &
+	"Neigh_BothAccess flag"//quip_new_line// &
+	"NEIGH_RVEC_F flag"//quip_new_line//quip_new_line// &
 	"################################################################################")
 
 end subroutine write_test_kim_file_from_model
 
-function kim_compute_of_logical(v)
-   logical, intent(in) :: v
-   integer :: kim_compute_of_logical
+function KIM_L(l)
+   logical, intent(in) :: l
+   integer :: KIM_L
 
-   if (v) then
-      kim_compute_of_logical = KIM_COMPUTE
+   if (l) then
+      KIM_L = 1
    else
-      kim_compute_of_logical = KIM_NOT_COMPUTE
+      KIM_L = 0
    endif
-end function kim_compute_of_logical
+end function KIM_L
+
+function KIM_COMPUTE_L(l)
+   logical, intent(in) :: l
+   integer :: KIM_COMPUTE_L
+
+   if (l) then
+      KIM_COMPUTE_L = KIM_COMPUTE_TRUE
+   else
+      KIM_COMPUTE_L = KIM_COMPUTE_FALSE
+   endif
+end function KIM_COMPUTE_L
 
 end module IPModel_KIM_module
