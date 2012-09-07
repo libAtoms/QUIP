@@ -36,7 +36,8 @@ endif
 include Makefile.inc
 include Makefile.rules
 
-default: all
+# default: all
+default: libcp2k_driver.a
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
