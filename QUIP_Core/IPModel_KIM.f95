@@ -67,12 +67,16 @@ type IPModel_KIM
 
   logical :: kim_is_initialised = .false.
 
-  integer, allocatable :: atomTypeOfZ(:)
+  integer, pointer :: atomTypeOfZ(:) => null()
+  character(len=512), pointer :: model_optional_outputs(:) => null()
+
+  logical :: kim_model_has_energy, kim_model_has_forces, kim_model_has_particleenergy, kim_model_has_virial 
 
 end type IPModel_KIM
 
 !NB in an ideal world these should not be global variables, but that requires
 !NB passing in a neighObject explicitly into the iterator, rather than just a pkim
+!NB maybe something can be done with a KIM buffer?
 integer :: kim_iterator_current_i = -1
 type(Atoms), pointer :: kim_at
 
@@ -129,7 +133,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
 #ifndef KIM_NO_AUTOGENERATE_TEST_KIM
   if (trim(this%KIM_Test_name) == '-') then
       ! create KIM test file string from model kim string
-      call write_test_kim_file_from_model(test_kim_es, this%KIM_Test_name, this%KIM_Model_name)
+      call write_test_kim_file_from_model(this, test_kim_es)
 
       ! KIM routines to initialise pkim based on this%KIM_Test_name string
       kim_error = KIM_API_string_init_f(this%pkim, string(test_kim_es)//char(0), this%KIM_Model_name)
@@ -138,6 +142,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
 	call system_abort("IPModel_KIM_Initialise_str: kim_api_init_str_testname_f with Test='"//trim(this%KIM_Test_name)// &
 	  "' and Model='"//trim(this%KIM_Model_name)//"' failed")
       endif
+
    else
 #endif
     ! KIM routines to initialise pkim based on this%KIM_Test_name
@@ -257,16 +262,21 @@ subroutine IPModel_KIM_Finalise(this)
   integer :: kim_error
 
   !! BAD - bug in gfortran 4.5 makes (apparently) this%kim_is_initialised is not set correctly for new structures, so we can't trust it
-  !! if (this%kim_is_initialised) then
-  !!   call kim_api_model_destroy_f(this%pkim, kim_error)
-  !!   call kim_api_free_f(this%pkim, kim_error)
-  !! endif
+  if (this%kim_is_initialised) then
+    kim_error = kim_api_model_destroy_f(this%pkim)
+    call kim_api_free_f(this%pkim, kim_error)
+  endif
 
   this%KIM_Test_name = ''
   this%KIM_Model_name = ''
   this%cutoff = 0.0_dp
   this%kim_is_initialised = .false.
   kim_iterator_current_i = -1
+  if (this%pkim /= 0) then
+     if (associated(this%AtomTypeOfZ)) deallocate(this%AtomTypeOfZ)
+     if (associated(this%model_optional_outputs)) deallocate(this%model_optional_outputs)
+  endif
+  this%pkim = 0
   nullify(kim_at)
 end subroutine IPModel_KIM_Finalise
 
@@ -279,8 +289,8 @@ end subroutine IPModel_KIM_Finalise
 subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_KIM), intent(inout) :: this
   type(Atoms), intent(inout), target :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), target, optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
+  real(dp), intent(out), target, optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -293,9 +303,14 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   real(dp) :: virial_sym(6)
   integer :: i
+  integer :: numberAtomTypes
   integer, allocatable :: atomTypes(:)
   integer kim_error
   integer :: bad_i(1)
+
+  real(dp), target :: t_e
+  real(dp), allocatable, target :: t_local_e(:), t_f(:,:)
+  real(dp), pointer :: p_e, p_local_e(:), p_f(:,:)
 
   INIT_ERROR(error)
 
@@ -319,23 +334,60 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
     bad_i = minloc(atomTypes)
     RAISE_ERROR("Some Z mapped to an invalid atom type, e.g. atom "//bad_i(1)//" Z "//at%Z(bad_i(1)), error)
   endif
+  numberAtomTypes = maxval(this%atomTypeOfZ)
 
   ! register config input information
   call kim_api_setm_data_f(this%pkim, kim_error, &
     "numberOfParticles", int(1,8), loc(at%N), KIM_L(.true.), &
     "coordinates", int(3*at%N,8), loc(at%pos(1,1)), KIM_L(.true.), &
-    "particleTypes", int(3*at%N,8), loc(atomTypes(1)), KIM_L(.true.))
+    "numberParticleTypes", int(numberAtomTypes,8), loc(numberAtomTypes), KIM_L(.true.), &
+    "particleTypes", int(at%N,8), loc(atomTypes(1)), KIM_L(.true.))
   ! deal with ghost atoms later (numberOfContributingAtoms)
   if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_setm_data_f for inputs failed", kim_error) /= KIM_STATUS_OK) then
     RAISE_ERROR("Failed to setm_data for numberOfParticles, coordinates, particleTypes fields in pkim", error)
   endif
 
+  ! it would be nice to know if model outputs are optional or not, so we don't have to allocate them
+  ! if we don't need to
+  if (present(e)) then
+     if (.not. this%kim_model_has_energy) &
+       call system_abort("IPModel_KIM_calc got energy, but kim model does not return energy")
+     p_e => e
+  else
+     p_e => t_e
+  endif
+  if (present(f)) then
+     if (.not. this%kim_model_has_forces) &
+       call system_abort("IPModel_KIM_calc got forces, but kim model does not return forces")
+     p_f => f
+  else
+     if (this%kim_model_has_forces) then
+	allocate(t_f(3, at%N))
+     else
+	allocate(t_f(1, 1))
+     endif
+     p_f => t_f
+  endif
+  if (present(local_e)) then
+     if (.not. this%kim_model_has_particleenergy) &
+       call system_abort("IPModel_KIM_calc got local_e, but kim model does not return particleEnergy")
+     p_f => f
+  else
+     if (this%kim_model_has_particleenergy) then
+	allocate(t_local_e(at%N))
+     else
+	allocate(t_local_e(1))
+     endif
+     p_local_e => t_local_e
+  endif
+  ! virial is already dealt with because virial_sym needs to be defined separately from virial (6 vs. 3x3)
+
   ! register config output information
   call kim_api_setm_data_f(this%pkim, kim_error, &
-    "energy", int(1,8), loc(e), KIM_L(present(e)), &
-    "particleEnergy", int(at%N,8), loc(local_e(1)), KIM_L(present(local_e)), &
-    "forces", int(3*at%N,8), loc(f(1,1)), KIM_L(present(f)), &
-    "virial", int(6,8), loc(virial_sym(1)), KIM_L(present(virial)))
+    "energy", int(1,8), loc(p_e), KIM_L(.true.), &
+    "particleEnergy", int(at%N,8), loc(p_local_e(1)), KIM_L(.true.), &
+    "forces", int(3*at%N,8), loc(p_f(1,1)), KIM_L(.true.), &
+    "virial", int(6,8), loc(virial_sym(1)), KIM_L(.true.))
   if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_setm_data_f for output failed", kim_error) /= KIM_STATUS_OK) then
     RAISE_ERROR("Failed to setm_data for energy, particleEnergy, forces, virial  fields in pkim", error)
   endif
@@ -377,6 +429,8 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
   deallocate(atomTypes)
+  if (allocated(t_f)) deallocate(t_f)
+  if (allocated(t_local_e)) deallocate(t_local_e)
 
 end subroutine IPModel_KIM_Calc
 
@@ -418,17 +472,22 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
 
 end function parse_extra_calcs
 
-subroutine write_test_kim_file_from_model(test_kim_es, test_name, model_name)
+subroutine write_test_kim_file_from_model(this, test_kim_es)
+    type(IPModel_KIM), intent(inout) :: this
     type(Extendable_Str) :: test_kim_es
-    character(len=*), intent(in) :: test_name, model_name
 
     integer kim_error
-    integer :: str_len
+    integer :: i, str_len
     character(len=1) :: model_str_stub(1); pointer(p_model_str, model_str_stub)
 
-    integer i, conventions_i, model_input_i
+    integer :: sec_start, sec_end
+    character(len=80) :: cur_sec_name
+    integer :: t_index
+    integer(kind=kim_intptr) :: t_pkim = 0
+    character(len=1000) :: test_model_output
 
-    p_model_str = kim_api_get_model_kim_str_f(trim(model_name), str_len, kim_error)
+
+    p_model_str = kim_api_get_model_kim_str_f(trim(this%KIM_model_name), str_len, kim_error)
     if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_model_kim_str failed", kim_error) /= KIM_STATUS_OK) &
       call system_abort("Failed to get model .kim string")
 
@@ -437,26 +496,160 @@ subroutine write_test_kim_file_from_model(test_kim_es, test_name, model_name)
       call concat(test_kim_es, model_str_stub(i), no_trim=.true.)
     end do
 
-    ! set conventions section to QUIP's restrictions
+    ! keep SUPPORTED_ATOM/PARTICLE_TYPES - will fail at compute type if it doesn't match
 
-    conventions_i = index(test_kim_es, "CONVENTIONS:")
-    if (conventions_i <= 0) then
-	call system_abort("write_test_kim_file_from_model failed to find CONVENTIONS section")
+    ! get rid of MODEL_PARAMETERS section
+    call find_section(test_kim_es, "MODEL_PARAMETERS", sec_start, sec_end)
+    if (sec_start > 0) then
+       call substr_replace(test_kim_es, sec_start, sec_end, "")
     endif
 
-    model_input_i = index(test_kim_es, "MODEL_INPUT:")
-    if (model_input_i <= 0) then
-	call system_abort("write_test_kim_file_from_model failed to find MODEL_INPUT section")
+    ! set CONVENTIONS section to QUIP's restrictions
+    call find_section(test_kim_es, "CONVENTIONS", sec_start, sec_end)
+    if (sec_start > 0) then
+       call substr_replace(test_kim_es, sec_start, sec_end, &
+	   "CONVENTIONS:"//quip_new_line// &
+	   "  OneBasedLists flag"//quip_new_line// &
+	   "  Neigh_BothAccess flag"//quip_new_line// &
+	   "  NEIGH_RVEC_F flag"//quip_new_line//quip_new_line// &
+	   "################################################################################")
+    else
+    	call system_abort("write_test_kim_file_from_model failed to find CONVENTIONS section")
     endif
 
-    call substr_replace(test_kim_es, conventions_i, model_input_i-2, &
-	"CONVENTIONS:"//quip_new_line// &
-	"OneBasedLists flag"//quip_new_line// &
-	"Neigh_BothAccess flag"//quip_new_line// &
-	"NEIGH_RVEC_F flag"//quip_new_line//quip_new_line// &
-	"################################################################################")
+    ! set MODEL_INPUT section to what QUIP supports
+    call find_section(test_kim_es, "MODEL_INPUT", sec_start, sec_end)
+    if (sec_start > 0) then
+       call substr_replace(test_kim_es, sec_start, sec_end, &
+	    "MODEL_INPUT:"//quip_new_line// &
+	    "# Name                      Type         Unit                Shape              Requirements"//quip_new_line// &
+	    "numberOfParticles           integer      none                []"//quip_new_line// &
+	    "numberParticleTypes         integer      none                []"//quip_new_line// &
+	    "particleTypes               integer      none                [numberOfParticles]"//quip_new_line// &
+	    "coordinates                 real*8       length              [numberOfParticles,3]"//quip_new_line// &
+	    "get_neigh                   method       none                []"//quip_new_line// &
+	    "neighObject                 pointer      none                []"//quip_new_line// &
+	    "#######################################################################################################")
+    else
+    	call system_abort("write_test_kim_file_from_model failed to find MODEL_INPUT section")
+    endif
+
+    ! promise to use every model output
+    kim_error = KIM_API_model_info_f(t_pkim, this%KIM_Model_name)
+    if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_model_info_f failed", kim_error) /= KIM_STATUS_OK) &
+      call system_abort("Failed to get info for kim model "//trim(this%KIM_model_name))
+
+    t_index = KIM_API_get_index_f(t_pkim, "energy", kim_error)
+    this%kim_model_has_energy = (kim_error == KIM_STATUS_OK)
+    t_index = KIM_API_get_index_f(t_pkim, "forces", kim_error)
+    this%kim_model_has_forces = (kim_error == KIM_STATUS_OK)
+    t_index = KIM_API_get_index_f(t_pkim, "particleEnergy", kim_error)
+    this%kim_model_has_particleenergy = (kim_error == KIM_STATUS_OK)
+    t_index = KIM_API_get_index_f(t_pkim, "virial", kim_error)
+    this%kim_model_has_virial = (kim_error == KIM_STATUS_OK)
+
+    test_model_output = &
+	 "destroy                     method       none                []"//quip_new_line// &
+	 "compute                     method       none                []"//quip_new_line// &
+	 "cutoff                      real*8       length              []"//quip_new_line
+    if (this%kim_model_has_energy) &
+      test_model_output = trim(test_model_output)// &
+	 "energy                      real*8       energy              []"//quip_new_line
+    if (this%kim_model_has_forces) &
+      test_model_output = trim(test_model_output)// &
+	 "forces                      real*8       force      [numberOfParticles,3]"//quip_new_line
+    if (this%kim_model_has_particleenergy) &
+      test_model_output = trim(test_model_output)// &
+	 "particleEnergy              real*8       energy     [numberOfParticles]"//quip_new_line
+    if (this%kim_model_has_virial) &
+      test_model_output = trim(test_model_output)// &
+	 "virial                      real*8       energy               [6]"//quip_new_line
+
+    call find_section(test_kim_es, "MODEL_OUTPUT", sec_start, sec_end)
+    if (sec_start > 0) then
+       call substr_replace(test_kim_es, sec_start, sec_end, &
+	    "MODEL_OUTPUT:"//quip_new_line// &
+	    "# Name                      Type         Unit                Shape        "//quip_new_line// &
+	    trim(test_model_output)// &
+	    "#######################################################################################################")
+    else
+    	call system_abort("write_test_kim_file_from_model failed to find MODEL_OUTPUT section")
+    endif
 
 end subroutine write_test_kim_file_from_model
+
+subroutine find_section(test_kim_es, sec_name, sec_start, sec_end)
+    type(Extendable_Str) :: test_kim_es
+    character(len=*), intent(in) :: sec_name
+    integer, intent(out) :: sec_start, sec_end
+
+    integer :: cur_sec_loc, next_sec_loc
+    character(len=80) :: cur_sec_name
+
+    sec_start = -1
+    sec_end = -1
+
+    cur_sec_loc = find_section_label(test_kim_es, 1, cur_sec_name)
+    do while (cur_sec_loc > 0)
+      if (trim(cur_sec_name) == trim(sec_name)) then
+	 sec_start = cur_sec_loc
+	 next_sec_loc = find_section_label(test_kim_es, cur_sec_loc+len_trim(cur_sec_name)+1)
+	 if (next_sec_loc <= 0) then
+	    sec_end = test_kim_es%len
+	 else
+	    sec_end = next_sec_loc - 2
+	 endif
+	 return
+      endif
+      cur_sec_loc = find_section_label(test_kim_es, cur_sec_loc+len_trim(cur_sec_name)+1, cur_sec_name)
+    end do 
+
+end subroutine find_section
+
+function find_section_label(test_kim_es, start, sec_name) result(sec_loc)
+   type(Extendable_Str) :: test_kim_es
+   integer, intent(in) :: start
+   character(len=*), optional :: sec_name
+   integer :: sec_loc
+
+   integer :: i
+   logical :: after_newline, in_section, is_newline, is_section_char, is_section_end
+   character(len=80) :: t_sec_name
+
+   after_newline = (start == 1)
+
+   sec_loc = -1
+   in_section = .false.
+   do i=start, test_kim_es%len
+      is_newline = (substr(test_kim_es,i,i) == quip_new_line)
+      is_section_char = (scan(substr(test_kim_es,i,i),"ABCDEFGHIJKLMNOPQRSTUVWXYZ_") > 0)
+      is_section_end = (substr(test_kim_es,i,i) == ':')
+      if (after_newline) then
+	 if (is_section_char) then
+	    in_section = .true.
+	    t_sec_name = substr(test_kim_es, i, i)
+	 endif
+      else ! not after newline
+	 if (in_section) then
+	    if (is_section_end) then
+	       sec_loc = i-len_trim(t_sec_name)
+	       if (present(sec_name)) sec_name = trim(t_sec_name)
+	       return
+	    else if (is_section_char) then
+	       t_sec_name = trim(t_sec_name) // substr(test_kim_es, i, i)
+	    else
+	       sec_loc = -1
+	       in_section = .false.
+	    endif
+	 endif
+      endif
+      after_newline = is_newline
+   end do
+
+   sec_loc = -1
+   in_section = .false.
+ 
+end function find_section_label
 
 function KIM_L(l)
    logical, intent(in) :: l
