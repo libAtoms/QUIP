@@ -179,7 +179,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
   integer :: n_neigh_i
 
   type(Dictionary)                :: params
-  logical :: has_atom_mask_name
+  logical :: has_atom_mask_name, atom_mask_exclude_all
   character(STRING_LENGTH) :: atom_mask_name
   logical, dimension(:), pointer :: atom_mask_pointer
 
@@ -213,7 +213,8 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
   atom_mask_pointer => null()
   if (present(args_str)) then
      call initialise(params)
-     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy: nb326 $")
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="Name of logical property used to mask atoms")
+     call param_register(params, 'atom_mask_exclude_all', 'F', atom_mask_exclude_all, help_string="If true, exclude contributions made by atoms with atom_mask==.false. on their neighbour with atom_mask==.true., i.e. behave as if excluded atoms were not there at all")
 
      if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_VP_Calc args_str')) then
         RAISE_ERROR("IPModel_SW_VP_Calc failed to parse args_str='"//trim(args_str)//"'",error)
@@ -230,7 +231,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
   if (.not.assign_pointer(at,"weight", w_e)) nullify(w_e)
 
 #ifdef _OPENMP
-!$omp parallel private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i)
+      !$omp parallel default(none) private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i) shared(this,at,e,local_e,f,virial,local_virial,mpi,atom_mask_pointer,atom_mask_exclude_all,w_e)
 
   if (present(e)) private_e = 0.0_dp
   if (present(local_e)) then
@@ -249,7 +250,6 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
 !$omp do
 #endif
-
   do i=1, at%N 
    if (present(mpi)) then
        if (mpi%active) then
@@ -271,7 +271,10 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
     do ji=1, n_neigh_i 
       j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
       
-    
+      if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
+         if(.not. atom_mask_pointer(j)) cycle
+      endif
+
       if (j <= 0) cycle  
       if (drij_mag .feq. 0.0_dp) cycle   
 
@@ -388,8 +391,10 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
       enddo !  closes j loop
       enddo !  closes i loop 
       
-      do i=1, at%N  ! New loop for three body terms, because (see parameters/ip.params.SW_VP.xml) cutoff for three body terms is in SiSiO case larger then the  SiSi cutoff
+      ! New loop for three body terms, because (see parameters/ip.params.SW_VP.xml) cutoff for three body terms is in SiSiO case larger then the  SiSi cutoff
 
+      !$omp do
+      do i=1, at%N 
 
         if (present(mpi)) then
            if (mpi%active) then
@@ -411,6 +416,11 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
       do ji=1, n_neigh_i 
       j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
+
+      if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
+         if(.not. atom_mask_pointer(j)) cycle
+      endif
+
       if (j <= 0) cycle  
       if (drij_mag .feq. 0.0_dp) cycle 
 
@@ -423,6 +433,11 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 	if (ki <= ji) cycle  
 	
         k = atoms_neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff) 
+
+        if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
+           if(.not. atom_mask_pointer(k)) cycle
+        endif
+
 	if (k <= 0) cycle
 	if (drik_mag .feq. 0.0_dp) cycle 
 
@@ -528,8 +543,6 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 						       de_dcos_ijk * dcos_ijk_dri(:)) 
 	    f(:,j) = f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))  
 	    f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
-          
-         
 #endif
 	  end if
 
@@ -1155,7 +1168,7 @@ subroutine IPModel_SW_VP_read_params_xml(this, param_str)
     call system_abort("IPModel_SW_VP_read_params_xml parsed file, but n_types = 0")
   endif
 
-end subroutine
+    end subroutine IPModel_SW_VP_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
