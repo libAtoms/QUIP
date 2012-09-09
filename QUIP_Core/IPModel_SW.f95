@@ -162,7 +162,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   integer :: n_neigh_i
 
   type(Dictionary)                :: params
-  logical :: has_atom_mask_name
+  logical :: has_atom_mask_name, atom_mask_exclude_all
   character(STRING_LENGTH) :: atom_mask_name
   logical, dimension(:), pointer :: atom_mask_pointer
 
@@ -199,7 +199,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   atom_mask_pointer => null()
   if (present(args_str)) then
      call initialise(params)
-     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="Name of logical property used to mask atoms")
+     call param_register(params, 'atom_mask_exclude_all', 'F', atom_mask_exclude_all, help_string="If true, exclude contributions made by atoms with atom_mask==.false. on their neighbour with atom_mask==.true., i.e. behave as if excluded atoms were not there at all")
      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
      if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Calc args_str')) then
@@ -258,6 +259,11 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
     n_neigh_i = atoms_n_neighbours(at, i)
     do ji=1, n_neigh_i
+
+      if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
+          if(.not. atom_mask_pointer(j)) cycle
+      endif
+
       j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff)
       if (j <= 0) cycle
       if (drij_mag .feq. 0.0_dp) cycle
@@ -335,6 +341,11 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       do ki=1, n_neigh_i
 	if (ki <= ji) cycle
 	k = atoms_neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
+
+        if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
+           if(.not. atom_mask_pointer(k)) cycle
+        endif
+
 	if (k <= 0) cycle
 	if (drik_mag .feq. 0.0_dp) cycle
 
