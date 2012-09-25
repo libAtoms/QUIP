@@ -57,7 +57,7 @@ if opt.read_args is not None:
 
 viewers = []
 if opt.chain:
-    v = atoms(args, loadall=opt.loadall, name='at', **read_args)
+    v = read(args, loadall=opt.loadall, name='at', **read_args)
     __all__.append('at')
     viewers.append(v)
 elif opt.time_ordered_series:
@@ -65,12 +65,12 @@ elif opt.time_ordered_series:
         pattern, = args
     except:
         p.error('when -t/--time-ordered-series is present, only one argument should be given')
-    v = atoms(time_ordered_series(pattern), loadall=opt.loadall, name='at', **read_args)
+    v = read(time_ordered_series(pattern), loadall=opt.loadall, name='at', **read_args)
     __all__.append('at')
     viewers.append(at)    
 else:
     for filename in args:
-        v = atoms(filename, loadall=opt.loadall, **read_args)
+        v = read(filename, loadall=opt.loadall, **read_args)
         __all__.append(v.name)
         viewers.append(v)
 
