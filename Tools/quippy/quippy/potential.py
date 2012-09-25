@@ -154,7 +154,7 @@ class Potential(_potential.Potential):
     def callback(at_ptr):
         from quippy import Atoms
         at = Atoms(fpointer=at_ptr, finalise=False)
-        if at.params['label'] not in Potential.callback_map:
+        if 'label' not in at.params or at.params['label'] not in Potential.callback_map:
             raise ValueError('Unknown Callback label %s' % at.params['label'])
         Potential.callback_map[at.params['label']](at)
 
