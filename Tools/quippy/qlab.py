@@ -12,6 +12,7 @@ from quippy.cinoutput import CInOutputReader
 import os
 import sys
 import inspect
+import itertools
 import numpy as np
 
 _viewers = {}
@@ -214,7 +215,23 @@ class QuippyViewer(AtomEyeViewer):
         return state
 
     def __setstate__(self, state):
-        AtomEyeViewer.__setstate__(self, state) 
+        AtomEyeViewer.__setstate__(self, state)
+
+    def set_cutoffs(self, nneighb_only=True):
+        at = self.gcat()
+        for Z1, Z2 in itertools.combinations_with_replacement(set(at.z), 2):
+            sym1, sym2 = ElementName[Z1], ElementName[Z2]
+            print sym1, sym2, 
+            if nneighb_only:
+                cutoff = at.nneightol*bond_length(Z1, Z2)
+                print 'nneigbb', cutoff
+            elif at.use_uniform_cutoff:
+                cutoff = at.cutoff
+                print 'uniform', cutoff
+            else:
+                cutoff = at.cutoff*bond_length(Z1, Z2)
+                print 'relative', cutoff
+            self.rcut_patch(sym1, sym2, cutoff, absolute=True)
     
 
 class AtomsViewer(Atoms, QuippyViewer):
@@ -223,7 +240,10 @@ class AtomsViewer(Atoms, QuippyViewer):
     """
     def __init__(self, source=None, name=None, **kwargs):
         Atoms.__init__(self)
-        self.shallow_copy_from(source)
+        if isinstance(source, Atoms):
+            self.shallow_copy_from(source)
+        else:
+            self.read_from(source, **kwargs)
         QuippyViewer.__init__(self, name, **kwargs)
 
     def gcat(self, update=False):
