@@ -1109,13 +1109,13 @@ contains
     ! only do the allocation if needed
     if(scale_positions) then
        allocate(frac(3,this%N))
-       frac = this%g .mult. this%pos
+       frac = matmul(this%g,this%pos)
     end if
 
     this%lattice = new_lattice
 
     if(scale_positions) then
-       this%pos = this%lattice .mult. frac
+       this%pos = matmul(this%lattice,frac)
        deallocate(frac)
     end if
 
