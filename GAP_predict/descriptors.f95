@@ -23,242 +23,15 @@
 ! HND X
 ! HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module descriptors_module
 
    use libatoms_module
 
    implicit none
 
-   real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
-   !integer, parameter :: WATER_DIMER_N_OH = 12
-   !integer, parameter :: WATER_DIMER_N_HH = 12
-   !integer, parameter :: WATER_DIMER_D = WATER_DIMER_N_OH+WATER_DIMER_N_HH+1
-   !logical, parameter :: DO_FOURIER_WARP = .true.
-   integer, parameter :: WATER_DIMER_D = 15
-
-   integer, parameter :: besseli_max_n = 20
-   real(dp), dimension(besseli_max_n), parameter :: besseli0_c = (/ &
-   0.125_dp, &
-   7.03125E-002_dp, &
-   7.32421875E-002_dp, &
-   0.112152099609375_dp, &    
-   0.22710800170898438_dp, &    
-   0.57250142097473145_dp, &    
-   1.7277275025844574_dp, &    
-   6.0740420012734830_dp, &    
-   24.380529699556064_dp, &    
-   110.01714026924674_dp, &    
-   551.33589612202059_dp, &    
-   3038.0905109223841_dp, &    
-   18257.755474293175_dp, &    
-   118838.42625678326_dp, &    
-   832859.30401628942_dp, &    
-   6252951.4934347980_dp, &    
-   50069589.531988934_dp, &    
-   425939216.50476694_dp, &    
-   3836255180.2304339_dp, &    
-   36468400807.065559_dp /)    
-
-   real(dp), dimension(besseli_max_n), parameter :: besseli1_c = (/ &
-   -0.375_dp, &    
-   -0.1171875_dp, &    
-   -0.1025390625_dp, &    
-   -0.144195556640625_dp, &    
-   -0.27757644653320313_dp, &    
-   -0.67659258842468262_dp, &    
-   -1.9935317337512970_dp, &    
-   -6.8839142681099474_dp, &    
-   -27.248827311268542_dp, &    
-   -121.59789187653587_dp, &    
-   -603.84407670507017_dp, &    
-   -3302.2722944808525_dp, &    
-   -19718.375912236628_dp, &    
-   -127641.27264617461_dp, &    
-   -890297.87670706783_dp, &    
-   -6656367.7188176867_dp, &    
-   -53104110.109685220_dp, &    
-   -450278600.30503929_dp, &    
-   -4043620325.1077542_dp, &    
-   -38338575207.427895_dp /)
-
-   real(dp), parameter :: besseli_max_x = 18.0_dp
-
-   type real_3
-        real(dp), dimension(3) :: x
-   endtype real_3
-
-   type cplx_3
-        complex(dp), dimension(3) :: x
-   endtype cplx_3
-
-   type cplx_2d_x
-      complex(dp), dimension(:,:,:), allocatable :: mm
-   endtype cplx_2d_x
-
-   type cplx_2d
-      complex(dp), dimension(:,:), allocatable :: mm
-   endtype cplx_2d
-
-   type cplx_1d_x
-      complex(dp), dimension(:,:), allocatable :: m
-   endtype cplx_1d_x
-
-   type cplx_1d
-      complex(dp), dimension(:), allocatable :: m
-   endtype cplx_1d
-
-   type cosnx
-      integer :: l_max, n_max
-      real(dp) :: cutoff
-      real(dp), dimension(:,:), allocatable :: RadialTransform
-      real(dp), dimension(:), allocatable :: NormFunction
-      logical :: initialised = .false.
-   endtype cosnx
-
-   type fourier_so4
-      integer :: j_max
-      real(dp) :: z0, cutoff
-      type(cplx_2d), dimension(:), allocatable :: U      
-      logical                                  :: initialised = .false.
-   endtype fourier_so4
-
-   type grad_fourier_so4
-      integer :: j_max
-      real(dp) :: z0, cutoff
-      type(cplx_2d_x), dimension(:), allocatable :: U      
-      logical                                  :: initialised = .false.
-   endtype grad_fourier_so4
-
-   type fourier_so3
-      integer :: l_max
-      real(dp), dimension(:), allocatable :: cutoff, cutoff_r1
-      integer, dimension(:), allocatable :: cutoff_f
-      type(cplx_1d), dimension(:,:), allocatable :: Y_times_R
-      logical :: initialised = .false.
-   endtype fourier_so3
-
-   type grad_fourier_so3
-      integer :: l_max
-      real(dp), dimension(:), allocatable :: cutoff, cutoff_r1
-      integer, dimension(:), allocatable :: cutoff_f
-      type(cplx_1d_x), dimension(:,:), allocatable :: Y_times_R
-      logical :: initialised = .false.
-   endtype grad_fourier_so3
-
-   type magnetic
-      complex(dp), dimension(:), allocatable :: mag
-   endtype magnetic
-
-   type bispectrum_so4
-      integer :: j_max
-      type(magnetic), dimension(:,:), allocatable :: coeff
-      logical                                  :: initialised = .false.
-   endtype bispectrum_so4
-
-   type magnetic_x
-      type(cplx_3), dimension(:), allocatable :: mag
-   endtype magnetic_x
-
-   type grad_bispectrum_so4
-      integer :: j_max
-      type(magnetic_x), dimension(:,:), allocatable :: coeff
-      logical                                  :: initialised = .false.
-   endtype grad_bispectrum_so4
-
-   type qw_so3
-      integer :: l_max, f_n
-      logical :: do_q, do_w
-      real(dp), dimension(:,:), allocatable :: q
-      real(dp), dimension(:,:), allocatable :: w
-      logical :: initialised = .false.
-   endtype qw_so3
-
-   type grad_qw_so3
-      integer :: l_max, f_n
-      logical :: do_q, do_w
-      type(real_3), dimension(:,:), allocatable :: q
-      type(real_3), dimension(:,:), allocatable :: w
-      logical :: initialised = .false.
-   endtype grad_qw_so3
-
-   type angular_fourier
-      type(magnetic), dimension(:), allocatable  :: ang
-   endtype angular_fourier
-
-   type radial_fourier
-      type(angular_fourier), dimension(:), allocatable :: rad
-   endtype radial_fourier
-
-   type angular_bispectrum
-      type(magnetic), dimension(:,:), allocatable :: ang
-   endtype angular_bispectrum
-
-   type radial_bispectrum
-      type(angular_bispectrum), dimension(:,:), allocatable :: rad
-   endtype radial_bispectrum
-
-   type symm_radial
-      real(dp) :: eta
-      real(dp) :: rs
-   endtype symm_radial
-
-   type symm_angular
-      real(dp) :: zeta
-      real(dp) :: lambda
-      real(dp) :: eta
-      real(dp) :: rj
-      real(dp) :: rk
-   endtype symm_angular
-
-   type symm
-      logical                                       :: initialised = .false.
-      real(dp)                                      :: cutoff
-      type(symm_radial), dimension(:), allocatable  :: radial
-      type(symm_angular), dimension(:), allocatable :: angular
-      integer                                       :: n_radial = 0
-      integer                                       :: n_angular = 0
-   endtype symm
-
-   type fourier_coefficient_atom
-      logical                             :: initialised = .false.
-      integer                             :: N_max = 0
-      integer                             :: L_max = 0
-      type(radial_fourier)                :: coeff
-      real(dp), dimension(:), allocatable :: r0
-      real(dp)                            :: sigma, cutoff_left, cutoff_right, cutoff_sigma
-   endtype fourier_coefficient_atom
-
-   type fourier_coefficient_pair
-      logical                                    :: initialised = .false.
-      integer                                    :: N_max = 0
-      integer                                    :: L_max = 0
-      complex(dp), dimension(:,:,:), allocatable :: coeff
-      real(dp), dimension(:), allocatable        :: r0
-      real(dp)                                   :: r_ij, r_cut, sigma, cutoff_left, cutoff_right, cutoff_sigma
-   endtype fourier_coefficient_pair
-
-   type bispectrum_coefficient_atom
-      logical                             :: initialised = .false.
-      integer                             :: N_max = 0
-      integer                             :: L_max = 0
-      type(radial_bispectrum)             :: coeff
-   endtype bispectrum_coefficient_atom
-
-   type bispectrum_coefficient_pair
-      logical                                    :: initialised = .false.
-      integer                                    :: N_max = 0
-      integer                                    :: L_max = 0
-      real(dp)                                   :: r_ij
-      complex(dp), dimension(:,:,:), allocatable :: coeff
-   endtype bispectrum_coefficient_pair
-
-   type per
-      complex(dp), dimension(:,:,:), allocatable :: f
-      integer, dimension(3)                      :: k
-      real(dp)                                   :: sig = 0.2_dp
-      real(dp), dimension(:), allocatable        :: w
-      logical                                    :: initialised = .false.
-   endtype per
+   private
 
    real(dp), dimension(:,:,:,:,:,:), allocatable, save :: cg_array
    integer :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0 
@@ -283,4528 +56,7214 @@ module descriptors_module
        1307674368000.0_dp, &
        20922789888000.0_dp/)
 
+   integer, parameter, public :: DT_NONE            =  0
+   integer, parameter, public :: DT_BISPECTRUM_SO4  =  1
+   integer, parameter, public :: DT_BISPECTRUM_SO3  =  2
+   integer, parameter, public :: DT_BEHLER          =  3
+   integer, parameter, public :: DT_DISTANCE_2B     =  4
+   integer, parameter, public :: DT_COORDINATION    =  5
+   integer, parameter, public :: DT_ANGLE_3B        =  6
+   integer, parameter, public :: DT_CO_ANGLE_3B     =  7
+   integer, parameter, public :: DT_CO_DISTANCE_2B  =  8
+   integer, parameter, public :: DT_COSNX           =  9
+   integer, parameter, public :: DT_TRIHIS          = 10
+   integer, parameter, public :: DT_WATER_MONOMER   = 11
+   integer, parameter, public :: DT_WATER_DIMER     = 12
+   integer, parameter, public :: DT_A2_DIMER        = 13
+   integer, parameter, public :: DT_AB_DIMER        = 14
+   integer, parameter, public :: DT_BOND_REAL_SPACE = 15
+   integer, parameter, public :: DT_ATOM_REAL_SPACE = 16
+   integer, parameter, public :: DT_POWER_SO3       = 17
+   integer, parameter, public :: DT_POWER_SO4       = 18
+   integer, parameter, public :: DT_SOAP            = 19
+
+   integer, parameter :: NP_WATER_DIMER    = 8
+   integer, parameter :: NP_A2_DIMER       = 8
+   integer, parameter :: NP_AB_DIMER       = 2
+
+   type descriptor_data_mono
+      real(dp), dimension(:), allocatable :: data
+      real(dp), dimension(:,:,:), allocatable :: grad_data
+      integer, dimension(:), allocatable :: ii
+      real(dp), dimension(:,:), allocatable :: pos
+      logical :: has_data
+      logical, dimension(:), allocatable :: has_grad_data
+
+      real(dp) :: covariance_cutoff = 1.0_dp
+      real(dp), dimension(:,:), allocatable :: grad_covariance_cutoff
+   endtype descriptor_data_mono
+
+   type cplx_2d
+      complex(dp), dimension(:,:), allocatable :: mm
+   endtype cplx_2d
+
+   type real_2d
+      real(dp), dimension(:,:), allocatable :: mm
+   endtype real_2d
+
+   type cplx_3d
+      complex(dp), dimension(:,:,:), allocatable :: mm
+   endtype cplx_3d
+
+   type RadialFunction_type
+      integer :: n_max
+      real(dp) :: cutoff, min_cutoff
+      real(dp), dimension(:,:), allocatable :: RadialTransform
+      real(dp), dimension(:), allocatable :: NormFunction
+
+      logical :: initialised = .false.
+   endtype RadialFunction_type
+
+   type fourier_SO4_type
+      real(dp) :: cutoff
+      real(dp) :: z0_ratio
+      real(dp) :: z0
+      integer :: j_max, Z
+      integer, dimension(:), allocatable :: species_Z
+      real(dp), dimension(:), allocatable :: w
+
+      logical :: initialised = .false.
+   endtype fourier_SO4_type
+
+   type bispectrum_SO4
+      real(dp), pointer :: cutoff
+      integer, pointer :: j_max, Z
+      real(dp), pointer :: z0_ratio
+      real(dp), pointer :: z0
+
+      integer, dimension(:), pointer :: species_Z
+      real(dp), dimension(:), pointer :: w
+      
+      type(fourier_SO4_type) :: fourier_SO4
+
+      logical :: initialised = .false.
+
+   endtype bispectrum_SO4
+
+   type bispectrum_SO3
+
+      integer :: l_max, n_max, Z
+      real(dp) :: cutoff, min_cutoff
+
+      type(RadialFunction_type) :: radial
+
+      integer, dimension(:), allocatable :: species_Z
+      real(dp), dimension(:), allocatable :: w
+
+      logical :: initialised = .false.
+
+   endtype bispectrum_SO3
+
+   type behler_g2
+      real(dp) :: eta
+      real(dp) :: rs
+      real(dp) :: rc
+   endtype behler_g2
+
+   type behler_g3
+      real(dp) :: eta
+      real(dp) :: lambda
+      real(dp) :: zeta
+      real(dp) :: rc
+   endtype behler_g3
+
+   type behler
+
+      real(dp) :: cutoff = 0.0_dp
+      logical :: initialised = .false.
+
+      integer :: n_g2, n_g3
+      type(behler_g2), dimension(:), allocatable :: g2
+      type(behler_g3), dimension(:), allocatable :: g3
+
+   endtype behler
+
+   type distance_2b
+      real(dp) :: cutoff
+      integer :: Z1, Z2
+
+      logical :: initialised = .false.
+
+   endtype distance_2b
+
+   type coordination
+      real(dp) :: cutoff
+      real(dp) :: transition_width
+      integer :: Z
+
+      logical :: initialised = .false.
+
+   endtype coordination
+
+   type angle_3b
+      real(dp) :: cutoff
+      integer :: Z, Z1, Z2
+
+      logical :: initialised = .false.
+
+   endtype angle_3b
+
+   type co_angle_3b
+      real(dp) :: cutoff
+      real(dp) :: coordination_cutoff
+      real(dp) :: coordination_transition_width
+      integer :: Z, Z1, Z2
+
+      logical :: initialised = .false.
+
+   endtype co_angle_3b
+
+   type co_distance_2b
+      real(dp) :: cutoff
+      real(dp) :: transition_width
+      real(dp) :: coordination_cutoff
+      real(dp) :: coordination_transition_width
+      integer :: Z1, Z2
+
+      logical :: initialised = .false.
+
+   endtype co_distance_2b
+
+   type cosnx
+
+      integer :: l_max, n_max, Z
+      real(dp) :: cutoff, min_cutoff
+
+      type(RadialFunction_type) :: radial
+
+      integer, dimension(:), allocatable :: species_Z
+      real(dp), dimension(:), allocatable :: w
+
+      logical :: initialised = .false.
+
+   endtype cosnx
+
+   type trihis
+      real(dp) :: cutoff
+      integer :: n_gauss
+
+      real(dp), dimension(:,:), allocatable :: gauss_centre
+      real(dp), dimension(:,:), allocatable :: gauss_width
+
+      logical :: initialised = .false.
+
+   endtype trihis
+
+   type water_monomer
+      real(dp) :: cutoff
+
+      logical :: initialised = .false.
+
+   endtype water_monomer
+
+   type water_dimer
+      real(dp) :: cutoff, cutoff_transition_width
+      real(dp) :: monomer_cutoff
+      logical :: OHH_ordercheck
+
+      logical :: initialised = .false.
+
+   endtype water_dimer
+
+   type A2_dimer
+      real(dp) :: cutoff
+      real(dp) :: monomer_cutoff
+      integer :: atomic_number
+
+      logical :: initialised = .false.
+
+   endtype A2_dimer
+
+   type AB_dimer
+      real(dp) :: cutoff
+      real(dp) :: monomer_cutoff
+      integer :: atomic_number1, atomic_number2
+
+      logical :: initialised = .false.
+
+   endtype AB_dimer
+
+   type bond_real_space
+      real(dp) :: bond_cutoff
+      real(dp) :: bond_transition_width
+      real(dp) :: cutoff
+      real(dp) :: transition_width
+
+      logical :: initialised = .false.
+
+   endtype bond_real_space
+
+   type atom_real_space
+      real(dp) :: cutoff
+      real(dp) :: cutoff_transition_width
+      integer :: l_max
+      real(dp) :: alpha
+      real(dp) :: zeta
+
+      logical :: initialised = .false.
+
+   endtype atom_real_space
+
+   type power_so3
+      integer :: l_max, n_max, Z
+      real(dp) :: cutoff, min_cutoff
+
+      type(RadialFunction_type) :: radial
+
+      integer, dimension(:), allocatable :: species_Z
+      real(dp), dimension(:), allocatable :: w
+
+      logical :: initialised = .false.
+   endtype power_so3
+
+   type power_SO4
+      real(dp), pointer :: cutoff
+      integer, pointer :: j_max, Z
+      real(dp), pointer :: z0_ratio
+      real(dp), pointer :: z0
+
+      integer, dimension(:), pointer :: species_Z
+      real(dp), dimension(:), pointer :: w
+      
+      type(fourier_SO4_type) :: fourier_SO4
+
+      logical :: initialised = .false.
+
+   endtype power_SO4
+
+   type soap
+      real(dp) :: cutoff
+      real(dp) :: cutoff_transition_width
+      integer :: l_max
+      real(dp) :: alpha, sigma
+
+      integer :: n_max
+      real(dp), dimension(:), allocatable :: r_basis
+      real(dp), dimension(:,:), allocatable :: transform_basis,cholesky_overlap_basis
+
+      logical :: initialised = .false.
+   endtype soap
+
+   type descriptor
+      integer :: descriptor_type = DT_NONE
+
+      type(bispectrum_SO4)  :: descriptor_bispectrum_SO4
+      type(bispectrum_SO3)  :: descriptor_bispectrum_SO3
+      type(behler)          :: descriptor_behler
+      type(distance_2b)     :: descriptor_distance_2b
+      type(coordination)    :: descriptor_coordination
+      type(angle_3b)        :: descriptor_angle_3b
+      type(co_angle_3b)     :: descriptor_co_angle_3b
+      type(co_distance_2b)  :: descriptor_co_distance_2b
+      type(cosnx)           :: descriptor_cosnx
+      type(trihis)          :: descriptor_trihis
+      type(water_monomer)   :: descriptor_water_monomer
+      type(water_dimer)     :: descriptor_water_dimer
+      type(A2_dimer)        :: descriptor_A2_dimer
+      type(AB_dimer)        :: descriptor_AB_dimer
+      type(bond_real_space) :: descriptor_bond_real_space
+      type(atom_real_space) :: descriptor_atom_real_space
+      type(power_so3)       :: descriptor_power_so3
+      type(power_SO4)       :: descriptor_power_SO4
+      type(soap)            :: descriptor_soap
+
+   endtype
+
+   type descriptor_data
+      type(descriptor_data_mono), dimension(:), allocatable :: x
+      logical :: atom_based = .false.
+   endtype descriptor_data
+
+   type cplx_1d
+      complex(dp), dimension(:), allocatable :: m
+   endtype cplx_1d
+
+   type real_1d
+      real(dp), dimension(:), allocatable :: m
+   endtype real_1d
+
+   type spherical_harmonics_type
+      type(cplx_1d), dimension(:), allocatable :: spherical_harmonics
+      type(cplx_2d), dimension(:), allocatable :: grad_spherical_harmonics
+      real(dp) :: r
+      real(dp), dimension(3) :: u
+   endtype spherical_harmonics_type
+
+   type neighbour_type
+      type(spherical_harmonics_type), dimension(:), allocatable :: neighbour
+   endtype neighbour_type
+
+   type grad_spherical_harmonics_overlap_type
+      type(cplx_3d), dimension(:), allocatable :: grad_integral
+   endtype grad_spherical_harmonics_overlap_type
+
+   public :: neighbour_type, real_space_fourier_coefficients, real_space_covariance_coefficient, coordination_function, dcoordination_function
+   public :: SphericalYCartesian
+
    interface initialise
-      module procedure initialise_fourier_atom, initialise_bispectrum_atom, &
-      initialise_fourier_pair, initialise_bispectrum_pair, initialise_symm, &
-      initialise_fourier_so4, initialise_bispectrum_so4, &
-      initialise_grad_fourier_so4, initialise_grad_bispectrum_so4, &
-      initialise_fourier_periodic, &
-      initialise_fourier_so3, initialise_qw_so3, &
-      initialise_grad_fourier_so3, initialise_grad_qw_so3, initialise_cosnx
+      module procedure descriptor_initialise, RadialFunction_initialise, fourier_so4_initialise, &
+      bispectrum_SO4_initialise, bispectrum_SO3_initialise, behler_initialise, distance_2b_initialise, &
+      coordination_initialise, angle_3b_initialise, co_angle_3b_initialise, co_distance_2b_initialise, cosnx_initialise, trihis_initialise, &
+      water_monomer_initialise, water_dimer_initialise, A2_dimer_initialise, AB_dimer_initialise, &
+      bond_real_space_initialise, atom_real_space_initialise, power_so3_initialise, power_SO4_initialise, soap_initialise
    endinterface initialise
+   public :: initialise
 
    interface finalise
-      module procedure finalise_fourier_atom, finalise_bispectrum_atom, &
-      finalise_fourier_pair, finalise_bispectrum_pair, finalise_symm, &
-      finalise_fourier_so4, finalise_bispectrum_so4, finalise_grad_fourier_so4, &
-      finalise_grad_bispectrum_so4, finalise_fourier_periodic, &
-      finalise_fourier_so3, finalise_qw_so3, &
-      finalise_grad_fourier_so3, finalise_grad_qw_so3, finalise_cosnx
+      module procedure descriptor_finalise, descriptor_data_finalise, RadialFunction_finalise, fourier_so4_finalise, cplx_2d_array1_finalise, cplx_3d_array2_finalise, &
+      bispectrum_SO4_finalise, bispectrum_SO3_finalise, behler_finalise, distance_2b_finalise, coordination_finalise, angle_3b_finalise, co_angle_3b_finalise, &
+      co_distance_2b_finalise, cosnx_finalise, trihis_finalise, water_monomer_finalise, water_dimer_finalise, &
+      A2_dimer_finalise, AB_dimer_finalise, bond_real_space_finalise, atom_real_space_finalise, power_so3_finalise, power_SO4_finalise, soap_finalise
    endinterface finalise
+   public :: finalise
 
-   interface print
-      module procedure print_fourier_atom, print_bispectrum_atom, &
-      print_fourier_pair, print_bispectrum_pair, print_bispectrum_so4
-   endinterface print
+   interface calc
+      module procedure descriptor_calc, bispectrum_SO4_calc, bispectrum_SO3_calc, behler_calc, distance_2b_calc, coordination_calc, angle_3b_calc, co_angle_3b_calc, &
+      co_distance_2b_calc, cosnx_calc, trihis_calc, water_monomer_calc, water_dimer_calc, A2_dimer_calc, AB_dimer_calc, bond_real_space_calc, atom_real_space_calc, &
+      power_so3_calc, power_SO4_calc, soap_calc
+   endinterface calc
+   public :: calc
 
-   interface fourier_transform
-      module procedure fourier_transform_atom, fourier_transform_vec, fourier_transform_pair, &
-      fourier_transform_periodic, fourier_transform_so4, grad_fourier_transform_so4, &
-      fourier_transform_so3, grad_fourier_transform_so3
-   endinterface fourier_transform
+   interface cutoff
+      module procedure descriptor_cutoff, bispectrum_SO4_cutoff, bispectrum_SO3_cutoff, behler_cutoff, distance_2b_cutoff, coordination_cutoff, angle_3b_cutoff, co_angle_3b_cutoff, &
+      co_distance_2b_cutoff, cosnx_cutoff, trihis_cutoff, water_monomer_cutoff, water_dimer_cutoff, A2_dimer_cutoff, AB_dimer_cutoff, bond_real_space_cutoff, atom_real_space_cutoff, &
+      power_so3_cutoff, power_SO4_cutoff, soap_cutoff
+   endinterface cutoff
+   public :: cutoff
 
-   interface calc_bispectrum
-      module procedure calc_bispectrum1_atom, calc_bispectrum_pair, calc_bispectrum_so4, calc_grad_bispectrum_so4, &
-      bispectrum_periodic
-   endinterface calc_bispectrum
+   interface descriptor_sizes
+      module procedure descriptor_sizes, bispectrum_SO4_sizes, bispectrum_SO3_sizes, behler_sizes, distance_2b_sizes, coordination_sizes, angle_3b_sizes, co_angle_3b_sizes, &
+      co_distance_2b_sizes, cosnx_sizes, trihis_sizes, water_monomer_sizes, water_dimer_sizes, A2_dimer_sizes, AB_dimer_sizes, bond_real_space_sizes, atom_real_space_sizes, &
+      power_so3_sizes, power_SO4_sizes, soap_sizes
+   endinterface descriptor_sizes
+   public :: descriptor_sizes
 
-   interface calc_qw
-      module procedure calc_qw_so3, calc_grad_qw_so3
-   endinterface calc_qw
-
-   interface bispectrum2vec
-      module procedure bispectrum2vec1_atom, bispectrum2vec2_atom, bispectrum2vec3_atom, &
-      bispectrum2vec1_pair, bispectrum2vec_so4, bispectrum2vec_grad_so4, bispectrum2vec_periodic
-   endinterface bispectrum2vec
-
-   interface qw2vec
-      module procedure qw2vec_qw_so3, qw2vec_grad_qw_so3
-   endinterface qw2vec
-
-   interface qw2d
-      module procedure qw2d_qw_so3, qw2d_grad_qw_so3
-   end interface
-
-   interface L_max2d
-      module procedure L_max2d_bispectrum_atom, L_max2d_bispectrum_pair
-   endinterface L_max2d
-
-   interface cg
-      module procedure cg_lookup !cg_calculate
-   endinterface cg
-
-   private
-
-   public :: symm, atom2symm, symm_jacobian, per, get_weights
-
-   public :: calc_qw_at
-   public :: fourier_transform, initialise, finalise, calc_bispectrum, calc_qw, L_max2d, L_max2d_atom, L_max2d_pair, &
-   & bispectrum2vec, qw2vec, qw2d, print
-
-   public :: fourier_coefficient_atom, fourier_coefficient_pair, &
-   & bispectrum_coefficient_atom, bispectrum_coefficient_pair
-   !NB gfortran 4.3.4 doesn't like private type members of a public type
-   public :: radial_bispectrum, magnetic, radial_fourier, cplx_1d, cplx_2d, magnetic_x, cplx_1d_x, &
-     cplx_2d_x, real_3, cplx_3, angular_bispectrum, angular_fourier, symm_radial, symm_angular
-   !NB
-
-   public :: test_qw_gradient
-
-   public :: order_lattice_vectors
-   public :: transpose_bispectrum_pair, conjugate_bispectrum_pair
-   public :: cg, cg_initialise, cg_finalise, wigner3j
-   public :: gaussian, fermi_dirac
-   public :: xyz2spherical, xyz2ell
-   public :: SphericalY
-   public :: LegendreP
-   public :: SolidRCartesian
-   public :: SphericalYCartesian
-   public :: GradSphericalYCartesian
-   public :: RadialFunction
-   public :: GradRadialFunction
-   public :: p_norm
-   public :: factorial, factorial2, binom, oscillate
-   public :: fourier_so4, bispectrum_so4, j_max2d, grad_fourier_so4, grad_bispectrum_so4
-   public :: fourier_so3, grad_fourier_so3, qw_so3, grad_qw_so3
-   public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
-   public :: kmax2d, suggest_kmax, suggest_resolution
-   public :: water_monomer, water_dimer, WATER_DIMER_D, hf_dimer, hf_dimer_grad
-   public :: cosnx, calc_cosnx, calc_grad_cosnx
-   public :: besseli0, besseli1, covariance_atom_atom
+   public :: descriptor, descriptor_data, descriptor_dimensions, descriptor_n_permutations, descriptor_permutations, descriptor_str_add_species
+   public :: cg_initialise, real_space_covariance
+   public :: cplx_1d, cplx_2d
 
    contains
 
-     subroutine initialise_fourier_so4(this,j_max,z0,cutoff)
-
-        type(fourier_so4), intent(inout) :: this
-        integer, intent(in) :: j_max
-        real(dp), intent(in) :: z0, cutoff
-
-        integer :: j
-
-        if( this%initialised ) call finalise(this)
-
-        this%z0 = z0
-        this%cutoff = cutoff
-        this%j_max = j_max
-
-        allocate( this%U(0:j_max) )
-        do j = 0, j_max
-           allocate( this%U(j)%mm(-j:j,-j:j) )
-           this%U(j)%mm = CPLX_ZERO
-        enddo
-        this%initialised = .true.
-     
-     endsubroutine initialise_fourier_so4
-
-     subroutine initialise_grad_fourier_so4(this,j_max,z0,cutoff)
-
-        type(grad_fourier_so4), intent(inout) :: this
-        integer, intent(in) :: j_max
-        real(dp), intent(in) :: z0, cutoff
-
-        integer :: j
-
-        if( this%initialised ) call finalise(this)
-
-        this%z0 = z0
-        this%cutoff = cutoff
-        this%j_max = j_max
-
-        allocate( this%U(0:j_max) )
-        do j = 0, j_max
-           allocate( this%U(j)%mm(3,-j:j,-j:j) )
-           this%U(j)%mm = CPLX_ZERO
-        enddo
-        this%initialised = .true.
-     
-     endsubroutine initialise_grad_fourier_so4
-
-     subroutine initialise_fourier_so3(this, l_max, cutoff, cutoff_f, cutoff_r1)
-
-       type(fourier_so3), intent(inout) :: this
-       integer, intent(in) :: l_max
-       real(dp), dimension(:), intent(in) :: cutoff, cutoff_r1
-       integer, dimension(:), intent(in) :: cutoff_f
-
-       integer :: l, f
-
-       if (mod(l_max, 2) /= 0) call system_abort('initialise_fourier_so3: l_max is odd')
-
-       if (this%initialised) call finalise(this)
-
-       this%l_max = l_max
-       allocate(this%cutoff(size(cutoff)), this%cutoff_f(size(cutoff_f)), this%cutoff_r1(size(cutoff_r1)))
-       this%cutoff = cutoff
-       this%cutoff_f = cutoff_f
-       this%cutoff_r1 = cutoff_r1
-
-       allocate(this%Y_times_R(1:l_max / 2,1:size(cutoff)))
-       do l = 2, l_max, 2
-          do f = 1, size(cutoff)
-             allocate(this%Y_times_R(l / 2,f)%m(-l:l))
-             this%Y_times_R(l / 2,f)%m = CPLX_ZERO
-          enddo
-       enddo
-       this%initialised = .true.
-     
-     endsubroutine initialise_fourier_so3
-
-     subroutine initialise_grad_fourier_so3(this, l_max, cutoff, cutoff_f, cutoff_r1)
-
-       type(grad_fourier_so3), intent(inout) :: this
-       integer, intent(in) :: l_max
-       real(dp), dimension(:), intent(in) :: cutoff, cutoff_r1
-       integer, dimension(:), intent(in) :: cutoff_f
-
-       integer :: l, f
-
-       if (mod(l_max, 2) /= 0) call system_abort('initialise_fourier_so3: l_max is odd')
-
-       if (this%initialised) call finalise(this)
-
-       this%l_max = l_max
-       allocate(this%cutoff(size(cutoff)), this%cutoff_f(size(cutoff_f)), this%cutoff_r1(size(cutoff_r1)))
-       this%cutoff = cutoff
-       this%cutoff_f = cutoff_f
-       this%cutoff_r1 = cutoff_r1
-
-       allocate(this%Y_times_R(1:l_max / 2,1:size(cutoff)))
-       do l = 2, l_max, 2
-          do f = 1, size(cutoff)
-             allocate(this%Y_times_R(l / 2,f)%m(3,-l:l))
-             this%Y_times_R(l / 2,f)%m = CPLX_ZERO
-          enddo
-       enddo
-       this%initialised = .true.
-
-     endsubroutine initialise_grad_fourier_so3
-
-     subroutine initialise_cosnx(this, l_max, n_max, cutoff, w)
-  
-       type(cosnx), intent(inout) :: this
-       integer, intent(in) :: l_max, n_max
-       real(dp), intent(in) :: cutoff
-       real(dp), dimension(:,:), intent(in), optional :: w
-  
-       real(dp), dimension(n_max,n_max) :: S, vS
-       real(dp), dimension(n_max) :: eS
-       real(dp), dimension(:,:), allocatable :: f
-       integer :: i, j, w_max
-  
-       if (this%initialised) call finalise(this)
-  
-       this%l_max = l_max
-       this%n_max = n_max
-       this%cutoff = cutoff
-  
-       allocate(this%RadialTransform(n_max,n_max),this%NormFunction(n_max))
-  
-       if( present(w) ) then
-          if(size(w,2) /= 2) call system_abort('initialise_cosnx: weight (w) expected to be (N,2) dimensional array')
-          w_max = size(w,1)
-          if(w(w_max,1) > cutoff) call system_abort('Last distance in w ('//w(w_max,1)//') is larger than the cutoff ('//cutoff//').')
-  
-          allocate(f(w_max,n_max))
-          do i = 1, n_max
-             f(:,i) = ( cutoff-w(:,1) )**(i+2)
-             this%NormFunction(i) = sqrt(TrapezoidIntegral(w(:,1),w(:,2)*f(:,i)**2))
-          enddo
-          do i = 1, n_max
-             do j = 1, n_max
-                S(j,i) = TrapezoidIntegral(w(:,1),w(:,2)*f(:,i)*f(:,j)) /( this%NormFunction(i)*this%NormFunction(j) )
-             enddo
-          enddo
-          deallocate(f)
-       else
-          do i = 1, n_max
-             this%NormFunction(i) = sqrt(cutoff**(2.0_dp*i+5.0_dp)/(2.0_dp*i+5.0_dp))
-             do j = 1, n_max
-                S(j,i) = sqrt((2.0_dp*i+5)*(2.0_dp*j+5))/(i+j+5.0_dp)
-             enddo
-          enddo
-       endif
-  
-       call diagonalise(S,eS,vS)
-  
-       this%RadialTransform = matmul(matmul(vS,diag(1.0_dp/sqrt(eS))),transpose(vS))
-  
-       this%initialised = .true.
-     
-     endsubroutine initialise_cosnx
-
-
-     subroutine initialise_bispectrum_so4(this,j_max)
-
-        type(bispectrum_so4), intent(inout) :: this
-        integer, intent(in) :: j_max
-
-        integer :: j1, j2
-
-        if( this%initialised ) call finalise(this)
-
-        this%j_max = j_max
-
-        allocate( this%coeff(0:this%j_max,0:this%j_max) )
-        do j1 = 0, this%j_max
-           do j2 = 0, this%j_max
-               allocate( this%coeff(j2,j1)%mag(abs(j1-j2):min(j1+j2,this%j_max)) )
-               this%coeff(j2,j1)%mag(:) = CPLX_ZERO
-           enddo
-        enddo
-
-        this%initialised = .true.
-     
-     endsubroutine initialise_bispectrum_so4
-
-     subroutine initialise_grad_bispectrum_so4(this,j_max)
-
-        type(grad_bispectrum_so4), intent(inout) :: this
-        integer, intent(in) :: j_max
-
-        integer :: j1, j2, j
-
-        if( this%initialised ) call finalise(this)
-
-        this%j_max = j_max
-
-        allocate( this%coeff(0:this%j_max,0:this%j_max) )
-        do j1 = 0, this%j_max
-           do j2 = 0, this%j_max
-               allocate( this%coeff(j2,j1)%mag(abs(j1-j2):min(j1+j2,this%j_max)) )
-               do j = abs(j1-j2), min(this%j_max,j1+j2)
-                  this%coeff(j2,j1)%mag(j)%x(:) = CPLX_ZERO
-               enddo
-           enddo
-        enddo
-
-        this%initialised = .true.
-     
-     endsubroutine initialise_grad_bispectrum_so4
-
-     subroutine initialise_qw_so3(this, l_max, f_n, do_q, do_w)
-
-       type(qw_so3), intent(inout) :: this
-       integer, intent(in) :: l_max, f_n
-       logical, intent(in), optional :: do_q, do_w
-
-       logical :: my_do_q, my_do_w
-
-       if (mod(l_max, 2) /= 0) call system_abort('initialise_qw_so3: l_max is odd')
-       if (f_n == 0) call system_abort('initialise_qw_so3: need at least 1 radial function')
-
-       if (this%initialised) call finalise(this)
-
-       my_do_q = optional_default(.true., do_q)
-       my_do_w = optional_default(.true., do_w)
-
-       this%l_max = l_max
-       this%f_n = f_n
-       this%do_q = my_do_q
-       this%do_w = my_do_w
-
-       if ((.not. my_do_q) .and. (.not. my_do_w)) call system_abort('initialise_qw_so3: nothing to initialise')
-
-       if (my_do_q) allocate(this%q(1:l_max / 2,1:f_n))
-       if (my_do_w) allocate(this%w(1:l_max / 2,1:f_n))
-
-       if (my_do_q) this%q(:,:) = CPLX_ZERO
-       if (my_do_w) this%w(:,:) = CPLX_ZERO
-
-       this%initialised = .true.
-
-     endsubroutine initialise_qw_so3
-
-     subroutine initialise_grad_qw_so3(this, l_max, f_n, do_q, do_w)
-
-       type(grad_qw_so3), intent(inout) :: this
-       integer, intent(in) :: l_max, f_n
-       logical, intent(in), optional :: do_q, do_w
-
-       logical :: my_do_q, my_do_w
-       integer :: l, f
-
-       if (mod(l_max, 2) /= 0) call system_abort('initialise_grad_qw_so3: l_max is odd')
-       if (f_n == 0) call system_abort('initialise_grad_qw_so3: need at least 1 radial function')
-
-       if (this%initialised) call finalise(this)
-
-       my_do_q = optional_default(.true., do_q)
-       my_do_w = optional_default(.true., do_w)
-
-       this%l_max = l_max
-       this%f_n = f_n
-       this%do_q = my_do_q
-       this%do_w = my_do_w
-
-       if ((.not. my_do_q) .and. (.not. my_do_w)) call system_abort('initialise_grad_qw_so3: nothing to initialise')
-
-       if (my_do_q) allocate(this%q(1:l_max / 2,1:f_n))
-       if (my_do_w) allocate(this%w(1:l_max / 2,1:f_n))
-
-       do l = 2, (l_max / 2)
-          do f = 1, f_n
-             if (my_do_q) this%q(l,f)%x(:) = CPLX_ZERO
-             if (my_do_w) this%w(l,f)%x(:) = CPLX_ZERO
-          enddo
-       enddo
-
-       this%initialised = .true.
-
-     endsubroutine initialise_grad_qw_so3
-
-     subroutine finalise_fourier_so4(this)
-        type(fourier_so4), intent(inout) :: this
-
-        integer :: j
-
-        if( .not. this%initialised ) return
-        do j = 0, this%j_max
-           deallocate( this%U(j)%mm )
-        enddo
-        deallocate( this%U )
-
-        this%z0 = 0.0_dp
-        this%cutoff = 0.0_dp
-        this%j_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_fourier_so4
-     
-     subroutine finalise_grad_fourier_so4(this)
-        type(grad_fourier_so4), intent(inout) :: this
-
-        integer :: j
-
-        if( .not. this%initialised ) return
-        do j = 0, this%j_max
-           deallocate( this%U(j)%mm )
-        enddo
-        deallocate( this%U )
-
-        this%z0 = 0.0_dp
-        this%cutoff = 0.0_dp
-        this%j_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_grad_fourier_so4
-
-     subroutine finalise_fourier_so3(this)
-        type(fourier_so3), intent(inout) :: this
-
-        integer :: l, f
-
-        if (.not. this%initialised) return
-        do l = 1, (this%l_max / 2)
-           do f = 1, size(this%cutoff)
-              deallocate(this%Y_times_R(l,f)%m)
-           enddo
-        enddo
-        deallocate(this%Y_times_R)
-
-        deallocate(this%cutoff, this%cutoff_f, this%cutoff_r1)
-        this%l_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_fourier_so3
-     
-     subroutine finalise_grad_fourier_so3(this)
-        type(grad_fourier_so3), intent(inout) :: this
-
-        integer :: l, f
-
-        if (.not. this%initialised) return
-        do l = 1, (this%l_max / 2)
-           do f = 1, size(this%cutoff)
-              deallocate(this%Y_times_R(l,f)%m)
-           enddo
-        enddo
-        deallocate(this%Y_times_R)
-
-        deallocate(this%cutoff, this%cutoff_f, this%cutoff_r1)
-        this%l_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_grad_fourier_so3
-     
-     subroutine finalise_cosnx(this)
-        type(cosnx), intent(inout) :: this
-     
-        if (.not. this%initialised) return
-     
-        deallocate(this%RadialTransform,this%NormFunction)
-        this%l_max = 0
-        this%n_max = 0
-        this%cutoff = 0.0_dp
-        this%initialised = .false.
-     
-     endsubroutine finalise_cosnx
-
-     subroutine finalise_bispectrum_so4(this)
-        type(bispectrum_so4), intent(inout) :: this
-
-        integer :: j1, j2
-
-        if( .not. this%initialised ) return
-
-        do j1 = 0, this%j_max
-           do j2 = 0, this%j_max
-               deallocate( this%coeff(j2,j1)%mag )
-           enddo
-        enddo
-        deallocate( this%coeff )
-
-        this%j_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_bispectrum_so4
-     
-     subroutine finalise_grad_bispectrum_so4(this)
-        type(grad_bispectrum_so4), intent(inout) :: this
-
-        integer :: j1, j2
-
-        if( .not. this%initialised ) return
-
-        do j1 = 0, this%j_max
-           do j2 = 0, this%j_max
-               deallocate( this%coeff(j2,j1)%mag )
-           enddo
-        enddo
-        deallocate( this%coeff )
-
-        this%j_max = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_grad_bispectrum_so4
-
-     subroutine finalise_qw_so3(this)
-        type(qw_so3), intent(inout) :: this
-
-        if (.not. this%initialised) return
-
-        if (allocated(this%q)) deallocate(this%q)
-        if (allocated(this%w)) deallocate(this%w)
-
-        this%l_max = 0
-        this%f_n = 0
-        this%do_q = .false.
-        this%do_w = .false.
-        this%initialised = .false.
-
-     endsubroutine finalise_qw_so3
-     
-     subroutine finalise_grad_qw_so3(this)
-        type(grad_qw_so3), intent(inout) :: this
-
-        if (.not. this%initialised) return
-
-        if (allocated(this%q)) deallocate(this%q)
-        if (allocated(this%w)) deallocate(this%w)
-
-        this%l_max = 0
-        this%f_n = 0
-        this%do_q = .false.
-        this%do_w = .false.
-        this%initialised = .false.
-
-     endsubroutine finalise_grad_qw_so3
-     
-     subroutine fourier_transform_so4(this,at,i,w)
-        type(fourier_so4), intent(inout) :: this
-        type(atoms), intent(in) :: at
-        integer, intent(in) :: i
-        real(dp), dimension(:), intent(in), optional :: w
-
-        integer :: j, n, jn, m1, m2
-        real(dp) :: r0, r, cutoff, z0, theta0
-        real(dp), dimension(3) :: diff
-        complex(dp) :: z0_pls_Iz, z0_min_Iz, x_pls_Iy, x_min_Iy
-        complex(dp), dimension(:,:), allocatable :: U, Up
-        real(dp), dimension(:), allocatable :: my_w
-
-        if( .not. this%initialised ) call system_abort('fourier_transform_so4: fourier_so4 not initialised')
-
-        allocate(my_w(at%N))
-        my_w = 1.0_dp
-        if(present(w)) then
-           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
-           my_w = w
-        endif
-
-        do j = 0, this%j_max
-           this%U(j)%mm(:,:) = CPLX_ZERO
-           do m1 = -j, j, 2
-              this%U(j)%mm(m1,m1) = CPLX_ONE * my_w(i)
-           enddo
-        enddo
-
-        allocate( U(-this%j_max:this%j_max, -this%j_max:this%j_max), &
-        & Up(-this%j_max:this%j_max, -this%j_max:this%j_max) )
-        U = CPLX_ZERO
-        Up = CPLX_ZERO
-
-        do n = 1, atoms_n_neighbours(at,i)
-           jn = atoms_neighbour(at, i, n, distance=r, diff=diff)
-           if( r > this%cutoff ) cycle
-
-!           r0 = sqrt( r**2 + this%z0**2 )
-!
-!           diff = diff * this%z0*sin( 2.0_dp * atan(r/this%z0) ) / r
-!           z0 = this%z0*cos( 2.0_dp * atan(r/this%z0) )
-!           r0 = sqrt( sum(diff**2) + z0**2 )
-           theta0 = r / this%z0 ! + PI/3
-           
-           z0 = r / tan( theta0 )
-           r0 = r / sin( theta0 )
-
-           z0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) ) / r0
-           z0_min_Iz = ( z0 - CPLX_IMAG*diff(3) ) / r0
-           x_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) ) / r0
-           x_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) ) / r0
-
-!           z0_pls_Iz = ( this%z0 + CPLX_IMAG*diff(3) ) / r0
-!           z0_min_Iz = ( this%z0 - CPLX_IMAG*diff(3) ) / r0
-!           x_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) ) / r0
-!           x_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) ) / r0
-           cutoff = coff(r,this%cutoff) * my_w(jn)
-!           cutoff = 1.0_dp
-
-           this%U(0)%mm(0,0) = this%U(0)%mm(0,0) + cutoff
-           Up(0:0,0:0) = CPLX_ONE
-
-           do j = 1, this%j_max
-              U(-j:j,-j:j) = CPLX_ZERO
-
-              do m1 = -j, j-2, 2
-                 do m2 = -j, j, 2
-                    if( (j-m2) /= 0 ) U(m2,m1) = U(m2,m1) + &
-                    & sqrt( real(j-m2,dp)/real(j-m1,dp) ) * z0_pls_Iz * Up(m2+1,m1+1)
-
-                    if( (j+m2) /= 0 ) U(m2,m1) = U(m2,m1) - &
-                    & CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * x_min_Iy * &
-                    & Up(m2-1,m1+1)
-                 enddo
-              enddo
-
-              m1 = j
-              do m2 = -j, j, 2
-                 if( (j+m2) /= 0 ) U(m2,m1) = U(m2,m1) + &
-                 & sqrt( real(j+m2,dp)/real(j+m1,dp) ) * z0_min_Iz * Up(m2-1,m1-1)
-                 if( (j-m2) /= 0 ) U(m2,m1) = U(m2,m1) - &
-                 & CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * x_pls_Iy * &
-                 & Up(m2+1,m1-1)
-              enddo
-
-              this%U(j)%mm = this%U(j)%mm + U(-j:j,-j:j) * cutoff !* sqrt( 2.0_dp * j + 1.0_dp )
-              Up(-j:j,-j:j) = U(-j:j,-j:j)
-           enddo
-        enddo
-
-        deallocate( U, Up, my_w )
-
-     endsubroutine fourier_transform_so4
-
-     subroutine grad_fourier_transform_so4(this,at,i,ni,w)
-        type(grad_fourier_so4), intent(inout) :: this
-        type(atoms), intent(in) :: at
-        integer, intent(in) :: i, ni
-        real(dp), dimension(:), intent(in), optional :: w
-
-        integer :: j, n, jn, m1, m2
-        real(dp) :: r0, r, cutoff, theta0, z0
-        real(dp), dimension(3) :: diff, u_ij, dcutoff, dz0, dr0
-        complex(dp) :: z0_pls_Iz, z0_min_Iz, x_pls_Iy, x_min_Iy
-        complex(dp), dimension(3) :: dz0_pls_Iz, dz0_min_Iz, dx_pls_Iy, dx_min_Iy
-        complex(dp), dimension(:,:), allocatable :: U, Up
-        complex(dp), dimension(:,:,:), allocatable :: dU, dUp
-        real(dp), dimension(:), allocatable :: my_w
-
-        if( .not. this%initialised ) call system_abort('fourier_transform_so4: fourier_so4 not initialised')
-
-        allocate(my_w(at%N))
-        my_w = 1.0_dp
-        if(present(w)) then
-           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
-           my_w = w
-        endif
-
-        do j = 0, this%j_max
-           this%U(j)%mm(:,:,:) = CPLX_ZERO
-        enddo
-
-        allocate( U(-this%j_max:this%j_max, -this%j_max:this%j_max), &
-        & Up(-this%j_max:this%j_max, -this%j_max:this%j_max), &
-        & dU(3,-this%j_max:this%j_max, -this%j_max:this%j_max), &
-        & dUp(3,-this%j_max:this%j_max, -this%j_max:this%j_max) )
-
-        U = CPLX_ZERO
-        Up = CPLX_ZERO
-        dU = CPLX_ZERO
-        dUp = CPLX_ZERO
-
-        if(ni==0) then
-           do n = 1, atoms_n_neighbours(at,i)
-              jn = atoms_neighbour(at, i, n, distance=r, diff=diff, cosines=u_ij )
-              
-              if( r > this%cutoff ) cycle
-              !if( i==jn ) cycle
-
-              !r0 = sqrt( r**2 + this%z0**2 )
-              cutoff = coff(r,this%cutoff) * my_w(jn)
-              dcutoff = -dcoff(r,this%cutoff)*u_ij * my_w(jn)
-
-              theta0 = r / this%z0 !+ PI/3
-
-              z0 = r / tan( theta0 )
-              r0 = sin( theta0 ) / r
-
-              dz0 = ( 1.0_dp / tan( theta0 ) - theta0 / sin(theta0)**2 ) * u_ij
-              !dz0 = ( 1.0_dp / tan( theta0 ) - (theta0-pi/3) / sin(theta0)**2 ) * u_ij
-              dr0 = ( cos( theta0 ) / (r*this%z0) - r0 / r ) * u_ij
-
-              z0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) ) * r0
-              z0_min_Iz = ( z0 - CPLX_IMAG*diff(3) ) * r0
-              x_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) ) * r0
-              x_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) ) * r0
-
-              dz0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) )*dr0 + dz0*r0
-              dz0_pls_Iz(3) = dz0_pls_Iz(3) + CPLX_IMAG*r0
-
-              dz0_min_Iz = ( z0 - CPLX_IMAG*diff(3) )*dr0 + dz0*r0
-              dz0_min_Iz(3) = dz0_min_Iz(3) - CPLX_IMAG*r0
-
-              dx_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) )*dr0
-              dx_pls_Iy(1) = dx_pls_Iy(1) + r0
-              dx_pls_Iy(2) = dx_pls_Iy(2) + CPLX_IMAG*r0
-
-              dx_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) )*dr0
-              dx_min_Iy(1) = dx_min_Iy(1) + r0
-              dx_min_Iy(2) = dx_min_Iy(2) - CPLX_IMAG*r0
-
-              !dz0_pls_Iz = - z0_pls_Iz * diff / r0**2
-              !dz0_pls_Iz(3) = dz0_pls_Iz(3) + CPLX_IMAG/r0
-              !dz0_min_Iz = - z0_min_Iz * diff / r0**2
-              !dz0_min_Iz(3) = dz0_min_Iz(3) - CPLX_IMAG/r0
-              !dx_pls_Iy = - x_pls_Iy * diff / r0**2
-              !dx_pls_Iy(1) = dx_pls_Iy(1) + 1.0_dp/r0
-              !dx_pls_Iy(2) = dx_pls_Iy(2) + CPLX_IMAG/r0
-              !dx_min_Iy = - x_min_Iy * diff / r0**2
-              !dx_min_Iy(1) = dx_min_Iy(1) + 1.0_dp/r0
-              !dx_min_Iy(2) = dx_min_Iy(2) - CPLX_IMAG/r0
-
-              Up(0:0,0:0) = CPLX_ONE
-              dUp(:,0:0,0:0) = CPLX_ZERO
-
-              this%U(0)%mm(:,0,0) = this%U(0)%mm(:,0,0) + dcutoff
-              do j = 1, this%j_max
-                 U(-j:j,-j:j) = CPLX_ZERO
-                 dU(:,-j:j,-j:j) = CPLX_ZERO
-
-                 do m1 = -j, j-2, 2
-                    do m2 = -j, j, 2
-                       if( (j-m2) /= 0 ) then
-                          U(m2,m1) = U(m2,m1) + &
-                          & sqrt( real(j-m2,dp)/real(j-m1,dp) ) * z0_pls_Iz * Up(m2+1,m1+1)
-                          dU(:,m2,m1) = dU(:,m2,m1) + &
-                          & sqrt( real(j-m2,dp)/real(j-m1,dp) ) * &
-                          & ( dz0_pls_Iz * Up(m2+1,m1+1) + z0_pls_Iz * dUp(:,m2+1,m1+1) )
-                       endif
-
-                       if( (j+m2) /= 0 ) then
-                          U(m2,m1) = U(m2,m1) - &
-                          & CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * x_min_Iy * &
-                          & Up(m2-1,m1+1)
-                          dU(:,m2,m1) = dU(:,m2,m1) - &
-                          & CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * &
-                          & ( dx_min_Iy * Up(m2-1,m1+1) + x_min_Iy * dUp(:,m2-1,m1+1) )
-                       endif
-                    enddo
-                 enddo
-                          
-                 m1 = j
-                 do m2 = -j, j, 2
-                    if( (j+m2) /= 0 ) then
-                       U(m2,m1) = U(m2,m1) + &
-                       & sqrt( real(j+m2,dp)/real(j+m1,dp) ) * z0_min_Iz * Up(m2-1,m1-1)
-                       dU(:,m2,m1) = dU(:,m2,m1) + &
-                       & sqrt( real(j+m2,dp)/real(j+m1,dp) ) * &
-                       & ( dz0_min_Iz * Up(m2-1,m1-1) + z0_min_Iz * dUp(:,m2-1,m1-1) )
-                    endif
-                    if( (j-m2) /= 0 ) then
-                       U(m2,m1) = U(m2,m1) - &
-                       & CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * x_pls_Iy * &
-                       & Up(m2+1,m1-1)
-                       dU(:,m2,m1) = dU(:,m2,m1) - &
-                       & CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * &
-                       & ( dx_pls_Iy * Up(m2+1,m1-1) + x_pls_Iy * dUp(:,m2+1,m1-1) )
-                    endif
-                 enddo
-
-                 Up(-j:j,-j:j) = U(-j:j,-j:j)
-                 dUp(:,-j:j,-j:j) = dU(:,-j:j,-j:j)
-                 this%U(j)%mm = this%U(j)%mm - dU(:,-j:j,-j:j) * cutoff 
-                 do m1 = -j, j, 2
-                    do m2 = -j, j, 2
-                       this%U(j)%mm(:,m2,m1) = this%U(j)%mm(:,m2,m1) &
-                       & + U(m2,m1) * dcutoff
-                    enddo
-                 enddo
-              enddo
-           enddo
-        else
-           jn = atoms_neighbour(at,i,ni,diff=diff,distance=r,cosines=u_ij)
-           if( r < this%cutoff ) then
-              theta0 = r / this%z0 !+ PI/3
-
-              z0 = r / tan( theta0 )
-              r0 = sin( theta0 ) / r
-
-              dz0 = ( 1.0_dp / tan( theta0 ) - theta0 / sin(theta0)**2 ) * u_ij
-              !dz0 = ( 1.0_dp / tan( theta0 ) - (theta0-pi/3) / sin(theta0)**2 ) * u_ij
-              dr0 = ( cos( theta0 ) / (r*this%z0) - r0 / r ) * u_ij
-
-              z0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) ) * r0
-              z0_min_Iz = ( z0 - CPLX_IMAG*diff(3) ) * r0
-              x_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) ) * r0
-              x_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) ) * r0
-
-              dz0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) )*dr0 + dz0*r0
-              dz0_pls_Iz(3) = dz0_pls_Iz(3) + CPLX_IMAG*r0
-
-              dz0_min_Iz = ( z0 - CPLX_IMAG*diff(3) )*dr0 + dz0*r0
-              dz0_min_Iz(3) = dz0_min_Iz(3) - CPLX_IMAG*r0
-
-              dx_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) )*dr0
-              dx_pls_Iy(1) = dx_pls_Iy(1) + r0
-              dx_pls_Iy(2) = dx_pls_Iy(2) + CPLX_IMAG*r0
-
-              dx_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) )*dr0
-              dx_min_Iy(1) = dx_min_Iy(1) + r0
-              dx_min_Iy(2) = dx_min_Iy(2) - CPLX_IMAG*r0
-
-              cutoff = coff(r,this%cutoff) * my_w(jn)
-              dcutoff = -dcoff(r,this%cutoff)*u_ij * my_w(jn)
-
-              !dz0_pls_Iz = - z0_pls_Iz * diff / r0**2
-              !dz0_pls_Iz(3) = dz0_pls_Iz(3) + CPLX_IMAG/r0
-              !dz0_min_Iz = - z0_min_Iz * diff / r0**2
-              !dz0_min_Iz(3) = dz0_min_Iz(3) - CPLX_IMAG/r0
-              !dx_pls_Iy = - x_pls_Iy * diff / r0**2
-              !dx_pls_Iy(1) = dx_pls_Iy(1) + 1.0_dp/r0
-              !dx_pls_Iy(2) = dx_pls_Iy(2) + CPLX_IMAG/r0
-              !dx_min_Iy = - x_min_Iy * diff / r0**2
-              !dx_min_Iy(1) = dx_min_Iy(1) + 1.0_dp/r0
-              !dx_min_Iy(2) = dx_min_Iy(2) - CPLX_IMAG/r0
-
-              Up(0:0,0:0) = CPLX_ONE
-              dUp(:,0:0,0:0) = CPLX_ZERO
-
-              this%U(0)%mm(:,0,0) = this%U(0)%mm(:,0,0) - dcutoff
-              do j = 1, this%j_max
-                 U(-j:j,-j:j) = CPLX_ZERO
-                 dU(:,-j:j,-j:j) = CPLX_ZERO
-
-                 do m1 = -j, j-2, 2
-                    do m2 = -j, j, 2
-                       if( (j-m2) /= 0 ) then
-                          U(m2,m1) = U(m2,m1) + &
-                          & sqrt( real(j-m2,dp)/real(j-m1,dp) ) * z0_pls_Iz * Up(m2+1,m1+1)
-                          dU(:,m2,m1) = dU(:,m2,m1) + &
-                          & sqrt( real(j-m2,dp)/real(j-m1,dp) ) * &
-                          & ( dz0_pls_Iz * Up(m2+1,m1+1) + z0_pls_Iz * dUp(:,m2+1,m1+1) )
-                       endif
-
-                       if( (j+m2) /= 0 ) then
-                          U(m2,m1) = U(m2,m1) - &
-                          & CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * x_min_Iy * &
-                          & Up(m2-1,m1+1)
-                          dU(:,m2,m1) = dU(:,m2,m1) - &
-                          & CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * &
-                          & ( dx_min_Iy * Up(m2-1,m1+1) + x_min_Iy * dUp(:,m2-1,m1+1) )
-                       endif
-                    enddo
-                 enddo
-                          
-                 m1 = j
-                 do m2 = -j, j, 2
-                    if( (j+m2) /= 0 ) then
-                       U(m2,m1) = U(m2,m1) + &
-                       & sqrt( real(j+m2,dp)/real(j+m1,dp) ) * z0_min_Iz * Up(m2-1,m1-1)
-                       dU(:,m2,m1) = dU(:,m2,m1) + &
-                       & sqrt( real(j+m2,dp)/real(j+m1,dp) ) * &
-                       & ( dz0_min_Iz * Up(m2-1,m1-1) + z0_min_Iz * dUp(:,m2-1,m1-1) )
-                    endif
-                    if( (j-m2) /= 0 ) then
-                       U(m2,m1) = U(m2,m1) - &
-                       & CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * x_pls_Iy * &
-                       & Up(m2+1,m1-1)
-                       dU(:,m2,m1) = dU(:,m2,m1) - &
-                       & CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * &
-                       & ( dx_pls_Iy * Up(m2+1,m1-1) + x_pls_Iy * dUp(:,m2+1,m1-1) )
-                    endif
-                 enddo
-
-                 Up(-j:j,-j:j) = U(-j:j,-j:j)
-                 dUp(:,-j:j,-j:j) = dU(:,-j:j,-j:j)
-                 this%U(j)%mm = this%U(j)%mm + dU(:,-j:j,-j:j) * cutoff
-                 do m1 = -j, j, 2
-                    do m2 = -j, j, 2
-                       this%U(j)%mm(:,m2,m1) = this%U(j)%mm(:,m2,m1) &
-                       & - U(m2,m1) * dcutoff
-                    enddo
-                 enddo
-              enddo
-           endif
-        endif
-        deallocate( U, Up, dU, dUp, my_w )
-
-     endsubroutine grad_fourier_transform_so4
-
-     subroutine calc_cosnx(this,at,vec,i,w)
-     
-        type(cosnx), intent(in)               :: this
-        type(atoms), intent(in)               :: at
-        real(dp), dimension(:), intent(out)   :: vec
-        integer, intent(in)                   :: i
-        real(dp), dimension(:), intent(in), optional :: w
-     
-        integer :: a, b, n, m, j, k, vec_i
-        real(dp) :: r_ij, r_ik, r_jk, cos_ijk, theta_ijk, Rad_ij, Rad_ik, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk
-        real(dp), dimension(3) :: d_ij, d_ik, d_jk
-        integer, dimension(3) :: shift_ij, shift_ik
-        real(dp), dimension(:), allocatable :: my_w
-     
-        if( (this%n_max * (this%l_max+1)) > size(vec) ) &
-        call system_abort('atom2symm: array sizes do not conform')
-     
-        allocate(my_w(at%N))
-        my_w = 1.0_dp
-        if(present(w)) then
-           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
-           my_w = w
-        endif
-
-        vec = 0.0_dp
-     
-        do n = 1, atoms_n_neighbours(at,i)
-           j = atoms_neighbour(at,i,n,distance=r_ij,diff=d_ij,shift=shift_ij)
-           if( r_ij > this%cutoff ) cycle
-     
-           do m = 1, atoms_n_neighbours(at,i)
-              k = atoms_neighbour(at,i,m,distance=r_ik,diff=d_ik,shift=shift_ik)
-              if( r_ik > this%cutoff ) cycle
-     
-              d_jk = diff(at,j,k,shift_ik-shift_ij)
-              r_jk = norm(d_jk)
-              if( r_jk .feq. 0.0_dp ) cycle
-     
-              cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik) !cosine(at,i,j,k)
-              theta_ijk = acos(cos_ijk)
-     
-              vec_i = 1
-     
-              do a = 1, this%n_max
-                 Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
-                 Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
-     
-                 T_0_cos_ijk = 1
-                 T_1_cos_ijk = cos_ijk
-                 if( this%l_max >= 0 ) then
-                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_0_cos_ijk
-                    vec_i = vec_i + 1
-                 endif
-     
-                 if( this%l_max >= 1 ) then
-                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_1_cos_ijk
-                    vec_i = vec_i + 1
-                 endif
-     
-                 do b = 2, this%l_max
-                    T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
-                    T_0_cos_ijk = T_1_cos_ijk
-                    T_1_cos_ijk = T_n_cos_ijk
-     
-                    vec(vec_i) = vec(vec_i) + Rad_ij*Rad_ik*T_n_cos_ijk
-                    vec_i = vec_i + 1
-                 enddo
-              enddo
-           enddo
-        enddo
-     
-        vec = vec * 0.5_dp
-
-        deallocate(my_w)
-
-     endsubroutine calc_cosnx
-
-     subroutine calc_grad_cosnx(this,at,vec,i,ni,w)
-     
-        type(cosnx), intent(in)               :: this
-        type(atoms), intent(in)               :: at
-        real(dp), dimension(:,:), intent(out) :: vec
-        integer, intent(in)                   :: i, ni
-        real(dp), dimension(:), intent(in), optional :: w
-     
-        integer :: n, m, j, k, vec_i, a, b
-        real(dp) :: r_ij, r_ik, r_jk,  &
-        cos_ijk, Rad_ij, Rad_ik, Ang, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk, &
-        U_0_cos_ijk, U_1_cos_ijk, U_n_cos_ijk 
-     
-        real(dp), dimension(3) :: dRad_ij, dRad_ik, dAng, dcosijk_ij, dcosijk_ik, &
-        u_ij, u_ik, u_jk, d_ij, d_ik, d_jk
-        integer, dimension(3) :: shift_ij, shift_ik
-        real(dp), dimension(:), allocatable :: my_w
-     
-        allocate(my_w(at%N))
-        my_w = 1.0_dp
-        if(present(w)) then
-           if (size(w) /= at%N) call system_abort('fourier_transform_so4: size of w is not at%N')
-           my_w = w
-        endif
-
-        vec = 0.0_dp 
-     
-        if(ni == 0) then
-           do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij,diff=d_ij,shift=shift_ij)
-              if( r_ij > this%cutoff ) cycle
-     
-              do m = 1, atoms_n_neighbours(at,i)
-                 k = atoms_neighbour(at,i,m,distance=r_ik,cosines=u_ik,diff=d_ik,shift=shift_ik)
-                 if( r_ik > this%cutoff ) cycle
-                 
-                 d_jk = diff(at,j,k,shift_ik-shift_ij)
-                 r_jk = norm(d_jk)
-                 u_jk = d_jk / r_jk
-     
-                 if( r_jk .feq. 0.0_dp ) cycle
-     
-                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
-     
-                 dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
-                 dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
-     
-                 vec_i = 1
-                 do a = 1, this%n_max
-                    Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
-                    Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
-                    dRad_ij = GradRadialFunction2(this, d_ij, a)*my_w(j)
-                    dRad_ik = GradRadialFunction2(this, d_ik, a)*my_w(k)
-     
-                    T_0_cos_ijk = 1
-                    T_1_cos_ijk = cos_ijk
-     
-                    U_0_cos_ijk = 1
-                    U_1_cos_ijk = 2*cos_ijk
-     
-                    if( this%l_max >= 0 ) then
-                       Ang = T_0_cos_ijk
-                       dAng = 0.0_dp
-     
-                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
-                       vec_i = vec_i + 1
-                    endif
-     
-                    if( this%l_max >= 1 ) then
-                       Ang = T_1_cos_ijk
-                       dAng = U_0_cos_ijk * (dcosijk_ij+dcosijk_ik)
-     
-                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
-                       vec_i = vec_i + 1
-                    endif
-     
-                    do b = 2, this%l_max
-                       T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
-                       T_0_cos_ijk = T_1_cos_ijk
-                       T_1_cos_ijk = T_n_cos_ijk
-     
-                       U_n_cos_ijk = 2*cos_ijk*U_1_cos_ijk - U_0_cos_ijk
-                       U_0_cos_ijk = U_1_cos_ijk
-                       U_1_cos_ijk = U_n_cos_ijk
-     
-                       Ang = T_n_cos_ijk
-                       dAng = b*U_0_cos_ijk * (dcosijk_ij+dcosijk_ik)
-     
-                       vec(vec_i,:) = vec(vec_i,:) - ( Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang + Rad_ij*dRad_ik*Ang ) * 0.5_dp
-                       vec_i = vec_i + 1
-                    enddo
-                 enddo
-              enddo
-           enddo
-     
-        else
-           j = atoms_neighbour(at,i,ni,distance=r_ij,cosines=u_ij,diff=d_ij,shift=shift_ij)
-           if( r_ij < this%cutoff ) then
-     
-              do m = 1, atoms_n_neighbours(at,i)
-                 k = atoms_neighbour(at,i,m,distance=r_ik,cosines=u_ik,diff=d_ik,shift=shift_ik)
-                 if( r_ik > this%cutoff ) cycle
-                    
-                 d_jk = diff(at,j,k,shift_ik-shift_ij)
-                 r_jk = norm(d_jk)
-                 u_jk = d_jk / r_jk
-     
-                 if( r_jk .feq. 0.0_dp ) cycle
-     
-                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
-                 dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
-                 dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
-     
-                 vec_i = 1
-                 do a = 1, this%n_max
-                    Rad_ij = RadialFunction2(this, d_ij, a)*my_w(j)
-                    Rad_ik = RadialFunction2(this, d_ik, a)*my_w(k)
-                    dRad_ij = GradRadialFunction2(this, d_ij, a)*my_w(j)
-     
-                    T_0_cos_ijk = 1
-                    T_1_cos_ijk = cos_ijk
-     
-                    U_0_cos_ijk = 1
-                    U_1_cos_ijk = 2*cos_ijk
-     
-                    if( this%l_max >= 0 ) then
-                       Ang = T_0_cos_ijk
-                       dAng = 0.0_dp
-     
-                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
-                       vec_i = vec_i + 1
-                    endif
-     
-                    if( this%l_max >= 1 ) then
-                       Ang = T_1_cos_ijk
-                       dAng = U_0_cos_ijk * dcosijk_ij
-     
-                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
-                       vec_i = vec_i + 1
-                    endif
-     
-                    do b = 2, this%l_max
-                       T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
-                       T_0_cos_ijk = T_1_cos_ijk
-                       T_1_cos_ijk = T_n_cos_ijk
-     
-                       U_n_cos_ijk = 2*cos_ijk*U_1_cos_ijk - U_0_cos_ijk
-                       U_0_cos_ijk = U_1_cos_ijk
-                       U_1_cos_ijk = U_n_cos_ijk
-     
-                       Ang = T_n_cos_ijk
-                       dAng = b*U_0_cos_ijk * dcosijk_ij
-     
-                       vec(vec_i,:) = vec(vec_i,:) + (Rad_ij*Rad_ik*dAng + dRad_ij*Rad_ik*Ang) * 1.0_dp
-                       vec_i = vec_i + 1
-                    enddo
-                 enddo
-              enddo
-           endif
-        endif
-
-        deallocate(my_w)
-
-     endsubroutine calc_grad_cosnx
-
-     subroutine fourier_transform_so4_old(this,at,i)
-        type(fourier_so4), intent(inout) :: this
-        type(atoms), intent(in) :: at
-        integer, intent(in) :: i
-
-        integer :: j, n, jn, m1, m2
-        real(dp) :: theta0, theta, phi, cutoff, r0, gs
-        real(dp), dimension(3) :: polar, diff
-
-        if( .not. this%initialised ) call system_abort('fourier_transform_so4: fourier_so4 not initialised')
-        do j = 0, this%j_max
-           this%U(j)%mm(:,:) = CPLX_ZERO
-!           do m1 = -j, j, 2
-!              this%U(j)%mm(m1,m1) = CPLX_ONE
-!           enddo
-        enddo
-
-        do n = 1, atoms_n_neighbours(at,i)
-           jn = atoms_neighbour(at,i,n,diff=diff)
-           polar = xyz2spherical( diff )
-           !theta0 = atan(polar(1)/this%z0)
-           !theta0 = atan( ((erf((polar(1)-2.4_dp)/0.6_dp)+1.0_dp)*0.5_dp)/this%z0)
-           theta0 = polar(1)/this%z0
-           theta = polar(2)
-           phi = polar(3)
-           !cutoff = 1.0_dp 
-           cutoff = 1.0_dp / (exp((polar(1)-2.15_dp)/0.25_dp) + 1.0_dp )
-           !cutoff = 1.0_dp / (exp((polar(1)-3.05_dp)/0.30_dp) + 1.0_dp )
-           do j = 0, this%j_max
-!r0 = j*0.6_dp + 2.0_dp
-!gs = exp( - (polar(1)-r0)**2/(1.2_dp**2) )
-              do m1 = -j, j, 2
-                 do m2 = -j, j, 2
-                    this%U(j)%mm(m2,m1) = this%U(j)%mm(m2,m1) + &
-                    & wigner_big_U(j,m2,m1,2.0_dp*theta0,theta,phi,2) * &
-                    & cutoff !* sqrt( 2.0_dp * j + 1.0_dp ) !* gs
-                 enddo
-              enddo
-           enddo
-        enddo
-     endsubroutine fourier_transform_so4_old
-
-!     subroutine grad_fourier_transform_so4_old(this,at,i,ij)
-!        type(grad_fourier_so4), intent(inout) :: this
-!        type(atoms), intent(in) :: at
-!        integer, intent(in) :: i, ij
-!
-!        integer :: j, n, jn, m1, m2
-!        real(dp) :: theta0, theta, phi, cutoff, gs, r0, dgs
-!        real(dp), dimension(3) :: polar, diff, u_ij
-!        real(dp), dimension(3,3) :: jacobian
-!        complex(dp), dimension(3) :: dw
-!        logical :: is_neighbour
-!
-!        if( .not. this%initialised ) call system_abort('fourier_transform_so4: fourier_so4 not initialised')
-!        do j = 0, this%j_max
-!           do m1 = -j, j
-!              do m2 = -j, j
-!                 this%U(j)%mm(m2,m1)%x = CPLX_ZERO
-!              enddo
-!           enddo
-!        enddo
-!
-!        if(i==ij) then
-!           do n = 1, atoms_n_neighbours(at,i)
-!              jn = atoms_neighbour(at,i,n,diff=diff,cosines=u_ij)
-!              polar = xyz2spherical( diff )
-!              theta0 = atan(polar(1)/this%z0)
-!              theta = polar(2)
-!              phi = polar(3)
-!              !cutoff = 1.0_dp / (exp((polar(1)-2.15_dp)/0.25_dp) + 1.0_dp )
-!              cutoff = 1.0_dp / (exp((polar(1)-3.05_dp)/0.30_dp) + 1.0_dp )
-!
-!              jacobian(:,1) = 1.0_dp/(1.0_dp + (polar(1)/this%z0)**2) / this%z0 * u_ij
-!              jacobian(:,2) = diff(3)*u_ij/(polar(1)**2*sqrt(1.0_dp-diff(3)**2/polar(1)**2))
-!              jacobian(3,2) = jacobian(3,2) - 1.0_dp/(polar(1)*sqrt(1.0_dp-diff(3)**2/polar(1)**2))
-!              if( ( diff(1) == 0.0_dp ) .and. ( diff(2) == 0.0_dp ) ) then
-!                 jacobian(:,3) = 0.0_dp
-!              else
-!                 jacobian(:,3) = (/-diff(2),diff(1),0.0_dp/) / ( diff(1)**2 + diff(2)**2 )
-!              endif
-!
-!              do j = 0, this%j_max
-!!r0 = j*0.6_dp + 2.0_dp
-!!gs = exp( - (polar(1)-r0)**2/(1.2_dp**2) )
-!!dgs = -2.0_dp*(polar(1)-r0)*exp( - (polar(1)-r0)**2/(1.2_dp**2) )/(1.2_dp**2)
-!                 do m1 = -j, j, 2
-!                    do m2 = -j, j, 2
-!                       dw = grad_wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2)
-!                       dw(1) = 4.0_dp * dw(1)
-!                       this%U(j)%mm(m2,m1)%x = this%U(j)%mm(m2,m1)%x - sqrt( 2.0_dp * j + 1.0_dp ) * &
-!                       & ( matmul(jacobian,dw) * cutoff - &
-!                       & wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2) * &
-!                       & cutoff**2 * exp((polar(1)-3.05_dp)/0.30_dp) / 0.30_dp * u_ij )
-!                       !this%U(j)%mm(m2,m1)%x = this%U(j)%mm(m2,m1)%x - sqrt( 2.0_dp * j + 1.0_dp ) * &
-!                       !& ( matmul(jacobian,dw) * cutoff * gs - &
-!                       !& wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2) * ( gs *  &
-!                       !& cutoff**2 * exp((polar(1)-3.05_dp)/0.30_dp) / 0.30_dp - &
-!                       !& cutoff * dgs ) * u_ij )
-!                    enddo
-!                 enddo
-!              enddo
-!           enddo
-!        else
-!           is_neighbour = .false.
-!           do n = 1, atoms_n_neighbours(at,i)
-!              if( ij==atoms_neighbour(at,i,n) ) is_neighbour = .true.
-!           enddo
-!           if( is_neighbour ) then
-!              diff = diff_min_image(at,i,ij)
-!              polar = xyz2spherical( diff )
-!              theta0 = atan(polar(1)/this%z0)
-!              theta = polar(2)
-!              phi = polar(3)
-!              !cutoff = 1.0_dp / (exp((polar(1)-2.15_dp)/0.25_dp) + 1.0_dp )
-!              cutoff = 1.0_dp / (exp((polar(1)-3.05_dp)/0.30_dp) + 1.0_dp )
-!              u_ij = diff / polar(1)
-!
-!              jacobian(:,1) = 1.0_dp/(1.0_dp + (polar(1)/this%z0)**2) / this%z0 * u_ij
-!              jacobian(:,2) = diff(3)*u_ij/(polar(1)**2*sqrt(1.0_dp-diff(3)**2/polar(1)**2))
-!              jacobian(3,2) = jacobian(3,2) - 1.0_dp/(polar(1)*sqrt(1.0_dp-diff(3)**2/polar(1)**2))
-!              if( ( diff(1) == 0.0_dp ) .and. ( diff(2) == 0.0_dp ) ) then
-!                 jacobian(:,3) = 0.0_dp
-!              else
-!                 jacobian(:,3) = (/-diff(2),diff(1),0.0_dp/) / ( diff(1)**2 + diff(2)**2 )
-!              endif
-!
-!              do j = 0, this%j_max
-!!r0 = j*0.6_dp + 2.0_dp
-!!gs = exp( - (polar(1)-r0)**2/(1.2_dp**2) )
-!!dgs = -2.0_dp*(polar(1)-r0)*exp( - (polar(1)-r0)**2/(1.2_dp**2) )/(1.2_dp**2)
-!                 do m1 = -j, j, 2
-!                    do m2 = -j, j, 2
-!                       dw = grad_wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2)
-!                       dw(1) = 4.0_dp * dw(1)
-!                       this%U(j)%mm(m2,m1)%x = sqrt( 2.0_dp * j + 1.0_dp ) * &
-!                       & ( matmul(jacobian,dw) * cutoff - &
-!                       & wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2) * &
-!                       & cutoff**2 * exp((polar(1)-3.05_dp)/0.30_dp) / 0.30_dp * u_ij )
-!                       !this%U(j)%mm(m2,m1)%x = sqrt( 2.0_dp * j + 1.0_dp ) * &
-!                       !& ( matmul(jacobian,dw) * cutoff * gs - &
-!                       !& wigner_big_U(j,m2,m1,4.0_dp*theta0,theta,phi,2) * &
-!                       !& ( cutoff**2 * exp((polar(1)-3.05_dp)/0.30_dp) / 0.30_dp * gs - &
-!                       !& cutoff * dgs ) * u_ij )
-!                    enddo
-!                 enddo
-!              enddo
-!           endif
-!        endif
-!
-!     endsubroutine grad_fourier_transform_so4_old
-
-     subroutine fourier_transform_so3(this, at, i)
-       type(fourier_so3), intent(inout) :: this
-       type(atoms), intent(in) :: at
-       integer, intent(in) :: i
-
-       integer :: l, m, f, n, jn
-       real(dp) :: x_ij(3), R
-
-       if (.not. this%initialised) call system_abort('fourier_transform_so3: fourier_so3 not initialised')
-       if (at%cutoff < maxval(this%cutoff)) call system_abort('fourier_transform_so3: radial function cutoff greater than atoms connectivity cutoff')
-
-       do l = 2, this%l_max, 2
-          do f = 1, size(this%cutoff)
-             this%Y_times_R(l / 2,f)%m(:) = CPLX_ZERO
-          enddo
-       enddo
-
-       do f = 1, size(this%cutoff)
-          do n = 1, atoms_n_neighbours(at, i)
-             jn = atoms_neighbour(at, i, n, diff = x_ij, max_dist = this%cutoff(f))
-
-             if (jn /= 0) then
-                R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
-
-                do l = 2, this%l_max, 2
-                   do m = -l, l
-                      this%Y_times_R(l / 2,f)%m(m) = this%Y_times_R(l / 2,f)%m(m) &
-                                                   + (SphericalYCartesian(l, m, x_ij) * R)
-                   enddo
-                enddo
-             endif
-          enddo
-       enddo
-
-     endsubroutine fourier_transform_so3
-
-     subroutine grad_fourier_transform_so3(this, at, i, ni)
-       type(grad_fourier_so3), intent(inout) :: this
-       type(atoms), intent(in) :: at
-       integer, intent(in) :: i, ni
-
-       integer :: l, m, f, n, jn
-       real(dp) :: x_ij(3), R, dR(3)
-
-       if (.not. this%initialised) call system_abort('grad_fourier_transform_so3: grad_fourier_so3 not initialised')
-       if (at%cutoff < maxval(this%cutoff)) call system_abort('grad_fourier_transform_so3: radial function cutoff greater than atoms connectivity cutoff')
-
-       do l = 2, this%l_max, 2
-          do f = 1, size(this%cutoff)
-             this%Y_times_R(l / 2,f)%m(:,:) = CPLX_ZERO
-          enddo
-       enddo
-
-       if (ni == 0) then
-          do f = 1, size(this%cutoff)
-             do n = 1, atoms_n_neighbours(at, i)
-                jn = atoms_neighbour(at, i, n, diff = x_ij, max_dist = this%cutoff(f))
-
-                if (jn /= 0) then
-                   R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
-                   dR = GradRadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
-
-                   do l = 2, this%l_max, 2
-                      do m = -l, l
-                         this%Y_times_R(l / 2,f)%m(:,m) = this%Y_times_R(l / 2,f)%m(:,m) &
-                                                        - (GradSphericalYCartesian(l, m, x_ij) * R) &
-                                                        - (SphericalYCartesian(l, m, x_ij) * dR)
-                      enddo
-                   enddo
-                endif
-             enddo
-          enddo
-       else
-          do f = 1, size(this%cutoff)
-             jn = atoms_neighbour(at, i, ni, diff = x_ij, max_dist = this%cutoff(f))
-
-             if (jn /= 0) then
-                R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
-                dR = GradRadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
-
-                do l = 2, this%l_max, 2
-                   do m = -l, l
-                      this%Y_times_R(l / 2,f)%m(:,m) = this%Y_times_R(l / 2,f)%m(:,m) &
-                                                     + (GradSphericalYCartesian(l, m, x_ij) * R) &
-                                                     + (SphericalYCartesian(l, m, x_ij) * dR)
-                   enddo
-                enddo
-             endif
-          enddo
-       endif
-
-     endsubroutine grad_fourier_transform_so3
-
-     subroutine calc_bispectrum_so4(this,f)
-        type(bispectrum_so4), intent(inout) :: this
-        type(fourier_so4), intent(in) :: f
-
-        integer :: j_max, j, j1, j2, m1, m2, m11, m12, m21, m22
-        complex(dp) :: sub
-
-        if( .not. this%initialised ) call initialise(this,f%j_max)
-
-        if( .not. cg_initialised ) then
-           call cg_initialise(f%j_max,2)
-        elseif( f%j_max > cg_j_max ) then
-           call cg_finalise()
-           call cg_initialise(f%j_max,2)
-        endif
-
-        j_max = min(this%j_max,f%j_max)
-
-        do j1 = 0, j_max
-            do j2 = 0, j_max
-               this%coeff(j2,j1)%mag(:) = CPLX_ZERO
-            enddo
-        enddo
-
-        do j1 = 0, j_max
-           j2 = j1
-           !do j2 = 0, j_max
-              do j = abs(j1-j2), min(j_max,j1+j2)
-                 do m1 = -j, j, 2
-                    do m2 = -j, j, 2
-                       sub = CPLX_ZERO
-                       do m11 = max(-j1,m1-j2), min(j1,m1+j2), 2
-                          do m12 = max(-j1,m2-j2), min(j1,m2+j2), 2
-                             sub = sub + cg_array(j1,m11,j2,m1-m11,j,m1) &
-                             & * cg_array(j1,m12,j2,m2-m12,j,m2) &
-                             & * f%U(j1)%mm(m11,m12) * f%U(j2)%mm(m1-m11,m2-m12)
-                          enddo
-                       enddo
-                       this%coeff(j1,j2)%mag(j) = this%coeff(j1,j2)%mag(j) + &
-                       & sub*conjg(f%U(j)%mm(m1,m2))
-                    enddo
-                 enddo
-              enddo
-           !enddo
-        enddo
-
-     endsubroutine calc_bispectrum_so4
-
-     subroutine calc_grad_bispectrum_so4(this,f,df)
-        type(grad_bispectrum_so4), intent(inout) :: this
-        type(fourier_so4), intent(in) :: f
-        type(grad_fourier_so4), intent(in) :: df
-
-        integer :: j_max, j, j1, j2, m1, m2, m11, m12, m21, m22
-        complex(dp) :: sub
-        complex(dp), dimension(3) :: dsub
-        real(dp) :: tmp_cg
-
-        if( .not. this%initialised ) call initialise(this,f%j_max)
-
-        if( .not. cg_initialised ) then
-           call cg_initialise(f%j_max,2)
-        elseif( f%j_max > cg_j_max ) then
-           call cg_finalise()
-           call cg_initialise(f%j_max,2)
-        endif
-
-        j_max = min(this%j_max,f%j_max,df%j_max)
-
-        do j1 = 0, j_max
-            do j2 = 0, j_max
-               do j = abs(j1-j2), min(j_max,j1+j2)
-                  this%coeff(j2,j1)%mag(j)%x = CPLX_ZERO
-               enddo
-            enddo
-        enddo
-
-        do j1 = 0, j_max
-           j2 = j1
-           !do j2 = 0, j_max
-              do j = abs(j1-j2), min(j_max,j1+j2)
-                 do m1 = -j, j, 2
-                    do m2 = -j, j, 2
-                       sub = CPLX_ZERO
-                       dsub = CPLX_ZERO
-                       do m11 = max(-j1,m1-j2), min(j1,m1+j2), 2
-                          do m12 = max(-j1,m2-j2), min(j1,m2+j2), 2
-
-                             tmp_cg =  cg_array(j1,m11,j2,m1-m11,j,m1) &
-                             & * cg_array(j1,m12,j2,m2-m12,j,m2) 
-                             sub = sub + tmp_cg &
-                             & * f%U(j1)%mm(m11,m12) * f%U(j2)%mm(m1-m11,m2-m12)
-                             dsub = dsub + tmp_cg &
-                             & * ( df%U(j1)%mm(:,m11,m12) * f%U(j2)%mm(m1-m11,m2-m12) + &
-                             & f%U(j1)%mm(m11,m12) * df%U(j2)%mm(:,m1-m11,m2-m12) )
-                          enddo
-                       enddo
-                       this%coeff(j1,j2)%mag(j)%x = this%coeff(j1,j2)%mag(j)%x + &
-                       & dsub*conjg(f%U(j)%mm(m1,m2)) + sub*conjg(df%U(j)%mm(:,m1,m2))
-                    enddo
-                 enddo
-              enddo
-           !enddo
-        enddo
-
-     endsubroutine calc_grad_bispectrum_so4
-
-     subroutine calc_qw_so3(this, f)
-       type(qw_so3), intent(inout) :: this
-       type(fourier_so3), intent(in) :: f
-
-       real(dp) :: m_normsq_sum
-       complex(dp) :: wc
-       integer :: l, n, m1, m2, m3
-
-       do n = 1, this%f_n
-          do l = 2, this%l_max, 2
-             m_normsq_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
-
-             if (this%do_q) then
-                if (abs(m_normsq_sum) < QW_FP_ZERO) then
-                   this%q(l / 2,n) = 0.0_dp
-                else
-                   this%q(l / 2,n) = sqrt(4.0_dp * PI * m_normsq_sum / ((2.0_dp * l) + 1.0_dp))
-                endif
-             endif
-
-             if (this%do_w) then
-                wc = CPLX_ZERO
-
-                do m1 = -l, l
-                   do m2 = -l, l
-                      do m3 = -l, l
-                         if ((m1 + m2 + m3) /= 0 ) cycle
-
-                         wc = wc + (wigner3j(l, m1, l, m2, l, m3) * &
-                                    f%Y_times_R(l / 2,n)%m(m1) * &
-                                    f%Y_times_R(l / 2,n)%m(m2) * &
-                                    f%Y_times_R(l / 2,n)%m(m3))
-                      enddo
-                   enddo
-                enddo
-
-                if (abs(m_normsq_sum) < QW_FP_ZERO) then
-                   wc = CPLX_ZERO
-                else
-                   wc = wc / (m_normsq_sum**1.5_dp)
-                endif
-
-                this%w(l / 2,n) = real(wc, dp)
-             endif
-          enddo
-       enddo
-
-     endsubroutine calc_qw_so3
-
-     subroutine calc_grad_qw_so3(this, f, df)
-       type(grad_qw_so3), intent(inout) :: this
-       type(fourier_so3), intent(in) :: f
-       type(grad_fourier_so3), intent(in) :: df
-
-       real(dp) :: m_normsq_sum, dm_normsq_sum(3)
-       complex(dp) :: wc, dwc(3)
-       integer :: l, n, k, m1, m2, m3
-
-       do n = 1, this%f_n
-          do l = 2, this%l_max, 2
-             m_normsq_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
-
-             do k = 1, 3
-                dm_normsq_sum(k) = sum(real((f%Y_times_R(l / 2,n)%m * conjg(df%Y_times_R(l / 2,n)%m(k,:))) + &
-                                           (df%Y_times_R(l / 2,n)%m(k,:) * conjg(f%Y_times_R(l / 2,n)%m)), dp))
-             end do
-
-             if (this%do_q) then
-                if (abs(m_normsq_sum) < QW_FP_ZERO) then
-                   this%q(l / 2,n)%x = 0.0_dp
-                else
-                   this%q(l / 2,n)%x = 2.0_dp * PI * dm_normsq_sum / sqrt(4.0_dp * PI * m_normsq_sum * ((2.0_dp * l) + 1.0_dp))
-                endif
-             endif
-
-             if (this%do_w) then
-                wc = CPLX_ZERO
-                dwc = CPLX_ZERO
-
-                do m1 = -l, l
-                   do m2 = -l, l
-                      do m3 = -l, l
-                         if ((m1 + m2 + m3) /= 0 ) cycle
-
-                         wc = wc + (wigner3j(l, m1, l, m2, l, m3) * &
-                                    f%Y_times_R(l / 2,n)%m(m1) * &
-                                    f%Y_times_R(l / 2,n)%m(m2) * &
-                                    f%Y_times_R(l / 2,n)%m(m3))
-
-                         dwc = dwc + (wigner3j(l, m1, l, m2, l, m3) &
-                                   * ((df%Y_times_R(l / 2,n)%m(:,m1) * f%Y_times_R(l / 2,n)%m(m2) * f%Y_times_R(l / 2,n)%m(m3)) &
-                                    + (f%Y_times_R(l / 2,n)%m(m1) * df%Y_times_R(l / 2,n)%m(:,m2) * f%Y_times_R(l / 2,n)%m(m3)) &
-                                    + (f%Y_times_R(l / 2,n)%m(m1) * f%Y_times_R(l / 2,n)%m(m2) * df%Y_times_R(l / 2,n)%m(:,m3))))
-                      enddo
-                   enddo
-                enddo
-
-                if (abs(m_normsq_sum) < QW_FP_ZERO) then
-                   wc = CPLX_ZERO
-                   dwc = CPLX_ZERO
-                else
-                   wc = wc / (m_normsq_sum**1.5_dp)
-                   dwc = (dwc / (m_normsq_sum**1.5_dp)) - (1.5_dp * wc * dm_normsq_sum / m_normsq_sum)
-                endif
-
-                this%w(l / 2,n)%x = real(dwc, dp)
-             endif
-          enddo
-       enddo
-
-     endsubroutine calc_grad_qw_so3
-
-     subroutine bispectrum2vec_so4(this, vec)
-        type(bispectrum_so4), intent(in) :: this
-        real(dp), dimension(:), intent(out) :: vec
-
-        integer :: j1, j2, j, i
-
-        if( size( vec ) < j_max2d(this%j_max) ) &
-        & call system_abort('bispectrum2vec_so4: vec too small')
-
-        vec = 0.0_dp
-        i = 1
-        do j1 = 0, this%j_max
-           j2 = j1
-           !do j2 = 0, this%j_max
-              do j = abs(j1-j2), min(this%j_max,j1+j2)
-                 if( mod(j1+j2+j,2) == 1 ) cycle
-                 vec(i) = real(this%coeff(j1,j2)%mag(j))
-                 i = i + 1
-              enddo
-           !enddo
-        enddo
-
-     endsubroutine bispectrum2vec_so4
-
-     subroutine print_bispectrum_so4(this)
-        type(bispectrum_so4), intent(in) :: this
-        integer :: j1, j2, j, i
-
-        do j1 = 0, this%j_max
-           do j2 = 0, this%j_max
-              do j = abs(j1-j2), min(this%j_max,j1+j2)
-                 call print(j1//"    "//j2//"    "//j//"    "//this%coeff(j1,j2)%mag(j))
-              enddo
-           enddo
-        enddo
-     endsubroutine print_bispectrum_so4
-
-     subroutine bispectrum2vec_grad_so4(this, vec)
-        type(grad_bispectrum_so4), intent(in) :: this
-        real(dp), dimension(:,:), intent(out) :: vec
-
-        integer :: j1, j2, j, i
-
-        if( size( vec ) < 3*j_max2d(this%j_max) ) &
-        & call system_abort('bispectrum2vec_so4: vec too small')
-
-        vec = 0.0_dp
-        i = 1
-        do j1 = 0, this%j_max
-           j2 = j1
-           !do j2 = 0, this%j_max
-              do j = abs(j1-j2), min(this%j_max,j1+j2)
-                 if( mod(j1+j2+j,2) == 1 ) cycle
-                 vec(i,:) = real(this%coeff(j1,j2)%mag(j)%x(:))
-                 i = i + 1
-              enddo
-           !enddo
-        enddo
-
-     endsubroutine bispectrum2vec_grad_so4
-
-     subroutine qw2vec_qw_so3(this, vec)
-       type(qw_so3), intent(in) :: this
-       real(dp), dimension(:), intent(out) :: vec
-
-       integer :: d, i, l, f
-
-       d = (this%l_max / 2) * this%f_n
-       if (this%do_q .and. this%do_w) d = d * 2
-
-       if (size(vec) < d) call system_abort('qw2vec_so3: vec too small')
-
-       vec = 0.0_dp
-       i = 1
-       do l = 2, this%l_max, 2
-          do f = 1, this%f_n
-             if (this%do_q .and. this%do_w) then
-                vec(i) = this%q(l / 2,f)
-                vec((d / 2) + i) = this%w(l / 2,f)
-             elseif (this%do_q) then
-                vec(i) = this%q(l / 2,f)
-             elseif (this%do_w) then
-                vec(i) = this%w(l / 2,f)
-             endif
-             i = i + 1
-          enddo
-       enddo
-           
-     endsubroutine qw2vec_qw_so3
-
-     subroutine qw2vec_grad_qw_so3(this, vec)
-       type(grad_qw_so3), intent(in) :: this
-       real(dp), dimension(:,:), intent(out) :: vec
-
-       integer :: d, i, l, f
-
-       d = (this%l_max / 2) * this%f_n
-       if (this%do_q .and. this%do_w) d = d * 2
-
-       if (size(vec) < (3 * d)) call system_abort('qw2vec_grad_so3: vec too small')
-
-       vec = 0.0_dp
-       i = 1
-       do l = 2, this%l_max, 2
-          do f = 1, this%f_n
-             if (this%do_q .and. this%do_w) then
-                vec(i,:) = this%q(l / 2,f)%x(:)
-                vec((d / 2) + i,:) = this%w(l / 2,f)%x(:)
-             elseif (this%do_q) then
-                vec(i,:) = this%q(l / 2,f)%x(:)
-             elseif (this%do_w) then
-                vec(i,:) = this%w(l / 2,f)%x(:)
-             endif
-             i = i + 1
-          enddo
-       enddo
-
-     endsubroutine qw2vec_grad_qw_so3
-
-     function j_max2d(j_max)
-        integer :: j_max2d
-        integer, intent(in) :: j_max
-        integer :: j1, j2, j
-
-        j_max2d = 0
-
-        do j1 = 0, j_max
-           j2 = j1
-           !do j2 = 0, j_max
-              do j = abs(j1-j2), min(j_max,j1+j2)
-                 if( mod(j1+j2+j,2) == 1 ) cycle
-                 j_max2d = j_max2d + 1
-              enddo
-           !enddo
-        enddo
-     
-     endfunction j_max2d
-
-     function qw2d_qw_so3(this)
-       type(qw_so3), intent(in) :: this
-       integer :: qw2d_qw_so3
-
-       qw2d_qw_so3 = qw2d_so3(qw = this)
-
-     endfunction qw2d_qw_so3
-
-     function qw2d_grad_qw_so3(this)
-       type(grad_qw_so3), intent(in) :: this
-       integer :: qw2d_grad_qw_so3
-
-       qw2d_grad_qw_so3 = qw2d_so3(dqw = this)
-
-     endfunction qw2d_grad_qw_so3
-
-     function qw2d_so3(qw, dqw)
-       type(qw_so3), intent(in), optional :: qw
-       type(grad_qw_so3), intent(in), optional :: dqw
-       integer :: qw2d_so3
-
-       if (present(qw)) then
-          qw2d_so3 = (qw%l_max / 2) * qw%f_n
-          if (qw%do_q .and. qw%do_w) qw2d_so3 = qw2d_so3 * 2
-       elseif (present(dqw)) then
-          qw2d_so3 = (dqw%l_max / 2) * dqw%f_n
-          if (dqw%do_q .and. dqw%do_w) qw2d_so3 = qw2d_so3 * 2
-       endif
-
-     endfunction qw2d_so3
-
-     function test_qw_gradient(f, df, qw, dqw, at, x0)
-       logical :: test_qw_gradient
-       type(fourier_so3), intent(inout) :: f
-       type(grad_fourier_so3), intent(inout) :: df
-       type(qw_so3), intent(inout) :: qw
-       type(grad_qw_so3), intent(inout) :: dqw
-       type(atoms), intent(inout) :: at
-       real(dp), intent(in) :: x0(3)
-       real(dp) :: x00(3)
-       real(dp), allocatable :: vec(:), dvec(:,:)
-       integer :: i, j, n
-
-       allocate (vec(qw2d(qw)), dvec(qw2d(qw),3))
-
-       test_qw_gradient = .true.
-
-       call add_atoms(at, x0, 1)
-       call calc_connect(at)
-
-       do n = 0, atoms_n_neighbours(at, at%N)
-          call print("neighbour: "//n)
-          call print("")
-
-          if (n == 0) then
-             j = at%N
-          else
-             j = atoms_neighbour(at, at%N, n)
-          end if
-
-          x00 = at%pos(:,j)
-
-          do i = 1, qw2d(qw)
-             call print("qw dimension: "//i)
-             call print("")
-
-             !test_qw_gradient = test_qw_gradient .and. test_gradient(x00, test_qw, test_dqw)
-             call print("")
-          end do
-       end do
-
-       call remove_atoms(at, at%N)
-       call calc_connect(at)
-
-       if (test_qw_gradient) then
-          call print("TEST_QW_GRADIENT: PASS")
-       else
-          call print("TEST_QW_GRADIENT: FAIL")
-       end if
-
-       contains
-
-       function test_qw(x, data)
-         real(dp) :: test_qw
-         real(dp) :: x(:)
-         character, optional :: data(:)
-         real(dp) :: x_old(3)
-
-         x_old = at%pos(:,j)
-         at%pos(:,j) = x
-         call calc_connect(at)
-         call fourier_transform(f, at, at%N)
-         call calc_qw(qw, f)
-         call qw2vec(qw, vec)
-
-         test_qw = vec(i)
-
-         at%pos(:,j) = x_old
-         call calc_connect(at)
-
-       endfunction test_qw
-
-       function test_dqw(x, data)
-         real(dp) :: test_dqw(3)
-         real(dp) :: x(:)
-         character, optional :: data(:)
-         real(dp) :: x_old(3)
-
-         x_old = at%pos(:,j)
-         at%pos(:,j) = x
-         call calc_connect(at)
-         call fourier_transform(f, at, at%N)
-         call fourier_transform(df, at, at%N, n)
-         call calc_qw(dqw, f, df)
-         call qw2vec(dqw, dvec)
-
-         test_dqw = dvec(i,:)
-
-         at%pos(:,j) = x_old
-         call calc_connect(at)
-
-       endfunction test_dqw
-
-     endfunction test_qw_gradient
-
-     subroutine get_weights(this,w)
-
-        type(atoms), intent(in) :: this
-        real(dp), dimension(:), intent(out) :: w
-
-        integer, dimension(:), allocatable :: Z
-        real(dp), dimension(:), allocatable :: w_type
-        integer :: i, Z_prev, n_type
-
-        if( size(w) < maxval(this%Z) ) call system_abort('get_weights: size of w is smaller than &
-        & the largest atomic number '// maxval(this%Z) //' in atoms object')
-
-        allocate(Z(this%N)) 
-        ! Make copy of atomic numbers
-        Z = this%Z
-        ! Sort them
-        call sort_array(Z)
-
-        ! Determine how many different atomtypes are present
-        Z_prev = 0
-        n_type = 0
-        do i = 1, this%N
-           if( Z_prev /= Z(i) ) then
-              n_type = n_type + 1
-              Z_prev = Z(i)
-           endif
-        enddo
-
-        ! Each atomtype is assigned with a weight. These are determined such
-        ! that their cube falls between 0.5 and 1.0
-        allocate(w_type(n_type))
-        !w_type = ( 0.5_dp * (/ (i, i=n_type,1,-1) /) / real(n_type,dp) + 0.5_dp )**(1.0_dp/3.0_dp)
-        !w_type = ( 0.5_dp * (/ (i, i=n_type,1,-1) /) / real(n_type,dp) + 0.5_dp ) 
-        if( n_type == 1 ) then
-           w_type = 1.0_dp
-        else
-           w_type = ( 0.5_dp*( (/ (i, i=n_type,1,-1) /) -1 ) / real(n_type-1,dp) + 0.5_dp )
-        endif
-           
-        ! Fill array w with weight for each atom. This is done via the index
-        ! array from the sorting.
-        Z_prev = 0
-        n_type = 0
-        w = 0.0_dp
-        do i = 1, this%N
-           if( Z_prev /= Z(i) ) then
-              n_type = n_type + 1
-              Z_prev = Z(i)
-              w(Z(i)) = w_type(n_type)
-           endif
-        enddo
-        deallocate(Z,w_type)
-
-     endsubroutine get_weights
-     
-     subroutine initialise_fourier_periodic(this,k_max1,k_max2,k_max3,at)
-
-        type(per), intent(inout) :: this
-        integer, intent(in) :: k_max1
-        integer, intent(in), optional :: k_max2, k_max3
-        type(atoms), intent(in), optional :: at
-
-        integer, dimension(3) :: k_max
-
-        if( this%initialised ) call finalise(this)
-
-        k_max = (/k_max1,optional_default(k_max1,k_max2),optional_default(k_max1,k_max3)/)
-
-        allocate( this%f(-k_max(1):k_max(1),-k_max(2):k_max(2),-k_max(3):k_max(3)) )
-        this%f = CPLX_ZERO
-
-        this%k = k_max
-
-        if( present(at) ) then
-           allocate(this%w(maxval(at%Z)))
-           call get_weights(at,this%w)
-        else
-           allocate(this%w(size(ElementName)))
-           this%w = 1.0_dp
-        endif
-
-        this%initialised = .true.
-
-     endsubroutine initialise_fourier_periodic
-
-     subroutine finalise_fourier_periodic(this)
-
-        type(per), intent(inout) :: this
-
-        if( .not. this%initialised ) return
-
-        deallocate( this%f, this%w )
-
-        this%k = 0
-        this%initialised = .false.
-
-     endsubroutine finalise_fourier_periodic
-
-     subroutine fourier_transform_periodic(at,f_hat)
-        type(Atoms), intent(inout) :: at
-        type(per), intent(inout) :: f_hat
-
-        integer :: k1, k2, k3, i
-        complex(dp) :: TWO_PI_I
-        real(dp), dimension(:,:), allocatable :: frac
-
-        real(dp), dimension(3) :: k
-
-        TWO_PI_I = 2.0_dp * PI * CPLX_IMAG
-
-        f_hat%f = CPLX_ZERO        
-
-        if( size(f_hat%w) < maxval(at%Z) ) call system_abort('size of weights &
-        & array is '// size(f_hat%w) //', which is smaller than the maximumal &
-        & atomic number '// maxval(at%Z) //' in atoms object')
-
-        allocate(frac(3,at%N))
-        do i = 1, at%N
-           frac(:,i) = matmul(at%g,at%pos(:,i))
-        enddo
-        
-        do i = 1, at%N
-           do k3 = -f_hat%k(3), f_hat%k(3)
-              do k2 = -f_hat%k(2), f_hat%k(2)
-                 do k1 = -f_hat%k(1), f_hat%k(1)
-                    k = k1 * at%g(1,:) + k2 * at%g(2,:) + k3 * at%g(3,:)
-                    f_hat%f(k1,k2,k3) = f_hat%f(k1,k2,k3) + exp(-0.5_dp * normsq(k) * f_hat%sig**2) * &
-                    & exp( TWO_PI_I * dot_product( (/k1,k2,k3/), frac(:,i) ) ) * f_hat%w(at%Z(i))
-                    !f_hat%f(k1,k2,k3) = f_hat%f(k1,k2,k3) + &
-                    !& exp( TWO_PI_I * dot_product( (/k1,k2,k3/), frac(:,i) ) ) * f_hat%w(at%Z(i))
-                 enddo
-              enddo
-           enddo
-        enddo
-
-        deallocate(frac)
-        
-     endsubroutine fourier_transform_periodic
-
-     function suggest_resolution(at)
-        type(Atoms), intent(in) :: at
-        real(dp) :: suggest_resolution
-
-        integer :: i, j
-        real(dp) :: distance
-
-        suggest_resolution = huge(1.0_dp)
-        do i = 1, at%N - 1
-           do j = i+1, at%N
-              distance = distance_min_image(at,i,j)
-              if( distance > 0.0_dp ) suggest_resolution=min(suggest_resolution,distance)
-           enddo
-        enddo
-              
-     endfunction suggest_resolution
-
-     function suggest_kmax(at,resolution)
-
-        type(Atoms), intent(in) :: at
-        real(dp), intent(in), optional :: resolution
-        integer, dimension(3) :: suggest_kmax
-        real(dp) :: my_resolution
-        integer :: i        
-
-        if( present(resolution) ) then
-           my_resolution = resolution
-        else
-           my_resolution = suggest_resolution(at)
-        endif
-
-        do i = 1, 3
-           suggest_kmax(i) = ceiling(norm(at%lattice(:,i))/my_resolution)
-        enddo
-
-     endfunction suggest_kmax
-
-     subroutine bispectrum_periodic(f_hat,bis)
-       
-        type(per), intent(inout) :: f_hat, bis
-        integer :: k1, k2, k3
-
-        if( .not. f_hat%initialised ) call system_abort('bispectrum_periodic: f_hat not initialised')
-
-        if( .not. bis%initialised .or. any ( 2*bis%k > f_hat%k ) ) then
-           call finalise(bis)
-           call initialise(bis,f_hat%k(1)/2,f_hat%k(2)/2,f_hat%k(3)/2)
-        endif
-
-        do k3 = -bis%k(3), bis%k(3)
-           do k2 = -bis%k(2), bis%k(2)
-              do k1 = -bis%k(1), bis%k(1)
-                 bis%f(k1,k2,k3) = f_hat%f(k1,k2,k3)**2 * conjg(f_hat%f(2*k1,2*k2,2*k3))
-              enddo
-           enddo
-        enddo
-
-     endsubroutine bispectrum_periodic
-
-     subroutine bispectrum2vec_periodic(bis,vec,p)
-
-        type(per), intent(in) :: bis
-        complex(dp), dimension(:), intent(out) :: vec
-        integer, dimension(3), intent(in), optional :: p
-        
-        integer :: k1, k2, k3, i
-        integer, dimension(3) :: k
-        integer, dimension(3), target :: kp
-        integer, pointer :: kp1, kp2, kp3
-
-        if( .not. bis%initialised ) call system_abort('bispectrum2vec_periodic: bis not initialised' )
-        if( size(vec) < kmax2d(bis) ) call system_abort('bispectrum2vec_periodic: vec too small')
-        if( present(p) .and. .not. ( (bis%k(1)==bis%k(2)) .and. (bis%k(1)==bis%k(3)) ) ) &
-        & call system_abort('bispectrum2vec_periodic: permutation present, so k(1) = k(2) = k(3)')
-        
-        vec = CPLX_ZERO
-
-        i = 0
-        kp1 => kp(1)
-        kp2 => kp(2)
-        kp3 => kp(3)
-
-        do k3 = -bis%k(3), bis%k(3)
-           do k2 = -bis%k(2), bis%k(2)
-              do k1 = -bis%k(1), bis%k(1)
-                 i = i + 1
-                 k = (/k1,k2,k3/)
-                 if(present(p)) then
-                    kp = k(p)
-                 else
-                    kp = k
-                 endif
-                 vec(i) = bis%f(kp1,kp2,kp3)
-              enddo
-           enddo
-        enddo
-
-     endsubroutine bispectrum2vec_periodic
-     
-     function kmax2d(this)
-        type(per), intent(in) :: this
-        integer :: kmax2d
-
-        if( .not. this%initialised ) call system_abort('kmax2d: bispectrum not initialised' )
-
-        kmax2d = product(2*this%k+1)
-        
-     endfunction kmax2d
-
-     subroutine reduce_lattice(matrix)
-        real(dp), dimension(3,3), intent(inout) :: matrix
-        real(dp), dimension(3,3) :: matrix2
-
-        real(dp) :: mn, mn1, mn2
-        integer :: i, j, i_min, j_min
-        logical :: o_min
-        
-
-        do
-           mn = matrix_norm(matrix)
-           mn1 = mn
-           do i = 1, 3
-              do j = 1, 3
-                 if( i==j) cycle
-
-                 matrix2 = matrix
-                 matrix2(:,i) = matrix2(:,i) - matrix2(:,j)
-                 mn2 = matrix_norm(matrix2)
-                 if( mn2 < mn1 ) then
-                    mn1 = mn2
-                    i_min = i
-                    j_min = j
-                    o_min = .true.
-                 endif
-                 matrix2 = matrix
-                 matrix2(:,i) = matrix2(:,i) + matrix2(:,j)
-                 mn2 = matrix_norm(matrix2)
-                 if( mn2 < mn1 ) then
-                    mn1 = mn2
-                    i_min = i
-                    j_min = j
-                    o_min = .false.
-                 endif
-              enddo
-           enddo
-           if( mn1 == mn ) exit
-           if( o_min ) then
-              matrix(:,i_min) = matrix(:,i_min) - matrix(:,j_min)
-           else
-              matrix(:,i_min) = matrix(:,i_min) + matrix(:,j_min)
-           endif
-        enddo
-
-
-     endsubroutine reduce_lattice
-
-     function matrix_norm(matrix)
-        real(dp), dimension(:,:), intent(in) :: matrix
-        real(dp) :: matrix_norm
-
-        matrix_norm = sqrt( sum( matrix**2 ) )
-     
-     endfunction matrix_norm
-
-     
-     subroutine order_lattice_vectors(at)
-
-        type(atoms), intent(inout) :: at
-
-        real(dp), dimension(3)       :: bQb, bOb, bHb, com
-        real(dp), dimension(3,3)     :: Q, new_lattice
-        real(dp), dimension(3,3,3)   :: O
-        real(dp), dimension(3,3,3,3) :: H
-
-        integer :: i, a, b, c, d
-
-        call add_property(at,'mass',ElementMass(at%Z))
-
-        com = centre_of_mass(at)
-        do i = 1, at%N
-           at%pos(:,i) = at%pos(:,i) - com
-        enddo
-
-        Q = 0.0_dp
-        O = 0.0_dp
-        H = 0.0_dp
-
-        do i = 1, at%N
-           do a = 1, 3
-              do b = 1, 3
-                 Q(b,a) = Q(b,a) + at%pos(a,i) * at%pos(b,i) * at%mass(i)
-                 do c = 1, 3
-                    O(c,b,a) = O(c,b,a) + at%pos(a,i) * at%pos(b,i) * at%pos(c,i) * at%mass(i)
-                    do d = 1, 3
-                       H(d,c,b,a) = H(d,c,b,a) + at%pos(a,i) * at%pos(b,i) * at%pos(c,i) * at%pos(d,i) * at%mass(i)
-                    enddo
-                 enddo
-              enddo
-           enddo
-        enddo
-
-        bQb = 0.0_dp
-        bOb = 0.0_dp
-        bHb = 0.0_dp
-
-        do i = 1, 3
-           do a = 1, 3
-              do b = 1, 3
-                 bQb(i) = bQb(i) + at%g(i,a) * at%g(i,b) * Q(b,a)
-                 do c = 1, 3
-                    bOb(i) = bOb(i) + at%g(i,a) * at%g(i,b) * at%g(i,c) * O(c,b,a)
-                    do d = 1, 3
-                       bHb(i) = bHb(i) + at%g(i,a) * at%g(i,b) * at%g(i,c) * at%g(i,d) * H(d,c,b,a)
-                    enddo
-                 enddo
-              enddo
-           enddo
-        enddo
-
-        call print(bQb)
-        call print(bOb)
-        call print(bHb)
-     
-     endsubroutine order_lattice_vectors
-
-     !#################################################################################
-     !#
-     !% Calculates Q and W (central symmetry parameters) for each atom in an atoms object.
-     !#
-     !#################################################################################
-
-     subroutine calc_qw_at(at,l,q_global,w_global)
-        type(Atoms), intent(inout) :: at     !% atoms object, q and w added as properties: q//l and w//l
-        integer, intent(in), optional :: l   !% which L spherical harmonics to use
-        real(dp), optional :: q_global, w_global
-
-        real(dp), dimension(:), pointer :: at_q, at_w
-
-        integer :: my_l
-        real(dp), dimension(3) :: u_ij, polar
-        real(dp), dimension(:), allocatable :: q
-
-        integer :: i, j, n, m, m1, m2, m3, n_bond
-        complex(dp) :: qm_bond
-        complex(dp), dimension(:), allocatable :: w, qm_global
-        complex(dp), dimension(:,:), allocatable :: qm
-
-        my_l = optional_default(4,l)
-
-        if( mod(my_l,2) /=0 ) call system_abort('Wisdom says l should be even number, let it be so.')
-
-        call add_property(at,'q'//my_l,0.0_dp)
-        call add_property(at,'w'//my_l,0.0_dp)
-        if( .not. assign_pointer(at, 'q'//my_l, at_q) ) &
-        & call system_abort('at_qw: could not assign pointer to atoms object')
-        if( .not. assign_pointer(at, 'w'//my_l, at_w) ) &
-        & call system_abort('at_qw: could not assign pointer to atoms object')
-
-        allocate(qm(-my_l:my_l,at%N), q(at%N), w(at%N), qm_global(-my_l:my_l) )
-
-        qm = CPLX_ZERO
-        w = CPLX_ZERO
-
-        n_bond = 0
-        qm_global = CPLX_ZERO
-        do i = 1, at%N
-           do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,cosines=u_ij)
-              polar = xyz2spherical(u_ij)
-              n_bond = n_bond + 1
-              do m = -my_l, my_l
-                 qm_bond = SphericalY(my_l,m,polar(2),polar(3))
-                 qm(m,i) = qm(m,i) + qm_bond/atoms_n_neighbours(at,i)
-                 qm_global(m) = qm_global(m) + qm_bond
-              enddo
-           enddo
-        enddo
-        n_bond = max(n_bond,1)
-        qm_global = qm_global / real(n_bond, dp)
-
-        q = sum( real( qm*conjg(qm) ), dim=1 )
-        if ( present(q_global) ) q_global = sqrt( PI * 4.0_dp * sum( real( qm_global*conjg(qm_global) ) ) / (2.0_dp * my_l + 1.0_dp ) )
-
-        do i = 1, at%N
-           do m1 = -my_l, my_l
-              do m2 = -my_l, my_l
-                 do m3 = -my_l, my_l
-                    if( m1+m2+m3 /= 0 ) cycle
-                    w(i) = w(i) + wigner3j(my_l,m1,my_l,m2,my_l,m3) * qm(m1,i) * qm(m2,i) * qm(m3,i)
-                 enddo
-              enddo
-           enddo
-        enddo
-
-        if ( present(w_global) ) then
-           w_global = 0.0_dp
-           do m1 = -my_l, my_l
-              do m2 = -my_l, my_l
-                 do m3 = -my_l, my_l
-                    if( m1+m2+m3 /= 0 ) cycle
-                    w_global = w_global + real( wigner3j(my_l,m1,my_l,m2,my_l,m3) * qm_global(m1) * qm_global(m2) * qm_global(m3) ) 
-                 enddo
-              enddo
-           enddo
-           w_global = w_global / ( sum( real( qm_global*conjg(qm_global) ) )**(3.0_dp/2.0_dp) )
-        endif
-
-        w = w / (q**(3.0_dp/2.0_dp))
-        q = sqrt(4.0_dp*PI/(2.0_dp * my_l + 1.0_dp)*q)
-        at_q = q
-        at_w = real(w)
-
-        deallocate(qm, q, w, qm_global)
-
-        at_q=>null()
-        at_w=>null()
-
-     endsubroutine calc_qw_at
-       
-     subroutine initialise_symm(this) !,n_radial,n_angular)
-        type(symm), intent(inout) :: this
-        !integer, intent(in)              :: n_radial, n_angular
-
-        if( this%initialised ) call finalise(this)
-
-        !this%n_radial = n_radial
-        !this%n_angular = n_angular
-
-        allocate( this%radial(this%n_radial), this%angular(this%n_angular) )
-
-        this%initialised = .true.
-
-     endsubroutine initialise_symm
-
-     subroutine finalise_symm(this)
-        type(symm), intent(inout) :: this
-
-        if( .not. this%initialised ) return
-        this%n_radial = 0
-        this%n_angular = 0
-
-        deallocate( this%radial, this%angular)
-
-        this%initialised = .false.
-
-     endsubroutine finalise_symm
-
-     subroutine atom2symm(at,coeff,vec,ii)
-
-        type(atoms), intent(in)               :: at
-        type(symm), intent(in)                :: coeff
-        real(dp), dimension(:,:), intent(out) :: vec
-        integer, intent(in), optional         :: ii
-
-        integer :: a, n, m, i, j, k, start_i, end_i
-        real(dp) :: r_ij, r_ik, r_jk, f_ij, f_ik, f_jk, cos_ijk
-        real(dp), dimension(3) :: d_ij, d_ik, d_jk
-        integer, dimension(3) :: shift_ij, shift_ik
-
-        if( (coeff%n_radial + coeff%n_angular) > size(vec,1) ) &
-        & call system_abort('atom2symm: array sizes do not conform')
-
-        start_i = 1
-        end_i   = at%N
-        if(present(ii)) then
-           start_i = ii
-           end_i   = ii
-        endif
-
-        vec = 0.0_dp
-
-        do i = start_i, end_i
-           do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,distance=r_ij,diff=d_ij,shift=shift_ij)
-              if( r_ij > coeff%cutoff ) cycle
-
-              f_ij = coff(r_ij,coeff%cutoff)
-              do a = 1, coeff%n_radial
-                 vec(a,i) = vec(a,i) + exp( - coeff%radial(a)%eta * (r_ij - coeff%radial(a)%rs)**2 ) * f_ij
-              enddo
-
-              do m = 1, atoms_n_neighbours(at,i)
-                 k = atoms_neighbour(at,i,m,distance=r_ik,diff=d_ik,shift=shift_ik)
-                 if( r_ik > coeff%cutoff ) cycle
-
-                 d_jk = diff(at,j,k,shift_ik-shift_ij)
-                 r_jk = norm(d_jk)
-                 if( r_jk .feq. 0.0_dp ) cycle
-
-                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik) !cosine(at,i,j,k)
-
-                 f_ik = coff(r_ik,coeff%cutoff)
-                 f_jk = coff(r_jk,coeff%cutoff)
-
-                 do a = 1, coeff%n_angular
-                    vec(a+coeff%n_radial,i) = vec(a+coeff%n_radial,i) + &
-                    (1.0_dp + coeff%angular(a)%lambda*cos_ijk)**coeff%angular(a)%zeta * &
-                    & exp(-coeff%angular(a)%eta*(r_ij**2+r_ik**2+r_jk**2))*f_ij*f_ik*f_jk
-                 enddo
-              enddo
-           enddo
-        enddo
-              
-     endsubroutine atom2symm
-
-     subroutine symm_jacobian(at,coeff,jacobian)
-
-        type(atoms), intent(in)  :: at
-        type(symm), intent(in)   :: coeff
-        real(dp), dimension(:,:,:) :: jacobian
-
-        integer :: n_basis, a, i, j, k, n, m, alpha
-        real(dp) :: r_ij, r_ik, r_jk, f_ij, f_ik, f_jk, cos_ijk, rad, ang, dang
-        real(dp), dimension(3) :: u_ij, u_ik, u_jk, df_ij, df_ik, df_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik, tmp, tmp_i, tmp_j, tmp_k
-        integer, dimension(3) :: shift_ij, shift_ik
-
-        jacobian = 0.0_dp
-        n_basis = coeff%n_radial + coeff%n_angular
-
-        do i = 1, at%N
-
-           do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij,diff=d_ij,shift=shift_ij)
-              if( r_ij > coeff%cutoff ) cycle
-
-              f_ij  = coff(r_ij,coeff%cutoff)
-              df_ij = dcoff(r_ij,coeff%cutoff) * u_ij
-
-              do a = 1, coeff%n_radial
-                 tmp = exp( -coeff%radial(a)%eta * (r_ij-coeff%radial(a)%rs)**2) * & 
-                        & (-2.0_dp * coeff%radial(a)%eta * (r_ij - coeff%radial(a)%rs) * f_ij * u_ij + df_ij )
-
-                 alpha = a
-
-                 jacobian(alpha,1:3,i) = jacobian(alpha,1:3,i) - tmp
-                 jacobian(alpha,3*n+1:3*(n+1),i) = jacobian(alpha,3*n+1:3*(n+1),i) + tmp
-              enddo
-
-              do m = 1, atoms_n_neighbours(at,i)
-                 k = atoms_neighbour(at,i,m,distance=r_ik,cosines=u_ik,diff=d_ik,shift=shift_ik)
-                 if( r_ik > coeff%cutoff ) cycle
-                 
-                 d_jk = diff(at,j,k,shift_ik-shift_ij)
-                 r_jk = norm(d_jk)
-                 u_jk = d_jk / r_jk
-                 if( r_jk .feq. 0.0_dp ) cycle
-
-                 cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
-
-                 f_ik = coff(r_ik,coeff%cutoff)
-                 f_jk = coff(r_jk,coeff%cutoff)
-
-                 df_ik = dcoff(r_ik,coeff%cutoff) * u_ik
-                 df_jk = dcoff(r_jk,coeff%cutoff) * u_jk
-                 dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
-                 dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
-
-                 do a = 1, coeff%n_angular
-
-                   rad = exp(-coeff%angular(a)%eta*(r_ij**2+r_ik**2+r_jk**2)) 
-                   ang = (1.0_dp + coeff%angular(a)%lambda*cos_ijk)**coeff%angular(a)%zeta
-                   dang = coeff%angular(a)%zeta*coeff%angular(a)%lambda*(1.0_dp + coeff%angular(a)%lambda*cos_ijk)**(coeff%angular(a)%zeta-1.0_dp)
-                   
-                   tmp_i = rad * ( - dang * (dcosijk_ij+dcosijk_ik) * f_ij*f_ik*f_jk + &
-                   & ang * 2.0_dp * coeff%angular(a)%eta * ( d_ij + d_ik ) * f_ij*f_ik*f_jk - &
-                   & ang * ( df_ij*f_ik*f_jk + f_ij*df_ik*f_jk ) )
-
-                   tmp_j = rad * ( dang*dcosijk_ij * f_ij*f_ik*f_jk + &
-                   & ang * 2.0_dp * coeff%angular(a)%eta * ( - d_ij + d_jk ) * f_ij*f_ik*f_jk + &
-                   & ang * ( df_ij*f_ik*f_jk - f_ij*f_ik*df_jk ) )
-
-                   tmp_k = rad * ( dang*dcosijk_ik * f_ij*f_ik*f_jk + &
-                   & ang * 2.0_dp * coeff%angular(a)%eta * ( - d_jk - d_ik ) * f_ij*f_ik*f_jk + &
-                   & ang * ( f_ij*df_ik*f_jk + f_ij*f_ik*df_jk ) )
-
-                   alpha = coeff%n_radial + a
-
-                   jacobian(alpha,1:3,i) = jacobian(alpha,1:3,i) + tmp_i
-                   jacobian(alpha,3*n+1:3*(n+1),i) = jacobian(alpha,3*n+1:3*(n+1),i) + tmp_j
-                   jacobian(alpha,3*m+1:3*(m+1),i) = jacobian(alpha,3*m+1:3*(m+1),i) + tmp_k
-                 enddo
-              enddo
-           enddo
-        enddo
-
-     endsubroutine symm_jacobian
-
-     !#################################################################################
-     !#
-     !% Initialises an atom-centered fourier coefficient object
-     !#
-     !#################################################################################
-
-     subroutine initialise_fourier_atom(f_hat,N_max,L_max,r_min,r_max,sigma, &
-                & cutoff_left,cutoff_right,cutoff_sigma)
-
-        type(fourier_coefficient_atom), intent(inout) :: f_hat   !% fourier coefficient object
-        integer, intent(in)  :: L_max                       !% angular basis functions
-        integer, intent(in)  :: N_max                       !% radial basis functions
-        real(dp), intent(in) :: r_min                       !% centre of first radial basis function
-        real(dp), intent(in) :: r_max                       !% centre of last radial basis function
-        real(dp), intent(in) :: sigma                       !% width of radial basis function
-        real(dp), intent(in), optional :: cutoff_left       !% centre of the 'left' cutoff fermi function
-        real(dp), intent(in), optional :: cutoff_right      !% centre of the 'right' cutoff fermi function
-        real(dp), intent(in), optional :: cutoff_sigma      !% width of the cutoff fermi functions
-    
-        integer  :: n, l
-        real(dp) :: dr
-    
-        if( f_hat%initialised ) then
-           call system_abort('initialise_fourier_array: f_hat already initialised')
-        endif
-    
-        allocate( f_hat%coeff%rad(N_max), f_hat%r0(N_max) )
-    
-        do n = 1, N_max
-           allocate( f_hat%coeff%rad(n)%ang(0:L_max) )
-           do l = 0, L_max
-              allocate( f_hat%coeff%rad(n)%ang(l)%mag( -L_max:L_max ) )
-              f_hat%coeff%rad(n)%ang(l)%mag(:) = cplx_zero
-           enddo
-        enddo
-
-        dr = (r_max-r_min)/(N_max-1)
-        f_hat%r0(1) = r_min
-        do n = 2, N_max
-           f_hat%r0(n) = f_hat%r0(n-1)+dr
-        enddo
-        f_hat%sigma = sigma
-        f_hat%cutoff_left  = optional_default(r_min,cutoff_left)
-        f_hat%cutoff_right = optional_default(r_max,cutoff_right)
-        f_hat%cutoff_sigma = optional_default(1.0_dp/sigma,cutoff_sigma)
-    
-        f_hat%N_max = N_max
-        f_hat%L_max = L_max
-        f_hat%initialised = .true.
-    
-     endsubroutine initialise_fourier_atom
-    
-     !#################################################################################
-     !#
-     !% Finalises an atom-centered fourier coefficient object
-     !#
-     !#################################################################################
-
-     subroutine finalise_fourier_atom(f_hat)
-         
-        type(fourier_coefficient_atom), intent(inout) :: f_hat
-        integer :: n, l
-    
-        if( .not. f_hat%initialised ) return
-    
-        do n = 1, f_hat%N_max
-           do l = 0, f_hat%L_max
-              deallocate( f_hat%coeff%rad(n)%ang(l)%mag )
-           enddo
-           deallocate( f_hat%coeff%rad(n)%ang )
-        enddo
-    
-        deallocate( f_hat%coeff%rad, f_hat%r0 )
-    
-        f_hat%sigma = 0.0_dp
-        f_hat%cutoff_left  = 0.0_dp
-        f_hat%cutoff_right = 0.0_dp
-        f_hat%cutoff_sigma = 0.0_dp
-
-        f_hat%N_max = 0
-        f_hat%L_max = 0
-        f_hat%initialised = .false.
-    
-     endsubroutine finalise_fourier_atom
-    
-     !#################################################################################
-     !#
-     !% Initialises an atom-centered bispectrum object
-     !#
-     !#################################################################################
-
-     subroutine initialise_bispectrum_atom(bispectrum,N_max,L_max) 
-    
-        type(bispectrum_coefficient_atom), intent(inout) :: bispectrum !% bispectrum
-        integer, intent(in) :: N_max                                   !% number of radial basis functions
-        integer, intent(in) :: L_max                                   !% number of angular basis functions
-    
-        integer :: l1, l2, n1, n2
-    
-        if( bispectrum%initialised ) call finalise(bispectrum)
-
-!        if( mod(N_max,2) == 0 ) call system_abort('initialise_bispectrum: N_max must be odd number')
-    
-        !allocate( bispectrum%coeff%rad( (N_max-1)/2 ) )
-        allocate( bispectrum%coeff%rad(N_max,N_max) )
-    
-        do n1 = 1, N_max
-           do n2 = 1, N_max
-               allocate( bispectrum%coeff%rad(n2,n1)%ang( 0:L_max, 0:L_max ) )
-               do l1 = 0,L_max
-                  do l2 = 0,L_max
-                     allocate( bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag( abs(l1-l2):min(l1+l2,L_max) ) )
-                     bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag(:) = cplx_zero
-                  enddo
-              enddo
-           enddo
-        enddo
-
-        bispectrum%N_max = N_max
-        bispectrum%L_max = L_max
-        bispectrum%initialised = .true.
-    
-     endsubroutine initialise_bispectrum_atom
-    
-     !#################################################################################
-     !#
-     !% Finalises an atom-centered bispectrum object
-     !#
-     !#################################################################################
-
-     subroutine finalise_bispectrum_atom(bispectrum)
-         
-        type(bispectrum_coefficient_atom), intent(inout) :: bispectrum !% bispectrum object
-        integer :: l1, l2, n1, n2
-    
-        if( .not. bispectrum%initialised ) return
-    
-        do n1 = 1, bispectrum%N_max
-           do n2 = 1, bispectrum%N_max
-              do l1 = 0,bispectrum%L_max
-                 do l2 = 0,bispectrum%L_max
-                    deallocate( bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag )
-                 enddo
-              enddo
-              deallocate( bispectrum%coeff%rad(n2,n1)%ang )
-           enddo
-        enddo
-    
-        deallocate( bispectrum%coeff%rad )
-
-        bispectrum%N_max = 0
-        bispectrum%L_max = 0
-        bispectrum%initialised = .false.
-    
-     endsubroutine finalise_bispectrum_atom
-
-     !#################################################################################
-     !#
-     !% Calculates an atom-centered fourier spectrum
-     !#
-     !#################################################################################
-
-     subroutine fourier_transform_vec(at,vec,f_hat,Z)
-
-       type(atoms), intent(in)                       :: at       !% atoms object
-       real(dp), dimension(3), intent(in)            :: vec      !% centre
-       type(fourier_coefficient_atom), intent(inout) :: f_hat    !% fourier coefficents
-       integer, intent(in), optional                 :: Z        !% which type of atoms to include
-
-       real(dp), dimension(:,:), allocatable, target :: atoms_sph_in
-       real(dp), dimension(3) :: diff
-       real(dp), pointer :: r, theta, phi
-
-       integer :: i, l, m, n, my_Z
-
-       if( f_hat%initialised ) then
-          do n = 1, f_hat%N_max
-             do l = 0, f_hat%L_max
-                f_hat%coeff%rad(n)%ang(l)%mag(:) = cplx_zero
-             enddo
-          enddo
-       else
-          call system_abort('fourier_transform: f_hat not initialised')
-       endif
-
-       my_Z = optional_default(at%Z(1),Z)
-
-       if( .not. any( my_Z == at%Z(:) ) ) &
-       & call print_warning('fourier_transform: no atoms '//Z//' in atoms object')
-
-       allocate( atoms_sph_in( 3, at%N ) )
-
-       atoms_sph_in = huge(1.0_dp)
-
-       do i = 1, at%N
-          if( my_Z /= at%Z(i) ) cycle
-          diff = diff_min_image(at,i,vec)
-          atoms_sph_in(:,i) = xyz2spherical( diff )
-       enddo
-
-       do n = 1, f_hat%N_max
-          do l = 0, f_hat%L_max
-             do m = -l, l
-                do i = 1, at%N
-                
-                   if( my_Z /= at%Z(i) ) cycle
-
-                   r => atoms_sph_in(1,i)
-                   theta => atoms_sph_in(2,i)
-                   phi => atoms_sph_in(3,i)
- 
-                   f_hat%coeff%rad(n)%ang(l)%mag(m) = f_hat%coeff%rad(n)%ang(l)%mag(m) + &
-                   & gaussian(r,f_hat%r0(n),f_hat%sigma) * SphericalY( l, m, theta, phi ) 
-
-                enddo
-             enddo
-          enddo
-       enddo
-
-       deallocate( atoms_sph_in )
-
-     endsubroutine fourier_transform_vec
-
-     !#################################################################################
-     !#
-     !% Calculates an atom-centered fourier spectrum
-     !#
-     !#################################################################################
-
-     subroutine fourier_transform_atom(at,i,f_hat,Z)
-
-       type(atoms), intent(in)                       :: at       !% atoms object
-       integer, intent(in)                           :: i        !% central atom
-       type(fourier_coefficient_atom), intent(inout) :: f_hat    !% fourier coefficents
-       integer, intent(in), optional                 :: Z        !% which type of atoms to include
-
-       real(dp), dimension(:,:), allocatable, target :: atoms_sph_in
-       real(dp), dimension(:), allocatable           :: cutoff
-       real(dp), dimension(3) :: diff
-       real(dp) :: radial
-       real(dp), pointer :: r, theta, phi
-
-       integer :: j, l, n, nn, m, my_Z
-
-       if( f_hat%initialised ) then
-          do n = 1, f_hat%N_max
-             do l = 0, f_hat%L_max
-                f_hat%coeff%rad(n)%ang(l)%mag(:) = cplx_zero
-             enddo
-          enddo
-       else
-          call system_abort('fourier_transform: f_hat not initialised')
-       endif
-
-       my_Z = optional_default(at%Z(i),Z)
-
-       if( .not. any( my_Z == at%Z(:) ) ) &
-       & call print_warning('fourier_transform: no atoms '//Z//' in atoms object')
-
-       allocate( atoms_sph_in( 3, atoms_n_neighbours(at,i) ), cutoff(atoms_n_neighbours(at,i)) )
-
-       cutoff = 0.0_dp
-       do nn = 1, atoms_n_neighbours(at,i)
-          j = atoms_neighbour(at,i,nn,diff=diff)
-          if( my_Z /= at%Z(j) ) cycle
-          atoms_sph_in(:,nn) = xyz2spherical( diff )
-          r => atoms_sph_in(1,nn)
-          cutoff(nn) = cutoff_left(r,f_hat%cutoff_left,f_hat%cutoff_sigma) * &
-                    & cutoff_right(r,f_hat%cutoff_right,f_hat%cutoff_sigma)
-       enddo
-
-       do n = 1, f_hat%N_max
-          do l = 0, f_hat%L_max
-             do m = -l, l
-                do nn = 1, atoms_n_neighbours(at,i)
-                   j = atoms_neighbour(at,i,nn)
-                   if( my_Z /= at%Z(j) ) cycle
-                   r => atoms_sph_in(1,nn)
-                   theta => atoms_sph_in(2,nn)
-                   phi => atoms_sph_in(3,nn)
- 
-                   radial = cutoff(nn) * gaussian(r,f_hat%r0(n),f_hat%sigma)
-
-                   f_hat%coeff%rad(n)%ang(l)%mag(m) = f_hat%coeff%rad(n)%ang(l)%mag(m) + &
-                   & radial * SphericalY( l, m, theta, phi ) 
-
-                enddo
-             enddo
-          enddo
-       enddo
-
-       deallocate( atoms_sph_in, cutoff )
-
-     endsubroutine fourier_transform_atom
-
-     !#################################################################################
-     !#
-     !% Calculates an atom-centered bispectrum from a single fourier spectrum
-     !#
-     !#################################################################################
-
-     subroutine calc_bispectrum1_atom(f_hat,bispectrum)
-
-       type(fourier_coefficient_atom), intent(in) :: f_hat            !% fourier coefficients
-       type(bispectrum_coefficient_atom), intent(inout) :: bispectrum !% bispectrum coefficients
-
-       integer :: l1, l2, l, m, m1, N_max, L_max, n1, n2 
-       complex(dp) :: sub_sum 
-
-       if( .not. f_hat%initialised ) then
-          call system_abort('calc_bispectrum1_atom: f_hat not initialised')
-       endif
-
-       if( .not. cg_initialised ) call cg_initialise(f_hat%L_max)
-
-       if( bispectrum%initialised ) then
-          do n1 = 1, bispectrum%N_max
-             do n2 = 1, bispectrum%N_max
-                do l1 = 0, bispectrum%L_max
-                   do l2 = 0, bispectrum%L_max
-                      bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag(:) = cplx_zero
-                   enddo
-                enddo
-             enddo
-          enddo
-       endif
-
-       N_max = f_hat%N_max
-       L_max = f_hat%L_max
-
-       if( .not. bispectrum%initialised ) call initialise( bispectrum, N_max, L_max )
-
-       if( bispectrum%L_max < L_max ) then
-          call print_warning('calc_bispectrum1_atom: bispectrum%L_max < L_max, using bispectrum%L_max')
-          L_max = bispectrum%L_max
-       endif
-
-       if( bispectrum%N_max < N_max ) then
-          call print_warning('calc_bispectrum1_atom: bispectrum%N_max < N_max, using bispectrum%N_max')
-          N_max = bispectrum%N_max
-       endif
-
-       do n1 = 1, N_max
-          do n2 = 1, N_max
-             do l1 = 0, L_max
-                do l2 = 0, L_max
-                   do l = abs(l1-l2), min(L_max,l1+l2)
-                      do m = -l, l
-                         sub_sum = cplx_zero
-                         do m1 = max( -l1,m-l2), min(l1,m+l2)
-       
-                            sub_sum = sub_sum + &
-                            & cg_array(l1,m1,l2,m-m1,l,m) * & 
-                            & conjg(f_hat%coeff%rad(n1)%ang(l1)%mag(m1) * f_hat%coeff%rad(n2)%ang(l2)%mag(m-m1))
-       
-                         enddo
-                      bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag(l) = &
-                      & bispectrum%coeff%rad(n2,n1)%ang(l2,l1)%mag(l) + f_hat%coeff%rad(n2)%ang(l)%mag(m) * sub_sum
-                      enddo
-                   enddo
-                enddo
-             enddo
-          enddo
-       enddo
-
-     endsubroutine calc_bispectrum1_atom
-
-     !#################################################################################
-     !#
-     !% Calculates an atom-centered bispectrum from two fourier spectrums
-     !#
-     !#################################################################################
-
-!     subroutine calc_bispectrum2_atom(f_hat1,f_hat2,bispectrum)
-!
-!       type(fourier_coefficient_atom), intent(in) :: f_hat1            !% fourier spectrum #1
-!       type(fourier_coefficient_atom), intent(in) :: f_hat2            !% fourier spectrum #2
-!       type(bispectrum_coefficient_atom), intent(inout) :: bispectrum  !% bispectrum
-!
-!       integer :: l1, l2, l, m, m1, N_max, L_max, n 
-!       complex(dp) :: sub_sum 
-!
-!       if( .not. (f_hat1%initialised.and.f_hat2%initialised) ) &
-!       & call system_abort('calc_bispectrum2_atom: f_hat1 or f_hat2 not initialised')
-!
-!       if( (f_hat1%L_max/=f_hat2%L_max) .or. (f_hat1%N_max/=f_hat2%N_max) ) &
-!       & call system_abort('calc_bispectrum2_atom: L_max or N_max does not match')
-!
-!       if( .not. cg_initialised ) call cg_initialise(f_hat1%L_max,f_hat1%L_max,f_hat1%L_max,f_hat1%L_max,f_hat1%L_max,f_hat1%L_max)
-!
-!       if( bispectrum%initialised ) then
-!          do n = 1, (bispectrum%N_max-1)/2
-!             do l1 = 0, bispectrum%L_max
-!                do l2 = 0, bispectrum%L_max
-!                   bispectrum%coeff%rad(n)%ang(l2,l1)%mag(:) = cplx_zero
-!                enddo
-!             enddo
-!          enddo
-!       endif
-!
-!       N_max = f_hat1%N_max
-!       L_max = f_hat1%L_max
-!
-!       if( .not. bispectrum%initialised ) call initialise( bispectrum, N_max, L_max )
-!
-!       if( bispectrum%L_max < L_max ) then
-!          call print_warning('calc_bispectrum2_atom: bispectrum%L_max < L_max, using bispectrum%L_max')
-!          L_max = bispectrum%L_max
-!       endif
-!
-!       if( bispectrum%N_max < N_max ) then
-!          call print_warning('calc_bispectrum2_atom: bispectrum%N_max < N_max, using bispectrum%N_max')
-!          N_max = bispectrum%N_max
-!       endif
-!
-!       do n = 1, (N_max-1)/2
-!          do l1 = 0, L_max
-!             do l2 = 0, L_max
-!                do l = abs(l1-l2), min(L_max,l1+l2)
-!                   do m = -l, l
-!                      sub_sum = cplx_zero
-!                      do m1 = max( -l1,m-l2), min(l1,m+l2)
-!       
-!                         sub_sum = sub_sum + &
-!                         & cg_array(l1,m1,l2,m-m1,l,m) * & 
-!                         & conjg(f_hat1%coeff%rad(2*n-1)%ang(l1)%mag(m1) * &
-!                         & f_hat2%coeff%rad(2*n)%ang(l2)%mag(m-m1))
-!       
-!                      enddo
-!                      bispectrum%coeff%rad(n)%ang(l2,l1)%mag(l) = &
-!                      & bispectrum%coeff%rad(n)%ang(l2,l1)%mag(l) + &
-!                      & f_hat1%coeff%rad(2*n+1)%ang(l)%mag(m) * sub_sum
-!                   enddo
-!                enddo
-!             enddo
-!          enddo
-!       enddo
-!
-!     endsubroutine calc_bispectrum2_atom
-
-     !#################################################################################
-     !#
-     !% Converts a pair environment from xyz to cylindrical coordinates
-     !#
-     !#################################################################################
-
-     subroutine xyz2cyl(at,i,j,cyl)
-
-        type(atoms), intent(in)   :: at    !% atoms object
-        integer, intent(in)       :: i, j  !% atom pair
-        type(table), intent(out)  :: cyl   !% cylindrical coordinates
-
-        integer :: k, n
-
-        real(dp), dimension(3) :: diff_ij, diff_ik, diff_jk, diff_ref, cross_ref
-        real(dp) :: r_ij, r_ik, r_jk, t, r_ik_dot_r_ij, r_jk_dot_r_ij, r, z, costheta, theta, r_ref, t_ref
-
-        logical :: theta_flag, clockwise
-
-        call allocate(cyl, Nint=2, Nreal=3, Nstr=0, Nlogical=0,max_length=0)
-
-        diff_ij = diff_min_image(at, i, j)
-        r_ij = distance_min_image(at, i, j)
-        theta_flag = .false.
-
-        do n = 1, atoms_n_neighbours(at,i)
-           k = atoms_neighbour(at, i, n, distance=r_ik, diff=diff_ik)
-           if( k == j ) cycle
-
-           r_ik_dot_r_ij = dot_product(diff_ik,diff_ij)
-           t = r_ik_dot_r_ij / r_ij**2
-           r = sqrt( r_ik**2 + t**2 * r_ij**2 - 2.0_dp*t*r_ik_dot_r_ij )
-           z = (0.5_dp - t) * r_ij
-
-           if( r .fne. 0.0_dp ) then
-               if( theta_flag ) then
-                   cross_ref = (diff_ref .cross. diff_ik) + &
-                   & ( (t_ref*diff_ik - t*diff_ref) .cross. diff_ij )
-                   clockwise = (dot_product(cross_ref,diff_ij) > 0.0_dp )
-                   costheta = ( dot_product(diff_ref,diff_ik) + t_ref*t*r_ij**2 - &
-                   & t * dot_product(diff_ref,diff_ij) - t_ref * dot_product(diff_ik,diff_ij) ) / &
-                   & (r_ref*r)
-               else
-                   theta_flag = .true.
-                   clockwise = .true. 
-                   costheta = 1.0_dp
-                   diff_ref = diff_ik
-                   t_ref = t
-                   r_ref = r
-               endif
-           else
-               clockwise = .true. 
-               costheta = 1.0_dp
-           endif
-           theta = acos(costheta)
-           if( .not. clockwise ) theta = 2*PI - theta
-           call append(cyl,(/k,at%Z(k)/),(/r,z,theta/)) 
-        enddo
-           
-        do n = 1, atoms_n_neighbours(at,j)
-           k = atoms_neighbour(at, j, n, distance=r_jk, diff=diff_jk)
-
-           if( k == i ) cycle
-           if( any(k == cyl%int(1,:) ) ) cycle
-
-           r_jk_dot_r_ij = dot_product(diff_jk,diff_ij)
-           t = r_jk_dot_r_ij / r_ij**2
-           r = sqrt( r_jk**2 + t**2 * r_ij**2 - 2.0_dp*t*r_jk_dot_r_ij )
-           z = - (0.5_dp + t) * r_ij
-
-           if( r .fne. 0.0_dp ) then
-               if( theta_flag ) then
-                   cross_ref = (diff_ref .cross. diff_jk) + &
-                   & ( (t_ref*diff_jk - t*diff_ref) .cross. diff_ij )
-                   clockwise = (dot_product(cross_ref,diff_ij) > 0.0_dp )
-                   costheta = ( dot_product(diff_ref,diff_jk) + t_ref*t*r_ij**2 - &
-                   & t * dot_product(diff_ref,diff_ij) - t_ref * dot_product(diff_jk,diff_ij) ) / &
-                   & (r_ref*r)
-               else
-                   theta_flag = .true.
-                   clockwise = .true.
-                   costheta = 1.0_dp
-                   diff_ref = diff_jk
-                   t_ref = t
-                   r_ref = r
-               endif
-           else
-               clockwise = .true.
-               costheta = 1.0_dp
-           endif
-           theta = acos(costheta)
-           if( .not. clockwise ) theta = 2*PI - theta
-           call append(cyl,(/k,at%Z(k)/),(/r,z,theta/)) 
-        enddo
-           
-     endsubroutine xyz2cyl
-
-     !#################################################################################
-     !#
-     !% Converts a pair environment from xyz to 'elliptical' or bispherical coordinates
-     !#
-     !#################################################################################
-
-     subroutine xyz2ell(at,i,j,ell)
-
-        type(atoms), intent(in)  :: at     !% atoms object
-        integer, intent(in)      :: i, j   !% atom pair
-        type(table), intent(out) :: ell    !% elliptical coordinates
-
-        integer :: k, n
-
-        real(dp), dimension(3) :: diff_ij, diff_ik, diff_jk, diff_pk, diff_ref, ref_cross_pk
-        real(dp) :: r_ij, r_ik, r_jk, r_pk, t, costheta, theta, r_ref, t_ref
-
-        logical :: theta_flag, clockwise
-
-        call allocate(ell, Nint=2, Nreal=3, Nstr=0, Nlogical=0)
-
-        diff_ij = diff_min_image(at, i, j)
-        r_ij = distance_min_image(at, i, j)
-        theta_flag = .false.
-
-        do n = 1, atoms_n_neighbours(at,i)
-           k = atoms_neighbour(at, i, n, distance=r_ik, diff=diff_ik)
-           if( k == j ) cycle
-           r_jk = distance_min_image(at,j,k)
-
-           t = dot_product(diff_ik,diff_ij) / r_ij**2
-           diff_pk = diff_ik - t * diff_ij
-           r_pk = norm(diff_pk)
-
-           if( r_pk .fne. 0.0_dp ) then
-               if( theta_flag ) then
-                   ref_cross_pk = (diff_ref .cross. diff_pk)
-                   clockwise = (dot_product(ref_cross_pk,diff_ij) > 0.0_dp )
-
-                   costheta = dot_product(diff_ref,diff_pk) / (r_ref*r_pk)
-               else
-                   theta_flag = .true.
-                   clockwise = .true.
-                   costheta = 1.0_dp
-                   diff_ref = diff_pk
-                   t_ref = t
-                   r_ref = r_pk
-               endif
-           else
-               clockwise = .true.
-               costheta = 1.0_dp
-           endif
-           theta = acos(costheta)
-           if( .not. clockwise ) theta = 2*PI - theta
-           call append(ell,(/k,at%Z(k)/),(/r_ik,r_jk,theta/)) 
-        enddo
-           
-        do n = 1, atoms_n_neighbours(at,j)
-           k = atoms_neighbour(at, j, n, distance=r_jk, diff=diff_jk)
-
-           if( k == i ) cycle
-           if( any(k == ell%int(1,:) ) ) cycle
-
-           r_ik = distance_min_image(at,i,k)
-
-           t = dot_product(diff_jk,diff_ij) / r_ij**2
-           diff_pk = diff_jk - t * diff_ij
-           r_pk = norm(diff_pk)
-
-           if( r_pk .fne. 0.0_dp ) then
-               if( theta_flag ) then
-                   ref_cross_pk = (diff_ref .cross. diff_pk)
-                   clockwise = (dot_product(ref_cross_pk,diff_ij) > 0.0_dp )
-
-                   costheta = dot_product(diff_ref,diff_pk) / (r_ref*r_pk)
-               else
-                   theta_flag = .true.
-                   clockwise = .true.
-                   costheta = 1.0_dp
-                   diff_ref = diff_pk
-                   t_ref = t
-                   r_ref = r_pk
-               endif
-           else
-               clockwise = .true.
-               costheta = 1.0_dp
-           endif
-           theta = acos(costheta)
-           if( .not. clockwise ) theta = 2*PI - theta
-           call append(ell,(/k,at%Z(k)/),(/r_ik,r_jk,theta/)) 
-        enddo
-           
-     endsubroutine xyz2ell
-
-     !#################################################################################
-     !#
-     !% Initialise a fourier object for atom pairs.
-     !#
-     !#################################################################################
-
-     subroutine initialise_fourier_pair(f_hat,N_max,L_max,r_cut,r_min,r_max,sigma, &
-                & cutoff_left,cutoff_right,cutoff_sigma)
-
-        type(fourier_coefficient_pair), intent(inout) :: f_hat  !% fourier coefficients
-        integer, intent(in)  :: L_max                           !% angular basis functions
-        integer, intent(in)  :: N_max                           !% radial basis functions
-        real(dp), intent(in) :: r_cut                           !% elliptical cutoff value
-        real(dp), intent(in) :: r_min                           !% centre of first radial basis function
-        real(dp), intent(in) :: r_max                           !% centre of last radial basis function
-        real(dp), intent(in) :: sigma                           !% width of radial basis function
-        real(dp), intent(in) :: cutoff_left                     !% centre of the 'left' cutoff fermi function
-        real(dp), intent(in) :: cutoff_right                    !% centre of the 'right' cutoff fermi function
-        real(dp), intent(in) :: cutoff_sigma                    !% width of the cutoff fermi functions
-    
-        integer  :: n
-        real(dp) :: dr
-
-        if( mod(L_max,2) /= 0 ) &
-        & call system_abort('initialise_fourier_pair: L_max must be even, here it is '//L_max//' clearly odd.')
-
-        if( f_hat%initialised ) call finalise(f_hat)
-        f_hat%r_cut = r_cut
-        f_hat%r_ij = 0.0_dp
-        allocate( f_hat%coeff(N_max,N_max,-L_max:L_max), f_hat%r0(N_max) )
-
-        f_hat%coeff = CPLX_ZERO
-
-        dr = (r_max-r_min)/(N_max-1)
-        f_hat%r0(1) = r_min
-        do n = 2, N_max
-           f_hat%r0(n) = f_hat%r0(n-1)+dr
-        enddo
-        f_hat%sigma = sigma
-        f_hat%cutoff_left  = cutoff_left
-        f_hat%cutoff_right = cutoff_right
-        f_hat%cutoff_sigma = cutoff_sigma
-    
-        f_hat%N_max = N_max
-        f_hat%L_max = L_max
-        f_hat%initialised = .true.
-    
-     endsubroutine initialise_fourier_pair
-    
-     !#################################################################################
-     !#
-     !% Finalise a fourier object for atom pairs.
-     !#
-     !#################################################################################
-
-     subroutine finalise_fourier_pair(f_hat)
-
-        type(fourier_coefficient_pair), intent(inout) :: f_hat !% fourier coefficients object
-
-        if( .not. f_hat%initialised ) return
-        f_hat%r_cut = 0.0_dp
-        f_hat%r_ij = 0.0_dp
-
-        deallocate( f_hat%coeff, f_hat%r0 )
-
-        f_hat%sigma = 0.0_dp
-        f_hat%cutoff_left  = 0.0_dp
-        f_hat%cutoff_right = 0.0_dp
-        f_hat%cutoff_sigma = 0.0_dp
-    
-        f_hat%N_max = 0
-        f_hat%L_max = 0
-        f_hat%initialised = .false.
-    
-     endsubroutine finalise_fourier_pair
-    
-     !#################################################################################
-     !#
-     !% Initialise a bispectrum object for an atom pair.
-     !#
-     !#################################################################################
-
-     subroutine initialise_bispectrum_pair(this,N_max,L_max)
-
-        type(bispectrum_coefficient_pair), intent(inout) :: this       !% bispectrum coefficients
-        integer, intent(in)                              :: N_max      !% number of radial basis functions
-        integer, intent(in)                              :: L_max      !% number of angular basis functions
-
-        if( this%initialised ) call finalise(this)
-
-        allocate(this%coeff(N_max,N_max,-L_max:L_max))
-        this%L_max=L_max
-        this%N_max=N_max
-        this%initialised = .true.
-
-     endsubroutine initialise_bispectrum_pair
-     
-     !#################################################################################
-     !#
-     !% Finalise a bispectrum object for an atom pair.
-     !#
-     !#################################################################################
-
-     subroutine finalise_bispectrum_pair(this)
-
-        type(bispectrum_coefficient_pair), intent(inout) :: this !% bispectrum coefficients
-
-        if( .not. this%initialised ) return
-
-        deallocate(this%coeff)
-        this%L_max=0
-        this%N_max=0
-        this%initialised = .false.
-
-     endsubroutine finalise_bispectrum_pair
-     
-     !#################################################################################
-     !#
-     !% Performs fourier transform on atom pairs.
-     !#
-     !#################################################################################
-
-     subroutine fourier_transform_pair(at,i,j,f_hat)
-
-        type(atoms), intent(in)                       :: at    !% atoms object
-        integer, intent(in)                           :: i, j  !% atom pair
-        type(fourier_coefficient_pair), intent(inout) :: f_hat !% fourier object
-
-        type(table) :: ell
-        real(dp), dimension(:), allocatable :: cutoff
-        real(dp), dimension(:,:), allocatable :: g1, g2
-        complex(dp), dimension(:,:), allocatable :: c
-        real(dp) :: r_ij, r12, r1, r2, theta
-        integer :: n, n1, n2, m, nn
-
-        if( .not. f_hat%initialised ) call system_abort('fourier_transform_pair: f_hat not initialised')
-
-        r_ij = distance_min_image(at,i,j)
-        r12 = r_ij + 2.0_dp*f_hat%r_cut
-        if( at%cutoff < r12/2.0_dp ) then
-            !call print_warning('atoms cutoff to small, calling calc_connect')
-            !call set_cutoff(at,r12/2.0_dp)
-            !call calc_connect(at)
-            call system_abort('fourier_transform_pair: atoms cutoff to small')
-        endif
-        call xyz2ell(at,i,j,ell)
-
-
-        f_hat%r_ij = r_ij
-        f_hat%coeff = CPLX_ZERO
-
-        allocate( cutoff(ell%N),g1(ell%N,f_hat%N_max),g2(ell%N,f_hat%N_max),&
-        & c(ell%N,-f_hat%L_max:f_hat%L_max) )
-
-        do nn = 1, ell%N
-           r1 = ell%real(1,nn)
-           r2 = ell%real(2,nn)
-           cutoff(nn) = cutoff_left(r1,f_hat%cutoff_left,f_hat%cutoff_sigma) * &
-                      & cutoff_left(r2,f_hat%cutoff_left,f_hat%cutoff_sigma) * &
-                      & cutoff_right(r1+r2,r12,f_hat%cutoff_sigma)
-        enddo
-        do n = 1, f_hat%N_max
-           do nn = 1, ell%N
-              r1 = ell%real(1,nn)
-              r2 = ell%real(2,nn)
-              g1(nn,n) = gaussian(r1,f_hat%r0(n),f_hat%sigma)
-              g2(nn,n) = gaussian(r2,f_hat%r0(n),f_hat%sigma)
-           enddo
-        enddo
-        do m = -f_hat%L_max, f_hat%L_max
-           do nn = 1, ell%N
-              theta = ell%real(3,nn)
-              c(nn,m) = exp( CPLX_IMAG * m * theta )
-           enddo
-        enddo
-
-        do m = -f_hat%L_max, f_hat%L_max
-           do n2 = 1, f_hat%N_max
-              do n1 = 1, f_hat%N_max
-                 f_hat%coeff(n1,n2,m) = sum( cutoff(:) * g1(:,n1) * g2(:,n2) * c(:,m) )
-              enddo
-           enddo
-        enddo
-        deallocate(cutoff,g1,g2,c)
-        call finalise(ell)
-
-     endsubroutine fourier_transform_pair
-
-     !#################################################################################
-     !#
-     !% Calculates bispectrum on a pair of atoms.
-     !#
-     !#################################################################################
-
-     subroutine calc_bispectrum_pair(f_hat,bispectrum)
-
-        type(fourier_coefficient_pair), intent(in)       :: f_hat      !% fourier coefficients
-        type(bispectrum_coefficient_pair), intent(inout) :: bispectrum !% bispectrum coefficients
-
-        integer :: m, n1, n2
-        if( .not. f_hat%initialised ) then
-          call system_abort('calc_bispectrum_pair: f_hat not initialised')
-        endif
-
-        if( bispectrum%initialised ) then
-            if( (bispectrum%L_max == f_hat%L_max/2) .and. (bispectrum%N_max == f_hat%N_max) ) then
-                bispectrum%coeff = CPLX_ZERO
-	    else
-                call finalise( bispectrum )
-                call initialise( bispectrum, f_hat%N_max, f_hat%L_max/2 )
-            endif
-        else
-            call initialise( bispectrum, f_hat%N_max, f_hat%L_max/2 )
-        endif
-
-        bispectrum%r_ij = f_hat%r_ij
-
-        do m = -bispectrum%L_max, bispectrum%L_max
-           do n2 = 1, bispectrum%N_max
-              do n1 = 1, bispectrum%N_max
-                 bispectrum%coeff(n1, n2, m) = conjg(f_hat%coeff(n1,n2,2*m))*&
-                 & f_hat%coeff(n1,n2,m)*f_hat%coeff(n1,n2,m)
-              enddo
-           enddo
-        enddo
-     endsubroutine calc_bispectrum_pair
-
-     !#################################################################################
-     !#
-     !% Transposes matrices in a bispectrum for each angular component.
-     !#
-     !#################################################################################
-
-     subroutine transpose_bispectrum_pair(this,other)
-
-        type(bispectrum_coefficient_pair), intent(inout) :: this, other !% bispectrum coefficients
-
-        integer :: m
-
-        if( .not. this%initialised ) call system_abort('transpose_bispectrum_pair: bispectrum not initialised')
-
-        if( other%initialised ) then
-            if( (this%N_max /= other%N_max) .or. (this%L_max /= other%L_max) ) then
-                call finalise(other)
-                call initialise(other, this%N_max, this%L_max)
-            endif
-        else
-            call initialise(other, this%N_max, this%L_max)
-        endif
-
-        other%r_ij = this%r_ij
-        do m = -this%L_max, this%L_max
-           other%coeff(:,:,m) = transpose(this%coeff(:,:,m))
-        enddo
-
-     endsubroutine transpose_bispectrum_pair
-
-     !#################################################################################
-     !#
-     !% Conjugates each bispectrum coefficient.
-     !#
-     !#################################################################################
-
-     subroutine conjugate_bispectrum_pair(this,other)
-
-        type(bispectrum_coefficient_pair), intent(inout) :: this, other !% bispectrum coefficients
-
-        if( .not. this%initialised ) call system_abort('conjugate_bispectrum_pair: bispectrum not initialised')
-        if( other%initialised ) then
-            if( (this%N_max /= other%N_max) .or. (this%L_max /= other%L_max) ) then
-                call finalise(other)
-                call initialise(other, this%N_max, this%L_max)
-            endif
-        else
-            call initialise(other, this%N_max, this%L_max)
-        endif
-
-        other%r_ij = this%r_ij
-        other%coeff(:,:,:) = conjg(this%coeff(:,:,:))
-
-     endsubroutine conjugate_bispectrum_pair
-
-     !#################################################################################
-     !#
-     !% Prints fourier coefficients.
-     !#
-     !#################################################################################
-
-     subroutine print_fourier_pair(this)
-
-        type(fourier_coefficient_pair), intent(in) :: this !% fourier object
-
-        integer  :: n1, n2, m
-
-        if( .not. this%initialised ) call system_abort('print_fourier_pair: not initialised')
-
-        print'("r_cut = ",f10.4)', this%r_cut
-        print'("r_ij  = ",f10.4)', this%r_ij
-
-        print'(3a5,2a10)','n1','n2','m','Re(x)','Im(x)'
-        do m = -this%L_max, this%L_max
-           do n2 = 1, this%N_max
-              do n1 = 1, this%N_max
-                 print'(3i5,2f10.4)',n1,n2,m,this%coeff(n1,n2,m)
-              enddo
-           enddo
-        enddo
-
-     endsubroutine print_fourier_pair
-    
-     !#################################################################################
-     !#
-     !% Prints fourier coefficients.
-     !#
-     !#################################################################################
-
-     subroutine print_fourier_atom(this)
-
-       type(fourier_coefficient_atom), intent(in) :: this
-       integer :: l, m, n
-
-       if( .not. this%initialised ) call system_abort('print_fourier_atom: not initialised')
-
-       print'(2a5,2a10)','l','m','Re(x)','Im(x)'
-
-       do n = 1, this%N_max
-          do l = 0, this%L_max
-             do m = -l, l
-                print'(3i5,2f10.4)',n,l,m,this%coeff%rad(n)%ang(l)%mag(m)
-             enddo
-          enddo
-       enddo
-
-     endsubroutine print_fourier_atom
-
-     !#################################################################################
-     !#
-     !% Prints bispectrum coefficients.
-     !#
-     !#################################################################################
-
-     subroutine print_bispectrum_pair(this)
-
-        type(bispectrum_coefficient_pair), intent(in) :: this ! bispectrum object
-
-        integer  :: n1, n2, m
-
-        if( .not. this%initialised ) call system_abort('print_bispectrum_pair: not initialised')
-
-        print'(3a5,2a10)','n1','n2','m','Re(x)','Im(x)'
-        do m = -this%L_max, this%L_max
-           do n2 = 1, this%N_max
-              do n1 = 1, this%N_max
-                 print'(3i5,2f10.4)',n1,n2,m,this%coeff(n1,n2,m)
-              enddo
-           enddo
-        enddo
-
-     endsubroutine print_bispectrum_pair
-    
-     !#################################################################################
-     !#
-     !% Prints bispectrum coefficients.
-     !#
-     !#################################################################################
-
-     subroutine print_bispectrum_atom(this)
-
-       type(bispectrum_coefficient_atom), intent(in) :: this
-       integer :: l1,l2,l, n1, n2
-
-       if( .not. this%initialised ) call system_abort('print_bispectrum_atom: not initialised')
-
-       print'(5a5,2a10)','n1','n2','l_1','l_2','l','Re(s)','Im(s)'
-
-       do n1 = 1, this%N_max
-          do n2 = 1, this%N_max
-             do l1 = 0, this%L_max
-                do l2 = 0, this%L_max
-                   do l = abs(l1-l2), min(this%L_max,l1+l2)
-                      print'(5i5,2f10.4)',n1,n2,l1,l2,l, this%coeff%rad(n2,n1)%ang(l2,l1)%mag(l)
-                   enddo
-                enddo
-             enddo
-          enddo
-       enddo
-
-     endsubroutine print_bispectrum_atom
-
-     !#################################################################################
-     !#
-     !% Determines how many coefficients are in a bispectrum object (atom)
-     !#
-     !#################################################################################
-
-     function L_max2d_atom(N_max,L_max)
-
-       integer, intent(in) :: L_max !% number of angular basis functions
-       integer, intent(in) :: N_max !% number of radial basis functions
-       integer :: L_max2d_atom
-
-       integer :: l1, l2, l, n1, n2
-
-       L_max2d_atom = 0
-
-       do n1 = 1, N_max
-          do n2 = 1, N_max
-             do l1 = 0, L_max
-                do l2 = 0, L_max
-                   do l = abs(l1-l2), min(L_max,l1+l2)
-                      L_max2d_atom = L_max2d_atom + 2
-                   enddo
-                enddo
-             enddo
-          enddo
-       enddo
-
-     endfunction L_max2d_atom
-
-     !#################################################################################
-     !#
-     !% Determines how many coefficients are in a bispectrum object (pair)
-     !#
-     !#################################################################################
-
-     function L_max2d_pair(N_max,L_max)
-
-       integer, intent(in) :: L_max !% number of angular basis functions
-       integer, intent(in) :: N_max !% number of radial basis functions
-       integer :: L_max2d_pair
-
-       L_max2d_pair = 2 * (L_max*2+1) * N_max**2 + 1
-
-     endfunction L_max2d_pair
-
-     !#################################################################################
-     !#
-     !% Determines how many coefficients are in a bispectrum object (atom)
-     !#
-     !#################################################################################
-
-     function L_max2d_bispectrum_atom(this1,this2,this3) 
-
-       type(bispectrum_coefficient_atom), intent(in) :: this1           !% bispectrum object
-       type(bispectrum_coefficient_atom), intent(in), optional :: this2 !% bispectrum object
-       type(bispectrum_coefficient_atom), intent(in), optional :: this3 !% bispectrum object
-       integer :: L_max2d_bispectrum_atom
-
-       L_max2d_bispectrum_atom = L_max2d_atom(this1%N_max,this1%L_max)
-       if( present(this2) ) L_max2d_bispectrum_atom = L_max2d_bispectrum_atom + L_max2d_atom(this2%N_max,this2%L_max)
-       if( present(this3) ) L_max2d_bispectrum_atom = L_max2d_bispectrum_atom + L_max2d_atom(this3%N_max,this3%L_max)
-
-     endfunction L_max2d_bispectrum_atom
-
-     !#################################################################################
-     !#
-     !% Determines how many coefficients are in a bispectrum object (pair)
-     !#
-     !#################################################################################
-
-     function L_max2d_bispectrum_pair(this1,this2,this3) 
-
-       type(bispectrum_coefficient_pair), intent(in) :: this1           !% bispectrum object
-       type(bispectrum_coefficient_pair), intent(in), optional :: this2 !% bispectrum object
-       type(bispectrum_coefficient_pair), intent(in), optional :: this3 !% bispectrum object
-       integer :: L_max2d_bispectrum_pair
-
-       L_max2d_bispectrum_pair = L_max2d_pair(this1%N_max,this1%L_max)
-       if( present(this2) ) L_max2d_bispectrum_pair = L_max2d_bispectrum_pair + L_max2d_pair(this2%N_max,this2%L_max)
-       if( present(this3) ) L_max2d_bispectrum_pair = L_max2d_bispectrum_pair + L_max2d_pair(this3%N_max,this3%L_max)
-
-     endfunction L_max2d_bispectrum_pair
-
-     !#################################################################################
-     !#
-     !% Copies bispectrum to an ordinary vector
-     !#
-     !#################################################################################
-
-     subroutine bispectrum2vec1_atom(this,vec)
-
-       type(bispectrum_coefficient_atom), intent(in) :: this !% bispectrum
-       real(dp), dimension(:), intent(out)      :: vec  !% array, dimension(L_max2d(this))
-
-       integer :: l1, l2, l, n1, n2, i
-
-       if( .not. this%initialised ) then
-           call system_abort('bispectrum2vec1_atom: not initialised')
-       endif
-
-       if( L_max2d(this) > size(vec) ) then
-          call system_abort('bispectrum2vec1_atom: vec too small')
-       endif
-
-       vec = 0.0_dp
-       i = 1
-
-       do n1 = 1, this%N_max
-          do n2 = 1, this%N_max
-             do l1 = 0, this%L_max
-                do l2 = 0, this%L_max
-                   do l = abs(l1-l2), min(this%L_max,l1+l2)
-                      vec(i) = real(this%coeff%rad(n2,n1)%ang(l2,l1)%mag(l))
-                      vec(i+1) = aimag(this%coeff%rad(n2,n1)%ang(l2,l1)%mag(l))
-                      i=i+2
-                   enddo
-                enddo
-             enddo
-          enddo
-       enddo
-
-     endsubroutine bispectrum2vec1_atom
-
-     !#################################################################################
-     !#
-     !% Copies two bispectrums to an ordinary vector
-     !#
-     !#################################################################################
-
-     subroutine bispectrum2vec2_atom(this1,this2,vec)
-
-       type(bispectrum_coefficient_atom), intent(in) :: this1, this2  !% bispectrums
-       real(dp), dimension(:), intent(out)      :: vec           !% vector, dimension(L_max2d(this1,this2))
-
-       if( .not. (this1%initialised.and.this2%initialised) ) then
-           call system_abort('bispectrum2vec1_atom: not initialised')
-       endif
-
-       if( L_max2d(this1,this2) > size(vec) ) then
-          call system_abort('bispectrum2vec1_atom: vec too small')
-       endif
-
-       vec = 0.0_dp
-
-       call bispectrum2vec1_atom( this1,vec(1:L_max2d(this1)) )
-       call bispectrum2vec1_atom( this2,vec(L_max2d(this1)+1:L_max2d(this1,this2)) )
-
-     endsubroutine bispectrum2vec2_atom
-
-     !#################################################################################
-     !#
-     !% Copies three bispectrums to an ordinary vector
-     !#
-     !#################################################################################
-
-     subroutine bispectrum2vec3_atom(this1,this2,this3,vec)
-
-       type(bispectrum_coefficient_atom), intent(in) :: this1, this2, this3 !% bispectrums
-       real(dp), dimension(:), intent(out)      :: vec                 !% vector, dimension(L_max2d(this1,this2))
-
-       if( .not. (this1%initialised.and.this2%initialised.and.this3%initialised) ) then
-           call system_abort('bispectrum2vec3_atom: not initialised')
-       endif
-
-       if( L_max2d(this1,this2,this3) > size(vec) ) then
-          call system_abort('bispectrum2vec3_atom: vec too small')
-       endif
-
-       vec = 0.0_dp
-       call bispectrum2vec1_atom( this1,vec(1:L_max2d(this1)) )
-       call bispectrum2vec1_atom( this2,vec(L_max2d(this1)+1:L_max2d(this1,this2)) )
-       call bispectrum2vec1_atom( this3,vec(L_max2d(this1,this2)+1:L_max2d(this1,this2,this3)) )
-
-     endsubroutine bispectrum2vec3_atom
-
-     !#################################################################################
-     !#
-     !% Copies bispectrum to an ordinary vector (pair)
-     !#
-     !#################################################################################
-
-     subroutine bispectrum2vec1_pair(this,vec)
-
-       type(bispectrum_coefficient_pair), intent(in) :: this !% bispectrum
-       real(dp), dimension(:), intent(out)      :: vec  !% array, dimension(L_max2d(this))
-
-       integer :: n1, n2, m, i
-
-       if( .not. this%initialised ) then
-           call system_abort('bispectrum2vec1_pair: not initialised')
-       endif
-
-       if( L_max2d(this) > size(vec) ) then
-          call system_abort('bispectrum2vec1_pair: vec too small')
-       endif
-
-       vec = 0.0_dp
-       vec(1) = this%r_ij
-       i = 2
-
-       do m = -this%L_max, this%L_max
-          do n2 = 1, this%N_max
-             do n1 = 1, this%N_max
-                vec(i) = real(this%coeff(n1,n2,m))
-                vec(i+1) = aimag(this%coeff(n1,n2,m))
-                i=i+2
-             enddo
-          enddo
-       enddo
-
-     endsubroutine bispectrum2vec1_pair
-    
-     !###############################################################
-     !#
-     !# special descriptor functions
-     !#
-     !###############################################################
-
-     function hf_dimer(at) result(vec)
-       ! atoms are ordered as: H1 F1 H2 F2
-       type(atoms), intent(in) :: at
-       real(dp), dimension(6) :: vec
-
-       vec(1) = distance_min_image(at,1,2)
-       vec(2) = distance_min_image(at,1,4)
-       vec(3) = distance_min_image(at,3,2)
-       vec(4) = distance_min_image(at,3,4)
-       vec(5) = distance_min_image(at,2,4)
-       vec(6) = distance_min_image(at,1,3)
-
-     end function hf_dimer
-
-     function hf_dimer_grad(at) result(dvec)
-       type(atoms), intent(in) :: at
-       real(dp), dimension(3,4,6) :: dvec
-
-       dvec = 0.0_dp
-
-       dvec(:,2,1) = diff_min_image(at, 1, 2) / distance_min_image(at, 1, 2)
-       dvec(:,1,1) = - dvec(:,2,1)
-       dvec(:,4,2) = diff_min_image(at, 1, 4) / distance_min_image(at, 1, 4)
-       dvec(:,1,2) = - dvec(:,4,2)
-       dvec(:,2,3) = diff_min_image(at, 3, 2) / distance_min_image(at, 3, 2)
-       dvec(:,3,3) = - dvec(:,2,3)
-       dvec(:,4,4) = diff_min_image(at, 3, 4) / distance_min_image(at, 3, 4)
-       dvec(:,3,4) = - dvec(:,4,4)
-       dvec(:,4,5) = diff_min_image(at, 2, 4) / distance_min_image(at, 2, 4)
-       dvec(:,2,5) = - dvec(:,4,5)
-       dvec(:,3,6) = diff_min_image(at, 1, 3) / distance_min_image(at, 1, 3)
-       dvec(:,1,6) = - dvec(:,3,6)
-
-     end function hf_dimer_grad
-
-     function water_monomer(at,w) result(vec)
-       type(atoms), intent(in) :: at
-       integer, dimension(3), intent(in) :: w
-       real(dp), dimension(3) :: vec, v1, v2
-       real(dp) :: r1, r2
-       integer :: iO, iH1, iH2
-
-       iO = w(1)
-       iH1 = w(2)
-       iH2 = w(3)
-
-       v1 = diff_min_image(at,iO,iH1)
-       v2 = diff_min_image(at,iO,iH2)
-
-       !r1 = norm(v1)
-       !r2 = norm(v2)
-
-       ! descriptors
-       vec(1) = normsq(v1+v2)
-       vec(2) = normsq(v1-v2)
-       !vec(3) = ((v1+v2).dot.(v1-v2))**2
-       !vec(1) = r1 + r2
-       !vec(2) = (r1 - r2)**2
-       vec(3) = dot_product(v1,v2)
-
-     end function water_monomer
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! the following functions are auxiliary routines to warp the interatomic distance
-     ! degrees of freedom in a water dimer. They are used when the distance distribution
-     ! is expanded in a basis
-     ! 
-     !     pure function water_dimer_space_warp_oh(r)
-     !       real(dp), intent(in)  :: r
-     !       real(dp) :: water_dimer_space_warp_oh
-     !       if(DO_FOURIER_WARP .eqv. .true.) then
-     !          water_dimer_space_warp_oh = 2.0_dp*(1.0_dp+tanh((r-0.95_dp)/0.05_dp))
-     !       else
-     !          water_dimer_space_warp_oh = 0.0_dp
-     !       end if
-     !     end function water_dimer_space_warp_oh
-     !
-     !     pure function water_dimer_space_warp_deriv_oh(r)
-     !       real(dp), intent(in)  :: r
-     !       real(dp) :: water_dimer_space_warp_deriv_oh
-     !       if(DO_FOURIER_WARP .eqv. .true.) then
-     !          water_dimer_space_warp_deriv_oh = 2.0_dp*(1.0_dp-tanh((r-0.95_dp)/0.05_dp)**2)/0.05_dp
-     !       else
-     !          water_dimer_space_warp_deriv_oh = 0.0_dp
-     !       end if
-     !     end function water_dimer_space_warp_deriv_oh
-     !
-     !     function water_dimer_space_warp_hh(r)
-     !       real(dp), intent(in)  :: r
-     !       real(dp) :: water_dimer_space_warp_hh
-     !       if(DO_FOURIER_WARP .eqv. .true.) then
-     !          water_dimer_space_warp_hh = 3.0_dp*(1.0_dp+tanh((r-1.5_dp)/0.2_dp))
-     !       else
-     !          water_dimer_space_warp_hh = 0.0_dp
-     !       end if
-     !     end function water_dimer_space_warp_hh
-     !
-     !     function water_dimer_space_warp_deriv_hh(r)
-     !       real(dp), intent(in)  :: r
-     !       real(dp) :: water_dimer_space_warp_deriv_hh
-     !       if(DO_FOURIER_WARP .eqv. .true.) then
-     !          water_dimer_space_warp_deriv_hh = 3.0_dp*(1.0_dp-tanh((r-1.5_dp)/0.2_dp)**2)/0.2_dp
-     !       else
-     !          water_dimer_space_warp_deriv_hh = 0.0_dp
-     !       end if
-     !     end function water_dimer_space_warp_deriv_hh
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! end of warping auxiliary routines !!!!!!
-
-     subroutine water_dimer(at,w1,w2,cutoff, vec, dvec, rOHout, rHHout)
-       type(atoms), intent(in) :: at
-       integer, dimension(3), intent(in) :: w1, w2
-       real(dp), dimension(WATER_DIMER_D), intent(out), optional     :: vec !, v
-       real(dp), dimension(3,6,WATER_DIMER_D), intent(out), optional :: dvec !, v
-       real(dp), intent(out), optional :: rOHout(8), rHHout(6)
-       real(dp), intent(in) :: cutoff
-       real(dp) :: rOO, rOH(8), rHH(6), drOH(3,6,8), drHH(3,6,6) !, &
-       !fOH(WATER_DIMER_N_OH), fHH(WATER_DIMER_N_HH), dfOH(3,6,WATER_DIMER_N_OH), dfHH(3,6,WATER_DIMER_N_HH), arg, arg_r, fOH_ij, fHH_ij
-       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j, k
-       !logical, parameter :: DO_FOURIER = .true.
-
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: r0_OH = (/0.8_dp, 0.85_dp, 0.90_dp, 0.95_dp, 1.0_dp, 1.05_dp, 1.1_dp, 1.50_dp, 2.0_dp, 2.50_dp, 3.0_dp, 3.5_dp, 4.00_dp, 4.50_dp, 5.0_dp/)
-!       real(dp), dimension(WATER_DIMER_N_OH), parameter :: sigma_OH = 1.0_dp / (/0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.03_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
-!       real(dp), dimension(WATER_DIMER_N_HH), parameter :: r0_HH = (/1.3_dp, 1.4_dp, 1.50_dp, 1.6_dp, 1.70_dp, 2.0_dp, 2.70_dp, 3.40_dp, 4.3_dp, 5.00_dp, 5.70_dp, 6.4_dp/)
-!       real(dp), dimension(WATER_DIMER_N_HH), parameter :: sigma_HH = 1.0_dp / (/0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.06_dp, 0.30_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp/)**2
-
-       !real(dp) :: rA1, rA2, rB1, rB2
-       !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
-
-
-       if( count( (/present(vec), present(dvec), present(rOHout), present(rHHout)/) ) == 0 ) return ! nothing to do
-
-       ! Atomic indices
-       iAo  = 1 !w1(1)   
-       iAh1 = 2 !w1(2)   
-       iAh2 = 3 !w1(3)   
-       iBo  = 4 !w2(1)   
-       iBh1 = 5 !w2(2)   
-       iBh2 = 6 !w2(3)   
-
-       rOO = distance_min_image(at, iAo, iBo)
-
-       ! All H-O distances
-       rOH(1) = distance_min_image(at, iAo, iAh1)
-       rOH(2) = distance_min_image(at, iAo, iAh2)
-       rOH(3) = distance_min_image(at, iAo, iBh1)
-       rOH(4) = distance_min_image(at, iAo, iBh2)
-       rOH(5) = distance_min_image(at, iBo, iAh1)
-       rOH(6) = distance_min_image(at, iBo, iAh2)
-       rOH(7) = distance_min_image(at, iBo, iBh1)
-       rOH(8) = distance_min_image(at, iBo, iBh2)
-       
-       ! All H-H distances
-       rHH(1) = distance_min_image(at, iAh1, iAh2)
-       rHH(2) = distance_min_image(at, iAh1, iBh1)
-       rHH(3) = distance_min_image(at, iAh1, iBh2)
-       rHH(4) = distance_min_image(at, iAh2, iBh1)
-       rHH(5) = distance_min_image(at, iAh2, iBh2)
-       rHH(6) = distance_min_image(at, iBh1, iBh2)
-
-       if(present(rOHout)) then
-          rOHout = rOH
-       end if
-       if(present(rHHout)) then
-          rHHout = rHH
-       end if
-
-       if(present(dvec)) then
-          drOH = 0.0_dp
-          drHH = 0.0_dp
-       
-          
-          drOH(:,1,1) = - diff_min_image(at, iAo, iAh1) / rOH(1) ! d r_{OH_1} / d r_1
-          drOH(:,2,1) = - drOH(:,1,1)                            ! d r_{OH_1} / d r_2
-          drOH(:,1,2) = - diff_min_image(at, iAo, iAh2) / rOH(2) ! d r_{OH_2} / d r_1
-          drOH(:,3,2) = - drOH(:,1,2)                            ! d r_{OH_2} / d r_3
-          drOH(:,1,3) = - diff_min_image(at, iAo, iBh1) / rOH(3) ! d r_{OH_3} / d r_1
-          drOH(:,5,3) = - drOH(:,1,3)                            ! d r_{OH_3} / d r_5
-          drOH(:,1,4) = - diff_min_image(at, iAo, iBh2) / rOH(4) ! d r_{OH_4} / d r_1
-          drOH(:,6,4) = - drOH(:,1,4)                            ! d r_{OH_4} / d r_6
-          drOH(:,4,5) = - diff_min_image(at, iBo, iAh1) / rOH(5) ! d r_{OH_5} / d r_4
-          drOH(:,2,5) = - drOH(:,4,5)                            ! d r_{OH_5} / d r_2
-          drOH(:,4,6) = - diff_min_image(at, iBo, iAh2) / rOH(6) ! d r_{OH_6} / d r_4
-          drOH(:,3,6) = - drOH(:,4,6)                            ! d r_{OH_6} / d r_3
-          drOH(:,4,7) = - diff_min_image(at, iBo, iBh1) / rOH(7) ! d r_{OH_7} / d r_4
-          drOH(:,5,7) = - drOH(:,4,7)                            ! d r_{OH_7} / d r_5
-          drOH(:,4,8) = - diff_min_image(at, iBo, iBh2) / rOH(8) ! d r_{OH_8} / d r_4
-          drOH(:,6,8) = - drOH(:,4,8)                            ! d r_{OH_8} / d r_6
-          drHH(:,2,1) = - diff_min_image(at, iAh1, iAh2) / rHH(1) ! d r_{HH_1} / d r_2
-          drHH(:,3,1) = - drHH(:,2,1)                             ! d r_{HH_1} / d r_3
-          drHH(:,2,2) = - diff_min_image(at, iAh1, iBh1) / rHH(2) ! d r_{HH_2} / d r_2
-          drHH(:,5,2) = - drHH(:,2,2)                             ! d r_{HH_2} / d r_5
-          drHH(:,2,3) = - diff_min_image(at, iAh1, iBh2) / rHH(3) ! d r_{HH_3} / d r_2
-          drHH(:,6,3) = - drHH(:,2,3)                             ! d r_{HH_3} / d r_6
-          drHH(:,3,4) = - diff_min_image(at, iAh2, iBh1) / rHH(4) ! d r_{HH_4} / d r_3
-          drHH(:,5,4) = - drHH(:,3,4)                             ! d r_{HH_4} / d r_5
-          drHH(:,3,5) = - diff_min_image(at, iAh2, iBh2) / rHH(5) ! d r_{HH_5} / d r_3
-          drHH(:,6,5) = - drHH(:,3,5)                             ! d r_{HH_5} / d r_6
-          drHH(:,5,6) = - diff_min_image(at, iBh1, iBh2) / rHH(6) ! d r_{HH_6} / d r_5
-          drHH(:,6,6) = - drHH(:,5,6)                             ! d r_{HH_6} / d r_6
-       endif
-       
-       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-       !! The following descriptor is just the interatomic distances 
-       !! in a specific order. The permutation symmetry is implemented
-       !! by summing up the covariance function elsewhere
-       !!
-
-       if(present(vec)) then
-          vec(1) = rOO
-          vec(2:9) = rOH
-          vec(10:15) = rHH
-       end if
-       
-       if(present(dvec)) then
-          dvec = 0.0_dp
-          dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / rOO
-          dvec(:,4,1) = - dvec(:,1,1)
-          dvec(:,:,2:9) = drOH
-          dvec(:,:,10:15) = drHH
-       end if
-
-
-       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-       !! The following code is for descriptors that expand the interatomic distance
-       !! distribution in some basis, either Gaussian or as a Fourier series
-       !!
-       !!
-       !!  if ( DO_FOURIER .eqv. .false. ) then
-       !!
-       !!    ! Fit gaussians to the distance distribution functions
-       !!
-       !!      if(present(vec) .or. present(dvec)) then
-       !!         fOH = 0.0_dp
-       !!         dfOH = 0.0_dp
-       !!         do i = 1, WATER_DIMER_N_OH     ! basis function
-       !!            do j = 1, 8  ! atom pair
-       !!               arg_r = rOH(j) - r0_OH(i)
-       !!               fOH_ij = exp( - 0.5_dp * arg_r**2 * sigma_OH(i) )
-       !!               if(present(vec)) fOH(i) = fOH(i) + fOH_ij
-       !!               if(present(dvec)) then
-       !!                  do k = 1, 6
-       !!                     dfOH(:,k,i) = dfOH(:,k,i) - arg_r * sigma_OH(i) * fOH_ij * drOH(:,k,j)
-       !!                  enddo
-       !!               endif
-       !!            enddo
-       !!         enddo
-       !!         
-       !!         fHH = 0.0_dp
-       !!         dfHH = 0.0_dp
-       !!         do i = 1, WATER_DIMER_N_HH     ! basis function
-       !!            do j = 1, 6  ! atom pair
-       !!               arg_r = rHH(j) - r0_HH(i)
-       !!               fHH_ij = exp( - 0.5_dp * arg_r**2 * sigma_HH(i) )
-       !!               if(present(vec)) fHH(i) = fHH(i) + fHH_ij
-       !!               if(present(dvec)) then
-       !!                  do k = 1, 6
-       !!                     dfHH(:,k,i) = dfHH(:,k,i) - arg_r * sigma_HH(i) * fHH_ij * drHH(:,k,j)
-       !!                  enddo
-       !!               endif
-       !!            enddo
-       !!         enddo
-       !!      endif
-       !!      
-       !!   else
-       !!
-       !!      ! "Fourier Transform" distances. This should be completely reversible,
-       !!      ! i.e. we can reconstruct all the distances up to permutations.
-       !!
-       !!      if(present(vec) .or. present(dvec)) then
-       !!         fOH = 0.0_dp
-       !!         dfOH = 0.0_dp
-       !!         do i = 1, WATER_DIMER_N_OH
-       !!            arg = PI*i/(cutoff+water_dimer_space_warp_oh(cutoff))
-       !!            do j = 1, 8
-       !!               arg_r = arg * (rOH(j) + water_dimer_space_warp_oh(rOH(j)))
-       !!               if(present(vec)) fOH(i) = fOH(i) + cos( arg_r )
-       !!               if(present(dvec)) then
-       !!                  do k = 1, 6
-       !!                     dfOH(:,k,i) = dfOH(:,k,i) - sin( arg_r ) * arg * drOH(:,k,j) * (1.0_dp + water_dimer_space_warp_deriv_oh(rOH(j)))
-       !!                  enddo
-       !!               endif
-       !!            enddo
-       !!         enddo
-       !!         
-       !!         fHH = 0.0_dp
-       !!         dfHH = 0.0_dp
-       !!         do i = 1, WATER_DIMER_N_HH
-       !!            arg = PI*i/(cutoff+water_dimer_space_warp_hh(cutoff))
-       !!            do j = 1, 6
-       !!               arg_r = arg * (rHH(j) + water_dimer_space_warp_hh(rHH(j)))
-       !!               if(present(vec)) fHH(i) = fHH(i) + cos( arg_r )
-       !!               if(present(dvec)) then
-       !!                  do k = 1, 6
-       !!                     dfHH(:,k,i) = dfHH(:,k,i) - sin( arg_r ) * arg * drHH(:,k,j) * (1.0_dp+water_dimer_space_warp_deriv_hh(rHH(j)))
-       !!                  enddo
-       !!               endif
-       !!            enddo
-       !!         enddo
-       !!      endif
-       !!      
-       !!   endif
-       !!
-       !!   if (present(vec)) then
-       !!      vec(1) = distance_min_image(at, iAo, iBo)
-       !!      vec(2:WATER_DIMER_N_OH+1) = fOH
-       !!      vec(WATER_DIMER_N_OH+2:WATER_DIMER_N_OH+WATER_DIMER_N_HH+1) = fHH
-       !!   endif
-       !!
-       !!   if (present(dvec)) then
-       !!      dvec = 0.0_dp
-       !!
-       !!      dvec(:,1,1) = - diff_min_image(at, iAo, iBo) / distance_min_image(at, iAo, iBo)
-       !!      dvec(:,4,1) = - dvec(:,1,1)
-       !!
-       !!      dvec(:,:,2:WATER_DIMER_N_OH+1)   = dfOH
-       !!      dvec(:,:,WATER_DIMER_N_OH+2:WATER_DIMER_N_OH+WATER_DIMER_N_HH+1) = dfHH
-       !!   endif
-
-       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-       ! descriptor based on ad-hoc combination of distances and lenths
-       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-       !!!
-       !!!! O--H vectors
-       !!!vA1 = diff_min_image(at,iAo,iAh1)
-       !!!vA2 = diff_min_image(at,iAo,iAh2)
-       !!!vB1 = diff_min_image(at,iBo,iBh1)
-       !!!vB2 = diff_min_image(at,iBo,iBh2)
-       !!!vAB = diff_min_image(at,iAo,iBo)
-       !!!
-       !!!rA1 = norm(vA1)
-       !!!rA2 = norm(vA2)
-       !!!rB1 = norm(vB1)
-       !!!rB2 = norm(vB2)
-       !!!nA = vA1 .cross. vA2
-       !!!nB = vB1 .cross. vB2
-       !!!sA = (vA1+vA2)
-       !!!dA = (vA1-vA2)
-       !!!sB = (vB1+vB2)
-       !!!dB = (vB1-vB2)
-       !!!! descriptors
-       !!!!vec(1) = normsq(sA)
-       !!!!vec(2) = normsq(dA)
-       !!!!vec(3) = (sA .dot. dA)**2
-       !!!!vec(4) = normsq(sB)
-       !!!!vec(5) = normsq(dB)
-       !!!!vec(6) = (sB .dot. dB)**2
-       !!!v(1) = rA1+rA2
-       !!!v(2) = (rA1-rA2)**2
-       !!!v(3) = vA1 .dot. vA2
-       !!!v(4) = rB1+rB2
-       !!!v(5) = (rB1-rB2)**2
-       !!!v(6) = vB1 .dot. vB2
-       !!!
-       !!!vec(1) = v(1)+v(4)
-       !!!vec(2) = (v(1)-v(4))**2
-       !!!vec(3) = v(2)+v(5)
-       !!!vec(4) = (v(2)-v(5))**2
-       !!!vec(5) = v(3)+v(6)
-       !!!vec(6) = (v(3)-v(6))**2
-       !!!
-       !!!vec(7) = sA .dot. sB
-       !!!v(8) = sA .dot. nB
-       !!!v(9) = sB .dot. nA
-       !!!v(10) = pA .dot. sB
-       !!!v(11) = pB .dot. sA
-       !!!
-       !!!vec(8) = (dA .dot. dB)**2
-       !!!vec(9) = (nA .dot. nB)**2
-       !!!vec(10) = (vAB .dot. sB) - (vAB .dot. sA)
-       !!!vec(11) = (vAB .dot. dB)**2 + (vAB .dot. dA)**2
-       !!!
-       !!!vec(12) = distance_min_image(at, iAo, iBo)
-    end subroutine water_dimer
-
-    !#################################################################################
-    !#
-    !# Auxiliary functions start here.
-    !#
-    !#################################################################################
-
-    !#################################################################################
-    !#
-    !% Factorial, real result
-    !#
-    !#################################################################################
-
-     function factorial(n) result(res)
-
-      ! factorial_real
-
-      integer, intent(in) :: n
-      real(dp)            :: res
-      integer :: i
-
-      if (n<0) then
-         call system_abort('factorial: negative argument')
-      elseif(n <= 16) then
-         res = factorial_table(n)
-      else
-         res=1.0_dp
-         do i=2,n
-            res = res*i
-         end do
-      end if
-
-    endfunction factorial
-
-    !#################################################################################
-    !#
-    !% Factorial, integer result
-    !#
-    !#################################################################################
-
-    function factorial_int(n) result(res)
-
-      ! factorial_int
-
-      integer, intent(in) :: n
-      integer             :: res
-      integer :: i
-
-      if (n<0) then
-         call system_abort('factorial_int: negative argument')
-      else
-         res=1
-         do i=2,n
-            res = res*i
-         end do
-      end if
-
-    endfunction factorial_int
-
-    !#################################################################################
-    !#
-    !% Double factorial, real result
-    !#
-    !#################################################################################
-
-    recursive function factorial2(n) result(res)
-
-      ! double factorial
-
-      integer, intent(in) :: n
-      real(dp)            :: res
-      integer :: i
-
-      if( n < -1 ) then
-          call system_abort('factorial2: negative argument')
-      else
-          res = 1.0_dp
-          do i = 2-mod(n,2), n, 2
-             res = res*i
-          enddo
+   function get_descriptor_type(args_str,error)
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      integer :: get_descriptor_type
+
+      type(Dictionary) :: params
+      logical :: is_bispectrum_so4, is_bispectrum_so3, is_behler, is_distance_2b, is_coordination, is_angle_3b, &
+         is_co_angle_3b, is_co_distance_2b, is_cosnx, is_trihis, is_water_monomer, is_water_dimer, is_A2_dimer, &
+         is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, is_soap
+
+      INIT_ERROR(error)
+
+      call initialise(params)
+      call param_register(params, 'bispectrum_so4', 'false', is_bispectrum_so4, help_string="Type of descriptor is bispectrum_so4.")
+      call param_register(params, 'bispectrum_so3', 'false', is_bispectrum_so3, help_string="Type of descriptor is bispectrum_so3.")
+      call param_register(params, 'behler', 'false', is_behler, help_string="Type of descriptor is behler.")
+      call param_register(params, 'distance_2b', 'false', is_distance_2b, help_string="Type of descriptor is distance_2b.")
+      call param_register(params, 'coordination', 'false', is_coordination, help_string="Type of descriptor is coordination.")
+      call param_register(params, 'angle_3b', 'false', is_angle_3b, help_string="Type of descriptor is angle_3b.")
+      call param_register(params, 'co_angle_3b', 'false', is_co_angle_3b, help_string="Type of descriptor is co_angle_3b.")
+      call param_register(params, 'co_distance_2b', 'false', is_co_distance_2b, help_string="Type of descriptor is co_distance_2b.")
+      call param_register(params, 'cosnx', 'false', is_cosnx, help_string="Type of descriptor is cosnx.")
+      call param_register(params, 'trihis', 'false', is_trihis, help_string="Type of descriptor is trihis.")
+      call param_register(params, 'water_monomer', 'false', is_water_monomer, help_string="Type of descriptor is water_monomer.")
+      call param_register(params, 'water_dimer', 'false', is_water_dimer, help_string="Type of descriptor is water_dimer.")
+      call param_register(params, 'A2_dimer', 'false', is_A2_dimer, help_string="Type of descriptor is A2_dimer.")
+      call param_register(params, 'AB_dimer', 'false', is_AB_dimer, help_string="Type of descriptor is AB_dimer.")
+      call param_register(params, 'bond_real_space', 'false', is_bond_real_space, help_string="Type of descriptor is bond_real_space.")
+      call param_register(params, 'atom_real_space', 'false', is_atom_real_space, help_string="Type of descriptor is atom_real_space.")
+      call param_register(params, 'power_so3', 'false', is_power_so3, help_string="Type of descriptor is power_so3.")
+      call param_register(params, 'power_so4', 'false', is_power_so4, help_string="Type of descriptor is power_so4.")
+      call param_register(params, 'soap', 'false', is_soap, help_string="Type of descriptor is soap.")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='descriptor_initialise args_str')) then
+         RAISE_ERROR("descriptor_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      if (count( (/is_bispectrum_so4, is_bispectrum_so3, is_behler, is_distance_2b, is_coordination, is_angle_3b, is_co_angle_3b, is_co_distance_2b, &
+      is_cosnx, is_trihis, is_water_monomer, is_water_dimer, is_A2_dimer, is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, is_soap/) ) /= 1) then
+         RAISE_ERROR("descriptor_initialise found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
       endif
 
-    endfunction factorial2
+      get_descriptor_type = DT_NONE
 
-    !#################################################################################
-    !#
-    !% Binomial coefficient, real result
-    !#
-    !#################################################################################
+      if( is_bispectrum_so4 ) then
+         get_descriptor_type = DT_BISPECTRUM_SO4
+      elseif( is_bispectrum_so3 ) then
+         get_descriptor_type = DT_BISPECTRUM_SO3
+      elseif( is_behler ) then
+         get_descriptor_type = DT_BEHLER
+      elseif( is_distance_2b ) then
+         get_descriptor_type = DT_DISTANCE_2B
+      elseif( is_coordination ) then
+         get_descriptor_type = DT_COORDINATION
+      elseif( is_angle_3b ) then
+         get_descriptor_type = DT_ANGLE_3B
+      elseif( is_co_angle_3b ) then
+         get_descriptor_type = DT_CO_ANGLE_3B
+      elseif( is_co_distance_2b ) then
+         get_descriptor_type = DT_CO_DISTANCE_2B
+      elseif( is_cosnx ) then
+         get_descriptor_type = DT_COSNX
+      elseif( is_trihis ) then
+         get_descriptor_type = DT_TRIHIS
+      elseif( is_water_monomer ) then
+         get_descriptor_type = DT_WATER_MONOMER
+      elseif( is_water_dimer ) then
+         get_descriptor_type = DT_WATER_DIMER
+      elseif( is_A2_dimer ) then
+         get_descriptor_type = DT_A2_DIMER
+      elseif( is_AB_dimer ) then
+         get_descriptor_type = DT_AB_DIMER
+      elseif( is_bond_real_space ) then
+         get_descriptor_type = DT_BOND_REAL_SPACE
+      elseif( is_atom_real_space ) then
+         get_descriptor_type = DT_ATOM_REAL_SPACE
+      elseif( is_power_so3 ) then
+         get_descriptor_type = DT_POWER_SO3
+      elseif( is_power_so4 ) then
+         get_descriptor_type = DT_POWER_SO4
+      elseif( is_soap ) then
+         get_descriptor_type = DT_SOAP
+      endif
 
-    recursive function binom(n,r) result(res)
+   endfunction get_descriptor_type
 
-      ! binomial coefficients
+   subroutine descriptor_initialise(this,args_str,error)
+      type(descriptor), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
 
-      integer, intent(in) :: n,r
-      real(dp)            :: res
-      integer             :: i
+      INIT_ERROR(error)
 
-      if((n<0) .or. (r<0) .or. (n<r)) then
-         res = 0.0_dp
-      else
-         res = 1.0_dp
-         do i = 0, r-1
-            res = real(n-i,dp)/real(r-i,dp) * res
+      call finalise(this)
+
+      this%descriptor_type = get_descriptor_type(args_str,error)
+
+      select case(this%descriptor_type)
+      case(DT_BISPECTRUM_SO4)
+         call initialise(this%descriptor_bispectrum_SO4,args_str,error)
+      case(DT_BISPECTRUM_SO3)
+         call initialise(this%descriptor_bispectrum_SO3,args_str,error)
+      case(DT_BEHLER)
+         call initialise(this%descriptor_behler,args_str,error)
+      case(DT_DISTANCE_2B)
+         call initialise(this%descriptor_distance_2b,args_str,error)
+      case(DT_COORDINATION)
+         call initialise(this%descriptor_coordination,args_str,error)
+      case(DT_ANGLE_3B)
+         call initialise(this%descriptor_angle_3b,args_str,error)
+      case(DT_CO_ANGLE_3B)
+         call initialise(this%descriptor_co_angle_3b,args_str,error)
+      case(DT_CO_DISTANCE_2B)
+         call initialise(this%descriptor_co_distance_2b,args_str,error)
+      case(DT_COSNX)
+         call initialise(this%descriptor_cosnx,args_str,error)
+      case(DT_TRIHIS)
+         call initialise(this%descriptor_trihis,args_str,error)
+      case(DT_WATER_MONOMER)
+         call initialise(this%descriptor_water_monomer,args_str,error)
+      case(DT_WATER_DIMER)
+         call initialise(this%descriptor_water_dimer,args_str,error)
+      case(DT_A2_DIMER)
+         call initialise(this%descriptor_A2_dimer,args_str,error)
+      case(DT_AB_DIMER)
+         call initialise(this%descriptor_AB_dimer,args_str,error)
+      case(DT_BOND_REAL_SPACE)
+         call initialise(this%descriptor_bond_real_space,args_str,error)
+      case(DT_ATOM_REAL_SPACE)
+         call initialise(this%descriptor_atom_real_space,args_str,error)
+      case(DT_POWER_SO3)
+         call initialise(this%descriptor_power_so3,args_str,error)
+      case(DT_POWER_SO4)
+         call initialise(this%descriptor_power_so4,args_str,error)
+      case(DT_SOAP)
+         call initialise(this%descriptor_soap,args_str,error)
+      endselect
+
+   endsubroutine descriptor_initialise
+
+   subroutine descriptor_finalise(this,error)
+      type(descriptor), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4)
+            call finalise(this%descriptor_bispectrum_SO4,error)
+         case(DT_BISPECTRUM_SO3)
+            call finalise(this%descriptor_bispectrum_SO3,error)
+         case(DT_BEHLER)
+            call finalise(this%descriptor_behler,error)
+         case(DT_DISTANCE_2b)
+            call finalise(this%descriptor_distance_2b,error)
+         case(DT_COORDINATION)
+            call finalise(this%descriptor_coordination,error)
+         case(DT_ANGLE_3B)
+            call finalise(this%descriptor_angle_3b,error)
+         case(DT_CO_ANGLE_3B)
+            call finalise(this%descriptor_co_angle_3b,error)
+         case(DT_CO_DISTANCE_2b)
+            call finalise(this%descriptor_co_distance_2b,error)
+         case(DT_COSNX)
+            call finalise(this%descriptor_cosnx,error)
+         case(DT_TRIHIS)
+            call finalise(this%descriptor_trihis,error)
+         case(DT_WATER_MONOMER)
+            call finalise(this%descriptor_water_monomer,error)
+         case(DT_WATER_DIMER)
+            call finalise(this%descriptor_water_dimer,error)
+         case(DT_A2_dimer)
+            call finalise(this%descriptor_A2_dimer,error)
+         case(DT_AB_dimer)
+            call finalise(this%descriptor_AB_dimer,error)
+         case(DT_BOND_REAL_SPACE)
+            call finalise(this%descriptor_bond_real_space,error)
+         case(DT_ATOM_REAL_SPACE)
+            call finalise(this%descriptor_atom_real_space,error)
+         case(DT_POWER_SO3)
+            call finalise(this%descriptor_power_so3,error)
+         case(DT_POWER_SO4)
+            call finalise(this%descriptor_power_so4,error)
+         case(DT_SOAP)
+            call finalise(this%descriptor_soap,error)
+      endselect
+
+      this%descriptor_type = DT_NONE
+
+   endsubroutine descriptor_finalise
+   
+   subroutine descriptor_data_finalise(this,error)
+      type(descriptor_data), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(allocated(this%x)) then
+         do i = 1, size(this%x)
+            if(allocated(this%x(i)%data)) deallocate(this%x(i)%data)
+            if(allocated(this%x(i)%grad_data)) deallocate(this%x(i)%grad_data)
+            if(allocated(this%x(i)%ii)) deallocate(this%x(i)%ii)
+            if(allocated(this%x(i)%pos)) deallocate(this%x(i)%pos)
+            if(allocated(this%x(i)%has_grad_data)) deallocate(this%x(i)%has_grad_data)
+            if(allocated(this%x(i)%grad_covariance_cutoff)) deallocate(this%x(i)%grad_covariance_cutoff)
          enddo
       endif
 
-    endfunction binom
+   endsubroutine descriptor_data_finalise
 
-    !#################################################################################
-    !#
-    !% $ (-1)^n $ function.
-    !#
-    !#################################################################################
+   subroutine RadialFunction_initialise(this,n_max,cutoff, min_cutoff,error)
+      type(RadialFunction_type), intent(inout) :: this
+      integer, intent(in) :: n_max
+      real(dp), intent(in) :: cutoff, min_cutoff
+      integer, optional, intent(out) :: error
 
-    function oscillate(m)
+      real(dp), dimension(:,:), allocatable :: S, vS
+      real(dp), dimension(:), allocatable :: eS
+      integer :: i, j
 
-      integer, intent(in) :: m
-      integer :: oscillate
+      INIT_ERROR(error)
 
-      if( mod(m,2) == 0 ) then
-          oscillate = 1
+      call finalise(this)
+
+      this%n_max = n_max
+      this%cutoff = cutoff
+      this%min_cutoff = min_cutoff
+
+      allocate(this%RadialTransform(this%n_max,this%n_max),this%NormFunction(this%n_max))
+      allocate(S(this%n_max,this%n_max), vS(this%n_max,this%n_max), eS(this%n_max))
+
+      do i = 1, this%n_max
+         this%NormFunction(i) = sqrt(this%cutoff**(2.0_dp*i+5.0_dp)/(2.0_dp*i+5.0_dp))
+         do j = 1, this%n_max
+            S(j,i) = sqrt((2.0_dp*i+5)*(2.0_dp*j+5))/(i+j+5.0_dp)
+         enddo
+      enddo
+
+      call diagonalise(S,eS,vS)
+      this%RadialTransform = matmul(matmul(vS,diag(1.0_dp/sqrt(eS))),transpose(vS))
+
+      if(allocated(S)) deallocate(S)
+      if(allocated(vS)) deallocate(vS)
+      if(allocated(eS)) deallocate(eS)
+
+      this%initialised = .true.
+
+   endsubroutine RadialFunction_initialise
+
+   subroutine RadialFunction_finalise(this,error)
+      type(RadialFunction_type), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%min_cutoff = 0.0_dp
+      this%n_max = 0
+
+      if(allocated(this%RadialTransform)) deallocate(this%RadialTransform)
+      if(allocated(this%NormFunction)) deallocate(this%NormFunction)
+
+      this%initialised = .false.
+
+   endsubroutine RadialFunction_finalise
+
+   subroutine cplx_2d_array1_finalise(this)
+      type(cplx_2d), dimension(:), allocatable, intent(inout) :: this
+      integer :: j
+
+      if(allocated(this)) then
+         do j = lbound(this,1), ubound(this,1)
+            if(allocated(this(j)%mm)) deallocate(this(j)%mm)
+         enddo
+         deallocate(this)
+      endif
+   endsubroutine cplx_2d_array1_finalise
+
+   subroutine cplx_3d_array2_finalise(this)
+      type(cplx_3d), dimension(:,:), allocatable, intent(inout) :: this
+      integer :: i, j
+
+      if(allocated(this)) then
+         do j = lbound(this,2), ubound(this,2)
+            do i = lbound(this,1), ubound(this,1)
+               if(allocated(this(i,j)%mm)) deallocate(this(i,j)%mm)
+            enddo
+         enddo
+         deallocate(this)
+      endif
+
+   endsubroutine cplx_3d_array2_finalise
+
+   subroutine fourier_SO4_calc(this,at,i,U,dU,error)
+      type(fourier_SO4_type), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(in) :: i
+      type(cplx_2d), dimension(:), allocatable, intent(inout) :: U
+      type(cplx_3d), dimension(:,:), allocatable, intent(inout), optional :: dU
+      integer, optional, intent(out) :: error
+
+      complex(dp), dimension(:,:), allocatable :: Uc, Up
+      complex(dp), dimension(:,:,:), allocatable :: dUc, dUp
+      complex(dp) :: z0_pls_Iz, z0_min_Iz, x_pls_Iy, x_min_Iy
+      complex(dp), dimension(3) :: dz0_pls_Iz, dz0_min_Iz, dx_pls_Iy, dx_min_Iy
+      real(dp), dimension(3) :: diff, u_ij, dfcut, dz0, dr0
+      real(dp) :: r0, r, fcut, z0, theta0
+      integer :: n, n_i, ji, j, m1, m2
+      integer, dimension(116) :: species_map
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR('fourier_SO4_calc: object not initialised',error)
+      endif
+
+      species_map = 0
+      do j = 1, size(this%species_Z)
+         if(this%species_Z(j) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(j)) = j
+         endif
+      enddo
+
+
+      if(allocated(U)) then
+         if(lbound(U,1) /= 0 .or. ubound(U,1) /= this%j_max) call finalise(U)
+      endif
+
+      if(.not.allocated(U)) then
+         allocate( U(0:this%j_max) )
+         do j = 0, this%j_max
+            allocate( U(j)%mm(-j:j,-j:j) )
+            U(j)%mm = CPLX_ZERO
+         enddo
+      endif
+
+      do j = 0, this%j_max
+         U(j)%mm = CPLX_ZERO
+         do m1 = -j, j, 2
+            U(j)%mm(m1,m1) = CPLX_ONE
+         enddo
+      enddo
+
+      allocate( Uc(-this%j_max:this%j_max, -this%j_max:this%j_max), &
+        Up(-this%j_max:this%j_max, -this%j_max:this%j_max) )
+
+      Uc = CPLX_ZERO
+      Up = CPLX_ZERO
+
+      if(present(dU)) then
+         if(allocated(dU)) call finalise(dU)
+
+         ! dU is not allocated, allocate and zero it
+         allocate( dU(0:this%j_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+         do j = 0, this%j_max
+            allocate( dU(j,0)%mm(3,-j:j,-j:j) )
+            dU(j,0)%mm = CPLX_ZERO
+         enddo
+
+         allocate( dUc(3,-this%j_max:this%j_max, -this%j_max:this%j_max), &
+            dUp(3,-this%j_max:this%j_max, -this%j_max:this%j_max) )
+         dUc = CPLX_ZERO
+         dUp = CPLX_ZERO
+      endif
+
+      n_i = 0
+      do n = 1, atoms_n_neighbours(at,i)
+         ji = atoms_neighbour(at, i, n, distance=r, diff=diff, cosines=u_ij)
+         if( r > this%cutoff ) cycle
+
+         n_i = n_i + 1
+
+         theta0 = r / this%z0
+         z0 = r / tan( theta0 )
+         r0 = sin( theta0 ) / r
+
+         z0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) ) * r0
+         z0_min_Iz = ( z0 - CPLX_IMAG*diff(3) ) * r0
+         x_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) ) * r0
+         x_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) ) * r0
+
+         fcut = cutoff_function(r,this%cutoff) * this%w(species_map(at%Z(ji)))
+
+         U(0)%mm(0,0) = U(0)%mm(0,0) + fcut
+         Up(0:0,0:0) = CPLX_ONE
+
+         if(present(dU)) then
+
+            dfcut = -dcutoff_function(r,this%cutoff)*u_ij * this%w(species_map(at%Z(ji)))
+            dz0 = ( 1.0_dp / tan( theta0 ) - theta0 / sin(theta0)**2 ) * u_ij
+            dr0 = ( cos( theta0 ) / (r*this%z0) - r0 / r ) * u_ij
+
+            dz0_pls_Iz = ( z0 + CPLX_IMAG*diff(3) )*dr0 + dz0*r0
+            dz0_pls_Iz(3) = dz0_pls_Iz(3) + CPLX_IMAG*r0
+               
+            dz0_min_Iz = ( z0 - CPLX_IMAG*diff(3) )*dr0 + dz0*r0
+            dz0_min_Iz(3) = dz0_min_Iz(3) - CPLX_IMAG*r0
+               
+            dx_pls_Iy = ( diff(1) + CPLX_IMAG*diff(2) )*dr0
+            dx_pls_Iy(1) = dx_pls_Iy(1) + r0
+            dx_pls_Iy(2) = dx_pls_Iy(2) + CPLX_IMAG*r0
+               
+            dx_min_Iy = ( diff(1) - CPLX_IMAG*diff(2) )*dr0
+            dx_min_Iy(1) = dx_min_Iy(1) + r0
+            dx_min_Iy(2) = dx_min_Iy(2) - CPLX_IMAG*r0
+
+            dUc = CPLX_ZERO
+            dUp = CPLX_ZERO
+
+            dU(0,0)%mm(:,0,0) = dU(0,0)%mm(:,0,0) + dfcut*CPLX_ONE
+
+            allocate( dU(0,n_i)%mm(3,-0:0,-0:0) )
+
+            dU(0,n_i)%mm(:,0,0) = - dfcut*CPLX_ONE
+         endif
+
+         do j = 1, this%j_max
+            Uc(-j:j,-j:j) = CPLX_ZERO
+            if(present(dU)) then
+               dUc(:,-j:j,-j:j) = CPLX_ZERO
+               allocate( dU(j,n_i)%mm(3,-j:j,-j:j) )
+               dU(j,n_i)%mm = CPLX_ZERO
+            endif
+
+            do m1 = -j, j-2, 2
+               do m2 = -j, j, 2
+                  if( (j-m2) /= 0 ) then
+                     Uc(m2,m1) = Uc(m2,m1) + &
+                     sqrt( real(j-m2,dp)/real(j-m1,dp) ) * z0_pls_Iz * Up(m2+1,m1+1)
+
+                     if(present(dU)) dUc(:,m2,m1) = dUc(:,m2,m1) + &
+                        sqrt( real(j-m2,dp)/real(j-m1,dp) ) * &
+                        ( dz0_pls_Iz * Up(m2+1,m1+1) + z0_pls_Iz * dUp(:,m2+1,m1+1) )
+                  endif
+
+                  if( (j+m2) /= 0 ) then
+                     Uc(m2,m1) = Uc(m2,m1) - &
+                     CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * x_min_Iy * Up(m2-1,m1+1)
+
+                     if(present(dU)) dUc(:,m2,m1) = dUc(:,m2,m1) - &
+                        CPLX_IMAG * sqrt( real(j+m2,dp)/real(j-m1,dp) ) * &
+                        ( dx_min_Iy * Up(m2-1,m1+1) + x_min_Iy * dUp(:,m2-1,m1+1) )
+
+                  endif
+               enddo
+            enddo
+
+            m1 = j
+            do m2 = -j, j, 2
+               if( (j+m2) /= 0 ) then
+                  Uc(m2,m1) = Uc(m2,m1) + &
+                  sqrt( real(j+m2,dp)/real(j+m1,dp) ) * z0_min_Iz * Up(m2-1,m1-1)
+
+                  if(present(dU)) dUc(:,m2,m1) = dUc(:,m2,m1) + &
+                     sqrt( real(j+m2,dp)/real(j+m1,dp) ) * &
+                     ( dz0_min_Iz * Up(m2-1,m1-1) + z0_min_Iz * dUp(:,m2-1,m1-1) )
+               endif
+
+               if( (j-m2) /= 0 ) then
+                  Uc(m2,m1) = Uc(m2,m1) - &
+                  CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * x_pls_Iy * Up(m2+1,m1-1)
+
+                  if(present(dU)) dUc(:,m2,m1) = dUc(:,m2,m1) - &
+                     CPLX_IMAG * sqrt( real(j-m2,dp)/real(j+m1,dp) ) * &
+                     ( dx_pls_Iy * Up(m2+1,m1-1) + x_pls_Iy * dUp(:,m2+1,m1-1) )
+               endif
+            enddo
+
+            U(j)%mm = U(j)%mm + Uc(-j:j,-j:j) * fcut
+            Up(-j:j,-j:j) = Uc(-j:j,-j:j)
+            if(present(dU)) then
+               dUp(:,-j:j,-j:j) = dUc(:,-j:j,-j:j)
+               dU(j,0)%mm = dU(j,0)%mm - dUc(:,-j:j,-j:j) * fcut
+               dU(j,n_i)%mm = dU(j,n_i)%mm + dUc(:,-j:j,-j:j) * fcut
+               do m1 = -j, j, 2
+                  do m2 = -j, j, 2
+                     dU(j,0)%mm(:,m2,m1) = dU(j,0)%mm(:,m2,m1) &
+                        + Uc(m2,m1) * dfcut
+                     dU(j,n_i)%mm(:,m2,m1) = dU(j,n_i)%mm(:,m2,m1) &
+                        - Uc(m2,m1) * dfcut
+                  enddo
+               enddo
+            endif
+
+         enddo ! j
+      enddo ! n
+
+      if(allocated(Up)) deallocate(Up)
+      if(allocated(Uc)) deallocate(Uc)
+      if(allocated(dUp)) deallocate(dUp)
+      if(allocated(dUc)) deallocate(dUc)
+
+   endsubroutine fourier_SO4_calc
+
+   subroutine fourier_so4_initialise(this,args_str,error)
+      type(fourier_SO4_type), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      integer :: n_species
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '2.75', this%cutoff, help_string="Cutoff for SO4 bispectrum")
+      call param_register(params, 'z0_ratio', '0.0', this%z0_ratio, help_string="Ratio of radius of 4D projection sphere times PI and the cutoff.")
+      call param_register(params, 'j_max', '4', this%j_max, help_string="Max of expansion of bispectrum, i.e. resulution")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'n_species', '1', n_species, help_string="Number of species for the descriptor")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='fourier_so4_initialise args_str')) then
+         RAISE_ERROR("fourier_so4_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      allocate(this%species_Z(n_species), this%w(n_species))
+
+      call initialise(params)
+      if( n_species == 1 ) then
+         call param_register(params, 'species_Z', '0', this%species_Z(1), help_string="Atomic number of species")
+         call param_register(params, 'w', '1.0', this%w(1), help_string="Weight associated to each atomic type")
       else
-          oscillate = -1
+         call param_register(params, 'species_Z', PARAM_MANDATORY, this%species_Z, help_string="Atomic number of species")
+         call param_register(params, 'w', PARAM_MANDATORY, this%w, help_string="Weight associated to each atomic type")
       endif
 
-    endfunction oscillate
-
-    !#################################################################################
-    !#
-    !% Gaussian: $ \exp( - \sigma(r-r_0)^2 )
-    !#
-    !#################################################################################
-
-    function gaussian(r,r0,sigma)
-
-      real(dp), intent(in) :: r             !% at r
-      real(dp), intent(in) :: r0            !% centre of gaussian
-      real(dp), intent(in) :: sigma         !% width of gaussian
-      real(dp)             :: gaussian
-
-      !gaussian = exp( -r**2 / (2.0_dp * sigma**2) ) / sqrt( 2.0_dp*PI ) / sigma
-      gaussian = exp( -sigma * (r-r0)**2 )
-
-    endfunction gaussian
-
-    !#################################################################################
-    !#
-    !% Fermi-Dirac function: $ \frac{1}{ \exp( \frac{r-r_0}{\sigma} ) + 1 )
-    !#
-    !#################################################################################
-
-    function fermi_dirac(r,r0,sigma)
-
-      real(dp), intent(in) :: r             !% at r
-      real(dp), intent(in) :: r0            !% centre of Fermi-Dirac
-      real(dp), intent(in) :: sigma         !% width of Fermi-Dirac
-      real(dp)             :: fermi_dirac
-
-      fermi_dirac = 1.0_dp/( exp( (r-r0)/sigma ) + 1.0_dp )
-
-    endfunction fermi_dirac
-
-    !#################################################################################
-    !#
-    !% Fermi-Dirac function for cutoff left:
-    !% $ \frac{\frac{r-r_0}{\sigma}}{ \exp( \frac{r-r_0}{\sigma} ) + 1 )
-    !#
-    !#################################################################################
-
-    function cutoff_left(r,r0,w)
-
-      real(dp), intent(in) :: r             !% at r
-      real(dp), intent(in) :: r0            !% centre of Fermi-Dirac
-      real(dp), intent(in) :: w         !% width of Fermi-Dirac
-      real(dp)             :: cutoff_left
-      real(dp)             :: arg
-
-      arg = exp( (r-r0)/w )
-      cutoff_left = arg / (arg+1.0_dp)
-
-!      cutoff with a cos
-!      r0w = r0 + w
-!      if( r < r0 ) then
-!          cutoff_left = 0.0_dp
-!      elseif( r < r0w ) then
-!          cutoff_left = 0.5_dp * cos( (r-r0w)*PI/w ) + 0.5_dp
-!      else
-!          cutoff_left = 1.0_dp
-!      endif
-
-    endfunction cutoff_left
-
-    !#################################################################################
-    !#
-    !% Fermi-Dirac function for cutoff right:
-    !% $ \frac{1}{ \exp( \frac{r-r_0}{\sigma} ) + 1 )
-    !#
-    !#################################################################################
-
-    function cutoff_right(r,r0,w)
-
-      real(dp), intent(in) :: r             !% at r
-      real(dp), intent(in) :: r0            !% centre of Fermi-Dirac
-      real(dp), intent(in) :: w         !% width of Fermi-Dirac
-      real(dp)             :: cutoff_right
-
-      cutoff_right = 1.0_dp / ( exp( (r-r0)/w ) + 1.0_dp )
-
-!      cutoff with a cos
-!      r0w = r0 - w
-!      if( r < r0w ) then
-!          cutoff_right = 1.0_dp
-!      elseif( r < r0 ) then
-!          cutoff_right = 0.5_dp * cos( (r-r0w)*PI/w ) + 0.5_dp
-!      else
-!          cutoff_right = 0.0_dp
-!      endif
-
-    endfunction cutoff_right
-
-
-    function coff(r,r_cut)
-
-       real(dp)             :: coff
-       real(dp), intent(in) :: r, r_cut
-       real(dp), parameter :: S = 0.25_dp
-
-       if( r > r_cut ) then
-           coff = 0.0_dp
-       else
-           coff = 0.5_dp * ( cos(PI*r/r_cut) + 1.0_dp )
-       endif
-       !if( r > r_cut ) then
-       !    coff = 0.0_dp
-       !elseif( r > (r_cut-S) ) then
-       !    coff = 0.5_dp * ( cos(PI*(r-r_cut+S)/S) + 1.0_dp )
-       !else
-       !    coff = 1.0_dp
-       !endif
-
-    endfunction coff
-
-    function dcoff(r,r_cut)
-
-       real(dp)             :: dcoff
-       real(dp), intent(in) :: r, r_cut
-       real(dp), parameter :: S = 0.25_dp
-
-       if( r > r_cut ) then
-           dcoff = 0.0_dp
-       else
-           dcoff = - 0.5_dp * PI * sin(PI*r/r_cut) / r_cut
-       endif
-       !if( r > r_cut ) then
-       !    dcoff = 0.0_dp
-       !elseif( r > (r_cut-S) ) then
-       !    dcoff = - 0.5_dp * PI * sin(PI*(r-r_cut+S)/S) / S
-       !else
-       !    dcoff = 0.0_dp
-       !endif
-
-    endfunction dcoff
-    !#################################################################################
-    !#
-    !% Converts xyz coordinates to spherical
-    !#
-    !#################################################################################
-
-    function xyz2spherical(xyz) result(spherical)
-
-      real(dp), dimension(3) :: spherical            ! Spherical coordinates: $r$, $\theta$, $\phi$
-      real(dp), dimension(3), intent(in) :: xyz      ! Cartesian coordinates
-
-      spherical(1) = sqrt( sum( xyz**2 ) )
-
-      if( spherical(1) == 0.0_dp ) then
-          spherical(2) = 0.0_dp
-          spherical(3) = 0.0_dp
-          return
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='fourier_so4_initialise args_str')) then
+         RAISE_ERROR("fourier_so4_initialise failed to parse args_str='"//trim(args_str)//"'", error)
       endif
+      call finalise(params)
 
-      spherical(2) = acos( xyz(3) / spherical(1) )
+      this%z0 = max(1.0_dp,this%z0_ratio) * this%cutoff/(PI-0.02_dp)
+      
+      this%initialised = .true.
 
-      if( xyz(1) /= 0.0_dp ) then
-         spherical(3) = atan( xyz(2) / xyz(1) )
-      elseif( xyz(2) > 0.0_dp ) then
-         spherical(3) = PI / 2.0_dp
-         return
-      elseif( xyz(2) < 0.0_dp ) then
-         spherical(3) = -PI / 2.0_dp
-         return
+
+   endsubroutine fourier_so4_initialise
+
+   subroutine fourier_so4_finalise(this,error)
+      type(fourier_so4_type), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+
+      this%cutoff = 0.0_dp
+      this%j_max = 0
+      this%z0_ratio = 0.0_dp
+      this%z0 = 0.0_dp
+      this%Z = 0
+
+      if(allocated(this%species_Z)) deallocate(this%species_Z)
+      if(allocated(this%w)) deallocate(this%w)
+
+      this%initialised = .false.
+
+   endsubroutine fourier_so4_finalise
+
+   subroutine bispectrum_so4_initialise(this,args_str,error)
+      type(bispectrum_so4), intent(inout), target :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(this%fourier_SO4,args_str,error)
+
+      this%cutoff => this%fourier_SO4%cutoff
+      this%z0_ratio => this%fourier_SO4%z0_ratio
+      this%z0 => this%fourier_SO4%z0
+      this%j_max => this%fourier_SO4%j_max
+      this%Z => this%fourier_SO4%Z
+      this%cutoff => this%fourier_SO4%cutoff
+      this%species_Z => this%fourier_SO4%species_Z
+      this%w => this%fourier_SO4%w
+      
+      this%initialised = .true.
+
+   endsubroutine bispectrum_so4_initialise
+
+   subroutine bispectrum_so4_finalise(this,error)
+      type(bispectrum_so4), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+
+      call finalise(this%fourier_SO4,error)
+
+      this%cutoff => null()
+      this%z0_ratio => null()
+      this%z0 => null()
+      this%j_max => null()
+      this%Z => null()
+      this%cutoff => null()
+      this%species_Z => null()
+      this%w => null()
+
+      this%initialised = .false.
+
+   endsubroutine bispectrum_so4_finalise
+
+   subroutine bispectrum_so3_initialise(this,args_str,error)
+      type(bispectrum_so3), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      integer :: n_species
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for bispectrum_so3-type descriptors")
+      call param_register(params, 'min_cutoff', '0.00', this%min_cutoff, help_string="Cutoff for minimal distances in bispectrum_so3-type descriptors")
+      call param_register(params, 'l_max', '4', this%l_max, help_string="L_max for bispectrum_so3-type descriptors")
+      call param_register(params, 'n_max', '4', this%n_max, help_string="N_max for bispectrum_so3-type descriptors")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'n_species', '1', n_species, help_string="Number of species for the descriptor")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='bispectrum_so3_initialise args_str')) then
+         RAISE_ERROR("bispectrum_so3_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      allocate(this%species_Z(n_species), this%w(n_species))
+
+      call initialise(params)
+      if( n_species == 1 ) then
+         call param_register(params, 'species_Z', '0', this%species_Z(1), help_string="Atomic number of species")
+         call param_register(params, 'w', '1.0', this%w(1), help_string="Weight associated to each atomic type")
       else
-         spherical(3) = 0.0_dp
-         return
+         call param_register(params, 'species_Z', PARAM_MANDATORY, this%species_Z, help_string="Atomic number of species")
+         call param_register(params, 'w', PARAM_MANDATORY, this%w, help_string="Weight associated to each atomic type")
       endif
 
-      if( xyz(1) < 0.0_dp ) then
-         spherical(3) = PI + spherical(3)
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='bispectrum_so3_initialise args_str')) then
+         RAISE_ERROR("bispectrum_so3_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      call initialise(this%Radial,this%n_max,this%cutoff,this%min_cutoff,error)
+
+      this%initialised = .true.
+
+      call print('Dimensions: '//bispectrum_so3_dimensions(this,error))
+
+   endsubroutine bispectrum_so3_initialise
+
+   subroutine bispectrum_so3_finalise(this,error)
+      type(bispectrum_so3), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+
+      this%cutoff = 0.0_dp
+      this%min_cutoff = 0.0_dp
+      this%l_max = 0
+      this%n_max = 0
+      this%Z = 0
+
+      if(allocated(this%species_Z)) deallocate(this%species_Z)
+      if(allocated(this%w)) deallocate(this%w)
+
+      call finalise(this%Radial)
+
+      this%initialised = .false.
+
+   endsubroutine bispectrum_so3_finalise
+
+   subroutine behler_initialise(this,args_str,error)
+      type(behler), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      !call param_register(params, 'behler_cutoff', '2.75', this%cutoff, help_string="Cutoff for Behler-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='behler_initialise args_str')) then
+         RAISE_ERROR("behler_initialise failed to parse args_str='"//trim(args_str)//"'", error)
       endif
 
-    endfunction xyz2spherical
+      call finalise(params)
 
-    !#################################################################################
-    !#
-    !% Legendre polynomial
-    !#
-    !#################################################################################
+      this%n_g2 = 8
+      this%n_g3 = 43
 
-    function LegendreP(l,m,x)
+      allocate(this%g2(this%n_g2), this%g3(this%n_g3))
 
-      real(dp), intent(in) :: x
-      integer, intent(in)  :: l, m
+      this%g2(1)%eta = 0.001_dp / BOHR**2; this%g2(1)%rs = 0.000_dp * BOHR; this%g2(1)%rc = 11.338_dp * BOHR
+      this%g2(2)%eta = 0.010_dp / BOHR**2; this%g2(2)%rs = 0.000_dp * BOHR; this%g2(2)%rc = 11.338_dp * BOHR
+      this%g2(3)%eta = 0.020_dp / BOHR**2; this%g2(3)%rs = 0.000_dp * BOHR; this%g2(3)%rc = 11.338_dp * BOHR
+      this%g2(4)%eta = 0.035_dp / BOHR**2; this%g2(4)%rs = 0.000_dp * BOHR; this%g2(4)%rc = 11.338_dp * BOHR
+      this%g2(5)%eta = 0.060_dp / BOHR**2; this%g2(5)%rs = 0.000_dp * BOHR; this%g2(5)%rc = 11.338_dp * BOHR
+      this%g2(6)%eta = 0.100_dp / BOHR**2; this%g2(6)%rs = 0.000_dp * BOHR; this%g2(6)%rc = 11.338_dp * BOHR
+      this%g2(7)%eta = 0.200_dp / BOHR**2; this%g2(7)%rs = 0.000_dp * BOHR; this%g2(7)%rc = 11.338_dp * BOHR
+      this%g2(8)%eta = 0.400_dp / BOHR**2; this%g2(8)%rs = 0.000_dp * BOHR; this%g2(8)%rc = 11.338_dp * BOHR
 
-      real(dp) :: LegendreP
+      this%g3( 1)%eta = 0.0001_dp / BOHR**2; this%g3( 1)%lambda = -1.000_dp; this%g3( 1)%zeta =  1.000_dp; this%g3( 1)%rc = 11.338_dp * BOHR
+      this%g3( 2)%eta = 0.0001_dp / BOHR**2; this%g3( 2)%lambda =  1.000_dp; this%g3( 2)%zeta =  1.000_dp; this%g3( 2)%rc = 11.338_dp * BOHR
+      this%g3( 3)%eta = 0.0001_dp / BOHR**2; this%g3( 3)%lambda = -1.000_dp; this%g3( 3)%zeta =  2.000_dp; this%g3( 3)%rc = 11.338_dp * BOHR
+      this%g3( 4)%eta = 0.0001_dp / BOHR**2; this%g3( 4)%lambda =  1.000_dp; this%g3( 4)%zeta =  2.000_dp; this%g3( 4)%rc = 11.338_dp * BOHR
+      this%g3( 5)%eta = 0.0030_dp / BOHR**2; this%g3( 5)%lambda = -1.000_dp; this%g3( 5)%zeta =  1.000_dp; this%g3( 5)%rc = 11.338_dp * BOHR
+      this%g3( 6)%eta = 0.0030_dp / BOHR**2; this%g3( 6)%lambda =  1.000_dp; this%g3( 6)%zeta =  1.000_dp; this%g3( 6)%rc = 11.338_dp * BOHR
+      this%g3( 7)%eta = 0.0030_dp / BOHR**2; this%g3( 7)%lambda = -1.000_dp; this%g3( 7)%zeta =  2.000_dp; this%g3( 7)%rc = 11.338_dp * BOHR
+      this%g3( 8)%eta = 0.0030_dp / BOHR**2; this%g3( 8)%lambda =  1.000_dp; this%g3( 8)%zeta =  2.000_dp; this%g3( 8)%rc = 11.338_dp * BOHR
+      this%g3( 9)%eta = 0.0080_dp / BOHR**2; this%g3( 9)%lambda = -1.000_dp; this%g3( 9)%zeta =  1.000_dp; this%g3( 9)%rc = 11.338_dp * BOHR
+      this%g3(10)%eta = 0.0080_dp / BOHR**2; this%g3(10)%lambda =  1.000_dp; this%g3(10)%zeta =  1.000_dp; this%g3(10)%rc = 11.338_dp * BOHR
+      this%g3(11)%eta = 0.0080_dp / BOHR**2; this%g3(11)%lambda = -1.000_dp; this%g3(11)%zeta =  2.000_dp; this%g3(11)%rc = 11.338_dp * BOHR
+      this%g3(12)%eta = 0.0080_dp / BOHR**2; this%g3(12)%lambda =  1.000_dp; this%g3(12)%zeta =  2.000_dp; this%g3(12)%rc = 11.338_dp * BOHR
+      this%g3(13)%eta = 0.0150_dp / BOHR**2; this%g3(13)%lambda = -1.000_dp; this%g3(13)%zeta =  1.000_dp; this%g3(13)%rc = 11.338_dp * BOHR
+      this%g3(14)%eta = 0.0150_dp / BOHR**2; this%g3(14)%lambda =  1.000_dp; this%g3(14)%zeta =  1.000_dp; this%g3(14)%rc = 11.338_dp * BOHR
+      this%g3(15)%eta = 0.0150_dp / BOHR**2; this%g3(15)%lambda = -1.000_dp; this%g3(15)%zeta =  2.000_dp; this%g3(15)%rc = 11.338_dp * BOHR
+      this%g3(16)%eta = 0.0150_dp / BOHR**2; this%g3(16)%lambda =  1.000_dp; this%g3(16)%zeta =  2.000_dp; this%g3(16)%rc = 11.338_dp * BOHR
+      this%g3(17)%eta = 0.0150_dp / BOHR**2; this%g3(17)%lambda = -1.000_dp; this%g3(17)%zeta =  4.000_dp; this%g3(17)%rc = 11.338_dp * BOHR
+      this%g3(18)%eta = 0.0150_dp / BOHR**2; this%g3(18)%lambda =  1.000_dp; this%g3(18)%zeta =  4.000_dp; this%g3(18)%rc = 11.338_dp * BOHR
+      this%g3(19)%eta = 0.0150_dp / BOHR**2; this%g3(19)%lambda = -1.000_dp; this%g3(19)%zeta = 16.000_dp; this%g3(19)%rc = 11.338_dp * BOHR
+      this%g3(20)%eta = 0.0150_dp / BOHR**2; this%g3(20)%lambda =  1.000_dp; this%g3(20)%zeta = 16.000_dp; this%g3(20)%rc = 11.338_dp * BOHR
+      this%g3(21)%eta = 0.0250_dp / BOHR**2; this%g3(21)%lambda = -1.000_dp; this%g3(21)%zeta =  1.000_dp; this%g3(21)%rc = 11.338_dp * BOHR
+      this%g3(22)%eta = 0.0250_dp / BOHR**2; this%g3(22)%lambda =  1.000_dp; this%g3(22)%zeta =  1.000_dp; this%g3(22)%rc = 11.338_dp * BOHR
+      this%g3(23)%eta = 0.0250_dp / BOHR**2; this%g3(23)%lambda = -1.000_dp; this%g3(23)%zeta =  2.000_dp; this%g3(23)%rc = 11.338_dp * BOHR
+      this%g3(24)%eta = 0.0250_dp / BOHR**2; this%g3(24)%lambda =  1.000_dp; this%g3(24)%zeta =  2.000_dp; this%g3(24)%rc = 11.338_dp * BOHR
+      this%g3(25)%eta = 0.0250_dp / BOHR**2; this%g3(25)%lambda = -1.000_dp; this%g3(25)%zeta =  4.000_dp; this%g3(25)%rc = 11.338_dp * BOHR
+      this%g3(26)%eta = 0.0250_dp / BOHR**2; this%g3(26)%lambda =  1.000_dp; this%g3(26)%zeta =  4.000_dp; this%g3(26)%rc = 11.338_dp * BOHR
+      this%g3(27)%eta = 0.0250_dp / BOHR**2; this%g3(27)%lambda = -1.000_dp; this%g3(27)%zeta = 16.000_dp; this%g3(27)%rc = 11.338_dp * BOHR
+      this%g3(28)%eta = 0.0250_dp / BOHR**2; this%g3(28)%lambda =  1.000_dp; this%g3(28)%zeta = 16.000_dp; this%g3(28)%rc = 11.338_dp * BOHR
+      this%g3(29)%eta = 0.0450_dp / BOHR**2; this%g3(29)%lambda = -1.000_dp; this%g3(29)%zeta =  1.000_dp; this%g3(29)%rc = 11.338_dp * BOHR
+      this%g3(30)%eta = 0.0450_dp / BOHR**2; this%g3(30)%lambda =  1.000_dp; this%g3(30)%zeta =  1.000_dp; this%g3(30)%rc = 11.338_dp * BOHR
+      this%g3(31)%eta = 0.0450_dp / BOHR**2; this%g3(31)%lambda = -1.000_dp; this%g3(31)%zeta =  2.000_dp; this%g3(31)%rc = 11.338_dp * BOHR
+      this%g3(32)%eta = 0.0450_dp / BOHR**2; this%g3(32)%lambda =  1.000_dp; this%g3(32)%zeta =  2.000_dp; this%g3(32)%rc = 11.338_dp * BOHR
+      this%g3(33)%eta = 0.0450_dp / BOHR**2; this%g3(33)%lambda = -1.000_dp; this%g3(33)%zeta =  4.000_dp; this%g3(33)%rc = 11.338_dp * BOHR
+      this%g3(34)%eta = 0.0450_dp / BOHR**2; this%g3(34)%lambda =  1.000_dp; this%g3(34)%zeta =  4.000_dp; this%g3(34)%rc = 11.338_dp * BOHR
+      this%g3(35)%eta = 0.0450_dp / BOHR**2; this%g3(35)%lambda = -1.000_dp; this%g3(35)%zeta = 16.000_dp; this%g3(35)%rc = 11.338_dp * BOHR
+      this%g3(36)%eta = 0.0450_dp / BOHR**2; this%g3(36)%lambda =  1.000_dp; this%g3(36)%zeta = 16.000_dp; this%g3(36)%rc = 11.338_dp * BOHR
+      this%g3(37)%eta = 0.0800_dp / BOHR**2; this%g3(37)%lambda = -1.000_dp; this%g3(37)%zeta =  1.000_dp; this%g3(37)%rc = 11.338_dp * BOHR
+      this%g3(38)%eta = 0.0800_dp / BOHR**2; this%g3(38)%lambda =  1.000_dp; this%g3(38)%zeta =  1.000_dp; this%g3(38)%rc = 11.338_dp * BOHR
+      this%g3(39)%eta = 0.0800_dp / BOHR**2; this%g3(39)%lambda = -1.000_dp; this%g3(39)%zeta =  2.000_dp; this%g3(39)%rc = 11.338_dp * BOHR
+      this%g3(40)%eta = 0.0800_dp / BOHR**2; this%g3(40)%lambda =  1.000_dp; this%g3(40)%zeta =  2.000_dp; this%g3(40)%rc = 11.338_dp * BOHR
+      this%g3(41)%eta = 0.0800_dp / BOHR**2; this%g3(41)%lambda = -1.000_dp; this%g3(41)%zeta =  4.000_dp; this%g3(41)%rc = 11.338_dp * BOHR
+      this%g3(42)%eta = 0.0800_dp / BOHR**2; this%g3(42)%lambda =  1.000_dp; this%g3(42)%zeta =  4.000_dp; this%g3(42)%rc = 11.338_dp * BOHR
+      this%g3(43)%eta = 0.0800_dp / BOHR**2; this%g3(43)%lambda =  1.000_dp; this%g3(43)%zeta = 16.000_dp; this%g3(43)%rc = 11.338_dp * BOHR
 
-      real(dp) :: pre_factor, m_over_two, sub_result_1, sub_result_2, sub_result_3
-      integer  :: m_in, ll
+      this%cutoff = 11.338_dp * BOHR
 
-      if( m>l .or. abs(x) > 1.0_dp ) then
-          LegendreP = 0.0_dp
-          return
+      this%initialised = .true.
+
+   endsubroutine behler_initialise
+
+   subroutine behler_finalise(this,error)
+      type(behler), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+
+      this%cutoff = 0.0_dp
+      this%n_g2 = 0
+      this%n_g3 = 0
+
+      if(allocated(this%g2)) deallocate(this%g2)
+      if(allocated(this%g3)) deallocate(this%g3)
+
+      this%initialised = .false.
+
+   endsubroutine behler_finalise
+
+   subroutine distance_2b_initialise(this,args_str,error)
+      type(distance_2b), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for distance_2b-type descriptors")
+      call param_register(params, 'Z1', '0', this%Z1, help_string="Atom type #1 in bond")
+      call param_register(params, 'Z2', '0', this%Z2, help_string="Atom type #2 in bond")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='distance_2b_initialise args_str')) then
+         RAISE_ERROR("distance_2b_initialise failed to parse args_str='"//trim(args_str)//"'", error)
       endif
+      call finalise(params)
 
-      if( m>=0 ) then
-          m_in = m
-          pre_factor = 1.0_dp
+      this%initialised = .true.
+
+   endsubroutine distance_2b_initialise
+
+   subroutine distance_2b_finalise(this,error)
+      type(distance_2b), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%Z1 = 0
+      this%Z2 = 0
+
+      this%initialised = .false.
+
+   endsubroutine distance_2b_finalise
+
+   subroutine coordination_initialise(this,args_str,error)
+      type(coordination), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for coordination-type descriptors")
+      call param_register(params, 'transition_width', '0.20', this%transition_width, help_string="Width of transition region from 1 to 0")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='coordination_initialise args_str')) then
+         RAISE_ERROR("coordination_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine coordination_initialise
+
+   subroutine coordination_finalise(this,error)
+      type(coordination), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%transition_width = 0.0_dp
+      this%Z = 0
+
+      this%initialised = .false.
+
+   endsubroutine coordination_finalise
+
+   subroutine angle_3b_initialise(this,args_str,error)
+      type(angle_3b), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for angle_3b-type descriptors")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'Z1', '0', this%Z1, help_string="Atomic number of neighbour #1")
+      call param_register(params, 'Z2', '0', this%Z2, help_string="Atomic number of neighbour #2")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='angle_3b_initialise args_str')) then
+         RAISE_ERROR("angle_3b_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine angle_3b_initialise
+
+   subroutine angle_3b_finalise(this,error)
+      type(angle_3b), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%Z = 0
+      this%Z1 = 0
+      this%Z2 = 0
+
+      this%initialised = .false.
+
+   endsubroutine angle_3b_finalise
+
+   subroutine co_angle_3b_initialise(this,args_str,error)
+      type(co_angle_3b), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for co_angle_3b-type descriptors")
+      call param_register(params, 'coordination_cutoff', '0.00', this%coordination_cutoff, help_string="Cutoff for coordination function in co_angle_3b-type descriptors")
+      call param_register(params, 'coordination_transition_width', '0.00', this%coordination_transition_width, help_string="Transition width for co_angle_3b-type descriptors")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'Z1', '0', this%Z1, help_string="Atomic number of neighbour #1")
+      call param_register(params, 'Z2', '0', this%Z2, help_string="Atomic number of neighbour #2")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='co_angle_3b_initialise args_str')) then
+         RAISE_ERROR("co_angle_3b_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine co_angle_3b_initialise
+
+   subroutine co_angle_3b_finalise(this,error)
+      type(co_angle_3b), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%coordination_cutoff = 0.0_dp
+      this%coordination_transition_width = 0.0_dp
+      this%Z = 0
+      this%Z1 = 0
+      this%Z2 = 0
+
+      this%initialised = .false.
+
+   endsubroutine co_angle_3b_finalise
+
+   subroutine co_distance_2b_initialise(this,args_str,error)
+      type(co_distance_2b), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for co_distance_2b-type descriptors")
+      call param_register(params, 'transition_width', '0.50', this%transition_width, help_string="Transition width of cutoff for co_distance_2b-type descriptors")
+      call param_register(params, 'coordination_cutoff', '0.00', this%coordination_cutoff, help_string="Cutoff for coordination function in co_distance_2b-type descriptors")
+      call param_register(params, 'coordination_transition_width', '0.00', this%coordination_transition_width, help_string="Transition width for co_distance_2b-type descriptors")
+      call param_register(params, 'Z1', '0', this%Z1, help_string="Atom type #1 in bond")
+      call param_register(params, 'Z2', '0', this%Z2, help_string="Atom type #2 in bond")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='co_distance_2b_initialise args_str')) then
+         RAISE_ERROR("co_distance_2b_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine co_distance_2b_initialise
+
+   subroutine co_distance_2b_finalise(this,error)
+      type(co_distance_2b), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%coordination_cutoff = 0.0_dp
+      this%coordination_transition_width = 0.0_dp
+      this%Z1 = 0
+      this%Z2 = 0
+
+      this%initialised = .false.
+
+   endsubroutine co_distance_2b_finalise
+
+   subroutine cosnx_initialise(this,args_str,error)
+      type(cosnx), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      integer :: n_species
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for cosnx-type descriptors")
+      call param_register(params, 'min_cutoff', '0.00', this%min_cutoff, help_string="Cutoff for minimal distances in cosnx-type descriptors")
+      call param_register(params, 'l_max', '4', this%l_max, help_string="L_max for cosnx-type descriptors")
+      call param_register(params, 'n_max', '4', this%n_max, help_string="N_max for cosnx-type descriptors")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'n_species', '1', n_species, help_string="Number of species for the descriptor")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='cosnx_initialise args_str')) then
+         RAISE_ERROR("cosnx_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      allocate(this%species_Z(n_species), this%w(n_species))
+
+      call initialise(params)
+      if( n_species == 1 ) then
+         call param_register(params, 'species_Z', '0', this%species_Z(1), help_string="Atomic number of species")
+         call param_register(params, 'w', '1.0', this%w(1), help_string="Weight associated to each atomic type")
       else
-          m_in = -m
-          pre_factor = oscillate(m) * factorial(l-m_in)/factorial(l+m_in)
+         call param_register(params, 'species_Z', PARAM_MANDATORY, this%species_Z, help_string="Atomic number of species")
+         call param_register(params, 'w', PARAM_MANDATORY, this%w, help_string="Weight associated to each atomic type")
       endif
 
-      m_over_two = real(m_in,dp) / 2.0_dp
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='cosnx_initialise args_str')) then
+         RAISE_ERROR("cosnx_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
 
-      sub_result_1 = oscillate(m_in) * factorial2(2*m_in-1) * (1.0_dp-x**2)**m_over_two
-      sub_result_2 = x * (2.0_dp*m_in+1.0_dp) * sub_result_1
+      call initialise(this%Radial,this%n_max,this%cutoff,this%min_cutoff,error)
 
-      if(l==m_in) then
-         LegendreP = pre_factor * sub_result_1
-         return
-      elseif( l==m_in+1 ) then
-         LegendreP = pre_factor * sub_result_2
-         return
+      this%initialised = .true.
+
+   endsubroutine cosnx_initialise
+
+   subroutine cosnx_finalise(this,error)
+      type(cosnx), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%min_cutoff = 0.0_dp
+      this%l_max = 0
+      this%n_max = 0
+
+      if(allocated(this%species_Z)) deallocate(this%species_Z)
+      if(allocated(this%w)) deallocate(this%w)
+
+      call finalise(this%Radial)
+
+      this%initialised = .false.
+
+   endsubroutine cosnx_finalise
+
+   subroutine trihis_initialise(this,args_str,error)
+      type(trihis), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      real(dp), dimension(:), allocatable :: gauss_centre1D, gauss_width1D
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for trihis-type descriptors")
+      call param_register(params, 'n_gauss', '0', this%n_gauss, help_string="Number of Gaussians for trihis-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='trihis_initialise args_str')) then
+         RAISE_ERROR("trihis_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      allocate(gauss_centre1D(3*this%n_gauss),gauss_width1D(3*this%n_gauss))
+      allocate(this%gauss_centre(3,this%n_gauss),this%gauss_width(3,this%n_gauss))
+
+      call initialise(params)
+      call param_register(params, 'trihis_gauss_centre', PARAM_MANDATORY, gauss_centre1D, help_string="Number of Gaussians for trihis-type descriptors")
+      call param_register(params, 'trihis_gauss_width', PARAM_MANDATORY, gauss_width1D, help_string="Number of Gaussians for trihis-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='trihis_initialise args_str')) then
+         RAISE_ERROR("trihis_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%gauss_centre = reshape(gauss_centre1D,(/3,this%n_gauss/))
+      this%gauss_width = reshape(gauss_width1D,(/3,this%n_gauss/))
+
+      deallocate(gauss_centre1D,gauss_width1D)
+
+      this%initialised = .true.
+
+   endsubroutine trihis_initialise
+
+   subroutine trihis_finalise(this,error)
+      type(trihis), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%n_gauss = 0
+
+      if(allocated(this%gauss_centre)) deallocate(this%gauss_centre)
+      if(allocated(this%gauss_width)) deallocate(this%gauss_width)
+
+      this%initialised = .false.
+
+   endsubroutine trihis_finalise
+
+   subroutine water_monomer_initialise(this,args_str,error)
+      type(water_monomer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for water_monomer-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='water_monomer_initialise args_str')) then
+         RAISE_ERROR("water_monomer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine water_monomer_initialise
+
+   subroutine water_monomer_finalise(this,error)
+      type(water_monomer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+
+      this%initialised = .false.
+
+   endsubroutine water_monomer_finalise
+
+   subroutine water_dimer_initialise(this,args_str,error)
+      type(water_dimer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for water_dimer-type descriptors")
+      call param_register(params, 'cutoff_transition_width', '0.50', this%cutoff_transition_width, help_string="Width of smooth cutoff region for water_dimer-type descriptors")
+      call param_register(params, 'monomer_cutoff', '1.50', this%monomer_cutoff, help_string="Monomer cutoff for water_dimer-type descriptors")
+      call param_register(params, 'OHH_ordercheck', 'T', this%OHH_ordercheck, help_string="T: find water molecules. F: use default order OHH")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='water_dimer_initialise args_str')) then
+         RAISE_ERROR("water_dimer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine water_dimer_initialise
+
+   subroutine water_dimer_finalise(this,error)
+      type(water_dimer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%cutoff_transition_width = 0.0_dp
+      this%monomer_cutoff = 0.0_dp
+      this%OHH_ordercheck = .true.
+
+      this%initialised = .false.
+
+   endsubroutine water_dimer_finalise
+
+   subroutine A2_dimer_initialise(this,args_str,error)
+      type(A2_dimer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for A2_dimer-type descriptors")
+      call param_register(params, 'monomer_cutoff', '1.50', this%monomer_cutoff, help_string="Monomer cutoff for A2_dimer-type descriptors")
+      call param_register(params, 'atomic_number', '1', this%atomic_number, help_string="Atomic number in A2_dimer-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='A2_dimer_initialise args_str')) then
+         RAISE_ERROR("A2_dimer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine A2_dimer_initialise
+
+   subroutine A2_dimer_finalise(this,error)
+      type(A2_dimer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%monomer_cutoff = 0.0_dp
+      this%atomic_number = 0
+
+      this%initialised = .false.
+
+   endsubroutine A2_dimer_finalise
+
+   subroutine AB_dimer_initialise(this,args_str,error)
+      type(AB_dimer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for AB_dimer-type descriptors")
+      call param_register(params, 'monomer_cutoff', '1.50', this%monomer_cutoff, help_string="Monomer cutoff for AB_dimer-type descriptors")
+      call param_register(params, 'atomic_number1', '1', this%atomic_number1, help_string="Atomic number of atom 1 in AB_dimer-type descriptors")
+      call param_register(params, 'atomic_number2', '9', this%atomic_number2, help_string="Atomic number of atom 2 in AB_dimer-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='AB_dimer_initialise args_str')) then
+         RAISE_ERROR("AB_dimer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      if( this%atomic_number1 == this%atomic_number2 ) then
+         RAISE_ERROR("AB_dimer_initialise: AB_dimer_atomic_number1 = AB_dimer_atomic_number2 = "//this%atomic_number1//" which would require addtional permutational symmetries. Use A2_dimer descriptor instead.",error)
       endif
 
-      do ll = m_in+2, l
+      this%initialised = .true.
 
-         sub_result_3 = (x*(2.0_dp*ll-1)*sub_result_2 - (ll+m_in-1)*sub_result_1)/(ll-m_in)
-         sub_result_1 = sub_result_2
-         sub_result_2 = sub_result_3
+   endsubroutine AB_dimer_initialise
+
+   subroutine AB_dimer_finalise(this,error)
+      type(AB_dimer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%monomer_cutoff = 0.0_dp
+      this%atomic_number1 = 0
+      this%atomic_number2 = 0
+
+      this%initialised = .false.
+
+   endsubroutine AB_dimer_finalise
+
+   subroutine bond_real_space_initialise(this,args_str,error)
+      type(bond_real_space), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'bond_cutoff', '0.00', this%bond_cutoff, help_string="Bond cutoff for bond_real_space-type descriptors")
+      call param_register(params, 'bond_transition_width', '0.00', this%bond_transition_width, help_string="Bond transition width for bond_real_space-type descriptors")
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Space cutoff for bond_real_space-type descriptors")
+      call param_register(params, 'transition_width', '0.00', this%transition_width, help_string="Space transition width for bond_real_space-type descriptors")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='bond_real_space_initialise args_str')) then
+         RAISE_ERROR("bond_real_space_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine bond_real_space_initialise
+
+   subroutine bond_real_space_finalise(this,error)
+      type(bond_real_space), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%bond_cutoff = 0.0_dp
+      this%bond_transition_width = 0.0_dp
+      this%cutoff = 0.0_dp
+      this%transition_width = 0.0_dp
+
+      this%initialised = .false.
+
+   endsubroutine bond_real_space_finalise
+
+   subroutine atom_real_space_initialise(this,args_str,error)
+      type(atom_real_space), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Space cutoff for atom_real_space-type descriptors")
+      call param_register(params, 'cutoff_transition_width', '0.00', this%cutoff_transition_width, help_string="Space transition width for atom_real_space-type descriptors")
+      call param_register(params, 'l_max', '0', this%l_max, help_string="Cutoff for spherical harmonics expansion")
+      call param_register(params, 'alpha', '1.0', this%alpha, help_string="Width of atomic Gaussians")
+      call param_register(params, 'zeta', '1.0', this%zeta, help_string="Exponent of covariance function")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='bond_real_space_initialise args_str')) then
+         RAISE_ERROR("bond_real_space_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%initialised = .true.
+
+   endsubroutine atom_real_space_initialise
+
+   subroutine atom_real_space_finalise(this,error)
+      type(atom_real_space), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%cutoff_transition_width = 0.0_dp
+      this%l_max = 0
+      this%alpha = 0.0_dp
+      this%zeta = 0.0_dp
+
+      this%initialised = .false.
+
+   endsubroutine atom_real_space_finalise
+
+   subroutine power_so3_initialise(this,args_str,error)
+      type(power_so3), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      integer :: n_species
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for power_so3-type descriptors")
+      call param_register(params, 'min_cutoff', '0.00', this%min_cutoff, help_string="Cutoff for minimal distances in power_so3-type descriptors")
+      call param_register(params, 'l_max', '4', this%l_max, help_string="L_max for power_so3-type descriptors")
+      call param_register(params, 'n_max', '4', this%n_max, help_string="N_max for power_so3-type descriptors")
+      call param_register(params, 'Z', '0', this%Z, help_string="Atomic number of central atom")
+      call param_register(params, 'n_species', '1', n_species, help_string="Number of species for the descriptor")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='power_so3_initialise args_str')) then
+         RAISE_ERROR("power_so3_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      allocate(this%species_Z(n_species), this%w(n_species))
+
+      call initialise(params)
+      if( n_species == 1 ) then
+         call param_register(params, 'species_Z', '0', this%species_Z(1), help_string="Atomic number of species")
+         call param_register(params, 'w', '1.0', this%w(1), help_string="Weight associated to each atomic type")
+      else
+         call param_register(params, 'species_Z', PARAM_MANDATORY, this%species_Z, help_string="Atomic number of species")
+         call param_register(params, 'w', PARAM_MANDATORY, this%w, help_string="Weight associated to each atomic type")
+      endif
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='power_so3_initialise args_str')) then
+         RAISE_ERROR("power_so3_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      call initialise(this%Radial,this%n_max,this%cutoff,this%min_cutoff,error)
+
+      this%initialised = .true.
+
+   endsubroutine power_so3_initialise
+
+   subroutine power_so3_finalise(this,error)
+      type(power_so3), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%min_cutoff = 0.0_dp
+      this%l_max = 0
+      this%n_max = 0
+      this%Z = 0
+
+      if(allocated(this%species_Z)) deallocate(this%species_Z)
+      if(allocated(this%w)) deallocate(this%w)
+
+      call finalise(this%Radial)
+
+      this%initialised = .false.
+
+   endsubroutine power_so3_finalise
+
+   subroutine power_so4_initialise(this,args_str,error)
+      type(power_so4), intent(inout), target :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(this%fourier_SO4,args_str,error)
+
+      this%cutoff => this%fourier_SO4%cutoff
+      this%z0_ratio => this%fourier_SO4%z0_ratio
+      this%z0 => this%fourier_SO4%z0
+      this%j_max => this%fourier_SO4%j_max
+      this%Z => this%fourier_SO4%Z
+      this%cutoff => this%fourier_SO4%cutoff
+      this%species_Z => this%fourier_SO4%species_Z
+      this%w => this%fourier_SO4%w
+      
+      this%initialised = .true.
+
+   endsubroutine power_so4_initialise
+
+   subroutine power_so4_finalise(this,error)
+      type(power_so4), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+
+      call finalise(this%fourier_SO4,error)
+
+      this%cutoff => null()
+      this%z0_ratio => null()
+      this%z0 => null()
+      this%j_max => null()
+      this%Z => null()
+      this%cutoff => null()
+      this%species_Z => null()
+      this%w => null()
+
+      this%initialised = .false.
+
+   endsubroutine power_so4_finalise
+
+   subroutine soap_initialise(this,args_str,error)
+      type(soap), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+
+      type(Dictionary) :: params
+      real(dp) :: alpha_basis, spacing_basis, cutoff_basis, basis_error_exponent
+      real(dp), dimension(:,:), allocatable :: covariance_basis, overlap_basis, cholesky_overlap_basis
+      integer :: i, j
+
+      type(LA_Matrix) :: LA_covariance_basis, LA_overlap_basis
+
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '6.00', this%cutoff, help_string="Cutoff for soap-type descriptors")
+      call param_register(params, 'cutoff_transition_width', '0.50', this%cutoff_transition_width, help_string="Cutoff transition width for soap-type descriptors")
+      call param_register(params, 'l_max', '8', this%l_max, help_string="L_max (spherical harmonics basis band limit) for soap-type descriptors")
+      call param_register(params, 'n_max', '40', this%n_max, help_string="N_max (number of radial basis functions) for soap-type descriptors")
+      call param_register(params, 'sigma', '0.50', this%sigma, help_string="Width of atomic Gaussians for soap-type descriptors")
+      call param_register(params, 'basis_error_exponent', '10.0', basis_error_exponent, help_string="10^(-basis_error_exponent) is the max difference between the target and the expanded function")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='soap_initialise args_str')) then
+         RAISE_ERROR("soap_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      this%alpha = 0.5_dp / this%sigma**2
+
+      alpha_basis = this%alpha
+      cutoff_basis = this%cutoff + this%sigma * sqrt(2.0_dp * basis_error_exponent * log(10.0_dp))
+      spacing_basis = cutoff_basis / this%n_max
+
+      allocate(this%r_basis(this%n_max), this%transform_basis(this%n_max,this%n_max), &
+         covariance_basis(this%n_max,this%n_max), overlap_basis(this%n_max,this%n_max), this%cholesky_overlap_basis(this%n_max,this%n_max))
+
+      !this%r_basis(this%n_max) = cutoff_basis
+      !do i = this%n_max-1, 1, -1
+      !   this%r_basis(i)  = this%r_basis(i+1) - spacing_basis
+      !enddo
+
+      this%r_basis(1) = 0.0_dp
+      do i = 2, this%n_max
+         this%r_basis(i)  = this%r_basis(i-1) + spacing_basis
+      enddo
+
+      do i = 1, this%n_max
+         do j = 1, this%n_max
+            covariance_basis(j,i) = exp(-alpha_basis * (this%r_basis(i) - this%r_basis(j))**2)
+            !overlap_basis(j,i) = exp(-0.5_dp * alpha_basis* (this%r_basis(i) - this%r_basis(j))**2) * ( 1.0_dp + erf( sqrt(alpha_basis/2.0_dp) * (this%r_basis(i) + this%r_basis(j)) ) )
+            !print*, 'A', exp( -alpha_basis*(this%r_basis(i)**2+this%r_basis(j)**2) )
+            !print*, 'B', sqrt(2.0_dp) * alpha_basis**1.5_dp * (this%r_basis(i) + this%r_basis(j))
+            !print*, 'C', alpha_basis*exp(0.5_dp * alpha_basis * (this%r_basis(i) + this%r_basis(j))**2)*sqrt(PI)*(1.0_dp + alpha_basis*(this%r_basis(i) + this%r_basis(j))**2 )
+            !print*, 'D', ( 1.0_dp + erf( sqrt(alpha_basis/2.0_dp) * (this%r_basis(i) + this%r_basis(j)) ) )
+            !overlap_basis(j,i) = exp( -alpha_basis*(this%r_basis(i)**2+this%r_basis(j)**2) ) * &
+            !   ( sqrt(2.0_dp) * alpha_basis**1.5_dp * (this%r_basis(i) + this%r_basis(j)) + &
+            !   alpha_basis*exp(0.5_dp * alpha_basis * (this%r_basis(i) + this%r_basis(j))**2)*sqrt(PI)*(1.0_dp + alpha_basis*(this%r_basis(i) + this%r_basis(j))**2 ) * &
+            !   ( 1.0_dp + erf( sqrt(alpha_basis/2.0_dp) * (this%r_basis(i) + this%r_basis(j)) ) ) )
+
+            overlap_basis(j,i) = ( exp( -alpha_basis*(this%r_basis(i)**2+this%r_basis(j)**2) ) * &
+               sqrt(2.0_dp) * alpha_basis**1.5_dp * (this%r_basis(i) + this%r_basis(j)) + &
+               alpha_basis*exp(-0.5_dp * alpha_basis * (this%r_basis(i) - this%r_basis(j))**2)*sqrt(PI)*(1.0_dp + alpha_basis*(this%r_basis(i) + this%r_basis(j))**2 ) * &
+               ( 1.0_dp + erf( sqrt(alpha_basis/2.0_dp) * (this%r_basis(i) + this%r_basis(j)) ) ) )
+         enddo
+      enddo
+
+      !overlap_basis = overlap_basis * sqrt(pi / ( 8.0_dp * alpha_basis ) )
+      overlap_basis = overlap_basis / sqrt(128.0_dp * alpha_basis**5)
+
+      call initialise(LA_covariance_basis,covariance_basis)
+      call initialise(LA_overlap_basis,overlap_basis)
+      call LA_Matrix_Factorise(LA_overlap_basis, this%cholesky_overlap_basis)
+      do i = 1, this%n_max
+         do j = 1, i-1 !i + 1, this%n_max
+            this%cholesky_overlap_basis(j,i) = 0.0_dp
+         enddo
+      enddo
+
+      call Matrix_Solve(LA_covariance_basis,this%cholesky_overlap_basis,this%transform_basis)
+
+      call finalise(LA_covariance_basis)
+      call finalise(LA_overlap_basis)
+
+      if(allocated(covariance_basis)) deallocate(covariance_basis)
+      if(allocated(overlap_basis)) deallocate(overlap_basis)
+      if(allocated(cholesky_overlap_basis)) deallocate(cholesky_overlap_basis)
+
+      this%initialised = .true.
+
+   endsubroutine soap_initialise
+
+   subroutine soap_finalise(this,error)
+      type(soap), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%cutoff_transition_width = 0.0_dp
+      this%l_max = 0
+      this%alpha = 0.0_dp
+
+      this%n_max = 0
+
+      if(allocated(this%r_basis)) deallocate(this%r_basis)
+      if(allocated(this%transform_basis)) deallocate(this%transform_basis)
+      if(allocated(this%cholesky_overlap_basis)) deallocate(this%cholesky_overlap_basis)
+
+      this%initialised = .false.
+
+   endsubroutine soap_finalise
+
+   subroutine descriptor_str_add_species(this,species,descriptor_str,error)
+      character(len=*), intent(in) :: this
+      integer, dimension(:), intent(in) :: species
+      character(len=STRING_LENGTH), dimension(:), allocatable, intent(out) :: descriptor_str
+      integer, optional, intent(out) :: error
+
+      integer :: my_descriptor_type, i, j, k, l, n_species
+      real(dp), dimension(:), allocatable :: w
+
+      INIT_ERROR(error)
+
+      if(allocated(descriptor_str)) deallocate(descriptor_str)
+
+      my_descriptor_type = get_descriptor_type(this,error)
+      n_species = size(species)
+
+      select case(my_descriptor_type)
+      case(DT_BISPECTRUM_SO4,DT_BISPECTRUM_SO3,DT_BEHLER,DT_COSNX,DT_POWER_SO3,DT_POWER_SO4)
+         allocate(w(n_species))
+         allocate(descriptor_str(n_species))
+
+         if( n_species == 1 ) then
+            w = 1.0_dp
+         else
+            w = real( (/ (i, i=0, n_species-1) /), kind=dp ) / (n_species-1) * 0.5_dp + 0.5_dp
+         endif
+
+         do i = 1, n_species
+            descriptor_str(i) = trim(this)//" n_species="//n_species//" Z="//species(i)//" species_Z={"//species//"} w={"//w//"}"
+         enddo
+
+         deallocate(w)
+      case(DT_DISTANCE_2B,DT_CO_DISTANCE_2B)
+         allocate(descriptor_str(n_species * (n_species+1) / 2))
+
+         l = 0
+         do i = 1, n_species
+            do j = i, n_species
+               l = l + 1
+               descriptor_str(l) = trim(this)//" Z1="//species(i)//" Z2="//species(j)
+            enddo
+         enddo
+
+      case(DT_COORDINATION)
+         allocate(descriptor_str(n_species))
+         do i = 1, n_species
+            descriptor_str(i) = trim(this)//" Z="//species(i)
+         enddo
+      case(DT_ANGLE_3B,DT_CO_ANGLE_3B)
+         allocate(descriptor_str(n_species * n_species * (n_species+1) / 2))
+         l = 0
+         do i = 1, n_species
+            do j = 1, n_species
+               do k = j, n_species
+                  l = l + 1
+                  descriptor_str(l) = trim(this)//" Z="//species(i)//" Z1="//species(j)//" Z2="//species(k)
+               enddo
+            enddo
+         enddo
+      case(DT_WATER_MONOMER,DT_WATER_DIMER,DT_A2_DIMER,DT_AB_DIMER,DT_TRIHIS,DT_BOND_REAL_SPACE,DT_ATOM_REAL_SPACE,DT_SOAP)
+         allocate(descriptor_str(1))
+         descriptor_str(1) = trim(this)
+      case default
+         RAISE_ERROR("descriptor_str_add_species: unknown descriptor type "//my_descriptor_type,error)
+      endselect
+
+   endsubroutine descriptor_str_add_species
+
+   subroutine descriptor_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(descriptor), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4)
+            call calc(this%descriptor_bispectrum_SO4,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_BISPECTRUM_SO3)
+            call calc(this%descriptor_bispectrum_SO3,at,descriptor_out,do_descriptor,do_grad_descriptor,error=error)
+         case(DT_BEHLER)
+            call calc(this%descriptor_behler,at,descriptor_out,do_descriptor,do_grad_descriptor,error=error)
+         case(DT_DISTANCE_2b)
+            call calc(this%descriptor_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_COORDINATION)
+            call calc(this%descriptor_coordination,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_ANGLE_3B)
+            call calc(this%descriptor_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_CO_ANGLE_3B)
+            call calc(this%descriptor_co_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_CO_DISTANCE_2b)
+            call calc(this%descriptor_co_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_COSNX)
+            call calc(this%descriptor_cosnx,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_TRIHIS)
+            call calc(this%descriptor_trihis,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_WATER_MONOMER)
+            call calc(this%descriptor_water_monomer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_WATER_DIMER)
+            call calc(this%descriptor_water_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_A2_DIMER)
+            call calc(this%descriptor_A2_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_AB_DIMER)
+            call calc(this%descriptor_AB_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_BOND_REAL_SPACE)
+            call calc(this%descriptor_bond_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_ATOM_REAL_SPACE)
+            call calc(this%descriptor_atom_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_POWER_SO3)
+            call calc(this%descriptor_power_so3,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_POWER_SO4)
+            call calc(this%descriptor_power_so4,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case(DT_SOAP)
+            call calc(this%descriptor_soap,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+         case default
+            RAISE_ERROR("descriptor_calc: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endsubroutine descriptor_calc
+
+   subroutine bispectrum_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(bispectrum_SO4), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(cplx_2d), dimension(:), allocatable :: U
+      type(cplx_3d), dimension(:,:), allocatable :: dU
+
+      complex(dp) :: sub
+      complex(dp), dimension(3) :: dsub
+      real(dp), dimension(3) :: diff, u_ij
+      real(dp) :: r, tmp_cg
+      integer :: i, n, n_i, ji, jn, j, m1, m2, j1, j2, m11, m12, m21, m22, i_desc, i_bisp, d, n_descriptors, n_cross, n_neighbours
+      integer, dimension(3) :: shift
+      integer, dimension(116) :: species_map
+      logical :: my_do_descriptor, my_do_grad_descriptor
+
+      INIT_ERROR(error)
+
+      call system_timer('bispectrum_SO4_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO4_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      species_map = 0
+      do i = 1, size(this%species_Z)
+         if(this%species_Z(i) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(i)) = i
+         endif
+      enddo
+
+      if( .not. cg_initialised ) then
+         call cg_initialise(this%j_max,2)
+      elseif( this%j_max > cg_j_max ) then
+         call cg_finalise()
+         call cg_initialise(this%j_max,2)
+      endif
+
+      call finalise(descriptor_out)
+
+      d = bispectrum_SO4_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
 
       enddo
 
-      LegendreP = pre_factor * sub_result_3
+      i_desc = 0
+      do i = 1, at%N
 
-    endfunction LegendreP
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
 
-    !#################################################################################
-    !#
-    !% Spherical Harmonic function
-    !#
-    !#################################################################################
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            ! dU is not allocated, allocate and zero it
+            allocate( dU(0:this%j_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            do j = 0, this%j_max
+               allocate( dU(j,0)%mm(3,-j:j,-j:j) )
+               dU(j,0)%mm = CPLX_ZERO
+            enddo
 
-    function SphericalY(l,m,theta,phi)
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
 
-       integer,  intent(in) :: l, m
-       real(dp), intent(in) :: theta, phi
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            ji = atoms_neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
+            if( r > this%cutoff ) cycle
 
-       complex(dp) :: SphericalY
-       complex(dp) :: arg
+            n_i = n_i + 1
 
-       arg = cplx_imag * m * phi
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = ji
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,ji) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+         enddo
 
-       SphericalY = sqrt( (2.0_dp*l+1) * factorial(l-m) / (4.0_dp*PI*factorial(l+m)) ) * &
-                  & LegendreP(l,m,cos(theta)) * exp( arg )
+         if(my_do_grad_descriptor) then
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,error=error)
+         else
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,error=error)
+         endif
 
-    endfunction SphericalY
+         if(my_do_descriptor) then
 
-    !#################################################################################
-    !#
-    !% Solid Harmonic function using Cartesian coordinates
-    !%
-    !% $ R_{l m} = \sqrt{\frac{4 \pi}{2 l + 1}} r^l Y_{l m} $
-    !#
-    !#################################################################################
+            i_bisp = 0
+            do j1 = 0, this%j_max
+               j2 = j1
+               !do j2 = 0, this%j_max
+                  do j = abs(j1-j2), min(this%j_max,j1+j2)
+                     if( mod(j1+j2+j,2) == 1 ) cycle
+                     
+                     i_bisp = i_bisp + 1
 
-    function SolidRCartesian(l, m, x)
+                     !do m1 = -j, j, 2
+                     !   do m2 = -j, j, 2
+                     !      sub = CPLX_ZERO
+                     !      do m11 = max(-j1-m1,-j1), min(j1-m1,j1), 2
+                     !         do m21 = max(-j2-m2,-j2), min(j2-m2,j2), 2
+                     !            sub = sub + cg_array(j1,m11,j,m1,j1,m11+m1) &
+                     !            * cg_array(j2,m21,j,m2,j2,m21+m2) &
+                     !            * U(j1)%mm(m11,m11+m1) * U(j2)%mm(m21,m21+m2)
+                     !         enddo
+                     !      enddo
+                     !      descriptor_out%x(i_desc)%data(i_bisp) = descriptor_out%x(i_desc)%data(i_bisp) + sub*conjg(U(j)%mm(-m2,m1))*(-1)**(m2/2)
+                     !   enddo
+                     !enddo
 
-      complex(dp) :: SolidRCartesian
-      integer, intent(in) :: l, m
-      real(dp), intent(in) :: x(3)
-      integer :: p, q, s
+                     do m1 = -j, j, 2
+                        do m2 = -j, j, 2
+                           sub = CPLX_ZERO
+                           do m11 = max(-j1,m1-j2), min(j1,m1+j2), 2
+                              do m12 = max(-j1,m2-j2), min(j1,m2+j2), 2
+                                 sub = sub + cg_array(j1,m11,j2,m1-m11,j,m1) &
+                                 * cg_array(j1,m12,j2,m2-m12,j,m2) &
+                                 * U(j1)%mm(m11,m12) * U(j2)%mm(m1-m11,m2-m12)
+                              enddo
+                           enddo
+                           descriptor_out%x(i_desc)%data(i_bisp) = descriptor_out%x(i_desc)%data(i_bisp) + sub*conjg(U(j)%mm(m1,m2))
+                        enddo
+                     enddo
 
-      SolidRCartesian = CPLX_ZERO
+                  enddo
+               !enddo
+            enddo
+         endif
 
-      do p = 0, l
-         q = p - m
-         s = l - p - q
+         if(my_do_grad_descriptor) then
+            n_i = 0
+            do n = 0, atoms_n_neighbours(at,i)
+               if( n>0 ) then
+                  ji = atoms_neighbour(at, i, n, distance=r)
+                  if( r > this%cutoff ) cycle
+                  n_i = n_i + 1
+               endif
+               i_bisp = 0
+               do j1 = 0, this%j_max
+                  j2 = j1
+                  !do j2 = 0, this%j_max
+                     do j = abs(j1-j2), min(this%j_max,j1+j2)
+                        if( mod(j1+j2+j,2) == 1 ) cycle
 
-         if ((q >= 0) .and. (s >= 0)) then
-            SolidRCartesian = SolidRCartesian + ((cmplx(-0.5_dp * x(1), -0.5_dp * x(2), dp)**p) &
-                                              * (cmplx(0.5_dp * x(1), -0.5_dp * x(2), dp)**q) &
-                                              * (x(3)**s) &
-                                              / (factorial(p) * factorial(q) * factorial(s)))
-         end if
-      end do
+                        i_bisp = i_bisp + 1
 
-      SolidRCartesian = SolidRCartesian * sqrt(factorial(l + m) * factorial(l - m))
+                        !do m1 = -j, j, 2
+                        !   do m2 = -j, j, 2
+                        !      sub = CPLX_ZERO
+                        !      dsub = CPLX_ZERO
 
-    end function SolidRCartesian
+                        !      do m11 = max(-j1-m1,-j1), min(j1-m1,j1), 2
+                        !         do m21 = max(-j2-m2,-j2), min(j2-m2,j2), 2
+                        !            tmp_cg =  cg_array(j1,m11,j,m1,j1,m11+m1) &
+                        !              * cg_array(j2,m21,j,m2,j2,m21+m2)
 
-    !#################################################################################
-    !#
-    !% Spherical Harmonic function using Cartesian coordinates
-    !#
-    !#################################################################################
+                        !            sub = sub + tmp_cg &
+                        !            * U(j1)%mm(m11,m1+m11) * U(j2)%mm(m21,m2+m21)
+                        !            dsub = dsub + tmp_cg &
+                        !            * ( dU(j1,n_i)%mm(:,m11,m1+m11) * U(j2)%mm(m21,m2+m21) + &
+                        !            U(j1)%mm(m11,m1+m11) * dU(j2,n_i)%mm(:,m21,m2+m21) )
+                        !         enddo
+                        !      enddo
+                        !      descriptor_out%x(i_desc)%grad_data(i_bisp,:,n_i) = &
+                        !      descriptor_out%x(i_desc)%grad_data(i_bisp,:,n_i) + &
+                        !      ( dsub*conjg(U(j)%mm(-m2,m1)) + sub*conjg(dU(j,n_i)%mm(:,-m2,m1)) )*(-1)**(m2/2)
+                        !   enddo
+                        !enddo
+                        do m1 = -j, j, 2
+                           do m2 = -j, j, 2
+                              sub = CPLX_ZERO
+                              dsub = CPLX_ZERO
+                              do m11 = max(-j1,m1-j2), min(j1,m1+j2), 2
+                                 do m12 = max(-j1,m2-j2), min(j1,m2+j2), 2
+                                    
+                                    tmp_cg =  cg_array(j1,m11,j2,m1-m11,j,m1) &
+                                    * cg_array(j1,m12,j2,m2-m12,j,m2)
 
-    function SphericalYCartesian(l, m, x)
+                                    sub = sub + tmp_cg &
+                                    * U(j1)%mm(m11,m12) * U(j2)%mm(m1-m11,m2-m12)
+                                    dsub = dsub + tmp_cg &
+                                    * ( dU(j1,n_i)%mm(:,m11,m12) * U(j2)%mm(m1-m11,m2-m12) + &
+                                    U(j1)%mm(m11,m12) * dU(j2,n_i)%mm(:,m1-m11,m2-m12) )
+                                 enddo
+                              enddo
+                              descriptor_out%x(i_desc)%grad_data(i_bisp,:,n_i) = &
+                              descriptor_out%x(i_desc)%grad_data(i_bisp,:,n_i) + &
+                              dsub*conjg(U(j)%mm(m1,m2)) + sub*conjg(dU(j,n_i)%mm(:,m1,m2))
+                           enddo
+                        enddo
 
-      complex(dp) :: SphericalYCartesian
-      integer, intent(in) :: l, m
-      real(dp), intent(in) :: x(3)
+                     enddo
+                  !enddo
+               enddo 
+            enddo
+         endif
 
-      SphericalYCartesian = SolidRCartesian(l, m, x) * sqrt(((2.0_dp * l) + 1) / (4.0_dp * PI)) &
-                                                     * (normsq(x)**(-0.5_dp * l))
+         call finalise(dU)
+      enddo ! i
 
-    end function SphericalYCartesian
+      ! clear U from the memory
+      call finalise(U)
+
+      call system_timer('bispectrum_SO4_calc')
+
+   endsubroutine bispectrum_SO4_calc
+
+   subroutine bispectrum_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(bispectrum_so3), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
+      type(cplx_1d), dimension(:,:), allocatable :: fourier_so3
+
+      type(cplx_2d), dimension(:), allocatable :: dSphericalY_ij
+      type(cplx_2d), dimension(:,:,:), allocatable :: dfourier_so3
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, n, a, l, m, l1, l2, m1, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij
+      real(dp), dimension(3) :: u_ij, d_ij
+      real(dp), dimension(:), allocatable :: Rad_ij
+      real(dp), dimension(:,:), allocatable :: dRad_ij
+
+      complex(dp) :: sub, dsub(3)
+
+      integer, dimension(116) :: species_map
+
+      INIT_ERROR(error)
+
+      call system_timer('bispectrum_so3_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_so3_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      species_map = 0
+      do i = 1, size(this%species_Z)
+         if(this%species_Z(i) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(i)) = i
+         endif
+      enddo
+
+      if( .not. cg_initialised ) then
+         call cg_initialise(this%l_max)
+      elseif( this%l_max > cg_j_max ) then
+         call cg_finalise()
+         call cg_initialise(this%l_max)
+      endif
+
+      call finalise(descriptor_out)
+
+      d = bispectrum_so3_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(fourier_so3(0:this%l_max,this%n_max),SphericalY_ij(0:this%l_max),Rad_ij(this%n_max))
+      do a = 1, this%n_max
+         do l = 0, this%l_max
+            allocate(fourier_so3(l,a)%m(-l:l))
+            fourier_so3(l,a)%m(:) = CPLX_ZERO
+         enddo
+      enddo
+      do l = 0, this%l_max
+         allocate(SphericalY_ij(l)%m(-l:l))
+      enddo
+
+      if(my_do_grad_descriptor) then
+         allocate( dRad_ij(3,this%n_max), dSphericalY_ij(0:this%l_max) )
+         do l = 0, this%l_max
+            allocate(dSphericalY_ij(l)%mm(3,-l:l))
+         enddo
+      endif
+
+      i_desc = 0
+      do i = 1, at%N
+
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         do a = 1, this%n_max
+            do l = 0, this%l_max
+               fourier_so3(l,a)%m(:) = CPLX_ZERO
+            enddo
+         enddo
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            allocate( dfourier_so3(0:this%l_max,this%n_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            do n = 0, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               do a = 1, this%n_max
+                  do l = 0, this%l_max
+                     allocate(dfourier_so3(l,a,n)%mm(3,-l:l))
+                     dfourier_so3(l,a,n)%mm(:,:) = CPLX_ZERO
+                  enddo
+               enddo
+            enddo
+         endif
+
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            n_i = n_i + 1
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = j
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+
+            do a = 1, this%n_max
+               Rad_ij(a) = RadialFunction(this%Radial, r_ij, a)
+               if(my_do_grad_descriptor) dRad_ij(:,a) = GradRadialFunction(this%Radial, r_ij, a) * u_ij
+            enddo
+
+            do l = 0, this%l_max
+               do m = -l, l
+                  SphericalY_ij(l)%m(m) = SphericalYCartesian(l,m,d_ij)
+                  if(my_do_grad_descriptor) dSphericalY_ij(l)%mm(:,m) = GradSphericalYCartesian(l,m,d_ij)
+               enddo
+            enddo
+
+            do a = 1, this%n_max
+               do l = 0, this%l_max
+                  do m = -l, l
+                     fourier_so3(l,a)%m(m) = fourier_so3(l,a)%m(m) + Rad_ij(a)*SphericalY_ij(l)%m(m)
+                     if(my_do_grad_descriptor) then
+                        dfourier_so3(l,a,n_i)%mm(:,m) = dfourier_so3(l,a,n_i)%mm(:,m) + &
+                        dRad_ij(:,a) * SphericalY_ij(l)%m(m) + Rad_ij(a)*dSphericalY_ij(l)%mm(:,m)
+                     endif
+                  enddo
+               enddo
+            enddo
+
+         enddo ! n
+
+         if(my_do_descriptor) then
+            i_pow = 0
+            do a = 1, this%n_max
+               do l1 = 0, this%l_max
+                  l2 = l1
+                  !do l2 = 0, this%l_max
+                     do l = abs(l1-l2), min(this%l_max,l1+l2)
+                        if( mod(l1,2)==1 .and. mod(l2,2)==1 .and. mod(l,2)==1 ) cycle
+                        i_pow = i_pow + 1
+
+                        do m = -l, l
+                           sub = CPLX_ZERO
+                           do m1 = max(-l1,m-l2),min(l1,m+l2)
+                              sub = sub + cg_array(l1,m1,l2,m-m1,l,m) * conjg(fourier_so3(l1,a)%m(m1)) * conjg(fourier_so3(l2,a)%m(m-m1))
+                           enddo
+
+                           descriptor_out%x(i_desc)%data(i_pow) = descriptor_out%x(i_desc)%data(i_pow) + fourier_so3(l,a)%m(m) * sub
+                        enddo
+
+                     enddo
+                  !enddo
+               enddo
+            enddo
+         endif
+
+         if(my_do_grad_descriptor) then
+            do n = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               i_pow = 0
+               do a = 1, this%n_max
+                  do l1 = 0, this%l_max
+                     l2 = l1
+                     !do l2 = 0, this%l_max
+                        do l = abs(l1-l2), min(this%l_max,l1+l2)
+                           if( mod(l1,2)==1 .and. mod(l2,2)==1 .and. mod(l,2)==1 ) cycle
+                           i_pow = i_pow + 1
+
+                           do m = -l, l
+                              sub = CPLX_ZERO
+                              dsub = CPLX_ZERO
+                              do m1 = max(-l1,m-l2),min(l1,m+l2)
+                                 dsub = dsub + cg_array(l1,m1,l2,m-m1,l,m) * &
+                                 ( conjg(dfourier_so3(l1,a,n)%mm(:,m1)) * conjg(fourier_so3(l2,a)%m(m-m1)) + &
+                                   conjg(fourier_so3(l1,a)%m(m1)) * conjg(dfourier_so3(l2,a,n)%mm(:,m-m1)) )
+                                 sub = sub + cg_array(l1,m1,l2,m-m1,l,m) * conjg(fourier_so3(l1,a)%m(m1)) * conjg(fourier_so3(l2,a)%m(m-m1))
+                              enddo
+
+                              descriptor_out%x(i_desc)%grad_data(i_pow,:,n) = descriptor_out%x(i_desc)%grad_data(i_pow,:,n) + &
+                              fourier_so3(l,a)%m(m) * dsub + dfourier_so3(l,a,n)%mm(:,m) * sub
+                           enddo
+                        enddo
+                     !enddo
+                  enddo
+               enddo
+               descriptor_out%x(i_desc)%grad_data(:,:,0) = descriptor_out%x(i_desc)%grad_data(:,:,0) - descriptor_out%x(i_desc)%grad_data(:,:,n)
+            enddo
+         endif
+
+         if(allocated(dfourier_so3)) then
+            do n = lbound(dfourier_so3,3), ubound(dfourier_so3,3)
+               do a = lbound(dfourier_so3,2), ubound(dfourier_so3,2)
+                  do l = lbound(dfourier_so3,1), ubound(dfourier_so3,1)
+                     deallocate(dfourier_so3(l,a,n)%mm)
+                  enddo
+               enddo
+            enddo
+            deallocate(dfourier_so3)
+         endif
+
+      enddo ! i
+
+      if(allocated(Rad_ij)) deallocate(Rad_ij)
+      if(allocated(dRad_ij)) deallocate(dRad_ij)
+
+      if(allocated(fourier_so3)) then
+         do a = lbound(fourier_so3,2), ubound(fourier_so3,2)
+            do l = lbound(fourier_so3,1), ubound(fourier_so3,1)
+               deallocate(fourier_so3(l,a)%m)
+            enddo
+         enddo
+         deallocate(fourier_so3)
+      endif
+
+      if(allocated(SphericalY_ij)) then
+         do l = lbound(SphericalY_ij,1), ubound(SphericalY_ij,1)
+            deallocate(SphericalY_ij(l)%m)
+         enddo
+         deallocate(SphericalY_ij)
+      endif
+
+      if(allocated(dSphericalY_ij)) then
+         do l = lbound(dSphericalY_ij,1), ubound(dSphericalY_ij,1)
+            deallocate(dSphericalY_ij(l)%mm)
+         enddo
+         deallocate(dSphericalY_ij)
+      endif
+
+      call system_timer('bispectrum_so3_calc')
+
+   endsubroutine bispectrum_so3_calc
+
+   subroutine behler_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(behler), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, k, n, m, a, b, i_desc, n_neighbours, n_i, m_i, n_descriptors, n_cross
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij, r_ik, r_jk, cos_ijk, Ang, dAng, Rad, dRad_ij, dRad_ik, dRad_jk, f_cut_ij, f_cut_ik, f_cut_jk, df_cut_ij, df_cut_ik, df_cut_jk, g2, dg2
+      real(dp), dimension(3) :: u_ij, u_ik, u_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik
+
+      INIT_ERROR(error)
+
+      call system_timer('behler_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("behler_calc: descriptor object not initialised", error)
+      endif
+
+      if( at%cutoff < this%cutoff ) then
+         RAISE_ERROR("behler_calc: cutoff of atoms object ("//at%cutoff//") less than cutoff of descriptor ("//this%cutoff//")", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = behler_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
+
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            n_i = n_i + 1
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = j
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+
+            f_cut_ij = cutoff_function(r_ij,this%cutoff)
+            if(my_do_grad_descriptor) df_cut_ij = dcutoff_function(r_ij,this%cutoff)
+
+            do a = 1, this%n_g2
+               g2 = exp(-this%g2(a)%eta * (r_ij-this%g2(a)%rs)**2)
+               if(my_do_descriptor) descriptor_out%x(i_desc)%data(a) = descriptor_out%x(i_desc)%data(a) + g2 * f_cut_ij
+               if(my_do_grad_descriptor) then
+                  dg2 = -2.0_dp * this%g2(a)%eta * (r_ij-this%g2(a)%rs) * g2
+                  descriptor_out%x(i_desc)%grad_data(a,:,n_i) = ( dg2 * f_cut_ij + g2 * df_cut_ij ) * u_ij
+                  descriptor_out%x(i_desc)%grad_data(a,:,0) = descriptor_out%x(i_desc)%grad_data(a,:,0) - descriptor_out%x(i_desc)%grad_data(a,:,n_i)
+               endif
+            enddo
+
+
+            m_i = 0
+            do m = 1, atoms_n_neighbours(at,i)
+               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               m_i = m_i + 1
+
+               d_jk = d_ik - d_ij
+               r_jk = norm(d_jk)
+               if( r_jk .feq. 0.0_dp ) cycle
+
+               u_jk = d_jk / r_jk
+
+               f_cut_ik = cutoff_function(r_ik,this%cutoff)
+               f_cut_jk = cutoff_function(r_jk,this%cutoff)
+
+               cos_ijk = dot_product(u_ij,u_ik)
+
+               if(my_do_grad_descriptor) then
+                  df_cut_ik = dcutoff_function(r_ik,this%cutoff)
+                  df_cut_jk = dcutoff_function(r_jk,this%cutoff)
+
+                  dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                  dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+               endif
+
+               do b = 1, this%n_g3
+                  a = b + this%n_g2
+
+                  Ang = (1.0_dp + this%g3(b)%lambda * cos_ijk)**this%g3(b)%zeta
+                  Rad = exp( -this%g3(b)%eta * (r_ij**2 + r_ik**2 + r_jk**2) )
+
+                  if(my_do_descriptor) descriptor_out%x(i_desc)%data(a) = descriptor_out%x(i_desc)%data(a) + 0.5_dp * Ang * Rad * f_cut_ij * f_cut_ik * f_cut_jk
+                  if(my_do_grad_descriptor) then
+                     dAng = this%g3(b)%zeta * (1.0_dp + this%g3(b)%lambda * cos_ijk)**(this%g3(b)%zeta -1.0_dp) * this%g3(b)%lambda
+                     dRad_ij = -this%g3(b)%eta * 2.0_dp * r_ij * Rad
+                     dRad_ik = -this%g3(b)%eta * 2.0_dp * r_ik * Rad
+                     dRad_jk = -this%g3(b)%eta * 2.0_dp * r_jk * Rad
+
+                     descriptor_out%x(i_desc)%grad_data(a,:,n_i) = descriptor_out%x(i_desc)%grad_data(a,:,n_i) + 0.5_dp * &
+                     ( ( dAng * dcosijk_ij * Rad + Ang * ( dRad_ij * u_ij - dRad_jk * u_jk ) ) * f_cut_ij * f_cut_ik * f_cut_jk + &
+                     Ang * Rad * f_cut_ik * ( df_cut_ij * u_ij * f_cut_jk - f_cut_ij * df_cut_jk * u_jk ) )
+
+                     descriptor_out%x(i_desc)%grad_data(a,:,m_i) = descriptor_out%x(i_desc)%grad_data(a,:,m_i) + 0.5_dp * &
+                     ( ( dAng * dcosijk_ik * Rad + Ang * ( dRad_ik * u_ik + dRad_jk * u_jk ) ) * f_cut_ij * f_cut_ik * f_cut_jk + &
+                     Ang * Rad * f_cut_ij * ( df_cut_ik * u_ik * f_cut_jk + f_cut_ik * df_cut_jk * u_jk ) ) 
+
+                     descriptor_out%x(i_desc)%grad_data(a,:,0) = descriptor_out%x(i_desc)%grad_data(a,:,0) - 0.5_dp * &
+                     ( ( dAng * (dcosijk_ij+dcosijk_ik) * Rad + Ang * (dRad_ij * u_ij + dRad_ik * u_ik) ) * f_cut_ij * f_cut_ik * f_cut_jk + &
+                     Ang * Rad * f_cut_jk * ( df_cut_ij * u_ij * f_cut_ik + f_cut_ij * df_cut_ik * u_ik ) )
+                  endif
+
+
+               enddo
+
+            enddo
+         enddo
+
+         do b = 1, this%n_g3
+            a = b + this%n_g2
+
+            if(my_do_descriptor) descriptor_out%x(i_desc)%data(a) = descriptor_out%x(i_desc)%data(a) * 2.0_dp**(1.0_dp-this%g3(b)%zeta) 
+            if(my_do_grad_descriptor) descriptor_out%x(i_desc)%grad_data(a,:,:) = descriptor_out%x(i_desc)%grad_data(a,:,:) * 2.0_dp**(1.0_dp-this%g3(b)%zeta)
+         enddo
+      enddo
+
+      call system_timer('behler_calc')
+
+   endsubroutine behler_calc
+
+   subroutine distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(distance_2b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor, Zi1, Zi2, Zj1, Zj2
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, n
+      integer, dimension(3) :: shift
+      real(dp) :: r_ij
+      real(dp), dimension(3) :: u_ij
+
+      INIT_ERROR(error)
+
+      call system_timer('distance_2b_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("distance_2b_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = distance_2b_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,0:1))
+            allocate(descriptor_out%x(i)%ii(0:1))
+            allocate(descriptor_out%x(i)%pos(3,0:1))
+            allocate(descriptor_out%x(i)%has_grad_data(0:1))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,0:1))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+         Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
+         Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+            if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+
+            i_desc = i_desc + 1
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%data(1) = r_ij
+               descriptor_out%x(i_desc)%has_data = .true.
+
+               descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij,this%cutoff,0.5_dp)
+            endif
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(0) = i
+               descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+               descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+               descriptor_out%x(i_desc)%grad_data(1,:,0) = -u_ij(:)
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0) = -dcoordination_function(r_ij,this%cutoff,0.5_dp)*u_ij
+
+               descriptor_out%x(i_desc)%ii(1) = j
+               descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,j) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(1) = .true.
+               descriptor_out%x(i_desc)%grad_data(1,:,1) = u_ij(:)
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1) = -descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0)
+
+            endif
+         enddo
+      enddo
+
+      call system_timer('distance_2b_calc')
+
+   endsubroutine distance_2b_calc
+
+   subroutine coordination_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(coordination), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, n, i_n, n_neighbours, i_desc, n_descriptors, n_cross
+      integer, dimension(3) :: shift
+      real(dp) :: r_ij
+      real(dp), dimension(3) :: u_ij, df_cut
+
+      INIT_ERROR(error)
+
+      call system_timer('coordination_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("coordination_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = coordination_dimensions(this,error)
+
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      allocate(descriptor_out%x(n_descriptors))
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+
+         i_desc = i_desc + 1
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
+
+         i_n = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+
+            if( r_ij > this%cutoff ) cycle
+            i_n = i_n + 1
+
+            if(my_do_descriptor) &
+               descriptor_out%x(i_desc)%data(1) = descriptor_out%x(i_desc)%data(1) + coordination_function(r_ij,this%cutoff,this%transition_width)
+
+            if(my_do_grad_descriptor) then
+               df_cut = dcoordination_function(r_ij,this%cutoff,this%transition_width) * u_ij
+
+               descriptor_out%x(i_desc)%grad_data(1,:,0) = descriptor_out%x(i_desc)%grad_data(1,:,0) - df_cut
+
+               descriptor_out%x(i_desc)%ii(i_n) = j
+               descriptor_out%x(i_desc)%pos(:,i_n) = at%pos(:,j) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(i_n) = .true.
+               descriptor_out%x(i_desc)%grad_data(1,:,i_n) = df_cut
+            endif
+         enddo
+      enddo
+
+      call system_timer('coordination_calc')
+
+   endsubroutine coordination_calc
+
+   subroutine angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(angle_3b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor, Zk1, Zk2, Zj1, Zj2
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, k, n, m
+      integer, dimension(3) :: shift_ij, shift_ik
+      real(dp) :: r_ij, r_ik, r_jk, cos_ijk, fc_j, fc_k, dfc_j, dfc_k
+      real(dp), dimension(3) :: u_ij, u_ik, u_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik
+
+      INIT_ERROR(error)
+
+      call system_timer('angle_3b_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("angle_3b_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = angle_3b_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,0:2))
+            allocate(descriptor_out%x(i)%ii(0:2))
+            allocate(descriptor_out%x(i)%pos(3,0:2))
+            allocate(descriptor_out%x(i)%has_grad_data(0:2))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,0:2))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+         if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+         
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
+
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+
+            fc_j = coordination_function(r_ij,this%cutoff,0.5_dp)
+            dfc_j = dcoordination_function(r_ij,this%cutoff,0.5_dp)
+
+            do m = 1, atoms_n_neighbours(at,i)
+
+               if( n == m ) cycle
+
+               k = atoms_neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
+               Zk2 = (this%Z2 == 0) .or. (at%Z(k) == this%Z2)
+
+               if( .not. ( ( Zk1 .and. Zj2 ) .or. ( Zk2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+               d_jk = d_ij - d_ik
+               r_jk = norm(d_jk)
+               u_jk = d_jk / r_jk
+
+               fc_k = coordination_function(r_ik,this%cutoff,0.5_dp)
+               dfc_k = dcoordination_function(r_ik,this%cutoff,0.5_dp)
+
+               cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
+
+               i_desc = i_desc + 1
+
+               if(my_do_descriptor) then
+                  descriptor_out%x(i_desc)%data(1) = r_ij + r_ik
+                  descriptor_out%x(i_desc)%data(2) = (r_ij - r_ik)**2
+                  descriptor_out%x(i_desc)%data(3) = r_jk !cos_ijk
+                  descriptor_out%x(i_desc)%has_data = .true.
+
+                  descriptor_out%x(i_desc)%covariance_cutoff = fc_j*fc_k
+               endif
+
+               if(my_do_grad_descriptor) then
+                  dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                  dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+
+                  descriptor_out%x(i_desc)%ii(0) = i
+                  descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+                  descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,0) = - u_ij - u_ik
+                  descriptor_out%x(i_desc)%grad_data(2,:,0) = 2.0_dp * (r_ij - r_ik)*(-u_ij + u_ik)
+                  descriptor_out%x(i_desc)%grad_data(3,:,0) = 0.0_dp !-dcosijk_ij - dcosijk_ik
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0) = - dfc_j*fc_k*u_ij - dfc_k*fc_j*u_ik
+
+                  descriptor_out%x(i_desc)%ii(1) = j
+                  descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+                  descriptor_out%x(i_desc)%has_grad_data(1) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,1) = u_ij
+                  descriptor_out%x(i_desc)%grad_data(2,:,1) = 2.0_dp * (r_ij - r_ik)*u_ij
+                  descriptor_out%x(i_desc)%grad_data(3,:,1) = u_jk !dcosijk_ij
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1) = dfc_j*fc_k*u_ij
+
+                  descriptor_out%x(i_desc)%ii(2) = k
+                  descriptor_out%x(i_desc)%pos(:,2) = at%pos(:,k) + matmul(at%lattice,shift_ik)
+                  descriptor_out%x(i_desc)%has_grad_data(2) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,2) = u_ik
+                  descriptor_out%x(i_desc)%grad_data(2,:,2) = 2.0_dp * (r_ij - r_ik)*(-u_ik)
+                  descriptor_out%x(i_desc)%grad_data(3,:,2) = -u_jk !dcosijk_ik
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,2) = dfc_k*fc_j*u_ik
+               endif
+            enddo
+         enddo
+      enddo
+
+      call system_timer('angle_3b_calc')
+
+   endsubroutine angle_3b_calc
+
+   subroutine co_angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(co_angle_3b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(descriptor) :: my_coordination
+      type(descriptor_data) :: descriptor_coordination
+
+      logical :: my_do_descriptor, my_do_grad_descriptor, Zk1, Zk2, Zj1, Zj2
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, k, n, m, n_neighbours_coordination
+      integer, dimension(3) :: shift_ij, shift_ik
+      real(dp) :: r_ij, r_ik, r_jk, cos_ijk, fc_j, fc_k, dfc_j, dfc_k
+      real(dp), dimension(3) :: u_ij, u_ik, u_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik
+
+      INIT_ERROR(error)
+
+      call system_timer('co_angle_3b_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_angle_3b_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = co_angle_3b_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      i_desc = 0
+      do i = 1, at%N
+         if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+         n_neighbours_coordination = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+
+            do m = 1, atoms_n_neighbours(at,i)
+
+               if( n == m ) cycle
+
+               k = atoms_neighbour(at, i, m, distance = r_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
+               Zk2 = (this%Z2 == 0) .or. (at%Z(k) == this%Z2)
+
+               if( .not. ( ( Zk1 .and. Zj2 ) .or. ( Zk2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+               i_desc = i_desc + 1
+               if(my_do_descriptor) then
+                  allocate(descriptor_out%x(i_desc)%data(d))
+                  descriptor_out%x(i_desc)%data = 0.0_dp
+                  descriptor_out%x(i_desc)%has_data = .false.
+               endif
+
+               if(my_do_grad_descriptor) then
+
+                  allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:2+n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%ii(0:2+n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%pos(3,0:2+n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%has_grad_data(0:2+n_neighbours_coordination))
+                  descriptor_out%x(i_desc)%grad_data = 0.0_dp
+                  descriptor_out%x(i_desc)%ii = 0
+                  descriptor_out%x(i_desc)%pos = 0.0_dp
+                  descriptor_out%x(i_desc)%has_grad_data = .false.
+
+                  allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:2+n_neighbours_coordination))
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+               endif
+            enddo
+         enddo
+      enddo
+
+      call initialise(my_coordination,'coordination cutoff='//this%coordination_cutoff//' coordination_transition_width='//this%coordination_transition_width,error)
+      call calc(my_coordination,at,descriptor_coordination,do_descriptor,do_grad_descriptor,error)
+      
+      i_desc = 0
+      do i = 1, at%N
+         if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
+
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+
+            fc_j = coordination_function(r_ij,this%cutoff,0.5_dp)
+            dfc_j = dcoordination_function(r_ij,this%cutoff,0.5_dp)
+
+            do m = 1, atoms_n_neighbours(at,i)
+               if( n == m ) cycle
+
+               k = atoms_neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
+               Zk2 = (this%Z2 == 0) .or. (at%Z(k) == this%Z2)
+
+               if( .not. ( ( Zk1 .and. Zj2 ) .or. ( Zk2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+               d_jk = d_ij - d_ik
+               r_jk = norm(d_jk)
+               u_jk = d_jk / r_jk
+
+               fc_k = coordination_function(r_ik,this%cutoff,0.5_dp)
+               dfc_k = dcoordination_function(r_ik,this%cutoff,0.5_dp)
+
+               cos_ijk = dot_product(d_ij,d_ik)/(r_ij*r_ik)
+
+               i_desc = i_desc + 1
+
+               if(my_do_descriptor) then
+                  descriptor_out%x(i_desc)%data(1) = r_ij + r_ik
+                  descriptor_out%x(i_desc)%data(2) = (r_ij - r_ik)**2
+                  descriptor_out%x(i_desc)%data(3) = r_jk !cos_ijk
+                  descriptor_out%x(i_desc)%data(4) = descriptor_coordination%x(i)%data(1)
+                  descriptor_out%x(i_desc)%has_data = .true.
+
+                  descriptor_out%x(i_desc)%covariance_cutoff = fc_j*fc_k
+               endif
+
+               if(my_do_grad_descriptor) then
+                  dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                  dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+
+                  descriptor_out%x(i_desc)%ii(0) = i
+                  descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+                  descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,0) = - u_ij - u_ik
+                  descriptor_out%x(i_desc)%grad_data(2,:,0) = 2.0_dp * (r_ij - r_ik)*(-u_ij + u_ik)
+                  descriptor_out%x(i_desc)%grad_data(3,:,0) = 0.0_dp !-dcosijk_ij - dcosijk_ik
+                  descriptor_out%x(i_desc)%grad_data(4,:,0) = descriptor_coordination%x(i)%grad_data(1,:,0)
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0) = - dfc_j*fc_k*u_ij - dfc_k*fc_j*u_ik
+
+                  descriptor_out%x(i_desc)%ii(1) = j
+                  descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+                  descriptor_out%x(i_desc)%has_grad_data(1) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,1) = u_ij
+                  descriptor_out%x(i_desc)%grad_data(2,:,1) = 2.0_dp * (r_ij - r_ik)*u_ij
+                  descriptor_out%x(i_desc)%grad_data(3,:,1) = u_jk !dcosijk_ij
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1) = dfc_j*fc_k*u_ij
+
+                  descriptor_out%x(i_desc)%ii(2) = k
+                  descriptor_out%x(i_desc)%pos(:,2) = at%pos(:,k) + matmul(at%lattice,shift_ik)
+                  descriptor_out%x(i_desc)%has_grad_data(2) = .true.
+                  descriptor_out%x(i_desc)%grad_data(1,:,2) = u_ik
+                  descriptor_out%x(i_desc)%grad_data(2,:,2) = 2.0_dp * (r_ij - r_ik)*(-u_ik)
+                  descriptor_out%x(i_desc)%grad_data(3,:,2) = -u_jk !dcosijk_ik
+
+                  descriptor_out%x(i_desc)%grad_covariance_cutoff(:,2) = dfc_k*fc_j*u_ik
+
+                  descriptor_out%x(i_desc)%ii(3:) = descriptor_coordination%x(i)%ii(1:)
+                  descriptor_out%x(i_desc)%pos(:,3:) = descriptor_coordination%x(i)%pos(:,1:)
+                  descriptor_out%x(i_desc)%has_grad_data(3:) = descriptor_coordination%x(i)%has_grad_data(1:)
+                  descriptor_out%x(i_desc)%grad_data(4,:,3:) = descriptor_coordination%x(i)%grad_data(1,:,1:)
+               endif
+            enddo
+         enddo
+      enddo
+
+      call finalise(my_coordination)
+      call finalise(descriptor_coordination)
+
+      call system_timer('co_angle_3b_calc')
+
+   endsubroutine co_angle_3b_calc
+
+   subroutine co_distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(co_distance_2b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(descriptor) :: my_coordination
+      type(descriptor_data) :: descriptor_coordination
+
+      logical :: my_do_descriptor, my_do_grad_descriptor, Zi1, Zi2, Zj1, Zj2
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, n, n_neighbours_coordination_i, n_neighbours_coordination_ij
+      integer, dimension(3) :: shift
+      real(dp) :: r_ij
+      real(dp), dimension(3) :: u_ij
+
+      INIT_ERROR(error)
+
+      call system_timer('co_distance_2b_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_distance_2b_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = co_distance_2b_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+
+      allocate(descriptor_out%x(n_descriptors))
+      i_desc = 0
+
+      do i = 1, at%N
+         Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
+         Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance=r_ij)
+
+            if(r_ij > this%cutoff) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+            if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+            i_desc = i_desc + 1
+            if(my_do_descriptor) then
+               allocate(descriptor_out%x(i_desc)%data(d))
+               descriptor_out%x(i_desc)%data = 0.0_dp
+               descriptor_out%x(i_desc)%has_data = .false.
+            endif
+
+            if(my_do_grad_descriptor) then
+               n_neighbours_coordination_ij = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff) + &
+               atoms_n_neighbours(at,j,max_dist=this%coordination_cutoff) + 2
+
+               allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:1+n_neighbours_coordination_ij))
+               allocate(descriptor_out%x(i_desc)%ii(0:1+n_neighbours_coordination_ij))
+               allocate(descriptor_out%x(i_desc)%pos(3,0:1+n_neighbours_coordination_ij))
+               allocate(descriptor_out%x(i_desc)%has_grad_data(0:1+n_neighbours_coordination_ij))
+               descriptor_out%x(i_desc)%grad_data = 0.0_dp
+               descriptor_out%x(i_desc)%ii = 0
+               descriptor_out%x(i_desc)%pos = 0.0_dp
+               descriptor_out%x(i_desc)%has_grad_data = .false.
+
+               allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:1+n_neighbours_coordination_ij))
+               descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+            endif
+         enddo
+      enddo
+
+      call initialise(my_coordination,'coordination cutoff='//this%coordination_cutoff//' coordination_transition_width='//this%coordination_transition_width,error)
+      call calc(my_coordination,at,descriptor_coordination,.true.,do_grad_descriptor,error)
+      
+      i_desc = 0
+      do i = 1, at%N
+         Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
+         Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+            if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+            i_desc = i_desc + 1
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%data(1) = r_ij
+               descriptor_out%x(i_desc)%has_data = .true.
+
+               descriptor_out%x(i_desc)%data(2) = descriptor_coordination%x(i)%data(1) + descriptor_coordination%x(j)%data(1)
+               descriptor_out%x(i_desc)%data(3) = (descriptor_coordination%x(i)%data(1) - descriptor_coordination%x(j)%data(1))**2
+
+               descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij,this%cutoff,this%transition_width)
+            endif
+            if(my_do_grad_descriptor) then
+               n_neighbours_coordination_i = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+
+               descriptor_out%x(i_desc)%ii(0) = i
+               descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+               descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+               descriptor_out%x(i_desc)%grad_data(1,:,0) = -u_ij(:)
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0) = -dcoordination_function(r_ij,this%cutoff,this%transition_width)*u_ij
+
+               descriptor_out%x(i_desc)%ii(1) = j
+               descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,j) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(1) = .true.
+               descriptor_out%x(i_desc)%grad_data(1,:,1) = u_ij(:)
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1) = -descriptor_out%x(i_desc)%grad_covariance_cutoff(:,0)
+
+               descriptor_out%x(i_desc)%ii(2:n_neighbours_coordination_i+2) = descriptor_coordination%x(i)%ii(:)
+               descriptor_out%x(i_desc)%pos(:,2:n_neighbours_coordination_i+2) = descriptor_coordination%x(i)%pos(:,:)
+               descriptor_out%x(i_desc)%has_grad_data(2:n_neighbours_coordination_i+2) = descriptor_coordination%x(i)%has_grad_data(:)
+               descriptor_out%x(i_desc)%grad_data(2,:,2:n_neighbours_coordination_i+2) = descriptor_coordination%x(i)%grad_data(1,:,:)
+               descriptor_out%x(i_desc)%grad_data(3,:,2:n_neighbours_coordination_i+2) = 2.0_dp*(descriptor_coordination%x(i)%data(1) - descriptor_coordination%x(j)%data(1))*&
+                  descriptor_coordination%x(i)%grad_data(1,:,:)
+
+               descriptor_out%x(i_desc)%ii(n_neighbours_coordination_i+3:) = descriptor_coordination%x(j)%ii(:)
+               descriptor_out%x(i_desc)%pos(:,n_neighbours_coordination_i+3:) = descriptor_coordination%x(j)%pos(:,:)
+               descriptor_out%x(i_desc)%has_grad_data(n_neighbours_coordination_i+3:) = descriptor_coordination%x(j)%has_grad_data(:)
+               descriptor_out%x(i_desc)%grad_data(2,:,n_neighbours_coordination_i+3:) = descriptor_coordination%x(j)%grad_data(1,:,:)
+               descriptor_out%x(i_desc)%grad_data(3,:,n_neighbours_coordination_i+3:) = -2.0_dp*(descriptor_coordination%x(i)%data(1) - descriptor_coordination%x(j)%data(1))*&
+                  descriptor_coordination%x(j)%grad_data(1,:,:)
+
+            endif
+         enddo
+      enddo
+
+      call finalise(my_coordination)
+      call finalise(descriptor_coordination)
+
+      call system_timer('co_distance_2b_calc')
+
+   endsubroutine co_distance_2b_calc
+
+   subroutine cosnx_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(cosnx), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, k, n, m, a, b, i_desc, i_cosnx, n_neighbours, n_i, n_descriptors, n_cross
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij, r_ik, r_jk, cos_ijk, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk, U_0_cos_ijk, U_1_cos_ijk, U_n_cos_ijk, Ang
+      real(dp), dimension(3) :: u_ij, u_ik, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik, dAng_ij, dAng_ik
+      real(dp), dimension(:), allocatable :: Rad_ij, Rad_ik, T_cos_ijk, U_cos_ijk
+      real(dp), dimension(:,:), allocatable :: dRad_ij, dRad_ik
+      integer, dimension(116) :: species_map
+
+      INIT_ERROR(error)
+
+      call system_timer('cosnx_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("cosnx_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      species_map = 0
+      do i = 1, size(this%species_Z)
+         if(this%species_Z(i) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(i)) = i
+         endif
+      enddo
+
+      call finalise(descriptor_out)
+
+      d = cosnx_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(Rad_ij(this%n_max), Rad_ik(this%n_max))
+      allocate(T_cos_ijk(0:this%l_max))
+      if(my_do_grad_descriptor) then
+         allocate(U_cos_ijk(-1:this%l_max))
+         allocate(dRad_ij(3,this%n_max), dRad_ik(3,this%n_max))
+      endif
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
+
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            n_i = n_i + 1
+
+            do a = 1, this%n_max
+               Rad_ij(a) = RadialFunction(this%Radial, r_ij, a) * this%w(species_map(at%Z(j)))
+               if(my_do_grad_descriptor) dRad_ij(:,a) = GradRadialFunction(this%Radial, r_ij, a) * u_ij * this%w(species_map(at%Z(j)))
+            enddo
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = j
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+
+            do m = 1, atoms_n_neighbours(at,i)
+               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               d_jk = d_ik - d_ij
+               r_jk = norm(d_jk)
+               if( r_jk .feq. 0.0_dp ) cycle
+
+               cos_ijk = dot_product(u_ij,u_ik)
+               if(my_do_grad_descriptor) then
+                  dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                  dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+               endif
+
+               do a = 1, this%n_max
+                  Rad_ik(a) = RadialFunction(this%Radial, r_ik, a) * this%w(species_map(at%Z(k)))
+                  if(my_do_grad_descriptor) dRad_ik(:,a) = GradRadialFunction(this%Radial, r_ik, a) * u_ik * this%w(species_map(at%Z(k)))
+               enddo
+
+               if(this%l_max >= 0) then
+                  T_cos_ijk(0) = 1.0_dp
+                  T_0_cos_ijk = T_cos_ijk(0)
+                  if(my_do_grad_descriptor) then
+                     U_cos_ijk(-1) = 0.0_dp
+                     U_cos_ijk(0) = 1.0_dp
+                     U_0_cos_ijk = U_cos_ijk(0)
+                  endif
+               endif
+
+               if(this%l_max >= 1) then
+                  T_cos_ijk(1) = cos_ijk
+                  T_1_cos_ijk = T_cos_ijk(1)
+                  if(my_do_grad_descriptor) then
+                     U_cos_ijk(1) = 2.0_dp*cos_ijk
+                     U_1_cos_ijk = U_cos_ijk(1)
+                  endif
+               endif
+
+               do b = 2, this%l_max
+                  T_n_cos_ijk = 2*cos_ijk*T_1_cos_ijk - T_0_cos_ijk
+                  T_0_cos_ijk = T_1_cos_ijk
+                  T_1_cos_ijk = T_n_cos_ijk
+
+                  T_cos_ijk(b) = T_n_cos_ijk
+
+                  if(my_do_grad_descriptor) then
+                     U_n_cos_ijk = 2*cos_ijk*U_1_cos_ijk - U_0_cos_ijk
+                     U_0_cos_ijk = U_1_cos_ijk
+                     U_1_cos_ijk = U_n_cos_ijk
+
+                     U_cos_ijk(b) = U_n_cos_ijk
+                  endif
+               enddo
+     
+               i_cosnx = 0
+               do a = 1, this%n_max
+                  do b = 0, this%l_max
+                     i_cosnx = i_cosnx + 1
+
+                     Ang = T_cos_ijk(b)
+
+                     if(my_do_descriptor) &
+                        descriptor_out%x(i_desc)%data(i_cosnx) = descriptor_out%x(i_desc)%data(i_cosnx) + Rad_ij(a)*Rad_ik(a)*Ang*0.5_dp
+
+                     if(my_do_grad_descriptor) then
+
+                        dAng_ij = b*U_cos_ijk(b-1) * dcosijk_ij
+                        dAng_ik = b*U_cos_ijk(b-1) * dcosijk_ik
+
+                        descriptor_out%x(i_desc)%grad_data(i_cosnx,:,0) = descriptor_out%x(i_desc)%grad_data(i_cosnx,:,0) - &
+                        ( Rad_ij(a)*Rad_ik(a)*(dAng_ij+dAng_ik) + dRad_ij(:,a)*Rad_ik(a)*Ang + Rad_ij(a)*dRad_ik(:,a)*Ang ) * 0.5_dp
+
+                        descriptor_out%x(i_desc)%grad_data(i_cosnx,:,n_i) = descriptor_out%x(i_desc)%grad_data(i_cosnx,:,n_i) + &
+                        (Rad_ij(a)*Rad_ik(a)*dAng_ij + dRad_ij(:,a)*Rad_ik(a)*Ang)
+                     endif
+                  enddo
+               enddo
+            enddo
+         enddo
+      enddo
+
+      if(allocated(Rad_ij)) deallocate(Rad_ij)
+      if(allocated(Rad_ik)) deallocate(Rad_ik)
+      if(allocated(T_cos_ijk)) deallocate(T_cos_ijk)
+      if(allocated(U_cos_ijk)) deallocate(U_cos_ijk)
+      if(allocated(dRad_ij)) deallocate(dRad_ij)
+      if(allocated(dRad_ik)) deallocate(dRad_ik)
+
+      call system_timer('cosnx_calc')
+
+   endsubroutine cosnx_calc
+
+   subroutine trihis_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(trihis), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, k, n, m, i_desc
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij, r_ik, r_jk, cos_ijk, Sym_Cor_S, Sym_Cor_A, exp_desc
+      real(dp), dimension(3) :: u_ij, u_ik, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik, x, exp_arg, dexp_desc
+      real(dp), dimension(3,3) :: dx_j, dx_k
+
+      INIT_ERROR(error)
+
+      call system_timer('trihis_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("trihis_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = trihis_dimensions(this,error)
+
+      allocate(descriptor_out%x(at%N))
+      do i = 1, at%N
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,0:atoms_n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%ii(0:atoms_n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%pos(3,0:atoms_n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%has_grad_data(0:atoms_n_neighbours(at,i)))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+         endif
+      enddo
+
+      do i = 1, at%N
+
+         if(my_do_descriptor) descriptor_out%x(i)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i)%ii(0) = i
+            descriptor_out%x(i)%pos(:,0) = at%pos(:,i) 
+            descriptor_out%x(i)%has_grad_data(0) = .true.
+         endif
+
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i)%ii(n) = j
+               descriptor_out%x(i)%pos(:,n) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i)%has_grad_data(n) = .true.
+            endif
+
+            do m = 1, atoms_n_neighbours(at,i)
+               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               d_jk = d_ik - d_ij
+               r_jk = norm(d_jk)
+               if( r_jk .feq. 0.0_dp ) cycle
+
+               cos_ijk = dot_product(u_ij,u_ik)
+               Sym_Cor_S = r_ij + r_ik
+               Sym_Cor_A = (r_ij - r_ik)**2
+
+               x = (/Sym_Cor_S, Sym_Cor_A, cos_ijk/)
+
+               if(my_do_grad_descriptor) then
+                  dcosijk_ij = ( u_ik - cos_ijk * u_ij ) / r_ij
+                  dcosijk_ik = ( u_ij - cos_ijk * u_ik ) / r_ik
+
+                  dx_j(:,1) = u_ij
+                  dx_j(:,2) = 2.0_dp*(r_ij - r_ik)*u_ij
+                  dx_j(:,3) = dcosijk_ij
+
+                  dx_k(:,1) = u_ik
+                  dx_k(:,2) = -2.0_dp*(r_ij - r_ik)*u_ik
+                  dx_k(:,3) = dcosijk_ik
+               endif
+
+               do i_desc = 1, this%n_gauss
+
+                  exp_arg = (x - this%gauss_centre(:,i_desc))/this%gauss_width(:,i_desc)
+                  exp_desc = exp(-0.5_dp*sum(exp_arg**2))
+
+                  if(my_do_descriptor) &
+                     descriptor_out%x(i)%data(i_desc) = descriptor_out%x(i)%data(i_desc) + exp_desc
+
+                  if(my_do_grad_descriptor) then
+                     dexp_desc = -exp_desc * exp_arg / this%gauss_width(:,i_desc)
+
+                     descriptor_out%x(i)%grad_data(i_desc,:,0) = descriptor_out%x(i)%grad_data(i_desc,:,0) - &
+                        matmul(dx_j+dx_k,dexp_desc)
+                     descriptor_out%x(i)%grad_data(i_desc,:,n) = descriptor_out%x(i)%grad_data(i_desc,:,n) + &
+                        2.0_dp*matmul(dx_j,dexp_desc)
+                  endif
+               enddo
+            enddo
+         enddo
+      enddo
+
+      call system_timer('trihis_calc')
+
+   endsubroutine trihis_calc
+
+   subroutine water_monomer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(water_monomer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, i, iO, iH1, iH2
+      integer, dimension(3) :: shift_1, shift_2
+      integer, dimension(:,:), allocatable :: water_monomer_index
+      real(dp) :: r1, r2
+      real(dp), dimension(3) :: v1, v2, u1, u2
+
+      INIT_ERROR(error)
+
+      call system_timer('water_monomer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_monomer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = water_monomer_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+            descriptor_out%x(i)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,3))
+            allocate(descriptor_out%x(i)%ii(3))
+            allocate(descriptor_out%x(i)%pos(3,3))
+            allocate(descriptor_out%x(i)%has_grad_data(3))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,3))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(water_monomer_index(3,n_descriptors))
+      call find_water_monomer(at,water_monomer_index,error=error)
+
+      do i = 1, n_descriptors
+
+         iO = water_monomer_index(1,i)
+         iH1 = water_monomer_index(2,i)
+         iH2 = water_monomer_index(3,i)
+
+
+         v1 = diff_min_image(at,iO,iH1,shift=shift_1)
+         v2 = diff_min_image(at,iO,iH2,shift=shift_2)
+         r1 = sqrt(dot_product(v1,v1))
+         r2 = sqrt(dot_product(v2,v2))
+         u1 = v1 / r1
+         u2 = v2 / r2
+
+         if(my_do_descriptor) then
+            descriptor_out%x(i)%has_data = .true.
+            descriptor_out%x(i)%data(1) = r1+r2 
+            descriptor_out%x(i)%data(2) = (r1-r2)**2
+            descriptor_out%x(i)%data(3) = dot_product(v1,v2)
+         endif
+
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i)%ii(:) = water_monomer_index(:,i)
+            descriptor_out%x(i)%pos(:,1) = at%pos(:,iO)
+            descriptor_out%x(i)%pos(:,2) = at%pos(:,iH1) + matmul(at%lattice,shift_1)
+            descriptor_out%x(i)%pos(:,3) = at%pos(:,iH2) + matmul(at%lattice,shift_2)
+            descriptor_out%x(i)%has_grad_data(:) = .true.
+
+            descriptor_out%x(i)%grad_data(1,:,1) = -u1-u2                  ! 1st descriptor wrt rO
+            descriptor_out%x(i)%grad_data(1,:,2) =  u1                     ! 1st descriptor wrt rH1
+            descriptor_out%x(i)%grad_data(1,:,3) =  u2                     ! 1st descriptor wrt rH2
+            descriptor_out%x(i)%grad_data(2,:,1) =  2.0_dp*(r1-r2)*(u2-u1) ! 2nd descriptor wrt rO
+            descriptor_out%x(i)%grad_data(2,:,2) =  2.0_dp*(r1-r2)*u1      ! 2nd descriptor wrt rH1
+            descriptor_out%x(i)%grad_data(2,:,3) = -2.0_dp*(r1-r2)*u2      ! 2nd descriptor wrt rH2
+            descriptor_out%x(i)%grad_data(3,:,1) =  -v1-v2                 ! 3rd descriptor wrt rO
+            descriptor_out%x(i)%grad_data(3,:,2) =  v2                     ! 3rd descriptor wrt rH1
+            descriptor_out%x(i)%grad_data(3,:,3) =  v1                     ! 3rd descriptor wrt rH2
+         endif
+
+      enddo
+
+      deallocate(water_monomer_index)
+      call system_timer('water_monomer_calc')
+
+   endsubroutine water_monomer_calc
+
+   subroutine water_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(water_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, n_monomers, i_desc, i, j, n, &
+         iAO, iAH1, iAH2, iBO, iBH1, iBH2
+      integer, dimension(3) :: shift_AO_BO, shift_AO_AH1, shift_AO_AH2, shift_AO_BH1, shift_AO_BH2, &
+         shift_BO_AH1, shift_BO_AH2, shift_BO_BH1, shift_BO_BH2, &
+         shift_AH1_AH2, shift_AH1_BH1, shift_AH1_BH2, shift_AH2_BH1, shift_AH2_BH2, shift_BH1_BH2
+      real(dp), dimension(3) :: diff_AO_BO, diff_AO_AH1, diff_AO_AH2, diff_AO_BH1, diff_AO_BH2, &
+         diff_BO_AH1, diff_BO_AH2, diff_BO_BH1, diff_BO_BH2, &
+         diff_AH1_AH2, diff_AH1_BH1, diff_AH1_BH2, diff_AH2_BH1, diff_AH2_BH2, diff_BH1_BH2
+      integer, dimension(:,:), allocatable :: water_monomer_index
+      real(dp) :: r_AO_BO, r_AO_AH1, r_AO_AH2, r_AO_BH1, r_AO_BH2, r_BO_AH1, r_BO_AH2, r_BO_BH1, r_BO_BH2, &
+         r_AH1_AH2, r_AH1_BH1, r_AH1_BH2, r_AH2_BH1, r_AH2_BH2, r_BH1_BH2
+      integer, dimension(1) :: j_array
+
+      INIT_ERROR(error)
+
+      call system_timer('water_dimer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_dimer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = water_dimer_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,6))
+            allocate(descriptor_out%x(i)%ii(6))
+            allocate(descriptor_out%x(i)%pos(3,6))
+            allocate(descriptor_out%x(i)%has_grad_data(6))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,6))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+
+         endif
+      enddo
+
+      n_monomers = 0
+      do i = 1, at%N
+         if(at%Z(i) == 8) n_monomers = n_monomers+1
+      enddo
+
+      allocate(water_monomer_index(3,n_monomers))
+      call find_water_monomer(at,water_monomer_index,OHH_ordercheck=this%OHH_ordercheck,error=error)
+
+      i_desc = 0
+      do i = 1, n_monomers
+         iAO = water_monomer_index(1,i)
+         iAH1 = water_monomer_index(2,i)
+         iAH2 = water_monomer_index(3,i)
+
+         diff_AO_AH1 = diff_min_image(at,iAO,iAH1,shift=shift_AO_AH1)
+         diff_AO_AH2 = diff_min_image(at,iAO,iAH2,shift=shift_AO_AH2)
+         diff_AH1_AH2 = diff_min_image(at,iAH1,iAH2,shift=shift_AH1_AH2)
+
+         r_AO_AH1 = norm(diff_AO_AH1)
+         r_AO_AH2 = norm(diff_AO_AH2)
+         r_AH1_AH2 = norm(diff_AH1_AH2)
+
+         do n = 1, atoms_n_neighbours(at,iAO)
+            iBO = atoms_neighbour(at,iAO,n,distance=r_AO_BO, diff=diff_AO_BO, shift=shift_AO_BO )
+            if(at%Z(iBO) /= 8) cycle
+            if( r_AO_BO >= this%cutoff ) cycle
+            i_desc = i_desc + 1
+
+            j_array = find(water_monomer_index(1,:) == iBO)
+            j = j_array(1)
+
+            iBH1 = water_monomer_index(2,j)
+            iBH2 = water_monomer_index(3,j)
+
+            diff_BO_BH1 = diff_min_image(at,iBO,iBH1,shift=shift_BO_BH1)
+            diff_BO_BH2 = diff_min_image(at,iBO,iBH2,shift=shift_BO_BH2)
+            diff_BH1_BH2 = diff_min_image(at,iBH1,iBH2,shift=shift_BH1_BH2)
+
+            r_BO_BH1 = norm(diff_BO_BH1)
+            r_BO_BH2 = norm(diff_BO_BH2)
+            r_BH1_BH2 = norm(diff_BH1_BH2)
+
+            diff_AO_BH1 = diff_AO_BO + diff_BO_BH1
+            diff_AO_BH2 = diff_AO_BO + diff_BO_BH2
+            shift_AO_BH1 = shift_AO_BO + shift_BO_BH1
+            shift_AO_BH2 = shift_AO_BO + shift_BO_BH2
+
+            r_AO_BH1 = norm(diff_AO_BH1)
+            r_AO_BH2 = norm(diff_AO_BH2)
+
+            diff_BO_AH1 = -diff_AO_BO + diff_AO_AH1
+            diff_BO_AH2 = -diff_AO_BO + diff_AO_AH2
+
+            shift_BO_AH1 = -shift_AO_BO + shift_AO_AH1
+            shift_BO_AH2 = -shift_AO_BO + shift_AO_AH2
+
+            r_BO_AH1 = norm(diff_BO_AH1)
+            r_BO_AH2 = norm(diff_BO_AH2)
+
+            diff_AH1_BH1 = -diff_AO_AH1 + diff_AO_BO + diff_BO_BH1
+            diff_AH1_BH2 = -diff_AO_AH1 + diff_AO_BO + diff_BO_BH2
+            diff_AH2_BH1 = -diff_AO_AH2 + diff_AO_BO + diff_BO_BH1
+            diff_AH2_BH2 = -diff_AO_AH2 + diff_AO_BO + diff_BO_BH2
+
+            shift_AH1_BH1 = -shift_AO_AH1 + shift_AO_BO + shift_BO_BH1
+            shift_AH1_BH2 = -shift_AO_AH1 + shift_AO_BO + shift_BO_BH2
+            shift_AH2_BH1 = -shift_AO_AH2 + shift_AO_BO + shift_BO_BH1
+            shift_AH2_BH2 = -shift_AO_AH2 + shift_AO_BO + shift_BO_BH2
+
+            r_AH1_BH1 = norm(diff_AH1_BH1)
+            r_AH1_BH2 = norm(diff_AH1_BH2)
+            r_AH2_BH1 = norm(diff_AH2_BH1)
+            r_AH2_BH2 = norm(diff_AH2_BH2)
+
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%has_data = .true.
+               descriptor_out%x(i_desc)%data(:) = (/r_AO_BO, &
+                  r_AO_AH1, r_AO_AH2, r_AO_BH1, r_AO_BH2, r_BO_AH1, r_BO_AH2, r_BO_BH1, r_BO_BH2, &
+                  r_AH1_AH2, r_AH1_BH1, r_AH1_BH2, r_AH2_BH1, r_AH2_BH2, r_BH1_BH2/)
+
+               descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_AO_BO, &
+               this%cutoff,this%cutoff_transition_width)
+            endif
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(:) = (/ water_monomer_index(:,i),water_monomer_index(:,j) /)
+               descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,iAO) ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%pos(:,2) = at%pos(:,iAH1) + matmul(at%lattice,shift_AO_AH1) ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%pos(:,3) = at%pos(:,iAH2) + matmul(at%lattice,shift_AO_AH2) ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%pos(:,4) = at%pos(:,iBO) + matmul(at%lattice,shift_AO_BO) ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%pos(:,5) = at%pos(:,iBH1) + matmul(at%lattice,shift_AO_BH1) ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%pos(:,6) = at%pos(:,iBH2) + matmul(at%lattice,shift_AO_BH2) ! TODO: Have to figure out how to do this.
+
+               descriptor_out%x(i_desc)%has_grad_data(:) = .true.
+
+               descriptor_out%x(i_desc)%grad_data(1,:,1) = -diff_AO_BO / r_AO_BO     ! 1st descriptor wrt OA
+               descriptor_out%x(i_desc)%grad_data(1,:,4) = -descriptor_out%x(i_desc)%grad_data(1,:,1)        ! 1st descriptor wrt OB
+
+               descriptor_out%x(i_desc)%grad_data(2,:,1) = -diff_AO_AH1 / r_AO_AH1  ! 2nd descriptor wrt OA
+               descriptor_out%x(i_desc)%grad_data(2,:,2) = -descriptor_out%x(i_desc)%grad_data(2,:,1)        ! 2nd descriptor wrt AH1
+               descriptor_out%x(i_desc)%grad_data(3,:,1) = -diff_AO_AH2 / r_AO_AH2  ! 3rd descriptor wrt OA
+               descriptor_out%x(i_desc)%grad_data(3,:,3) = -descriptor_out%x(i_desc)%grad_data(3,:,1)        ! 3rd descriptor wrt AH2
+               descriptor_out%x(i_desc)%grad_data(4,:,1) = -diff_AO_BH1 / r_AO_BH1  ! 4th descriptor wrt OA
+               descriptor_out%x(i_desc)%grad_data(4,:,5) = -descriptor_out%x(i_desc)%grad_data(4,:,1)        ! 4th descriptor wrt BH1
+               descriptor_out%x(i_desc)%grad_data(5,:,1) = -diff_AO_BH2 / r_AO_BH2  ! 5th descriptor wrt OA
+               descriptor_out%x(i_desc)%grad_data(5,:,6) = -descriptor_out%x(i_desc)%grad_data(5,:,1)        ! 5th descriptor wrt BH2
+
+               descriptor_out%x(i_desc)%grad_data(6,:,4) = -diff_BO_AH1 / r_BO_AH1  ! 6th descriptor wrt OB
+               descriptor_out%x(i_desc)%grad_data(6,:,2) = -descriptor_out%x(i_desc)%grad_data(6,:,4)        ! 6th descriptor wrt AH1
+               descriptor_out%x(i_desc)%grad_data(7,:,4) = -diff_BO_AH2 / r_BO_AH2  ! 7th descriptor wrt OB
+               descriptor_out%x(i_desc)%grad_data(7,:,3) = -descriptor_out%x(i_desc)%grad_data(7,:,4)        ! 7th descriptor wrt AH2
+               descriptor_out%x(i_desc)%grad_data(8,:,4) = -diff_BO_BH1 / r_BO_BH1  ! 8th descriptor wrt OB
+               descriptor_out%x(i_desc)%grad_data(8,:,5) = -descriptor_out%x(i_desc)%grad_data(8,:,4)        ! 8th descriptor wrt BH1
+               descriptor_out%x(i_desc)%grad_data(9,:,4) = -diff_BO_BH2 / r_BO_BH2  ! 9th descriptor wrt OB
+               descriptor_out%x(i_desc)%grad_data(9,:,6) = -descriptor_out%x(i_desc)%grad_data(9,:,4)        ! 9th descriptor wrt BH2
+
+               descriptor_out%x(i_desc)%grad_data(10,:,2) = -diff_AH1_AH2 / r_AH1_AH2 ! 10th descriptor wrt AH1
+               descriptor_out%x(i_desc)%grad_data(10,:,3) = -descriptor_out%x(i_desc)%grad_data(10,:,2)         ! 10th descriptor wrt AH2
+               descriptor_out%x(i_desc)%grad_data(11,:,2) = -diff_AH1_BH1 / r_AH1_BH1 ! 11th descriptor wrt AH1
+               descriptor_out%x(i_desc)%grad_data(11,:,5) = -descriptor_out%x(i_desc)%grad_data(11,:,2)         ! 11th descriptor wrt BH1
+               descriptor_out%x(i_desc)%grad_data(12,:,2) = -diff_AH1_BH2 / r_AH1_BH2 ! 12th descriptor wrt AH1
+               descriptor_out%x(i_desc)%grad_data(12,:,6) = -descriptor_out%x(i_desc)%grad_data(12,:,2)         ! 12th descriptor wrt BH2
+
+               descriptor_out%x(i_desc)%grad_data(13,:,3) = -diff_AH2_BH1 / r_AH2_BH1 ! 13th descriptor wrt AH2
+               descriptor_out%x(i_desc)%grad_data(13,:,5) = -descriptor_out%x(i_desc)%grad_data(13,:,3)         ! 13th descriptor wrt BH1
+               descriptor_out%x(i_desc)%grad_data(14,:,3) = -diff_AH2_BH2 / r_AH2_BH2 ! 14th descriptor wrt AH2
+               descriptor_out%x(i_desc)%grad_data(14,:,6) = -descriptor_out%x(i_desc)%grad_data(14,:,3)         ! 14th descriptor wrt BH2
+
+               descriptor_out%x(i_desc)%grad_data(15,:,5) = -diff_BH1_BH2 / r_BH1_BH2 ! 15th descriptor wrt BH1
+               descriptor_out%x(i_desc)%grad_data(15,:,6) = -descriptor_out%x(i_desc)%grad_data(15,:,5)         ! 15th descriptor wrt BH2
+
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1) = -dcoordination_function(r_AO_BO,&
+               this%cutoff,this%cutoff_transition_width) * diff_AO_BO / r_AO_BO
+               descriptor_out%x(i_desc)%grad_covariance_cutoff(:,4) = -descriptor_out%x(i_desc)%grad_covariance_cutoff(:,1)
+            endif
+         enddo
+      enddo
+
+      deallocate(water_monomer_index)
+      call system_timer('water_dimer_calc')
+
+   endsubroutine water_dimer_calc
+
+   subroutine A2_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(A2_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, n_monomers, i_desc, i, j, &
+         iA1, iA2, iB1, iB2
+      integer, dimension(3) :: shift_A1_A2, shift_A1_B1, shift_A1_B2, shift_A2_B1, shift_A2_B2, shift_B1_B2
+      integer, dimension(at%N) :: A2_monomer_index
+      real(dp) :: r_A1_A2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2, r_B1_B2
+
+      INIT_ERROR(error)
+
+      call system_timer('A2_dimer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("A2_dimer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = A2_dimer_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,4))
+            allocate(descriptor_out%x(i)%ii(4))
+            allocate(descriptor_out%x(i)%pos(3,4))
+            allocate(descriptor_out%x(i)%has_grad_data(4))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,4))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      n_monomers = count(at%Z == this%atomic_number) / 2
+
+      call find_A2_monomer(at,this%atomic_number, this%monomer_cutoff, A2_monomer_index,error)
+
+      i_desc = 0
+      do i = 1, at%N
+         iA1 = i
+         iA2 = atoms_neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2,shift=shift_A1_A2)
+         if( iA1 > iA2 ) cycle
+
+         do j = i + 1, at%N
+            iB1 = j
+            iB2 = atoms_neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2,shift=shift_B1_B2)
+            if( iB1 > iB2 ) cycle
+
+            r_A1_B1 = distance_min_image(at,iA1,iB1,shift=shift_A1_B1)
+            r_A1_B2 = distance_min_image(at,iA1,iB2,shift=shift_A1_B2)
+
+            r_A2_B1 = distance_min_image(at,iA2,iB1,shift=shift_A2_B1)
+            r_A2_B2 = distance_min_image(at,iA2,iB2,shift=shift_A2_B2)
+            
+            if( any( (/r_A1_A2,r_B1_B2,r_A1_B1,r_A1_B2,r_A2_B1,r_A2_B2/) > this%cutoff) ) cycle
+            i_desc = i_desc + 1
+
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%has_data = .true.
+               descriptor_out%x(i_desc)%data(:) = (/ r_A1_A2, r_B1_B2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2/)
+            endif
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(:) = (/ iA1, iA2, iB1, iB2 /)
+               descriptor_out%x(i_desc)%pos(:,:) = 0.0_dp ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%has_grad_data(:) = .true.
+
+               descriptor_out%x(i_desc)%grad_data(1,:,1) = -diff(at,iA1,iA2,shift=shift_A1_A2) / r_A1_A2      ! 1st descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(1,:,2) = -descriptor_out%x(i_desc)%grad_data(1,:,1)         ! 1st descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(2,:,3) = -diff(at,iB1,iB2,shift=shift_B1_B2) / r_B1_B2      ! 2nd descriptor wrt B1
+               descriptor_out%x(i_desc)%grad_data(2,:,4) = -descriptor_out%x(i_desc)%grad_data(2,:,3)         ! 2nd descriptor wrt B2
+
+               descriptor_out%x(i_desc)%grad_data(3,:,1) = -diff(at,iA1,iB1,shift=shift_A1_B1) / r_A1_B1      ! 3rd descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(3,:,3) = -descriptor_out%x(i_desc)%grad_data(3,:,1)         ! 3rd descriptor wrt B1
+               descriptor_out%x(i_desc)%grad_data(4,:,1) = -diff(at,iA1,iB2,shift=shift_A1_B2) / r_A1_B2      ! 4th descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(4,:,4) = -descriptor_out%x(i_desc)%grad_data(4,:,1)         ! 4th descriptor wrt B2
+
+               descriptor_out%x(i_desc)%grad_data(5,:,2) = -diff(at,iA2,iB1,shift=shift_A2_B1) / r_A2_B1      ! 5th descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(5,:,3) = -descriptor_out%x(i_desc)%grad_data(5,:,2)         ! 5th descriptor wrt B1
+               descriptor_out%x(i_desc)%grad_data(6,:,2) = -diff(at,iA2,iB2,shift=shift_A2_B2) / r_A2_B2      ! 6th descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(6,:,4) = -descriptor_out%x(i_desc)%grad_data(6,:,2)         ! 6th descriptor wrt B2
+
+            endif
+         enddo
+      enddo
+
+      call system_timer('A2_dimer_calc')
+
+   endsubroutine A2_dimer_calc
+
+   subroutine AB_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(AB_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, n_monomers, i_desc, i, j, &
+         iA1, iA2, iB1, iB2
+      integer, dimension(3) :: shift_A1_A2, shift_A1_B1, shift_A1_B2, shift_A2_B1, shift_A2_B2, shift_B1_B2
+      integer, dimension(:,:), allocatable :: AB_monomer_index
+      real(dp) :: r_A1_A2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2, r_B1_B2
+
+      INIT_ERROR(error)
+
+      call system_timer('AB_dimer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("AB_dimer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = AB_dimer_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,4))
+            allocate(descriptor_out%x(i)%ii(4))
+            allocate(descriptor_out%x(i)%pos(3,4))
+            allocate(descriptor_out%x(i)%has_grad_data(4))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,4))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      if( count(at%Z == this%atomic_number1) == count(at%Z == this%atomic_number2) ) then
+         n_monomers = count(at%Z == this%atomic_number1)
+      else
+         RAISE_ERROR("AB_dimer_calc: number of monomer atoms 1 ("//count(at%Z == this%atomic_number1)//") not equal to number of monomer atoms 2 ("//count(at%Z == this%atomic_number1)//")",error)
+      endif
+
+      allocate(AB_monomer_index(2,n_monomers))
+      call find_AB_monomer(at,(/this%atomic_number1,this%atomic_number2/), this%monomer_cutoff, AB_monomer_index,error)
+
+      i_desc = 0
+      do i = 1, n_monomers
+         iA1 = AB_monomer_index(1,i)
+         iB1 = AB_monomer_index(2,i)
+         do j = i + 1, n_monomers
+            iA2 = AB_monomer_index(1,j)
+            iB2 = AB_monomer_index(2,j)
+
+
+            r_A1_B1 = distance_min_image(at,iA1,iB1,shift=shift_A1_B1)
+            r_A2_B2 = distance_min_image(at,iA2,iB2,shift=shift_A2_B2)
+
+            r_A1_A2 = distance_min_image(at,iA1,iA2,shift=shift_A1_A2)
+            r_B1_B2 = distance_min_image(at,iB1,iB2,shift=shift_B1_B2)
+
+            r_A1_B2 = distance_min_image(at,iA1,iB2,shift=shift_A1_B2)
+            r_A2_B1 = distance_min_image(at,iA2,iB1,shift=shift_A2_B1)
+            
+            if( any( (/r_A1_A2,r_B1_B2,r_A1_B1,r_A1_B2,r_A2_B1,r_A2_B2/) > this%cutoff) ) cycle
+            i_desc = i_desc + 1
+
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%has_data = .true.
+               descriptor_out%x(i_desc)%data(:) = (/ r_A1_B1, r_A2_B2, r_A1_A2, r_B1_B2, r_A1_B2, r_A2_B1 /)
+            endif
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(:) = (/ AB_monomer_index(:,i),AB_monomer_index(:,j) /)
+               descriptor_out%x(i_desc)%pos(:,:) = 0.0_dp ! TODO: Have to figure out how to do this.
+               descriptor_out%x(i_desc)%has_grad_data(:) = .true.
+
+               descriptor_out%x(i_desc)%grad_data(1,:,1) = -diff(at,iA1,iB1,shift=shift_A1_B1) / r_A1_B1      ! 1st descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(1,:,2) = -descriptor_out%x(i_desc)%grad_data(1,:,1)         ! 1st descriptor wrt B1
+               descriptor_out%x(i_desc)%grad_data(2,:,3) = -diff(at,iA2,iB2,shift=shift_A2_B2) / r_A2_B2      ! 2nd descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(2,:,4) = -descriptor_out%x(i_desc)%grad_data(2,:,3)         ! 2nd descriptor wrt B2
+
+               descriptor_out%x(i_desc)%grad_data(3,:,1) = -diff(at,iA1,iA2,shift=shift_A1_A2) / r_A1_A2      ! 1st descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(3,:,3) = -descriptor_out%x(i_desc)%grad_data(3,:,1)         ! 1st descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(4,:,2) = -diff(at,iB1,iB2,shift=shift_B1_B2) / r_B1_B2      ! 2nd descriptor wrt B1
+               descriptor_out%x(i_desc)%grad_data(4,:,4) = -descriptor_out%x(i_desc)%grad_data(4,:,2)         ! 2nd descriptor wrt B2
+
+               descriptor_out%x(i_desc)%grad_data(5,:,1) = -diff(at,iA1,iB2,shift=shift_A1_B2) / r_A1_B2      ! 4th descriptor wrt A1
+               descriptor_out%x(i_desc)%grad_data(5,:,4) = -descriptor_out%x(i_desc)%grad_data(5,:,1)         ! 4th descriptor wrt B2
+               descriptor_out%x(i_desc)%grad_data(6,:,3) = -diff(at,iA2,iB1,shift=shift_A2_B1) / r_A2_B1      ! 5th descriptor wrt A2
+               descriptor_out%x(i_desc)%grad_data(6,:,2) = -descriptor_out%x(i_desc)%grad_data(6,:,3)         ! 5th descriptor wrt B1
+
+            endif
+         enddo
+      enddo
+
+      deallocate(AB_monomer_index)
+      call system_timer('AB_dimer_calc')
+
+   endsubroutine AB_dimer_calc
+
+   subroutine bond_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(bond_real_space), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(atoms) :: at_copy
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, n, k, m, m_index, ij_neighbours
+      integer, dimension(3) :: shift_j, shift_k
+      real(dp) :: r_ij, r_ijk
+
+      INIT_ERROR(error)
+
+      call system_timer('bond_real_space_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bond_real_space_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         do n = 1, atoms_n_neighbours(at, i)
+            j = atoms_neighbour(at, i, n, shift=shift_j, distance=r_ij, max_dist=this%bond_cutoff)
+
+            if(j == 0) cycle
+
+            i_desc = i_desc + 1
+
+            at_copy = at
+            call add_atoms(at_copy, 0.5_dp * (at%pos(:,i) + at%pos(:,j) + matmul(at%lattice,shift_j)), 1)
+            call calc_connect(at_copy)
+
+            ij_neighbours = 0
+
+            do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
+               k = atoms_neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
+
+               if(k == 0) cycle
+
+               if(at_copy%pos(:,k) .feq. at_copy%pos(:,at%N + 1)) cycle
+
+               ij_neighbours = ij_neighbours + 1
+            enddo
+
+            if(my_do_descriptor) then
+               allocate(descriptor_out%x(i_desc)%data(4 * ij_neighbours))
+
+               m_index = 2
+
+               do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
+                  k = atoms_neighbour(at_copy, at%N + 1, m, shift=shift_k, distance=r_ijk, max_dist=this%cutoff)
+
+                  if(k == 0) cycle
+
+                  if(at_copy%pos(:,k) .feq. at_copy%pos(:,at%N + 1)) cycle
+
+                  if((at_copy%pos(:,k) + matmul(at_copy%lattice,shift_k)) .feq. at%pos(:,i)) then
+                     descriptor_out%x(i_desc)%data(1:3) = at%pos(:,i) - at_copy%pos(:,at%N + 1)
+                     descriptor_out%x(i_desc)%data(4) = coordination_function(r_ijk,this%cutoff,this%transition_width)
+                  elseif((at_copy%pos(:,k) + matmul(at_copy%lattice,shift_k)) .feq. (at%pos(:,j) + matmul(at%lattice,shift_j))) then
+                     descriptor_out%x(i_desc)%data(5:7) = at%pos(:,j) + matmul(at%lattice,shift_j) - at_copy%pos(:,at%N + 1)
+                     descriptor_out%x(i_desc)%data(8) = coordination_function(r_ijk,this%cutoff,this%transition_width)
+                  else
+                     m_index = m_index + 1
+
+                     descriptor_out%x(i_desc)%data((4 * m_index) - 3:(4 * m_index) - 1) = at_copy%pos(:,k) + matmul(at_copy%lattice,shift_k) - at_copy%pos(:,at%N + 1)
+                     descriptor_out%x(i_desc)%data(4 * m_index) = coordination_function(r_ijk,this%cutoff,this%transition_width)
+                  endif
+               end do
+
+               descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij,this%bond_cutoff,this%bond_transition_width)
+
+               descriptor_out%x(i_desc)%has_data = .true.
+            endif
+
+            if(my_do_grad_descriptor) then
+               allocate(descriptor_out%x(i_desc)%grad_data(4 * ij_neighbours,3,0:ij_neighbours - 1))
+               allocate(descriptor_out%x(i_desc)%ii(0:ij_neighbours - 1))
+               allocate(descriptor_out%x(i_desc)%pos(3,0:ij_neighbours - 1))
+               allocate(descriptor_out%x(i_desc)%has_grad_data(0:ij_neighbours - 1))
+
+               descriptor_out%x(i_desc)%grad_data = 0.0_dp
+               descriptor_out%x(i_desc)%ii = 0
+               descriptor_out%x(i_desc)%pos = 0.0_dp
+               descriptor_out%x(i_desc)%has_grad_data = .false.
+
+               allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,ij_neighbours - 1))
+               descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+            endif
+
+            call finalise(at_copy)
+         enddo
+      enddo
+
+      call system_timer('bond_real_space_calc')
+
+   endsubroutine bond_real_space_calc
+
+   subroutine atom_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(atom_real_space), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, grad_d, n_descriptors, n_cross, descriptor_mould_size, i_desc, i_data, i, j, k, n, l, m, n_neighbours, i_n
+
+      real(dp) :: r
+      real(dp), dimension(3) :: diff
+      real(dp), dimension(1) :: descriptor_mould
+      integer, dimension(3) :: shift
+
+      complex(dp), dimension(:), allocatable :: spherical_harmonics
+      complex(dp), dimension(:,:), allocatable :: grad_spherical_harmonics
+
+      INIT_ERROR(error)
+
+      call system_timer('atom_real_space_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bond_real_space_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+      descriptor_out%atom_based = .true.
+
+      i_desc = 0
+      do i = 1, at%N
+         i_desc = i_desc + 1
+
+         n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+         d = ( 2 * (this%l_max+1)**2 + 2 ) * n_neighbours
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            grad_d = 2 * (this%l_max+1)**2 + 2
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,1:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(1:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,1:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(1:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,1:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(spherical_harmonics(-this%l_max:this%l_max))
+      if( my_do_grad_descriptor ) allocate(grad_spherical_harmonics(3,-this%l_max:this%l_max))
+
+      i_desc = 0
+      do i = 1, at%N
+         i_desc = i_desc + 1
+         i_data = 0
+         i_n = 0
+
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
+
+         if(my_do_grad_descriptor) then
+            !descriptor_out%x(i_desc)%ii(0) = i
+            !descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
+            !descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
+
+         do n = 1, atoms_n_neighbours(at,i)
+
+            j = atoms_neighbour(at,i,n,distance = r, diff = diff, shift=shift)
+            if(r > this%cutoff) cycle
+            i_n = i_n + 1
+
+            i_data = i_data + 1
+            if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%data(i_data) = r
+            endif
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(i_n) = j
+               descriptor_out%x(i_desc)%pos(:,i_n) = at%pos(:,j) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(i_n) = .true.
+               descriptor_out%x(i_desc)%grad_data(i_data,:,i_n) = diff / r
+            endif
+
+            i_data = i_data + 1
+            if(my_do_descriptor) descriptor_out%x(i_desc)%data(i_data) = real(i_n,dp)
+            if(my_do_grad_descriptor) descriptor_out%x(i_desc)%grad_data(i_data,:,i_n) = real(i_n,dp)
+
+            do l = 0, this%l_max
+               descriptor_mould_size = size(transfer(spherical_harmonics(-l:l),descriptor_mould))
+               
+               do m = -l, l
+                  if(my_do_descriptor) spherical_harmonics(m) = SphericalYCartesian(l,m,diff)
+                  if(my_do_grad_descriptor) grad_spherical_harmonics(:,m) = GradSphericalYCartesian(l,m,diff)
+               enddo
+
+               if(my_do_descriptor) then
+                  descriptor_out%x(i_desc)%data(i_data+1:i_data+descriptor_mould_size) = transfer(spherical_harmonics(-l:l),descriptor_mould)
+               endif
+
+               if(my_do_grad_descriptor) then
+                  do k = 1, 3
+                     descriptor_out%x(i_desc)%grad_data(i_data+1:i_data+descriptor_mould_size,k,i_n) = &
+                     transfer(grad_spherical_harmonics(k,-l:l),descriptor_mould)
+                  enddo
+               endif
+
+               i_data = i_data + descriptor_mould_size
+
+            enddo
+         enddo
+      enddo
+
+      if(allocated(spherical_harmonics)) deallocate(spherical_harmonics)
+      if(allocated(grad_spherical_harmonics)) deallocate(grad_spherical_harmonics)
+
+      call system_timer('atom_real_space_calc')
+
+   endsubroutine atom_real_space_calc
+
+   subroutine power_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(power_so3), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
+      type(cplx_1d), dimension(:,:), allocatable :: fourier_so3
+
+      type(cplx_2d), dimension(:), allocatable :: dSphericalY_ij
+      type(cplx_2d), dimension(:,:,:), allocatable :: dfourier_so3
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, n, a, l, m, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij
+      real(dp), dimension(3) :: u_ij, d_ij
+      real(dp), dimension(:), allocatable :: Rad_ij
+      real(dp), dimension(:,:), allocatable :: dRad_ij
+      integer, dimension(116) :: species_map
+
+      INIT_ERROR(error)
+
+      call system_timer('power_so3_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_so3_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      species_map = 0
+      do i = 1, size(this%species_Z)
+         if(this%species_Z(i) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(i)) = i
+         endif
+      enddo
+
+      call finalise(descriptor_out)
+
+      d = power_so3_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(fourier_so3(0:this%l_max,this%n_max),SphericalY_ij(0:this%l_max),Rad_ij(this%n_max))
+      do a = 1, this%n_max
+         do l = 0, this%l_max
+            allocate(fourier_so3(l,a)%m(-l:l))
+            fourier_so3(l,a)%m(:) = CPLX_ZERO
+         enddo
+      enddo
+      do l = 0, this%l_max
+         allocate(SphericalY_ij(l)%m(-l:l))
+      enddo
+
+      if(my_do_grad_descriptor) then
+         allocate( dRad_ij(3,this%n_max), dSphericalY_ij(0:this%l_max) )
+         do l = 0, this%l_max
+            allocate(dSphericalY_ij(l)%mm(3,-l:l))
+         enddo
+      endif
+
+      i_desc = 0
+      do i = 1, at%N
+
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         do a = 1, this%n_max
+            do l = 0, this%l_max
+               fourier_so3(l,a)%m(:) = CPLX_ZERO
+            enddo
+         enddo
+
+         if(my_do_grad_descriptor) then
+            allocate( dfourier_so3(0:this%l_max,this%n_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            do n = 0, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               do a = 1, this%n_max
+                  do l = 0, this%l_max
+                     allocate(dfourier_so3(l,a,n)%mm(3,-l:l))
+                     dfourier_so3(l,a,n)%mm(:,:) = CPLX_ZERO
+                  enddo
+               enddo
+            enddo
+         endif
+
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            n_i = n_i + 1
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = j
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+
+            do a = 1, this%n_max
+               Rad_ij(a) = RadialFunction(this%Radial, r_ij, a)
+               if(my_do_grad_descriptor) dRad_ij(:,a) = GradRadialFunction(this%Radial, r_ij, a) * u_ij
+            enddo
+
+            do l = 0, this%l_max
+               do m = -l, l
+                  SphericalY_ij(l)%m(m) = SphericalYCartesian(l,m,d_ij)
+                  if(my_do_grad_descriptor) dSphericalY_ij(l)%mm(:,m) = GradSphericalYCartesian(l,m,d_ij)
+               enddo
+            enddo
+
+            do a = 1, this%n_max
+               do l = 0, this%l_max
+                  do m = -l, l
+                     fourier_so3(l,a)%m(m) = fourier_so3(l,a)%m(m) + Rad_ij(a)*SphericalY_ij(l)%m(m)
+                     if(my_do_grad_descriptor) then
+                        dfourier_so3(l,a,n_i)%mm(:,m) = dfourier_so3(l,a,n_i)%mm(:,m) + &
+                        dRad_ij(:,a) * SphericalY_ij(l)%m(m) + Rad_ij(a)*dSphericalY_ij(l)%mm(:,m)
+                     endif
+                  enddo
+               enddo
+            enddo
+
+         enddo ! n
+
+         if(my_do_descriptor) then
+            i_pow = 0
+            do a = 1, this%n_max
+               do l = 0, this%l_max
+                  i_pow = i_pow + 1
+
+                  descriptor_out%x(i_desc)%data(i_pow) = dot_product(fourier_so3(l,a)%m,fourier_so3(l,a)%m)
+               enddo
+            enddo
+         endif
+
+         if(my_do_grad_descriptor) then
+            do n = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               i_pow = 0
+               do a = 1, this%n_max
+                  do l = 0, this%l_max
+                     i_pow = i_pow + 1
+
+                     descriptor_out%x(i_desc)%grad_data(i_pow,:,n) = 2.0_dp * matmul(conjg(dfourier_so3(l,a,n)%mm(:,:)),fourier_so3(l,a)%m(:))
+                  enddo
+               enddo
+               descriptor_out%x(i_desc)%grad_data(:,:,0) = descriptor_out%x(i_desc)%grad_data(:,:,0) - descriptor_out%x(i_desc)%grad_data(:,:,n)
+            enddo
+         endif
+
+         if(allocated(dfourier_so3)) then
+            do n = lbound(dfourier_so3,3), ubound(dfourier_so3,3)
+               do a = lbound(dfourier_so3,2), ubound(dfourier_so3,2)
+                  do l = lbound(dfourier_so3,1), ubound(dfourier_so3,1)
+                     deallocate(dfourier_so3(l,a,n)%mm)
+                  enddo
+               enddo
+            enddo
+            deallocate(dfourier_so3)
+         endif
+
+      enddo ! i
+
+      if(allocated(Rad_ij)) deallocate(Rad_ij)
+      if(allocated(dRad_ij)) deallocate(dRad_ij)
+
+      if(allocated(fourier_so3)) then
+         do a = lbound(fourier_so3,2), ubound(fourier_so3,2)
+            do l = lbound(fourier_so3,1), ubound(fourier_so3,1)
+               deallocate(fourier_so3(l,a)%m)
+            enddo
+         enddo
+         deallocate(fourier_so3)
+      endif
+
+      if(allocated(SphericalY_ij)) then
+         do l = lbound(SphericalY_ij,1), ubound(SphericalY_ij,1)
+            deallocate(SphericalY_ij(l)%m)
+         enddo
+         deallocate(SphericalY_ij)
+      endif
+
+      if(allocated(dSphericalY_ij)) then
+         do l = lbound(dSphericalY_ij,1), ubound(dSphericalY_ij,1)
+            deallocate(dSphericalY_ij(l)%mm)
+         enddo
+         deallocate(dSphericalY_ij)
+      endif
+
+      call system_timer('power_so3_calc')
+
+   endsubroutine power_so3_calc
+
+   subroutine power_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(power_SO4), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(cplx_2d), dimension(:), allocatable :: U
+      type(cplx_3d), dimension(:,:), allocatable :: dU
+
+      real(dp), dimension(3) :: diff, u_ij
+      real(dp) :: r
+      integer :: i, n, n_i, ji, jn, k, j, i_desc, i_bisp, d, n_descriptors, n_cross, n_neighbours
+      integer, dimension(3) :: shift
+      integer, dimension(116) :: species_map
+      logical :: my_do_descriptor, my_do_grad_descriptor
+
+      INIT_ERROR(error)
+
+      call system_timer('power_SO4_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_SO4_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      species_map = 0
+      do i = 1, size(this%species_Z)
+         if(this%species_Z(i) == 0) then
+            species_map = 1
+         else
+            species_map(this%species_Z(i)) = i
+         endif
+      enddo
+
+      call finalise(descriptor_out)
+
+      d = power_SO4_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      allocate(descriptor_out%x(n_descriptors))
+
+      i_desc = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .true.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+         endif
+
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            ji = atoms_neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
+            if( r > this%cutoff ) cycle
+
+            n_i = n_i + 1
+
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = ji
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,ji) + matmul(at%lattice,shift)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+         enddo
+
+         if(my_do_grad_descriptor) then
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,error=error)
+         else
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,error=error)
+         endif
+
+         if(my_do_descriptor) then
+
+            i_bisp = 0
+            do j = 0, this%j_max
+               i_bisp = i_bisp + 1
+               descriptor_out%x(i_desc)%data(i_bisp) =  sum( conjg(U(j)%mm)*U(j)%mm )
+            enddo
+         endif
+
+         if(my_do_grad_descriptor) then
+            n_i = 0
+            do n = 1, atoms_n_neighbours(at,i)
+               ji = atoms_neighbour(at, i, n, distance=r)
+               if( r > this%cutoff ) cycle
+               n_i = n_i + 1
+               i_bisp = 0
+               do j = 0, this%j_max
+                  i_bisp = i_bisp + 1
+                  do k = 1, 3
+                     descriptor_out%x(i_desc)%grad_data(i_bisp,k,n_i) = 2.0_dp * sum( conjg(U(j)%mm)*dU(j,n_i)%mm(k,:,:) )
+                  enddo
+               enddo 
+            enddo
+            descriptor_out%x(i_desc)%grad_data(:,:,0) = -sum(descriptor_out%x(i_desc)%grad_data(:,:,:), dim=3)
+         endif
+
+         call finalise(dU)
+      enddo ! i
+
+      ! clear U from the memory
+      call finalise(U)
+
+      call system_timer('power_SO4_calc')
+
+   endsubroutine power_SO4_calc
+
+   subroutine soap_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+      type(soap), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      integer, optional, intent(out) :: error
+
+      type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
+      type(cplx_2d), dimension(:), allocatable :: grad_SphericalY_ij
+
+      !SPEED type(cplx_1d), dimension(:,:), allocatable :: fourier_so3
+      !SPEED type(cplx_2d), dimension(:,:,:), allocatable :: grad_fourier_so3
+      type(real_1d), dimension(:,:), allocatable :: fourier_so3_r, fourier_so3_i
+      type(real_2d), dimension(:,:,:), allocatable :: grad_fourier_so3_r, grad_fourier_so3_i
+      real(dp), allocatable :: t_g_r(:,:), t_g_i(:,:), t_f_r(:,:), t_f_i(:,:), t_g_f_rr(:,:), t_g_f_ii(:,:)
+      integer :: alpha
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, i, j, n, a, b, k, l, m, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross
+      integer, dimension(3) :: shift_ij
+      real(dp) :: r_ij, arg_bess, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm, mo_spher_bess_fi_ki_lp, exp_p, exp_m, f_cut, df_cut, norm_descriptor_i
+      real(dp), dimension(3) :: u_ij, d_ij
+      real(dp), dimension(:,:), allocatable :: radial_fun, radial_coefficient, grad_radial_fun, grad_radial_coefficient, grad_descriptor_i
+      real(dp), dimension(:), allocatable :: descriptor_i
+
+      INIT_ERROR(error)
+
+      call system_timer('soap_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("soap_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = soap_dimensions(this,error)
+      allocate(descriptor_i(d))
+      if(my_do_grad_descriptor) allocate(grad_descriptor_i(d,3))
+
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      allocate(descriptor_out%x(n_descriptors))
+
+      allocate(radial_fun(0:this%l_max, this%n_max), radial_coefficient(0:this%l_max, this%n_max)) 
+      !SPEED allocate(fourier_so3(0:this%l_max,this%n_max), SphericalY_ij(0:this%l_max))
+      allocate(fourier_so3_r(0:this%l_max,this%n_max), fourier_so3_i(0:this%l_max,this%n_max), SphericalY_ij(0:this%l_max))
+
+      if(my_do_grad_descriptor) then
+         allocate(grad_radial_fun(0:this%l_max, this%n_max), grad_radial_coefficient(0:this%l_max, this%n_max))
+         allocate(grad_SphericalY_ij(0:this%l_max))
+      endif
+
+      do a = 1, this%n_max
+         do l = 0, this%l_max
+            !SPEED allocate(fourier_so3(l,a)%m(-l:l))
+            !SPEED fourier_so3(l,a)%m(:) = CPLX_ZERO
+            allocate(fourier_so3_r(l,a)%m(-l:l))
+            allocate(fourier_so3_i(l,a)%m(-l:l))
+            fourier_so3_r(l,a)%m(:) = 0.0_dp
+            fourier_so3_i(l,a)%m(:) = 0.0_dp
+         enddo
+      enddo
+      do l = 0, this%l_max
+         allocate(SphericalY_ij(l)%m(-l:l))
+         if(my_do_grad_descriptor) allocate(grad_SphericalY_ij(l)%mm(3,-l:l))
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i_desc)%data(d))
+            !slow, no need
+	    !descriptor_out%x(i_desc)%data = 0.0_dp
+            descriptor_out%x(i_desc)%has_data = .false.
+            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+	    ! slow, no need
+            ! descriptor_out%x(i_desc)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc)%grad_data(:,:,0) = 0.0_dp
+            descriptor_out%x(i_desc)%ii = 0
+            descriptor_out%x(i_desc)%pos = 0.0_dp
+            descriptor_out%x(i_desc)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      i_desc = 0
+      do i = 1, at%N
+
+         i_desc = i_desc + 1
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_grad_descriptor) then
+            descriptor_out%x(i_desc)%ii(0) = i
+            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
+            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+            !SPEED allocate( grad_fourier_so3(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            allocate( grad_fourier_so3_r(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            allocate( grad_fourier_so3_i(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+         endif
+
+         !do a = 1, this%n_max
+         !   radial_fun(0,a) = exp( -this%alpha * this%r_basis(a)**2 ) !* this%r_basis(a)
+         !enddo
+         !radial_coefficient(0,:) = matmul( radial_fun(0,:), this%transform_basis )
+         radial_fun(0,:) = 0.0_dp
+         radial_fun(0,1) = 1.0_dp
+         radial_coefficient(0,:) = matmul( radial_fun(0,:), this%cholesky_overlap_basis)
+
+         do a = 1, this%n_max
+            !SPEED fourier_so3(0,a)%m(0) = radial_coefficient(0,a) * SphericalYCartesian(0,0,(/0.0_dp, 0.0_dp, 0.0_dp/))
+            fourier_so3_r(0,a)%m(0) = real(radial_coefficient(0,a) * SphericalYCartesian(0,0,(/0.0_dp, 0.0_dp, 0.0_dp/)), dp)
+            fourier_so3_i(0,a)%m(0) = aimag(radial_coefficient(0,a) * SphericalYCartesian(0,0,(/0.0_dp, 0.0_dp, 0.0_dp/)))
+            do l = 1, this%l_max
+               !SPEED fourier_so3(l,a)%m(:) = CPLX_ZERO
+               fourier_so3_r(l,a)%m(:) = 0.0_dp
+               fourier_so3_i(l,a)%m(:) = 0.0_dp
+            enddo
+         enddo
+
+! soap_calc 20 takes 0.0052 s
+! call system_timer("soap_calc 20")
+         n_i = 0
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            n_i = n_i + 1
+            if(my_do_grad_descriptor) then
+               descriptor_out%x(i_desc)%ii(n_i) = j
+               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+            endif
+
+            f_cut = coordination_function(r_ij,this%cutoff, this%cutoff_transition_width)
+            if(my_do_grad_descriptor) then
+               df_cut = dcoordination_function(r_ij,this%cutoff, this%cutoff_transition_width)
+               do a = 1, this%n_max
+                  do l = 0, this%l_max
+                     !SPEED allocate(grad_fourier_so3(l,a,n_i)%mm(3,-l:l))
+                     !SPEED grad_fourier_so3(l,a,n_i)%mm(:,:) = CPLX_ZERO
+                     allocate(grad_fourier_so3_r(l,a,n_i)%mm(3,-l:l))
+                     allocate(grad_fourier_so3_i(l,a,n_i)%mm(3,-l:l))
+                     grad_fourier_so3_r(l,a,n_i)%mm(:,:) = 0.0_dp
+                     grad_fourier_so3_i(l,a,n_i)%mm(:,:) = 0.0_dp
+                  enddo
+               enddo
+            endif
+
+            do a = 1, this%n_max
+               arg_bess = 2.0_dp * this%alpha * r_ij * this%r_basis(a)
+               exp_p = exp( -this%alpha*( r_ij + this%r_basis(a) )**2 )
+               exp_m = exp( -this%alpha*( r_ij - this%r_basis(a) )**2 )
+
+               do l = 0, this%l_max
+                  if( l == 0 ) then
+                     if(arg_bess == 0.0_dp) then
+                        !mo_spher_bess_fi_ki_l = 1.0_dp
+                        mo_spher_bess_fi_ki_l = exp( -this%alpha * (this%r_basis(a)**2 + r_ij**2) )
+                        if(my_do_grad_descriptor) mo_spher_bess_fi_ki_lp = 0.0_dp
+                     else
+                        !mo_spher_bess_fi_ki_lm = cosh(arg_bess)/arg_bess
+                        !mo_spher_bess_fi_ki_l = sinh(arg_bess)/arg_bess
+                        mo_spher_bess_fi_ki_lm = 0.5_dp * (exp_m + exp_p) / arg_bess
+                        mo_spher_bess_fi_ki_l  = 0.5_dp * (exp_m + exp_p) / arg_bess
+                        if(my_do_grad_descriptor) mo_spher_bess_fi_ki_lp = mo_spher_bess_fi_ki_lm - (2*l+1)*mo_spher_bess_fi_ki_l / arg_bess
+                     endif
+                  else
+                     if(arg_bess == 0.0_dp) then
+                        mo_spher_bess_fi_ki_l = 0.0_dp
+                        if(my_do_grad_descriptor) mo_spher_bess_fi_ki_lp = 0.0_dp
+                     else
+                        mo_spher_bess_fi_ki_lmm = mo_spher_bess_fi_ki_lm
+                        mo_spher_bess_fi_ki_lm = mo_spher_bess_fi_ki_l
+                        if(my_do_grad_descriptor) then
+                           mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lp
+                           mo_spher_bess_fi_ki_lp = mo_spher_bess_fi_ki_lm - (2*l+1)*mo_spher_bess_fi_ki_l / arg_bess
+                        else
+                           mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lmm - (2*l-1)*mo_spher_bess_fi_ki_lm / arg_bess
+                        endif
+                     endif
+                  endif
+
+                  !radial_fun(l,a) = exp( -this%alpha * (this%r_basis(a)**2 + r_ij**2) ) * mo_spher_bess_fi_ki_l !* this%r_basis(a)
+                  radial_fun(l,a) = mo_spher_bess_fi_ki_l !* this%r_basis(a)
+                  if(my_do_grad_descriptor) grad_radial_fun(l,a) = -2.0_dp * this%alpha * r_ij * mo_spher_bess_fi_ki_l + &
+                     l*mo_spher_bess_fi_ki_l / r_ij + mo_spher_bess_fi_ki_lp * 2.0_dp * this%alpha * this%r_basis(a)
+
+               enddo
+            enddo
+
+            radial_coefficient = matmul( radial_fun, this%transform_basis )
+            if(my_do_grad_descriptor) grad_radial_coefficient = matmul( grad_radial_fun, this%transform_basis ) * f_cut + radial_coefficient * df_cut
+            radial_coefficient = radial_coefficient * f_cut
+
+            do l = 0, this%l_max
+               do m = -l, l
+                  SphericalY_ij(l)%m(m) = SphericalYCartesian(l,m,d_ij)
+                  if(my_do_grad_descriptor) grad_SphericalY_ij(l)%mm(:,m) = GradSphericalYCartesian(l,m,d_ij)
+               enddo
+            enddo
+
+            do a = 1, this%n_max
+               do l = 0, this%l_max
+                  do m = -l, l
+                     !SPEED fourier_so3(l,a)%m(m) = fourier_so3(l,a)%m(m) + radial_coefficient(l,a) * SphericalY_ij(l)%m(m)
+                     !SPEED if(my_do_grad_descriptor) grad_fourier_so3(l,a,n_i)%mm(:,m) = grad_fourier_so3(l,a,n_i)%mm(:,m) + &
+                        !SPEED grad_radial_coefficient(l,a) * SphericalY_ij(l)%m(m) * u_ij + radial_coefficient(l,a) * grad_SphericalY_ij(l)%mm(:,m)
+                     fourier_so3_r(l,a)%m(m) = fourier_so3_r(l,a)%m(m) + real(radial_coefficient(l,a) * SphericalY_ij(l)%m(m), dp)
+                     fourier_so3_i(l,a)%m(m) = fourier_so3_i(l,a)%m(m) + aimag(radial_coefficient(l,a) * SphericalY_ij(l)%m(m))
+                     if(my_do_grad_descriptor) then
+			grad_fourier_so3_r(l,a,n_i)%mm(:,m) = grad_fourier_so3_r(l,a,n_i)%mm(:,m) + &
+			   real(grad_radial_coefficient(l,a) * SphericalY_ij(l)%m(m) * u_ij + radial_coefficient(l,a) * grad_SphericalY_ij(l)%mm(:,m), dp)
+			grad_fourier_so3_i(l,a,n_i)%mm(:,m) = grad_fourier_so3_i(l,a,n_i)%mm(:,m) + &
+			   aimag(grad_radial_coefficient(l,a) * SphericalY_ij(l)%m(m) * u_ij + radial_coefficient(l,a) * grad_SphericalY_ij(l)%mm(:,m))
+		     endif
+                  enddo
+               enddo
+            enddo
+
+         enddo ! n
+! call system_timer("soap_calc 20")
+
+         i_pow = 0
+         do a = 1, this%n_max
+            do b = 1, this%n_max
+               do l = 0, this%l_max
+                  i_pow = i_pow + 1
+                  !SPEED descriptor_i(i_pow) = real( dot_product(fourier_so3(l,a)%m, fourier_so3(l,b)%m) )
+                  descriptor_i(i_pow) = dot_product(fourier_so3_r(l,a)%m, fourier_so3_r(l,b)%m) + dot_product(fourier_so3_i(l,a)%m, fourier_so3_i(l,b)%m)
+               enddo !l
+            enddo !b
+         enddo !a
+         norm_descriptor_i = sqrt(dot_product(descriptor_i,descriptor_i))
+
+         if(my_do_descriptor) descriptor_out%x(i_desc)%data = descriptor_i / norm_descriptor_i
+
+         if(my_do_grad_descriptor) then
+! soap_calc 33 takes 0.047 s
+! call system_timer("soap_calc 33")
+	    allocate(t_g_r(this%n_max*3, 2*this%l_max+1), t_g_i(this%n_max*3, 2*this%l_max+1))
+	    allocate(t_f_r(this%n_max, 2*this%l_max+1), t_f_i(this%n_max, 2*this%l_max+1))
+	    allocate(t_g_f_rr(this%n_max*3, this%n_max), t_g_f_ii(this%n_max*3, this%n_max))
+            do n_i = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               !SPEED i_pow = 0
+               !SPEED do a = 1, this%n_max
+                  !SPEED do b = 1, this%n_max
+                     !SPEED do l = 0, this%l_max
+                        !SPEED i_pow = i_pow + 1
+                        !SPEED grad_descriptor_i(i_pow,:) = real( matmul(conjg(grad_fourier_so3(l,a,n_i)%mm),fourier_so3(l,b)%m) + matmul(grad_fourier_so3(l,b,n_i)%mm,conjg(fourier_so3(l,a)%m)) )
+                     !SPEED enddo !l
+                  !SPEED enddo !b
+               !SPEED enddo !a
+	       do l=0, this%l_max
+		  do a = 1, this%n_max
+		     do alpha=1, 3
+			t_g_r(3*(a-1)+alpha, 1:2*l+1) = grad_fourier_so3_r(l,a,n_i)%mm(alpha,-l:l)
+			t_g_i(3*(a-1)+alpha, 1:2*l+1) = grad_fourier_so3_i(l,a,n_i)%mm(alpha,-l:l)
+		     end do
+		  end do
+		  do b = 1, this%n_max
+		     t_f_r(b, 1:2*l+1) = fourier_so3_r(l,b)%m(-l:l)
+		     t_f_i(b, 1:2*l+1) = fourier_so3_i(l,b)%m(-l:l)
+		  end do
+		  call dgemm('N','T',this%n_max*3, this%n_max, 2*l+1, 1.0_dp, &
+		     t_g_r(1,1), size(t_g_r,1), t_f_r(1,1), size(t_f_r,1), 0.0_dp, t_g_f_rr(1,1), size(t_g_f_rr, 1))
+		  call dgemm('N','T',this%n_max*3, this%n_max, 2*l+1, 1.0_dp, &
+		     t_g_i(1,1), size(t_g_i,1), t_f_i(1,1), size(t_f_i,1), 0.0_dp, t_g_f_ii(1,1), size(t_g_f_ii, 1))
+
+		  i_pow = l+1
+		  do a = 1, this%n_max
+		     do b = 1, this%n_max
+			grad_descriptor_i(i_pow, 1:3) = t_g_f_rr(3*(a-1)+1:3*a,b) + t_g_f_ii(3*(a-1)+1:3*a,b) + &
+			                                t_g_f_rr(3*(b-1)+1:3*b,a) + t_g_f_ii(3*(b-1)+1:3*b,a)
+			i_pow = i_pow + this%l_max+1
+		     end do
+		  end do
+
+	       end do !l
+               descriptor_out%x(i_desc)%grad_data(:,:,n_i) = grad_descriptor_i / norm_descriptor_i
+               do k = 1, 3
+                  descriptor_out%x(i_desc)%grad_data(:,k,n_i) = descriptor_out%x(i_desc)%grad_data(:,k,n_i) - descriptor_i * dot_product(descriptor_i,grad_descriptor_i(:,k)) / norm_descriptor_i**3
+               enddo
+
+               descriptor_out%x(i_desc)%grad_data(:,:,0) = descriptor_out%x(i_desc)%grad_data(:,:,0) - descriptor_out%x(i_desc)%grad_data(:,:,n_i)
+            enddo !ni
+	    deallocate(t_f_r, t_f_i)
+	    deallocate(t_g_r, t_g_i)
+	    deallocate(t_g_f_rr, t_g_f_ii)
+! call system_timer("soap_calc 33")
+
+            do n_i = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+               do a = 1, this%n_max
+                  do l = 0, this%l_max
+                     !SPEED deallocate(grad_fourier_so3(l,a,n_i)%mm)
+                     deallocate(grad_fourier_so3_r(l,a,n_i)%mm)
+                     deallocate(grad_fourier_so3_i(l,a,n_i)%mm)
+                  enddo
+               enddo
+            enddo
+            !SPEED deallocate(grad_fourier_so3)
+            deallocate(grad_fourier_so3_r)
+            deallocate(grad_fourier_so3_i)
+         endif
+
+      enddo ! i
+
+      !SPEED if(allocated(fourier_so3)) then
+         !SPEED do a = lbound(fourier_so3,2), ubound(fourier_so3,2)
+            !SPEED do l = lbound(fourier_so3,1), ubound(fourier_so3,1)
+               !SPEED deallocate(fourier_so3(l,a)%m)
+            !SPEED enddo
+         !SPEED enddo
+         !SPEED deallocate(fourier_so3)
+      !SPEED endif
+      if(allocated(fourier_so3_r)) then
+         do a = lbound(fourier_so3_r,2), ubound(fourier_so3_r,2)
+            do l = lbound(fourier_so3_r,1), ubound(fourier_so3_r,1)
+               deallocate(fourier_so3_r(l,a)%m)
+            enddo
+         enddo
+         deallocate(fourier_so3_r)
+      endif
+      if(allocated(fourier_so3_i)) then
+         do a = lbound(fourier_so3_i,2), ubound(fourier_so3_i,2)
+            do l = lbound(fourier_so3_i,1), ubound(fourier_so3_i,1)
+               deallocate(fourier_so3_i(l,a)%m)
+            enddo
+         enddo
+         deallocate(fourier_so3_i)
+      endif
+
+      if(allocated(SphericalY_ij)) then
+         do l = lbound(SphericalY_ij,1), ubound(SphericalY_ij,1)
+            deallocate(SphericalY_ij(l)%m)
+         enddo
+         deallocate(SphericalY_ij)
+      endif
+
+      if(allocated(grad_SphericalY_ij)) then
+         do l = lbound(grad_SphericalY_ij,1), ubound(grad_SphericalY_ij,1)
+            deallocate(grad_SphericalY_ij(l)%mm)
+         enddo
+         deallocate(grad_SphericalY_ij)
+      endif
+
+      if(allocated(radial_fun)) deallocate(radial_fun)
+      if(allocated(radial_coefficient)) deallocate(radial_coefficient)
+      if(allocated(grad_radial_fun)) deallocate(grad_radial_fun)
+      if(allocated(grad_radial_coefficient)) deallocate(grad_radial_coefficient)
+      if(allocated(descriptor_i)) deallocate(descriptor_i)
+      if(allocated(grad_descriptor_i)) deallocate(grad_descriptor_i)
+
+      call system_timer('soap_calc')
+
+   endsubroutine soap_calc
+
+   function descriptor_dimensions(this,error)
+      type(descriptor), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: descriptor_dimensions
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4)
+            descriptor_dimensions = bispectrum_SO4_dimensions(this%descriptor_bispectrum_SO4,error)
+         case(DT_BISPECTRUM_SO3)
+            descriptor_dimensions = bispectrum_SO3_dimensions(this%descriptor_bispectrum_SO3,error)
+         case(DT_BEHLER)
+            descriptor_dimensions = behler_dimensions(this%descriptor_behler,error)
+         case(DT_DISTANCE_2b)
+            descriptor_dimensions = distance_2b_dimensions(this%descriptor_distance_2b,error)
+         case(DT_COORDINATION)
+            descriptor_dimensions = coordination_dimensions(this%descriptor_coordination,error)
+         case(DT_ANGLE_3B)
+            descriptor_dimensions = angle_3b_dimensions(this%descriptor_angle_3b,error)
+         case(DT_CO_ANGLE_3B)
+            descriptor_dimensions = co_angle_3b_dimensions(this%descriptor_co_angle_3b,error)
+         case(DT_CO_DISTANCE_2b)
+            descriptor_dimensions = co_distance_2b_dimensions(this%descriptor_co_distance_2b,error)
+         case(DT_COSNX)
+            descriptor_dimensions = cosnx_dimensions(this%descriptor_cosnx,error)
+         case(DT_TRIHIS)
+            descriptor_dimensions = trihis_dimensions(this%descriptor_trihis,error)
+         case(DT_WATER_MONOMER)
+            descriptor_dimensions = water_monomer_dimensions(this%descriptor_water_monomer,error)
+         case(DT_WATER_DIMER)
+            descriptor_dimensions = water_dimer_dimensions(this%descriptor_water_dimer,error)
+         case(DT_A2_DIMER)
+            descriptor_dimensions = A2_dimer_dimensions(this%descriptor_A2_dimer,error)
+         case(DT_AB_DIMER)
+            descriptor_dimensions = AB_dimer_dimensions(this%descriptor_AB_dimer,error)
+         case(DT_BOND_REAL_SPACE)
+            descriptor_dimensions = bond_real_space_dimensions(this%descriptor_bond_real_space,error)
+         case(DT_ATOM_REAL_SPACE)
+            descriptor_dimensions = atom_real_space_dimensions(this%descriptor_atom_real_space,error)
+         case(DT_POWER_SO3)
+            descriptor_dimensions = power_so3_dimensions(this%descriptor_power_so3,error)
+         case(DT_POWER_SO4)
+            descriptor_dimensions = power_so4_dimensions(this%descriptor_power_so4,error)
+         case(DT_SOAP)
+            descriptor_dimensions = soap_dimensions(this%descriptor_soap,error)
+         case default
+            RAISE_ERROR("descriptor_dimensions: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endfunction descriptor_dimensions
+
+   function bispectrum_SO4_dimensions(this,error) result(i)
+      type(bispectrum_SO4), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+      integer :: j, j1, j2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO4_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 0
+      do j1 = 0, this%j_max
+         j2 = j1
+         !do j2 = 0, this%j_max
+            do j = abs(j1-j2), min(this%j_max,j1+j2)
+               if( mod(j1+j2+j,2) == 1 ) cycle
+               i = i + 1
+            enddo
+         !enddo
+      enddo
+
+   endfunction bispectrum_SO4_dimensions
+
+   function bispectrum_SO3_dimensions(this,error) result(i)
+      type(bispectrum_SO3), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+      integer :: a, l1, l2, l
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO3_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 0
+      do a = 1, this%n_max
+         do l1 = 0, this%l_max
+            l2 = l1
+            !do l2 = 0, this%l_max
+               do l = abs(l1-l2), min(this%l_max,l1+l2)
+                  if( mod(l1,2)==1 .and. mod(l2,2)==1 .and. mod(l,2)==1 ) cycle
+                  i = i + 1
+               enddo
+            !enddo
+         enddo
+      enddo
+
+   endfunction bispectrum_SO3_dimensions
+
+   function behler_dimensions(this,error) result(i)
+      type(behler), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("behler_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = this%n_g2 + this%n_g3
+
+   endfunction behler_dimensions
+
+   function distance_2b_dimensions(this,error) result(i)
+      type(distance_2b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("distance_2b_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 1
+
+   endfunction distance_2b_dimensions
+
+   function coordination_dimensions(this,error) result(i)
+      type(coordination), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("coordination_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 1
+
+   endfunction coordination_dimensions
+
+   function angle_3b_dimensions(this,error) result(i)
+      type(angle_3b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("angle_3b_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 3
+
+   endfunction angle_3b_dimensions
+
+   function co_angle_3b_dimensions(this,error) result(i)
+      type(co_angle_3b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_angle_3b_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 4
+
+   endfunction co_angle_3b_dimensions
+
+   function co_distance_2b_dimensions(this,error) result(i)
+      type(co_distance_2b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_distance_2b_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 3
+
+   endfunction co_distance_2b_dimensions
+
+   function cosnx_dimensions(this,error) result(i)
+      type(cosnx), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("cosnx_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = this%n_max*(this%l_max+1)
+
+   endfunction cosnx_dimensions
+
+   function trihis_dimensions(this,error) result(i)
+      type(trihis), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("trihis_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = this%n_gauss
+
+   endfunction trihis_dimensions
+
+   function water_monomer_dimensions(this,error) result(i)
+      type(water_monomer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_monomer_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 3
+
+   endfunction water_monomer_dimensions
+
+   function water_dimer_dimensions(this,error) result(i)
+      type(water_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_dimer_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 15
+
+   endfunction water_dimer_dimensions
+
+   function A2_dimer_dimensions(this,error) result(i)
+      type(A2_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("A2_dimer_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 6
+
+   endfunction A2_dimer_dimensions
+
+   function AB_dimer_dimensions(this,error) result(i)
+      type(AB_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("AB_dimer_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 6
+
+   endfunction AB_dimer_dimensions
+
+   function bond_real_space_dimensions(this,error) result(i)
+      type(bond_real_space), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bond_real_space_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 1
+
+   endfunction bond_real_space_dimensions
+
+   function atom_real_space_dimensions(this,error) result(i)
+      type(atom_real_space), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("atom_real_space_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = 2 * (this%l_max+1)**2 + 2
+
+   endfunction atom_real_space_dimensions
+
+   function power_so3_dimensions(this,error) result(i)
+      type(power_so3), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_so3_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = this%n_max*(this%l_max+1)
+
+   endfunction power_so3_dimensions
+
+   function power_SO4_dimensions(this,error) result(i)
+      type(power_SO4), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_SO4_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = this%j_max + 1
+
+   endfunction power_SO4_dimensions
+
+   function soap_dimensions(this,error) result(i)
+      type(soap), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("soap_dimensions: descriptor object not initialised", error)
+      endif
+
+      i = (this%l_max+1) * this%n_max**2
+
+   endfunction soap_dimensions
+
+   function descriptor_cutoff(this,error)
+      type(descriptor), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: descriptor_cutoff
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4)
+            descriptor_cutoff = cutoff(this%descriptor_bispectrum_SO4,error)
+         case(DT_BISPECTRUM_SO3)
+            descriptor_cutoff = cutoff(this%descriptor_bispectrum_SO3,error)
+         case(DT_BEHLER)
+            descriptor_cutoff = cutoff(this%descriptor_behler,error)
+         case(DT_DISTANCE_2b)
+            descriptor_cutoff = cutoff(this%descriptor_distance_2b,error)
+         case(DT_COORDINATION)
+            descriptor_cutoff = cutoff(this%descriptor_coordination,error)
+         case(DT_ANGLE_3B)
+            descriptor_cutoff = cutoff(this%descriptor_angle_3b,error)
+         case(DT_CO_ANGLE_3B)
+            descriptor_cutoff = cutoff(this%descriptor_co_angle_3b,error)
+         case(DT_CO_DISTANCE_2b)
+            descriptor_cutoff = cutoff(this%descriptor_co_distance_2b,error)
+         case(DT_COSNX)
+            descriptor_cutoff = cutoff(this%descriptor_cosnx,error)
+         case(DT_TRIHIS)
+            descriptor_cutoff = cutoff(this%descriptor_trihis,error)
+         case(DT_WATER_MONOMER)
+            descriptor_cutoff = cutoff(this%descriptor_water_monomer,error)
+         case(DT_WATER_DIMER)
+            descriptor_cutoff = cutoff(this%descriptor_water_dimer,error)
+         case(DT_A2_DIMER)
+            descriptor_cutoff = cutoff(this%descriptor_A2_dimer,error)
+         case(DT_AB_DIMER)
+            descriptor_cutoff = cutoff(this%descriptor_AB_dimer,error)
+         case(DT_BOND_REAL_SPACE)
+            descriptor_cutoff = cutoff(this%descriptor_bond_real_space,error)
+         case(DT_ATOM_REAL_SPACE)
+            descriptor_cutoff = cutoff(this%descriptor_atom_real_space,error)
+         case(DT_POWER_SO3)
+            descriptor_cutoff = cutoff(this%descriptor_power_so3,error)
+         case(DT_POWER_SO4)
+            descriptor_cutoff = cutoff(this%descriptor_power_so4,error)
+         case(DT_SOAP)
+            descriptor_cutoff = cutoff(this%descriptor_soap,error)
+         case default
+            RAISE_ERROR("descriptor_cutoff: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endfunction descriptor_cutoff
+
+   function bispectrum_SO4_cutoff(this,error) 
+      type(bispectrum_SO4), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: bispectrum_SO4_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO4_cutoff: descriptor object not initialised", error)
+      endif
+
+      bispectrum_SO4_cutoff = this%cutoff
+
+   endfunction bispectrum_SO4_cutoff
+
+   function bispectrum_SO3_cutoff(this,error) 
+      type(bispectrum_SO3), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: bispectrum_SO3_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO3_cutoff: descriptor object not initialised", error)
+      endif
+
+      bispectrum_SO3_cutoff = this%cutoff
+
+   endfunction bispectrum_SO3_cutoff
+
+   function behler_cutoff(this,error) 
+      type(behler), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: behler_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("behler_cutoff: descriptor object not initialised", error)
+      endif
+
+      behler_cutoff = this%cutoff
+
+   endfunction behler_cutoff
+
+   function distance_2b_cutoff(this,error) 
+      type(distance_2b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: distance_2b_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("distance_2b_cutoff: descriptor object not initialised", error)
+      endif
+
+      distance_2b_cutoff = this%cutoff
+
+   endfunction distance_2b_cutoff
+
+   function co_distance_2b_cutoff(this,error) 
+      type(co_distance_2b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: co_distance_2b_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_distance_2b_cutoff: descriptor object not initialised", error)
+      endif
+
+      co_distance_2b_cutoff = this%cutoff
+
+   endfunction co_distance_2b_cutoff
+
+   function coordination_cutoff(this,error) 
+      type(coordination), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: coordination_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("coordination_cutoff: descriptor object not initialised", error)
+      endif
+
+      coordination_cutoff = this%cutoff
+
+   endfunction coordination_cutoff
+
+   function angle_3b_cutoff(this,error) 
+      type(angle_3b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: angle_3b_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("angle_3b_cutoff: descriptor object not initialised", error)
+      endif
+
+      angle_3b_cutoff = this%cutoff
+
+   endfunction angle_3b_cutoff
+
+   function co_angle_3b_cutoff(this,error) 
+      type(co_angle_3b), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: co_angle_3b_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_angle_3b_cutoff: descriptor object not initialised", error)
+      endif
+
+      co_angle_3b_cutoff = this%cutoff
+
+   endfunction co_angle_3b_cutoff
+
+   function cosnx_cutoff(this,error) 
+      type(cosnx), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: cosnx_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("cosnx_cutoff: descriptor object not initialised", error)
+      endif
+
+      cosnx_cutoff = this%cutoff
+
+   endfunction cosnx_cutoff
+
+   function trihis_cutoff(this,error) 
+      type(trihis), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: trihis_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("trihis_cutoff: descriptor object not initialised", error)
+      endif
+
+      trihis_cutoff = this%cutoff
+
+   endfunction trihis_cutoff
+
+   function water_monomer_cutoff(this,error) 
+      type(water_monomer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: water_monomer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_monomer_cutoff: descriptor object not initialised", error)
+      endif
+
+      water_monomer_cutoff = this%cutoff
+
+   endfunction water_monomer_cutoff
+
+   function water_dimer_cutoff(this,error) 
+      type(water_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: water_dimer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_dimer_cutoff: descriptor object not initialised", error)
+      endif
+
+      water_dimer_cutoff = this%cutoff
+
+   endfunction water_dimer_cutoff
+
+   function A2_dimer_cutoff(this,error) 
+      type(A2_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: A2_dimer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("A2_dimer_cutoff: descriptor object not initialised", error)
+      endif
+
+      A2_dimer_cutoff = this%cutoff
+
+   endfunction A2_dimer_cutoff
+
+   function AB_dimer_cutoff(this,error) 
+      type(AB_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: AB_dimer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("AB_dimer_cutoff: descriptor object not initialised", error)
+      endif
+
+      AB_dimer_cutoff = this%cutoff
+
+   endfunction AB_dimer_cutoff
+
+   function bond_real_space_cutoff(this,error)
+      type(bond_real_space), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: bond_real_space_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bond_real_space_cutoff: descriptor object not initialised", error)
+      endif
+
+      bond_real_space_cutoff = max(this%cutoff, this%bond_cutoff)
+
+   endfunction bond_real_space_cutoff
+
+   function atom_real_space_cutoff(this,error)
+      type(atom_real_space), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: atom_real_space_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("atom_real_space_cutoff: descriptor object not initialised", error)
+      endif
+
+      atom_real_space_cutoff = this%cutoff
+
+   endfunction atom_real_space_cutoff
+
+   function power_so3_cutoff(this,error) 
+      type(power_so3), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: power_so3_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_so3_cutoff: descriptor object not initialised", error)
+      endif
+
+      power_so3_cutoff = this%cutoff
+
+   endfunction power_so3_cutoff
+
+   function power_so4_cutoff(this,error) 
+      type(power_so4), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: power_so4_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_so4_cutoff: descriptor object not initialised", error)
+      endif
+
+      power_so4_cutoff = this%cutoff
+
+   endfunction power_so4_cutoff
+
+   function soap_cutoff(this,error) 
+      type(soap), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: soap_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("soap_cutoff: descriptor object not initialised", error)
+      endif
+
+      soap_cutoff = this%cutoff
+
+   endfunction soap_cutoff
+
+   subroutine descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      type(descriptor), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4)
+            call bispectrum_SO4_sizes(this%descriptor_bispectrum_SO4,at,n_descriptors,n_cross,error=error)
+         case(DT_BISPECTRUM_SO3)
+            call bispectrum_SO3_sizes(this%descriptor_bispectrum_SO3,at,n_descriptors,n_cross,error=error)
+         case(DT_BEHLER)
+            call behler_sizes(this%descriptor_behler,at,n_descriptors,n_cross,error=error)
+         case(DT_DISTANCE_2b)
+            call distance_2b_sizes(this%descriptor_distance_2b,at,n_descriptors,n_cross,error=error)
+         case(DT_COORDINATION)
+            call coordination_sizes(this%descriptor_coordination,at,n_descriptors,n_cross,error=error)
+         case(DT_ANGLE_3B)
+            call angle_3b_sizes(this%descriptor_angle_3b,at,n_descriptors,n_cross,error=error)
+         case(DT_CO_ANGLE_3B)
+            call co_angle_3b_sizes(this%descriptor_co_angle_3b,at,n_descriptors,n_cross,error=error)
+         case(DT_CO_DISTANCE_2b)
+            call co_distance_2b_sizes(this%descriptor_co_distance_2b,at,n_descriptors,n_cross,error=error)
+         case(DT_COSNX)
+            call cosnx_sizes(this%descriptor_cosnx,at,n_descriptors,n_cross,error=error)
+         case(DT_TRIHIS)
+            call trihis_sizes(this%descriptor_trihis,at,n_descriptors,n_cross,error=error)
+         case(DT_WATER_MONOMER)
+            call water_monomer_sizes(this%descriptor_water_monomer,at,n_descriptors,n_cross,error=error)
+         case(DT_WATER_DIMER)
+            call water_dimer_sizes(this%descriptor_water_dimer,at,n_descriptors,n_cross,error=error)
+         case(DT_A2_DIMER)
+            call A2_dimer_sizes(this%descriptor_A2_dimer,at,n_descriptors,n_cross,error=error)
+         case(DT_AB_DIMER)
+            call AB_dimer_sizes(this%descriptor_AB_dimer,at,n_descriptors,n_cross,error=error)
+         case(DT_BOND_REAL_SPACE)
+            call bond_real_space_sizes(this%descriptor_bond_real_space,at,n_descriptors,n_cross,error=error)
+         case(DT_ATOM_REAL_SPACE)
+            call atom_real_space_sizes(this%descriptor_atom_real_space,at,n_descriptors,n_cross,error=error)
+         case(DT_POWER_SO3)
+            call power_so3_sizes(this%descriptor_power_so3,at,n_descriptors,n_cross,error=error)
+         case(DT_POWER_SO4)
+            call power_so4_sizes(this%descriptor_power_so4,at,n_descriptors,n_cross,error=error)
+         case(DT_SOAP)
+            call soap_sizes(this%descriptor_soap,at,n_descriptors,n_cross,error=error)
+         case default
+            RAISE_ERROR("descriptor_sizes: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endsubroutine descriptor_sizes
+
+   subroutine bispectrum_SO4_sizes(this,at,n_descriptors,n_cross,error)
+      type(bispectrum_SO4), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO4_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine bispectrum_SO4_sizes
+
+   subroutine bispectrum_SO3_sizes(this,at,n_descriptors,n_cross,error)
+      type(bispectrum_SO3), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bispectrum_SO3_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine bispectrum_SO3_sizes
+
+   subroutine behler_sizes(this,at,n_descriptors,n_cross,error)
+      type(behler), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("behler_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+      do i = 1, at%N
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+   endsubroutine behler_sizes
+
+   subroutine distance_2b_sizes(this,at,n_descriptors,n_cross,error)
+      type(distance_2b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, n
+      logical :: Zi1, Zi2, Zj1, Zj2
+      real(dp) :: r_ij
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("distance_2b_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
+         Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance=r_ij)
+            if(r_ij > this%cutoff) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+            if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+            n_descriptors = n_descriptors + 1
+         enddo
+      enddo
+
+      n_cross = n_descriptors*2
+
+   endsubroutine distance_2b_sizes
+
+   subroutine coordination_sizes(this,at,n_descriptors,n_cross,error)
+      type(coordination), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("coordination_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine coordination_sizes
+
+   subroutine angle_3b_sizes(this,at,n_descriptors,n_cross,error)
+      type(angle_3b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, k, n, m
+      real(dp) :: r_ij, r_ik
+      logical :: Zk1, Zk2, Zj1, Zj2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("angle_3b_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+
+            do m = 1, atoms_n_neighbours(at,i)
+               if( n == m ) cycle
+
+               k = atoms_neighbour(at, i, m, distance = r_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
+               Zk2 = (this%Z2 == 0) .or. (at%Z(k) == this%Z2)
+               if( .not. ( ( Zk1 .and. Zj2 ) .or. ( Zk2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+               n_descriptors = n_descriptors + 1
+            enddo
+         enddo
+      enddo
+      n_cross = n_descriptors * 3
+
+   endsubroutine angle_3b_sizes
+
+   subroutine co_angle_3b_sizes(this,at,n_descriptors,n_cross,error)
+      type(co_angle_3b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, k, n, m, n_neighbours_coordination
+      real(dp) :: r_ij, r_ik
+      logical :: Zk1, Zk2, Zj1, Zj2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_angle_3b_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+
+         n_neighbours_coordination = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at, i, n, distance = r_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+
+            do m = 1, atoms_n_neighbours(at,i)
+               if( n == m ) cycle
+               k = atoms_neighbour(at, i, m, distance = r_ik)
+               if( r_ik > this%cutoff ) cycle
+
+               Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
+               Zk2 = (this%Z2 == 0) .or. (at%Z(k) == this%Z2)
+               if( .not. ( ( Zk1 .and. Zj2 ) .or. ( Zk2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+               n_descriptors = n_descriptors + 1
+               n_cross = n_cross + 3 + n_neighbours_coordination
+            enddo
+         enddo
+      enddo
+
+
+   endsubroutine co_angle_3b_sizes
+
+   subroutine co_distance_2b_sizes(this,at,n_descriptors,n_cross,error)
+      type(co_distance_2b), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      real(dp) :: r_ij
+      integer :: i, j, n
+      logical :: Zi1, Zi2, Zj1, Zj2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("co_distance_2b_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
+         Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
+         do n = 1, atoms_n_neighbours(at,i)
+            j = atoms_neighbour(at,i,n,distance=r_ij)
+            if( r_ij > this%cutoff ) cycle
+
+            Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
+            Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
+            if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
+
+            n_descriptors = n_descriptors + 1
+            n_cross = n_cross + 4 + atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff) + atoms_n_neighbours(at,j,max_dist=this%coordination_cutoff)
+         enddo
+      enddo
+
+   endsubroutine co_distance_2b_sizes
+
+   subroutine cosnx_sizes(this,at,n_descriptors,n_cross,error)
+      type(cosnx), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("cosnx_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine cosnx_sizes
+
+   subroutine trihis_sizes(this,at,n_descriptors,n_cross,error)
+      type(trihis), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("trihis_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = at%N
+
+      n_cross = 0
+
+      do i = 1, at%N
+         n_cross = n_cross + atoms_n_neighbours(at,i) + 1
+      enddo
+
+   endsubroutine trihis_sizes
+
+   subroutine water_monomer_sizes(this,at,n_descriptors,n_cross,error)
+      type(water_monomer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_monomer_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if(at%Z(i) == 8) then
+            n_descriptors = n_descriptors + 1
+            n_cross = n_cross + 3
+         endif
+      enddo
+
+   endsubroutine water_monomer_sizes
+
+   subroutine water_dimer_sizes(this,at,n_descriptors,n_cross,error)
+      type(water_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, n
+      real(dp) :: r_ij
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("water_dimer_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if(at%Z(i) == 8) then
+            do n = 1, atoms_n_neighbours(at,i)
+               j = atoms_neighbour(at,i,n,distance=r_ij)
+               if(at%Z(j) == 8 .and. r_ij < this%cutoff) then
+                  n_descriptors = n_descriptors + 1
+                  n_cross = n_cross + 6
+               endif
+            enddo
+         endif
+      enddo
+   endsubroutine water_dimer_sizes
+
+   subroutine A2_dimer_sizes(this,at,n_descriptors,n_cross,error)
+      type(A2_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, iA1, iA2, iB1, iB2
+      integer, dimension(at%N) :: A2_monomer_index
+      real(dp) :: r_A1_A2, r_B1_B2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("A2_dimer_sizes: descriptor object not initialised", error)
+      endif
+
+      call find_A2_monomer(at,this%atomic_number, this%monomer_cutoff, A2_monomer_index)
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         iA1 = i
+         iA2 = atoms_neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2)
+         if( iA1 > iA2 ) cycle
+
+         do j = i + 1, at%N
+            iB1 = j
+            iB2 = atoms_neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2)
+            if( iB1 > iB2 ) cycle
+
+            r_A1_B1 = distance_min_image(at,iA1,iB1)
+            r_A1_B2 = distance_min_image(at,iA1,iB2)
+
+            r_A2_B1 = distance_min_image(at,iA2,iB1)
+            r_A2_B2 = distance_min_image(at,iA2,iB2)
+            
+            if( all( (/r_A1_A2,r_B1_B2,r_A1_B1,r_A1_B2,r_A2_B1,r_A2_B2/) < this%cutoff) ) then
+               n_descriptors = n_descriptors + 1
+               n_cross = n_cross + 4
+            endif
+         enddo
+      enddo
+
+   endsubroutine A2_dimer_sizes
+
+   subroutine AB_dimer_sizes(this,at,n_descriptors,n_cross,error)
+      type(AB_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, n_monomers, iA1, iA2, iB1, iB2
+      integer, dimension(:,:), allocatable :: AB_monomer_index
+      real(dp) :: r_A1_A2, r_B1_B2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("A2_dimer_sizes: descriptor object not initialised", error)
+      endif
+
+      if( count(at%Z == this%atomic_number1) == count(at%Z == this%atomic_number2) ) then
+         n_monomers = count(at%Z == this%atomic_number1)
+      else
+         RAISE_ERROR("AB_dimer_sizes: number of monomer atoms 1 ("//count(at%Z == this%atomic_number1)//") not equal to number of monomer atoms 2 ("//count(at%Z == this%atomic_number1)//")",error)
+      endif
+
+      allocate(AB_monomer_index(2,n_monomers))
+      call find_AB_monomer(at,(/this%atomic_number1,this%atomic_number2/), this%monomer_cutoff, AB_monomer_index)
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, n_monomers
+         iA1 = AB_monomer_index(1,i)
+         iB1 = AB_monomer_index(2,i)
+         do j = i + 1, n_monomers
+            iA2 = AB_monomer_index(1,j)
+            iB2 = AB_monomer_index(2,j)
+
+            r_A1_B1 = distance_min_image(at,iA1,iB1)
+            r_A2_B2 = distance_min_image(at,iA2,iB2)
+
+            r_A1_A2 = distance_min_image(at,iA1,iA2)
+            r_B1_B2 = distance_min_image(at,iB1,iB2)
+
+            r_A1_B2 = distance_min_image(at,iA1,iB2)
+            r_A2_B1 = distance_min_image(at,iA2,iB1)
+            
+            if( all( (/r_A1_A2,r_B1_B2,r_A1_B1,r_A1_B2,r_A2_B1,r_A2_B2/) < this%cutoff) ) then
+               n_descriptors = n_descriptors + 1
+               n_cross = n_cross + 4
+            endif
+         enddo
+      enddo
+
+      deallocate(AB_monomer_index)
+
+   endsubroutine AB_dimer_sizes
+
+   subroutine bond_real_space_sizes(this,at,n_descriptors,n_cross,error)
+      type(bond_real_space), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      type(atoms) :: at_copy
+      integer :: i, j, k, n, m, shift_j(3)
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("bond_real_space_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         n_descriptors = n_descriptors + atoms_n_neighbours(at,i,max_dist=this%bond_cutoff)
+
+         do n = 1, atoms_n_neighbours(at, i)
+            j = atoms_neighbour(at, i, n, shift=shift_j, max_dist=this%bond_cutoff)
+
+            if(j == 0) cycle
+
+            at_copy = at
+            call add_atoms(at_copy, 0.5_dp * (at%pos(:,i) + at%pos(:,j) + matmul(at%lattice,shift_j)), 1)
+            call calc_connect(at_copy)
+
+            do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
+               k = atoms_neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
+
+               if(k == 0) cycle
+
+               if(at_copy%pos(:,k) .feq. at_copy%pos(:,at%N + 1)) cycle
+
+               n_cross = n_cross + 1
+            enddo
+
+            call finalise(at_copy)
+         enddo
+      enddo
+
+   endsubroutine bond_real_space_sizes
+
+   subroutine atom_real_space_sizes(this,at,n_descriptors,n_cross,error)
+      type(atom_real_space), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("atom_real_space_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = at%N
+      n_cross = 0
+
+      do i = 1, at%N
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff)*2 
+      enddo
+
+   endsubroutine atom_real_space_sizes
+
+   subroutine power_so3_sizes(this,at,n_descriptors,n_cross,error)
+      type(power_so3), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_so3_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine power_so3_sizes
+
+   subroutine power_SO4_sizes(this,at,n_descriptors,n_cross,error)
+      type(power_SO4), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("power_SO4_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine power_SO4_sizes
+
+   subroutine soap_sizes(this,at,n_descriptors,n_cross,error)
+      type(soap), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("soap_sizes: descriptor object not initialised", error)
+      endif
+
+      n_descriptors = 0
+      n_cross = 0
+
+      do i = 1, at%N
+         n_descriptors = n_descriptors + 1
+         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+      enddo
+
+   endsubroutine soap_sizes
+
+   function descriptor_n_permutations(this,error)
+      type(descriptor), intent(in) :: this
+      integer, optional, intent(out) :: error
+
+      integer :: descriptor_n_permutations
+
+      INIT_ERROR(error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4,DT_BISPECTRUM_SO3,DT_BEHLER,DT_DISTANCE_2b,DT_COORDINATION, &
+            DT_ANGLE_3B,DT_CO_ANGLE_3B,DT_CO_DISTANCE_2b,DT_COSNX,DT_TRIHIS,DT_WATER_MONOMER,DT_BOND_REAL_SPACE,DT_ATOM_REAL_SPACE,DT_POWER_SO3,DT_POWER_SO4,DT_SOAP)
+
+            descriptor_n_permutations = 1
+            
+         case(DT_WATER_DIMER)
+            descriptor_n_permutations = NP_WATER_DIMER
+         case(DT_A2_DIMER)
+            descriptor_n_permutations = NP_A2_DIMER
+         case(DT_AB_DIMER)
+            descriptor_n_permutations = NP_AB_DIMER
+         case default
+            RAISE_ERROR("descriptor_permutations: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endfunction descriptor_n_permutations
+
+   subroutine descriptor_permutations(this,permutations,error)
+      type(descriptor), intent(in) :: this
+      integer, dimension(:,:), intent(out) :: permutations
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      call check_size('permutations',permutations, &
+           (/descriptor_dimensions(this,error),descriptor_n_permutations(this,error)/),'descriptor_permutations',error)
+
+      selectcase(this%descriptor_type)
+         case(DT_BISPECTRUM_SO4,DT_BISPECTRUM_SO3,DT_BEHLER,DT_DISTANCE_2b,DT_COORDINATION, &
+            DT_ANGLE_3B,DT_CO_ANGLE_3B,DT_CO_DISTANCE_2b,DT_COSNX,DT_TRIHIS,DT_WATER_MONOMER,DT_BOND_REAL_SPACE,DT_ATOM_REAL_SPACE,DT_POWER_SO3,DT_POWER_SO4,DT_SOAP)
+            
+            permutations(:,1) = (/ (i, i = 1, size(permutations,1)) /)
+         case(DT_WATER_DIMER)
+            permutations(:,1) = (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15/) ! original order
+            permutations(:,2) = (/1, 3, 2, 4, 5, 7, 6, 8, 9, 10, 13, 14, 11, 12, 15/) ! swap Hs on monomer A
+            permutations(:,3) = (/1, 2, 3, 5, 4, 6, 7, 9, 8, 10, 12, 11, 14, 13, 15/) ! swap Hs on monomer B
+            permutations(:,4) = (/1, 3, 2, 5, 4, 7, 6, 9, 8, 10, 14, 13, 12, 11, 15/) ! swap Hs on both monomers
+            permutations(:,5) = (/1, 8, 9, 6, 7, 4, 5, 2, 3, 15, 11, 13, 12, 14, 10/) ! swap monomers A and B
+            permutations(:,6) = (/1, 9, 8, 6, 7, 5, 4, 2, 3, 15, 12, 14, 11, 13, 10/) ! swap monomers and Hs on monomer A
+            permutations(:,7) = (/1, 8, 9, 7, 6, 4, 5, 3, 2, 15, 13, 11, 14, 12, 10/) ! swap monomers and Hs on monomer B
+            permutations(:,8) = (/1, 9, 8, 7, 6, 5, 4, 3, 2, 15, 14, 12, 13, 11, 10/) ! swap monomers and Hs on both monomers
+
+         case(DT_A2_DIMER)
+            permutations(:,1) = (/1, 2, 3, 4, 5, 6/) ! original order
+            permutations(:,2) = (/1, 2, 5, 6, 3, 4/) ! swap atoms on monomer A
+            permutations(:,3) = (/1, 2, 4, 3, 6, 5/) ! swap atoms on monomer B
+            permutations(:,4) = (/1, 2, 6, 5, 4, 3/) ! swap atoms on both monomers
+            permutations(:,5) = (/2, 1, 3, 5, 4, 6/) ! swap monomers A and B
+            permutations(:,6) = (/2, 1, 5, 3, 6, 4/) ! swap monomers and atoms on monomer A
+            permutations(:,7) = (/2, 1, 4, 6, 3, 5/) ! swap monomers and atoms on monomer B
+            permutations(:,8) = (/2, 1, 6, 4, 5, 3/) ! swap monomers and atoms on both monomers
+            
+         case(DT_AB_DIMER)
+            permutations(:,1) = (/1, 2, 3, 4, 5, 6/) ! original order
+            permutations(:,2) = (/2, 1, 3, 4, 6, 5/) ! swap monomers
+            
+         case default
+            RAISE_ERROR("descriptor_permutations: unknown descriptor type "//this%descriptor_type,error)
+      endselect
+
+   endsubroutine descriptor_permutations
+
+   subroutine real_space_fourier_coefficients(at,l_max,atom_coefficient)
+      type(atoms), intent(in) :: at
+      integer, intent(in) :: l_max
+      type(neighbour_type), dimension(:), allocatable :: atom_coefficient
+
+      integer :: i, j, n, l, m
+      real(dp) :: r
+      real(dp), dimension(3) :: d
+
+      if(.not.allocated(atom_coefficient)) allocate(atom_coefficient(at%N))
+
+      do i = 1, at%N
+         if(.not. allocated(atom_coefficient(i)%neighbour)) allocate(atom_coefficient(i)%neighbour(atoms_n_neighbours(at,i)))
+         do n = 1, atoms_n_neighbours(at,i)
+
+            j = atoms_neighbour(at,i,n,distance = r, diff = d)
+            atom_coefficient(i)%neighbour(n)%r = r
+            atom_coefficient(i)%neighbour(n)%u = d / r
+
+            if(.not. allocated(atom_coefficient(i)%neighbour(n)%spherical_harmonics)) allocate( atom_coefficient(i)%neighbour(n)%spherical_harmonics(0:l_max), &
+            atom_coefficient(i)%neighbour(n)%grad_spherical_harmonics(0:l_max) )
+            do l = 0, l_max
+               if(.not. allocated(atom_coefficient(i)%neighbour(n)%spherical_harmonics(l)%m)) &
+               allocate(atom_coefficient(i)%neighbour(n)%spherical_harmonics(l)%m(-l:l))
+               if(.not. allocated(atom_coefficient(i)%neighbour(n)%grad_spherical_harmonics(l)%mm)) &
+               allocate(atom_coefficient(i)%neighbour(n)%grad_spherical_harmonics(l)%mm(3,-l:l))
+
+               atom_coefficient(i)%neighbour(n)%spherical_harmonics(l)%m = CPLX_ZERO
+               atom_coefficient(i)%neighbour(n)%grad_spherical_harmonics(l)%mm = CPLX_ZERO
+
+               do m = -l, l
+                  atom_coefficient(i)%neighbour(n)%spherical_harmonics(l)%m(m) = SphericalYCartesian(l,m,d)
+                  atom_coefficient(i)%neighbour(n)%grad_spherical_harmonics(l)%mm(:,m) = GradSphericalYCartesian(l,m,d)
+               enddo
+            enddo
+         enddo
+      enddo
+
+   endsubroutine real_space_fourier_coefficients
+
+   function real_space_covariance_coefficient(anc1,anc2,i1,i2,alpha,l_max,f1,f2)
+      type(neighbour_type), dimension(:), intent(in) :: anc1, anc2
+      real(dp), intent(in) :: alpha
+      integer, intent(in) :: i1, i2, l_max
+      real(dp), dimension(:,:), intent(out), optional :: f1, f2
+
+      real(dp) :: real_space_covariance_coefficient
+
+      complex(dp) :: real_space_covariance_in, I_lm1m2
+      integer :: n1, n2, l, m1, m2, k
+      real(dp) :: r1, r2, arg_bess, fac_exp, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm, mo_spher_bess_fi_ki_lp, grad_mo_spher_bess_fi_ki_l
+      real(dp), dimension(3) :: u1, u2, grad_arg_bess1, grad_fac_exp1, grad_arg_bess2, grad_fac_exp2
+      type(cplx_2d), dimension(:), allocatable :: integral_r
+      type(grad_spherical_harmonics_overlap_type), dimension(:), allocatable :: grad_integral_r1, grad_integral_r2
+
+      logical :: do_derivative
+
+      do_derivative = (present(f1) .or. present(f2)) 
+
+      real_space_covariance_in = CPLX_ZERO
+
+      allocate(integral_r(0:l_max))
+      do l = 0, l_max
+         allocate(integral_r(l)%mm(-l:l,-l:l))
+         integral_r(l)%mm = CPLX_ZERO
+      enddo
+
+      if(present(f1)) then
+         allocate(grad_integral_r1(0:size(anc1(i1)%neighbour)))
+         do n1 = 0, size(anc1(i1)%neighbour)
+            allocate(grad_integral_r1(n1)%grad_integral(0:l_max))
+            do l = 0, l_max
+               allocate(grad_integral_r1(n1)%grad_integral(l)%mm(3,-l:l,-l:l))
+               grad_integral_r1(n1)%grad_integral(l)%mm = CPLX_ZERO
+            enddo
+         enddo
+      endif
+
+      if(present(f2)) then
+         allocate(grad_integral_r2(0:size(anc2(i2)%neighbour)))
+         do n2 = 0, size(anc2(i2)%neighbour)
+            allocate(grad_integral_r2(n2)%grad_integral(0:l_max))
+            do l = 0, l_max
+               allocate(grad_integral_r2(n2)%grad_integral(l)%mm(3,-l:l,-l:l))
+               grad_integral_r2(n2)%grad_integral(l)%mm = CPLX_ZERO
+            enddo
+         enddo
+      endif
+      do n1 = 1, size(anc1(i1)%neighbour)
+         r1 = anc1(i1)%neighbour(n1)%r
+         u1 = anc1(i1)%neighbour(n1)%u
+         do n2 = 1, size(anc2(i2)%neighbour)
+            r2 = anc2(i2)%neighbour(n2)%r
+
+            u2 = anc2(i2)%neighbour(n2)%u
+
+            arg_bess = alpha*r1*r2
+            fac_exp = exp(-0.5_dp*alpha*(r1**2+r2**2))
+
+            if(present(f1)) then
+               grad_arg_bess1 = alpha*r2*u1
+               grad_fac_exp1 = -fac_exp*alpha*r1*u1
+            endif
+
+            if(present(f2)) then
+               grad_arg_bess2 = alpha*r1*u2
+               grad_fac_exp2 = -fac_exp*alpha*r2*u2
+            endif
+
+            do l = 0, l_max
+               if( l == 0 ) then
+                  mo_spher_bess_fi_ki_lm = cosh(arg_bess)/arg_bess
+                  mo_spher_bess_fi_ki_l = sinh(arg_bess)/arg_bess
+                  if(do_derivative) mo_spher_bess_fi_ki_lp = mo_spher_bess_fi_ki_lm - (2*l+1)*mo_spher_bess_fi_ki_l / arg_bess
+               else
+                  mo_spher_bess_fi_ki_lmm = mo_spher_bess_fi_ki_lm
+                  mo_spher_bess_fi_ki_lm = mo_spher_bess_fi_ki_l
+                  if(do_derivative) then
+                     mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lp
+                     mo_spher_bess_fi_ki_lp = mo_spher_bess_fi_ki_lm - (2*l+1)*mo_spher_bess_fi_ki_l / arg_bess
+                  else
+                     mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lmm - (2*l-1)*mo_spher_bess_fi_ki_lm / arg_bess
+                  endif
+
+               endif
+
+
+               if(do_derivative) grad_mo_spher_bess_fi_ki_l = 0.5_dp * (mo_spher_bess_fi_ki_lp - mo_spher_bess_fi_ki_l / arg_bess + mo_spher_bess_fi_ki_lm)
+                  
+               do m1 = -l, l
+                  do m2 = -l, l
+                     I_lm1m2 = conjg(anc1(i1)%neighbour(n1)%spherical_harmonics(l)%m(m1)) * anc2(i2)%neighbour(n2)%spherical_harmonics(l)%m(m2) * mo_spher_bess_fi_ki_l*fac_exp
+                     integral_r(l)%mm(m2,m1) = integral_r(l)%mm(m2,m1) + I_lm1m2
+                     if(present(f1)) then
+                        grad_integral_r1(n1)%grad_integral(l)%mm(:,m2,m1) = grad_integral_r1(n1)%grad_integral(l)%mm(:,m2,m1) + &
+                        anc2(i2)%neighbour(n2)%spherical_harmonics(l)%m(m2) * &
+                        ( conjg(anc1(i1)%neighbour(n1)%grad_spherical_harmonics(l)%mm(:,m1)) * mo_spher_bess_fi_ki_l*fac_exp + &
+                        conjg(anc1(i1)%neighbour(n1)%spherical_harmonics(l)%m(m1)) * ( grad_mo_spher_bess_fi_ki_l * grad_arg_bess1 * fac_exp + mo_spher_bess_fi_ki_l * grad_fac_exp1 ) )
+                     endif
+
+                     if(present(f2)) then
+                        grad_integral_r2(n2)%grad_integral(l)%mm(:,m2,m1) = grad_integral_r2(n2)%grad_integral(l)%mm(:,m2,m1) + &
+                        conjg(anc1(i1)%neighbour(n1)%spherical_harmonics(l)%m(m1)) * &
+                        ( anc2(i2)%neighbour(n2)%grad_spherical_harmonics(l)%mm(:,m2) * mo_spher_bess_fi_ki_l*fac_exp + &
+                        anc2(i2)%neighbour(n2)%spherical_harmonics(l)%m(m2) * ( grad_mo_spher_bess_fi_ki_l * grad_arg_bess2 * fac_exp + mo_spher_bess_fi_ki_l * grad_fac_exp2 ) )
+                     endif
+
+                  enddo
+               enddo
+            enddo
+         enddo
+      enddo
+
+      if(present(f1)) then
+         f1 = 0.0_dp
+         do n1 = 0, size(anc1(i1)%neighbour)
+            do l = 0, l_max
+               do k = 1, 3
+                  f1(k,n1+1) = f1(k,n1+1) + real(sum(conjg(grad_integral_r1(n1)%grad_integral(l)%mm(k,:,:))*integral_r(l)%mm(:,:)))
+               enddo
+            enddo
+         enddo
+         f1 = 2.0_dp * f1
+      endif
+
+      if(present(f2)) then
+         f2 = 0.0_dp
+         do n2 = 0, size(anc2(i2)%neighbour)
+            do l = 0, l_max
+               do k = 1, 3
+                  f2(k,n2+1) = f2(k,n2+1) + real(sum(conjg(grad_integral_r2(n2)%grad_integral(l)%mm(k,:,:))*integral_r(l)%mm(:,:)))
+               enddo
+            enddo
+         enddo
+         f2 = 2.0_dp * f2
+      endif
+
+      do l = 0, l_max
+         real_space_covariance_in = real_space_covariance_in + sum(conjg(integral_r(l)%mm) * integral_r(l)%mm)
+      enddo
+      real_space_covariance_coefficient = real(real_space_covariance_in)
+
+      do l = 0, l_max
+         deallocate(integral_r(l)%mm)
+      enddo
+      deallocate(integral_r)
+
+      if(present(f1)) then
+         do n1 = 0, size(anc1(i1)%neighbour)
+            do l = 0, l_max
+               deallocate(grad_integral_r1(n1)%grad_integral(l)%mm)
+            enddo
+            deallocate(grad_integral_r1(n1)%grad_integral)
+         enddo
+         deallocate(grad_integral_r1)
+      endif
+
+      if(present(f2)) then
+         do n2 = 0, size(anc2(i2)%neighbour)
+            do l = 0, l_max
+               deallocate(grad_integral_r2(n2)%grad_integral(l)%mm)
+            enddo
+            deallocate(grad_integral_r2(n2)%grad_integral)
+         enddo
+         deallocate(grad_integral_r2)
+      endif
+
+   endfunction real_space_covariance_coefficient
+
+   function real_space_covariance(at1,at2,i1,i2,alpha,l_max,f1,f2)
+      type(atoms), intent(in) :: at1, at2
+      real(dp), intent(in) :: alpha
+      integer, intent(in) :: i1, i2, l_max
+      real(dp), dimension(:,:), intent(inout), optional :: f1, f2
+
+      real(dp) :: real_space_covariance
+
+      complex(dp) :: real_space_covariance_in, I_lm1m2
+      integer :: j1, j2, n1, n2, l, m1, m2
+      real(dp) :: r1, r2, arg_bess, fac_exp, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm
+      real(dp), dimension(3) :: d1, d2
+      type(cplx_2d), dimension(:), allocatable :: integral_r
+
+      logical :: do_derivative
+
+      do_derivative = (present(f1) .or. present(f2)) 
+
+      real_space_covariance_in = CPLX_ZERO
+
+      allocate(integral_r(0:l_max))
+      do l = 0, l_max
+         allocate(integral_r(l)%mm(-l:l,-l:l))
+         integral_r(l)%mm = CPLX_ZERO
+      enddo
+
+      do n1 = 1, atoms_n_neighbours(at1,i1)
+         j1 = atoms_neighbour(at1,i1,n1,distance = r1, diff = d1)
+         do n2 = 1, atoms_n_neighbours(at2,i2)
+            j2 = atoms_neighbour(at2,i2,n2,distance = r2, diff = d2)
+
+            arg_bess = alpha*r1*r2
+            fac_exp = exp(-0.5_dp*alpha*(r1**2+r2**2))
+
+            do l = 0, l_max
+               if( l == 0 ) then
+                  mo_spher_bess_fi_ki_lmm = sinh(arg_bess)/arg_bess
+                  mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lmm
+               elseif( l == 1 ) then
+                  mo_spher_bess_fi_ki_lm = ( arg_bess*cosh(arg_bess) - sinh(arg_bess) ) / arg_bess**2
+                  mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lm
+               else
+                  mo_spher_bess_fi_ki_l = mo_spher_bess_fi_ki_lmm - (2*l+1)*mo_spher_bess_fi_ki_lm / arg_bess
+                  mo_spher_bess_fi_ki_lm = mo_spher_bess_fi_ki_l
+                  mo_spher_bess_fi_ki_lmm = mo_spher_bess_fi_ki_lm
+               endif
+                  
+               do m1 = -l, l
+                  do m2 = -l, l
+                     I_lm1m2 = conjg(SphericalYCartesian(l,m1,d1)) * SphericalYCartesian(l,m2,d2)*mo_spher_bess_fi_ki_l*fac_exp
+                     integral_r(l)%mm(m2,m1) = integral_r(l)%mm(m2,m1) + I_lm1m2
+                  enddo
+               enddo
+            enddo
+         enddo
+      enddo
+
+      do l = 0, l_max
+         real_space_covariance_in = real_space_covariance_in + sum(conjg(integral_r(l)%mm) * integral_r(l)%mm)
+      enddo
+      real_space_covariance = real(real_space_covariance_in)
+
+      do l = 0, l_max
+         deallocate(integral_r(l)%mm)
+      enddo
+      deallocate(integral_r)
+
+   endfunction real_space_covariance
+
+   function cutoff_function(r,cutoff_in)
+
+      real(dp)             :: cutoff_function
+      real(dp), intent(in) :: r, cutoff_in
+      real(dp), parameter :: S = 0.25_dp
+
+      if( r > cutoff_in ) then
+          cutoff_function = 0.0_dp
+      else
+          cutoff_function = 0.5_dp * ( cos(PI*r/cutoff_in) + 1.0_dp )
+      endif
+      !if( r > cutoff_in ) then
+      !    cutoff = 0.0_dp
+      !elseif( r > (cutoff_in-S) ) then
+      !    cutoff = 0.5_dp * ( cos(PI*(r-cutoff_in+S)/S) + 1.0_dp )
+      !else
+      !    cutoff = 1.0_dp
+      !endif
+
+   endfunction cutoff_function
+
+   function dcutoff_function(r,cutoff_in)
+
+      real(dp)             :: dcutoff_function
+      real(dp), intent(in) :: r, cutoff_in
+      real(dp), parameter :: S = 0.25_dp
+
+      if( r > cutoff_in ) then
+          dcutoff_function = 0.0_dp
+      else
+          dcutoff_function = - 0.5_dp * PI * sin(PI*r/cutoff_in) / cutoff_in
+      endif
+      !if( r > r_cut ) then
+      !    dcutoff = 0.0_dp
+      !elseif( r > (cutoff_in-S) ) then
+      !    dcutoff = - 0.5_dp * PI * sin(PI*(r-cutoff_in+S)/S) / S
+      !else
+      !    dcutoff = 0.0_dp
+      !endif
+
+   endfunction dcutoff_function
+
+   function coordination_function(r,cutoff_in,transition_width)
+
+      real(dp)             :: coordination_function
+      real(dp), intent(in) :: r, cutoff_in, transition_width
+
+      if( r > cutoff_in ) then
+          coordination_function = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+          coordination_function = 0.5_dp * ( cos(PI*(r-cutoff_in+transition_width)/transition_width) + 1.0_dp )
+      else
+          coordination_function = 1.0_dp
+      endif
+
+   endfunction coordination_function
+
+   function dcoordination_function(r,cutoff_in,transition_width)
+
+      real(dp)             :: dcoordination_function
+      real(dp), intent(in) :: r, cutoff_in,transition_width
+
+      if( r > cutoff_in ) then
+          dcoordination_function = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+          dcoordination_function = - 0.5_dp * PI * sin(PI*(r-cutoff_in+transition_width)/transition_width) / transition_width
+      else
+          dcoordination_function = 0.0_dp
+      endif
+
+   endfunction dcoordination_function
+
+   function RadialFunction(this,r,i)
+      type(RadialFunction_type), intent(in) :: this
+      real(dp), intent(in) :: r
+      integer, intent(in) :: i
+
+      real(dp) :: RadialFunction
+   
+      real(dp), dimension(this%n_max) :: h
+      integer :: j
+   
+      if( r < this%cutoff ) then
+         do j = 1, this%n_max
+            h(j) = (this%cutoff-r)**(j+2) / this%NormFunction(j)
+         enddo
+         RadialFunction = dot_product(this%RadialTransform(:,i),h)
+      else
+         RadialFunction = 0.0_dp
+      endif
+   
+   endfunction RadialFunction
+   
+   function GradRadialFunction(this,r,i)
+      type(RadialFunction_type), intent(in) :: this
+      real(dp), intent(in) :: r
+      integer, intent(in) :: i
+
+      real(dp) :: GradRadialFunction
+   
+      real(dp), dimension(this%n_max) :: h
+      integer :: j
+   
+      if( r < this%cutoff ) then
+         do j = 1, this%n_max
+            h(j) = - (j+2) * (this%cutoff-r)**(j+1) / this%NormFunction(j)
+         enddo
+         GradRadialFunction = dot_product(this%RadialTransform(:,i),h)
+      else
+         GradRadialFunction = 0.0_dp
+      endif
+   
+   endfunction GradRadialFunction
+
+   !#################################################################################
+   !#
+   !% Solid Harmonic function using Cartesian coordinates
+   !%
+   !% $ R_{l m} = \sqrt{\frac{4 \pi}{2 l + 1}} r^l Y_{l m} $
+   !#
+   !#################################################################################
+
+   function SolidRCartesian(l, m, x)
+
+     complex(dp) :: SolidRCartesian
+     integer, intent(in) :: l, m
+     real(dp), intent(in) :: x(3)
+     integer :: p, q, s
+
+     SolidRCartesian = CPLX_ZERO
+
+     do p = 0, l
+        q = p - m
+        s = l - p - q
+
+        if ((q >= 0) .and. (s >= 0)) then
+           SolidRCartesian = SolidRCartesian + ((cmplx(-0.5_dp * x(1), -0.5_dp * x(2), dp)**p) &
+                                             * (cmplx(0.5_dp * x(1), -0.5_dp * x(2), dp)**q) &
+                                             * (x(3)**s) &
+                                             / (factorial(p) * factorial(q) * factorial(s)))
+        end if
+     end do
+
+     SolidRCartesian = SolidRCartesian * sqrt(factorial(l + m) * factorial(l - m))
+
+   end function SolidRCartesian
+
+   !#################################################################################
+   !#
+   !% Spherical Harmonic function using Cartesian coordinates
+   !#
+   !#################################################################################
+
+   function SphericalYCartesian(l, m, x)
+
+     complex(dp) :: SphericalYCartesian
+     integer, intent(in) :: l, m
+     real(dp), intent(in) :: x(3)
+
+     SphericalYCartesian = SolidRCartesian(l, m, x) * sqrt(((2.0_dp * l) + 1) / (4.0_dp * PI)) &
+                                                    * (normsq(x)**(-0.5_dp * l))
+
+   end function SphericalYCartesian
 
     !#################################################################################
     !#
@@ -4872,732 +7331,363 @@ module descriptors_module
                               - (l * x * SphericalYCartesian(l, m, x) / normsq(x))
 
     end function GradSphericalYCartesian
+   subroutine cg_initialise(j,denom)
 
-    !#################################################################################
-    !#
-    !% Radial functions used by fourier so3
-    !#
-    !#################################################################################
-
-    function RadialFunction(cutoff, x, cutoff_f, cutoff_r1)
-
-      real(dp) :: RadialFunction
-      real(dp), intent(in) :: cutoff, x(3), cutoff_r1
-      integer, intent(in) :: cutoff_f
-      real(dp) :: r
-
-      r = norm(x)
-
-      if (cutoff_f == 1) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - cutoff_r1))) then
-            RadialFunction = 1.0_dp
-         else if ((r >= (cutoff - cutoff_r1)) .and. (r <= cutoff)) then
-            RadialFunction = (cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1))**2
-         else
-            call system_abort('RadialFunction: distance greater than cutoff')
-         end if
-      else if (cutoff_f == 2) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - (2.0_dp * cutoff_r1)))) then
-            RadialFunction = 0.0_dp
-         else if ((r >= (cutoff - (2.0_dp * cutoff_r1))) .and. (r <= cutoff)) then
-            RadialFunction = (cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1))**2
-         else
-            call system_abort('RadialFunction: distance greater than cutoff')
-         end if
-      else if (cutoff_f == 3) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - cutoff_r1))) then
-            RadialFunction = (cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / (cutoff - cutoff_r1)))**2
-         else if ((r >= (cutoff - cutoff_r1)) .and. (r <= cutoff)) then
-            RadialFunction = (cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1))**2
-         else
-            call system_abort('RadialFunction: distance greater than cutoff')
-         end if
-      else
-         call system_abort('RadialFunction: radial function type unknown')
-      end if
-
-    end function RadialFunction
-
-    !#################################################################################
-    !#
-    !% Derivative of Radial functions used by fourier so3
-    !#
-    !#################################################################################
-
-    function GradRadialFunction(cutoff, x, cutoff_f, cutoff_r1)
- 
-      real(dp) :: GradRadialFunction(3)
-      real(dp), intent(in) :: cutoff, x(3), cutoff_r1
-      integer, intent(in) :: cutoff_f
-      real(dp) :: r
-
-      r = norm(x)
-
-      if (cutoff_f == 1) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - cutoff_r1))) then
-            GradRadialFunction = 0.0_dp
-         else if ((r >= (cutoff - cutoff_r1)) .and. (r <= cutoff)) then
-            GradRadialFunction = -PI * x * cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         * sin(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         / (cutoff_r1 * r)
-         else
-            call system_abort('GradRadialFunction: distance greater than cutoff')
-         end if
-      else if (cutoff_f == 2) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - (2.0_dp * cutoff_r1)))) then
-            GradRadialFunction = 0.0_dp
-         else if ((r >= (cutoff - (2.0_dp * cutoff_r1))) .and. (r <= cutoff)) then
-            GradRadialFunction = -PI * x * cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         * sin(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         / (cutoff_r1 * r)
-         else
-            call system_abort('GradRadialFunction: distance greater than cutoff')
-         end if
-      else if (cutoff_f == 3) then
-         if ((r >= 0.0_dp) .and. (r < (cutoff - cutoff_r1))) then
-            GradRadialFunction = -PI * x * cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / (cutoff - cutoff_r1)) &
-                                         * sin(0.5_dp * PI * (r - cutoff + cutoff_r1) / (cutoff - cutoff_r1)) &
-                                         / ((cutoff - cutoff_r1) * r)
-         else if ((r >= (cutoff - cutoff_r1)) .and. (r <= cutoff)) then
-            GradRadialFunction = -PI * x * cos(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         * sin(0.5_dp * PI * (r - cutoff + cutoff_r1) / cutoff_r1) &
-                                         / (cutoff_r1 * r)
-         else
-            call system_abort('GradRadialFunction: distance greater than cutoff')
-         end if
-      else
-         call system_abort('GradRadialFunction: radial function type unknown')
-      end if
-
-    end function GradRadialFunction
-
-    function RadialFunction2(this,x,i)
-       real(dp) :: RadialFunction2
-       type(cosnx), intent(in) :: this
-       real(dp), dimension(3), intent(in) :: x
-       integer, intent(in) :: i
-    
-       real(dp), dimension(this%n_max) :: h
-       real(dp) :: r
-       integer :: j
-    
-       r = norm(x)
-       if( r < this%cutoff ) then
-          do j = 1, this%n_max
-             h(j) = (this%cutoff-r)**(j+2) / this%NormFunction(j)
-          enddo
-          RadialFunction2 = dot_product(this%RadialTransform(:,i),h)
-       else
-          RadialFunction2 = 0.0_dp
-       endif
-    
-    endfunction RadialFunction2
-    
-    function GradRadialFunction2(this,x,i)
-       real(dp), dimension(3) :: GradRadialFunction2
-       type(cosnx), intent(in) :: this
-       real(dp), dimension(3), intent(in) :: x
-       integer, intent(in) :: i
-    
-       real(dp), dimension(this%n_max) :: h
-       real(dp) :: r
-       integer :: j
-    
-       r = norm(x)
-       if( r < this%cutoff ) then
-          do j = 1, this%n_max
-             h(j) = - (j+2) * (this%cutoff-r)**(j+1) / this%NormFunction(j)
-          enddo
-          GradRadialFunction2 = dot_product(this%RadialTransform(:,i),h) * x / r
-       else
-          GradRadialFunction2 = 0.0_dp
-       endif
-    
-    endfunction GradRadialFunction2
-
-    function wigner_big_U(j,m1,m2,omega,theta,phi,denom)
-       complex(dp) :: wigner_big_U
-       integer, intent(in) :: j,m1,m2
-       real(dp), intent(in) :: omega,theta,phi
-       integer, intent(in), optional :: denom
-
-       complex(dp) :: v, u, tmp2
-       real(dp) :: tmp1
-       integer :: s, my_denom
-
-       my_denom = optional_default(1,denom)
-
-       v = sin(omega/2.0_dp)*sin(theta)*CPLX_ONE
-       u = cos(omega/2.0_dp)*CPLX_ONE -sin(omega/2.0_dp)*cos(theta)*CPLX_IMAG
-  
-       tmp1 = 0.0_dp
-  
-       if( m1+m2 >= 0 ) then
-          tmp2 = ( u / ( -CPLX_IMAG*v ) ) ** ((m1+m2)/my_denom)
-          do s = max(0,-(m1+m2))/my_denom, min((j-m1),(j-m2))/my_denom
-             tmp1 = tmp1 + (1.0_dp - 1.0_dp/v**2)**s / ( factorial(s) * &
-             & factorial(s+(m1+m2)/my_denom) * factorial((j-m1)/my_denom-s) * factorial((j-m2)/my_denom-s) )
-          enddo
-       else
-          tmp2 = ( conjg(u) / ( -CPLX_IMAG*v ) ) ** (-(m1+m2)/my_denom)
-          do s = max(0,(m1+m2))/my_denom, min((j+m1),(j+m2))/my_denom
-             tmp1 = tmp1 + (1.0_dp - 1.0_dp/v**2)**s / ( factorial(s) * &
-             & factorial(s-(m1+m2)/my_denom) * factorial((j+m1)/my_denom-s) * factorial((j+m2)/my_denom-s) )
-          enddo
-       endif
-  
-       wigner_big_U = (-CPLX_IMAG*v)**j * tmp2 * exp( -CPLX_IMAG*((m1-m2)/my_denom)*phi ) * &
-       & sqrt( factorial((j+m1)/my_denom) * factorial((j-m1)/my_denom) * factorial((j+m2)/my_denom) * &
-       & factorial((j-m2)/my_denom) ) * tmp1
-
-    endfunction wigner_big_U
-
-    function grad_wigner_big_U(j,m1,m2,omega,theta,phi,denom)
-       complex(dp), dimension(3) :: grad_wigner_big_U
-       integer, intent(in) :: j,m1,m2
-       real(dp), intent(in) :: omega,theta,phi
-       integer, intent(in), optional :: denom
-
-       complex(dp) :: u, tmp2, tmp5, tmp6, du_domega, du_dtheta, dU_dv, dU_du
-       real(dp) :: tmp1, tmp3, tmp4, tmp7, v, dv_domega, dv_dtheta
-       integer :: s, my_denom, my_2j
-
-       my_denom = optional_default(1,denom)
-       if( my_denom == 1 ) then
-          my_2j = 2*j
-       else
-          my_2j = j
-       endif
-
-       v = sin(omega/2.0_dp)*sin(theta)
-       u = cos(omega/2.0_dp)*CPLX_ONE - sin(omega/2.0_dp)*cos(theta)*CPLX_IMAG
-  
-       tmp1 = 0.0_dp
-       tmp4 = 0.0_dp
-  
-       if( m1+m2 >= 0 ) then
-          tmp2 = ( u / ( -CPLX_IMAG*v ) ) ** ((m1+m2)/my_denom)
-          tmp5 = CPLX_IMAG*((m1+m2)/my_denom)*( u / ( -CPLX_IMAG*v ) ) ** ((m1+m2)/my_denom) / ( -CPLX_IMAG*v )
-          tmp6 = ((m1+m2)/my_denom)*( u / ( -CPLX_IMAG*v ) ) ** ((m1+m2)/my_denom-1) / ( -CPLX_IMAG*v )
-          
-          du_domega = -sin(omega/2.0_dp)*CPLX_ONE/2.0_dp - cos(omega/2.0_dp)*cos(theta)*CPLX_IMAG / 2.0_dp
-          du_dtheta = sin(omega/2.0_dp)*sin(theta)*CPLX_IMAG
-
-          do s = max(0,-(m1+m2))/my_denom, min((j-m1),(j-m2))/my_denom
-             tmp3 = 1.0_dp / ( factorial(s) * &
-             & factorial(s+(m1+m2)/my_denom) * factorial((j-m1)/my_denom-s) * factorial((j-m2)/my_denom-s) )
-             tmp1 = tmp1 + (1.0_dp - 1.0_dp/v**2)**s * tmp3
-             tmp4 = tmp4 + 2.0_dp * s*(1.0_dp - 1.0_dp/v**2)**(s-1) / v**3 * tmp3
-          enddo
-       else
-          tmp2 = ( conjg(u) / ( -CPLX_IMAG*v ) ) ** (-(m1+m2)/my_denom)
-          tmp5 = -CPLX_IMAG*((m1+m2)/my_denom)*( conjg(u) / ( -CPLX_IMAG*v ) ) ** (-(m1+m2)/my_denom) / ( -CPLX_IMAG*v )
-          tmp6 = (-(m1+m2)/my_denom)*( conjg(u) / ( -CPLX_IMAG*v ) ) ** (-(m1+m2)/my_denom-1) / ( -CPLX_IMAG*v )
-
-          du_domega = -sin(omega/2.0_dp)*CPLX_ONE/2.0_dp + cos(omega/2.0_dp)*cos(theta)*CPLX_IMAG / 2.0_dp
-          du_dtheta = -sin(omega/2.0_dp)*sin(theta)*CPLX_IMAG
-
-          do s = max(0,(m1+m2))/my_denom, min((j+m1),(j+m2))/my_denom
-             tmp3 = 1.0_dp / ( factorial(s) * &
-             & factorial(s-(m1+m2)/my_denom) * factorial((j+m1)/my_denom-s) * factorial((j+m2)/my_denom-s) )
-             tmp1 = tmp1 + (1.0_dp - 1.0_dp/v**2)**s * tmp3
-             tmp4 = tmp4 + 2.0_dp * s*(1.0_dp - 1.0_dp/v**2)**(s-1) / v**3 * tmp3
-          enddo
-       endif
-       tmp7 = sqrt( factorial((j+m1)/my_denom) * factorial((j-m1)/my_denom) * &
-       & factorial((j+m2)/my_denom) * factorial((j-m2)/my_denom) )
-
-       dU_dv = ( -my_2j*CPLX_IMAG*(-CPLX_IMAG*v)**(my_2j-1) * tmp2 * tmp1 + &
-       & (-CPLX_IMAG*v)**my_2j * (tmp5 * tmp1 + tmp2 * tmp4) ) * exp( -CPLX_IMAG*((m1-m2)/my_denom)*phi ) * tmp7
-       dU_du = (-CPLX_IMAG*v)**my_2j * tmp6 * tmp1 * exp( -CPLX_IMAG*((m1-m2)/my_denom)*phi ) * tmp7
-
-       dv_domega = cos(omega/2.0_dp)*sin(theta) / 2.0_dp
-       dv_dtheta = sin(omega/2.0_dp)*cos(theta)
-
-       
-       grad_wigner_big_U(1) = dU_dv*dv_domega + dU_du*du_domega
-       grad_wigner_big_U(2) = dU_dv*dv_dtheta + dU_du*du_dtheta
-       grad_wigner_big_U(3) = -CPLX_IMAG*((m1-m2)/my_denom) * (-CPLX_IMAG*v)**my_2j &
-       & * tmp2 * exp( -CPLX_IMAG*((m1-m2)/my_denom)*phi ) * tmp7 * tmp1
-  
-     endfunction grad_wigner_big_U
-
-    !#################################################################################
-    !#
-    !% Initialise Clebsch-Gordan coefficient for fast calculation
-    !#
-    !#################################################################################
-
-    !subroutine cg_initialise(j1,m1,j2,m2,j,m)
-    subroutine cg_initialise(j,denom)
-
-       integer, intent(in) :: j
-       integer :: i_j1,i_m1,i_j2,i_m2,i_j,i_m
-       integer, intent(in), optional :: denom
-
-       integer :: my_denom
-
-       if(cg_initialised) return
-
-       my_denom = optional_default(1,denom)
-
-       cg_j1_max = j
-       cg_m1_max = j
-       cg_j2_max = j
-       cg_m2_max = j
-       cg_j_max = j !(j1_max+j2_max)
-       cg_m_max = j !(j1_max+j2_max)
-
-       allocate( cg_array(0:cg_j1_max,-cg_m1_max:cg_m1_max,0:cg_j2_max,-cg_m2_max:cg_m2_max,&
-       & 0:cg_j_max,-cg_j_max:cg_j_max) )
- 
-       cg_array = 0.0_dp
-
-!       do i_m = -m_max, m_max
-!       do i_j = abs(j1_max-j2_max), j1_max+j2_max
-!       do i_m2 = -m2_max, m2_max
-!       do i_j2 = 0, j2_max
-!       do i_m1 = -m1_max, m1_max
-!       do i_j1 = 0, j1_max
-!
-!          cg_array(i_j1,i_m1,i_j2,i_m2,i_j,i_m) = cg_calculate(i_j1,i_m1,i_j2,i_m2,i_j,i_m,denom)
-!
-!       enddo
-!       enddo
-!       enddo
-!       enddo
-!       enddo
-!       enddo
-       do i_j1 = 0, cg_j1_max
-       do i_m1 = -i_j1, i_j1, my_denom
-       do i_j2 = 0, cg_j2_max
-       do i_m2 = -i_j2, i_j2, my_denom
-       do i_j = abs(i_j1-i_j2), min(cg_j_max,i_j1+i_j2)
-       do i_m = -i_j, i_j, my_denom
-
-
-          cg_array(i_j1,i_m1,i_j2,i_m2,i_j,i_m) = cg_calculate(i_j1,i_m1,i_j2,i_m2,i_j,i_m,denom)
-
-       enddo
-       enddo
-       enddo
-       enddo
-       enddo
-       enddo
-       cg_initialised = .true.
-     
-    endsubroutine cg_initialise
-
-    !#################################################################################
-    !#
-    !% Finalise global CG arrays
-    !#
-    !#################################################################################
-
-    subroutine cg_finalise
-
-       cg_j1_max = 0
-       cg_m1_max = 0
-       cg_j2_max = 0
-       cg_m2_max = 0
-       cg_j_max = 0
-       cg_m_max = 0
-
-       if(allocated(cg_array)) deallocate( cg_array )
-       cg_initialised = .false.
-
-    endsubroutine cg_finalise
-
-    !#################################################################################
-    !#
-    !% Look up CG coefficient from CG array, previously calculated.
-    !#
-    !#################################################################################
-
-    function cg_lookup(j1,m1,j2,m2,j,m,denom) result(cg)
-
-      real(dp)            :: cg
-      integer, intent(in) :: j1,m1,j2,m2,j,m
+      integer, intent(in) :: j
+      integer :: i_j1,i_m1,i_j2,i_m2,i_j,i_m
       integer, intent(in), optional :: denom
 
-      cg=0.0_dp
+      integer :: my_denom
 
-      if ( .not. cg_check(j1,m1,j2,m2,j,m,denom) ) then
-         return
-      endif
+      if(cg_initialised) return
 
-      if( j1<=cg_j1_max .and. j2<=cg_j2_max .and. j<=cg_j_max .and. &
-        & abs(m1)<=cg_m1_max .and. abs(m2)<=cg_m2_max .and. abs(m) <= cg_m_max .and. &
-        & cg_initialised ) then
-          cg = cg_array(j1,m1,j2,m2,j,m)
-      else
-          cg = cg_calculate(j1,m1,j2,m2,j,m,denom)
-      endif
+      my_denom = optional_default(1,denom)
 
-    endfunction cg_lookup
+      cg_j1_max = j
+      cg_m1_max = j
+      cg_j2_max = j
+      cg_m2_max = j
+      cg_j_max = j !(j1_max+j2_max)
+      cg_m_max = j !(j1_max+j2_max)
 
-    !#################################################################################
-    !#
-    !% Check if input variables for CG make sense.
-    !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
-    !%                                                                    
-    !% $ j_1 + j_2 \ge j $ \\
-    !% $ j_1 - j_2 \ge -j $ \\
-    !% $ j_1 - j_2 \le j $ \\
-    !% $ j_1 \ge m_1 \ge j_1 $ \\
-    !% $ j_2 \ge m_2 \ge j_2 $ \\
-    !% $ j \ge m \ge j $ \\
-    !% $ m_1 + m_2 = m $ \\
-    !#
-    !#################################################################################
+      allocate( cg_array(0:cg_j1_max,-cg_m1_max:cg_m1_max,0:cg_j2_max,-cg_m2_max:cg_m2_max,&
+      & 0:cg_j_max,-cg_j_max:cg_j_max) )
+ 
+      cg_array = 0.0_dp
 
-    function cg_check(j1,m1,j2,m2,j,m,denom)
+      do i_j1 = 0, cg_j1_max
+      do i_m1 = -i_j1, i_j1, my_denom
+      do i_j2 = 0, cg_j2_max
+      do i_m2 = -i_j2, i_j2, my_denom
+      do i_j = abs(i_j1-i_j2), min(cg_j_max,i_j1+i_j2)
+      do i_m = -i_j, i_j, my_denom
 
-       logical :: cg_check
-       integer, intent(in) :: j1,m1,j2,m2,j,m
-       integer, intent(in), optional :: denom
 
-       integer :: my_denom
+         cg_array(i_j1,i_m1,i_j2,i_m2,i_j,i_m) = cg_calculate(i_j1,i_m1,i_j2,i_m2,i_j,i_m,denom)
 
-       my_denom = optional_default(1,denom)
-       cg_check = (j1>=0) .and. (j2>=0) .and. (j>=0) .and. &
-                & (abs(m1)<=j1) .and. (abs(m2)<=j2) .and. (abs(m)<=j) &
-                & .and. (m1+m2==m) .and. (j1+j2 >= j) .and. (abs(j1-j2) <= j) &
-                & .and. (mod(j1+j2+j,my_denom)==0)
-       
-    endfunction cg_check
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
 
-    !#################################################################################
-    !#
-    !% Calculate a Clebsch-Gordan coefficient $\left< j_1 m_1 j_2 m_2 | j m \right>$
-    !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
-    !% $ \left< j_1 m_1 j_2 m_2 | j m \right> = (-1)^{m+j_1-j_2) 
-    !% \sqrt{2j+1} \left( \begin{array}{ccc}
-    !% j_1 & j_2 & j \\
-    !% m_1 & m_2 & -m \\
-    !% \end{array} \right) $
-    !% where the thing on the right-hand side is the Wigner 3J symbol.
-    !#
-    !#################################################################################
+      cg_initialised = .true.
+    
+   endsubroutine cg_initialise
 
-    function cg_calculate(j1,m1,j2,m2,j,m,denom) result(cg)
+   !#################################################################################
+   !#
+   !% Finalise global CG arrays
+   !#
+   !#################################################################################
 
-      real(dp)            :: cg
+   subroutine cg_finalise
+
+      cg_j1_max = 0
+      cg_m1_max = 0
+      cg_j2_max = 0
+      cg_m2_max = 0
+      cg_j_max = 0
+      cg_m_max = 0
+
+      if(allocated(cg_array)) deallocate( cg_array )
+      cg_initialised = .false.
+
+   endsubroutine cg_finalise
+
+   !#################################################################################
+   !#
+   !% Look up CG coefficient from CG array, previously calculated.
+   !#
+   !#################################################################################
+
+   function cg_lookup(j1,m1,j2,m2,j,m,denom) result(cg)
+
+     real(dp)            :: cg
+     integer, intent(in) :: j1,m1,j2,m2,j,m
+     integer, intent(in), optional :: denom
+
+     cg=0.0_dp
+
+     if ( .not. cg_check(j1,m1,j2,m2,j,m,denom) ) then
+        return
+     endif
+
+     if( j1<=cg_j1_max .and. j2<=cg_j2_max .and. j<=cg_j_max .and. &
+       abs(m1)<=cg_m1_max .and. abs(m2)<=cg_m2_max .and. abs(m) <= cg_m_max .and. cg_initialised ) then
+         cg = cg_array(j1,m1,j2,m2,j,m)
+     else
+         cg = cg_calculate(j1,m1,j2,m2,j,m,denom)
+     endif
+
+   endfunction cg_lookup
+
+   !#################################################################################
+   !#
+   !% Check if input variables for CG make sense.
+   !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
+   !%                                                                    
+   !% $ j_1 + j_2 \ge j $ \\
+   !% $ j_1 - j_2 \ge -j $ \\
+   !% $ j_1 - j_2 \le j $ \\
+   !% $ j_1 \ge m_1 \ge j_1 $ \\
+   !% $ j_2 \ge m_2 \ge j_2 $ \\
+   !% $ j \ge m \ge j $ \\
+   !% $ m_1 + m_2 = m $ \\
+   !#
+   !#################################################################################
+
+   function cg_check(j1,m1,j2,m2,j,m,denom)
+
+      logical :: cg_check
       integer, intent(in) :: j1,m1,j2,m2,j,m
       integer, intent(in), optional :: denom
 
       integer :: my_denom
 
       my_denom = optional_default(1,denom)
+      cg_check = (j1>=0) .and. (j2>=0) .and. (j>=0) .and. &
+               (abs(m1)<=j1) .and. (abs(m2)<=j2) .and. (abs(m)<=j) &
+               .and. (m1+m2==m) .and. (j1+j2 >= j) .and. (abs(j1-j2) <= j) &
+               .and. (mod(j1+j2+j,my_denom)==0)
+      
+   endfunction cg_check
 
-      cg=0.0_dp
-      if ( .not. cg_check(j1,m1,j2,m2,j,m,denom) ) return
+   !#################################################################################
+   !#
+   !% Calculate a Clebsch-Gordan coefficient $\left< j_1 m_1 j_2 m_2 | j m \right>$
+   !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
+   !% $ \left< j_1 m_1 j_2 m_2 | j m \right> = (-1)^{m+j_1-j_2) 
+   !% \sqrt{2j+1} \left( \begin{array}{ccc}
+   !% j_1 & j_2 & j \\
+   !% m_1 & m_2 & -m \\
+   !% \end{array} \right) $
+   !% where the thing on the right-hand side is the Wigner 3J symbol.
+   !#
+   !#################################################################################
 
-      cg = oscillate((m+j1-j2)/my_denom) * sqrt(2.0_dp*real(j,dp)/real(my_denom,dp)+1.0_dp) &
-      & * wigner3j(j1,m1,j2,m2,j,-m,denom)
+   function cg_calculate(j1,m1,j2,m2,j,m,denom) result(cg)
 
-    end function cg_calculate
+     real(dp)            :: cg
+     integer, intent(in) :: j1,m1,j2,m2,j,m
+     integer, intent(in), optional :: denom
 
-    !#################################################################################
-    !#
-    !% Triangle coefficient
-    !% Source: http://mathworld.wolfram.com/TriangleCoefficient.html
-    !% 
-    !% $ \Delta(a,b,c) = \frac{ (a+b-c)! (a-b+c)! (-a+b+c)! }{ (a+b+c+1)! } $
-    !#
-    !#################################################################################
+     integer :: my_denom
 
-    function tc(a,b,c,denom)
+     my_denom = optional_default(1,denom)
 
-       real(dp) :: tc
-       integer, intent(in) :: a, b, c
+     cg=0.0_dp
+     if ( .not. cg_check(j1,m1,j2,m2,j,m,denom) ) return
+
+     cg = oscillate((m+j1-j2)/my_denom) * sqrt(2.0_dp*real(j,dp)/real(my_denom,dp)+1.0_dp) * &
+     wigner3j(j1,m1,j2,m2,j,-m,denom)
+
+   end function cg_calculate
+
+   !#################################################################################
+   !#
+   !% Triangle coefficient
+   !% Source: http://mathworld.wolfram.com/TriangleCoefficient.html
+   !% 
+   !% $ \Delta(a,b,c) = \frac{ (a+b-c)! (a-b+c)! (-a+b+c)! }{ (a+b+c+1)! } $
+   !#
+   !#################################################################################
+
+   function tc(a,b,c,denom)
+
+      real(dp) :: tc
+      integer, intent(in) :: a, b, c
+      integer, intent(in), optional :: denom
+      integer :: my_denom
+
+      my_denom = optional_default(1,denom)
+
+      tc = factorial((a+b-c)/my_denom) * factorial((a-b+c)/my_denom) * &
+      factorial((-a+b+c)/my_denom) / factorial((a+b+c)/my_denom+1)
+
+   endfunction tc
+
+   !#################################################################################
+   !#
+   !% Wigner 3J symbol
+   !% Source: http://mathworld.wolfram.com/Wigner3j-Symbol.html
+   !% 
+   !% \[
+   !% \left( \begin{array}{ccc}
+   !% j_1 & j_2 & j \\
+   !% m_1 & m_2 & m \\
+   !% \end{array} \right) = (-1)^{j_1-j_2-m) \sqrt{ \Delta (j_1,j_2,j) }
+   !% \sqrt{ (j_1+m_1)! (j_1-m_1)! (j_2+m_2)! (j_2-m_2)! (j+m)! (j-m)! }
+   !% \sum_k \frac{ (-1)^k }{k! (j-j_2+k+m_1)! (j-j_1+k-m_2)! (j_1+j_2-j-k)!
+   !% (j_1-k-m_1)! (j_2-k+m_2)! }
+   !% \]
+   !% the summation index k runs on all integers where none of the argument of
+   !% factorials are negative
+   !% $\Delta(a,b,c)$ is the triangle coefficient.
+   !#
+   !#################################################################################
+
+   function wigner3j(j1,m1,j2,m2,j,m,denom)
+
+       real(dp)            :: wigner3j
+       integer, intent(in) :: j1,m1,j2,m2,j,m
        integer, intent(in), optional :: denom
-       integer :: my_denom
+
+       real(dp) :: pre_fac, triang_coeff, main_coeff, sum_coeff, sum_term
+       integer  :: k, kmin, kmax, my_denom
 
        my_denom = optional_default(1,denom)
 
-       tc = factorial((a+b-c)/my_denom) * factorial((a-b+c)/my_denom) &
-       & * factorial((-a+b+c)/my_denom) / factorial((a+b+c)/my_denom+1)
+       pre_fac = oscillate((j1-j2-m)/my_denom)
 
-    endfunction tc
+       triang_coeff = sqrt( tc(j1,j2,j,denom) )
 
-    !#################################################################################
-    !#
-    !% Wigner 3J symbol
-    !% Source: http://mathworld.wolfram.com/Wigner3j-Symbol.html
-    !% 
-    !% \[
-    !% \left( \begin{array}{ccc}
-    !% j_1 & j_2 & j \\
-    !% m_1 & m_2 & m \\
-    !% \end{array} \right) = (-1)^{j_1-j_2-m) \sqrt{ \Delta (j_1,j_2,j) }
-    !% \sqrt{ (j_1+m_1)! (j_1-m_1)! (j_2+m_2)! (j_2-m_2)! (j+m)! (j-m)! }
-    !% \sum_k \frac{ (-1)^k }{k! (j-j_2+k+m_1)! (j-j_1+k-m_2)! (j_1+j_2-j-k)!
-    !% (j_1-k-m_1)! (j_2-k+m_2)! }
-    !% \]
-    !% the summation index k runs on all integers where none of the argument of
-    !% factorials are negative
-    !% $\Delta(a,b,c)$ is the triangle coefficient.
-    !#
-    !#################################################################################
+       main_coeff = sqrt( &
+                  factorial((j1+m1)/my_denom) * factorial((j1-m1)/my_denom) * &
+                  factorial((j2+m2)/my_denom) * factorial((j2-m2)/my_denom) * &
+                  factorial((j+m)/my_denom) * factorial((j-m)/my_denom) )
+                  
+       sum_coeff = 0.0_dp
 
-    function wigner3j(j1,m1,j2,m2,j,m,denom)
+       kmin = max( j2-j-m1, j1+m2-j, 0 ) / my_denom
+       kmax = min( j1+j2-j, j1-m1, j2+m2) / my_denom
 
-        real(dp)            :: wigner3j
-        integer, intent(in) :: j1,m1,j2,m2,j,m
-        integer, intent(in), optional :: denom
+       do k = kmin, kmax
 
-        real(dp) :: pre_fac, triang_coeff, main_coeff, sum_coeff, sum_term
-        integer  :: k, kmin, kmax, my_denom
+          sum_term = 1.0_dp / ( factorial(k) * factorial((j-j2+m1)/my_denom+k) * &
+                   factorial((j-j1-m2)/my_denom+k) * factorial((j1+j2-j)/my_denom-k) * &
+                   factorial((j1-m1)/my_denom-k) * factorial((j2+m2)/my_denom-k) )
 
-        my_denom = optional_default(1,denom)
+          sum_term = oscillate(k) * sum_term
+          
+          sum_coeff = sum_coeff + sum_term
 
-        pre_fac = oscillate((j1-j2-m)/my_denom)
+       enddo
 
-        triang_coeff = sqrt( tc(j1,j2,j,denom) )
+       wigner3j = pre_fac * triang_coeff * main_coeff * sum_coeff
 
-        main_coeff = sqrt( &
-                   & factorial((j1+m1)/my_denom) * factorial((j1-m1)/my_denom) * &
-                   & factorial((j2+m2)/my_denom) * factorial((j2-m2)/my_denom) * &
-                   & factorial((j+m)/my_denom) * factorial((j-m)/my_denom) )
-                   
-        sum_coeff = 0.0_dp
+   endfunction wigner3j
 
-        kmin = max( j2-j-m1, j1+m2-j, 0 ) / my_denom
-        kmax = min( j1+j2-j, j1-m1, j2+m2) / my_denom
+   !#################################################################################
+   !#
+   !% Factorial, real result
+   !#
+   !#################################################################################
 
-        do k = kmin, kmax
+    function factorial(n) result(res)
 
-           sum_term = 1.0_dp / ( factorial(k) * factorial((j-j2+m1)/my_denom+k) * &
-                    & factorial((j-j1-m2)/my_denom+k) * factorial((j1+j2-j)/my_denom-k)    * &
-                    & factorial((j1-m1)/my_denom-k) * factorial((j2+m2)/my_denom-k) )
+     ! factorial_real
 
-           sum_term = oscillate(k) * sum_term
-           
-           sum_coeff = sum_coeff + sum_term
+     integer, intent(in) :: n
+     real(dp)            :: res
+     integer :: i
 
+     if (n<0) then
+        call system_abort('factorial: negative argument')
+     elseif(n <= 16) then
+        res = factorial_table(n)
+     else
+        res=1.0_dp
+        do i=2,n
+           res = res*i
+        end do
+     end if
+
+   endfunction factorial
+
+   !#################################################################################
+   !#
+   !% Factorial, integer result
+   !#
+   !#################################################################################
+
+   function factorial_int(n) result(res)
+
+     ! factorial_int
+
+     integer, intent(in) :: n
+     integer             :: res
+     integer :: i
+
+     if (n<0) then
+        call system_abort('factorial_int: negative argument')
+     else
+        res=1
+        do i=2,n
+           res = res*i
+        end do
+     end if
+
+   endfunction factorial_int
+
+   !#################################################################################
+   !#
+   !% Double factorial, real result
+   !#
+   !#################################################################################
+
+   recursive function factorial2(n) result(res)
+
+     ! double factorial
+
+     integer, intent(in) :: n
+     real(dp)            :: res
+     integer :: i
+
+     if( n < -1 ) then
+         call system_abort('factorial2: negative argument')
+     else
+         res = 1.0_dp
+         do i = 2-mod(n,2), n, 2
+            res = res*i
+         enddo
+     endif
+
+   endfunction factorial2
+
+   !#################################################################################
+   !#
+   !% Binomial coefficient, real result
+   !#
+   !#################################################################################
+
+   recursive function binom(n,r) result(res)
+
+     ! binomial coefficients
+
+     integer, intent(in) :: n,r
+     real(dp)            :: res
+     integer             :: i
+
+     if((n<0) .or. (r<0) .or. (n<r)) then
+        res = 0.0_dp
+     else
+        res = 1.0_dp
+        do i = 0, r-1
+           res = real(n-i,dp)/real(r-i,dp) * res
         enddo
+     endif
 
-        wigner3j = pre_fac * triang_coeff * main_coeff * sum_coeff
+   endfunction binom
 
-    endfunction wigner3j
+   !#################################################################################
+   !#
+   !% $ (-1)^n $ function.
+   !#
+   !#################################################################################
 
-    !#################################################################################
-    !#
-    !% Variance of an array.
-    !#
-    !#################################################################################
+   function oscillate(m)
 
-    function p_norm(vec,p)
+     integer, intent(in) :: m
+     integer :: oscillate
 
-       real(dp) :: p_norm
-       real(dp), dimension(:) :: vec
-       integer, optional :: p
-       integer :: my_p
+     if( mod(m,2) == 0 ) then
+         oscillate = 1
+     else
+         oscillate = -1
+     endif
 
-       my_p = optional_default(2,p)
-
-       p_norm = ( sum(vec**my_p) / size(vec) ) ** (1.0_dp/real(my_p,dp)) 
-
-    endfunction p_norm
-
-    !#################################################################################
-    !#
-    !% Modified Bessel Function of the first kind, 0th and 1st order (the derivative in this case).
-    !#
-    !#################################################################################
-
-    function besseli0(x)
-
-       real(dp), intent(in) :: x
-       real(dp) :: besseli0
-
-       real(dp) :: x2, r, k
-       integer :: i
-
-       x2 = x**2
-
-       if(x == 0.0_dp) then
-          besseli0 = 1.0_dp
-       elseif( x < besseli_max_x ) then
-          besseli0 = 1.0_dp
-          r = 1.0_dp
-          k = 1.0_dp
-          do while ( abs(r/besseli0) > NUMERICAL_ZERO )
-             r = 0.25_dp * r * x2 / k**2
-             besseli0 = besseli0 + r
-             k = k + 1.0_dp
-          enddo
-       else
-          besseli0 = 1.0_dp
-          do i = 1, besseli_max_n
-             besseli0 = besseli0 + besseli0_c(i)/x**i
-          enddo
-          besseli0 = besseli0 * exp(x) / sqrt(2.0_dp*pi*x)
-       endif
-
-    endfunction besseli0
-
-    function besseli1(x)
-
-       real(dp), intent(in) :: x
-       real(dp) :: besseli1
-
-       real(dp) :: x2, r, k
-       integer :: i
-
-       x2 = x**2
-
-       if(x == 0.0_dp) then
-          besseli1 = 0.0_dp
-       elseif( x < besseli_max_x ) then
-          besseli1 = 1.0_dp
-          r = 1.0_dp
-          k = 1.0_dp
-          do while ( abs(r/besseli1) > NUMERICAL_ZERO )
-             r = 0.25_dp * r * x2 / (k*(k+1.0_dp))
-             besseli1 = besseli1 + r
-             k = k + 1.0_dp
-          enddo
-          besseli1 = besseli1 * 0.5_dp * x
-       else
-          besseli1 = 1.0_dp
-          do i = 1, besseli_max_n
-             besseli1 = besseli1 + besseli1_c(i)/x**i
-          enddo
-          besseli1 = besseli1 * exp(x) / sqrt(2.0_dp*pi*x)
-       endif
-
-    endfunction besseli1
-
-    function covariance_atom_atom(at1,i1,at2,i2)
-
-       type(atoms), intent(in) :: at1, at2
-       integer, intent(in) :: i1, i2
-       real(dp) :: covariance_atom_atom
-
-       real(dp) :: s, s2, sum1, sum2, bessel_arg, r_j1, r_j2, r_k1, r_k2, &
-       cos_j1k1, cos_j2k2, dj1j2, dj1k2, dk1j2, dk1k2, cos_j1k1_m_j2k2, cos_j1k1_p_j2k2, &
-       r_j1k1, r_j2k2
-
-       real(dp), dimension(3) :: d_j1, d_j2, d_k1, d_k2
-
-       integer, dimension(3) :: shift_j1, shift_j2, shift_k1, shift_k2
-
-       integer :: n1, n2, m1, m2, j1, j2, k1, k2
-
-       s = 0.3_dp
-       s2 = s**2
-
-       sum1 = 0.0_dp
-       sum2 = 0.0_dp
-       bessel_arg = 0.0_dp
-
-       do n1 = 1, atoms_n_neighbours(at1,i1)
-          j1 = atoms_neighbour(at1,i1,n1,distance=r_j1,diff=d_j1)
-
-          do m1 = 1, atoms_n_neighbours(at1,i1)
-             k1 = atoms_neighbour(at1,i1,m1,distance=r_k1,diff=d_k1)
-
-             cos_j1k1 = dot_product(d_j1,d_k1)/(r_j1*r_k1)
-             print*, r_j1, r_k1, cos_j1k1
-
-             sum1 = sum1 + 0.25_dp * exp( -(r_j1**2+r_k1**2)/(2.0_dp*s2) ) * pi * s * &
-             ( 2.0_dp * s + exp( (r_j1+r_k1)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_k1)* &
-             (1.0_dp + erf((r_j1+r_k1)/(2.0_dp*s))) ) * cos_j1k1
-          enddo
-       enddo
-
-       do n2 = 1, atoms_n_neighbours(at2,i2)
-          j2 = atoms_neighbour(at2,i2,n2,distance=r_j2,diff=d_j2)
-
-          do m2 = 1, atoms_n_neighbours(at2,i2)
-             k2 = atoms_neighbour(at2,i2,m2,distance=r_k2,diff=d_k2)
-
-             cos_j2k2 = dot_product(d_j2,d_k2)/(r_j2*r_k2)
-
-             sum2 = sum2 + 0.25_dp * exp( -(r_j2**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
-             ( 2.0_dp * s + exp( (r_j2+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j2+r_k2)* &
-             (1.0_dp + erf((r_j2+r_k2)/(2.0_dp*s))) ) * cos_j2k2
-          enddo
-       enddo
-
-       !do n1 = 1, atoms_n_neighbours(at1,i1)
-       !   j1 = atoms_neighbour(at1,i1,n1,distance=r_j1,diff=d_j1,shift=shift_j1)
-
-       !   do m1 = 1, atoms_n_neighbours(at1,i1)
-       !      k1 = atoms_neighbour(at1,i1,m1,distance=r_k1,diff=d_k1,shift=shift_k1)
-
-       !      r_j1k1 = norm(diff(at1,j1,k1,shift_k1-shift_j1))
-
-       !      if(r_j1k1 .feq. 0.0_dp) then
-       !         cos_j1k1 = 1.0_dp
-       !      else
-       !         cos_j1k1 = dot_product(d_j1,d_k1)/(r_j1*r_k1)
-       !      endif
-
-       !      do n2 = 1, atoms_n_neighbours(at2,i2)
-       !         j2 = atoms_neighbour(at2,i2,n2,distance=r_j2,diff=d_j2,shift=shift_j2)
-
-       !         do m2 = 1, atoms_n_neighbours(at2,i2)
-       !            k2 = atoms_neighbour(at2,i2,m2,distance=r_k2,diff=d_k2,shift=shift_k2)
-
-       !            r_j2k2 = norm(diff(at2,j2,k2,shift_k2-shift_j2))
-
-       !            if(r_j2k2 .feq. 0.0_dp) then
-       !               cos_j2k2 = 1.0_dp
-       !            else
-       !               cos_j2k2 = dot_product(d_j2,d_k2)/(r_j2*r_k2)
-       !            endif
-
-       !            dj1j2 = 0.25_dp * exp(-(r_j1**2+r_j2**2)/(2.0_dp*s2) ) * pi * s * &
-       !            ( 2.0_dp * s + exp( (r_j1+r_j2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_j2)* &
-       !            (1.0_dp + erf((r_j1+r_j2)/(2.0_dp*s))) )
-
-       !            dj1k2 = 0.25_dp * exp(-(r_j1**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
-       !            ( 2.0_dp * s + exp( (r_j1+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_j1+r_k2)* &
-       !            (1.0_dp + erf((r_j1+r_k2)/(2.0_dp*s))) )
-
-       !            dk1j2 = 0.25_dp * exp(-(r_k1**2+r_j2**2)/(2.0_dp*s2) ) * pi * s * &
-       !            ( 2.0_dp * s + exp( (r_k1+r_j2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_k1+r_j2)* &
-       !            (1.0_dp + erf((r_k1+r_j2)/(2.0_dp*s))) )
-
-       !            dk1k2 = 0.25_dp * exp(-(r_k1**2+r_k2**2)/(2.0_dp*s2) ) * pi * s * &
-       !            ( 2.0_dp * s + exp( (r_k1+r_k2)**2/(4.0_dp*s2) ) * sqrt(pi) * (r_k1+r_k2)* &
-       !            (1.0_dp + erf((r_k1+r_k2)/(2.0_dp*s))) )
-
-
-       !            cos_j1k1_m_j2k2 = cos_j1k1*cos_j2k2+sqrt((1.0_dp-cos_j1k1**2)*(1.0_dp-cos_j2k2**2))
-       !            cos_j1k1_p_j2k2 = cos_j1k1*cos_j2k2-sqrt((1.0_dp-cos_j1k1**2)*(1.0_dp-cos_j2k2**2))
-
-
-
-       !            if(n2 < m2) then
-       !               if( n1 < m1 ) then
-       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_m_j2k2
-       !                  print*, dj1j2 * dk1k2 * cos_j1k1_m_j2k2
-       !               else
-       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_p_j2k2
-       !                  print*, dj1j2 * dk1k2 * cos_j1k1_p_j2k2
-       !               endif
-       !            else
-       !               if( n1 < m1 ) then
-       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_p_j2k2
-       !                  print*, dj1j2 * dk1k2 * cos_j1k1_p_j2k2
-       !               else
-       !                  bessel_arg = bessel_arg + dj1j2 * dk1k2 * cos_j1k1_m_j2k2
-       !                  print*, dj1j2 * dk1k2 * cos_j1k1_m_j2k2
-       !               endif
-
-       !            endif
-
-       !         enddo
-       !      enddo
-       !   enddo
-       !enddo
-
-       covariance_atom_atom = exp( -(sum1+sum2) )*besseli0(sqrt(4.0_dp * bessel_arg)) 
-
-    endfunction covariance_atom_atom
+   endfunction oscillate
 
 endmodule descriptors_module
