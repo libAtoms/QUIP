@@ -2404,61 +2404,78 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
   end subroutine delete_metal_connects
 
-  subroutine find_water_monomer(at,water_index,error)
+  subroutine find_water_monomer(at,water_index,OHH_ordercheck,error)
 
      type(atoms), intent(in) :: at
      integer, dimension(3,at%N/3), intent(out) :: water_index
+     logical, intent(in), optional :: OHH_ordercheck
      integer, intent(out), optional :: error
 
      real(dp) :: r, roh1, roh2
-     integer :: i, j, n, h1, h2, oindex
+     integer :: i, j, n, h1, h2, oindex, iO, iH1, iH2
      logical, dimension(at%N) :: H_associated
+     logical :: do_OHH_ordercheck
 
 
      ! loop through atoms, find oxygens and their closest hydrogens
      oindex = 0
      H_associated = .false.
 
-     do i = 1, at%N
-        if(at%Z(i) == 8) then
-           oindex = oindex + 1
+     do_OHH_ordercheck = optional_default(.true.,OHH_ordercheck)
+
+     if(do_OHH_ordercheck) then
+        do i = 1, at%N
+           if(at%Z(i) == 8) then
+              oindex = oindex + 1
 
 
-           roh1 = at%cutoff ! initialise smaller oh distance
-           roh2 = at%cutoff ! initialise larger oh distance
-           h1 = 0
-           h2 = 0
-           do n = 1, atoms_n_neighbours(at, i)
-              j = atoms_neighbour(at, i, n, distance=r)
+              roh1 = 1.3_dp ! initialise smaller oh distance
+              roh2 = 1.3_dp ! initialise larger oh distance
+              h1 = 0
+              h2 = 0
+              do n = 1, atoms_n_neighbours(at, i)
+                 j = atoms_neighbour(at, i, n, distance=r)
 
-              if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
+                 if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
 
-              if(r < roh1) then
-                 if(h1 /= 0) then ! H1 was already found, so move it to H2
-                    roh2 = roh1
-                    h2 = h1
+                 if(r < roh1) then
+                    if(h1 /= 0) then ! H1 was already found, so move it to H2
+                       roh2 = roh1
+                       h2 = h1
+                    end if
+                    roh1 = r
+                    h1 = j
+                 else if(r < roh2) then
+                    roh2 = r
+                    h2 = j
                  end if
-                 roh1 = r
-                 h1 = j
-              else if(r < roh2) then
-                 roh2 = r
-                 h2 = j
+              end do
+              if(h1 == 0 .or. h2 == 0) then
+                 RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2//" with cutoff of 1.3 A", error)
+!                 call write(at, "stdout")
               end if
-           end do
-           if(h1 == 0 .or. h2 == 0) then
-              RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2, error)
+              H_associated(h1) = .true.
+              H_associated(h2) = .true.
+
+              water_index(:,oindex) = (/i, h1, h2/)
            end if
-           H_associated(h1) = .true.
-           H_associated(h2) = .true.
+        end do
 
-           water_index(:,oindex) = (/i, h1, h2/)
+        ! sanity check
+        if(oindex /= at%N/3) then
+           RAISE_ERROR("Number of oxygens is not equal to at%N/3", error)
         end if
-     end do
-
-     ! sanity check
-     if(oindex /= at%N/3) then
-        RAISE_ERROR("Number of oxygens is not equal to at%N/3", error)
-     end if
+     else
+        do i = 1, at%N/3
+           iO = (i-1)*3+1
+           iH1 = iO+1
+           iH2 = iO+2
+           if( (at%Z(iO)/=8) .or. (at%Z(iH1)/=1) .or. (at%Z(iH2)/=1) ) then
+              RAISE_ERROR("Atom order incorrect, does not match OHH order.", error)
+           endif
+           water_index(:,i) = (/iO, iH1, iH2/)
+        enddo
+     endif
 
   endsubroutine find_water_monomer
 
