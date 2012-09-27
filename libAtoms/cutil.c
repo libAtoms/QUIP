@@ -166,6 +166,28 @@ int c_increase_stack_(int *stack_size) {
   return stat;
 }
 
+void fwrite_array_d_(int *size, double *v, char *filename) {
+   FILE *fp;
+   int i;
+   fp = fopen(filename, "w");
+   for (i=0; i < *size; i++) {
+      fprintf(fp, "%.20e\n", v[i]);
+   }
+   fclose(fp);
+}
+
+void fread_array_d_(int *size, double *v, char *filename) {
+   FILE *fp;
+   int i;
+
+   fp = fopen(filename, "r");
+   for (i=0; i < *size; i++) {
+      fscanf(fp, "%lf", v+i);
+   }
+   fclose(fp);
+}
+
+
 int pointer_to_(void *p) {
   return ((int) p);
 }
