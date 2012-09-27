@@ -460,14 +460,18 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
     do while (.not. done)
       read (unit=unit, fmt='(A)', iostat=stat, advance='no', size=n_read) line
       if (.not. is_iostat_end(stat)) then
-	if (n_read == 0) cycle
+	if (n_read == 0 .and. .not. is_iostat_eor(stat) ) cycle
 	if (.not.last_was_incomplete .and. .not. my_keep_lf) then
 	  call concat(this, " " // trim(line))
 	else
 	  call concat(this, trim(line))
 	endif
-	if (is_iostat_eor(stat) .and. my_keep_lf) then
-	  call concat(this, quip_new_line)
+	if(is_iostat_eor(stat)) then
+           if(my_keep_lf) then
+	      call concat(this, quip_new_line)
+           elseif(n_read == 0) then
+              call concat(this, " ")
+           endif
 	endif
 	last_was_incomplete = (stat == 0)
       else
