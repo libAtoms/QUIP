@@ -58,7 +58,7 @@ include 'IPModel_interface.h'
 public :: IPModel_WaterDimer_Gillan
 type IPModel_WaterDimer_Gillan
   real(dp) :: cutoff = 0.0_dp
-  character(len=20) :: fname_d, fname_q
+  character(len=STRING_LENGTH) :: fname_d, fname_q
   real(dp) :: two_body_weight_roo = 0.0_dp
   real(dp) :: two_body_weight_delta = 0.0_dp
   logical  :: do_two_body_weight = .false.
@@ -84,6 +84,18 @@ interface Calc
   module procedure IPModel_WaterDimer_Gillan_Calc
 end interface Calc
 
+
+! module-gobal variables
+
+integer, parameter :: ngrid_mx=20
+integer :: lin3d_2_igotdata, lin3d_2_itab_print, lin3d_2_nxsup, lin3d_2_nysup, lin3d_2_nzsup
+real(dp) :: lin3d_2_xinf, lin3d_2_xsup, lin3d_2_yinf, lin3d_2_ysup, lin3d_2_zinf, lin3d_2_zsup
+real(dp) :: lin3d_2_deltax, lin3d_2_deltay, lin3d_2_deltaz
+real(dp) :: lin3d_2_f1tab(ngrid_mx, ngrid_mx, ngrid_mx), lin3d_2_f2tab(ngrid_mx, ngrid_mx, ngrid_mx)
+integer :: lin3d_3_igotdata, lin3d_3_itab_print, lin3d_3_nxsup, lin3d_3_nysup, lin3d_3_nzsup
+real(dp) :: lin3d_3_xinf, lin3d_3_xsup, lin3d_3_yinf, lin3d_3_ysup, lin3d_3_zinf, lin3d_3_zsup
+real(dp) :: lin3d_3_deltax, lin3d_3_deltay, lin3d_3_deltaz
+real(dp) :: lin3d_3_f1tab(ngrid_mx, ngrid_mx, ngrid_mx), lin3d_3_f2tab(ngrid_mx, ngrid_mx, ngrid_mx), lin3d_3_f3tab(ngrid_mx, ngrid_mx, ngrid_mx)
 contains
 
 subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, error)
@@ -100,6 +112,8 @@ subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, e
 
 
   call initialise(params)
+  call param_register(params, 'dipole_file', PARAM_MANDATORY, this%fname_d, help_string="name of file which contains the dipole tables")
+  call param_register(params, 'quadrupole_file', PARAM_MANDATORY, this%fname_q, help_string="name of file which contains the quadrupole tables")
   call param_register(params, 'two_body_weight_roo', '0.0', this%two_body_weight_roo, has_value_target=this%do_two_body_weight, help_string="if set, apply weight function to 2-body energy and force based on O-O distance. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
   call param_register(params, 'two_body_weight_delta', '0.25', this%two_body_weight_delta, help_string="width of weighting function for  two_body energy and force based on O-O distance. For weighting to take effect, two_body_weight_roo needs to be explicitly set. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
   
@@ -116,8 +130,6 @@ subroutine IPModel_WaterDimer_Gillan_Initialise_str(this, args_str, param_str, e
   ! read interpolation tables
   init3d = 0
 
-  this%fname_d = "dip_grid_1-1331"
-  this%fname_q = "quad_grid_1-1331"
 
   call lin3d_2(init3d,theta,r1,r2,f1,f2, this%fname_d)
   call lin3d_3(init3d,theta,r1,r2,f1,f2,f3,this%fname_q)
@@ -130,6 +142,8 @@ subroutine IPModel_WaterDimer_Gillan_Finalise(this)
   type(IPModel_WaterDimer_Gillan), intent(inout) :: this
 
   ! Add finalisation code here
+
+  call finalise(this%two_body_weight)
 
 end subroutine IPModel_WaterDimer_Gillan_Finalise
 
@@ -153,7 +167,6 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
    real(dp):: weight, dweight(3), rOiOj
 
    INIT_ERROR(error)
-
 
    ! Parameters
 
@@ -205,9 +218,13 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
       local_e = 0.0_dp
    endif
    if (present(f)) then
-      RAISE_ERROR('Forces not implemented', error)
+      f = 0.0_dp
+      !RAISE_ERROR('Forces not implemented', error)
    end if
-   if (present(virial)) virial = 0.0_dp
+   if (present(virial)) then
+      RAISE_ERROR('Virial not implemented', error)
+   end if
+
    if (present(local_virial)) then
       call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_WaterDimer_Gillan_Calc', error)
       local_virial = 0.0_dp
@@ -292,6 +309,12 @@ end subroutine IPModel_WaterDimer_Gillan_Print
         r2 = sqrt(r2sq)
         theta = acos(scprod/(r1*r2))
         theta_deg = (180.d0/pi)*theta
+!        write(*,113) r1
+!  113   format('bond length O-H1:',f15.6,' angstrom')
+!        write(*,114) r2
+!  114   format('bond length O-H2:',f15.6,' angstrom')
+!        write(*,115) theta_deg
+!  115   format('bond angle H-O-H:',f15.6,' degrees')
 ! ... unit vectors along local x, y and z axes
         do i = 1, 3
           univec(1,i) = bvec_r(mo,1,i)/r1
@@ -611,83 +634,69 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ---------------------------------------------------------------------
       subroutine lin3d_2(init3d,x,y,z,f1,f2,fname)
       implicit none
-      character*20 fname
-      integer ngrid_mx, ngrid3_mx
-      parameter (ngrid_mx = 20, ngrid3_mx = ngrid_mx*ngrid_mx*ngrid_mx)
+      character(len=STRING_LENGTH) fname
+      integer ngrid3_mx
+      parameter (ngrid3_mx = ngrid_mx*ngrid_mx*ngrid_mx)
       integer init3d
       real*8 x, y, z, f1, f2
-      integer igotdata
       integer ix, iy, iz, nx, ny, nz
       integer nxsup, nysup, nzsup
-      integer itab_print
-      real*8 xinf, xsup, yinf, ysup, zinf, zsup
-      real*8 deltax, deltay, deltaz
-      real*8 f1tab(ngrid_mx,ngrid_mx,ngrid_mx)
-      real*8 f2tab(ngrid_mx,ngrid_mx,ngrid_mx)
       real*8 xi, eta, zeta, px, py, pz, qx, qy, qz
-      save
-      data igotdata /0/
-      data itab_print /0/
-      data nxsup, nysup, nzsup / 3 * 0 /
-      data xinf, xsup, yinf, ysup, zinf, zsup / 6 * 0.d0 /
-      data deltax, deltay, deltaz / 3 * 0.d0 /
-      data f1tab / ngrid3_mx * 0.d0 /
-      data f2tab / ngrid3_mx * 0.d0 /
 ! ---------------------------------------------------------------------
       if(init3d .eq. 0) then
-        igotdata = 1
-        open(unit=21,file=fname)
-        read(21,*) nxsup, xinf, xsup
-        read(21,*) nysup, yinf, ysup
-        read(21,*) nzsup, zinf, zsup
-        deltax = (xsup - xinf)/float(nxsup - 1)
-        deltay = (ysup - yinf)/float(nysup - 1)
-        deltaz = (zsup - zinf)/float(nzsup - 1)
+        lin3d_2_igotdata = 1
+        open(unit=21,file=trim(fname))
+        read(21,*) lin3d_2_nxsup, lin3d_2_xinf, lin3d_2_xsup
+        read(21,*) lin3d_2_nysup, lin3d_2_yinf, lin3d_2_ysup
+        read(21,*) lin3d_2_nzsup, lin3d_2_zinf, lin3d_2_zsup
+        lin3d_2_deltax = (lin3d_2_xsup - lin3d_2_xinf)/float(lin3d_2_nxsup - 1)
+        lin3d_2_deltay = (lin3d_2_ysup - lin3d_2_yinf)/float(lin3d_2_nysup - 1)
+        lin3d_2_deltaz = (lin3d_2_zsup - lin3d_2_zinf)/float(lin3d_2_nzsup - 1)
 ! .....................................................................
-        do nx = 1, nxsup
-          do ny = 1, nysup
-            do nz = 1, nzsup
-              read(21,*) ix, iy, iz,  f1tab(ix,iy,iz), f2tab(ix,iy,iz)
+        do nx = 1, lin3d_2_nxsup
+          do ny = 1, lin3d_2_nysup
+            do nz = 1, lin3d_2_nzsup
+              read(21,*) ix, iy, iz,  lin3d_2_f1tab(ix,iy,iz), lin3d_2_f2tab(ix,iy,iz)
             enddo
           enddo
         enddo
         close(unit=21)
       else
-        xi = (x - xinf)/deltax
-        if((x - xinf) .lt. 0.d0) then
+        xi = (x - lin3d_2_xinf)/lin3d_2_deltax
+        if((x - lin3d_2_xinf) .lt. 0.d0) then
           ix = 0
-        elseif(((x - xinf) .ge. 0.d0) .and. ((x - xsup) .le. 0.d0)) then
+        elseif(((x - lin3d_2_xinf) .ge. 0.d0) .and. ((x - lin3d_2_xsup) .le. 0.d0)) then
           ix = int(xi)
         else 
-          ix = nxsup - 2
+          ix = lin3d_2_nxsup - 2
         endif
         px = xi - float(ix)
         qx = 1.d0 - px
         ix = ix + 1
-        eta = (y - yinf)/deltay
-        if((y - yinf) .lt. 0.d0) then
+        eta = (y - lin3d_2_yinf)/lin3d_2_deltay
+        if((y - lin3d_2_yinf) .lt. 0.d0) then
           iy = 0
-        elseif(((y - yinf) .ge. 0.d0) .and. ((y - ysup) .le. 0.d0)) then
+        elseif(((y - lin3d_2_yinf) .ge. 0.d0) .and. ((y - lin3d_2_ysup) .le. 0.d0)) then
           iy = int(eta)
         else 
-          iy = nysup - 2
+          iy = lin3d_2_nysup - 2
         endif
         py = eta - float(iy)
         qy = 1.d0 - py
         iy = iy + 1
-        zeta = (z - zinf)/deltaz
-        if((z - zinf) .lt. 0.d0) then
+        zeta = (z - lin3d_2_zinf)/lin3d_2_deltaz
+        if((z - lin3d_2_zinf) .lt. 0.d0) then
           iz = 0
-        elseif(((z - zinf) .ge. 0.d0) .and. ((z - zsup) .le. 0.d0)) then
+        elseif(((z - lin3d_2_zinf) .ge. 0.d0) .and. ((z - lin3d_2_zsup) .le. 0.d0)) then
           iz = int(zeta)
         else 
-          iz = nzsup - 2
+          iz = lin3d_2_nzsup - 2
         endif
         pz = zeta - float(iz)
         qz = 1.d0 - pz
         iz = iz + 1
-        f1 =      qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)    + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)   + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)   + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
-        f2 =      qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)    + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)   + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)   + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
+        f1 =      qx*qy*qz*lin3d_2_f1tab(ix,iy,iz) + qx*qy*pz*lin3d_2_f1tab(ix,iy,iz+1)    + qx*py*qz*lin3d_2_f1tab(ix,iy+1,iz) + qx*py*pz*lin3d_2_f1tab(ix,iy+1,iz+1)   + px*qy*qz*lin3d_2_f1tab(ix+1,iy,iz) + px*qy*pz*lin3d_2_f1tab(ix+1,iy,iz+1)   + px*py*qz*lin3d_2_f1tab(ix+1,iy+1,iz) + px*py*pz*lin3d_2_f1tab(ix+1,iy+1,iz+1)
+        f2 =      qx*qy*qz*lin3d_2_f2tab(ix,iy,iz) + qx*qy*pz*lin3d_2_f2tab(ix,iy,iz+1)    + qx*py*qz*lin3d_2_f2tab(ix,iy+1,iz) + qx*py*pz*lin3d_2_f2tab(ix,iy+1,iz+1)   + px*qy*qz*lin3d_2_f2tab(ix+1,iy,iz) + px*qy*pz*lin3d_2_f2tab(ix+1,iy,iz+1)   + px*py*qz*lin3d_2_f2tab(ix+1,iy+1,iz) + px*py*pz*lin3d_2_f2tab(ix+1,iy+1,iz+1)
       endif
 ! ---------------------------------------------------------------------
       return
@@ -707,101 +716,84 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ---------------------------------------------------------------------
       subroutine lin3d_3(init3d,x,y,z,f1,f2,f3,fname)
       implicit none
-      character*20 fname
-      integer ngrid_mx, ngrid3_mx
-      parameter (ngrid_mx = 20, ngrid3_mx = ngrid_mx*ngrid_mx*ngrid_mx)
+      character(len=STRING_LENGTH) fname
+      integer ngrid3_mx
+      parameter (ngrid3_mx = ngrid_mx*ngrid_mx*ngrid_mx)
       integer init3d
       real*8 x, y, z, f1, f2, f3
-      integer igotdata
-      integer itab_print
       integer ix, iy, iz, nx, ny, nz
-      integer nxsup, nysup, nzsup
-      real*8 xinf, xsup, yinf, ysup, zinf, zsup
-      real*8 deltax, deltay, deltaz
-      real*8 f1tab(ngrid_mx,ngrid_mx,ngrid_mx)
-      real*8 f2tab(ngrid_mx,ngrid_mx,ngrid_mx)
-      real*8 f3tab(ngrid_mx,ngrid_mx,ngrid_mx)
       real*8 xi, eta, zeta, px, py, pz, qx, qy, qz
-      save
-      data igotdata /0/
-      data itab_print /0/
-      data nxsup, nysup, nzsup / 3 * 0 /
-      data xinf, xsup, yinf, ysup, zinf, zsup / 6 * 0.d0 /
-      data deltax, deltay, deltaz / 3 * 0.d0 /
-      data f1tab / ngrid3_mx * 0.d0 /
-      data f2tab / ngrid3_mx * 0.d0 /
-      data f3tab / ngrid3_mx * 0.d0 /
 ! ---------------------------------------------------------------------
       if(init3d .eq. 0) then
-        igotdata = 1
-        open(unit=21,file=fname)
-        read(21,*) nxsup, xinf, xsup
-        read(21,*) nysup, yinf, ysup
-        read(21,*) nzsup, zinf, zsup
-        deltax = (xsup - xinf)/float(nxsup - 1)
-        deltay = (ysup - yinf)/float(nysup - 1)
-        deltaz = (zsup - zinf)/float(nzsup - 1)
+        lin3d_3_igotdata = 1
+        open(unit=21,file=trim(fname))
+        read(21,*) lin3d_3_nxsup, lin3d_3_xinf, lin3d_3_xsup
+        read(21,*) lin3d_3_nysup, lin3d_3_yinf, lin3d_3_ysup
+        read(21,*) lin3d_3_nzsup, lin3d_3_zinf, lin3d_3_zsup
+        lin3d_3_deltax = (lin3d_3_xsup - lin3d_3_xinf)/float(lin3d_3_nxsup - 1)
+        lin3d_3_deltay = (lin3d_3_ysup - lin3d_3_yinf)/float(lin3d_3_nysup - 1)
+        lin3d_3_deltaz = (lin3d_3_zsup - lin3d_3_zinf)/float(lin3d_3_nzsup - 1)
 ! .....................................................................
-        do nx = 1, nxsup
-          do ny = 1, nysup
-            do nz = 1, nzsup
-              read(21,*) ix, iy, iz,  f1tab(ix,iy,iz), f2tab(ix,iy,iz), f3tab(ix,iy,iz)
+        do nx = 1, lin3d_3_nxsup
+          do ny = 1, lin3d_3_nysup
+            do nz = 1, lin3d_3_nzsup
+              read(21,*) ix, iy, iz,  lin3d_3_f1tab(ix,iy,iz), lin3d_3_f2tab(ix,iy,iz), lin3d_3_f3tab(ix,iy,iz)
             enddo
           enddo
         enddo
         close(unit=21)
       else
-        xi = (x - xinf)/deltax
-        if((x - xinf) .lt. 0.d0) then
+        xi = (x - lin3d_3_xinf)/lin3d_3_deltax
+        if((x - lin3d_3_xinf) .lt. 0.d0) then
           ix = 0
-        elseif(((x - xinf) .ge. 0.d0) .and. ((x - xsup) .le. 0.d0)) then
+        elseif(((x - lin3d_3_xinf) .ge. 0.d0) .and. ((x - lin3d_3_xsup) .le. 0.d0)) then
           ix = int(xi)
         else 
-          ix = nxsup - 2
+          ix = lin3d_3_nxsup - 2
         endif
         px = xi - float(ix)
         qx = 1.d0 - px
         ix = ix + 1
-        if((ix .lt. 1) .or. (ix .gt. nxsup)) then
+        if((ix .lt. 1) .or. (ix .gt. lin3d_3_nxsup)) then
           write(*,931) ix
   931     format(//'error: index ix out of range: ',i10)
           stop
         endif
-        eta = (y - yinf)/deltay
-        if((y - yinf) .lt. 0.d0) then
+        eta = (y - lin3d_3_yinf)/lin3d_3_deltay
+        if((y - lin3d_3_yinf) .lt. 0.d0) then
           iy = 0
-        elseif(((y - yinf) .ge. 0.d0) .and. ((y - ysup) .le. 0.d0)) then
+        elseif(((y - lin3d_3_yinf) .ge. 0.d0) .and. ((y - lin3d_3_ysup) .le. 0.d0)) then
           iy = int(eta)
         else 
-          iy = nysup - 2
+          iy = lin3d_3_nysup - 2
         endif
         py = eta - float(iy)
         qy = 1.d0 - py
         iy = iy + 1
-        if((iy .lt. 1) .or. (iy .gt. nysup)) then
+        if((iy .lt. 1) .or. (iy .gt. lin3d_3_nysup)) then
           write(*,932) iy
   932     format(//'error: index iy out of range: ',i10)
           stop
         endif
-        zeta = (z - zinf)/deltaz
-        if((z - zinf) .lt. 0.d0) then
+        zeta = (z - lin3d_3_zinf)/lin3d_3_deltaz
+        if((z - lin3d_3_zinf) .lt. 0.d0) then
           iz = 0
-        elseif(((z - zinf) .ge. 0.d0) .and. ((z - zsup) .le. 0.d0)) then
+        elseif(((z - lin3d_3_zinf) .ge. 0.d0) .and. ((z - lin3d_3_zsup) .le. 0.d0)) then
           iz = int(zeta)
         else 
-          iz = nzsup - 2
+          iz = lin3d_3_nzsup - 2
         endif
         pz = zeta - float(iz)
         qz = 1.d0 - pz
         iz = iz + 1
-        if((iz .lt. 1) .or. (iz .gt. nzsup)) then
+        if((iz .lt. 1) .or. (iz .gt. lin3d_3_nzsup)) then
           write(*,933) iz
   933     format(//'error: index iz out of range: ',i10)
           stop
         endif
-        f1 =      qx*qy*qz*f1tab(ix,iy,iz) + qx*qy*pz*f1tab(ix,iy,iz+1)    + qx*py*qz*f1tab(ix,iy+1,iz) + qx*py*pz*f1tab(ix,iy+1,iz+1)   + px*qy*qz*f1tab(ix+1,iy,iz) + px*qy*pz*f1tab(ix+1,iy,iz+1)   + px*py*qz*f1tab(ix+1,iy+1,iz) + px*py*pz*f1tab(ix+1,iy+1,iz+1)
-        f2 =      qx*qy*qz*f2tab(ix,iy,iz) + qx*qy*pz*f2tab(ix,iy,iz+1)    + qx*py*qz*f2tab(ix,iy+1,iz) + qx*py*pz*f2tab(ix,iy+1,iz+1)   + px*qy*qz*f2tab(ix+1,iy,iz) + px*qy*pz*f2tab(ix+1,iy,iz+1)   + px*py*qz*f2tab(ix+1,iy+1,iz) + px*py*pz*f2tab(ix+1,iy+1,iz+1)
-        f3 =      qx*qy*qz*f3tab(ix,iy,iz) + qx*qy*pz*f3tab(ix,iy,iz+1)    + qx*py*qz*f3tab(ix,iy+1,iz) + qx*py*pz*f3tab(ix,iy+1,iz+1)   + px*qy*qz*f3tab(ix+1,iy,iz) + px*qy*pz*f3tab(ix+1,iy,iz+1)   + px*py*qz*f3tab(ix+1,iy+1,iz) + px*py*pz*f3tab(ix+1,iy+1,iz+1)
+        f1 =      qx*qy*qz*lin3d_3_f1tab(ix,iy,iz) + qx*qy*pz*lin3d_3_f1tab(ix,iy,iz+1)    + qx*py*qz*lin3d_3_f1tab(ix,iy+1,iz) + qx*py*pz*lin3d_3_f1tab(ix,iy+1,iz+1)   + px*qy*qz*lin3d_3_f1tab(ix+1,iy,iz) + px*qy*pz*lin3d_3_f1tab(ix+1,iy,iz+1)   + px*py*qz*lin3d_3_f1tab(ix+1,iy+1,iz) + px*py*pz*lin3d_3_f1tab(ix+1,iy+1,iz+1)
+        f2 =      qx*qy*qz*lin3d_3_f2tab(ix,iy,iz) + qx*qy*pz*lin3d_3_f2tab(ix,iy,iz+1)    + qx*py*qz*lin3d_3_f2tab(ix,iy+1,iz) + qx*py*pz*lin3d_3_f2tab(ix,iy+1,iz+1)   + px*qy*qz*lin3d_3_f2tab(ix+1,iy,iz) + px*qy*pz*lin3d_3_f2tab(ix+1,iy,iz+1)   + px*py*qz*lin3d_3_f2tab(ix+1,iy+1,iz) + px*py*pz*lin3d_3_f2tab(ix+1,iy+1,iz+1)
+        f3 =      qx*qy*qz*lin3d_3_f3tab(ix,iy,iz) + qx*qy*pz*lin3d_3_f3tab(ix,iy,iz+1)    + qx*py*qz*lin3d_3_f3tab(ix,iy+1,iz) + qx*py*pz*lin3d_3_f3tab(ix,iy+1,iz+1)   + px*qy*qz*lin3d_3_f3tab(ix+1,iy,iz) + px*qy*pz*lin3d_3_f3tab(ix+1,iy,iz+1)   + px*py*qz*lin3d_3_f3tab(ix+1,iy+1,iz) + px*py*pz*lin3d_3_f3tab(ix+1,iy+1,iz+1)
       endif
 ! ---------------------------------------------------------------------
       return
