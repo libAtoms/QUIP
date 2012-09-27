@@ -40,7 +40,7 @@ use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GP_PREDICT_OBS
 use descriptors_module
 #endif
 
@@ -55,7 +55,9 @@ implicit none
   character(len=STRING_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
 	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
-             & do_fine_phonons, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
+             & do_fine_phonons, do_EvsV, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
+  integer :: EvsV_NdVsteps
+  real(dp) :: EvsV_dVfactor
   real(dp) :: relax_lattice_fix(9)
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
@@ -98,7 +100,7 @@ implicit none
   real(dp) :: mycutoff
   logical :: do_create_residue_labels, fill_in_mass
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GP_PREDICT_OBS
   real(dp), allocatable :: vec(:)
   integer :: bispectrum_jmax
   logical :: do_print_bispectrum
@@ -186,10 +188,15 @@ implicit none
   call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
   call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
   call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GP_PREDICT_OBS
   call param_register(cli_params, 'print_bispectrum', 'F', do_print_bispectrum,  help_string="print the bispectrum for each atom. cutoff and jmax are controlled by separate arguments")
   call param_register(cli_params, 'bispectrum_jmax', '5', bispectrum_jmax, help_string="jmax for calculating the bispectrum when print_bispectrum is True")
 #endif
+
+  call param_register(cli_params, 'EvsV', 'F', do_EvsV, help_string="compute energy vs volume curve")
+  call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
+  call param_register(cli_params, 'EvsV_NdVsteps', '1', EvsV_NdVsteps, help_string="number of times to increase the volume when doing EvsV")
+  
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
@@ -464,10 +471,39 @@ implicit none
         endif
      endif ! do_fine_phonons
 
+     if(do_EvsV) then
+        did_anything = .true.
+        
+	extra_calc_args = ""
+        if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
+	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+        if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+
+        if(.not. do_E) then
+           call print("Cannot do E vs V without E calculation being requested", PRINT_ALWAYS)
+        else
+           call print("EVSV dV factor = "//EvsV_dVfactor)
+           call print("EVSV linear factor = "//(EvsV_dVfactor**(1.0_dp/3.0_dp)))
+           call print("EVSV number of steps = "//EvsV_NdVsteps)
+           call print("EVSV Volume        Energy      Max force component")
+           call print("EVSV --------------------------------------")
+           do i=1,EvsV_NdVsteps
+              call set_lattice(at, at%lattice*(EvsV_dVfactor**(1.0_dp/3.0_dp)), scale_positions=.true.)
+              
+              call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
+              HANDLE_ERROR(error)
+              call get_param_value(at, 'energy', E0)
+              if (do_F) call assign_property_pointer(at, "force", F0)
+              call print("EVSV "//cell_volume(at)//" "//E0//" "//maxval(F0))
+           end do
+        end if
+     end if
+     
 #ifdef HAVE_TB
      if (do_absorption) do_calc = .true.
 #endif
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GP_PREDICT_OBS
      if ( do_print_bispectrum ) do_calc = .true.
 #endif
 
@@ -548,7 +584,7 @@ implicit none
      endif
 #endif
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GP_PREDICT_OBS
      if ( do_print_bispectrum ) then
         call initialise(f_hat, bispectrum_jmax, 1.2_dp*mycutoff/(PI-0.02_dp), mycutoff)
         allocate(vec(j_max2d(bispectrum_jmax)))
