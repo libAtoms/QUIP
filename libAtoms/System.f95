@@ -214,9 +214,9 @@ module system_module
      module procedure inoutput_parse_line
   end interface parse_line
 
-  private :: reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d
+  private :: reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   interface reallocate
-     module procedure reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d
+     module procedure reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   end interface reallocate
 
   interface operator(//)
@@ -299,6 +299,13 @@ module system_module
     module procedure optional_default_c, optional_default_z
     module procedure optional_default_ia, optional_default_ra
   end interface optional_default
+
+  private :: string_to_real_sub, string_to_integer_sub, string_to_logical_sub
+  private :: string_to_real1d, string_to_integer1d, string_to_logical1d
+  interface string_to_numerical
+     module procedure string_to_real_sub, string_to_integer_sub, string_to_logical_sub
+     module procedure string_to_real1d, string_to_integer1d, string_to_logical1d
+  end interface string_to_numerical
 
   integer, external :: pointer_to
 
@@ -1256,6 +1263,7 @@ contains
     local_string = adjustl(string)
     n = len_trim(local_string)
     write(format,'(a,i0,a)')'(i',n,')'
+    string_to_int = 0
     read(local_string,format,iostat=stat) string_to_int
     if (present(err)) err = (stat /= 0)
 
@@ -1269,6 +1277,7 @@ contains
     logical                    :: string_to_logical
     integer stat
 
+    string_to_logical = .false.
     read(string,*,iostat=stat) string_to_logical
 
     if (present(err)) err = (stat /= 0)
@@ -1292,12 +1301,114 @@ contains
        end if
     end if
 
+    string_to_real = 0.0_dp
     read(string,*,iostat=stat) string_to_real
 
     if (present(err)) err = (stat /= 0)
 
-
   end function string_to_real
+
+  subroutine string_to_real_sub(string,real_number,error)
+     character(len=*), intent(in) :: string
+     real(dp), intent(out) :: real_number
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     real_number = 0.0_dp
+     read(string,*,iostat=stat) real_number
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_real_sub: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_real_sub
+
+  subroutine string_to_integer_sub(string,integer_number,error)
+     character(len=*), intent(in) :: string
+     integer, intent(out) :: integer_number
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     integer_number = 0
+     read(string,*,iostat=stat) integer_number
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_integer_sub: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_integer_sub
+
+  subroutine string_to_logical_sub(string,logical_number,error)
+     character(len=*), intent(in) :: string
+     logical, intent(out) :: logical_number
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     logical_number = .false.
+     read(string,*,iostat=stat) logical_number
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_logical_sub: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_logical_sub
+
+  subroutine string_to_real1d(string,real1d,error)
+     character(len=*), intent(in) :: string
+     real(dp), dimension(:), intent(out) :: real1d
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     real1d = 0.0_dp
+     read(string,*,iostat=stat) real1d
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_real1d: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_real1d
+
+  subroutine string_to_integer1d(string,integer1d,error)
+     character(len=*), intent(in) :: string
+     integer, dimension(:), intent(out) :: integer1d
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     integer1d = 0
+     read(string,*,iostat=stat) integer1d
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_integer1d: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_integer1d
+
+  subroutine string_to_logical1d(string,logical1d,error)
+     character(len=*), intent(in) :: string
+     logical, dimension(:), intent(out) :: logical1d
+     integer, intent(out), optional :: error
+
+     integer :: stat
+
+     INIT_ERROR(error)
+
+     logical1d = .false.
+     read(string,*,iostat=stat) logical1d
+
+     if(stat /= 0) then
+        RAISE_ERROR("string_to_logical1d: could not convert, iostat="//stat, error)
+     endif
+  endsubroutine string_to_logical1d
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
@@ -1366,7 +1477,7 @@ contains
     end if
 
     if (present(zero)) then
-       if (zero) array = 0
+       if (zero) array = 0.0_dp
     end if
 
   end subroutine reallocate_real1d
@@ -1437,6 +1548,82 @@ contains
     end if
 
   end subroutine reallocate_real2d
+
+  subroutine reallocate_char1d(array, d1, zero, copy)
+    character(len=*), allocatable, dimension(:), intent(inout) :: array
+    integer,                            intent(in)             :: d1
+    logical, optional,                  intent(in)             :: zero, copy
+
+
+    if (allocated(array)) then
+       call reallocate_allocated_char1d(array,d1,copy)
+    else
+       allocate(array(d1))
+    end if
+
+    if (present(zero)) then
+       if (zero) array = ""
+    end if
+
+
+  end subroutine reallocate_char1d
+
+  subroutine reallocate_allocated_char1d(array,d1,copy)
+     character(len=*), allocatable, dimension(:), intent(inout) :: array
+     integer,                            intent(in)             :: d1
+     logical, optional,                  intent(in)             :: copy
+ 
+     logical :: do_copy
+     character(len=len(array(lbound(array)))), allocatable, dimension(:) :: tmp
+ 
+     if (size(array) /= d1) then
+        do_copy = optional_default(.false., copy)
+        if (do_copy) then
+          allocate(tmp(size(array)))
+          tmp = array
+        endif
+        deallocate(array)
+        allocate(array(d1))
+        if (do_copy) then
+          array = ""
+          array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+          deallocate(tmp)
+        endif
+     end if
+  endsubroutine reallocate_allocated_char1d
+
+  subroutine reallocate_log1d(array, d1, zero, copy)
+    logical, allocatable, dimension(:), intent(inout) :: array
+    integer,                            intent(in)    :: d1
+    logical, optional,                  intent(in)    :: zero, copy
+
+    logical :: do_copy
+    logical, allocatable :: tmp(:)
+
+    if (allocated(array)) then
+       if (size(array) /= d1) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array)))
+	    tmp = array
+	  endif
+          deallocate(array)
+          allocate(array(d1))
+	  if (do_copy) then
+	    array = .false.
+	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+	    deallocate(tmp)
+	  endif
+       end if
+    else
+       allocate(array(d1))
+    end if
+
+    if (present(zero)) then
+       if (zero) array = .false.
+    end if
+
+  end subroutine reallocate_log1d
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
