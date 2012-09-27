@@ -615,7 +615,7 @@ implicit none
   call print(pot)
 
   call initialise(ds, at_in)
-  call finalise(at_in)
+
 
   ! set some initial values, in particular if this run is a continuation
   initial_i_step = 1
@@ -623,7 +623,13 @@ implicit none
     call get_param_value(ds%atoms, 'time', ds%t, l_error)
     call get_param_value(ds%atoms, 'i_step', initial_i_step, l_error)
     CLEAR_ERROR(error)
+    if(has_property(at_in, 'velo')) then
+       ds%atoms%velo=at_in%velo
+       call print("Initialising velocities from input file")
+    endif
   endif
+
+  call finalise(at_in)
 
   call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
