@@ -61,6 +61,7 @@ include 'IPModel_interface.h'
 public :: IPModel_PartridgeSchwenke
 type IPModel_PartridgeSchwenke
    real(dp) :: cutoff = 1.7_dp
+   logical :: OHH_ordercheck = .true.
 end type IPModel_PartridgeSchwenke
 
 real(dp) :: c5z(245),cbasis(245),ccore(245), crest(245)
@@ -465,11 +466,23 @@ end interface Calc
 
 contains
 
-subroutine IPModel_PartridgeSchwenke_Initialise_str(this, args_str, param_str)
+subroutine IPModel_PartridgeSchwenke_Initialise_str(this, args_str, param_str, error)
   type(IPModel_PartridgeSchwenke), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
+  type(Dictionary)                :: params
+  integer, optional, intent(out) :: error
 
   call Finalise(this)
+
+  call initialise(params)
+  call param_register(params, 'OHH_ordercheck', 'T', this%OHH_ordercheck, help_string="if FALSE, skip transforming atomic order to OHHOHHOHH... and assume atoms are in that order. This also skips cutoff checking for OH bonds. default: TRUE")
+  
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_PartridgeSchwenke_Initialise args_str')) then
+     RAISE_ERROR("IPModel_PartridgeSchwenke failed to parse args_str='"//trim(args_str)//"'", error)
+  endif
+  call finalise(params)
+
+  
 end subroutine IPModel_PartridgeSchwenke_Initialise_str
 
 subroutine IPModel_PartridgeSchwenke_Finalise(this)
@@ -535,7 +548,7 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, local
 
   ! loop through atoms, find oxygens and their closest hydrogens
 
-  call find_water_monomer(at,water_index,error)
+  call find_water_monomer(at,water_index,this%OHH_ordercheck,error=error)
 
   do i = 1, at%N/3
      o = water_index(1,i)
