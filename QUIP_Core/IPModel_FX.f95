@@ -62,6 +62,11 @@ type IPModel_FX
    real(dp) :: two_body_weight_delta = 0.0_dp
    logical  :: do_two_body_weight = .false.
    type(Spline) :: two_body_weight
+   logical :: OHH_ordercheck = .true.
+   real(dp) :: E_scale
+   ! some modifiable FX parameters, defaults are from the FX source code
+   real(dp) :: polarM=1.444_dp
+   real(dp) :: vdwC=-0.72298855E+03_dp,vdwD=0.10211829E+06_dp, vdwE=0.37170376E+01_dp 
 end type IPModel_FX
 
 
@@ -98,9 +103,15 @@ subroutine IPModel_FX_Initialise_str(this, args_str, param_str, error)
   call param_register(params, 'return_one_body', 'F', this%return_one_body, help_string="if set, return the one_body energy and force as the main return data")
   call param_register(params, 'two_body_weight_roo', '0.0', this%two_body_weight_roo, has_value_target=this%do_two_body_weight, help_string="if set, apply weight function to 2-body energy and force based on O-O distance. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
   call param_register(params, 'two_body_weight_delta', '0.25', this%two_body_weight_delta, help_string="width of weighting function for  two_body energy and force based on O-O distance. For weighting to take effect, two_body_weight_roo needs to be explicitly set. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
+  call param_register(params, 'OHH_ordercheck', 'T', this%OHH_ordercheck, help_string="if FALSE, skip transforming atomic order to OHHOHHOHH... and assume atoms are in that order. This also skips cutoff checking for OH bonds. default: TRUE")
+  call param_register(params, 'E_scale', '1.0', this%E_scale, 'Scale the potential by this factor')
+  call param_register(params, 'polarM', '1.444_dp', this%polarM, help_string="polarisability on the M site")
+  call param_register(params, 'vdwC', '-0.72298855E+03_dp', this%vdwC, help_string="vdwC parameter")
+  call param_register(params, 'vdwD', '0.10211829E+06_dp', this%vdwD, help_string="vdwD parameter")
+  call param_register(params, 'vdwE', '0.37170376E+01_dp', this%vdwE, help_string="vdwE parameter")
   
   if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_FX_Initialise args_str')) then
-     RAISE_ERROR("IPModel_FX_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+     RAISE_ERROR("IPModel_FX_Init failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)
 
@@ -133,6 +144,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   type(Dictionary)                :: params
   logical :: has_atom_mask_name, do_one_body, do_two_body
   character(STRING_LENGTH) :: atom_mask_name, one_body_name, two_body_name
+  logical :: OHH_ordercheck = .true., do_OHH_ordercheck
 
   integer, dimension(:,:), allocatable :: water_monomer_index
   real(dp), allocatable :: one_body_energy(:), one_body_force(:,:), two_body_force(:,:)
@@ -160,6 +172,7 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy: nb326 $")
      call param_register(params, 'one_body', 'one_body', one_body_name, has_value_target=do_one_body, help_string="compute one-body terms of the cluster expansion and store it using this name")
      call param_register(params, 'two_body', 'two_body', two_body_name, has_value_target=do_two_body, help_string="compute two-body terms of the cluster expansion and store it using this name")
+     call param_register(params, 'OHH_ordercheck', 'T', OHH_ordercheck, has_value_target=do_OHH_ordercheck, help_string="if FALSE, skip transforming atomic order to OHHOHHOHH... and assume atoms are in that order. This also skips cutoff checking for OH bonds.")
 
      if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_FX_Calc args_str')) then
         RAISE_ERROR("IPModel_FX_Calc failed to parse args_str='"//trim(args_str)//"'",error)
@@ -170,14 +183,20 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      endif
   endif
 
-  
-  call nttm3f_readXYZ(at%N/3, at%Z, at%pos, RR, rindex)
-  call ttm3f(at%N/3,RR, dRR, energy)
 
-  if(present(e)) e=energy * KCAL_MOL
+  if(do_OHH_ordercheck) then
+     do_OHH_ordercheck = OHH_ordercheck
+  else
+     do_OHH_ordercheck = this%OHH_ordercheck
+  end if
+
+  call nttm3f_readXYZ(at%N/3, at%Z, at%pos, RR, rindex, do_OHH_ordercheck)
+  call ttm3f(at%N/3,RR, dRR, energy, this%polarM, this%vdwC, this%vdwD, this%vdwE)
+
+  if(present(e)) e=energy * KCAL_MOL * this%E_scale
   if(present(f)) then
      do i=1,at%N
-        f(:,i)=-dRR(:,rindex(i)) * KCAL_MOL
+        f(:,i)=-dRR(:,rindex(i)) * KCAL_MOL * this%E_scale
      end do
   end if
 
@@ -187,7 +206,8 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if(do_one_body .or. do_two_body .or. this%return_one_body .or. this%return_two_body) then
      
      allocate(water_monomer_index(3,at%N/3))
-     call find_water_monomer(at,water_monomer_index, error)
+
+     call find_water_monomer(at,water_monomer_index, do_OHH_ordercheck,error)
      PASS_ERROR(error)
 
      allocate(one_body_energy(at%N/3))
@@ -201,11 +221,11 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
         watpos(:,3) = at%pos(:,Oi)+diff_min_image(at, Oi, water_monomer_index(3,i))
         watZ(2:3) = 1 ! Hydrogens
 
-        call nttm3f_readXYZ(1, watZ, watpos, watRR, wat_rindex)
-        call ttm3f(1, watRR, watdRR, watE)
-        one_body_energy(i) = watE*KCAL_MOL
+        call nttm3f_readXYZ(1, watZ, watpos, watRR, wat_rindex, do_OHH_ordercheck)
+        call ttm3f(1, watRR, watdRR, watE, this%polarM, this%vdwC, this%vdwD, this%vdwE)
+        one_body_energy(i) = watE*KCAL_MOL*this%E_scale
         do k=1,3
-           one_body_force(:,water_monomer_index(k,i)) = -watdRR(:,wat_rindex(k)) * KCAL_MOL
+           one_body_force(:,water_monomer_index(k,i)) = -watdRR(:,wat_rindex(k)) * KCAL_MOL * this%E_scale
         end do
      end do
 
@@ -245,11 +265,11 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
               wat2pos(:,6) = at%pos(:,Oi) + diff_OiOj+diff_min_image(at, Oj, water_monomer_index(3,j))
               wat2Z(5:6) = 1 ! first Hydrogens
 
-              call nttm3f_readXYZ(2, wat2Z, wat2pos, wat2RR, wat2_rindex)
-              call ttm3f(2, wat2RR, wat2dRR, wat2E)
+              call nttm3f_readXYZ(2, wat2Z, wat2pos, wat2RR, wat2_rindex, do_OHH_ordercheck)
+              call ttm3f(2, wat2RR, wat2dRR, wat2E, this%polarM, this%vdwC, this%vdwD, this%vdwE)
 
+              rOiOj = norm(diff_OiOj)
               if(this%do_two_body_weight) then
-                 rOiOj = norm(diff_OiOj)
                  weight = spline_value(this%two_body_weight, rOiOj)
                  dweight = spline_deriv(this%two_body_weight, rOiOj)
               else
@@ -257,20 +277,20 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
                  dweight = 0.0_dp
               end if
 
-              two_body_energy_ij = (wat2E * KCAL_MOL - one_body_energy(i) - one_body_energy(j)) * weight
-              two_body_energy = two_body_energy + two_body_energy_ij
+              two_body_energy_ij = (wat2E * KCAL_MOL * this%E_scale - one_body_energy(i) - one_body_energy(j))
+              two_body_energy = two_body_energy + two_body_energy_ij*weight
 
               do k=1,6
-                 wat2_force(:,k) = -wat2dRR(:,wat2_rindex(k)) * KCAL_MOL
+                 wat2_force(:,k) = -wat2dRR(:,wat2_rindex(k)) * KCAL_MOL * this%E_scale
               end do
               do k=1,3
                  kk = water_monomer_index(k, i)
                  two_body_force(:,kk) = two_body_force(:,kk) + (wat2_force(:,k)-one_body_force(:,kk))*weight
-                 if(k==1) two_body_force(:,kk) = two_body_force(:,kk) - two_body_energy_ij*dweight*diff_OiOj/rOiOj
+                 if(k==1) two_body_force(:,kk) = two_body_force(:,kk) + two_body_energy_ij*dweight*diff_OiOj/rOiOj
 
                  kk = water_monomer_index(k, j)
                  two_body_force(:,kk) = two_body_force(:,kk) + (wat2_force(:,3+k)-one_body_force(:,kk))*weight
-                 if(k==1) two_body_force(:,kk) = two_body_force(:,kk) + two_body_energy_ij*dweight*diff_OiOj/rOiOj
+                 if(k==1) two_body_force(:,kk) = two_body_force(:,kk) - two_body_energy_ij*dweight*diff_OiOj/rOiOj
               end do
            end do
         end do
@@ -310,6 +330,11 @@ subroutine IPModel_FX_Print(this, file)
   end if
   if(this%do_two_body_weight) then
      call print("Two-body term is weighted with parameters x0="//this%two_body_weight_roo//" delta="//this%two_body_weight_delta, file=file)
+  end if
+  if(this%OHH_ordercheck) then
+     call print("Performing reordering of atoms into OHHOHH.. order and checking O-H cutoff distances")
+  else
+     call print("SKIPPING reordering of atoms into OHHOHH.. order and checking O-H cutoff distances")
   end if
 end subroutine IPModel_FX_Print
 
