@@ -86,6 +86,7 @@ type IPModel_Coulomb
   logical :: yukawa_pseudise = .false.
 
   real(dp) :: ewald_error
+  real(dp) :: smooth_coulomb_cutoff
 
   real(dp) :: dsf_alpha = 0.0_dp
 
@@ -259,7 +260,7 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       mpi=mpi, atom_mask_name=atom_mask_name, source_mask_name=source_mask_name, type_of_atomic_num=this%type_of_atomic_num, &
       pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)
    case(IPCoulomb_Method_Ewald)
-      call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., error=error)
+      call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_coulomb_cutoff, error=error)
    case(IPCoulomb_Method_Ewald_NB)
       if (present(f) .or. present(virial) .or. present(local_virial)) then
 	 RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
@@ -472,6 +473,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%ewald_error
       else
          parse_ip%ewald_error = 1.0e-6_dp
+      endif
+
+      call QUIP_FoX_get_value(attributes, "smooth_coulomb_cutoff", value, status)
+      if (status == 0) then
+         read (value, *) parse_ip%smooth_coulomb_cutoff
+      else
+         parse_ip%smooth_coulomb_cutoff = 0.0_dp
       endif
 
       call QUIP_FoX_get_value(attributes, "dsf_alpha", value, status)

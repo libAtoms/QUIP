@@ -1,6 +1,6 @@
 <Coulomb_Potentials>
 
-   <Coulomb_params n_types="2" cutoff="6.0" method="ewald" ewald_error="1.0e-6" label="default_ewald">
+   <Coulomb_params n_types="2" cutoff="6.0" method="ewald" ewald_error="1.0e-6" smooth_coulomb_cutoff="0.0" label="default_ewald">
       <per_type_data type="1" atomic_num="8" charge="-1.2"/>
       <per_type_data type="2" atomic_num="14" charge="2.4"/>
    </Coulomb_params>

@@ -53,7 +53,7 @@ contains
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, error)
+  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -63,6 +63,7 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), intent(in), optional                     :: ewald_error
     logical, intent(in), optional                      :: use_ewald_cutoff
+    real(dp), intent(in), optional                     :: smooth_coulomb_cutoff
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, k, n, n1, n2, n3, not_needed !for reciprocal force
@@ -71,7 +72,7 @@ contains
     logical :: my_use_ewald_cutoff
 
     real(dp) :: r_ij, erfc_ar, arg, my_ewald_error, alpha, kmax, kmax2, prefac, infac, two_alpha_over_sqrt_pi, v, &
-    & ewald_precision, ewald_cutoff, my_cutoff
+    & ewald_precision, ewald_cutoff, my_cutoff, my_smooth_coulomb_cutoff, smooth_arg, smooth_f, dsmooth_f
 
     real(dp), dimension(3) :: force, u_ij, a, b, c, h
     real(dp), dimension(3,3) :: identity3x3, k3x3
@@ -94,7 +95,7 @@ contains
     ! Set up Ewald calculation
     my_ewald_error = optional_default(1e-06_dp,ewald_error) * 4.0_dp * PI * EPSILON_0 ! convert eV to internal units
     my_use_ewald_cutoff = optional_default(.true.,use_ewald_cutoff) ! can choose between optimal Ewald 
-                                                                    ! cutoff and original one
+    my_smooth_coulomb_cutoff = optional_default(0.0_dp, smooth_coulomb_cutoff) ! default is not to use smooth Coulomb
 
     a = at_in%lattice(:,1); b = at_in%lattice(:,2); c = at_in%lattice(:,3)
     v = cell_volume(at_in)
@@ -124,6 +125,9 @@ contains
        my_cutoff = at_in%cutoff
     endif
 
+    if( my_cutoff < my_smooth_coulomb_cutoff ) then
+       RAISE_ERROR('Cutoff='//my_cutoff//' is smaller than the smooth region specified by smooth_coulomb_cutoff='//my_smooth_coulomb_cutoff, error)
+    endif
          
     alpha = sqrt(ewald_precision) / my_cutoff 
     call print('Ewald alpha = '//alpha,PRINT_ANAL)
@@ -206,14 +210,23 @@ contains
        do n = 1, atoms_n_neighbours(at,i)
           j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
+
+          if( r_ij < my_smooth_coulomb_cutoff ) then
+             smooth_arg = r_ij * PI / my_smooth_coulomb_cutoff / 2.0_dp
+             smooth_f = ( 1.0_dp - sin(smooth_arg) ) / r_ij
+             dsmooth_f = cos(smooth_arg) * PI / my_smooth_coulomb_cutoff / 2.0_dp
+          else
+             smooth_f = 0.0_dp
+             dsmooth_f = 0.0_dp
+          endif
            
           erfc_ar = erfc(r_ij*alpha)/r_ij
 
-          if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)*erfc_ar
+          if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)* ( erfc_ar - smooth_f )
 
           if( present(f) .or. present(virial) ) then
               force(:) = charge(i)*charge(j) * &
-              & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar ) / r_ij * u_ij(:)
+              & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar - smooth_f - dsmooth_f) / r_ij * u_ij(:)
 
               if(present(f)) then
                  f(:,i) = f(:,i) - force(:) 
