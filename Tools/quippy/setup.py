@@ -253,6 +253,12 @@ def find_wrap_sources(makefile, quip_root):
         libraries.append('gap_predict')
         targets.extend([(quip_root, 'GAP_predict/libgap_predict.a')])
 
+    if 'HAVE_GP_TEACH' in makefile and int(makefile['HAVE_GP_TEACH']) == 1:
+        gp_dir = os.path.join(quip_root, 'GAP_teach')
+        source_dirs.append(gp_dir)
+        libraries.append('gap_teach')
+        targets.extend([(quip_root, 'GAP_teach/libgap_teach.a')])
+
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
     wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95', 'ElectrostaticEmbed.f95']]
