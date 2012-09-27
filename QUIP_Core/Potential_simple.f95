@@ -82,6 +82,7 @@ module Potential_simple_module
      logical :: is_wrapper
      logical :: little_clusters
      logical :: force_using_fd
+     logical :: virial_using_fd
      
   end type Potential_Simple
 
@@ -203,6 +204,8 @@ contains
     call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="If true, uses little cluster, calculate forces only")
     call param_register(params, 'force_using_fd', 'F', this%force_using_fd, &
       help_string="If true, and if 'force' is also present in the calc argument list, calculate forces using finite difference.")
+    call param_register(params, 'virial_using_fd', 'F', this%virial_using_fd, &
+      help_string="If true, and if 'virial' is also present in the calc argument list, calculate virial using finite difference.")
 
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_Initialise_str args_str')) then
@@ -317,10 +320,11 @@ contains
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
 
-    real(dp) :: energy, virial(3,3)
+    real(dp) :: energy, virial(3,3), deform(3,3), lat_save(3,3)
+    real(dp), allocatable :: allpos_save(:,:)
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
 
-    integer:: i,k,n, zero_loc(1)
+    integer:: i,j,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
@@ -343,10 +347,12 @@ contains
     character(len=STRING_LENGTH) :: run_suffix
     logical :: force_using_fd
     real(dp) :: force_fd_delta
+    logical :: virial_using_fd
+    real(dp) :: virial_fd_delta
 
-    character(len=STRING_LENGTH) read_extra_param_list
+    character(len=STRING_LENGTH) :: read_extra_param_list
     character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
-    integer n_copy, n_params
+    integer :: n_copy, n_params
 
     INIT_ERROR(error)
 
@@ -379,6 +385,10 @@ contains
       help_string="If true, and if 'force' is also present in the argument list, calculate forces using finite difference.")
     call param_register(params, 'force_fd_delta', '1.0e-4', force_fd_delta, &
       help_string="Displacement to use with finite difference force calculation")
+    call param_register(params, 'virial_using_fd', 'F', virial_using_fd, &
+      help_string="If true, and if 'virial' is also present in the argument list, calculate virial using finite difference.")
+    call param_register(params, 'virial_fd_delta', '1.0e-4', virial_fd_delta, &
+      help_string="Displacement to use with finite difference virial calculation")
     call param_register(params, 'energy', '', calc_energy, &
       help_string="If present, calculate energy and put it in field with this string as name")
     call param_register(params, 'force', '', calc_force, &
@@ -399,6 +409,9 @@ contains
 
     if(this%force_using_fd) then
        force_using_fd = .true.
+    end if
+    if(this%virial_using_fd) then
+       virial_using_fd = .true.
     end if
 
     if (single_cluster .and. little_clusters) then
@@ -690,10 +703,11 @@ contains
        do_calc_force = (len_trim(calc_force) > 0) .and. .not. force_using_fd
        do_calc_energy = len_trim(calc_energy) > 0
        do_calc_local_energy = len_trim(calc_local_energy) > 0
-       do_calc_virial = len_trim(calc_virial) > 0
-       do_calc_local_virial = len_trim(calc_local_virial) > 0
+       do_calc_virial = (len_trim(calc_virial) > 0) .and. .not. virial_using_fd
+       do_calc_local_virial = len_trim(calc_local_virial) > 0 
        call print("do_calc_force=        "//do_calc_force//" calc_force="//trim(calc_force), PRINT_VERBOSE)
        call print("force_using_fd=       "//force_using_fd, PRINT_VERBOSE)
+       call print("virial_using_fd=      "//virial_using_fd, PRINT_VERBOSE)
        call print("do_calc_energy=       "//do_calc_energy//" calc_energy="//trim(calc_energy), PRINT_VERBOSE)
        call print("do_calc_local_energy= "//do_calc_local_energy//" calc_local_energy="//trim(calc_local_energy), PRINT_VERBOSE)
        call print("do_calc_virial=       "//do_calc_virial//" calc_virial="//trim(calc_virial), PRINT_VERBOSE)
@@ -1079,7 +1093,58 @@ contains
              end do
           end do
           call remove_value(at%params, "fd_energy")
-          call print("Done with finite difference calculation", PRINT_VERBOSE)
+          call print("Done with finite difference force calculation", PRINT_VERBOSE)
+       end if
+       if(virial_using_fd .and. len_trim(calc_virial) > 0) then ! do virial by finite difference
+          call print("Calculating virial by finite differences with displacement="//virial_fd_delta, PRINT_VERBOSE)
+
+          ! must remove 'virial_using_fd' from args_str if it's there (and the rest, or properties get overwritten)
+          call initialise(params)
+          call read_string(params, my_args_str)
+          call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
+          call remove_value(params, 'virial_using_fd')
+          call remove_value(params, trim(calc_force))
+          call remove_value(params, trim(calc_energy))
+          call remove_value(params, trim(calc_local_energy))
+          call remove_value(params, trim(calc_virial))
+          call set_value(params, "energy", "fd_energy")
+          new_args_str = write_string(params, real_format='f16.8')
+          call finalise(params)
+
+          allocate(allpos_save(3,at%N))
+          allpos_save = at%pos
+          lat_save = at%lattice
+          do i=1,3
+             do j=i,3
+                
+                deform = 0.0_dp
+                call add_identity(deform)
+                deform(i,j) = deform(i,j) + virial_fd_delta
+                if(i /= j) deform(j,i) = deform(j,i) + virial_fd_delta
+                call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
+                call calc_dists(at)
+                call calc(this, at, args_str=new_args_str, error=error)
+                call get_param_value(at, "fd_energy", e_plus, error=error)
+                PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd virial failed to get energy property fd_energy", error)
+                
+                deform = 0.0_dp
+                call add_identity(deform)
+                deform(i,j) = deform(i,j) - virial_fd_delta
+                if(i /= j) deform(j,i) = deform(j,i) - virial_fd_delta
+                call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
+                call calc_dists(at)
+                call calc(this, at, args_str=new_args_str, error=error)
+                call get_param_value(at, "fd_energy", e_minus, error=error)
+                PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd virial failed to get energy property fd_energy", error)
+                virial(i,j) = -(e_plus-e_minus)/(2.0_dp*virial_fd_delta)
+                virial(j,i) = virial(i,j)
+             end do
+          end do
+          call set_value(at%params, trim(calc_virial), virial)
+          at%pos = allpos_save
+          call set_lattice(at, lat_save, scale_positions=.false.)
+          call calc_dists(at)
+          deallocate(allpos_save)
        end if
     end if
 
