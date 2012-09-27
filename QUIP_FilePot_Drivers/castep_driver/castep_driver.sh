@@ -34,13 +34,11 @@
 # Input file is $1, output goes to $2. Both file are in extended
 # XYZ format.
 
-olddir=`pwd`
-[[ -z "$castep" ]] && castep=$olddir/castep                          # Path to CASTEP executable
-[[ -z "$castep_template" ]] && castep_template=$olddir/castep_driver # Template .cell and .param files
-[[ -z "$castep_dir" ]] && castep_dir=$olddir                         # Directory in which to run CASTEP
+[[ -z "$castep" ]] && castep=../castep                          # Path to CASTEP executable
+[[ -z "$castep_template" ]] && castep_template=../castep_driver # Template .cell and .param files
 use_check2xsf=0                                                      # Should we use check2xsf to create output
                                                                      # from .check files?
-[[ -z "$check2xsf" ]] && check2xsf=$olddir/check2xsf                 # Path to check2xsf executable
+[[ -z "$check2xsf" ]] && check2xsf=check2xsf                 # Path to check2xsf executable
 use_check_files=0                                                    # Should we try to restart from .check files?
 max_force_tol=99999.0                                                # Max force that is considered reasonable:
                                                                      # if there are any larger forces we rerun CASTEP
@@ -56,11 +54,10 @@ else
     exit
 fi
 
-xyzfile=$1
-outfile=$2
+xyzfile=../$1
+outfile=../$2
 stem=`basename $xyzfile .xyz`
 
-cd $castep_dir
 
 # Extract a property from an extended XYZ file and print it
 # $1 : file name
@@ -100,11 +97,11 @@ if [[ ! -d $stem ]]; then
 fi
 cd $stem
 
-cp $olddir/$xyzfile .
 
-if [[ -f $olddir/*.usp ]]; then
-    cp $olddir/*.usp .
-fi
+cp ../*.usp  .
+cp ../*.recpot  .
+
+
 
 N=`head -1 $xyzfile`                # Number of atoms
 params=`head -2 $xyzfile | tail -1` # Parameter line
@@ -127,8 +124,8 @@ echo "%ENDBLOCK POSITIONS_ABS" >> ${stem}.cell
 echo >> ${stem}.cell
 
 # Write castep input files from templates
-cat ${castep_template}.cell >> ${stem}.cell
-cat ${castep_template}.param > ${stem}.param
+cat ../${castep_template}.cell >> ${stem}.cell
+cat ../${castep_template}.param > ${stem}.param
 
 # If not the first time, then start from old wavefunctions
 if [[ -r ${stem}.check && $use_check_files == 1 ]]; then
@@ -140,7 +137,7 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
     if [[ $test_mode == 1 ]]; then
 	echo castep_driver: test mode
     else
-	rm -f ${stem}.castep ${stem}.out ${stem}.0001.err ${olddir}/${stem}.out
+	rm -f ${stem}.castep ${stem}.out ${stem}.0001.err ${stem}.out
 	${castep} ${stem}
     fi
 
@@ -182,7 +179,7 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
 	fi
 
         # Extract stress tensor
-	grep -A 8 "Symmetrised Stress Tensor" ${stem}.castep | tail -3 | awk '{print $3,$4,$5}' > ${stem}_tmpvirial
+	grep -A 8 "Stress Tensor" ${stem}.castep | tail -3 | awk '{print $3,$4,$5}' > ${stem}_tmpvirial
 
         # Change stress tensor into virial
 	[[ -f ${stem}_tmpvirial_libatoms ]] && rm ${stem}_tmpvirial_libatoms
@@ -200,7 +197,7 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
 	echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy virial\=\"`cat ${stem}_tmpvirial_libatoms | sed -e 's/\ $//'`\" >> ${stem}.out
 
         # Extract forces
-	grep -A $(($N+5)) "Symmetrised Forces" ${stem}.castep | tail -$N | awk '{print $2,$3,$4,$5,$6}' > ${stem}_tmpforce
+	grep -A $(($N+5)) "Forces" ${stem}.castep | tail -$N | awk '{print $2,$3,$4,$5,$6}' > ${stem}_tmpforce
 
         # Combine atomic positions and forces, converting from castep 
         # (species,species number) ordering to atom number ordering as we go
@@ -254,7 +251,7 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
 done
 
 # Copy output file
-cp ${stem}.out $olddir/$outfile
+cp ${stem}.out $outfile
 
 echo castep_driver ${stem}: done, E\=$energy eV, time $ctime s
 exit 0
