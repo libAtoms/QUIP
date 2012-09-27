@@ -48,13 +48,13 @@ module clustering_module
   
   contains
 
-  subroutine distance_matrix(x,dm,theta_fac)
+  subroutine distance_matrix(x,dm,theta_fac,theta)
      real(dp), dimension(:,:), intent(in) :: x
      real(dp), dimension(:,:), intent(out) :: dm
      real(dp), intent(in), optional :: theta_fac
-     real(dp), dimension(:), allocatable :: theta
+     real(dp), dimension(:), intent(in), target, optional :: theta
 
-     real(dp), dimension(:,:), allocatable :: my_x
+     real(dp), dimension(:), pointer :: my_theta => null()
      real(dp) :: my_theta_fac
      integer :: i, j, d, n
 
@@ -62,32 +62,35 @@ module clustering_module
      d = size(x,1)
      n = size(x,2)
 
-     allocate(theta(d),my_x(d,n))
+     if( present(theta) ) then
+        my_theta => theta
+     else
+        allocate(my_theta(d))
 
-     my_x = x
-
-     do i = 1, d
-        theta(i) = ( maxval(my_x(i,:)) - minval(my_x(i,:)) ) 
-!        theta(i) = sqrt( & !take square root
-!                         & sum( x(i,:)**2 ) / size(x(i,:)) - &
-!                         & (sum( x(i,:) ) / size(x(i,:)))**2 )
-        if( theta(i) .feq. 0.0_dp ) theta(i) = 1.0_dp
-     enddo
-     theta = theta * my_theta_fac
-
-     do i = 1, n
-        my_x(:,i) = x(:,i) / theta
-     enddo
+        do i = 1, d
+           my_theta(i) = ( maxval(x(i,:)) - minval(x(i,:)) ) 
+   !        theta(i) = sqrt( & !take square root
+   !                         & sum( x(i,:)**2 ) / size(x(i,:)) - &
+   !                         & (sum( x(i,:) ) / size(x(i,:)))**2 )
+           if( my_theta(i) .feq. 0.0_dp ) my_theta(i) = 1.0_dp
+        enddo
+        my_theta = my_theta * my_theta_fac
+     endif
 
      do i = 1, n
         do j = i, n
-           dm(j,i) = normsq( (my_x(:,j) - my_x(:,i)) ) + cluster_jitter*ran_uniform()
+           dm(j,i) = normsq( (x(:,j) - x(:,i)) / my_theta ) + cluster_jitter*ran_uniform()
            dm(i,j) = dm(j,i)
         enddo
         dm(i,i) = 0.0_dp
      enddo
 
-     deallocate(theta,my_x)
+     if( present(theta) ) then
+        my_theta => null()
+     else
+        deallocate(my_theta)
+     endif
+
   endsubroutine distance_matrix
 
   subroutine pca(x,x_mean,v)
@@ -118,10 +121,11 @@ module clustering_module
 
   endsubroutine pca
 
-  subroutine pivot(x,pivout,theta_fac)
+  subroutine pivot(x,pivout,theta_fac,theta)
      real(dp), dimension(:,:), intent(in) :: x
      integer, dimension(:), intent(out) :: pivout
      real(dp), intent(in), optional :: theta_fac
+     real(dp), dimension(:), intent(in), optional :: theta
      
      real(dp), dimension(:,:), allocatable :: knn
      real(dp), dimension(:), allocatable :: ktmp
@@ -142,7 +146,7 @@ module clustering_module
      
      allocate(pivin(n),ktmp(n))
      
-     call distance_matrix(x,knn,theta_fac)
+     call distance_matrix(x,knn,theta_fac=theta_fac,theta=theta)
      do i = 1, n
         do j = 1, n
            knn(j,i) = exp(-0.5_dp*knn(j,i))
@@ -193,11 +197,12 @@ module clustering_module
   
   endsubroutine pivot
 
-  subroutine bisect_kmedoids(x,n_clusters_in,c,med,theta_fac)
+  subroutine bisect_kmedoids(x,n_clusters_in,c,med,theta_fac,theta)
      real(dp), dimension(:,:), intent(in) :: x
      integer, intent(in) :: n_clusters_in
      integer, dimension(:), intent(out),optional :: c, med
      real(dp), intent(in), optional :: theta_fac
+     real(dp), dimension(:), intent(in), optional :: theta
 
      type(clstr) :: my_cluster, tmp
 
@@ -217,7 +222,7 @@ module clustering_module
      allocate(my_cluster%dm(n,n),stat=stat)
      if(stat /=0 ) call system_abort('bisect_kmedoids: could not allocate dm matrix.')
 
-     call distance_matrix(x,my_cluster%dm,theta_fac)
+     call distance_matrix(x,my_cluster%dm,theta_fac=theta_fac,theta=theta)
 
      ! start clustering
      my_cluster%N = 1                               ! start with one big cluster
@@ -427,5 +432,148 @@ module clustering_module
      deallocate( tmp%cluster, medoids )
      
   endsubroutine kmedoid
+
+  subroutine cluster_kmeans(x,cluster_index,theta_fac,theta)
+     real(dp), dimension(:,:), intent(in) :: x
+     integer, dimension(:), intent(out) :: cluster_index
+     real(dp), intent(in), optional :: theta_fac
+     real(dp), dimension(:), intent(in), target, optional :: theta
+
+     real(dp), dimension(:), pointer :: my_theta => null()
+     real(dp) :: my_theta_fac, d_min, d_ij
+
+     real(dp), dimension(:,:), allocatable :: cluster_centre
+     integer, dimension(:), allocatable :: cluster_info
+     integer :: d, n, m, i, j, k, cluster_info_old
+     logical :: cluster_same
+
+     d = size(x,1)
+     n = size(x,2)
+     m = size(cluster_index)
+
+     if( m > n ) call system_abort('cluster_kmeans: required number of clusters ('//m//') greater than total number of points ('//n//')')
+
+     my_theta_fac = optional_default(1.0_dp, theta_fac)
+     if( present(theta) ) then
+        my_theta => theta
+     else
+        allocate(my_theta(d))
+        do i = 1, d
+           my_theta(i) = ( maxval(x(i,:)) - minval(x(i,:)) )
+           if( my_theta(i) .feq. 0.0_dp ) my_theta(i) = 1.0_dp
+        enddo
+        my_theta = my_theta * my_theta_fac
+     endif
+
+     allocate(cluster_centre(d,m),cluster_info(n))
+
+     call fill_random_integer(cluster_index, n) !choose random points as cluster centres.
+
+     cluster_centre = x(:,cluster_index)
+     cluster_info = 0
+
+     do 
+        cluster_same = .true.
+
+        do i = 1, n
+           d_min = huge(0.0_dp)
+           cluster_info_old = cluster_info(i)
+           do j = 1, m
+              d_ij = sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2)
+              if( d_ij < d_min ) then
+                 d_min = d_ij
+                 cluster_info(i) = j
+              endif
+           enddo
+           if( cluster_info_old /= cluster_info(i) ) cluster_same = .false.
+        enddo
+
+        do j = 1, m
+           do k = 1, d
+              cluster_centre(k,j) = sum(x(k,:),mask=(cluster_info==j)) / count(cluster_info==j)
+           enddo
+        enddo
+        if( cluster_same ) exit
+     enddo
+
+     do j = 1, m
+        d_min = huge(0.0_dp)
+        do i = 1, n
+           d_ij = sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2)
+           if( d_ij < d_min ) then
+              d_min = d_ij
+              cluster_index(j) = i
+           endif
+        enddo
+     enddo
+
+     deallocate(cluster_centre, cluster_info)
+
+     if(present(theta)) then
+        my_theta => null()
+     else
+        deallocate(my_theta)
+     endif
+
+  endsubroutine cluster_kmeans
+
+  subroutine select_uniform(x,index_out)
+     real(dp), dimension(:,:), intent(in) :: x
+     integer, dimension(:), intent(out) :: index_out
+
+     integer :: i, j, d, n, m, n_grid, i_global, i_index_out
+     integer, dimension(:), allocatable :: p_grid, i_hist, histogram, x_histogram, index_out_histogram
+     real(dp), dimension(:), allocatable :: lower_bound, upper_bound, x_range
+
+     d = size(x,1)
+     n = size(x,2)
+     m = size(index_out)
+
+     if( n < m ) call system_abort('select_uniform: n = '//n//' < m = '//m)
+
+     allocate(lower_bound(d), upper_bound(d), x_range(d), p_grid(d), i_hist(d))
+
+     lower_bound = minval(x,dim=2)
+     upper_bound = maxval(x,dim=2)
+     x_range = upper_bound - lower_bound
+
+     n_grid = ceiling( real(m,kind=dp)**(1.0_dp/real(d,kind=dp)) )
+     p_grid = (/ ( n_grid**(i-1), i = 1, d ) /)
+
+     allocate(histogram(n_grid**d))
+     allocate(x_histogram(n),index_out_histogram(m))
+
+     histogram = 0
+
+     do i = 1, n
+        do j = 1, d
+           i_hist(j) = nint( ( x(j,i) - lower_bound(j) ) / x_range(j) * (n_grid-1) ) + 1
+        enddo
+        i_global = sum((i_hist-1)*p_grid)+1
+
+        histogram(i_global) = histogram(i_global) + 1
+        x_histogram(i) = i_global
+     enddo
+
+     index_out = 0
+     i_index_out = 0
+     index_out_histogram = 0
+
+     do i = 1, n
+        if( all(index_out /= 0) ) exit
+
+        if( all(x_histogram(i) /= index_out_histogram) ) then
+           i_index_out = i_index_out + 1
+           index_out(i_index_out) = i
+           index_out_histogram(i_index_out) = x_histogram(i)
+        elseif( count( histogram(index_out_histogram(1:i_index_out)) > 0 ) >= count(histogram > 0) ) then
+           i_index_out = i_index_out + 1
+           index_out(i_index_out) = i
+           index_out_histogram(i_index_out) = x_histogram(i)
+        endif
+     enddo
+     deallocate(lower_bound, upper_bound, x_range, p_grid, i_hist, histogram, x_histogram,index_out_histogram)
+
+  endsubroutine select_uniform
 
 endmodule clustering_module
