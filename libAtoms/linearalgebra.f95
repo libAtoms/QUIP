@@ -455,6 +455,10 @@ module linearalgebra_module
      module procedure matrix_exp_d
   end interface matrix_exp
 
+  private :: find_nonzero_chunk_real1d
+  interface find_nonzero_chunk
+     module procedure find_nonzero_chunk_real1d
+  endinterface find_nonzero_chunk
 CONTAINS
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1998,7 +2002,9 @@ CONTAINS
 
      this%n = size(matrix,1)
      this%m = size(matrix,2)
-     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n),this%tau(this%m) )
+     
+     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
+     & this%tau(this%m) )
 
      this%matrix = matrix
      this%initialised = .true.
@@ -2343,6 +2349,81 @@ CONTAINS
 
   endsubroutine LA_Matrix_Solve_Matrix
 
+  subroutine LA_Matrix_Expand_Symmetrically(this,vector,error)
+
+     type(LA_Matrix), intent(inout) :: this
+     real(qp), dimension(:), intent(in) :: vector
+     integer, intent(out), optional :: error
+
+     integer :: n, tmp_factorised, info
+     real(qp) :: scond, u2
+     real(qp), dimension(:,:) , allocatable :: tmp_matrix, tmp_factor
+     real(qp), dimension(:) , allocatable :: tmp_s
+
+     logical :: tmp_equilibrated
+
+     INIT_ERROR(error)
+     
+     if( this%n /= this%m ) then
+        RAISE_ERROR('LA_Matrix_Expand_Symmetrically: matrix not square',error)
+     endif
+
+     n = size(vector)
+     if( n /= this%n + 1 ) then
+        RAISE_ERROR('LA_Matrix_Expand_Symmetrically: expanding vector should be longer by 1 than matrix dimensionality',error)
+     endif
+     
+     allocate(tmp_matrix(this%n+1,this%n+1))
+     tmp_matrix(1:this%n,1:this%n) = this%matrix
+     tmp_matrix(this%n+1,:) = vector
+     tmp_matrix(:,this%n+1) = vector
+
+     if(this%factorised == CHOLESKY) then
+        allocate(tmp_factor(this%n,this%n), tmp_s(this%n)) 
+        tmp_factor = this%factor
+        tmp_s = this%s
+     endif
+
+     tmp_equilibrated = this%equilibrated
+     tmp_factorised = this%factorised
+
+     call finalise(this)
+
+     call initialise(this,tmp_matrix)
+     this%equilibrated = tmp_equilibrated
+     this%factorised = tmp_factorised
+
+     select case(this%factorised)
+     case(CHOLESKY)
+        this%s(1:this%n-1) = tmp_s
+        this%s(this%n) = 1.0_qp / sqrt(this%matrix(this%n,this%n))
+        scond = maxval(this%s) / minval(this%s)
+        if( this%equilibrated .or. ( scond < 0.1_qp ) ) then
+           call LA_Matrix_Factorise(this)
+        else
+           this%factor(1:this%n-1,1:this%n-1) = tmp_factor
+           this%factor(1:this%n-1,this%n) = vector(1:this%n-1)
+           call dtrtrs('L','N','N',this%n-1,1,tmp_factor,this%n-1,this%factor(1:this%n-1,this%n:this%n),this%n-1,info)
+           if( info /=0 ) then
+              RAISE_ERROR('LA_Matrix_Expand_Symmetrically: dtrtrs returned an error:'//info,error)
+           endif
+           u2 = this%matrix(this%n,this%n) - dot_product(this%factor(1:this%n-1,this%n),this%factor(1:this%n-1,this%n))
+           if( u2 < 0.0_qp ) then
+              RAISE_ERROR('LA_Matrix_Expand_Symmetrically: expanded matrix no longer positive definite',error)
+           endif
+           this%factor(this%n,1:this%n-1) = this%factor(1:this%n-1,this%n)
+           this%factor(this%n,this%n) = sqrt(u2)
+        endif
+     case(QR)
+        call LA_Matrix_QR_Factorise(this)
+     endselect
+
+     if(allocated(tmp_matrix)) deallocate(tmp_matrix)
+     if(allocated(tmp_factor)) deallocate(tmp_factor)
+     if(allocated(tmp_s)) deallocate(tmp_s)
+
+  endsubroutine LA_Matrix_Expand_Symmetrically
+
   subroutine qpotrs(factor,x, info)
     real(qp), dimension(:,:), intent(in) ::factor
     real(qp), dimension(:,:), intent(inout) :: x
@@ -2633,7 +2714,7 @@ CONTAINS
 
     call LA_Matrix_GetQR(this, Q, R)
 
-    ! inversion of upper triangular matrix R
+    ! inversion of upper triangular matrix R via back-substitution
     R_inv(:,:) = 0.0_dp
     do j=1,this%n
        do i=1,j-1
@@ -5937,6 +6018,75 @@ CONTAINS
   
   endfunction TrapezoidIntegral
 
+  subroutine fill_random_integer(r,n,b)
+     integer, dimension(:), intent(out) :: r
+     integer, intent(in) :: n
+     integer, dimension(:), intent(in), optional :: b
+
+     integer :: i, i0, irnd, sr
+     real(qp) :: rnd
+
+     sr = size(r)
+     if( sr > n ) call system_abort('fill_random_integer: cannot fill array, too short')
+     r = 0
+     i0 = 1
+     if( present(b) ) then
+        if(size(b) > sr) call system_abort('fill_random_integer: cannot fill array, optional b too long')
+        r(1:size(b)) = b
+        i0 = size(b) + 1
+     endif
+
+     do i = i0, sr
+        do 
+           call random_number(rnd)
+           irnd = ceiling(rnd*n)
+           if( all(r /= irnd) ) exit
+        enddo
+        r(i) = irnd
+     enddo
+
+  end subroutine fill_random_integer
+
+  function apply_function_matrix(fun,this)
+     real(dp), dimension(:,:), intent(in) :: this
+     real(dp), dimension(size(this,1),size(this,2)) :: apply_function_matrix
+     interface
+        function fun(x)
+           use system_module
+           real(dp), dimension(:), intent(in) :: x
+           real(dp), dimension(size(x)) :: fun
+        endfunction fun
+     endinterface
+
+     real(dp), dimension(:), allocatable :: evals
+     real(dp), dimension(:,:), allocatable :: evects
+
+     allocate(evals(size(this,1)), evects(size(this,1),size(this,2)))
+
+     call diagonalise(this, evals, evects)
+
+     apply_function_matrix = matrix_mvmt(evects,fun(evals))
+
+     deallocate(evals,evects)
+
+  endfunction apply_function_matrix
+
+  function sqrt_real_array1d(x)
+     real(dp), dimension(:), intent(in) :: x
+     real(dp), dimension(size(x)) :: sqrt_real_array1d
+
+     sqrt_real_array1d = sqrt(x)
+
+  endfunction sqrt_real_array1d
+
+  function invsqrt_real_array1d(x)
+     real(dp), dimension(:), intent(in) :: x
+     real(dp), dimension(size(x)) :: invsqrt_real_array1d
+
+     invsqrt_real_array1d = 1.0_dp/sqrt(x)
+
+  endfunction invsqrt_real_array1d
+
   function matrix_exp_d(a)
      real(dp), intent(in) :: a(:,:)
      real(dp) :: matrix_exp_d(size(a,1),size(a,2))
@@ -6070,5 +6220,33 @@ CONTAINS
       deallocate(a, prev_a, k_means)
 
    end subroutine k_means_clustering_pick_1d
+
+  subroutine find_nonzero_chunk_real1d(this,first,last)
+     real(dp), dimension(:), intent(in) :: this
+     integer, intent(out), optional :: first, last
+
+     integer :: i
+
+     if(present(first)) then
+        first = 1
+        do i = 1, size(this)
+           if(this(i) /= 0.0_dp) then
+              first = i
+              exit
+           endif
+        enddo
+     endif
+
+     if(present(last)) then
+        last = 1
+        do i = size(this), 1, -1
+           if(this(i) /= 0.0_dp) then
+              last = i
+              exit
+           endif
+        enddo
+     endif
+
+  endsubroutine find_nonzero_chunk_real1d
 
 end module linearalgebra_module
