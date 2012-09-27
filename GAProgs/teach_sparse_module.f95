@@ -27,41 +27,44 @@ module teach_sparse_mod
 
   use libatoms_module
   use descriptors_module
-  use gp_predict_module
   use gp_teach_module
   use fox_wxml
   use potential_module
 
   implicit none
 
-  type sparse_types
-     character(len=STRING_LENGTH) :: type
-     integer :: m
-     real(dp), dimension(3) :: sgm
-  endtype sparse_types
+  integer, parameter :: SPARSE_LENGTH = 10000
+  integer, parameter :: THETA_LENGTH = 10000
 
   type teach_sparse
+     type(Atoms), dimension(:), allocatable :: at
      character(len=STRING_LENGTH) :: at_file='', ip_args = '', &
-     energy_parameter_name, force_parameter_name, virial_parameter_name, coordinates, config_type_parameter_name, mark_sparse_atoms = '', mask_name = ''
+     energy_parameter_name, force_parameter_name, virial_parameter_name, config_type_parameter_name, config_type_sigma_string
      character(len=10240) :: command_line = ''
-     real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
-     real(dp), dimension(3) :: sgm
-     logical :: do_core = .false., &
-     qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
-     do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse, &
-     has_config_type_hypers, do_pca, do_mark_sparse_atoms, use_rdf
+     real(dp) :: e0
+     real(dp) :: max_cutoff
+     real(dp), dimension(3) :: default_sigma
+     real(dp) :: sparse_jitter
+     logical :: do_core = .false., do_sparse, has_config_type_sigma
 
-     integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
-     qw_f_n, cosnx_l_max, cosnx_n_max
+     integer :: n_frame, n_coordinate, n_ener, n_force, n_virial, min_save, n_species
      type(extendable_str) :: quip_string
-     type(gp) :: my_gp
+     type(Potential) :: core_pot
 
-     real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
-     real(dp), dimension(:), allocatable :: w_Z, yf, ydf, dlta, pca_mean, sigma, NormFunction
-     real(dp), dimension(:,:), allocatable :: x, xd, theta, pca_matrix, RadialTransform, rdf
-     integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type, r, species_Z, config_type
-     integer, dimension(99) :: qw_cutoff_f
-     type(sparse_types), dimension(:), allocatable :: config_type_hypers
+     type(gpFull) :: my_gp
+     type(gpSparse) :: gp_sp
+
+     type(descriptor), dimension(:), allocatable :: my_descriptor
+     character(len=STRING_LENGTH), dimension(99) :: descriptor_str
+
+     real(dp), dimension(:), allocatable :: delta, f0, theta, theta_uniform, zeta
+     real(dp), dimension(:,:), allocatable :: sigma
+     integer, dimension(:), allocatable :: n_sparseX, sparse_method, target_type, n_cross, n_descriptors, species_Z
+     integer, dimension(:,:), allocatable :: config_type_n_sparseX
+     character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type, config_type_n_sparseX_string
+     logical, dimension(:), allocatable :: mark_sparse_atoms, add_species, bond_real_space, atom_real_space, soap
+
+     logical :: sparseX_separate_file
 
   endtype teach_sparse
      
@@ -74,162 +77,124 @@ module teach_sparse_mod
   public :: teach_sparse
   public :: teach_sparse_print_xml
   public :: file_print_xml
-  public :: print_sparse
+!  public :: print_sparse
+  public :: parse_config_type_sigma
+  public :: parse_config_type_n_sparseX
+  public :: read_teach_xyz
+  public :: read_descriptors
+  public :: get_species_xyz
+  public :: add_multispecies_descriptors
 
 contains
+
+  subroutine read_teach_xyz(this)
+
+    type(teach_sparse), intent(inout) :: this
+
+    type(cinoutput) :: xyzfile
+    integer :: n_con
+
+    if( allocated(this%at) ) then
+       do n_con = 1, this%n_frame
+          call finalise(this%at(n_con))
+       enddo
+       deallocate(this%at)
+       this%n_frame = 0
+    endif
+
+    call initialise(xyzfile,this%at_file)
+    this%n_frame = xyzfile%n_frame
+
+    allocate(this%at(this%n_frame))
+
+    do n_con = 1, this%n_frame
+       call read(xyzfile,this%at(n_con),frame=n_con-1)
+       call set_cutoff(this%at(n_con), this%max_cutoff)
+       call calc_connect(this%at(n_con))
+    enddo
+
+    call finalise(xyzfile)
+
+  endsubroutine read_teach_xyz
+
+  subroutine read_descriptors(this)
+
+    type(teach_sparse), intent(inout) :: this
+
+    integer :: i
+
+    this%max_cutoff = 0.0_dp
+
+    if(allocated(this%my_descriptor)) then
+       do i = 1, size(this%my_descriptor)
+          call finalise(this%my_descriptor(i))
+       enddo
+       deallocate(this%my_descriptor)
+    endif
+
+    allocate(this%my_descriptor(this%n_coordinate))
+    do i = 1, this%n_coordinate
+       call initialise(this%my_descriptor(i),this%descriptor_str(i))
+       if( this%max_cutoff < cutoff(this%my_descriptor(i)) ) this%max_cutoff = cutoff(this%my_descriptor(i))
+    enddo
+
+  endsubroutine read_descriptors
 
   subroutine teach_n_from_xyz(this)
 
     type(teach_sparse), intent(inout) :: this
 
-    type(cinoutput) :: xyzfile
-    type(atoms) :: at
-    integer :: n_max, n_con, n_at
-    logical :: has_ener, has_force, has_virial, has_mask
-    real(dp) :: ener, virial(3,3), d, bin_width
+    integer :: n_con
+    logical :: has_ener, has_force, has_virial
+    real(dp) :: ener, virial(3,3)
     real(dp), pointer :: f(:,:)
-    integer :: i, j, n, num_bins, n_neighb
-    logical, dimension(:), pointer :: mask
-    integer, dimension(116) :: species_present
+    integer :: i
+    integer :: n_descriptors, n_cross
 
-    type(Table) :: distances
+    allocate(this%n_cross(this%n_coordinate))
+    allocate(this%n_descriptors(this%n_coordinate))
 
-    call initialise(xyzfile,this%at_file)
-
-    n_max = xyzfile%n_frame
-
-    this%n = 0
-    this%nn = 0
-    this%ne = 0
+    this%n_cross = 0
+    this%n_descriptors = 0
     this%n_ener = 0
     this%n_force = 0
     this%n_virial = 0
-    species_present = 0
-    this%n_species = 0
 
-    if ( this%use_rdf ) then
-       call allocate(distances,0,1,0,0,1000000)
-       call set_increment(distances,1000000)
-    endif
+    do n_con = 1, this%n_frame
 
-    do n_con = 1, n_max
-       call read(xyzfile,at,frame=n_con-1)
-
-       has_mask = .false.
-       if (len_trim(this%mask_name) > 0) has_mask = assign_pointer(at, this%mask_name, mask)
-       if (.not. has_mask) then
-          allocate(mask(at%n))
-          mask(:) = .true.
-       end if
-
-       has_ener = get_value(at%params,this%energy_parameter_name,ener)
-       has_force = assign_pointer(at,this%force_parameter_name, f)
-       has_virial = get_value(at%params,this%virial_parameter_name,virial)
-
-       if (has_mask .and. (has_ener .or. has_virial)) &
-            call system_abort('Has mask and energy or virial')
-
-       if (has_mask .and. trim(this%coordinates) /= 'bispectrum') &
-            call system_abort('Masked teaching only implemented for bispectrum descriptor')
-
-       n_at = count(mask)
-
-       if( has_ener .or. has_force .or. has_virial .or. this%use_rdf ) then
-          call set_cutoff(at,this%r_cut)
-          call calc_connect(at)
-       endif
-
-       if ( this%use_rdf ) then
-          do i = 1, at%N
-             do n = 1, atoms_n_neighbours(at,i)
-                j = atoms_neighbour(at,i,n,distance=d)
-                call append(distances, d)
-             enddo
-          enddo
-       endif
+       has_ener = get_value(this%at(n_con)%params,this%energy_parameter_name,ener)
+       has_force = assign_pointer(this%at(n_con),this%force_parameter_name, f)
+       has_virial = get_value(this%at(n_con)%params,this%virial_parameter_name,virial)
 
        if( has_ener ) then
           this%n_ener = this%n_ener + 1
-          this%ne = this%ne + at%N
        endif
 
        if( has_force ) then
-          this%n_force = this%n_force + 3*count(mask)
-          ! count number of neighbour pairs (i,j) where both i and j are in mask
-          n_neighb = 0
-          do i = 1, at%N
-             if (.not. mask(i)) cycle
-             do n = 1, atoms_n_neighbours(at, i)
-                j = atoms_neighbour(at, i, n)
-                if (.not. mask(j)) cycle
-                n_neighb = n_neighb + 1
-             end do
-          enddo
-          this%n = this%n + 3*n_at + 3*n_neighb
+          this%n_force = this%n_force + this%at(n_con)%N*3
        endif
 
        if( has_virial ) then
           this%n_virial = this%n_virial + 6
-          do i = 1, at%N
-             this%n = this%n + 6*(atoms_n_neighbours(at,i)+1)
-          enddo
        endif
 
-       do i = 1, at%N
-          if (.not. mask(i)) cycle
-          if( all(at%Z(i) /= species_present) ) then
-             this%n_species = this%n_species + 1
-             species_present(this%n_species) = at%Z(i)
+       do i = 1, this%n_coordinate
+          if( has_ener .or. has_force .or. has_virial ) then
+             call descriptor_sizes(this%my_descriptor(i),this%at(n_con),n_descriptors,n_cross)
           endif
+
+          if( has_force ) then
+             this%n_cross(i) = this%n_cross(i) + n_cross*3
+          endif
+
+          if( has_virial ) then
+             this%n_cross(i) = this%n_cross(i) + n_cross*6
+          endif
+
+          if( has_ener .or. has_force .or. has_virial ) this%n_descriptors(i) = this%n_descriptors(i) + n_descriptors
        enddo
 
-       if( has_ener .or. has_force .or. has_virial ) this%nn = this%nn + n_at
-
-       call finalise(at)
-       if (.not. has_mask) deallocate(mask)
     enddo
-
-    call finalise(xyzfile)
-
-    if ( this%use_rdf ) then
-       num_bins = int(sqrt(real(distances%N,dp)))
-       allocate(this%rdf(num_bins,2))
-       
-       bin_width = this%r_cut / real(num_bins,dp)
-       do i = 1, num_bins
-          this%rdf(i,1) = (real(i,dp) - 0.5_dp) * bin_width
-       enddo
-    
-       this%rdf(:,2) = histogram(distances%real(1,1:distances%N), 0.0_dp, this%r_cut, num_bins)
-       call finalise(distances)
-    endif
-
-    select case(trim(this%coordinates))
-    case('hf_dimer')
-       this%n_species = 1
-       allocate(this%species_Z(this%n_species))
-       this%species_Z = 9
-       this%nn = this%nn / 4
-       this%ne = this%n_ener
-       this%n = this%n_force
-    case('water_monomer')
-       this%n_species = 1
-       allocate(this%species_Z(this%n_species))
-       this%species_Z = 8
-       if(3*this%n_ener /= this%nn) call system_abort('coordinates type water_monomer, but 3*n_ener /= ne')
-       this%nn = this%n_ener
-       this%ne = this%n_ener
-    case('water_dimer')
-       this%n_species = 1
-       allocate(this%species_Z(this%n_species))
-       this%species_Z = 8
-       this%nn = this%nn / 6
-       this%ne = this%n_ener
-       this%n = this%n_force
-    case default
-       allocate(this%species_Z(this%n_species))
-       this%species_Z = species_present(1:this%n_species)
-    endselect
 
   end subroutine teach_n_from_xyz
 
@@ -237,164 +202,99 @@ contains
 
     type(teach_sparse), intent(inout) :: this
 
-    type(cinoutput) :: xyzfile
-    type(atoms) :: at
-    type(fourier_so4) :: f_hat
-    type(grad_fourier_so4) :: df_hat
-    type(bispectrum_so4) :: bis
-    type(grad_bispectrum_so4) :: dbis
-    type(cosnx) :: my_cosnx
-    type(fourier_so3) :: f3_hat
-    type(grad_fourier_so3) :: df3_hat
-    type(qw_so3) :: qw
-    type(grad_qw_so3) :: dqw
+    type(inoutput) :: theta_inout
+    type(descriptor_data) :: my_descriptor_data
 
-    type(Potential) :: core_pot
-    
     integer :: d
-    integer :: n_max, n_con, n_at
-    logical :: has_ener, has_force, has_virial, has_config_type, has_mask
-    real(dp) :: ener, ener_core
+    integer :: n_con
+    logical :: has_ener, has_force, has_virial, has_config_type, has_energy_sigma, has_force_sigma, has_virial_sigma
+    real(dp) :: ener, ener_core, my_cutoff, energy_sigma, force_sigma, virial_sigma
+    real(dp), dimension(3) :: pos
     real(dp), dimension(3,3) :: virial, virial_core
-    real(dp), pointer :: f(:,:)
+    real(dp), dimension(:), allocatable :: theta, theta_fac
+    real(dp), dimension(:,:), pointer :: f
     real(dp), dimension(:,:), allocatable :: f_core
-    real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:), dvec(:,:,:,:)
-    integer :: shift(3)
-    integer, dimension(3,1) :: water_monomer_index
-    integer, dimension(3,2) :: water_dimer_index
-    real(dp), dimension(3) :: pos, water_monomer_v
-    real(dp), dimension(WATER_DIMER_D) :: water_dimer_v
-    logical, dimension(:), pointer :: mask
-    integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
-    integer :: nei_max
-    integer :: i, j, n, k, l, jx, jn, ii, jj
+    integer, dimension(:,:), allocatable :: force_loc, permutations
+    integer :: ie, i, j, n, k, l, i_coordinate
+    integer, dimension(:), allocatable :: xloc
+    integer, dimension(3,3) :: virial_loc
 
-    integer :: it, n_config_type
+    integer :: i_config_type, n_config_type, n_theta_fac
     character(len=STRING_LENGTH) :: config_type
+    character(len=THETA_LENGTH) :: theta_string
+    character(len=STRING_LENGTH), dimension(:), allocatable :: theta_string_array
 
-    select case(trim(this%coordinates))
-    case('qw')
+    my_cutoff = 0.0_dp
+    call gp_setParameters(this%my_gp,this%n_coordinate,this%n_ener,this%n_force+this%n_virial,this%sparse_jitter)
 
-       call initialise(f3_hat, this%qw_l_max, &
-       this%qw_cutoff(1:this%qw_f_n), this%qw_cutoff_f(1:this%qw_f_n), &
-       this%qw_cutoff_r1(1:this%qw_f_n))
-       call initialise(df3_hat, this%qw_l_max, &
-       this%qw_cutoff(1:this%qw_f_n), this%qw_cutoff_f(1:this%qw_f_n), &
-       this%qw_cutoff_r1(1:this%qw_f_n))
-       call initialise(qw, this%qw_l_max, &
-       this%qw_f_n, do_q = (.not. this%qw_no_q), do_w = (.not. this%qw_no_w))
-       call initialise(dqw, this%qw_l_max, &
-       this%qw_f_n, do_q = (.not. this%qw_no_q), do_w = (.not. this%qw_no_w))
+    do i_coordinate = 1, this%n_coordinate
+       d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
-       this%d = qw2d(qw)
-    case('bispectrum')
-       call initialise(f_hat,this%j_max, this%z0,this%r_cut)
-       call initialise(df_hat,this%j_max, this%z0,this%r_cut)
+       call gp_setParameters(this%my_gp,i_coordinate, d, this%n_descriptors(i_coordinate), this%n_cross(i_coordinate), this%delta(i_coordinate), this%f0(i_coordinate), &
+                             bond_real_space=this%bond_real_space(i_coordinate), atom_real_space=this%atom_real_space(i_coordinate), soap=this%soap(i_coordinate) )
+       call gp_addDescriptor(this%my_gp,i_coordinate,trim(this%descriptor_str(i_coordinate)))
 
-       this%d = j_max2d(f_hat%j_max)
+       allocate(permutations(d,descriptor_n_permutations(this%my_descriptor(i_coordinate))))
+       call descriptor_permutations(this%my_descriptor(i_coordinate),permutations)
+       call gp_setPermutations(this%my_gp,i_coordinate,permutations)
+       deallocate(permutations)
 
-    case('cosnx')
-    
-       if( this%use_rdf ) then
-          call initialise(my_cosnx,this%cosnx_l_max, this%cosnx_n_max, this%r_cut, w = this%rdf )
-       else
-          call initialise(my_cosnx,this%cosnx_l_max, this%cosnx_n_max, this%r_cut )
-       endif
-       allocate(this%NormFunction(this%cosnx_n_max),this%RadialTransform(this%cosnx_n_max,this%cosnx_n_max))
-       this%NormFunction = my_cosnx%NormFunction
-       this%RadialTransform = my_cosnx%RadialTransform
-    
-       this%d = (this%cosnx_l_max+1)*this%cosnx_n_max
-
-    case('hf_dimer')
-       this%d = 6
-    case('water_monomer')
-       this%d = 3
-    case('water_dimer')
-       this%d = WATER_DIMER_D
-    case default
-       call system_abort('Unknown coordinates '//trim(this%coordinates))
-    endselect
-    d = this%d
+       my_cutoff = max(my_cutoff,cutoff(this%my_descriptor(i_coordinate)))
+    enddo
 
     call print("Number of target energies (property name: "//trim(this%energy_parameter_name)//") found: "//this%n_ener)
     call print("Number of target forces (property name: "//trim(this%force_parameter_name)//") found: "//this%n_force)
     call print("Number of target virials (property name: "//trim(this%virial_parameter_name)//") found: "//this%n_virial)
 
-    allocate(this%x(d,this%nn),this%xd(d,this%n), &
-    this%yf(this%n_ener), this%ydf(this%n_force+this%n_virial), &
-    this%lf(this%n_ener),this%ldf(this%n_force+this%n_virial), &
-    this%xf(this%ne),this%xdf(this%n))
-    allocate(this%xz(this%nn))
-    allocate(this%target_type(this%n_ener+this%n_force+this%n_virial),this%config_type(this%nn))
+    if( this%do_core ) call Initialise(this%core_pot, args_str=this%ip_args, param_str=string(this%quip_string))
 
-    if( this%do_core ) call Initialise(core_pot, args_str=this%ip_args, param_str=string(this%quip_string))
+    do n_con = 1, this%n_frame
 
-    call initialise(xyzfile,this%at_file)
+       has_ener = get_value(this%at(n_con)%params,this%energy_parameter_name,ener)
+       has_force = assign_pointer(this%at(n_con),this%force_parameter_name, f)
+       has_virial = get_value(this%at(n_con)%params,this%virial_parameter_name,virial)
+       has_config_type = get_value(this%at(n_con)%params,this%config_type_parameter_name,config_type)
 
-    n_max = xyzfile%n_frame
-
-    li = 0
-    ui = 0
-    nn = 0
-    ix = 0
-    ie = 0
-    i_con = 0
-    i_ener = 0
-    w_con = 0
-
-    do n_con = 1, n_max
-       call read(xyzfile,at,frame=n_con-1)
-
-       has_mask = .false.
-       if (len_trim(this%mask_name) > 0) has_mask = assign_pointer(at, this%mask_name, mask)
-       if (.not. has_mask) then
-          allocate(mask(at%n))
-          mask(:) = .true.
-       end if
-       n_at = count(mask)
-
-       call print('Config #'//n_con//' has mask with '//count(mask)//' selected atoms')
-       
-       has_ener = get_value(at%params,this%energy_parameter_name,ener)
-       has_force = assign_pointer(at,this%force_parameter_name, f)
-       has_virial = get_value(at%params,this%virial_parameter_name,virial)
-       has_config_type = get_value(at%params,this%config_type_parameter_name,config_type)
-
-       if (has_mask .and. (has_ener .or. has_virial)) &
-            call system_abort('Has mask and energy or virial')
-
-       if (has_mask .and. trim(this%coordinates) /= 'bispectrum') &
-            call system_abort('Masked teaching only implemented for bispectrum descriptor')
+       has_energy_sigma = get_value(this%at(n_con)%params,'energy_sigma',energy_sigma)
+       has_force_sigma = get_value(this%at(n_con)%params,'force_sigma',force_sigma)
+       has_virial_sigma = get_value(this%at(n_con)%params,'virial_sigma',virial_sigma)
 
        if( has_config_type ) then
-          config_type = lower_case(trim(config_type))
+          config_type = trim(config_type)
        else
           config_type = "default"
        endif
 
-       if( .not. allocated(this%config_type_hypers) ) call system_abort('config_type_hypers not allocated')
+       if( .not. allocated(this%config_type) ) call system_abort('config_type not allocated')
        n_config_type = 0
-       do it = lbound(this%config_type_hypers,dim=1), ubound(this%config_type_hypers,dim=1)
-          if( trim(this%config_type_hypers(it)%type) == trim(config_type) ) n_config_type = it
+       do i_config_type = 1, size(this%config_type)
+          if( trim(this%config_type(i_config_type)) == trim(config_type) ) n_config_type = i_config_type
        enddo
 
+       if( n_config_type == 0 ) then ! get the number of the "default" type as default
+          do i_config_type = 1, size(this%config_type)
+             if( trim(this%config_type(i_config_type)) == "default" ) n_config_type = i_config_type
+          enddo
+       endif
+
        if( this%do_core ) then
-          allocate(f_core(3,at%N))
+          allocate(f_core(3,this%at(n_con)%N))
           ener_core = 0.0_dp
           f_core = 0.0_dp
           virial_core = 0.0_dp
 
-          call set_cutoff(at, max(cutoff(core_pot),this%r_cut))
-          call calc_connect(at)
+          if( this%at(n_con)%cutoff < max(cutoff(this%core_pot),my_cutoff) ) then
+             call set_cutoff(this%at(n_con), max(cutoff(this%core_pot),my_cutoff))
+             call calc_connect(this%at(n_con))
+          endif
 
           if(has_virial .and. has_force) then
-             call calc(core_pot,at,energy=ener_core,force=f_core,virial=virial_core)
+             call calc(this%core_pot,this%at(n_con),energy=ener_core,force=f_core,virial=virial_core)
           elseif(has_force) then
-             call calc(core_pot,at,energy=ener_core,force=f_core)
+             call calc(this%core_pot,this%at(n_con),energy=ener_core,force=f_core)
           else
-             call calc(core_pot,at,energy=ener_core)
-          endif
+             call calc(this%core_pot,this%at(n_con),energy=ener_core)
+          end if
 
           if(has_ener) ener = ener - ener_core
           if(has_force) f = f - f_core
@@ -403,266 +303,164 @@ contains
        endif
 
        if(has_ener) then
-          select case(trim(this%coordinates))
-          case('water_monomer','water_dimer','hf_dimer')
-             ener = ener - this%e0     
-          case default
-             ener = ener - at%n*this%e0     
-          endselect
+          ener = ener - this%at(n_con)%N*this%e0     
        endif
 
-       call set_cutoff(at,this%r_cut)
-       call calc_connect(at)
-
-       nei_max = 0
-       do i = 1, at%N
-          if(nei_max < atoms_n_neighbours(at,i)+1) nei_max = atoms_n_neighbours(at,i)+1
-       enddo
-
-       if(has_ener .or. has_force .or. has_virial ) allocate(vec(d,n_at))
-       if(has_force .or. has_virial) then
-          select case(trim(this%coordinates))
-          case('water_dimer')
-             allocate(dvec(3,6,d,1))
-             dvec = 0.0_dp
-          case('hf_dimer')
-             allocate(dvec(3,4,d,1))
-             dvec = 0.0_dp
-          case default
-             allocate(jack(d,3*nei_max,n_at))
-             jack = 0.0_dp
-          endselect
+       if( this%at(n_con)%cutoff < my_cutoff ) then
+          call set_cutoff(this%at(n_con),my_cutoff)
+          call calc_connect(this%at(n_con))
        endif
-       allocate(w(at%N))
 
-       do i = 1, at%N
-          w(i) = this%w_Z(at%Z(i))
-       enddo
+       if( .not. has_energy_sigma ) energy_sigma = this%sigma(1,n_config_type)*this%at(n_con)%N
+       if( .not. has_force_sigma ) force_sigma = this%sigma(2,n_config_type)
+       if( .not. has_virial_sigma ) virial_sigma = this%sigma(3,n_config_type)*this%at(n_con)%N
+
+       if( has_ener ) ie = gp_addFunctionValue(this%my_gp,ener, energy_sigma)
+       if(has_force) then
+          allocate(force_loc(3,this%at(n_con)%N))
+          do i = 1, this%at(n_con)%N
+             do k = 1, 3
+                force_loc(k,i) = gp_addFunctionDerivative(this%my_gp,-f(k,i),force_sigma)
+             enddo
+          enddo
+       endif
+       if(has_virial) then
+          ! check if virial is symmetric
+          if( sum((virial - transpose(virial))**2) .fne. 0.0_dp ) &
+          call print_warning('virial not symmetric, now symmetrised')
+
+
+          ! Now symmetrise matrix
+          virial = ( virial + transpose(virial) ) / 2.0_dp
+
+          do k = 1, 3
+             do l = k, 3
+                virial_loc(l,k) = gp_addFunctionDerivative(this%my_gp,-virial(l,k),virial_sigma)
+             enddo
+          enddo
+       endif
 
        if(has_ener .or. has_force .or. has_virial ) then
-          select case(trim(this%coordinates))
-          case('hf_dimer')
-             if( at%N /= 4 ) call system_abort('Number of atoms is '//at%N//', not two HF molecules')
+          do i_coordinate = 1, this%n_coordinate
 
-             w_con = w_con + 1
+             call calc(this%my_descriptor(i_coordinate),this%at(n_con),my_descriptor_data, &
+             do_descriptor=.true.,do_grad_descriptor=has_force .or. has_virial)
 
-             if(has_ener) then
-                ie = ie + 1
-                this%xf(ie) = w_con
-                this%yf(ie) = ener
-                this%lf(ie) = ie
-                this%target_type(ie) = 1
+             allocate(xloc(size(my_descriptor_data%x)))
+
+             if( has_ener ) then
+                do i = 1, size(my_descriptor_data%x)
+                   if( .not. my_descriptor_data%x(i)%has_data) cycle
+                   xloc(i) = gp_addCoordinates(this%my_gp,my_descriptor_data%x(i)%data(:),i_coordinate, &
+                   cutoff_in=my_descriptor_data%x(i)%covariance_cutoff, current_y=ie,config_type=n_config_type)
+                enddo
+             else
+                do i = 1, size(my_descriptor_data%x)
+                   if( .not. my_descriptor_data%x(i)%has_data) cycle
+                   xloc(i) = gp_addCoordinates(this%my_gp,my_descriptor_data%x(i)%data(:),i_coordinate, &
+                   cutoff_in=my_descriptor_data%x(i)%covariance_cutoff, config_type=n_config_type)
+                enddo
              endif
+
 
              if(has_force) then
-                li = ui + 1
-                ui = ui + 12
-                dvec(:,:,:,1) = hf_dimer_grad(at)
-                this%xd(:,li:ui) = transpose(reshape(dvec(:,:,:,1), (/12,d/)))
-                this%ydf(li:ui) = -reshape(f(:,:),(/12/))
-                this%xdf(li:ui) = w_con
-                this%ldf(li:ui) = (/(i, i=li,ui)/)
-                this%target_type(this%n_ener+li:this%n_ener+ui) = 2
-             endif
+                do i = 1, size(my_descriptor_data%x)
+                   do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
+                      if( .not. my_descriptor_data%x(i)%has_grad_data(n)) cycle
+                      j = my_descriptor_data%x(i)%ii(n)
 
-             this%x(:,w_con) = hf_dimer(at)
-             this%xz(w_con) = 9
-             this%config_type(w_con) = n_config_type
+                      do k = 1, 3
+                         call gp_addCoordinateDerivatives(this%my_gp,my_descriptor_data%x(i)%grad_data(:,k,n),i_coordinate, &
+                         force_loc(k,j), xloc(i), dcutoff_in=my_descriptor_data%x(i)%grad_covariance_cutoff(k,n) )
 
-          case('water_monomer')
-             if( at%N /= 3 ) call system_abort('Number of atoms is '//at%N//', not a single water molecule')
-             call find_water_monomer(at,water_monomer_index)
-             water_monomer_v = water_monomer(at,water_monomer_index(:,1))
-
-             w_con = w_con + 1
-             this%x(:,w_con) = water_monomer_v
-             this%xz(w_con) = 8
-             this%xf(w_con) = w_con
-             this%yf(w_con) = ener
-             this%lf(w_con) = w_con
-             this%target_type(w_con) = 1
-
-          case('water_dimer')
-             if( at%n /= 6 ) call system_abort('Number of atoms is '//at%n//', not two water molecules')
-
-             call find_water_monomer(at,water_dimer_index)
-             call water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2),this%r_cut, vec = water_dimer_v,dvec=dvec)
-
-             w_con = w_con + 1
-
-             if(has_ener) then
-                ie = ie + 1
-                this%xf(ie) = w_con
-                this%yf(ie) = ener
-                this%lf(ie) = ie
-                this%target_type(ie) = 1
-             endif
-
-             if(has_force) then
-                li = ui + 1
-                ui = ui + 18
-                this%xd(:,li:ui) = transpose(reshape(dvec(:,:,:,1), (/18,d/)))
-                !this%ydf(li:ui) = -reshape(f(:,(/water_dimer_index(:,1),water_dimer_index(:,2)/)),(/18/))
-                this%ydf(li:ui) = -reshape(f(:,:),(/18/))                
-                this%xdf(li:ui) = w_con
-                this%ldf(li:ui) = (/(i, i=li,ui)/)
-                this%target_type(this%n_ener+li:this%n_ener+ui) = 2
-             endif
-
-             this%x(:,w_con) = water_dimer_v
-             this%xz(w_con) = 8
-             this%config_type(w_con) = n_config_type
-
-          case('qw')
-             do i = 1, at%N
-                call fourier_transform(f3_hat,at,i)
-                call calc_qw(qw,f3_hat)
-                call qw2vec(qw,vec(:,i))
-                if(has_force .or. has_virial) then
-                   do n = 0, atoms_n_neighbours(at,i)
-                      call fourier_transform(df3_hat,at,i,n)
-                      call calc_qw(dqw,f3_hat,df3_hat)
-                      call qw2vec(dqw,jack(:,3*n+1:3*(n+1),i))
-                   enddo
-                endif
-             enddo
-          case('bispectrum')
-             ii = 0
-             do i = 1, at%N
-                if (.not. mask(i)) cycle
-                ii = ii + 1
-                call fourier_transform(f_hat,at,i,w)
-                call calc_bispectrum(bis,f_hat)
-                call bispectrum2vec(bis,vec(:,ii))
-                if(has_force .or. has_virial) then
-                   do n = 0, atoms_n_neighbours(at,i)
-                      call fourier_transform(df_hat,at,i,n,w)
-                      call calc_bispectrum(dbis,f_hat,df_hat)
-                      call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),ii))
-                   enddo
-                endif
-             enddo
-          case('cosnx')
-             do i = 1, at%N
-                call calc_cosnx(my_cosnx,at,vec(:,i),i,w)
-                if(has_force .or. has_virial) then
-                   do n = 0, atoms_n_neighbours(at,i)
-                      call calc_grad_cosnx(my_cosnx,at,jack(:,3*n+1:3*(n+1),i),i,n,w)
-                   enddo
-                endif
-             enddo
-          case default
-             call system_abort('Unknown coordinates '//trim(this%coordinates))
-          endselect
-
-          select case(trim(this%coordinates))
-          case('water_monomer','water_dimer','hf_dimer')
-
-          case default
-             ii = 0
-             do i = 1, at%N
-                if (.not. mask(i)) cycle
-                ii = ii + 1
-
-                ix = i_con + ii
-                this%x(:,ix) = vec(:,ii)
-                this%config_type(ix) = n_config_type
-                this%xz(ix) = at%Z(i)
-
-                if( has_ener ) then
-                   ie = ie + 1
-                   this%xf(ie) = ix
-                endif
-           
-                if(has_force) then
-                   do k = 1, 3
-                      nn = nn+1
-                      ui = ui + 1
-                      this%xdf(ui) = ix
-                      this%xd(:,ui) = jack(:,k,ii)
-
-                      do n = 1, atoms_n_neighbours(at,i)
-                         j = atoms_neighbour(at,i,n,jn=jn)
-
-                         if (.not. mask(j)) cycle
-                         jj = count(mask(1:j)) ! find reduced index of neighbour
-                         ui = ui + 1
-                         jx = i_con + jj
-                         this%xdf(ui) = jx
-                         this%xd(:,ui) = jack(:,jn*3+k,jj)
+                         if(my_descriptor_data%atom_based) call gp_addCoordinateDerivatives( &
+                            this%my_gp,-my_descriptor_data%x(i)%grad_data(:,k,n),i_coordinate, &
+                            force_loc(k,i), xloc(i), dcutoff_in=-my_descriptor_data%x(i)%grad_covariance_cutoff(k,n))
                       enddo
-
-                      this%ydf(nn) = -f(k,i)
-                      this%ldf(nn) = ui
-                      !sigma(nn+n_ener) = sgm(2)
-                      this%target_type(nn+this%n_ener) = 3*n_config_type + 2
                    enddo
-                endif
-             enddo
- 
+                enddo
+
+             endif
+
              if(has_virial) then
-                ! check if virial is symmetric
-                if( sum((virial - transpose(virial))**2) .fne. 0.0_dp ) &
-                call print_warning('virial not symmetric, now symmetrised')
-
-
-                ! Now symmetrise matrix
-                virial = ( virial + transpose(virial) ) / 2.0_dp
-
                 do k = 1, 3
                    do l = k, 3
-                      nn = nn+1
 
-                      do i = 1, at%N
-                         ix = i_con + i
-
-                         ui = ui + 1
-                         this%xdf(ui) = ix
-                         this%xd(:,ui) = jack(:,k,i)*at%pos(l,i)
-                         do n = 1, atoms_n_neighbours(at,i)
-                            j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
-                            ui = ui + 1
-                            jx = i_con + j
-                            this%xdf(ui) = jx
-                            pos = at%pos(:,i) - matmul(at%lattice,shift)
-                            this%xd(:,ui) = jack(:,jn*3+k,j)*pos(l)
+                      do i = 1, size(my_descriptor_data%x)
+                         do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
+                            if( .not. my_descriptor_data%x(i)%has_grad_data(n)) cycle
+                            j = my_descriptor_data%x(i)%ii(n)
+                            pos = my_descriptor_data%x(i)%pos(:,n)
+                            call gp_addCoordinateDerivatives(this%my_gp,my_descriptor_data%x(i)%grad_data(:,k,n)*pos(l), i_coordinate, &
+                            virial_loc(l,k), xloc(i), dcutoff_in=my_descriptor_data%x(i)%grad_covariance_cutoff(k,n)*pos(l))
                          enddo
                       enddo
 
-                      this%ydf(nn) = -virial(l,k) 
-                      this%ldf(nn) = ui
-                      !sigma(nn+n_ener) = sgm(3)
-                      this%target_type(nn+this%n_ener) = 3*n_config_type + 3
                    enddo
                 enddo
              endif
 
-             i_con = i_con + n_at
-
-             if(has_ener) then
-                i_ener = i_ener + 1
-                this%yf(i_ener) = ener
-                this%lf(i_ener) = ie
-                !sigma(i_ener) = sgm(1)
-                this%target_type(i_ener) = 3*n_config_type + 1
-             endif
-          endselect
+             if(allocated(xloc)) deallocate(xloc)
+             call finalise(my_descriptor_data)
+          enddo
        endif
 
-       if(allocated(vec)) deallocate(vec)
-       if(allocated(dvec)) deallocate(dvec)
-       if(allocated(jack)) deallocate(jack)
-       if(allocated(w)) deallocate(w)
-       if(.not. has_mask) deallocate(mask)
-
-       call finalise(at)
+       if(allocated(force_loc)) deallocate(force_loc)
     enddo
 
-    call finalise(xyzfile)
+    do i_coordinate = 1, this%n_coordinate
+       if(len_trim(this%theta_file(i_coordinate)) > 0) then
+          allocate(theta_string_array(this%my_gp%coordinate(i_coordinate)%d))
+          allocate(theta(this%my_gp%coordinate(i_coordinate)%d))
 
-    if( this%do_core ) then
-       call Finalise(core_pot)
-    endif
+          call initialise(theta_inout,trim(this%theta_file(i_coordinate)))
+          read(theta_inout%unit,'(a)') theta_string
+          call split_string(theta_string,' :','{}',theta_string_array,d,matching=.true.)
+          if(this%my_gp%coordinate(i_coordinate)%d /= d) call system_abort('File '//trim(this%theta_file(i_coordinate))//' does not contain the right number of hyperparameters')
+          do i = 1, d
+             theta(i) = string_to_real(trim(theta_string_array(i)))
+          enddo
+          call gp_setTheta(this%my_gp,i_coordinate,theta)
+          deallocate(theta_string_array)
+          deallocate(theta)
+          call finalise(theta_inout)
+       elseif(this%theta_uniform(i_coordinate) .fne. 0.0_dp) then
+          allocate(theta(this%my_gp%coordinate(i_coordinate)%d))
+          theta = this%theta_uniform(i_coordinate)
+          call gp_setTheta(this%my_gp,i_coordinate,theta)
+          deallocate(theta)
+       else
+          if(this%bond_real_space(i_coordinate) .or. this%atom_real_space(i_coordinate)) then
+             call gp_setTheta(this%my_gp,i_coordinate,(/ this%theta(i_coordinate) /))
+          elseif(this%soap(i_coordinate) ) then
+             call gp_setTheta(this%my_gp,i_coordinate,(/ this%zeta(i_coordinate) /))
+          else
+             allocate(theta_string_array(this%my_gp%coordinate(i_coordinate)%d))
+             allocate(theta_fac(this%my_gp%coordinate(i_coordinate)%d))
+             call split_string(trim(this%theta_fac_string(i_coordinate))," ",'{}',theta_string_array,n_theta_fac,matching=.true.)
+
+             if(n_theta_fac == 1) then
+                theta_fac = string_to_real(theta_string_array(1))
+             elseif(n_theta_fac == this%my_gp%coordinate(i_coordinate)%d) then
+                do i = 1, this%my_gp%coordinate(i_coordinate)%d
+                   theta_fac(i) = string_to_real(theta_string_array(i))
+                enddo
+             else
+                call system_abort("theta_fac can only contain one value or as many as dimensions the descriptor is")
+             endif
+             call gp_setThetaFactor(this%my_gp,i_coordinate,theta_fac,useSparseX=.false.)
+          
+             deallocate(theta_fac)
+             deallocate(theta_string_array)
+          endif
+       endif
+
+
+    enddo
+
+    if( this%do_core ) call Finalise(this%core_pot)
+
+    if( this%do_sparse ) call gp_sparsify(this%my_gp,this%config_type_n_sparseX,this%sparse_method)
 
   end subroutine teach_data_from_xyz
 
@@ -670,55 +468,40 @@ contains
 
     type(teach_sparse), intent(inout) :: this
 
-    type(Potential) :: core_pot
-    type(cinoutput) :: xyzfile
-    type(atoms) :: at
-    integer :: n_max, n_con
+    integer :: n_con
     integer :: n_ener
     logical :: has_ener
     real(dp) :: ener, ener_core
 
-    if( this%do_core ) call Initialise(core_pot, this%ip_args, param_str=string(this%quip_string))
-
-    call initialise(xyzfile,this%at_file)
-
-    n_max = xyzfile%n_frame
+    if( this%do_core ) call Initialise(this%core_pot, this%ip_args, param_str=string(this%quip_string))
 
     n_ener = 0
     this%e0 = 0.0_dp
 
-    do n_con = 1, n_max
-       call read(xyzfile,at,frame=n_con-1)
+    do n_con = 1, this%n_frame
 
-       has_ener = get_value(at%params,trim(this%energy_parameter_name),ener)
+       has_ener = get_value(this%at(n_con)%params,trim(this%energy_parameter_name),ener)
 
        if( has_ener ) then
 
           ener_core = 0.0_dp
           if( this%do_core ) then
-             call set_cutoff(at, cutoff(core_pot))
-             call calc_connect(at)
-             call calc(core_pot,at,energy=ener_core)
+             if( this%at(n_con)%cutoff < cutoff(this%core_pot) ) then
+                call set_cutoff(this%at(n_con), cutoff(this%core_pot))
+                call calc_connect(this%at(n_con))
+             endif
+             call calc(this%core_pot,this%at(n_con),energy=ener_core)
           endif
 
-          select case(trim(this%coordinates))
-          case('water_monomer','water_dimer','hf_dimer')
-             this%e0 = this%e0 + (ener-ener_core)
-          case default
-             this%e0 = this%e0 + (ener-ener_core) / at%N
-          endselect
+          this%e0 = this%e0 + (ener-ener_core) / this%at(n_con)%N
 
           n_ener = n_ener + 1
        endif
-
-       call finalise(at)
     enddo
 
     if( n_ener > 0 ) this%e0 = this%e0 / n_ener
 
-    call finalise(xyzfile)
-
-    if( this%do_core ) call Finalise(core_pot)
+    if( this%do_core ) call Finalise(this%core_pot)
 
   end subroutine e0_avg_from_xyz
 
@@ -729,34 +512,27 @@ contains
     type(cinoutput) :: xyzfile
     type(atoms) :: at
 
-    allocate(this%w_Z(maxval(this%species_Z)))
-    this%w_Z = 0.0_dp
-    select case(trim(this%coordinates))
-    case('water_monomer','water_dimer')
-       this%w_Z(8) = 1.0_dp
-    case('hf_dimer')
-       this%w_Z(9) = 1.0_dp
-    case default
-       call initialise(xyzfile,this%at_file)
+    call initialise(xyzfile,this%at_file)
 
-       call read(xyzfile,at,frame=0)
-       call get_weights(at,this%w_Z)
-       call finalise(at)
+    call read(xyzfile,at,frame=0)
+    !call get_weights(at,this%w_Z)
+    call finalise(at)
 
-       call finalise(xyzfile)
-    endselect
+    call finalise(xyzfile)
 
   end subroutine w_Z_from_xyz
 
-  subroutine teach_sparse_print_xml(this,filename)
+  subroutine teach_sparse_print_xml(this,filename,sparseX_separate_file)
      type(teach_sparse), intent(in) :: this
      character(len=*), intent(in) :: filename
+     logical, intent(in), optional :: sparseX_separate_file
+
      type(xmlf_t) :: xf
-     integer :: i
      type(extendable_str) :: gap_string
      character(len=STRING_LENGTH) :: gp_tmp_file, gp_label
      type(inoutput) :: gp_inout
      integer, dimension(8) :: values
+     logical :: my_sparseX_separate_file
 
      call date_and_time(values=values)
      ! Get totally unique label for GAP. This will be used at various places.
@@ -773,108 +549,19 @@ contains
      call xml_AddAttribute(xf,"svn_version",""//current_version())
 
      call xml_NewElement(xf,"GAP_data")
-     call xml_AddAttribute(xf,"n_species",""//this%n_species)
      call xml_AddAttribute(xf,"do_core",""//this%do_core)
      call xml_AddAttribute(xf,"e0",""//this%e0)
-     call xml_AddAttribute(xf,"f0",""//this%f0)
-     call xml_AddAttribute(xf,"do_pca",""//this%do_pca)
 
-     select case(trim(this%coordinates))
-     case('hf_dimer')
-        call xml_AddAttribute(xf,"coordinates","hf_dimer")
-        call xml_NewElement(xf,"hf_dimer_params")
-        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
-        call xml_EndElement(xf,"hf_dimer_params")
-     case('water_monomer')
-        call xml_AddAttribute(xf,"coordinates","water_monomer")
-        call xml_NewElement(xf,"water_monomer_params")
-        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
-        call xml_EndElement(xf,"water_monomer_params")
-     case('water_dimer')
-        call xml_AddAttribute(xf,"coordinates","water_dimer")
-        call xml_NewElement(xf,"water_dimer_params")
-        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
-        call xml_EndElement(xf,"water_dimer_params")
-     case('qw')
-        call xml_AddAttribute(xf,"coordinates","qw")
-
-        call xml_NewElement(xf,"qw_so3_params")
-        call xml_AddAttribute(xf,"l_max",""//this%qw_l_max)
-        call xml_AddAttribute(xf,"n_radial",""//this%qw_f_n)
-        call xml_AddAttribute(xf,"do_q",""//(.not.this%qw_no_q))
-        call xml_AddAttribute(xf,"do_w",""//(.not.this%qw_no_w))
-
-        do i = 1, this%qw_f_n
-           call xml_NewElement(xf,"radial_function")
-           call xml_AddAttribute(xf,"i",""//i)
-           call xml_AddAttribute(xf,"cutoff",""//this%qw_cutoff(i))
-           call xml_AddAttribute(xf,"cutoff_type",""//this%qw_cutoff_f(i))
-           call xml_AddAttribute(xf,"cutoff_r1",""//this%qw_cutoff_r1(i))
-           call xml_EndElement(xf,"radial_function")
-        enddo
-
-        call xml_EndElement(xf,"qw_so3_params")
-     case('cosnx')
-        call xml_AddAttribute(xf,"coordinates","cosnx")
-     
-        call xml_NewElement(xf,"cosnx_params")
-        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
-        call xml_AddAttribute(xf,"l_max",""//this%cosnx_l_max)
-        call xml_AddAttribute(xf,"n_max",""//this%cosnx_n_max)
-     
-        call xml_NewElement(xf,"NormFunction")
-        call xml_AddCharacters(xf, ""//this%NormFunction)
-        call xml_EndElement(xf,"NormFunction")
-     
-        call xml_NewElement(xf,"RadialTransform")
-        do i = 1, this%cosnx_n_max
-           call xml_NewElement(xf,"RadialTransform_row")
-           call xml_AddAttribute(xf,"i",""//i)
-           call xml_AddCharacters(xf, ""//this%RadialTransform(:,i))
-           call xml_EndElement(xf,"RadialTransform_row")
-        enddo
-        call xml_EndElement(xf,"RadialTransform")
-     
-        call xml_EndElement(xf,"cosnx_params")
-
-     case('bispectrum')
-        call xml_AddAttribute(xf,"coordinates","bispectrum")
-        
-        call xml_NewElement(xf,"bispectrum_so4_params")
-        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
-        call xml_AddAttribute(xf,"j_max",""//this%j_max)
-        call xml_AddAttribute(xf,"z0",""//this%z0)
-        call xml_EndElement(xf,"bispectrum_so4_params")
-     case default
-        call system_abort('Unknown coordinates '//trim(this%coordinates))
-     endselect
-
-     if(this%do_pca) then
-        call xml_NewElement(xf,"PCA_matrix")
-        call xml_AddAttribute(xf,"n",""//this%d)
-        call xml_NewElement(xf,"PCA_mean")
-        call xml_AddCharacters(xf, ""//this%pca_mean)
-        call xml_EndElement(xf,"PCA_mean")
-        do i = 1, this%d
-           call xml_NewElement(xf,"row")
-           call xml_AddAttribute(xf,"i",""//i)
-           call xml_AddCharacters(xf, ""//this%pca_matrix(:,i))
-           call xml_EndElement(xf,"row")
-        enddo
-        call xml_EndElement(xf,"PCA_matrix")
-     endif
-
-     do i = 1, this%n_species
-        call xml_NewElement(xf,"per_type_data")
-        call xml_AddAttribute(xf,"i",""//i)
-        call xml_AddAttribute(xf,"atomic_num",""//this%species_Z(i))
-        call xml_AddAttribute(xf,"weight",""//this%w_Z(this%species_Z(i)))
-        call xml_EndElement(xf,"per_type_data")
-     enddo
      call xml_EndElement(xf,"GAP_data")
 
+     my_sparseX_separate_file = optional_default(.false., sparseX_separate_file)
+
      ! Print GP bit of the potential
-     call gp_print_xml(this%my_gp,xf,label=gp_label)
+     if (my_sparseX_separate_file) then
+	call gp_printXML(this%gp_sp,xf,label=gp_label,sparseX_base_filename=trim(filename)//".sparseX")
+     else
+	call gp_printXML(this%gp_sp,xf,label=gp_label)
+     endif
 
      ! Print the command line used for the teaching
      if(len(trim(this%command_line))> 0 ) then
@@ -897,20 +584,26 @@ contains
 
      ! Open a unique root element for the xml
      call print('<'//trim(gp_label)//'>',file=gp_inout)
+     !call system_command('echo "<'//trim(gp_label)//'>" >>'//trim(filename))
 
      if(this%do_core) then
         ! Create the sum potential xml entry (by hand)
         call print('<Potential label="'//trim(gp_label)//'" init_args="Sum init_args_pot1={'//trim(this%ip_args)//'} init_args_pot2={IP GAP label='//trim(gp_label)//'}"/>',file=gp_inout)
+        !call system_command('echo "<Potential label=\"'//trim(gp_label)//'\" init_args=\"Sum init_args_pot1={'//trim(this%ip_args)//'} init_args_pot2={IP GAP label='//trim(gp_label)//'}\"/>" >>'//trim(filename))
 
         ! Now add the core potential that was used.
         call print(string(this%quip_string),file=gp_inout)
+        !call system_command('echo "'//string(this%quip_string)//' >>'//trim(filename))
+
      endif
 
      ! Add the GAP potential
      call print(string(gap_string),file=gp_inout)
+     !call system_command('cat '//trim(gp_tmp_file)//' >>'//trim(filename))
 
      ! Close the root element
      call print('</'//trim(gp_label)//'>',file=gp_inout)
+     !call system_command('echo "</'//trim(gp_label)//'>" >>'//trim(filename))
 
      call finalise(gp_inout)
      call finalise(gap_string)
@@ -947,44 +640,328 @@ contains
 
   endsubroutine file_print_xml
 
-  subroutine print_sparse(this)
-    type(teach_sparse), intent(in) :: this
-    type(cinoutput) :: xyzfile, xyzfile_out
-    type(atoms) :: at, at_out
+!  subroutine print_sparse(this)
+!    type(teach_sparse), intent(in) :: this
+!    type(cinoutput) :: xyzfile, xyzfile_out
+!    type(atoms) :: at, at_out
+!
+!    integer :: li, ui, n_con
+!    logical, dimension(:), allocatable :: x
+!    logical, dimension(:), pointer :: sparse
+!
+!    if(this%do_mark_sparse_atoms) then
+!
+!       allocate(x(this%n_descriptors))
+!       x = .false.
+!       x(this%r) = .true.
+!
+!       call initialise(xyzfile,this%at_file)
+!       call initialise(xyzfile_out,this%mark_sparse_atoms,action=OUTPUT)
+!
+!       li = 0
+!       ui = 0
+!       do n_con = 1, xyzfile%n_frame
+!          call read(xyzfile,at,frame=n_con-1)
+!          at_out = at
+!
+!          call add_property(at_out,'sparse',.false.,ptr=sparse)
+!
+!          li = ui + 1
+!          ui = ui + at%N
+!          if(any( x(li:ui) )) sparse(find_indices(x(li:ui))) = .true.
+!
+!          call write(at_out,xyzfile_out,properties="species:pos:sparse")
+!       enddo
+!       call finalise(xyzfile)
+!       call finalise(xyzfile_out)
+!       deallocate(x)
+!
+!    endif
+!
+!  endsubroutine print_sparse
 
-    integer :: li, ui, n_con
-    logical, dimension(:), allocatable :: x
-    logical, dimension(:), pointer :: sparse
+  subroutine parse_config_type_sigma(this)
+    type(teach_sparse), intent(inout) :: this
+    character(len=STRING_LENGTH), dimension(99) :: config_type_sigma_fields
+    integer :: config_type_sigma_num_fields, i_default, i, n_config_type
 
-    if(this%do_mark_sparse_atoms) then
+    if( this%has_config_type_sigma ) then
+       call split_string(this%config_type_sigma_string,':','{}',config_type_sigma_fields,config_type_sigma_num_fields,matching=.true.)
 
-       allocate(x(this%nn))
-       x = .false.
-       x(this%r) = .true.
+       n_config_type = config_type_sigma_num_fields / 4
 
-       call initialise(xyzfile,this%at_file)
-       call initialise(xyzfile_out,this%mark_sparse_atoms,action=OUTPUT)
-
-       li = 0
-       ui = 0
-       do n_con = 1, xyzfile%n_frame
-          call read(xyzfile,at,frame=n_con-1)
-          at_out = at
-
-          call add_property(at_out,'sparse',.false.,ptr=sparse)
-
-          li = ui + 1
-          ui = ui + at%N
-          if(any( x(li:ui) )) sparse(find_indices(x(li:ui))) = .true.
-
-          call write(at_out,xyzfile_out,properties="species:pos:sparse")
+       ! find "default" if present
+       i_default = 0
+       do i = 1, config_type_sigma_num_fields, 4
+          if( trim(config_type_sigma_fields(i)) == "default" ) i_default = i
        enddo
-       call finalise(xyzfile)
-       call finalise(xyzfile_out)
-       deallocate(x)
 
+       if( i_default == 0 ) then
+          ! no default present in the string, we add it, and it'll be the last one
+          n_config_type = n_config_type + 1
+          i_default = n_config_type
+          config_type_sigma_fields(config_type_sigma_num_fields+1) = "default"
+          config_type_sigma_fields(config_type_sigma_num_fields+2) = ""//this%default_sigma(1)
+          config_type_sigma_fields(config_type_sigma_num_fields+3) = ""//this%default_sigma(2)
+          config_type_sigma_fields(config_type_sigma_num_fields+4) = ""//this%default_sigma(3)
+          config_type_sigma_num_fields = config_type_sigma_num_fields + 4
+       endif
+
+       allocate(this%config_type(n_config_type))
+       allocate(this%sigma(3,n_config_type))
+
+       do i = 1, n_config_type 
+          this%config_type(i) = trim(config_type_sigma_fields(4*(i-1)+1))
+          this%sigma(1,i) = string_to_real(config_type_sigma_fields(4*(i-1)+2))
+          this%sigma(2,i) = string_to_real(config_type_sigma_fields(4*(i-1)+3))
+          this%sigma(3,i) = string_to_real(config_type_sigma_fields(4*(i-1)+4))
+       enddo
+
+       call print('Sparse points and target errors per pre-defined types of configurations')
+       do i = 1, n_config_type
+          call print(""//trim(this%config_type(i))//"  "//this%sigma(:,i))
+       enddo
+    else
+       allocate(this%config_type(1))
+       allocate(this%sigma(3,1))
+       this%config_type(1)= "default"
+       this%sigma(:,1) = this%default_sigma
     endif
 
-  endsubroutine print_sparse
+  endsubroutine parse_config_type_sigma
+
+  subroutine parse_config_type_n_sparseX(this)
+    type(teach_sparse), intent(inout) :: this
+
+    integer :: i, j, i_default, i_coordinate, i_config_type, config_type_n_sparseX_num_fields, n_config_type, new_config_types
+    character(len=STRING_LENGTH), dimension(99) :: config_type_n_sparseX_fields
+    logical :: config_type_present
+
+    if( .not. allocated(this%config_type) ) call system_abort('config_type not allocated, call parse_config_type_sigma first')
+
+    do i = 1, size(this%config_type)
+       if( trim(this%config_type(i)) == "default" ) i_default = i
+    enddo
+
+    ! Check first if we have more new config types than we had from config_type_sigma
+    do i_coordinate = 1, this%n_coordinate
+       if( this%n_sparseX(i_coordinate) == 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) > 0) then
+          call split_string(this%config_type_n_sparseX_string(i_coordinate),':','{}',config_type_n_sparseX_fields,config_type_n_sparseX_num_fields,matching=.true.)
+
+          n_config_type = size(this%config_type)
+          new_config_types = 0 ! Assume there are no new config_types
+          do j = 1, config_type_n_sparseX_num_fields, 2 ! loop over config_types in the descriptor string
+             config_type_present = .false.
+             do i = 1, n_config_type ! loop over config_types previously set
+                if( trim(this%config_type(i)) == trim(config_type_n_sparseX_fields(j)) ) config_type_present = .true. ! Found config_type among old ones
+             enddo
+             if(.not.config_type_present) new_config_types = new_config_types + 1 ! Increment as it's a genuine new config_type
+          enddo
+          if( new_config_types > 0 ) then
+             call reallocate(this%config_type, n_config_type + new_config_types, copy=.true.)
+             call reallocate(this%sigma,3,n_config_type + new_config_types, copy=.true.)
+
+             i_config_type = n_config_type
+             do j = 1, config_type_n_sparseX_num_fields, 2 ! loop over config_types in the descriptor string
+                config_type_present = .false.
+                do i = 1, n_config_type ! loop over config_types previously set
+                   if( trim(this%config_type(i)) == trim(config_type_n_sparseX_fields(j)) ) config_type_present = .true. ! Found config_type among old ones
+                enddo
+                if(.not.config_type_present) then ! it's a genuine new config_type
+                   i_config_type = i_config_type + 1
+                   this%config_type(i_config_type) = trim(config_type_n_sparseX_fields(j))
+                   this%sigma(:,i_config_type) = this%sigma(:,i_default)
+                endif
+             enddo
+          endif
+
+       elseif(this%n_sparseX(i_coordinate) > 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) > 0) then
+          call system_abort('Confused: cannot specify both n_sparseX and config_type_n_sparseX')
+
+
+       elseif(this%n_sparseX(i_coordinate) == 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) == 0) then
+          call system_abort('Confused: either n_sparseX or config_type_n_sparse has to be specified')
+       endif
+
+    enddo
+
+    n_config_type = size(this%config_type)
+    allocate(this%config_type_n_sparseX(n_config_type,this%n_coordinate))
+    this%config_type_n_sparseX = 0
+
+    do i_coordinate = 1, this%n_coordinate
+       if( this%n_sparseX(i_coordinate) == 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) > 0) then
+          call split_string(this%config_type_n_sparseX_string(i_coordinate),':','{}',config_type_n_sparseX_fields,config_type_n_sparseX_num_fields,matching=.true.)
+
+          do j = 1, config_type_n_sparseX_num_fields, 2 ! loop over config_types in the descriptor string
+             do i = 1, n_config_type ! loop over config_types previously set
+                if( trim(this%config_type(i)) == trim(config_type_n_sparseX_fields(j)) ) &
+                   this%config_type_n_sparseX(i,i_coordinate) = string_to_int( config_type_n_sparseX_fields(j+1) )
+             enddo
+          enddo
+          this%n_sparseX(i_coordinate) = sum( this%config_type_n_sparseX(:,i_coordinate) )
+
+       elseif( this%n_sparseX(i_coordinate) > 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) == 0) then
+          this%config_type_n_sparseX(i_default,i_coordinate) = this%n_sparseX(i_coordinate)
+       endif
+    enddo
+
+  endsubroutine parse_config_type_n_sparseX
+
+  subroutine get_species_xyz(this)
+    type(teach_sparse), intent(inout) :: this
+
+    integer :: n_con, i
+    integer, dimension(116) :: species_present
+
+    this%n_species = 0
+    species_present = 0
+
+    do n_con = 1, this%n_frame
+       do i = 1, this%at(n_con)%N
+          if( all(this%at(n_con)%Z(i) /= species_present) ) then
+             this%n_species = this%n_species + 1
+             species_present(this%n_species) = this%at(n_con)%Z(i)
+          endif
+       enddo
+    enddo
+
+    allocate(this%species_Z(this%n_species))
+    this%species_Z = species_present(1:this%n_species)
+    
+  endsubroutine get_species_xyz
+
+  subroutine add_multispecies_descriptors(this)
+    type(teach_sparse), intent(inout) :: this
+
+    integer :: i_coordinate, i, n_descriptor_str
+    character(STRING_LENGTH), dimension(:), allocatable :: descriptor_str_i, new_descriptor_str
+
+    ! temporary arrays
+    real(dp), dimension(:), allocatable :: delta, f0
+    integer, dimension(:), allocatable :: n_sparseX, sparse_method
+    character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type_n_sparseX_string
+    logical, dimension(:), allocatable :: mark_sparse_atoms, bond_real_space, atom_real_space, soap
+
+    n_descriptor_str = 0
+    do i_coordinate = 1, this%n_coordinate
+       if( this%add_species(i_coordinate) ) then
+
+          call print('Old descriptor: {'//trim(this%descriptor_str(i_coordinate))//'}')
+          call descriptor_str_add_species(this%descriptor_str(i_coordinate),this%species_Z,descriptor_str_i)
+          call reallocate(new_descriptor_str, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+
+          call reallocate(delta, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(f0, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(n_sparseX, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(config_type_n_sparseX_string, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(theta_fac_string, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(theta_file, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(sparse_file, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(mark_sparse_atoms, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(sparse_method, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(bond_real_space, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(atom_real_space, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(soap, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+
+          do i = 1, size(descriptor_str_i)
+             new_descriptor_str(i+n_descriptor_str) = trim(descriptor_str_i(i))
+             call print('New descriptor: {'//trim(descriptor_str_i(i))//'}')
+
+             delta(i+n_descriptor_str) = this%delta(i_coordinate)
+             f0(i+n_descriptor_str) = this%f0(i_coordinate)
+             n_sparseX(i+n_descriptor_str) = this%n_sparseX(i_coordinate)
+             config_type_n_sparseX_string(i+n_descriptor_str) = this%config_type_n_sparseX_string(i_coordinate)
+             theta_fac_string(i+n_descriptor_str) = this%theta_fac_string(i_coordinate)
+             theta_file(i+n_descriptor_str) = this%theta_file(i_coordinate)
+             sparse_file(i+n_descriptor_str) = this%sparse_file(i_coordinate)
+             mark_sparse_atoms(i+n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
+             sparse_method(i+n_descriptor_str) = this%sparse_method(i_coordinate)
+             bond_real_space(i+n_descriptor_str) = this%bond_real_space(i_coordinate)
+             atom_real_space(i+n_descriptor_str) = this%atom_real_space(i_coordinate)
+             soap(i+n_descriptor_str) = this%soap(i_coordinate)
+
+          enddo
+          n_descriptor_str = n_descriptor_str + size(descriptor_str_i)
+          deallocate(descriptor_str_i)
+
+       else
+          n_descriptor_str = n_descriptor_str + 1
+
+          call reallocate(new_descriptor_str, n_descriptor_str,copy=.true.)
+          call reallocate(delta, n_descriptor_str,copy=.true.)
+          call reallocate(f0, n_descriptor_str,copy=.true.)
+          call reallocate(n_sparseX, n_descriptor_str,copy=.true.)
+          call reallocate(config_type_n_sparseX_string, n_descriptor_str,copy=.true.)
+          call reallocate(theta_fac_string, n_descriptor_str,copy=.true.)
+          call reallocate(theta_file, n_descriptor_str,copy=.true.)
+          call reallocate(sparse_file, n_descriptor_str,copy=.true.)
+          call reallocate(mark_sparse_atoms, n_descriptor_str,copy=.true.)
+          call reallocate(sparse_method, n_descriptor_str,copy=.true.)
+          call reallocate(bond_real_space, n_descriptor_str,copy=.true.)
+          call reallocate(atom_real_space, n_descriptor_str,copy=.true.)
+          call reallocate(soap, n_descriptor_str,copy=.true.)
+
+          new_descriptor_str(n_descriptor_str) = trim(this%descriptor_str(i_coordinate))
+          delta(n_descriptor_str) = this%delta(i_coordinate)
+          f0(n_descriptor_str) = this%f0(i_coordinate)
+          n_sparseX(n_descriptor_str) = this%n_sparseX(i_coordinate)
+          config_type_n_sparseX_string(n_descriptor_str) = this%config_type_n_sparseX_string(i_coordinate)
+          theta_fac_string(n_descriptor_str) = this%theta_fac_string(i_coordinate)
+          theta_file(n_descriptor_str) = this%theta_file(i_coordinate)
+          sparse_file(n_descriptor_str) = this%sparse_file(i_coordinate)
+          mark_sparse_atoms(n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
+          sparse_method(n_descriptor_str) = this%sparse_method(i_coordinate)
+          bond_real_space(n_descriptor_str) = this%bond_real_space(i_coordinate)
+          atom_real_space(n_descriptor_str) = this%atom_real_space(i_coordinate)
+          soap(n_descriptor_str) = this%soap(i_coordinate)
+
+          call print('Unchanged descriptor: {'//trim(this%descriptor_str(i_coordinate))//'}')
+       endif
+
+    enddo
+    call reallocate(this%delta, n_descriptor_str)
+    call reallocate(this%f0, n_descriptor_str)
+    call reallocate(this%n_sparseX, n_descriptor_str)
+    call reallocate(this%config_type_n_sparseX_string, n_descriptor_str)
+    call reallocate(this%theta_fac_string, n_descriptor_str)
+    call reallocate(this%theta_file, n_descriptor_str)
+    call reallocate(this%sparse_file, n_descriptor_str)
+    call reallocate(this%mark_sparse_atoms, n_descriptor_str)
+    call reallocate(this%sparse_method, n_descriptor_str)
+    call reallocate(this%bond_real_space, n_descriptor_str)
+    call reallocate(this%atom_real_space, n_descriptor_str)
+    call reallocate(this%soap, n_descriptor_str)
+
+    this%descriptor_str(1:n_descriptor_str) = new_descriptor_str
+    this%delta = delta
+    this%f0 = f0
+    this%n_sparseX = n_sparseX
+    this%config_type_n_sparseX_string = config_type_n_sparseX_string
+    this%theta_fac_string = theta_fac_string
+    this%theta_file = theta_file
+    this%sparse_file = sparse_file
+    this%mark_sparse_atoms = mark_sparse_atoms
+    this%sparse_method = sparse_method
+    this%bond_real_space = bond_real_space
+    this%atom_real_space = atom_real_space
+    this%soap = soap
+
+    this%n_coordinate = n_descriptor_str
+
+    if(allocated(delta)) deallocate(delta)
+    if(allocated(f0)) deallocate(f0)
+    if(allocated(n_sparseX)) deallocate(n_sparseX)
+    if(allocated(config_type_n_sparseX_string)) deallocate(config_type_n_sparseX_string)
+    if(allocated(theta_fac_string)) deallocate(theta_fac_string)
+    if(allocated(theta_file)) deallocate(theta_file)
+    if(allocated(sparse_file)) deallocate(sparse_file)
+    if(allocated(mark_sparse_atoms)) deallocate(mark_sparse_atoms)
+    if(allocated(sparse_method)) deallocate(sparse_method)
+    if(allocated(bond_real_space)) deallocate(bond_real_space)
+    if(allocated(atom_real_space)) deallocate(atom_real_space)
+    if(allocated(soap)) deallocate(soap)
+
+  endsubroutine add_multispecies_descriptors
 
 end module teach_sparse_mod
