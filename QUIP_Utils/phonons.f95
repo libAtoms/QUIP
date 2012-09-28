@@ -628,7 +628,7 @@ deallocate(dmft)
   do k = 1, nk
 !     call print('q: '//q(:,k)*a/(2*PI))
      !call print(evecs(:,:,k))
-     print'('//at_in%N*3//'f15.9)',sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
+     print '("PHONONS_FINE ",3F12.6,"  ",'//at_in%N*3//'f15.9)',q(:,k),sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
   enddo
 
 !  if (present(phonons_output_file)) then
