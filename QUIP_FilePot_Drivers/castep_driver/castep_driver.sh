@@ -34,6 +34,9 @@
 # Input file is $1, output goes to $2. Both file are in extended
 # XYZ format.
 
+[[ -z "$castep" ]] && castep=$CASTEP
+[[ -z "$castep_template" ]] && castep_template=$CASTEP_TEMPLATE
+
 [[ -z "$castep" ]] && castep=../castep                          # Path to CASTEP executable
 [[ -z "$castep_template" ]] && castep_template=../castep_driver # Template .cell and .param files
 use_check2xsf=0                                                      # Should we use check2xsf to create output
