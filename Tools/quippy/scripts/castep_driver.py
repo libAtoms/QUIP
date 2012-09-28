@@ -128,7 +128,7 @@ if os.environ.has_key('CASTEP_TEMPLATE'):
    CASTEP_TEMPLATE = os.environ['CASTEP_TEMPLATE']
 elif 'template' in calc_args_str:
    CASTEP_TEMPLATE = calc_args_str['template']
-   del calc_args_str[''template']
+   del calc_args_str['template']
 else:
    CASTEP_TEMPLATE = 'castep'
 
@@ -407,8 +407,10 @@ try:
       if 'max_scf_cycles_dm'   in param: del param['max_scf_cycles_dm']
       if 'max_scf_cycles_edft' in param: del param['max_scf_cycles_edft']
 
-      # override template with command line arguments
-      param.update(calc_args_str)
+      # override template with command line arguments, ignoring unknown
+      for (key, value) in calc_args_str.iteritems():
+         if key in castep.valid_parameters_keywords:
+            param[key] = value
 
       # Run castep
       if not BATCH_READ and not BATCH_QUEUE:
