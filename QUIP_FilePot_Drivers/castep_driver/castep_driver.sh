@@ -127,8 +127,8 @@ echo "%ENDBLOCK POSITIONS_ABS" >> ${stem}.cell
 echo >> ${stem}.cell
 
 # Write castep input files from templates
-cat ../${castep_template}.cell >> ${stem}.cell
-cat ../${castep_template}.param > ${stem}.param
+cat ${castep_template}.cell >> ${stem}.cell
+cat ${castep_template}.param > ${stem}.param
 
 # If not the first time, then start from old wavefunctions
 if [[ -r ${stem}.check && $use_check_files == 1 ]]; then
