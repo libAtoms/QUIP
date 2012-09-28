@@ -49,7 +49,7 @@ use QUIP_Common_module
 
 #ifdef HAVE_GP_PREDICT
 use descriptors_module
-use gp_teach_module
+use gp_predict_module
 #endif
 
 implicit none

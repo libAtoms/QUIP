@@ -33,7 +33,7 @@ endif
 include Makefile.inc
 include Makefile.rules
 
-GP_PREDICT_F95_FILES = descriptors
+GP_PREDICT_F95_FILES = descriptors gp_predict
 GP_PREDICT_F95_SOURCES = ${addsuffix .f95, ${GP_PREDICT_F95_FILES}}
 GP_PREDICT_F95_OBJS = ${addsuffix .o, ${GP_PREDICT_F95_FILES}}
 
