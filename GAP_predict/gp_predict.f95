@@ -2061,16 +2061,15 @@ module gp_predict_module
    function gpCoordinates_Covariance( this, i_x, j_x, i_sparseX, j_sparseX, grad_Covariance_i, grad_Covariance_j, grad2_Covariance, error )
       type(gpCoordinates), intent(inout), target :: this
       integer, intent(in), optional :: i_x, j_x, i_sparseX, j_sparseX
-      real(dp), dimension(:), optional, intent(out), target :: grad_Covariance_i, grad_Covariance_j
-      real(dp), dimension(:,:), optional, intent(out), target  :: grad2_Covariance
+      real(dp), dimension(:), optional, intent(out) :: grad_Covariance_i, grad_Covariance_j
+      real(dp), dimension(:,:), optional, intent(out) :: grad2_Covariance
       integer, optional, intent(out) :: error
 
       real(dp) :: gpCoordinates_Covariance
 
       integer :: i_p, x_i_size, x_j_size, i
       real(dp) :: covarianceExp, covarianceDiag_x_x_i, covarianceDiag_x_x_j, normalisation, zeta, cov_delta
-      real(dp), dimension(:), pointer :: x_i, x_j, xPrime_i, xPrime_j, grad_Covariance_Diag_i, grad_Covariance_Diag_j
-      real(dp), dimension(:,:), pointer :: xPrime_ij
+      real(dp), dimension(:), pointer :: x_i, x_j, grad_Covariance_Diag_i, grad_Covariance_Diag_j
       real(dp), dimension(this%d) :: xI_xJ_theta2, xI_xJ
 
       INIT_ERROR(error)
@@ -2090,9 +2089,6 @@ module gp_predict_module
       x_j => null()
       grad_Covariance_Diag_i => null()
       grad_Covariance_Diag_j => null()
-      xPrime_i => null()
-      xPrime_j => null()
-      xPrime_ij => null()
 
       x_i_size = 0
       x_j_size = 0
@@ -2142,19 +2138,12 @@ module gp_predict_module
       gpCoordinates_Covariance = 0.0_dp
       if(present(grad_Covariance_i)) then
          grad_Covariance_i = 0.0_dp
-         xPrime_i => grad_Covariance_i
       endif
       if(present(grad_Covariance_j)) then
          grad_Covariance_j = 0.0_dp
-         xPrime_j => grad_Covariance_j
       endif
       if(present(grad2_Covariance)) then
-         if(.not. associated(xPrime_i)) allocate(xPrime_i(size(x_i)))
-         if(.not. associated(xPrime_j)) allocate(xPrime_j(size(x_j)))
-         xPrime_i = 0.0_dp
-         xPrime_j = 0.0_dp
          grad2_Covariance = 0.0_dp
-         xPrime_ij => grad2_Covariance
       endif
 
       if(this%bond_real_space) then
@@ -2183,61 +2172,6 @@ module gp_predict_module
 !            elseif(present(j_xPrime)) then
 !            endif
          endif
-      elseif(this%atom_real_space) then
-         zeta = this%atom_real_space_cov%zeta
-         cov_delta = this%atom_real_space_cov%delta
-
-         gpCoordinates_Covariance = gpCovariance_atom_real_space_Calc(this%atom_real_space_cov, x_i, x_i_size, x_j, x_j_size, &
-         xPrime_i = xPrime_i, xPrime_j = xPrime_j, xPrime_ij = xPrime_ij)
-
-         normalisation = sqrt(covarianceDiag_x_x_i * covarianceDiag_x_x_j)
-         
-         if(present(grad2_Covariance)) then
-            !grad2_Covariance = xPrime_ij / normalisation - &
-            !                   (xPrime_i .outer. grad_Covariance_Diag_j) / normalisation / covarianceDiag_x_x_j - &
-            !                   (grad_Covariance_Diag_i .outer. xPrime_j) / normalisation / covarianceDiag_x_x_i + &
-            !                   (grad_Covariance_Diag_i .outer. grad_Covariance_Diag_j) * gpCoordinates_Covariance / normalisation**3
-
-            !grad2_Covariance = xPrime_ij / normalisation
-            !do i = 1, size(grad2_Covariance,2)
-            !   grad2_Covariance(:,i) = grad2_Covariance(:,i) - &
-            !   xPrime_i*grad_Covariance_Diag_j(i) / normalisation / covarianceDiag_x_x_j - &
-            !   grad_Covariance_Diag_i*xPrime_j(i) / normalisation / covarianceDiag_x_x_i + &
-            !   grad_Covariance_Diag_i*grad_Covariance_Diag_j(i) * gpCoordinates_Covariance / normalisation**3
-            !enddo
-            grad2_Covariance = xPrime_ij * gpCoordinates_Covariance**(zeta-1.0_dp) / normalisation**zeta
-            do i = 1, size(grad2_Covariance,2)
-               grad2_Covariance(:,i) = grad2_Covariance(:,i) + &
-               (zeta-1.0_dp) * gpCoordinates_Covariance**(zeta-2.0_dp) * xPrime_i*xPrime_j(i) / normalisation**zeta - &
-               zeta * gpCoordinates_Covariance**(zeta-1.0_dp) * xPrime_i*grad_Covariance_Diag_j(i) / normalisation**zeta / covarianceDiag_x_x_j - &
-               zeta * gpCoordinates_Covariance**(zeta-1.0_dp) * grad_Covariance_Diag_i*xPrime_j(i) / normalisation**zeta / covarianceDiag_x_x_i + &
-               zeta * gpCoordinates_Covariance**zeta * grad_Covariance_Diag_i*grad_Covariance_Diag_j(i) / normalisation**(zeta+2.0_dp)
-            enddo
-            grad2_Covariance = zeta * grad2_Covariance * cov_delta**2
-                              
-         endif
-
-         if(present(grad_Covariance_i)) then
-            !grad_Covariance_i = grad_Covariance_i / normalisation - grad_Covariance_Diag_i * gpCoordinates_Covariance / normalisation / covarianceDiag_x_x_i
-            grad_Covariance_i = gpCoordinates_Covariance**(zeta-1.0_dp) * grad_Covariance_i / normalisation**zeta - grad_Covariance_Diag_i * (gpCoordinates_Covariance / normalisation)**zeta / covarianceDiag_x_x_i
-            grad_Covariance_i = zeta * grad_Covariance_i * cov_delta**2
-         endif
-
-         if(present(grad_Covariance_j)) then
-            !grad_Covariance_j = grad_Covariance_j / normalisation - grad_Covariance_Diag_j * gpCoordinates_Covariance / normalisation / covarianceDiag_x_x_j
-            grad_Covariance_j = gpCoordinates_Covariance**(zeta-1.0_dp) * grad_Covariance_j / normalisation**zeta - grad_Covariance_Diag_j * (gpCoordinates_Covariance / normalisation)**zeta / covarianceDiag_x_x_j
-            grad_Covariance_j = zeta * grad_Covariance_j * cov_delta**2
-         endif
-
-         !gpCoordinates_Covariance = gpCoordinates_Covariance / normalisation
-         gpCoordinates_Covariance = (gpCoordinates_Covariance / normalisation)**zeta * cov_delta**2
-
-         if(.not. present(grad_Covariance_i) .and. associated(xPrime_i)) deallocate(xPrime_i)
-         if(.not. present(grad_Covariance_j) .and. associated(xPrime_j)) deallocate(xPrime_j)
-
-         xPrime_i => null()
-         xPrime_j => null()
-         xPrime_ij => null()
       elseif(this%soap) then
          gpCoordinates_Covariance = dot_product(x_i,x_j)
 
