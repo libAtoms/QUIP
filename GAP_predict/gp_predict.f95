@@ -2173,7 +2173,7 @@ module gp_predict_module
 !            endif
          endif
       elseif(this%soap) then
-         gpCoordinates_Covariance = dot_product(x_i,x_j)
+         gpCoordinates_Covariance = sum(x_i*x_j)
 
          if(present(grad_Covariance_i)) grad_Covariance_i = this%delta**2 * this%theta(1) * gpCoordinates_Covariance**(this%theta(1)-1.0_dp) * x_j
          if(present(grad_Covariance_j)) grad_Covariance_j = this%delta**2 * this%theta(1) * gpCoordinates_Covariance**(this%theta(1)-1.0_dp) * x_i
