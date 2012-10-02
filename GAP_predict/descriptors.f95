@@ -288,6 +288,7 @@ module descriptors_module
       real(dp) :: bond_transition_width
       real(dp) :: cutoff
       real(dp) :: transition_width
+      real(dp) :: atom_sigma
 
       logical :: initialised = .false.
 
@@ -1756,6 +1757,7 @@ module descriptors_module
       call param_register(params, 'bond_transition_width', '0.00', this%bond_transition_width, help_string="Bond transition width for bond_real_space-type descriptors")
       call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Space cutoff for bond_real_space-type descriptors")
       call param_register(params, 'transition_width', '0.00', this%transition_width, help_string="Space transition width for bond_real_space-type descriptors")
+      call param_register(params, 'atom_sigma', '0.00', this%atom_sigma, help_string="Atom sigma for bond_real_space-type descriptors")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='bond_real_space_initialise args_str')) then
          RAISE_ERROR("bond_real_space_initialise failed to parse args_str='"//trim(args_str)//"'", error)
@@ -1777,6 +1779,7 @@ module descriptors_module
       this%bond_transition_width = 0.0_dp
       this%cutoff = 0.0_dp
       this%transition_width = 0.0_dp
+      this%atom_sigma = 0.0_dp
 
       this%initialised = .false.
 
@@ -4403,7 +4406,9 @@ module descriptors_module
       real(dp) :: atom_i(3), atom_j(3), atom_k(3), bond(3), bond_len
       real(dp) :: atom_i_cross_atom_j(3), atom_i_normsq_min_atom_j_normsq
       real(dp), allocatable :: r(:,:), z(:), c(:)
+      real(dp) :: self_overlap
       real(dp), allocatable :: dr(:,:,:,:), dz(:,:,:), dc(:,:,:)
+      real(dp), allocatable :: dself_overlap(:,:)
       integer, allocatable :: ii(:)
       real(dp), allocatable :: pos(:,:)
       real(dp) :: r_m_cross_r_l(3)
@@ -4458,24 +4463,26 @@ module descriptors_module
 
             if(my_do_descriptor .or. my_do_grad_descriptor) then
                allocate(r(3,ij_neighbours), z(ij_neighbours), c(ij_neighbours))
+               allocate(ii(ij_neighbours), pos(3,ij_neighbours))
 
                r = 0.0_dp
                z = 0.0_dp
                c = 0.0_dp
+               self_overlap = 0.0_dp
                bond = atom_i - atom_j
                bond_len = norm(bond)
                atom_i_cross_atom_j = atom_i .cross. atom_j
                atom_i_normsq_min_atom_j_normsq = normsq(atom_i) - normsq(atom_j)
+               ii = 0
+               pos = 0.0_dp
 
                if(my_do_grad_descriptor) then
-                  allocate(dr(3,ij_neighbours,3,ij_neighbours), dz(ij_neighbours,3,ij_neighbours), dc(ij_neighbours,3,ij_neighbours))
-                  allocate(ii(ij_neighbours), pos(3,ij_neighbours))
+                  allocate(dr(3,ij_neighbours,3,ij_neighbours), dz(ij_neighbours,3,ij_neighbours), dc(ij_neighbours,3,ij_neighbours), dself_overlap(3,ij_neighbours))
 
                   dr = 0.0_dp
                   dz = 0.0_dp
                   dc = 0.0_dp
-                  ii = 0
-                  pos = 0.0_dp
+                  dself_overlap = 0.0_dp
                endif
 
                m_index = 2
@@ -4494,20 +4501,23 @@ module descriptors_module
                      z(1) = 0.5_dp * bond_len
                      c(1) = coordination_function(r_ijk, this%cutoff, this%transition_width)
 
+                     ii(1) = k
+                     pos(:,1) = atom_k
+
                      if(my_do_grad_descriptor) then
                         ! dr remains zero
                         dz(1,:,1) = 0.5_dp * bond / bond_len
                         dz(1,:,2) = - dz(1,:,1)
                         dc(1,:,1) = 0.25_dp * dcoordination_function(r_ijk, this%cutoff, this%transition_width) * bond / r_ijk
                         dc(1,:,2) = - dc(1,:,1)
-
-                        ii(1) = k
-                        pos(:,1) = atom_k
                      endif
                   elseif(atom_k .feq. atom_j) then
                      ! r remain zero
                      z(2) = -0.5_dp * bond_len
                      c(2) = coordination_function(r_ijk, this%cutoff, this%transition_width)
+
+                     ii(2) = k
+                     pos(:,2) = atom_k
 
                      if(my_do_grad_descriptor) then
                         ! dr remains zero
@@ -4515,9 +4525,6 @@ module descriptors_module
                         dz(2,:,2) = - dz(2,:,1)
                         dc(2,:,1) = -0.25_dp * dcoordination_function(r_ijk, this%cutoff, this%transition_width) * bond / r_ijk
                         dc(2,:,2) = - dc(2,:,1)
-
-                        ii(2) = k
-                        pos(:,2) = atom_k
                      endif
                   else
                      m_index = m_index + 1
@@ -4525,6 +4532,9 @@ module descriptors_module
                      r(:,m_index) = ((atom_k .cross. bond) + atom_i_cross_atom_j) / bond_len
                      z(m_index) = ((atom_k .dot. bond) - 0.5_dp * atom_i_normsq_min_atom_j_normsq) / bond_len
                      c(m_index) = coordination_function(r_ijk, this%cutoff, this%transition_width)
+
+                     ii(m_index) = k
+                     pos(:,m_index) = atom_k
 
                      if(my_do_grad_descriptor) then
                         dr(:,m_index,1,1) = ((/ 0.0_dp, atom_k(3) - atom_j(3), atom_j(2) - atom_k(2) /) / bond_len) - (r(:,m_index) * bond(1) / bond_len**2)
@@ -4544,38 +4554,47 @@ module descriptors_module
                         dr(:,m_index,3,m_index) = (/ - bond(2), bond(1), 0.0_dp /) / bond_len
                         dz(m_index,:,m_index) = bond / bond_len
                         dc(m_index,:,m_index) = -2.0_dp * dc(m_index,:,1)
-
-                        ii(m_index) = k
-                        pos(:,m_index) = atom_k
                      endif
                   endif
                enddo
             endif
 
             if(my_do_descriptor) then
-               allocate(descriptor_out%x(i_desc)%data(1 + (1 + 2 * ij_neighbours) * ij_neighbours))
+               allocate(descriptor_out%x(i_desc)%data(2 + (1 + 2 * ij_neighbours) * ij_neighbours))
 
                !descriptor_out%x(i_desc)%data = 0.0_dp
 
-               descriptor_out%x(i_desc)%data(1) = real(ij_neighbours, dp)
-
-               descriptor_out%x(i_desc)%data(2:ij_neighbours + 1) = c
-
                do m = 1, ij_neighbours
-                  if(m <= 2) then
-                     descriptor_out%x(i_desc)%data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m)) = z(m)
+                  self_overlap = self_overlap + c(m)**2
+
+                  if(m == 1) then
+                     descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m)) = z(m)
+                  elseif(m == 2) then
+                     descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m)) = z(m)
+
+                     self_overlap = self_overlap + 2.0_dp * c(m) * c(m - 1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 )
                   else
                      do l = 3, ij_neighbours
                         if(l == m) then
-                           descriptor_out%x(i_desc)%data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1) = normsq(r(:,m))
-                           descriptor_out%x(i_desc)%data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l)) = z(m)
+                           descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1) = normsq(r(:,m))
+                           descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l)) = z(m)
                         else
-                           descriptor_out%x(i_desc)%data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1) = r(:,m) .dot. r(:,l)
-                           descriptor_out%x(i_desc)%data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l)) = ((r(:,m) .cross. r(:,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1) = r(:,m) .dot. r(:,l)
+                           descriptor_out%x(i_desc)%data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l)) = ((r(:,m) .cross. r(:,l)) .dot. bond) / bond_len
+                        endif
+
+                        if(l < m) then
+                           self_overlap = self_overlap + 2.0_dp * c(m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 )
                         endif
                      enddo
                   endif
                enddo
+
+               descriptor_out%x(i_desc)%data(1) = real(ij_neighbours, dp)
+
+               descriptor_out%x(i_desc)%data(2) = self_overlap
+
+               descriptor_out%x(i_desc)%data(3:ij_neighbours + 2) = c
 
                descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij, this%bond_cutoff, this%bond_transition_width)
 
@@ -4583,7 +4602,7 @@ module descriptors_module
             endif
 
             if(my_do_grad_descriptor) then
-               allocate(descriptor_out%x(i_desc)%grad_data(1 + (1 + 2 * ij_neighbours) * ij_neighbours,3,ij_neighbours))
+               allocate(descriptor_out%x(i_desc)%grad_data(2 + (1 + 2 * ij_neighbours) * ij_neighbours,3,ij_neighbours))
                allocate(descriptor_out%x(i_desc)%ii(ij_neighbours))
                allocate(descriptor_out%x(i_desc)%pos(3,ij_neighbours))
                allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,ij_neighbours))
@@ -4591,65 +4610,114 @@ module descriptors_module
 
                descriptor_out%x(i_desc)%grad_data = 0.0_dp
 
-               !descriptor_out%x(i_desc)%grad_data(1,:,:) = 0.0_dp
-
-               descriptor_out%x(i_desc)%grad_data(2:ij_neighbours + 1,:,:) = dc
-
                do m = 1, ij_neighbours
-                  if(m <= 2) then
-                     descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,1) = dz(m,:,1)
-                     descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,2) = dz(m,:,2)
+                  dself_overlap(:,1) = dself_overlap(:,1) + 2.0_dp * c(m) * dc(m,:,1)
+                  dself_overlap(:,2) = dself_overlap(:,2) + 2.0_dp * c(m) * dc(m,:,2)
+
+                  if(m == 1) then
+                     descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,1) = dz(m,:,1)
+                     descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,2) = dz(m,:,2)
+                  elseif(m == 2) then
+                     descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,1) = dz(m,:,1)
+                     descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * m),:,2) = dz(m,:,2)
+
+                     dself_overlap(:,1) = dself_overlap(:,1) + 2.0_dp * dc(m,:,1) * c(m - 1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             + 2.0_dp * c(m) * dc(m - 1,:,1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             + c(m) * c(m - 1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             * (pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2
+                     dself_overlap(:,2) = dself_overlap(:,2) + 2.0_dp * dc(m,:,2) * c(m - 1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             + 2.0_dp * c(m) * dc(m - 1,:,2) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             + c(m) * c(m - 1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,m - 1)) / this%atom_sigma**2 ) \
+                                                             * (pos(:,m - 1) - pos(:,m)) / this%atom_sigma**2
                   else
+                     dself_overlap(:,m) = dself_overlap(:,m) + 2.0_dp * c(m) * dc(m,:,m)
+
                      do l = 3, ij_neighbours
                         if(l == m) then
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,1) = dz(m,:,1)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,1) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,1) = dz(m,:,1)
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,2) = dz(m,:,2)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,2) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,2) = dz(m,:,2)
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,m))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,m))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,m))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,m) = dz(m,:,m)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,1,m))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,2,m))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,m) = 2.0_dp * (r(:,m) .dot. dr(:,m,3,m))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),:,m) = dz(m,:,m)
                         else
                            r_m_cross_r_l = r(:,m) .cross. r(:,l)
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,1) = (dr(:,m,1,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,1,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,1) = (dr(:,m,2,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,2,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,1) = (dr(:,m,3,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,3,1))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,1) = ((((dr(:,m,1,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,1,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 1.0_dp, 0.0_dp, 0.0_dp /) - (bond * bond(1) / bond_len**2)))) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,1) = ((((dr(:,m,2,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,2,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 1.0_dp, 0.0_dp /) - (bond * bond(2) / bond_len**2)))) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,1) = ((((dr(:,m,3,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,3,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 0.0_dp, 1.0_dp /) - (bond * bond(3) / bond_len**2)))) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,1) = (dr(:,m,1,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,1,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,1) = (dr(:,m,2,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,2,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,1) = (dr(:,m,3,1) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,3,1))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,1) = ((((dr(:,m,1,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,1,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 1.0_dp, 0.0_dp, 0.0_dp /) - (bond * bond(1) / bond_len**2)))) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,1) = ((((dr(:,m,2,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,2,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 1.0_dp, 0.0_dp /) - (bond * bond(2) / bond_len**2)))) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,1) = ((((dr(:,m,3,1) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,3,1))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 0.0_dp, 1.0_dp /) - (bond * bond(3) / bond_len**2)))) / bond_len
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,2) = (dr(:,m,1,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,1,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,2) = (dr(:,m,2,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,2,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,2) = (dr(:,m,3,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,3,2))
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,2) = ((((dr(:,m,1,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,1,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ -1.0_dp, 0.0_dp, 0.0_dp /) + (bond * bond(1) / bond_len**2)))) / bond_len 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,2) = ((((dr(:,m,2,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,2,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, -1.0_dp, 0.0_dp /) + (bond * bond(2) / bond_len**2)))) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,2) = ((((dr(:,m,3,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,3,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 0.0_dp, -1.0_dp /) + (bond * bond(3) / bond_len**2)))) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,2) = (dr(:,m,1,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,1,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,2) = (dr(:,m,2,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,2,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,2) = (dr(:,m,3,2) .dot. r(:,l)) + (r(:,m) .dot. dr(:,l,3,2))
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,2) = ((((dr(:,m,1,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,1,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ -1.0_dp, 0.0_dp, 0.0_dp /) + (bond * bond(1) / bond_len**2)))) / bond_len 
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,2) = ((((dr(:,m,2,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,2,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, -1.0_dp, 0.0_dp /) + (bond * bond(2) / bond_len**2)))) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,2) = ((((dr(:,m,3,2) .cross. r(:,l)) + (r(:,m) .cross. dr(:,l,3,2))) .dot. bond) + (r_m_cross_r_l .dot. ((/ 0.0_dp, 0.0_dp, -1.0_dp /) + (bond * bond(3) / bond_len**2)))) / bond_len
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,m) = dr(:,m,1,m) .dot. r(:,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,m) = dr(:,m,2,m) .dot. r(:,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,m) = dr(:,m,3,m) .dot. r(:,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,m) = ((dr(:,m,1,m) .cross. r(:,l)) .dot. bond) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,m) = ((dr(:,m,2,m) .cross. r(:,l)) .dot. bond) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,m) = ((dr(:,m,3,m) .cross. r(:,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,m) = dr(:,m,1,m) .dot. r(:,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,m) = dr(:,m,2,m) .dot. r(:,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,m) = dr(:,m,3,m) .dot. r(:,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,m) = ((dr(:,m,1,m) .cross. r(:,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,m) = ((dr(:,m,2,m) .cross. r(:,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,m) = ((dr(:,m,3,m) .cross. r(:,l)) .dot. bond) / bond_len
 
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,l) = r(:,m) .dot. dr(:,l,1,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,l) = r(:,m) .dot. dr(:,l,2,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,l) = r(:,m) .dot. dr(:,l,3,l)
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,l) = ((r(:,m) .cross. dr(:,l,1,l)) .dot. bond) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,l) = ((r(:,m) .cross. dr(:,l,2,l)) .dot. bond) / bond_len
-                           descriptor_out%x(i_desc)%grad_data(1 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,l) = ((r(:,m) .cross. dr(:,l,3,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,1,l) = r(:,m) .dot. dr(:,l,1,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,2,l) = r(:,m) .dot. dr(:,l,2,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l) - 1,3,l) = r(:,m) .dot. dr(:,l,3,l)
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),1,l) = ((r(:,m) .cross. dr(:,l,1,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),2,l) = ((r(:,m) .cross. dr(:,l,2,l)) .dot. bond) / bond_len
+                           descriptor_out%x(i_desc)%grad_data(2 + ij_neighbours + (2 * (m - 1) * ij_neighbours) + (2 * l),3,l) = ((r(:,m) .cross. dr(:,l,3,l)) .dot. bond) / bond_len
+                        endif
+
+                        if(l < m) then
+                           dself_overlap(:,m) = dself_overlap(:,m) + 2.0_dp * dc(m,:,m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                   + c(m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                   * (pos(:,l) - pos(:,m)) / this%atom_sigma**2
+
+                           if(l == 1) then
+                              dself_overlap(:,1) = dself_overlap(:,1) + 2.0_dp * dc(m,:,1) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + c(m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      * (pos(:,m) - pos(:,l)) / this%atom_sigma**2
+                              dself_overlap(:,2) = dself_overlap(:,2) + 2.0_dp * dc(m,:,2) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,2) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 )
+                           elseif(l == 2) then
+                              dself_overlap(:,1) = dself_overlap(:,1) + 2.0_dp * dc(m,:,1) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 )
+                              dself_overlap(:,2) = dself_overlap(:,2) + 2.0_dp * dc(m,:,2) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,2) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + c(m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      * (pos(:,m) - pos(:,l)) / this%atom_sigma**2
+                           else
+                              dself_overlap(:,1) = dself_overlap(:,1) + 2.0_dp * dc(m,:,1) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,1) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 )
+                              dself_overlap(:,2) = dself_overlap(:,2) + 2.0_dp * dc(m,:,2) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + 2.0_dp * c(m) * dc(l,:,2) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 )
+                              dself_overlap(:,l) = dself_overlap(:,l) + 2.0_dp * c(m) * dc(l,:,l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      + c(m) * c(l) * exp( -0.25_dp * normsq(pos(:,m) - pos(:,l)) / this%atom_sigma**2 ) \
+                                                                      * (pos(:,m) - pos(:,l)) / this%atom_sigma**2
+                           endif
                         endif
                      enddo
                   endif
                enddo
+
+               !descriptor_out%x(i_desc)%grad_data(1,:,:) = 0.0_dp
+
+               descriptor_out%x(i_desc)%grad_data(2,:,:) = dself_overlap
+
+               descriptor_out%x(i_desc)%grad_data(3:ij_neighbours + 2,:,:) = dc
 
                descriptor_out%x(i_desc)%ii = ii
                descriptor_out%x(i_desc)%pos = pos
@@ -4664,10 +4732,10 @@ module descriptors_module
 
             if(my_do_descriptor .or. my_do_grad_descriptor) then
                deallocate(r, z, c)
+               deallocate(ii, pos)
 
                if(my_do_grad_descriptor) then
-                  deallocate(dr, dz, dc)
-                  deallocate(ii, pos)
+                  deallocate(dr, dz, dc, dself_overlap)
                endif
             endif
 
