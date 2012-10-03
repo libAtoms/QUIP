@@ -5501,11 +5501,12 @@ module descriptors_module
 
          i_pow = 0
          do a = 1, this%n_max
-            do b = 1, this%n_max
+            do b = 1, a
                do l = 0, this%l_max
                   i_pow = i_pow + 1
                   !SPEED descriptor_i(i_pow) = real( dot_product(fourier_so3(l,a)%m, fourier_so3(l,b)%m) )
                   descriptor_i(i_pow) = dot_product(fourier_so3_r(l,a)%m, fourier_so3_r(l,b)%m) + dot_product(fourier_so3_i(l,a)%m, fourier_so3_i(l,b)%m)
+                  if( a /= b ) descriptor_i(i_pow) = descriptor_i(i_pow) * SQRT_TWO
                enddo !l
             enddo !b
          enddo !a
@@ -5547,9 +5548,12 @@ module descriptors_module
 
 		  i_pow = l+1
 		  do a = 1, this%n_max
-		     do b = 1, this%n_max
+		     do b = 1, a
 			grad_descriptor_i(i_pow, 1:3) = t_g_f_rr(3*(a-1)+1:3*a,b) + t_g_f_ii(3*(a-1)+1:3*a,b) + &
 			                                t_g_f_rr(3*(b-1)+1:3*b,a) + t_g_f_ii(3*(b-1)+1:3*b,a)
+
+                        if( a /= b ) grad_descriptor_i(i_pow, 1:3) = grad_descriptor_i(i_pow, 1:3) * SQRT_TWO
+
 			i_pow = i_pow + this%l_max+1
 		     end do
 		  end do
@@ -5988,7 +5992,7 @@ module descriptors_module
          RAISE_ERROR("soap_dimensions: descriptor object not initialised", error)
       endif
 
-      i = (this%l_max+1) * this%n_max**2
+      i = (this%l_max+1) * this%n_max * (this%n_max+1) / 2
 
    endfunction soap_dimensions
 
