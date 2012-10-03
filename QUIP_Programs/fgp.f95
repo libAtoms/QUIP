@@ -8,7 +8,7 @@ module likelihood_optimisation_module
       real(dp), dimension(:,:), pointer :: distance_matrix, covariance_matrix, force_covariance_matrix
   endtype optimise_likelihood
 
-contains
+  contains
 
   function likelihood(x,am_data)
       real(dp), dimension(:) :: x
@@ -98,8 +98,6 @@ contains
 
 end module likelihood_optimisation_module
 
-
-
 program force_gaussian_prediction
 
    use libatoms_module
@@ -123,7 +121,7 @@ program force_gaussian_prediction
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size, dimension_mark(3)
    integer, dimension(:), allocatable            :: distance_index, mark_zero_ivs 
-   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, linear_vectors, do_svd
+   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, do_svd, print_data, do_teach
    character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
    
  
@@ -155,6 +153,8 @@ program force_gaussian_prediction
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
+   call param_register(params, 'print_data', 'F', print_data, "if true, print out the information for the database" )
+   call param_register(params, 'do_teach', 'T', do_teach, "if false, the teaching part will be skipped")
    call param_register(params, 'out_file', 'out.xyz', out_file, "output configuration file containing the predicted forces")
    call param_register(params, 'print_at', 'F', print_at, "true for print out the testing configuration with predicted forces")
    call param_register(params, 'print_ft_matrix_test', 'F', print_ft_matrix_test, "print the feature matrix of the testing conf if true")
@@ -171,6 +171,7 @@ program force_gaussian_prediction
    call param_print(params)
    call finalise(params)
 
+ if (do_teach) then  
    if (fixed_iv) then
       call load_iv_params(iv_params_file, r_grid, m_grid, k) 
    else   
@@ -187,7 +188,7 @@ program force_gaussian_prediction
    
   if (add_vector > 0)   k = k + add_vector   
   call print('The number of valid  Internal Vectors :  '//k)
-   
+ 
   ! to know the total number of teaching confs: n
   call initialise(in, teaching_file, INPUT)
   n = 0  
@@ -202,14 +203,23 @@ program force_gaussian_prediction
   call finalise(in)
   call print("The total number of teaching configurations:    "//n)
 
+  
+  ! write the file containing parameters to get internal vectors and the number of total teaching configurations
+  open(unit=4, file='grid.dat')
+  write(4,*) k, n
+  do i=1, k-add_vector
+        write(4, *) r_grid(i), m_grid(i)
+  enddo
+  close(unit=4)
+
   call system_timer('Preparing Information from the DATABASE')
  
   ! the main work starts
   call initialise(in, teaching_file, INPUT)
   call print('Got '//in%n_frame//' input frames.')
 
-  allocate(feature_matrix(k, 3, n))   
-  allocate(feature_matrix_norm(k, 3, n))
+  allocate(feature_matrix(k,3,n))   
+  allocate(feature_matrix_norm(k,3,n))
   allocate(force_proj_ivs(k, n))
 
  t = 0 ! counter for loop the atomic configurations
@@ -277,11 +287,33 @@ program force_gaussian_prediction
         do j=1, k
              force_proj_ivs(j,t) = dot_product(feature_matrix_norm(j,:,t), force) 
              !call print("Force projection on IV"//j//" is:  "//force_proj_ivs(j,t))
-        enddo   
+        enddo 
+         
      enddo   ! loop over the atoms
  enddo       ! loop over the frames
-
+  
  call finalise(in)
+ 
+ if (print_data) then 
+
+    OPEN(2,status='unknown',file='Force.dat',form='UNFORMATTED')
+    OPEN(3,status='unknown',file='IV.dat',form='UNFORMATTED')
+
+    do t=1, n 
+            write(2)  force_proj_ivs(:, t) 
+            write(3)  feature_matrix(:,:,t)
+    enddo
+
+    do t=1, n
+      write(2)  (force_proj_ivs(i, t), i=1, k)
+      do i=1, 3
+       write(3)  (feature_matrix(j,i,t), j=1,k)
+      enddo
+    enddo
+
+    close(2)
+    close(3)
+ endif 
 
  call system_timer('Preparing Information from the DATABASE')
 
@@ -342,7 +374,6 @@ if (fix_sigma) then
       write(1,*) sigma
       close(unit=1)
    endif                                !  statistics on the distance matrix
-
 else 
    theta_array=theta
    sigma(t) = maxval(distance_ivs(:,:))/theta_array(t)
@@ -364,6 +395,57 @@ deallocate(deviation_value)
 call system_timer('Getting hyper-parameters from the DATABASE')
 
 
+end if ! do_teach, otherwise skipped
+
+! if not do_teach, teaching information should be collected from data files 
+if (.not. do_teach) then
+
+    call print_title('READING DATA INFORMATION')
+    call system_timer('Collecting Information from Files')
+    open(4, status='old', file='grid.dat', form='FORMATTED')
+    read(4, *) k, n
+    allocate(r_grid(k-add_vector), m_grid(k-add_vector))
+   
+    do i=1, k-add_vector
+       read(4, *) r_grid(i), m_grid(i)
+    enddo
+    close(4)
+
+    allocate(force_proj_ivs(k,n))
+    allocate(feature_matrix(k,3,n))
+    allocate(feature_matrix_norm(k,3,n))
+    allocate(sigma(k))
+
+    OPEN(2,status='old',file='Force.dat',form='UNFORMATTED')
+    OPEN(3,status='old',file='IV.dat',form='UNFORMATTED')
+
+    do t=1, n
+      read(2)  (force_proj_ivs(i, t), i=1, k)
+      do i=1, 3
+         read(3)  (feature_matrix(j,i,t), j=1,k)
+      enddo
+    enddo
+    close(2)
+    close(3)
+
+   !calculating the normalised vectors
+    do j=1, k
+    feature_len = norm(feature_matrix(j,:, t))
+    if (feature_len < TOL_REAL)  then
+             feature_len=1.0_dp
+             call print("WARNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs")
+    endif
+    feature_matrix_norm(j,:,t)=feature_matrix(j,:, t)/feature_len
+    enddo
+
+    ! reading sigma file
+    open(unit=1, file='sigma.dat', form='formatted')
+    read(1, *) sigma
+    close(unit=1)
+    call system_timer('Collecting Information from Files')
+endif
+
+! the following part can be changed to a subroutine
 call print_title('starting the predicting process')
 
 if (n_relevant_confs > n)  call system_abort("Trying to get more confs than the database has")
@@ -379,8 +461,6 @@ if (local_ml_optim_size > 0) then
    allocate(distance_matrix(local_ml_optim_size,local_ml_optim_size), force_covariance_matrix(local_ml_optim_size,local_ml_optim_size), covariance_tiny(local_ml_optim_size,local_ml_optim_size))
 endif
 allocate(inv_covariance(n_relevant_confs,n_relevant_confs))
-allocate(distance_confs(n))
-allocate(distance_index(n))
 allocate(force_proj_ivs_select(k, n_relevant_confs))
 
 call initialise(in, test_file, INPUT)
@@ -418,7 +498,9 @@ do i=1, in%n_frame
         feature_matrix_norm_pred(j,:) = feature_matrix_pred(j,:)/feature_len
      enddo
 
-      if (add_vector > 0) then
+     deallocate(r_grid)
+     deallocate(m_grid)
+     if (add_vector > 0) then
          do j = k-add_vector+1, k
             temp_integer=k-j
             select case (temp_integer)
@@ -451,25 +533,28 @@ do i=1, in%n_frame
 
       
       call system_timer('Sorting the DATABASE')
+      allocate(distance_confs(n), distance_index(n))
       
       ! do the sorting and selection
       call sorting_configuration(feature_matrix_pred, feature_matrix, feature_matrix_norm_pred, feature_matrix_norm, sigma, distance_confs, distance_index)
       call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
            distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
    
-     dist_shift_factor = 0.2_dp        ! distance shifted with a given factor
-     if (distance_confs(1)>dist_shift_factor) then  
+      dist_shift_factor = 0.2_dp        ! distance shifted with a given factor
+      if (distance_confs(1)>dist_shift_factor) then  
                 sigma_covariance = sigma_covariance*distance_confs(1)/dist_shift_factor    
                 write(*,*) "distance are shifted with a factor of :", dist_shift_factor
       endif
 
       if (.false.) then        ! massive output, only for testing use
-         call print("Detail on the teaching procedure")
+         call print("Detail on the teaching information")
          do ii = 1, n_relevant_confs
             call print("Index: "//distance_index(ii)//" Distance: "//distance_confs(ii))
             call print("Force in IVs space: "//force_proj_ivs(:,distance_index(ii)))
          enddo
       endif
+      deallocate(distance_confs)
+
       call system_timer('Sorting the DATABASE')
 
       if (local_ml_optim_size > 0) call print("Optimise: "//local_ml_optim_size)
@@ -549,7 +634,7 @@ do i=1, in%n_frame
         write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
      enddo
    
-     allocate(out_u(3,3), out_vt(3,3))  ! to obtain the transformation matrix with the principal axis
+     allocate(out_u(3,3), out_vt(3,3))      ! to obtain the transformation matrix with the principal axis
      call inverse_svd_threshold(transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred, thresh, u_out=out_u, vt_out=out_vt)
      allocate(feature_matrix_norm_pred_t(k,3))
      call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
@@ -568,7 +653,7 @@ do i=1, in%n_frame
     case(2) 
          feature_inner_matrix=transpose(feature_matrix_norm_pred_t) .mult. feature_matrix_norm_pred_t
          call rank_lowered_inverse(feature_inner_matrix, feature_inv) 
-         force = transpose(out_u) .mult. feature_inv .mult. transpose(feature_matrix_norm_pred_t) .mult. force_proj_ivs_pred 
+         force = out_u .mult. feature_inv .mult. transpose(feature_matrix_norm_pred_t) .mult. force_proj_ivs_pred 
     case(3)
 
          feature_inner_matrix=transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred
@@ -592,7 +677,7 @@ do i=1, in%n_frame
   deallocate(out_u)
   deallocate(out_vt)
   deallocate(feature_matrix_norm_pred_t)
-
+  deallocate(distance_index)
 
    call print("force in external space:"//force)
    call print("the original force:"//force_ptr(:, n_center_atom))
@@ -614,8 +699,6 @@ enddo    ! loop over frames
 
 call finalise(in)
 
-deallocate(m_grid)
-deallocate(r_grid)
 deallocate(force_proj_ivs_pred)
 deallocate(feature_matrix_norm)
 deallocate(feature_matrix_norm_pred)
@@ -629,8 +712,6 @@ deallocate(force_proj_target)
 deallocate(inv_covariance) 
 deallocate(covariance)
 deallocate(covariance_pred)
-deallocate(distance_confs)
-deallocate(distance_index)
 if(allocated(force_covariance_matrix)) deallocate(force_covariance_matrix)
 if(allocated(covariance_tiny)) deallocate(covariance_tiny)
 if(allocated(distance_matrix)) deallocate(distance_matrix)
