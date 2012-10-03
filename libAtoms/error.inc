@@ -70,6 +70,8 @@
 
 #define CLEAR_ERROR(error) call error_clear_stack()
 
+#define PRINT_LINE_NUMBER if(.true.) then; print "('LINE ' i0)",__LINE__; endif
+
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
