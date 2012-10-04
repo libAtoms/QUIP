@@ -172,9 +172,9 @@ program force_gaussian_prediction
    call finalise(params)
 
  if (do_teach) then  
-   if (fixed_iv) then
+  if (fixed_iv) then
       call load_iv_params(iv_params_file, r_grid, m_grid, k) 
-   else   
+  else   
       call print_title('Testing the grid')
       ! generate the r0_m grids
       call initialise(in, grid_file, INPUT)
@@ -184,7 +184,7 @@ program force_gaussian_prediction
       call calc_connect(at_in)
       call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
       call  finalise(in)
-   end if
+  end if
    
   if (add_vector > 0)   k = k + add_vector   
   call print('The number of valid  Internal Vectors :  '//k)
@@ -203,15 +203,17 @@ program force_gaussian_prediction
   call finalise(in)
   call print("The total number of teaching configurations:    "//n)
 
-  
-  ! write the file containing parameters to get internal vectors and the number of total teaching configurations
-  open(unit=4, file='grid.dat')
-  write(4,*) k, n
-  do i=1, k-add_vector
+  if (print_data) then 
+    ! write the file containing parameters to get internal vectors and the number of total teaching configurations
+    open(unit=4, file='grid.dat')
+    write(4,*) k, n
+    do i=1, k-add_vector
         write(4, *) r_grid(i), m_grid(i)
-  enddo
-  close(unit=4)
+    enddo
+    close(unit=4)
+  endif
 
+  call print_title('starting the teaching process')
   call system_timer('Preparing Information from the DATABASE')
  
   ! the main work starts
@@ -222,7 +224,7 @@ program force_gaussian_prediction
   allocate(feature_matrix_norm(k,3,n))
   allocate(force_proj_ivs(k, n))
 
- t = 0 ! counter for loop the atomic configurations
+ t=0 ! counter for loop the atomic configurations
  do i=1, in%n_frame
         call read(in, at_in)
         call assign_property_pointer(at_in, 'force', ptr=force_ptr)
@@ -292,32 +294,25 @@ program force_gaussian_prediction
      enddo   ! loop over the atoms
  enddo       ! loop over the frames
   
- call finalise(in)
+call finalise(in)
+call system_timer('Preparing Information from the DATABASE')
+
+if (print_data) then 
+call system_timer('Writing Data File')
  
- if (print_data) then 
-
-    OPEN(2,status='unknown',file='Force.dat',form='UNFORMATTED')
-    OPEN(3,status='unknown',file='IV.dat',form='UNFORMATTED')
-
-    do t=1, n 
-            write(2)  force_proj_ivs(:, t) 
-            write(3)  feature_matrix(:,:,t)
+  OPEN(2,status='replace',file='Force.dat',form='UNFORMATTED')
+  OPEN(3,status='replace',file='IV.dat',form='UNFORMATTED')
+  do t=1, n
+    write(2)  force_proj_ivs(:, t)
+    do i=1,3
+       write(3)  feature_matrix(:,i,t)
     enddo
+  enddo
+  close(2)
+  close(3)
 
-    do t=1, n
-      write(2)  (force_proj_ivs(i, t), i=1, k)
-      do i=1, 3
-       write(3)  (feature_matrix(j,i,t), j=1,k)
-      enddo
-    enddo
-
-    close(2)
-    close(3)
- endif 
-
- call system_timer('Preparing Information from the DATABASE')
-
- call print_title('starting the teaching process')
+call system_timer('Writing Data File')
+endif  ! print_data or not
 
  allocate(distance_ivs(n,n))
  allocate(sigma(k))
@@ -384,7 +379,7 @@ else
       
 endif          ! doing fix_sigma or using sigma derived from theta
 
- call print('sigma is:    '//sigma)
+call print('sigma is:    '//sigma)
 
 deallocate(distance_ivs)
 deallocate(theta_array)
@@ -394,10 +389,9 @@ deallocate(deviation_value)
 
 call system_timer('Getting hyper-parameters from the DATABASE')
 
-
 end if ! do_teach, otherwise skipped
 
-! if not do_teach, teaching information should be collected from data files 
+! if not do_teach, teaching information to be collected from data files 
 if (.not. do_teach) then
 
     call print_title('READING DATA INFORMATION')
@@ -420,29 +414,31 @@ if (.not. do_teach) then
     OPEN(3,status='old',file='IV.dat',form='UNFORMATTED')
 
     do t=1, n
-      read(2)  (force_proj_ivs(i, t), i=1, k)
-      do i=1, 3
-         read(3)  (feature_matrix(j,i,t), j=1,k)
-      enddo
+       read(2) force_proj_ivs(:, t)
+       do i=1, 3
+          read(3) feature_matrix(:,i,t)
+       enddo
     enddo
     close(2)
     close(3)
 
    !calculating the normalised vectors
+  do t=1, n
     do j=1, k
-    feature_len = norm(feature_matrix(j,:, t))
-    if (feature_len < TOL_REAL)  then
+     feature_len = norm(feature_matrix(j,:, t))
+     if (feature_len < TOL_REAL)  then
              feature_len=1.0_dp
              call print("WARNING: TEACHING, encountered the decimal limit in getting the unit direction of IVs")
-    endif
-    feature_matrix_norm(j,:,t)=feature_matrix(j,:, t)/feature_len
+     endif
+     feature_matrix_norm(j,:,t)=feature_matrix(j,:, t)/feature_len
     enddo
-
+ enddo
     ! reading sigma file
-    open(unit=1, file='sigma.dat', form='formatted')
+    open(unit=1, status='old', file='sigma.dat', form='formatted')
     read(1, *) sigma
     close(unit=1)
-    call system_timer('Collecting Information from Files')
+    call system_timer('Collecting Information From Files')
+    call print('sigma is:    '//sigma)
 endif
 
 ! the following part can be changed to a subroutine
@@ -543,7 +539,7 @@ do i=1, in%n_frame
       dist_shift_factor = 0.2_dp        ! distance shifted with a given factor
       if (distance_confs(1)>dist_shift_factor) then  
                 sigma_covariance = sigma_covariance*distance_confs(1)/dist_shift_factor    
-                write(*,*) "distance are shifted with a factor of :", dist_shift_factor
+                call print("distances are shifted with a factor of :"//dist_shift_factor)
       endif
 
       if (.false.) then        ! massive output, only for testing use
@@ -640,7 +636,8 @@ do i=1, in%n_frame
      call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
 
      feature_matrix_norm_pred_t = feature_matrix_norm_pred .mult. out_u
-
+ 
+  ! feature_matrix_pred_t contains the Internal-directions after PCA transformation.
   do j=1, k
      write(*,*) "feature_matrix_pred_t : ", feature_matrix_norm_pred_t(j, :)
   enddo
