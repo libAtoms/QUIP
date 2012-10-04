@@ -71,4 +71,5 @@ module libAtoms_module
   use histogram1d_module
   use domaindecomposition_module
   use gp_basic_module
+  use k_means_clustering_module
 end module libAtoms_module

@@ -81,6 +81,7 @@ LIBATOMS_F95_FILES = \
   histogram1d \
   find_surface_atoms \
   gp_basic \
+  k_means_clustering \
   libAtoms \
   libAtoms_misc_utils \
   libAtoms_utils_no_module
