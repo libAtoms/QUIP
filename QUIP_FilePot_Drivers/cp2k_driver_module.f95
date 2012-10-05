@@ -499,7 +499,7 @@ contains
       end if
     end if
 
-    if (trim(qmmm_link_type) == "QM_KIND") then
+    if (trim(run_type) == 'QMMM' .and. trim(qmmm_link_type) == "QM_KIND") then
        if (trim(qmmm_link_qm_kind) == '') then
           RAISE_ERROR("qmmm_link_type == QM_KIND, but qmmm_link_qm_kind not specified", error)
        end if
@@ -817,12 +817,6 @@ contains
 	 if (len_trim(calc_qm_charges) > 0) then
 	    call print("@SET DO_DFT_QM_CHARGES 1", file=cp2k_input_io, verbosity=PRINT_ALWAYS)
 	 endif
-         if (have_silica_potential .and. .not. silica_pos_dep_charges) then
-            call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-            call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-            call print("@SET HSI_CHARGE "//hydrogen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-            call print("@SET OSTAR_CORE_CORRECTION "//(1.0_dp - silicon_charge/4.0_dp), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
-         end if
 	 if (try_reuse_wfn .and. can_reuse_wfn) then            
            call print('Reusing wavefunction from last time')
 	   if (persistent) then
@@ -834,6 +828,13 @@ contains
 	   !call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 	 endif
        endif ! use_QM
+
+       if (have_silica_potential .and. .not. silica_pos_dep_charges) then
+          call print("@SET SIO_CHARGE "//silicon_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+          call print("@SET OSB_CHARGE "//oxygen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+          call print("@SET HSI_CHARGE "//hydrogen_charge, file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+          call print("@SET OSTAR_CORE_CORRECTION "//(1.0_dp - silicon_charge/4.0_dp), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
+       end if
 
        ! put in unit cell
        call print("@SET SUBSYS_CELL_A_X "//at%lattice(1,1), file=cp2k_input_io, verbosity=PRINT_ALWAYS)
