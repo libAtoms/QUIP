@@ -37,7 +37,7 @@ program teach_sparse_program
   type(Dictionary) :: params
 
   character(len=STRING_LENGTH) :: verbosity
-  character(len=STRING_LENGTH) :: descriptor_str, sparse_method_str
+  character(len=STRING_LENGTH) :: descriptor_str, sparse_method_str, core_param_file
 
   logical :: has_e0
 
@@ -60,6 +60,9 @@ program teach_sparse_program
   call param_register(params, 'default_sigma', PARAM_MANDATORY, main_teach_sparse%default_sigma, help_string="error in [energies forces virials]")
 
   call param_register(params, 'sparse_jitter', PARAM_MANDATORY, main_teach_sparse%sparse_jitter, help_string="intrisic error of atomic/bond energy")
+  
+  call param_register(params, 'core_param_file', 'quip_params.xml', core_param_file, &
+       help_string=" QUIP XML file for a potential to subtract from data (and added back after prediction)")
   
   call param_register(params, 'ip_args', '', main_teach_sparse%ip_args, has_value_target = main_teach_sparse%do_core, &
        help_string=" QUIP init string for a potential to subtract from data (and added back after prediction)")
@@ -215,7 +218,7 @@ program teach_sparse_program
 
   call print('Descriptors have been parsed')
 
-  if(main_teach_sparse%do_core) call read(main_teach_sparse%quip_string, "quip_params.xml",keep_lf=.true.)
+  if(main_teach_sparse%do_core) call read(main_teach_sparse%quip_string, trim(core_param_file), keep_lf=.true.)
 
   call read_descriptors(main_teach_sparse) ! initialises descriptors from the descriptor_str and sets max_cutoff according to that.
   call read_teach_xyz(main_teach_sparse)   ! reads in xyz into an array of atoms objects. sets cutoff and does calc_connect on each frame
