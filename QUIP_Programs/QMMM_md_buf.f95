@@ -137,7 +137,7 @@ program qmmm_md
   character(len=STRING_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
   character(len=STRING_LENGTH) :: extra_calc_args                 ! extra args to mm and qm calcs (like FilePot_log)
   character(len=STRING_LENGTH) :: filepot_program
-  character(len=STRING_LENGTH) :: mm_internal_init_args, mm_internal_param_filename
+  character(len=STRING_LENGTH) :: mm_internal_init_args, mm_internal_param_filename, mm_internal_calc_args
 
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
@@ -261,6 +261,7 @@ program qmmm_md
       call param_register(params_in, 'tmp_run_dir_i', '-1', tmp_run_dir_i, help_string="if >0, the cp2k run directory will be /tmp/cp2k_run_$tmp_run_dir_i$, and all input files are also copied here when first called")
       call param_register(params_in, 'copy_latest_every', '-1', copy_latest_every, help_string="if >0, the copy the latest.xyz and the wfn files from the run directory /tmp/cp2k_run_$tmp_run_dir_i$ back to the home at this frequency -- only active when $tmp_run_dir_i$>0")
       call param_register(params_in, 'mm_internal_init_args', '', mm_internal_init_args, help_string="init args for internal MM potential, used when Run_Type2==MM_INTERNAL")
+      call param_register(params_in, 'mm_internal_calc_args', '', mm_internal_calc_args, help_string="calc args for internal MM potential, used when Run_Type2==MM_INTERNAL")
       call param_register(params_in, 'mm_internal_param_filename', '', mm_internal_param_filename, help_string="XML filename for internal MM potential, used when Run_Type2==MM_INTERNAL")
 
       if (.not. param_read_args(params_in)) then
@@ -553,7 +554,6 @@ program qmmm_md
           call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,&
                find_silica_residue=have_silica_potential,silica_pos_dep_charges=silica_pos_dep_charges, &
                silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential)
-          call check_topology(ds%atoms)
        endif
     endif
 
@@ -592,6 +592,14 @@ program qmmm_md
     call calc_dists(ds%atoms)
 
   !TOPOLOGY
+
+    if (trim(Run_Type1).ne.'QS') then
+       if (.not.Continue_it) then
+	  ! topology check cannot be done until after QM region has been marked
+          call check_topology(ds%atoms)
+       end if
+    end if
+
 
   !CHARGE
  
@@ -675,6 +683,7 @@ program qmmm_md
 	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
 	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
 	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+          ' hysteretic_buffer_nneighb_only=T'//&
 	  ' weight_interpolation='//trim(weight_interpolation)// &
 	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
 	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
@@ -689,6 +698,7 @@ program qmmm_md
 	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
 	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
 	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+          ' hysteretic_buffer_nneighb_only=T'//&
 	  ' weight_interpolation='//trim(weight_interpolation)// &
 	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
 	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster // &
@@ -1464,6 +1474,7 @@ contains
            slow_args_str = trim(slow_args_str) // ' run_suffix=_core'
          endif
        endif
+       if (trim(Run_Type1) == 'MM_INTERNAL') slow_args_str = trim(slow_args_str)//' '//trim(mm_internal_calc_args)
 
        if (EVB_MM .and. trim(Run_Type2)=="MM") then
           !Add fast_args_str into mm_args_str of EVB pot
@@ -1485,6 +1496,7 @@ contains
            fast_args_str = trim(fast_args_str) // ' run_suffix=_core'
          endif
        endif
+       if (trim(Run_Type2) == 'MM_INTERNAL') fast_args_str = trim(fast_args_str)//' '//trim(mm_internal_calc_args)
 
        ! cluster_hopping_nneighb_only=F so that create_hybrid_weights will be able to find all the atoms
        args_str='cluster_hopping_nneighb_only=F qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} run_suffix=_extended'
@@ -1900,7 +1912,7 @@ contains
 	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
 	 cluster_hopping_nneighb_only=.false., cluster_heuristics_nneighb_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,&
-	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
+	 list_changed=list_changed1, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)
       PASS_ERROR(error)
        if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
@@ -1949,7 +1961,7 @@ contains
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
 	 add_only_heavy_atoms=(.not. buffer_general),cluster_hopping_nneighb_only=.false.,cluster_heuristics_nneighb_only=.true.,min_images_only=.true., &
 	 use_create_cluster_info=use_create_cluster_info_for_core,&
-	 list_changed=list_changed1, have_silica_potential=have_silica_potential, res_num_silica=res_num_silica, &
+	 list_changed=list_changed1, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)
       PASS_ERROR(error)
 
