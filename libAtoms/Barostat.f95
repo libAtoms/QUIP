@@ -116,7 +116,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine barostat_initialise(this,type,p_ext,stress_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,deformation_grad,cell_volume,W_epsilon,Ndof,gamma_epsilon,T)
+  subroutine barostat_initialise(this,type,p_ext,stress_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,deformation_grad,cell_volume,W_epsilon,Ndof,gamma_epsilon,T,W_epsilon_factor)
 
     type(barostat),   intent(inout) :: this
     integer,            intent(in)    :: type
@@ -130,6 +130,7 @@ contains
     real(dp), optional, intent(in)    :: Ndof
     real(dp), optional, intent(in)    :: gamma_epsilon
     real(dp), optional, intent(in)    :: T
+    real(dp), optional, intent(in)    :: W_epsilon_factor
 
     real(dp) :: use_T
 
@@ -192,7 +193,7 @@ contains
        if (present(W_epsilon)) then
 	  this%W_epsilon = W_epsilon
        else
-	  this%W_epsilon = barostat_mass(maxval(abs(this%stress_ext)), cell_volume, Ndof, gamma_epsilon, T)
+	  this%W_epsilon = barostat_mass(maxval(abs(this%stress_ext)), cell_volume, Ndof, gamma_epsilon, T, W_epsilon_factor)
        endif
        use_T = optional_default(-1.0_dp, T)
        if (use_T > 0.0_dp) then
@@ -337,33 +338,37 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  pure function barostat_mass_int(p_ext, cell_volume, Ndof, gamma_epsilon, T) result(W_epsilon)
+  pure function barostat_mass_int(p_ext, cell_volume, Ndof, gamma_epsilon, T, W_epsilon_factor) result(W_epsilon)
 
     real(dp), intent(in) :: p_ext, cell_volume
     integer,  intent(in) :: Ndof
     real(dp), intent(in) :: gamma_epsilon
     real(dp), intent(in), optional   :: T
+    real(dp), intent(in), optional   :: W_epsilon_factor
     real(dp) :: W_epsilon ! result
 
-    W_epsilon = barostat_mass_real(p_ext, cell_volume, real(Ndof,dp), gamma_epsilon, T)
+    W_epsilon = barostat_mass_real(p_ext, cell_volume, real(Ndof,dp), gamma_epsilon, T, W_epsilon_factor)
 
   end function barostat_mass_int
 
-  pure function barostat_mass_real(p_ext, cell_volume, Ndof, gamma_epsilon, T) result(W_epsilon)
+  pure function barostat_mass_real(p_ext, cell_volume, Ndof, gamma_epsilon, T, W_epsilon_factor) result(W_epsilon)
 
     real(dp), intent(in) :: p_ext, cell_volume
     real(dp), intent(in) :: Ndof
     real(dp), intent(in) :: gamma_epsilon
     real(dp), intent(in), optional   :: T
+    real(dp), intent(in), optional   :: W_epsilon_factor
     real(dp) :: W_epsilon ! result
 
-    real(dp) :: use_T
+    real(dp) :: use_T, use_W_epsilon_factor
 
     use_T = optional_default(BAROSTAT_MIN_TEMP, T)
     if (use_T <= 0.0_dp) use_T = BAROSTAT_MIN_TEMP
 
-    W_epsilon = max( 9.0_dp*abs(p_ext)*cell_volume/((gamma_epsilon*2.0_dp*PI)**2), &
-		     5000.0_dp*(Ndof+3.0_dp)*BOLTZMANN_K*use_T/((gamma_epsilon*2.0_dp*PI)**2) )
+    use_W_epsilon_factor=optional_default(1.0_dp, W_epsilon_factor)
+
+    W_epsilon = use_W_epsilon_factor*max( 9.0_dp*abs(p_ext)*cell_volume/((gamma_epsilon*2.0_dp*PI)**2), &
+		     (Ndof+3.0_dp)*BOLTZMANN_K*use_T/((gamma_epsilon*2.0_dp*PI)**2) )
 
   end function barostat_mass_real
 

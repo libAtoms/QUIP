@@ -41,7 +41,7 @@ private
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau
+    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
     real(dp) :: cutoff_buffer 
@@ -116,6 +116,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'nose_hoover_tau', '100.0', params%nose_hoover_tau, help_string="time constant for nose_hoover thermostat")
   call param_register(md_params_dict, 'adaptive_langevin_NH_tau', '0.0', params%adaptive_langevin_NH_tau, help_string="tau for Nose-Hoover part of open Langevin thermostat, active if > 0")
   call param_register(md_params_dict, 'barostat_tau', '10.0', params%barostat_tau, help_string="time constant for barostat Langevin")
+  call param_register(md_params_dict, 'barostat_mass_factor', '1.0', params%barostat_mass_factor, help_string="factor to multiply barostat mass by, if default leads to overly fast dynamics")
   call param_register(md_params_dict, 'langevin_OU', 'F', params%langevin_OU, help_string="If true, do Ornstein-Uhlenbeck Langevin dynamics")
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
@@ -246,6 +247,10 @@ subroutine print_params(params)
   call print("md_params%hydrostatic_strain=" // params%hydrostatic_strain)
   call print("md_params%diagonal_strain=" // params%diagonal_strain)
   call print("md_params%finite_strain_formulation=" // params%finite_strain_formulation)
+  call print("md_params%barostat_tau=" // params%barostat_tau)
+  call print("md_params%barostat_const_T=" // params%barostat_const_T)
+  call print("md_params%barostat_mass_factor=" // params%barostat_mass_factor)
+
   call print("md_params%calc_virial=" // params%calc_virial)
   call print("md_params%calc_energy=" // params%calc_energy)
   call print("md_params%summary_interval=" // params%summary_interval)
@@ -451,10 +456,10 @@ subroutine initialise_md_thermostat(ds, params)
 	 if (params%const_P) then
 	    if (params%const_T .and. params%barostat_const_T) then
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor)
 	    else
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, W_epsilon_factor=params%barostat_mass_factor)
 	    endif
 	 endif
 	 if (params%const_T) then
