@@ -839,13 +839,13 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_set_barostat(this,type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,W_epsilon,T)
+   subroutine ds_set_barostat(this,type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,W_epsilon,T,W_epsilon_factor)
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
      real(dp),              intent(in)    :: p_ext
      logical,              intent(in)    :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
      real(dp),              intent(in)    :: tau_epsilon
-     real(dp), optional,    intent(in)    :: W_epsilon, T
+     real(dp), optional,    intent(in)    :: W_epsilon, T, W_epsilon_factor
 
      real(dp) :: gamma_epsilon
 
@@ -857,7 +857,7 @@ contains
 
      call initialise(this%barostat, type=type, p_ext=p_ext, hydrostatic_strain=hydrostatic_strain, diagonal_strain=diagonal_strain, &
         finite_strain_formulation=finite_strain_formulation, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, &
-	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T)
+	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T, W_epsilon_factor=W_epsilon_factor)
 
    end subroutine ds_set_barostat
 
