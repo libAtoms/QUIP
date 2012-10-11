@@ -40,6 +40,8 @@ public :: SE_kernel_r_rr
 
 integer, parameter :: dp = 8
 
+real(dp), parameter :: TWO_PI = 2.0_dp*3.14159265358979_dp
+
 integer, parameter :: NOT_FACTORISED = 0
 integer, parameter :: QR             = 2
 
@@ -54,7 +56,7 @@ end type GP_Matrix
 
 type gp_basic
    real(dp), allocatable :: len_scale_sq(:)
-   logical, allocatable :: periodic(:)
+   real(dp), allocatable :: periodicity(:)
    real(dp) :: f_var
    integer  :: n_dof, m_f, m_g, m_teach
    type(GP_Matrix) :: Cmat, Kmm, noise_Kmm
@@ -105,17 +107,17 @@ endinterface Matrix_QR_Solve
 
 contains
 
-subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, &
+subroutine gp_basic_initialise_nd(self, len_scale, periodicity, f_var, kernel, f_r, f_v, f_n, g_r, g_v, g_n, f_sparse_set, &
                                   g_sparse_set, jitter)
    type(gp_basic), intent(inout) :: self !% object to store GP
    real(dp), intent(in) :: len_scale(:)
-   logical, intent(in) :: periodic(:)
+   real(dp), intent(in) :: periodicity(:)
    real(dp), intent(in) :: f_var !% length scale and variance prior for GP
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -224,15 +226,15 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
       print *,"size(len_scale)=",size(len_scale)," , n_dof=",self%n_dof
       stop
    endif
-   if (size(periodic) /= self%n_dof) then
-      print *,"size(periodic)=",size(periodic)," /= n_dof=",self%n_dof
+   if (size(periodicity) /= self%n_dof) then
+      print *,"size(periodicity)=",size(periodicity)," /= n_dof=",self%n_dof
       stop
    endif
 
    allocate(self%len_scale_sq(self%n_dof))
-   allocate(self%periodic(self%n_dof))
+   allocate(self%periodicity(self%n_dof))
    self%len_scale_sq = len_scale**2
-   self%periodic = periodic
+   self%periodicity = periodicity
    self%f_var = f_var
 
    if (n_f + n_g == 0) then
@@ -252,7 +254,7 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
    ! everyone needs Kmm
    call kernel_mat(self%m_f, self%f_r, self%m_g, self%g_r, &
                    self%m_f, self%f_r, self%m_g, self%g_r, &
-                   self%f_var, self%len_scale_sq, self%periodic, kernel, Kmm)
+                   self%f_var, self%len_scale_sq, self%periodicity, kernel, Kmm)
 
    if (self%sparsified) then
       allocate(Kmn(self%m_teach, n_tot))
@@ -263,7 +265,7 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodic, f_var, kernel, f_r,
 
       call kernel_mat(self%m_f, self%f_r, self%m_g, self%g_r, & 
 		      n_f, f_r, n_g, g_r, &
-		      self%f_var, self%len_scale_sq, self%periodic, kernel, Kmn)
+		      self%f_var, self%len_scale_sq, self%periodicity, kernel, Kmn)
 
       ! we'll need Kmm^{-1} for variance
       call gp_matrix_initialise(self%Kmm, Kmm)
@@ -364,7 +366,7 @@ subroutine gp_basic_finalise(self)
       if (allocated(self%mat_inv_k)) deallocate(self%mat_inv_k)
       if (allocated(self%mat_inv_k_grad)) deallocate(self%mat_inv_k_grad)
       if (allocated(self%len_scale_sq)) deallocate(self%len_scale_sq)
-      if (allocated(self%periodic)) deallocate(self%periodic)
+      if (allocated(self%periodicity)) deallocate(self%periodicity)
       call gp_matrix_finalise(self%Cmat)
       call gp_matrix_finalise(self%noise_Kmm)
       call gp_matrix_finalise(self%Kmm)
@@ -383,10 +385,10 @@ function f_predict_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r(:) !% position at which to f_predict value
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -399,7 +401,7 @@ function f_predict_r(self, r, kernel)
       return
    endif
 
-   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k)
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k)
    f_predict_r = ddot(size(self%k), self%k(1), 1, self%Cmat_inv_v(1), 1)
 end function f_predict_r
 
@@ -407,10 +409,10 @@ function f_predict_grad_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self !% object for GP
    real(dp), intent(in) :: r(:) !% position at which to f_predict value
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -421,7 +423,7 @@ function f_predict_grad_r(self, r, kernel)
       return
    endif
 
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
    call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), 1.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
       self%Cmat_inv_v(1), 1, 0.0_dp, f_predict_grad_r(1), 1)
 end function f_predict_grad_r
@@ -430,10 +432,10 @@ function f_predict_var_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -446,7 +448,7 @@ function f_predict_var_r(self, r, kernel)
       return
    endif
 
-   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k)
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k)
 
    f_predict_var_r = self%f_var
    if (self%sparsified) then
@@ -464,10 +466,10 @@ function f_predict_grad_var_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -484,7 +486,7 @@ function f_predict_grad_var_r(self, r, kernel)
 
    ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
    ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
 
    ! first term should be second derivative of covariance, but it's hard wired for now
    f_predict_grad_var_r = self%f_var/self%len_scale_sq 
@@ -516,10 +518,10 @@ function f_predict_var_grad_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self
    real(dp), intent(in) :: r(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -530,8 +532,8 @@ function f_predict_var_grad_r(self, r, kernel)
       return
    endif
 
-   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k)
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodic, kernel, self%k_grad)
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
 
    f_predict_var_grad_r = 0.0_dp
    if (self%sparsified) then
@@ -548,18 +550,18 @@ function f_predict_var_grad_r(self, r, kernel)
    endif
 end function f_predict_var_grad_r
 
-subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_var, len_scale_sq, periodic, kernel, mat)
+subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_var, len_scale_sq, periodicity, kernel, mat)
    integer, intent(in) :: l_n_f, l_n_g
    real(dp), optional, intent(in) :: l_f_r(:,:), l_g_r(:,:)
    integer, intent(in) :: r_n_f, r_n_g
    real(dp), optional, intent(in) :: r_f_r(:,:), r_g_r(:,:)
    real(dp), intent(in) :: f_var, len_scale_sq(:)
-   logical, intent(in) :: periodic(:)
+   real(dp), intent(in) :: periodicity(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -567,41 +569,41 @@ subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_
 
    integer :: i, i_glob, n_dof
 
-   if (present(l_f_r)) n_dof=size(l_f_r,1)
-   if (present(l_g_r)) n_dof=size(l_g_r,1)
+   if (l_n_f > 0) n_dof=size(l_f_r,1)
+   if (l_n_g > 0) n_dof=size(l_g_r,1)
 
    do i=1, l_n_f
       ! f on f
-      if (r_n_f > 0) call kernel(l_f_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+      if (r_n_f > 0) call kernel(l_f_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 				 f_f=mat(i,1:r_n_f))
       ! f on g
-      if (r_n_g > 0) call kernel(l_f_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+      if (r_n_g > 0) call kernel(l_f_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 				 f_g=mat(i,r_n_f+1:r_n_f+r_n_g*n_dof))
    end do
    do i=1, l_n_g
       i_glob = l_n_f + (i-1)*n_dof + 1
       ! g on f
-      if (r_n_f > 0) call kernel(l_g_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+      if (r_n_f > 0) call kernel(l_g_r(1:n_dof,i), r_f_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 				 g_f=mat(i_glob:i_glob+n_dof-1,1:r_n_f))
       ! g on g
-      if (r_n_g > 0) call kernel(l_g_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+      if (r_n_g > 0) call kernel(l_g_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 				 g_g=mat(i_glob:i_glob+n_dof-1,r_n_f+1:r_n_f+r_n_g*n_dof))
    end do
 end subroutine
 
-subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, kernel, vec)
+subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodicity, kernel, vec)
    real(dp), intent(in) :: r(:)
    integer, intent(in) :: n_f
    real(dp), intent(in) :: f_r(:,:)
    integer, intent(in) :: n_g
    real(dp), intent(in) :: g_r(:,:)
    real(dp), intent(in) :: f_var, len_scale_sq(:)
-   logical, intent(in) :: periodic(:)
+   real(dp), intent(in) :: periodicity(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -611,25 +613,25 @@ subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
 
    n_dof=size(r)
 
-   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 			    f_f=vec(1:n_f))
-   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 			    f_g=vec(n_f+1:n_f+n_g*n_dof))
 end subroutine f_kernel_vec
 
-subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, kernel, vec)
+subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodicity, kernel, vec)
    real(dp), intent(in) :: r(:)
    integer, intent(in) :: n_f
    real(dp), intent(in) :: f_r(:,:)
    integer, intent(in) :: n_g
    real(dp), intent(in) :: g_r(:,:)
    real(dp), intent(in) :: f_var, len_scale_sq(:)
-   logical, intent(in) :: periodic(:)
+   real(dp), intent(in) :: periodicity(:)
    interface
-      subroutine kernel(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
 	 integer, parameter :: dp = 8
 	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-	 logical, intent(in) :: periodic(:)
+	 real(dp), intent(in) :: periodicity(:)
 	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
       end subroutine kernel
    end interface
@@ -639,15 +641,15 @@ subroutine g_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodic, ke
 
    n_dof = size(r)
 
-   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+   if (n_f > 0) call kernel(r(1:n_dof), f_r(1:n_dof,1:n_f), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 			    g_f=vec(1:n_dof,1:n_f))
-   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodic(1:n_dof), &
+   if (n_g > 0) call kernel(r(1:n_dof), g_r(1:n_dof,1:n_g), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 			    g_g=vec(1:n_dof,n_f+1:n_f+n_g*n_dof))
 end subroutine g_kernel_vec
 
-subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, g_g)
+subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
    real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
-   logical, intent(in) :: periodic(:)
+   real(dp), intent(in) :: periodicity(:)
    real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
 
    real(dp), allocatable :: exp_arg(:), dexp_arg_i(:,:), ddexp_arg_i(:,:), dexp_arg_j(:,:)
@@ -663,8 +665,8 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, 
    allocate(dexp_arg_j(n_dof,nv))
    exp_arg = 0.0_dp
    do i=1, n_dof
-      if (periodic(i)) then
-	 exp_arg(:) = exp_arg(:) - 2.0_dp*sin((x2(i,:)-x1(i))/2.0_dp)**2/len_scale_sq(i)
+      if (periodicity(i) /= 0.0_dp) then
+	 exp_arg(:) = exp_arg(:) - 2.0_dp*sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2/len_scale_sq(i)
       else
 	 exp_arg(:) = exp_arg(:) - 0.5_dp*(x2(i,:)-x1(i))**2/len_scale_sq(i)
       endif
@@ -673,9 +675,9 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, 
    if (present(f_f)) f_f(:) = f_var * exp(exp_arg(:))
    if (present(g_f) .or. present(g_g)) then
       do i=1, n_dof
-	 if (periodic(i)) then
-	    dexp_arg_i(i,:) = 2.0_dp*sin((x2(i,:)-x1(i))/2.0_dp)*cos((x2(i,:)-x1(i))/2.0_dp) / len_scale_sq(i)
-	    if (present(g_g)) ddexp_arg_i(i,:) = (-sin((x2(i,:)-x1(i))/2.0_dp)**2+cos((x2(i,:)-x1(i))/2.0_dp)**2)/len_scale_sq(i)
+	 if (periodicity(i) /= 0.0_dp) then
+	    dexp_arg_i(i,:) = 2.0_dp*sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)*cos(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)*TWO_PI/periodicity(i) / len_scale_sq(i)
+	    if (present(g_g)) ddexp_arg_i(i,:) = (-sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2+cos(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2)*(TWO_PI/periodicity(i))**2/len_scale_sq(i)
 	 else
 	    dexp_arg_i(i,:) = (x2(i,:)-x1(i))/len_scale_sq(i)
 	    if (present(g_g)) ddexp_arg_i(i,:) = 1.0_dp/len_scale_sq(i)
@@ -684,8 +686,8 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodic, f_f, g_f, f_g, 
    endif
    if (present(f_g) .or. present(g_g)) then
       do j=1, n_dof
-	 if (periodic(j)) then
-	    dexp_arg_j(j,:) = -2.0_dp*sin((x2(j,:)-x1(j))/2.0_dp)*cos((x2(j,:)-x1(j))/2.0_dp) / len_scale_sq(j)
+	 if (periodicity(j) /= 0.0_dp) then
+	    dexp_arg_j(j,:) = -2.0_dp*sin(TWO_PI/periodicity(j)*(x2(j,:)-x1(j))/2.0_dp)*cos(TWO_PI/periodicity(j)*(x2(j,:)-x1(j))/2.0_dp)*TWO_PI/periodicity(j) / len_scale_sq(j)
 	 else
 	    dexp_arg_j(j,:) = -(x2(j,:)-x1(j))/len_scale_sq(j)
 	 endif

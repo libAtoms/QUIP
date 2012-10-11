@@ -41,8 +41,9 @@ private
 
 contains
 
-   subroutine k_means_clustering_pick_1d(x, cluster_indices)
+   subroutine k_means_clustering_pick_1d(x, periodicity, cluster_indices)
       real(dp), intent(in) :: x(:)
+      real(dp), intent(in) :: periodicity
       integer, intent(out) :: cluster_indices(:)
 
       integer :: k
@@ -74,7 +75,7 @@ contains
 	 closest_i = 0
 	 closest_r = HUGE(1.0_dp)
 	 do i=1, k
-	    r = sqrt((x(j)-k_means(i))**2)
+	    r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
 	    if (r < closest_r) then
 	       closest_r = r
 	       closest_i = i
@@ -101,7 +102,7 @@ contains
 	    closest_i = 0
 	    closest_r = HUGE(1.0_dp)
 	    do i=1, k
-	       r = sqrt((x(j)-k_means(i))**2)
+	       r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
 	       if (r < closest_r) then
 		  closest_r = r
 		  closest_i = i
@@ -115,7 +116,7 @@ contains
 	 closest_i = 0
 	 closest_r = HUGE(1.0_dp)
 	 do j=1, n
-	    r = sqrt((x(j)-k_means(i))**2)
+	    r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
 	    if (r < closest_r) then
 	       closest_r = r
 	       closest_j = j
@@ -128,8 +129,9 @@ contains
 
    end subroutine k_means_clustering_pick_1d
 
-   subroutine k_means_clustering_pick_nd(x, cluster_indices)
+   subroutine k_means_clustering_pick_nd(x, periodicity, cluster_indices)
       real(dp), intent(in) :: x(:,:)
+      real(dp), intent(in) :: periodicity(:)
       integer, intent(out) :: cluster_indices(:)
 
       integer :: k
@@ -162,7 +164,7 @@ contains
 	 closest_i = 0
 	 closest_r = HUGE(1.0_dp)
 	 do i=1, k
-	    r = sqrt(sum((x(:,j)-k_means(:,i))**2))
+	    r = dist(x(:,j), k_means(:,i), periodicity(:))
 	    if (r < closest_r) then
 	       closest_r = r
 	       closest_i = i
@@ -189,7 +191,7 @@ contains
 	    closest_i = 0
 	    closest_r = HUGE(1.0_dp)
 	    do i=1, k
-	       r = sqrt(sum((x(:,j)-k_means(:,i))**2))
+	       r = dist(x(:,j), k_means(:,i), periodicity(:))
 	       if (r < closest_r) then
 		  closest_r = r
 		  closest_i = i
@@ -203,7 +205,7 @@ contains
 	 closest_i = 0
 	 closest_r = HUGE(1.0_dp)
 	 do j=1, n
-	    r = sqrt(sum((x(:,j)-k_means(:,i))**2))
+	    r = dist(x(:,j), k_means(:,i), periodicity(:))
 	    if (r < closest_r) then
 	       closest_r = r
 	       closest_j = j
@@ -215,5 +217,29 @@ contains
       deallocate(a, prev_a, k_means)
 
    end subroutine k_means_clustering_pick_nd
+
+   ! from BRUSH paper, citing MacKay
+   function dist(x0, x1, periodicity)
+      real(dp), intent(in) :: x0(:), x1(:)
+      real(dp), intent(in) :: periodicity(:)
+      real(dp) :: dist ! result
+
+      integer :: i
+
+      if (any(periodicity /= 0.0_dp)) then
+	 dist = 0.0_dp
+	 do i=1, size(x0)
+	    if (periodicity(i) /= 0.0_dp) then
+	       dist = dist + 4.0_dp*sin((2.0_dp*3.14159265358979_dp/periodicity(i))*(x0(i)-x1(i))/2.0_dp)**2
+	    else
+	       dist = dist + (x0(i)-x1(i))**2
+	    endif
+	 end do
+	 dist = sqrt(dist)
+      else
+	 dist = sqrt(sum((x0(:)-x1(:))**2))
+      endif
+
+   end function dist
 
 end module k_means_clustering_module
