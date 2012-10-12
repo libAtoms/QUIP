@@ -258,3 +258,8 @@ __all__.extend(quippy.structures.__all__)
 import quippy.crack
 from quippy.crack import *
 __all__.extend(quippy.crack.__all__)
+
+if 'ase' in available_modules:
+    import quippy.neb
+    from quippy.neb import *
+    __all__.extend(quippy.neb.__all__)
