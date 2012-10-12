@@ -219,19 +219,24 @@ class QuippyViewer(AtomEyeViewer):
 
     def set_cutoffs(self, nneighb_only=True):
         at = self.gcat()
-        for Z1, Z2 in itertools.combinations_with_replacement(set(at.z), 2):
-            sym1, sym2 = ElementName[Z1], ElementName[Z2]
-            print sym1, sym2, 
-            if nneighb_only:
-                cutoff = at.nneightol*bond_length(Z1, Z2)
-                print 'nneigbb', cutoff
-            elif at.use_uniform_cutoff:
-                cutoff = at.cutoff
-                print 'uniform', cutoff
-            else:
-                cutoff = at.cutoff*bond_length(Z1, Z2)
-                print 'relative', cutoff
-            self.rcut_patch(sym1, sym2, cutoff, absolute=True)
+        seen = []
+        for Z1 in set(at.z):
+            for Z2 in set(at.z):
+                if (min(Z1,Z2), max(Z1, Z2)) in seen:
+                    continue
+                seen.append((min(Z1, Z2), max(Z1, Z2)))
+                sym1, sym2 = ElementName[Z1], ElementName[Z2]
+                print sym1, sym2, 
+                if nneighb_only:
+                    cutoff = at.nneightol*bond_length(Z1, Z2)
+                    print 'nneigbb', cutoff
+                elif at.use_uniform_cutoff:
+                    cutoff = at.cutoff
+                    print 'uniform', cutoff
+                else:
+                    cutoff = at.cutoff*bond_length(Z1, Z2)
+                    print 'relative', cutoff
+                self.rcut_patch(sym1, sym2, cutoff, absolute=True)
     
 
 class AtomsViewer(Atoms, QuippyViewer):
