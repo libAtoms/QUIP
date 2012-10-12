@@ -107,7 +107,7 @@ program force_gaussian_prediction
    type(Atoms)           :: at_in
    type(CInOutput)       :: in
    type(Dictionary)      :: params
-   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati, dist_shift_factor
+   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati, dist_shift_factor, dim_tol, error_bar
    real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
@@ -121,8 +121,8 @@ program force_gaussian_prediction
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size, dimension_mark(3)
    integer, dimension(:), allocatable            :: distance_index, mark_zero_ivs 
-   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, do_svd, print_data, do_teach
-   character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file
+   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, do_svd, print_data, do_teach, print_verbosity
+   character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file, data_dir
    
  
    call system_initialise(enable_timing=.true.)
@@ -149,12 +149,15 @@ program force_gaussian_prediction
    call param_register(params, 'fix_sigma',  'F', fix_sigma, "true, if you want manually input sigma")
    call param_register(params, 'least_sq',    'T', least_sq, "if true, the internal force components will be tranformed to real force using least squares")
    call param_register(params, 'do_svd', 'T', do_svd, "if true, doing inverting by SVD")
-   call param_register(params, 'sigma_covariance', '1.0', sigma_covariance, "the factor multiplied by sigma when using fix_sigma")
+   call param_register(params, 'sigma_covariance', '1.0', sigma_covariance, "the factor multiplied by sigma when using fix_sigma") 
+   call param_register(params, 'dim_tol', '0.005', dim_tol, "threshold for determing the dimensionality of the group of IVs")
    call param_register(params, 'teaching_file', 'data.xyz', teaching_file, "file to read teaching configurations from")
    call param_register(params, 'grid_file', 'grid.xyz', grid_file, "file to generate the proper pairs of (r0, m)")
    call param_register(params, 'test_file', 'test.xyz', test_file, "file to read the testing configurations from")
    call param_register(params, 'print_data', 'F', print_data, "if true, print out the information for the database" )
+   call param_register(params, 'data_dir', './', data_dir, "the directory where data files locate")
    call param_register(params, 'do_teach', 'T', do_teach, "if false, the teaching part will be skipped")
+   call param_register(params, 'print_verbosity', 'F', print_verbosity, "if true, print out verbosity stuff")
    call param_register(params, 'out_file', 'out.xyz', out_file, "output configuration file containing the predicted forces")
    call param_register(params, 'print_at', 'F', print_at, "true for print out the testing configuration with predicted forces")
    call param_register(params, 'print_ft_matrix_test', 'F', print_ft_matrix_test, "print the feature matrix of the testing conf if true")
@@ -393,10 +396,9 @@ end if ! do_teach, otherwise skipped
 
 ! if not do_teach, teaching information to be collected from data files 
 if (.not. do_teach) then
-
-    call print_title('READING DATA INFORMATION')
-    call system_timer('Collecting Information from Files')
-    open(4, status='old', file='grid.dat', form='FORMATTED')
+    call print_title('READING TEACHING INFORMATION')
+    call system_timer('Collecting Information From Files')
+    open(4, status='old', file=trim(data_dir)//'grid.dat', form='FORMATTED')
     read(4, *) k, n
     allocate(r_grid(k-add_vector), m_grid(k-add_vector))
    
@@ -410,8 +412,8 @@ if (.not. do_teach) then
     allocate(feature_matrix_norm(k,3,n))
     allocate(sigma(k))
 
-    OPEN(2,status='old',file='Force.dat',form='UNFORMATTED')
-    OPEN(3,status='old',file='IV.dat',form='UNFORMATTED')
+    OPEN(2,status='old',file=trim(data_dir)//'Force.dat',form='UNFORMATTED')
+    OPEN(3,status='old',file=trim(data_dir)//'IV.dat',form='UNFORMATTED')
 
     do t=1, n
        read(2) force_proj_ivs(:, t)
@@ -434,7 +436,7 @@ if (.not. do_teach) then
     enddo
  enddo
     ! reading sigma file
-    open(unit=1, status='old', file='sigma.dat', form='formatted')
+    open(unit=1, status='old', file=trim(data_dir)//'sigma.dat', form='formatted')
     read(1, *) sigma
     close(unit=1)
     call system_timer('Collecting Information From Files')
@@ -474,6 +476,7 @@ do i=1, in%n_frame
       n_loop = at_in%N
    endif
 
+   error_bar=0.0_dp  ! for calculating the average error of the system.
    do n_center_atom=1, n_loop
 
      do j=1, k                  ! reset the mark for zero internal vectors
@@ -482,8 +485,10 @@ do i=1, in%n_frame
 
      do j= 1, k-add_vector
         feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
-        call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
-        feature_len = norm(feature_matrix_pred(j,:))
+       if (print_verbosity) then 
+         call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
+       endif 
+       feature_len = norm(feature_matrix_pred(j,:))
 
         if (feature_len < TOL_REAL)  then
             feature_len=1.0_dp
@@ -494,8 +499,6 @@ do i=1, in%n_frame
         feature_matrix_norm_pred(j,:) = feature_matrix_pred(j,:)/feature_len
      enddo
 
-     deallocate(r_grid)
-     deallocate(m_grid)
      if (add_vector > 0) then
          do j = k-add_vector+1, k
             temp_integer=k-j
@@ -514,7 +517,7 @@ do i=1, in%n_frame
             endif
             
             feature_matrix_norm_pred(j,:) = feature_matrix_pred(j,:)/feature_len
-            call print("added internal vectors : "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
+            if (print_verbosity) call print("added internal vectors : "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
          enddo
       endif
 
@@ -522,7 +525,9 @@ do i=1, in%n_frame
      if (print_ft_matrix_test) then
        do j=1, k 
           do ii=1, k   
-            call print("ATOM : "//n_center_atom//" feature_matrix: ("//j//" "//ii//") "//dot_product(feature_matrix_pred(j,:), feature_matrix_norm_pred(ii,:)) )
+           if(print_verbosity) then
+              call print("ATOM : "//n_center_atom//" feature_matrix: ("//j//" "//ii//") "//dot_product(feature_matrix_pred(j,:), feature_matrix_norm_pred(ii,:)) )
+           endif
           enddo   
        enddo
      endif
@@ -622,25 +627,29 @@ do i=1, in%n_frame
       
       
       do j=1, k 
-         call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  
+         if (print_verbosity) then
+            call print("Force in IV space"//j//": "//force_proj_ivs_pred(j)//": "//force_proj_target(j)//": "//abs(force_proj_ivs_pred(j)-force_proj_target(j)))  
+         endif
       enddo
       
  
      do j=1, k
-        write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
+        if (print_verbosity) write(*,*) "feature_matrix_norm_pred", feature_matrix_norm_pred(j,:)
      enddo
    
      allocate(out_u(3,3), out_vt(3,3))      ! to obtain the transformation matrix with the principal axis
      call inverse_svd_threshold(transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred, thresh, u_out=out_u, vt_out=out_vt)
      allocate(feature_matrix_norm_pred_t(k,3))
-     call internal_dimension_mark(feature_matrix_pred .mult. out_u, 0.005_dp, dimension_mark)
+     call internal_dimension_mark(feature_matrix_pred .mult. out_u, dim_tol, dimension_mark)
 
      feature_matrix_norm_pred_t = feature_matrix_norm_pred .mult. out_u
  
   ! feature_matrix_pred_t contains the Internal-directions after PCA transformation.
-  do j=1, k
-     write(*,*) "feature_matrix_pred_t : ", feature_matrix_norm_pred_t(j, :)
-  enddo
+  if (print_verbosity) then
+       do j=1, k
+           write(*,*) "feature_matrix_pred_t : ", feature_matrix_norm_pred_t(j, :)
+       enddo
+  endif
 
   select case (sum(dimension_mark(:)))
     case(0)
@@ -655,13 +664,13 @@ do i=1, in%n_frame
 
          feature_inner_matrix=transpose(feature_matrix_norm_pred) .mult. feature_matrix_norm_pred
          if (do_svd) then   
-             write(*,*)  "feature inner matrix :", feature_inner_matrix
+             if (print_verbosity) write(*,*)  "feature inner matrix :", feature_inner_matrix
              call inverse_svd_threshold(feature_inner_matrix, thresh, result_inv=feature_inv)
-             write(*,*)  "inverse feature inner matrix :", feature_inv
+             if (print_verbosity) write(*,*)  "inverse feature inner matrix :", feature_inv
          else
-             write(*,*)  "feature_inner_matrix :", feature_inner_matrix
+             if (print_verbosity) write(*,*)  "feature_inner_matrix :", feature_inner_matrix
              call inverse(feature_inner_matrix, feature_inv)
-             write(*,*)  "inverse feature inner matrix :", feature_inv
+             if (print_verbosity) write(*,*)  "inverse feature inner matrix :", feature_inv
          endif
 
          if (least_sq) then
@@ -685,8 +694,14 @@ do i=1, in%n_frame
    kappa = cov(feature_matrix_pred, feature_matrix_pred, feature_matrix_norm_pred, feature_matrix_norm_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
     
    call print("predicted error : "//sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred))))
-     
+   error_bar = error_bar + sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))  
  enddo  ! loop over positions
+
+   error_bar = error_bar / n_loop
+   call print("Error Bar :"//error_bar)
+   open(unit=6, status='replace',file='error_bar.dat')
+   write(6,'(F10.5)') error_bar
+   close(6)   
 
    if (print_at) then 
       call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
@@ -696,6 +711,8 @@ enddo    ! loop over frames
 
 call finalise(in)
 
+deallocate(r_grid)
+deallocate(m_grid)
 deallocate(force_proj_ivs_pred)
 deallocate(feature_matrix_norm)
 deallocate(feature_matrix_norm_pred)
@@ -934,10 +951,6 @@ contains
    call print("the number of zero singular values : "//j)
 
   if (n_dimension<=3) then  ! DEBUGGING use
-      write(*,*) "u", u
-      write(*,*) "vt", vt
-      write(*,*) "sigmainv", sigmainv
-      write(*,*) sigmainv .mult. transpose(u)
   endif
   result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
 
@@ -1028,10 +1041,12 @@ end if !on condition of matrix inverting
    integer                                     ::  i
  
    do i=1, size(matrix_data(1,1,:)) 
-      cov_tmp = cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm, matrix_data_norm(:,:,i), sigma, 1.0_dp, distance=distance_confs(i))   
+      cov_tmp = cov(matrix_predict, matrix_data(:,:,i), matrix_predict_norm, matrix_data_norm(:,:,i), sigma, 1.0_dp, distance=distance_confs(i)) 
+      distance_index(i) = i  
    enddo
-
-    call insertion_sort(distance_confs, idx=distance_index)
+!   call insertion_sort(distance_confs, idx=distance_index)
+!   heap sorting below
+    call heap_sort(distance_confs, i_data=distance_index)
 
  end subroutine sorting_configuration
 
