@@ -56,7 +56,8 @@ __all__ = ['strain_matrix', 'stress_matrix', 'strain_vector',
            'stress_vector', 'generate_strained_configs',
            'calc_stress', 'fit_elastic_constants',
            'elastic_constants', 'atomic_strain',
-           'elastic_fields', 'transform_elasticity']
+           'elastic_fields', 'transform_elasticity',
+           'rayleigh_wave_speed']
 
 def strain_matrix(strain_vector):
     e1, e2, e3, e4, e5, e6 = strain_vector
@@ -825,7 +826,7 @@ def transform_elasticity(c, R):
                         for q in frange(3):
                             for r in frange(3):
                                 for s in frange(3):
-                                    cp[i,j,k,l] += R[p,i]*R[q,j]*R[r,k]*R[s,l]*c[p,q,r,s]
+                                    cp[i,j,k,l] += R[i,p]*R[j,q]*R[k,r]*R[l,s]*c[p,q,r,s]
 
     if made_tensor:
         return elasticity_tensor_to_matrix(cp)
@@ -833,19 +834,44 @@ def transform_elasticity(c, R):
         return cp
 
 
-def rayleigh_wave_speed_isotropic(C, rho):
-    vp = sqrt(C[1,1]/rho)
-    vs = sqrt(C[4,4]/rho)
+def rayleigh_wave_speed(C, rho, a=4000., b=6000., isotropic=False):
+    """
+    Rayleigh wave speed in isotropic crystal.
 
-    y = lambda v: sqrt(1 - (v/vs)**2)*sqrt(1 - (v/vp)**2) - sqrt(1 - v**2/(2*vs**2))**4
+    For anisotropic case (default), formula is Darinskii, A. (1997).
+    On the theory of leaky waves in crystals.
+    Wave Motion, 25(1), 35-49. doi:10.1016/S0165-2125(96)00031-5
 
+    If isostropic=True, formula is from
+    http://sepwww.stanford.edu/data/media/public/docs/sep124/jim1/paper_html/node5.html.
 
+    C should be rotated to reference frame of sample, and should
+    be given in units of GPa.
+    Propagation speed is along the first (x) axis.
+    rho is density in g/cm^3.
 
-def rayleigh_wave_speed(C, rho):
+    Returns triplet (vs, vp, c_R) in m/s
+    """
 
-    vp = sqrt(C[3,3]/rho)
-    vsv = sqrt(C[4,4]/rho)
+    if 'scipy' not in available_modules:
+        raise RuntimeError('scipy is needed for rayleigh_wave_speed()')
 
-    y = lambda x: (x/vp)**4*( (C[3,3]/C[2,2])*(1-(x/vp)**2)) - ((1-( (C[3,2]**2)/(C[2,2]*C[3,3]) ) - (x/vp)**2)**2)*(1-(x/vsv)**2)
+    from scipy.optimize import bisect
 
-    return y
+    C = C.copy()
+    C *= 1e9 # convert GPa -> P*
+    rho *= 1e3 # convert g/cm^3 -> kg/m^3
+
+    if isotropic:
+        vp = np.sqrt(C[1,1]/rho)
+        vs = np.sqrt(C[4,4]/rho)
+        f = lambda v: (np.sqrt(1 - (v/vs)**2)*np.sqrt(1 - (v/vp)**2) -
+                       (np.sqrt(1 - v**2/(2*vs**2)))**4)
+    else:
+        vp = np.sqrt(C[3,3]/rho)
+        vs = np.sqrt(C[4,4]/rho)
+        f = lambda x: ((x/vp)**4*( (C[3,3]/C[2,2])*(1-(x/vp)**2)) -
+                       ((1-( (C[3,2]**2)/(C[2,2]*C[3,3]) ) -
+                       (x/vp)**2)**2)*(1-(x/vs)**2))
+    c_R = bisect(f, vs/2., vs)
+    return vs, vp, c_R
