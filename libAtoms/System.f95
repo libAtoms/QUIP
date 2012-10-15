@@ -3236,6 +3236,18 @@ end function pad
      call c_mem_info(total_mem, free_mem)
    end subroutine mem_info
 
+   subroutine print_mem_info(file)
+      type(inoutput), intent(in), optional :: file
+
+      real(8) :: total_mem, free_mem
+
+      call mem_info(total_mem, free_mem)
+
+      call print('TOTAL MEMORY = '//total_mem/1.0e9_dp//' GB', file=file)
+      call print('FREE MEMORY = '//free_mem/1.0e9_dp//' GB', file=file)
+
+   endsubroutine print_mem_info
+
    subroutine wait_for_file_to_exist(filename, max_wait_time, cycle_time, error)
       character(len=*) filename
       real(dp) :: max_wait_time
