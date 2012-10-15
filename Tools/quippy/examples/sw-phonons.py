@@ -3,8 +3,34 @@ from phonopy.structure.atoms import Atoms as PhonopyAtoms
 from phonopy.units import VaspToTHz
 import numpy as np
 from phonopy.phonon.band_structure import BandStructure
-from pylab import clf, ylim, vlines, savefig, draw
+from pylab import clf, ylim, axvline, savefig, draw, gca, plot, xticks
 from quippy import diamond, Potential
+
+def band_plot_from_file(plt, filename, factor=1.0):
+    import yaml
+    from yaml import Loader
+    
+    string = open(filename).read()
+    data = yaml.load(string, Loader=Loader)
+
+    frequencies = []
+    distances = []
+    special_points = []
+    npoints = data['nqpoint'] / data['npath']
+
+    for j, v in enumerate( data['phonon'] ):
+        frequencies.append( [ f['frequency'] for f in v['band']  ] )
+        distances.append( v['distance'] )
+        
+        if j % npoints == 0:
+            special_points.append( v['distance'] )
+
+    special_points.append(data['phonon'][-1]['distance'])
+    return special_points, distances, frequencies
+
+
+write_yaml = 1 # save results to band.yaml file
+read_yaml = 0 # set to 1 to add a plot loaded from YAML file
 
 # Define unit cell and potential to be used for calculating forces
 a = 5.44
@@ -85,17 +111,37 @@ for i in range(51):
     band.append(q_start + (q_end - q_start) / 50 * i)
 bands.append(band)
 
+dir_labels = [r'$\Gamma$', '$X$', '$W$', '$X$', '$K$', r'$\Gamma$', '$L$']
+
 # plot the band structure
 clf()
 phonon.set_band_structure(bands)
-phonon.plot_band_structure([r'$\Gamma$', '$X$', '$W$', '$X$', '$K$', r'$\Gamma$', '$L$'])
+phonon.plot_band_structure(dir_labels)
 ylim(0,20.)
 
 # save results to file band.yaml
 bs=BandStructure(bands, phonon.dynamical_matrix, phonon.primitive, factor=VaspToTHz)
-bs.write_yaml()
 
-# add vertical  lines to plot
-vlines(bs.special_point, 0, 20.)
+if write_yaml:
+    bs.write_yaml()
+
+# add vertical lines to plot
+for p in bs.special_point:
+    axvline(p, color='k')
+
+# Example showing how to load previously saved results
+if read_yaml:
+    special_points, distances, frequencies = band_plot_from_file(gca(), 'band.yaml')
+
+    # set x axis labels
+    sp = special_points[:]
+    for p in sp:
+        axvline(p, color='k')
+    xticks(sp, dir_labels)
+
+    # plot SW
+    for freqs in np.array(frequencies).transpose():
+        plot(distances, freqs, 'k-', label='SW')
+
 draw()
 savefig('sw-phonons.pdf')
