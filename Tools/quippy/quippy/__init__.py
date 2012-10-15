@@ -53,7 +53,7 @@ if 'modules' in cfg.sections():
 available_modules = []
 unavailable_modules = []
 
-for mod in ['netCDF4', 'scipy', 'ase', 'atomeye', 'enthought.mayavi']:
+for mod in ['netCDF4', 'scipy', 'ase', 'atomeye', 'enthought.mayavi', 'phonopy']:
     if mod in disabled_modules: continue
     try:
         __import__(mod)

@@ -43,6 +43,9 @@ if 'ase' in available_modules:
 else:
     import quippy.miniase as ase
 
+if 'phonopy' in available_modules:
+    from phonopy.structure.atoms import Atoms as PhonopyAtoms
+
 def get_lattice_params(lattice):
     a,b,c,alpha,beta,gamma = (farray(0.), farray(0.), farray(0.),
                               farray(0.), farray(0.), farray(0.))
@@ -187,7 +190,7 @@ class PropertiesWrapper(DictMixin):
         value = np.array(value)
 
         if value.shape[0] != at.n:
-            warnings.warn(('Assignment to arrays["%s"]: changing size '+
+            logging.debug(('Assignment to arrays["%s"]: changing size '+
                            ' from %d to %d') % (key, at.n, value.shape[0]))
             for p in at.properties.keys():
                 at.remove_property(p)
@@ -273,12 +276,22 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             self.copy_from(symbols)
             symbols = None
 
+        # Phonopy compatibility
+        if 'phonopy' in available_modules:
+            if symbols is not None and isinstance(symbols, PhonopyAtoms):
+                atoms = symbols
+                symbols = atoms.get_chemical_symbols()
+                cell = atoms.get_cell()
+                positions = atoms.get_positions()
+                masses = atoms.get_masses()
+
         # Try to read from first argument
+        # fails with IOError or ValueError if symbols is ASE symbols argument
         if symbols is not None:
             try:
                 self.read_from(symbols, **readargs)
                 symbols = None
-            except IOError:
+            except (IOError, ValueError):
                 pass
 
         ## ASE compatibility
