@@ -37,7 +37,7 @@ module descriptors_module
    integer :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0 
    logical :: cg_initialised = .false.
 
-   real(dp), parameter :: factorial_table(0:16) = (/&
+   real(dp), parameter :: factorial_table(0:20) = (/&
        1.0_dp, &
        1.0_dp, &
        2.0_dp, &
@@ -54,7 +54,11 @@ module descriptors_module
        6227020800.0_dp, &
        87178291200.0_dp, &
        1307674368000.0_dp, &
-       20922789888000.0_dp/)
+       20922789888000.0_dp, &
+       355687428096000.0_dp, &
+       6402373705728000.0_dp, &
+       121645100408832000.0_dp, &
+       2432902008176640000.0_dp/)
 
    integer, parameter, public :: DT_NONE            =  0
    integer, parameter, public :: DT_BISPECTRUM_SO4  =  1
@@ -7837,7 +7841,7 @@ module descriptors_module
 
      if (n<0) then
         call system_abort('factorial: negative argument')
-     elseif(n <= 16) then
+     elseif(n <= 20) then
         res = factorial_table(n)
      else
         res=1.0_dp
