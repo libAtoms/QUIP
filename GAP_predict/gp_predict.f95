@@ -3874,24 +3874,10 @@ module gp_predict_module
          endif
       endif
 
-      if(this%atom_real_space) then
-         if((.not. this%atom_real_space_cov%initialised)) then
-            call gpCoordinates_gpCovariance_atom_real_space_Initialise(this)
-         endif
-      endif
-
       k = 0.0_dp
       xPrime_i => null()
       if(present(gradPredict)) then
          allocate(grad_k(size(xStar),this%n_sparseX))
-      endif
-
-      if(this%atom_real_space) then
-         if(present(gradPredict)) then
-            allocate(grad_kStar(size(xStar)))
-            xPrime_i => grad_kStar
-         endif
-         if(this%atom_real_space) covariance_x_x = gpCovariance_atom_real_space_Calc(this%atom_real_space_cov, x_i=xStar, x_i_size=size(xStar), x_j=xStar, x_j_size=size(xStar), xPrime_i = xPrime_i)
       endif
 
       if (this%soap) then
@@ -3914,26 +3900,6 @@ module gp_predict_module
 	       this%bond_real_space_cov%delta = delta
 	       k(i_sparseX) = gpCovariance_bond_real_space_Calc(this%bond_real_space_cov, x_i=xStar, x_i_size=(size(xStar) - 1), j_sparseX=i_sparseX) &
 			      / sqrt(covariance_x_x * this%covarianceDiag_sparseX_sparseX(i_sparseX))
-	    elseif(this%atom_real_space) then
-
-	       if(present(gradPredict)) xPrime_i => grad_k(:,i_sparseX)
-
-	       zeta = this%atom_real_space_cov%zeta
-	       delta = this%atom_real_space_cov%delta
-
-	       covariance_x_xStar = gpCovariance_atom_real_space_Calc(this%atom_real_space_cov, &
-	       x_i=xStar, x_i_size=size(xStar), &
-	       x_j=this%sparseX(:,i_sparseX), x_j_size=this%sparseX_size(i_sparseX), &
-	       xPrime_i = xPrime_i)
-
-	       if(present(gradPredict)) then
-		  grad_k(:,i_sparseX) = covariance_x_xStar**(zeta-1.0_dp) * grad_k(:,i_sparseX) / sqrt(covariance_x_x * this%covarianceDiag_sparseX_sparseX(i_sparseX))**zeta - &
-		  grad_kStar * ( covariance_x_xStar / sqrt(covariance_x_x * this%covarianceDiag_sparseX_sparseX(i_sparseX)) )**zeta / covariance_x_x
-		  grad_k(:,i_sparseX) = grad_k(:,i_sparseX) * zeta * delta**2
-	       endif
-
-	       k(i_sparseX) = ( covariance_x_xStar / sqrt(covariance_x_x * this%covarianceDiag_sparseX_sparseX(i_sparseX)) )**zeta * delta**2
-
 ! now a single dgemv call outside the loop 
 !	    elseif(this%soap) then
 !	       covariance_x_xStar = dot_product(xStar,this%sparseX(:,i_sparseX))
@@ -3963,8 +3929,9 @@ module gp_predict_module
       gpCoordinates_Predict = dot_product( k, this%alpha )
 
       if(my_do_sparseScore) then
-         call Matrix_Solve(this%LA_k_mm,k,k_mm_k)
+         call Matrix_QR_Solve(this%LA_k_mm,k,k_mm_k)
          sparseScore = (this%delta**2 + this%f0**2) - dot_product(k,k_mm_k)
+         
          if(allocated(k_mm_k)) deallocate(k_mm_k)
       endif
 
@@ -4001,7 +3968,7 @@ module gp_predict_module
          RAISE_ERROR('gpCoordinates_initialise_SparseScore: object not initialised', error)
       endif
 
-      if(this%sparseScore_initialised) call gpCoordinates_finalise_SparseScore(this,error)
+      if(this%sparseScore_initialised) return
 
       allocate(k_mm(this%n_sparseX,this%n_sparseX))
       k_mm = 0.0_dp
@@ -4027,11 +3994,13 @@ module gp_predict_module
             endif
             k_mm(i,j) = k_mm(j,i)
          enddo
+         k_mm(i,i) = k_mm(i,i) + 0.001_dp**2
       enddo
 
       k_mm = k_mm + this%f0**2
 
       call initialise(this%LA_k_mm, k_mm)
+      call LA_Matrix_QR_Factorise(this%LA_k_mm,error=error)
       if(allocated(k_mm)) deallocate(k_mm)
 
       this%sparseScore_initialised = .true.
