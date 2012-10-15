@@ -360,7 +360,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), sparseScore=sparseScore(i), do_sparseScore=do_sparseScore)
         endif
         call system_timer('IPModel_GAP_Calc_gp_predict')
-
         if(present(e) .or. present(local_e)) then
            local_e_in( min(i,size(local_e_in)) ) = local_e_in( min(i,size(local_e_in)) ) + &
                 e_i * my_descriptor_data%x(i)%covariance_cutoff
@@ -389,7 +388,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      if(do_sparseScore) then
         do i = 1, size(my_descriptor_data%x)
-           call print('DESCRIPTOR '//i//' SPARSE_SCORE = '//sparseScore)
+           call print('DESCRIPTOR '//i//' SPARSE_SCORE = '//sparseScore(i))
         enddo
         deallocate(sparseScore)
      endif
