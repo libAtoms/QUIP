@@ -450,6 +450,11 @@ module linearalgebra_module
      module procedure matrix_exp_d
   end interface matrix_exp
 
+  private :: uniq_int, uniq_real, uniq_real_dim2
+  interface uniq
+     module procedure uniq_int, uniq_real, uniq_real_dim2
+  endinterface uniq
+
   private :: find_nonzero_chunk_real1d
   interface find_nonzero_chunk
      module procedure find_nonzero_chunk_real1d
@@ -1144,7 +1149,7 @@ CONTAINS
    ! a .feq. b
    !
    ! floating point logical comparison
-   function real_feq(x,y) result(feq)
+   pure function real_feq(x,y) result(feq)
 
      real(dp), intent(in) :: x, y
      logical              :: feq
@@ -1156,7 +1161,7 @@ CONTAINS
    ! a .fne. b
    !
    ! floating point logical comparison
-   function real_fne(x,y) result(fne)
+   pure function real_fne(x,y) result(fne)
 
      real(dp), intent(in) :: x, y
      logical              :: fne
@@ -1168,7 +1173,7 @@ CONTAINS
    ! za .feq. zb
    !
    ! complex logical comparison
-   function complex_feq(x,y) result(feq)
+   pure function complex_feq(x,y) result(feq)
 
      complex(dp), intent(in) :: x, y
      logical              :: feq
@@ -1185,7 +1190,7 @@ CONTAINS
    ! za .fne. zb
    !
    ! complex logical comparison
-   function complex_fne(x,y) result(fne)
+   pure function complex_fne(x,y) result(fne)
 
      complex(dp), intent(in) :: x, y
      logical              :: fne
@@ -4796,7 +4801,7 @@ CONTAINS
    !% Return a copy of the integer array 'array' with duplicate
    !% elements removed. 'uniq' assumes the input array is sorted
    !% so that duplicate entries appear consecutively.
-   subroutine uniq(array, uniqed)
+   subroutine uniq_int(array, uniqed)
      integer, intent(in), dimension(:) :: array
      integer, dimension(:), allocatable, intent(out) :: uniqed
 
@@ -4815,8 +4820,72 @@ CONTAINS
      allocate(uniqed(n_seen))
      uniqed = seen(1:n_seen)
 
-   end subroutine uniq
+   end subroutine uniq_int
 
+   subroutine uniq_real(array, uniqed)
+     real(dp), intent(in), dimension(:) :: array
+     real(dp), dimension(:), allocatable, intent(out) :: uniqed
+
+     real(dp), dimension(size(array)) :: seen
+     integer :: i, n_seen
+
+     n_seen = 1
+     seen(1) = array(1)
+
+     do i=2,size(array)
+        if (array(i) .feq. array(i-1)) cycle
+        n_seen = n_seen + 1
+        seen(n_seen) = array(i)
+     end do
+
+     allocate(uniqed(n_seen))
+     uniqed = seen(1:n_seen)
+
+   end subroutine uniq_real
+
+   subroutine uniq_real_dim2(array, uniqed, unique)
+     real(dp), intent(in), dimension(:,:), target :: array
+     real(dp), dimension(:,:), allocatable, intent(out), optional :: uniqed
+     logical, dimension(:), intent(out), optional, target :: unique
+
+     logical, dimension(:), pointer :: my_unique
+     real(dp), dimension(:), pointer :: last_unique
+     integer :: i, n_seen, d, n
+
+     d = size(array,1)
+     n = size(array,2)
+
+     if(present(unique)) then
+        my_unique => unique
+     else
+        allocate(my_unique(n))
+     endif
+
+     my_unique = .false.
+     my_unique(1) = .true.
+     last_unique => array(:,1)
+
+     do i = 2, n
+        if( last_unique .feq. array(:,i) ) cycle
+        my_unique(i) = .true.
+        last_unique => array(:,i)
+     enddo
+
+     last_unique => null()
+
+     if(present(uniqed)) then
+        n_seen = count(my_unique)
+        call reallocate(uniqed,d,n_seen)
+        uniqed(:,:) = array(:,find_indices(my_unique))
+     endif
+
+     if(present(unique)) then
+        my_unique => null()
+     else
+        deallocate(my_unique)
+     endif
+
+   end subroutine uniq_real_dim2
 
    !% Sort an array of integers into ascending order (slow: scales as N$^2$).
    !% r_data is an accompanying array of reals on which the same reordering is performed
@@ -5095,6 +5164,107 @@ CONTAINS
 
    endsubroutine heap_sort_r
 
+   subroutine heap_sort_r_2dim(array, i_data, r_data)
+     real(dp),           dimension(:,:), intent(inout)  :: array
+     integer,  optional, dimension(:), intent(inout)    :: i_data
+     real(dp), optional, dimension(:), intent(inout)    :: r_data
+
+     ! ---
+
+     integer   :: N, i, j, root, tmpi, d
+     real(dp), dimension(:), allocatable  :: tmp_array
+     real(dp) :: tmpr
+
+     ! ---
+
+     N = size(array,2)
+     d = size(array,1)
+     allocate(tmp_array(d))
+
+     do i = N/2, 1, -1
+
+        j = i
+        call siftdown(j, N)
+
+     enddo
+
+     do i = N, 2, -1
+        
+        ! Swap
+        tmp_array(:) = array(:,1)
+        array(:,1)   = array(:,i)
+        array(:,i)   = tmp_array(:)
+        if (present(i_data)) then
+           tmpi       = i_data(1)
+           i_data(1)  = i_data(i)
+           i_data(i)  = tmpi
+        endif
+        if (present(r_data)) then
+           tmpr       = r_data(1)
+           r_data(1)  = r_data(i)
+           r_data(i)  = tmpr
+        endif
+
+        root = 1
+        j = i -1
+        call siftdown(root, j)
+    
+     enddo
+
+     deallocate(tmp_array)
+
+   contains
+
+     subroutine siftdown(root, bottom)
+       integer, intent(inout)  :: root
+       integer, intent(in)     :: bottom
+
+       ! ---
+
+       logical  :: done
+       integer  :: maxchild
+
+       ! ---
+
+       done = .false.
+
+       do while ((root*2 <= bottom) .and. .not. done)
+
+          if (root*2 == bottom) then
+             maxchild = root * 2
+          else if ( real_array_gt(array(:,root*2),array(:,root*2+1)) ) then  !array(:,root*2) > array(:,root*2+1)
+             maxchild = root * 2
+          else
+             maxchild = root*2 + 1
+          endif
+
+          if ( real_array_lt(array(:,root),array(:,maxchild)) ) then ! array(:,root) < array(:,maxchild)
+
+             ! Swap
+             tmp_array(:)       = array(:,root)
+             array(:,root)      = array(:,maxchild)
+             array(:,maxchild)  = tmp_array(:)
+             if (present(i_data)) then
+                tmpi              = i_data(root)
+                i_data(root)      = i_data(maxchild)
+                i_data(maxchild)  = tmpi
+             endif
+             if (present(r_data)) then
+                tmpr              = r_data(root)
+                r_data(root)      = r_data(maxchild)
+                r_data(maxchild)  = tmpr
+             endif
+
+             root = maxchild
+          else
+             done = .true.
+          endif
+
+       enddo
+
+     endsubroutine siftdown
+
+   endsubroutine heap_sort_r_2dim
 
    !% Do an in place insertion sort on 'this', in ascending order.
    !% If 'idx' is present  then on exit it will contain the list 
@@ -5559,6 +5729,78 @@ CONTAINS
     lt = .not.int_array_ge(array1,array2)
 
   end function int_array_lt
+
+  pure function int_array_le(array1,array2) result(le)
+
+    integer, intent(in) :: array1(:)
+    integer, intent(in) :: array2(size(array1))
+    logical             :: le
+
+    le = .not.int_array_gt(array1,array2)
+
+  end function int_array_le
+
+  pure function real_array_gt(array1,array2)
+     real(dp), dimension(:), intent(in) :: array1
+     real(dp), dimension(size(array1)), intent(in) :: array2
+     logical :: real_array_gt
+
+     integer :: i
+
+     do i = 1, size(array1)
+        if(array1(i) .feq. array2(i)) then
+           cycle
+        elseif(array1(i) > array2(i)) then
+           real_array_gt = .true.
+           return
+        else !array1(i) < array2(i)
+           real_array_gt = .false.
+           return
+        endif
+     enddo
+
+     real_array_gt = .false.
+
+  endfunction real_array_gt
+
+  pure function real_array_ge(array1,array2)
+     real(dp), dimension(:), intent(in) :: array1
+     real(dp), dimension(size(array1)), intent(in) :: array2
+     logical :: real_array_ge
+
+     integer :: i
+
+     do i = 1, size(array1)
+        if(array1(i) .feq. array2(i)) then
+           cycle
+        elseif(array1(i) > array2(i)) then
+           real_array_ge = .true.
+           return
+        else !array1(i) < array2(i)
+           real_array_ge = .false.
+           return
+        endif
+     enddo
+
+     real_array_ge = .true.
+
+  endfunction real_array_ge
+
+  pure function real_array_lt(array1,array2)
+     real(dp), dimension(:), intent(in) :: array1
+     real(dp), dimension(size(array1)), intent(in) :: array2
+     logical :: real_array_lt
+
+     real_array_lt = .not.real_array_ge(array1,array2)
+  endfunction real_array_lt
+
+  pure function real_array_le(array1,array2)
+     real(dp), dimension(:), intent(in) :: array1
+     real(dp), dimension(size(array1)), intent(in) :: array2
+     logical :: real_array_le
+
+     real_array_le = .not.real_array_gt(array1,array2)
+  endfunction real_array_le
 
   !% compare contents of 2 cells in up to N=2 arrays (int or real), return true if 
   !% contents in first cell is less than 2nd, with 1st array taking precendence.  
