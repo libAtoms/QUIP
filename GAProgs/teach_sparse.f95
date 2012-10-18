@@ -174,7 +174,7 @@ program teach_sparse_program
      call param_register(params, 'add_species', 'F', main_teach_sparse%add_species(i_coordinate), &
      help_string="Create species-specific descriptor, using the descriptor string as a template.")
 
-     call param_register(params, 'covariance_type', 'ARD', covariance_type_str, &
+     call param_register(params, 'covariance_type', PARAM_MANDATORY, covariance_type_str, &
         help_string="Type of covariance function to use. Available: ARD, DOT_PRODUCT, BOND_REAL_SPACE")
 
      call param_register(params, 'theta', '1.0', main_teach_sparse%theta(i_coordinate), &
