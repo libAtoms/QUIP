@@ -125,6 +125,13 @@ module gp_predict_module
 
    integer, parameter, public :: GP_COVARIANCE_FITC = 1
    integer, parameter, public :: GP_COVARIANCE_DTC = 2
+
+
+   integer, parameter, public :: COVARIANCE_NONE             = 0
+   integer, parameter, public :: COVARIANCE_ARD              = 1
+   integer, parameter, public :: COVARIANCE_DOT_PRODUCT      = 2
+   integer, parameter, public :: COVARIANCE_BOND_REAL_SPACE  = 3
+
    type gpCovariance_bond_real_space
 
       integer :: n
@@ -219,12 +226,7 @@ module gp_predict_module
       ! Lists the permutations symmetries of the coordinates
 
       type(gpCovariance_bond_real_space) :: bond_real_space_cov
-      logical :: bond_real_space = .false.
-
-      type(gpCovariance_atom_real_space) :: atom_real_space_cov
-      logical :: atom_real_space = .false.
-
-      logical :: soap = .false.
+      integer :: covariance_type = COVARIANCE_NONE
 
       type(extendable_str) :: descriptor_str
 
@@ -392,7 +394,7 @@ module gp_predict_module
    endinterface gp_Predict
    public :: gp_Predict
 
-   public :: gpCoordinates_Covariance, gpCoordinates_gpCovariance_bond_real_space_Initialise, gpCoordinates_gpCovariance_atom_real_space_Initialise
+   public :: gpCoordinates_Covariance, gpCoordinates_gpCovariance_bond_real_space_Initialise
    public :: gpCoordinates_initialise_SparseScore
 
    contains
@@ -424,12 +426,12 @@ module gp_predict_module
 
    endsubroutine gpFull_setParameters
 
-   subroutine gpFull_gpCoordinates_setParameters(this, i, d, n_x, n_xPrime, delta, f0, bond_real_space, atom_real_space, soap, x_size_max, xPrime_size_max, error)
+   subroutine gpFull_gpCoordinates_setParameters(this, i, d, n_x, n_xPrime, delta, f0, covariance_type, x_size_max, xPrime_size_max, error)
 
       type(gpFull), intent(inout) :: this
       integer, intent(in) :: i, d, n_x, n_xPrime
       real(dp), intent(in) :: delta, f0
-      logical, optional, intent(in) :: bond_real_space, atom_real_space, soap
+      integer, optional, intent(in) :: covariance_type
       integer, optional, intent(in) :: x_size_max, xPrime_size_max
       integer, optional, intent(out) :: error
 
@@ -443,16 +445,16 @@ module gp_predict_module
          RAISE_ERROR( 'gpFull_set_gpCoordinates_parameters: access to descriptor '//i//' is not possible as number of descriptors is '//this%n_coordinate,error )
       endif
 
-      call gpCoordinates_setParameters(this%coordinate(i), d, n_x, n_xPrime, delta, f0, bond_real_space=bond_real_space, atom_real_space=atom_real_space, soap = soap, x_size_max=x_size_max, xPrime_size_max=xPrime_size_max, error=error)
+      call gpCoordinates_setParameters(this%coordinate(i), d, n_x, n_xPrime, delta, f0, covariance_type = covariance_type, x_size_max=x_size_max, xPrime_size_max=xPrime_size_max, error=error)
 
    endsubroutine gpFull_gpCoordinates_setParameters
 
-   subroutine gpCoordinates_setParameters(this, d, n_x, n_xPrime, delta, f0, bond_real_space, atom_real_space, soap, x_size_max, xPrime_size_max, error)
+   subroutine gpCoordinates_setParameters(this, d, n_x, n_xPrime, delta, f0, covariance_type, x_size_max, xPrime_size_max, error)
 
       type(gpCoordinates), intent(inout) :: this
       integer, intent(in) :: d, n_x, n_xPrime
       real(dp), intent(in) :: delta, f0
-      logical, optional, intent(in) :: bond_real_space, atom_real_space, soap
+      integer, optional, intent(in) :: covariance_type
       integer, optional, intent(in) :: x_size_max, xPrime_size_max
       integer, optional, intent(out) :: error
 
@@ -473,9 +475,7 @@ module gp_predict_module
       this%n_sparseX = 0
       this%n_permutations = 1
 
-      this%bond_real_space = optional_default(.false., bond_real_space)
-      this%atom_real_space = optional_default(.false., atom_real_space)
-      this%soap = optional_default(.false., soap)
+      this%covariance_type = optional_default(COVARIANCE_ARD, covariance_type)
 
       if(present(x_size_max)) then
          allocate( this%x(x_size_max,n_x) )
@@ -484,7 +484,7 @@ module gp_predict_module
       endif
       this%x = 0.0_dp
 
-      if(present(xPrime_size_max) .and. this%atom_real_space) then
+      if(present(xPrime_size_max)) then
          allocate( this%xPrime(xPrime_size_max,n_xPrime) )
       else
          allocate( this%xPrime(d,n_xPrime) )
@@ -508,18 +508,18 @@ module gp_predict_module
       this%covarianceDiag_x_x = 1.0_dp
       this%covarianceDiag_xPrime_xPrime = 1.0_dp
 
-      if(this%bond_real_space .or. this%atom_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          allocate( this%x_size(n_x), this%xPrime_size(n_xPrime) )
          this%x_size = d
          this%xPrime_size = 0
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 0.0_dp
          this%permutations = 1
-      elseif( this%soap ) then
+      elseif( this%covariance_type == COVARIANCE_DOT_PRODUCT ) then
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 1.0_dp
          this%permutations = 1
-      else
+      elseif( this%covariance_type == COVARIANCE_ARD ) then
          allocate( this%theta(d), this%permutations(d,1) )
          this%theta = 0.0_dp
          this%permutations(:,1) = (/ (i, i=1, d) /)
@@ -529,12 +529,12 @@ module gp_predict_module
       this%initialised = .true.
    endsubroutine gpCoordinates_setParameters
 
-   subroutine gpCoordinates_setParameters_sparse(this, d, n_sparseX, delta, f0, bond_real_space, atom_real_space, soap, sparseX_size_max, error)
+   subroutine gpCoordinates_setParameters_sparse(this, d, n_sparseX, delta, f0, covariance_type, sparseX_size_max, error)
 
       type(gpCoordinates), intent(inout) :: this
       integer, intent(in) :: d, n_sparseX
       real(dp), intent(in) :: delta, f0
-      logical, optional, intent(in) :: bond_real_space, atom_real_space, soap
+      integer, optional, intent(in) :: covariance_type
       integer, optional, intent(in) :: sparseX_size_max
       integer, optional, intent(out) :: error
 
@@ -555,9 +555,7 @@ module gp_predict_module
       this%n_sparseX = n_sparseX
       this%n_permutations = 1
 
-      this%bond_real_space = optional_default(.false., bond_real_space)
-      this%atom_real_space = optional_default(.false., atom_real_space)
-      this%soap = optional_default(.false., soap)
+      this%covariance_type = optional_default(COVARIANCE_ARD, covariance_type)
 
       if(present(sparseX_size_max)) then
          allocate( this%sparseX(sparseX_size_max,n_sparseX) )
@@ -574,17 +572,17 @@ module gp_predict_module
       allocate( this%covarianceDiag_sparseX_sparseX(n_sparseX) )
       this%covarianceDiag_sparseX_sparseX = 1.0_dp
 
-      if(this%bond_real_space .or. this%atom_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          allocate( this%sparseX_size(n_sparseX) )
          this%sparseX_size = 0
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 0.0_dp
          this%permutations = 1
-      elseif( this%soap ) then
+      elseif( this%covariance_type == COVARIANCE_DOT_PRODUCT ) then
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 1.0_dp
          this%permutations = 1
-      else
+      elseif( this%covariance_type == COVARIANCE_ARD ) then
          allocate( this%theta(d), this%permutations(d,1) )
          this%theta = 0.0_dp
          this%permutations(:,1) = (/ (i, i=1, d) /)
@@ -617,9 +615,7 @@ module gp_predict_module
 
       this%n_permutations = size(permutations,2)
 
-      if(this%atom_real_space .or. this%bond_real_space .or. this%soap) then
-
-      else
+      if(this%covariance_type == COVARIANCE_ARD) then
          call reallocate(this%permutations,this%d,this%n_permutations,zero=.true.)
          this%permutations = permutations
          ! Symmetrise theta wrt permutations
@@ -629,6 +625,8 @@ module gp_predict_module
             this%theta = this%theta + theta(this%permutations(:,i))
          enddo
          this%theta = this%theta / real(this%n_permutations,kind=dp)
+      else
+
       endif
 
 
@@ -696,23 +694,21 @@ module gp_predict_module
 
       do i_coordinate = 1, this%n_coordinate
 
-         if(from%coordinate(i_coordinate)%bond_real_space .or. from%coordinate(i_coordinate)%atom_real_space) then
+         if( from%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call gpCoordinates_setParameters_sparse(this%coordinate(i_coordinate), &
                  from%coordinate(i_coordinate)%d, from%coordinate(i_coordinate)%n_sparseX, from%coordinate(i_coordinate)%delta, from%coordinate(i_coordinate)%f0, &
-                 bond_real_space=from%coordinate(i_coordinate)%bond_real_space, atom_real_space=from%coordinate(i_coordinate)%atom_real_space, &
-                 sparseX_size_max=maxval(from%coordinate(i_coordinate)%sparseX_size), &
+                 covariance_type = from%coordinate(i_coordinate)%covariance_type, sparseX_size_max=maxval(from%coordinate(i_coordinate)%sparseX_size), &
                  error=error)
          else
             call gpCoordinates_setParameters_sparse(this%coordinate(i_coordinate), &
-                 from%coordinate(i_coordinate)%d, from%coordinate(i_coordinate)%n_sparseX, from%coordinate(i_coordinate)%delta, from%coordinate(i_coordinate)%f0, soap = from%coordinate(i_coordinate)%soap, &
+                 from%coordinate(i_coordinate)%d, from%coordinate(i_coordinate)%n_sparseX, from%coordinate(i_coordinate)%delta, from%coordinate(i_coordinate)%f0, covariance_type = from%coordinate(i_coordinate)%covariance_type, &
                  error=error)
          endif
 
          this%coordinate(i_coordinate)%sparseX = from%coordinate(i_coordinate)%sparseX
          this%coordinate(i_coordinate)%covarianceDiag_sparseX_sparseX = from%coordinate(i_coordinate)%covarianceDiag_sparseX_sparseX
-         this%coordinate(i_coordinate)%atom_real_space_cov = from%coordinate(i_coordinate)%atom_real_space_cov
 
-         if(from%coordinate(i_coordinate)%bond_real_space .or. from%coordinate(i_coordinate)%atom_real_space) then 
+         if(from%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE) then 
             this%coordinate(i_coordinate)%sparseX_size = from%coordinate(i_coordinate)%sparseX_size
          endif
          this%coordinate(i_coordinate)%theta = from%coordinate(i_coordinate)%theta
@@ -941,13 +937,9 @@ module gp_predict_module
       this%sparsified = .false.
       this%initialised = .false.
 
-      if(this%bond_real_space) call gpCovariance_bond_real_space_Finalise(this%bond_real_space_cov)
-      this%bond_real_space = .false.
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call gpCovariance_bond_real_space_Finalise(this%bond_real_space_cov)
 
-      if(this%atom_real_space) call gpCovariance_atom_real_space_Finalise(this%atom_real_space_cov)
-      this%atom_real_space = .false.
-
-      this%soap = .false.
+      this%covariance_type = COVARIANCE_NONE
 
    endsubroutine gpCoordinates_Finalise
 
@@ -1085,7 +1077,7 @@ module gp_predict_module
          RAISE_ERROR('gpFull_addCoordinates: '//i_coordinate//'th coordinate object is not initialised',error)
       endif
 
-      if( this%coordinate(i_coordinate)%bond_real_space .or. this%coordinate(i_coordinate)%atom_real_space ) then
+      if( this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
          if( size(x,1) > size(this%coordinate(i_coordinate)%x,1) ) then
             allocate( new_x(size(x,1),this%coordinate(i_coordinate)%n_x) )
             new_x = 0.0_dp
@@ -1109,7 +1101,7 @@ module gp_predict_module
          RAISE_ERROR('gpFull_addCoordinates: object full, no more descriptors can be added',error)
       endif
 
-      if( this%coordinate(i_coordinate)%bond_real_space .or. this%coordinate(i_coordinate)%atom_real_space ) then
+      if( this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
          this%coordinate(i_coordinate)%x(1:size(x,1),previous_x+1:this%coordinate(i_coordinate)%current_x) = x
          this%coordinate(i_coordinate)%x_size(previous_x+1:this%coordinate(i_coordinate)%current_x) = size(x,1)
       else
@@ -1163,8 +1155,6 @@ module gp_predict_module
       integer :: previous_xPrime
       real(dp), dimension(:,:), allocatable :: new_xPrime
 
-      integer :: i, first_nonzero, last_nonzero
-
       INIT_ERROR(error)
 
       if( .not. this%initialised ) then
@@ -1179,7 +1169,7 @@ module gp_predict_module
          RAISE_ERROR('gpFull_addCoordinateDerivatives: '//i_coordinate//'th coordinate object is not initialised',error)
       endif
 
-      if( this%coordinate(i_coordinate)%bond_real_space ) then
+      if( this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
          if( size(xPrime,1) > size(this%coordinate(i_coordinate)%xPrime,1) ) then
             allocate( new_xPrime(size(xPrime,1),this%coordinate(i_coordinate)%n_xPrime) )
             new_xPrime = 0.0_dp
@@ -1189,30 +1179,6 @@ module gp_predict_module
             this%coordinate(i_coordinate)%xPrime = new_xPrime
             deallocate( new_xPrime )
          end if
-      elseif( this%coordinate(i_coordinate)%atom_real_space ) then
-
-         ! Put non-zero part of data into the container. Check if everything is the right size. xPrime_size gets the first non-zero index so later the array can be reconstructed.
-         previous_xPrime = this%coordinate(i_coordinate)%current_xPrime
-         do i = 1, size(xPrime,2)
-            call find_nonzero_chunk(xPrime(:,i), first = first_nonzero, last = last_nonzero)
-            if( last_nonzero - first_nonzero + 1 > size(this%coordinate(i_coordinate)%xPrime,1) ) then ! something's wrong: more data, initialised with the wrong size...
-               RAISE_ERROR('gpFull_addCoordinateDerivatives: wrong number of elements non-zero in case of atom real space descriptors',error)
-            endif
-
-            if( first_nonzero + size(this%coordinate(i_coordinate)%xPrime,1) - 1 > size(xPrime,1) ) & ! data is at the very end, and there are extra zeros in the front of the chunk, adjusting starting position to include them
-               first_nonzero = size(xPrime,1) + 1 - size(this%coordinate(i_coordinate)%xPrime,1)
- 
-            if( last_nonzero - size(this%coordinate(i_coordinate)%xPrime,1) + 1 < 1 ) & ! data is at the very beginning, and there are extra zeros in the end of the chunk. adjusting finishing position
-               last_nonzero = size(this%coordinate(i_coordinate)%xPrime,1)
-
-            if( last_nonzero - first_nonzero + 1 < size(this%coordinate(i_coordinate)%xPrime,1) ) & ! data chunk is in the middle and there are zeros either at the front or at the end. adjusting finishing so array is padded with zeros at the end.
-               last_nonzero = first_nonzero + size(this%coordinate(i_coordinate)%xPrime,1) - 1
-
-            ! Now the array should be exactly the right size...
-
-            this%coordinate(i_coordinate)%xPrime(:,previous_xPrime+i) = xPrime(first_nonzero:last_nonzero,i)
-            this%coordinate(i_coordinate)%xPrime_size(previous_xPrime+i) = first_nonzero
-         enddo
       else
          if( size(xPrime,1) /= this%coordinate(i_coordinate)%d ) then
             RAISE_ERROR('gpFull_addCoordinateDerivatives: dimensionality of descriptors '//size(xPrime,1)//' does not match what is given in the object '//this%coordinate(i_coordinate)%d,error)
@@ -1230,11 +1196,9 @@ module gp_predict_module
          RAISE_ERROR('gpFull_addCoordinateDerivatives: object full, no more descriptors can be added',error)
       endif
 
-      if( this%coordinate(i_coordinate)%bond_real_space ) then
+      if( this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
          this%coordinate(i_coordinate)%xPrime(1:size(xPrime,1),previous_xPrime+1:this%coordinate(i_coordinate)%current_xPrime) = xPrime
          this%coordinate(i_coordinate)%xPrime_size(previous_xPrime+1:this%coordinate(i_coordinate)%current_xPrime) = size(xPrime,1)
-      elseif( this%coordinate(i_coordinate)%atom_real_space ) then
-         ! everthing has been done before...
       else
          this%coordinate(i_coordinate)%xPrime(:,previous_xPrime+1:this%coordinate(i_coordinate)%current_xPrime) = xPrime
       endif
@@ -1303,9 +1267,8 @@ module gp_predict_module
       real(dp), dimension(:), intent(in) :: theta
       integer, optional, intent(out) :: error
 
-      integer :: i, x_i_size
+      integer :: i
       real(dp) :: delta
-      real(dp), dimension(:), pointer :: xPrime_i
 
       INIT_ERROR(error)
 
@@ -1318,7 +1281,7 @@ module gp_predict_module
       allocate(this%covarianceDiag_x_xPrime(size(this%x,1),this%n_x))
       this%covarianceDiag_x_xPrime = 0.0_dp
 
-      if(this%bond_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          if(.not. this%bond_real_space_cov%initialised) then
             call gpCoordinates_gpCovariance_bond_real_space_Initialise(this)
          endif
@@ -1335,19 +1298,9 @@ module gp_predict_module
 
          this%bond_real_space_cov%delta = delta
 
-      elseif(this%atom_real_space) then
-         if(.not. this%atom_real_space_cov%initialised) then
-            call gpCoordinates_gpCovariance_atom_real_space_Initialise(this)
-         endif
-
-         do i = 1, this%n_x
-            x_i_size = this%x_size(i)
-            xPrime_i => this%covarianceDiag_x_xPrime(:,i)
-            this%covarianceDiag_x_x(i) = gpCovariance_atom_real_space_Calc(this%atom_real_space_cov, x_i = this%x(:,i), x_i_size = x_i_size, x_j = this%x(:,i), x_j_size = x_i_size, xPrime_i=xPrime_i)
-         enddo
-      elseif(this%soap) then
+      elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
          this%theta = theta
-      else
+      elseif(this%covariance_type == COVARIANCE_ARD) then
          ! Symmetrise theta wrt permutations
          this%theta = 0.0_dp
          do i = 1, this%n_permutations
@@ -1475,8 +1428,7 @@ module gp_predict_module
       integer, optional, intent(out) :: error
 
       integer :: i_coordinate, i_global_sparseX, j_global_sparseX, i_sparseX, j_sparseX, &
-      n_globalY, i_globalY, i_global_yPrime, i_y, i_yPrime, i_x, j_x, n_x, i_xPrime, j_xPrime, n_xPrime, &
-      n, i, first_nonzero, last_nonzero, first_nonzero_i, last_nonzero_i, first_nonzero_j, last_nonzero_j
+      n_globalY, i_globalY, i_global_yPrime, i_y, i_yPrime, i_x, j_x, n_x, i_xPrime, j_xPrime, n_xPrime, n, i
       real(dp) :: covariance_xPrime_sparseX, covariance_x_x_single, covariance_xPrime_xPrime, fc_i, fc_j, dfc_i, dfc_j
 
       real(dp), dimension(:,:,:,:), allocatable :: grad2_Covariance
@@ -1509,15 +1461,9 @@ module gp_predict_module
             RAISE_ERROR('gpFull_covarianceMatrix: '//i_coordinate//'th coordinate object not sparsified',error)
          endif
 
-         if(this%coordinate(i_coordinate)%bond_real_space) then
+         if(this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             if((.not. this%coordinate(i_coordinate)%bond_real_space_cov%initialised) .or. (.not. this%coordinate(i_coordinate)%bond_real_space_cov%sparseX_inisialised)) then
                call gpCoordinates_gpCovariance_bond_real_space_Initialise(this%coordinate(i_coordinate))
-            endif
-         endif
-
-         if(this%coordinate(i_coordinate)%atom_real_space) then
-            if((.not. this%coordinate(i_coordinate)%atom_real_space_cov%initialised)) then
-               call gpCoordinates_gpCovariance_atom_real_space_Initialise(this%coordinate(i_coordinate))
             endif
          endif
 
@@ -1591,7 +1537,7 @@ module gp_predict_module
                endif
             enddo
 
-!$omp parallel do default(none) shared(this,i_coordinate,i_sparseX,grad_Covariance_i,covariance_x_sparseX) private(i_xPrime,i_yPrime,i_x,i_global_yPrime,covariance_xPrime_sparseX,first_nonzero,last_nonzero) reduction(+:covariance_subY_currentX_y)
+!$omp parallel do default(none) shared(this,i_coordinate,i_sparseX,grad_Covariance_i,covariance_x_sparseX) private(i_xPrime,i_yPrime,i_x,i_global_yPrime,covariance_xPrime_sparseX) reduction(+:covariance_subY_currentX_y)
 	    do i_xPrime = 1, this%coordinate(i_coordinate)%n_xPrime
 	       ! loop over all derivative data
 
@@ -1603,19 +1549,12 @@ module gp_predict_module
 		  i_global_yPrime = this%map_yPrime_globalY(i_yPrime)
 		  ! find unique function value/derivative identifier
 
-		  if(this%coordinate(i_coordinate)%atom_real_space) then
-		     first_nonzero = this%coordinate(i_coordinate)%xPrime_size(i_xPrime)
-		  else
-		     first_nonzero = 1
-		  endif
-		  last_nonzero = first_nonzero + size(this%coordinate(i_coordinate)%xPrime,1) - 1
-
 		  ! on Xeon w/ ifort 12, sum is fastest .  ddot is close.  dot_product is terrible
 		  ! on Opteron w/ ifort 12 acml 5.2, ddot is 14.95 s, dot_product is 22.5 s, and sum is 13.9 s
 		  ! dgemv doesn't seem noticeably faster at Opterons (may be faster on Xeon for 'N' transpose setting)
 		  ! covariance_xPrime_sparseX = ddot(size(this%coordinate(i_coordinate)%xPrime,1),grad_Covariance_i(first_nonzero,i_x),1,this%coordinate(i_coordinate)%xPrime(1,i_xPrime),1)*&
 		  ! covariance_xPrime_sparseX = dot_product(grad_Covariance_i(first_nonzero:last_nonzero,i_x),this%coordinate(i_coordinate)%xPrime(:,i_xPrime))* &
-		  covariance_xPrime_sparseX = sum(grad_Covariance_i(first_nonzero:last_nonzero,i_x)*this%coordinate(i_coordinate)%xPrime(:,i_xPrime))* &
+		  covariance_xPrime_sparseX = sum(grad_Covariance_i(:,i_x)*this%coordinate(i_coordinate)%xPrime(:,i_xPrime))* &
 		     this%coordinate(i_coordinate)%cutoff(i_x)*this%coordinate(i_coordinate)%sparseCutoff(i_sparseX) + &
 		     covariance_x_sparseX(i_x)*this%coordinate(i_coordinate)%cutoffPrime(i_xPrime)*this%coordinate(i_coordinate)%sparseCutoff(i_sparseX)
 
@@ -1754,35 +1693,19 @@ module gp_predict_module
                   i_x = xPrime_x_Index(i_xPrime)
                   xPrime_i => this%coordinate(i_coordinate)%xPrime(:,xPrime_Index(i_xPrime))
                   
-                  if(this%coordinate(i_coordinate)%atom_real_space) then
-                     first_nonzero_i = this%coordinate(i_coordinate)%xPrime_size(xPrime_Index(i_xPrime))
-                     last_nonzero_i = first_nonzero_i + size(this%coordinate(i_coordinate)%xPrime,1) - 1
-                  else
-                     first_nonzero_i = 1
-                     last_nonzero_i = size(this%coordinate(i_coordinate)%xPrime_size,1)
-                  endif
-
                   fc_i = this%coordinate(i_coordinate)%cutoff(xIndex(i_x))
                   dfc_i = this%coordinate(i_coordinate)%cutoffPrime(xPrime_Index(i_xPrime))
                   do j_xPrime = 1, n_xPrime
                      j_x = xPrime_x_Index(j_xPrime)
                      xPrime_j => this%coordinate(i_coordinate)%xPrime(:,xPrime_Index(j_xPrime))
 
-                     if(this%coordinate(i_coordinate)%atom_real_space) then
-                        first_nonzero_j = this%coordinate(i_coordinate)%xPrime_size(xPrime_Index(j_xPrime))
-                        last_nonzero_j = first_nonzero_j + size(this%coordinate(i_coordinate)%xPrime,1) - 1
-                     else
-                        first_nonzero_j = 1
-                        last_nonzero_j = size(this%coordinate(i_coordinate)%xPrime_size,1)
-                     endif
-                     
                      fc_j = this%coordinate(i_coordinate)%cutoff(xIndex(j_x))
                      dfc_j = this%coordinate(i_coordinate)%cutoffPrime(xPrime_Index(j_xPrime))
 
-                     covariance_xPrime_xPrime = dot_product(matmul(xPrime_i,grad2_Covariance(first_nonzero_i:last_nonzero_i,first_nonzero_j:last_nonzero_j,j_x,i_x)),xPrime_j)*&
+                     covariance_xPrime_xPrime = dot_product(matmul(xPrime_i,grad2_Covariance(:,:,j_x,i_x)),xPrime_j)*&
                      fc_i*fc_j + &
-                     dot_product(grad_Covariance_j(first_nonzero_i:last_nonzero_i,j_x,i_x),xPrime_i)*fc_i*dfc_j + &
-                     dot_product(grad_Covariance_j(first_nonzero_j:last_nonzero_j,j_x,i_x),xPrime_j)*fc_j*dfc_i + &
+                     dot_product(grad_Covariance_j(:,j_x,i_x),xPrime_i)*fc_i*dfc_j + &
+                     dot_product(grad_Covariance_j(:,j_x,i_x),xPrime_j)*fc_j*dfc_i + &
                      covariance_x_x(j_x,i_x)*dfc_i*dfc_j
                      !gpCoordinates_Covariance( this%coordinate(i_coordinate), i_xPrime = xPrime_Index(i_xPrime), j_xPrime = xPrime_Index(j_xPrime) )
                      this%covarianceDiag_y_y(i_global_yPrime) = this%covarianceDiag_y_y(i_global_yPrime) + covariance_xPrime_xPrime
@@ -1858,8 +1781,7 @@ module gp_predict_module
       type(gpFull), intent(inout) :: this
       integer, optional, intent(out) :: error
 
-      integer :: i_coordinate, n_globalY, i_globalY, j_globalY, i_global_yPrime, j_global_yPrime, i_y, j_y, i_yPrime, j_yPrime, i_x, j_x, i_xPrime, j_xPrime, &
-         first_nonzero, last_nonzero
+      integer :: i_coordinate, n_globalY, i_globalY, j_globalY, i_global_yPrime, j_global_yPrime, i_y, j_y, i_yPrime, j_yPrime, i_x, j_x, i_xPrime, j_xPrime
       real(dp) :: covariance_x_x
       real(dp), dimension(:), allocatable :: globalY
       real(dp), dimension(:,:), allocatable :: grad_Covariance_i
@@ -1880,15 +1802,9 @@ module gp_predict_module
             RAISE_ERROR('gpFull_covarianceMatrix: '//i_coordinate//'th coordinate object not initialised',error)
          endif
 
-         if(this%coordinate(i_coordinate)%bond_real_space) then
+         if(this%coordinate(i_coordinate)%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             if(.not. this%coordinate(i_coordinate)%bond_real_space_cov%initialised) then
                call gpCoordinates_gpCovariance_bond_real_space_Initialise(this%coordinate(i_coordinate))
-            endif
-         endif
-
-         if(this%coordinate(i_coordinate)%atom_real_space) then
-            if(.not. this%coordinate(i_coordinate)%atom_real_space_cov%initialised) then
-               call gpCoordinates_gpCovariance_atom_real_space_Initialise(this%coordinate(i_coordinate))
             endif
          endif
 
@@ -1964,15 +1880,7 @@ module gp_predict_module
                      i_global_yPrime = this%map_yPrime_globalY(i_yPrime)
                      ! find unique function value/derivative identifier
 
-                     if(this%coordinate(i_coordinate)%atom_real_space) then
-                        first_nonzero = this%coordinate(i_coordinate)%xPrime_size(i_xPrime)
-                        last_nonzero = first_nonzero + size(this%coordinate(i_coordinate)%xPrime,1) - 1
-                     else
-                        first_nonzero = 1
-                        last_nonzero = size(this%coordinate(i_coordinate)%xPrime,1)
-                     endif
-
-                     covariance_x_x = dot_product(grad_Covariance_i(first_nonzero:last_nonzero,i_x),this%coordinate(i_coordinate)%xPrime(:,i_xPrime))
+                     covariance_x_x = dot_product(grad_Covariance_i(:,i_x),this%coordinate(i_coordinate)%xPrime(:,i_xPrime))
                      !gpCoordinates_Covariance(this%coordinate(i_coordinate), i_xPrime = i_xPrime, j_x = j_x)
                      this%covariance_y_y(i_global_yPrime, j_globalY) = this%covariance_y_y(i_global_yPrime, j_globalY) + covariance_x_x
                   endif
@@ -2068,7 +1976,7 @@ module gp_predict_module
       real(dp) :: gpCoordinates_Covariance
 
       integer :: i_p, x_i_size, x_j_size, i
-      real(dp) :: covarianceExp, covarianceDiag_x_x_i, covarianceDiag_x_x_j, normalisation, zeta, cov_delta
+      real(dp) :: covarianceExp, covarianceDiag_x_x_i, covarianceDiag_x_x_j
       real(dp), dimension(:), pointer :: x_i, x_j, grad_Covariance_Diag_i, grad_Covariance_Diag_j
       real(dp), dimension(this%d) :: xI_xJ_theta2, xI_xJ
 
@@ -2098,7 +2006,7 @@ module gp_predict_module
          covarianceDiag_x_x_i = this%covarianceDiag_x_x(i_x)
          grad_Covariance_Diag_i => this%covarianceDiag_x_xPrime(:,i_x)
 
-         if(this%bond_real_space .or. this%atom_real_space) then
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             x_i_size = this%x_size(i_x)
          endif
       endif
@@ -2108,7 +2016,7 @@ module gp_predict_module
          covarianceDiag_x_x_j = this%covarianceDiag_x_x(j_x)
          grad_Covariance_Diag_j => this%covarianceDiag_x_xPrime(:,j_x)
 
-         if(this%bond_real_space .or. this%atom_real_space) then
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             x_j_size = this%x_size(j_x)
          endif
       endif
@@ -2117,7 +2025,7 @@ module gp_predict_module
          x_i => this%sparseX(:,i_sparseX)
          covarianceDiag_x_x_i = this%covarianceDiag_sparseX_sparseX(i_sparseX)
 
-         if(this%bond_real_space .or. this%atom_real_space) then
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             x_i_size = this%sparseX_size(i_sparseX)
          endif
       endif
@@ -2126,7 +2034,7 @@ module gp_predict_module
          x_j => this%sparseX(:,j_sparseX)
          covarianceDiag_x_x_j = this%covarianceDiag_sparseX_sparseX(j_sparseX)
 
-         if(this%bond_real_space .or. this%atom_real_space) then
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             x_j_size = this%sparseX_size(j_sparseX)
          endif
       endif
@@ -2146,7 +2054,7 @@ module gp_predict_module
          grad2_Covariance = 0.0_dp
       endif
 
-      if(this%bond_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          if(present(i_x)) then
             if(present(j_x)) then
                gpCoordinates_Covariance = gpCovariance_bond_real_space_Calc(this%bond_real_space_cov, x_i=this%x(:,i_x), x_i_size=this%x_size(i_x), &
@@ -2172,14 +2080,14 @@ module gp_predict_module
 !            elseif(present(j_xPrime)) then
 !            endif
          endif
-      elseif(this%soap) then
+      elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
          gpCoordinates_Covariance = sum(x_i*x_j)
 
          if(present(grad_Covariance_i)) grad_Covariance_i = this%delta**2 * this%theta(1) * gpCoordinates_Covariance**(this%theta(1)-1.0_dp) * x_j
          if(present(grad_Covariance_j)) grad_Covariance_j = this%delta**2 * this%theta(1) * gpCoordinates_Covariance**(this%theta(1)-1.0_dp) * x_i
 
          gpCoordinates_Covariance = this%delta**2 * gpCoordinates_Covariance**this%theta(1)
-      else
+      elseif(this%covariance_type == COVARIANCE_ARD ) then
          do i_p = 1, this%n_permutations
             ! permute only i. theta should be symmetrised by now.
 
@@ -2241,7 +2149,7 @@ module gp_predict_module
 
       INIT_ERROR(error)
 
-      if (.not. this%bond_real_space) then
+      if (.not. this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          RAISE_ERROR('gpCoordinates_gpCovariance_bond_real_space_Initialise: covariance is not bond_real_space', error)
       endif
 
@@ -2436,46 +2344,6 @@ module gp_predict_module
 !      this%bond_real_space_cov%initialised = .true.
 !
 !   endsubroutine gpCoordinates_gpCovariance_bond_real_space_Initialise
-
-   subroutine gpCoordinates_gpCovariance_atom_real_space_Initialise( this, error )
-      type(gpCoordinates), intent(inout) :: this
-      integer, optional, intent(out) :: error
-
-      type(Dictionary) :: params
-
-!$omp barrier      
-      INIT_ERROR(error)
-
-      if (.not. this%atom_real_space) then
-         RAISE_ERROR('gpCoordinates_gpCovariance_atom_real_space_Initialise: covariance is not atom_real_space', error)
-      endif
-
-      call gpCovariance_atom_real_space_Finalise(this%atom_real_space_cov, error)
-
-      call initialise(params)
-      call param_register(params, 'l_max', '0', this%atom_real_space_cov%l_max, &
-           help_string="Cutoff of spherical harmonics expansion")
-      call param_register(params, 'atom_sigma', '1.0', this%atom_real_space_cov%atom_sigma, &
-           help_string="Atoms sigma for atom_real_space-type descriptors")
-      call param_register(params, 'zeta', '1.0', this%atom_real_space_cov%zeta, &
-      help_string="Exponent of covariance function")
-      call param_register(params, 'delta', '1.0', this%atom_real_space_cov%delta, &
-           help_string="delta for atom_real_space-type descriptors")
-      call param_register(params, 'cutoff', '0.0', this%atom_real_space_cov%cutoff, &
-           help_string="cutoff for atom_real_space-type descriptors")
-      call param_register(params, 'cutoff_transition_width', '0.0', this%atom_real_space_cov%cutoff_transition_width, &
-           help_string="cutoff_transition_width for atom_real_space-type descriptors")
-
-      if (.not. param_read_line(params, string(this%descriptor_str), ignore_unknown=.true., task='gpCoordinates_gpCovariance_atom_real_space_Initialise descriptor_str')) then
-         RAISE_ERROR("gpCoordinates_gpCovariance_bond_atom_space_Initialise failed to parse descriptor_str='"//trim(string(this%descriptor_str))//"'", error)
-      endif
-      call finalise(params)
-
-      this%atom_real_space_cov%initialised = .true.
-
-      this%atom_real_space_cov%atom_sigma = 0.5_dp / this%atom_real_space_cov%atom_sigma**2
-
-   endsubroutine gpCoordinates_gpCovariance_atom_real_space_Initialise
 
    function gpCovariance_bond_real_space_Calc( this, x_i, x_i_size, x_j, x_j_size, i_sparseX, j_sparseX, error )
       type(gpCovariance_bond_real_space), intent(in) :: this
@@ -3835,13 +3703,13 @@ module gp_predict_module
 
       real(dp) :: gpCoordinates_Predict
 
-      real(dp) :: covarianceExp, zeta
+      real(dp) :: covarianceExp
       real(dp), pointer :: fc_i
       real(dp), dimension(:), pointer :: x_i
       real(dp), dimension(this%d) :: xI_xJ_theta
       real(dp), dimension(this%n_sparseX) :: k
       integer :: i_sparseX, i_p
-      real(dp) :: delta, covariance_x_x, covariance_x_xStar
+      real(dp) :: delta, covariance_x_x
       real(dp), allocatable :: covariance_x_xStars(:), alpha_scaled(:)
       real(dp), dimension(:), pointer :: xPrime_i
       real(dp), dimension(:), allocatable, target :: grad_kStar, k_mm_k
@@ -3855,7 +3723,7 @@ module gp_predict_module
          RAISE_ERROR('gpCoordinates_Predict: object not initialised', error)
       endif
 
-      if(this%bond_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          if((.not. this%bond_real_space_cov%initialised) .or. (.not. this%bond_real_space_cov%sparseX_inisialised)) then
             call gpCoordinates_gpCovariance_bond_real_space_Initialise(this)
          endif
@@ -3880,7 +3748,7 @@ module gp_predict_module
          allocate(grad_k(size(xStar),this%n_sparseX))
       endif
 
-      if (this%soap) then
+      if (this%covariance_type == COVARIANCE_DOT_PRODUCT) then
 	 allocate(covariance_x_xStars(this%n_sparseX))
 	 call dgemv('T', size(this%sparseX,1), size(this%sparseX,2), 1.0_dp, this%sparseX(1,1), size(this%sparseX, 1), &
 	            xStar(1), 1, 0.0_dp, covariance_x_xStars(1), 1)
@@ -3893,7 +3761,7 @@ module gp_predict_module
       else
 	 xPrime_i => null()
 	 do i_sparseX = 1, this%n_sparseX
-	    if(this%bond_real_space) then
+	    if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
 	       delta = this%bond_real_space_cov%delta
 	       this%bond_real_space_cov%delta = 1.0_dp
 	       covariance_x_x = gpCovariance_bond_real_space_Calc(this%bond_real_space_cov, x_i=xStar, x_i_size=(size(xStar) - 1), x_j=xStar, x_j_size=(size(xStar) - 1))
@@ -3901,13 +3769,13 @@ module gp_predict_module
 	       k(i_sparseX) = gpCovariance_bond_real_space_Calc(this%bond_real_space_cov, x_i=xStar, x_i_size=(size(xStar) - 1), j_sparseX=i_sparseX) &
 			      / sqrt(covariance_x_x * this%covarianceDiag_sparseX_sparseX(i_sparseX))
 ! now a single dgemv call outside the loop 
-!	    elseif(this%soap) then
+!	    elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
 !	       covariance_x_xStar = dot_product(xStar,this%sparseX(:,i_sparseX))
 !
 !	       k(i_sparseX) = this%delta**2 * covariance_x_xStar**this%theta(1)
 !
 !	       if(present(gradPredict)) grad_k(:,i_sparseX) = this%delta**2 * this%theta(1) * covariance_x_xStar**(this%theta(1)-1.0_dp) * this%sparseX(:,i_sparseX)
-	    else
+            elseif(this%covariance_type == COVARIANCE_ARD) then
 	       x_i => this%sparseX(:,i_sparseX)
 	       fc_i => this%sparseCutoff(i_sparseX)
 	       do i_p = 1, this%n_permutations
@@ -3935,7 +3803,7 @@ module gp_predict_module
          if(allocated(k_mm_k)) deallocate(k_mm_k)
       endif
 
-      if (this%soap) then
+      if (this%covariance_type == COVARIANCE_DOT_PRODUCT) then
 	 if(present(gradPredict)) &
 	    call dgemv('N', size(this%sparseX,1), size(this%sparseX,2), 1.0_dp, this%sparseX(1,1), size(this%sparseX,1), &
 	       alpha_scaled(1), 1, 0.0_dp, gradPredict(1), 1)
@@ -3977,14 +3845,10 @@ module gp_predict_module
          x_i => this%sparseX(:,i)
          fc_i => this%sparseCutoff(i)
          do j = i, this%n_sparseX
-            if(this%bond_real_space) then
-            elseif(this%atom_real_space) then
-               k_mm(j,i) = ( gpCovariance_atom_real_space_Calc( this%atom_real_space_cov, x_i=this%sparseX(:,i), x_i_size=this%sparseX_size(i), &
-               x_j=this%sparseX(:,j), x_j_size=this%sparseX_size(j) ) / &
-               sqrt(this%covarianceDiag_sparseX_sparseX(i)*this%covarianceDiag_sparseX_sparseX(j)) )**this%atom_real_space_cov%zeta * this%atom_real_space_cov%delta**2
-            elseif(this%soap) then
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
+            elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
                k_mm(j,i) = this%delta**2 * dot_product( this%sparseX(:,i),this%sparseX(:,j) )**this%theta(1)
-            else
+            elseif( this%covariance_type == COVARIANCE_ARD ) then
                x_j => this%sparseX(:,j)
                fc_j => this%sparseCutoff(j)
                do i_p = 1, this%n_permutations
@@ -4054,8 +3918,6 @@ module gp_predict_module
       integer, intent(out), optional :: error
 
       integer :: i, j, j_end
-      real(dp), dimension(:), allocatable :: xyz_array
-      integer :: xyz_array_size
       logical :: have_sparseX_base_filename
 
       INIT_ERROR(error)
@@ -4078,13 +3940,11 @@ module gp_predict_module
       call xml_AddAttribute(xf,"signal_mean", ""//this%f0)
       call xml_AddAttribute(xf,"sparsified", ""//this%sparsified)
       call xml_AddAttribute(xf,"n_permutations", ""//this%n_permutations)
-      if(this%bond_real_space) call xml_AddAttribute(xf,"bond_real_space", ""//this%bond_real_space)
-      if(this%atom_real_space) call xml_AddAttribute(xf,"atom_real_space", ""//this%atom_real_space)
-      if(this%soap) call xml_AddAttribute(xf,"soap", ""//this%soap)
+      call xml_AddAttribute(xf,"covariance_type", ""//this%covariance_type)
 
       if(this%sparsified) then
          call xml_AddAttribute(xf,"n_sparseX",""//this%n_sparseX)
-         if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"sparseX_size_max", ""//maxval(this%sparseX_size))
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"sparseX_size_max", ""//maxval(this%sparseX_size))
 	 if (have_sparseX_base_filename) then
 	    if (present(label)) then
 	       call xml_AddAttribute(xf,"sparseX_filename",trim(sparseX_base_filename)//"."//trim(label))
@@ -4095,8 +3955,8 @@ module gp_predict_module
       else
          call xml_AddAttribute(xf,"n_x",""//this%n_x)
          call xml_AddAttribute(xf,"n_xPrime",""//this%n_xPrime)
-         if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"x_size_max", ""//maxval(this%x_size))
-         if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"xPrime_size_max", ""//maxval(this%xPrime_size))
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"x_size_max", ""//maxval(this%x_size))
+         if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"xPrime_size_max", ""//maxval(this%xPrime_size))
       endif
 
       call xml_NewElement(xf,"theta")
@@ -4120,16 +3980,10 @@ module gp_predict_module
             call xml_AddAttribute(xf,"i", ""//i)
             call xml_AddAttribute(xf,"alpha", ""//this%alpha(i))
             call xml_AddAttribute(xf,"sparseCutoff", ""//this%sparseCutoff(i))
-            if(this%bond_real_space .or. this%atom_real_space) then
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
                call xml_AddAttribute(xf,"covariance_sparseX_sparseX", ""//this%covarianceDiag_sparseX_sparseX(i))
             endif
-            if(this%atom_real_space) then
-               call gp_atom_real_space_RealArray_XYZ(this%atom_real_space_cov,this%sparseX(:,i),this%sparseX_size(i), &
-               xyz_array,xyz_array_size)               
-               call xml_AddAttribute(xf,"sparseX_size", ""//xyz_array_size)
-               call xml_AddCharacters(xf, ""//xyz_array//"  ")
-               if(allocated(xyz_array)) deallocate(xyz_array)
-            elseif(this%bond_real_space) then
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
                call xml_AddAttribute(xf,"sparseX_size", ""//this%sparseX_size(i))
                call xml_AddCharacters(xf, ""//this%sparseX(:this%sparseX_size(i),i)//"  ")
             elseif (.not. have_sparseX_base_filename) then
@@ -4155,8 +4009,8 @@ module gp_predict_module
             call xml_AddAttribute(xf,"i", ""//i)
             call xml_AddAttribute(xf,"map_x_y", ""//this%map_x_y(i))
             call xml_AddAttribute(xf,"cutoff", ""//this%cutoff(i))
-            if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"x_size", ""//this%x_size(i))
-            if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"covariance_x_x", ""//this%covarianceDiag_x_x(i))
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"x_size", ""//this%x_size(i))
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"covariance_x_x", ""//this%covarianceDiag_x_x(i))
             call xml_AddCharacters(xf, ""//this%x(:,i)//" ")
             call xml_EndElement(xf,"x")
          enddo
@@ -4166,8 +4020,8 @@ module gp_predict_module
             call xml_AddAttribute(xf,"map_xPrime_yPrime", ""//this%map_xPrime_yPrime(i))
             call xml_AddAttribute(xf,"map_xPrime_x", ""//this%map_xPrime_x(i))
             call xml_AddAttribute(xf,"cutoffPrime", ""//this%cutoffPrime(i))
-            if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"xPrime_size", ""//this%xPrime_size(i))
-            if(this%bond_real_space .or. this%atom_real_space) call xml_AddAttribute(xf,"covariance_xPrime_xPrime", ""//this%covarianceDiag_xPrime_xPrime(i))
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"xPrime_size", ""//this%xPrime_size(i))
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) call xml_AddAttribute(xf,"covariance_xPrime_xPrime", ""//this%covarianceDiag_xPrime_xPrime(i))
             call xml_AddCharacters(xf, ""//this%xPrime(:,i)//" ")
             call xml_EndElement(xf,"xPrime")
          enddo
@@ -4419,8 +4273,8 @@ module gp_predict_module
       type(dictionary_t), intent(in) :: attributes
 
       real(dp) :: delta, f0
-      integer :: status, d, n_sparseX, n_x, n_xPrime, n_permutations, i, x_size_max, xPrime_size_max, sparseX_size_max
-      logical :: sparsified, bond_real_space, atom_real_space, soap
+      integer :: status, d, n_sparseX, n_x, n_xPrime, n_permutations, i, x_size_max, xPrime_size_max, sparseX_size_max, covariance_type
+      logical :: sparsified
       character(len=1024) :: value
 
       if(name == 'gpCoordinates') then ! new GP_data
@@ -4483,34 +4337,19 @@ module gp_predict_module
                call system_abort("gpCoordinates_startElement_handler did not find the n_permutations attribute.")
             endif
 
-            call GP_FoX_get_value(attributes, 'bond_real_space', value, status)
+            call GP_FoX_get_value(attributes, 'covariance_type', value, status)
             if (status == 0) then
-               read (value,*) bond_real_space
+               read (value,*) covariance_type
             else
-               bond_real_space = .false.
-!               call system_abort("gpCoordinates_startElement_handler did not find the bond_real_space attribute.")
-            endif
-
-            call GP_FoX_get_value(attributes, 'atom_real_space', value, status)
-            if (status == 0) then
-               read (value,*) atom_real_space
-            else
-               atom_real_space = .false.
-!               call system_abort("gpCoordinates_startElement_handler did not find the atom_real_space attribute.")
-            endif
-
-            call GP_FoX_get_value(attributes, 'soap', value, status)
-            if (status == 0) then
-               read (value,*) soap
-            else
-               soap = .false.
+               call system_abort("gpCoordinates_startElement_handler did not find the covariance_type attribute.")
+               covariance_type = COVARIANCE_NONE
             endif
 
             call GP_FoX_get_value(attributes, 'x_size_max', value, status)
             if (status == 0) then
                read (value,*) x_size_max
             else
-               if ((bond_real_space .or. atom_real_space) .and. (.not. sparsified)) call system_abort("gpCoordinates_startElement_handler did not find the x_size_max attribute.")
+               if ((covariance_type == COVARIANCE_BOND_REAL_SPACE) .and. (.not. sparsified)) call system_abort("gpCoordinates_startElement_handler did not find the x_size_max attribute.")
                x_size_max = 0
             endif
 
@@ -4518,7 +4357,7 @@ module gp_predict_module
             if (status == 0) then
                read (value,*) xPrime_size_max
             else
-               if ((bond_real_space .or. atom_real_space) .and. (.not. sparsified)) call system_abort("gpCoordinates_startElement_handler did not find the xPrime_size_max attribute.")
+               if ((covariance_type == COVARIANCE_BOND_REAL_SPACE) .and. (.not. sparsified)) call system_abort("gpCoordinates_startElement_handler did not find the xPrime_size_max attribute.")
                xPrime_size_max = 0
             endif
 
@@ -4526,7 +4365,7 @@ module gp_predict_module
             if (status == 0) then
                read (value,*) sparseX_size_max
             else
-               if ((bond_real_space .or. atom_real_space) .and. sparsified) call system_abort("gpCoordinates_startElement_handler did not find the sparseX_size_max attribute.")
+               if ((covariance_type == COVARIANCE_BOND_REAL_SPACE) .and. sparsified) call system_abort("gpCoordinates_startElement_handler did not find the sparseX_size_max attribute.")
                sparseX_size_max = 0
             endif
 
@@ -4538,10 +4377,10 @@ module gp_predict_module
                   call system_abort("gpCoordinates_startElement_handler did not find the n_sparseX attribute.")
                endif
 
-               if (bond_real_space .or. atom_real_space) then
-                  call gpCoordinates_setParameters_sparse(parse_gpCoordinates,d,n_sparseX,delta,f0,bond_real_space=bond_real_space,atom_real_space=atom_real_space,sparseX_size_max=sparseX_size_max)
+               if (covariance_type == COVARIANCE_BOND_REAL_SPACE) then
+                  call gpCoordinates_setParameters_sparse(parse_gpCoordinates,d,n_sparseX,delta,f0,covariance_type=covariance_type,sparseX_size_max=sparseX_size_max)
                else
-                  call gpCoordinates_setParameters_sparse(parse_gpCoordinates,d,n_sparseX,delta,f0, soap = soap)
+                  call gpCoordinates_setParameters_sparse(parse_gpCoordinates,d,n_sparseX,delta,f0, covariance_type=covariance_type)
 		  call GP_FoX_get_value(attributes, 'sparseX_filename', value, status)
 		  if (status == 0) then
 		     call fread_array_d(size(parse_gpCoordinates%sparseX), parse_gpCoordinates%sparseX(1,1), trim(value)//C_NULL_CHAR)
@@ -4565,14 +4404,14 @@ module gp_predict_module
                   call system_abort("gpCoordinates_startElement_handler did not find the n_xPrime attribute.")
                endif
 
-               if (bond_real_space .or. atom_real_space) then
-                  call gpCoordinates_setParameters(parse_gpCoordinates,d,n_x,n_xPrime,delta,f0,bond_real_space=bond_real_space,atom_real_space=atom_real_space,x_size_max=x_size_max,xPrime_size_max=xPrime_size_max)
+               if (covariance_type == COVARIANCE_BOND_REAL_SPACE) then
+                  call gpCoordinates_setParameters(parse_gpCoordinates,d,n_x,n_xPrime,delta,f0,covariance_type=covariance_type,x_size_max=x_size_max,xPrime_size_max=xPrime_size_max)
                else
-                  call gpCoordinates_setParameters(parse_gpCoordinates,d,n_x,n_xPrime,delta,f0,soap=soap)
+                  call gpCoordinates_setParameters(parse_gpCoordinates,d,n_x,n_xPrime,delta,f0,covariance_type=covariance_type)
                endif
             endif
 
-            if (bond_real_space .or. atom_real_space .or. soap) then
+            if (covariance_type == COVARIANCE_BOND_REAL_SPACE .or. covariance_type == COVARIANCE_DOT_PRODUCT) then
                allocate(parse_in_permutations(1,n_permutations))
             else
                allocate(parse_in_permutations(d,n_permutations))
@@ -4633,7 +4472,7 @@ module gp_predict_module
             parse_sliced = .false.
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'sparseX_size', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%sparseX_size(i)
@@ -4642,7 +4481,7 @@ module gp_predict_module
             endif
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'covariance_sparseX_sparseX', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%covarianceDiag_sparseX_sparseX(i)
@@ -4691,7 +4530,7 @@ module gp_predict_module
             call system_abort("gpCoordinates_startElement_handler did not find the map_x_y attribute.")
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'x_size', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%x_size(i)
@@ -4700,7 +4539,7 @@ module gp_predict_module
             endif
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'covariance_x_x', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%covarianceDiag_x_x(i)
@@ -4739,7 +4578,7 @@ module gp_predict_module
             call system_abort("gpCoordinates_startElement_handler did not find the map_xPrime_x attribute.")
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'xPrime_size', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%xPrime_size(i)
@@ -4748,7 +4587,7 @@ module gp_predict_module
             endif
          endif
 
-         if( parse_gpCoordinates%bond_real_space .or. parse_gpCoordinates%atom_real_space ) then
+         if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
             call GP_FoX_get_value(attributes, 'covariance_xPrime_xPrime', value, status)
             if (status == 0) then
                read (value,*) parse_gpCoordinates%covarianceDiag_xPrime_xPrime(i)
@@ -4770,11 +4609,6 @@ module gp_predict_module
       character(len=*), intent(in)   :: localname
       character(len=*), intent(in)   :: name
 
-      real(dp), dimension(:), allocatable :: x_array, xyz_array
-      integer :: x_array_size, xyz_array_size
-      !character(len=100*parse_gpCoordinates%d) :: val
-      !character(len=200*100) :: val
-
       if(parse_in_gpCoordinates) then
          if(name == 'gpCoordinates') then
             call gpCoordinates_setPermutations(parse_gpCoordinates,parse_in_permutations)
@@ -4786,8 +4620,6 @@ module gp_predict_module
             call string_to_numerical(string(parse_cur_data),parse_gpCoordinates%theta)
          elseif(name == 'descriptor') then
             parse_gpCoordinates%descriptor_str = parse_cur_data
-            if(parse_gpCoordinates%atom_real_space) &
-               call gpCoordinates_gpCovariance_atom_real_space_Initialise(parse_gpCoordinates)
          elseif(name == 'permutation') then
             
             if( parse_i_permutation > size(parse_in_permutations,2) ) then
@@ -4809,23 +4641,9 @@ module gp_predict_module
 
             !val = string(parse_cur_data)
             !read(val,*) parse_gpCoordinates%sparseX(:,parse_i_sparseX)
-            if( parse_gpCoordinates%bond_real_space ) then
+            if( parse_gpCoordinates%covariance_type == COVARIANCE_BOND_REAL_SPACE ) then
                parse_gpCoordinates%sparseX(:,parse_i_sparseX) = 0.0_dp
                call string_to_numerical(string(parse_cur_data),parse_gpCoordinates%sparseX(:parse_gpCoordinates%sparseX_size(parse_i_sparseX),parse_i_sparseX))
-            elseif(parse_gpCoordinates%atom_real_space) then   
-               xyz_array_size = parse_gpCoordinates%sparseX_size(parse_i_sparseX)
-               allocate(xyz_array(xyz_array_size))
-
-               call string_to_numerical(string(parse_cur_data),xyz_array)
-
-               call gp_atom_real_space_XYZ_RealArray(parse_gpCoordinates%atom_real_space_cov, &
-               xyz_array,xyz_array_size,x_array,x_array_size)
-
-               parse_gpCoordinates%sparseX_size(parse_i_sparseX) = x_array_size
-               parse_gpCoordinates%sparseX(:x_array_size,parse_i_sparseX) = x_array
-
-               if(allocated(x_array)) deallocate(x_array)
-               if(allocated(xyz_array)) deallocate(xyz_array)
             else
                if(.not. parse_sparseX_separate_file .and. .not. parse_sliced) call string_to_numerical(string(parse_cur_data),parse_gpCoordinates%sparseX(:,parse_i_sparseX))
             endif

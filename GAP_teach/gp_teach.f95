@@ -92,7 +92,7 @@ module gp_teach_module
       endselect
 
       call sort_array(this%sparseX_index)
-      if(this%bond_real_space .or. this%atom_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          if(allocated(this%sparseX)) deallocate(this%sparseX)
          allocate(this%sparseX(maxval(this%x_size(this%sparseX_index)),this%n_sparseX))
          if(allocated(this%sparseX_size)) deallocate(this%sparseX_size)
@@ -170,7 +170,7 @@ module gp_teach_module
       enddo
 
       call sort_array(this%sparseX_index)
-      if(this%bond_real_space .or. this%atom_real_space) then
+      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
          if(allocated(this%sparseX)) deallocate(this%sparseX)
          allocate(this%sparseX(maxval(this%x_size(this%sparseX_index)),this%n_sparseX))
          if(allocated(this%sparseX_size)) deallocate(this%sparseX_size)
@@ -291,19 +291,7 @@ module gp_teach_module
       allocate(k_n(n), k_mn(m,n), score(n), k_mm_k_m(m,n))
       k_mn = 0.0_dp
  
-      if(this%atom_real_space) then
-         do i = 1, n
-            if(present(config_type_index)) then
-               ii = config_type_index(i)
-            else
-               ii = i
-            endif
-
-            k_n(i) = gpCovariance_atom_real_space_Calc( this%atom_real_space_cov, this%x(:,ii), this%x_size(ii), this%x(:,ii), this%x_size(ii) )
-         enddo
-      else
-         allocate(xI_xJ(this%d))
-      endif
+      allocate(xI_xJ(this%d))
  
       j = 1
       index_out(j) = 1 !ceiling(ran_uniform() * n)
@@ -327,12 +315,10 @@ module gp_teach_module
             else
                ii = i
             endif
-            if(this%bond_real_space) then
-            elseif(this%atom_real_space) then
-               k_mn(j,i) = ( gpCovariance_atom_real_space_Calc( this%atom_real_space_cov, this%x(:,ii), this%x_size(ii), this%x(:,jj), this%x_size(jj) ) / sqrt(k_n(i)*k_n(index_out(j))) )**this%atom_real_space_cov%zeta
-            elseif(this%soap) then
+            if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
+            elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
                k_mn(j,i) = dot_product( this%x(:,ii), this%x(:,jj) )**this%theta(1)
-            else
+            elseif( this%covariance_type == COVARIANCE_ARD ) then
                k_mn(j,i) = 0.0_dp
                do i_p = 1, this%n_permutations
                   !xI_xJ = (this%x(this%permutations(:,i_p),i) - this%x(:,j)) / 4.0_dp

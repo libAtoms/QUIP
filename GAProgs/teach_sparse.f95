@@ -37,7 +37,7 @@ program teach_sparse_program
   type(Dictionary) :: params
 
   character(len=STRING_LENGTH) :: verbosity
-  character(len=STRING_LENGTH) :: descriptor_str, sparse_method_str, core_param_file
+  character(len=STRING_LENGTH) :: descriptor_str, sparse_method_str, covariance_type_str, core_param_file
 
   logical :: has_e0
 
@@ -135,9 +135,7 @@ program teach_sparse_program
   allocate(main_teach_sparse%mark_sparse_atoms(main_teach_sparse%n_coordinate))
   allocate(main_teach_sparse%sparse_method(main_teach_sparse%n_coordinate))
   allocate(main_teach_sparse%add_species(main_teach_sparse%n_coordinate))
-  allocate(main_teach_sparse%bond_real_space(main_teach_sparse%n_coordinate))
-  allocate(main_teach_sparse%atom_real_space(main_teach_sparse%n_coordinate))
-  allocate(main_teach_sparse%soap(main_teach_sparse%n_coordinate))
+  allocate(main_teach_sparse%covariance_type(main_teach_sparse%n_coordinate))
   allocate(main_teach_sparse%theta(main_teach_sparse%n_coordinate))
   allocate(main_teach_sparse%zeta(main_teach_sparse%n_coordinate))
 
@@ -176,14 +174,8 @@ program teach_sparse_program
      call param_register(params, 'add_species', 'F', main_teach_sparse%add_species(i_coordinate), &
      help_string="Create species-specific descriptor, using the descriptor string as a template.")
 
-     call param_register(params, 'bond_real_space', 'F', main_teach_sparse%bond_real_space(i_coordinate), &
-     help_string="Use bond-type real space covariance.")
-
-     call param_register(params, 'atom_real_space', 'F', main_teach_sparse%atom_real_space(i_coordinate), &
-     help_string="Use atom-type real space covariance.")
-
-     call param_register(params, 'soap', 'F', main_teach_sparse%soap(i_coordinate), &
-     help_string="Use soap-type real space covariance.")
+     call param_register(params, 'covariance_type', 'ARD', covariance_type_str, &
+        help_string="Type of covariance function to use. Available: ARD, DOT_PRODUCT, BOND_REAL_SPACE")
 
      call param_register(params, 'theta', '1.0', main_teach_sparse%theta(i_coordinate), &
      help_string="Width of Gaussians for use with real space covariance.")
@@ -212,6 +204,21 @@ program teach_sparse_program
      case default
         call system_abort("unknown sparse method "//trim(sparse_method_str))
      endselect
+
+     select case(lower_case(trim(covariance_type_str)))
+     case('none')
+        call system_abort("covariance type cannot be"//trim(covariance_type_str))
+        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_NONE
+     case('ard')
+        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_ARD
+     case('dot_product')
+        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_DOT_PRODUCT
+     case('BOND_REAL_SPACE')
+        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_BOND_REAL_SPACE
+     case default
+        call system_abort("unknown covariance type"//trim(covariance_type_str)//". Available: ARD, DOT_PRODUCT, BOND_REAL_SPACE")
+     endselect
+
 
      if(.not. has_theta_uniform) main_teach_sparse%theta_uniform(i_coordinate) = 0.0_dp
   enddo

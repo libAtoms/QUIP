@@ -59,10 +59,10 @@ module teach_sparse_mod
 
      real(dp), dimension(:), allocatable :: delta, f0, theta, theta_uniform, zeta
      real(dp), dimension(:,:), allocatable :: sigma
-     integer, dimension(:), allocatable :: n_sparseX, sparse_method, target_type, n_cross, n_descriptors, species_Z
+     integer, dimension(:), allocatable :: n_sparseX, sparse_method, target_type, n_cross, n_descriptors, species_Z, covariance_type
      integer, dimension(:,:), allocatable :: config_type_n_sparseX
      character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type, config_type_n_sparseX_string
-     logical, dimension(:), allocatable :: mark_sparse_atoms, add_species, bond_real_space, atom_real_space, soap
+     logical, dimension(:), allocatable :: mark_sparse_atoms, add_species
 
      logical :: sparseX_separate_file
 
@@ -231,7 +231,7 @@ contains
        d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
        call gp_setParameters(this%my_gp,i_coordinate, d, this%n_descriptors(i_coordinate), this%n_cross(i_coordinate), this%delta(i_coordinate), this%f0(i_coordinate), &
-                             bond_real_space=this%bond_real_space(i_coordinate), atom_real_space=this%atom_real_space(i_coordinate), soap=this%soap(i_coordinate) )
+                             covariance_type=this%covariance_type(i_coordinate) )
        call gp_addDescriptor(this%my_gp,i_coordinate,trim(this%descriptor_str(i_coordinate)))
 
        allocate(permutations(d,descriptor_n_permutations(this%my_descriptor(i_coordinate))))
@@ -430,11 +430,11 @@ contains
           call gp_setTheta(this%my_gp,i_coordinate,theta)
           deallocate(theta)
        else
-          if(this%bond_real_space(i_coordinate) .or. this%atom_real_space(i_coordinate)) then
+          if(this%covariance_type(i_coordinate) == COVARIANCE_BOND_REAL_SPACE) then
              call gp_setTheta(this%my_gp,i_coordinate,(/ this%theta(i_coordinate) /))
-          elseif(this%soap(i_coordinate) ) then
+          elseif(this%covariance_type(i_coordinate) == COVARIANCE_DOT_PRODUCT) then
              call gp_setTheta(this%my_gp,i_coordinate,(/ this%zeta(i_coordinate) /))
-          else
+          elseif( this%covariance_type(i_coordinate) == COVARIANCE_ARD ) then
              allocate(theta_string_array(this%my_gp%coordinate(i_coordinate)%d))
              allocate(theta_fac(this%my_gp%coordinate(i_coordinate)%d))
              call split_string(trim(this%theta_fac_string(i_coordinate))," ",'{}',theta_string_array,n_theta_fac,matching=.true.)
@@ -841,7 +841,7 @@ contains
     real(dp), dimension(:), allocatable :: delta, f0
     integer, dimension(:), allocatable :: n_sparseX, sparse_method
     character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type_n_sparseX_string
-    logical, dimension(:), allocatable :: mark_sparse_atoms, bond_real_space, atom_real_space, soap
+    logical, dimension(:), allocatable :: mark_sparse_atoms, covariance_type
 
     n_descriptor_str = 0
     do i_coordinate = 1, this%n_coordinate
@@ -860,9 +860,7 @@ contains
           call reallocate(sparse_file, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(mark_sparse_atoms, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(sparse_method, n_descriptor_str+size(descriptor_str_i),copy=.true.)
-          call reallocate(bond_real_space, n_descriptor_str+size(descriptor_str_i),copy=.true.)
-          call reallocate(atom_real_space, n_descriptor_str+size(descriptor_str_i),copy=.true.)
-          call reallocate(soap, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(covariance_type, n_descriptor_str+size(descriptor_str_i),copy=.true.)
 
           do i = 1, size(descriptor_str_i)
              new_descriptor_str(i+n_descriptor_str) = trim(descriptor_str_i(i))
@@ -877,9 +875,7 @@ contains
              sparse_file(i+n_descriptor_str) = this%sparse_file(i_coordinate)
              mark_sparse_atoms(i+n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
              sparse_method(i+n_descriptor_str) = this%sparse_method(i_coordinate)
-             bond_real_space(i+n_descriptor_str) = this%bond_real_space(i_coordinate)
-             atom_real_space(i+n_descriptor_str) = this%atom_real_space(i_coordinate)
-             soap(i+n_descriptor_str) = this%soap(i_coordinate)
+             covariance_type(i+n_descriptor_str) = this%covariance_type(i_coordinate)
 
           enddo
           n_descriptor_str = n_descriptor_str + size(descriptor_str_i)
@@ -898,9 +894,7 @@ contains
           call reallocate(sparse_file, n_descriptor_str,copy=.true.)
           call reallocate(mark_sparse_atoms, n_descriptor_str,copy=.true.)
           call reallocate(sparse_method, n_descriptor_str,copy=.true.)
-          call reallocate(bond_real_space, n_descriptor_str,copy=.true.)
-          call reallocate(atom_real_space, n_descriptor_str,copy=.true.)
-          call reallocate(soap, n_descriptor_str,copy=.true.)
+          call reallocate(covariance_type, n_descriptor_str,copy=.true.)
 
           new_descriptor_str(n_descriptor_str) = trim(this%descriptor_str(i_coordinate))
           delta(n_descriptor_str) = this%delta(i_coordinate)
@@ -912,9 +906,7 @@ contains
           sparse_file(n_descriptor_str) = this%sparse_file(i_coordinate)
           mark_sparse_atoms(n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
           sparse_method(n_descriptor_str) = this%sparse_method(i_coordinate)
-          bond_real_space(n_descriptor_str) = this%bond_real_space(i_coordinate)
-          atom_real_space(n_descriptor_str) = this%atom_real_space(i_coordinate)
-          soap(n_descriptor_str) = this%soap(i_coordinate)
+          covariance_type(n_descriptor_str) = this%covariance_type(i_coordinate)
 
           call print('Unchanged descriptor: {'//trim(this%descriptor_str(i_coordinate))//'}')
        endif
@@ -929,9 +921,7 @@ contains
     call reallocate(this%sparse_file, n_descriptor_str)
     call reallocate(this%mark_sparse_atoms, n_descriptor_str)
     call reallocate(this%sparse_method, n_descriptor_str)
-    call reallocate(this%bond_real_space, n_descriptor_str)
-    call reallocate(this%atom_real_space, n_descriptor_str)
-    call reallocate(this%soap, n_descriptor_str)
+    call reallocate(this%covariance_type, n_descriptor_str)
 
     this%descriptor_str(1:n_descriptor_str) = new_descriptor_str
     this%delta = delta
@@ -943,9 +933,7 @@ contains
     this%sparse_file = sparse_file
     this%mark_sparse_atoms = mark_sparse_atoms
     this%sparse_method = sparse_method
-    this%bond_real_space = bond_real_space
-    this%atom_real_space = atom_real_space
-    this%soap = soap
+    this%covariance_type = covariance_type
 
     this%n_coordinate = n_descriptor_str
 
@@ -958,9 +946,7 @@ contains
     if(allocated(sparse_file)) deallocate(sparse_file)
     if(allocated(mark_sparse_atoms)) deallocate(mark_sparse_atoms)
     if(allocated(sparse_method)) deallocate(sparse_method)
-    if(allocated(bond_real_space)) deallocate(bond_real_space)
-    if(allocated(atom_real_space)) deallocate(atom_real_space)
-    if(allocated(soap)) deallocate(soap)
+    if(allocated(covariance_type)) deallocate(covariance_type)
 
   endsubroutine add_multispecies_descriptors
 
