@@ -122,13 +122,15 @@ module gp_teach_module
          case(GP_SPARSE_COVARIANCE)
             call sparse_covariance(this,sparseX_index,config_type_index)
          case(GP_SPARSE_UNIQ)
-            if(i_config_type == 1) this%sparseX_index = x_index(find_indices(x_unique))
+            exit
          case default
             RAISE_ERROR('gpCoordinates_sparsify: '//my_sparseMethod//' method is unknown', error)
          endselect
          this%sparseX_index(li:ui) = config_type_index(sparseX_index)
          deallocate(config_type_index,sparseX_index)
       enddo
+
+      if(my_sparseMethod == GP_SPARSE_UNIQ) this%sparseX_index = x_index(find_indices(x_unique))
 
       call sort_array(this%sparseX_index)
       if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
