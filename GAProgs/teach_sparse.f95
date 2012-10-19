@@ -201,6 +201,8 @@ program teach_sparse_program
         main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_KMEANS
      case('covariance')
         main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_COVARIANCE
+     case('uniq')
+        main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_UNIQ
      case default
         call system_abort("unknown sparse method "//trim(sparse_method_str))
      endselect
