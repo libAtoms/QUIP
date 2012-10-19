@@ -43,74 +43,11 @@ module gp_teach_module
    use clustering_module
 
    interface gp_sparsify
-      module procedure gpFull_sparsify, gpFull_sparsify_array, gpFull_sparsify_array_config_type
+      module procedure gpFull_sparsify_array_config_type
    endinterface gp_sparsify
    public :: gp_sparsify
 
    contains
-
-   subroutine gpCoordinates_sparsify(this, n_sparseX, sparseMethod, error)
-      type(gpCoordinates), intent(inout) :: this
-      integer, intent(in) :: n_sparseX
-      integer, optional, intent(in) :: sparseMethod
-      integer, optional, intent(out) :: error
-
-      integer :: my_sparseMethod
-
-      INIT_ERROR(error)
-
-      my_sparseMethod = optional_default(GP_SPARSE_RANDOM,sparseMethod)
-
-      if( .not. this%initialised ) then
-         RAISE_ERROR('gpCoordinates_sparsify: : object not initialised',error)
-      endif
-
-      this%n_sparseX = n_sparseX
-      call reallocate(this%sparseX, this%d,this%n_sparseX, zero = .true.)
-
-      call reallocate(this%sparseX_index, this%n_sparseX, zero = .true.)
-      call reallocate(this%map_sparseX_globalSparseX, this%n_sparseX, zero = .true.)
-      call reallocate(this%alpha, this%n_sparseX, zero = .true.)
-      call reallocate(this%sparseCutoff, this%n_sparseX, zero = .true.)
-      this%sparseCutoff = 1.0_dp
-
-      select case(my_sparseMethod)
-      case(GP_SPARSE_RANDOM)
-         call fill_random_integer(this%sparseX_index, this%n_x)
-      case(GP_SPARSE_PIVOT)
-         call pivot(this%x(:,:), this%sparseX_index, theta = this%theta)
-      case(GP_SPARSE_CLUSTER)
-         call bisect_kmedoids(this%x(:,:), n_sparseX, med = this%sparseX_index, theta = this%theta)
-      case(GP_SPARSE_UNIFORM)
-         call select_uniform(this%x(:,:), this%sparseX_index)
-      case(GP_SPARSE_KMEANS)
-         call cluster_kmeans(this%x(:,:), this%sparseX_index, theta = this%theta)
-      case(GP_SPARSE_COVARIANCE)
-         call sparse_covariance(this,this%sparseX_index)
-      case default
-         RAISE_ERROR('gpCoordinates_sparsify: '//my_sparseMethod//' method is unknown', error)
-      endselect
-
-      call sort_array(this%sparseX_index)
-      if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
-         if(allocated(this%sparseX)) deallocate(this%sparseX)
-         allocate(this%sparseX(maxval(this%x_size(this%sparseX_index)),this%n_sparseX))
-         if(allocated(this%sparseX_size)) deallocate(this%sparseX_size)
-         allocate(this%sparseX_size(this%n_sparseX))
-         this%sparseX(:,:) = this%x(1:maxval(this%x_size(this%sparseX_index)),this%sparseX_index)
-         this%sparseX_size = this%x_size(this%sparseX_index)
-      else
-         this%sparseX(:,:) = this%x(:,this%sparseX_index)
-      endif
-      this%sparseCutoff = this%cutoff(this%sparseX_index)
-
-      if(allocated(this%covarianceDiag_sparseX_sparseX)) deallocate(this%covarianceDiag_sparseX_sparseX)
-      allocate(this%covarianceDiag_sparseX_sparseX(this%n_sparseX))
-      this%covarianceDiag_sparseX_sparseX = this%covarianceDiag_x_x(this%sparseX_index)
-
-      this%sparsified = .true.
-
-   endsubroutine gpCoordinates_sparsify
 
    subroutine gpCoordinates_sparsify_config_type(this, n_sparseX, sparseMethod, error)
       type(gpCoordinates), intent(inout) :: this
@@ -118,8 +55,11 @@ module gp_teach_module
       integer, optional, intent(in) :: sparseMethod
       integer, optional, intent(out) :: error
 
-      integer :: my_sparseMethod, li, ui, i_config_type, n_config_type
+      integer :: my_sparseMethod, li, ui, i_config_type, n_config_type, d, n_x
       integer, dimension(:), allocatable :: config_type_index, sparseX_index
+      real(dp), dimension(:,:), allocatable :: x
+      integer, dimension(:), allocatable :: x_index
+      logical, dimension(:), allocatable :: x_unique
 
       INIT_ERROR(error)
 
@@ -129,7 +69,26 @@ module gp_teach_module
          RAISE_ERROR('gpCoordinates_sparsify: : object not initialised',error)
       endif
 
-      this%n_sparseX = sum(n_sparseX)
+      if(my_sparseMethod == GP_SPARSE_UNIQ) then
+         d = size(this%x,1)
+         n_x = size(this%x,2)
+
+         allocate(x(d,n_x))
+         allocate(x_index(n_x))
+         allocate(x_unique(n_x))
+
+         x = this%x
+         x_index = (/(i,i=1,n_x)/)
+
+         call heap_sort(x,i_data=x_index)
+         call uniq(x,unique=x_unique)
+         this%n_sparseX = count(x_unique)
+
+         call print('UNIQ type sparsification specified. The number of sparse point was changed to '//this%n_sparseX//' from '//n_sparseX//'.')
+      else
+         this%n_sparseX = sum(n_sparseX)
+      endif
+
       call reallocate(this%sparseX, this%d,this%n_sparseX, zero = .true.)
 
       call reallocate(this%sparseX_index, this%n_sparseX, zero = .true.)
@@ -162,6 +121,8 @@ module gp_teach_module
             call cluster_kmeans(this%x(:,config_type_index), sparseX_index, theta = this%theta)
          case(GP_SPARSE_COVARIANCE)
             call sparse_covariance(this,sparseX_index,config_type_index)
+         case(GP_SPARSE_UNIQ)
+            if(i_config_type == 1) this%sparseX_index = x_index(find_indices(x_unique))
          case default
             RAISE_ERROR('gpCoordinates_sparsify: '//my_sparseMethod//' method is unknown', error)
          endselect
@@ -186,60 +147,14 @@ module gp_teach_module
       this%covarianceDiag_sparseX_sparseX = this%covarianceDiag_x_x(this%sparseX_index)
 
       this%sparseCutoff = this%cutoff(this%sparseX_index)
+
+      if(allocated(x)) deallocate(x)
+      if(allocated(x_index)) deallocate(x_index)
+      if(allocated(x_unique)) deallocate(x_unique)
+
       this%sparsified = .true.
 
    endsubroutine gpCoordinates_sparsify_config_type
-
-   subroutine gpFull_sparsify(this, n_sparseX, sparseMethod, i_coordinate, error)
-      type(gpFull), intent(inout) :: this
-      integer, intent(in) :: n_sparseX
-      integer, optional, intent(in) :: sparseMethod
-      integer, optional, intent(in) :: i_coordinate
-      integer, optional, intent(out) :: error
-
-      integer :: i
-
-      INIT_ERROR(error)
-
-      if( .not. this%initialised ) then
-         RAISE_ERROR('gpFull_sparsify: object not initialised',error)
-      endif
-
-      if( present(i_coordinate) ) then
-         call gpCoordinates_sparsify(this%coordinate(i_coordinate),n_sparseX, sparseMethod, error)
-      else
-         do i = 1, this%n_coordinate
-            call gpCoordinates_sparsify(this%coordinate(i),n_sparseX, sparseMethod, error)
-         enddo
-      endif
-
-   endsubroutine gpFull_sparsify
-
-   subroutine gpFull_sparsify_array(this, n_sparseX, sparseMethod, error)
-      type(gpFull), intent(inout) :: this
-      integer, dimension(:), intent(in) :: n_sparseX
-      integer, dimension(:), optional, intent(in) :: sparseMethod
-      integer, optional, intent(out) :: error
-
-      integer :: i
-      integer, dimension(:), allocatable :: my_sparseMethod
-
-      INIT_ERROR(error)
-
-      if( .not. this%initialised ) then
-         RAISE_ERROR('gpFull_sparsify_array: object not initialised',error)
-      endif
-
-      allocate(my_sparseMethod(this%n_coordinate))
-      my_sparseMethod = optional_default((/ (GP_SPARSE_RANDOM, i=1,this%n_coordinate) /),sparseMethod)
-
-      do i = 1, this%n_coordinate
-         call gpCoordinates_sparsify(this%coordinate(i),n_sparseX(i), my_sparseMethod(i), error)
-      enddo
-
-      if(allocated(my_sparseMethod)) deallocate(my_sparseMethod)
-
-   endsubroutine gpFull_sparsify_array
 
    subroutine gpFull_sparsify_array_config_type(this, n_sparseX, sparseMethod, error)
       type(gpFull), intent(inout) :: this
