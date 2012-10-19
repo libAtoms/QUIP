@@ -128,7 +128,7 @@ module gp_predict_module
 
 
    integer, parameter, public :: COVARIANCE_NONE             = 0
-   integer, parameter, public :: COVARIANCE_ARD              = 1
+   integer, parameter, public :: COVARIANCE_ARD_SE           = 1
    integer, parameter, public :: COVARIANCE_DOT_PRODUCT      = 2
    integer, parameter, public :: COVARIANCE_BOND_REAL_SPACE  = 3
 
@@ -475,7 +475,7 @@ module gp_predict_module
       this%n_sparseX = 0
       this%n_permutations = 1
 
-      this%covariance_type = optional_default(COVARIANCE_ARD, covariance_type)
+      this%covariance_type = optional_default(COVARIANCE_ARD_SE, covariance_type)
 
       if(present(x_size_max)) then
          allocate( this%x(x_size_max,n_x) )
@@ -519,7 +519,7 @@ module gp_predict_module
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 1.0_dp
          this%permutations = 1
-      elseif( this%covariance_type == COVARIANCE_ARD ) then
+      elseif( this%covariance_type == COVARIANCE_ARD_SE ) then
          allocate( this%theta(d), this%permutations(d,1) )
          this%theta = 0.0_dp
          this%permutations(:,1) = (/ (i, i=1, d) /)
@@ -555,7 +555,7 @@ module gp_predict_module
       this%n_sparseX = n_sparseX
       this%n_permutations = 1
 
-      this%covariance_type = optional_default(COVARIANCE_ARD, covariance_type)
+      this%covariance_type = optional_default(COVARIANCE_ARD_SE, covariance_type)
 
       if(present(sparseX_size_max)) then
          allocate( this%sparseX(sparseX_size_max,n_sparseX) )
@@ -582,7 +582,7 @@ module gp_predict_module
          allocate( this%theta(1), this%permutations(1,1) )
          this%theta = 1.0_dp
          this%permutations = 1
-      elseif( this%covariance_type == COVARIANCE_ARD ) then
+      elseif( this%covariance_type == COVARIANCE_ARD_SE ) then
          allocate( this%theta(d), this%permutations(d,1) )
          this%theta = 0.0_dp
          this%permutations(:,1) = (/ (i, i=1, d) /)
@@ -615,7 +615,7 @@ module gp_predict_module
 
       this%n_permutations = size(permutations,2)
 
-      if(this%covariance_type == COVARIANCE_ARD) then
+      if(this%covariance_type == COVARIANCE_ARD_SE) then
          call reallocate(this%permutations,this%d,this%n_permutations,zero=.true.)
          this%permutations = permutations
          ! Symmetrise theta wrt permutations
@@ -1300,7 +1300,7 @@ module gp_predict_module
 
       elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
          this%theta = theta
-      elseif(this%covariance_type == COVARIANCE_ARD) then
+      elseif(this%covariance_type == COVARIANCE_ARD_SE) then
          ! Symmetrise theta wrt permutations
          this%theta = 0.0_dp
          do i = 1, this%n_permutations
@@ -2087,7 +2087,7 @@ module gp_predict_module
          if(present(grad_Covariance_j)) grad_Covariance_j = this%delta**2 * this%theta(1) * gpCoordinates_Covariance**(this%theta(1)-1.0_dp) * x_i
 
          gpCoordinates_Covariance = this%delta**2 * gpCoordinates_Covariance**this%theta(1)
-      elseif(this%covariance_type == COVARIANCE_ARD ) then
+      elseif(this%covariance_type == COVARIANCE_ARD_SE ) then
          do i_p = 1, this%n_permutations
             ! permute only i. theta should be symmetrised by now.
 
@@ -3775,7 +3775,7 @@ module gp_predict_module
 !	       k(i_sparseX) = this%delta**2 * covariance_x_xStar**this%theta(1)
 !
 !	       if(present(gradPredict)) grad_k(:,i_sparseX) = this%delta**2 * this%theta(1) * covariance_x_xStar**(this%theta(1)-1.0_dp) * this%sparseX(:,i_sparseX)
-            elseif(this%covariance_type == COVARIANCE_ARD) then
+            elseif(this%covariance_type == COVARIANCE_ARD_SE) then
 	       x_i => this%sparseX(:,i_sparseX)
 	       fc_i => this%sparseCutoff(i_sparseX)
 	       do i_p = 1, this%n_permutations
@@ -3848,7 +3848,7 @@ module gp_predict_module
             if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
                k_mm(j,i) = this%delta**2 * dot_product( this%sparseX(:,i),this%sparseX(:,j) )**this%theta(1)
-            elseif( this%covariance_type == COVARIANCE_ARD ) then
+            elseif( this%covariance_type == COVARIANCE_ARD_SE ) then
                x_j => this%sparseX(:,j)
                fc_j => this%sparseCutoff(j)
                do i_p = 1, this%n_permutations

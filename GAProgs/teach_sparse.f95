@@ -175,7 +175,7 @@ program teach_sparse_program
      help_string="Create species-specific descriptor, using the descriptor string as a template.")
 
      call param_register(params, 'covariance_type', PARAM_MANDATORY, covariance_type_str, &
-        help_string="Type of covariance function to use. Available: ARD, DOT_PRODUCT, BOND_REAL_SPACE")
+        help_string="Type of covariance function to use. Available: ARD_SE, DOT_PRODUCT, BOND_REAL_SPACE")
 
      call param_register(params, 'theta', '1.0', main_teach_sparse%theta(i_coordinate), &
      help_string="Width of Gaussians for use with real space covariance.")
@@ -209,14 +209,14 @@ program teach_sparse_program
      case('none')
         call system_abort("covariance type cannot be"//trim(covariance_type_str))
         main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_NONE
-     case('ard')
-        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_ARD
+     case('ard_se')
+        main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_ARD_SE
      case('dot_product')
         main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_DOT_PRODUCT
      case('BOND_REAL_SPACE')
         main_teach_sparse%covariance_type(i_coordinate) = COVARIANCE_BOND_REAL_SPACE
      case default
-        call system_abort("unknown covariance type"//trim(covariance_type_str)//". Available: ARD, DOT_PRODUCT, BOND_REAL_SPACE")
+        call system_abort("unknown covariance type"//trim(covariance_type_str)//". Available: ARD_SE, DOT_PRODUCT, BOND_REAL_SPACE")
      endselect
 
 

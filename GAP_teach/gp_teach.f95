@@ -318,7 +318,7 @@ module gp_teach_module
             if(this%covariance_type == COVARIANCE_BOND_REAL_SPACE) then
             elseif(this%covariance_type == COVARIANCE_DOT_PRODUCT) then
                k_mn(j,i) = dot_product( this%x(:,ii), this%x(:,jj) )**this%theta(1)
-            elseif( this%covariance_type == COVARIANCE_ARD ) then
+            elseif( this%covariance_type == COVARIANCE_ARD_SE ) then
                k_mn(j,i) = 0.0_dp
                do i_p = 1, this%n_permutations
                   !xI_xJ = (this%x(this%permutations(:,i_p),i) - this%x(:,j)) / 4.0_dp

@@ -434,7 +434,7 @@ contains
              call gp_setTheta(this%my_gp,i_coordinate,(/ this%theta(i_coordinate) /))
           elseif(this%covariance_type(i_coordinate) == COVARIANCE_DOT_PRODUCT) then
              call gp_setTheta(this%my_gp,i_coordinate,(/ this%zeta(i_coordinate) /))
-          elseif( this%covariance_type(i_coordinate) == COVARIANCE_ARD ) then
+          elseif( this%covariance_type(i_coordinate) == COVARIANCE_ARD_SE ) then
              allocate(theta_string_array(this%my_gp%coordinate(i_coordinate)%d))
              allocate(theta_fac(this%my_gp%coordinate(i_coordinate)%d))
              call split_string(trim(this%theta_fac_string(i_coordinate))," ",'{}',theta_string_array,n_theta_fac,matching=.true.)
