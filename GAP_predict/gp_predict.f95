@@ -122,6 +122,7 @@ module gp_predict_module
    integer, parameter, public :: GP_SPARSE_UNIFORM = 4
    integer, parameter, public :: GP_SPARSE_KMEANS = 5
    integer, parameter, public :: GP_SPARSE_COVARIANCE = 6
+   integer, parameter, public :: GP_SPARSE_UNIQ = 7
 
    integer, parameter, public :: GP_COVARIANCE_FITC = 1
    integer, parameter, public :: GP_COVARIANCE_DTC = 2
