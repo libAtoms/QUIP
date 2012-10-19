@@ -372,9 +372,9 @@ module linearalgebra_module
     module procedure sort_array_i, sort_array_r
   end interface sort_array
 
-  private :: heap_sort_i, heap_sort_r
+  private :: heap_sort_i, heap_sort_r, heap_sort_r_2dim
   interface heap_sort
-    module procedure heap_sort_i, heap_sort_r
+    module procedure heap_sort_i, heap_sort_r, heap_sort_r_2dim
   end interface heap_sort
 
   private :: insertion_sort_i, insertion_sort_r
