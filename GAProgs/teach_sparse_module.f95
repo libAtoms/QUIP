@@ -460,7 +460,7 @@ contains
 
     if( this%do_core ) call Finalise(this%core_pot)
 
-    if( this%do_sparse ) call gp_sparsify(this%my_gp,this%config_type_n_sparseX,this%sparse_method)
+    if( this%do_sparse ) call gp_sparsify(this%my_gp,n_sparseX=this%config_type_n_sparseX,default_all=(this%n_sparseX/=0),sparseMethod=this%sparse_method)
 
   end subroutine teach_data_from_xyz
 

@@ -49,9 +49,10 @@ module gp_teach_module
 
    contains
 
-   subroutine gpCoordinates_sparsify_config_type(this, n_sparseX, sparseMethod, error)
+   subroutine gpCoordinates_sparsify_config_type(this, n_sparseX, default_all, sparseMethod, error)
       type(gpCoordinates), intent(inout) :: this
       integer, dimension(:), intent(in) :: n_sparseX
+      logical, intent(in) :: default_all
       integer, optional, intent(in) :: sparseMethod
       integer, optional, intent(out) :: error
 
@@ -69,9 +70,10 @@ module gp_teach_module
          RAISE_ERROR('gpCoordinates_sparsify: : object not initialised',error)
       endif
 
+      d = size(this%x,1)
+      n_x = size(this%x,2)
+
       if(my_sparseMethod == GP_SPARSE_UNIQ) then
-         d = size(this%x,1)
-         n_x = size(this%x,2)
 
          allocate(x(d,n_x))
          allocate(x_index(n_x))
@@ -99,14 +101,22 @@ module gp_teach_module
 
       ui = 0
       do i_config_type = 1, size(n_sparseX)
-         if( n_sparseX(i_config_type) == 0 ) cycle
 
-         n_config_type = count(i_config_type == this%config_type)
-         allocate(config_type_index(n_config_type),sparseX_index(n_sparseX(i_config_type)))
-         config_type_index = find(i_config_type == this%config_type)
+         if(default_all) then
+            allocate(config_type_index(n_x), sparseX_index(this%n_sparsex))
+            config_type_index = (/(i,i=1,n_x)/)
+            li = 1
+            ui = this%n_sparseX
+         else
+            if( n_sparseX(i_config_type) == 0 ) cycle
 
-         li = ui + 1
-         ui = ui + n_sparseX(i_config_type)
+            n_config_type = count(i_config_type == this%config_type)
+            allocate(config_type_index(n_config_type),sparseX_index(n_sparseX(i_config_type)))
+            config_type_index = find(i_config_type == this%config_type)
+
+            li = ui + 1
+            ui = ui + n_sparseX(i_config_type)
+         endif
          
          select case(my_sparseMethod)
          case(GP_SPARSE_RANDOM)
@@ -128,6 +138,8 @@ module gp_teach_module
          endselect
          this%sparseX_index(li:ui) = config_type_index(sparseX_index)
          deallocate(config_type_index,sparseX_index)
+
+         if(default_all) exit
       enddo
 
       if(my_sparseMethod == GP_SPARSE_UNIQ) this%sparseX_index = x_index(find_indices(x_unique))
@@ -158,9 +170,10 @@ module gp_teach_module
 
    endsubroutine gpCoordinates_sparsify_config_type
 
-   subroutine gpFull_sparsify_array_config_type(this, n_sparseX, sparseMethod, error)
+   subroutine gpFull_sparsify_array_config_type(this, n_sparseX, default_all, sparseMethod, error)
       type(gpFull), intent(inout) :: this
       integer, dimension(:,:), intent(in) :: n_sparseX
+      logical, dimension(:), intent(in) :: default_all
       integer, dimension(:), optional, intent(in) :: sparseMethod
       integer, optional, intent(out) :: error
 
@@ -177,7 +190,7 @@ module gp_teach_module
       my_sparseMethod = optional_default((/ (GP_SPARSE_RANDOM, i=1,this%n_coordinate) /),sparseMethod)
 
       do i = 1, this%n_coordinate
-         call gpCoordinates_sparsify_config_type(this%coordinate(i),n_sparseX(:,i), my_sparseMethod(i), error)
+         call gpCoordinates_sparsify_config_type(this%coordinate(i),n_sparseX(:,i), default_all(i), my_sparseMethod(i), error)
       enddo
 
       if(allocated(my_sparseMethod)) deallocate(my_sparseMethod)
