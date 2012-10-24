@@ -3734,6 +3734,7 @@ module gp_predict_module
       xPrime_i => null()
       if(present(gradPredict)) then
          allocate(grad_k(size(xStar),this%n_sparseX))
+         grad_k = 0.0_dp
       endif
 
       if (this%covariance_type == COVARIANCE_DOT_PRODUCT) then
@@ -3777,8 +3778,7 @@ module gp_predict_module
 
 		  covarianceExp = this%delta**2 * exp( -0.5_dp * dot_product(xI_xJ_theta,xI_xJ_theta) )
 
-		  if(present(gradPredict)) &
-		  grad_k(:,i_sparseX) = grad_k(:,i_sparseX) + covarianceExp*xI_xJ_theta / this%theta
+		  if(present(gradPredict)) grad_k(:,i_sparseX) = grad_k(:,i_sparseX) + covarianceExp*xI_xJ_theta / this%theta
 		  k(i_sparseX) = k(i_sparseX) + covarianceExp
 	       enddo
 	       k(i_sparseX) = k(i_sparseX) * fc_i + this%f0**2
