@@ -348,7 +348,7 @@ all_configs = AtomsReader(infiles,
                           **read_args)
 
 try:
-    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1
+    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 and sys.stderr.isatty()
 except AttributeError:
     show_progress = False
 
