@@ -125,7 +125,9 @@ class FortranArray(numpy.ndarray):
             return
         logging.debug('in __array_finalize__, self.parent=%r, obj.parent=%r' % (getattr(self, 'parent', None),
                                                                                 getattr(obj, 'parent', None)))
-        self.parent = getattr(obj, 'parent', None)
+
+        if not self.flags.owndata:
+            self.parent = getattr(obj, 'parent', None)
 
     def __array_prepare__(self, array, context=None):
         logging.debug('in __array_prepare__, self.parent=%r, array.parent=%r' % (getattr(self, 'parent', None),
