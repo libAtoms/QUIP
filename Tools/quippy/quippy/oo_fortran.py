@@ -678,6 +678,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
         constructors = \
             [ x for x in methods if x.startswith('%s_initialise_ptr' % lcls) ] +\
             [ x for x in methods if (x.startswith('%s_initialise' % lcls) or
+                                     x.startswith('%s_init' % lcls) or
                                      x.startswith('%s_allocate' % lcls))]
 
         destructors = \

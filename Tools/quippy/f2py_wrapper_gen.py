@@ -267,7 +267,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               if fintent != []: fintent = fintent[0].replace('intent', 'fintent')
 
               if ('intent(out)' in attributes or 
-                  ((sub.name.lower().find('_initialise') != -1 or sub.name.lower().find('_allocate') != -1) \
+                  ((sub.name.lower().find('_initialise') != -1 or (sub.name.lower().find('_init') != -1) or sub.name.lower().find('_allocate') != -1) \
                    and len(argnames) > 0 and argnames[0] == prefix+'this' and arg.name == prefix+'this')):
                  if not 'pointer' in attributes:
                     allocates.append(arg.name)
