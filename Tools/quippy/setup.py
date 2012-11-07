@@ -239,10 +239,10 @@ def find_wrap_sources(makefile, quip_root):
     wrap_sources += [os.path.join(libatoms_dir, s) for s in
                      ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95', 
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
-                     'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95',
+                     'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95', 'Spline.f95',
 		     'frametools.f95', 'Topology.f95', 'find_surface_atoms.f95']]
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'quaternion',
-                   'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str']
+                   'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str', 'spline']
     source_dirs.append(libatoms_dir)
     libraries.append('atoms')
     targets.append((quip_root, 'libAtoms/libatoms.a'))
