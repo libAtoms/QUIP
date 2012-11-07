@@ -101,12 +101,12 @@ module gp_teach_module
 
       ui = 0
       do i_config_type = 1, size(n_sparseX)
-
          if(default_all) then
             allocate(config_type_index(n_x), sparseX_index(this%n_sparsex))
             config_type_index = (/(i,i=1,n_x)/)
             li = 1
             ui = this%n_sparseX
+            n_config_type = this%n_sparsex
          else
             if( n_sparseX(i_config_type) == 0 ) cycle
 

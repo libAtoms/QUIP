@@ -799,7 +799,7 @@ contains
                    this%config_type_n_sparseX(i,i_coordinate) = string_to_int( config_type_n_sparseX_fields(j+1) )
              enddo
           enddo
-          this%n_sparseX(i_coordinate) = sum( this%config_type_n_sparseX(:,i_coordinate) )
+          !this%n_sparseX(i_coordinate) = sum( this%config_type_n_sparseX(:,i_coordinate) )
 
        elseif( this%n_sparseX(i_coordinate) > 0 .and. len_trim(this%config_type_n_sparseX_string(i_coordinate)) == 0) then
           this%config_type_n_sparseX(i_default,i_coordinate) = this%n_sparseX(i_coordinate)
@@ -839,9 +839,9 @@ contains
 
     ! temporary arrays
     real(dp), dimension(:), allocatable :: delta, f0
-    integer, dimension(:), allocatable :: n_sparseX, sparse_method
+    integer, dimension(:), allocatable :: n_sparseX, sparse_method, covariance_type
     character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type_n_sparseX_string
-    logical, dimension(:), allocatable :: mark_sparse_atoms, covariance_type
+    logical, dimension(:), allocatable :: mark_sparse_atoms
 
     n_descriptor_str = 0
     do i_coordinate = 1, this%n_coordinate
