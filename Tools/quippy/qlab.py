@@ -351,7 +351,7 @@ def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
         if isinstance(source, Atoms) or (tmp_reader.random_access and len(tmp_reader) == 1):
             viewer = AtomsViewer(source, name, **kwargs)
         else:
-            if loadall:
+            if loadall or not tmp_reader.random_access:
                 viewer = AtomsListViewer(source, name=name, **kwargs)
             else:
                 viewer = AtomsReaderViewer(source, name=name, **kwargs)
