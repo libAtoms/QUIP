@@ -253,6 +253,8 @@ contains
                trim(error_stack(i)%fn) // &
                '", line ' // &
                trim(adjustl(linestr)) // &
+               ' kind '// &
+               trim(ERROR_STRINGS(-error_stack(i)%kind)) // &
                C_NEW_LINE // &
                "    " // &
                trim(error_stack(i)%doc)
@@ -263,8 +265,9 @@ contains
                '  File "' // &
                trim(error_stack(i)%fn) // &
                '", line ' // &
-               trim(adjustl(linestr))
-
+               trim(adjustl(linestr))// &
+               ' kind '// &
+               trim(ERROR_STRINGS(-error_stack(i)%kind))
        endif
 
     enddo
