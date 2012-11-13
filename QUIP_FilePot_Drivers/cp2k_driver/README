@@ -1,13 +1,10 @@
-Patches tested against CP2K trunk cvs version 27 June 2011 (NB).
+Patches tested against CP2K trunk svn version 13 Nov 2012 (NB).
    http://cp2k.berlios.de/download.html
 
 MANDATORY patches for cp2k source:
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)
 
 RECOMMENDED patches:
-  cp2k_wfn_read.patch (makes cp2k only check for wfn existence on ionode)
-  cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
-  cp2k_fft_lib.patch (fixes dependencies for MKL fft library)
   cp2k_reftraj.patch (enables &REFTRAJ&WAIT in cp2k, which QUIP uses for cp2k_filepot persistent connections)
   cp2k_colvar_restraint_constraint_print.patch (printing of of atoms/restraint forces for COLVARs.
       Not actually used by QUIP, just useful for pure CP2K umbrella integration)
@@ -16,6 +13,10 @@ OPTIONAL patches:
   cp2k_silica.patch (CV: Silica potential)
 
 OUTDATED patches:
+  cp2k_wfn_read.patch (makes cp2k only check for wfn existence on ionode, as of 13 Nov 2012 in CP2K SVN trunk)
+  cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9, as of 13 Nov 2012 in CP2K SVN trunk)
+  cp2k_fft_lib.patch (fixes dependencies for MKL fft library, as of 13 Nov 2012 in CP2K SVN trunk)
+
   cp2k_speed.patch.outdated (speed improvements that are now, as of 20 April 2011, in the CP2K
                              CVS repository)
   cp2k_exyz.patch.OUTDATED (OUTDATED, no need for EXYZ reading anyway, all additional
