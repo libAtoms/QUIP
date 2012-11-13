@@ -279,5 +279,5 @@ class PuPyXYZWriter(object):
     def close(self):
         if self.opened: self.xyz.close()
 
-AtomsReaders['pupyxyz'] = AtomsReaders['string'] = PuPyXYZReader
-AtomsWriters['pupyxyz'] = AtomsWriters['string'] = AtomsWriters['stdout'] = PuPyXYZWriter
+AtomsReaders['pupyxyz'] = PuPyXYZReader
+AtomsWriters['pupyxyz'] = AtomsWriters['stdout'] = PuPyXYZWriter

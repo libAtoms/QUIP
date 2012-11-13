@@ -245,7 +245,7 @@ class TestCInOutput(QuippyTestCase):
    def testframe_out_of_range(self):
       self.al.write("test.xyz")
       cio = CInOutput("test.xyz", INPUT)
-      self.assertRaises(RuntimeError, cio.read, frame=5)
+      self.assertRaises(EOFError, cio.read, frame=5)
       cio.close()
 
    def testwrite_single_xyz_properties(self):

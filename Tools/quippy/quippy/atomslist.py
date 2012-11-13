@@ -72,7 +72,7 @@ class AtomsReaderMixin(object):
 
         # Special case for writing to a string
         if format == 'string':
-            return res[-1]
+            return ''.join(res)
         else:
             if res is not None and not all(el is None for el in res):
                 return res
