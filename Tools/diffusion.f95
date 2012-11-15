@@ -87,7 +87,6 @@ use libatoms_module
     call read(structure, xyzfile, error=error)
     call map_into_cell(structure)
 
-    prev_structure = structure
     allocate(travel(3,structure%N))
     travel = 0
 
@@ -107,6 +106,8 @@ use libatoms_module
        if (frame_count.eq.from) then
           call print('Reference structure is at step '//frame_count)
           reference = structure
+          prev_structure = structure
+          travel=0
        endif
      
        if (frame_count.ge.from) then
@@ -134,13 +135,17 @@ use libatoms_module
      
           if (mod(frame_count-1,IO_Rate).eq.0) then
              if (one_atom.eq.0) then
-                call print(frame_count//' '//ave_r2//' '//(structure%pos(:,19)+(structure%lattice .mult. travel(:,19)))//' '//travel(:,19),file=datafile)
+                call print(frame_count//' '//ave_r2,file=datafile)
              else
                 call print(frame_count//' '//ave_r2//' '//one_r2,file=datafile)
              endif
           endif
+
+          prev_structure=structure
+
        endif
-       prev_structure=structure
+
+
        call read(structure,xyzfile,error=error)
        call map_into_cell(structure)
 
