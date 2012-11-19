@@ -66,6 +66,7 @@ implicit none
   integer :: phonons_path_steps
   logical :: do_torque, precond_n_minim
   real(dp) :: fire_minim_dt0
+  real(dp) :: fire_minim_dt_max
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file
@@ -175,6 +176,7 @@ implicit none
   call param_register(cli_params, 'relax_lattice_fix', '0.0 0.0 0.0   0.0 0.0 0.0   0.0 0.0 0.0', relax_lattice_fix, help_string="if virial and relax are set, constrain lattice parameter matrix where this is /= 0.  Doesn't work as expected in general, although definitely OK for orthogonal lattice vectors aligned with coordinate axes")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
+  call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") ! ANKE
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, cg, pcg, lbfgs, cg_n, fire")
@@ -324,12 +326,12 @@ implicit none
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
 		eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval)
-           call finalise(relax_io)
+		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) ! ANKE
+           call finalise(relax_io) 
         else
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
 		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval)
+		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) ! ANKE
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
