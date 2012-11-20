@@ -338,8 +338,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         call gpCoordinates_initialise_SparseScore(this%my_gp%coordinate(i_coordinate))
      endif
 
-     if(present(f) .or. present(virial) .or. present(local_virial)) allocate(gradPredict(d))
-
+     if(present(f) .or. present(virial) .or. present(local_virial)) then
+        if (allocated(gradPredict)) deallocate(gradPredict)
+	allocate(gradPredict(d))
+     end if
+     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial))
 
