@@ -73,6 +73,9 @@ p.add_option('--nneightol', action='store', type='float', help='Nearest neighbou
 p.add_option('--exec-code', action='store', help="Python code string to execute on all images before starting minimisation or NEB")
 p.add_option('--exec-file', action='store', help="Python code file to execute on all images before starting minimisation or NEB")
 p.add_option('--minim', action='store_true', help="Minimise initial and final states before starting NEB")
+p.add_option('--minim-method', action='store', help="Method used for minimisation: cg, fire, sd, lbfgs, etc.", default='cg')
+p.add_option('--minim-tol', action='store', help="Minim tolerance in (eV/A)**2", default=1e-6, type=float)
+p.add_option('--minim-max-steps', action='store', help="Minim max number of steps", default=1000, type=int)
 p.add_option('--basename', action='store', help="Stem used to generate output file names")
 
 opt, args = p.parse_args()
@@ -117,7 +120,7 @@ if opt.minim is not None:
     for at in images:
         at.set_cutoff(relax_pot.cutoff() + 1.0)
         at.calc_connect()
-        relax_pot.minim(at, 'cg', 1e-6, 1000, do_pos=True, do_lat=False, calc_args=opt.calc_args)
+        relax_pot.minim(at, opt.minim_method, opt.minim_tol, opt.minim_max_steps, do_pos=True, do_lat=False, args_str=opt.calc_args)
 
     del relax_pot
 
