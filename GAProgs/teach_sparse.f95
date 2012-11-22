@@ -44,6 +44,7 @@ program teach_sparse_program
   integer :: i_coordinate
   character(len=STRING_LENGTH) :: gp_file
   logical :: has_theta_uniform
+  integer :: rnd_seed
 
   call system_initialise(verbosity=PRINT_NORMAL)
   call enable_timing()
@@ -93,6 +94,8 @@ program teach_sparse_program
 
   call param_register(params, 'verbosity', 'NORMAL', verbosity, help_string="Verbosity control")
 
+  call param_register(params, "rnd_seed", "-1", rnd_seed, help_string="Random seed")
+
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse at_file=file &
      descriptor_str=<string> default_sigma={<float> <float> <float>} sparse_jitter=<float> [e0]  [ip_args={}] &
@@ -115,6 +118,8 @@ program teach_sparse_program
     case default
       call system_abort("confused by verbosity " // trim(verbosity))
   end select
+
+  if (rnd_seed >= 0) call system_set_random_seeds(rnd_seed)
 
   call print_title('Gaussian Approximation Potentials - Database fitting')
   call print('')
