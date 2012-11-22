@@ -107,7 +107,8 @@ program force_gaussian_prediction
    type(Atoms)           :: at_in
    type(CInOutput)       :: in
    type(Dictionary)      :: params
-   real(dp)              :: r_cut, r_min, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs, sigma_covariance, dist_primitive, distance_ivs_stati, dist_shift_factor, dim_tol, error_bar
+   real(dp)              :: r_cut, r_min, r_max, m_min, m_max, feature_len, theta, thresh, sigma_error, cutoff_len_ivs
+   real(dp)              ::  sigma_covariance, dist_primitive, distance_ivs_stati, dist_shift_factor, dim_tol, error_bar
    real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred, force_proj_ivs_pred, force_proj_target, distance_confs
    real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
@@ -121,7 +122,7 @@ program force_gaussian_prediction
    integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size, dimension_mark(3)
    integer, dimension(:), allocatable            :: distance_index, mark_zero_ivs 
-   logical                                       :: spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv, print_ft_matrix_test,  print_at, do_svd, print_data, do_teach, print_verbosity
+   logical                                       :: bonding_direction, spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv,  print_at, do_svd, print_data, do_teach, print_verbosity
    character(STRING_LENGTH)                      :: teaching_file, grid_file, test_file, out_file, iv_params_file, data_dir
    
  
@@ -130,9 +131,11 @@ program force_gaussian_prediction
    call initialise(params)
    call param_register(params, 'theta',  '2.5', theta, "the correlation length of the data")
    call param_register(params, 'r_min',  '0.5', r_min, "the minimum radius for the spherical atomic environment")
+   call param_register(params, 'r_max',  '8.0', r_max, "the maximum radius for the spherical atomic environment")
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maximum m for calculating the atomic environment")
+   call param_register(params, 'bonding_direction', 'F', bonding_direction, "evaluating IVs by summing the bonding directions or not")
    call param_register(params, 'cutoff_len_ivs', '0.04', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Singular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
@@ -160,7 +163,6 @@ program force_gaussian_prediction
    call param_register(params, 'print_verbosity', 'F', print_verbosity, "if true, print out verbosity stuff")
    call param_register(params, 'out_file', 'out.xyz', out_file, "output configuration file containing the predicted forces")
    call param_register(params, 'print_at', 'F', print_at, "true for print out the testing configuration with predicted forces")
-   call param_register(params, 'print_ft_matrix_test', 'F', print_ft_matrix_test, "print the feature matrix of the testing conf if true")
    call param_register(params, 'fixed_iv', 'F', fixed_iv, "does a file containing the internal vector parameters exist?")
    call param_register(params, 'iv_params_file', 'iv_params.csv', iv_params_file, "location of internal vectors parameters file (if necessary)")
    call param_register(params, 'local_ml_optim_size', '0', local_ml_optim_size, "Optimise sigma_error and sigma_covariance using local_ml_optim_size LS confs. If 0, no optimisation is performed")
@@ -185,7 +187,7 @@ program force_gaussian_prediction
       ! including the tranlational symmetry images
       call set_cutoff(at_in, r_cut)
       call calc_connect(at_in)
-      call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
+      call  grid_m_r0(at_in, r_mesh, m_mesh, r_min, r_max, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
       call  finalise(in)
   end if
    
@@ -254,7 +256,7 @@ program force_gaussian_prediction
           !call print("The atom:"//n_center_atom)
 
         do j=1, k-add_vector
-           feature_matrix(j,:,t) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
+           feature_matrix(j,:,t) = internal_vector(at_in, r_grid(j), m_grid(j), bonding_direction, n_center_atom)*SCALE_IVS
            feature_len = norm(feature_matrix(j,:, t))
 
            if (feature_len < TOL_REAL)  then
@@ -484,7 +486,7 @@ do i=1, in%n_frame
      enddo
 
      do j= 1, k-add_vector
-        feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), n_center_atom)*SCALE_IVS
+        feature_matrix_pred(j,:) = internal_vector(at_in, r_grid(j), m_grid(j), bonding_direction, n_center_atom)*SCALE_IVS
        if (print_verbosity) then 
          call print("internal vectors ( "//r_grid(j)//" "//m_grid(j)//" ):   "//feature_matrix_pred(j,1)//"  "//feature_matrix_pred(j,2)//"  "//feature_matrix_pred(j,3))
        endif 
@@ -522,7 +524,7 @@ do i=1, in%n_frame
       endif
 
 
-     if (print_ft_matrix_test) then
+     if (print_verbosity) then
        do j=1, k 
           do ii=1, k   
            if(print_verbosity) then
@@ -704,7 +706,7 @@ do i=1, in%n_frame
    close(6)   
 
    if (print_at) then 
-      call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
+     call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
    endif
 
 enddo    ! loop over frames
@@ -734,32 +736,36 @@ call system_finalise()
  
 contains 
    
-  function internal_vector(at, r0, m, n_center_atom)
+  function internal_vector(at, r0, m, bonding_direction, n_center_atom)
 
       real(dp)                            :: internal_vector(3), delta_r(3), delta_r_len
       real(dp), intent(in)                :: r0, m
       type(Atoms), intent(in)             :: at
+      logical, intent(in)                 :: bonding_direction
       integer                             :: i, j, n_center_atom
 
       internal_vector = 0.0_dp
       do i=1, atoms_n_neighbours(at, n_center_atom)
           j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r) 
+          if (.not. bonding_direction)  delta_r_len=1.0_dp
           internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /delta_r_len)
       enddo
  endfunction  internal_vector
 
 
- function internal_vector_dm(at, r0, m, n_center_atom)
+ function internal_vector_dm(at, r0, m, bonding_direction, n_center_atom)
 
       real(dp)                            :: internal_vector_dm, internal_vector_prim(3), delta_r(3), delta_r_len, alpha
       real(dp), intent(in)                :: r0, m
       type(Atoms), intent(in)             :: at
+      logical, intent(in)                 :: bonding_direction
       integer                             :: i, j, n_center_atom
 
       internal_vector_prim = 0.0_dp
       do i=1, atoms_n_neighbours(at, n_center_atom)
           j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r)
           alpha = delta_r_len / r0
+          if (.not. bonding_direction) delta_r_len=1.0_dp
           internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) /delta_r_len)
       enddo
       internal_vector_dm = norm(internal_vector_prim)
@@ -800,12 +806,12 @@ contains
    
  end subroutine load_iv_params
 
- subroutine grid_m_r0(at, r_mesh, m_mesh, r_min, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
+ subroutine grid_m_r0(at, r_mesh, m_mesh, r_min, r_max, r_cut, m_min, m_max, preci, k, r_grid, m_grid, cutoff_len_ivs)
 
   type(Atoms), intent(in), optional                        :: at
   real(dp), dimension(:), intent(out), allocatable         :: r_grid, m_grid
   real(dp), dimension(:), allocatable                      :: r_point, m_point 
-  real(dp), intent(in)                                     :: r_cut, r_min, m_min, m_max, cutoff_len_ivs
+  real(dp), intent(in)                                     :: r_cut, r_min, r_max, m_min, m_max, cutoff_len_ivs
   real(dp)                                                 :: ivs(3)
   real(dp), parameter                                      :: SCALE_IVS = 100.0_dp
   integer, intent(in)                                      :: r_mesh, m_mesh
@@ -818,7 +824,7 @@ contains
   allocate(m_point(m_mesh))
  
   do i=1, r_mesh                                                                             ! r_mesh, the mesh size for r
-     r_point(i) = r_min + real(i-1,dp)*(r_cut - r_min)/real(r_mesh,dp)
+     r_point(i) = r_min + real(i-1,dp)*(r_max - r_min)/real(r_mesh,dp)
   enddo 
 
   do i=1, m_mesh
@@ -828,7 +834,7 @@ contains
   k = 0
   do i = 1, m_mesh     ! to know the value of k
      do j = 1, r_mesh
-         ivs  = internal_vector(at, r_point(j),  m_point(i), 1)*SCALE_IVS
+         ivs  = internal_vector(at, r_point(j),  m_point(i), bonding_direction, 1)*SCALE_IVS
          if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (norm(ivs) > cutoff_len_ivs) )  k = k + 1
      enddo
   enddo
@@ -839,9 +845,9 @@ contains
   k = 0
   do i=1, m_mesh 
      do j = 1, r_mesh 
-         ivs  = internal_vector(at, r_point(j), m_point(i), 1)*SCALE_IVS
+         ivs  = internal_vector(at, r_point(j), m_point(i), bonding_direction, 1)*SCALE_IVS
          write(*,*) "IVs using ",  r_point(j), m_point(i),"------", ivs                             
-         write(*,*) "IVs_dr:   ",  internal_vector_dm(at, r_point(j), m_point(i), 1)*SCALE_IVS           
+         write(*,*) "IVs_dr:   ",  internal_vector_dm(at, r_point(j), m_point(i), bonding_direction, 1)*SCALE_IVS           
          write(*,*) "cutoff m:",   cutoff_m(r_cut, r_point(j), preci)
          if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (norm(ivs) > cutoff_len_ivs))   then
              k = k + 1
@@ -855,7 +861,6 @@ contains
   deallocate(m_point)
 
  end subroutine grid_m_r0
-
 
  function cov(feature_matrix1, feature_matrix2, bent_space1, bent_space2, iv_weights, sigma_cov, distance, func_type)
 
