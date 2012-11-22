@@ -340,7 +340,7 @@ module descriptors_module
       real(dp) :: cutoff
       real(dp) :: cutoff_transition_width
       integer :: l_max
-      real(dp) :: alpha, sigma
+      real(dp) :: alpha, sigma, covariance_sigma0
 
       integer :: n_max
       real(dp), dimension(:), allocatable :: r_basis
@@ -1972,6 +1972,7 @@ module descriptors_module
       call param_register(params, 'l_max', '8', this%l_max, help_string="L_max (spherical harmonics basis band limit) for soap-type descriptors")
       call param_register(params, 'n_max', '40', this%n_max, help_string="N_max (number of radial basis functions) for soap-type descriptors")
       call param_register(params, 'sigma', '0.50', this%sigma, help_string="Width of atomic Gaussians for soap-type descriptors")
+      call param_register(params, 'covariance_sigma0', '0.0', this%covariance_sigma0, help_string="sigma_0 parameter in polynomial covariance function")
       call param_register(params, 'basis_error_exponent', '10.0', basis_error_exponent, help_string="10^(-basis_error_exponent) is the max difference between the target and the expanded function")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='soap_initialise args_str')) then
@@ -2054,6 +2055,7 @@ module descriptors_module
       this%cutoff_transition_width = 0.0_dp
       this%l_max = 0
       this%alpha = 0.0_dp
+      this%covariance_sigma0 = 0.0_dp
 
       this%n_max = 0
 
@@ -5514,6 +5516,8 @@ module descriptors_module
                enddo !l
             enddo !b
          enddo !a
+         descriptor_i(i_pow+1) = this%covariance_sigma0
+
          norm_descriptor_i = sqrt(dot_product(descriptor_i,descriptor_i))
 
          if(my_do_descriptor) descriptor_out%x(i_desc)%data = descriptor_i / norm_descriptor_i
@@ -5563,6 +5567,8 @@ module descriptors_module
 		  end do
 
 	       end do !l
+               grad_descriptor_i(i_pow+1, 1:3) = 0.0_dp
+
                descriptor_out%x(i_desc)%grad_data(:,:,n_i) = grad_descriptor_i / norm_descriptor_i
                do k = 1, 3
                   descriptor_out%x(i_desc)%grad_data(:,k,n_i) = descriptor_out%x(i_desc)%grad_data(:,k,n_i) - descriptor_i * dot_product(descriptor_i,grad_descriptor_i(:,k)) / norm_descriptor_i**3
@@ -5996,7 +6002,7 @@ module descriptors_module
          RAISE_ERROR("soap_dimensions: descriptor object not initialised", error)
       endif
 
-      i = (this%l_max+1) * this%n_max * (this%n_max+1) / 2
+      i = (this%l_max+1) * this%n_max * (this%n_max+1) / 2 + 1
 
    endfunction soap_dimensions
 
