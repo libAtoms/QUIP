@@ -23,10 +23,6 @@ from quippy._structures import *
 from quippy.farray import fidentity, fzeros, frange, farray
 
 import numpy as np
-try:
-    import atomeye
-except ImportError:
-    pass
 
 __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'quartz_params', 'alpha_quartz', 'get_bulk_params',
@@ -115,6 +111,10 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
         for (dir, p) in periodicity.iteritems():
             print 'Periodicity in direction %d fixed at %f' % (dir, p)
 
+    if graphics:
+        import atomeye
+        viewer = atomeye.AtomEyeViewer()
+
     while sorted(periodicity.keys()) != [1,2,3]:
         nrep += 1
         if nrep > max_nrep:
@@ -170,8 +170,9 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
                 highlight = fzeros(box.n)
                 highlight[ref_plane1] = 1
                 highlight[ref_plane2] = 2
-                box.show(highlight)
-                atomeye.view.wait()
+                box.add_property('highlight', highlight, overwrite=True)
+                viewer.show(box, 'highlight')
+                viewer.wait()
                 raw_input('continue')
 
             candidates = [i for i in frange(box.n) if box.pos[dir,i] > box.pos[dir,ref_atom2] + max_dist[dir] + tol]
@@ -200,15 +201,17 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
 
                 if graphics:
                     highlight[cand_plane1] = 3
-                    box.show(highlight)
-                    atomeye.view.wait()
+                    box.highlight[:] = highlight
+                    viewer.show(box, 'highlight')
+                    viewer.wait()
 
                 cand_plane2 = atoms_near_plane(box, xyz[:,dir], box.pos[dir,cand2], tol)
 
                 if graphics:
                     highlight[cand_plane2] = 4
-                    box.show(highlight)
-                    atomeye.view.wait()
+                    box.highlight[:] = highlight                    
+                    viewer.show(box, 'highlight')
+                    viewer.wait()
 
                     highlight[cand_plane1] = 0
                     highlight[cand_plane2] = 0
@@ -229,8 +232,9 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
                     if graphics:
                         highlight[cand_plane1] = 3
                         highlight[cand_plane2] = 3
-                        box.show(highlight)
-                        atomeye.view.wait()
+                        box.highlight[:] = highlight
+                        viewer.show(box, 'highlight')
+                        viewer.wait()
                         raw_input('continue...')
                     break
 
