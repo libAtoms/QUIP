@@ -273,7 +273,7 @@ class AtomsReader(AtomsReaderMixin):
             atoms = iter(self.reader)
 
             if self._start is not None or self._stop is not None or self._step is not None:
-                if self._start < 0 or self._stop < 0:
+                if (self._start is not None and self._start < 0) or (self._stop is not None and self._stop < 0):
                     raise IndexError('Cannot use negative start or stop indices for an AtomsReader which does not support random access')
                 
                 frames = itertools.islice(frames, self._start or 0, self._stop or None, self._step or 1)
