@@ -344,10 +344,7 @@ if opt.read_args is not None:
 if opt.load_all:
     all_configs = AtomsList(infiles,
                             format=opt.in_format,
-                            start=opt.range.start,
-                            stop=opt.range.stop,
-                            step=opt.range.step,
-                            **read_args)
+                            **read_args)[opt.range.start:opt.range.stop:opt.range.step]
 else:
     all_configs = AtomsReader(infiles,
                               format=opt.in_format,
