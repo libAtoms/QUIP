@@ -429,7 +429,7 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
 
 def elastic_constants(pot, at, sym='cubic', relax=True, verbose=True, graphics=True):
     """Convenience function which returns the 6x6 matrix :math:`C_{ij}` of configuration `at`
-    with Potential `pot` assumsing symmetry `sym` (default "cubic")."""
+    with Potential `pot` assumming symmetry `sym` (default "cubic")."""
 
     strained_configs = generate_strained_configs(at, sym)
     stressed_configs = calc_stress(strained_configs, pot, relax=relax)
@@ -859,7 +859,7 @@ def rayleigh_wave_speed(C, rho, a=4000., b=6000., isotropic=False):
     from scipy.optimize import bisect
 
     C = C.copy()
-    C *= 1e9 # convert GPa -> P*
+    C *= 1e9 # convert GPa -> Pa
     rho *= 1e3 # convert g/cm^3 -> kg/m^3
 
     if isotropic:
