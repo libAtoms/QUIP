@@ -77,6 +77,7 @@ p.add_option('--read-args', action='store', help="""Extra arguments to be passed
 p.add_option('-a', '--atom-range', action='store', help="""Range of atoms to include: should be followed by two arguments, min
 and max 1-based atom indices. Using a reduced atom range dramatically
 speeds up reading of large XYZ trajectories.""", nargs=2)
+p.add_option('-l', '--load-all', action='store_true', help="""Read all frames before starting processing. Allows frame indexing for file types which do not support random access (e.g. .castep)""")
 
 
 # Options related to rendering of images with AtomEye
@@ -340,15 +341,23 @@ if opt.extract_params and 'stdin' not in infiles:
 if opt.read_args is not None:
     read_args.update(eval("dict(%s)" % opt.read_args))
 
-all_configs = AtomsReader(infiles,
-                          format=opt.in_format,
-                          start=opt.range.start,
-                          stop=opt.range.stop,
-                          step=opt.range.step,
-                          **read_args)
+if opt.load_all:
+    all_configs = AtomsList(infiles,
+                            format=opt.in_format,
+                            start=opt.range.start,
+                            stop=opt.range.stop,
+                            step=opt.range.step,
+                            **read_args)
+else:
+    all_configs = AtomsReader(infiles,
+                              format=opt.in_format,
+                              start=opt.range.start,
+                              stop=opt.range.stop,
+                              step=opt.range.step,
+                              **read_args)
 
 try:
-    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 and sys.stderr.isatty()
+    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 and sys.stderr.isatty() and not opt.load_all
 except AttributeError:
     show_progress = False
 
