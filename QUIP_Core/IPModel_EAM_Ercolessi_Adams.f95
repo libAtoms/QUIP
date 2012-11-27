@@ -579,9 +579,15 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "r_min", value, status)
     if (status /= 0) call system_abort ("IPModel_EAM_ErcolAd_read_params_xml cannot find r_min")
     read (value, *) parse_ip%r_min(parse_cur_type_i, parse_cur_type_j)
+
     call QUIP_FoX_get_value(attributes, "r_cut", value, status)
     if (status /= 0) call system_abort ("IPModel_EAM_ErcolAd_read_params_xml cannot find r_cut")
     read (value, *) parse_ip%r_cut(parse_cur_type_i, parse_cur_type_j)
+
+    if (parse_cur_type_i /= parse_cur_type_j) then
+       parse_ip%r_min(parse_cur_type_j, parse_cur_type_i) = parse_ip%r_min(parse_cur_type_i, parse_cur_type_j)
+       parse_ip%r_cut(parse_cur_type_j, parse_cur_type_i) = parse_ip%r_cut(parse_cur_type_i, parse_cur_type_j)
+    end if
 
   elseif (parse_in_ip .and. name == 'spline_V') then
     parse_in_spline_V = .true.
