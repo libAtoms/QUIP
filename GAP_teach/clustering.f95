@@ -450,12 +450,16 @@ module clustering_module
      d = size(x,1)
      n = size(x,2)
      m = size(cluster_index)
-
      if( m > n ) call system_abort('cluster_kmeans: required number of clusters ('//m//') greater than total number of points ('//n//')')
 
      my_theta_fac = optional_default(1.0_dp, theta_fac)
      if( present(theta) ) then
-        my_theta => theta
+        if( size(theta) == d) then
+           my_theta => theta
+        else
+           allocate(my_theta(d))
+           my_theta = theta(1)
+        endif
      else
         allocate(my_theta(d))
         do i = 1, d
