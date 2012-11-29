@@ -135,7 +135,7 @@ program force_gaussian_prediction
    call param_register(params, 'r_cut',  '8.0', r_cut, "the cutoff radius for the spherical atomic environment")
    call param_register(params, 'm_min',  '1.0', m_min, "the minimum m for calculating the atomic environment")
    call param_register(params, 'm_max',  '5.0', m_max, "the maximum m for calculating the atomic environment")
-   call param_register(params, 'bonding_direction', 'F', bonding_direction, "evaluating IVs by summing the bonding directions or not")
+   call param_register(params, 'bonding_direction', 'T', bonding_direction, "evaluating IVs by summing the bonding directions or not")
    call param_register(params, 'cutoff_len_ivs', '0.04', cutoff_len_ivs, "the cutoff lenght for IVs to be considered valid when generating the grid")
    call param_register(params, 'thresh', '1.0', thresh, "the threshold for doing the Singular Value Decompostion of the Covariance Matrix")
    call param_register(params, 'preci',  '6',   preci,  "the screening accuracy on the edge atoms")
@@ -701,9 +701,6 @@ do i=1, in%n_frame
 
    error_bar = error_bar / n_loop
    call print("Error Bar :"//error_bar)
-   open(unit=6, status='replace',file='error_bar.dat')
-   write(6,'(F10.5)') error_bar
-   close(6)   
 
    if (print_at) then 
      call write(at_in, out_file, append=.true.)      ! write the output configurations with predicted force
@@ -747,8 +744,11 @@ contains
       internal_vector = 0.0_dp
       do i=1, atoms_n_neighbours(at, n_center_atom)
           j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r) 
-          if (.not. bonding_direction)  delta_r_len=1.0_dp
-          internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /delta_r_len)
+          if  (bonding_direction)  then
+                 internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /delta_r_len)
+          else
+                 internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /1.0_dp)
+          endif
       enddo
  endfunction  internal_vector
 
@@ -765,9 +765,12 @@ contains
       do i=1, atoms_n_neighbours(at, n_center_atom)
           j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r)
           alpha = delta_r_len / r0
-          if (.not. bonding_direction) delta_r_len=1.0_dp
-          internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) /delta_r_len)
-      enddo
+          if (bonding_direction) then
+                   internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) /delta_r_len)
+          else
+                   internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) )
+          endif
+     enddo
       internal_vector_dm = norm(internal_vector_prim)
  endfunction  internal_vector_dm
 
@@ -791,15 +794,15 @@ contains
    
    open (unit=22, file=iv_params_file, status='old', action='read')
    read(22,*), k
-   write(*,*) "Number of iv: ", k
+   call print("Number of iv: "//k)
    allocate(r_grid(k))
    allocate(m_grid(k))
    
-   write(*,*) "Reading internal vectors parameters from file ", iv_params_file
+   call print(" Reading internal vectors parameters from file "//iv_params_file)
    
    do i=1, k
       read(22,*) r_grid(i), m_grid(i)
-      write(*,*) "Vector", i, ":", r_grid(i), m_grid(i)
+      call print("Vector "//i//" : "//r_grid(i)//" "//m_grid(i))
    end do
 
    close(22)
@@ -846,9 +849,9 @@ contains
   do i=1, m_mesh 
      do j = 1, r_mesh 
          ivs  = internal_vector(at, r_point(j), m_point(i), bonding_direction, 1)*SCALE_IVS
-         write(*,*) "IVs using ",  r_point(j), m_point(i),"------", ivs                             
-         write(*,*) "IVs_dr:   ",  internal_vector_dm(at, r_point(j), m_point(i), bonding_direction, 1)*SCALE_IVS           
-         write(*,*) "cutoff m:",   cutoff_m(r_cut, r_point(j), preci)
+         call print("IVs using "//r_point(j)//" "//m_point(i)//" ------ "//ivs)                             
+         call print("IVs_dr:   "//internal_vector_dm(at, r_point(j), m_point(i), bonding_direction, 1)*SCALE_IVS)           
+         call print("cutoff m : "//cutoff_m(r_cut, r_point(j), preci))
          if ((m_point(i) >= cutoff_m(r_cut, r_point(j), preci)) .and. (norm(ivs) > cutoff_len_ivs))   then
              k = k + 1
              r_grid(k) = r_point(j) 
