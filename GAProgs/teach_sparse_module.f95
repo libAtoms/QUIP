@@ -45,7 +45,7 @@ module teach_sparse_mod
      real(dp) :: max_cutoff
      real(dp), dimension(3) :: default_sigma
      real(dp) :: sparse_jitter
-     logical :: do_core = .false., do_sparse, has_config_type_sigma
+     logical :: do_core = .false., do_sparse, has_config_type_sigma, do_e0_avg = .true.
 
      integer :: n_frame, n_coordinate, n_ener, n_force, n_virial, min_save, n_species
      type(extendable_str) :: quip_string
@@ -476,7 +476,12 @@ contains
     if( this%do_core ) call Initialise(this%core_pot, this%ip_args, param_str=string(this%quip_string))
 
     n_ener = 0
-    this%e0 = 0.0_dp
+
+    if(this%do_e0_avg) then
+       this%e0 = 0.0_dp
+    else
+       this%e0 = huge(1.0_dp)
+    endif
 
     do n_con = 1, this%n_frame
 
@@ -493,13 +498,21 @@ contains
              call calc(this%core_pot,this%at(n_con),energy=ener_core)
           endif
 
-          this%e0 = this%e0 + (ener-ener_core) / this%at(n_con)%N
+          if(this%do_e0_avg) then
+             this%e0 = this%e0 + (ener-ener_core) / this%at(n_con)%N
+          else
+             if( this%e0 < (ener-ener_core) / this%at(n_con)%N ) this%e0 = (ener-ener_core) / this%at(n_con)%N
+          endif
 
           n_ener = n_ener + 1
        endif
     enddo
 
-    if( n_ener > 0 ) this%e0 = this%e0 / n_ener
+    if( n_ener > 0 ) then
+       if(this%do_e0_avg) this%e0 = this%e0 / n_ener
+    else
+       this%e0 = 0.0_dp
+    endif
 
     if( this%do_core ) call Finalise(this%core_pot)
 

@@ -39,12 +39,13 @@ program teach_sparse_program
   character(len=STRING_LENGTH) :: verbosity
   character(len=STRING_LENGTH) :: descriptor_str, sparse_method_str, covariance_type_str, core_param_file
 
-  logical :: has_e0
+  logical :: has_e0, has_e0_offset
 
   integer :: i_coordinate
   character(len=STRING_LENGTH) :: gp_file
   logical :: has_theta_uniform
   integer :: rnd_seed
+  real(dp) :: e0_offset
 
   call system_initialise(verbosity=PRINT_NORMAL)
   call enable_timing()
@@ -56,8 +57,14 @@ program teach_sparse_program
   call param_register(params, 'descriptor_str', PARAM_MANDATORY, descriptor_str, help_string="Initialisation string for descriptors")
 
   call param_register(params, 'e0', '0.0', main_teach_sparse%e0, has_value_target = has_e0, &
-       help_string="Value to be subtracted from energies before fitting (and added back on after prediction)")
+       help_string="Atomic energy value to be subtracted from energies before fitting (and added back on after prediction). energy = core + GAP + e0")
   
+  call param_register(params, 'e0_offset', '0.0', e0_offset, has_value_target = has_e0_offset, &
+       help_string="Offset of baseline. If zero, the offset is the average atomic energy of the input data.")
+
+    call param_register(params, 'do_e0_avg', 'T', main_teach_sparse%do_e0_avg, &
+       help_string="Method of calculating e0. If true, computes the average atomic energy in input data. If false, sets e0 to the lowest atomic energy in the input data.")
+
   call param_register(params, 'default_sigma', PARAM_MANDATORY, main_teach_sparse%default_sigma, help_string="error in [energies forces virials]")
 
   call param_register(params, 'sparse_jitter', PARAM_MANDATORY, main_teach_sparse%sparse_jitter, help_string="intrisic error of atomic/bond energy")
@@ -98,7 +105,7 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse at_file=file &
-     descriptor_str=<string> default_sigma={<float> <float> <float>} sparse_jitter=<float> [e0]  [ip_args={}] &
+     descriptor_str=<string> default_sigma={<float> <float> <float>} sparse_jitter=<float> [e0] [e0_offset] [ip_args={}] &
      [energy_parameter_name=energy] [force_parameter_name=force] [virial_parameter_name=virial] &
      [config_type_parameter_name=config_type] &
      [config_type_sigma={type1:energy:force:virial:type2:energy:force:virial}] [do_sparse=T] [verbosity=NORMAL]")
@@ -251,9 +258,19 @@ program teach_sparse_program
 
   call teach_n_from_xyz(main_teach_sparse) ! counts number of energies, forces, virials. computes number of descriptors and gradients.
 
+  if( count( (/has_e0, has_e0_offset/) ) > 1 ) then
+     call print_warning('Both e0 and e0_offset has been specified. That means your offset is e0 + e0_offset = '//(main_teach_sparse%e0+e0_offset))
+  endif
+
   if ( .not. has_e0) then
      call e0_avg_from_xyz(main_teach_sparse) ! calculates the average atomic energy so it can be subtracted later.
+     call print('Average(energy-core)/atom = '//main_teach_sparse%e0)
   end if
+
+  if( has_e0_offset ) then
+     main_teach_sparse%e0 = main_teach_sparse%e0 + e0_offset
+     call print('Average(energy-core)/atom + offset= '//main_teach_sparse%e0)
+  endif
 
   call teach_data_from_xyz(main_teach_sparse) ! converts atomic neighbourhoods (bond neighbourhoods etc.) do descriptors, and feeds those to the GP
   call print('Cartesian coordinates transformed to descriptors')
