@@ -834,11 +834,11 @@ contains
   subroutine add_multispecies_descriptors(this)
     type(teach_sparse), intent(inout) :: this
 
-    integer :: i_coordinate, i, n_descriptor_str
+    integer :: i_coordinate, i, n_descriptor_str, i_add_species
     character(STRING_LENGTH), dimension(:), allocatable :: descriptor_str_i, new_descriptor_str
 
     ! temporary arrays
-    real(dp), dimension(:), allocatable :: delta, f0
+    real(dp), dimension(:), allocatable :: delta, f0, theta_uniform, theta, zeta
     integer, dimension(:), allocatable :: n_sparseX, sparse_method, covariance_type
     character(len=STRING_LENGTH), dimension(:), allocatable :: theta_file, sparse_file, theta_fac_string, config_type_n_sparseX_string
     logical, dimension(:), allocatable :: mark_sparse_atoms
@@ -855,14 +855,20 @@ contains
           call reallocate(f0, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(n_sparseX, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(config_type_n_sparseX_string, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(sparse_method, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(theta_fac_string, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(theta_uniform, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(theta_file, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(sparse_file, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(mark_sparse_atoms, n_descriptor_str+size(descriptor_str_i),copy=.true.)
-          call reallocate(sparse_method, n_descriptor_str+size(descriptor_str_i),copy=.true.)
           call reallocate(covariance_type, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(theta, n_descriptor_str+size(descriptor_str_i),copy=.true.)
+          call reallocate(zeta, n_descriptor_str+size(descriptor_str_i),copy=.true.)
 
           do i = 1, size(descriptor_str_i)
+             i_add_species = index(descriptor_str_i(i),'add_species')
+             if(i_add_species /= 0) descriptor_str_i(i)(i_add_species:i_add_species+len('add_species')-1) = '           '
+
              new_descriptor_str(i+n_descriptor_str) = trim(descriptor_str_i(i))
              call print('New descriptor: {'//trim(descriptor_str_i(i))//'}')
 
@@ -870,12 +876,15 @@ contains
              f0(i+n_descriptor_str) = this%f0(i_coordinate)
              n_sparseX(i+n_descriptor_str) = this%n_sparseX(i_coordinate)
              config_type_n_sparseX_string(i+n_descriptor_str) = this%config_type_n_sparseX_string(i_coordinate)
+             sparse_method(i+n_descriptor_str) = this%sparse_method(i_coordinate)
              theta_fac_string(i+n_descriptor_str) = this%theta_fac_string(i_coordinate)
+             theta_uniform(i+n_descriptor_str) = this%theta_uniform(i_coordinate)
              theta_file(i+n_descriptor_str) = this%theta_file(i_coordinate)
              sparse_file(i+n_descriptor_str) = this%sparse_file(i_coordinate)
              mark_sparse_atoms(i+n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
-             sparse_method(i+n_descriptor_str) = this%sparse_method(i_coordinate)
              covariance_type(i+n_descriptor_str) = this%covariance_type(i_coordinate)
+             theta(i+n_descriptor_str) = this%theta(i_coordinate)
+             zeta(i+n_descriptor_str) = this%zeta(i_coordinate)
 
           enddo
           n_descriptor_str = n_descriptor_str + size(descriptor_str_i)
@@ -889,24 +898,30 @@ contains
           call reallocate(f0, n_descriptor_str,copy=.true.)
           call reallocate(n_sparseX, n_descriptor_str,copy=.true.)
           call reallocate(config_type_n_sparseX_string, n_descriptor_str,copy=.true.)
+          call reallocate(sparse_method, n_descriptor_str,copy=.true.)
           call reallocate(theta_fac_string, n_descriptor_str,copy=.true.)
+          call reallocate(theta_uniform, n_descriptor_str,copy=.true.)
           call reallocate(theta_file, n_descriptor_str,copy=.true.)
           call reallocate(sparse_file, n_descriptor_str,copy=.true.)
           call reallocate(mark_sparse_atoms, n_descriptor_str,copy=.true.)
-          call reallocate(sparse_method, n_descriptor_str,copy=.true.)
           call reallocate(covariance_type, n_descriptor_str,copy=.true.)
+          call reallocate(theta, n_descriptor_str,copy=.true.)
+          call reallocate(zeta, n_descriptor_str,copy=.true.)
 
           new_descriptor_str(n_descriptor_str) = trim(this%descriptor_str(i_coordinate))
           delta(n_descriptor_str) = this%delta(i_coordinate)
           f0(n_descriptor_str) = this%f0(i_coordinate)
           n_sparseX(n_descriptor_str) = this%n_sparseX(i_coordinate)
           config_type_n_sparseX_string(n_descriptor_str) = this%config_type_n_sparseX_string(i_coordinate)
+          sparse_method(n_descriptor_str) = this%sparse_method(i_coordinate)
           theta_fac_string(n_descriptor_str) = this%theta_fac_string(i_coordinate)
+          theta_uniform(n_descriptor_str) = this%theta_uniform(i_coordinate)
           theta_file(n_descriptor_str) = this%theta_file(i_coordinate)
           sparse_file(n_descriptor_str) = this%sparse_file(i_coordinate)
           mark_sparse_atoms(n_descriptor_str) = this%mark_sparse_atoms(i_coordinate)
-          sparse_method(n_descriptor_str) = this%sparse_method(i_coordinate)
           covariance_type(n_descriptor_str) = this%covariance_type(i_coordinate)
+          theta(n_descriptor_str) = this%theta(i_coordinate)
+          zeta(n_descriptor_str) = this%zeta(i_coordinate)
 
           call print('Unchanged descriptor: {'//trim(this%descriptor_str(i_coordinate))//'}')
        endif
@@ -916,24 +931,30 @@ contains
     call reallocate(this%f0, n_descriptor_str)
     call reallocate(this%n_sparseX, n_descriptor_str)
     call reallocate(this%config_type_n_sparseX_string, n_descriptor_str)
+    call reallocate(this%sparse_method, n_descriptor_str)
     call reallocate(this%theta_fac_string, n_descriptor_str)
+    call reallocate(this%theta_uniform, n_descriptor_str)
     call reallocate(this%theta_file, n_descriptor_str)
     call reallocate(this%sparse_file, n_descriptor_str)
     call reallocate(this%mark_sparse_atoms, n_descriptor_str)
-    call reallocate(this%sparse_method, n_descriptor_str)
     call reallocate(this%covariance_type, n_descriptor_str)
+    call reallocate(this%theta, n_descriptor_str)
+    call reallocate(this%zeta, n_descriptor_str)
 
     this%descriptor_str(1:n_descriptor_str) = new_descriptor_str
     this%delta = delta
     this%f0 = f0
     this%n_sparseX = n_sparseX
     this%config_type_n_sparseX_string = config_type_n_sparseX_string
+    this%sparse_method = sparse_method
     this%theta_fac_string = theta_fac_string
+    this%theta_uniform = theta_uniform
     this%theta_file = theta_file
     this%sparse_file = sparse_file
     this%mark_sparse_atoms = mark_sparse_atoms
-    this%sparse_method = sparse_method
     this%covariance_type = covariance_type
+    this%theta = theta
+    this%zeta = zeta
 
     this%n_coordinate = n_descriptor_str
 
@@ -941,12 +962,15 @@ contains
     if(allocated(f0)) deallocate(f0)
     if(allocated(n_sparseX)) deallocate(n_sparseX)
     if(allocated(config_type_n_sparseX_string)) deallocate(config_type_n_sparseX_string)
+    if(allocated(sparse_method)) deallocate(sparse_method)
     if(allocated(theta_fac_string)) deallocate(theta_fac_string)
+    if(allocated(theta_uniform)) deallocate(theta_uniform)
     if(allocated(theta_file)) deallocate(theta_file)
     if(allocated(sparse_file)) deallocate(sparse_file)
     if(allocated(mark_sparse_atoms)) deallocate(mark_sparse_atoms)
-    if(allocated(sparse_method)) deallocate(sparse_method)
     if(allocated(covariance_type)) deallocate(covariance_type)
+    if(allocated(theta)) deallocate(theta)
+    if(allocated(zeta)) deallocate(zeta)
 
   endsubroutine add_multispecies_descriptors
 
