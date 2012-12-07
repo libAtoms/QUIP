@@ -713,7 +713,7 @@ subroutine TBModel_Bowler_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10)
+  real(dp) SK_frad_H(N_SK)
   real(dp) dv_hat_sq(3)
 
   ti = get_type(this%type_of_atomic_num,at%Z(at_i))
@@ -789,8 +789,8 @@ function TBModel_Bowler_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10)
-  real(dp) SK_dfrad_H(10)
+  real(dp) SK_frad_H(N_SK)
+  real(dp) SK_dfrad_H(N_SK)
   real(dp) dv_hat_sq(3)
   real(dp) virial_outerprod_fac
 
@@ -849,7 +849,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
   integer, intent(in) :: is, js
-  real(dp), intent(out) :: f_H(10)
+  real(dp), intent(out) :: f_H(N_SK)
 
   if (orb_set_type_i == ORB_S .and. orb_set_type_j == ORB_S) then
     f_H(SK_SSS) = calc_H_coeff(this, SK_SSS, dv_mag, ti, tj)
@@ -860,6 +860,8 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
   else if (orb_set_type_i == ORB_P .and. orb_set_type_j == ORB_P) then
     f_H(SK_PPS) = calc_H_coeff(this, SK_PPS, dv_mag, ti, tj)
     f_H(SK_PPP) = calc_H_coeff(this, SK_PPP, dv_mag, ti, tj)
+  else
+    call system_abort("TBModel_Bowler radial_functions got invalide orb_set_type "//orb_set_type_i//" or "//orb_set_type_j)
   endif
 end subroutine radial_functions
 
@@ -869,7 +871,7 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
   integer, intent(in) :: is, js
-  real(dp), intent(out) :: f_dH(10)
+  real(dp), intent(out) :: f_dH(N_SK)
 
   if (orb_set_type_i == ORB_S .and. orb_set_type_j == ORB_S) then
     f_dH(SK_SSS) = calc_H_coeff_deriv(this, SK_SSS, dv_mag, ti, tj)
@@ -880,6 +882,8 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
   else if (orb_set_type_i == ORB_P .and. orb_set_type_j == ORB_P) then
     f_dH(SK_PPS) = calc_H_coeff_deriv(this, SK_PPS, dv_mag, ti, tj)
     f_dH(SK_PPP) = calc_H_coeff_deriv(this, SK_PPP, dv_mag, ti, tj)
+  else
+    call system_abort("TBModel_Bowler dradial_functions got invalide orb_set_type "//orb_set_type_i//" or "//orb_set_type_j)
   endif
 end subroutine dradial_functions
 
@@ -1036,7 +1040,7 @@ function TBModel_Bowler_get_local_rep_E_force(this, at, i) result(force)
   integer, intent(in) :: i
   real(dp) :: force(3,at%N)
 
-  real(dp) dE_dr, dist, dv_hat(3), dv_mag
+  real(dp) dE_dr, dist, dv_hat(3)
   integer ji, j, ti, tj
 
   force = 0.0_dp
@@ -1060,7 +1064,7 @@ function TBModel_Bowler_get_local_rep_E_virial(this, at, i) result(virial)
   integer, intent(in) :: i
   real(dp) :: virial(3,3)
 
-  real(dp) dE_dr, dist, dv_hat(3), dv_mag
+  real(dp) dE_dr, dist, dv_hat(3)
   integer ji, j, ti, tj
 
   virial = 0.0_dp

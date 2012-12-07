@@ -54,7 +54,7 @@ subroutine do_nrl_tb_params_to_xml(fname)
   double precision, allocatable :: lambda_sq(:,:), abcd(:,:,:,:,:)
   double precision, allocatable :: H_coeff(:,:,:,:,:), S_coeff(:,:,:,:,:)
 
-  integer n_elec_s, n_elec_p, n_elec_d
+  double precision n_elec_s, n_elec_p, n_elec_d
   double precision t_d
   integer i, j, stat
   integer i_mag, n_mag
@@ -188,6 +188,13 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	  orb_set_type(i,2) = ORB_P
 	  orb_set_type(i,3) = ORB_D
 	  n_elecs(i) = n_elec_s + n_elec_p + n_elec_d
+	case (16)
+	  n_orb_sets(i) = 4
+	  orb_set_type(i,1) = ORB_S
+	  orb_set_type(i,2) = ORB_P
+	  orb_set_type(i,3) = ORB_D
+	  orb_set_type(i,4) = ORB_F
+	  n_elecs(i) = n_elec_s + n_elec_p + n_elec_d
     end select
   end do
 
@@ -205,9 +212,9 @@ subroutine do_nrl_tb_params_to_xml(fname)
   endif
 
   allocate(lambda_sq(n_types,n_mag))
-  allocate(abcd(4,3,n_types,n_types,n_mag))
-  allocate(H_coeff(4,10,n_types,n_types,n_mag))
-  allocate(S_coeff(4,10,n_types,n_types,n_mag))
+  allocate(abcd(4,max_n_orb_sets,n_types,n_types,n_mag))
+  allocate(H_coeff(4,N_SK,n_types,n_types,n_mag))
+  allocate(S_coeff(4,N_SK,n_types,n_types,n_mag))
 
   do i_mag=1, n_mag
 
@@ -215,88 +222,111 @@ subroutine do_nrl_tb_params_to_xml(fname)
     j = i
 	read *, lambda_sq(i,i_mag)
 
-	read *, abcd(ABCD_A,SPD_S,i,i,i_mag)
-	read *, abcd(ABCD_B,SPD_S,i,i,i_mag)
-	read *, abcd(ABCD_C,SPD_S,i,i,i_mag)
-	read *, abcd(ABCD_D,SPD_S,i,i,i_mag)
+	read *, abcd(ABCD_A,SPDF_S,i,i,i_mag)
+	read *, abcd(ABCD_B,SPDF_S,i,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_S,i,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_S,i,i,i_mag)
 
-	read *, abcd(ABCD_A,SPD_P,i,i,i_mag)
-	read *, abcd(ABCD_B,SPD_P,i,i,i_mag)
-	read *, abcd(ABCD_C,SPD_P,i,i,i_mag)
-	read *, abcd(ABCD_D,SPD_P,i,i,i_mag)
+	read *, abcd(ABCD_A,SPDF_P,i,i,i_mag)
+	read *, abcd(ABCD_B,SPDF_P,i,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_P,i,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_P,i,i,i_mag)
 
-	read *, abcd(ABCD_A,SPD_D,i,i,i_mag)
-	read *, abcd(ABCD_B,SPD_D,i,i,i_mag)
-	read *, abcd(ABCD_C,SPD_D,i,i,i_mag)
-	read *, abcd(ABCD_D,SPD_D,i,i,i_mag)
+	read *, abcd(ABCD_A,SPDF_D,i,i,i_mag)
+	read *, abcd(ABCD_B,SPDF_D,i,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_D,i,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_D,i,i,i_mag)
 
 	read *, t_d
-	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_A,SPD_D,i,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_A,SPD_D,i,i,i_mag) // " " // t_d)
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_A,SPDF_D,i,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_A,SPDF_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_B,SPD_D,i,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPD_D,i,i,i_mag) // " " // t_d)
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_B,SPDF_D,i,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPDF_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_C,SPD_D,i,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPD_D,i,i,i_mag) // " " // t_d)
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_C,SPDF_D,i,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPDF_D,i,i,i_mag) // " " // t_d)
 	read *, t_d
-	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_D,SPD_D,i,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPD_D,i,i,i_mag) // " " // t_d)
+	if (any(orb_set_type(i,1:n_orb_sets(i)) == ORB_D) .and. abcd(ABCD_D,SPDF_D,i,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPDF_D,i,i,i_mag) // " " // t_d)
+
+	if (n_orb_sets(i) == 4) then
+	   read *, abcd(ABCD_A,SPDF_F,i,i,i_mag)
+	   read *, abcd(ABCD_B,SPDF_F,i,i,i_mag)
+	   read *, abcd(ABCD_C,SPDF_F,i,i,i_mag)
+	   read *, abcd(ABCD_D,SPDF_F,i,i,i_mag)
+	endif
+
     end do
 
     do i=2, n_types
       do j=1, i-1
 
-	abcd(ABCD_A,SPD_S,i,j,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_S,i,j,i_mag)
-	read *, abcd(ABCD_C,SPD_S,i,j,i_mag)
-	read *, abcd(ABCD_D,SPD_S,i,j,i_mag)
+	! i on j
+	abcd(ABCD_A,SPDF_S,i,j,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_S,i,j,i_mag)
+	read *, abcd(ABCD_C,SPDF_S,i,j,i_mag)
+	read *, abcd(ABCD_D,SPDF_S,i,j,i_mag)
 
-	abcd(ABCD_A,SPD_P,i,j,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_P,i,j,i_mag)
-	read *, abcd(ABCD_C,SPD_P,i,j,i_mag)
-	read *, abcd(ABCD_D,SPD_P,i,j,i_mag)
+	abcd(ABCD_A,SPDF_P,i,j,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_P,i,j,i_mag)
+	read *, abcd(ABCD_C,SPDF_P,i,j,i_mag)
+	read *, abcd(ABCD_D,SPDF_P,i,j,i_mag)
 
-	abcd(ABCD_A,SPD_D,i,j,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_D,i,j,i_mag)
-	read *, abcd(ABCD_C,SPD_D,i,j,i_mag)
-	read *, abcd(ABCD_D,SPD_D,i,j,i_mag)
-
-	read *, t_d
-	if (abcd(ABCD_B,SPD_D,i,j,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPD_D,i,j,i_mag) // " " // t_d)
-	read *, t_d
-	if (abcd(ABCD_C,SPD_D,i,j,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPD_D,i,j,i_mag) // " " // t_d)
-	read *, t_d
-	if (abcd(ABCD_D,SPD_D,i,j,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPD_D,i,j,i_mag) // " " // t_d)
-
-	abcd(ABCD_A,SPD_S,j,i,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_S,j,i,i_mag)
-	read *, abcd(ABCD_C,SPD_S,j,i,i_mag)
-	read *, abcd(ABCD_D,SPD_S,j,i,i_mag)
-
-	abcd(ABCD_A,SPD_P,j,i,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_P,j,i,i_mag)
-	read *, abcd(ABCD_C,SPD_P,j,i,i_mag)
-	read *, abcd(ABCD_D,SPD_P,j,i,i_mag)
-
-	abcd(ABCD_A,SPD_D,j,i,i_mag) = 0.0D0
-	read *, abcd(ABCD_B,SPD_D,j,i,i_mag)
-	read *, abcd(ABCD_C,SPD_D,j,i,i_mag)
-	read *, abcd(ABCD_D,SPD_D,j,i,i_mag)
+	abcd(ABCD_A,SPDF_D,i,j,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_D,i,j,i_mag)
+	read *, abcd(ABCD_C,SPDF_D,i,j,i_mag)
+	read *, abcd(ABCD_D,SPDF_D,i,j,i_mag)
 
 	read *, t_d
-	if (abcd(ABCD_B,SPD_D,j,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPD_D,j,i,i_mag) // " " // t_d)
+	if (abcd(ABCD_B,SPDF_D,i,j,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPDF_D,i,j,i_mag) // " " // t_d)
 	read *, t_d
-	if (abcd(ABCD_C,SPD_D,j,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPD_D,j,i,i_mag) // " " // t_d)
+	if (abcd(ABCD_C,SPDF_D,i,j,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPDF_D,i,j,i_mag) // " " // t_d)
 	read *, t_d
-	if (abcd(ABCD_D,SPD_D,j,i,i_mag) /= t_d) &
-	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPD_D,j,i,i_mag) // " " // t_d)
+	if (abcd(ABCD_D,SPDF_D,i,j,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPDF_D,i,j,i_mag) // " " // t_d)
 
+	if (n_orb_sets(i) == 4) then
+	   abcd(ABCD_A,SPDF_F,i,j,i_mag) = 0.0D0
+	   read *, abcd(ABCD_B,SPDF_F,i,j,i_mag)
+	   read *, abcd(ABCD_C,SPDF_F,i,j,i_mag)
+	   read *, abcd(ABCD_D,SPDF_F,i,j,i_mag)
+	endif
+
+	! j on i
+	abcd(ABCD_A,SPDF_S,j,i,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_S,j,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_S,j,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_S,j,i,i_mag)
+
+	abcd(ABCD_A,SPDF_P,j,i,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_P,j,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_P,j,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_P,j,i,i_mag)
+
+	abcd(ABCD_A,SPDF_D,j,i,i_mag) = 0.0D0
+	read *, abcd(ABCD_B,SPDF_D,j,i,i_mag)
+	read *, abcd(ABCD_C,SPDF_D,j,i,i_mag)
+	read *, abcd(ABCD_D,SPDF_D,j,i,i_mag)
+
+	read *, t_d
+	if (abcd(ABCD_B,SPDF_D,j,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_B,SPDF_D,j,i,i_mag) // " " // t_d)
+	read *, t_d
+	if (abcd(ABCD_C,SPDF_D,j,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_C,SPDF_D,j,i,i_mag) // " " // t_d)
+	read *, t_d
+	if (abcd(ABCD_D,SPDF_D,j,i,i_mag) /= t_d) &
+	  call system_abort ("NRL-TB No support for E_g T_2g split" // abcd(ABCD_D,SPDF_D,j,i,i_mag) // " " // t_d)
+
+	if (n_orb_sets(j) == 4) then
+	   abcd(ABCD_A,SPDF_F,j,i,i_mag) = 0.0D0
+	   read *, abcd(ABCD_B,SPDF_F,j,i,i_mag)
+	   read *, abcd(ABCD_C,SPDF_F,j,i,i_mag)
+	   read *, abcd(ABCD_D,SPDF_F,j,i,i_mag)
+	endif
 
       end do
     end do
@@ -345,6 +375,48 @@ subroutine do_nrl_tb_params_to_xml(fname)
       read *, H_coeff(MC_F,SK_DDD,j,i,i_mag)
       read *, H_coeff(MC_FB,SK_DDD,j,i,i_mag)
       read *, H_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
+      if (n_orb_sets(i) == 4) then
+	 read *, H_coeff(MC_E,SK_SFS,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_SFS,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_SFS,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_SFS,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_PFS,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_PFS,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_PFS,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_PFS,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_PFP,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_PFP,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_PFP,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_PFP,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_DFS,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_DFS,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_DFS,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_DFS,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_DFP,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_DFP,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_DFP,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_DFP,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_DFD,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_DFD,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_DFD,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_DFD,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_FFS,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_FFS,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_FFP,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_FFP,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_FFD,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_FFD,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	 read *, H_coeff(MC_E,SK_FFF,j,i,i_mag)
+	 read *, H_coeff(MC_F,SK_FFF,j,i,i_mag)
+	 read *, H_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	 read *, H_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+      endif
     end do
 
     do i=2, n_types
@@ -389,6 +461,48 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	read *, H_coeff(MC_F,SK_DDD,j,i,i_mag)
 	read *, H_coeff(MC_FB,SK_DDD,j,i,i_mag)
 	read *, H_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
+	if (n_orb_sets(i) == 4) then
+	   read *, H_coeff(MC_E,SK_SFS,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_SFS,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_SFS,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_SFS,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_PFS,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_PFS,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_PFS,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_PFS,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_PFP,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_PFP,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_PFP,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_PFP,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_DFS,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_DFS,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFS,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFS,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_DFP,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_DFP,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFP,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFP,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_DFD,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_DFD,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFD,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFD,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_FFS,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_FFS,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_FFP,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_FFP,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_FFD,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_FFD,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	   read *, H_coeff(MC_E,SK_FFF,j,i,i_mag)
+	   read *, H_coeff(MC_F,SK_FFF,j,i,i_mag)
+	   read *, H_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+	endif
 
 	H_coeff(MC_E,SK_SSS,i,j,i_mag) = H_coeff(MC_E,SK_SSS,j,i,i_mag)
 	H_coeff(MC_F,SK_SSS,i,j,i_mag) = H_coeff(MC_F,SK_SSS,j,i,i_mag)
@@ -449,6 +563,64 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	H_coeff(MC_FB,SK_DDD,i,j,i_mag) = H_coeff(MC_FB,SK_DDD,j,i,i_mag)
 	H_coeff(MC_G_SQ,SK_DDD,i,j,i_mag) = H_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
 
+	if (n_orb_sets(j) == 4) then
+	   read *, H_coeff(MC_E,SK_SFS,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_SFS,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_SFS,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_SFS,i,j,i_mag)
+	   H_coeff(MC_E,SK_SFS,i,j,i_mag) = -H_coeff(MC_E,SK_SFS,i,j,i_mag)
+	   H_coeff(MC_F,SK_SFS,i,j,i_mag) = -H_coeff(MC_F,SK_SFS,i,j,i_mag)
+	   H_coeff(MC_FB,SK_SFS,i,j,i_mag) = -H_coeff(MC_FB,SK_SFS,i,j,i_mag)
+
+	   read *, H_coeff(MC_E,SK_PFS,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_PFS,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_PFS,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_PFS,i,j,i_mag)
+	   read *, H_coeff(MC_E,SK_PFP,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_PFP,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_PFP,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_PFP,i,j,i_mag)
+
+	   read *, H_coeff(MC_E,SK_DFS,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_DFS,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFS,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFS,i,j,i_mag)
+	   read *, H_coeff(MC_E,SK_DFP,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_DFP,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFP,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFP,i,j,i_mag)
+	   read *, H_coeff(MC_E,SK_DFD,i,j,i_mag)
+	   read *, H_coeff(MC_F,SK_DFD,i,j,i_mag)
+	   read *, H_coeff(MC_FB,SK_DFD,i,j,i_mag)
+	   read *, H_coeff(MC_G_SQ,SK_DFD,i,j,i_mag)
+	   H_coeff(MC_E,SK_DFS,i,j,i_mag) = -H_coeff(MC_E,SK_DFS,i,j,i_mag)
+	   H_coeff(MC_F,SK_DFS,i,j,i_mag) = -H_coeff(MC_F,SK_DFS,i,j,i_mag)
+	   H_coeff(MC_FB,SK_DFS,i,j,i_mag) = -H_coeff(MC_FB,SK_DFS,i,j,i_mag)
+	   H_coeff(MC_E,SK_DFP,i,j,i_mag) = -H_coeff(MC_E,SK_DFP,i,j,i_mag)
+	   H_coeff(MC_F,SK_DFP,i,j,i_mag) = -H_coeff(MC_F,SK_DFP,i,j,i_mag)
+	   H_coeff(MC_FB,SK_DFP,i,j,i_mag) = -H_coeff(MC_FB,SK_DFP,i,j,i_mag)
+	   H_coeff(MC_E,SK_DFD,i,j,i_mag) = -H_coeff(MC_E,SK_DFD,i,j,i_mag)
+	   H_coeff(MC_F,SK_DFD,i,j,i_mag) = -H_coeff(MC_F,SK_DFD,i,j,i_mag)
+	   H_coeff(MC_FB,SK_DFD,i,j,i_mag) = -H_coeff(MC_FB,SK_DFD,i,j,i_mag)
+
+	   H_coeff(MC_E,SK_FFS,i,j,i_mag) = H_coeff(MC_E,SK_FFS,j,i,i_mag)
+	   H_coeff(MC_F,SK_FFS,i,j,i_mag) = H_coeff(MC_F,SK_FFS,j,i,i_mag)
+	   H_coeff(MC_FB,SK_FFS,i,j,i_mag) = H_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	   H_coeff(MC_G_SQ,SK_FFS,i,j,i_mag) = H_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	   H_coeff(MC_E,SK_FFP,i,j,i_mag) = H_coeff(MC_E,SK_FFP,j,i,i_mag)
+	   H_coeff(MC_F,SK_FFP,i,j,i_mag) = H_coeff(MC_F,SK_FFP,j,i,i_mag)
+	   H_coeff(MC_FB,SK_FFP,i,j,i_mag) = H_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	   H_coeff(MC_G_SQ,SK_FFP,i,j,i_mag) = H_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	   H_coeff(MC_E,SK_FFD,i,j,i_mag) = H_coeff(MC_E,SK_FFD,j,i,i_mag)
+	   H_coeff(MC_F,SK_FFD,i,j,i_mag) = H_coeff(MC_F,SK_FFD,j,i,i_mag)
+	   H_coeff(MC_FB,SK_FFD,i,j,i_mag) = H_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	   H_coeff(MC_G_SQ,SK_FFD,i,j,i_mag) = H_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	   H_coeff(MC_E,SK_FFF,i,j,i_mag) = H_coeff(MC_E,SK_FFF,j,i,i_mag)
+	   H_coeff(MC_F,SK_FFF,i,j,i_mag) = H_coeff(MC_F,SK_FFF,j,i,i_mag)
+	   H_coeff(MC_FB,SK_FFF,i,j,i_mag) = H_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	   H_coeff(MC_G_SQ,SK_FFF,i,j,i_mag) = H_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+	endif
+
       end do
     end do
 
@@ -496,6 +668,48 @@ subroutine do_nrl_tb_params_to_xml(fname)
       read *, S_coeff(MC_F,SK_DDD,j,i,i_mag)
       read *, S_coeff(MC_FB,SK_DDD,j,i,i_mag)
       read *, S_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
+      if (n_orb_sets(i) == 4) then
+	 read *, S_coeff(MC_E,SK_SFS,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_SFS,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_SFS,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_SFS,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_PFS,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_PFS,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_PFS,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_PFS,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_PFP,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_PFP,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_PFP,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_PFP,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_DFS,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_DFS,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_DFS,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_DFS,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_DFP,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_DFP,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_DFP,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_DFP,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_DFD,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_DFD,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_DFD,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_DFD,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_FFS,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_FFS,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_FFP,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_FFP,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_FFD,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_FFD,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	 read *, S_coeff(MC_E,SK_FFF,j,i,i_mag)
+	 read *, S_coeff(MC_F,SK_FFF,j,i,i_mag)
+	 read *, S_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	 read *, S_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+      endif
     end do
 
     do i=2, n_types
@@ -540,6 +754,48 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	read *, S_coeff(MC_F,SK_DDD,j,i,i_mag)
 	read *, S_coeff(MC_FB,SK_DDD,j,i,i_mag)
 	read *, S_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
+	if (n_orb_sets(i) == 4) then
+	   read *, S_coeff(MC_E,SK_SFS,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_SFS,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_SFS,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_SFS,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_PFS,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_PFS,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_PFS,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_PFS,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_PFP,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_PFP,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_PFP,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_PFP,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_DFS,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_DFS,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFS,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFS,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_DFP,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_DFP,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFP,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFP,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_DFD,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_DFD,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFD,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFD,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_FFS,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_FFS,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_FFP,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_FFP,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_FFD,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_FFD,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	   read *, S_coeff(MC_E,SK_FFF,j,i,i_mag)
+	   read *, S_coeff(MC_F,SK_FFF,j,i,i_mag)
+	   read *, S_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+	endif
 
 	S_coeff(MC_E,SK_SSS,i,j,i_mag) = S_coeff(MC_E,SK_SSS,j,i,i_mag)
 	S_coeff(MC_F,SK_SSS,i,j,i_mag) = S_coeff(MC_F,SK_SSS,j,i,i_mag)
@@ -600,8 +856,67 @@ subroutine do_nrl_tb_params_to_xml(fname)
 	S_coeff(MC_FB,SK_DDD,i,j,i_mag) = S_coeff(MC_FB,SK_DDD,j,i,i_mag)
 	S_coeff(MC_G_SQ,SK_DDD,i,j,i_mag) = S_coeff(MC_G_SQ,SK_DDD,j,i,i_mag)
 
+	if (n_orb_sets(j) == 4) then
+	   read *, S_coeff(MC_E,SK_SFS,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_SFS,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_SFS,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_SFS,i,j,i_mag)
+	   S_coeff(MC_E,SK_SFS,i,j,i_mag) = -S_coeff(MC_E,SK_SFS,i,j,i_mag)
+	   S_coeff(MC_F,SK_SFS,i,j,i_mag) = -S_coeff(MC_F,SK_SFS,i,j,i_mag)
+	   S_coeff(MC_FB,SK_SFS,i,j,i_mag) = -S_coeff(MC_FB,SK_SFS,i,j,i_mag)
+
+	   read *, S_coeff(MC_E,SK_PFS,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_PFS,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_PFS,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_PFS,i,j,i_mag)
+	   read *, S_coeff(MC_E,SK_PFP,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_PFP,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_PFP,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_PFP,i,j,i_mag)
+
+	   read *, S_coeff(MC_E,SK_DFS,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_DFS,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFS,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFS,i,j,i_mag)
+	   read *, S_coeff(MC_E,SK_DFP,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_DFP,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFP,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFP,i,j,i_mag)
+	   read *, S_coeff(MC_E,SK_DFD,i,j,i_mag)
+	   read *, S_coeff(MC_F,SK_DFD,i,j,i_mag)
+	   read *, S_coeff(MC_FB,SK_DFD,i,j,i_mag)
+	   read *, S_coeff(MC_G_SQ,SK_DFD,i,j,i_mag)
+	   S_coeff(MC_E,SK_DFS,i,j,i_mag) = -S_coeff(MC_E,SK_DFS,i,j,i_mag)
+	   S_coeff(MC_F,SK_DFS,i,j,i_mag) = -S_coeff(MC_F,SK_DFS,i,j,i_mag)
+	   S_coeff(MC_FB,SK_DFS,i,j,i_mag) = -S_coeff(MC_FB,SK_DFS,i,j,i_mag)
+	   S_coeff(MC_E,SK_DFP,i,j,i_mag) = -S_coeff(MC_E,SK_DFP,i,j,i_mag)
+	   S_coeff(MC_F,SK_DFP,i,j,i_mag) = -S_coeff(MC_F,SK_DFP,i,j,i_mag)
+	   S_coeff(MC_FB,SK_DFP,i,j,i_mag) = -S_coeff(MC_FB,SK_DFP,i,j,i_mag)
+	   S_coeff(MC_E,SK_DFD,i,j,i_mag) = -S_coeff(MC_E,SK_DFD,i,j,i_mag)
+	   S_coeff(MC_F,SK_DFD,i,j,i_mag) = -S_coeff(MC_F,SK_DFD,i,j,i_mag)
+	   S_coeff(MC_FB,SK_DFD,i,j,i_mag) = -S_coeff(MC_FB,SK_DFD,i,j,i_mag)
+
+	   S_coeff(MC_E,SK_FFS,i,j,i_mag) = S_coeff(MC_E,SK_FFS,j,i,i_mag)
+	   S_coeff(MC_F,SK_FFS,i,j,i_mag) = S_coeff(MC_F,SK_FFS,j,i,i_mag)
+	   S_coeff(MC_FB,SK_FFS,i,j,i_mag) = S_coeff(MC_FB,SK_FFS,j,i,i_mag)
+	   S_coeff(MC_G_SQ,SK_FFS,i,j,i_mag) = S_coeff(MC_G_SQ,SK_FFS,j,i,i_mag)
+	   S_coeff(MC_E,SK_FFP,i,j,i_mag) = S_coeff(MC_E,SK_FFP,j,i,i_mag)
+	   S_coeff(MC_F,SK_FFP,i,j,i_mag) = S_coeff(MC_F,SK_FFP,j,i,i_mag)
+	   S_coeff(MC_FB,SK_FFP,i,j,i_mag) = S_coeff(MC_FB,SK_FFP,j,i,i_mag)
+	   S_coeff(MC_G_SQ,SK_FFP,i,j,i_mag) = S_coeff(MC_G_SQ,SK_FFP,j,i,i_mag)
+	   S_coeff(MC_E,SK_FFD,i,j,i_mag) = S_coeff(MC_E,SK_FFD,j,i,i_mag)
+	   S_coeff(MC_F,SK_FFD,i,j,i_mag) = S_coeff(MC_F,SK_FFD,j,i,i_mag)
+	   S_coeff(MC_FB,SK_FFD,i,j,i_mag) = S_coeff(MC_FB,SK_FFD,j,i,i_mag)
+	   S_coeff(MC_G_SQ,SK_FFD,i,j,i_mag) = S_coeff(MC_G_SQ,SK_FFD,j,i,i_mag)
+	   S_coeff(MC_E,SK_FFF,i,j,i_mag) = S_coeff(MC_E,SK_FFF,j,i,i_mag)
+	   S_coeff(MC_F,SK_FFF,i,j,i_mag) = S_coeff(MC_F,SK_FFF,j,i,i_mag)
+	   S_coeff(MC_FB,SK_FFF,i,j,i_mag) = S_coeff(MC_FB,SK_FFF,j,i,i_mag)
+	   S_coeff(MC_G_SQ,SK_FFF,i,j,i_mag) = S_coeff(MC_G_SQ,SK_FFF,j,i,i_mag)
+	endif
+
       end do
     end do
+
   end do ! i_mag
 
   lambda_sq = lambda_sq**2
@@ -631,11 +946,11 @@ implicit none
   double precision, allocatable :: pair_rep_inner(:,:), pair_rep_outer(:,:)
   double precision, intent(in) :: cutoff
   double precision, intent(in) :: lambda_sq(n_types,n_mag), abcd(4,3,n_types,n_types,n_mag)
-  double precision, intent(in) :: H_coeff(4,10,n_types,n_types,n_mag), S_coeff(4,10,n_types,n_types,n_mag)
+  double precision, intent(in) :: H_coeff(4,N_SK,n_types,n_types,n_mag), S_coeff(4,N_SK,n_types,n_types,n_mag)
 
   type(xmlf_t) :: xf
 
-  integer :: i, j, k, i_mag
+  integer :: i, j, k, i_mag, n_sk_use, max_spdf
 
   call xml_OpenFile(fname,xf)
   ! call xml_AddXMLDeclaration(xf)
@@ -680,6 +995,14 @@ implicit none
     call xml_EndElement(xf,"per_type_data")
   end do
 
+  if (any(orb_set_type == ORB_F)) then
+     n_sk_use=20
+     max_spdf = SPDF_F
+  else
+     n_sk_use=10
+     max_spdf = SPDF_D
+  endif
+
   do i=1, n_types
   do j=1, n_types
     call xml_NewElement(xf,"per_pair_data")
@@ -692,7 +1015,7 @@ implicit none
 	call xml_AddAttribute(xf,"pair_rep_outer", "" // pair_rep_outer(i,j))
       endif
       call xml_NewElement(xf,"abcd")
-	do k=SPD_S, SPD_D
+	do k=SPDF_S, max_spdf
 	  ! call xml_AddArray(xf,abcd(1:4,k,i,j), '(f20.10,1x)')
 	  do i_mag=1, n_mag
 	    call xml_AddCharacters(xf, "" // abcd(1:4,k,i,j,i_mag) // " ")
@@ -701,7 +1024,7 @@ implicit none
 	end do
       call xml_EndElement(xf,"abcd")
       call xml_NewElement(xf,"H_coeff")
-	do k=SK_SSS, SK_DDD
+	do k=1, n_sk_use
 	  ! call xml_AddArray(xf,H_coeff(1:4,k,i,j), '(f20.10,1x)')
 	  do i_mag=1, n_mag
 	    call xml_AddCharacters(xf, "" // H_coeff(1:4,k,i,j,i_mag) // " ")
@@ -710,7 +1033,7 @@ implicit none
 	end do
       call xml_EndElement(xf,"H_coeff")
       call xml_NewElement(xf,"S_coeff")
-	do k=SK_SSS, SK_DDD
+	do k=1, n_sk_use
 	  ! call xml_AddArray(xf,S_coeff(1:4,k,i,j), '(f20.10,1x)')
 	  do i_mag=1, n_mag
 	    call xml_AddCharacters(xf, "" // S_coeff(1:4,k,i,j,i_mag) // " ")

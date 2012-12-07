@@ -676,7 +676,7 @@ subroutine TBModel_GSP_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H, 
   real(dp), intent(out) :: b_S(:,:)
 
   integer i, j, ti, tj, is, js, i_set, j_set
-  real(dp) SK_frad_H(10)
+  real(dp) SK_frad_H(N_SK)
   real(dp) dv_hat_sq(3)
 
   ti = get_type(this%type_of_atomic_num,at%Z(at_i))
@@ -749,8 +749,8 @@ function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind
   logical :: TBModel_GSP_get_dHS_blocks
 
   integer :: i, j, ti, tj, is, js, i_set, j_set
-  real(dp) SK_frad_H(10) 
-  real(dp) SK_dfrad_H(10)
+  real(dp) SK_frad_H(N_SK) 
+  real(dp) SK_dfrad_H(N_SK)
   real(dp) dv_hat_sq(3)
   real(dp) virial_outerprod_fac
 
@@ -807,7 +807,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  real(dp), intent(out) :: f_H(10)
+  real(dp), intent(out) :: f_H(N_SK)
 
   if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_D) then
     f_H(SK_DDS) = calc_H_coeff(this, SK_DDS, dv_mag, ti, tj)
@@ -821,7 +821,7 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  real(dp), intent(out) :: f_dH(10)
+  real(dp), intent(out) :: f_dH(N_SK)
 
   if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_D) then
     f_dH(SK_DDS) = calc_H_coeff_deriv(this, SK_DDS, dv_mag, ti, tj)
