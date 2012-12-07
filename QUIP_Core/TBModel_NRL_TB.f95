@@ -296,9 +296,9 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
       allocate(parse_tbm%pair_rep_outer(parse_tbm%n_types,parse_tbm%n_types))
     endif
     allocate(parse_tbm%lambda_sq(parse_tbm%n_types,parse_tbm%n_mag))
-    allocate(parse_tbm%abcd(4,3,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
-    allocate(parse_tbm%H_coeff(4,10,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
-    allocate(parse_tbm%S_coeff(4,10,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
+    allocate(parse_tbm%abcd(4,max_n_orb_sets,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
+    allocate(parse_tbm%H_coeff(4,N_SK,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
+    allocate(parse_tbm%S_coeff(4,N_SK,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
 
   elseif (parse_in_tbm .and. name == 'per_type_data') then
 
@@ -388,7 +388,7 @@ subroutine TBM_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: name 
 
   character(len=10240) :: val
-  real(dp) :: abcd_v(24), coeff_v(80)
+  real(dp) :: abcd_v(32), coeff_v(160)
   integer k
 
   if (parse_in_tbm) then
@@ -400,44 +400,84 @@ subroutine TBM_endElement_handler(URI, localname, name)
     elseif (name == 'abcd') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	read (val, *) abcd_v(1:24)
-	parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
-	parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
-	parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
-	parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
-	parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	   read (val, *) abcd_v(1:32)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
+	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(25:28)
+	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(29:32)
+	else ! no f orbitals
+	   read (val, *) abcd_v(1:24)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
+	endif
       else
-	read (val, *) abcd_v(1:12)
-	parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
-	parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	   read (val, *) abcd_v(1:16)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(13:16)
+	else ! no f orbitals
+	   read (val, *) abcd_v(1:12)
+	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
+	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+	endif
       endif
     elseif (name == 'H_coeff') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	read (val, *) coeff_v(1:80)
-	do k=1, 10
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	  read (val, *) coeff_v(1:160)
+	else ! no f orbitals
+	  read (val, *) coeff_v(1:80)
+	  coeff_v(81:160) = 0.0_dp
+	endif
+	do k=1, 20
 	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
 	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
 	end do
       else
-	read (val, *) coeff_v(1:40)
-	do k=1, 10
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	  read (val, *) coeff_v(1:80)
+	else ! no f orbitals
+	  read (val, *) coeff_v(1:40)
+	  coeff_v(41:80) = 0.0_dp
+	endif
+	do k=1, 20
 	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
 	end do
       endif
     elseif (name == 'S_coeff') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	read (val, *) coeff_v(1:80)
-	do k=1, 10
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	  read (val, *) coeff_v(1:160)
+	else ! no f orbitals
+	  read (val, *) coeff_v(1:80)
+	  coeff_v(81:160) = 0.0_dp
+	endif
+	do k=1, 20
 	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
 	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
 	end do
       else
-	read (val, *) coeff_v(1:40)
-	do k=1, 10
+	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+	  read (val, *) coeff_v(1:80)
+	else ! no f orbitals
+	  read (val, *) coeff_v(1:40)
+	  coeff_v(41:80) = 0.0_dp
+	endif
+	do k=1, 20
 	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
 	end do
       endif
@@ -521,7 +561,7 @@ subroutine TBModel_NRL_TB_Print(this,file)
   type(TBModel_NRL_TB),    intent(in)           :: this
   type(Inoutput), intent(inout),optional:: file
 
-  integer::i, j, ii, i_mag
+  integer::i, j, ii, i_mag, n_sk_use, max_spdf
 
   if(this%n_types == 0) call System_Abort('TBModel_NRL_TB_Print: TBModel_NRL_TB structure not initialised')
 
@@ -530,6 +570,14 @@ subroutine TBModel_NRL_TB_Print(this,file)
   call Print ('TBModel_NRL_TB: is_orthogonal ' // this%is_orthogonal // &
    ' is_magnetic '// this%is_magnetic// ' has_pair_repulsion '// this%has_pair_repulsion//  &
    ' overlap_zero_limit '// this%overlap_zero_limit// ' force_harrison_signs '// this%force_harrison_signs, file=file)
+
+  if (any(this%orb_set_type == ORB_F)) then
+     n_sk_use = 20
+     max_spdf = SPDF_F
+  else
+     n_sk_use = 10
+     max_spdf = SPDF_D
+  endif
 
   do i=1, this%n_types
     call Print ('TBModel_NRL_TB: atomic num mass n_orbs n_elecs ' // this%atomic_num(i) //  " " // this%atomic_mass(i) //  &
@@ -547,15 +595,17 @@ subroutine TBModel_NRL_TB_Print(this,file)
 	if (i == j) then
 	  call Print ('TBModel_NRL_TB: lambda_sq ' // this%lambda_sq(i,i_mag), file=file)
 	endif
-	call Print ('TBModel_NRL_TB: a_s b_s c_s d_s ' // this%abcd(ABCD_A:ABCD_D,SPD_S,i,j,i_mag), file=file)
-	call Print ('TBModel_NRL_TB: a_p b_p c_p d_p ' // this%abcd(ABCD_A:ABCD_D,SPD_P,i,j,i_mag), file=file)
-	call Print ('TBModel_NRL_TB: a_p b_p c_p d_p ' // this%abcd(ABCD_A:ABCD_D,SPD_D,i,j,i_mag), file=file)
+	call Print ('TBModel_NRL_TB: a_s b_s c_s d_s ' // this%abcd(ABCD_A:ABCD_D,SPDF_S,i,j,i_mag), file=file)
+	call Print ('TBModel_NRL_TB: a_p b_p c_p d_p ' // this%abcd(ABCD_A:ABCD_D,SPDF_P,i,j,i_mag), file=file)
+	call Print ('TBModel_NRL_TB: a_d b_d c_d d_d ' // this%abcd(ABCD_A:ABCD_D,SPDF_D,i,j,i_mag), file=file)
+	if (max_spdf >= SPDF_F) &
+	   call Print ('TBModel_NRL_TB: a_f b_f c_f d_f ' // this%abcd(ABCD_A:ABCD_D,SPDF_F,i,j,i_mag), file=file)
 
-	do ii=SK_SSS, SK_DDD
+	do ii=1, n_sk_use
 	  call Print ('TBModel_NRL_TB: H e f fb g_sq ' // ii // " " //  this%H_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
 	end do
 
-	do ii=SK_SSS, SK_DDD
+	do ii=1, n_sk_use
 	  call Print ('TBModel_NRL_TB: S e f fb g_sq ' // ii // " " //  this%S_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
 	end do
       end do ! i_mag
@@ -618,7 +668,7 @@ subroutine TBModel_NRL_TB_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10), SK_frad_S(10)
+  real(dp) SK_frad_H(N_SK), SK_frad_S(N_SK)
   real(dp) dv_hat_sq(3)
 
   ti = get_type(this%type_of_atomic_num,at%Z(at_i))
@@ -645,6 +695,8 @@ subroutine TBModel_NRL_TB_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_
     do is=1, N_ORBS_OF_SET(this%orb_set_type(i_set,ti))
       j = 1
       do j_set=1, this%n_orb_sets(tj)
+      SK_frad_H = 0.0_dp
+      SK_frad_S = 0.0_dp
       call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
 	SK_frad_H, SK_frad_S, i_mag)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
@@ -714,7 +766,7 @@ function TBModel_NRL_TB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10), SK_frad_S(10), SK_dfrad_H(10), SK_dfrad_S(10)
+  real(dp) SK_frad_H(N_SK), SK_frad_S(N_SK), SK_dfrad_H(N_SK), SK_dfrad_S(N_SK)
   real(dp) dv_hat_sq(3)
   real(dp) virial_outerprod_fac
 
@@ -846,7 +898,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  real(dp), intent(out) :: f_H(10), f_S(10)
+  real(dp), intent(out) :: f_H(N_SK), f_S(N_SK)
   integer, intent(in), optional :: i_mag
 
   integer :: u_i_mag
@@ -933,7 +985,64 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
     if (this%force_harrison_signs) f_S(SK_DDS) = harrison_sign_dds*abs(f_S(SK_DDS))
     if (this%force_harrison_signs) f_H(SK_DDP) = harrison_sign_ddp*abs(f_H(SK_DDP))
     if (this%force_harrison_signs) f_S(SK_DDP) = harrison_sign_ddp*abs(f_S(SK_DDP))
+
+  else if (orb_set_type_i == ORB_S .and. orb_set_type_j == ORB_F) then
+    f_H(SK_SFS) = calc_SK_coeff_H(this, SK_SFS,ti,tj, dv_mag,u_i_mag)
+    f_S(SK_SFS) = calc_SK_coeff_S_zero_limit(this, SK_SFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_S) then
+    f_H(SK_SFS) = -calc_SK_coeff_H(this, SK_SFS,tj,ti, dv_mag,u_i_mag)
+    f_S(SK_SFS) = -calc_SK_coeff_S_zero_limit(this, SK_SFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_P .and. orb_set_type_j == ORB_F) then
+    f_H(SK_PFS) = calc_SK_coeff_H(this, SK_PFS,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_PFP) = calc_SK_coeff_H(this, SK_PFP,ti,tj, dv_mag,u_i_mag)
+    f_S(SK_PFS) = calc_SK_coeff_S_zero_limit(this, SK_PFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_PFP) = calc_SK_coeff_S_zero_limit(this, SK_PFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_P) then
+    f_H(SK_PFS) = calc_SK_coeff_H(this, SK_PFS,tj,ti, dv_mag,u_i_mag)
+    f_H(SK_PFP) = calc_SK_coeff_H(this, SK_PFP,tj,ti, dv_mag,u_i_mag)
+    f_S(SK_PFS) = calc_SK_coeff_S_zero_limit(this, SK_PFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_PFP) = calc_SK_coeff_S_zero_limit(this, SK_PFP,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_F) then
+    f_H(SK_DFS) = calc_SK_coeff_H(this, SK_DFS,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_DFP) = calc_SK_coeff_H(this, SK_DFP,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_DFD) = calc_SK_coeff_H(this, SK_DFD,ti,tj, dv_mag,u_i_mag)
+    f_S(SK_DFS) = calc_SK_coeff_S_zero_limit(this, SK_DFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_DFP) = calc_SK_coeff_S_zero_limit(this, SK_DFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_DFD) = calc_SK_coeff_S_zero_limit(this, SK_DFD,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_D) then
+    f_H(SK_DFS) = -calc_SK_coeff_H(this, SK_DFS,tj,ti, dv_mag,u_i_mag)
+    f_H(SK_DFP) = -calc_SK_coeff_H(this, SK_DFP,tj,ti, dv_mag,u_i_mag)
+    f_H(SK_DFD) = -calc_SK_coeff_H(this, SK_DFD,tj,ti, dv_mag,u_i_mag)
+    f_S(SK_DFS) = -calc_SK_coeff_S_zero_limit(this, SK_DFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_DFP) = -calc_SK_coeff_S_zero_limit(this, SK_DFP,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_DFD) = -calc_SK_coeff_S_zero_limit(this, SK_DFD,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_F) then
+    f_H(SK_FFS) = calc_SK_coeff_H(this, SK_FFS,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_FFP) = calc_SK_coeff_H(this, SK_FFP,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_FFD) = calc_SK_coeff_H(this, SK_FFD,ti,tj, dv_mag,u_i_mag)
+    f_H(SK_FFF) = calc_SK_coeff_H(this, SK_FFF,ti,tj, dv_mag,u_i_mag)
+    f_S(SK_FFS) = calc_SK_coeff_S_zero_limit(this, SK_FFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_FFP) = calc_SK_coeff_S_zero_limit(this, SK_FFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_FFD) = calc_SK_coeff_S_zero_limit(this, SK_FFD,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_S(SK_FFF) = calc_SK_coeff_S_zero_limit(this, SK_FFF,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
   endif
+
 end subroutine radial_functions
 
 subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, f_dH, f_dS, i_mag)
@@ -941,7 +1050,7 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  real(dp), intent(out) :: f_dH(10), f_dS(10)
+  real(dp), intent(out) :: f_dH(N_SK), f_dS(N_SK)
   integer, intent(in), optional :: i_mag
 
   integer :: u_i_mag
@@ -1028,6 +1137,62 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
     if (this%force_harrison_signs) f_dS(SK_DDS) = harrison_sign_dds*abs(f_dS(SK_DDS))
     if (this%force_harrison_signs) f_dH(SK_DDP) = harrison_sign_ddp*abs(f_dH(SK_DDP))
     if (this%force_harrison_signs) f_dS(SK_DDP) = harrison_sign_ddp*abs(f_dS(SK_DDP))
+
+  else if (orb_set_type_i == ORB_S .and. orb_set_type_j == ORB_F) then
+    f_dH(SK_SFS) = calc_SK_coeff_H_d(this, SK_SFS,ti,tj, dv_mag,u_i_mag)
+    f_dS(SK_SFS) = calc_SK_coeff_S_d_zero_limit(this, SK_SFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_S) then
+    f_dH(SK_SFS) = -calc_SK_coeff_H_d(this, SK_SFS,tj,ti, dv_mag,u_i_mag)
+    f_dS(SK_SFS) = -calc_SK_coeff_S_d_zero_limit(this, SK_SFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_P .and. orb_set_type_j == ORB_F) then
+    f_dH(SK_PFS) = calc_SK_coeff_H_d(this, SK_PFS,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_PFP) = calc_SK_coeff_H_d(this, SK_PFP,ti,tj, dv_mag,u_i_mag)
+    f_dS(SK_PFS) = calc_SK_coeff_S_d_zero_limit(this, SK_PFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_PFP) = calc_SK_coeff_S_d_zero_limit(this, SK_PFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_P) then
+    f_dH(SK_PFS) = calc_SK_coeff_H_d(this, SK_PFS,tj,ti, dv_mag,u_i_mag)
+    f_dH(SK_PFP) = calc_SK_coeff_H_d(this, SK_PFP,tj,ti, dv_mag,u_i_mag)
+    f_dS(SK_PFS) = calc_SK_coeff_S_d_zero_limit(this, SK_PFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_PFP) = calc_SK_coeff_S_d_zero_limit(this, SK_PFP,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_F) then
+    f_dH(SK_DFS) = calc_SK_coeff_H_d(this, SK_DFS,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_DFP) = calc_SK_coeff_H_d(this, SK_DFP,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_DFD) = calc_SK_coeff_H_d(this, SK_DFD,ti,tj, dv_mag,u_i_mag)
+    f_dS(SK_DFS) = calc_SK_coeff_S_d_zero_limit(this, SK_DFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_DFP) = calc_SK_coeff_S_d_zero_limit(this, SK_DFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_DFD) = calc_SK_coeff_S_d_zero_limit(this, SK_DFD,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_D) then
+    f_dH(SK_DFS) = -calc_SK_coeff_H_d(this, SK_DFS,tj,ti, dv_mag,u_i_mag)
+    f_dH(SK_DFP) = -calc_SK_coeff_H_d(this, SK_DFP,tj,ti, dv_mag,u_i_mag)
+    f_dH(SK_DFD) = -calc_SK_coeff_H_d(this, SK_DFD,tj,ti, dv_mag,u_i_mag)
+    f_dS(SK_DFS) = -calc_SK_coeff_S_d_zero_limit(this, SK_DFS,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_DFP) = -calc_SK_coeff_S_d_zero_limit(this, SK_DFP,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_DFD) = -calc_SK_coeff_S_d_zero_limit(this, SK_DFD,tj,ti, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+  else if (orb_set_type_i == ORB_F .and. orb_set_type_j == ORB_F) then
+    f_dH(SK_FFS) = calc_SK_coeff_H_d(this, SK_FFS,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_FFP) = calc_SK_coeff_H_d(this, SK_FFP,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_FFD) = calc_SK_coeff_H_d(this, SK_FFD,ti,tj, dv_mag,u_i_mag)
+    f_dH(SK_FFF) = calc_SK_coeff_H_d(this, SK_FFF,ti,tj, dv_mag,u_i_mag)
+    f_dS(SK_FFS) = calc_SK_coeff_S_d_zero_limit(this, SK_FFS,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_FFP) = calc_SK_coeff_S_d_zero_limit(this, SK_FFP,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_FFD) = calc_SK_coeff_S_d_zero_limit(this, SK_FFD,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
+    f_dS(SK_FFF) = calc_SK_coeff_S_d_zero_limit(this, SK_FFF,ti,tj, dv_mag, &
+      ti == tj, orb_set_type_i == orb_set_type_j,u_i_mag)
   endif
 end subroutine  dradial_functions
 

@@ -356,7 +356,9 @@ contains
     integer, allocatable, dimension(:,:) :: lookup
     logical, pointer, dimension(:) :: atom_mask, source_mask
     logical, allocatable, dimension(:) :: select_mask
+#ifdef _OPENMP
     logical old_nested
+#endif
     integer i, j, k, n, igrid, offset, stride, npoint, select_n
 
     !$omp threadprivate(private_at_copy)

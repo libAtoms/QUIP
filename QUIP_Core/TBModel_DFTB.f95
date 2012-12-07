@@ -802,7 +802,7 @@ subroutine TBModel_DFTB_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H,
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10), SK_frad_S(10)
+  real(dp) SK_frad_H(N_SK), SK_frad_S(N_SK)
   real(dp) dv_hat_sq(3)
 
   ti = get_type(this%type_of_atomic_num,at%Z(at_i))
@@ -881,8 +881,8 @@ function TBModel_DFTB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_in
 
   integer ti, tj, is, js, i_set, j_set
   integer i, j
-  real(dp) SK_frad_H(10), SK_frad_S(10)
-  real(dp) SK_dfrad_H(10), SK_dfrad_S(10)
+  real(dp) SK_frad_H(N_SK), SK_frad_S(N_SK)
+  real(dp) SK_dfrad_H(N_SK), SK_dfrad_S(N_SK)
   real(dp) dv_hat_sq(3)
   real(dp) virial_outerprod_fac
 
@@ -950,7 +950,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
    real(dp), intent(in) :: dv_mag
    integer, intent(in) :: orb_set_type_i, orb_set_type_j
    integer, intent(in) :: is, js
-   real(dp), intent(out) :: f_H(10), f_S(10)
+   real(dp), intent(out) :: f_H(N_SK), f_S(N_SK)
 
    if (dv_mag > this%SK_cutoff(ti,tj)) then
      f_H = 0.0_dp
@@ -995,6 +995,8 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
      f_S(SK_DDP) = spline_value(this%S_spline(9,ti,tj), dv_mag)
      f_H(SK_DDD) = spline_value(this%H_spline(10,ti,tj), dv_mag)
      f_S(SK_DDD) = spline_value(this%S_spline(10,ti,tj), dv_mag)
+   else
+     call system_abort("TBModel_DFTB radial_functions got invalide orb_set_type "//orb_set_type_i//" or "//orb_set_type_j)
    endif
  end subroutine radial_functions
 
@@ -1004,7 +1006,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
    real(dp), intent(in) :: dv_mag
    integer, intent(in) :: orb_set_type_i, orb_set_type_j
    integer, intent(in) :: is, js
-   real(dp), intent(out) :: f_dH(10), f_dS(10)
+   real(dp), intent(out) :: f_dH(N_SK), f_dS(N_SK)
 
    if (dv_mag > this%SK_cutoff(ti,tj)) then
      f_dH = 0.0_dp
@@ -1049,6 +1051,8 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
      f_dS(SK_DDP) = spline_deriv(this%S_spline(9,ti,tj), dv_mag)
      f_dH(SK_DDD) = spline_deriv(this%H_spline(10,ti,tj), dv_mag)
      f_dS(SK_DDD) = spline_deriv(this%S_spline(10,ti,tj), dv_mag)
+   else
+     call system_abort("TBModel_DFTB dradial_functions got invalide orb_set_type "//orb_set_type_i//" or "//orb_set_type_j)
    endif
 
 end subroutine dradial_functions
