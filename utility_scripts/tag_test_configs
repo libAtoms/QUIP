@@ -2,10 +2,9 @@
 SUFFIXES _openmp _openmpi
 # format is "module_name module_version no_suffix_make_req no_suffix_quippy_req first_suffix_make_req first_suffix_quippy_req ..."
 # req is R for required, O for optional, and - for do not even try
-# gnu 4.5.1          R R    R -    R O
+gnu 4.5.1          R R    R -    R O
 intel 11.1.075     R R    R -    R O
-# gnu 4.4.4          R R    - -    R O
-# intel 10.1.025     R R    R -    R O
-# intel 12.0.1.107   R R    - -    R O
-# intel 12.1.7.367   R R    O -    R O
-# intel 13.0.079     R R    O -    R O
+gnu 4.4.4          R R    - -    R O
+intel 10.1.025     R R    R -    R O
+intel 12.0.1.107   R R    - -    R O
+intel 12.1.7.367   R R    O -    R O
