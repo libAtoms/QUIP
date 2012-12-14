@@ -40,6 +40,7 @@ def make_test(script, env=None):
             
         exitcode = os.system("/bin/bash -c '%s'" % script)
         if exitcode != 0:
+            print "command: /bin/bash -c '%s' failed" % script
             self.fail()
 
     return run_script
