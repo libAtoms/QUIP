@@ -512,10 +512,16 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   if (!got_index && frame != 0 && in != stdin) {
     debug("read_xyz: skipping to frame %d\n", frame);
 
+    // do prefix stripping properly when skipping
+    strip_prefix = 0;
     for (i=0; i<frame; i++) {
       GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
       if (sscanf(linep, "%d", &nxyz) != 1) {
-  	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms when skipping frame %d", linep, i);
+	if (sscanf(linep, "%s %d", prefix, &nxyz) == 2) {
+	  strip_prefix = 1;
+	} else {
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms (optionally preceeded by a prefix string)", linep);
+	}
       }
       GET_LINE("read_xyz: premature end when skipping, expecting comment line");
       for (j=0; j<nxyz; j++)
