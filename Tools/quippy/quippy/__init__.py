@@ -74,9 +74,14 @@ else:
 # if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
 if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
        ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
-    import ctypes
+    try:
+        # Python 2.5 or newer
+        from ctyles import RTLD_GLOBAL
+    except ImportError:
+        # Python 2.4
+        from dl import RTLD_GLOBAL
     flags = sys.getdlopenflags()
-    sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
+    sys.setdlopenflags(flags | RTLD_GLOBAL)
     available_modules.append('mpi')
 
 import _quippy
