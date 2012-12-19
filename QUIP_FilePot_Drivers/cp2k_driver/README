@@ -1,5 +1,5 @@
-Patches tested against CP2K trunk svn version 13 Nov 2012 (NB).
-   http://cp2k.berlios.de/download.html
+Mandatory and recommended patches tested against CP2K trunk svn version 19 Dec 2012 (NB).
+   svn://svn.code.sf.net/p/cp2k/code/trunk
 
 MANDATORY patches for cp2k source:
   cp2k_motion_utils.F.patch (fixes output for parsing by cp2k_driver)

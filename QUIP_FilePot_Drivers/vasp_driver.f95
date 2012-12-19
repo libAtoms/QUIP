@@ -11,7 +11,7 @@ implicit none
    integer :: i, index_insert
    type(CInOutput) :: outfile_io
 
-   integer :: error
+   integer :: error, stat_vals(13)
 
    call system_initialise(verbosity=PRINT_SILENT, enable_timing=.true.)
    call verbosity_push(PRINT_NORMAL)
