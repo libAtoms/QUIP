@@ -983,7 +983,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     if (k != entry_count) {
       for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linep);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "incomplete row, frame %d atom %d - got %d/%d entries line %d\n", frame, n, k, entry_count, frame, linep);
     }
 
     k = 0;
@@ -1053,7 +1053,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   if (!string && in != stdin) fclose(in);
 }
 
-#define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else fputs(line, out); }
+#define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else { if (fputs(line, out) < 0) fprintf(stderr, "Error writing line in xyz file write\n"); } }
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
 		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
@@ -1070,6 +1070,8 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
   long *frames, start_idx, end_idx;
   int *atoms, nframes;
   int frames_array_size, got_index, do_update;
+
+  struct stat idx_stat;
 
   INIT_ERROR;
 
@@ -1090,9 +1092,13 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open %s for writing", filename);
       }
       start_idx = ftell(out);
+      if (start_idx < 0) {
+	 perror("Error in ftell at start of xyz file write");
+      }
     }
-  } else
+  } else {
     out = NULL;
+  }
 
   // Number of atoms
   if (prefix != NULL && prefix[0] != '\0')
@@ -1330,6 +1336,9 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
   if (!string) {
     if (out != stdout) {
       end_idx = ftell(out);
+      if (end_idx < 0) {
+	 perror("Error in ftell at end of xyz file write");
+      }
       fclose(out);
 
       if (update_index) {   	/* read and update .xyz.idx index file */
@@ -1353,6 +1362,16 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 
 	  xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
 	  PASS_ERROR;
+
+	  if (stat(indexname, &idx_stat) != 0) {
+	     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat index file %s\n", indexname);
+	  }
+	  if (idx_stat.st_size == 0) { // try again
+	     sleep(1);
+	     xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
+	     PASS_ERROR;
+	  }
+
 	}  else {
 	  // found index file, but does not match current file contents so let's remove it
 	  if (got_index) unlink(indexname);
