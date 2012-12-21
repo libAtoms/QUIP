@@ -50,7 +50,16 @@
 
 module IPModel_FC_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_NERD, verbosity_push_decrement, verbosity_pop, split_string_simple, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use table_module
+use connection_module
+use atoms_types_module
+use atoms_module
+use cinoutput_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -152,10 +161,10 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
   do i = 1, this%ideal_struct%N
     ti = get_type(this%type_of_atomic_num, this%ideal_struct%Z(i))
     ji = 1
-    do while (ji <= atoms_n_neighbours(this%ideal_struct, i))
+    do while (ji <= n_neighbours(this%ideal_struct, i))
       ji = 1
-      do while (ji <= atoms_n_neighbours(this%ideal_struct, i))
-	j = atoms_neighbour(this%ideal_struct, i, ji, distance=ideal_dr_mag, shift=s)
+      do while (ji <= n_neighbours(this%ideal_struct, i))
+	j = neighbour(this%ideal_struct, i, ji, distance=ideal_dr_mag, shift=s)
 
 	! if (dr_mag .feq. 0.0_dp) cycle
 	! if ((i < j) .and. i_is_min_image) cycle
@@ -302,13 +311,13 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
        endif
     endif
 
-    do ji = 1, atoms_n_neighbours(this%ideal_struct, i)
+    do ji = 1, n_neighbours(this%ideal_struct, i)
 #if NEIGHBOR_LOOP_OPTION == 0
-      j = atoms_neighbour(at, i, ji, dr_mag, cosines = dr, shift=s)
+      j = neighbour(at, i, ji, dr_mag, cosines = dr, shift=s)
 #endif
 #if NEIGHBOR_LOOP_OPTION == 1 || NEIGHBOR_LOOP_OPTION == 2
 #if NEIGHBOR_LOOP_OPTION == 1
-      j = atoms_neighbour_index(this%ideal_struct, i, ji, tind, t, is_j)
+      j = neighbour_index(this%ideal_struct, i, ji, tind, t, is_j)
 #else
       i_n1n = ji-this%ideal_struct%connect%neighbour2(i)%t%N
       if (ji <= this%ideal_struct%connect%neighbour2(i)%t%N) then

@@ -39,7 +39,9 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 module TB_GreensFunctions_module
 
-use libatoms_module
+use system_module, only : dp, print, inoutput, mainlog, PRINT_NERD, verbosity_push_decrement, verbosity_pop, system_abort, operator(//)
+use mpi_context_module
+use atoms_module
 
 use Functions_module
 use ApproxFermi_module

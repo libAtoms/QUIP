@@ -53,7 +53,18 @@
 #include "error.inc"
 module Potential_simple_module
 
-  use libAtoms_module
+  use error_module
+  use system_module, only : dp, inoutput, PRINT_VERBOSE, PRINT_NERD, PRINT_ALWAYS, PRINT_ANAL, current_verbosity, INPUT, optional_default, parse_string
+  use extendable_str_module
+  use dictionary_module
+  use paramreader_module
+  use linearalgebra_module
+  use table_module
+  use atoms_types_module
+  use atoms_module
+  use cinoutput_module
+  use clusters_module
+
   use QUIP_Common_module
   use MPI_context_module
   use IP_module

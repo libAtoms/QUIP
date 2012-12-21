@@ -39,6 +39,8 @@ module topology_module
   use dictionary_module      
   use table_module           
   use periodictable_module   
+  use connection_module           
+  use atoms_types_module           
   use atoms_module           
   use clusters_module        
   use structures_module      
@@ -704,9 +706,9 @@ integer :: j,atom_i, ji
 	  if (unidentified(i)) then
 	    call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
 	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=PRINT_ALWAYS)
-	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i,alt_connect=alt_connect),verbosity=PRINT_ALWAYS)
-	    do ji=1, atoms_n_neighbours(at, i, alt_connect=alt_connect)
-	      j = atoms_neighbour(at, i, ji, alt_connect=alt_connect)
+	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//n_neighbours(at,i,alt_connect=alt_connect),verbosity=PRINT_ALWAYS)
+	    do ji=1, n_neighbours(at, i, alt_connect=alt_connect)
+	      j = neighbour(at, i, ji, alt_connect=alt_connect)
 	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=PRINT_ALWAYS)
 	    end do
 	  endif
@@ -1628,8 +1630,8 @@ call print('PSF| '//impropers%n//' impropers')
 
     are_silica_2body_neighbours = .false.
 
-    do neigh = 1, atoms_n_neighbours(this,i)
-       j2 = atoms_neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
+    do neigh = 1, n_neighbours(this,i)
+       j2 = neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
        if (j2.eq.j) then
           Z_i = this%Z(i)
           Z_j = this%Z(j)
@@ -1670,8 +1672,8 @@ call print('PSF| '//impropers%n//' impropers')
 
     are_silica_nearest_neighbours = .false.
 
-    do neigh = 1, atoms_n_neighbours(this,i)
-       j2 = atoms_neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
+    do neigh = 1, n_neighbours(this,i)
+       j2 = neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
        if (j2.eq.j) then
           Z_i = this%Z(i)
           Z_j = this%Z(j)
@@ -2264,8 +2266,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
     do iatom = 1, SiOH_list%N
        atom_i = SiOH_list%int(1,iatom)
-       do jatom = 1, atoms_n_neighbours(at,atom_i)
-          atom_j = atoms_neighbour(at, atom_i, jatom)
+       do jatom = 1, n_neighbours(at,atom_i)
+          atom_j = neighbour(at, atom_i, jatom)
          ! check if atom_j is in SiOH_list
           if (.not.silica_mask(atom_j)) then
 !          if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
@@ -2433,8 +2435,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
               roh2 = 1.3_dp ! initialise larger oh distance
               h1 = 0
               h2 = 0
-              do n = 1, atoms_n_neighbours(at, i)
-                 j = atoms_neighbour(at, i, n, distance=r)
+              do n = 1, n_neighbours(at, i)
+                 j = neighbour(at, i, n, distance=r)
 
                  if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
 
@@ -2501,8 +2503,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
            r12 = monomer_cutoff ! initialise distance
            atom_2 = 0
-           do n = 1, atoms_n_neighbours(at, i)
-              j = atoms_neighbour(at, i, n, distance=r, jn = jn, max_dist=monomer_cutoff)
+           do n = 1, n_neighbours(at, i)
+              j = neighbour(at, i, n, distance=r, jn = jn, max_dist=monomer_cutoff)
               if( j == 0 ) cycle
               if( (at%Z(j) /= atomic_number) .or. atom_associated(j) ) cycle
 
@@ -2549,8 +2551,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
            r12 = monomer_cutoff ! initialise distance
            atom_2 = 0
-           do n = 1, atoms_n_neighbours(at, i)
-              j = atoms_neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
+           do n = 1, n_neighbours(at, i)
+              j = neighbour(at, i, n, distance=r, max_dist=monomer_cutoff)
               if( j == 0 ) cycle
 
               if( (at%Z(j) /= atomic_number(2)) .or. atom_associated(j) ) cycle
@@ -2598,8 +2600,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
        if (present(form_bond)) then
 	 if (all(form_bond >= 1) .and. all(form_bond <= at%N)) then
 	    bond_exists = .false.
-	    do ji=1, atoms_n_neighbours(at, form_bond(1), alt_connect=conn)
-	       j = atoms_neighbour(at, form_bond(1), ji, shift=shift, alt_connect=conn)
+	    do ji=1, n_neighbours(at, form_bond(1), alt_connect=conn)
+	       j = neighbour(at, form_bond(1), ji, shift=shift, alt_connect=conn)
 	       if (j == form_bond(2)) then
 		  bond_exists = .true.
 		  exit
@@ -2615,8 +2617,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
        if (present(break_bond)) then
 	 if (all(break_bond >= 1) .and. all(break_bond <= at%N)) then
 	    bond_exists = .false.
-	    do ji=1, atoms_n_neighbours(at, break_bond(1), alt_connect=conn)
-	       j = atoms_neighbour(at, break_bond(1), ji, shift=shift, alt_connect=conn)
+	    do ji=1, n_neighbours(at, break_bond(1), alt_connect=conn)
+	       j = neighbour(at, break_bond(1), ji, shift=shift, alt_connect=conn)
 	       if (j == break_bond(2)) then
 		  bond_exists = .true.
 		  exit

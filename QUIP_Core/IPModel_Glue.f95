@@ -28,7 +28,14 @@
 
 module IPModel_Glue_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -227,8 +234,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     ! Iterate over our nighbours
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           rho_local = rho_local + eam_density(this, tj, r_ij_mag)
@@ -241,8 +248,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
     if(present(f)) f(:,i) = f(:,i) + drho_i_dri * potential_deriv
 
     ! Iterate over neighbours again to sum forces
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
      
       if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then         

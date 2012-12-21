@@ -46,6 +46,11 @@ module quaternions_module
   use linearalgebra_module ! for .feq./.fne
 
   implicit none
+  private
+
+  public :: quaternion, initialise, finalise, print
+  public :: rotate, rotation, rotation_matrix, orientation, assignment(=)
+  public :: operator(.dot.), operator(*), operator(+), operator(.conj.)
 
   type Quaternion
 

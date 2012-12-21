@@ -45,7 +45,10 @@
 
 module TBModel_module
 
-use libatoms_module
+use system_module, only : dp, print, inoutput, PRINT_VERBOSE, system_abort, operator(//)
+use dictionary_module
+use paramreader_module
+use atoms_module
 
 use QUIP_Common_module
 use TBModel_NRL_TB_module

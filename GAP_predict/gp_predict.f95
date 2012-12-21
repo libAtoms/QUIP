@@ -38,7 +38,14 @@
 module gp_predict_module
 
    use iso_c_binding, only : C_NULL_CHAR
-   use libatoms_module
+   ! use libatoms_module
+   use error_module
+   use system_module, only : dp, qp, optional_default, reallocate, NUMERICAL_ZERO, system_timer, string_to_numerical, print_warning
+   use units_module
+   use linearalgebra_module
+   use extendable_str_module
+   use dictionary_module
+   use paramreader_module
    use descriptors_module
    use fox_wxml
    use FoX_sax, only: xml_t, dictionary_t, haskey, getvalue, parse, &

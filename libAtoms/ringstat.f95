@@ -42,9 +42,14 @@
 
 module ringstat_module
   use error_module
+  use system_module, only : dp
+  use linearalgebra_module
   use atoms_module
 
   implicit none
+  private
+
+  public :: count_sp_rings, distance_map
 
 contains
 
@@ -88,9 +93,9 @@ contains
           i  = walker(k)
 
 !          do ni = nl%seed(i), nl%last(i)
-          do ni = 1, atoms_n_neighbours(at, i)
+          do ni = 1, n_neighbours(at, i)
 !             j  = nl%neighbors(ni)
-             j = atoms_neighbour(at, i, ni)
+             j = neighbour(at, i, ni)
              if ( ( .not. present(mask) .or. mask(j) ) .and. dist(j) == 0 ) then
 
                 n_new_walker              = n_new_walker+1
@@ -220,19 +225,19 @@ contains
 
     no(1) = 0
     do i = 2, at%N
-       no(i) = no(i-1) + atoms_n_neighbours(at, i-1)
+       no(i) = no(i-1) + n_neighbours(at, i-1)
     enddo
 
-    allocate(done(no(at%N) + atoms_n_neighbours(at, at%N)))
+    allocate(done(no(at%N) + n_neighbours(at, at%N)))
 
     done  = .false.
 
     bonds_loop1: do a = 1, at%N
        if ( .not. present(mask) .or. mask(a) ) then
 !          bonds_loop2: do na = nl%seed(a), nl%last(a)
-          bonds_loop2: do na = 1, atoms_n_neighbours(at, a)
+          bonds_loop2: do na = 1, n_neighbours(at, a)
 !             b  = nl%neighbors(na)
-             b = atoms_neighbour(at, a, na)
+             b = neighbour(at, a, na)
 
              if ( a < b .and. ( .not. present(mask) .or. mask(b) ) ) then
 
@@ -242,8 +247,8 @@ contains
 !                      done(ni)  = .true.
 !                   endif
 !                enddo
-                do ni = 1, atoms_n_neighbours(at, b)
-                   if (atoms_neighbour(at, b, ni) == a) then
+                do ni = 1, n_neighbours(at, b)
+                   if (neighbour(at, b, ni) == a) then
                       done(no(b)+ni)  = .true.
                    endif
                 enddo
@@ -255,7 +260,7 @@ contains
                 ring_len     = 1
                 rings(1, 1)  = b
 !                dr(:, 1, 1)  = GET_DRJ(p, nl, a, b, na)
-                b = atoms_neighbour(at, a, na, diff=dr(:, 1, 1))
+                b = neighbour(at, a, na, diff=dr(:, 1, 1))
 
                 while_walkers_exist: do while (n_walker > 0)
 
@@ -267,11 +272,11 @@ contains
                       if ( i > 0 ) then
 
 !                         ni_away_from_root_loop: do ni = nl%seed(i), nl%last(i)
-                         ni_away_from_root_loop: do ni = 1, atoms_n_neighbours(at, i)
+                         ni_away_from_root_loop: do ni = 1, n_neighbours(at, i)
                             ni_away_from_root_if: if ( .not. done(no(i)+ni) ) then
 
 !                               DISTJ_SQ(p, nl, i, ni, j, d, abs_dr_sq)
-                               j = atoms_neighbour(at, i, ni, diff=d)
+                               j = neighbour(at, i, ni, diff=d)
                                abs_dr_sq = d .dot. d
 
                                if ( abs_dr_sq < cutoff_sq .and. ( .not. present(mask) .or. mask(j) ) .and. j /= last(k) ) then
@@ -335,11 +340,11 @@ contains
                          i = -i
 
 !                         ni_towards_root_loop: do ni = nl%seed(i), nl%last(i)
-                         ni_towards_root_loop: do ni = 1, atoms_n_neighbours(at, i)
+                         ni_towards_root_loop: do ni = 1, n_neighbours(at, i)
                             ni_towards_root_if: if ( .not. done(no(i)+ni) ) then
 
 !                               DISTJ_SQ(p, nl, i, ni, j, d, abs_dr_sq)
-                               j = atoms_neighbour(at, i, ni, diff=d)
+                               j = neighbour(at, i, ni, diff=d)
                                abs_dr_sq = d .dot. d
 
                                if ( abs_dr_sq < cutoff_sq .and. ( .not. present(mask) .or. mask(j) ) .and. j /= last(k) ) then

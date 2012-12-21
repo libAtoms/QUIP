@@ -45,7 +45,16 @@
 
 module IPModel_WaterDimer_Gillan_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, operator(//)
+use units_module
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use quaternions_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -223,6 +232,8 @@ subroutine IPModel_WaterDimer_Gillan_Calc(this, at, e, local_e, f, virial, local
    end if
    if (present(virial)) then
       RAISE_ERROR('Virial not implemented', error)
+   else
+      virial = 0.0_dp
    end if
 
    if (present(local_virial)) then

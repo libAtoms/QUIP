@@ -44,7 +44,7 @@
 module IPModel_ASAP_module
 
 use error_module
-use libatoms_module, only: dp, STRING_LENGTH
+use system_module, only : dp, only: dp, STRING_LENGTH
 use mpi_context_module
 use QUIP_Common_module
 
@@ -180,7 +180,7 @@ contains
 
 
 subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str)
-  use libatoms_module
+  use system_module, only : dp
   type(IPModel_ASAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
 
@@ -205,7 +205,7 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str)
 end subroutine IPModel_ASAP_Initialise_str
 
 subroutine IPModel_ASAP_Finalise(this)
-  use libatoms_module
+  use system_module, only : dp
   type(IPModel_ASAP), intent(inout) :: this
 
 #ifdef HAVE_ASAP
@@ -772,7 +772,7 @@ end subroutine IPModel_ASAP_Calc
 
 
 subroutine IPModel_ASAP_Print(this, file)
-  use libatoms_module
+  use system_module, only : dp
   type(IPModel_ASAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
@@ -800,7 +800,7 @@ subroutine IPModel_ASAP_Print(this, file)
 end subroutine IPModel_ASAP_Print
 
 subroutine IPModel_ASAP_read_params_xml(this, param_str)
-  use libatoms_module
+  use system_module, only : dp
   type(IPModel_ASAP), intent(inout), target :: this
   character(len=*), intent(in) :: param_str
 
@@ -830,7 +830,7 @@ end subroutine IPModel_ASAP_read_params_xml
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  use libatoms_module
+  use system_module, only : dp
   character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name
@@ -1004,7 +1004,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  use libatoms_module
+  use system_module, only : dp
   character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name

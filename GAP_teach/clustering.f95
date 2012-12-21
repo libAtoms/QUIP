@@ -25,9 +25,15 @@
 
 module clustering_module
 
-  use libatoms_module
+  ! use libatoms_module
+  use error_module
+  use system_module ! , only : dp, optional_default, ran_uniform, reallocate
+  use linearalgebra_module
 
   implicit none
+  private
+
+  public :: pivot, bisect_kmedoids, cluster_kmeans
 
   integer, parameter  :: n_trial = 10
   integer, parameter  :: n_trial_k_med = 100

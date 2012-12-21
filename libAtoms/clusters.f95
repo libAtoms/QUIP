@@ -31,12 +31,15 @@
 #include "error.inc"
 module clusters_module
   use system_module
+  use linearalgebra_module
   use Table_module
   use periodictable_module
   use Atoms_types_module
   use Atoms_module
+  use dictionary_module
   use ParamReader_module
-  use atoms_module
+  use group_module
+  use constraints_module
   use dynamicalsystem_module
   use cinoutput_module
 
@@ -190,17 +193,17 @@ contains
          RAISE_ERROR("bfs_step: input table must have intsize=4.", error)
     endif
 
-    call table_allocate(output, 4, 0, 0, 0)
+    call allocate(output, 4, 0, 0, 0)
 
     ! Now go though the atomic indices
     do m = 1, input%N
        i = input%int(1,m)
        ishift = input%int(2:4,m)
 
-       if (present(debugfile)) call print("bfs_step check atom " // m // " " // i // " with n_neigh " // atoms_n_neighbours(this, i, alt_connect=use_connect), file=debugfile)
+       if (present(debugfile)) call print("bfs_step check atom " // m // " " // i // " with n_neigh " // n_neighbours(this, i, alt_connect=use_connect), file=debugfile)
        ! Loop over i's neighbours
-       do n = 1, atoms_n_neighbours(this,i, alt_connect=use_connect)
-	  j = atoms_neighbour(this,i,n,shift=jshift,max_dist=max_r, alt_connect=use_connect)
+       do n = 1, n_neighbours(this,i, alt_connect=use_connect)
+	  j = neighbour(this,i,n,shift=jshift,max_dist=max_r, alt_connect=use_connect)
 	  if (present(debugfile)) call print("bfs_step   check neighbour " // n // " " // j, file=debugfile)
 	  if (j == 0) cycle
 
@@ -396,15 +399,15 @@ contains
          RAISE_ERROR("bfs_step: input table must have intsize=4.", error)
     endif
 
-    call table_allocate(output, 4, 0, 0, 0)
+    call allocate(output, 4, 0, 0, 0)
 
     do n=1,input%N
        i = input%int(1,n)
        ishift = input%int(2:4,n)
 
        !Loop over neighbours
-       do m = 1, atoms_n_neighbours(this,i)
-          j = atoms_neighbour(this,i,m, r_ij,shift=jshift)
+       do m = 1, n_neighbours(this,i)
+          j = neighbour(this,i,m, r_ij,shift=jshift)
 
           ! Look for nearest neighbours of i not in input list
           if (find(input,(/j,ishift+jshift/)) == 0 .and. is_nearest_neighbour(this, i, m)) then
@@ -413,8 +416,8 @@ contains
              nn = 0
              ! Count number of nearest neighbours of j, and how many
              ! of them are in input list
-             do p = 1, atoms_n_neighbours(this,j)
-                k = atoms_neighbour(this,j,p, r_kj, shift=kshift)
+             do p = 1, n_neighbours(this,j)
+                k = neighbour(this,j,p, r_kj, shift=kshift)
                 if (is_nearest_neighbour(this, j, p)) then
                    nn = nn + 1
                    if (find(input,(/k,ishift+jshift+kshift/)) /= 0) n_in = n_in + 1
@@ -468,11 +471,11 @@ function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, u
   do while (n <= cluster_info%N)
     i = cluster_info%int(1,n)
     ishift = cluster_info%int(2:4,n)
-    call print('cluster_in_out_in: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+    call print('cluster_in_out_in: i = '//i//' ['//ishift//'] Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 
     !Loop over neighbours
-    do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
-    j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
+    do m = 1, n_neighbours(this,i,alt_connect=use_connect)
+    j = neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
 
     if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
         (connectivity_just_from_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect)) ) then
@@ -484,8 +487,8 @@ function cluster_in_out_in(this, cluster_info, connectivity_just_from_connect, u
 
       n_nearest = 0
       n_in = 0
-      do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
-         k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
+      do p = 1, n_neighbours(this,j,alt_connect=use_connect)
+         k = neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
          if (k == i) cycle
          if (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) then
             n_nearest = n_nearest + 1
@@ -548,10 +551,10 @@ end function cluster_in_out_in
       n = n + 1
       i = cluster_info%int(1,n)     ! index of atom in the cluster
       ishift = cluster_info%int(2:4,n)
-      call print('cluster_fix_termination_clash: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      call print('cluster_fix_termination_clash: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
       !Loop over atom i's neighbours
-      do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
-	j = atoms_neighbour(this,i,m, shift=jshift, diff=dhat_ij, distance=r_ij,alt_connect=use_connect)
+      do m = 1, n_neighbours(this,i,alt_connect=use_connect)
+	j = neighbour(this,i,m, shift=jshift, diff=dhat_ij, distance=r_ij,alt_connect=use_connect)
 	dhat_ij = dhat_ij/r_ij
 
 	!If j is IN the cluster, or not a nearest neighbour then try the next neighbour
@@ -574,10 +577,10 @@ end function cluster_in_out_in
 	     termination_bond_rescale(this%Z(i), this%Z(j)) * r_ij * dhat_ij
 
 	!Do a loop over j's nearest neighbours
-	call print('cluster_fix_termination_clash:  Looping over '//atoms_n_neighbours(this,j, alt_connect=use_connect)//' neighbours of j', PRINT_ANAL)
+	call print('cluster_fix_termination_clash:  Looping over '//n_neighbours(this,j, alt_connect=use_connect)//' neighbours of j', PRINT_ANAL)
 
-	do p = 1, atoms_n_neighbours(this,j, alt_connect=use_connect)
-	  k = atoms_neighbour(this,j,p, shift=kshift, diff=dhat_jk, distance=r_jk, alt_connect=use_connect)
+	do p = 1, n_neighbours(this,j, alt_connect=use_connect)
+	  k = neighbour(this,j,p, shift=kshift, diff=dhat_jk, distance=r_jk, alt_connect=use_connect)
 	  dhat_jk = dhat_jk/r_jk
 
 	  !If k is OUT of the cluster or k == i or it is not a nearest neighbour of j
@@ -661,9 +664,9 @@ end function cluster_in_out_in
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
       if (atom_res_number(i) < 0) cycle
-      call print('cluster_keep_whole_residues: i = '//i//' residue # = ' // atom_res_number(i) //'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      call print('cluster_keep_whole_residues: i = '//i//' residue # = ' // atom_res_number(i) //'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
 	if (atom_res_number(i) /= atom_res_number(j)) then
 	  call print("cluster_keep_whole_residues:   j = "//j//" ["//jshift//"] has different res number " // atom_res_number(j), PRINT_ANAL)
@@ -722,9 +725,9 @@ end function cluster_in_out_in
       ishift = cluster_info%int(2:4,n)
       if (atom_res_number(i) < 0) cycle
       call print('cluster_keep_whole_prolines: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // &
-                 '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+                 '. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 	is_proline = .false.
 
 	if (atom_res_number(i) /= atom_res_number(j)) then
@@ -791,9 +794,9 @@ end function cluster_in_out_in
       ishift = cluster_info%int(2:4,n)
       if (atom_res_number(i) < 0) cycle
       call print('cluster_keep_whole_proline_sidechains: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // &
-                 '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+                 '. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 	is_proline = .false.
 
 	if (atom_res_number(i) /= atom_res_number(j)) then
@@ -859,9 +862,9 @@ end function cluster_in_out_in
       ishift = cluster_info%int(2:4,n)
       if (atom_res_number(i) < 0) cycle
       if (atom_subgroup_number(i) == 0) cycle
-      call print('cluster_keep_whole_subgroups: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // '. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      call print('cluster_keep_whole_subgroups: i = '//i//' residue # = ' // atom_res_number(i) //' subgroup # = '// atom_subgroup_number(i) // '. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 	call print("cluster_keep_whole_subgroups:    m = " // m //" j = " // j, PRINT_ANAL)
 	if (atom_res_number(j) < 0) cycle
 	if (atom_subgroup_number(j) == 0) cycle
@@ -921,9 +924,9 @@ end function cluster_in_out_in
          cycle  
       end if
 
-      call print('cluster_keep_whole_silica_tetrahedra: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      call print('cluster_keep_whole_silica_tetrahedra: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
 	if (this%z(j) /= 8) then
 	  call print("cluster_keep_whole_silica_tetrahedra:   j = "//j//" ["//jshift//"] is not oxygen ", PRINT_ANAL)
@@ -976,9 +979,9 @@ end function cluster_in_out_in
          cycle  
       end if
 
-      call print('cluster_keep_whole_titania_octahedra: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-        j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      call print('cluster_keep_whole_titania_octahedra: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+        j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
         if (this%z(j) /= 8) then
           call print("cluster_keep_whole_titania_octahedra:   j = "//j//" ["//jshift//"] is not oxygen ", PRINT_ANAL)
@@ -995,8 +998,8 @@ end function cluster_in_out_in
 
         !check if the oxygen has more than 1 neighbour in the cluster.
 !       neigh_O = 0
-!       do l=1,atoms_n_neighbours(this, j, alt_connect=use_connect)
-!           k = atoms_neighbour(this, j, l, distance=rdist, shift=kshift, alt_connect=use_connect)
+!       do l=1,n_neighbours(this, j, alt_connect=use_connect)
+!           k = neighbour(this, j, l, distance=rdist, shift=kshift, alt_connect=use_connect)
 !           if(find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
 !             call print(" j : "// j // " Z(j) :" // this%Z(j) // ' shift ' // jshift)
 !             call print(" k : "// k // " Z(k) :" // this%Z(k) // ' shift ' // kshift)
@@ -1053,23 +1056,23 @@ end function cluster_in_out_in
       n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
-      call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 
       ! loop over every neighbour, looking for outside neighbours
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
 	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
 	  call print("cluster_reduce_n_cut_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
 	  cycle
 	end if
 	! if we're here, j must be an outside neighbour of i
-	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//atoms_n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 
 	n_bonds_in = 0
 	n_bonds_out = 0
-	do p=1, atoms_n_neighbours(this, j, alt_connect=use_connect)
-	  k = atoms_neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
+	do p=1, n_neighbours(this, j, alt_connect=use_connect)
+	  k = neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
 	    call print("cluster_reduce_n_cut_bonds:   k = "//k//" ["//kshift//"] not nearest neighbour of j = " // j,PRINT_ANAL)
 	    cycle
@@ -1119,11 +1122,11 @@ end function cluster_in_out_in
       n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
-      call print('cluster_protect_X_H_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      call print('cluster_protect_X_H_bonds: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 
       ! loop over every neighbour, looking for outside neighbours
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
 	! if j is in, or not a nearest neighbour, go on to next
 	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
@@ -1169,11 +1172,11 @@ end function cluster_in_out_in
       n = n + 1
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
-      call print('cluster_keep_whole_molecules: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+      call print('cluster_keep_whole_molecules: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 
       ! loop over every neighbour, looking for outside neighbours
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+      do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
 	! if j is in, or not a nearest neighbour, go on to next
 	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
@@ -1201,8 +1204,8 @@ end function cluster_in_out_in
   !do n = 1, cluster%N
   !        i = cluster%int(1,n)
   !        is_alone = .true.
-  !        do j = 1, atoms_n_neighbours(at,i)
-  !                k = atoms_neighbour(at,i,j)
+  !        do j = 1, n_neighbours(at,i)
+  !                k = neighbour(at,i,j)
   !                if(find(cluster_info,(/k,shift/)) /= 0) then
   !                   if(is_nearest_neighbour(at,i,j)) GOTO 120
   !                else
@@ -1235,11 +1238,11 @@ end function cluster_in_out_in
 !OUTDATED     do while (n <= cluster_info%N)
 !OUTDATED       i = cluster_info%int(1,n)
 !OUTDATED       ishift = cluster_info%int(2:4,n)
-!OUTDATED       call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+!OUTDATED       call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 !OUTDATED 
 !OUTDATED       ! loop over every neighbour, looking for outside neighbours
-!OUTDATED       do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-!OUTDATED 	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+!OUTDATED       do m=1, n_neighbours(this, i, alt_connect=use_connect)
+!OUTDATED 	j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 !OUTDATED 
 !OUTDATED 	! if j is in, or not a neareste neighbour, go on to next
 !OUTDATED 	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
@@ -1248,10 +1251,10 @@ end function cluster_in_out_in
 !OUTDATED 	  cycle
 !OUTDATED 	end if
 !OUTDATED 	! if we're here, j must be an outside neighbour of i
-!OUTDATED 	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//atoms_n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+!OUTDATED 	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
 !OUTDATED 
-!OUTDATED 	do p=1, atoms_n_neighbours(this, j, alt_connect=use_connect)
-!OUTDATED 	  k = atoms_neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
+!OUTDATED 	do p=1, n_neighbours(this, j, alt_connect=use_connect)
+!OUTDATED 	  k = neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
 !OUTDATED 	  if (k == i .and. all(jshift + kshift == 0)) cycle
 !OUTDATED 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
 !OUTDATED 	    call print("cluster_reduce_n_cut_bonds:   k = "//k//" ["//kshift//"] not nearest neighbour of j = " // j,PRINT_ANAL)
@@ -1309,8 +1312,8 @@ end function cluster_in_out_in
 
 	! count nearest neighbours of i
 	n_nearest_neighbours = 0
-	do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	  j = atoms_neighbour(this, i, m, alt_connect=use_connect)
+	do m=1, n_neighbours(this, i, alt_connect=use_connect)
+	  j = neighbour(this, i, m, alt_connect=use_connect)
 
 	  ! if j is not nearest neighbour, go on to next one
 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
@@ -1322,8 +1325,8 @@ end function cluster_in_out_in
 	end do ! m
 
 	if (ElementValence(this%Z(i)) /= -1 .and. (ElementValence(this%Z(i)) /= n_nearest_neighbours)) then ! i has a valence, and it doesn't match nn#
-	  do m=1, atoms_n_neighbours(this, i)
-	    j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+	  do m=1, n_neighbours(this, i)
+	    j = neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
 
 	    ! if j is in, or isn't nearest neighbour, go on to next
 	    if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
@@ -1409,19 +1412,19 @@ end function cluster_in_out_in
 	call print("cluster_protect_peptide_bonds: found_this_neighbour " // found_this_neighbour // " found_other_neighbour " // found_other_neighbour, PRINT_ANAL)
 
 	! must have 3 neighbours
-	if (atoms_n_neighbours(this, i, alt_connect=use_connect) /= 3) then
+	if (n_neighbours(this, i, alt_connect=use_connect) /= 3) then
 	  call print("cluster_protect_peptide_bonds:   i = "//i//" doesn't have 3 neighbours",PRINT_ANAL)
 	  cycle
 	endif
-	do ji=1, atoms_n_neighbours(this, i, alt_connect=use_connect) ! look for correct neighbour
-	  j=atoms_neighbour(this, i, ji, shift=jshift, alt_connect=use_connect)
+	do ji=1, n_neighbours(this, i, alt_connect=use_connect) ! look for correct neighbour
+	  j=neighbour(this, i, ji, shift=jshift, alt_connect=use_connect)
 	  call print("cluster_protect_peptide_bonds:   j = " //j//" Z(j) " // this%Z(j), PRINT_ANAL)
 	  ! only nearest neighbours count, usually
 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, ji, alt_connect=use_connect))) then
 	    call print("cluster_protect_peptide_bonds:   neighbour j = "//j//" not nearest neighbour",PRINT_ANAL)
 	    cycle
 	  end if
-	  if (this%Z(j) == this_neighbour_Z .and. atoms_n_neighbours(this, j) == 1) then ! neighbour has right Z and coordination
+	  if (this%Z(j) == this_neighbour_Z .and. n_neighbours(this, j) == 1) then ! neighbour has right Z and coordination
 	    found_this_neighbour = .true.
 	    call print("cluster_protect_peptide_bonds:   neighbour j = "//j//" is neighbor (O) we're looking for",PRINT_ANAL)
 	  endif
@@ -1442,7 +1445,7 @@ end function cluster_in_out_in
 	    ! endif
 
 	    ! other must have 3 neighbours
-	    if (atoms_n_neighbours(this, found_other_j, alt_connect=use_connect) /= 3) then
+	    if (n_neighbours(this, found_other_j, alt_connect=use_connect) /= 3) then
 	      call print("cluster_protect_peptide_bonds:   found_other_j = "//found_other_j//" doesn't have 3 neighbours", PRINT_ANAL)
 	      cycle
 	    endif
@@ -1453,15 +1456,15 @@ end function cluster_in_out_in
 	    ! endif
 
 	    ! check neighbours of other
-	    do ki=1, atoms_n_neighbours(this, found_other_j, alt_connect=use_connect)
-	      k=atoms_neighbour(this, found_other_j, ki, alt_connect=use_connect)
+	    do ki=1, n_neighbours(this, found_other_j, alt_connect=use_connect)
+	      k=neighbour(this, found_other_j, ki, alt_connect=use_connect)
 	      ! only nearest neighbours count
 	      if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,found_other_j, ki, alt_connect=use_connect))) then
 		call print("cluster_protect_peptide_bonds:   found_other_j's neighbour k = "//k//" not nearest neighbour",PRINT_ANAL)
 		cycle
 	      end if
 
-	      if (this%Z(k) == other_neighbour_Z .and. atoms_n_neighbours(this, k) == 1) then ! neighbour has right Z and coordination
+	      if (this%Z(k) == other_neighbour_Z .and. n_neighbours(this, k) == 1) then ! neighbour has right Z and coordination
 		found_other_neighbour = .true.
 		call print("cluster_protect_peptide_bonds:   neighbour k = "//k//" is neighbor (O) we're looking for",PRINT_ANAL)
 	      endif
@@ -2101,7 +2104,7 @@ end function cluster_in_out_in
     ! It's length will be at least cluster_list%N
 
     call print('create_cluster: Creating temporary cluster table', PRINT_NERD)
-    call table_allocate(cluster_info,6,4,1,0,cluster_list%N)
+    call allocate(cluster_info,6,4,1,0,cluster_list%N)
 
     ! First, put all the marked atoms into cluster_info, storing their positions and shifts
     call print('create_cluster: Adding specified atoms to the cluster', PRINT_NERD)
@@ -2217,8 +2220,8 @@ end function cluster_in_out_in
     if (terminate.or.terminate_octahedra) then
        call print('create_cluster: Terminating cluster with hydrogens',PRINT_NERD)
 
-       call table_allocate(n_term, 5, 0, 0, 0)
-       call table_allocate(in_n_term, 5, 0, 0, 0)
+       call allocate(n_term, 5, 0, 0, 0)
+       call allocate(in_n_term, 5, 0, 0, 0)
        oldN = cluster_info%N
 
        !Loop over atoms in the cluster
@@ -2228,9 +2231,9 @@ end function cluster_in_out_in
           ishift = cluster_info%int(2:4,n)
           if(terminate_octahedra .and. at%z(i).ne.8 ) cycle 
           !Loop over atom i's neighbours
-          do m = 1, atoms_n_neighbours(at,i, alt_connect=use_connect)
+          do m = 1, n_neighbours(at,i, alt_connect=use_connect)
 
-             j = atoms_neighbour(at,i,m, r_ij, diff=dhat_ij, shift=jshift, alt_connect=use_connect)
+             j = neighbour(at,i,m, r_ij, diff=dhat_ij, shift=jshift, alt_connect=use_connect)
              dhat_ij = dhat_ij / r_ij
 
              if (find(cluster_info,(/j,ishift+jshift,at%Z(j),0/), atom_mask) == 0 .and. &
@@ -3499,7 +3502,7 @@ type(inoutput), optional :: debugfile
 
     nn = 0
     do i = 1,nn_atoms%N
-       nn(i) = atoms_n_neighbours(nn_atoms, i)
+       nn(i) = n_neighbours(nn_atoms, i)
     end do
 
     if (all(old_nn == 0)) old_nn = nn ! Special case for first time

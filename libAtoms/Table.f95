@@ -59,6 +59,11 @@ module table_module
   use mpi_context_module
   use dictionary_module
   implicit none
+  private
+
+  public :: table, allocate, initialise, finalise, print, set_increment, append, find, table_string_length
+  public :: wipe, delete, int_part, real_part, logical_part, str_part, sort, search, select, int_subtable, insert, delete_multiple
+  public :: append_column, subtable, remove_columns
 
   integer, parameter, private :: DEFAULT_TABLE_LENGTH = 100
   integer, parameter, private :: DEFAULT_TABLE_INCREMENT = 1000

@@ -43,7 +43,19 @@
 
 module IPModel_TS_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, current_verbosity, line, system_timer, verbosity_push_decrement, verbosity_pop, operator(//)
+use units_module
+use periodictable_module
+use mpi_context_module
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
+use cinoutput_module
+
+
 use functions_module
 use QUIP_Common_module
 use Yukawa_module
@@ -170,9 +182,9 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
      ti = get_type(this%type_of_atomic_num, at%Z(i))
      if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
 
-     do m = 1, atoms_n_neighbours(at, i)
+     do m = 1, n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_ms*BOHR))
+         j = neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_ms*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
 
@@ -282,9 +294,9 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
          i_is_min_image = is_min_image(at, i)
       end if
       ti = get_type(this%type_of_atomic_num, at%Z(i))
-      do m = 1, atoms_n_neighbours(at, i)
+      do m = 1, n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
+         j = neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
          
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle

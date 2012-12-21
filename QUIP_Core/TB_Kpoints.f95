@@ -39,7 +39,10 @@
 
 module TB_KPoints_module
 
-use libatoms_module
+use system_module, only : dp, inoutput, initialise, INPUT, is_file_readable, NUMERICAL_ZERO, system_abort
+use units_module
+use extendable_str_module
+use linearalgebra_module
 use mpi_context_module
 use quip_Common_module
 

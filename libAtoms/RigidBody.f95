@@ -43,6 +43,9 @@ module rigidbody_module
   use quaternions_module
 
   implicit none
+  private
+
+  public :: rigidbody, initialise, finalise, print
 
   type RigidBodyModel
   !% Object used as a reference by the RigidBody type.

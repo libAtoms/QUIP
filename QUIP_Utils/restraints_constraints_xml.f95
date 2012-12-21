@@ -1,5 +1,7 @@
 module restraints_constraints_xml_module
-use libatoms_module
+use system_module, only : dp, system_abort, operator(//)
+use constraints_module
+use dynamicalsystem_module
 use quip_common_module
 implicit none
 private

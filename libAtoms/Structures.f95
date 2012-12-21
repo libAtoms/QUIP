@@ -39,13 +39,23 @@
 
 module  structures_module
   use system_module
+  use units_module
+  use periodictable_module
   use linearalgebra_module
+  use table_module
+  use extendable_str_module
+  use dictionary_module
+  use connection_module
+  use atoms_types_module
   use atoms_module
   use cinoutput_module
   use paramreader_module
   use clusters_module
   implicit none
-  public
+  private
+
+  public :: slab, find_motif
+  public :: graphene_cubic, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, rutile, diamond, supercell, structure_from_file
 
   interface slab
      module procedure slab_width_height_nz, slab_nx_ny_nz
@@ -149,8 +159,8 @@ contains
     call calc_connect(at)
 
     do i= 1,at%N
-       do n = 1,atoms_n_neighbours(at, i)
-          j = atoms_neighbour(at, i, n, distance=r_ij)
+       do n = 1,n_neighbours(at, i)
+          j = neighbour(at, i, n, distance=r_ij)
           if(r_ij < 2.0_dp .and. i > j) then
              call print('i= '//i//' j= '//j//' r_ij = '//r_ij)
              call append(removelist, j)
@@ -233,8 +243,8 @@ contains
     call calc_connect(at)
     do i_at = 1, at%N
       if (atoms_remove(i_at)) cycle
-      do j=1, atoms_n_neighbours(at, i_at)
-	j_at = atoms_neighbour(at, i_at, j, distance=r)
+      do j=1, n_neighbours(at, i_at)
+	j_at = neighbour(at, i_at, j, distance=r)
 	if (atoms_remove(j_at)) cycle
 	if (present(close_threshold)) then
 	  if (r < close_threshold) then
@@ -581,7 +591,7 @@ contains
     ! Form primitive cell by discarding atoms with 
     ! lattice coordinates outside range [-0.5,0.5]
     d = (/ 0.01, 0.02, 0.03 /)
-    call Table_Allocate(keep_list, 1, 0, 0, 0, tmp_slab%N)
+    call Allocate(keep_list, 1, 0, 0, 0, tmp_slab%N)
 
     do i=1,tmp_slab%N
        t = tmp_slab%g .mult. (tmp_slab%pos(:,i) + d)
@@ -2349,8 +2359,8 @@ subroutine anatase(at, a, c, u)
        B = 0
        do p = 1, core%N
           k = core%int(1,p)
-	  do ji=1, atoms_n_neighbours(at, k, alt_connect=alt_connect)
-	    j = atoms_neighbour(at, k, ji, alt_connect=alt_connect)
+	  do ji=1, n_neighbours(at, k, alt_connect=alt_connect)
+	    j = neighbour(at, k, ji, alt_connect=alt_connect)
 	    if (my_nneighb_only) then
 	       if (.not. is_nearest_neighbour(at, k, ji, alt_connect=alt_connect)) cycle
 	    endif
@@ -2829,8 +2839,8 @@ subroutine anatase(at, a, c, u)
    call calc_connect(a2_sc)
    do i=1, a2_sc%N
       if (a2_sc%Z(i) == 2) then
-	 do ji=1, atoms_n_neighbours(a2_sc, i) 
-	    j = atoms_neighbour(a2_sc, i, ji, distance=r)
+	 do ji=1, n_neighbours(a2_sc, i) 
+	    j = neighbour(a2_sc, i, ji, distance=r)
 	    if (a2_sc%Z(j) /= 1) cycle
 	    if (r/max(norm(a2_sc%pos(:,i)),norm(a2_sc%pos(:,j))) <= match_tol) then
 	       call add_atoms(matches, a2_sc%pos(:,j), 1)
@@ -2944,8 +2954,8 @@ subroutine anatase(at, a, c, u)
     is_good = .true.
     do i=1, a_dup%N
       if (is_good(i)) then
-	 do ji=1, atoms_n_neighbours(a_dup, i)
-	    j = atoms_neighbour(a_dup, i, ji, max_dist=0.01_dp)
+	 do ji=1, n_neighbours(a_dup, i)
+	    j = neighbour(a_dup, i, ji, max_dist=0.01_dp)
 	    if (j > i) is_good(j) = .false.
 	 end do
       endif
@@ -2977,8 +2987,8 @@ subroutine anatase(at, a, c, u)
     remove_list = 0
     do i=1, at%N
       if (removable_p(i)) cycle
-      do ji=1, atoms_n_neighbours(at, i)
-	 j = atoms_neighbour(at, i, ji, distance=r)
+      do ji=1, n_neighbours(at, i)
+	 j = neighbour(at, i, ji, distance=r)
 	 if (r < distance) then
 	    if (n_remove > 0) then
 	       if (any(remove_list == j)) cycle
@@ -3005,8 +3015,8 @@ subroutine anatase(at, a, c, u)
 
     min_neighbour_dist = 1.0e38_dp
     do i=1, at%N
-      do ji=1, atoms_n_neighbours(at, i)
-	 j = atoms_neighbour(at, i, ji, distance=r)
+      do ji=1, n_neighbours(at, i)
+	 j = neighbour(at, i, ji, distance=r)
 	 if (r < min_neighbour_dist) min_neighbour_dist = r
       end do
     end do
@@ -3180,11 +3190,11 @@ subroutine anatase(at, a, c, u)
       do i=1, at%N
 	 ba_sum = 0.0_dp
 	 ba_sum_sq = 0.0_dp
-	 n_nn = atoms_n_neighbours(at,i)
+	 n_nn = n_neighbours(at,i)
 	 do i_nn=1, n_nn
-	    ii = atoms_neighbour(at, i, i_nn, cosines=i_rv)
+	    ii = neighbour(at, i, i_nn, cosines=i_rv)
 	    do j_nn=i_nn+1, n_nn
-	       ii = atoms_neighbour(at, i, j_nn, cosines=j_rv)
+	       ii = neighbour(at, i, j_nn, cosines=j_rv)
 	       ba = DEGREES_PER_RADIAN*acos(sum(i_rv*j_rv))
 	       ba_sum = ba_sum + ba
 	       ba_sum_sq = ba_sum_sq + ba**2

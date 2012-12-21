@@ -36,17 +36,18 @@ program xyz2pdb
 
 !  use libatoms_module
 
+  use error_module
+  use atoms_types_module,      only: bond_length, assign_pointer, add_property, atoms_sort
   use atoms_module,            only: atoms, finalise, &
                                      set_cutoff, &
                                      calc_connect, print, &
-                                     distance_min_image, bond_length, &
-                                     map_into_cell, assign_pointer, add_property, &
-				     has_property, atoms_sort
+                                     distance_min_image, &
+                                     map_into_cell, has_property
   use dictionary_module,       only: dictionary, initialise, finalise, &
-                                     set_value
+                                     set_value, STRING_LENGTH
   use linearalgebra_module,    only: find_in_array
   use paramreader_module,      only: param_register, param_read_args, &
-                                     STRING_LENGTH, PARAM_MANDATORY
+                                     PARAM_MANDATORY
   use periodictable_module,    only: ElementCovRad
   use system_module,           only: dp, inoutput, &
                                      system_initialise, system_finalise, &
@@ -61,7 +62,6 @@ program xyz2pdb
                                      write_psf_file, &
                                      MM_RUN, silica_2body_cutoff, find_molecule_ids
   use cinoutput_module,        only : read, write
-  use error_module
 
   implicit none
 

@@ -46,8 +46,9 @@
 
 module units_module
 
-use system_module ! for definition of dp
+use system_module, only : dp ! for definition of dp
 implicit none
+public
 
 real(dp), parameter :: ELECTRONMASS_GPERMOL =  5.48579903e-4_dp !% grams/mol
 real(dp), parameter :: ELEM_CHARGE = 1.60217653e-19_dp !% coulombs

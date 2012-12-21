@@ -45,7 +45,8 @@ module CInOutput_module
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, assignment(=)
-  use Atoms_module, only: Atoms, initialise, is_initialised, is_domain_decomposed, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint, transform_basis
+  use Atoms_module, only: Atoms, initialise, is_initialised, is_domain_decomposed, finalise, set_lattice, atoms_repoint, transform_basis, bcast, has_property
+  use Atoms_types_module, only : add_property
   use MPI_Context_module, only: MPI_context
   use DomainDecomposition_module, only: allocate, comm_atoms_to_all
 

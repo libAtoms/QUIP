@@ -31,9 +31,14 @@
 ! Nye Tensor calculations from C. S. Hartley and Y. Mishin, Acta Mat. v. 53, p. 1313 (2005)
 
 module nye_tensor_module
+  use system_module, only : dp, print, PRINT_NERD, PRINT_VERBOSE, operator(//)
+  use units_module
   use linearalgebra_module
   use atoms_module
-implicit none
+  implicit none
+  private
+
+  public :: calc_nye_tensor
 
 contains
   subroutine calc_nye_tensor(at, ref_lat, alpha, G)
@@ -52,7 +57,7 @@ contains
     integer, allocatable :: nn_list(:)
     real(dp), allocatable :: nn_vec(:,:), nn_vec_normalised(:,:)
 
-    integer :: ref_n_neighbours, n_neighbours, max_n_neighbours
+    integer :: ref_n_neighbours, l_n_neighbours, max_n_neighbours
     integer :: i_at
 
     integer i_gamma, II, MM, i, j, k, m
@@ -66,8 +71,8 @@ contains
 
     max_n_neighbours = 0
     do i_at = 1, at%N
-      n_neighbours = atoms_n_neighbours(at, i_at)
-      if (n_neighbours > max_n_neighbours) max_n_neighbours = n_neighbours
+      l_n_neighbours = n_neighbours(at, i_at)
+      if (l_n_neighbours > max_n_neighbours) max_n_neighbours = l_n_neighbours
     end do
 
     if (.not.present(G)) then
@@ -84,8 +89,8 @@ contains
     call get_nn_list(ref_lat, 1, ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised)
 
     do i_at=1, at%N
-      call get_nn_list(at, i_at, n_neighbours, nn_list, nn_vec, nn_vec_normalised)
-      call find_lattice_correspondence(n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
+      call get_nn_list(at, i_at, l_n_neighbours, nn_list, nn_vec, nn_vec_normalised)
+      call find_lattice_correspondence(l_n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
 				       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
 				       n_matches(i_at), match_list(:,i_at), Qplus(:,:,i_at), G_p(:,:,i_at))
       call print("atom i_at " // i_at, PRINT_NERD)
@@ -140,10 +145,10 @@ contains
     deallocate(Delta_G, Delta_G_vec)
   end subroutine calc_nye_tensor
 
-  subroutine find_lattice_correspondence(n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
+  subroutine find_lattice_correspondence(l_n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
       n_matches, match_list, Qplus, G)
-    integer, intent(in) :: n_neighbours
+    integer, intent(in) :: l_n_neighbours
     integer, intent(in) :: nn_list(:)
     real(dp), intent(in) :: nn_vec(:,:), nn_vec_normalised(:,:)
     integer, intent(in) :: ref_n_neighbours
@@ -166,13 +171,13 @@ contains
 
     !real(dp) :: max_angle_dev = 27.0_dp*PI/180.0_dp
 
-    allocate(angles(n_neighbours, ref_n_neighbours))
+    allocate(angles(l_n_neighbours, ref_n_neighbours))
     allocate(t_match_list(ref_n_neighbours))
     allocate(t_match_length(ref_n_neighbours))
 
 
     ! calculate all angles between lat and ref neighbor vectors
-    do i_gamma = 1, n_neighbours
+    do i_gamma = 1, l_n_neighbours
       do i_beta = 1, ref_n_neighbours
 	angles(i_gamma, i_beta) = acos(sum(nn_vec_normalised(1:3,i_gamma)*ref_nn_vec_normalised(1:3,i_beta)))
       end do
@@ -180,7 +185,7 @@ contains
 
 
     ! for each lat vector i_gamma, find matching ref vector and save in match_list(i_gamma), save 0 if more than 1 ref. vector matches
-    do i_gamma = 1, n_neighbours
+    do i_gamma = 1, l_n_neighbours
       smallest_angle = 1.0e38_dp
       n_matches = 0 ! ref. vector matches to this real neighbor vector
       do i_beta=1, ref_n_neighbours
@@ -200,10 +205,10 @@ contains
     end do
 
     ! look for multiple lat vectors that match same ref vector, and pick best length match - zero other entries of match_list
-    do i_gamma = 1, n_neighbours
+    do i_gamma = 1, l_n_neighbours
       if (match_list(i_gamma) == 0) cycle
       t_n_matches = 0
-      do i_gammap = 1, n_neighbours
+      do i_gammap = 1, l_n_neighbours
 	if (match_list(i_gammap) == match_list(i_gamma)) then
 	  t_n_matches = t_n_matches + 1
 	  t_match_list(t_n_matches) = i_gammap
@@ -223,7 +228,7 @@ contains
     allocate(P(n_matches,3))
     allocate(Q(n_matches,3))
     i_match = 0
-    do i_gamma=1, n_neighbours
+    do i_gamma=1, l_n_neighbours
       if (match_list(i_gamma) /= 0) then
 	i_match = i_match + 1
 	Q(i_match,1:3) = nn_vec(1:3,i_gamma)
@@ -255,9 +260,9 @@ contains
     deallocate(t_match_length)
 
     ! make output match_list(), which contains indices of atoms for each matched bond
-    allocate(t_match_list(n_neighbours))
+    allocate(t_match_list(l_n_neighbours))
     i_gammap = 0
-    do i_gamma = 1, n_neighbours
+    do i_gamma = 1, l_n_neighbours
        if (match_list(i_gamma) /= 0) then
 	  i_gammap = i_gammap + 1
 	  t_match_list(i_gammap) = nn_list(i_gamma)
@@ -268,29 +273,29 @@ contains
     deallocate(t_match_list)
   end subroutine find_lattice_correspondence
 
-  subroutine get_nn_list(at, i_at, n_neighbours, nn_list, nn_vec, nn_vec_normalised)
+  subroutine get_nn_list(at, i_at, l_n_neighbours, nn_list, nn_vec, nn_vec_normalised)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: i_at
-    integer, intent(out) :: n_neighbours
+    integer, intent(out) :: l_n_neighbours
     integer, allocatable, intent(inout) :: nn_list(:)
     real(dp), allocatable, intent(inout) :: nn_vec(:,:), nn_vec_normalised(:,:)
 
     real(dp) :: nn_v(3), nn_v_normalised(3)
     integer i_neigh
 
-    n_neighbours = atoms_n_neighbours(at, i_at)
+    l_n_neighbours = n_neighbours(at, i_at)
 
-    if (n_neighbours > size(nn_list)) then
+    if (l_n_neighbours > size(nn_list)) then
       if (allocated(nn_list)) deallocate(nn_list)
-      allocate(nn_list(n_neighbours))
+      allocate(nn_list(l_n_neighbours))
       if (allocated(nn_vec)) deallocate(nn_vec)
-      allocate(nn_vec(3,n_neighbours))
+      allocate(nn_vec(3,l_n_neighbours))
       if (allocated(nn_vec_normalised)) deallocate(nn_vec_normalised)
-      allocate(nn_vec_normalised(3,n_neighbours))
+      allocate(nn_vec_normalised(3,l_n_neighbours))
     endif
 
-    do i_neigh = 1, n_neighbours
-      nn_list(i_neigh) = atoms_neighbour(at, i_at, i_neigh, diff = nn_v, cosines = nn_v_normalised)
+    do i_neigh = 1, l_n_neighbours
+      nn_list(i_neigh) = neighbour(at, i_at, i_neigh, diff = nn_v, cosines = nn_v_normalised)
       nn_vec(:, i_neigh) = nn_v
       nn_vec_normalised(:, i_neigh) = nn_v_normalised
     end do

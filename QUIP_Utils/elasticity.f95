@@ -548,10 +548,10 @@ contains
 
        ! Count number of nearest neighbours
        nn = 0
-       do m=1,atoms_n_neighbours(at, i) 
+       do m=1,n_neighbours(at, i) 
           if (is_nearest_neighbour(at,i,m)) then
              nn = nn + 1
-             j = atoms_neighbour(at, i, m, distance=dist(nn), diff=ndiff(:,nn))
+             j = neighbour(at, i, m, distance=dist(nn), diff=ndiff(:,nn))
 
              if (at%Z(j) == 1) then ! Skip hydrogen neighbours
                 nn = nn - 1

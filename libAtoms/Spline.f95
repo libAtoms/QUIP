@@ -37,10 +37,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module spline_module
+  use system_module, only : dp, inoutput, print, optional_default, system_abort, verbosity_push_decrement, verbosity_pop
   use linearalgebra_module
   use table_module
   implicit none
+  private
   SAVE
+  
+  public :: spline, initialise, finalise, print, min_knot, max_knot, spline_value, spline_deriv
 
 
   type Spline

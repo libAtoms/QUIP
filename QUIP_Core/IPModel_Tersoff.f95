@@ -42,7 +42,14 @@
 
 module IPModel_Tersoff_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, verbosity_push_decrement, verbosity_pop, operator(//)
+use units_module
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -246,12 +253,12 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
-    allocate(z_ij(atoms_n_neighbours(at,i)))
+    allocate(z_ij(n_neighbours(at,i)))
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     ! calculate z_ij = beta_i zeta_ij
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, dr_ij_mag, cosines = dr_ij)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, dr_ij_mag, cosines = dr_ij)
       if (dr_ij_mag .feq. 0.0_dp) cycle
 
       if (do_rescale_r) dr_ij_mag = dr_ij_mag*r_scale
@@ -270,9 +277,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
       endif
 
       zeta_ij = 0.0_dp
-      do ki=1, atoms_n_neighbours(at, i)
+      do ki=1, n_neighbours(at, i)
 	if (ki == ji) cycle
-	k = atoms_neighbour(at, i, ki, dr_ik_mag, cosines = dr_ik)
+	k = neighbour(at, i, ki, dr_ik_mag, cosines = dr_ik)
 	if (dr_ik_mag .feq. 0.0_dp) cycle
         if (do_rescale_r) dr_ik_mag = dr_ik_mag*r_scale
 
@@ -287,8 +294,8 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
     end do ! ji (calc z_ij)
 
     ! calculate energies, forces, etc
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, dr_ij_mag, dr_ij_diff, dr_ij)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, dr_ij_mag, dr_ij_diff, dr_ij)
       if (dr_ij_mag .feq. 0.0_dp) cycle
 
       if (do_rescale_r) then
@@ -357,9 +364,9 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 	  beta_i_db_ij_dz_ij = -1.0_dp
 	endif
 
-	do ki=1, atoms_n_neighbours(at,i)
+	do ki=1, n_neighbours(at,i)
 	  if (ki == ji) cycle
-	  k = atoms_neighbour(at, i, ki, dr_ik_mag, dr_ik_diff, dr_ik)
+	  k = neighbour(at, i, ki, dr_ik_mag, dr_ik_diff, dr_ik)
 	  if (dr_ik_mag .feq. 0.0_dp) cycle
 
           if (do_rescale_r) then

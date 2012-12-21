@@ -648,8 +648,8 @@ contains
            do at_j = 1, at%N
              if((at_j == at_i) .or. .not. mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
              dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
-              do i = 1, atoms_n_neighbours(at,at_j)
-                k = atoms_neighbour(at,at_j,i)
+              do i = 1, n_neighbours(at,at_j)
+                k = neighbour(at,at_j,i)
                 r = 0.0_dp
                 if(is_nearest_neighbour(at,at_j,i) .and. at%Z(k) == 1) then
                   d = distance_min_image(at,at%pos(:,at_i),at%pos(:,k))
@@ -691,8 +691,8 @@ contains
             if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
             dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
             if( (dist > (bin_r-(dbin_width*0.5_dp))) .and. (dist < (bin_r+(dbin_width*0.5_dp))) ) then
-              do i = 1, atoms_n_neighbours(at,at_j)
-                k = atoms_neighbour(at,at_j,i)
+              do i = 1, n_neighbours(at,at_j)
+                k = neighbour(at,at_j,i)
                 r = 0.0_dp
                 if(is_nearest_neighbour(at,at_j,i) .and. at%Z(k) == 1) then
                   d = distance_min_image(at,at%pos(:,at_i),at%pos(:,k))
@@ -741,8 +741,8 @@ contains
                 do at_j = 1, at%N
                   if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !.or. (at%Z(at_j) .ne. 8)) cycle
                   dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
-                   do i = 1, atoms_n_neighbours(at,at_j)
-                     k = atoms_neighbour(at,at_j,i)
+                   do i = 1, n_neighbours(at,at_j)
+                     k = neighbour(at,at_j,i)
                      r = 0.0_dp
                      if(is_nearest_neighbour(at,at_j,i) .and. at%Z(k) == 1) then
                        d = distance_min_image(at,at%pos(:,at_i),at%pos(:,k))
@@ -788,8 +788,8 @@ contains
                if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
                dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
                if( (dist > (bin_r-(dbin_width*0.5_dp))) .and. (dist < (bin_r+(dbin_width*0.5_dp))) ) then
-                 do i = 1, atoms_n_neighbours(at,at_j)
-                   k = atoms_neighbour(at,at_j,i)
+                 do i = 1, n_neighbours(at,at_j)
+                   k = neighbour(at,at_j,i)
                    r = 0.0_dp
                    if(is_nearest_neighbour(at,at_j,i) .and. at%Z(k) == 1) then
                      d = distance_min_image(at,at%pos(:,at_i),at%pos(:,k))

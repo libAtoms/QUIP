@@ -38,7 +38,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 module TBModel_NRL_TB_module
 
-use libatoms_module
+use system_module, only : dp, print, inoutput, optional_default, system_abort, verbosity_push_decrement, verbosity_pop
+use periodictable_module
+use units_module
+use linearalgebra_module
+use dictionary_module
+use extendable_str_module
+use paramreader_module
+use atoms_module
 
 use TB_Common_module
 use QUIP_Common_module
@@ -735,8 +742,8 @@ subroutine TBModel_NRL_TB_get_dHS_masks(this, at, at_ind, d_mask, od_mask)
     else
       d_mask = .false.
       d_mask(at_ind) = .true.
-      do ji=1, atoms_n_neighbours(at, at_ind)
-	j = atoms_neighbour(at, at_ind, ji)
+      do ji=1, n_neighbours(at, at_ind)
+	j = neighbour(at, at_ind, ji)
 	d_mask(j) = .true.
       end do
     endif
@@ -1372,8 +1379,8 @@ function onsite_function(this, at, at_i, orb_set_type,i_mag)
   ti = get_type(this%type_of_atomic_num,at%Z(at_i))
 
   density = 0.0_dp
-  do ji=1, atoms_n_neighbours(at, at_i)
-    j = atoms_neighbour(at, at_i, ji, dist)
+  do ji=1, n_neighbours(at, at_i)
+    j = neighbour(at, at_i, ji, dist)
     tj = get_type(this%type_of_atomic_num,at%Z(j))
 
     f_cut = cutoff_function(this, dist, ti, tj)
@@ -1411,8 +1418,8 @@ function donsite_function(this, at, at_i, orb_set_type, at_ind, i_mag)
 
   density = 0.0_dp
   density_d = 0.0_dp
-  do ji=1, atoms_n_neighbours(at, at_i)
-    j = atoms_neighbour(at, at_i, ji, dist, cosines = dircos)
+  do ji=1, n_neighbours(at, at_i)
+    j = neighbour(at, at_i, ji, dist, cosines = dircos)
     tj = get_type(this%type_of_atomic_num,at%Z(j))
 
     f_cut = cutoff_function(this, dist, ti, tj)

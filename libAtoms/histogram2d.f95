@@ -10,6 +10,9 @@ module histogram2d_module
   use io
   use logging
 
+  private
+  public : histogram2d, init, del, clear, set_bounds, write, add, average, mul, normalize, reduce, log_memory_estimate
+
   integer, parameter  :: INTERP_LINEAR  = 0
   integer, parameter  :: INTERP_LUCY    = 1
 
@@ -63,7 +66,7 @@ module histogram2d_module
      module procedure histogram2d_write, histogram2d_write_mult
      module procedure histogram2d_write_character_fn, histogram2d_write_mult_character_fn
   endinterface
-
+,
   interface add
      module procedure histogram2d_add, histogram2d_add_vals, histogram2d_add_vals_norms
      module procedure histogram2d_add_vals_mask, histogram2d_add_vals_norm_mask, histogram2d_add_vals_norms_mask

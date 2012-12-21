@@ -43,7 +43,13 @@
 
 module IPModel_FS_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -229,8 +235,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
     phi_tot = 0.0_dp
      
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, rij_mag)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, rij_mag)
       if (rij_mag .feq. 0.0_dp) cycle
 
       if (do_rescale_r) rij_mag = rij_mag*r_scale
@@ -250,8 +256,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       local_e(i) = local_e(i) - sqrt_phi_tot 
     endif
 
-    do ji=1, atoms_n_neighbours(at, i)
-       j = atoms_neighbour(at, i, ji, rij_mag, cosines = drij)
+    do ji=1, n_neighbours(at, i)
+       j = neighbour(at, i, ji, rij_mag, cosines = drij)
        if (rij_mag .feq. 0.0_dp) cycle
 
        if (do_rescale_r) rij_mag = rij_mag*r_scale

@@ -52,7 +52,25 @@
 #include "error.inc"
 module Potential_module
 
-  use libAtoms_module
+  use error_module
+  use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, INPUT, &
+   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_warning, system_timer, system_abort
+  use units_module
+  use periodictable_module
+  use extendable_str_module
+  use linearalgebra_module
+  use dictionary_module
+  use paramreader_module
+  use mpi_context_module
+  use table_module
+  use minimization_module
+  use connection_module
+  use atoms_types_module
+  use atoms_module
+  use cinoutput_module
+  use dynamicalsystem_module
+  use clusters_module
+
   use QUIP_Common_module
 #ifdef HAVE_TB
   use TB_module
@@ -1476,10 +1494,10 @@ max_atom_rij_change = 1.038_dp
     P = 0.0_dp
     do i=1, am%minim_at%N
       n_nearest = 0
-      do jj=1, atoms_n_neighbours(am%minim_at, i)
+      do jj=1, n_neighbours(am%minim_at, i)
 	if (is_nearest_neighbour(am%minim_at, i, jj)) then
 	  n_nearest = n_nearest + 1
-	  j = atoms_neighbour(am%minim_at, i, jj)
+	  j = neighbour(am%minim_at, i, jj)
 	  P(3*(i-1)+1,3*(j-1)+1) = -c1
 	  P(3*(i-1)+2,3*(j-1)+2) = -c1
 	  P(3*(i-1)+3,3*(j-1)+3) = -c1

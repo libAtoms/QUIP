@@ -52,6 +52,7 @@ module  atoms_module
 
   use error_module
   use system_module
+  use units_module
   use mpi_context_module
   use linearalgebra_module
   use extendable_str_module
@@ -66,6 +67,18 @@ module  atoms_module
   use Quaternions_module
 
   implicit none
+  private
+  public :: atoms, initialise, initialise_ptr, is_initialised, is_domain_decomposed, shallowcopy, finalise
+  public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff, set_cutoff_factor
+  public :: add_atoms, remove_atoms, get_param_value, set_param_value, has_property, remove_property
+  public :: distance, distance_min_image, diff, diff_min_image, print, set_lattice, select, cell_volume, map_into_cell
+  public :: bcast, copy_properties, transform_basis, rotate, index_to_z_index, z_index_to_index
+  public :: calc_connect, calc_connect_hysteretic, is_min_image, set_comm_property, set_Zs, sort
+  public :: shuffle, n_neighbours, neighbour, centre_of_mass, realpos, atoms_copy_without_connect
+  public :: calc_dists, atoms_repoint, is_nearest_neighbour, is_nearest_neighbour_abs_index
+  public :: termination_bond_rescale, make_lattice, neighbour_index, cosine, cosine_neighbour, direction_cosines
+  public :: directionality, closest_atom, set_atoms, get_lattice_params, list_matching_prop
+  public :: coalesce_in_one_periodic_image, prop_names_string, parse_atom_mask
 
   integer,  parameter :: NOT_NEIGHBOUR = 0     !% Returned by 'Find_Neighbour' if unsuccessful
 
@@ -319,6 +332,11 @@ module  atoms_module
   !% Neighbor list stuf
   interface n_neighbours
      module procedure atoms_n_neighbours
+  endinterface
+
+  !% Neighbor list stuf
+  interface neighbour_index
+     module procedure atoms_neighbour_index
   endinterface
 
   interface neighbour
@@ -2900,7 +2918,7 @@ contains
     integer :: i
     integer, allocatable, dimension(:) :: inarray
     
-    call table_allocate(outlist,1,0,0,0)
+    call allocate(outlist,1,0,0,0)
     
     allocate(inarray(inlist%N))
     inarray = int_part(inlist,1)
@@ -2930,7 +2948,7 @@ contains
        RAISE_ERROR('difference: list1%N ('//(list1%N)//') <= list2%N ('//(list2%N)//').', error)
     end if
 
-    call table_allocate(outlist, 1, 0, 0, 0)
+    call allocate(outlist, 1, 0, 0, 0)
 
     allocate(array1(list1%N),array2(list2%N))
     array1 = int_part(list1,1)

@@ -38,9 +38,14 @@
 module gp_teach_module
 
    use iso_c_binding, only : C_NULL_CHAR
-   use libatoms_module
+   ! use libatoms_module
+   use error_module
+   use system_module, only : dp, optional_default, reallocate
+   use linearalgebra_module
    use gp_predict_module
    use clustering_module
+   implicit none
+   private
 
    interface gp_sparsify
       module procedure gpFull_sparsify_array_config_type
@@ -56,7 +61,7 @@ module gp_teach_module
       integer, optional, intent(in) :: sparseMethod
       integer, optional, intent(out) :: error
 
-      integer :: my_sparseMethod, li, ui, i_config_type, n_config_type, d, n_x
+      integer :: my_sparseMethod, i, li, ui, i_config_type, n_config_type, d, n_x
       integer, dimension(:), allocatable :: config_type_index, sparseX_index
       real(dp), dimension(:,:), allocatable :: x
       integer, dimension(:), allocatable :: x_index

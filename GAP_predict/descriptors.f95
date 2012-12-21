@@ -27,7 +27,14 @@
 
 module descriptors_module
 
-   use libatoms_module
+   use error_module
+   use system_module, only : dp, print, optional_default, system_timer, operator(//)
+   use units_module
+   use linearalgebra_module
+   use dictionary_module
+   use paramreader_module
+   use atoms_module
+   use topology_module
 
    implicit none
 
@@ -810,7 +817,7 @@ module descriptors_module
          if(allocated(dU)) call finalise(dU)
 
          ! dU is not allocated, allocate and zero it
-         allocate( dU(0:this%j_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+         allocate( dU(0:this%j_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
          do j = 0, this%j_max
             allocate( dU(j,0)%mm(3,-j:j,-j:j) )
             dU(j,0)%mm = CPLX_ZERO
@@ -823,8 +830,8 @@ module descriptors_module
       endif
 
       n_i = 0
-      do n = 1, atoms_n_neighbours(at,i)
-         ji = atoms_neighbour(at, i, n, distance=r, diff=diff, cosines=u_ij)
+      do n = 1, n_neighbours(at,i)
+         ji = neighbour(at, i, n, distance=r, diff=diff, cosines=u_ij)
          if( r > this%cutoff ) cycle
 
          n_i = n_i + 1
@@ -2233,7 +2240,7 @@ module descriptors_module
       complex(dp), dimension(3) :: dsub
       real(dp), dimension(3) :: diff, u_ij
       real(dp) :: r, tmp_cg
-      integer :: i, n, n_i, ji, jn, j, m1, m2, j1, j2, m11, m12, m21, m22, i_desc, i_bisp, d, n_descriptors, n_cross, n_neighbours
+      integer :: i, n, n_i, ji, jn, j, m1, m2, j1, j2, m11, m12, m21, m22, i_desc, i_bisp, d, n_descriptors, n_cross, l_n_neighbours
       integer, dimension(3) :: shift
       integer, dimension(116) :: species_map
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -2287,18 +2294,18 @@ module descriptors_module
          endif
 
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
 
@@ -2313,7 +2320,7 @@ module descriptors_module
          if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
          if(my_do_grad_descriptor) then
             ! dU is not allocated, allocate and zero it
-            allocate( dU(0:this%j_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            allocate( dU(0:this%j_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
             do j = 0, this%j_max
                allocate( dU(j,0)%mm(3,-j:j,-j:j) )
                dU(j,0)%mm = CPLX_ZERO
@@ -2325,8 +2332,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            ji = atoms_neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
+         do n = 1, n_neighbours(at,i)
+            ji = neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
             if( r > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -2390,9 +2397,9 @@ module descriptors_module
 
          if(my_do_grad_descriptor) then
             n_i = 0
-            do n = 0, atoms_n_neighbours(at,i)
+            do n = 0, n_neighbours(at,i)
                if( n>0 ) then
-                  ji = atoms_neighbour(at, i, n, distance=r)
+                  ji = neighbour(at, i, n, distance=r)
                   if( r > this%cutoff ) cycle
                   n_i = n_i + 1
                endif
@@ -2480,7 +2487,7 @@ module descriptors_module
       type(cplx_2d), dimension(:,:,:), allocatable :: dfourier_so3
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, n, a, l, m, l1, l2, m1, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross
+      integer :: d, i, j, n, a, l, m, l1, l2, m1, i_desc, i_pow, l_n_neighbours, n_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
       real(dp) :: r_ij
       real(dp), dimension(3) :: u_ij, d_ij
@@ -2539,18 +2546,18 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -2587,8 +2594,8 @@ module descriptors_module
 
          if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
          if(my_do_grad_descriptor) then
-            allocate( dfourier_so3(0:this%l_max,this%n_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
-            do n = 0, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            allocate( dfourier_so3(0:this%l_max,this%n_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
+            do n = 0, n_neighbours(at,i,max_dist=this%cutoff)
                do a = 1, this%n_max
                   do l = 0, this%l_max
                      allocate(dfourier_so3(l,a,n)%mm(3,-l:l))
@@ -2599,8 +2606,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -2662,7 +2669,7 @@ module descriptors_module
          endif
 
          if(my_do_grad_descriptor) then
-            do n = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            do n = 1, n_neighbours(at,i,max_dist=this%cutoff)
                i_pow = 0
                do a = 1, this%n_max
                   do l1 = 0, this%l_max
@@ -2744,7 +2751,7 @@ module descriptors_module
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, k, n, m, a, b, i_desc, n_neighbours, n_i, m_i, n_descriptors, n_cross
+      integer :: d, i, j, k, n, m, a, b, i_desc, l_n_neighbours, n_i, m_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
       real(dp) :: r_ij, r_ik, r_jk, cos_ijk, Ang, dAng, Rad, dRad_ij, dRad_ik, dRad_jk, f_cut_ij, f_cut_ik, f_cut_jk, df_cut_ij, df_cut_ik, df_cut_jk, g2, dg2
       real(dp), dimension(3) :: u_ij, u_ik, u_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik
@@ -2784,18 +2791,18 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -2812,8 +2819,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -2839,8 +2846,8 @@ module descriptors_module
 
 
             m_i = 0
-            do m = 1, atoms_n_neighbours(at,i)
-               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+            do m = 1, n_neighbours(at,i)
+               k = neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
                if( r_ik > this%cutoff ) cycle
 
                m_i = m_i + 1
@@ -2965,8 +2972,8 @@ module descriptors_module
       do i = 1, at%N
          Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
          Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
@@ -3010,7 +3017,7 @@ module descriptors_module
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, n, i_n, n_neighbours, i_desc, n_descriptors, n_cross
+      integer :: d, i, j, n, i_n, l_n_neighbours, i_desc, n_descriptors, n_cross
       integer, dimension(3) :: shift
       real(dp) :: r_ij
       real(dp), dimension(3) :: u_ij, df_cut
@@ -3047,18 +3054,18 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -3077,8 +3084,8 @@ module descriptors_module
          endif
 
          i_n = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
 
             if( r_ij > this%cutoff ) cycle
             i_n = i_n + 1
@@ -3161,8 +3168,8 @@ module descriptors_module
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
          
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
 
             if( r_ij > this%cutoff ) cycle
 
@@ -3172,11 +3179,11 @@ module descriptors_module
             fc_j = coordination_function(r_ij,this%cutoff,0.5_dp)
             dfc_j = dcoordination_function(r_ij,this%cutoff,0.5_dp)
 
-            do m = 1, atoms_n_neighbours(at,i)
+            do m = 1, n_neighbours(at,i)
 
                if( n == m ) cycle
 
-               k = atoms_neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
+               k = neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
                if( r_ik > this%cutoff ) cycle
 
                Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
@@ -3254,7 +3261,7 @@ module descriptors_module
       type(descriptor_data) :: descriptor_coordination
 
       logical :: my_do_descriptor, my_do_grad_descriptor, Zk1, Zk2, Zj1, Zj2
-      integer :: d, n_descriptors, n_cross, i_desc, i, j, k, n, m, n_neighbours_coordination
+      integer :: d, n_descriptors, n_cross, i_desc, i, j, k, n, m, l_n_neighbours_coordination
       integer, dimension(3) :: shift_ij, shift_ik
       real(dp) :: r_ij, r_ik, r_jk, cos_ijk, fc_j, fc_k, dfc_j, dfc_k
       real(dp), dimension(3) :: u_ij, u_ik, u_jk, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik
@@ -3281,20 +3288,20 @@ module descriptors_module
       i_desc = 0
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
-         n_neighbours_coordination = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+         l_n_neighbours_coordination = n_neighbours(at,i,max_dist=this%coordination_cutoff)
 
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
             Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
 
-            do m = 1, atoms_n_neighbours(at,i)
+            do m = 1, n_neighbours(at,i)
 
                if( n == m ) cycle
 
-               k = atoms_neighbour(at, i, m, distance = r_ik)
+               k = neighbour(at, i, m, distance = r_ik)
                if( r_ik > this%cutoff ) cycle
 
                Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
@@ -3311,16 +3318,16 @@ module descriptors_module
 
                if(my_do_grad_descriptor) then
 
-                  allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:2+n_neighbours_coordination))
-                  allocate(descriptor_out%x(i_desc)%ii(0:2+n_neighbours_coordination))
-                  allocate(descriptor_out%x(i_desc)%pos(3,0:2+n_neighbours_coordination))
-                  allocate(descriptor_out%x(i_desc)%has_grad_data(0:2+n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:2+l_n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%ii(0:2+l_n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%pos(3,0:2+l_n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%has_grad_data(0:2+l_n_neighbours_coordination))
                   descriptor_out%x(i_desc)%grad_data = 0.0_dp
                   descriptor_out%x(i_desc)%ii = 0
                   descriptor_out%x(i_desc)%pos = 0.0_dp
                   descriptor_out%x(i_desc)%has_grad_data = .false.
 
-                  allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:2+n_neighbours_coordination))
+                  allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:2+l_n_neighbours_coordination))
                   descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
                endif
             enddo
@@ -3334,8 +3341,8 @@ module descriptors_module
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
 
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines = u_ij, diff = d_ij, shift=shift_ij)
 
             if( r_ij > this%cutoff ) cycle
 
@@ -3345,10 +3352,10 @@ module descriptors_module
             fc_j = coordination_function(r_ij,this%cutoff,0.5_dp)
             dfc_j = dcoordination_function(r_ij,this%cutoff,0.5_dp)
 
-            do m = 1, atoms_n_neighbours(at,i)
+            do m = 1, n_neighbours(at,i)
                if( n == m ) cycle
 
-               k = atoms_neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
+               k = neighbour(at, i, m, distance = r_ik, cosines = u_ik, diff = d_ik, shift=shift_ik)
                if( r_ik > this%cutoff ) cycle
 
                Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
@@ -3466,8 +3473,8 @@ module descriptors_module
       do i = 1, at%N
          Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
          Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance=r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance=r_ij)
 
             if(r_ij > this%cutoff) cycle
 
@@ -3483,8 +3490,8 @@ module descriptors_module
             endif
 
             if(my_do_grad_descriptor) then
-               n_neighbours_coordination_ij = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff) + &
-               atoms_n_neighbours(at,j,max_dist=this%coordination_cutoff) + 2
+               n_neighbours_coordination_ij = n_neighbours(at,i,max_dist=this%coordination_cutoff) + &
+               n_neighbours(at,j,max_dist=this%coordination_cutoff) + 2
 
                allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:1+n_neighbours_coordination_ij))
                allocate(descriptor_out%x(i_desc)%ii(0:1+n_neighbours_coordination_ij))
@@ -3508,8 +3515,8 @@ module descriptors_module
       do i = 1, at%N
          Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
          Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines = u_ij, shift=shift)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
@@ -3527,7 +3534,7 @@ module descriptors_module
                descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij,this%cutoff,this%transition_width)
             endif
             if(my_do_grad_descriptor) then
-               n_neighbours_coordination_i = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+               n_neighbours_coordination_i = n_neighbours(at,i,max_dist=this%coordination_cutoff)
 
                descriptor_out%x(i_desc)%ii(0) = i
                descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
@@ -3574,7 +3581,7 @@ module descriptors_module
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, k, n, m, a, b, i_desc, i_cosnx, n_neighbours, n_i, n_descriptors, n_cross
+      integer :: d, i, j, k, n, m, a, b, i_desc, i_cosnx, l_n_neighbours, n_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
       real(dp) :: r_ij, r_ik, r_jk, cos_ijk, T_0_cos_ijk, T_1_cos_ijk, T_n_cos_ijk, U_0_cos_ijk, U_1_cos_ijk, U_n_cos_ijk, Ang
       real(dp), dimension(3) :: u_ij, u_ik, d_ij, d_ik, d_jk, dcosijk_ij, dcosijk_ik, dAng_ij, dAng_ik
@@ -3623,18 +3630,18 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -3659,8 +3666,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -3676,8 +3683,8 @@ module descriptors_module
                descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
             endif
 
-            do m = 1, atoms_n_neighbours(at,i)
-               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+            do m = 1, n_neighbours(at,i)
+               k = neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
                if( r_ik > this%cutoff ) cycle
 
                d_jk = d_ik - d_ij
@@ -3807,10 +3814,10 @@ module descriptors_module
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
-            allocate(descriptor_out%x(i)%grad_data(d,3,0:atoms_n_neighbours(at,i)))
-            allocate(descriptor_out%x(i)%ii(0:atoms_n_neighbours(at,i)))
-            allocate(descriptor_out%x(i)%pos(3,0:atoms_n_neighbours(at,i)))
-            allocate(descriptor_out%x(i)%has_grad_data(0:atoms_n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%grad_data(d,3,0:n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%ii(0:n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%pos(3,0:n_neighbours(at,i)))
+            allocate(descriptor_out%x(i)%has_grad_data(0:n_neighbours(at,i)))
             descriptor_out%x(i)%grad_data = 0.0_dp
             descriptor_out%x(i)%ii = 0
             descriptor_out%x(i)%pos = 0.0_dp
@@ -3827,8 +3834,8 @@ module descriptors_module
             descriptor_out%x(i)%has_grad_data(0) = .true.
          endif
 
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             if(my_do_grad_descriptor) then
@@ -3837,8 +3844,8 @@ module descriptors_module
                descriptor_out%x(i)%has_grad_data(n) = .true.
             endif
 
-            do m = 1, atoms_n_neighbours(at,i)
-               k = atoms_neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
+            do m = 1, n_neighbours(at,i)
+               k = neighbour(at, i, m, distance = r_ik, cosines=u_ik, diff=d_ik)
                if( r_ik > this%cutoff ) cycle
 
                d_jk = d_ik - d_ij
@@ -4077,8 +4084,8 @@ module descriptors_module
          r_AO_AH2 = norm(diff_AO_AH2)
          r_AH1_AH2 = norm(diff_AH1_AH2)
 
-         do n = 1, atoms_n_neighbours(at,iAO)
-            iBO = atoms_neighbour(at,iAO,n,distance=r_AO_BO, diff=diff_AO_BO, shift=shift_AO_BO )
+         do n = 1, n_neighbours(at,iAO)
+            iBO = neighbour(at,iAO,n,distance=r_AO_BO, diff=diff_AO_BO, shift=shift_AO_BO )
             if(at%Z(iBO) /= 8) cycle
             if( r_AO_BO >= this%cutoff ) cycle
             i_desc = i_desc + 1
@@ -4259,12 +4266,12 @@ module descriptors_module
       i_desc = 0
       do i = 1, at%N
          iA1 = i
-         iA2 = atoms_neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2,shift=shift_A1_A2)
+         iA2 = neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2,shift=shift_A1_A2)
          if( iA1 > iA2 ) cycle
 
          do j = i + 1, at%N
             iB1 = j
-            iB2 = atoms_neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2,shift=shift_B1_B2)
+            iB2 = neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2,shift=shift_B1_B2)
             if( iB1 > iB2 ) cycle
 
             r_A1_B1 = distance_min_image(at,iA1,iB1,shift=shift_A1_B1)
@@ -4471,8 +4478,8 @@ module descriptors_module
       i_desc = 0
 
       do i = 1, at%N
-         do n = 1, atoms_n_neighbours(at, i)
-            j = atoms_neighbour(at, i, n, shift=shift_j, distance=r_ij, max_dist=this%bond_cutoff)
+         do n = 1, n_neighbours(at, i)
+            j = neighbour(at, i, n, shift=shift_j, distance=r_ij, max_dist=this%bond_cutoff)
 
             if(j == 0) cycle
 
@@ -4487,8 +4494,8 @@ module descriptors_module
 
             ij_neighbours = 0
 
-            do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
-               k = atoms_neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
+            do m = 1, n_neighbours(at_copy, at%N + 1)
+               k = neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
 
                if(k == 0) cycle
 
@@ -4523,8 +4530,8 @@ module descriptors_module
 
                m_index = 2
 
-               do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
-                  k = atoms_neighbour(at_copy, at%N + 1, m, shift=shift_k, distance=r_ijk, max_dist=this%cutoff)
+               do m = 1, n_neighbours(at_copy, at%N + 1)
+                  k = neighbour(at_copy, at%N + 1, m, shift=shift_k, distance=r_ijk, max_dist=this%cutoff)
 
                   if(k == 0) cycle
 
@@ -4791,7 +4798,7 @@ module descriptors_module
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, grad_d, n_descriptors, n_cross, descriptor_mould_size, i_desc, i_data, i, j, k, n, l, m, n_neighbours, i_n
+      integer :: d, grad_d, n_descriptors, n_cross, descriptor_mould_size, i_desc, i_data, i, j, k, n, l, m, l_n_neighbours, i_n
 
       real(dp) :: r
       real(dp), dimension(3) :: diff
@@ -4825,8 +4832,8 @@ module descriptors_module
       do i = 1, at%N
          i_desc = i_desc + 1
 
-         n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
-         d = ( 2 * (this%l_max+1)**2 + 2 ) * n_neighbours
+         l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
+         d = ( 2 * (this%l_max+1)**2 + 2 ) * l_n_neighbours
 
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
@@ -4837,16 +4844,16 @@ module descriptors_module
          if(my_do_grad_descriptor) then
             grad_d = 2 * (this%l_max+1)**2 + 2
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,1:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(1:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,1:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(1:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,1:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(1:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,1:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(1:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,1:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,1:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -4870,9 +4877,9 @@ module descriptors_module
             !descriptor_out%x(i_desc)%has_grad_data(0) = .true.
          endif
 
-         do n = 1, atoms_n_neighbours(at,i)
+         do n = 1, n_neighbours(at,i)
 
-            j = atoms_neighbour(at,i,n,distance = r, diff = diff, shift=shift)
+            j = neighbour(at,i,n,distance = r, diff = diff, shift=shift)
             if(r > this%cutoff) cycle
             i_n = i_n + 1
 
@@ -4937,7 +4944,7 @@ module descriptors_module
       type(cplx_2d), dimension(:,:,:), allocatable :: dfourier_so3
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, n, a, l, m, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross
+      integer :: d, i, j, n, a, l, m, i_desc, i_pow, l_n_neighbours, n_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
       real(dp) :: r_ij
       real(dp), dimension(3) :: u_ij, d_ij
@@ -4986,18 +4993,18 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -5034,8 +5041,8 @@ module descriptors_module
          enddo
 
          if(my_do_grad_descriptor) then
-            allocate( dfourier_so3(0:this%l_max,this%n_max,0:atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
-            do n = 0, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            allocate( dfourier_so3(0:this%l_max,this%n_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
+            do n = 0, n_neighbours(at,i,max_dist=this%cutoff)
                do a = 1, this%n_max
                   do l = 0, this%l_max
                      allocate(dfourier_so3(l,a,n)%mm(3,-l:l))
@@ -5046,8 +5053,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -5095,7 +5102,7 @@ module descriptors_module
          endif
 
          if(my_do_grad_descriptor) then
-            do n = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            do n = 1, n_neighbours(at,i,max_dist=this%cutoff)
                i_pow = 0
                do a = 1, this%n_max
                   do l = 0, this%l_max
@@ -5163,7 +5170,7 @@ module descriptors_module
 
       real(dp), dimension(3) :: diff, u_ij
       real(dp) :: r
-      integer :: i, n, n_i, ji, jn, k, j, i_desc, i_bisp, d, n_descriptors, n_cross, n_neighbours
+      integer :: i, n, n_i, ji, jn, k, j, i_desc, i_bisp, d, n_descriptors, n_cross, l_n_neighbours
       integer, dimension(3) :: shift
       integer, dimension(116) :: species_map
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -5210,18 +5217,18 @@ module descriptors_module
          endif
 
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%ii = 0
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
 
@@ -5241,8 +5248,8 @@ module descriptors_module
          endif
 
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            ji = atoms_neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
+         do n = 1, n_neighbours(at,i)
+            ji = neighbour(at, i, n, jn=jn, distance=r, diff=diff, cosines=u_ij,shift=shift)
             if( r > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -5271,8 +5278,8 @@ module descriptors_module
 
          if(my_do_grad_descriptor) then
             n_i = 0
-            do n = 1, atoms_n_neighbours(at,i)
-               ji = atoms_neighbour(at, i, n, distance=r)
+            do n = 1, n_neighbours(at,i)
+               ji = neighbour(at, i, n, distance=r)
                if( r > this%cutoff ) cycle
                n_i = n_i + 1
                i_bisp = 0
@@ -5314,7 +5321,7 @@ module descriptors_module
       integer :: alpha
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, n, a, b, k, l, m, i_desc, i_pow, n_neighbours, n_i, n_descriptors, n_cross, i_species, j_species, ia, jb
+      integer :: d, i, j, n, a, b, k, l, m, i_desc, i_pow, l_n_neighbours, n_i, n_descriptors, n_cross, i_species, j_species, ia, jb
       integer, dimension(3) :: shift_ij
       integer, dimension(:,:), allocatable :: rs_index
       real(dp) :: r_ij, arg_bess, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm, mo_spher_bess_fi_ki_lp, exp_p, exp_m, f_cut, df_cut, norm_descriptor_i
@@ -5406,12 +5413,12 @@ module descriptors_module
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
-            n_neighbours = atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
 	    ! slow, no need
             ! descriptor_out%x(i_desc)%grad_data = 0.0_dp
             descriptor_out%x(i_desc)%grad_data(:,:,0) = 0.0_dp
@@ -5419,7 +5426,7 @@ module descriptors_module
             descriptor_out%x(i_desc)%pos = 0.0_dp
             descriptor_out%x(i_desc)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:n_neighbours))
+            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
             descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
@@ -5435,9 +5442,9 @@ module descriptors_module
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
             descriptor_out%x(i_desc)%has_grad_data(0) = .true.
-            !SPEED allocate( grad_fourier_so3(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
-            allocate( grad_fourier_so3_r(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
-            allocate( grad_fourier_so3_i(0:this%l_max,this%n_max,atoms_n_neighbours(at,i,max_dist=this%cutoff)) )
+            !SPEED allocate( grad_fourier_so3(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
+            allocate( grad_fourier_so3_r(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
+            allocate( grad_fourier_so3_i(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
          endif
 
          !do a = 1, this%n_max
@@ -5464,8 +5471,8 @@ module descriptors_module
 ! soap_calc 20 takes 0.0052 s
 ! call system_timer("soap_calc 20")
          n_i = 0
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij, cosines=u_ij, diff=d_ij, shift=shift_ij)
             if( r_ij > this%cutoff ) cycle
 
             n_i = n_i + 1
@@ -5594,11 +5601,11 @@ module descriptors_module
 	    allocate(t_g_r(this%n_max*3, 2*this%l_max+1), t_g_i(this%n_max*3, 2*this%l_max+1))
 	    allocate(t_f_r(this%n_max*this%n_species, 2*this%l_max+1), t_f_i(this%n_max*this%n_species, 2*this%l_max+1))
 	    allocate(t_g_f_rr(this%n_max*3, this%n_max*this%n_species), t_g_f_ii(this%n_max*3, this%n_max*this%n_species))
-            !do n_i = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            !do n_i = 1, n_neighbours(at,i,max_dist=this%cutoff)
 
             n_i = 0
-            do n = 1, atoms_n_neighbours(at,i)
-               j = atoms_neighbour(at, i, n, distance = r_ij)
+            do n = 1, n_neighbours(at,i)
+               j = neighbour(at, i, n, distance = r_ij)
                if( r_ij > this%cutoff ) cycle
 
                n_i = n_i + 1
@@ -5699,7 +5706,7 @@ module descriptors_module
 	    deallocate(t_g_f_rr, t_g_f_ii)
 ! call system_timer("soap_calc 33")
 
-            do n_i = 1, atoms_n_neighbours(at,i,max_dist=this%cutoff)
+            do n_i = 1, n_neighbours(at,i,max_dist=this%cutoff)
                do a = 1, this%n_max
                   do l = 0, this%l_max
                      !SPEED deallocate(grad_fourier_so3(l,a,n_i)%mm)
@@ -6543,7 +6550,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine bispectrum_SO4_sizes
@@ -6567,7 +6574,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine bispectrum_SO3_sizes
@@ -6590,7 +6597,7 @@ module descriptors_module
       n_cross = 0
       do i = 1, at%N
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
    endsubroutine behler_sizes
 
@@ -6616,8 +6623,8 @@ module descriptors_module
       do i = 1, at%N
          Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
          Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance=r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance=r_ij)
             if(r_ij > this%cutoff) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
@@ -6651,7 +6658,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine coordination_sizes
@@ -6678,17 +6685,17 @@ module descriptors_module
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
 
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
             Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
 
-            do m = 1, atoms_n_neighbours(at,i)
+            do m = 1, n_neighbours(at,i)
                if( n == m ) cycle
 
-               k = atoms_neighbour(at, i, m, distance = r_ik)
+               k = neighbour(at, i, m, distance = r_ik)
                if( r_ik > this%cutoff ) cycle
 
                Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
@@ -6725,18 +6732,18 @@ module descriptors_module
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
 
-         n_neighbours_coordination = atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff)
+         n_neighbours_coordination = n_neighbours(at,i,max_dist=this%coordination_cutoff)
 
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at, i, n, distance = r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at, i, n, distance = r_ij)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
             Zj2 = (this%Z2 == 0) .or. (at%Z(j) == this%Z2)
 
-            do m = 1, atoms_n_neighbours(at,i)
+            do m = 1, n_neighbours(at,i)
                if( n == m ) cycle
-               k = atoms_neighbour(at, i, m, distance = r_ik)
+               k = neighbour(at, i, m, distance = r_ik)
                if( r_ik > this%cutoff ) cycle
 
                Zk1 = (this%Z1 == 0) .or. (at%Z(k) == this%Z1)
@@ -6774,8 +6781,8 @@ module descriptors_module
       do i = 1, at%N
          Zi1 = (this%Z1 == 0) .or. (at%Z(i) == this%Z1)
          Zi2 = (this%Z2 == 0) .or. (at%Z(i) == this%Z2)
-         do n = 1, atoms_n_neighbours(at,i)
-            j = atoms_neighbour(at,i,n,distance=r_ij)
+         do n = 1, n_neighbours(at,i)
+            j = neighbour(at,i,n,distance=r_ij)
             if( r_ij > this%cutoff ) cycle
 
             Zj1 = (this%Z1 == 0) .or. (at%Z(j) == this%Z1)
@@ -6783,7 +6790,7 @@ module descriptors_module
             if( .not. ( ( Zi1 .and. Zj2 ) .or. ( Zi2 .and. Zj1 ) ) ) cycle ! this pair doesn't belong to the descriptor type
 
             n_descriptors = n_descriptors + 1
-            n_cross = n_cross + 4 + atoms_n_neighbours(at,i,max_dist=this%coordination_cutoff) + atoms_n_neighbours(at,j,max_dist=this%coordination_cutoff)
+            n_cross = n_cross + 4 + n_neighbours(at,i,max_dist=this%coordination_cutoff) + n_neighbours(at,j,max_dist=this%coordination_cutoff)
          enddo
       enddo
 
@@ -6809,7 +6816,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine cosnx_sizes
@@ -6833,7 +6840,7 @@ module descriptors_module
       n_cross = 0
 
       do i = 1, at%N
-         n_cross = n_cross + atoms_n_neighbours(at,i) + 1
+         n_cross = n_cross + n_neighbours(at,i) + 1
       enddo
 
    endsubroutine trihis_sizes
@@ -6884,8 +6891,8 @@ module descriptors_module
 
       do i = 1, at%N
          if(at%Z(i) == 8) then
-            do n = 1, atoms_n_neighbours(at,i)
-               j = atoms_neighbour(at,i,n,distance=r_ij)
+            do n = 1, n_neighbours(at,i)
+               j = neighbour(at,i,n,distance=r_ij)
                if(at%Z(j) == 8 .and. r_ij < this%cutoff) then
                   n_descriptors = n_descriptors + 1
                   n_cross = n_cross + 6
@@ -6918,12 +6925,12 @@ module descriptors_module
 
       do i = 1, at%N
          iA1 = i
-         iA2 = atoms_neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2)
+         iA2 = neighbour(at,i,A2_monomer_index(i),distance=r_A1_A2)
          if( iA1 > iA2 ) cycle
 
          do j = i + 1, at%N
             iB1 = j
-            iB2 = atoms_neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2)
+            iB2 = neighbour(at,j,A2_monomer_index(j),distance=r_B1_B2)
             if( iB1 > iB2 ) cycle
 
             r_A1_B1 = distance_min_image(at,iA1,iB1)
@@ -7015,10 +7022,10 @@ module descriptors_module
       n_cross = 0
 
       do i = 1, at%N
-         n_descriptors = n_descriptors + atoms_n_neighbours(at, i, max_dist=this%bond_cutoff)
+         n_descriptors = n_descriptors + n_neighbours(at, i, max_dist=this%bond_cutoff)
 
-         do n = 1, atoms_n_neighbours(at, i)
-            j = atoms_neighbour(at, i, n, shift=shift_j, max_dist=this%bond_cutoff)
+         do n = 1, n_neighbours(at, i)
+            j = neighbour(at, i, n, shift=shift_j, max_dist=this%bond_cutoff)
 
             if(j == 0) cycle
 
@@ -7026,8 +7033,8 @@ module descriptors_module
             call add_atoms(at_copy, 0.5_dp * (at%pos(:,i) + at%pos(:,j) + matmul(at%lattice,shift_j)), 1)
             call calc_connect(at_copy)
 
-            do m = 1, atoms_n_neighbours(at_copy, at%N + 1)
-               k = atoms_neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
+            do m = 1, n_neighbours(at_copy, at%N + 1)
+               k = neighbour(at_copy, at%N + 1, m, max_dist=this%cutoff)
 
                if(k == 0) cycle
 
@@ -7060,7 +7067,7 @@ module descriptors_module
       n_cross = 0
 
       do i = 1, at%N
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff)*2 
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff)*2 
       enddo
 
    endsubroutine atom_real_space_sizes
@@ -7085,7 +7092,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine power_so3_sizes
@@ -7110,7 +7117,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine power_SO4_sizes
@@ -7135,7 +7142,7 @@ module descriptors_module
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          n_descriptors = n_descriptors + 1
-         n_cross = n_cross + atoms_n_neighbours(at,i,max_dist=this%cutoff) + 1
+         n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine soap_sizes
@@ -7225,10 +7232,10 @@ module descriptors_module
       if(.not.allocated(atom_coefficient)) allocate(atom_coefficient(at%N))
 
       do i = 1, at%N
-         if(.not. allocated(atom_coefficient(i)%neighbour)) allocate(atom_coefficient(i)%neighbour(atoms_n_neighbours(at,i)))
-         do n = 1, atoms_n_neighbours(at,i)
+         if(.not. allocated(atom_coefficient(i)%neighbour)) allocate(atom_coefficient(i)%neighbour(n_neighbours(at,i)))
+         do n = 1, n_neighbours(at,i)
 
-            j = atoms_neighbour(at,i,n,distance = r, diff = d)
+            j = neighbour(at,i,n,distance = r, diff = d)
             atom_coefficient(i)%neighbour(n)%r = r
             atom_coefficient(i)%neighbour(n)%u = d / r
 
@@ -7448,10 +7455,10 @@ module descriptors_module
          integral_r(l)%mm = CPLX_ZERO
       enddo
 
-      do n1 = 1, atoms_n_neighbours(at1,i1)
-         j1 = atoms_neighbour(at1,i1,n1,distance = r1, diff = d1)
-         do n2 = 1, atoms_n_neighbours(at2,i2)
-            j2 = atoms_neighbour(at2,i2,n2,distance = r2, diff = d2)
+      do n1 = 1, n_neighbours(at1,i1)
+         j1 = neighbour(at1,i1,n1,distance = r1, diff = d1)
+         do n2 = 1, n_neighbours(at2,i2)
+            j2 = neighbour(at2,i2,n2,distance = r2, diff = d2)
 
             arg_bess = alpha*r1*r2
             fac_exp = exp(-0.5_dp*alpha*(r1**2+r2**2))

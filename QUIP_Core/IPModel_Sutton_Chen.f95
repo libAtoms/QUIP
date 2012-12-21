@@ -40,7 +40,13 @@
 
 module IPModel_Sutton_Chen_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -216,8 +222,8 @@ subroutine IPModel_Sutton_Chen_Calc(this, at, e, local_e, f, virial, local_viria
       ! Get the type of this species from its atomic number
       ti = get_type(this%type_of_atomic_num, at%Z(i))
 
-      do n = 1, atoms_n_neighbours(at, i)
-         j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=this%cutoff)
+      do n = 1, n_neighbours(at, i)
+         j = neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=this%cutoff)
          if( j <= 0 ) cycle
          tj = get_type(this%type_of_atomic_num, at%Z(j))
          a_over_r = this%a(tj) / r_ij 
@@ -245,8 +251,8 @@ subroutine IPModel_Sutton_Chen_Calc(this, at, e, local_e, f, virial, local_viria
 
       if(present(f)) then
          f(:,i) = f(:,i) + this%epsilon(ti) * ( drho_i_dri * df_i + dv_i_dri )
-         do n = 1, atoms_n_neighbours(at, i)
-            j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=this%cutoff)
+         do n = 1, n_neighbours(at, i)
+            j = neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=this%cutoff)
             if( j <= 0 ) cycle
 
             tj = get_type(this%type_of_atomic_num, at%Z(j))

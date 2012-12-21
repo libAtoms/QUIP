@@ -31,6 +31,9 @@
 
 module IPEwald_module
 
+use error_module
+use system_module, only : dp, optional_default, PRINT_ANAL, operator(//)
+use units_module
 use Atoms_module
 use linearalgebra_module
 use functions_module
@@ -207,8 +210,8 @@ contains
 
     do i=1,at%N
        !Loop over neighbours
-       do n = 1, atoms_n_neighbours(at,i)
-          j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+       do n = 1, n_neighbours(at,i)
+          j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
 
           if( r_ij < my_smooth_coulomb_cutoff ) then
@@ -341,8 +344,8 @@ contains
 
     do i = 1, at%N
        !Loop over neighbours
-       do n = 1, atoms_n_neighbours(at,i)
-          j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+       do n = 1, n_neighbours(at,i)
+          j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
            
           de = 0.5_dp * ( cos(r_ij*PI/my_cutoff) + 1.0_dp ) / r_ij
@@ -415,8 +418,8 @@ contains
 
     do i = 1, at%N
        !Loop over neighbours
-       do n = 1, atoms_n_neighbours(at,i)
-          j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+       do n = 1, n_neighbours(at,i)
+          j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
            
           de = 0.5_dp * charge(i)*charge(j) / r_ij
@@ -451,7 +454,7 @@ contains
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
-    real(dp), intent(out)              :: alpha
+    real(dp), intent(in)              :: alpha
 
     real(dp), intent(out), optional                    :: e
     real(dp), dimension(:,:), intent(out), optional    :: f
@@ -506,8 +509,8 @@ contains
        dphi_ij_outer_r_ij = 0.0_dp
 
 
-       do n = 1, atoms_n_neighbours(at,i)
-          j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=my_cutoff) ! nth neighbour of atom i
+       do n = 1, n_neighbours(at,i)
+          j = neighbour(at, i, n, distance=r_ij, cosines=u_ij, max_dist=my_cutoff) ! nth neighbour of atom i
           if (j <= 0) cycle
           if (r_ij .feq. 0.0_dp) cycle
           

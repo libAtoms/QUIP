@@ -1359,7 +1359,7 @@ contains
 
     nn = 0
     do i = 1,nn_atoms%N
-       nn(i) = atoms_n_neighbours(nn_atoms, i)
+       nn(i) = n_neighbours(nn_atoms, i)
     end do
 
     if (all(old_nn == 0)) old_nn = nn ! Special case for first time
@@ -2670,8 +2670,8 @@ contains
          call calc_connect(crack_slab)
   
          ! Find atom1's closest neighbour vertically above or below it (x and z equal, not y)
-         do n = 1, atoms_n_neighbours(crack_slab, atom1)
-            j = atoms_neighbour(crack_slab, atom1, n, diff=uij) ! nth neighbour of atom1
+         do n = 1, n_neighbours(crack_slab, atom1)
+            j = neighbour(crack_slab, atom1, n, diff=uij) ! nth neighbour of atom1
             if (abs(uij(1)) < 1e-4_dp .and. & 
                  abs(uij(2)) > 1e-4_dp .and. &
                  abs(uij(3)) < 1e-4_dp) then
@@ -2749,25 +2749,25 @@ contains
       my_x_boundaries = optional_default(.false.,x_boundaries)
 
       rmin = 100.d0
-      allocate(who_nn(atoms_n_neighbours(at, j)))
-      allocate(who(atoms_n_neighbours(at, j)))
-      allocate(who_absolute_index(atoms_n_neighbours(at, j)))
+      allocate(who_nn(n_neighbours(at, j)))
+      allocate(who(n_neighbours(at, j)))
+      allocate(who_absolute_index(n_neighbours(at, j)))
       who_absolute_index  = 0
       who_nn  = 0
       who = 0
       n2  = 0
 
 
-      do i = 1, atoms_n_neighbours(at, j)
-         ji = atoms_neighbour(at,j,i,distance=rij)
+      do i = 1, n_neighbours(at, j)
+         ji = neighbour(at,j,i,distance=rij)
          if(at%Z(ji).ne.at%Z(j)) then 
             n2 = n2 + 1
             who_absolute_index(n2) = ji 
             who(n2) = i
             if(present(at_for_connectivity)) then
-               who_nn(n2) = atoms_n_neighbours(at_for_connectivity, ji)
+               who_nn(n2) = n_neighbours(at_for_connectivity, ji)
             else
-               who_nn(n2) = atoms_n_neighbours(at, ji)
+               who_nn(n2) = n_neighbours(at, ji)
             endif
 !           Detect who is the nearest neighbour of different type
             if(rij.lt.rmin) then
@@ -2792,20 +2792,20 @@ contains
 
       if(my_x_boundaries) then
          ! check x-boundary 
-         if(at%pos(1,atoms_neighbour(at,j,who_closest)).gt.0.0_dp.and.at%pos(1,j).lt.0.0_dp) then
+         if(at%pos(1,neighbour(at,j,who_closest)).gt.0.0_dp.and.at%pos(1,j).lt.0.0_dp) then
             at%pos(1,j) = at%pos(1,j) + at%lattice(1,1) 
-         elseif(at%pos(1,atoms_neighbour(at,j,who_closest)).lt.0.0_dp.and.at%pos(1,j).gt.0.0_dp) then
+         elseif(at%pos(1,neighbour(at,j,who_closest)).lt.0.0_dp.and.at%pos(1,j).gt.0.0_dp) then
             at%pos(1,j) = at%pos(1,j) - at%lattice(1,1) 
          endif
          if(present(neigh_removed)) then
            do i = 1, n2
-             if( abs(at%pos(1,atoms_neighbour(at,j,who(i)))-at%pos(1,j)).gt.at%lattice(1,1)/2.0_dp) then
+             if( abs(at%pos(1,neighbour(at,j,who(i)))-at%pos(1,j)).gt.at%lattice(1,1)/2.0_dp) then
                 neigh_removed=.true.
              endif
            enddo
          endif
       else   !check only y
-         if(at%pos(2,atoms_neighbour(at,j,who_closest)).gt.0.0_dp) then
+         if(at%pos(2,neighbour(at,j,who_closest)).gt.0.0_dp) then
              y =  abs(at%pos(2,j))
          else
              y = -abs(at%pos(2,j))

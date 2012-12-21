@@ -87,6 +87,12 @@ module group_module
   use linearalgebra_module
 
   implicit none
+  private
+
+  public :: group, print, initialise, finalise, set_type
+  public :: group_n_objects, group_nth_object, group_n_atoms, group_nth_atom
+  public :: num_free_groups, free_group, tidy_groups, groups_create_lookup
+  public :: group_add_atom, group_delete_atom, group_add_object, merge_groups
 
   type Group
 

@@ -40,6 +40,7 @@ module RS_SparseMatrix_module
 
 use System_module
 use MPI_Context_module
+use linearalgebra_module
 use Atoms_module
 use ScaLAPACK_module
 use Matrix_module
@@ -176,8 +177,8 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
 
   integer :: i, ji, j
   integer :: cur_data_pos, cur_row_offset
-  integer, allocatable :: atoms_neighbour_sorted(:)
-  real(dp), allocatable :: atoms_neighbour_distance_sorted(:)
+  integer, allocatable :: neighbour_sorted(:)
+  real(dp), allocatable :: neighbour_distance_sorted(:)
   integer :: n_uniq
 
   real(dp) :: my_cutoff
@@ -211,25 +212,25 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
   this%row_indices = 0
   do i=1, at%N
 
-    allocate(atoms_neighbour_sorted(atoms_n_neighbours(at, i)))
-    allocate(atoms_neighbour_distance_sorted(atoms_n_neighbours(at, i)))
-    do ji=1, atoms_n_neighbours(at, i)
-      atoms_neighbour_sorted(ji) = atoms_neighbour(at, i, ji, atoms_neighbour_distance_sorted(ji))
+    allocate(neighbour_sorted(n_neighbours(at, i)))
+    allocate(neighbour_distance_sorted(n_neighbours(at, i)))
+    do ji=1, n_neighbours(at, i)
+      neighbour_sorted(ji) = neighbour(at, i, ji, neighbour_distance_sorted(ji))
     end do
-    call sort_array(atoms_neighbour_sorted, atoms_neighbour_distance_sorted)
+    call sort_array(neighbour_sorted, neighbour_distance_sorted)
 
-    n_uniq = uniq_minval(atoms_neighbour_sorted, atoms_neighbour_distance_sorted)
+    n_uniq = uniq_minval(neighbour_sorted, neighbour_distance_sorted)
 
     if(n_uniq == 0) call system_abort("atoms with no neighbours, not even itself!?!?!?")
 
     do ji=1, n_uniq
-      j = atoms_neighbour_sorted(ji)
+      j = neighbour_sorted(ji)
       if (ji > 1) then
-	if (j == atoms_neighbour_sorted(ji-1)) cycle
+	if (j == neighbour_sorted(ji-1)) cycle
       end if
 
       ! insert data for regular element
-      if (atoms_neighbour_distance_sorted(ji) <= my_cutoff) then
+      if (neighbour_distance_sorted(ji) <= my_cutoff) then
 	this%row_indices(i+1) = this%row_indices(i+1) + 1
 	this%n_blocks = this%n_blocks + 1
 	this%data_size = this%data_size + this%block_size(i)*this%block_size(j)
@@ -237,8 +238,8 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
 
     end do
 
-    deallocate(atoms_neighbour_sorted)
-    deallocate(atoms_neighbour_distance_sorted)
+    deallocate(neighbour_sorted)
+    deallocate(neighbour_distance_sorted)
 
   end do
 
@@ -260,27 +261,27 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
   cur_data_pos = 1
   do i=1, at%N
 
-    allocate(atoms_neighbour_sorted(atoms_n_neighbours(at, i)))
-    allocate(atoms_neighbour_distance_sorted(atoms_n_neighbours(at, i)))
-    do ji=1, atoms_n_neighbours(at, i)
-      atoms_neighbour_sorted(ji) = atoms_neighbour(at, i, ji, atoms_neighbour_distance_sorted(ji))
+    allocate(neighbour_sorted(n_neighbours(at, i)))
+    allocate(neighbour_distance_sorted(n_neighbours(at, i)))
+    do ji=1, n_neighbours(at, i)
+      neighbour_sorted(ji) = neighbour(at, i, ji, neighbour_distance_sorted(ji))
     end do
-    call sort_array(atoms_neighbour_sorted, atoms_neighbour_distance_sorted)
+    call sort_array(neighbour_sorted, neighbour_distance_sorted)
 
-    n_uniq = uniq_minval(atoms_neighbour_sorted, atoms_neighbour_distance_sorted)
+    n_uniq = uniq_minval(neighbour_sorted, neighbour_distance_sorted)
 
     if(n_uniq == 0) call system_abort("atoms with no neighbours, not even itself!?!?!?")
 
     cur_row_offset = 0
 
     do ji=1, n_uniq
-      j = atoms_neighbour_sorted(ji)
+      j = neighbour_sorted(ji)
       if (ji > 1) then
-	if (j == atoms_neighbour_sorted(ji-1)) cycle
+	if (j == neighbour_sorted(ji-1)) cycle
       end if
 
       ! insert data for regular element
-      if (atoms_neighbour_distance_sorted(ji) <= my_cutoff) then
+      if (neighbour_distance_sorted(ji) <= my_cutoff) then
 	this%col(this%row_indices(i)+cur_row_offset) = j
 	this%data_ptrs(this%row_indices(i)+cur_row_offset) = cur_data_pos
 	cur_row_offset = cur_row_offset + 1
@@ -289,8 +290,8 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
 
     end do
 
-    deallocate(atoms_neighbour_sorted)
-    deallocate(atoms_neighbour_distance_sorted)
+    deallocate(neighbour_sorted)
+    deallocate(neighbour_distance_sorted)
 
   end do
 end subroutine RS_SparseMatrixL_Initialise_at

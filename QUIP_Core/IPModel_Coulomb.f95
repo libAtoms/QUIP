@@ -50,7 +50,13 @@
 
 module IPModel_Coulomb_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module

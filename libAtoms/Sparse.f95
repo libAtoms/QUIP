@@ -49,7 +49,10 @@ module sparse_module
   use table_module
 
   implicit none
+  private
   SAVE
+
+  public :: sparse, print, print_full, operator(.mult.), assignment(=), sparse_init, sparse_finalise
 
   type Sparse
      type(table)::table ! values
@@ -86,7 +89,7 @@ contains
     integer, optional::Nmax  ! maximum number of nonzero elements
     integer::Nrows,Ncols ! size of the matrix
 
-    call table_allocate(this%table,1,1,0,0,Nmax)
+    call allocate(this%table,1,1,0,0,Nmax)
     call reallocate(this%rows,Nrows+1)
     this%Nrows = Nrows
     this%Ncols = Ncols
@@ -143,7 +146,7 @@ contains
     end if
 
     ! now truncate the length
-    call table_allocate(this%table)
+    call allocate(this%table)
 
   end subroutine sparse_assign_matrix
 

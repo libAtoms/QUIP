@@ -42,7 +42,15 @@
 
 module IPModel_Si_MEAM_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use atoms_types_module
+use atoms_module
+
 use mpi_context_module
 use QUIP_Common_module
 
@@ -225,9 +233,9 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
      dn_i = 0.0_dp
      dn_i_drij_outer_rij = 0.0_dp
      !Loop over neighbours
-     do n = 1, atoms_n_neighbours(at,i)
+     do n = 1, n_neighbours(at,i)
 
-        j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
+        j = neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
         tj = get_type(this%type_of_atomic_num, at%Z(j))
 
         if( r_ij < this%r_cut_phi(ti,tj) ) then
@@ -255,9 +263,9 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
         f_ij = calc_y(this%f(ti,tj),r_ij)
         if(present(f) .or. present(virial)) df_ij = calc_dy(this%f(ti,tj),r_ij)
 
-        do nn = 1, atoms_n_neighbours(at,i)
+        do nn = 1, n_neighbours(at,i)
 
-           k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
+           k = neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
            tk = get_type(this%type_of_atomic_num, at%Z(k))
 
            !if( j>=k ) cycle
@@ -301,9 +309,9 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
      if(present(virial)) virial = virial - dU_i * dn_i_drij_outer_rij
 
      if(present(f)) then
-        do n = 1, atoms_n_neighbours(at,i)  !cross-terms
+        do n = 1, n_neighbours(at,i)  !cross-terms
 
-           j = atoms_neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
+           j = neighbour(at, i, n, distance=r_ij, cosines=u_ij, diff=diff_ij) ! nth neighbour of atom i
 
            tj = get_type(this%type_of_atomic_num, at%Z(j))
            if( (r_ij >= this%r_cut_rho(ti,tj)).or.(r_ij >= this%r_cut_f(ti,tj)) ) cycle
@@ -317,9 +325,9 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
            dn_j = 0.0_dp
 
-           do nn = 1, atoms_n_neighbours(at,i)
+           do nn = 1, n_neighbours(at,i)
 
-              k = atoms_neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
+              k = neighbour(at, i, nn, distance=r_ik, cosines=u_ik, diff=diff_ik)
               tk = get_type(this%type_of_atomic_num, at%Z(k))
 
               if( norm(diff_ij-diff_ik) .feq. 0.0_dp ) cycle
@@ -562,24 +570,24 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     elseif (name == 'spline') then
       selectcase(trim(spline_function))
         case('phi')
-          call spline_init(parse_ip%phi(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
+          call initialise(parse_ip%phi(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
           if( parse_cur_type_i /= parse_cur_type_j ) &
-          &   call spline_init(parse_ip%phi(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
+          &   call initialise(parse_ip%phi(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
         case('rho')
-          call spline_init(parse_ip%rho(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
+          call initialise(parse_ip%rho(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
           if( parse_cur_type_i /= parse_cur_type_j ) &
-          &   call spline_init(parse_ip%rho(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
+          &   call initialise(parse_ip%rho(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
         case('f')
-          call spline_init(parse_ip%f(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
+          call initialise(parse_ip%f(parse_cur_type_i,parse_cur_type_j), spline_x, spline_y, yp1, ypn)
           if( parse_cur_type_i /= parse_cur_type_j ) &
-          &   call spline_init(parse_ip%f(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
+          &   call initialise(parse_ip%f(parse_cur_type_j,parse_cur_type_i), spline_x, spline_y, yp1, ypn)
         case('U')
-          call spline_init(parse_ip%U(parse_cur_type_i), spline_x, spline_y, yp1, ypn)
+          call initialise(parse_ip%U(parse_cur_type_i), spline_x, spline_y, yp1, ypn)
         case('g')
-          call spline_init(parse_ip%g(parse_cur_type_i,parse_cur_type_j,parse_cur_type_k), &
+          call initialise(parse_ip%g(parse_cur_type_i,parse_cur_type_j,parse_cur_type_k), &
           & spline_x, spline_y, yp1, ypn)
           if( parse_cur_type_j /= parse_cur_type_k ) &
-          &   call spline_init(parse_ip%g(parse_cur_type_i,parse_cur_type_k,parse_cur_type_j), &
+          &   call initialise(parse_ip%g(parse_cur_type_i,parse_cur_type_k,parse_cur_type_j), &
           & spline_x, spline_y, yp1, ypn) 
         case default
           call system_abort('')
