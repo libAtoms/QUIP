@@ -5515,7 +5515,7 @@ module descriptors_module
                         !mo_spher_bess_fi_ki_lm = cosh(arg_bess)/arg_bess
                         !mo_spher_bess_fi_ki_l = sinh(arg_bess)/arg_bess
                         mo_spher_bess_fi_ki_lm = 0.5_dp * (exp_m + exp_p) / arg_bess
-                        mo_spher_bess_fi_ki_l  = 0.5_dp * (exp_m + exp_p) / arg_bess
+                        mo_spher_bess_fi_ki_l  = 0.5_dp * (exp_m - exp_p) / arg_bess
                         if(my_do_grad_descriptor) mo_spher_bess_fi_ki_lp = mo_spher_bess_fi_ki_lm - (2*l+1)*mo_spher_bess_fi_ki_l / arg_bess
                      endif
                   else
