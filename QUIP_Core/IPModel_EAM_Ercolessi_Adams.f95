@@ -45,7 +45,14 @@
 
 module IPModel_EAM_ErcolAd_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -260,8 +267,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
     rho_i = 0.0_dp
     drho_i_dri = 0.0_dp
     drho_i_drij_outer_rij = 0.0_dp
-    do ji=1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
+    do ji=1, n_neighbours(at, i)
+      j = neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
       if (r_ij_mag .feq. 0.0_dp) cycle
 
       if (do_rescale_r) r_ij_mag = r_ij_mag*r_scale
@@ -331,8 +338,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
 
       if (present(f)) then
 	! cross terms for forces
-	do ji=1, atoms_n_neighbours(at, i)
-	  j = atoms_neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
+	do ji=1, n_neighbours(at, i)
+	  j = neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
 	  if (r_ij_mag .feq. 0.0_dp) cycle
 
 	  if (do_rescale_r) r_ij_mag = r_ij_mag*r_scale

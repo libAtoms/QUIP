@@ -37,6 +37,8 @@
 module Atoms_ll_module
 use error_module
 use system_module
+use extendable_str_module
+use dictionary_module
 use atoms_module
 use cinoutput_module
 implicit none

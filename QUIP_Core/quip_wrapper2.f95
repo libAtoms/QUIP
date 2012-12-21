@@ -44,7 +44,11 @@
 ! stress: kbar
 subroutine quip_wrapper2(N,Z, frac_coord,lattice,args_str,mpi_communicator,energy,force,stress)
 
-  use libatoms_module
+  use system_module, only : dp, system_initialise, PRINT_VERBOSE
+  use units_module
+  use mpi_context_module
+  use dictionary_module
+  use atoms_module
   use potential_module
 
   implicit none

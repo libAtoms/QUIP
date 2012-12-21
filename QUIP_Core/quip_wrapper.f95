@@ -39,7 +39,12 @@
 
 subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
 
-  use libatoms_module
+  use system_module, only : dp, print, system_initialise, PRINT_NORMAL, PRINT_SILENT, verbosity_push, verbosity_pop
+  use dictionary_module
+  use periodictable_module
+  use mpi_context_module
+  use atoms_module
+
   use potential_module
 
   implicit none

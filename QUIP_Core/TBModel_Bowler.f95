@@ -39,7 +39,12 @@
 
 module TBModel_Bowler_module
 
-use libatoms_module
+use system_module, only : dp, print, inoutput, system_abort, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use atoms_module
 
 use TB_Common_module
 use QUIP_Common_module
@@ -604,11 +609,11 @@ subroutine TBModel_Bowler_fix_tails(this)
   do tj=1, this%n_types
     y(1) = TBModel_Bowler_dist_scaling(x(1), this%r0(ti,tj), this%n(ti,tj), this%rc(ti,tj), this%nc(ti,tj))
     yd1 = TBModel_Bowler_dist_scaling_deriv(x(1), this%r0(ti,tj), this%n(ti,tj), this%rc(ti,tj), this%nc(ti,tj))
-    call spline_init(this%H_tail_spline(ti,tj), x, y, yd1, yd2)
+    call initialise(this%H_tail_spline(ti,tj), x, y, yd1, yd2)
 
     y(1) = TBModel_Bowler_dist_scaling(x(1), this%r0(ti,tj), this%m(ti,tj), this%dc(ti,tj), this%mc(ti,tj))
     yd1 = TBModel_Bowler_dist_scaling_deriv(x(1), this%r0(ti,tj), this%m(ti,tj), this%dc(ti,tj), this%mc(ti,tj))
-    call spline_init(this%Vrep_tail_spline(ti,tj), x, y, yd1, yd2)
+    call initialise(this%Vrep_tail_spline(ti,tj), x, y, yd1, yd2)
   end do
   end do
 
@@ -1023,8 +1028,8 @@ function TBModel_Bowler_get_local_rep_E(this, at, i)
   TBModel_Bowler_get_local_rep_E = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -1046,8 +1051,8 @@ function TBModel_Bowler_get_local_rep_E_force(this, at, i) result(force)
   force = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -1070,8 +1075,8 @@ function TBModel_Bowler_get_local_rep_E_virial(this, at, i) result(virial)
   virial = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 

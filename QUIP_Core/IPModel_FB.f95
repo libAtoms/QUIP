@@ -41,7 +41,13 @@
 
 module IPModel_FB_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -207,8 +213,8 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     endif
 
     ti = get_type(this%type_of_atomic_num, at%Z(i))
-    do n = 1, atoms_n_neighbours(at, i)
-      j = atoms_neighbour(at, i, n, distance=r_ij, cosines = u_ij)
+    do n = 1, n_neighbours(at, i)
+      j = neighbour(at, i, n, distance=r_ij, cosines = u_ij)
       if (r_ij .feq. 0.0_dp) cycle
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (present(e) .or. present(local_e)) then

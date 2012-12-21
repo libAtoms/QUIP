@@ -36,15 +36,15 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QC_QUIP_Wrapper_module
-use libatoms_module !! , only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
+use system_module, only : dp !! , only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
     !! atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
 use potential_module !! , only : potential, initialise, finalise
 use potential_module !! , only : potential, initialise, calc
 use mpi_context_module !! , only : mpi_context
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-use libatoms_module !! , only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
+use system_module, only : dp !! , only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
 use potential_module !! , only : print
-use libatoms_module !! , only : print_xyz, mainlog, optional_default
+use system_module, only : dp !! , only : print_xyz, mainlog, optional_default
 #endif
 implicit none
 private

@@ -61,6 +61,7 @@ module dynamicalsystem_module
    use table_module
    use periodictable_module
    use dictionary_module, only: STRING_LENGTH
+   use atoms_types_module
    use atoms_module
    use rigidbody_module
    use group_module
@@ -69,6 +70,22 @@ module dynamicalsystem_module
    use barostat_module
    
    implicit none
+   private
+
+   public :: dynamicalsystem, add_atoms, remove_atoms, print, initialise, finalise
+   public :: kinetic_energy, kinetic_virial, angular_momentum, momentum, add_thermostat
+   public :: set_barostat, add_thermostats, update_thermostat, gaussian_velocity_component
+   public :: TYPE_CONSTRAINED, TYPE_ATOM, ds_print_status, rescale_velo, zero_momentum
+   public :: advance_verlet1, advance_verlet2, distance_relative_velocity, ds_amend_constraint
+   public :: torque, temperature, zero_angular_momentum, enable_damping, moment_of_inertia_tensor
+
+   public :: constrain_bondanglecos, &
+	     constrain_bondlength, &
+	     constrain_bondlength_sq, &
+	     constrain_bondlength_dev_pow, &
+	     constrain_bondlength_diff, &
+	     constrain_gap_energy, &
+	     constrain_atom_plane
 
    !Different integration types. Stored in group%type. Used by advance_verlet to integrate
    !the equations of motion in different ways. 

@@ -131,10 +131,19 @@ module constraints_module
 
   use system_module
   use linearalgebra_module 
+  use atoms_types_module
   use atoms_module
   use group_module
+  use dictionary_module
 
   implicit none
+  private
+
+  public :: constraint, initialise, finalise, print, register_constraint, add_restraint_forces
+  public :: BONDANGLECOS, BONDLENGTH, BONDLENGTH_SQ, BONDLENGTH_DEV_POW, BONDLENGTH_DIFF, GAP_ENERGY, PLANE
+  public :: CUBIC_BONDLENGTH_SQ
+  public :: CONSTRAINT_WARNING_TOLERANCE, LOWER_BOUND, UPPER_BOUND, BOTH_UPPER_AND_LOWER_BOUNDS, BOUND_STRING
+  public :: constraint_store_gradient, constraint_calculate_values_at, constraint_amend, shake, rattle
 
   integer, parameter  :: MAX_CONSTRAINT_SUBS = 20         !% This must be consistent with Constraint_Pointers.c
   integer             :: REGISTERED_CONSTRAINTS = 0       !% Stores the number of registered constraint functions

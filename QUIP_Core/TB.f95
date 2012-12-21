@@ -39,19 +39,36 @@
 #include "error.inc"
 module TB_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, initialise, finalise, INPUT, current_verbosity, print, &
+   DEALLOC_TRACE, PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, PRINT_ANAL, optional_default, mpi_id, REAL_SIZE, ALLOC_TRACE, &
+   verbosity_push_decrement, verbosity_push, verbosity_pop, system_timer, operator(//)
+use mpi_context_module, only : mpi_context, finalise
+use linearalgebra_module, only : operator(.feq.), operator(.fne.), operator(.mult.)
+use extendable_str_module, only : extendable_str, initialise, finalise, read, string
+use dictionary_module, only : dictionary, get_value, set_value, STRING_LENGTH
+use paramreader_module, only : param_register, param_read_line
+use atoms_types_module, only : assign_pointer
+use atoms_module, only : atoms, calc_connect, set_cutoff
+use CInOutput_module, only : write
 
 use QUIP_common_module
 
-use Functions_module
-use ApproxFermi_module
-use Matrix_module
-use RS_SparseMatrix_module
-use TB_KPoints_module
-use TBModel_module
-use TBMatrix_module
-use TBSystem_module
-use TB_GreensFunctions_module
+use Functions_module, only : f_fermi, f_fermi_deriv
+use ApproxFermi_module, only : approxfermi, approx_f_fermi, approx_f_fermi_deriv
+use Matrix_module, only : matrixd, add_identity, inverse
+! use RS_SparseMatrix_module
+use TB_KPoints_module, only : kpoints, ksum_dup, ksum_distrib, local_ksum, min, max, ksum_distrib_inplace, collect
+use TBModel_module, only : has_band_width, has_Fermi_T, has_Fermi_E, get_local_rep_E, get_local_rep_E_force, get_local_rep_E_virial
+use TBMatrix_module, only : tbmatrix, tbvector, finalise, wipe, diagonalise, partial_TraceMult, Re_diag, diag_spinor, partial_TraceMult_spinor, TraceMult, matrix_product_sub, &
+   multDiag, multDiagRL, zero, transpose_sub, accum_scaled_elem_product, scaled_accum
+use TBSystem_module, only : tbsystem, initialise, finalise, wipe, print, setup_atoms, update_orb_local_pot, atom_orbital_spread, &
+   scf_e_correction, scf_f_correction, scf_virial_correction, atom_orbital_sum, fill_matrices, fill_dmatrices, fill_these_matrices, &
+   SCF_LCN, SCF_GCN, SCF_LOCAL_U, SCF_NONLOCAL_U_DFTB, SCF_NONLOCAL_U_NRL_TB, n_elec, scf_set_atomic_n_mom, scf_set_global_n, &
+   calc_orb_local_pot, scf_get_atomic_n_mom, scf_get_global_n, set_type, local_scf_e_correction, fill_sc_matrices, setup_deriv_matrices, &
+   add_term_d2scfe_dn2_times_vec, add_term_dscf_e_correction_dn, add_term_d2scfe_dgndn, atom_orbital_spread_mat, ksum_atom_orbital_sum_mat, &
+   add_term_dscf_e_correction_dgn
+use TB_GreensFunctions_module, only : greensfunctions, initialise, finalise, wipe, print, calc_dm_from_gs, calc_gs, calc_mod_dm_from_gs, gsum_distrib_inplace
 
 implicit none
 private
@@ -603,6 +620,8 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
 
   if( present(local_virial) ) then
      RAISE_ERROR("TB_Calc: local_virial calculation requested, but not implemented yet",error)
+  else
+     local_virial = 0.0_dp
   endif
 
   if(current_verbosity() > PRINT_NERD) then

@@ -43,7 +43,15 @@
 
 module IPModel_Brenner_module
 
-use libAtoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use units_module
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
+
 use mpi_context_module
 use QUIP_Common_module
 
@@ -224,7 +232,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
   ! temporary storage for bond vectors and angles
   max_neighb = 0
   do i=1,at%N
-     n = atoms_n_neighbours(at, i)
+     n = n_neighbours(at, i)
      if (n > max_neighb) max_neighb = n
   end do
 
@@ -247,8 +255,8 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
      ti = get_type(this%type_of_atomic_num, at%Z(i))
 
      ! Loop over neighbour of atom i
-     do n=1, atoms_n_neighbours(at, i)
-        j = atoms_neighbour(at, i, n,r_ij,cosines=u_ij)
+     do n=1, n_neighbours(at, i)
+        j = neighbour(at, i, n,r_ij,cosines=u_ij)
         if (r_ij .feq. 0.0_dp) cycle
 
         tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -302,8 +310,8 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
            ! and dG_dcostheta for each neighbour to save having
            ! to recalculate them below when we evaluate forces
            G_sum = 0.0_dp
-           do m=1, atoms_n_neighbours(at, r)
-              k = atoms_neighbour(at, r, m, r_rk(m), cosines=u_rk(:,m))
+           do m=1, n_neighbours(at, r)
+              k = neighbour(at, r, m, r_rk(m), cosines=u_rk(:,m))
               if (k == i .or. k == j) cycle
               if (r_rk(m) .feq. 0.0_dp) cycle
 
@@ -359,8 +367,8 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
               prefactor = 0.5_dp*w_f*0.5_dp*Va*delta_ij/ &
                    ((1.0_dp + G_sum)**(1.0_dp + delta_ij))
 
-              do m=1, atoms_n_neighbours(at, r)
-                 k = atoms_neighbour(at, r, m)
+              do m=1, n_neighbours(at, r)
+                 k = neighbour(at, r, m)
                  if (k == i .or. k == j) cycle
                  if (r_rk(m) > R2_ij) cycle ! Outside range of cutoff function
 

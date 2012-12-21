@@ -45,7 +45,14 @@
 
 module IPModel_KIM_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, quip_new_line, split_string_simple
+use periodictable_module
+use extendable_str_module
+use linearalgebra_module
+use dictionary_module
+use paramreader_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -247,9 +254,9 @@ function quip_neighbour_iterator(pkim, iterator_mode, request, atom, nneigh, p_n
     return
   endif
 
-  nneigh = atoms_n_neighbours(kim_at, atom)
+  nneigh = n_neighbours(kim_at, atom)
   do ji=1, nneigh
-      neigh_list(ji) = atoms_neighbour(kim_at, atom, ji, diff = neigh_rij(1:3,ji))
+      neigh_list(ji) = neighbour(kim_at, atom, ji, diff = neigh_rij(1:3,ji))
   end do
 
   outval = KIM_STATUS_OK

@@ -42,7 +42,13 @@
 
 module IPModel_Brenner_2002_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -197,7 +203,7 @@ subroutine IPModel_Brenner_2002_Calc(this, at, e, local_e, f, virial, local_viri
 
    n_tot = 0
    do i=1,at%N
-      n_tot = n_tot + atoms_n_neighbours(at, i)
+      n_tot = n_tot + n_neighbours(at, i)
    end do
 
    allocate(aptr(at%N+1),bptr(n_tot+at%n+1),dr(n_tot+at%n+1,3), w_per_at(3,3,at%n), &
@@ -215,8 +221,8 @@ subroutine IPModel_Brenner_2002_Calc(this, at, e, local_e, f, virial, local_viri
       pos_in(i,:) = at%pos(:,i)
       
       aptr(i) = neighb
-      do n=1,atoms_n_neighbours(at,i)
-         bptr(neighb) = atoms_neighbour(at,i,n, diff=dr(neighb,:))
+      do n=1,n_neighbours(at,i)
+         bptr(neighb) = neighbour(at,i,n, diff=dr(neighb,:))
          dr(neighb,:) = -dr(neighb,:) ! opposite sign convention
 
          neighb = neighb + 1

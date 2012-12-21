@@ -44,6 +44,9 @@ use units_module
 !
 
 implicit none
+private
+
+public :: ElementName, ElementMass, ElementValence, ElementCovRad, atomic_number, atomic_number_from_symbol, atomic_number_from_mass
 
 character(3),parameter,dimension(0:116) :: ElementName =   (/"xx ",                                    &
    "H  ","He ","Li ","Be ","B  ","C  ","N  ","O  ","F  ","Ne ","Na ","Mg ","Al ","Si ","P  ","S  ",    &

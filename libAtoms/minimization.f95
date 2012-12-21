@@ -44,7 +44,10 @@ module minimization_module
   use system_module
   use linearalgebra_module
   implicit none
+  private
   SAVE
+
+  public :: minim, n_minim, fire_minim, test_gradient, n_test_gradient
 
   real(dp),parameter:: DXLIM=huge(1.0_dp)     !% Maximum amount we are willing to move any component in a linmin step
 

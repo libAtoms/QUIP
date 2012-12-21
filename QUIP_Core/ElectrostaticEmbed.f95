@@ -34,7 +34,16 @@
 
 module ElectrostaticEmbed_module
 
-  use libatoms_module
+  use error_module
+  use system_module, only : dp, inoutput, optional_default, initialise, OUTPUT, operator(//)
+  use units_module
+  use periodictable_module
+  use linearalgebra_module
+  use dictionary_module
+  use atoms_types_module
+  use atoms_module
+  use clusters_module
+
   use QUIP_Common_module
   use Functions_module
   use Potential_module

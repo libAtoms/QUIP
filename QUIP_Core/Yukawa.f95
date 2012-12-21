@@ -32,7 +32,13 @@
 
 module Yukawa_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, optional_default, system_timer
+use units_module
+use linearalgebra_module
+use mpi_context_module
+use atoms_types_module
+use atoms_module
 use functions_module
 use QUIP_Common_module
 
@@ -144,9 +150,9 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
       ti = 0
       if (do_pseudise .and. at%Z(i) /= 0) ti = get_type(type_of_atomic_num, at%Z(i))
 
-      do m = 1, atoms_n_neighbours(at, i)
+      do m = 1, n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=cutoff)
+         j = neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
          
          if (associated(source_mask)) then
@@ -390,9 +396,9 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
          if (present(local_e)) private_local_e(i) = private_local_e(i) + de_ind
       end if
 
-      do m = 1, atoms_n_neighbours(at, i)
+      do m = 1, n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=cutoff)
+         j = neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
 
          if (associated(source_mask)) then

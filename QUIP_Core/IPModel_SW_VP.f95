@@ -46,7 +46,13 @@
 
 module IPModel_SW_VP_module
 
-use libAtoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_NERD, PRINT_ANAL, current_verbosity, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -263,13 +269,13 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
     ti = get_type(this%type_of_atomic_num, at%Z(i)) 
 
-    if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_VP_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
+    if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANAL)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))   
-    n_neigh_i = atoms_n_neighbours(at, i)
+    n_neigh_i = n_neighbours(at, i)
 
 
     do ji=1, n_neigh_i 
-      j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
+      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
       
       if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
          if(.not. atom_mask_pointer(j)) cycle
@@ -409,13 +415,13 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
     ti = get_type(this%type_of_atomic_num, at%Z(i)) ! 
 
 
-   ! if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_VP_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
+   ! if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANAL)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:)) 
-    n_neigh_i = atoms_n_neighbours(at, i)
+    n_neigh_i = n_neighbours(at, i)
 
 
       do ji=1, n_neigh_i 
-      j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
+      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
 
       if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
          if(.not. atom_mask_pointer(j)) cycle
@@ -432,7 +438,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
          
 	if (ki <= ji) cycle  
 	
-        k = atoms_neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff) 
+        k = neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff) 
 
         if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
            if(.not. atom_mask_pointer(k)) cycle

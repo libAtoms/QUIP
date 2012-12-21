@@ -517,8 +517,8 @@
              hybrid_mask = hybrid_mark == HYBRID_ACTIVE_MARK
              do i=1,at%n
                 if (hybrid_mark(i) == HYBRID_ACTIVE_MARK) then
-                   do n=1,atoms_n_neighbours(at, i)
-                      j = atoms_neighbour(at, i, n, max_dist=cutoff(this%qmpot))
+                   do n=1,n_neighbours(at, i)
+                      j = neighbour(at, i, n, max_dist=cutoff(this%qmpot))
                       if (j == 0) cycle
                       hybrid_mask(j) = .true.
                    end do

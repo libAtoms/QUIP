@@ -40,7 +40,11 @@
 
 module TBMatrix_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, current_verbosity, inoutput, PRINT_NORMAL, operator(//)
+use mpi_context_module
+use linearalgebra_module
+use atoms_module
 
 use ScaLAPACK_module
 use Matrix_module

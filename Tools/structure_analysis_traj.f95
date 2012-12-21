@@ -1455,8 +1455,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
       i_zone = 1
     endif
     n_in_zone(i_zone) = n_in_zone(i_zone) + 1
-    do ji=1, atoms_n_neighbours(at, i_at)
-      j_at = atoms_neighbour(at, i_at, ji, distance=r_ij)
+    do ji=1, n_neighbours(at, i_at)
+      j_at = neighbour(at, i_at, ji, distance=r_ij)
       if (j_at == i_at) cycle
       if (.not. neighbour_1_mask_a(j_at)) cycle
       if (neighbour_1_max_dist > 0.0_dp) then
@@ -1464,8 +1464,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
       else
 	if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
       endif
-      do ki=1, atoms_n_neighbours(at, i_at)
-	k_at = atoms_neighbour(at, i_at, ki)
+      do ki=1, n_neighbours(at, i_at)
+	k_at = neighbour(at, i_at, ki)
 	if (k_at == i_at .or. k_at == j_at) cycle
 	if (.not. neighbour_2_mask_a(k_at)) cycle
 	r_jk = distance_min_image(at, j_at, k_at)
@@ -2134,8 +2134,8 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
      min_distance = huge(1._dp)
      O1 = 0
      k = 0
-     do i = 1, atoms_n_neighbours(at,H1)
-        j = atoms_neighbour(at,H1,i,distance)
+     do i = 1, n_neighbours(at,H1)
+        j = neighbour(at,H1,i,distance)
         if (distance<min_distance) then
            min_distance = distance
            k = i  !the closest neighbour is the k-th one
@@ -2147,9 +2147,9 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
      if (.not.mask_a(O1)) call system_abort('H'//H1//' has not O closest neighbour '//ElementName(at%Z(O1))//O1//'.')
 
      !loop over all other Os: O2
-     do i = 1, atoms_n_neighbours(at,H1)
+     do i = 1, n_neighbours(at,H1)
         if (i.eq.k) cycle
-        O2 = atoms_neighbour(at,H1,i)
+        O2 = neighbour(at,H1,i)
         !if (at%Z(O2).ne.8) cycle !only keep O
         if (.not. mask_a(O2)) cycle
         !check O1-O2 distance for definition
@@ -2306,13 +2306,13 @@ real(dp) :: dist, exp_arg
      num_atoms = num_atoms + 1
 
      !find H neighbours
-     n = atoms_n_neighbours(at,O)
+     n = n_neighbours(at,O)
      if (n.ne.2) then ! O with =2 nearest neighbours
         call print("WARNING! water(?) oxygen with "//n//"/=2 neighbours will be skipped!")
         cycle
      endif
-     H1 = atoms_neighbour(at,O,1)
-     H2 = atoms_neighbour(at,O,2)
+     H1 = neighbour(at,O,1)
+     H2 = neighbour(at,O,2)
      if ((at%Z(H1).ne.1).or.(at%Z(H2).ne.1)) then !2 H neighbours
         call print("WARNING! water(?) oxygen with non H neighbour will be skipped!")
         cycle

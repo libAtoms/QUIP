@@ -41,7 +41,13 @@
 
 module IPModel_BornMayer_module
 
-  use libatoms_module
+  use error_module
+  use system_module, only : dp, inoutput, print, PRINT_VERBOSE, PRINT_ANAL, current_verbosity, operator(//)
+  use dictionary_module
+  use paramreader_module
+  use linearalgebra_module
+  use atoms_types_module
+  use atoms_module
 
   use mpi_context_module
   use QUIP_Common_module
@@ -230,10 +236,10 @@ contains
        endif
 
        ti = get_type(this%type_of_atomic_num, at%Z(i))
-       if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_BornMayer_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
-       n_neigh_i = atoms_n_neighbours(at, i)
+       if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_BornMayer_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANAL)
+       n_neigh_i = n_neighbours(at, i)
        do ji=1, n_neigh_i
-          j = atoms_neighbour(at, i, ji, drij_mag, cosines=drij, max_dist=this%cutoff)
+          j = neighbour(at, i, ji, drij_mag, cosines=drij, max_dist=this%cutoff)
           if (j <= 0) cycle
           if (drij_mag .feq. 0.0_dp) cycle
 

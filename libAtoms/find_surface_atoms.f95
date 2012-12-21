@@ -8,7 +8,10 @@
 !   system (iterate over 6 - could be done with 4 with a tetrahedron).  If any 
 !   intersections are not null, atom has an unbounded power cell and is a surface atom.
 module find_surface_atoms_module
+use system_module, only : dp, print, mainlog, PRINT_VERBOSE, PRINT_ALWAYS, ran, operator(//)
 use periodictable_module
+use linearalgebra_module
+use atoms_types_module
 use atoms_module
 implicit none
 
@@ -60,8 +63,8 @@ subroutine label_surface_atoms(at, probe_r)
 
       ! count close enough neighbours
       nn = 0
-      do ji=1, atoms_n_neighbours(at, i)
-	 j = atoms_neighbour(at, i, ji, distance=dist_ij)
+      do ji=1, n_neighbours(at, i)
+	 j = neighbour(at, i, ji, distance=dist_ij)
 	 if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
 	    nn = nn + 1
 	 endif
@@ -74,8 +77,8 @@ subroutine label_surface_atoms(at, probe_r)
 
       ! do constraints for close enough neighbours
       nn = 0
-      do ji=1, atoms_n_neighbours(at, i)
-	 j = atoms_neighbour(at, i, ji, distance=dist_ij, cosines=cos_ij)
+      do ji=1, n_neighbours(at, i)
+	 j = neighbour(at, i, ji, distance=dist_ij, cosines=cos_ij)
 	 if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
 	    nn = nn + 1
 	    ! pi = di^2 - (ElementCovRad(i)+probe_r)^2

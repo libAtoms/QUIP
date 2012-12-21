@@ -96,42 +96,50 @@
 #include "error.inc"
 module IP_module
 
-use libatoms_module
+! use system_module, only : dp
+use error_module
+use system_module, only : dp, inoutput, initialise, INPUT, print, PRINT_VERBOSE, PRINT_ALWAYS, system_timer
+use units_module
+use mpi_context_module
+use extendable_str_module
+use dictionary_module
+use paramreader_module
+use atoms_module
 
 use QUIP_Common_module
-use IPModel_GAP_module
-use IPModel_LJ_module
-use IPModel_Morse_module
-use IPModel_FC_module
-use IPModel_SW_module
-use IPModel_Tersoff_module
-use IPModel_EAM_ErcolAd_module
-use IPModel_Brenner_module
-use IPModel_FB_module
-use IPModel_Si_MEAM_module
-use IPModel_FS_module
-use IPModel_BOP_module
-use IPModel_Brenner_Screened_module
-use IPModel_Brenner_2002_module
+use IPModel_GAP_module, only : ipmodel_gap, initialise, finalise, calc, print
+use IPModel_LJ_module, only : ipmodel_lj, initialise, finalise, calc, print
+use IPModel_Morse_module, only : ipmodel_morse, initialise, finalise, calc, print
+use IPModel_FC_module, only : ipmodel_fc, initialise, finalise, calc, print
+use IPModel_SW_module, only : ipmodel_sw, initialise, finalise, calc, print
+use IPModel_Tersoff_module, only : ipmodel_tersoff, initialise, finalise, calc, print
+use IPModel_EAM_ErcolAd_module, only : ipmodel_eam_ercolad, initialise, finalise, calc, print
+use IPModel_Brenner_module, only : ipmodel_brenner, initialise, finalise, calc, print
+use IPModel_FB_module, only : ipmodel_fb, initialise, finalise, calc, print
+use IPModel_Si_MEAM_module, only : ipmodel_si_meam, initialise, finalise, calc, print
+use IPModel_FS_module, only : ipmodel_fs, initialise, finalise, calc, print
+use IPModel_BOP_module, only : ipmodel_bop, initialise, finalise, calc, print
+use IPModel_Brenner_Screened_module, only : ipmodel_brenner_screened, initialise, finalise, calc, print
+use IPModel_Brenner_2002_module, only : ipmodel_brenner_2002, initialise, finalise, calc, print
 #ifdef HAVE_ASAP
-use IPModel_ASAP_module
+use IPModel_ASAP_module, only : ipmodel_asap, initialise, finalise, calc, print
 #endif
-use IPModel_TS_module
-use IPModel_Glue_module
-use IPModel_PartridgeSchwenke_module
-use IPModel_Einstein_module
-use IPModel_Coulomb_module
-use IPModel_Sutton_Chen_module
-use IPModel_Template_module
+use IPModel_TS_module, only : ipmodel_ts, initialise, finalise, calc, print, setup_atoms
+use IPModel_Glue_module, only : ipmodel_glue, initialise, finalise, calc, print
+use IPModel_PartridgeSchwenke_module, only : ipmodel_partridgeschwenke, initialise, finalise, calc, print
+use IPModel_Einstein_module, only : ipmodel_einstein, initialise, finalise, calc, print
+use IPModel_Coulomb_module, only : ipmodel_coulomb, initialise, finalise, calc, print
+use IPModel_Sutton_Chen_module, only : ipmodel_sutton_chen, initialise, finalise, calc, print
+use IPModel_Template_module, only : ipmodel_template, initialise, finalise, calc, print
 #ifdef HAVE_KIM
-use IPModel_KIM_module
+use IPModel_KIM_module, only : ipmodel_kim, initialise, finalise, calc, print
 #endif
-use IPModel_FX_module
-use IPModel_HFdimer_module
-use IPModel_WaterDimer_Gillan_module
-use IPModel_BornMayer_module
-use IPModel_Custom_module
-use IPModel_SW_VP_module
+use IPModel_FX_module, only : ipmodel_fx, initialise, finalise, calc, print
+use IPModel_HFdimer_module, only : ipmodel_hfdimer, initialise, finalise, calc, print
+use IPModel_WaterDimer_Gillan_module, only : ipmodel_waterdimer_gillan, initialise, finalise, calc, print
+use IPModel_BornMayer_module, only : ipmodel_bornmayer, initialise, finalise, calc, print
+use IPModel_Custom_module, only : ipmodel_custom, initialise, finalise, calc, print
+use IPModel_SW_VP_module, only : ipmodel_sw_vp, initialise, finalise, calc, print
 ! Add new IP here
 
 implicit none

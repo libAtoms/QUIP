@@ -49,6 +49,9 @@ module paramreader_module
   use table_module
 
   implicit none
+  private
+
+  public :: param_register, PARAM_MANDATORY, param_read_line, param_read_args, param_print_help, param_print, param_check, param_write_string
 
   integer, parameter, private :: MAX_N_FIELDS = 100       !% Maximum number of fields during parsing
 
@@ -604,7 +607,7 @@ module paramreader_module
       end do
 
       ! Find the key=value pairs, skipping over non-option arguments
-      call table_allocate(opt_inds, 1, 0, 0, 0)
+      call allocate(opt_inds, 1, 0, 0, 0)
       i = 1
       do 
          eqpos = scan(args(i), '=')

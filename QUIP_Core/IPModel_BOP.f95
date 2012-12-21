@@ -40,7 +40,18 @@
 
 module IPModel_BOP_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, PRINT_NERD, current_verbosity, initialise, OUTPUT, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use table_module
+use atoms_types_module
+use connection_module
+use atoms_module
+use clusters_module
+use structures_module
+use cinoutput_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -368,7 +379,7 @@ subroutine IPModel_BOP_Calc_ptr(this)
    if(allocated(this%bptr)) deallocate(this%bptr)
    nn = 0
    do iat = 1, this%at%N 
-     nn = nn + atoms_n_neighbours(this%at, iat) + 2
+     nn = nn + n_neighbours(this%at, iat) + 2
    enddo
    nn = nn + 1
    this%bptr_num = nn
@@ -383,9 +394,9 @@ subroutine IPModel_BOP_Calc_ptr(this)
       if(nn.ge.this%bptr_num) then
          call system_abort("IPModel_BOP_Calc_ptr: nn > this%bptr_num")
       endif
-      do ik = 1, atoms_n_neighbours(this%at, iat)
+      do ik = 1, n_neighbours(this%at, iat)
          nn = nn + 1
-         k = atoms_neighbour(this%at, iat, ik, rik)
+         k = neighbour(this%at, iat, ik, rik)
          this%bptr(nn) = k
          if(nn.ge.this%bptr_num) then
            call system_abort("IPModel_BOP_Calc_ptr: nn > this%bptr_num")

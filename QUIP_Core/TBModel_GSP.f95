@@ -38,7 +38,12 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 module TBModel_GSP_module
 
-use libatoms_module
+use system_module, only : dp, inoutput, system_abort, verbosity_push_decrement, verbosity_pop, operator(//)
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use spline_module
+use atoms_module
 
 use TB_Common_module
 use QUIP_Common_module
@@ -542,14 +547,14 @@ subroutine TBModel_GSP_fix_tails(this)
          this%rc(ti,tj),this%na(ti,tj),this%nb(ti,tj),this%nc(ti,tj))
        yd1 = TBModel_GSP_dist_scaling_deriv(x(1),this%r0(ti,tj), &
          this%rc(ti,tj),this%na(ti,tj),this%nb(ti,tj),this%nc(ti,tj))
-       call spline_init(this%H_tail_spline(ti,tj), x, y, yd1, yd2)
+       call initialise(this%H_tail_spline(ti,tj), x, y, yd1, yd2)
     end do
 
     x_env(1) = this%Rtail(ti)
     x_env(2) = this%Rcut(ti)
     y(1) = TBModel_GSP_Vrep_env_emb_term(x_env(1),this%C(ti),this%nu(ti)) 
     yd1  = TBModel_GSP_Vrep_env_emb_term_deriv(x_env(1),this%C(ti),this%nu(ti)) 
-    call spline_init(this%Vrep_env_emb_tail_spline(ti), x_env, y, yd1, yd2)
+    call initialise(this%Vrep_env_emb_tail_spline(ti), x_env, y, yd1, yd2)
   end do
 
 end subroutine
@@ -948,8 +953,8 @@ function TBModel_GSP_screening_c(this,sk_ind,at, i,j,dist,ti,tj)
   real(dp)                       :: cterm(15)
 
   c_temp = 0._dp
-  do ki = 1, atoms_n_neighbours(at, i)
-     k = atoms_neighbour(at, i, ki, rik)
+  do ki = 1, n_neighbours(at, i)
+     k = neighbour(at, i, ki, rik)
      if (rik .feq. 0.0_dp) cycle
      tk = get_type(this%type_of_atomic_num, at%Z(k))
      rjk = distance(at, j, k, (/0, 0, 0/))  
@@ -968,13 +973,13 @@ function TBModel_GSP_screening_c(this,sk_ind,at, i,j,dist,ti,tj)
                         cterm(11)*cterm(12)*cterm(13)*cterm(14)*cterm(14) 
   enddo
 
-  do kj =1, atoms_n_neighbours(at, j)
-     k =  atoms_neighbour(at, j, kj, rjk)
+  do kj =1, n_neighbours(at, j)
+     k =  neighbour(at, j, kj, rjk)
      if (rjk .feq. 0.0_dp) cycle
      tk = get_type(this%type_of_atomic_num, at%Z(k))
      lgo = .true.
-     do  ki=1, atoms_n_neighbours(at, i)
-       kk = atoms_neighbour(at, i, ki)  
+     do  ki=1, n_neighbours(at, i)
+       kk = neighbour(at, i, ki)  
        if(k.eq.kk) then
           exit
           lgo = .false.
@@ -1178,8 +1183,8 @@ function TBModel_GSP_Vrep_env_emb(this, at, i, ti)
   real(dp)                       :: TBModel_GSP_Vrep_env_emb
 
   emb = 0.0_dp
-  do ki=1, atoms_n_neighbours(at, i)
-    k = atoms_neighbour(at, i, ki, rik)
+  do ki=1, n_neighbours(at, i)
+    k = neighbour(at, i, ki, rik)
     if (rik .feq. 0.0_dp) cycle
     if(rik.lt.this%Rtail(ti)) then  
       emb = emb + TBModel_GSP_Vrep_env_emb_term(rik,this%C(ti),this%nu(ti))  
@@ -1270,8 +1275,8 @@ function TBModel_GSP_get_local_rep_E(this, at, i)
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
   emb_i = TBModel_GSP_Vrep_env_emb(this, at, i, ti) 
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
     emb_j = TBModel_GSP_Vrep_env_emb(this, at, j, tj)   
@@ -1302,8 +1307,8 @@ function TBModel_GSP_get_local_rep_E_force(this, at, i) result(force)
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
   emb_i = TBModel_GSP_Vrep_env_emb(this, at, i, ti)
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
     emb_j = TBModel_GSP_Vrep_env_emb(this, at, j, tj)
@@ -1314,16 +1319,16 @@ function TBModel_GSP_get_local_rep_E_force(this, at, i) result(force)
     force(:,i) = force(:,i) + dE_dr*dv_hat(:)/2.0_dp
     force(:,j) = force(:,j) - dE_dr*dv_hat(:)/2.0_dp
 
-    do ik = 1, atoms_n_neighbours(at, i)
-     k = atoms_neighbour(at, i, ik, dist_k, cosines = dv_hat)
+    do ik = 1, n_neighbours(at, i)
+     k = neighbour(at, i, ik, dist_k, cosines = dv_hat)
      if (dist_k .feq. 0.0_dp) cycle
      dE_dr = TBModel_GSP_Vrep_env_deriv_wk(this,dist,dist_k,ti,tj,emb_i,lambda_ij)
      force(:,i) = force(:,i) + dE_dr*dv_hat(:)/2.0_dp
      force(:,k) = force(:,k) - dE_dr*dv_hat(:)/2.0_dp
     enddo
 
-    do jk = 1, atoms_n_neighbours(at, j)
-     k = atoms_neighbour(at, j, jk, dist_k, cosines = dv_hat)
+    do jk = 1, n_neighbours(at, j)
+     k = neighbour(at, j, jk, dist_k, cosines = dv_hat)
      if (dist_k .feq. 0.0_dp) cycle
      dE_dr = TBModel_GSP_Vrep_env_deriv_wk(this,dist,dist_k,tj,ti,emb_j,lambda_ij)
      force(:,j) = force(:,j) + dE_dr*dv_hat(:)/2.0_dp
@@ -1347,8 +1352,8 @@ function TBModel_GSP_get_local_rep_E_virial(this, at, i) result(virial)
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
   emb_i = TBModel_GSP_Vrep_env_emb(this, at, i, ti)
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
     emb_j = TBModel_GSP_Vrep_env_emb(this, at, j, tj)
@@ -1358,15 +1363,15 @@ function TBModel_GSP_get_local_rep_E_virial(this, at, i) result(virial)
              TBModel_GSP_Vrep_env_deriv_ij(this,dist,ti,tj,lambda_ij) 
     virial = virial - dE_dr*(dv_hat .outer. dv_hat) * dist / 2.0_dp
 
-    do ik = 1, atoms_n_neighbours(at, i)
-     k = atoms_neighbour(at, i, ik, dist_k, cosines = dv_hat)
+    do ik = 1, n_neighbours(at, i)
+     k = neighbour(at, i, ik, dist_k, cosines = dv_hat)
      if (dist_k .feq. 0.0_dp) cycle
      dE_dr = TBModel_GSP_Vrep_env_deriv_wk(this,dist,dist_k,ti,tj,emb_i,lambda_ij)
      virial = virial - dE_dr*(dv_hat .outer. dv_hat) * dist_k / 2.0_dp
     enddo
 
-    do jk = 1, atoms_n_neighbours(at, j)
-     k = atoms_neighbour(at, j, jk, dist_k, cosines = dv_hat)
+    do jk = 1, n_neighbours(at, j)
+     k = neighbour(at, j, jk, dist_k, cosines = dv_hat)
      if (dist_k .feq. 0.0_dp) cycle
      dE_dr = TBModel_GSP_Vrep_env_deriv_wk(this,dist,dist_k,tj,ti,emb_j,lambda_ij)
      virial = virial - dE_dr*(dv_hat .outer. dv_hat) * dist_k / 2.0_dp

@@ -43,9 +43,14 @@ module barostat_module
 
   use system_module
   use units_module
+  use linearalgebra_module
   use atoms_module
 
   implicit none
+  private
+  public :: barostat, initialise, finalise, print, update_barostat, set_degrees_of_freedom, barostat_mass
+  public :: BAROSTAT_NONE, BAROSTAT_HOOVER_LANGEVIN
+  public :: barostat_pre_vel1, barostat_post_vel1_pre_pos, barostat_post_pos_pre_calc, barostat_post_calc_pre_vel2, barostat_post_vel2
 
   real(dp), parameter :: BAROSTAT_MIN_TEMP = 1.0_dp
 

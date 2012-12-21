@@ -36,8 +36,13 @@
 #include "error.inc"
 module Callbackpot_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, print, current_verbosity, PRINT_NORMAL, operator(//)
 use mpi_context_module
+use dictionary_module
+use paramreader_module
+use atoms_types_module
+use atoms_module
 
 implicit none
 private

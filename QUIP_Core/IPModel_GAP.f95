@@ -42,7 +42,14 @@
 
 module IPModel_GAP_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, inoutput, string_to_int, reallocate, current_version, system_timer
+use dictionary_module
+use extendable_str_module
+use paramreader_module
+use linearalgebra_module
+use atoms_types_module
+use atoms_module
 
 use mpi_context_module
 use QUIP_Common_module

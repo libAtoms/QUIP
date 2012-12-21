@@ -76,8 +76,17 @@
 #include "error.inc"
 module FilePot_module
 
-use libatoms_module
+use error_module
+use system_module, only : dp, print, PRINT_NORMAL, PRINT_ALWAYS, PRINT_VERBOSE, inoutput, current_verbosity, system_command, optional_default, parse_string, operator(//)
 use mpi_context_module
+use dictionary_module
+use paramreader_module
+use linearalgebra_module
+use connection_module
+use atoms_types_module
+use atoms_module
+use structures_module
+use CInOutput_module
 
 implicit none
 private

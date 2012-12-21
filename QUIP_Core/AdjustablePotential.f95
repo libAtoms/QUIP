@@ -65,9 +65,20 @@
 
 
 module AdjustablePotential_module
-  use libAtoms_module
+  use system_module, only : dp, print, inoutput, PRINT_VERBOSE, PRINT_NERD, line, optional_default, mainlog, value, system_abort, reallocate, print_warning, operator(//)
+  use linearalgebra_module
+  use table_module
+  use sparse_module
+  use minimization_module
+
+  use atoms_module
+  use clusters_module
+
   implicit none
+  private
   SAVE
+  
+  public :: adjustable_potential_init, adjustable_potential_optimise, adjustable_potential_force, adjustable_potential_finalise
   
 
   ! ratio of smallest to largest eigenvalue of spring space spanning matrix
@@ -266,7 +277,7 @@ contains
     ! copy atom indices from argument to global
     
     call wipe(atomlist)
-    call table_allocate(atomlist,1,0,0,0,fitlist%N)
+    call allocate(atomlist,1,0,0,0,fitlist%N)
     call append(atomlist, fitlist%int(1,1:fitlist%N))
 
     ! set up twobody table that holds pairs of atom indices and shiftts
@@ -275,11 +286,11 @@ contains
     ! wipe previous table
     call print("Wiping twobody table", PRINT_NERD)
     call wipe(twobody)
-    call Table_Allocate(twobody, 5, 1+2*adjustable_potential_nparams,0,0)
+    call allocate(twobody, 5, 1+2*adjustable_potential_nparams,0,0)
 
-    call table_allocate(springs, 4, 0, 0, 0)
-    call table_allocate(newsprings, 4, 0, 0, 0)
-    call table_allocate(tmpsprings, 4, 0, 0, 0)
+    call allocate(springs, 4, 0, 0, 0)
+    call allocate(newsprings, 4, 0, 0, 0)
+    call allocate(tmpsprings, 4, 0, 0, 0)
 
 
     ! default parameters
@@ -502,7 +513,7 @@ contains
     deallocate(default_row)
 
     call print("Allocating twobody table to proper size", PRINT_NERD)
-    call table_allocate(twobody) ! reduce table to proper length
+    call allocate(twobody) ! reduce table to proper length
 
     write(line, '(a,i0)') "Number of force components: ", size(target_force) ; call print(line)
     write(line, '(a,i0)') "Number of parameters:       ", twobody%N*adjustable_potential_nparams ; call print(line)

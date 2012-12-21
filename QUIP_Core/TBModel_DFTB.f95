@@ -38,7 +38,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 module TBModel_DFTB_module
 
-use libatoms_module
+use system_module, only : dp, inoutput, print, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, increase_stack, system_abort, verbosity_push_decrement, verbosity_pop
+use units_module
+use extendable_str_module
+use linearalgebra_module
+use spline_module
+use dictionary_module
+use paramreader_module
+use atoms_module
 
 use TB_Common_module
 use QUIP_Common_module
@@ -177,7 +184,7 @@ subroutine TBModel_DFTB_Finalise(this)
     do ti=1, size(this%H_spline,2)
     do tj=1, size(this%H_spline,3)
       do i=1, size(this%H_spline,1)
-	call spline_finalise(this%H_spline(i,ti,tj))
+	call finalise(this%H_spline(i,ti,tj))
       end do
     end do
     end do
@@ -187,7 +194,7 @@ subroutine TBModel_DFTB_Finalise(this)
     do ti=1, size(this%S_spline,2)
     do tj=1, size(this%S_spline,3)
       do i=1, size(this%S_spline,1)
-	call spline_finalise(this%S_spline(i,ti,tj))
+	call finalise(this%S_spline(i,ti,tj))
       end do
     end do
     end do
@@ -196,7 +203,7 @@ subroutine TBModel_DFTB_Finalise(this)
   if (allocated(this%Vrep_spline)) then
     do ti=1, size(this%Vrep_spline,1)
     do tj=1, size(this%Vrep_spline,2)
-      call spline_finalise(this%Vrep_spline(ti,tj))
+      call finalise(this%Vrep_spline(ti,tj))
     end do
     end do
     deallocate(this%Vrep_spline)
@@ -419,16 +426,16 @@ subroutine TBM_endElement_handler(URI, localname, name)
       if (allocated(parse_Vrep_vals)) deallocate(parse_Vrep_vals)
     elseif (parse_in_tbm .and. name == 'H_spline') then
       do ii=1, 10
-	call spline_init(parse_tbm%H_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_H_vals(ii,:), 0.0_dp, 0.0_dp)
+	call initialise(parse_tbm%H_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_H_vals(ii,:), 0.0_dp, 0.0_dp)
       end do
       parse_in_H_spline = .false.
     elseif (parse_in_tbm .and. name == 'S_spline') then
       do ii=1, 10
-	call spline_init(parse_tbm%S_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_S_vals(ii,:), 0.0_dp, 0.0_dp)
+	call initialise(parse_tbm%S_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_S_vals(ii,:), 0.0_dp, 0.0_dp)
       end do
       parse_in_S_spline = .false.
     elseif (parse_in_tbm .and. name == 'Vrep_spline') then
-      call spline_init(parse_tbm%Vrep_spline(parse_cur_type_i,parse_cur_type_j), parse_Vrep_r, parse_Vrep_vals, 0.0_dp, 0.0_dp)
+      call initialise(parse_tbm%Vrep_spline(parse_cur_type_i,parse_cur_type_j), parse_Vrep_r, parse_Vrep_vals, 0.0_dp, 0.0_dp)
       parse_in_Vrep_spline = .false.
     elseif (name == 'point') then
       if (parse_in_H_spline) then
@@ -644,7 +651,7 @@ end subroutine
 !    SK_r = SK_r*BOHR
 !    H_vals = H_vals*HARTREE
 !    do i=1, 10
-!      call spline_init(this%H_spline(i,ti,tj), SK_r, H_vals(i,:), 0.0_dp, 0.0_dp)
+!      call initialise(this%H_spline(i,ti,tj), SK_r, H_vals(i,:), 0.0_dp, 0.0_dp)
 !    end do
 !
 !    call mark_node(fxml, path='//DFTB_params/per_pair_data/S_spline', attributes=attributes, status=status)
@@ -665,7 +672,7 @@ end subroutine
 !    end do
 !    SK_r = SK_r*BOHR
 !    do i=1, 10
-!      call spline_init(this%S_spline(i,ti,tj), SK_r, S_vals(i,:), 0.0_dp, 0.0_dp)
+!      call initialise(this%S_spline(i,ti,tj), SK_r, S_vals(i,:), 0.0_dp, 0.0_dp)
 !    end do
 !
 !    call mark_node(fxml, path='//DFTB_params/per_pair_data/Vrep_spline', attributes=attributes, status=status)
@@ -686,7 +693,7 @@ end subroutine
 !    end do
 !    Vrep_r = Vrep_r*BOHR
 !    Vrep_vals = Vrep_vals*HARTREE
-!    call spline_init(this%Vrep_spline(ti,tj), Vrep_r, Vrep_vals, 0.0_dp, 0.0_dp)
+!    call initialise(this%Vrep_spline(ti,tj), Vrep_r, Vrep_vals, 0.0_dp, 0.0_dp)
 !
 !    deallocate(SK_r)
 !    deallocate(H_vals)
@@ -1069,8 +1076,8 @@ function TBModel_DFTB_get_local_rep_E(this, at, i)
   TBModel_DFTB_get_local_rep_E = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -1094,8 +1101,8 @@ function TBModel_DFTB_get_local_rep_E_force(this, at, i) result(force)
   force = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 
@@ -1120,8 +1127,8 @@ function TBModel_DFTB_get_local_rep_E_virial(this, at, i) result(virial)
   virial = 0.0_dp
 
   ti = get_type(this%type_of_atomic_num, at%Z(i))
-  do ji=1, atoms_n_neighbours(at, i)
-    j = atoms_neighbour(at, i, ji, dist, cosines = dv_hat)
+  do ji=1, n_neighbours(at, i)
+    j = neighbour(at, i, ji, dist, cosines = dv_hat)
     if (dist .feq. 0.0_dp) cycle
     tj = get_type(this%type_of_atomic_num, at%Z(j))
 
