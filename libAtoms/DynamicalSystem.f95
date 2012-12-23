@@ -76,8 +76,9 @@ module dynamicalsystem_module
    public :: kinetic_energy, kinetic_virial, angular_momentum, momentum, add_thermostat
    public :: set_barostat, add_thermostats, update_thermostat, gaussian_velocity_component
    public :: TYPE_CONSTRAINED, TYPE_ATOM, ds_print_status, rescale_velo, zero_momentum
-   public :: advance_verlet1, advance_verlet2, distance_relative_velocity, ds_amend_constraint
-   public :: torque, temperature, zero_angular_momentum, enable_damping, moment_of_inertia_tensor
+   public :: advance_verlet1, advance_verlet2, advance_verlet, distance_relative_velocity, ds_amend_constraint
+   public :: torque, temperature, zero_angular_momentum, enable_damping, disable_damping, moment_of_inertia_tensor
+   public :: ds_add_constraint, ds_save_state, ds_restore_state
 
    public :: constrain_bondanglecos, &
 	     constrain_bondlength, &

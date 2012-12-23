@@ -141,6 +141,7 @@ module constraints_module
 
   public :: constraint, initialise, finalise, print, register_constraint, add_restraint_forces
   public :: BONDANGLECOS, BONDLENGTH, BONDLENGTH_SQ, BONDLENGTH_DEV_POW, BONDLENGTH_DIFF, GAP_ENERGY, PLANE
+  public :: CRACK_TIP_CURVATURE, CRACK_TIP_GRADIENT, CRACK_TIP_POSITION
   public :: CUBIC_BONDLENGTH_SQ
   public :: CONSTRAINT_WARNING_TOLERANCE, LOWER_BOUND, UPPER_BOUND, BOTH_UPPER_AND_LOWER_BOUNDS, BOUND_STRING
   public :: constraint_store_gradient, constraint_calculate_values_at, constraint_amend, shake, rattle

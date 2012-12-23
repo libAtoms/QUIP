@@ -8,7 +8,7 @@
 !   system (iterate over 6 - could be done with 4 with a tetrahedron).  If any 
 !   intersections are not null, atom has an unbounded power cell and is a surface atom.
 module find_surface_atoms_module
-use system_module, only : dp, print, mainlog, PRINT_VERBOSE, PRINT_ALWAYS, ran, operator(//)
+use system_module, only : dp, print, mainlog, PRINT_VERBOSE, PRINT_ALWAYS, ran, operator(//), system_abort
 use periodictable_module
 use linearalgebra_module
 use atoms_types_module
