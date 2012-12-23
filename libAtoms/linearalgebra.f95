@@ -61,7 +61,7 @@ module linearalgebra_module
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, matrix_inverse
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
-  public :: rms_diff, histogram, kmeans, round_prime_factors
+  public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix

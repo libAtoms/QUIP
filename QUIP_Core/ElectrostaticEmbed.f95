@@ -35,11 +35,12 @@
 module ElectrostaticEmbed_module
 
   use error_module
-  use system_module, only : dp, inoutput, optional_default, initialise, OUTPUT, operator(//)
+  use system_module, only : dp, inoutput, optional_default, initialise, OUTPUT, operator(//), system_timer
   use units_module
   use periodictable_module
   use linearalgebra_module
   use dictionary_module
+  use connection_module
   use atoms_types_module
   use atoms_module
   use clusters_module

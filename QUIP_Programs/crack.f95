@@ -821,9 +821,9 @@ program crack
 	   ! default thermostat 
 	   if (params%md(params%md_stanza)%ensemble == 'NVT') then
 	      if (state == STATE_THERMALISE) then
-		 call ds_add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
+		 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
 	      else
-		 call ds_add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
+		 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
 	      endif
 	      ds%atoms%thermostat_region = i_thermostat
 	   endif

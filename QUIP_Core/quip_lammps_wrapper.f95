@@ -1,6 +1,6 @@
 module QUIP_LAMMPS_wrapper_module
 
-   use system_module, only : dp, system_initialise, PRINT_SILENT
+   use system_module, only : dp, system_initialise, PRINT_SILENT, system_abort
    use linearalgebra_module
    use connection_module
    use atoms_types_module
