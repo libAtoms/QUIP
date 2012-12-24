@@ -42,12 +42,14 @@ module Connection_module
 
   use error_module
   use system_module
+  use units_module
   use periodictable_module
   use linearalgebra_module
   use dictionary_module
   use table_module
   use Atoms_types_module
 
+  implicit none
   private
 
   public :: Connection
@@ -75,7 +77,7 @@ module Connection_module
   end interface print
 
   !% Overloaded assigment operators for Connection objects.
-  public :: assignment
+  public :: assignment(=)
   interface assignment(=)
      module procedure connection_assignment
   end interface assignment(=)
