@@ -78,7 +78,8 @@ module  atoms_module
   public :: calc_dists, atoms_repoint, is_nearest_neighbour, is_nearest_neighbour_abs_index
   public :: termination_bond_rescale, make_lattice, neighbour_index, cosine, cosine_neighbour, direction_cosines
   public :: directionality, closest_atom, set_atoms, get_lattice_params, list_matching_prop
-  public :: coalesce_in_one_periodic_image, prop_names_string, parse_atom_mask
+  public :: coalesce_in_one_periodic_image, prop_names_string, parse_atom_mask, complement
+  public :: direction_cosines_min_image, difference, set_map_shift
 
   integer,  parameter :: NOT_NEIGHBOUR = 0     !% Returned by 'Find_Neighbour' if unsuccessful
 
