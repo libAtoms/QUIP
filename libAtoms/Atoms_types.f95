@@ -53,6 +53,7 @@ module Atoms_types_module
   use dictionary_module
   use table_module
 
+  implicit none
   private
 
   public :: DEFAULT_NNEIGHTOL
