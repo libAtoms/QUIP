@@ -620,8 +620,6 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
 
   if( present(local_virial) ) then
      RAISE_ERROR("TB_Calc: local_virial calculation requested, but not implemented yet",error)
-  else
-     local_virial = 0.0_dp
   endif
 
   if(current_verbosity() > PRINT_NERD) then
