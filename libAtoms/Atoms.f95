@@ -69,7 +69,7 @@ module  atoms_module
   implicit none
   private
   public :: atoms, initialise, initialise_ptr, is_initialised, is_domain_decomposed, shallowcopy, finalise
-  public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff, set_cutoff_factor
+  public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff, set_cutoff_factor, cutoff, cutoff_break
   public :: add_atoms, remove_atoms, get_param_value, set_param_value, has_property, remove_property
   public :: distance, distance_min_image, diff, diff_min_image, print, set_lattice, select, cell_volume, map_into_cell
   public :: bcast, copy_properties, transform_basis, rotate, index_to_z_index, z_index_to_index
@@ -169,6 +169,18 @@ module  atoms_module
   interface set_cutoff_factor
      module procedure atoms_set_cutoff_factor
   end interface
+
+  !% Return cutoff used for bonds of type Z1--Z2
+  private :: atoms_cutoff
+  interface cutoff
+     module procedure atoms_cutoff
+  end interface cutoff
+
+  !% Return cutoff_break used for bonds of type Z1--Z2
+  private :: atoms_cutoff_break
+  interface cutoff_break
+     module procedure atoms_cutoff_break
+  end interface cutoff_break
 
   !% Add one or more atoms to an Atoms object.
   private :: add_atom_single, add_atom_multiple, atoms_join
