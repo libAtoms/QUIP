@@ -40,7 +40,7 @@ program elastic
   type(Dictionary) :: params
   integer :: i, n, iostat, nargs
   character(len=2048) :: comment, arg1, arg2, missing_params
-  real(dp) :: a, C11, C12, C44, cutoff, nneightol
+  real(dp) :: a, C11, C12, C44, l_cutoff, nneightol
 
   call system_initialise(PRINT_SILENT)
   call verbosity_push(PRINT_NORMAL)
@@ -51,7 +51,7 @@ program elastic
   call param_register(params, 'C11', PARAM_MANDATORY, C11, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'C12', PARAM_MANDATORY, C12, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'C44', PARAM_MANDATORY, C44, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'cutoff', '5.0', cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'cutoff', '5.0', l_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'nneightol', '1.2', nneightol, help_string="No help yet.  This source file was $LastChangedBy$")
 
   nargs = cmd_arg_count()
@@ -92,7 +92,7 @@ program elastic
 
      call print('Frame '//n)
 
-     call set_cutoff(at, cutoff)
+     call set_cutoff(at, l_cutoff)
      at%nneightol = nneightol
 
      call elastic_fields(at, a, C11, C12, C44)

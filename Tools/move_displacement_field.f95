@@ -34,7 +34,7 @@ program move_displacement_field
 use libatoms_module
 implicit none
   real(dp) :: shift_vec(3)
-  real(dp) :: cutoff, dist_tol
+  real(dp) :: l_cutoff, dist_tol
   real(dp), allocatable :: new_pos(:,:)
   type(Atoms) :: config, ref_config
   character(len=STRING_LENGTH) :: config_filename, ref_config_filename
@@ -50,7 +50,7 @@ implicit none
   call param_register(cli_params, "config_filename", PARAM_MANDATORY, config_filename, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "ref_config_filename", PARAM_MANDATORY, ref_config_filename, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "shift_vec", PARAM_MANDATORY, shift_vec, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, "cutoff", "5.0", cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, "cutoff", "5.0", l_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, "dist_tol", "0.3", dist_tol, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params)) then
     call print("Usage: move_displacement_field config_filename=file ref_config_filename=file shift_vec={x y z}", PRINT_ALWAYS)
@@ -63,7 +63,7 @@ implicit none
   call print("config_filename " // trim(config_filename))
   call print("ref_config_filename " // trim(ref_config_filename))
   call print("shift_vec " // shift_vec)
-  call print("cutoff " // cutoff)
+  call print("cutoff " // l_cutoff)
   call print("dist_tol " // dist_tol)
   call print("")
 
@@ -79,10 +79,10 @@ implicit none
 
   allocate(new_pos(3,config%N))
 
-  call set_cutoff(ref_config, cutoff)
+  call set_cutoff(ref_config, l_cutoff)
   call calc_connect(ref_config)
 
-  call fit_box_in_cell(cutoff, cutoff, cutoff, ref_config%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
+  call fit_box_in_cell(l_cutoff, l_cutoff, l_cutoff, ref_config%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
   cell_image_Na = max(1,(cell_image_Na+1)/2)
   cell_image_Nb = max(1,(cell_image_Nb+1)/2)
   cell_image_Nc = max(1,(cell_image_Nc+1)/2)
