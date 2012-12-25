@@ -62,7 +62,7 @@ program density_1d
     type(Dictionary)                      :: params_in
     character(STRING_LENGTH)               :: xyzfilename, datafilename
     logical                               :: xyzfile_is_list
-    real(dp)                              :: cutoff, bin_width
+    real(dp)                              :: l_cutoff, bin_width
     character(STRING_LENGTH)               :: mask
     integer                               :: IO_Rate, Density_Time_Evolution_Rate
     integer                               :: decimation
@@ -105,7 +105,7 @@ program density_1d
     call param_register(params_in, 'xyzfile_is_list', 'F', xyzfile_is_list, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'datafile', 'data.den1', datafilename, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'AtomMask', param_mandatory, mask, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params_in, 'Cutoff', param_mandatory, cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params_in, 'Cutoff', param_mandatory, l_cutoff, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'BinWidth', param_mandatory, bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'decimation', '1', decimation, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params_in, 'min_time', '-1.0', min_time, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -133,7 +133,7 @@ program density_1d
     call print(' Input file is list: '//xyzfile_is_list)
     call print('        Output file: '//trim(datafilename))
     call print('           AtomMask: '//trim(mask))
-    call print('             Cutoff: '//round(Cutoff,3))
+    call print('             Cutoff: '//round(l_Cutoff,3))
     call print('           BinWidth: '//round(bin_width,3))
     call print('         decimation: '//decimation)
     if (decimation == 1) then
@@ -183,13 +183,13 @@ program density_1d
        call print('')
     end if
 
-    if (cutoff < 0.0_dp) call system_abort('Cutoff < 0.0 Angstroms')
+    if (l_cutoff < 0.0_dp) call system_abort('Cutoff < 0.0 Angstroms')
     if (bin_width < 0.0_dp) call system_abort('Bin width < 0.0 Angstroms')
     if (Gaussian_smoothing.and.(Gaussian_sigma.le.0._dp)) call system_abort('sigma must be > 0._dp')
 
     !Make num_bins and bin_width consistent
-    num_bins = ceiling(cutoff / bin_width)
-    bin_width = cutoff / real(num_bins,dp)
+    num_bins = ceiling(l_cutoff / bin_width)
+    bin_width = l_cutoff / real(num_bins,dp)
     if (do_statistics) call initialise(density_bins,0,num_bins,0,0,0)
     if (do_statistics) call initialise(density_bins_intermed,0,num_bins,0,0,0)
 
@@ -212,7 +212,7 @@ program density_1d
     data(:,1) = data_intermed(:,1)
 
     call print('')
-    write(line,'(i0,a,f0.4,a,f0.4,a)') num_bins,' bins x ',bin_width,' Angstroms per bin = ',cutoff,' Angstroms cutoff'
+    write(line,'(i0,a,f0.4,a,f0.4,a)') num_bins,' bins x ',bin_width,' Angstroms per bin = ',l_cutoff,' Angstroms cutoff'
     call print(line)
     call print('')
 
@@ -318,12 +318,12 @@ program density_1d
 	   end if
 
 	   d = distance_min_image(structure,j,(/0._dp,0._dp,0._dp/))
-	   if (d < cutoff+3.0*Gaussian_sigma) then
+	   if (d < l_cutoff+3.0*Gaussian_sigma) then
 #ifdef DEBUG
 	      call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
 #endif
 	      !Add this distance to the list
-	      call accum_histogram(hist, d, 0.0_dp, cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
+	      call accum_histogram(hist, d, 0.0_dp, l_cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
 	   end if
 	end do
 

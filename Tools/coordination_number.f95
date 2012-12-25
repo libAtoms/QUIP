@@ -67,7 +67,7 @@ program coordination_number
 real(dp) :: dist, coord_num
 logical, allocatable :: mask_a(:)
 character(STRING_LENGTH) :: mask_str
-real(dp) :: kappa, cutoff
+real(dp) :: kappa, l_cutoff
 integer :: iatom, center_atom
 logical :: no_smoothing
 
@@ -85,7 +85,7 @@ logical :: no_smoothing
       call param_register(params_in, 'neighbour_mask'     , ''             , mask_str         , help_string="neighbour atom in the coordination sphere"   )
       call param_register(params_in, 'center_mask'        , '0'            , center_atom      , help_string="center atom, around which the coordination number is calculated"   )
       call param_register(params_in, 'kappa'              , '-1.0'         , kappa            , help_string="smoothing by default: 1/(exp(kappa*(d-cutoff))+1)"   )
-      call param_register(params_in, 'cutoff'             , PARAM_MANDATORY, cutoff           , help_string="cutoff of the coordination sphere"   )
+      call param_register(params_in, 'cutoff'             , PARAM_MANDATORY, l_cutoff           , help_string="cutoff of the coordination sphere"   )
       call param_register(params_in, 'last_frame'         , '0'            , last_frame       , help_string="last frame to process (0=all)"   )
       call param_register(params_in, 'time_step'          , '0.0'          , time_step        , help_string="time step"   )
       call param_register(params_in, 'restart_every'      , '1'            , restart_every    , help_string="to be consistent with the restart frequency"   )
@@ -101,7 +101,7 @@ logical :: no_smoothing
       call finalise(params_in)
 
       if (kappa<0) call system_abort("kappa<0")
-      if (cutoff<0) call system_abort("cutoff<0")
+      if (l_cutoff<0) call system_abort("cutoff<0")
 
     !PRINT INPUT PARAMETERS
       call print('Run parameters:')
@@ -111,7 +111,7 @@ logical :: no_smoothing
       call print('  center_mask     '// center_atom              )
       call print('  last_frame      '// last_frame               )
       call print('  kappa           '// kappa                    )
-      call print('  cutoff          '// cutoff                   )
+      call print('  cutoff          '// l_cutoff                   )
       call print('  time_step       '// time_step                )
       call print('  restart_every   '// restart_every//' steps'  )
       if (restart_every/=1) call print('    Prints after every '//restart_every//' steps, synchronised with the restart frequency.')
@@ -143,7 +143,7 @@ logical :: no_smoothing
        call initialise(out_file, out_filename, action=OUTPUT,append=.true.)
     else
        call initialise(out_file, out_filename, action=OUTPUT,append=.false.)
-       call print("# Step Nr.   Time[fs]  n_coord("//trim(mask_str)//")   ((r_cut="//cutoff//"))", file=out_file)
+       call print("# Step Nr.   Time[fs]  n_coord("//trim(mask_str)//")   ((r_cut="//l_cutoff//"))", file=out_file)
     endif
 
     step_nr = 0
@@ -184,9 +184,9 @@ logical :: no_smoothing
           if (.not.mask_a(iatom)) cycle
           dist = distance_min_image(at,center_atom,iatom)
           if (no_smoothing) then
-             if (dist<cutoff) coord_num = coord_num +1._dp
+             if (dist<l_cutoff) coord_num = coord_num +1._dp
           else
-             coord_num = coord_num + 1._dp/(exp(kappa*(dist-cutoff))+1._dp)
+             coord_num = coord_num + 1._dp/(exp(kappa*(dist-l_cutoff))+1._dp)
           endif
        enddo
        deallocate(mask_a)
