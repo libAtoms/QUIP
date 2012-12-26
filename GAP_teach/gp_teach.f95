@@ -40,7 +40,7 @@ module gp_teach_module
    use iso_c_binding, only : C_NULL_CHAR
    ! use libatoms_module
    use error_module
-   use system_module, only : dp, optional_default, reallocate
+   use system_module, only : dp, optional_default, reallocate, operator(//)
    use linearalgebra_module
    use gp_predict_module
    use clustering_module
