@@ -36,16 +36,13 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QC_QUIP_Wrapper_module
-use system_module, only : dp !! , only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
-    !! atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
-use potential_module !! , only : potential, initialise, finalise
-use potential_module !! , only : potential, initialise, calc
-use mpi_context_module !! , only : mpi_context
-#if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-use system_module, only : dp !! , only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
-use potential_module !! , only : print
-use system_module, only : dp !! , only : print_xyz, mainlog, optional_default
-#endif
+use system_module, only : dp, system_initialise, INPUT, system_abort,verbosity_push, verbosity_pop, PRINT_SILENT, operator(//), inoutput, PRINT_ALWAYS
+use extendable_str_module, only : extendable_str, string, read
+use table_module, only : table, wipe, int_part
+use atoms_types_module, only : atoms, assign_pointer, add_property
+use atoms_module, only : initialise, calc_connect, set_lattice
+use potential_module, only : potential, initialise, finalise, calc
+use mpi_context_module, only : mpi_context
 implicit none
 private
 
