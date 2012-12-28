@@ -50,7 +50,7 @@ module linearalgebra_module
   private
   SAVE
 
-  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse
+  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), norm, normsq, operator(.mult.), operator(.dot.)
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
@@ -61,7 +61,7 @@ module linearalgebra_module
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, matrix_inverse
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
-  public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search
+  public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
