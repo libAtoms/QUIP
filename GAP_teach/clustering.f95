@@ -33,7 +33,7 @@ module clustering_module
   implicit none
   private
 
-  public :: pivot, bisect_kmedoids, cluster_kmeans
+  public :: pivot, bisect_kmedoids, cluster_kmeans, select_uniform
 
   integer, parameter  :: n_trial = 10
   integer, parameter  :: n_trial_k_med = 100
