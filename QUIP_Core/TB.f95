@@ -55,7 +55,7 @@ use CInOutput_module, only : write
 use QUIP_common_module
 
 use Functions_module, only : f_fermi, f_fermi_deriv
-use ApproxFermi_module, only : approxfermi, approx_f_fermi, approx_f_fermi_deriv
+use ApproxFermi_module, only : approxfermi, approx_f_fermi, approx_f_fermi_deriv, initialise, finalise, print
 use Matrix_module, only : matrixd, add_identity, inverse
 ! use RS_SparseMatrix_module
 use TB_KPoints_module, only : kpoints, ksum_dup, ksum_distrib, local_ksum, min, max, ksum_distrib_inplace, collect
