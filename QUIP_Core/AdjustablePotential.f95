@@ -65,7 +65,7 @@
 
 
 module AdjustablePotential_module
-  use system_module, only : dp, print, inoutput, PRINT_VERBOSE, PRINT_NERD, line, optional_default, mainlog, value, system_abort, reallocate, print_warning, operator(//)
+  use system_module, only : dp, print, inoutput, PRINT_VERBOSE, PRINT_NERD, line, optional_default, mainlog, value, system_abort, reallocate, print_warning, operator(//), mpi_id, abort_on_mpi_error
   use linearalgebra_module
   use table_module
   use sparse_module
