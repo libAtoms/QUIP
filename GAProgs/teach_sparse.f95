@@ -27,6 +27,7 @@ program teach_sparse_program
 
   use libatoms_module
   use descriptors_module
+  use gp_predict_module
   use gp_teach_module
   use clustering_module
   use teach_sparse_mod
