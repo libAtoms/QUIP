@@ -1,4 +1,4 @@
-TESTS = test_eval test_md
+TESTS = test_eval test_md test_md_velo
 
 all: $(TESTS)
 
