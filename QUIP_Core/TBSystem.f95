@@ -50,7 +50,7 @@ use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm
 use mpi_context_module, only : mpi_context
 use dictionary_module, only : dictionary
 use paramreader_module, only : param_register, param_read_line
-use atoms_module, only : atoms, n_neighbours, neighbour
+use atoms_module, only : atoms, n_neighbours, neighbour, assignment(=)
 
 ! use Functions_module 
 use QUIP_Common_module ! , only : xml_t, dictionary_t, pauli_sigma

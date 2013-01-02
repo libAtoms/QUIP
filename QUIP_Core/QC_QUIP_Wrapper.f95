@@ -40,7 +40,7 @@ use system_module, only : dp, system_initialise, INPUT, system_abort,verbosity_p
 use extendable_str_module, only : extendable_str, string, read
 use table_module, only : table, wipe, int_part
 use atoms_types_module, only : atoms, assign_pointer, add_property
-use atoms_module, only : initialise, calc_connect, set_lattice
+use atoms_module, only : initialise, calc_connect, set_lattice, assignment(=)
 use potential_module, only : potential, initialise, finalise, calc
 use mpi_context_module, only : mpi_context
 implicit none

@@ -49,7 +49,7 @@ use extendable_str_module, only : extendable_str, initialise, finalise, read, st
 use dictionary_module, only : dictionary, get_value, set_value, STRING_LENGTH
 use paramreader_module, only : param_register, param_read_line
 use atoms_types_module, only : assign_pointer
-use atoms_module, only : atoms, calc_connect, set_cutoff
+use atoms_module, only : atoms, calc_connect, set_cutoff, assignment(=)
 use CInOutput_module, only : write
 
 use QUIP_common_module
