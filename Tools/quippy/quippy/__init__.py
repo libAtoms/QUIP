@@ -76,7 +76,7 @@ if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
        ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
     try:
         # Python 2.5 or newer
-        from ctyles import RTLD_GLOBAL
+        from ctypes import RTLD_GLOBAL
     except ImportError:
         # Python 2.4
         from dl import RTLD_GLOBAL
