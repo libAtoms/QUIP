@@ -53,21 +53,21 @@
 module Potential_module
 
   use error_module
-  use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, INPUT, &
+  use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
    optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
   use units_module, only : GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
-  use linearalgebra_module , only : norm, trace, matrix3x3_det, normsq, least_squares, add_identity, inverse, diagonalise, symmetric_linear_solve, operator(.fne.), operator(.mult.), operator(.feq.)
-  use dictionary_module, only : dictionary, STRING_LENGTH, lookup_entry_i, write_string, get_value, has_key, read_string, set_value, remove_value
+  use linearalgebra_module , only : norm, trace, matrix3x3_det, normsq, least_squares, add_identity, inverse, diagonalise, symmetric_linear_solve, operator(.fne.), operator(.mult.), operator(.feq.), print
+  use dictionary_module, only : dictionary, STRING_LENGTH, lookup_entry_i, write_string, get_value, has_key, read_string, set_value, remove_value, initialise, finalise
   use paramreader_module, only : param_register, param_read_line
   use mpi_context_module, only : mpi_context
-  use table_module, only : table, find, int_part, wipe, append
+  use table_module, only : table, find, int_part, wipe, append, finalise
   use minimization_module, only : minim, n_minim, fire_minim, test_gradient, n_test_gradient
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, diff_min_image, set_lattice, is_nearest_neighbour, distance_min_image, &
-   get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint
+   get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint, finalise
   use cinoutput_module, only : cinoutput, write
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2
   use clusters_module, only : HYBRID_ACTIVE_MARK, HYBRID_NO_MARK, HYBRID_BUFFER_MARK, create_embed_and_fit_lists_from_cluster_mark, create_embed_and_fit_lists, &
