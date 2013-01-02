@@ -43,9 +43,7 @@
 
 module IPModel_ASAP_module
 
-use error_module
-use system_module, only : dp, only: dp, STRING_LENGTH
-use mpi_context_module
+use libAtoms_module
 use QUIP_Common_module
 
 implicit none
