@@ -52,7 +52,8 @@ module linearalgebra_module
 
   public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
-  public :: operator(.feq.), operator(.fne.), norm, normsq, operator(.mult.), operator(.dot.)
+  public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
+  public :: norm, normsq, operator(.mult.), operator(.dot.)
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
   public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
@@ -234,6 +235,26 @@ module linearalgebra_module
   private :: real_fne,complex_fne,matrix_fne,vector_fne
   interface operator(.fne.)
      module procedure real_fne,complex_fne,matrix_fne,vector_fne
+  end interface
+
+  private :: real_fge
+  interface operator(.fge.)
+     module procedure real_fge
+  end interface
+
+  private :: real_fgt
+  interface operator(.fgt.)
+     module procedure real_fgt
+  end interface
+
+  private :: real_fle
+  interface operator(.fle.)
+     module procedure real_fle
+  end interface
+
+  private :: real_flt
+  interface operator(.flt.)
+     module procedure real_flt
   end interface
 
   !% Overloaded interfaces to \textsc{lapack} matrix diagonlisation
@@ -1183,6 +1204,38 @@ CONTAINS
      fne = .not. real_feq(x, y) 
      
    end function real_fne
+
+   pure function real_fgt(x,y) result(fgt)
+      real(dp), intent(in) :: x, y
+      logical              :: fgt
+
+      fgt = ( (x-y) > max(abs(x),abs(y)) * NUMERICAL_ZERO ) !.or. ( (x-y) > NUMERICAL_ZERO )
+
+   endfunction real_fgt
+
+   pure function real_fle(x,y) result(fle)
+      real(dp), intent(in) :: x, y
+      logical              :: fle
+
+      fle = .not. real_fgt(x,y)
+
+   endfunction real_fle
+
+   pure function real_flt(x,y) result(flt)
+      real(dp), intent(in) :: x, y
+      logical              :: flt
+
+      flt = ( (y-x) > max(abs(x),abs(y)) * NUMERICAL_ZERO ) !.or. ( (y-x) > NUMERICAL_ZERO )
+
+   endfunction real_flt
+
+   pure function real_fge(x,y) result(fge)
+      real(dp), intent(in) :: x, y
+      logical              :: fge
+
+      fge = .not. real_flt(x,y)
+
+   endfunction real_fge
 
    ! za .feq. zb
    !
