@@ -446,6 +446,7 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
   type(inoutput) :: phonons_output
   real(dp), dimension(:,:), allocatable :: frac
   integer :: do_phonons_path_steps
+  integer :: t_real_precision
 
 
   do_phonon_supercell = optional_default((/2,2,2/),phonon_supercell)
@@ -625,11 +626,17 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
 deallocate(dmft)
 !$omp end parallel  
   
+  t_real_precision = mainlog%default_real_precision
   do k = 1, nk
 !     call print('q: '//q(:,k)*a/(2*PI))
      !call print(evecs(:,:,k))
-     print '("PHONONS_FINE ",3F12.6,"  ",'//at_in%N*3//'f15.9)',q(:,k),sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
+     mainlog%default_real_precision=6
+     call print("PHONONS_FINE "//q(:,k), nocr=.true.)
+     mainlog%default_real_precision=9
+     call print("    "//sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp)
+     ! print '("PHONONS_FINE ",3F12.6,"  ",'//at_in%N*3//'f15.9)',q(:,k),sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
   enddo
+  mainlog%default_real_precision = t_real_precision
 
 !  if (present(phonons_output_file)) then
 !     call initialise(phonons_output, phonons_output_file, action=OUTPUT)
