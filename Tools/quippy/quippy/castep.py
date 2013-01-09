@@ -456,7 +456,7 @@ class CastepParam(OrderedDict):
         "Read user parameters from .castep output. Input should be filename, file-like object or list of lines"
 
         if type(castep_output) == type(''):
-            castep_output = open(castep_output, 'r')
+            f = open(castep_output, 'r')
             castep_output = f.readlines()
             f.close()
         elif hasattr(castep_output, 'read'):
