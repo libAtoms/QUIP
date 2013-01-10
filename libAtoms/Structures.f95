@@ -410,7 +410,7 @@ contains
    if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 0,0,-1 /))) & 
         Nrep = (/ 2,2,1 /)
    if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) &
-        Nrep = (/ 2,1,2 /)
+        Nrep = (/ 1,1,2 /)
 
    a1 = axes(:,1);   a2 = axes(:,2);    a3 = axes(:,3)
    rot(1,:) = a1/norm(a1);  rot(2,:) = a2/norm(a2);  rot(3,:) = a3/norm(a3)
