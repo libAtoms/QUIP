@@ -261,7 +261,7 @@ def find_wrap_sources(makefile, quip_root):
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
-    wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95', 'ElectrostaticEmbed.f95']]
+    wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95', 'ElectrostaticEmbed.f95', 'AdjustablePotential.f95']]
     wrap_types += ['potential']
     libraries = ['quip_core', 'thirdparty'] + libraries
     targets.append((quip_root, 'QUIP_Core/libquip_core.a'))
