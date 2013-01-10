@@ -92,6 +92,11 @@ for filename, label, color in zip(filenames, opt.label, colors):
 
         all_data = np.dstack(cycles)
 
+        if cycle_label == 'interp':
+            # repeat beginning of cycle at end
+            all_data = np.vstack([all_data, all_data[0,:,:][np.newaxis,:]])
+            time = np.r_[time,time[-1]+(time[-1]-time[-2])]
+
         max_data = all_data.max(axis=2)
         min_data = all_data.min(axis=2)
         mean_data = all_data.mean(axis=2)
