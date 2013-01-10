@@ -17,16 +17,214 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import numpy as np
+import itertools
 from quippy.atoms import *
 import quippy._structures
 from quippy._structures import *
-from quippy.farray import fidentity, fzeros, frange, farray
+from quippy.farray import FortranArray, fidentity, fzeros, frange, farray, gcd
 
 import numpy as np
 
 __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'quartz_params', 'alpha_quartz', 'get_bulk_params',
-                                        'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths']
+                                        'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths',
+                                        'MillerIndex', 'angle_between']
+
+class MillerIndex(FortranArray):
+
+    __array_priority__ = 101.0
+
+    brackets = {'direction': '[]',
+                'direction_family': '<>',
+                'plane': '()',
+                'plane_family': '{}'}
+
+    all_brackets = list(itertools.chain(*brackets.values()))
+
+    def __new__(cls, v=None, type='direction'):
+        """Construct a MillerIndex from vector or string:
+
+        a = MillerIndex(v)
+        """
+        if isinstance(v, basestring):
+            v = MillerIndex.parse(v)
+        if len(v) == 3 or len(v) == 4:
+            self = FortranArray.__new__(cls, v)
+        else:
+            raise ValueError('%s input v should be of length 3 or 4' % cls.__name__)
+        self.type = type
+        self.simplify()
+        return self
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.type = getattr(obj, 'type', None)
+
+    def __repr__(self):
+        return ('%s(['+'%d'*len(self)+'])') % ((self.__class__.__name__,) + tuple(self))
+        
+    def __str__(self):
+        bopen, bclose = MillerIndex.brackets[self.type]
+        return (bopen+'%d'*len(self)+bclose) % tuple(self)
+
+    def latex(self):
+        s = '$'
+        bopen, bclose = MillerIndex.brackets[self.type]
+        s += bopen
+        for component in self:
+            if component < 0:
+                s += '\bar{%d}' % component
+            else:
+                s += '%d' % component
+        s += bclose
+        s += '$'
+        return s
+
+    @classmethod
+    def parse(cls, s):
+        """
+        Parse a Miller index string
+
+        Negative indices can be denoted by:
+         1. leading minus sign, e.g. '[11-2]'
+         2. trailing 'b' (for 'bar'), e.g. '112b'
+         3. LaTeX \bar{}, e.g. '11\bar{2}'
+
+        Leading or trailing brackets of various kinds are ignored.
+        i.e. '[001]', '{001}', '(001)', '[001]', '<001>', '001' are all equivalent.
+
+        Returns an array of components (i,j,k) or (h,k,i,l)
+        """
+
+        if not isinstance(s, basestring):
+            raise TypeError("Can't parse from %r of type %r" % (s, type(s)))
+
+        orig_s = s
+        for (a, b) in [(r'\bar{','-')] + [(b,'') for b in MillerIndex.all_brackets]:
+            s = s.replace(a, b)
+
+        L = list(s)
+        components = np.array([1,1,1,1]) # space for up to 4 elements
+        i = 3 # parse backwards from end of string
+        while L:
+            if i < 0:
+                raise ValueError('Cannot parse Miller index from string "%s", too many components found' % orig_s)
+            c = L.pop()
+            if c == '-':
+                if i == 3:
+                    raise ValueError('Miller index string "%s" cannot end with a minus sign' % orig_s)
+                components[i+1] *= -1
+            elif c == 'b':
+                components[i] *= -1
+            elif c in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+                components[i] *= int(c)
+                i -= 1
+            else:
+                raise ValueError('Unexpected character "%s" in miller index string "%s"' % (c, orig_s))
+                
+        if i == 0:
+            return components[1:]
+        elif i == -1:
+            return components
+        else:
+            raise ValueError('Cannot parse Miller index from string %s, too few components found' % orig_s)
+        
+        self.simplify()
+
+    def simplify(self):
+        """
+        Simplify by dividing through by greatest common denominator
+        """
+        d = abs(reduce(gcd, self))
+        self[:] /= d
+
+    def simplified(self):
+        copy = self.copy()
+        copy.simplify()
+        return copy
+
+    def normalised(self):
+        a = self.as3()
+        return a.copy().view(FortranArray)/a.norm()
+
+    hat = normalised
+
+    def cross(self, other):
+        a = self.as3()
+        b = MillerIndex(other).as3()
+        return np.cross(a, b).view(MillerIndex).simplified()
+
+    def cosine(self, other):
+        other = MillerIndex(other)
+        return np.dot(self.normalised(), other.normalised())
+
+    def angle(self, other):
+        return np.arccos(self.cosine(other))
+
+    def as4(self):
+        if len(self) == 4:
+            return self
+        else:
+            h, k, l = self
+            i = -(h+l)
+            return MillerIndex((h,k,i,l))
+
+    def as3(self):
+        if len(self) == 3:
+            return self
+        else:
+            h, k, i, l = self
+            return MillerIndex((h, k, l))
+
+    def plane_spacing(self, a):
+        return a/self.as3().norm()
+
+
+def angle_between(a, b):
+    """Angle between crystallographic directions between a=[ijk] and b=[lmn], in radians."""
+    return MillerIndex(a).angle(b)
+
+
+def rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
+    """Return 3x3 matrix rotation matrix defining a crack with open
+    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either
+    crack tip line `z` or crack propagation direction `x`."""
+
+    axes = fzeros((3,3))
+    y = MillerIndex(y).as3()
+
+    if (x is None and z is None) or (x is not None and z is not None):
+        raise ValueError('exactly one of x and z must be non-null')
+
+    axes[:,2] = np.dot(unit.g.T, y)     # plane defined by y=(lmn)
+
+    if z is not None:
+        z = MillerIndex(z).as3()
+        axes[:,3] = np.dot(unit.lattice, z) # line defined by z=[pqr]
+
+        axes[:,2] = axes[:,2]/axes[:,2].norm()
+        axes[:,3] = axes[:,3]/axes[:,3].norm()
+
+        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
+            raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
+
+        axes[:,1] = np.cross(axes[:,2], axes[:,3])
+    else:
+        x = MillerIndex(x).as3()
+        axes[:,1] = np.dot(unit.lattice, x)
+
+        axes[:,2] = axes[:,2]/axes[:,2].norm()
+        axes[:,1] = axes[:,1]/axes[:,1].norm()
+
+        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
+            raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
+
+        axes[:,3] = np.cross(axes[:,1], axes[:,2])
+
+    # Rotation matrix is transpose of axes matrix
+    return axes.T
+
 
 
 def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=None, periodicity=None, vacuum=None, shift=None, verbose=True):
@@ -273,44 +471,6 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
     orthorhombic.map_into_cell()
     return orthorhombic
 
-def rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
-    """Return 3x3 matrix rotation matrix defining a crack with open
-    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either
-    crack tip line `z` or crack propagation direction `x`."""
-
-    axes = fzeros((3,3))
-    if len(y) == 4:
-        h, k, i, l = y
-        y = [h, k, l]
-
-    if (x is None and z is None) or (x is not None and z is not None):
-        raise ValueError('exactly one of x and z must be non-null')
-
-    axes[:,2] = np.dot(unit.g.T, y)     # plane defined by y=(lmn)
-
-    if z is not None:
-        axes[:,3] = np.dot(unit.lattice, z) # line defined by z=[pqr]
-
-        axes[:,2] = axes[:,2]/axes[:,2].norm()
-        axes[:,3] = axes[:,3]/axes[:,3].norm()
-
-        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
-            raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
-
-        axes[:,1] = np.cross(axes[:,2], axes[:,3])
-    else:
-        axes[:,1] = np.dot(unit.lattice, x)
-
-        axes[:,2] = axes[:,2]/axes[:,2].norm()
-        axes[:,1] = axes[:,1]/axes[:,1].norm()
-
-        if abs(np.dot(axes[:,2], axes[:,3])) > tol:
-            raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
-
-        axes[:,3] = np.cross(axes[:,1], axes[:,2])
-
-    # Rotation matrix is transpose of axes matrix
-    return axes.T
 
 
 quartz_params = {'experiment': {'a': 4.9160,
