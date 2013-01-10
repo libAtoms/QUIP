@@ -23,7 +23,7 @@
 # HND X
 # HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys, string, os, operator, itertools, logging, glob, re
+import sys, string, os, operator, itertools, logging, glob, re, shutil
 import numpy as np
 
 from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
@@ -1114,14 +1114,13 @@ def check_pspots(cluster, cell, param, orig_dir):
 
     if not missing_pspots:
         n_electrons = reduce(operator.add, \
-                             map(lambda el: valence_charges[el]*count(cluster.species == el), \
+                             map(lambda el: valence_charges[el]*sum(cluster.species.stripstrings() == el), \
                                  elements))
-
         log.info('total electrons %.1f' % n_electrons)
-        if (param.has_key('spin_polarised') and param['spin_polarised'].lower() and \
+        if (param.has_key('spin_polarised') and param['spin_polarised'] and \
             int(n_electrons) % 2 != 0):
             raise ValueError('spin polarised set to false but got odd number of electrons!')
-        if (param.has_key('spin_polarised') and param['spin_polarised'].lower() and \
+        if (param.has_key('spin_polarised') and param['spin_polarised'] and \
             int(n_electrons) % 2 == 0):
             raise ValueError('spin polarised set to true but got even number of electrons!')
 
