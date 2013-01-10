@@ -78,7 +78,7 @@ p.add_option('-a', '--atom-range', action='store', help="""Range of atoms to inc
 and max 1-based atom indices. Using a reduced atom range dramatically
 speeds up reading of large XYZ trajectories.""", nargs=2)
 p.add_option('-l', '--load-all', action='store_true', help="""Read all frames before starting processing. Allows frame indexing for file types which do not support random access (e.g. .castep)""")
-
+p.add_option('-t', '--time-ordered-series', action='store_true', help="""Join all input files, ordering by time and discarding duplicates""")
 
 # Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
@@ -340,6 +340,9 @@ if opt.extract_params and 'stdin' not in infiles:
     read_args['range'] = 'empty'
 if opt.read_args is not None:
     read_args.update(eval("dict(%s)" % opt.read_args))
+
+if opt.time_ordered_series:
+    infiles = time_ordered_series(infiles)
 
 if opt.load_all:
     all_configs = AtomsList(infiles,
