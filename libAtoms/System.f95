@@ -2076,7 +2076,7 @@ contains
     type inoutput_ptr
        type(inoutput), pointer :: p
     end type inoutput_ptr
-    integer, intent(out), dimension(12) :: mainlog_ptr, errorlog_ptr
+    integer, intent(out), dimension(SIZEOF_FORTRAN_T) :: mainlog_ptr, errorlog_ptr
     type(inoutput_ptr) :: mainlog_p, errorlog_p
 
     mainlog_p%p => mainlog
