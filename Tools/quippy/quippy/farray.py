@@ -20,13 +20,13 @@
 array indexing."""
 
 import sys
-import numpy
+import numpy as np 
 import weakref
 import logging
 
 __all__ = ['FortranArray', 'frange', 'fenumerate', 'fzeros', 'farray',
            'fidentity', 'fvar', 'f2n', 'n2f', 'unravel_index', 's2a',
-           'a2s', 'loadtxt', 'loadcsv']
+           'a2s', 'loadtxt', 'loadcsv', 'tilevec', 'gcd']
 
 major, minor = sys.version_info[0:2]
 assert (major, minor) >= (2, 4)
@@ -64,7 +64,7 @@ def fenumerate(seq):
 
 def fzeros(shape,dtype=float):
     """Create an empty :class:`FortranArray` with Fortran ordering."""
-    return FortranArray(numpy.zeros(shape,dtype,order='F'))
+    return FortranArray(np.zeros(shape,dtype,order='F'))
 
 def farray(seq, dtype=None):
     """Convert ``seq`` to a :class:`FortranArray` with Fortran ordering.
@@ -72,13 +72,13 @@ def farray(seq, dtype=None):
     >>> fa = farray([1,2,3])
 
     A copy of the data in seq will be made if necessary."""
-    na = numpy.array(seq,order='F', dtype=dtype)
+    na = np.array(seq,order='F', dtype=dtype)
     return FortranArray(na)
 
 def fidentity(n):
     """Return the ``n`` dimensional identity matrix as a :class:`FortranArray`."""
 
-    return farray(numpy.identity(n))
+    return farray(np.identity(n))
 
 def fvar(seq):
     """
@@ -107,8 +107,8 @@ def fvar(seq):
     finally:
         del frame
 
-class FortranArray(numpy.ndarray):
-    """Subclass of :class:`numpy.ndarray` which uses Fortran-style one-based indexing.
+class FortranArray(np.ndarray):
+    """Subclass of :class:`np.ndarray` which uses Fortran-style one-based indexing.
 
     The first element is numbered one rather than zero and
     trying to access element zero will raise an :exc:`IndexError`
@@ -136,7 +136,7 @@ class FortranArray(numpy.ndarray):
             raise RuntimeError("array's parent has gone array of scope!")
         if getattr(array, 'parent', None) is not None and array.parent() is None:
             raise RuntimeError("array's parent has gone array of scope!")
-        return numpy.ndarray.__array_prepare__(self, array, context)
+        return np.ndarray.__array_prepare__(self, array, context)
         
     #def __array_wrap__(self, array, context=None):
     #    print 'in __array_wrap__, self.parent=%r, array.parent=%r' % (getattr(self, 'parent', None),
@@ -145,7 +145,7 @@ class FortranArray(numpy.ndarray):
     #        raise RuntimeError("array's parent has gone array of scope!")
     #    if getattr(array, 'parent', None) is not None and array.parent() is None:
     #        raise RuntimeError("array's parent has gone array of scope!")
-    #    return numpy.ndarray.__array_wrap__(self, array, context)
+    #    return np.ndarray.__array_wrap__(self, array, context)
 
 
     def __new__(cls, input_array=None, doc=None, parent=None):
@@ -155,8 +155,8 @@ class FortranArray(numpy.ndarray):
 
         If doc is not None, docstring of new array is set to doc."""
 
-        self = numpy.asarray(input_array)
-        self = self.view(FortranArray)
+        self = np.asarray(input_array)
+        self = self.view(cls)
 
         if doc is not None:
             self.__doc__ = doc
@@ -170,16 +170,16 @@ class FortranArray(numpy.ndarray):
     #    print 'Freeing array shape %r' % self.shape
 
     def __eq__(self, other):
-        obj = numpy.ndarray.__eq__(self, other)
-        if isinstance(obj, numpy.ndarray):
-            return obj.view(FortranArray)
+        obj = np.ndarray.__eq__(self, other)
+        if isinstance(obj, np.ndarray):
+            return obj.view(self.__class__)
         else:
             return obj
 
     def __ne__(self, other):
-        obj = numpy.ndarray.__ne__(self, other)
-        if isinstance(obj, numpy.ndarray):
-            return obj.view(FortranArray)
+        obj = np.ndarray.__ne__(self, other)
+        if isinstance(obj, np.ndarray):
+            return obj.view(self.__class__)
         else:
             return obj
 
@@ -211,12 +211,12 @@ class FortranArray(numpy.ndarray):
         islist = isinstance(indx, list)
         doext = False
 
-        if isinstance(indx, numpy.ndarray):
+        if isinstance(indx, np.ndarray):
             indx = (indx,)
 
         nindx = []
         for idx in indx:
-            if isinstance(idx, int) or isinstance(idx, numpy.integer):
+            if isinstance(idx, int) or isinstance(idx, np.integer):
 #                print 'mapping int %d to %d' % (idx, FortranArray.map_int(idx))
                 nindx.append(FortranArray.map_int(idx))
             elif isinstance(idx, slice):
@@ -232,10 +232,10 @@ class FortranArray(numpy.ndarray):
                 rslice = slice(rslice_start, rslice_stop, rslice_step)
 #                print 'mapping slice %s to %s' % (idx, rslice)
                 nindx.append( rslice )
-            elif isinstance(idx, numpy.ndarray):
+            elif isinstance(idx, np.ndarray):
                 if idx.dtype.kind == 'i':
                     if (idx == 0).any(): raise ValueError('Advanced slicing array must not contain index 0')
-                    nindx.append(numpy.where(idx > 0, idx-1, idx))
+                    nindx.append(np.where(idx > 0, idx-1, idx))
                 elif idx.dtype.kind == 'b':
                     nindx.append(idx)
                 else:
@@ -278,9 +278,9 @@ class FortranArray(numpy.ndarray):
         if getattr(self, 'parent', None) and self.parent() is None:
             raise RuntimeError("array's parent has gone out of scope!")
         indx = self.mapindices(indx)
-        obj = numpy.ndarray.__getitem__(self, indx)
-        if isinstance(obj, numpy.ndarray):
-            fa = obj.view(FortranArray)
+        obj = np.ndarray.__getitem__(self, indx)
+        if isinstance(obj, np.ndarray):
+            fa = obj.view(self.__class__)
             return fa
         return obj
 
@@ -294,14 +294,14 @@ class FortranArray(numpy.ndarray):
         if isinstance(indx, slice): domap = False
         if indx is Ellipsis: domap = False
         if isinstance(indx, list): doext = True
-        if isinstance(indx, numpy.ndarray): doext = True
+        if isinstance(indx, np.ndarray): doext = True
 
         if hasattr(indx, '__iter__'):
             if any([isinstance(x,slice) or x is Ellipsis for x in indx]): domap = False
-            if any([isinstance(x,numpy.ndarray) for x in indx]): doext = True
+            if any([isinstance(x,np.ndarray) for x in indx]): doext = True
             if any([isinstance(x,list) for x in indx]): doext = True
             if len(indx) != len(self.shape): domap = False
-        elif isinstance(indx, int) or isinstance(indx, numpy.integer):
+        elif isinstance(indx, int) or isinstance(indx, np.integer):
             if len(self.shape) != 1:
                 domap = False
                 indx = (Ellipsis, indx)
@@ -313,7 +313,7 @@ class FortranArray(numpy.ndarray):
 #            print 'mapping', indx
             indx = self.mapindices(indx)
 
-        numpy.ndarray.__setitem__(self, indx, value)
+        np.ndarray.__setitem__(self, indx, value)
 
     def __getslice__(self, i, j):
         "Overloaded __getslice__ which accepts one-based indices."
@@ -322,9 +322,9 @@ class FortranArray(numpy.ndarray):
 
         if i != 0:
             i = FortranArray.map_int(i)
-        obj = numpy.ndarray.__getslice__(self, i, j)
-        if isinstance(obj, numpy.ndarray):
-            fa = obj.view(FortranArray)
+        obj = np.ndarray.__getslice__(self, i, j)
+        if isinstance(obj, np.ndarray):
+            fa = obj.view(self.__class__)
             return fa
 
     def __setslice__(self, i, j, value):
@@ -334,60 +334,60 @@ class FortranArray(numpy.ndarray):
 
         if i != 0:
             i = FortranArray.map_int(i)
-        numpy.ndarray.__setslice__(self, i, j, value)
+        np.ndarray.__setslice__(self, i, j, value)
 
     def nonzero(self):
         """Return the one-based indices of the elements of a which are not zero."""
-        return tuple(a + 1 for a in numpy.ndarray.nonzero(self))
+        return tuple(a + 1 for a in np.ndarray.nonzero(self))
 
     def argmin(self, axis=None, out=None):
         """Return one-based indices of the minimum values along the given  axis of `a`.
 
-        Refer to `numpy.ndarray.argmax` for detailed documentation."""
+        Refer to `np.ndarray.argmax` for detailed documentation."""
         if axis is not None and axis > 0:
             axis -= 1
-        return numpy.ndarray.argmin(self,axis,out) + 1
+        return np.ndarray.argmin(self,axis,out) + 1
 
     def argmax(self, axis=None, out=None):
         """Return one-based indices of the maximum values along the given axis of `a`.
 
-        Refer to `numpy.ndarray.argmax` for detailed documentation."""
+        Refer to `np.ndarray.argmax` for detailed documentation."""
         if axis is not None and axis > 0:
             axis -= 1
-        return numpy.ndarray.argmax(self,axis,out) + 1
+        return np.ndarray.argmax(self,axis,out) + 1
 
     def argsort(self, axis=None, kind='quicksort', order=None):
         """Returns the indices that would sort this array.
 
-        Refer to `numpy.argsort` for full documentation."""
+        Refer to `np.argsort` for full documentation."""
 
         if axis is not None and axis > 0:
             axis -= 1
-        return numpy.ndarray.argsort(self,axis,kind,order) + 1
+        return np.ndarray.argsort(self,axis,kind,order) + 1
 
     def take(self, indices, axis=None, out=None, mode='raise'):
         """Return an array formed from the elements of a at the given
         one-based indices.
 
-        Refer to `numpy.take` for full documentation."""
+        Refer to `np.take` for full documentation."""
 
         if axis is not None and axis > 0:
             axis -= 1
-        return numpy.ndarray.take(self,self.mapindices(indices),
+        return np.ndarray.take(self,self.mapindices(indices),
                                   axis,out,mode)
 
     def put(self, indices, values, mode='raise'):
         """Set a.flat[n] = values[n] for all n in indices.
 
-        Refer to `numpy.put` for full documentation."""
+        Refer to `np.put` for full documentation."""
 
-        return numpy.ndarray.put(self, self.mapindices(indices),
+        return np.ndarray.put(self, self.mapindices(indices),
                                  values, mode)
 
     def __repr__(self):
         if getattr(self, 'parent', None) and self.parent() is None:
             raise RuntimeError("array's parent has gone out of scope!")
-        s = repr(numpy.asarray(self).view(numpy.ndarray))
+        s = repr(np.asarray(self).view(np.ndarray))
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
         return s
@@ -396,7 +396,7 @@ class FortranArray(numpy.ndarray):
     def __str__(self):
         if getattr(self, 'parent', None) and self.parent() is None:
             raise RuntimeError("array's parent has gone out of scope!")        
-        return str(numpy.asarray(self).view(numpy.ndarray))
+        return str(np.asarray(self).view(np.ndarray))
 
     def __iter__(self):
         """Iterate over this :class:`FortranArray` treating first dimension as fastest varying.
@@ -407,7 +407,7 @@ class FortranArray(numpy.ndarray):
         if len(self.shape) > 1:
             return self.col_iter()
         else:
-            return numpy.ndarray.__iter__(numpy.asarray(self).view(numpy.ndarray))
+            return np.ndarray.__iter__(np.asarray(self).view(np.ndarray))
 
 
     def row_iter(self):
@@ -416,9 +416,9 @@ class FortranArray(numpy.ndarray):
             yield self.item()
         else:
             for i in frange(self.shape[0]):
-                obj = numpy.ndarray.__getitem__(self, i-1)
-                if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)
+                obj = np.ndarray.__getitem__(self, i-1)
+                if (isinstance(obj, np.ndarray) and obj.dtype.isbuiltin):
+                    fa = obj.view(self.__class__)
                     yield fa
                 else:
                     yield obj
@@ -436,10 +436,10 @@ class FortranArray(numpy.ndarray):
                 raise ValueError('first array dimension should be of size 3')
             out = fzeros(m)
             for i in frange(m):
-                out[i] = numpy.dot(self[:,i],self[:,i])
+                out[i] = np.dot(self[:,i],self[:,i])
             return out
         elif len(self.shape) == 1:
-            return numpy.dot(self,self)
+            return np.dot(self,self)
         elif len(self.shape) == 0:
             return self.item()
         else:
@@ -448,7 +448,13 @@ class FortranArray(numpy.ndarray):
 
     def norm(self):
         "Return ``sqrt(norm2(self))``"
-        return numpy.sqrt(self.norm2())
+        return np.sqrt(self.norm2())
+
+    def normalised(self):
+        "Return a normalised copy of this array"
+        return self.copy()/self.norm()
+
+    hat = normalised
 
     def col_iter(self):
         """Iterator for ``MxN`` arrays to return ``cols [...,i]`` for ``i=1,N`` one by one as ``Mx1`` arrays."""
@@ -456,47 +462,47 @@ class FortranArray(numpy.ndarray):
             yield self.item()
         else:
             for i in frange(self.shape[-1]):
-                obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1)).view(FortranArray)
+                obj = np.ndarray.__getitem__(self, (Ellipsis, i-1)).view(self.__class__)
                 yield obj
 
     cols = property(col_iter)
 
     def all(self, axis=None, out=None):
-        """One-based analogue of :meth:`numpy.ndarray.all`"""
+        """One-based analogue of :meth:`np.ndarray.all`"""
 
         if axis is not None and axis > 0:
             axis -= 1
-        obj = numpy.ndarray.all(self, axis, out)
-        if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)
+        obj = np.ndarray.all(self, axis, out)
+        if isinstance(obj, np.ndarray):
+            obj = obj.view(self.__class__)
         return obj
 
     def any(self, axis=None, out=None):
-        """One-based analogue of :meth:`numpy.ndarray.any`"""
+        """One-based analogue of :meth:`np.ndarray.any`"""
 
         if axis is not None and axis > 0:
             axis -= 1
-        obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
-        if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)
+        obj = np.ndarray.any(self, axis, out).view(self.__class__)
+        if isinstance(obj, np.ndarray):
+            obj = obj.view(self.__class__)
         return obj
 
     def sum(self, axis=None, dtype=None, out=None):
-        """One-based analogue of :meth:`numpy.ndarray.sum`"""
+        """One-based analogue of :meth:`np.ndarray.sum`"""
         if axis is not None and axis > 0:
             axis -= 1
-        obj = numpy.ndarray.sum(self, axis, out).view(FortranArray)
-        if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)
+        obj = np.ndarray.sum(self, axis, out).view(self.__class__)
+        if isinstance(obj, np.ndarray):
+            obj = obj.view(self.__class__)
         return obj
 
     def mean(self, axis=None, dtype=None, out=None):
-        """One-based analogue of :meth:`numpy.ndarray.mean`"""
+        """One-based analogue of :meth:`np.ndarray.mean`"""
         if axis is not None and axis > 0:
             axis -= 1
-        obj = numpy.ndarray.mean(self, axis, out).view(FortranArray)
-        if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)
+        obj = np.ndarray.mean(self, axis, out).view(self.__class__)
+        if isinstance(obj, np.ndarray):
+            obj = obj.view(self.__class__)
         return obj
 
 
@@ -561,7 +567,7 @@ def convert_farray_to_ndarray(func):
         nres = []
         for r in res:
             if isinstance(r, ndarray):
-                nres.append(r.view(FortranArray))
+                nres.append(r.view(self.__class__))
             else:
                 nres.append(r)
 
@@ -621,17 +627,17 @@ def convert_ndarray_to_farray(func):
     return nfunc
 
 def f2n(x):
-    """Return ``x.view(numpy.ndarray)``"""
-    return x.view(numpy.ndarray)
+    """Return ``x.view(np.ndarray)``"""
+    return x.view(np.ndarray)
 
 def n2f(x):
     """Return ``x.view(FortranArray)``"""
     return x.view(FortranArray)
 
 def unravel_index(x, dims):
-    """1-based version of numpy.unravel_index"""
+    """1-based version of np.unravel_index"""
 
-    return tuple([n+1 for n in numpy.unravel_index(x-1, dims)])
+    return tuple([n+1 for n in np.unravel_index(x-1, dims)])
 
 
 def s2a(d, pad=TABLE_STRING_LENGTH):
@@ -650,12 +656,23 @@ def a2s(a):
     return [ ''.join(a[:,i]).strip() for i in frange(a.shape[1]) ]
 
 def loadtxt(filename):
-    return farray(numpy.loadtxt(filename))
+    return farray(np.loadtxt(filename))
 
 def loadcsv(filename):
     """Read CSV formatted data file and return dictionary of farrays, using first
        row in file as column labels for dictionary keys."""
-    data = numpy.loadtxt(filename,delimiter=',',skiprows=1)
+    data = np.loadtxt(filename,delimiter=',',skiprows=1)
     cols = open(filename,'rU').readline().strip().split(',')
     data = dict(zip(cols, (farray(data[:,i]) for i in range(data.shape[1]))))
     return data
+
+def tilevec(vec, n):
+    """repeat 3-vector `vec` n times to give an array with shape (3,N)"""
+    return np.tile(array(vec)[:,np.newaxis], n)
+
+def gcd(a, b):
+    """Calculate the greatest common divisor of a and b"""
+    while b:
+        a, b = b, a%b
+    return a
+
