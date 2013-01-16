@@ -4284,7 +4284,7 @@ module gp_predict_module
 
       real(dp) :: delta, f0
       integer :: status, d, n_sparseX, n_x, n_xPrime, n_permutations, i, x_size_max, xPrime_size_max, sparseX_size_max, covariance_type
-      logical :: sparsified
+      logical :: sparsified, exist_sparseX_filename
       character(len=1024) :: value
 
       if(name == 'gpCoordinates') then ! new GP_data
@@ -4393,6 +4393,9 @@ module gp_predict_module
                   call gpCoordinates_setParameters_sparse(parse_gpCoordinates,d,n_sparseX,delta,f0, covariance_type=covariance_type)
 		  call GP_FoX_get_value(attributes, 'sparseX_filename', value, status)
 		  if (status == 0) then
+                     inquire(file=trim(value),exist=exist_sparseX_filename)
+                     if(.not.exist_sparseX_filename) call system_abort("gpCoordinates_startElement_handler: sparseX file "//trim(value)//" does not exist.")
+
 		     call fread_array_d(size(parse_gpCoordinates%sparseX), parse_gpCoordinates%sparseX(1,1), trim(value)//C_NULL_CHAR)
 		     parse_sparseX_separate_file = .true.
 		  else
