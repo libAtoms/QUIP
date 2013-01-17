@@ -10,7 +10,8 @@ Create executables (do this in $QUIP_ROOT)
   make Tools/make_bulk_supercell Tools/make_k_mesh QUIP_Programs/eval
 
 Create 8 atom simple cubic supercell of diamond structure Si (Z=14)
-  ${QUIP_ROOT}/build.${QUIP_ARCH}/make_bulk_supercell struct=dia_sc vol_per_atom=20.0 Z_values='14' > dia.xyz
+Note that the Z_values has to begin with a letter (which is later ignored), so that QUIP parses it as a string
+  ${QUIP_ROOT}/build.${QUIP_ARCH}/make_bulk_supercell struct=dia_sc vol_per_atom=20.0 Z_values='S 14' > dia.xyz
 
 Create a k-point mesh
   ${QUIP_ROOT}/build.${QUIP_ARCH}/make_k_mesh mesh='2 2 2' monkhorst_pack > k_points.xml
