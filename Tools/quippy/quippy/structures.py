@@ -28,9 +28,14 @@ import numpy as np
 __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'quartz_params', 'alpha_quartz', 'get_bulk_params',
                                         'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths',
-                                        'MillerIndex', 'angle_between']
+                                        'MillerIndex', 'MillerPlane', 'MillerDirection', 'angle_between']
+from quippy import fortran_indexing
+if fortran_indexing:
+   arraybase = FortranArray
+else:
+   arraybase = np.ndarray
 
-class MillerIndex(FortranArray):
+class MillerIndex(arraybase):
 
     __array_priority__ = 101.0
 
@@ -179,6 +184,12 @@ class MillerIndex(FortranArray):
 
     def plane_spacing(self, a):
         return a/self.as3().norm()
+
+def MillerPlane(v):
+   return MillerIndex(v, 'plane')
+
+def MillerDirection(v):
+   return MillerIndex(v, 'direction')
 
 
 def angle_between(a, b):
