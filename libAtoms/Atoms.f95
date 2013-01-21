@@ -80,6 +80,7 @@ module  atoms_module
   public :: directionality, closest_atom, set_atoms, get_lattice_params, list_matching_prop
   public :: coalesce_in_one_periodic_image, prop_names_string, parse_atom_mask, complement
   public :: direction_cosines_min_image, difference, set_map_shift
+  public :: undo_pbc_jumps, undo_com_motion, calc_msd, fake_smooth_pos
 
   integer,  parameter :: NOT_NEIGHBOUR = 0     !% Returned by 'Find_Neighbour' if unsuccessful
 
