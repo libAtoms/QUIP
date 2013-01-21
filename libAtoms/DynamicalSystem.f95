@@ -73,11 +73,11 @@ module dynamicalsystem_module
    private
 
    public :: dynamicalsystem, add_atoms, remove_atoms, print, initialise, finalise
-   public :: kinetic_energy, kinetic_virial, angular_momentum, momentum, add_thermostat
+   public :: kinetic_energy, kinetic_virial, angular_momentum, momentum, n_thermostat, add_thermostat, remove_thermostat, print_thermostats
    public :: set_barostat, add_thermostats, update_thermostat, gaussian_velocity_component
    public :: TYPE_CONSTRAINED, TYPE_ATOM, ds_print_status, rescale_velo, zero_momentum
    public :: advance_verlet1, advance_verlet2, advance_verlet, distance_relative_velocity, ds_amend_constraint
-   public :: torque, temperature, zero_angular_momentum, enable_damping, disable_damping, moment_of_inertia_tensor
+   public :: torque, temperature, zero_angular_momentum, is_damping_enabled, get_damping_time, enable_damping, disable_damping, moment_of_inertia_tensor, thermostat_temperatures
    public :: ds_add_constraint, ds_save_state, ds_restore_state
 
    public :: constrain_bondanglecos, &
@@ -185,6 +185,14 @@ module dynamicalsystem_module
    interface add_thermostat
       module procedure ds_add_thermostat
    end interface add_thermostat
+
+   interface remove_thermostat
+      module procedure ds_remove_thermostat
+   end interface remove_thermostat
+
+   interface print_thermostats
+      module procedure ds_print_thermostats
+   end interface print_thermostats
 
    interface set_barostat
       module procedure ds_set_barostat
@@ -879,6 +887,22 @@ contains
 
    end subroutine ds_set_barostat
 
+   function n_thermostat(this)
+     type(dynamicalsystem), intent(in) :: this
+     integer n_thermostat
+
+     n_thermostat = size(this%thermostat)
+
+   end function n_thermostat
+
+   subroutine ds_remove_thermostat(this, index)
+     type(dynamicalsystem), intent(inout) :: this
+     integer, intent(in) :: index
+
+     call remove_thermostat(this%thermostat, index)
+
+   end subroutine ds_remove_thermostat
+
    subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, NHL_tau, NHL_mu, massive, region_i)
 
      type(dynamicalsystem), intent(inout) :: this
@@ -1057,6 +1081,28 @@ contains
    !X enable/disable damping
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+   function is_damping_enabled(this)
+     type(DynamicalSystem), intent(in) :: this
+     logical is_damping_enabled
+
+     if (this%thermostat(0)%type == THERMOSTAT_NONE) then
+        is_damping_enabled = .false.
+     else
+        is_damping_enabled = .true.
+     end if
+
+   end function is_damping_enabled
+
+   function get_damping_time(this)
+     type(DynamicalSystem), intent(in) :: this
+     real(dp) :: get_damping_time
+
+     if (.not. is_damping_enabled(this)) &
+          call system_abort('get_damping_time: damping is not enabled')
+     get_damping_time = 1.0_dp/this%thermostat(0)%gamma
+
+   end function get_damping_time
 
    subroutine enable_damping(this,damp_time)
 
@@ -2325,12 +2371,13 @@ contains
     !% DynamicalSystem. If present, the optional
     !% 'label' parameter should be a one character label for the log lines and is printed
     !% in the first column of the output.
-   subroutine ds_print_status(this, label, epot, instantaneous, mpi_obj, error)
+   subroutine ds_print_status(this, label, epot, instantaneous, mpi_obj, file, error)
      type(DynamicalSystem),       intent(in)   :: this
      character(*),      optional, intent(in)   :: label
      real(dp),          optional, intent(in)   :: epot
      logical,           optional, intent(in)   :: instantaneous
      type(MPI_context), optional, intent(in)   :: mpi_obj
+     type(InOutput),  optional, intent(inout)  :: file
      integer,           optional, intent(out)  :: error
 
      character(len=STRING_LENGTH) :: string
@@ -2348,10 +2395,10 @@ contains
         if(present(epot)) then
              write(line, '(a14,a12,a12,a12,5a20)') "Time", "Temp", "Mean temp", &
                   "Norm(p)","Total work","Thermo work", &
-                  "Ekin", "Etot", "Eext"; call print(line)
+                  "Ekin", "Etot", "Eext"; call print(line, file=file)
           else
              write(line, '(a14,a12,a12,a12,a12,2a20)') "Time", "Temp", "Mean temp", &
-                  "Norm(p)",  "Total work","Thermo work"; call print(line)
+                  "Norm(p)",  "Total work","Thermo work"; call print(line, file=file)
           end if
         firstcall = .false.
      end if
@@ -2384,23 +2431,32 @@ contains
              this%work, this%thermostat_work
 
      end if
-     call print(line)
+     call print(line, file=file)
 
      if (this%print_thermostat_temps) then
        if (any(region_temps >= 0.0_dp)) then
-	 call print("T "//this%t, nocr=.true.)
+	 call print("T "//this%t, nocr=.true., file=file)
 	 do i=0, size(region_temps)-1
 	   if (this%thermostat(i)%type /= THERMOSTAT_NONE) then
-	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
+	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true., file=file)
 	   else
-	     call print(" "// i // " type=NONE", nocr=.true.)
+	     call print(" "// i // " type=NONE", nocr=.true., file=file)
 	   endif
 	 end do
-	 call print("")
+	 call print("", file=file)
        endif
      endif
 
    end subroutine ds_print_status
+
+
+   subroutine ds_print_thermostats(this)
+      type(DynamicalSystem),  intent(inout) :: this
+
+      call print(this%thermostat)
+
+   end subroutine ds_print_thermostats
+ 
 
    !% Print lots of information about this DynamicalSystem in text format.
    subroutine ds_print(this,file)
