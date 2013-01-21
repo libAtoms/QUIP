@@ -21,6 +21,7 @@ import itertools
 from quippy.atoms import *
 import quippy._structures
 from quippy._structures import *
+from quippy import quippy_array
 from quippy.farray import FortranArray, fidentity, fzeros, frange, farray, gcd
 
 import numpy as np
@@ -29,13 +30,8 @@ __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'quartz_params', 'alpha_quartz', 'get_bulk_params',
                                         'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths',
                                         'MillerIndex', 'MillerPlane', 'MillerDirection', 'angle_between']
-from quippy import fortran_indexing
-if fortran_indexing:
-   arraybase = FortranArray
-else:
-   arraybase = np.ndarray
 
-class MillerIndex(arraybase):
+class MillerIndex(quippy_array):
 
     __array_priority__ = 101.0
 
@@ -54,7 +50,7 @@ class MillerIndex(arraybase):
         if isinstance(v, basestring):
             v = MillerIndex.parse(v)
         if len(v) == 3 or len(v) == 4:
-            self = FortranArray.__new__(cls, v)
+            self = quippy_array.__new__(cls, v)
         else:
             raise ValueError('%s input v should be of length 3 or 4' % cls.__name__)
         self.type = type
