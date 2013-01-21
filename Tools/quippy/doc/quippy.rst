@@ -19,10 +19,6 @@
 Core :mod:`quippy` module reference
 ===================================
 
-.. module:: quippy
-   :platform: Unix
-   :synopsis: Core quippy functionality
-
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
 
 This section contains library reference material for the core quippy
@@ -30,10 +26,14 @@ classes and modules.
 
 .. toctree::
 
-   farray.rst
    atoms.rst
-   dictionary.rst
-   atomslist.rst
+   structures.rst
+   elasticity.rst
    potential.rst
+   io.rst
    dynamicalsystem.rst
+   clusters.rst
+   farray.rst
+   dictionary.rst
    atomeye.rst
+

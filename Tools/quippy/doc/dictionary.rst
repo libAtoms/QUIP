@@ -16,10 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:class:`quippy.Dictionary` -- key/value pairs
-=============================================
+:class:`quippy.dictionary.Dictionary` -- Fortran dictionary for key/value pairs
+===============================================================================
 
-.. currentmodule:: quippy
+.. currentmodule:: quippy.dictionary
 
 .. class:: Dictionary([D])
    

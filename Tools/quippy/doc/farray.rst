@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:class:`quippy.farray.FortranArray` -- Fortran one-based array indexing
-=======================================================================
+:mod:`quippy.farray` -- Fortran one-based array indexing
+========================================================
 
 .. currentmodule:: quippy.farray
 

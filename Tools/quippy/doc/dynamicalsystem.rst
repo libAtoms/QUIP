@@ -16,10 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:class:`quippy.DynamicalSystem` -- run molecular dynamics simulation
+:mod:`quippy.dynamicalsystem` -- run molecular dynamics simulation
 ====================================================================
 
-.. currentmodule:: quippy
+.. currentmodule:: quippy.dynamicalsystem
 
 .. class:: DynamicalSystem(atoms[, velocity, acceleration, constraints, rigidbodies])
    
@@ -231,3 +231,8 @@
       Change velocities to those that the system would have in the
       zero momentum frame.  Optionalally zero the total momentum of a
       subset of atoms, specified by `indices`.
+
+
+.. autoclass:: Dynamics
+   :members:
+
