@@ -16,7 +16,8 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy.atoms import Atoms, AtomsReaders, AtomsWriters
+from quippy.atoms import Atoms
+from quippy.io import AtomsReaders, AtomsWriters
 from quippy.units import BOHR
 from quippy.farray import *
 import sys, numpy

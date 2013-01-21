@@ -47,7 +47,7 @@ at.pos += random.uniform(size=3*at.n).reshape((3,at.n),order='F')
 
 p.minim(at, 'cg', 1e-3, 100, do_pos=True, do_lat=True)
 
-#from quippy.elastic import *
+#from quippy.elasticity import *
 #C = elastic_constants(mp, at, 'trigonal_low')
 
 

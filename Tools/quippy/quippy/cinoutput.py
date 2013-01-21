@@ -21,7 +21,8 @@ from quippy._cinoutput import *
 
 from quippy import netcdf_file
 from quippy.system import INPUT, OUTPUT, INOUT
-from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.atoms import Atoms
+from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.farray import farray, padded_str_array
 from quippy.extendable_str import Extendable_str
 import numpy as np

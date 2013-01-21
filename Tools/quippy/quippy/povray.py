@@ -16,7 +16,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy.atoms import AtomsWriters
+from quippy.io import AtomsWriters
 from quippy.farray import *
 import sys
 

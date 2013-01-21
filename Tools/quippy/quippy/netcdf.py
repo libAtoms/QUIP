@@ -16,23 +16,21 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy.atoms import atoms_reader, AtomsReaders, AtomsWriters
+import logging, StringIO
+from math import pi
+
+from quippy.atoms import make_lattice, get_lattice_params
+from quippy.io import atoms_reader, AtomsReaders, AtomsWriters
 from quippy.periodictable import ElementName
-from quippy.dictionary import (PROPERTY_INT, PROPERTY_REAL,
+from quippy.dictionary import (Dictionary, PROPERTY_INT, PROPERTY_REAL,
                                PROPERTY_STR, PROPERTY_LOGICAL,
                                T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                                T_CHAR, T_LOGICAL, T_INTEGER_A,
                                T_REAL_A, T_COMPLEX_A, T_CHAR_A,
                                T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 from quippy.table import TABLE_STRING_LENGTH
-
-from quippy.atomslist import *
 from quippy.ordereddict import *
-from quippy import Dictionary
-from quippy.atoms import make_lattice, get_lattice_params
 from quippy.farray import *
-import logging, StringIO
-from math import pi
 from quippy import netcdf_file
 
 __all__ = ['NetCDFReader']

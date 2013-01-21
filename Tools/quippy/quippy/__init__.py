@@ -141,7 +141,7 @@ merge_modules = {'atoms': ('atoms_types', 'atoms', 'connection', 'domaindecompos
 # List of Fortran modules which have Python wrappers in this package
 python_wrappers = ['periodictable', 'table', 'potential',
                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
-                   'extendable_str', 'structures']
+                   'extendable_str', 'structures', 'elasticity']
 modules_name_map = {}
 for mod in python_wrappers:
     if mod in wrap_modules:
@@ -208,13 +208,18 @@ import quippy.fortranio
 from quippy.fortranio import *
 __all__.extend(quippy.fortranio.__all__)
 
-import quippy.farray
-__all__.extend(quippy.farray.__all__)
-from quippy.farray import *
+if fortran_indexing:
+   import quippy.farray
+   __all__.extend(quippy.farray.__all__)
+   from quippy.farray import *
+   quippy_array = FortranArray
+else:
+   quippy_array = np.ndarray
+__all__.append('quippy_array')
 
-import quippy.atomslist
-from quippy.atomslist import *
-__all__.extend(quippy.atomslist.__all__)
+import quippy.io
+from quippy.io import *
+__all__.extend(quippy.io.__all__)
 
 import quippy.util
 from quippy.util import *
@@ -254,9 +259,9 @@ if 'enthought.mayavi' in available_modules:
 #    from quippy.plot2d import *
 #    __all__.extend(quippy.plot2d.__all__)
 
-import quippy.elastic
-from quippy.elastic import *
-__all__.extend(quippy.elastic.__all__)
+import quippy.elasticity
+from quippy.elasticity import *
+__all__.extend(quippy.elasticity.__all__)
 
 import quippy.surface
 from quippy.surface import *

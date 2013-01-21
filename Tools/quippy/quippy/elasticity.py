@@ -50,14 +50,15 @@ from quippy import available_modules
 if 'scipy' in available_modules:
     from scipy import stats
 from farray import *
+from quippy import _elasticity
+from quippy._elasticity import *
 import numpy as np
-
-__all__ = ['strain_matrix', 'stress_matrix', 'strain_vector',
-           'stress_vector', 'generate_strained_configs',
-           'calc_stress', 'fit_elastic_constants',
-           'elastic_constants', 'atomic_strain',
-           'elastic_fields', 'transform_elasticity',
-           'rayleigh_wave_speed']
+__all__ = _elasticity.__all__ + ['strain_matrix', 'stress_matrix', 'strain_vector',
+                                 'stress_vector', 'generate_strained_configs',
+                                 'calc_stress', 'fit_elastic_constants',
+                                 'elastic_constants', 'atomic_strain',
+                                 'elastic_fields', 'transform_elasticity',
+                                 'rayleigh_wave_speed']
 
 def strain_matrix(strain_vector):
     e1, e2, e3, e4, e5, e6 = strain_vector
