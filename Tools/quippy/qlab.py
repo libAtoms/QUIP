@@ -258,6 +258,8 @@ class AtomsViewer(Atoms, QuippyViewer):
         pass
 
     def update_source(self, source, **kwargs):
+        if not isinstance(source, Atoms):
+            source = Atoms(source)
         self.shallow_copy_from(source)
         self.redraw()
 
