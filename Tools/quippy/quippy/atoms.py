@@ -16,31 +16,70 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""Definition of the Atoms class
+"""This module defines the :class:`quippy.atoms.Atoms` class which
+stores and manipulates a collection of atoms.
 
-This module defines the quippy.Atoms class which stores and
-manipulates a collection of atoms"""
+The :class:`Atoms` class is a Pythonic wrapper over auto-generated
+:class:`quippy._atoms.Atoms` class. Atoms object are usually
+constructed either by reading from an input file in one of the
+:ref:`fileformats`, or by using the structure creation functions in
+the :mod:`quippy.structures` or :mod:`ase.lattice` modules.
+
+For example to read from an :ref:`extendedxyz` file, use::
+
+   from quippy.atoms import Atoms
+   atoms = Atoms('filename.xyz')
+
+Or, to create an 8-atom bulk diamond cubic cell of silicon::
+
+   from quippy.structures import diamond
+   si_bulk = diamond(5.44, 14)
+
+The :class:`Atoms` class is inherited from the
+:class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and
+methods in addition to those listed below. This means that quippy and
+ASE Atoms objects are interoperable, and it is easy to convert from
+one to the other, e.g.::
+
+   from quippy.atoms import Atoms as QuippyAtoms
+   from ase.atoms import Atoms as ASEAtoms
+   conv_quippy_to_ase = ASEAtoms(si_bulk)
+   conv_ase_to_quippy = QuippyAtoms(conv_quippy_to_ase)
+   assert conv_ase_to_quippy.equivalent(si_bulk)
+
+An atoms object contains atomic numbers, all dynamical variables
+and connectivity information for all the atoms in the simulation
+cell.
+
+"""
+
+import os
+import weakref
+import copy
+import sys
+import logging
+from math import pi, sqrt
+
+import numpy as np
 
 from quippy import _atoms
 from quippy._atoms import *
 
-import os, weakref, warnings, copy, sys, logging
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format, parse_slice
+from quippy.units import N_A, MASSCONVERT
+from quippy.periodictable import ElementMass
 from quippy.extendable_str import Extendable_str
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import available_modules, FortranDerivedTypes
-from math import pi
-import numpy as np
 
-__all__ = _atoms.__all__ + ['AtomsReaders',
-                            'AtomsWriters',
-                            'atoms_reader']
+atomslog = logging.getLogger('quippy.atoms')
+
+__all__ = _atoms.__all__ + ['NeighbourInfo', 'Neighbours', 'get_lattice_params']
                                    
 if 'ase' in available_modules:
     import ase
-    import ase.constraints
 else:
     import quippy.miniase as ase
 
@@ -58,6 +97,7 @@ get_lattice_params.__doc__ = """Wrapper around _atoms.get_lattice_params()
 Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
 
 """ + _atoms.get_lattice_params.__doc__
+
 
 class NeighbourInfo(object):
     """Store information about a single neighbour of an atom"""
@@ -83,7 +123,7 @@ class Neighbours(object):
     """Provides access to neighbours of an atom.
 
        Supports both iteration over all atoms, and indexing
-       e.g. at.neighbours[1] returns a list of the neighbours of the
+       e.g. ``at.neighbours[1]`` returns a list of the neighbours of the
        atom with index 1. If at.fortran_indexing is True, atom and
        neighbour indices start from 1; otherwise they are numbered
        from zero."""
@@ -191,7 +231,13 @@ class Neighbours(object):
         offsets = np.r_[[n.shift for n in neighbours]]
         return (indices, offsets)
 
-    get_neighbors = get_neighbours # variant spelling
+
+    def get_neighbors(self, i):
+        """
+        Variant spelling of :meth:`get_neighbours`
+        """
+        return self.get_neighbours(i)
+
  
 class PropertiesWrapper(DictMixin):
     """Wrapper between quippy properties and ASE arrays"""
@@ -205,16 +251,17 @@ class PropertiesWrapper(DictMixin):
         res = at.properties[at.name_map.get(key, key)].view(np.ndarray).T
         if res.dtype == 'int32':   # convert dtype int32 -> int
             res = res.astype(int)
-            logging.debug('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
+            atomslog.debug('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
         return res
 
     def __setitem__(self, key, value):
         at = self.atref()
+        atomslog.debug('Setting arrays["%s"]' % key)
         key = Atoms.name_map.get(key, key)
         value = np.array(value)
 
         if value.shape[0] != at.n:
-            logging.debug(('Assignment to arrays["%s"]: changing size '+
+            atomslog.debug(('Assignment to arrays["%s"]: changing size '+
                            ' from %d to %d') % (key, at.n, value.shape[0]))
             for p in at.properties.keys():
                 at.remove_property(p)
@@ -232,7 +279,7 @@ class PropertiesWrapper(DictMixin):
 
     def __delitem__(self, key):
         at = self.atref()
-        warnings.warn('Deletion of arrays["%s"]' % key)
+        atomslog.debug('Deletion of arrays["%s"]' % key)
         key = at.name_map.get(key, key)
         at.remove_property(key)
 
@@ -243,15 +290,6 @@ class PropertiesWrapper(DictMixin):
 
 class Atoms(_atoms.Atoms, ase.Atoms):
 
-    """
-    Pythonic wrapper over auto-generated Atoms class.
-
-    Also inherits from ase.Atoms so has all ASE Atoms methods
-
-    An atoms object contains atomic numbers, all dynamical variables
-    and connectivity information for all the atoms in the simulation
-    cell."""
-
     _cmp_skip_fields = ['own_this', 'ref_count', 'domain']
 
     name_map = {'positions'       : 'pos',
@@ -260,6 +298,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     rev_name_map = dict(zip(name_map.values(), name_map.keys()))
 
+
+    
     def __init__(self, symbols=None, positions=None, numbers=None, tags=None,
                  momenta=None, masses=None, magmoms=None, charges=None,
                  scaled_positions=None, cell=None, pbc=None, constraint=None,
@@ -296,7 +336,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         self.hysteretic_neighbours = Neighbours(self, hysteretic=True)
 
         # If first argument is quippy.Atoms instance, copy data from it
-        if symbols is not None and isinstance(symbols, self.__class__):
+        if isinstance(symbols, self.__class__):
             self.copy_from(symbols)
             symbols = None
 
@@ -309,14 +349,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 positions = atoms.get_positions()
                 masses = atoms.get_masses()
 
-        # Try to read from first argument
-        # fails with IOError or ValueError if symbols is ASE symbols argument
-        if symbols is not None:
-            try:
-                self.read_from(symbols, **readargs)
-                symbols = None
-            except (IOError, ValueError):
-                pass
+        # Try to read from first argument, if it's not ase.Atoms
+        if symbols is not None and not isinstance(symbols, ase.Atoms):
+            self.read_from(symbols, **readargs)
+            symbols = None
 
         ## ASE compatibility
         remove_properties = []
@@ -334,10 +370,12 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             else:
                 remove_properties.append('pos')
 
-        # if symbols is None and momenta is None:
-        #     if hasattr(self, 'velo'):
-        #         momenta = self.velo.view(np.ndarray).T
-
+        # Make sure argument to ase.Atoms constructor are consistent with
+        # properties already present in this Atoms object
+        if symbols is None and momenta is None and self.has_property('velo'):
+            momenta = self.get_momenta()
+        if symbols is None and masses is None and self.has_property('mass'):
+            masses = self.get_masses()
         if symbols is None and cell is None:
             cell = self.lattice.T.view(np.ndarray)
         if symbols is None and pbc is None:
@@ -415,34 +453,36 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     arrays = property(_get_ase_arrays, _set_ase_arrays)
 
     def _get_info(self):
-        """Get ASE info dictionary
+        """ASE info dictionary
 
-        Entries are actually storred in QUIP params dictionary"""
+        Entries are actually stored in QUIP params dictionary"""
 
         return self.params
 
     def _set_info(self, value):
         """Set ASE info dictionary.
 
-         Updates entries in QUIP params dictionary. Note that assigning {} to
-         info doesn't remove the existing params."""
+        Entries are actually stored in QUIP params dictionary.
+        Note that clearing Atoms.info doesn't empty params
+        """
 
         self.params.update(value)
 
     info = property(_get_info, _set_info)
 
-    def iterindices(self):
-        """Iterate over atoms.
+    def _indices(self):
+        """Return array of atoms indices
 
-        If fortran_indexing is True, returns range 1..self.n.
-        Otherwise, returns range 0..(self.n-1)."""
+        If fortran_indexing is True, returns FortranArray containing
+        numbers 1..self.n.  Otherwise, returns a standard numpuy array
+        containing numbers in range 0..(self.n-1)."""
 
         if self.fortran_indexing:
-            return iter(frange(len(self)))
+            return farray(list(frange(len(self))))
         else:
-            return iter(range(len(self)))
+            return np.array(list(range(len(self))))
 
-    indices = property(iterindices)
+    indices = property(_indices)
 
     def iteratoms(self):
         """Iterate over atoms, calling get_atom() for each one"""
@@ -458,10 +498,12 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         positions, atomic numbers, unit cell and periodic boundary
         conditions match.
 
-        Note: the quippy expression a.equivalent(b) has the same
-        definition as a == b in ASE. This means that a quippy.Atoms
-        instance can be compared with an ase.Atoms instance using
-        this method.
+        .. note:: 
+
+            The quippy expression a.equivalent(b) has the same
+            definition as a == b in ASE. This means that a quippy.Atoms
+            instance can be compared with an ase.Atoms instance using
+            this method.
         """
 
         try:
@@ -477,11 +519,21 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     @classmethod
     def read(cls, source, format=None, **kwargs):
-        """Read Atoms object from file `source` according to `format`.
+        """
+        Class method to read Atoms object from file `source` according to `format`
 
         If `format` is None, filetype is inferred from filename.
         Returns a new Atoms instance; to read into an existing Atoms
-        object, use the read_from() method."""
+        object, use the read_from() method.
+
+        If `source` corresponds to a known format then it used
+        to construct an appropriate iterator from the :attr:`AtomsReaders`
+        dictionary. See :ref:`fileformats` for a list of supported
+        file formats. 
+        
+        If `source` corresponds to an unknown format then it is
+        expected to be an iterator returning :class:`Atoms` objects.
+        """
 
         if isinstance(source, basestring) and '@' in source:
             source, frame = source.split('@')
@@ -493,6 +545,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 raise ValueError("Frame @-reference %r does not resolve to single frame" % frame)
             kwargs['frame'] = frame
 
+        from quippy.io import AtomsReaders
         filename, source, format = infer_format(source, format, AtomsReaders)
 
         opened = False
@@ -518,6 +571,16 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def write(self, dest=None, format=None, properties=None,
               prefix=None, **kwargs):
+        """
+        Write this :class:`Atoms` object to `dest`. If `format` is
+        absent it is inferred from the file extension or type of `dest`,
+        as described for the :meth:`read` method.  If `properties` is
+        present, it should be a list of property names to include in the
+        output file, e.g. `['species', 'pos']`.
+        
+        See :ref:`fileformats` for a list of supported file formats.
+        """
+        
         if dest is None:
             # if filename is missing, save back to file from
             # which we loaded configuration
@@ -526,6 +589,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             else:
                 raise ValueError("No 'dest' and Atoms has no stored filename")
 
+        from quippy.io import AtomsWriters
         filename, dest, format = infer_format(dest, format, AtomsWriters)
         opened = filename is not None
 
@@ -551,13 +615,18 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             dest.close()
         return res
 
-    def select(self, mask=None, list=None, orig_index=None):
-        """Select a subset of the atoms in an Atoms object
+    def select(self, mask=None, list=None, orig_index=True):
+        """Return a new :class:`Atoms` containing a subset of the atoms in this Atoms object
 
-        Use either a logical mask array or a list of atom indices to include.
+        One of either `mask` or `list` should be present.  If `mask`
+        is given it should be a rank one array of length `self.n`. In
+        this case atoms corresponding to true values in `mask` will be
+        included in the result.  If `list` is present it should be an
+        arry of list containing atom indices to include in the result.
 
-        small_at = at.select([mask, list])
-
+        If `orig_index` is True (default), the new object will contain
+        an ``orig_index`` property mapping the indices of the new atoms
+        back to the original larger Atoms object.
         """
         if mask is not None:
             mask = farray(mask)
@@ -571,9 +640,15 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             raise ValueError('Either mask or list must be present.')
         return out
 
+
     def copy(self):
+        """
+        Return a copy of this :class:`Atoms` object
+        """
+        
         other = self.__class__(n=self.n, lattice=self.lattice,
-                               properties=self.properties, params=self.params)
+                               properties=self.properties, params=self.params,
+                               fortran_indexing=self.fortran_indexing)
 
         # copy any normal (not Fortran) attributes
         for k, v in self.__dict__.iteritems():
@@ -597,7 +672,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         self.__class__.__del__(self)
         if isinstance(other, _atoms.Atoms):
             _atoms.Atoms.__init__(self, n=other.n, lattice=other.lattice,
-                                  properties=other.properties, params=other.params)
+                                  properties=other.properties, params=other.params,
+                                  fortran_indexing=other.fortran_indexing)
 
             self.use_uniform_cutoff = other.use_uniform_cutoff
             self.cutoff = other.cutoff
@@ -608,26 +684,24 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             _atoms.Atoms.__init__(self, n=0, lattice=np.eye(3))
             ase.Atoms.__init__(self, other)
 
-            # copy params
+            # copy params/info dicts
             if hasattr(other, 'params'):
                 self.params.update(other.params)
+            if hasattr(other, 'info'):
+                self.params.update(other.info)
 
-            # create properties for non-standard arrays
+            # create extra properties for any non-standard arrays
+            standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',
+                                   'momenta', 'tags', 'magmoms' ]
+                
             for ase_name, value in other.arrays.iteritems():
                 quippy_name = self.name_map.get(ase_name, ase_name)
-                if quippy_name not in self.properties:
+                if ase_name not in standard_ase_arrays:
                     self.add_property(quippy_name, value)
 
             self.constraints = copy.deepcopy(other.constraints)
             self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
-
-            if self.constraints != []:
-                if len(self.constraints) == 1 and isinstance(self.constraints[0], ase.constraints.FixAtoms):
-                    self.add_property('move_mask', 1, overwrite=True)
-                    self.move_mask[self.constraints[0].index] = 0
-                else:
-                    raise NotImplementedError('cannot yet convert generic ASE constraints to quippy constraints')
-                                    
+            
         else:
             raise TypeError('can only copy from instances of quippy.Atoms or ase.Atoms')
         
@@ -740,8 +814,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         print title+'\n'.join(fields)
 
     def density(self):
-        from quippy import ElementMass, N_A, MASSCONVERT
-
         """Density in units of :math:`g/m^3`. If `mass` property exists,
            use that, otherwise we use `z` and ElementMass table."""
         if self.has_property('mass'):
@@ -778,6 +850,21 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         If property with the same type is already present then no error
         occurs.If `overwrite` is true, the value will be overwritten with
         that given in `value`, otherwise the old value is retained.
+
+        Here are some examples::
+
+            a = Atoms(n=10, lattice=10.0*fidentity(3))
+
+            a.add_property('mark', 1)                  # Scalar integer
+            a.add_property('bool', False)              # Scalar logical
+            a.add_property('local_energy', 0.0)        # Scalar real
+            a.add_property('force', 0.0, n_cols=3)     # Vector real
+            a.add_property('label', '')                # Scalar string
+
+            a.add_property('count', [1,2,3,4,5,6,7,8,9,10])  # From list
+            a.add_property('norm_pos', a.pos.norm())         # From 1D array
+            a.add_property('pos', new_pos)                   # Overwrite positions with array new_pos
+                                                             # which should have shape (3,10)
         """
 
         kwargs = {}
@@ -841,15 +928,3 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
 
 FortranDerivedTypes['type(atoms)'] = Atoms
-
-AtomsReaders = {}
-AtomsWriters = {}
-
-def atoms_reader(source):
-    """Decorator to add a new reader"""
-    def decorate(func):
-        global AtomsReaders
-        if not source in AtomsReaders:
-            AtomsReaders[source] = func
-        return func
-    return decorate
