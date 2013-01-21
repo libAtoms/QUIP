@@ -393,8 +393,8 @@ contains
           this%unit=0 !standard error
           this%action=OUTPUT
 
-       else if (filename.eq.'stdout') then
-          this%filename=filename
+       else if (filename.eq.'stdout' .or. filename .eq. '-') then
+          this%filename='stdout'
           this%unit = 6 !standard output
           this%action=OUTPUT
 
