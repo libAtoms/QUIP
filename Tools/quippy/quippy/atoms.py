@@ -40,6 +40,7 @@ __all__ = _atoms.__all__ + ['AtomsReaders',
                                    
 if 'ase' in available_modules:
     import ase
+    import ase.constraints
 else:
     import quippy.miniase as ase
 
@@ -169,6 +170,29 @@ class Neighbours(object):
                 else:
                     yield neighb.distance
 
+    def get_neighbours(self, i):
+        """
+        Return neighbours of atom i
+
+        Return arrays of indices and offsets to neighbouring
+        atoms. The positions of the neighbor atoms can be calculated like
+        this::
+
+            indices, offsets = nl.get_neighbors(42)
+            for i, offset in zip(indices, offsets):
+               print atoms.positions[i] + dot(offset, atoms.get_cell())
+               
+        Compatible with ase.calculators.neighborlist.NeighborList.get_neighbors(),
+        providing that NeighborList is constructed with bothways=True and
+        self_interaction=False.
+        """
+        neighbours = self[i]
+        indices = np.array([n.j for n in neighbours])
+        offsets = np.r_[[n.shift for n in neighbours]]
+        return (indices, offsets)
+
+    get_neighbors = get_neighbours # variant spelling
+ 
 class PropertiesWrapper(DictMixin):
     """Wrapper between quippy properties and ASE arrays"""
 
@@ -329,6 +353,9 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         # remove anything that ASE added that we don't want
         for p in remove_properties:
             self.remove_property(p)
+
+        if isinstance(symbols, ase.Atoms):
+            self.copy_from(symbols)
 
         ## end ASE compatibility
 
@@ -566,37 +593,59 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def copy_from(self, other):
         """Replace contents of this Atoms object with data from `other`."""
-        self.__class__.__del__(self)
-        _atoms.Atoms.__init__(self,n=other.n, lattice=other.lattice,
-                              properties=other.properties, params=other.params)
 
+        self.__class__.__del__(self)
+        if isinstance(other, _atoms.Atoms):
+            _atoms.Atoms.__init__(self, n=other.n, lattice=other.lattice,
+                                  properties=other.properties, params=other.params)
+
+            self.use_uniform_cutoff = other.use_uniform_cutoff
+            self.cutoff = other.cutoff
+            self.cutoff_break = other.cutoff_break
+            self.nneightol = other.nneightol
+            
+        elif isinstance(other, ase.Atoms):
+            _atoms.Atoms.__init__(self, n=0, lattice=np.eye(3))
+            ase.Atoms.__init__(self, other)
+
+            # copy params
+            if hasattr(other, 'params'):
+                self.params.update(other.params)
+
+            # create properties for non-standard arrays
+            for ase_name, value in other.arrays.iteritems():
+                quippy_name = self.name_map.get(ase_name, ase_name)
+                if quippy_name not in self.properties:
+                    self.add_property(quippy_name, value)
+
+            self.constraints = copy.deepcopy(other.constraints)
+            self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
+
+            if self.constraints != []:
+                if len(self.constraints) == 1 and isinstance(self.constraints[0], ase.constraints.FixAtoms):
+                    self.add_property('move_mask', 1, overwrite=True)
+                    self.move_mask[self.constraints[0].index] = 0
+                else:
+                    raise NotImplementedError('cannot yet convert generic ASE constraints to quippy constraints')
+                                    
+        else:
+            raise TypeError('can only copy from instances of quippy.Atoms or ase.Atoms')
+        
         # copy any normal (not Fortran) attributes
         for k, v in other.__dict__.iteritems():
             if not k.startswith('_') and k not in self.__dict__:
                 self.__dict__[k] = v
-
-        # from _atoms.Atoms
-        self.use_uniform_cutoff = other.use_uniform_cutoff
-        self.cutoff = other.cutoff
-        self.cutoff_break = other.cutoff_break
-        self.nneightol = other.nneightol
-
-        # from ase.Atoms
-        self.constraints = copy.deepcopy(other.constraints)
-        self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
+        
 
     def read_from(self, source, **readargs):
-        """Replace contents of this Atoms object with file `source`"""
-        if isinstance(source, Atoms):
+        """Replace contents of this Atoms object with Atoms read from `source`"""
+        try:
             self.copy_from(source)
-        else:
+        except TypeError:
             tmp = Atoms.read(source, **readargs)
             self.shallow_copy_from(tmp)
             # tmp goes out of scope here, but reference counting
             # prevents it from being free'd.
-
-    def __len__(self):
-        return self.n
 
     def __getattr__(self, name):
         #print 'getattr', name
