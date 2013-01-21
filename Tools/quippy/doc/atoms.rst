@@ -16,78 +16,61 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:class:`quippy.Atoms` -- store and manipulate atoms
-===================================================
+:mod:`quippy.atoms` -- Representation of atomic configurations
+==============================================================
 
-.. currentmodule:: quippy
+.. automodule:: quippy.atoms
+   :synopsis: Representation of an atomic configuration
 
-.. class:: Atoms([source, n, lattice, data, properties, params, *readargs, **readkwargs])
+.. autoclass:: Atoms
 
-   An :class:`Atoms` object is used to store and manipulate a
-   collection of atoms which together form a molecule or crystal.
-
-   :class:`Atoms` objects store two main kinds of data:
-   :attr:`properties` and :attr:`params`. Properties are used
-   for data which are extensive with the size of the system, e.g.
-   position, velocity, acceleration or local energy. Parameters
-   are used for intensive variables e.g. temperature or total
-   energy.
-
-   When constructing an :class:`Atoms` object, if the `source`
-   argument is present then :meth:`Atoms.read` is invoked to
-   initialise the :class:`Atoms` object from `source` which would
-   typically be a filename, for example::
-
-      >>> at = Atoms('input.xyz')
-
-   Otherwise, the arguments `n`, `lattice`, `data`,
-   `properties` and `params` are used to initialise the
-   object. `n` (default value 0) sets the number of atoms and
-   `lattice` (default identity matrix) the lattice vectors. To create
-   an :class:`Atoms` object to store 10 atoms with a cubic unit cell
-   of dimensions 10 x 10 x 10 A, you would write::
-
-       >>> at = Atoms(n=10, lattice=10.0*fidentity(3))
-
-   (The :func:`fidentity` function creates a :class:`FortranArray`
-   representing an identity matrix). The optional arguments `data`,
-   `properties` and `parameters` can be used to initialise
-   attributes of the object. If one of `data` or `properties` is
-   present then so must the other.
-
-   Important attributes and methods are listed below. In the example
-   code `at` refers to an :class:`Atoms` instance.
+   Important :class:`Atoms` attributes include:
 
    .. attribute:: n
    
-	Number of atoms. Also available as ``len(at)``.
+       Number of atoms. Also available as ``len(at)``.
 
    .. attribute:: lattice
 
-	3 x 3 :class:`FortranArray` matrix with lattice vectors as columns:
+       3 x 3 matrix with lattice vectors as columns:
 
-	.. math::
-	    \left(
-	    \begin{array}{ccc}
-	     | & | & | \\
-	     \mathbf{a} & \mathbf{b} & \mathbf{c} \\
-	     | & | & | \\
-	    \end{array}
-	    \right)
-	     = \left(
-	    \begin{array}{ccc}
-	     R_{11} & R_{12} & R_{13} \\
-	     R_{21} & R_{22} & R_{23} \\
-	     R_{31} & R_{32} & R_{33} \\
-	    \end{array}
-	    \right)
+       .. math::
+           \left(
+           \begin{array}{ccc}
+            | & | & | \\
+            \mathbf{a} & \mathbf{b} & \mathbf{c} \\
+            | & | & | \\
+           \end{array}
+           \right)
+            = \left(
+           \begin{array}{ccc}
+            R_{11} & R_{12} & R_{13} \\
+            R_{21} & R_{22} & R_{23} \\
+            R_{31} & R_{32} & R_{33} \\
+           \end{array}
+           \right)
 
    .. attribute:: g
     
-      3 x 3 :class:`FortranArray` matrix of reciprocal lattice vectors, 
+      3 x 3 matrix of reciprocal lattice vectors,
       i.e. the inverse of the :attr:`lattice` matrix.
 
+  
+   .. attribute:: pos
 
+      3 x `N` array of atomic positions, stored inside :attr:`properties` dictionary.
+
+
+   .. attribute:: Z
+
+      Array of atomic numbers, stored inside :attr:`properties` dictionary.
+
+
+   .. attribute:: species
+
+      Array of atomic symbols, stored inside :attr:`properties` dictionary.
+
+   
    .. attribute:: cutoff
 
       Should be set using :meth:`set_cutoff` or :meth:`set_cutoff_factor`.
@@ -145,13 +128,6 @@
       with :meth:`calc_connect_hysteretic` and accessed by calling
       :meth:`neighbour` with ``alt_connect=at.hysteretic_connect``.
 
-   .. attribute:: data
-
-      :class:`Table` object storing the data for all of the atomic
-      properties.  No need to access directly; use the automatically
-      created view arrays such as `pos`, `z`, `velo`, etc.
-
-
    .. attribute:: neighbours
 
       A :class:`Neighbours` object, which, when indexed with an
@@ -166,12 +142,14 @@
       
         for i in frange(at.n):
 	    for neighb in at.neighbours[i]:
-		print (neighb.j, neighb.distance, neighb.diff, neighb.cosines, neighb.shift)
+		print (neighb.j, neighb.distance, neighb.diff,
+		       neighb.cosines, neighb.shift)
 
       Note that this attribute provides a more Pythonic interface to
       the atomic connectivity information than the wrapped Fortran
       functions :meth:`n_neighbours` and :meth:`neighbour` described
       below.
+
 
    .. attribute:: hysteretic_neighbours
 
@@ -181,59 +159,38 @@
       set appropriately and :meth:`calc_connect_hysteretic` called
       before accessing this attribute.
 
-   .. method:: read(source[, format, *args, **kwargs])
+   .. autoattribute:: info
 
-      Class method to read an :class:`Atoms` object from `source`. If
-      `format` is ``None`` then it is inferred automatically, either
-      from the file extension if `source` is a filename, or from
-      the class of `source`. 
+   .. autoattribute:: arrays
 
-      If `source` corresponds to a known format then it used
-      to construct an appropriate iterator from the :attr:`AtomsReaders`
-      dictionary. See :ref:`fileformats` for a list of supported
-      file formats. 
-
-      If `source` corresponds to an unknown format then it is
-      expected to be an iterator returning :class:`Atoms` objects.
+   .. autoattribute:: indices
 
 
-   .. method:: write(dest[, format, properties, *args, **kwargs])
+   Important :class:`Atoms` methods include:
 
-      Write this :class:`Atoms` object to `dest`. If `format` is
-      absent it is inferred from the file extension or type of `dest`,
-      as described for the :meth:`read` method.  If `properties` is
-      present, it should be a list of property names to include in the
-      output file, e.g. `['species', 'pos']`.
+   .. automethod:: iteratoms
 
-      See :ref:`fileformats` for a list of supported file formats.
+   .. automethod:: equivalent
 
-   .. method:: show([property, arrows])
+   .. automethod:: read
 
-      Show this :class:`Atoms` object in AtomEye using the quippy
-      :mod:`~quippy.atomeye` module.  If `property` is present it
-      should be the name of a scalar property
-      (e.g. ``"local_energy"``) or a rank one array of length ``at.n``
-      to be used to colour the atoms. If `arrows` is present it should
-      be the name of a vector property (e.g. ``"force"``) or a rank
-      two array with shape (3, ``at.n``) to be used to draw arrows
-      originating from each atom.
+   .. automethod:: read_from
 
+   .. automethod:: copy
 
-   .. method:: select([mask, list])
+   .. automethod:: copy_from
 
-      Return an :class:`Atoms` containing a subset of the atoms in
-      this object. One of either `mask` or `list` should be
-      present. If `mask` is given it should be a rank one array of
-      length `self.n`. In this case atoms corresponding to true
-      values in `mask` will be included in the result.  If `list`
-      is present it should be an arry of list containing atom indices
-      to include in the result.
+   .. automethod:: write
 
+   .. automethod:: select
 
-   .. method:: copy()
+   .. automethod:: md5_hash
 
-      Return a copy of this :class:`Atoms` object.
-      
+   .. automethod:: get_atom
+
+   .. automethod:: print_atom
+
+   .. automethod:: density
 
    .. method:: add_atoms(pos, z[, mass, velo, acc, travel, data])
 
@@ -244,51 +201,14 @@
       :class:`Table` object with all new atomic data in the same
       format as the existing :attr:`data` table
 
-      
+  
    .. method:: has_property(name)
 
       Return true if property `name` exists. Property names
       are case-insensitive.
 
+   .. automethod:: add_property
 
-   .. method:: add_property(name, value[, n_cols])
-
-      Add a new property to this Atoms object.
-
-      `name` is the name of the new property and `value` should be
-      either a scalar or an array representing the value, which should
-      be either integer, real, logical or string.
-
-      If a scalar is given for `value` it is copied to every element
-      in the new property.  `n_cols` can be specified to create a 2D
-      property from a scalar initial value - the default is 1 which
-      creates a 1D property.
-
-      If an array is given for `value` it should either have shape
-      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
-      property.  In this case `n_cols` is inferred from the shape of
-      the `value` and shouldn't be passed as an argument.
-
-      If property with the same type is already present then no error
-      occurs. A warning is printed if the verbosity level is VERBOSE
-      or higher. The value will be overwritten with that given in
-      `value`.
-
-      Here are some examples::
-
-	  a = Atoms(n=10, lattice=10.0*fidentity(3))
-
-	  a.add_property('mark', 1)                  # Scalar integer
-	  a.add_property('bool', False)              # Scalar logical
-	  a.add_property('local_energy', 0.0)        # Scalar real
-	  a.add_property('force', 0.0, n_cols=3)     # Vector real
-	  a.add_property('label', '')                # Scalar string
-
-	  a.add_property('count', [1,2,3,4,5,6,7,8,9,10])  # From list
-	  a.add_property('norm_pos', a.pos.norm())         # From 1D array
-	  a.add_property('pos', new_pos)                   # Overwrite positions with array new_pos
-	                                                   # which should have shape (3,10)
-      
    .. method:: remove_property(name)
 
       Remove the property `name`.
@@ -487,187 +407,51 @@
       of the two atoms' types. Optional argument `factor_break` is
       used by :meth:`calc_connect_hysteretic`.
 
-   .. method:: density()
+   .. automethod:: mem_estimate
 
-      Return density in units of :math:`g/m^3`. If a `mass` property
-      exists, use that, otherwise we use `z` and `ElementMass` to
-      calculate the total mass of the cell.
 
-      
-Structure generation routines
------------------------------
+   Important attributes and methods inherited
+   from :class:`ase.atoms.Atoms` include the following. See the ASE
+   documentation of the :class:`ase.atoms.Atoms` for full details.
 
-.. function:: diamond(a[, z])
+   .. autoattribute:: positions
 
-   Return an 8-atom diamond-structure with cubic lattice constant `a` and
-   atomic number `z`, e.g.::
+   .. autoattribute:: numbers
 
-      a = diamond(5.44, 14)  # Silicon unit cell
+   .. autoattribute:: cell
 
+   .. autoattribute:: constraints
 
-.. function:: bcc(a[, z])
+   .. automethod:: get_positions
 
-   Return a 2-atom bcc structure with cubic lattice constant `a` and
-   atomic number `z`.
+   .. automethod:: set_positions
 
+   .. automethod:: get_atomic_numbers
 
-.. function:: fcc(a[, z])
+   .. automethod:: set_atomic_numbers
 
-   Return a 4-atom fcc-structure with cubic lattice constant `a` and
-   atomic number `z`.
- 
+   .. automethod:: get_cell
 
-.. function:: a15(a[, z])
+   .. automethod:: set_cell
 
-   Return an 8-atom a15-structure with cubic lattice constant `a` and
-   atomic number `z`.
+   .. automethod:: get_momenta
 
+   .. automethod:: set_momenta
 
-.. function:: alpha_quartz(a, c, u, x, y, z)
+   .. automethod:: get_calculator
 
-   Return 9-atom primitve trigonal alpha-quartz unit cell, with lattice constants
-   `a` and `c` and internal coordinates `u` (Si), `x`, `y` and `z` (O).
+   .. automethod:: set_calculator
 
+   .. automethod:: get_potential_energy
 
-.. function:: alpha_quartz_cubic(a, c, u, x, y, z)
+   .. automethod:: get_potential_energies
 
-   Return non-primitve 18-atom cubic alpha-quartz unit cell.
+   .. automethod:: get_forces
 
+   .. automethod:: get_stress
 
-.. function:: graphene_cubic(a)
+   .. automethod:: get_stresses
 
-   Return cubic graphene unit cell with lattice parameter `a`.
 
-.. function:: graphene_sheet(a, n, m, rep_x, repy_y)
-
-   Return a graphene sheet with index `(n,m)` and lattice constant
-   `a`, with `rep_x` repeat units in the x-direction and `rep_y`
-   in the y-direction.
-
-.. function:: graphene_tube(a, n, m, nz)
-
-   Construct a `(n,m)` nanotube with lattice parameter `a` and `nz`
-   unit cells along the tube length. Return a tuple `(tube, radius)`
-   where `tube` is the new :class:`Atoms` object and `radius` is the
-   radius of the nanotube. Example usage::
-
-      >>> tube, r = graphene_tube(1.42, 6, 6, 1) # (6,6) nanotube, 1 unit cell long in z direction
-
-.. function:: tube_radius(at)
-
-   Return average radius of the nanotube `at`.
-
-
-.. function:: slab(axes, a, [nx, ny,  width, height, nz, atnum, lat_type])
-
-   Return a slab of material with the x, y, and z axes desribed by the
-   Miller indices in the array axes (with ``x = axes[:,1])``, ``y =
-   axes[:,2]`` and ``z = axes[:,3]``).  The extent of the slab should
-   be given either as ``(nx, ny, nz)`` unit cells or as ``(width,
-   height, nz)`` where `width` and `height` are measured in Angstrom
-   and `nz` is the number of cells in the `z` direction.
-   
-   `atnum` can be used to initialise the `z` and `species` properties.
-   `lat_type` should be of ``"diamond"```, ``"fcc"``, or ``"bcc"``
-   (default is ``"diamond"``)
-
-.. function:: supercell(at, n1, n2, n3)
-
-   Replicates the unit cell `at` `n1` x `n2` x `n3` times along its
-   lattice vectors.
-
-.. function:: transform(at, t)
-
-   Transform cell and lattice coordinates by the 3 x 3 matrix `t` and
-   return a new :class:`Atoms` object.
-
-
-.. function:: water()
-
-   Return an :class:`Atoms` object containing one TIP3P water molecule in a box
-   giving the correct density at 300K
-
-
-
-Cluster carving routines
-------------------------
-
-.. function:: create_hybrid_weights(at, args_str)
-
-   Given an atoms structure with a `hybrid_mark` property, this
-   routine creates a `weight_region1` property, whose values are
-   between 0 and 1.
-
-.. function:: create_cluster_info_from_mark(at, args_str[, cut_bonds])
-
-   Create a cluster using the 'hybrid_mark' property and options in
-   `args_str`.  All atoms that are marked with anything other than
-   ``HYBRID_NO_MARK`` will be included in the cluster; this includes
-   active, transition and buffer atoms.
-
-   Optionally return a list of the bonds cut when making the cluster in the 
-   :class:`Table` `cut_bonds`.
-
-
-.. function:: carve_cluster(at, args_str, cluster_info)
-
-   Carve a cluster from `at` using the information in the
-   :class:`Table` `cluster_info`, which should be generated by a
-   call to :func:`create_cluster_info_from_hybrid_mark`.
-
-   The output cluster contains all properties of the initial atoms object, and
-   some additional columns, which are:
-
-    ``index``
-	index of the cluster atoms into the initial atoms object.
-
-    ``termindex`` 
-       nonzero for termination atoms, and is an index into
-       the cluster atoms specifiying which atom is being terminated,
-       it is used in collecting the forces.
-
-    ``rescale`` 
-	a real number which for nontermination atoms is 1.0,
-        for termination atoms records the scaling applied to
-        termination bond lengths
-    
-    ``shift``
-	the shift of each atom
-
-.. function:: construct_buffer(at, core, radius[, use_avgpos, verbosity])
-   
-   Given an atoms object, and a list of core atoms in the first
-   integer of the `core` table, fill the `buffer` table with all atoms
-   within `radius` of any core atom (which can be reached by
-   connectivity hopping).  Optionally use the time averaged positions.
-
-
-.. function:: create_embed_and_fit_list(at, fit_hops,[nneighb_only,min_images_only])
-
-   Given an Atoms structure with an active region marked in the
-   `hybrid_mark` property using ``HYBRID_ACTIVE_MARK``, grow the embed
-   region by `fit_hops` bond hops to form a fit region. 
-
-   Returns the  embedlist and fitlist as :class:`Table` objects
-   with correct periodic shifts.
-
-
-.. function:: estimate_origin_extent(at, active, cluster_radius)
-
-   Return estimated `(origin, extent)` for hysteretic connectivity 
-   calculator to include all atoms within a distance `cluster_radius`
-   of an atom in the `active` array.
-
-
-Miscellaneous routines
-----------------------
-   
-.. function:: elastic_fields(at, a, c11, c12, c44)
-
-   Calculate atom resolved local strain and stress for all
-   fourfold-coordinated atoms in `at`. Crystal structure should be
-   diamond.
-
-   Properties are added to `at`. `a` should be the relaxed lattice
-   constant in A, and `c11`, `c12` and `c44` are the independent
-   elastic constants for the diamond structure, in GPa.
+.. autoclass:: Neighbours
+   :members:

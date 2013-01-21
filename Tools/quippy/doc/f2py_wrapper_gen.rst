@@ -36,7 +36,7 @@ handles into pointers to derived types, as described in
 portable across most currently available Fortran compilers. In this
 way we can access the underlying Fortran structures from Python.
 
-:cfunc:`initialise()` and :cfunc:`finalise()` routines are handled
+:c:func:`initialise()` and :c:func:`finalise()` routines are handled
 specially: on initialisation, a derived type pointer is allocated
 before the wrapped routine is invoked, and an opaque reference to this
 new derived type is returned. On finalisation the underlying

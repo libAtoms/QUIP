@@ -17,39 +17,13 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 :mod:`atomeye` -- Interface to AtomEye viewer
-====================================================
+=============================================
 
-.. module:: atomeye
-   :platform: Unix
+.. automodule:: atomeye
    :synopsis: Interface to AtomEye viewer
+   :members:
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
-
-This module provides a high-level interface between quippy and the
-AtomEye extension module :mod:`_atomeye`. Usually
-:class:`Atoms` or :class:`AtomsList` objects will be visualised by
-calling their :meth:`~quippy.atoms.Atoms.show` method, but if you want to
-customise the AtomEye view you'll have to interact with this module
-directly.
-
-Usually you'll have only one :class:`AtomEyeView` window open, which
-you can access with the :attr:`atomeye.view` attribute. For
-example, to display a 2 x 2 x 2 supercell of bulk silicon, change the
-background colour to black, set the size and save an image you'd do
-the following::
-
-   from quippy import *
-
-   at = supercell(diamond(5.43, 14), 2, 2, 2)
-   at.show()
-   atomeye.view.change_bgcolor((0, 0, 0))
-   atomeye.view.resize(400,300)
-   atomeye.view.capture('si2x2x2.png')
-
-.. image:: si2x2x2.png
-   :align: center
-
-The module defines the following methods and attributes:
 
 .. function:: show(obj, [property, frame, window_id, arrows])
 
@@ -83,17 +57,15 @@ The module defines the following methods and attributes:
                           'key->BackSpace': 'load_config_backward'
                           }
 
-:class:`AtomEyeView` objects
-----------------------------
+:class:`AtomEyeViewer` objects
+------------------------------
 
-.. class:: AtomEyeView([obj, window_id, copy, frame, delta, property, arrows])
+.. class:: AtomEyeViewer([obj, window_id, copy, frame, delta, property, arrows])
       
    Class to represent an AtomEye viewer window. Constructing a new
-   class opens a new window. Instances will typically be created with
-   the :meth:`quippy.atoms.Atoms.show` or :meth:`quippy.atomslist.AtomsList.show`
-   methods or with the :func:`show` function defined in this
-   module. The argument `copy` can be used to clone a viewer window; all
-   other arguments are the same as for the :meth:`show` method.
+   class opens a new window. The argument `copy` can be used to clone
+   a viewer window; all other arguments are the same as for the
+   :meth:`show` method.
 
    In addition to the methods described below, there are wrapper
    methods for most of the `AtomEye 3 commands
@@ -106,7 +78,7 @@ The module defines the following methods and attributes:
 
       Show `obj`, which should be either an :class:`~quippy.atoms.Atoms`
       object or a sequence of :class:`~quippy.atoms.Atoms` objects (for
-      example an :class:`quippy.atomslist.AtomsList`).
+      example an :class:`quippy.io.AtomsList`).
 
       `frame` can be used to specify one-based frame index if `obj` is
       a sequence of Atoms objects. The other arguments are as 
