@@ -617,7 +617,7 @@ class test(Command):
            result = runner.run(tests)
 
            # Exit script with exitcode 1 if any tests failed
-           if result.failures != [] or result.errors != []:
+           if result.failures or result.errors:
               sys.exit(1)
 
         # restore sys.path
