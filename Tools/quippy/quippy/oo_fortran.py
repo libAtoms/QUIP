@@ -25,6 +25,7 @@ import numpy as np
 from types import MethodType
 from util import args_str, is_interactive_shell
 from dictmixin import PuPyDictionary
+from quippy import fortran_indexing # default value
 
 major, minor = sys.version_info[0:2]
 
@@ -140,20 +141,33 @@ def type_is_compatible(spec, arg):
 def process_in_args(args, kwargs, inargs, prefix):
     # Process positional arguments
     newargs = []
+    modargs = []
     for arg, spec in zip(args,inargs):
         if arg is not None and spec['type'].startswith('type'):
-            if isinstance(arg, FortranDerivedTypes[spec['type'].lower()]):
+            cls = FortranDerivedTypes[spec['type'].lower()]
+            if isinstance(arg, cls):
                 newargs.append(arg._fpointer)
+                modargs.append(None)
             else:
-                raise TypeError('Argument %s should be of type %s' % (arg, spec['type']))
+                try:
+                    newarg = cls(arg)
+                    newargs.append(newarg._fpointer)
+                    modargs.append(newarg)
+                except:
+                    TypeError('Argument %s should be of type %s but got incompatible type %s' % (arg, spec['type'], type(arg)))
+
         elif arg is not None and spec['type'].startswith('character'):
             # if arg is a list of strings of unequal length, pad with spaces
             if isinstance(arg, list) and any([len(x) != len(arg[0]) for x in arg]):
-                newargs.append(s2a(arg).T)
+                a = s2a(arg).T
+                newargs.append(a)
+                modargs.append(None)
             else:
                 newargs.append(arg)
+                modargs.append(None)
         else:
             newargs.append(arg)
+            modargs.append(None)
 
     # Process keyword arguments and args_str arguments.
 
@@ -166,6 +180,7 @@ def process_in_args(args, kwargs, inargs, prefix):
     got_args_str = prefix+'args_str' in kwarg_lookup
 
     newkwargs = {}
+    modkwargs = {}
     args_str_kwargs = {}
     for k,a in kwargs.iteritems():
         k = prefix+k
@@ -176,15 +191,23 @@ def process_in_args(args, kwargs, inargs, prefix):
         if k not in kwarg_lookup:
             raise ValueError('Unknown keyword argument %s' % k)
         if kwarg_lookup[k]['type'].startswith('type'):
-            if isinstance(a, FortranDerivedTypes[kwarg_lookup[k]['type'].lower()]):
+            cls = FortranDerivedTypes[kwarg_lookup[k]['type'].lower()]
+            if isinstance(a, cls):
                 newkwargs[k] = a._fpointer
+                modkwargs[k] = None
             elif a is None:
                 continue
             else:
-                raise TypeError('Argument %s=%s should be of type %s' % (k,a,kwarg_lookup[k]))
+                try:
+                    na = cls(a)
+                    newkwargs[k] = na._fpointer
+                    modkwargs[k] = na
+                except:
+                    raise TypeError('Argument %s should be of type %s, but got incompatible type %s' % (k,a,kwarg_lookup[k],type(a)))
         else:
             if a is None: continue
             newkwargs[k] = a
+            modkwargs[k] = None
 
     # Construct final args_str by merging args_str argument with args_str_kwargs
     if got_args_str:
@@ -199,7 +222,7 @@ def process_in_args(args, kwargs, inargs, prefix):
         if args_str_final != '':
             newkwargs[prefix+'args_str'] = args_str_final
 
-    return tuple(newargs), newkwargs
+    return tuple(newargs), tuple(modargs), newkwargs, modkwargs
 
 def process_results(res, args, kwargs, inargs, outargs, prefix, fortran_indexing):
     newres = []
@@ -256,7 +279,7 @@ class FortranDerivedType(object):
     _elements = {}
     _cmp_skip_fields = []
     _cmp_tol = 1e-8
-    _fortran_indexing = True
+    _fortran_indexing = fortran_indexing
 
     _prefix = ''
 
@@ -294,6 +317,9 @@ class FortranDerivedType(object):
 
         logging.debug('Constructing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
         self._update()
+
+    def __len__(self):
+        return self.n        
 
     def _set_fortran_indexing(self, fortran_indexing):
         self._fortran_indexing = fortran_indexing
@@ -440,7 +466,7 @@ class FortranDerivedType(object):
         if not name.startswith('__init__'):
             # Put self at beginning of args list
             args = tuple([self] + list(args))
-        newargs, newkwargs = process_in_args(args, kwargs, inargs, self._prefix)
+        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, self._prefix)
 
         try:
             res = fobj(*newargs, **newkwargs)
@@ -559,7 +585,7 @@ def flatten_list_of_dicts(dictlist):
     return modout
 
 
-def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map):
+def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map, fortran_indexing):
     all_classes = []
     leftover_routines = []
     interfaces = {}
@@ -576,7 +602,8 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
         classes, routines, mod_params = wrapmod(fobj, curspec,
                                                 short_names=short_names,
-                                                params=all_params, prefix=prefix)
+                                                params=all_params, prefix=prefix,
+                                                fortran_indexing=fortran_indexing)
         all_classes.extend(classes)
 
         pymod = imp.new_module(package+'.'+modules_name_map.get(mod,mod))
@@ -617,13 +644,15 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
                 if method_name in py_keywords: name = name+'_'
 
-                wrapped_routine = wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix)
+                wrapped_routine = wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix,
+                                              fortran_indexing=fortran_indexing)
                 FortranRoutines[cls.__name__+'.'+method_name] = wrapped_routine
                 setattr(cls, method_name, wrapped_routine)
                 logging.debug('  added method %s to class %s' % (method_name, cls.__name__))
 
             else:
-                wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix)
+                wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix,
+                                              fortran_indexing=fortran_indexing)
                 for intf_name,intf_spec in modspec['interfaces'].iteritems():
                     if routine in intf_spec['routines']:
                         if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [])
@@ -654,7 +683,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
 
 
-def wrapmod(modobj, moddoc, short_names, params, prefix):
+def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
     wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
     wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
@@ -1129,7 +1158,7 @@ def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True):
     #outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
 
     def func(*args, **kwargs):
-        newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
+        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, prefix)
 
         try:
             res = fobj(*newargs, **newkwargs)
