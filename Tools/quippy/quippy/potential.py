@@ -25,8 +25,9 @@ from quippy import _potential
 from quippy._potential import *
 from quippy.util import quip_xml_parameters, dict_to_args_str
 from quippy.elastic import stress_matrix
+from quippy.farray import fzeros
 
-__all__ = _potential.__all__ + ['force_test']
+__all__ = _potential.__all__ + ['force_test', 'Minim']
 
 def calculator_callback_factory(calculator):
     """Return a Python function which can be used as a quippy
@@ -44,7 +45,7 @@ def calculator_callback_factory(calculator):
             at.force[:] = at.get_forces().T
         if at.calc_virial:
             stress = at.get_stress()
-            virial = quippy.fzeros((3,3))
+            virial = fzeros((3,3))
             virial[:,:] = stress_matrix(-stress*at.get_volume()/quippy.GPA)
             at.params['virial'] = virial
         if at.calc_local_virial:
@@ -166,11 +167,11 @@ class Potential(_potential.Potential):
             return
 
         if isinstance(atoms, quippy.Atoms) and self.inplace:
-           # store a reference
-           self.atoms = atoms
+            # store a reference
+            self.atoms = atoms
         else:
-           # store a copy of `atoms` as a quippy.atoms.Atoms instance
-           self.atoms = quippy.atoms.Atoms(atoms)
+            # store a copy of `atoms` as a quippy.atoms.Atoms instance
+            self.atoms = quippy.atoms.Atoms(atoms)
 
         # build neighbour list
         self.atoms.set_cutoff(self.cutoff())
@@ -260,6 +261,26 @@ class Potential(_potential.Potential):
         self.calculate(atoms, ['stresses'])
         return self.stresses.copy()
 
+    def get_elastic_constants(self, atoms, fd=None, relaxed=True,
+                              args_str=None, relax_initial=True,
+                              relax_tol=None, relax_method=None):
+        c = c0 = None
+        if relaxed:
+            c = fzeros((6,6))
+        else:
+            c0 = fzeros((6,6))
+        self.calc_elastic_constants(atoms, fd=fd, arg_str=args_str, c=c, c0=c0,
+                                    relax_initial=relax_initial, return_relaxed=False,
+                                    relax_tol=relax_tol, relax_method=relax_method)
+        if relaxed:
+            if not self.fortran_indexing:
+                c = c.view(np.ndarray)
+            return c
+        else:
+            if not self.fortran_indexing:
+                c0 = c0.view(cp.ndarray)
+            return c0
+
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
 
@@ -282,3 +303,77 @@ def force_test(at, p, dx=1e-4):
             num_f[j,i] = -(ep - em)/(2*dx)
 
     return analytic_f, num_f, analytic_f - num_f
+
+
+try:
+    from ase.optimize import Optimizer
+except ImportError:
+    Optimizer = object
+
+class Minim(Optimizer):
+    """
+    Minimise forces and/or virial tensor components wrt Atoms positions and/or cell
+
+    Wrapper around quippy.potential.Potential.minim() which is
+    compatible with ase.optimize.Optimizer interface.
+
+    'method' should be one of 'sd', (Steepest descent), 'cg' (Conjugate Gradients),
+    'pcg', (Preconditioned Conjugate Gradients), 'lbfgs' (L-BFGS), or 'fire' (FIRE).
+    """
+    def __init__(self, atoms, restart=None, relax_positions=True, relax_cell=True,
+                 logfile='-', trajectory=None,
+                 inplace=False, method='cg', linminroutine=None,
+                 args_str=None, eps_guess=None,
+                 fire_dt0=None, fire_dt_max=None, external_pressure=None,
+                 use_precond=None, cutoff_skin=1.0):
+
+        calc = atoms.get_calculator()
+        if not isinstance(calc, Potential):
+            raise ValueError('quippy.potential.Minim requires Atoms calculator to be a quippy.potential.Potential instance')
+        self.potential = calc
+
+        if isinstance(atoms, quippy.Atoms) and inplace:
+            # store a reference
+            self.atoms = atoms
+        else:
+            # store a copy of `atoms` as a quippy.atoms.Atoms instance
+            self.atoms = quippy.atoms.Atoms(atoms)
+
+        self.potential.inplace = True #reduce the number of copies of Atoms instance
+
+        self.steps = 0
+        if restart is not None:
+            raise NotImplementedError
+        if logfile != '-':
+            raise NotImplementedError
+        if trajectory is not None:
+            raise NotImplementedError
+
+        self.method = method
+        self.linminroutine = linminroutine
+        self.do_pos = relax_positions
+        self.do_lat = relax_cell
+        self.args_str = args_str
+        self.eps_guess = eps_guess
+        self.fire_dt0 = fire_dt0
+        self.fire_dt_max = fire_dt_max
+        self.external_pressure = external_pressure
+        self.use_precond = use_precond
+        self.cutoff_skin = cutoff_skin
+
+    def run(self, fmax=0.05, steps=100000000, convergence_tol=None):
+        if convergence_tol is None:
+            convergence_tol = 3*len(self.atoms)*fmax**2 # only approximately equivalent
+
+        self.atoms.set_cutoff(self.potential.cutoff()+self.cutoff_skin)
+        self.atoms.calc_connect()
+
+        print 'Calling QUIP minim() with convergence_tol', convergence_tol
+        self.steps = self.potential.minim(self.atoms, self.method, convergence_tol, steps,
+                                    self.linminroutine, do_pos=self.do_pos, do_lat=self.do_lat,
+                                    args_str=self.args_str, eps_guess=self.eps_guess,
+                                    fire_minim_dt0=self.fire_dt0, fire_minim_dt_max=self.fire_dt_max,
+                                    external_pressure=self.external_pressure, use_precond=self.use_precond)
+
+    def get_number_of_steps(self):
+        return self.steps
