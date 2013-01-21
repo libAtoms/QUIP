@@ -1628,7 +1628,7 @@ CONTAINS
        end if
        if(convergence_counter == convergence_window) then
           call print("Converged after step " // main_counter)
-          call print(method // "iter= " // main_counter // " df^2= " // normsqgrad_f // " f= " // f)
+          call print(trim(method)//" iter = " // main_counter // " df^2= " // normsqgrad_f // " f= " // f)
           exit_flag = 1 ! while loop will quit
           cycle !continue
        end if
