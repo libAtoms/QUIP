@@ -39,6 +39,11 @@ if os.path.exists(quippyrc):
 if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
     cfg.read(os.environ['QUIPPY_CFG'])
 
+fortran_indexing = True
+if 'general' in cfg.sections():
+    if 'fortran_indexing' in cfg.options('general'):
+        fortran_indexing = int(cfg.get('general', 'fortran_indexing'))
+
 if 'logging' in cfg.sections():
     if 'level' in cfg.options('logging'):
         logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
@@ -145,7 +150,8 @@ for mod in python_wrappers:
 pymods = wrap_all(_quippy, spec, wrap_modules, merge_modules,
                   spec['short_names'],
                   prefix='qp_', package='quippy',
-                  modules_name_map=modules_name_map)
+                  modules_name_map=modules_name_map,
+                  fortran_indexing=fortran_indexing)
 
 # Add modules to quippy package and to sys.modules
 for name, mod in pymods.items():
