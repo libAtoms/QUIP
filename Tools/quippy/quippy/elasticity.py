@@ -16,36 +16,6 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# Elastic constant calculation.
-
-# Code adapted from elastics.py script, available from
-# http://github.com/djw/elastic-constants
-#
-# Copyright (c) 2008, Dan Wilson
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#     * Neither the name of the copyright holder nor the
-#       names of its contributors may be used to endorse or promote products
-#       derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY DAN WILSON ''AS IS'' AND ANY
-# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL DAN WILSON BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 from quippy import available_modules
 if 'scipy' in available_modules:
     from scipy import stats
@@ -61,18 +31,28 @@ __all__ = _elasticity.__all__ + ['strain_matrix', 'stress_matrix', 'strain_vecto
                                  'rayleigh_wave_speed']
 
 def strain_matrix(strain_vector):
+    """
+    Form a 3x3 strain matrix from a 6 component vector in Voigt notation
+    """
     e1, e2, e3, e4, e5, e6 = strain_vector
     return farray([[1.0+e1, 0.5*e6, 0.5*e5],
                    [0.5*e6, 1.0+e2, 0.5*e4],
                    [0.5*e5, 0.5*e4, 1.0+e3]])
 
 def stress_matrix(stress_vector):
+    """
+    Form a 3x3 stress matrix from a 6 component vector in Voigt notation
+    """
     s1, s2, s3, s4, s5, s6 = stress_vector
     return farray([[s1, s6, s5],
                    [s6, s2, s4],
                    [s5, s4, s3]])
 
 def strain_vector(strain_matrix):
+    """
+    Form a 6 component strain vector in Voight notation from a 3x3 matrix
+    """
+
     return farray([strain_matrix[1,1] - 1.0,
                    strain_matrix[2,2] - 1.0,
                    strain_matrix[3,3] - 1.0,
@@ -81,6 +61,9 @@ def strain_vector(strain_matrix):
                    2.0*strain_matrix[1,2]])
 
 def stress_vector(stress_matrix):
+    """
+    Form a 6 component stress vector in Voight notation from a 3x3 matrix
+    """
     return farray([stress_matrix[1,1],
                    stress_matrix[2,2],
                    stress_matrix[3,3],
@@ -263,6 +246,36 @@ def calc_stress(configs, pot, relax=False, relax_tol=1e-3, relax_steps=100):
         at2.params['stress'] = -at2.params['virial']*GPA/at2.cell_volume()
         yield at2
 
+
+# Elastic constant calculation.
+
+# Code adapted from elastics.py script, available from
+# http://github.com/djw/elastic-constants
+#
+# Copyright (c) 2008, Dan Wilson
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of the copyright holder nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY DAN WILSON ''AS IS'' AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL DAN WILSON BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graphics=True):
     """Given a sequence of configs with strain and stress parameters, fit elastic constants C_ij"""
@@ -837,21 +850,24 @@ def transform_elasticity(c, R):
 
 def rayleigh_wave_speed(C, rho, a=4000., b=6000., isotropic=False):
     """
-    Rayleigh wave speed in isotropic crystal.
+    Rayleigh wave speed in a crystal.
 
-    For anisotropic case (default), formula is Darinskii, A. (1997).
-    On the theory of leaky waves in crystals.
-    Wave Motion, 25(1), 35-49. doi:10.1016/S0165-2125(96)00031-5
+    Returns triplet ``(vs, vp, c_R)`` in m/s, where `vs` is the transverse
+    wave speed, `vp` the longitudinal wave speed and `c_R` the Rayleigh
+    shear wave speed. 
 
-    If isostropic=True, formula is from
-    http://sepwww.stanford.edu/data/media/public/docs/sep124/jim1/paper_html/node5.html.
+    For the anisotropic case (default), formula is Darinskii,
+    A. (1997).  On the theory of leaky waves in crystals.  `Wave
+    Motion, 25(1),
+    35-49. <http://dx.doi.org/10.1016/S0165-2125(96)00031-5>`_. If
+    `isostropic` is True, formula is from `this page
+    <http://sepwww.stanford.edu/data/media/public/docs/sep124/jim1/paper_html/node5.html>`_
 
-    C should be rotated to reference frame of sample, and should
-    be given in units of GPa.
-    Propagation speed is along the first (x) axis.
-    rho is density in g/cm^3.
+    `C` is the 6x6 matrix of elastic contstant, rotated to reference
+    the frame of sample, and should be given in units of GPa.  The
+    Rayleight speed returned is along the first (x) axis.
 
-    Returns triplet (vs, vp, c_R) in m/s
+    `rho` is the density in g/cm^3.
     """
 
     if 'scipy' not in available_modules:
@@ -876,3 +892,32 @@ def rayleigh_wave_speed(C, rho, a=4000., b=6000., isotropic=False):
                        (x/vp)**2)**2)*(1-(x/vs)**2))
     c_R = bisect(f, vs/2., vs)
     return vs, vp, c_R
+
+
+def youngs_modulus(C, l):
+    """
+    Calculate Youngs modulus :math:`E_l` from 6x6 elastic constants matrix :math:`C_{ij}`.
+
+    This is the modulus for loading in direction with Miller indices
+    given by the three component vector `l`.
+    
+    Formula is from W. Brantley, `Calculated elastic constants for stress
+    problems associated with semiconductor devices`. J. Appl. Phys., 44,
+    534 (1973).
+    """
+    return _elasticity.youngs_modulus(C, l)
+
+
+def poisson_ratio(C, l, m):
+    """
+    Calculate Poisson ratio :math:`\\nu_{lm}` from the 6x6 elastic constant matrix :math:`C_{ij}`.
+
+    `m` and `l` should be Miller indices of two crystallographic
+    directions.  The result is then the response in the `m` direction
+    to pulling in the `l` direction.
+    
+    The formula is from W. Brantley, `Calculated elastic constants for
+    stress problems associated with semiconductor
+    devices`. J. Appl. Phys., 44, 534 (1973).
+    """
+    return _elasticity.poission_ratio(C, l, m)
