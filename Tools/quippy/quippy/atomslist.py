@@ -24,7 +24,7 @@ from quippy.mockndarray import mockNDarray
 from quippy.farray import *
 import numpy as np
 
-__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList', 'read_dataset', 'time_ordered_series']
+__all__ = ['AtomsReader', 'AtomsWriter', 'AtomsList', 'read_dataset', 'time_ordered_series', 'write']
 
 class AtomsReaderMixin(object):
     def __repr__(self):
@@ -373,7 +373,6 @@ class AtomsList(AtomsReaderMixin, list):
 
     def apply(self, func):
         return np.array([func(at) for at in self])
-        
 
 def AtomsWriter(dest, format=None, **kwargs):
     """Return a file-like object capable of writing Atoms in the specified format.
@@ -381,10 +380,10 @@ def AtomsWriter(dest, format=None, **kwargs):
 
     filename, dest, format = infer_format(dest, format, AtomsWriters)
     if format in AtomsWriters:
-        return AtomsWriters[format](dest, **kwargs)
+        writer = AtomsWriters[format](dest, **kwargs)
+        return writer
     else:
         raise ValueError("Don't know how to write Atoms to format %r" % format)
-
 
 
 class AtomsSequenceReader(object):
@@ -514,9 +513,9 @@ def time_ordered_series(source, dt=None):
 
     return filenames
     
-            
 
-    
-
-        
-    
+def write(atoms, filename):
+    """
+    Convenience functon to write `atoms` to the file `filename`
+    """
+    AtomsWriter(filename).write(atoms)
