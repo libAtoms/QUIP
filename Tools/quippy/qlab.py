@@ -25,14 +25,15 @@ class QuippyViewer(AtomEyeViewer):
                'filename', 'source', 'frame', 'name',
                'cache_mem_limit', 'block']
     
-    def __init__(self, name):
+    def __init__(self, name, verbose=True, fortran_indexing=True):
         global _viewers, _current_viewer
 
-        AtomEyeViewer.__init__(self, self, fortran_indexing=True)
+        AtomEyeViewer.__init__(self, self, verbose=verbose, fortran_indexing=fortran_indexing)
         self.selection_mark = None
         self.name = name
         _current_viewer = self
         _viewers[name] = _current_viewer
+        self.set_cutoffs() # syncronise QUIP cutoffs with AtomEye
                         
         return self
 
@@ -243,13 +244,15 @@ class AtomsViewer(Atoms, QuippyViewer):
     """
     Subclass of Atoms and AtomEyeViewer
     """
-    def __init__(self, source=None, name=None, **kwargs):
-        Atoms.__init__(self)
+    def __init__(self, source=None, name=None, verbose=True, fortran_indexing=True, **kwargs):
+        Atoms.__init__(self, fortran_indexing=fortran_indexing)
         if isinstance(source, Atoms):
             self.shallow_copy_from(source)
         else:
             self.read_from(source, **kwargs)
-        QuippyViewer.__init__(self, name, **kwargs)
+        QuippyViewer.__init__(self, name, verbose=verbose,
+                              fortran_indexing=fortran_indexing,
+                              **kwargs)
 
     def gcat(self, update=False):
         return self
@@ -270,12 +273,12 @@ class AtomsReaderViewer(AtomsReader, QuippyViewer):
     """
     Subclass of AtomsReader and AtomEyeViewer
     """
-    def __init__(self, source=None, name=None, cache=True, **kwargs):
+    def __init__(self, source=None, name=None, cache=True, verbose=True, **kwargs):
         if cache:
             total_mem, free_mem = mem_info()
             kwargs['cache_mem_limit'] = 0.5*free_mem
         AtomsReader.__init__(self, source, **kwargs)
-        QuippyViewer.__init__(self, name)
+        QuippyViewer.__init__(self, name, verbose=verbose)
 
     def update_source(self, source, cache=True, **kwargs):
         self.close()
@@ -327,7 +330,8 @@ def find_viewer(source, name=None, recycle=True):
         print 'Creating viewer named %s' % name
         return (name, None)
         
-def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
+def read(source, name=None, recycle=True, loadall=False, inject=True,
+         fortran_indexing=True, **kwargs):
     """
     Read atoms from `source` and open in an AtomEye viewer window.
 
@@ -359,6 +363,8 @@ def read(source, name=None, recycle=True, loadall=False, inject=True, **kwargs):
                 viewer = AtomsReaderViewer(source, name=name, **kwargs)
     else:
         viewer.update_source(source, **kwargs)
+
+    viewer.gcat().fortran_indexing = fortran_indexing
 
     if inject:
         parent_frame = inspect.currentframe().f_back
