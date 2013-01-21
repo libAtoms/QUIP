@@ -55,7 +55,8 @@ module thermostat_module
   implicit none
   private
 
-  public :: thermostat, initialise, finalise, print, adD_thermostat, add_thermostats, update_thermostat, set_degrees_of_freedom, nose_hoover_mass, thermostat_array_assignment
+  public :: thermostat, initialise, finalise, print, add_thermostat, remove_thermostat, add_thermostats, update_thermostat, &
+       set_degrees_of_freedom, nose_hoover_mass, thermostat_array_assignment
   public :: THERMOSTAT_NONE, &
 	    THERMOSTAT_LANGEVIN, &
 	    THERMOSTAT_NOSE_HOOVER, &
@@ -153,6 +154,10 @@ module thermostat_module
   interface add_thermostat
      module procedure thermostats_add_thermostat
   end interface add_thermostat
+
+  interface remove_thermostat
+     module procedure thermostats_remove_thermostat
+  end interface remove_thermostat
 
   interface add_thermostats
      module procedure thermostats_add_thermostats
@@ -471,6 +476,37 @@ contains
     end if
 
   end subroutine thermostats_finalise
+
+  subroutine thermostats_remove_thermostat(this,index)
+    type(thermostat), allocatable, intent(inout) :: this(:)
+    integer, intent(in) :: index
+
+    type(thermostat), allocatable                :: temp(:)
+    integer                                      :: i, l, u, la(1), ua(1)
+
+    if (.not. allocated(this)) &
+         call system_abort('thermostats array not allocataed')
+
+    la = lbound(this); l=la(1)
+    ua = ubound(this); u=ua(1)
+    
+    if (index < l .or. index > u) &
+         call system_abort('index '//index//' outside of range '//l//' <= index <= '//u)
+         
+    allocate(temp(l:u))
+    do i = l,u
+       temp(i) = this(i)
+    end do
+    call finalise(this)
+    
+    allocate(this(l:u-1))
+    do i = l,u
+       if (i == index) cycle
+       this(i) = temp(i)
+    end do
+    call finalise(temp)
+
+  end subroutine thermostats_remove_thermostat
 
   subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0,NHL_gamma,NHL_mu,massive,region_i)
 
