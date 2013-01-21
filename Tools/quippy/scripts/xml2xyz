@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+"""
+Extract XYZ configurations from CDATA tags in a GAP xml file
+"""
+
+from xml.dom import minidom
+import sys
+import os
+
+xml = sys.argv[1]
+if len(sys.argv) > 2:
+    xyz = sys.argv[2]
+else:
+    xyz = os.path.splitext(xml)[0]+'.xyz'
+xyz = open(xyz, 'w')
+
+data = minidom.parse(xml)
+xyz_data = data.getElementsByTagName('XYZ_data')[0]
+
+xyz_data.normalize()
+
+cdata = [n for n in xyz_data.childNodes if n.nodeType == xyz_data.CDATA_SECTION_NODE]
+
+for line in cdata:
+    stripped = line.data.strip()
+    stripped = stripped.replace('\n',' ')
+    xyz.write(stripped+'\n')
+
+xyz.close()
+
+
