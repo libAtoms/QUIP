@@ -33,6 +33,7 @@ if (major, minor) < (2, 5):
     all = lambda seq: not False in seq
     any = lambda seq: True in seq
 
+wraplog = logging.getLogger('quippy.oo_fortran')
 
 fortran_class_prefix = ''
 
@@ -150,6 +151,7 @@ def process_in_args(args, kwargs, inargs, prefix):
                 modargs.append(None)
             else:
                 try:
+                    raise NotImplementedError
                     newarg = cls(arg)
                     newargs.append(newarg._fpointer)
                     modargs.append(newarg)
@@ -199,6 +201,7 @@ def process_in_args(args, kwargs, inargs, prefix):
                 continue
             else:
                 try:
+                    raise NotImplementedError
                     na = cls(a)
                     newkwargs[k] = na._fpointer
                     modkwargs[k] = na
@@ -315,7 +318,7 @@ class FortranDerivedType(object):
             elif '__init__' in self._routines:
                 self._fpointer = self._runroutine('__init__', *args, **kwargs)
 
-        logging.debug('Constructing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
+        wraplog.debug('Constructing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
         self._update()
 
     def __len__(self):
@@ -332,6 +335,8 @@ class FortranDerivedType(object):
 
     def is_same_fortran_object(self, other):
         """Test if `self` and `other` point to the same Fortan object."""
+        if not hasattr(other, '_fpointer'):
+            return False
         return (self._fpointer == other._fpointer).all()
 
     def shallow_copy(self):
@@ -357,7 +362,7 @@ class FortranDerivedType(object):
 
     def __del__(self):
         try:
-            logging.debug('Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
+            wraplog.debug('Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
         except:
             pass
             #print 'Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise)
@@ -394,7 +399,7 @@ class FortranDerivedType(object):
     def __eq__(self, other):
         # Class must agree
         if not issubclass(self.__class__, other.__class__) and not issubclass(other.__class__, self.__class__):
-            logging.debug('class mismatch %s not subclass of %s (or vice versa)' % (self.__class__.__name__, other.__class__.__name__))
+            wraplog.debug('class mismatch %s not subclass of %s (or vice versa)' % (self.__class__.__name__, other.__class__.__name__))
             return False
 
         # Don't compare uninitialised objects
@@ -411,7 +416,7 @@ class FortranDerivedType(object):
                 continue
 
             if getattr(self, el) != getattr(other, el):
-                logging.debug('element mismatch %s' % el)
+                wraplog.debug('element mismatch %s' % el)
                 return False
 
         # Compare arrays
@@ -422,11 +427,11 @@ class FortranDerivedType(object):
             if a is None or b is None: return False
             if a.dtype.kind != 'f':
                 if not (a == b).all():
-                    logging.debug('array mismatch %s' % array)
+                    wraplog.debug('array mismatch %s' % array)
                     return False
             else:
                 if (abs(a-b) > self._cmp_tol).any():
-                    logging.debug('real array mismatch %s' % array)
+                    wraplog.debug('real array mismatch %s' % array)
                     return False
         return True
 
@@ -434,7 +439,7 @@ class FortranDerivedType(object):
         return not self.__eq__(other)
 
     def _update(self):
-        logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))
+        wraplog.debug('updating %s at 0x%x' % (self.__class__, id(self)))
         if self._fpointer is None: return
         for hook in self._update_hooks:
             hook(self)
@@ -501,11 +506,11 @@ class FortranDerivedType(object):
         if not name in self._interfaces:
             raise ValueError('Unknown interface %s.%s' % (self.__class__.__name__, name))
 
-        logging.debug('Interface %s %s' % (self.__class__.__name__, name))
+        wraplog.debug('Interface %s %s' % (self.__class__.__name__, name))
 
         for rname, spec, routine in self._interfaces[name]:
 
-            logging.debug('Trying candidate routine %s' % rname)
+            wraplog.debug('Trying candidate routine %s' % rname)
 
             #inargs = filter(lambda x: not 'intent(out)' in x['attributes'], spec['args'])
             inargs  = [ x for x in spec['args'] if not 'intent(out)' in x['attributes'] ]
@@ -520,7 +525,7 @@ class FortranDerivedType(object):
             # Should be in range len(oblig_inargs) <= L <= len(oblig_inargs) + len(opt_inargs)
             if (len(args)+len(kwargs) < len(oblig_inargs) or
                 len(args)+len(kwargs) > len(oblig_inargs) + len(opt_inargs)):
-                logging.debug('Number of arguments incompatible: %d must be in range %d <= n <= %d' %
+                wraplog.debug('Number of arguments incompatible: %d must be in range %d <= n <= %d' %
                               (len(args), len(oblig_inargs), len(oblig_inargs)+len(opt_inargs)))
                 continue
 
@@ -528,7 +533,7 @@ class FortranDerivedType(object):
 
             # Check types and dimensions are compatible
             if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
-                logging.debug('Types and dimensions of args incompatible %s %s %s' %
+                wraplog.debug('Types and dimensions of args incompatible %s %s %s' %
                               (newinargs, args, [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]))
                 continue
 
@@ -538,20 +543,20 @@ class FortranDerivedType(object):
                 innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
 
             if not all([self._prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
-                logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
+                wraplog.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
                 continue
 
             try:
                 for key, arg in kwargs.iteritems():
                     (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == self._prefix+key.lower()]
                     if not type_is_compatible(inarg, arg):
-                        logging.debug('Types and dimensions of kwarg %s incompatible' % key)
+                        wraplog.debug('Types and dimensions of kwarg %s incompatible' % key)
                         raise ValueError
 
             except ValueError:
                 continue
 
-            logging.debug('calling '+rname)
+            wraplog.debug('calling '+rname)
             return routine(self, *args, **kwargs)
 
 
@@ -594,7 +599,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
     pymods = {}
 
     for mod in mods:
-        logging.debug('Module '+str(mod))
+        wraplog.debug('Module '+str(mod))
         if mod in merge_mods:
             curspec = flatten_list_of_dicts([spec[x] for x in merge_mods[mod]])
         else:
@@ -648,7 +653,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                                               fortran_indexing=fortran_indexing)
                 FortranRoutines[cls.__name__+'.'+method_name] = wrapped_routine
                 setattr(cls, method_name, wrapped_routine)
-                logging.debug('  added method %s to class %s' % (method_name, cls.__name__))
+                wraplog.debug('  added method %s to class %s' % (method_name, cls.__name__))
 
             else:
                 wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix,
@@ -657,7 +662,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                     if routine in intf_spec['routines']:
                         if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [])
                         interfaces[intf_name][2].append((routine, rspec, wrapped_routine))
-                        logging.debug('  added routine %s to top-level interface %s' % (routine, intf_name))
+                        wraplog.debug('  added routine %s to top-level interface %s' % (routine, intf_name))
                         break
                 else:
                     FortranRoutines[routine] = wrapped_routine
@@ -665,7 +670,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                     wrapped_routine.__module__ = pymods[modules_name_map.get(mod,mod)].__name__
                     setattr(pymods[modules_name_map.get(mod,mod)], routine, wrapped_routine)
                     pymods[modules_name_map.get(mod,mod)].__all__.append(routine)
-                    logging.debug('  added top-level routine %s' % routine)
+                    wraplog.debug('  added top-level routine %s' % routine)
                     
     # remap interface names which clash with keywords and skip overloaded operator
     interfaces = dict([(py_keywords_map.get(k,k),v) for (k,v) in interfaces.iteritems() if '.' ])
@@ -677,7 +682,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         wrapped_interface.__module__ = pymods[modules_name_map.get(mod,mod)].__name__
         setattr(pymods[modules_name_map.get(mod,mod)], name, wrapped_interface)
         pymods[modules_name_map.get(mod,mod)].__all__.append(name)
-        logging.debug('  added interface routine %s' % routine)
+        wraplog.debug('  added interface routine %s' % routine)
 
     return pymods
 
@@ -696,7 +701,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
     for cls in types:
         lcls = cls.lower()
 
-        logging.debug('  Class %s' % cls)
+        wraplog.debug('  Class %s' % cls)
 
         methods = [ x for x in moddoc['routines'].keys()
                     if (len(moddoc['routines'][x]['args']) > 0 and
@@ -729,11 +734,11 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                 [ x for x in methods if x.startswith('%s_finalise' % scls) ]
 
         if (len(constructors) == 0):
-            logging.debug("Can't find constructor for type %s. Skipping class" % cls)
+            wraplog.debug("Can't find constructor for type %s. Skipping class" % cls)
             continue
 
         if (len(destructors) == 0):
-            logging.debug("Can't find destructor for type %s. Skipping class" % cls)
+            wraplog.debug("Can't find destructor for type %s. Skipping class" % cls)
             continue
 
         destructor = destructors[0]
@@ -786,7 +791,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
             doc = moddoc['routines'][fullname]
             if fullname in constructors:
                 name = '__init__'+name
-                logging.debug('    adding constructor %s.%s' % (tcls, name))
+                wraplog.debug('    adding constructor %s.%s' % (tcls, name))
 
             if fullname in destructors:
                 del routines[routines.index(fullname)]
@@ -802,7 +807,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                     if not intf_name in interfaces: interfaces[intf_name] = []
                     interfaces[intf_name].append((name, moddoc['routines'][fullname], getattr(new_cls,name)))
 
-            logging.debug('    adding method %s' % name)
+            wraplog.debug('    adding method %s' % name)
             del routines[routines.index(fullname)]
 
         # only keep interfaces with more than one routine in them
@@ -858,7 +863,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
             if 'get' in el and 'set' in el:
                 if is_scalar_type(el['type']):
-                    logging.debug('    adding scalar property %s get=%s set=%s' % (name, el['get'], el['set']))
+                    wraplog.debug('    adding scalar property %s get=%s set=%s' % (name, el['get'], el['set']))
 
                     new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']), el['type'])
 
@@ -871,7 +876,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                                                     doc=el['doc']))
                 #elif not 'pointer' in el['attributes']:
                 else:
-                    logging.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
+                    wraplog.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
                     new_cls._subobjs[name] = (el['type'],
                                               getattr(modobj, el['get']),
                                               getattr(modobj, el['set']))
@@ -882,7 +887,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
             # array members
             if 'array' in el:
-                logging.debug('    adding array %s' % name)
+                wraplog.debug('    adding array %s' % name)
                 new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'], el['type'])
                 setattr(new_cls, '_'+name, property(fget=wrap_array_get(name,reshape=False),
                                                     fset=wrap_array_set(name,reshape=False),
@@ -893,7 +898,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
             # arrays of derived types (1D only for now..)
             if 'array_getitem' in el and 'array_setitem' and 'array_len' in el:
-                logging.debug('    adding derived type array %s' % name)
+                wraplog.debug('    adding derived type array %s' % name)
                 new_cls._arrays[name] = (getattr(modobj, el['array_getitem']),
                                          getattr(modobj, el['array_setitem']),
                                          getattr(modobj, el['array_len']),
@@ -920,9 +925,9 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
         try:
             mod_params[name] = eval(code, evaldict)
             evaldict[name] = mod_params[name]
-            logging.debug('  adding parameter %s' % name)
+            wraplog.debug('  adding parameter %s' % name)
         except NameError:
-            logging.debug('  ignorning NameError in parameter %s = %s' % (name, code))
+            wraplog.debug('  ignorning NameError in parameter %s = %s' % (name, code))
 
     return (classes, routines, mod_params)
 
@@ -1189,10 +1194,10 @@ def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True):
 def wrapinterface(name, intf_spec, routines, prefix):
 
     def func(*args, **kwargs):
-        logging.debug('Interface %s ' % name)
+        wraplog.debug('Interface %s ' % name)
 
         for rname, spec, routine in routines:
-            logging.debug('Trying candidate routine %s' % rname)
+            wraplog.debug('Trying candidate routine %s' % rname)
 
             inargs  = [ x for x in spec['args'] if not 'intent(out)' in x['attributes'] ]
             oblig_inargs = [x for x in inargs if  not 'optional' in x['attributes'] ]
@@ -1206,8 +1211,8 @@ def wrapinterface(name, intf_spec, routines, prefix):
             # Should be in range len(oblig_inargs) <= L <= len(oblig_inargs) + len(opt_inargs)
             if (len(args)+len(kwargs) < len(oblig_inargs) or
                 len(args)+len(kwargs) > len(oblig_inargs) + len(opt_inargs)):
-                if logging.root.getEffectiveLevel() <= logging.DEBUG:
-                    logging.debug('Number of arguments incompatible: %d must be in range %d <= n <= %d' %
+                if wraplog.getEffectiveLevel() <= logging.DEBUG:
+                    wraplog.debug('Number of arguments incompatible: %d must be in range %d <= n <= %d' %
                                   (len(args), len(oblig_inargs), len(oblig_inargs)+len(opt_inargs)))
                 continue
 
@@ -1215,8 +1220,8 @@ def wrapinterface(name, intf_spec, routines, prefix):
 
             # Check types and dimensions are compatible
             if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
-                if logging.root.getEffectiveLevel() <= logging.DEBUG:
-                    logging.debug('Types and dimensions of args incompatible %s %s %s' %
+                if wraplog.getEffectiveLevel() <= logging.DEBUG:
+                    wraplog.debug('Types and dimensions of args incompatible %s %s %s' %
                                   (newinargs, args, [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]))
                 continue
 
@@ -1226,21 +1231,21 @@ def wrapinterface(name, intf_spec, routines, prefix):
                 innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
 
             if not all([prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
-                if logging.root.getEffectiveLevel() <= logging.DEBUG:
-                    logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
+                if wraplog.getEffectiveLevel() <= logging.DEBUG:
+                    wraplog.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
                 continue
 
             try:
                 for key, arg in kwargs.iteritems():
                     (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == prefix+key.lower()]
                     if not type_is_compatible(inarg, arg):
-                        if logging.root.getEffectiveLevel() <= logging.DEBUG:
-                            logging.debug('Types and dimensions of kwarg %s incompatible' % key)
+                        if wraplog.getEffectiveLevel() <= logging.DEBUG:
+                            wraplog.debug('Types and dimensions of kwarg %s incompatible' % key)
                         raise ValueError
             except ValueError:
                 continue
 
-            logging.debug('calling '+rname)
+            wraplog.debug('calling '+rname)
             return routine(*args, **kwargs)
 
         raise TypeError('No matching routine found in interface %s' % name)
