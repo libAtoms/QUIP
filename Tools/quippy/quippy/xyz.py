@@ -16,23 +16,24 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
+import logging, StringIO, sys
+from math import pi
+import numpy as np
+
+from quippy.atoms import Atoms
+from quippy.io import atoms_reader, AtomsReaders, AtomsWriters
 from quippy.periodictable import ElementName
-from quippy.dictionary import (PROPERTY_INT, PROPERTY_REAL,
+from quippy.dictionary import (Dictionary, PROPERTY_INT, PROPERTY_REAL,
                                PROPERTY_STR, PROPERTY_LOGICAL,
                                T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                                T_CHAR, T_LOGICAL, T_INTEGER_A,
                                T_REAL_A, T_COMPLEX_A, T_CHAR_A,
                                T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 from quippy.table import TABLE_STRING_LENGTH
+from quippy.io import *
+from quippy.ordereddict import *
+from quippy.farray import *
 
-from atomslist import *
-from ordereddict import *
-from quippy import Dictionary
-from farray import *
-import logging, StringIO, sys
-from math import pi
-import numpy as np
 
 __all__ = ['PuPyXYZReader', 'PuPyXYZWriter']
 

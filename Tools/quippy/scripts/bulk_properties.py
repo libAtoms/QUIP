@@ -3,7 +3,7 @@
 from quippy import *
 from quippy.surface import *
 from quippy.structures import *
-from quippy.elastic import *
+from quippy.elasticity import *
 import optparse
 import numpy as np
 

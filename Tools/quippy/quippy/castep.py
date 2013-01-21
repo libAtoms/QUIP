@@ -26,11 +26,11 @@
 import sys, string, os, operator, itertools, logging, glob, re, shutil
 import numpy as np
 
-from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.atoms import Atoms, make_lattice, get_lattice_params
+from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.dictionary import Dictionary
 from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
 from quippy.periodictable import atomic_number
-from quippy.atoms import make_lattice, get_lattice_params
 
 from ordereddict import OrderedDict
 from farray import *
@@ -552,21 +552,21 @@ def CastepGeomMDReader(source, atoms_ref=None):
 
         # Temperature, in atomic units - we convert to Kelvin
         temperature_lines = filter(lambda s: s.endswith('<-- T'), lines)
-        if temperature_lines != []:
+        if temperature_lines:
             if len(temperature_lines) != 1:
                 raise ValueError('Number of temperature lines should be exactly one. Got %r' % temperature_lines)
             params['temperature'] = float(temperature_lines[0].split()[0])*HARTREE/BOLTZMANN_K
 
         # Pressure, in atomic units - we convert to ev/A**3
         pressure_lines = filter(lambda s: s.endswith('<-- P'), lines)
-        if pressure_lines != []:
+        if pressure_lines:
             if len(pressure_lines) != 1:
                 raise ValueError('Number of pressure lines should be exactly one. Got %r' % pressure_lines)
             params['pressure'] = float(pressure_lines[0].split()[0])*HARTREE/BOHR**3
 
         # Lattice is next, in units of Bohr
         lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
-        if lattice_lines != []:
+        if lattice_lines:
             lattice = farray([ [float(x)* BOHR for x in row[0:3]]
                                for row in map(string.split, lattice_lines) ]).T
         else:
@@ -587,7 +587,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
         velolines  = filter(lambda s: s.endswith('<-- V'), lines)
         forcelines = filter(lambda s: s.endswith('<-- F'), lines)
 
-        if poslines != [] and forcelines != [] and len(poslines) != len(forcelines):
+        if poslines and forcelines and len(poslines) != len(forcelines):
             raise ValueError('Number of pos lines (%d) != force lines (%d)'
                              % (len(poslines), len(forcelines)))
 
@@ -627,7 +627,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
             at = Atoms(n=n_atoms, lattice=lattice, params=params)
 
         # Now parse the positions, converting from units of Bohr
-        if poslines != []:
+        if poslines:
             for i, line in fenumerate(poslines):
                 el, num, x, y, z, arrow, label = line.split()
                 num = int(num)
@@ -641,7 +641,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
             at.pos[:] = np.dot(at.lattice, at.frac_pos)
 
         # Velocities, if this is an MD file, from atomic units to A/fs
-        if velolines != []:
+        if velolines:
             at.add_property('velo', 0.0, n_cols=3)
             for i, line in fenumerate(velolines):
                 el, num, vx, vy, vz, arrow, label = line.split()
@@ -649,14 +649,14 @@ def CastepGeomMDReader(source, atoms_ref=None):
                 at.velo[:,lookup[(el,num)]] = [ float(f)*BOHR/AU_FS for f in (vx, vy, vz) ]
 
         # And finally the forces, which are in units of Hartree/Bohr
-        if forcelines != []:
+        if forcelines:
             at.add_property('force', 0.0, n_cols=3)
             for i, line in fenumerate(forcelines):
                 el, num, fx, fy, fz, arrow, label = line.split()
                 num = int(num)
                 at.force[:,lookup[(el,num)]] = [ float(f)*HARTREE/BOHR for f in (fx, fy, fz) ]
 
-        if stress_lines != []:
+        if stress_lines:
             at.params['virial'] = -virial*at.cell_volume()
 
         if atoms_ref is None:
@@ -772,7 +772,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
                 logging.warning('No cell contents. If this is a variable cell geometry optimisation with fixed ions this is normal')
                 n_atoms = atoms_ref.n
 
-        if cell_contents != []:
+        if cell_contents:
             cell_first_line = cell_contents[-1] # last cell contents line
 
             try:
@@ -809,7 +809,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             lookup = {}
             atoms = Atoms(n=n_atoms,lattice=lattice)
 
-        if cell_contents != []:
+        if cell_contents:
             cell_lines = castep_output[cell_first_line+offset:cell_first_line+offset+n_atoms]
 
             # Fill in species and fractional positions
@@ -855,14 +855,14 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
         # If we're doing geom-opt, look for enthalpy
         enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
                           s.startswith(' BFGS: Final Enthalpy')]
-        if enthalpy_lines != []:
+        if enthalpy_lines:
             atoms.params['enthalpy'] = float(enthalpy_lines[-1].split()[-2])
 
         try:
 
             for fn in ('Forces', 'Symmetrised Forces'):
                 force_start_lines = [i for (i,s) in enumerate(castep_output) if s.find('****** %s ******' % fn) != -1]
-                if force_start_lines != []: break
+                if force_start_lines: break
 
             if force_start_lines == []:
                 raise ValueError
@@ -919,9 +919,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
         got_virial = False
         for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
             stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
-            if stress_start_lines != []: break
+            if stress_start_lines: break
 
-        if stress_start_lines != []:
+        if stress_start_lines:
             stress_start = stress_start_lines[-1]
             stress_lines = castep_output[stress_start+6:stress_start+9]
             virial = fzeros((3,3),float)

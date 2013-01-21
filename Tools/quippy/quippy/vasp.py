@@ -17,7 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import quippy
-from quippy.atoms import Atoms, atoms_reader, AtomsReaders, AtomsWriters
+from quippy.atoms import Atoms
+from quippy.io import atoms_reader, AtomsReaders, AtomsWriters
 from quippy.farray import fzeros,frange
 import numpy as np
 import re, sys

@@ -40,7 +40,7 @@ class TestConvert_ExtraProperties(QuippyTestCase):
 
    def setUp(self):
       self.dia_quippy   = diamond(5.44, 14)
-      self.dia_quippy.add_property('momenta', np.random.uniform(-1,1,size=3*8).reshape(3,8))
+      self.dia_quippy.add_property('magmoms', np.random.uniform(-1,1,size=3*8).reshape(3,8))
       self.dia_quippy.add_property('charge', [1.0]*8)
       self.dia_ase      = ase.Atoms(self.dia_quippy)
       self.dia_quippy_2 = quippy.Atoms(self.dia_ase)
@@ -132,7 +132,7 @@ class TestCalculator_SW_Potential(QuippyTestCase):
       self.assertArrayAlmostEqual(self.ase_at.get_forces(), self.f_ref.T)
 
    def test_stress(self):
-      from quippy.elastic import stress_vector
+      from quippy.elasticity import stress_vector
       self.assertArrayAlmostEqual(self.ase_at.get_stress(), stress_vector(-self.v_ref*GPA/self.at.cell_volume()))
 
    def test_numeric_forces(self):

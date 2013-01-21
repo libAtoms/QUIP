@@ -27,7 +27,8 @@ import time, os, itertools, sys
 from StringIO import StringIO
 from farray import *
 
-from quippy.atoms import Atoms, AtomsReaders, AtomsWriters, atoms_reader
+from quippy.atoms import Atoms
+from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.periodictable import ElementMass, atomic_number
 from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
 

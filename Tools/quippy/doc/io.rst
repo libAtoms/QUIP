@@ -16,10 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:class:`quippy.AtomsReader` and :class:`quippy.AtomsList` -- manipulate trajectories
-====================================================================================
+:mod:`quippy.io` -- read and write trajectories
+===============================================
 
-.. currentmodule:: quippy
+.. currentmodule:: quippy.io
 
 There are two classes for reading trajectories: :class:`AtomsReader`
 and :class:`AtomsList`. Use an :class:`AtomsReader` for quick
