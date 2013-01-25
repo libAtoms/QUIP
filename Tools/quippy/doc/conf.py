@@ -233,10 +233,25 @@ doc_subs = [(classname_re, r'\1:class:`~.\4`'),
             (method_or_attr_re, r'\1:meth:`.\4`')]
 
 def process_docstring(app, what, name, obj, options, lines):
+    pass
+
+def _process_docstring_regexp(app, what, name, obj, options, lines):
+    in_block = False
+    indent = 0
     for i, line in enumerate(lines):
-        for r, s in doc_subs:
-            line = r.sub(s, line)
-        lines[i] = line
+        #print in_block, line, indent,  len(line) - len(line.lstrip()) <= indent
+        if not in_block:
+            if line.endswith('::'):
+                in_block = True
+                indent = len(line) - len(line.lstrip())
+                continue
+        
+            for r, s in doc_subs:
+                line = r.sub(s, line)
+            lines[i] = line
+        else:
+            if not len(line) - len(line.lstrip()) <= indent:
+                in_block = False
         
 
         
@@ -246,7 +261,6 @@ def process_signature(app, what, name, obj, options, signature, return_annotatio
 
 def maybe_skip_member(app, what, name, obj, skip, options):
     if hasattr(FortranDerivedType, name) and options.inherited_members:
-        print 'Skipping', name
         return True
     return skip
 
