@@ -23,7 +23,7 @@ from quippy.farray import fzeros,frange
 import numpy as np
 import re, sys
 
-__all__ = ['VASP_POSCAR_Reader', 'VASP_OUTCAR_reader', 'VASP_Writer']
+__all__ = ['VASP_POSCAR_Reader', 'VASP_OUTCAR_Reader', 'VASPWriter']
 
 @atoms_reader('vasp')
 @atoms_reader('POSCAR')
