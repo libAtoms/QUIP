@@ -161,10 +161,10 @@ class TestTable(QuippyTestCase):
       t.delete([4], keep_order=True)
       self.assertEqual(list(t.int), [10,6,8])
 
-   def testrecord_delete_multiple(self):
+   def test_delete_multiple(self):
       t = Table(1,0,0,0)
       t.append([2,4,6,8,10])
-      t.record_delete_multiple([1,2])
+      t.delete_multiple([1,2])
       self.assertEqual(list(t.int), [10,8,6])
 
    def testwipe(self): 
