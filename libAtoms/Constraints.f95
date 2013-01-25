@@ -1155,8 +1155,7 @@ contains
   !% The constraint function is:
   !% \begin{displaymath}
   !% \begin{array}{l}
-  !% C = |\mathbf{r}_1 - \mathbf{r}_2|^2 - l^2 \\
-  !% l = at^3 + bt^2 + ct + d
+  !% C = |\mathbf{r}_1 - \mathbf{r}_2|^2 - l^2 \\ l = at^3 + bt^2 + ct + d
   !% \end{array}
   !% \end{displaymath}
   !X

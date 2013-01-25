@@ -77,9 +77,9 @@
 !X
 !X MPI errors
 !X
-!% MPI error string are obtained using mpi_error_string and then pushed
-!% onto the error stack.
-!%
+!X MPI error string are obtained using mpi_error_string and then pushed
+!X onto the error stack.
+!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #define PASS_MPI_ERROR(mperror, error)  if (mperror /= MPI_SUCCESS) then ; call push_MPI_error(mperror, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_MPI ; return ; else ; call error_abort(error) ; endif ; endif

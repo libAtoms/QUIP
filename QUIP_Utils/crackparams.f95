@@ -36,30 +36,29 @@
 !% The 'CrackParams' type contains all simulation parameters for a fracture simulation.
 !% It is initialised from the '<crack_params>' stanza of an XML file, which
 !% should contain some or all of the following tags:
-!% \begin{enumerate}
-!%   \item '<crack>' --- parameters used exclusively by 'makecrack' which
+!%   *  '<crack>' -- parameters used exclusively by 'makecrack' which
 !%      define the geometry and structure of the simulation cell.
-!%   \item 'simulation' --- high level parameters which define the task to be performed
+!%   *  'simulation' -- high level parameters which define the task to be performed
 !%      by the 'crack' program.
-!%   \item 'md' --- parameters related to molecular dynamics, used when
+!%   *  'md' -- parameters related to molecular dynamics, used when
 !%      'simulation_task = md'.
-!%   \item 'minim' --- parameters related to geometry optimsation, used when
+!%   *  'minim' -- parameters related to geometry optimsation, used when
 !%      'simulation_task = minim'
-!%   \item 'io' -- Input/output parameters
-!%   \item 'selection' --- parameters that effect the choice of QM region
-!%   \item 'classical' --- parameters that define which classical potential to use
-!%   \item 'qm' --- parameters concerned with QM force evaluation, including which
+!%   *  'io' -- Input/output parameters
+!%   *  'selection' -- parameters that effect the choice of QM region
+!%   *  'classical' -- parameters that define which classical potential to use
+!%   *  'qm' -- parameters concerned with QM force evaluation, including which
 !%       potential to use.
-!%   \item 'fit' -- parameters relating to the adjustable potential used to reproduce
+!%   *  'fit' -- parameters relating to the adjustable potential used to reproduce
 !%       quantum mechanical forces
-!%   \item 'force_intergration' --- parameters for the force integration task, used
+!%   *  'force_intergration' -- parameters for the force integration task, used
 !%       when 'simulation_task = force_integration'.
-!%   \item 'quasi_static' --- parameters for the quasi-static loading task, used
+!%   *  'quasi_static' -- parameters for the quasi-static loading task, used
 !%       when 'simulation_task = quasi_static'. 
-!%   \item 'hack ' -- finally, nasty hacks required for some crack systems, for
+!%   *  'hack' -- finally, nasty hacks required for some crack systems, for
 !%      example it is necessary to zero the $z$-component of the QM forces to
 !%      get a well behaved simulation of the fracture of two-dimensional graphene.
-!% \end{enumerate}
+!%
 !% Note that tag and attribute names are mapped into variable names by joining
 !% them with an underscore: for example the 'task' attribute within  the 'simulation'
 !% tag becomes the 'simulation_task' variables.
@@ -67,7 +66,7 @@
 !% 
 !% Here is a complete example of the '<crack_params>' XML stanza for a MD run
 !% using the Bowler tight binding model in the QM region and the standard 
-!% Stillinger-Weber potential for the classical region. 
+!% Stillinger-Weber potential for the classical region ::
 !%
 !%><crack_params>
 !%>  <crack structure="diamond" element="Si" lattice_guess="5.44" 

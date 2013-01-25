@@ -106,4 +106,4 @@ doctest:
 	      "results in _build/doctest/output.txt."
 
 upload: html
-	scp -r _build/html/* sphinx:~/www.jrk33.co.uk_html/quippy
+	rsync -avz -e ssh _build/html/ sphinx:~/www.jrk33.co.uk_html/quippy

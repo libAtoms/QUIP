@@ -32,9 +32,6 @@ import itertools
 __all__ = _cinoutput.__all__
 
 class CInOutput(_cinoutput.CInOutput):
-
-    __doc__ = _cinoutput.CInOutput.__doc__
-
     def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
                  frame=None, one_frame_per_file=None, mpi=None, zero=False, range=None, indices=None,
                  fpointer=None, finalise=True, string=False):

@@ -3,6 +3,8 @@
 import sys, os, cPickle, f90doc
 from distutils.dep_util import newer
 
+sys.stderr.write('makedep.py using f90doc from %s\n' % f90doc.__file__)
+
 def warn(s):
     sys.stderr.write(s+'\n')
 

@@ -16,166 +16,437 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.io` -- read and write trajectories
-===============================================
+:mod:`quippy.io` --- read and write atomic configurations
+=========================================================
 
-.. currentmodule:: quippy.io
+.. automodule:: quippy.io
+   :synopsis: Read and write atomic configurations
+   :members:
 
-There are two classes for reading trajectories: :class:`AtomsReader`
-and :class:`AtomsList`. Use an :class:`AtomsReader` for quick
-read-only access to a trajectory or if you only want to access some of
-the frames. If you want to load the entire file into memory and
-manipulate it use an :class:`AtomsList`.
+.. _fileformats:
 
-.. class:: AtomsReader(source[, format, start, stop, step, cache_limit=10, **kwargs])
+Supported File Formats
+----------------------
 
-   An :class:`AtomsReader` reads a series of :class:`Atoms` objects
-   from the trajectory `source` which should be one of the following:
+The :attr:`AtomsReaders` and :attr:`AtomsWriters` dictionaries are
+used by the :class:`Atoms` constructor, :meth:`Atoms.write`, the
+:class:`AtomsList` constructor and :meth:`AtomsList.write` to work out
+how to read or write a particular file type, based on the filename
+extension.
 
-    * a filename - in this case `format` is inferred from the file
-      extension -- see :ref:`fileformats`
-    * a shell-style glob pattern e.g. `"*.xyz"`
-    * a list of filenames or glob patterns e.g. `["foo*.xyz",
-      "bar*.xyz"]`
-    * an open file or file-like object (e.g. a :class:`CInOutput`
-      object)
-    * any Python `iterator
-      <http://docs.python.org/library/stdtypes.html#iterator-types>`_
-      which yields a sequence of :class:`Atoms` objects
+The quippy native formats are :ref:`extendedxyz` and :ref:`netcdf`.
 
-   `start`, `stop` and `step` can be used to restrict the range of frames
-   read from `source`. The first frame in the file has index zero.
+.. module:: quippy.cinoutput
+   :synopsis: XYZ and NetCDF I/O using fast C routines
 
-   `cache_limit` determines how many configurations will be stored in
-   memory. If more than `cache_limit` configurations are read in, the
-   least recently accessed configurations are thrown away. To store
-   everything, use an :class:`AtomsList` instead.
+The standard implementation of both these formats is in C in the files
+:file:`xyz.c` and :file:`netcdf.c` in the `libAtoms` package. It is
+this version which is wrapped by the
+:class:`~quippy.cinoutput.CInOutput` class, which is used by
+:class:`~quippy.io.AtomsReader` and :class:`~quippy.io.AtomsList` when
+reading from or writing to XYZ or NetCDF files.
 
-   Some `sources` understand additional keyword arguments from
-   `**kwargs`. For example the CASTEP file reader can take an
-   `atoms_ref` argument which is a reference :class:`Atoms` object
-   which is used to fill in information which is missing from the
-   input file.
+.. attribute:: AtomsReaders
 
-   All :class:`AtomsReaders` support iteration, so you can loop over
-   the contents using a :keyword:`for` loop::
+   Supported file formats for reading :class:`~quippy.atoms.Atoms` objects from files.
 
-      al = AtomsReader('input-file.xyz')
-      for at in al:
-         # process Atoms object `at`
-	 print at.energy
+   +-----------------+-----------------------------+
+   | File extension  |  Description                |
+   +=================+=============================+   
+   | ``castep`` or   | :ref:`castep` output        |
+   | ``castep_log``  |                             |
+   +-----------------+-----------------------------+
+   | ``cell``        | :ref:`castep` cell files    |
+   +-----------------+-----------------------------+
+   | ``chkpt``       | :ref:`imd`                  |
+   +-----------------+-----------------------------+
+   | ``cp2k_output`` | :ref:`cp2k`                 |
+   +-----------------+-----------------------------+
+   | ``cube``        | :ref:`cube`                 |
+   +-----------------+-----------------------------+
+   | ``geom``        | :ref:`castep` geometry      |
+   +-----------------+-----------------------------+
+   | ``md``          | :ref:`castep` MD file       |
+   +-----------------+-----------------------------+
+   | ``nc``          | :ref:`netcdf`               |
+   +-----------------+-----------------------------+
+   | ``pos``         | :ref:`asap`                 |
+   +-----------------+-----------------------------+
+   | ``POSCAR`` or   | :ref:`vasp` coordinates     |
+   | ``CONTCAR``,    |                             |
+   +-----------------+-----------------------------+
+   | ``OUTCAR``,     | :ref:`vasp` output          |
+   +-----------------+-----------------------------+
+   | ``stdin``       | Read from stdin in          |
+   |                 | :ref:`extendedxyz` format   |
+   +-----------------+-----------------------------+
+   | ``string``      | Read from string in         |
+   |                 | :ref:`extendedxyz` format   |
+   +-----------------+-----------------------------+
+   | ``xyz``         | :ref:`extendedxyz`          |
+   +-----------------+-----------------------------+
 
-   or using list comprehension::
+.. attribute:: AtomsWriters
 
-      print [at.energy for at in al]
+   Supported file formats for writing :class:`~quippy.atoms.Atoms` objects to files.
 
-   In addition to iteration, some sources allow random access. To find
-   out if an :class:`AtomsReader` supports random access, either try
-   to get it's length with :func:`len`, or check if the
-   :attr:`random_access` property is true. If `cache_limit` is large
-   enough to store all the frames in the file, all
-   :class:`AtomsReaders` will allow random access once the entire
-   trajectory has been loaded.
-
-   If :attr:`randomaccess` is true, you can access individual frames
-   by indexing and slicing, e.g. ``al[i]`` is the i\ :sup:`th`
-   :class:`Atoms` object within ``al`` and ``al[i:j]`` returns objects
-   from `i` upto but not including `j`. Like ordinary Python lists,
-   indices start from 0 and run up to ``len(al)-1``.
-
-   Methods and attributes:
-
-   .. attribute:: random_access
-
-      True if this source supports random access, False if it does not.
-
-   .. method:: iterframes([reverse])
-
-      Return an interator over all the frames in this trajectory. This
-      is the default iterator for an :class:`AtomsReader` instance
-      `al`, and can be accessed with ``iter(al)``. 
-
-      If `reverse=True` then the iteration starts with the last frame
-      and goes backwards through the file. This is only possible if
-      :attr:`random_access` is true.
-
-   .. method:: show([property, frame, arrows])
-      
-      Visualise using :func:`atomeye.show`. The optional arguments
-      `property`, `frame` and `arrows` control the atom colouring,
-      initial frame and vector arrows respectively.
-
-
-   .. method:: write(dest[, format, properties, progress, progress_width, update_interval, show_value, **kwargs])
-
-      Write all frames in this AtomsList to `dest`. If `format` is not
-      given it is inferred from the file extension of `dest` (see
-      :ref:`fileformats`). If `properties` is present, it should be a list
-      of property names to include in the output file, e.g. `['species', 'pos']`.
-      
-      `progress`, `progress_width`, `update_interval` and `show_value`
-      are used to control a textual progress bar. The extra arguments
-      in `*args` and `**kwargs` are passed along to the underlying
-      writer routine constructed for writing to `dest`.
-
-      See :ref:`fileformats` for a list of supported file formats.
+   +----------------+----------------------------+
+   | File extension |  Description               |
+   +================+============================+
+   | ``cell``       | :ref:`castep` cell file    |
+   +----------------+----------------------------+
+   | ``cube``       | :ref:`cube`                |
+   +----------------+----------------------------+
+   | ``dan``        | :ref:`dan`                 |
+   +----------------+----------------------------+
+   | ``eps``,       | Images                     |
+   | ``jpg``,       | (via:ref:`atomeyewriter`)  |
+   | ``png``,       | 			         |
+   +----------------+----------------------------+
+   | ``nc``         | :ref:`netcdf`              |
+   +----------------+----------------------------+
+   | ``pos``        | :ref:`asap`                |
+   +----------------+----------------------------+
+   | ``pov``        | :ref:`povray`              |
+   +----------------+----------------------------+
+   | ``POSCAR``     | :ref:`vasp` coordinates    |
+   +----------------+----------------------------+
+   | ``-``,         | Write to stdout in         |
+   | ``stdout``     | :ref:`extendedxyz` format  |
+   +----------------+----------------------------+
+   | ``string``     | Write to string in         |
+   |                | :ref:`extendedxyz` format  |
+   +----------------+----------------------------+
+   | ``xyz``        | :ref:`extendedxyz`         |
+   +----------------+----------------------------+
 
 
-.. class:: AtomsList(source, [format, start, stop, step, *args, **kwargs])
+.. _extendedxyz:
 
-   An :class:`AtomsList` is just like an :class:`AtomsReader` except
-   that all frames are read in on initialiased and then stored in
-   memory. This is equivalent to an :class:`AtomsReader` with a
-   `cache_limit` of `None` so an :class:`AtomsList` always
-   supports random access.  
-   
-   The :class:`AtomsList` allows configurations to be added, removed
-   or reordered using the standard Python methods for `mutable
-   sequence types
-   <http://docs.python.org/library/stdtypes.html#mutable-sequence-types>`_
-   (e.g. :meth:`append`, :meth:`extend`, :meth:`index`, etc).
-   
-   The attributes of the component :class:`Atoms` can be accessed as a
-   single array, using the frame number as the first array index. Note
-   that the first index runs from 0 to `len(al)-1`, unlike the other
-   indices which are one-based since the :class:`Atoms` attributes are
-   stored in a :class:`FortranArray`.
+Extended XYZ
+------------
+
+.. module:: quippy.xyz
+  :synopsis: Python reference implementation of Extended XYZ I/O
+
+Extended XYZ format is a enhanced version of the `basic XYZ format
+<http://en.wikipedia.org/wiki/XYZ_file_format>`_ that allows extra
+columns to be present in the file for additonal per atom properties as
+well as standardising the format of the comment line to include the
+cell lattice and other per frame parameters.
+
+It's easiest to describe the format with an example. Here is a standard XYZ file containing a bulk cubic
+8 atom silicon cell ::
+
+  8
+  Cubic bulk silicon cell
+  Si        0.00000000      0.00000000      0.00000000
+  Si        1.36000000      1.36000000      1.36000000
+  Si        2.72000000      2.72000000      0.00000000
+  Si        4.08000000      4.08000000      1.36000000
+  Si        2.72000000      0.00000000      2.72000000
+  Si        4.08000000      1.36000000      4.08000000
+  Si        0.00000000      2.72000000      2.72000000
+  Si        1.36000000      4.08000000      4.08000000
+
+The first line is the number of atoms, followed by a comment and
+then one line per atom, giving the element symbol and cartesian
+x y, and z coordinates in Angstroms.
+
+Here's the same configuration in extended XYZ format ::
+
+  8
+  Lattice="5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44" Properties=species:S:1:pos:R:3 Time=0.0
+  Si        0.00000000      0.00000000      0.00000000
+  Si        1.36000000      1.36000000      1.36000000
+  Si        2.72000000      2.72000000      0.00000000
+  Si        4.08000000      4.08000000      1.36000000
+  Si        2.72000000      0.00000000      2.72000000
+  Si        4.08000000      1.36000000      4.08000000
+  Si        0.00000000      2.72000000      2.72000000
+  Si        1.36000000      4.08000000      4.08000000
+
+In extended XYZ format, the comment line is replaced by a series of
+key/value pairs.  The keys should be strings and values can be
+integers, reals, logicals (denoted by `T` and `F` for true and false)
+or strings. Quotes are required if a value contains any spaces (like
+`Lattice` above).  There are two mandatory parameters that any
+extended XYZ: `Lattice` and `Properties`. Other parameters --
+e.g. `Time` in the example above --- can be added to the parameter line
+as needed.
+
+`Lattice` is a Cartesian 3x3 matrix representation of the cell lattice
+vectors, in the form ::
+
+  Lattice="R11 R21 R31 R12 R22 R32 R13 R23 R33"
+
+The list of properties in the file is described by the `Properties` parameter, which should take
+the form of a series of colon separated triplets giving the name, format (`R` for real, `I` for integer) and number of columns of each property. For example::
+
+  Properties="species:S:1:pos:R:3:vel:R:3:select:I:1"
+
+indicates the first column represents atomic species, the next three
+columns represent atomic positions, the next three velcoities, and the
+last is an single integer called `select`. With this property
+definition, the line ::
+
+  Si        4.08000000      4.08000000      1.36000000   0.00000000      0.00000000      0.00000000       1
+
+would describe a silicon atom at position (4.08,4.08,1.36) with zero
+velocity and the `select` property set to 1.
+
+.. _netcdf:
+
+NetCDF
+------
+
+.. module:: quippy.netcdf
+  :synopsis: Python reference implementation of NetCDF I/O
+
+We use the `NetCDF file format
+<http://www.unidata.ucar.edu/software/netcdf/>`_, a flexible binary
+file format designed for scientific array data. 
+
+We use a superset of the `AMBER conventions
+<http://amber.scripps.edu/netcdf/nctraj.html>`_, so that our
+trajectory file can be read directly by VMD. An important distinction
+from the Extended XYZ format is the names of some properties:
+
++---------------------+----------------------+
+| Extended XYZ name   | NetCDF name          |
++=====================+======================+
+| pos                 | coordinates          |
++---------------------+----------------------+
+| velo                | velocities           |
++---------------------+----------------------+
+
+This mapping is handled automatically by, but if you access the data
+directly you'll need to be aware of it.
+
+NetCDF versions 3 and 4 are supported. If version 4 is used then it's
+possible to use zlib compression, which greatly reduces the file size.
+
+NetCDF Convention
+^^^^^^^^^^^^^^^^^
+
+All data is either per-atom (referred to as a `property`) or per-frame (refereed to as a `parameter`).
+
+Dimensions
+^^^^^^^^^^
+ * `frame` - number of frames (this is the unlimited dimension)
+ * `spatial` - number of spatial dimensions (i.e. 3)
+ * `atom` - number of atoms
+ * `cell_spatial` - number of cell lengths (i.e. 3)
+ * `cell_angular` - number of cell angles (i.e. 3)
+ * `label` - length of string properies (per-atom character data, e.g. species, value is 10)
+ * `string` - length of string parameters (per-frame string data, value is 1024)
+
+Variables
+^^^^^^^^^
+
+Global variables
+
+  * `spatial (spatial)` - character, equal to `('x','y','z')`
+  * `cell_spatial (cell_spatial)` - character, equal to `('a','b','c')`
+  * `cell_angular (cell_angular, label)` - character, equal to `('alpha', 'beta', 'gamma')`
+
+Parameters (per-frame variables)
   
-   For example the following statements are all true::
+ * `cell_lengths (frame, cell_spatial)` - double, cell lengths in Angstrom
+ * `cell_angles (frame, cell_angular)` - double, cell angles in degrees
 
-      al.energy      ==  [at.energy for at in al] # energies of all atoms
-      al.energy[0]   ==  al[0].energy             # energy of first frame
-      all(al.velo[0] ==  al[0].velo)              # velocities of all atoms in first frame
-      al.velo[0,-1]  ==  al[0].velo[-1]           # velocity of last atom in first frame
+Other parameters can be of type double, integer, logical or
+string. Integer, logical and double types can be vectors or scalars
+(i.e. dimension `(frame)` or `(frame,spatial)`), but string parameters
+must be scalar (i.e. dimension `(frame,string)`. Additionally, real and
+integer 3x3 matrices with dimension `(frame,spatial,spatial)` are
+supported (e.g. for the virial tensor). In order to distinguish
+between integer and logical variables, a special `type` attribute
+should be added to the variable, set to one of the following values::
 
-   In addition to the standard Python list methods and those of
-   :class:`AtomsReader`, :class:`AtomsList` defined a couple of extras
-   methods.
+  T_INTEGER = 1
+  T_REAL = 2
+  T_LOGICAL = 4 
+  T_INTEGER_A = 5
+  T_REAL_A = 6
+  T_LOGICAL_A = 8
+  T_CHAR = 9
+  T_INTEGER_A2 = 12
+  T_REAL_A2 = 13
 
-   .. method:: sort([cmp, key, reverse, attr])
-  
-      Sort the AtomsList in place. This is the same as the standard
-      :meth:`list.sort` method, except for the additional `attr`
-      argument. If this is present then the sorted list will be
-      ordered by the :class:`Atoms` attribute `attr`, e.g.::
+Properties (per-atom variables)
 
-         al.sort(attr='energy')
+Properties can be of type integer, real, string or logical. As for parameters,
+integer, real and logical properties can be scalar
+(dimension `(frame,atom)`) or vector (dimension `(frame,atom,spatial)`), but
+string properties must be of dimension `(frame,atom,label)`. Again a `type`
+attribute must be added to the NetCDF variable, with one of the following values::
 
-      will order the configurations by their `energy` (assuming that
-      :attr:`Atoms.params` contains an entry named `energy` for each
-      configuration; otherwise an :exc:`AttributError` will be raised).
+  PROPERTY_INT     = 1
+  PROPERTY_REAL    = 2
+  PROPERTY_STR     = 3
+  PROPERTY_LOGICAL = 4
 
-
-.. function:: AtomsWriter(dest[, format])
-
-   Returns a file-like object for writing Atoms to `dest` which
-   should be either a filename or an initiliased output object.  If
-   `format` is not given it is inferred from the file extension of
-   `dest`. Example usage::
-
-      out = AtomsWriter('out_file.xyz')
-      for at in seq:
-         out.write(at)
-      out.close()
+See the :mod:`quippy.netcdf` module for a reference implementation of the
+NetCDF reading and writing routines, in pure Python.
 
 
+.. _asap:
+
+ASAP file format
+----------------
+
+.. automodule:: quippy.asap
+   :synopsis: ASAP file reader and writer
+   :members:
+
+.. _atomeyewriter:
+
+AtomEye Image Writer
+--------------------
+
+.. automodule:: quippy.atomeyewriter
+   :synopsis: AtomEye image writer
+   :members:
+
+.. _castep:
+
+CASTEP
+------
+
+.. automodule:: quippy.castep
+   :synopsis: CASTEP file readers and writers
+   :members:
+
+
+
+.. _cube:
+
+Gaussian CUBE
+-------------
+
+.. automodule:: quippy.cube
+   :synopsis: Gaussian CUBE I/O
+   :members:
+
+.. _dan:
+
+DAN visualisation code
+----------------------
+
+.. automodule:: quippy.dan
+   :synopsis: DAN visualisation code writer
+   :members:
+
+.. _imd:
+
+IMD checkpoint
+--------------
+
+.. automodule:: quippy.imd
+   :synopsis: IMD checkpoint reader
+   :members:
+
+.. _povray:
+
+POV-ray
+-------
+
+.. automodule:: quippy.povray
+   :synopsis: POV-ray script writer
+   :members:
+
+.. _vasp:
+
+VASP
+----
+
+.. automodule:: quippy.vasp
+   :synopsis: VASP POSCAR and OUTCAR readers and writers
+   :members:
+
+
+ASE supported files types
+-------------------------
+
+Since :class:`quippy.atoms.Atoms` is a subclass of the ASE
+:class:`ase.atoms.Atoms` class, all of the ASE I/O formats can also be
+used with quippy: see :func:`ase.io.read` for a list of supported
+formats. To convert from :class:`ase.atoms.Atoms` to
+:class:`quippy.atoms,Atoms`, simply pass the ASE Atoms object to the
+quippy Atoms constructor, e.g.::
+
+   from quippy.atoms import Atoms as QuippyAtoms
+   from ase.atoms import Atoms as ASEAtoms
+   from ase.io import read
+
+   ase_atoms = read(filename)
+   quippy_atoms = QuippyAtoms(ase_atoms)
+
+Similarily, to use one of the quippy file formats with other ASE
+tools::
+
+   from quippy.io import read
+   quippy_atoms = read(filename)
+   ase_atoms = ASEAtoms(quippy_atoms)
+
+
+Adding a new file type
+----------------------
+
+To add support for a new file format, implement routines which
+read from or write to files following the templates below. ::
+
+     def sample_reader(filename): 
+	 # insert code to open `filename` for reading
+
+	 while True:
+	    # determine if more frame are available
+	    if more_frames:
+	       # read next frame from `filename` into new Atoms object
+	       at = Atoms()
+	       yield at
+	    else:
+	       break
+	   
+
+     class sample_writer(object):
+	 def __init__(self, filename):
+	    # insert code to open `filename` for writing
+	    pass
+	 
+	 def write(self, at):
+            # insert code to write `at` to `filename`
+	    pass	    
+
+         def close(self):
+	    # insert code to close `filename`
+	    pass
+
+:func:`sample_reader` is a generator which yields a succession of
+:class:`~quippy.atoms.Atoms` objects, raising :exc:`StopIteration` when there are no
+more available - for a file format which only permits one
+configuration per file, a simplified implementation template would be::
+
+   def sample_reader(filename):
+      # insert code to open `filename` for reading
+      # insert code to read from `filename` into new Atoms object
+      yield at
+      
+
+To register the new file format, you just need to set entries in
+:attr:`AtomsReaders` and :attr:`AtomsWriters`::
+     
+     from quippy import AtomsReaders, AtomsWriters
+     AtomsReaders['new_format'] = sample_reader
+     AtomsWriters['new_format'] = sameple_writer
+
+For the case of reading, there is a generator :func:`atoms_reader`
+which can be used to simplify the registration process::
+
+   @atoms_reader('new_format')
+   def sample_reader(filename):
+      ...
+
+See the code in :mod:`quippy.xyz` :mod:`quippy.netcdf` and
+:mod:`quippy.castep` for full examples.

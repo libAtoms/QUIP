@@ -81,7 +81,7 @@ you should checkout a copy of the QUIP trunk::
   svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/QUIP QUIP
 
 If you don't have an account, you can download the `current snapshot
-<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/QUIP?view=tar>`_
+<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release?view=tar>`_
 (~ 6MB) of the svn repository as a tarball. Extracting this archive will create a
 :file:`QUIP` tree.
 

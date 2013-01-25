@@ -51,6 +51,12 @@ end interface rotate
 
 contains
 
+!% Mark atoms according to the results of a callback function `mark_f`
+!%
+!% The integer property `mark_name` will be set to `mark_value` for
+!% the atoms for which the function `mark_f(at, i, periodic, f_i_data,
+!% f_r_data[, error])` returns true, where `i` is the atom index and
+!% the other arguments are passed along from those given to `atoms_mark`.
 subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mark_value, intersection, error)
   type(atoms), intent(inout) :: this
   interface
@@ -66,12 +72,12 @@ subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mar
       logical mark_f
     end function mark_f
   end interface
-  integer, intent(in), optional :: f_i_data(:)
-  real(dp), intent(in), optional :: f_r_data(:)
-  logical, intent(in), optional :: periodic
-  character(len=*), intent(in), optional :: mark_name
-  integer, intent(in), optional :: mark_value
-  logical, intent(in), optional :: intersection
+  integer, intent(in), optional :: f_i_data(:) !% Integer data passed along to `mark_f` function
+  real(dp), intent(in), optional :: f_r_data(:) !% Real data passed along to `mark_f` function
+  logical, intent(in), optional :: periodic !% Passed along to `mark_f` function
+  character(len=*), intent(in), optional :: mark_name !% Name of integer property to set the marks in
+  integer, intent(in), optional :: mark_value !% Value with which to mark atoms
+  logical, intent(in), optional :: intersection !% If true, only consider atoms where mark property is already non-zero
   integer, intent(out), optional :: error
 
   integer :: i
@@ -181,6 +187,8 @@ function is_in_sphere_f(this, i, periodic, i_data, r_data, error)
   endif
 end function is_in_sphere_f
 
+
+!% Mark atoms in a cylinder centred on the point `p` with axis `v` and radius `r`
 subroutine mark_cylinder(this, p, v, r, periodic, mark_name, mark_value, intersection)
   type(atoms), intent(inout) :: this
   real(dp), intent(in) :: p(3), v(3), r
@@ -191,6 +199,7 @@ subroutine mark_cylinder(this, p, v, r, periodic, mark_name, mark_value, interse
   call atoms_mark(this, is_in_cylinder_f, f_r_data=(/ p, v, r /), periodic=periodic, mark_name=mark_name, mark_value=mark_value, intersection=intersection)
 end subroutine mark_cylinder
 
+!% Mark atoms in a cylinder centred on the point `p` with radius `r`
 subroutine mark_sphere(this, p, r, periodic, mark_name, mark_value, intersection)
   type(atoms), intent(inout) :: this
   real(dp), intent(in) :: p(3), r
@@ -201,6 +210,9 @@ subroutine mark_sphere(this, p, r, periodic, mark_name, mark_value, intersection
   call atoms_mark(this, is_in_sphere_f, f_r_data=(/ p, r /), periodic=periodic, mark_name=mark_name, mark_value=mark_value, intersection=intersection)
 end subroutine mark_sphere
 
+!% Rotate `field`, which should be a vector field with shape `(3, N)`,
+!% e.g. atomic positions array around `axis` by `angle`, centering the
+!% rotation on `origin`
 subroutine ft_rotate(field, axis, angle, origin)
   real(dp), intent(inout) :: field(:,:)
   real(dp), intent(in) :: axis(3)

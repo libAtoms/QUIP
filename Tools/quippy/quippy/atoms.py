@@ -16,41 +16,10 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""This module defines the :class:`quippy.atoms.Atoms` class which
-stores and manipulates a collection of atoms.
-
-The :class:`Atoms` class is a Pythonic wrapper over auto-generated
-:class:`quippy._atoms.Atoms` class. Atoms object are usually
-constructed either by reading from an input file in one of the
-:ref:`fileformats`, or by using the structure creation functions in
-the :mod:`quippy.structures` or :mod:`ase.lattice` modules.
-
-For example to read from an :ref:`extendedxyz` file, use::
-
-   from quippy.atoms import Atoms
-   atoms = Atoms('filename.xyz')
-
-Or, to create an 8-atom bulk diamond cubic cell of silicon::
-
-   from quippy.structures import diamond
-   si_bulk = diamond(5.44, 14)
-
-The :class:`Atoms` class is inherited from the
-:class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and
-methods in addition to those listed below. This means that quippy and
-ASE Atoms objects are interoperable, and it is easy to convert from
-one to the other, e.g.::
-
-   from quippy.atoms import Atoms as QuippyAtoms
-   from ase.atoms import Atoms as ASEAtoms
-   conv_quippy_to_ase = ASEAtoms(si_bulk)
-   conv_ase_to_quippy = QuippyAtoms(conv_quippy_to_ase)
-   assert conv_ase_to_quippy.equivalent(si_bulk)
-
-An atoms object contains atomic numbers, all dynamical variables
-and connectivity information for all the atoms in the simulation
-cell.
-
+"""
+This module defines the :class:`Atoms`, which stores and manipulates a
+collection of atoms, as well as the :class:`Connection` class which stores
+topology and neighbour lists, and the :class:`DomainDecomposition` class.
 """
 
 import os
@@ -65,6 +34,7 @@ import numpy as np
 from quippy import _atoms
 from quippy._atoms import *
 
+from quippy.oo_fortran import update_doc_string
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format, parse_slice
@@ -76,7 +46,7 @@ from quippy import available_modules, FortranDerivedTypes
 
 atomslog = logging.getLogger('quippy.atoms')
 
-__all__ = _atoms.__all__ + ['NeighbourInfo', 'Neighbours', 'get_lattice_params']
+__all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice_params']
                                    
 if 'ase' in available_modules:
     import ase
@@ -86,18 +56,19 @@ else:
 if 'phonopy' in available_modules:
     from phonopy.structure.atoms import Atoms as PhonopyAtoms
 
+get_lattice_params_ = get_lattice_params
+
 def get_lattice_params(lattice):
+    """
+    Wrapper around Fortran :func:`get_lattice_params_`
+
+    Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
+    """
+    
     a,b,c,alpha,beta,gamma = (farray(0.), farray(0.), farray(0.),
                               farray(0.), farray(0.), farray(0.))
     _atoms.get_lattice_params(lattice,a,b,c,alpha,beta,gamma)
     return tuple(float(x) for x in (a,b,c,alpha,beta,gamma))
-
-get_lattice_params.__doc__ = """Wrapper around _atoms.get_lattice_params()
-
-Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
-
-""" + _atoms.get_lattice_params.__doc__
-
 
 class NeighbourInfo(object):
     """Store information about a single neighbour of an atom"""
@@ -119,26 +90,51 @@ class NeighbourInfo(object):
                     % (self.j, self.distance, self.diff,
                        self.cosines, self.shift))
 
-class Neighbours(object):
-    """Provides access to neighbours of an atom.
+class Connection(_atoms.Connection):
+    __doc__ = update_doc_string(_atoms.Connection.__doc__, """    
+    The :class:`Connection` is a subclass of :class:`_atoms.Connection`
+    which adds supports for iteration over all atoms, and indexing
+    e.g. ``at.connect.neighbours[1]`` returns a list of the neighbours of
+    the atom with index 1.
 
-       Supports both iteration over all atoms, and indexing
-       e.g. ``at.neighbours[1]`` returns a list of the neighbours of the
-       atom with index 1. If at.fortran_indexing is True, atom and
-       neighbour indices start from 1; otherwise they are numbered
-       from zero."""
+    When indexed with an integer from 1 to `at.n`, returns an array
+    of :class:`NeighbourInfo` objects, each of which corresponds to
+    a particular pair `(i,j)` and has attributes `j`, `distance`,
+    `diff`, `cosines` and `shift`.
 
-    def __init__(self, at, hysteretic=False):
-        self.atref = weakref.ref(at)
-        self.hysteretic = hysteretic
+    If self.fortran_indexing is True, atom and neighbour indices
+    start from 1; otherwise they are numbered from zero.
+
+    If connectivity information has not already been calculated
+    :meth:`calc_connect` will be called automatically. The code to
+    loop over the neighbours of all atoms is quite idiomatic::
+
+        for i in at.indices:
+           for neighb in at.connect[i]:
+               print (neighb.j, neighb.distance, neighb.diff,
+                      neighb.cosines, neighb.shift)
+
+    Note that this provides a more Pythonic interface to the atomic
+    connectivity information than the wrapped Fortran functions
+    :meth:`Atoms.n_neighbours` and :meth:`Atoms.neighbour`.
+    """)
+
+    # def __init__(self, n=None, nbuffer=None, pos=None,
+    #              lattice=None, g=None, origin=None,
+    #              extent=None, nn_guess=None, fill=None,
+    #              fpointer=None, finalise=True):
+    #     _atoms.Connection.__init__(self, n, nbuffer, pos,
+    #                                lattice, g, origin,
+    #                                extent, nn_guess, fill,
+    #                                fpointer, finalise)
+        
 
     def is_neighbour(self, i, j):
         return (i,j) in self.pairs()
 
     def pairs(self):
         """Yield pairs of atoms (i,j) with i < j which are neighbours"""
-        at = self.atref()
-        for i, neighbour_list in zip(at.indices, self.iterneighbours()):
+        for i, neighbour_list in zip(self.parent.indices, self.iterneighbours()):
             for neighb in neighbour_list:
                 if i < neighb.j:
                     yield (i,neighb.j)
@@ -159,23 +155,20 @@ class Neighbours(object):
 
     def iterneighbours(self):
         """Iterate over the neighbours of all atoms"""
-        at = self.atref()
-        for i in at.indices:
+        for i in self.parent.indices:
             yield self[i]
 
     def __getitem__(self, i):
-        at = self.atref()
-
-        if self.hysteretic:
-            connect = at.hysteretic_connect
+        if self is self.parent:
+            connect = self.hysteretic_connect
         else:
-            connect = at.connect
+            connect = self.connect
 
-        if not connect.initialised:
-            if self.hysteretic:
-                at.calc_connect_hysteretic(connect)
+        if not self.initialised:
+            if self is self.parent.hysteretic_connect:
+                self.calc_connect_hysteretic(self.parent)
             else:
-                at.calc_connect(connect)
+                self.calc_connect(self.parent)
 
         distance = farray(0.0)
         diff = fzeros(3)
@@ -183,29 +176,28 @@ class Neighbours(object):
         shift = fzeros(3, dtype=np.int32)
 
         res = []
-        if not at.fortran_indexing:
+        if not self.fortran_indexing:
             i = i+1 # convert to 1-based indexing
 
-        for n in frange(at.n_neighbours(i, alt_connect=connect)):
-            j = at.neighbour(i, n, distance, diff,
-                             cosines, shift, alt_connect=connect)
-            if not at.fortran_indexing:
+        for n in frange(self.n_neighbours(i, alt_connect=connect)):
+            j = self.neighbour(self.parent, i, n, distance, diff,
+                               cosines, shift, alt_connect=connect)
+            if not self.fortran_indexing:
                 j = j-1
             res.append(NeighbourInfo(j, distance, diff, cosines, shift))
 
-        if at.fortran_indexing:
+        if self.fortran_indexing:
             res = farray(res) # to give 1-based indexing
         return res
 
     def distances(self, Z1=None, Z2=None):
         """Distances between pairs of neighbours, optionally
            filtered by species (Z1,Z2)"""
-        at = self.atref()
-        for i in at.indices:
+        for i in self.parent.indices:
             for neighb in self[i]:
                 if neighb.j > i: continue
                 if Z1 is not None and Z2 is not None:
-                    if sorted((at.z[i], at.z[neighb.j])) == sorted((Z1, Z2)):
+                    if sorted((self.parent.z[i], self.parent.z[neighb.j])) == sorted((Z1, Z2)):
                         yield neighb.distance
                 else:
                     yield neighb.distance
@@ -218,7 +210,7 @@ class Neighbours(object):
         atoms. The positions of the neighbor atoms can be calculated like
         this::
 
-            indices, offsets = nl.get_neighbors(42)
+            indices, offsets = atoms.connect.get_neighbors(42)
             for i, offset in zip(indices, offsets):
                print atoms.positions[i] + dot(offset, atoms.get_cell())
                
@@ -289,6 +281,28 @@ class PropertiesWrapper(DictMixin):
 
 
 class Atoms(_atoms.Atoms, ase.Atoms):
+    __doc__ = update_doc_string(_atoms.Atoms.__doc__, """
+    The :class:`Atoms` class is a Pythonic wrapper over the auto-generated
+    :class:`quippy._atoms.Atoms` class. Atoms object are usually
+    constructed either by reading from an input file in one of the
+    :ref:`fileformats`, or by using the structure creation functions in
+    the :mod:`quippy.structures` or :mod:`ase.lattice` modules.
+
+    For example to read from an :ref:`extendedxyz` file, use::
+
+       from quippy.atoms import Atoms
+       atoms = Atoms('filename.xyz')
+
+    Or, to create an 8-atom bulk diamond cubic cell of silicon::
+
+       from quippy.structures import diamond
+       si_bulk = diamond(5.44, 14)
+
+    The :class:`Atoms` class is inherited from the
+    :class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and
+    methods in addition to those listed below. This means that quippy and
+    ASE Atoms objects are fully interoperable.
+    """)
 
     _cmp_skip_fields = ['own_this', 'ref_count', 'domain']
 
@@ -297,8 +311,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 'charges'         : 'charge'}
 
     rev_name_map = dict(zip(name_map.values(), name_map.keys()))
-
-
     
     def __init__(self, symbols=None, positions=None, numbers=None, tags=None,
                  momenta=None, masses=None, magmoms=None, charges=None,
@@ -332,8 +344,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                               fpointer=fpointer, finalise=finalise)
 
         self._ase_arrays = PropertiesWrapper(self)
-        self.neighbours = Neighbours(self)
-        self.hysteretic_neighbours = Neighbours(self, hysteretic=True)
 
         # If first argument is quippy.Atoms instance, copy data from it
         if isinstance(symbols, self.__class__):
@@ -455,7 +465,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def _get_info(self):
         """ASE info dictionary
 
-        Entries are actually stored in QUIP params dictionary"""
+        Entries are actually stored in QUIP params dictionary."""
 
         return self.params
 
@@ -926,5 +936,5 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         return mem
 
 
-
 FortranDerivedTypes['type(atoms)'] = Atoms
+FortranDerivedTypes['type(connection)'] = Connection

@@ -149,6 +149,10 @@ module  atoms_module
   endinterface
 
   private :: atoms_set_atoms, atoms_set_atoms_singlez
+
+  !%  Set atomic numbers (in the 'z' integer property), species names
+  !%  (in 'species' string property) and optionally masses (if 'mass'
+  !%  property exists in the Atoms object).
   interface set_atoms
      module procedure atoms_set_atoms, atoms_set_atoms_singlez
   end interface
@@ -184,6 +188,10 @@ module  atoms_module
   end interface cutoff_break
 
   !% Add one or more atoms to an Atoms object.
+  !% To add a single atom, 'pos' should be an array of size 3 and 'z a
+  !% single integer. To add multiple atoms either arrays of length
+  !% 'n_new' should be passed, or another Atoms from which to copy data
+  !% should be given as the 'from' argument.
   private :: add_atom_single, add_atom_multiple, atoms_join
   interface add_atoms
      module procedure add_atom_single, add_atom_multiple, atoms_join
@@ -221,25 +229,34 @@ module  atoms_module
   end interface set_param_value
 
   !% Convenience function to test if a property is present. No checking
-  !% of property type is done.
+  !% of property type is done. Property names are case-insensitive.
   private :: atoms_has_property
   interface has_property
      module procedure atoms_has_property
   end interface
 
-  !% remove a property from this atoms object
+  !% Remove a property from this atoms object
   private :: atoms_remove_property
   interface remove_property
      module procedure atoms_remove_property
   end interface
 
   !% This interface calculates the distance between the nearest periodic images of two points (or atoms).
+
+  !%  Return minimum image distance between two atoms or positions.
+  !%  End points can be specified by any combination of atoms indices
+  !%  'i' and 'j' and absolute coordinates 'u' and 'w'. If 'shift' is
+  !%  present the periodic shift between the two atoms or points will
+  !%  be returned in it.
   private :: distance8_atom_atom, distance8_atom_vec, distance8_vec_atom, distance8_vec_vec
   interface distance_min_image
      module procedure distance8_atom_atom, distance8_atom_vec, distance8_vec_atom, distance8_vec_vec
   end interface
 
-  !% This interface calculates the difference vector between the nearest periodic images of two points (or atoms).
+  !%  Return the minimum image difference vector between two atoms or
+  !%  positions. End points can be specified by any combination of
+  !%  atoms indices 'i' and 'j' and absolute coordinates 'u' and
+  !%  'w'.
   private :: diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
   interface diff_min_image
      module procedure diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
@@ -274,6 +291,8 @@ module  atoms_module
   end interface
 
   private :: atoms_map_into_cell
+  !%  Map atomic positions into the unit cell so that lattice
+  !%  coordinates satisfy $-0.5 \le t_x,t_y,t_z < 0.5$
   interface map_into_cell
     module procedure atoms_map_into_cell
   end interface
@@ -976,6 +995,7 @@ contains
   !
   !% Specify a uniform neighbour cutoff throughout the system.
   !% If zero, revert to default (uniform_cutoff=false, factor=DEFAULT_NNEIGHTOL)
+  !% Optionally set 'cutoff_break' for 'calc_connect_hysteretic' at the same time.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1017,7 +1037,8 @@ contains
   !
   !% Specify the neighbour cutoff to be a mulitple of the bond length
   !% of the two atoms' types.
-  !% If zero, revert to default (DEFAULT_NNEIGHTOL)
+  !% If zero, revert to default ('DEFAULT_NNEIGHTOL').
+  !% Optional argument `factor_break` is used by 'calc_connect_hysteretic'.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1228,9 +1249,11 @@ contains
   !
   !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  !% Return the number of neighbour that atom $i$ has.
-  !% If the optional arguments max_dist or max_factor are present 
-  !% then only neighbours closer than this cutoff are included.
+  !% Return the number of neighbour that atom 'i' has.  If the
+  !% optional arguments max_dist or max_factor are present then only
+  !% neighbours closer than this cutoff are included.  'alt_connect'
+  !% can be set to another Connection object to use alternative
+  !% connectivity information, for example 'hysteretic_connect'.
   function atoms_n_neighbours(this, i, max_dist, max_factor, alt_connect, error) result(n)
     type(Atoms), intent(in) :: this
     integer, intent(in) :: i
@@ -1300,7 +1323,18 @@ contains
   !%>      ...
   !%>   end do
   !%
-  !% if distance > max_dist, return 0, and do not waste time calculating other quantities
+  !% If distance > max_dist, return 0, and do not waste time calculating other quantities.
+  !% 'alt_connect' has the same meaning as 'n_neighbours'.
+  !%
+  !% Here's a typical loop construct in Python. Note how `r` and `u`
+  !% are created before the loop: arguments which are both optional
+  !% and ``intent(out)`` in Fortran are converted to ``intent(in,out)`` for quippy. ::
+  !%>
+  !%>    r = farray(0.0)
+  !%>    u = fzeros(3)    
+  !%>    for i in frange(at.n):
+  !%>        for n in frange(at.n_neighbours(i)):
+  !%>            j = at.neighbour(i, n, distance=r, diff=u)
   function atoms_neighbour(this, i, n, distance, diff, cosines, shift, index, max_dist, jn, alt_connect, error) result(j)
     type(Atoms), intent(in)         :: this
     integer ::i, j, n
@@ -1855,7 +1889,7 @@ contains
   !
   !% The subroutine 'calc_dists' updates the stored distance tables using 
   !% the stored connectivity and shifts. This should be called every time
-  !% any atoms are moved (e.g. it is called by 'advance_verlet').
+  !% any atoms are moved (e.g. it is called by 'DynamicalSystem%advance_verlet').
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1969,6 +2003,10 @@ contains
 
 
   !% Difference vector between atoms $i$ and $j$ if they are separated by a shift of 'shift'
+  !% \begin{displaymath}
+  !%   \mathbf{u}_{ij} = \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s}
+  !% \end{displaymath}
+  !% where $\mathbf{R}$ is the 'lattice' matrix and $\mathbf{s}$ the shift
   function diff(this, i, j, shift)
     type(Atoms), intent(in)    :: this
     integer,     intent(in)    :: i,j
@@ -2059,7 +2097,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% Return the real position of the atom, taking into account the
+  !% Return the real position of atom 'i', taking into account the
   !% stored travel across the periodic boundary conditions.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2079,8 +2117,14 @@ contains
   end function realpos
 
 
-  !% Return distance between atoms $i$ and $j$ if they are separated by a shift
+  !% Return distance between atoms 'i' and 'j' if they are separated by a shift
   !% of 'shift'.
+  !%
+  !% \begin{displaymath}
+  !%   r_{ij} = \left| \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s} \right|
+  !% \end{displaymath}
+  !% where $\mathbf{R}$ is the 'lattice' matrix and $\mathbf{s}$ the shift.
+
   function distance(this, i, j, shift)
     type(Atoms), intent(in)::this
     integer,     intent(in)::i, j, shift(3)
@@ -2095,10 +2139,9 @@ contains
   !
   ! Actual distance computing routines. 
   !
-  ! The real work is done in the function that
-  ! computes the distance of two general vector positions.  when
-  ! atomic indices are specified, they are first converted to vector
-  ! positions.
+  ! The real work is done in the function that computes the distance
+  ! of two general vector positions.  when atomic indices are
+  ! specified, they are first converted to vector positions.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -2292,7 +2335,7 @@ contains
     end subroutine set_map_shift
 
    !
-   !% Returns the (unsigned) volume of the simulation cell of 'this'
+   !% Returns the (unsigned) volume of the simulation cell of this Atoms
    !
    function atoms_cell_volume(this)
      type(Atoms), intent(in) :: this
@@ -2403,7 +2446,7 @@ contains
    !
    !% Calculate the centre of mass of an atoms object, using the closest images to the origin atom,
    !% or first atom if this is not specified.  If origin is zero, use actual position, not minimum image.
-   !% If an index_list is present, just calculate it for that subset of atoms (then the origin atom is
+   !% If an 'index_list' is present, just calculate it for that subset of atoms (then the origin atom is
    !% the first in this list unless it is specified separately).
    !%
    !% Note: Because the origin can be specified separately it need not be one of the atoms in the 
@@ -2528,7 +2571,7 @@ contains
      type(table),                      intent(in)  :: list     !% Indices and shifts of the other atoms relative to origin
      real(dp), dimension(3),           intent(out) :: evalues  !% Eigenvalues of the directionality matrix
      real(dp), dimension(3,3),         intent(out) :: evectors !% Eigenvectors of the directionality matrix
-     integer, optional,                intent(in)  :: method   !% 'METHOD = 1' Directionality ellipsoid method \\
+     integer, optional,                intent(in)  :: method   !% 'METHOD = 1' Directionality ellipsoid method.
                                                                !% 'METHOD = 2' Singular Value Decomposition method (default)
      integer, intent(out), optional :: error
 
@@ -3560,7 +3603,7 @@ contains
   end function atoms_z_index_to_index
 
 
-  !% Test if an atom j is one of i's nearest neighbours
+  !% Test if an atom 'j' is one of 'i's nearest neighbours
   function is_nearest_neighbour_abs_index(this,i,j, alt_connect)
     type(Atoms), intent(in), target :: this
     integer,     intent(in) :: i,j
@@ -3633,10 +3676,14 @@ contains
   end subroutine atoms_calc_connect_hysteretic
 
 
-  !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
-  !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
-  !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
-  !% is equivalent to the standard $O(N^2)$ method.
+  !% Fast $O(N)$ connectivity calculation routine. It divides the unit
+  !% cell into similarly shaped subcells, of sufficient size that
+  !% sphere of radius 'cutoff' is contained in a subcell, at least in
+  !% the directions in which the unit cell is big enough. For very
+  !% small unit cells, there is only one subcell, so the routine is
+  !% equivalent to the standard $O(N^2)$ method.
+  !% If 'own_neighbour' is true, atoms can be neighbours with their
+  !% own periodic images.
   subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
     type(Atoms),                intent(inout)  :: this
     type(Connection), optional, intent(inout)  :: alt_connect

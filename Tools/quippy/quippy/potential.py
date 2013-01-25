@@ -16,77 +16,6 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""
-    This module encapsulates all the interatomic potentials implemented in QUIP
-    
-    A :class:`Potential` object represents an interatomic potential, a
-    tight binding model or an interface to an external code used to
-    perform calculations. It is initialised from an `args_str`
-    describing the type of potential, and an XML formatted string
-    `param_str` giving the parameters.
-
-    Types of Potential:
-    
-      ====================  ==========================================================
-      `args_str` prefix      Description
-      ====================  ==========================================================   
-      ``IP``                Interatomic Potential
-      ``TB``                Tight Binding Model
-      ``FilePot``           File potential, used to communicate with external program
-      ``CallbackPot``       Callback potential, computation done by Python function
-      ``Sum``               Sum of two other potentials
-      ``ForceMixing``       Combination of forces from two other potentials
-      ====================  ==========================================================
-    
-    
-    Types of interatomic potential available:
-    
-      ======================== ==========================================================
-      `args_str` prefix        Description
-      ======================== ==========================================================   
-      ``IP BOP``               Bond order potential for metals
-      ``IP BornMayer``         Born-Mayer potential for oxides (e.g. BKS potential for silica)
-      ``IP Brenner``           Brenner (1990) potential for carbon
-      ``IP Brenner_2002``      Brenner (2002) reactive potential for carbon
-      ``IP Brenner_Screened``  Interface to Pastewka et al. screened Brenner reactive potential for carbon
-      ``IP Coulomb``           Coulomb interaction: support direct summation, Ewald and damped shifted force Coulomb potential
-      ``IP Einstein``          Einstein crystal potential
-      ``IP EAM_ErcolAd``       Embedded atom potential of Ercolessi and Adams
-      ``IP FB``                Flikkema and Bromley potential
-      ``IP FS``	  	       Finnis-Sinclair potential for metals
-      ``IP FX``                Wrapper around ttm3f water potential of Fanourgakis-Xantheas
-      ``IP GAP``               Gaussian approximation potential
-      ``IP Glue``              Generic implementation of 'glue' potential
-      ``IP HFdimer``           Simple interatomic potential for an HF dimer, from MP2 calculations
-      ``IP KIM``               Interface to KIM, the Knowledgebase of Interatomic potential Models (www.openkim.org)
-      ``IP LJ``                Lennard-Jones potential
-      ``IP Morse``             Morse potential
-      ``IP PartridgeSchwenke`` Partridge-Schwenke model for a water monomer
-      ``IP SW``                Stillinger-Weber potential for silicon
-      ``IP SW_VP``             Combined Stillinger-Weber and Vashista potential for Si/SiO2
-      ``IP Si_MEAM``           Silicon modified embedded attom potential
-      ``IP Sutton_Chen``       Sutton-Chen potential
-      ``IP TS``                Tangney-Scandolo polarisable potential for oxides
-      ``IP Tersoff``           Tersoff potential for silicon
-      ``IP WaterDimer_Gillan`` 2-body potential for water dimer
-      ======================== ==========================================================   
-    
-    Types of tight binding potential available:
-    
-      ======================= ==========================================================
-      `args_str` prefix       Description
-      ======================= ==========================================================   
-      ``TB Bowler``           Bowler tight binding model 
-      ``TB DFTB``             Density functional tight binding
-      ``TB GSP``              Goodwin-Skinner-Pettifor tight binding model
-      ``TB NRL_TB``           Naval Research Laboratory tight binding model
-      ======================= ==========================================================   
-    
-    Examples of the XML parameters for each of these potential can be
-    found in the `QUIP_Core/parameters <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release/QUIP_Core/parameters/>`_
-    directory of the QUIP svn repository.
-"""
-
 import logging
 import weakref
 from math import sqrt
@@ -136,80 +65,47 @@ def calculator_callback_factory(calculator):
 
 
 class Potential(_potential.Potential):
-    """
-    :class:`Potential` class which abstracts all QUIP interatomic potentials.
-
-    Provides interface to all energy/force/virial calculating schemes,
-    including actual calculations, as well as abstract hybrid schemes
-    such as LOTF, Force Mixing, ONIOM, and the local energy scheme.
-
-    Typically a :class:`Potential` is constructed from an initialisation
-    args_str and an XML parameter file, e.g.::
-
-        pot = Potential('IP SW', param_filename='SW.xml')
-
-    creates a Stillinger-Weber potential using the parameters from
-    the file 'SW.xml'. The XML parameters can also be given directly
-    as a string, via the `param_str` argument.
-
-    The main workhorse is the :meth:`calc` routine, which is used
-    internally to perform all calculations, e.g. to calculate forces::
-
-        atoms = diamond(5.44, 14)
-        atoms.rattle(0.01)
-        atoms.set_cutoff(pot.cutoff())
-        atoms.calc_connect()
-        force = fzeros((3,len(atoms))
-        pot.calc(atoms, force=force)
-        print np.transpose(force)
-
-    Note how the :attr:`~quippy.atoms.Atoms.cutoff` attribute is set
-    to the cutoff of this Potential, and then the neighbour lists are
-    built with the :meth:`~quippy.atoms.Atoms.calc_connect` routine.
+    __doc__ = _potential.Potential.__doc__ + """
     
-    A Potential can be used to optimise the geometry of an
-    :class:`~quippy.atoms.Atoms` structure, using the :meth:`minim` method, or via
-    the :class:`Minim` wrapper class.
+The :class:`Potential` class also implements the ASE
+:class:`ase.calculators.interface.Calculator` interface via the
+the :meth:`get_forces`, :meth:`get_stress`, :meth:`get_stresses`,
+:meth:`get_potential_energy`, :meth:`get_potential_energies`
+methods. This simplifies calculation since there is no need
+to set the cutoff or to call :meth:`~quippy.atoms.Atoms.calc_connect`,
+as this is done internally. The example above reduces to::
 
-    The :class:`Potential` class also implements the ASE
-    :class:`ase.calculators.interface.Calculator` interface via the
-    the :meth:`get_forces`, :meth:`get_stress`, :meth:`get_stresses`,
-    :meth:`get_potential_energy`, :meth:`get_potential_energies`
-    methods. This simplifies calculation since there is no need
-    to set the cutoff or to call :meth:`~quippy.atoms.Atoms.calc_connect`,
-    as this is done internally. The example above reduces to::
+    atoms = diamond(5.44, 14)
+    atoms.rattle(0.01)
+    atoms.set_calculator(pot)
+    forces = atoms.get_forces()
+    print forces
 
-        atoms = diamond(5.44, 14)
-        atoms.rattle(0.01)
-        atoms.set_calculator(pot)
-        forces = atoms.get_forces()
-        print forces
+Note that the ASE force array is the transpose of the QUIP force
+array, so has shape (len(atoms), 3) rather than (3, len(atoms)).
 
-    Note that the ASE force array is the tranpose of the QUIP force
-    array, so has shape (len(atoms), 3) rather than (3, len(atoms)).
+The optional arguments `pot1`, `pot2` and `bulk_scale` are
+used by ``Sum`` and ``ForceMixing`` potentials (see also
+wrapper classes :class:`ForceMixingPotential` and
+:class:`LOTFPotential`).
 
-    The optional arguments `pot1`, `pot2` and `bulk_scale` are
-    used by ``Sum`` and ``ForceMixing`` potentials (see also
-    wrapper classes :class:`ForceMixingPotential` and
-    :class:`LOTFPotential`).
+An :class:`quippy.mpi_context.MPI_context` object can be
+passed as the `mpi_obj` argument to restrict the
+parallelisation of this potential to a subset of the
 
-    An :class:`quippy.mpi_context.MPI_context` object can be
-    passed as the `mpi_obj` argument to restrict the
-    parallelisation of this potential to a subset of the
+The `callback` argument is used to implement the calculation of
+the :class:`Potential` in a Python function: see :meth:`set_callback` for
+an example.
 
-    The `callback` argument is used to implement the calculation of
-    the :class:`Potential` in a Python function: see :meth:`set_callback` for
-    an example.
+In addition to the builtin QUIP potentials, it is possible to
+use any ASE calculator as a QUIP potential by passing it as
+the `calculator` argument to the :class:`Potential` constructor, e.g.::
 
-    In addition to the builtin QUIP potentials, it is possible to
-    use any ASE calculator as a QUIP potential by passing it as
-    the `calculator` argument to the :class:`Potential` constructor, e.g.::
+   from ase.calculators.morse import MorsePotential
+   pot = Potential(calculator=MorsePotential)
 
-       from ase.calculators.morse import MorsePotential
-       pot = Potential(calculator=MorsePotential)
-
-    `cutoff_skin` is used to set the :attr:`cutoff_skin` attribute.
-    """
+`cutoff_skin` is used to set the :attr:`cutoff_skin` attribute.
+"""
 
     callback_map = {}
 
@@ -379,15 +275,13 @@ class Potential(_potential.Potential):
            
 
     # Synonyms for `update` for compatibility with ASE calculator interface
-    initialize = update
-    set_atoms  = update
+    def initialize(self, atoms):
+        self.update(atoms)
+
+    def set_atoms(self, atoms):
+        self.set_atoms(atoms)
 
     def calculation_required(self, atoms, quantities):
-        """
-        Determine if a new calculation is required to calculate `quantities`.
-
-        Called internally by :meth:`get_potential_energy`, :meth:`get_forces`, etc.
-        """
         self.update(atoms)
         for quantity in quantities:
             if getattr(self, quantity) is None:
@@ -603,12 +497,12 @@ class Minim(Optimizer):
 
     This class is a wrapper around the
     :meth:`quippy.potential.Potential.minim` routine, compatible with
-    compatible with :class:`ase.optimize.Optimizer` interface.
+    the ASE `ASE Optimizer inferface <https://wiki.fysik.dtu.dk/ase/ase/optimize.html>`_.
 
-    'method' should be one of 'sd', (Steepest descent), 'cg'
-    (Conjugate Gradients), 'cg_n' (Noam Bernstein's Conjugate Gradients
-    implementation), 'pcg', (Preconditioned Conjugate Gradients),
-    'lbfgs' (L-BFGS), or 'fire' (FIRE).
+    `method` should be one of ``"sd"``, (steepest descent), ``"cg"``
+    (conjugate gradients, the default), ``"cg_n"`` (Noam Bernstein's conjugate gradients
+    implementation), ``"pcg"``, (preconditioned conjugate gradients),
+    ``"lbfgs"`` (L-BFGS), or ``"fire"`` (FIRE).
 
     Example usage::
 
@@ -740,7 +634,10 @@ class Minim(Optimizer):
         
 
     def get_number_of_steps(self):
-        return self.nsteps
+       """
+       Return number of steps taken during minimisation
+       """
+       return self.nsteps
 
 
 class ForceMixingPotential(Potential):

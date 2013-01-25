@@ -39,22 +39,16 @@ program crack
   !% corresponding to different simulation tasks, as listed in the table
   !% below. Each of these is described below.
   !%
-  !% \begin{center}
-  !% \begin{tabular}{cc}
-  !% \hline
-  !% \hline
-  !% 'simulation_task' & Description \\
-  !% \hline
-  !% 'md' & Molecular dynamics \\
-  !% 'minim' & Hybrid structural relaxation \\
-  !% 'force_integraion' & Hybrid force integration \\
-  !% 'quasi_static' & Quasi-static loading \\
-  !% \hline
-  !% \hline
-  !% \end{tabular}
-  !% \end{center}
+  !% =================== ================================
+  !% 'simulation_task'   Description
+  !% =================== ================================
+  !% 'md'                Molecular dynamics
+  !% 'minim'             Hybrid structural relaxation
+  !% 'force_integraion'  Hybrid force integration
+  !% 'quasi_static'      Quasi-static loading 
+  !% =================== ================================
   !%
-  !% \subsection{Molecular Dynamics}
+  !% Molecular Dynamics
   !%
   !% We start with a relaxed configuration at a load $G$ below the critical
   !% Griffith load $G_c$.
@@ -73,15 +67,12 @@ program crack
   !% As an example, extrapolation for 10 steps of $\Delta t=1$~fs is possible for
   !% silicon crack systems.
   !%
-  !% \begin{figure}[b]
-  !%   \centering
-  !%   \includegraphics[width=12cm]{flow-chart}
-  !%   \caption[Molecular dynamics methodology flow chart]
-  !%   {\label{fig:flow-chart} Flow chart illustrating molecular dynamics
-  !%   methodology used for the fracture simulations. See text for a
-  !%   description of each state and the conditions that have to met for
-  !%   transitions to take place.}
-  !% \end{figure}
+  !%   .. figure:: flow-chart
+  !%
+  !%      Flow chart illustrating molecular dynamics methodology used
+  !%      for the fracture simulations. See text for a description of
+  !%      each state and the conditions that have to met for
+  !%      transitions to take place.
   !% 
   !% Unfortunately it is not possible to run dynamics for long enough to
   !% fully explore the environment at each load and to cross barriers which
@@ -101,9 +92,11 @@ program crack
   !% rescaling. 
   !% The thermalisation continues until the fluctuations in temperature
   !% are small, defined by the inequality
-  !% \begin{equation}
-  !% \frac{T - \left<T\right>}{T} < \frac{1}{\sqrt{N}}
-  !% \end{equation}
+  !%
+  !%  .. math::
+  !% 
+  !%     \frac{T - \left<T\right>}{T} < \frac{1}{\sqrt{N}}
+  !% 
   !% where $T$ and $\left<T\right>$ are the instantaneous and average
   !% temperatures and $N$ is the total number of atoms in the simulation.
   !% Once this condition is satisfied the thermostat is turned down and we
@@ -111,7 +104,7 @@ program crack
   !% After the crack has started to move, the rebonding is automatically
   !% detected and the load is not increased further.
   !%
-  !%\subsection{Molecular Dynamics -- smooth loading}
+  !% Molecular Dynamics -- smooth loading
   !%
   !% There is now an alternative way to smoothly increase the load during
   !% an MD simulation. To use this method set the 'md_smooth_loading_rate'
@@ -251,8 +244,8 @@ program crack
   !% the boundary.
   !% The integration path is discretised into $N+1$ samples according to
   !% \begin{eqnarray}
-  !%   \Delta \mathbf{R} & = & \frac{1}{N}\left(\mathbf{R}_R - \mathbf{R}_U\right) \\
-  !%   \mathbf{F}_i & = & \mathbf{F}(\mathbf{R}_U + i\,\Delta \mathbf{R}), \;\; 0 \le i \le N
+  !%   \Delta \mathbf{R} & = & \frac{1}{N}\left(\mathbf{R}_R - \mathbf{R}_U\right) 
+  !%   \\ \mathbf{F}_i & = & \mathbf{F}(\mathbf{R}_U + i\,\Delta \mathbf{R}), \;\; 0 \le i \le N
   !% \end{eqnarray}
   !% and then Eq.~\ref{eq:force-integration} can be evaluated using
   !% Simpson's Rule:

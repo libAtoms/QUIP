@@ -36,17 +36,28 @@
 !% thermostat settings, and logical masks so that thermostatting can be applied
 !% to selected atoms etc.
 !% 
-!% Initialise a DynamicalSystem object like this:
+!% In Fortran code, initialise a DynamicalSystem object like this:
 !%> 	call initialise(MyDS, MyAtoms)
 !% which (shallowly) copies MyAtoms into the internal atoms structure (and so 
-!% MyAtoms is not required by MyDS after this call and can be finalised).
+!% MyAtoms is not required by MyDS after this call and can be finalised). In Python,
+!% a DynamicalSystem can be initialised from an Atoms instance:
+!%>     MyDS = DynamicalSystem(MyAtoms)
+!%
+!%
+!% A DynamicalSystem is constructed from an Atoms object
+!% 'atoms'. The initial velocities and accelerations can optionally be
+!% specificed as '(3,atoms.n)' arrays. The 'constraints' and
+!% 'rigidbodies' arguments can be used to specify the number of
+!% constraints and rigid bodies respectively (the default is zero in
+!% both cases).
 !%
 !% DynamicalSystem has an integrator,
 !%> 	call advance_verlet(MyDS,dt,forces)
 !% which takes a set of forces and integrates the equations of motion forward
 !% for a time 'dt'.
-!X
-!X
+!% 
+!% All dynamical variables are stored inside the Atoms' :attr:`~quippy.atoms.Atoms.properties` Dictionary. 
+!%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #include "error.inc"
@@ -141,12 +152,14 @@ module dynamicalsystem_module
       module procedure DS_Assignment
    end interface
 
-   !% Add one or more atoms to this DynamicalSystem
+   !% Add one or more atoms to this DynamicalSystem. Equivalent to 'Atoms%add_atoms',
+   !% but also appends the number of degrees of freedom correctly.
    interface add_atoms
       module procedure ds_add_atom_single, ds_add_atom_multiple
    end interface add_atoms
 
-   !% Remove one or more atoms from this DynamicalSystem
+   !% Remove one or more atoms from this DynamicalSystem. Equivalent of 'Atoms%remove_atoms',
+   !%but also amends the number of degrees of freedom correctly.
    interface remove_atoms
       module procedure ds_remove_atom_single, ds_remove_atom_multiple
    end interface remove_atoms
@@ -182,6 +195,22 @@ module dynamicalsystem_module
      module procedure arrays_momentum, atoms_momentum, ds_momentum
    end interface momentum
 
+   !% Add a new thermostat to this DynamicalSystem. 'type' should
+   !% be one of the following thermostat types:
+   !%  * 'THERMOSTAT_NONE'
+   !%  * 'THERMOSTAT_LANGEVIN'
+   !%  * 'THERMOSTAT_NOSE_HOOVER'
+   !%  * 'THERMOSTAT_NOSE_HOOVER_LANGEVIN'
+   !%  * 'THERMOSTAT_LANGEVIN_NPT'
+   !%  * 'THERMOSTAT_LANGEVIN_PR'
+   !%  * 'THERMOSTAT_NPH_ANDERSEN'
+   !%  * 'THERMOSTAT_NPH_PR'
+   !%  * 'THERMOSTAT_LANGEVIN_OU'
+   !%  * 'THERMOSTAT_LANGEVIN_NPT_NB'
+   !%
+   !% 'T' is the target temperature. 'Q' is the Nose-Hoover coupling constant. Only one
+   !% of 'tau' or 'gamma' should be given. 'p' is the external
+   !% pressure for the case of Langevin NPT.
    interface add_thermostat
       module procedure ds_add_thermostat
    end interface add_thermostat
@@ -1104,6 +1133,8 @@ contains
 
    end function get_damping_time
 
+   !% Enable damping, with damping time set to `damp_time`. Only atoms
+   !% flagged in the `damp_mask` property will be affected.
    subroutine enable_damping(this,damp_time)
 
      type(dynamicalsystem), intent(inout) :: this
@@ -1439,6 +1470,12 @@ contains
    !% Return the temperature, assuming each degree of freedom contributes
    !% $\frac{1}{2}kT$. By default only moving and thermostatted atoms are
    !% included --- this can be overriden by setting 'include_all' to true.
+   !% 'region' can be used to restrict
+   !% the calculation to a particular thermostat
+   !% region. 'instantaneous' controls whether the calculation should
+   !% be carried out using the current values of the velocities and
+   !% masses, or whether to return the value at the last Verlet step
+   !% (the latter is the default).
    function temperature(this, property, value, include_all, instantaneous, &
         mpi_obj, error)
       type(DynamicalSystem), intent(in) :: this
@@ -1521,8 +1558,11 @@ contains
 
    end subroutine add_heat
 
-   !% Rescale the atomic velocities to temperature 'temp'. If the current
-   !% temperature is zero, we first randomise the velocites.
+   !% Rescale the atomic velocities to temperature 'temp'. If the
+   !% current temperature is zero, we first randomise the velocites.
+   !% If 'mass_weighted' is true, then the velocites are weighted by
+   !% $1/sqrt{m}$. Linear momentum is zeroed automatically.  If
+   !% 'zero_l' is true then the angular momentum is also zeroed.
    subroutine rescale_velo(this, temp, mass_weighted, zero_L)
       type(DynamicalSystem), intent(inout) :: this
       real(dp),              intent(in)    :: temp
@@ -1677,7 +1717,6 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
    !% Calculates the velocity of the centre of mass c.f. 'centre_of_mass' in Atoms module. No origin atom required.
-
    pure function centre_of_mass_velo(this,index_list) result(V_CoM)
      
      type(DynamicalSystem),            intent(in) :: this
@@ -1706,7 +1745,6 @@ contains
    end function centre_of_mass_velo
 
    !% Calculates the acceleration of the centre of mass c.f. 'centre_of_mass' in Atoms module. No origin atom required
-
    pure function centre_of_mass_acc(this,index_list) result(A_CoM)
      
      type(DynamicalSystem),            intent(in) :: this
@@ -1759,7 +1797,20 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    
+
+
+   !%  Advance the velocities by half the time-step 'dt' and the
+   !%  positions by a full time-step. A typical MD loop should
+   !%  resemble the following code (Python example, Fortran is similar):
+   !% 
+   !%> ds.atoms.calc_connect() 
+   !%> for n in range(n_steps):
+   !%>    ds.advance_verlet1(dt)
+   !%>    pot.calc(ds.atoms, force=True, energy=True)
+   !%>    ds.advance_verlet2(dt, ds.atoms.force)
+   !%>    ds.print_status(epot=ds.atoms.energy)
+   !%>    if n % connect_interval == 0:
+   !%>       ds.atoms.calc_connect()
    subroutine advance_verlet1(this,dt,virial,parallel,store_constraint_force,do_calc_dists,mpi_obj,error)
 
      type(dynamicalsystem), intent(inout)  :: this
@@ -2105,6 +2156,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+   !% Advances the velocities by the second half time-step
    subroutine advance_verlet2(this,dt,f,virial,E,parallel,store_constraint_force,error)
 
      type(dynamicalsystem), intent(inout)  :: this
@@ -2332,8 +2384,14 @@ contains
 
    end subroutine advance_verlet2
 
-   !% Calls advance_verlet2 followed by advance_verlet1. Outside this routine the
-   !% velocities will be half-stepped.
+   !% Calls' advance_verlet2' followed by 'advance_verlet1'. Outside this routine the
+   !% velocities will be half-stepped. This allows a simpler MD loop:
+   !%>  for n in range(n_steps):
+   !%>      pot.calc(ds.atoms, force=True, energy=True)
+   !%>      ds.advance_verlet(dt, ds.atoms.force)
+   !%>      ds.print_status(epot=ds.atoms.energy)
+   !%>      if n % connect_interval == 0:
+   !%>         ds.atoms.calc_connect()
    subroutine advance_verlet(ds,dt,f,virial,E,parallel,store_constraint_force,do_calc_dists,error)
 
      type(dynamicalsystem), intent(inout) :: ds
@@ -2367,10 +2425,10 @@ contains
     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     !% Print a status line showing the current time, temperature, the mean temperature
-    !% the total energy and the total momentum for this
-    !% DynamicalSystem. If present, the optional
+    !% the total energy and the total momentum for this DynamicalSystem. If present, the optional
     !% 'label' parameter should be a one character label for the log lines and is printed
-    !% in the first column of the output.
+    !% in the first column of the output. 'epot' should be the potential energy
+    !% if this is available. 'instantaneous' has the same meaning as in 'temperature' routine.
    subroutine ds_print_status(this, label, epot, instantaneous, mpi_obj, file, error)
      type(DynamicalSystem),       intent(in)   :: this
      character(*),      optional, intent(in)   :: label

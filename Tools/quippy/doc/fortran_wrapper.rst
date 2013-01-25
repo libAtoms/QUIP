@@ -19,8 +19,8 @@
 .. _wrapping-fortran-90-code:
 
 
-Wrapping Fortran 90 Code
-************************
+Appendix: Wrapping Fortran 90 Code
+**********************************
 
 This section describes the machinery involved in connecting between
 Python and Fortran. You should only read it if you want to extend

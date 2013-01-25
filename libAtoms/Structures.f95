@@ -372,18 +372,17 @@ contains
   end subroutine bulk
 
 
- !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- ! 
- ! Make a slab of diamond structure, facing in any direction. Axes is 3x3
- ! matrix with column vectors being axes of slab. For a crack (abc)[def], 
- ! axes(:,2)=[abc], i.e. plane that is opened by crack and axes(:,3)=[def]
- ! is crack tip line, perpendicular to surface and to plane in which 
- ! crack propagates. Lattice constant is 'a'. Slab axes returned as
- ! columns in the matrix 'axes'.
- !
- !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
- subroutine unit_slab(myatoms, axes, a, atnum, lat_type, c, u, x, y, z)
+  !%  Return a slab of material with the x, y, and z axes desribed by the
+  !%  Miller indices in the array axes (with ``x = axes[:,1])``, ``y =
+  !%  axes[:,2]`` and ``z = axes[:,3]``).  The extent of the slab should
+  !%  be given either as ``(nx, ny, nz)`` unit cells or as ``(width,
+  !%  height, nz)`` where `width` and `height` are measured in Angstrom
+  !%  and `nz` is the number of cells in the `z` direction.
+  !%  
+  !%  `atnum` can be used to initialise the `z` and `species` properties.
+  !%  `lat_type` should be of ``"diamond"```, ``"fcc"``, or ``"bcc"``
+  !%  (default is ``"diamond"``)
+  subroutine unit_slab(myatoms, axes, a, atnum, lat_type, c, u, x, y, z)
    type(Atoms), intent(out) :: myatoms
    real(dp), intent(in), dimension(3,3) :: axes
    real(dp), intent(in) :: a ! Lattice vector
@@ -732,7 +731,7 @@ contains
   end function gcd
 
   !% Construct a $(n,m)$ nanotube with lattice parameter 'a' and 'nz'
-  !% unit cells along the tube length. Returns the radius of the tube.
+  !% unit cells along the tube length. Also returns the radius of the tube.
   function Graphene_Tube(tube, a, n, m, nz) result(r)
     type(Atoms), intent(out) :: tube
     real(dp), intent(in) :: a
@@ -1181,6 +1180,15 @@ contains
   ! diamond(myatoms, a)
   !
   !% Creates an 8-atom diamond-structure with cubic lattice constant of 'a'
+  !% and atomic number 'Z', e.g. in Python::
+  !%
+  !%    a = diamond(5.44, 14)  # Silicon unit cell
+  !% 
+  !% Or, in Fortran::
+  !%
+  !%    type(Atoms) :: at
+  !%    ...
+  !%    call diamond(at, 5.44_dp, 14)
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1658,7 +1666,8 @@ contains
 
   end subroutine graphite_rhombohedral
 
-  !%  Primitive 9-atom trigonal alpha quartz cell
+  !%  Primitive 9-atom trigonal alpha quartz cell, with lattice constants
+  !% `a` and `c` and internal coordinates `u` (Si), `x`, `y` and `z` (O).
   subroutine alpha_quartz(at, a, c, u, x, y, z)
     type(Atoms), intent(out) :: at
     real(dp), intent(in) :: a, c, u, x, y, z
@@ -2056,6 +2065,7 @@ subroutine anatase(at, a, c, u)
 
   end function structure_from_file
 
+  !% Transform cell and lattice coordinates by the 3 x 3 matrix `t`
   subroutine transform(at_out, at_in, t)
     type(Atoms), intent(out)::at_out  !% Output 
     type(Atoms), intent(in) ::at_in   !% Input 

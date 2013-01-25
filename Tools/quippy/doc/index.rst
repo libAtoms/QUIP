@@ -29,11 +29,12 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :numbered: 2
 
    install.rst
    tutorials.rst
    quippy.rst
-   filetypes.rst
+   visualisation.rst
    fortran_wrapper.rst
    
 

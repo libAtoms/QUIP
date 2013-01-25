@@ -16,6 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+"""
+This module defines the :class:`DynamicalSystem` and :class:`Dynamics`
+classes, for carrying out molecular dynamics simulations.
+
+.. module:: quippy.dynamicalsystem
+   :synopsis: Run molecular dynamics simulations
+"""
+
 from quippy import *
 from numpy import *
 

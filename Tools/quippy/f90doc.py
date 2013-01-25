@@ -108,10 +108,10 @@ s_attrib_re_a = re.compile(a_attribs,re.IGNORECASE)
 
 cont_line   = re.compile('&')
 
-fdoc_comm     = re.compile(r'^!\s*\*FD')
-fdoc_comm_mid = re.compile(r'!\s*\*FD')
-fdoc_mark     = re.compile('_FD\s*')
-fdoc_rv_mark  = re.compile('_FDRV\s*')
+fdoc_comm     = re.compile(r'^!\s?\*FD')
+fdoc_comm_mid = re.compile(r'!\s?\*FD')
+fdoc_mark     = re.compile('_FD\s?')
+fdoc_rv_mark  = re.compile('_FDRV\s?')
 
 result_re = re.compile(r'result\s*\((.*?)\)')
 
@@ -1169,6 +1169,14 @@ class f90file:
         self.file.close()
         self.dquotes=[]
         self.squotes=[]
+
+    def readlines(self):
+        lines = []
+        line = self.next_line()
+        while line is not None:
+            lines.append(line)
+            line = self.next_line()
+        return lines
 
     def next_line(self):
 

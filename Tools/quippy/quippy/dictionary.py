@@ -16,18 +16,65 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import _dictionary
-from quippy._dictionary import *
 import weakref
 import numpy as np
-from dictmixin import DictMixin, ParamReaderMixin
-from farray import *
+
+from quippy import _dictionary
+from quippy._dictionary import *
+from quippy.oo_fortran import update_doc_string
+from quippy.dictmixin import DictMixin, ParamReaderMixin
+from quippy.farray import *
 
 __all__ = _dictionary.__all__
 
 class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
+    __doc__ = update_doc_string(_dictionary.Dictionary.__doc__, """
+    
+    The quippy Python :class:`Dictionary` class is designed to behave
+    as much as possible like a true Python dictionary, but since it is
+    implemented in Fortran it can only store a restricted range of
+    data types.  Keys much be strings and values must be one of the
+    types above.
 
-    __doc__ = _dictionary.Dictionary.__doc__
+    Trying to store any other type of data will raise a :exc:`ValueError`.
+
+    For Atoms' :attr:`~quippy.atoms.Atoms.params` entries, there are
+    further restrictions imposed by the implementation of the XYZ and
+    NetCDF I/O routines. The only types of data that can be stored here
+    are:
+
+    - Integer
+    - Real
+    - String
+    - Integer 3-vector
+    - Real 3-vector
+    - Integer 3 x 3 matrix
+    - Real 3 x 3 matrix
+
+    A :class:`Dictionary` can be created from a standard Python dictionary,
+    and easily converted back::
+
+        >>> py_dict = {'a':1, 'b':2}
+        >>> fortran_dict = Dictionary(py_dict)
+        >>> py_dict == dict(fortran_dict)
+        True
+
+    It also supports all the standard dictionary operations and methods::
+
+        >>> fortran_dict['c'] = 3
+	>>> fortran_dict.keys()
+	['a', 'b', 'c']
+
+    An additional feature of the quippy :class:`Dictionary` is that it
+    can read and write itself to a string in the format used within XYZ
+    files::
+
+        >>> str(fortran_dict)
+	'a=1 b=2 c=3'
+	>>> d2 = Dictionary('a=1 b=2 c=3')
+	>>> d2.keys(), d2.values()      
+	(['a', 'b', 'c'], [1, 2, 3])
+    """)
 
     _interfaces = _dictionary.Dictionary._interfaces
     _interfaces['set_value'] = [ k for k in _dictionary.Dictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]

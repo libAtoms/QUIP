@@ -34,8 +34,7 @@
 !%
 !% \begin{displaymath}
 !% \begin{array}{c}
-!% i^2 = j^2 = k^2 = ijk = -1 \\
-!%  ij = k \quad jk = i \quad ki = j
+!% i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 !% \end{array}
 !% \end{displaymath}
 

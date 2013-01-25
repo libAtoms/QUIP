@@ -16,16 +16,27 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""Object oriented interface on top of f2py generated wrappers."""
+"""Object oriented interface on top of f2py generated wrappers.
 
-import logging, sys, imp, weakref
-import arraydata
-from farray import *
-import numpy as np
+This module adds support for derived types to f2py generated modules,
+providing the Fortran source code was built using
+:mod:`f2py_wrapper_gen`."""
+
+import logging
+import inspect
+import sys
+import imp
+import weakref
+import re
 from types import MethodType
-from util import args_str, is_interactive_shell
-from dictmixin import PuPyDictionary
+
+import numpy as np
+
+from quippy.farray import *
+from quippy.util import args_str, is_interactive_shell
+from quippy.dictmixin import PuPyDictionary
 from quippy import fortran_indexing # default value
+import quippy.arraydata as arraydata
 
 major, minor = sys.version_info[0:2]
 
@@ -62,6 +73,13 @@ FortranRoutines = {}
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 
 from numpy.f2py.crackfortran import badnames
+
+special_names = {
+    'assignment(=)' : 'assignment',
+    }
+
+rev_special_names = dict((v,k) for (k,v) in special_names.iteritems())
+
 
 def is_scalar_type(t):
     if t in numpy_to_fortran.values(): return True
@@ -270,7 +288,17 @@ def process_results(res, args, kwargs, inargs, outargs, prefix, fortran_indexing
 
 
 class FortranDerivedType(object):
-    """Abstract base class for all fortran derived types."""
+    """Abstract base class for all fortran derived types.
+
+    This class is an abstract base class for all Fortran
+    derived-types. It contains all the magic necessary
+    to communicate with a module wrapped using the
+    :mod:`f2py_wrapper_gen` module.
+
+    The constructor invokes a Fortran interface or routine to initialise
+    the object. When the reference count for instances of this class drops to zero,
+    the destructor frees the associated Fortran derived type.
+    """
 
     _modobj = None
     _moddoc = None
@@ -439,6 +467,19 @@ class FortranDerivedType(object):
         return not self.__eq__(other)
 
     def _update(self):
+        """
+        Automatically invoked whenever this object needs to be
+        updated. This happens when it is first created, when it is
+        direcly passed to a Fortran routine with ``intent(in,out)`` or
+        when it is a component of another object which is passed with
+        ``intent(in,out)``.
+
+        This method also invokes all the hook in the
+        :attr:`_update_hooks` list. This can be used in subclasses to
+        allow a customised response. For example this mechanism is used
+        in :class:`quippy.extras.Atoms` to update Atoms properties.
+        """
+        
         wraplog.debug('updating %s at 0x%x' % (self.__class__, id(self)))
         if self._fpointer is None: return
         for hook in self._update_hooks:
@@ -451,9 +492,57 @@ class FortranDerivedType(object):
         self._update_hooks.remove(hook)
 
     def _get_array_shape(self, name):
+        """
+        This method can be used to override Fortran's idea of the shape of 
+        arrays within derived types, for example to present only a partial
+        view of an array. This is used in :class:`quippy.table.Table`
+        to allow the sizes of arrays within the Table class to correspond to the
+        current extent of the Table, rather than the size of the allocated storage
+        which will usually be larger.
+
+        If this method returns ``None`` then the full array is presented, otherwise
+        the return value should be a tuple `(N_1, N_2, ..., N_d)` where `d`
+        is the number of dimensions of the array and `N_1, N_2` etc. are the lengths
+        of each dimension.
+        """
         return None
 
     def _runroutine(self, name, *args, **kwargs):
+        """
+        Internal method used to invoke the Fortran routine `name`
+
+        `name` must be a valid key in :attr:`_routines`. Wrapper
+        methods which simply call :meth:`_runroutine()` are
+        automatically generated in subclasses of
+        :class:`FortranDerivedType` by :func:`wrap_all()`.
+
+        Input arguments which are instances of a subclass of
+        :class:`FortranDerivedType` are replaced by their
+        :attr:`_fpointer` integer attribute.
+
+        If there is an keyword argument with the name `args_string`
+        then unexpected keyword arguments are permitted. All the
+        undefined keyword arguments are collected together to form a
+        dictionary which is converted to string form and used as the the
+        `arg_string` argument, providing rudimentary support for
+        variable numbers and types of arguments. For example::
+
+            p = Potential('IP SW', xml_string)
+	    p.calc(at, virial=True, energy=True)
+
+        is equivalent to::
+
+            p = Potential('IP SW', xml_string)
+	    p.calc(at, args_str="virial energy")
+	
+        The return value us made up of a tuple of the arguments to the
+        Fortran routine which are ``intent(out)``. Pointers to Fortran
+        derived-type instances are replaced with new instances of the
+        appropriate subclass of :class:`FortranDerivedType`. Arrays
+        are converted to use one-based indexing using
+        :class:`~quippy.farray.FortranArray`.
+        """
+        
         if not name.startswith('__init__') and self._fpointer is None:
             raise ValueError('%s object not initialised.' % self.__class__.__name__)
 
@@ -502,6 +591,15 @@ class FortranDerivedType(object):
 
 
     def _runinterface(self, name, *args, **kwargs):
+        """
+        Internal method used to invoke the appropriate routine
+        within the Fortran interface `name`. If no routine is found 
+        matching the names and types of the arguments provided then
+        an :exc:`TypeError` exception is raised.
+
+        Arguments and results are handled in the same way as 
+        :func:`_runroutine`.
+        """
 
         if not name in self._interfaces:
             raise ValueError('Unknown interface %s.%s' % (self.__class__.__name__, name))
@@ -591,6 +689,36 @@ def flatten_list_of_dicts(dictlist):
 
 
 def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map, fortran_indexing):
+    """
+    Returns tuple `(classes, routines, params)` suitable for
+    importing into top-level package namespace. `topmod` should be an
+    f2py-generated module containing `fortran` objects, and `spec`
+    should be the specification dictionary generated by
+    :func:`f2py_wrapper_gen.wrap_mod`.  `mods` is a list of the names
+    of Fortran modules to wrap, and `short_names` is a dictionary
+    mapping shortened Fortran derived-type names to their canonical
+    form.
+
+    `classes` and `routines` are lists of `(name, value)` tuples
+    where `value` is a newly defined subclass of
+    :class:`FortranDerivedType` or newly wrapped routine respectively.
+    `params` is a Python dictionary of Fortran parameters (constants).
+
+    Here's how this function is used in quippy's :file:`__init.py__` to
+    import the new classes, routines and params into the top-level quippy
+    namespace::
+   
+       classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'])
+
+       for name, cls in classes:
+ 	  setattr(sys.modules[__name__], name, cls)
+
+       for name, routine in routines:
+   	  setattr(sys.modules[__name__], name, routine)
+
+       sys.modules[__name__].__dict__.update(params)
+    """
+
     all_classes = []
     leftover_routines = []
     interfaces = {}
@@ -598,14 +726,14 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
     all_params = {}
     pymods = {}
 
-    for mod in mods:
+    for mod, modfile in mods:
         wraplog.debug('Module '+str(mod))
         if mod in merge_mods:
             curspec = flatten_list_of_dicts([spec[x] for x in merge_mods[mod]])
         else:
             curspec = spec[mod]
 
-        classes, routines, mod_params = wrapmod(fobj, curspec,
+        classes, routines, mod_params = wrapmod(fobj, curspec, modname=mod, modfile=modfile,
                                                 short_names=short_names,
                                                 params=all_params, prefix=prefix,
                                                 fortran_indexing=fortran_indexing)
@@ -647,21 +775,22 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                 else:
                     method_name = routine
 
-                if method_name in py_keywords: name = name+'_'
+                method_name = py_keywords_map.get(method_name, method_name)
+                method_name = special_names.get(method_name, method_name)
 
                 wrapped_routine = wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix,
-                                              fortran_indexing=fortran_indexing)
+                                              fortran_indexing=fortran_indexing, skip_this=True, modfile=modfile)
                 FortranRoutines[cls.__name__+'.'+method_name] = wrapped_routine
                 setattr(cls, method_name, wrapped_routine)
                 wraplog.debug('  added method %s to class %s' % (method_name, cls.__name__))
 
             else:
                 wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix,
-                                              fortran_indexing=fortran_indexing)
+                                              fortran_indexing=fortran_indexing, skip_this=True, modfile=modfile)
                 for intf_name,intf_spec in modspec['interfaces'].iteritems():
                     if routine in intf_spec['routines']:
-                        if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [])
-                        interfaces[intf_name][2].append((routine, rspec, wrapped_routine))
+                        if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [], modfile)
+                        interfaces[intf_name][2].append((routine, rspec, wrapped_routine, modfile))
                         wraplog.debug('  added routine %s to top-level interface %s' % (routine, intf_name))
                         break
                 else:
@@ -672,11 +801,14 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                     pymods[modules_name_map.get(mod,mod)].__all__.append(routine)
                     wraplog.debug('  added top-level routine %s' % routine)
                     
-    # remap interface names which clash with keywords and skip overloaded operator
-    interfaces = dict([(py_keywords_map.get(k,k),v) for (k,v) in interfaces.iteritems() if '.' ])
+    # remap interface names which clash with keywords and skip overloaded operators
+    interfaces = dict([(py_keywords_map.get(k,k),v)
+                         for (k,v) in interfaces.iteritems() ])
+    interfaces = dict([(special_names.get(k,k),v)
+                         for (k,v) in interfaces.iteritems() ])
 
-    for name, (mod, intf_spec, routines) in interfaces.iteritems():
-        wrapped_interface = wrapinterface(name, intf_spec, routines, prefix)
+    for name, (mod, intf_spec, routines, modfile) in interfaces.iteritems():
+        wrapped_interface = wrapinterface(name, intf_spec, routines, prefix, modfile=modfile)
         FortranRoutines[name] = wrapped_interface
         top_level_routines.append((name, wrapped_interface))
         wrapped_interface.__module__ = pymods[modules_name_map.get(mod,mod)].__name__
@@ -688,7 +820,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
 
 
-def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
+def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortran_indexing):
 
     wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
     wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
@@ -745,8 +877,23 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
         constructor = constructors[0]
 
         tcls = fortran_class_prefix+cls[0].upper()+cls[1:]
+
+        if constructor:
+            constructor_name = constructor
+            constructor = add_doc(wrapinit(constructor), getattr(modobj, prefix+constructor),
+                                  moddoc['routines'][constructor], constructor, tcls, prefix,
+                                  format='numpydoc', skip_this=True, modfile=modfile)
+
+        constructor_doc_lines = constructor.__doc__.split('\n')
+        constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :svn:`%s`.\n' % (cls, modfile))
+
+        classdoc = '\n'.join([constructor_doc_lines[0]] + ['\n'] +
+                             process_docstring(moddoc['doc']).split('\n') +
+                             process_docstring(moddoc['types'][cls]['doc']).split('\n') +
+                             ['\n'] + constructor_doc_lines[1:])
+
         new_cls = type(object)(tcls, (FortranDerivedType,),
-                              {'__doc__': moddoc['doc'],
+                              {'__doc__': classdoc,
                                '_moddoc': None,
                                '_modobj': None,
                                '_classdoc': None,
@@ -767,9 +914,8 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
         new_cls._prefix = prefix
 
         if constructor:
-            new_cls._routines['__init__'] = (getattr(modobj, prefix+constructor), moddoc['routines'][constructor])
-            new_cls.__init__ = add_doc(wrapinit(constructor), getattr(modobj, prefix+constructor),
-                                       moddoc['routines'][constructor], constructor, tcls, prefix)
+            new_cls._routines['__init__'] = (getattr(modobj, prefix+constructor_name), moddoc['routines'][constructor_name])
+            new_cls.__init__ = constructor
 
         if destructor:
             new_cls._routines['__del__'] = (getattr(modobj, prefix+destructor), moddoc['routines'][destructor])
@@ -785,7 +931,8 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                 if name[:len(short_names[lcls])+1] == short_names[lcls]+'_':
                     name = name[len(short_names[lcls])+1:]
 
-            if name in py_keywords: name = name+'_'
+            name = py_keywords_map.get(name, name)
+            name = special_names.get(name, name)
 
             fobj = getattr(modobj, prefix+fullname)
             doc = moddoc['routines'][fullname]
@@ -798,60 +945,89 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                 continue
 
             new_cls._routines[name] = (fobj, doc)
-            func = add_doc(wrapmethod(name), fobj, doc, name, tcls+'.'+name, prefix)
+            func = add_doc(wrapmethod(name), fobj, doc, fullname, tcls+'.'+name,
+                           prefix, format='numpydoc', skip_this=True, modfile=modfile)
             setattr(new_cls, name, func)
 
             for intf_name,value in moddoc['interfaces'].iteritems():
                 intf_routines = value['routines']
                 if fullname in intf_routines:
                     if not intf_name in interfaces: interfaces[intf_name] = []
-                    interfaces[intf_name].append((name, moddoc['routines'][fullname], getattr(new_cls,name)))
+
+                    # regenerate interface documentation in sphinx format and with correct names
+                    intf_func = add_doc(wrapmethod(name), fobj, doc, fullname, intf_name,
+                                        prefix, format='sphinx', skip_this=True, modfile=modfile)
+                    interfaces[intf_name].append((name, moddoc['routines'][fullname], intf_func))
 
             wraplog.debug('    adding method %s' % name)
             del routines[routines.index(fullname)]
 
         # only keep interfaces with more than one routine in them
-        # if there's just one routine we want to copy the docstring
-        has_initialise_ptr = 'initialise_ptr' in interfaces.keys()
-
         for name,value in interfaces.iteritems():
+            orig_name = name
             if name.lower() == 'finalise': continue
             if name.lower() == 'initialise' or \
                     name.lower() == 'initialise_ptr': name = '__init__'
-            if name in py_keywords: name = name + '_'
-
+            name = py_keywords_map.get(name, name)
+            name = special_names.get(name, name)
+            
             if len(value) > 1:
                 new_cls._interfaces[name] = value
+            else:
+                # if there's just one routine we want to update the routine, prepending the interface docstring
+                rname, rspec, rfunc = value[0]
+                fobj, rspec = new_cls._routines[rname]
+                rspec['doc'] = '\n'.join(moddoc['interfaces'][orig_name]['doc']) + '\n' + rspec['doc']
+
+                del new_cls._routines[rname]
+                new_cls._routines[name] = (fobj, rspec)
+                if name == '__init__':
+                    constructor = add_doc(wrapinit(name), fobj, rspec, rname, name, prefix,
+                                          format='numpydoc', skip_this=True, modfile=modfile)
+                    new_cls.__init__ = constructor
+                else:
+                    func = add_doc(wrapmethod(name), fobj, rspec, rname, name, prefix,
+                                   format='numpydoc', skip_this=True, modfile=modfile)
+                    setattr(new_cls, name, func)
+                    
 
         for intf, value in new_cls._interfaces.iteritems():
 
             # if there's a routine with same name as interface, move it first
             if hasattr(new_cls, intf):
-                setattr(new_cls,intf+'_', getattr(new_cls, intf))
+                setattr(new_cls,'__'+intf, getattr(new_cls, intf))
 
             docname = intf
             if docname.endswith('_'): docname=docname[:-1]
 
             func = wrapinterface(intf)
             if intf == '__init__': docname = 'initialise'
+            docname = rev_special_names.get(docname, docname)
+            
             doc = '\n'.join(moddoc['interfaces'][docname]['doc']) + '\n\n'
+
+            doc += 'Wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % intf
 
             for rname,spec,routine in value:
                 if hasattr(new_cls, rname):
                     setattr(new_cls, '_'+rname, getattr(new_cls, rname))
                     delattr(new_cls, rname)
 
+                routine_lines = routine.__doc__.split('\n')
+                signature_line = routine_lines[0]
                 if intf == '__init__':
-                    doc += routine.__doc__.replace('.'+rname,'')
-                else:
-                    doc += routine.__doc__.replace(rname,intf)
+                   signature_line = signature_line.replace('.'+rname,'')
+                #signature_line = signature_line.replace(rname, intf)
+                
+                doc +=        ('   .. function :: %s\n' % signature_line +
+                    '\n'.join(['      %s'   % line for line in routine_lines[1:]])) + '\n\n'
 
             if intf != '__init__':
-                func.__doc__ = doc
+                func.__doc__ = process_docstring(doc)
                 setattr(new_cls, intf, func)
             else:
-                func  = wrapinit(constructor)
-                func.__doc__ = doc
+                func  = wrapinit(constructor_name)
+                func.__doc__ = process_docstring(doc)
                 new_cls.__init__ = func
 
         # Add properties for get and set routines of scalar type, sub
@@ -873,7 +1049,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
                     setattr(new_cls, name, property(fget=wrap_get(name),
                                                     fset=wrap_set(name),
-                                                    doc=el['doc']))
+                                                    doc=process_docstring(el['doc'])))
                 #elif not 'pointer' in el['attributes']:
                 else:
                     wraplog.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
@@ -882,7 +1058,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                                               getattr(modobj, el['set']))
                     setattr(new_cls, name, property(fget=wrap_obj_get(name),
                                                     fset=wrap_obj_set(name),
-                                                    doc=el['doc']))
+                                                    doc=process_docstring(el['doc'])))
 
 
             # array members
@@ -891,10 +1067,10 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
                 new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'], el['type'])
                 setattr(new_cls, '_'+name, property(fget=wrap_array_get(name,reshape=False),
                                                     fset=wrap_array_set(name,reshape=False),
-                                                    doc=el['doc']))
+                                                    doc=process_docstring(el['doc'])))
                 setattr(new_cls, name, property(fget=wrap_array_get(name),
                                                 fset=wrap_array_set(name),
-                                                doc=el['doc']))
+                                                doc=process_docstring(el['doc'])))
 
             # arrays of derived types (1D only for now..)
             if 'array_getitem' in el and 'array_setitem' and 'array_len' in el:
@@ -906,7 +1082,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix, fortran_indexing):
 
                 setattr(new_cls, name, property(fget=wrap_derived_type_array_get(name),
                                                 fset=wrap_derived_type_array_set(name),
-                                                doc=el['doc']))
+                                                doc=process_docstring(el['doc'])))
                                                  
 
 
@@ -977,6 +1153,7 @@ def wrap_obj_get(name):
             except KeyError:
                 obj = self._subobjs_cache[tuple(p)] = FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False,
                                                                                        fortran_indexing=self.fortran_indexing)
+                obj.parent = weakref.proxy(self)
             return obj
 
     return func
@@ -1051,7 +1228,7 @@ def wrap_derived_type_array_set(name):
 
 class FortranDerivedTypeArray(object):
     def __init__(self, parent, getfunc, setfunc, lenfunc, doc, arraytype, fortran_indexing):
-        self.parent = weakref.ref(parent)
+        self.parent = weakref.proxy(parent)
         self.getfunc = getfunc
         self.setfunc = setfunc
         self.lenfunc = lenfunc
@@ -1075,18 +1252,12 @@ class FortranDerivedTypeArray(object):
         return self.iteritems()
 
     def __len__(self):
-        p = self.parent()
-        if p is None:
-            raise ValueError('parent has gone out of scope')
-        return self.lenfunc(p._fpointer)
+        return self.lenfunc(self.parent._fpointer)
 
     def __getitem__(self, i):
-        p = self.parent()
-        if p is None:
-            raise ValueError('parent has gone out of scope')
         if not self.fortran_indexing:
             i += 1
-        pp = self.getfunc(p._fpointer, i)
+        pp = self.getfunc(self.parent._fpointer, i)
         try:
             obj = p._subobjs_cache[tuple(pp)]
         except KeyError:
@@ -1095,64 +1266,166 @@ class FortranDerivedTypeArray(object):
         return obj
 
     def __setitem__(self, i, value):
-        p = self.parent()
-        if p is None:
-            raise ValueError('parent has gone out of scope')
         if not self.fortran_indexing:
             i += 1
-        self.setfunc(p._fpointer, i, value._fpointer)
+        self.setfunc(self.parent._fpointer, i, value._fpointer)
 
 
-def add_doc(func, fobj, doc, fullname, name, prefix):
+doc_subs = [(re.compile(r'([A-Za-z0-9_]+)%([A-Za-z0-9_]+)'), r'\1.\2'), # Fortran attribute access % -> Python .
+            (re.compile(r"'(.*?)'"), r"``\1``"), # Single quoted strings to fixed width font
+            (re.compile(r"\$(.*?)\$"), r":math:`\1`")]
+
+def process_docstring(doc):
+    for regexp, repl in doc_subs:
+        doc = regexp.sub(repl, doc)
+
+    # turn verbatim and displayed maths sections into valid Sphinx blockquotes
+    indent = 0
+    lines = doc.split('\n')
+    first_line_in_block = True
+    in_block = False
+    in_math = False
+    for i in range(len(lines)):
+        if lines[i].startswith('>'):
+            if not in_block:
+                in_block = True
+                indent += 3
+                if lines[i-1] != '':
+                    if lines[i-1].endswith(':'):
+                        lines[i-1] += ':\n'
+                    else:
+                        lines[i-1] += ' ::\n'
+                elif not lines[i-1].endswith('::'):
+                    if lines[i-2].endswith(':'):
+                        lines[i-2] += ':'
+                    else:
+                        lines[i-2] += ' ::'
+            lines[i] = lines[i].replace('>', '')
+        elif in_block:
+            if lines[i-1] != '':
+                lines[i-1] += '\n'
+            in_block = False
+            indent -= 3
+
+        if '\\begin{displaymath}' in lines[i]:
+            lines[i] = lines[i].replace('\\begin{displaymath}', '\n.. math::\n')
+            indent += 3
+            in_math = True
+
+        if '\\end{displaymath}' in lines[i]:
+            lines[i] = lines[i].replace('\\end{displaymath}', '')
+            indent -= 3
+            in_math = False
+
+        lines[i] = ' '*indent + lines[i]
+        
+    doc = '\n'.join(lines)
+    return doc
+
+
+def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_this=False, modfile=None):
+    func.__name__ = fullname
+    func._fobj = fobj
 
     if doc is None:
-        func.__doc__ = fobj.__doc__
+        func.__doc__ = None
+        return func
+
+    if format not in ['numpydoc', 'sphinx']:
+        raise ValueError('Unsuported format %s' % format)
+
+    if format == 'numpydoc':
+        arg_header = 'Parameters\n----------\n'
+        ret_header = 'Returns\n-------\n'
+        notes_header = 'Notes\n-----\n'
     else:
+        arg_header = ''
+        ret_header = ''
+        notes_header = ''
 
-        d = fobj.__doc__
-        L = d.split('\n')
-        arg_lines = L[3:]
+    d = fobj.__doc__
+    L = d.split('\n')
+    arg_lines_in = L[3:]
 
-        L[0] = L[0].replace(fullname, name)
-        L[0] = L[0].replace(prefix,'')
-        if '.' in name:
-            L[0] = L[0].replace(name[:name.index('.')].lower()+'_', '')
-            L[1] = L[1].replace(name[:name.index('.')].lower()+'_', '')
-        L[1] = L[1].replace(prefix, '')
-        if '=' in L[1]:
-            L[1] = L[1][:L[1].index('=')] + L[1][L[1].index('='):].replace(fullname, name)
-        else:
-            L[1] = L[1].replace(fullname.lower()+'_', '')
-            L[1] = L[1].replace(fullname, name)
+    arg_lines = []
+    ret_lines = []
 
-        if arg_lines:
-            indent = max([len(s) for s in arg_lines])
-            fmt = '  %%-%ds %%s' % indent
+    signature_line = L[1]
 
-            for arg in doc['args']:
-                name = arg['name'].lower()
-                if name in badnames: name = badnames[name]
+    if '.' in name:
+        signature_line = signature_line.replace(name[:name.index('.')].lower()+'_', '')
+    signature_line = signature_line.replace(prefix, '')
 
-                for i, line in enumerate(arg_lines):
-                    if line.startswith('  %s :' % name): break
+    if '=' in signature_line:
+        signature_line = signature_line[:signature_line.index('=')] + signature_line[signature_line.index('='):].replace(fullname, name)
+        retvar = signature_line[:signature_line.index('=')].strip()
+        signature_line = signature_line[signature_line.index('=')+1:].strip()
+    else:
+        signature_line = signature_line.replace(fullname.lower()+'_', '')
+        retvar = None
+        signature_line = signature_line.replace(fullname, name)
+
+    if skip_this:
+        signature_line = signature_line.replace('this,', '')
+        signature_line = signature_line.replace('this[,', '[')
+        signature_line = signature_line.replace('(this)', '')
+
+
+    final_doc = signature_line + '\n\n'
+    
+    if doc['doc']:
+        final_doc += process_docstring(doc['doc']) + '\n\n'
+
+    if arg_lines_in:
+        for arg in doc['args']:
+            argname = arg['name'].lower()
+            if argname in badnames: argname = badnames[argname]
+
+            for i, line in enumerate(arg_lines_in):
+                if line.startswith('  %s :' % argname): break
+            else:
+                raise ValueError('%s not found in lines %r' % (argname, arg_lines_in))
+
+            line = line.replace(argname,argname[len(prefix):])
+            argname, type = line.split(':', 2)
+            argname = argname.strip()
+            if argname == 'this' and skip_this:
+                continue
+
+            if arg['type'].startswith('type('):
+                type = '%s object' % arg['type'][5:-1]
+                type = type[:1].upper() + type[1:]
+            if 'optional' in arg['attributes']:
+                type += ', optional'
+                
+
+            if argname == retvar:
+                if format == 'numpydoc':
+                    ret_lines.append('%s : %s' % (argname, type))
+                    if arg['doc']:
+                        ret_lines.extend(['    ' + line for line in process_docstring(arg['doc']).split('\n') ])
                 else:
-                    raise ValueError('%s not found in lines %r' % (name, arg_lines))
+                    ret_lines.append(':returns: **%s** -- %s %s' % (argname, type, arg['doc']))
+            else:
+                if format == 'numpydoc':
+                    arg_lines.append('%s : %s' % (argname, type))
+                    if arg['doc']:
+                        arg_lines.extend(['    ' + line for line in process_docstring(arg['doc']).split('\n') ])
+                else:
+                    arg_lines.append(':param %s: %s' % (argname, type + ' ' + arg['doc']))
 
-                arg_lines[i] = arg_lines[i].replace(name,name[len(prefix):])
-
-                if arg['type'].startswith('type('):
-                    arg_lines[i] = '  %s : %s object' % (name[len(prefix):], arg['type'][5:-1])
-
-                if arg['doc'] != '':
-                    arg_lines[i] = (fmt % (arg_lines[i].strip(),arg['doc'])).replace('\n','\n   '+indent*' ')
-
-        func.__doc__ = '%s\n\n%s' % ('\n'.join(L[:3]+arg_lines), doc['doc'])
-        func.__name__ = fullname
-        func._fobj = fobj
-
+    if arg_lines:
+        final_doc += arg_header + '\n'.join(arg_lines) + '\n\n'
+    if ret_lines:
+        final_doc += ret_header + '\n'.join(ret_lines) + '\n\n'
+    final_doc += notes_header + 'Routine is wrapper around Fortran routine ``%s`` defined in file :svn:`%s`.\n' % (fullname, modfile)
+            
+    func.__doc__ = final_doc
     return func
 
-def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True):
+
+
+def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True, skip_this=False, modfile=None):
     doc = moddoc['routines'][name]
     fobj = getattr(modobj, prefix+name)
 
@@ -1188,10 +1461,11 @@ def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True):
 
         return newres
 
-    return add_doc(func, fobj, doc, name, shortname, prefix)
+    return add_doc(func, fobj, doc, name, shortname, prefix,
+                   format='numpydoc', skip_this=skip_this, modfile=modfile)
 
 
-def wrapinterface(name, intf_spec, routines, prefix):
+def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
 
     def func(*args, **kwargs):
         wraplog.debug('Interface %s ' % name)
@@ -1250,8 +1524,53 @@ def wrapinterface(name, intf_spec, routines, prefix):
 
         raise TypeError('No matching routine found in interface %s' % name)
 
+
     doc = '\n'.join(intf_spec['doc']) + '\n\n'
-    for rname,spec,routine in routines:
-        doc += routine.__doc__.replace(rname,name)
+
+    doc += 'Routine is wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % name
+    
+    for rname, spec, routine, modfile in routines:
+
+        # regenerate routine documentation, using sphinx format rather than numpydoc format
+        tmp_routine = add_doc(routine, routine._fobj, spec, rname, name, prefix, format='sphinx', modfile=modfile)
+        
+        routine_lines = tmp_routine.__doc__.split('\n')
+        doc +=        ('  .. function :: %s\n' % routine_lines[0] +
+            '\n'.join(['     %s'   % line for line in routine_lines[1:]])) + '\n'
+
+        #doc = doc.replace("``%s``"%rname,"``%s``"%rname.upper())
+        #doc = doc.replace(rname,name)
+        #doc = doc.replace("``%s``"%rname.upper(),"``%s``"%rname)
+
     func.__doc__ = doc
     return func
+
+
+def update_doc_string(doc, extra, sections=None):
+    """
+    Insert `extra` in the docstring `doc`, before the first matching section
+
+    Searches for each section heading in the list `sections` in turn.
+    If sections is not given, the default is `['Parameters', 'Notes']`.
+    Returns the new doc string, suitable for assigning to cls.__doc__
+    """
+
+    if sections is None:
+       sections = ['Parameters', 'Notes']
+
+    doc = inspect.cleandoc(doc)
+    extra = inspect.cleandoc(extra)
+    
+    lines = doc.split('\n')
+    for section in sections:
+       indices = [i for i, line in enumerate(lines) if line == section ]
+       if len(indices) == 1:
+          break
+    else:
+       raise ValueError('None of sections "%s" found in doc string "%s"' % (sections, doc))
+
+    index, = indices
+    doc = '\n'.join(lines[:index] + extra.split('\n') + lines[index:])
+    doc = doc.replace('\n\n\n', '\n\n')
+
+    return doc

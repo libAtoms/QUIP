@@ -203,3 +203,4 @@ def most_recent_files(dir_pattern, file_pattern, suffix=''):
     Find the most recent file matching file_pattern in each of the directories matching dir_pattern
     """
     return [most_recent_file(os.path.join(dir, file_pattern))+suffix for dir in glob.glob(dir_pattern)]
+

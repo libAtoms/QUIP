@@ -16,6 +16,10 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+"""
+This module contains a variety of structure generating routines.
+"""
+
 import numpy as np
 import itertools
 from quippy.atoms import *
@@ -32,6 +36,21 @@ __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'MillerIndex', 'MillerPlane', 'MillerDirection', 'angle_between']
 
 class MillerIndex(quippy_array):
+    """
+    Representation of a three of four index Miller direction or plane
+
+    A :class:`MillerIndex` can be constructed from vector or parsed from a string::
+
+        x = MillerIndex('-211')
+        y = MillerIndex('111', type='plane')
+        z = x.cross(y)
+        print x # prints "[-211]"
+        print y # prints "(111)", note round brackets denoting a plane
+        print z.latex()
+        assert(angle_between(x,y) == pi/2.)
+        assert(angle_between(y,z) == pi/2.)
+        assert(angle_between(x,z) == pi/2.)
+    """
 
     __array_priority__ = 101.0
 
@@ -43,10 +62,6 @@ class MillerIndex(quippy_array):
     all_brackets = list(itertools.chain(*brackets.values()))
 
     def __new__(cls, v=None, type='direction'):
-        """Construct a MillerIndex from vector or string:
-
-        a = MillerIndex(v)
-        """
         if isinstance(v, basestring):
             v = MillerIndex.parse(v)
         if len(v) == 3 or len(v) == 4:
@@ -70,6 +85,9 @@ class MillerIndex(quippy_array):
         return (bopen+'%d'*len(self)+bclose) % tuple(self)
 
     def latex(self):
+        """
+        Format this :class:`MillerIndex` as a LaTeX string
+        """
         s = '$'
         bopen, bclose = MillerIndex.brackets[self.type]
         s += bopen
@@ -84,16 +102,16 @@ class MillerIndex(quippy_array):
 
     @classmethod
     def parse(cls, s):
-        """
+        r"""
         Parse a Miller index string
 
         Negative indices can be denoted by:
-         1. leading minus sign, e.g. '[11-2]'
-         2. trailing 'b' (for 'bar'), e.g. '112b'
-         3. LaTeX \bar{}, e.g. '11\bar{2}'
+         1. leading minus sign, e.g. ``[11-2]``
+         2. trailing ``b`` (for 'bar'), e.g. ``112b``
+         3. LaTeX ``\bar{}``, e.g. ``[11\bar{2}]`` (which renders as :math:`[11\bar{2}]` in LaTeX)
 
         Leading or trailing brackets of various kinds are ignored.
-        i.e. '[001]', '{001}', '(001)', '[001]', '<001>', '001' are all equivalent.
+        i.e. ``[001]``, ``{001}``, ``(001)``, ``[001]``, ``<001>``, ``001`` are all equivalent.
 
         Returns an array of components (i,j,k) or (h,k,i,l)
         """
@@ -182,9 +200,11 @@ class MillerIndex(quippy_array):
         return a/self.as3().norm()
 
 def MillerPlane(v):
+   """Special case of :class:`MillerIndex` with ``type="plane"``"""
    return MillerIndex(v, 'plane')
 
 def MillerDirection(v):
+   """Special case of :class:`MillerIndex` with ``type="direction"`` (the default)"""
    return MillerIndex(v, 'direction')
 
 

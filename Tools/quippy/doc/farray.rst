@@ -16,13 +16,11 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.farray` -- Fortran one-based array indexing
-========================================================
+:mod:`quippy.farray` --- Fortran one-based array indexing
+=========================================================
 
-.. currentmodule:: quippy.farray
-
-quippy contains a :class:`FortranArray` class and various utility
-functions for handling one-based array indexing.
+.. automodule:: quippy.farray
+   :synopsis: Fortran one-based array indexing
 
 .. autoclass:: FortranArray
    :members:

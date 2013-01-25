@@ -16,24 +16,82 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-Core :mod:`quippy` module reference
-===================================
+Quippy library reference
+========================
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
 
 This section contains library reference material for the core quippy
 classes and modules. 
 
+
+Core functionality
+------------------
+
 .. toctree::
+   :maxdepth: 2
 
    atoms.rst
-   structures.rst
-   elasticity.rst
-   potential.rst
    io.rst
-   dynamicalsystem.rst
+   potential.rst
+
+Structure generation, manipulation and analysis
+-----------------------------------------------
+
+.. toctree::
+   crack.rst
    clusters.rst
-   farray.rst
+   find_surface_atoms.rst
+   frametools.rst
+   real_space_covariance.rst
+   structures.rst
+   surface.rst
+   topology.rst
+
+Molecular Dynamics
+------------------
+
+.. toctree::
+   dynamicalsystem.rst
+   adjustablepotential.rst
+
+Additional tools for Potentials
+-------------------------------
+
+.. toctree::
+   cp2k.rst
+   elasticity.rst
+   polarization.rst
+   electrostaticembed.rst
+
+Mathematical and optimisation tools
+-----------------------------------
+
+.. toctree::
+   linearalgebra.rst
+   quaternions.rst
+   spline.rst
+   simplex.rst
+
+Units, Data and Constants
+-------------------------
+
+.. toctree::
+   periodictable.rst
+   units.rst
+
+Low level routines and datatypes
+--------------------------------
+
+.. toctree::
+   system.rst
    dictionary.rst
-   atomeye.rst
+   table.rst
+   mpi_context.rst
+   paramreader.rst
+   fortranio.rst
+   farray.rst
+   util.rst
+
+
 
