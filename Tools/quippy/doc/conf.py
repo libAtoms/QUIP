@@ -225,14 +225,12 @@ from quippy.oo_fortran import FortranDerivedType, FortranDerivedTypes
 
 import re
 
-#classnames = [v.__name__ for v in FortranDerivedTypes.values()]
-#classname_re = re.compile('(^|[\W-`]+)((``)?)('+'|'.join([v.__name__ for v in FortranDerivedTypes.values()])+r')\2(?=[\W-`]+)')
-#method_or_attr_re = re.compile('(^|\W+)((``)?)('+'|'.join([v.__name__+'\.([a-zA-Z][a-zA-Z0-9_]*)' for v in FortranDerivedTypes.values()])+r')\2(?=[\W+-`])')
+classnames = [v.__name__ for v in FortranDerivedTypes.values()]
+classname_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__ for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
+method_or_attr_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__+'\.([a-zA-Z][a-zA-Z0-9_]*)' for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
 
-#doc_subs = [(classname_re, r'\1:class:`~.\4`'),
-#            (method_or_attr_re, r'\1:meth:`.\4`')]
-
-doc_subs = []
+doc_subs = [(classname_re, r'\1:class:`~.\4`'),
+            (method_or_attr_re, r'\1:meth:`.\4`')]
 
 def process_docstring(app, what, name, obj, options, lines):
     for i, line in enumerate(lines):
@@ -301,7 +299,7 @@ def setup(app):
     app.connect('autodoc-process-docstring', process_docstring)
     app.connect('autodoc-process-signature', process_signature)
     app.connect('autodoc-skip-member', maybe_skip_member)
-    app.add_role('svn', svn_trunk_role)
+    app.add_role('svn', svn_release_role)
     app.add_role('svnrelease', svn_release_role)
     app.add_role('mol', mol_role)
 
