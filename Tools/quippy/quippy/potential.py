@@ -279,7 +279,7 @@ the `calculator` argument to the :class:`Potential` constructor, e.g.::
         self.update(atoms)
 
     def set_atoms(self, atoms):
-        self.set_atoms(atoms)
+        self.update(atoms)
 
     def calculation_required(self, atoms, quantities):
         self.update(atoms)
