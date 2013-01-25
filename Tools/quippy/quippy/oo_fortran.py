@@ -753,10 +753,10 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         # (available with 'from ... import *')
         setattr(pymod, '__all__', [c[0] for c in classes]+mod_params.keys())
                 
-        leftover_routines.append((mod, curspec, routines))
+        leftover_routines.append((mod, curspec, routines, modfile))
 
     # add orphaned routines to classes and generate top-level interfaces
-    for mod, modspec, routines in leftover_routines:
+    for mod, modspec, routines, modfile in leftover_routines:
         for routine in routines:
             rspec = modspec['routines'][routine]
 
@@ -1275,6 +1275,11 @@ doc_subs = [(re.compile(r'([A-Za-z0-9_]+)%([A-Za-z0-9_]+)'), r'\1.\2'), # Fortra
             (re.compile(r"'(.*?)'"), r"``\1``"), # Single quoted strings to fixed width font
             (re.compile(r"\$(.*?)\$"), r":math:`\1`")]
 
+def normalise_type_case(type):
+    classnames = [c.__name__ for c in FortranDerivedTypes.values()]
+    lower_to_normed = dict((c.lower(), c) for c in classnames)
+    return lower_to_normed.get(type.lower(), type)
+
 def process_docstring(doc):
     for regexp, repl in doc_subs:
         doc = regexp.sub(repl, doc)
@@ -1295,7 +1300,7 @@ def process_docstring(doc):
                         lines[i-1] += ':\n'
                     else:
                         lines[i-1] += ' ::\n'
-                elif not lines[i-1].endswith('::'):
+                elif not lines[i-2].endswith('::'):
                     if lines[i-2].endswith(':'):
                         lines[i-2] += ':'
                     else:
@@ -1393,8 +1398,9 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
                 continue
 
             if arg['type'].startswith('type('):
-                type = '%s object' % arg['type'][5:-1]
-                type = type[:1].upper() + type[1:]
+                type = arg['type'][5:-1]
+                type = normalise_type_case(type)
+                type = ':class:`~.%s` object' % type
             if 'optional' in arg['attributes']:
                 type += ', optional'
                 
@@ -1470,7 +1476,7 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
     def func(*args, **kwargs):
         wraplog.debug('Interface %s ' % name)
 
-        for rname, spec, routine in routines:
+        for rname, spec, routine, modfile in routines:
             wraplog.debug('Trying candidate routine %s' % rname)
 
             inargs  = [ x for x in spec['args'] if not 'intent(out)' in x['attributes'] ]
@@ -1560,6 +1566,8 @@ def update_doc_string(doc, extra, sections=None):
 
     doc = inspect.cleandoc(doc)
     extra = inspect.cleandoc(extra)
+
+    extra = '\n' + extra + '\n'
     
     lines = doc.split('\n')
     for section in sections:
