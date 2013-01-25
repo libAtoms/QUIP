@@ -67,7 +67,7 @@
 !%      ``IP Einstein``          Einstein crystal potential
 !%      ``IP EAM_ErcolAd``       Embedded atom potential of Ercolessi and Adams
 !%      ``IP FB``                Flikkema and Bromley potential
-!%      ``IP FS``	  	  Finnis-Sinclair potential for metals
+!%      ``IP FS``                Finnis-Sinclair potential for metals
 !%      ``IP FX``                Wrapper around ttm3f water potential of
 !%                               Fanourgakis-Xantheas
 !%      ``IP GAP``               Gaussian approximation potential
@@ -289,15 +289,15 @@ module Potential_module
   !% receive the quantity in question, as set out in the table
   !% below.
   !%
-  !%   ================  ============= =============== ================================
-  !%   Array argument    Quantity      Shape           Default storage location
-  !%   ================  ============= =============== ================================
-  !%   'energy'          Energy        '()''  	       'energy' param
-  !%   'local_energy'    Local energy  '(at.n,)'       'local_energy' property
-  !%   'force'           Force         '(3,at.n)'      'force' property
-  !%   'virial'          Virial tensor '(3,3)'         'virial' param
-  !%   'local_virial'    Local virial  '(3,3,at.n)'    'local_virial' property
-  !%   ================  ============= =============== ================================
+  !%   ================  ============= ================ =========================
+  !%   Array argument    Quantity      Shape            Default storage location
+  !%   ================  ============= ================ =========================
+  !%   ``energy``        Energy        ``()``  	        ``energy`` param
+  !%   ``local_energy``  Local energy  ``(at.n,)``      ``local_energy`` property
+  !%   ``force``         Force         ``(3,at.n)``     ``force`` property
+  !%   ``virial``        Virial tensor ``(3,3)``        ``virial`` param
+  !%   ``local_virial``  Local virial  ``(3,3,at.n)``   ``local_virial`` property
+  !%   ================  ============= ================ =========================
   !%
   !% The 'args_str' argumentis an optional string  containing
   !% additional arguments which depend on the particular Potential

@@ -36,10 +36,10 @@
 !% The 'CrackParams' type contains all simulation parameters for a fracture simulation.
 !% It is initialised from the '<crack_params>' stanza of an XML file, which
 !% should contain some or all of the following tags:
-!%   *  '<crack>' -- parameters used exclusively by 'makecrack' which
-!%      define the geometry and structure of the simulation cell.
+!%   *   '<crack>' -- parameters used exclusively by 'makecrack' which
+!%       define the geometry and structure of the simulation cell.
 !%   *  'simulation' -- high level parameters which define the task to be performed
-!%      by the 'crack' program.
+!%       by the 'crack' program.
 !%   *  'md' -- parameters related to molecular dynamics, used when
 !%      'simulation_task = md'.
 !%   *  'minim' -- parameters related to geometry optimsation, used when
@@ -56,8 +56,8 @@
 !%   *  'quasi_static' -- parameters for the quasi-static loading task, used
 !%       when 'simulation_task = quasi_static'. 
 !%   *  'hack' -- finally, nasty hacks required for some crack systems, for
-!%      example it is necessary to zero the $z$-component of the QM forces to
-!%      get a well behaved simulation of the fracture of two-dimensional graphene.
+!%       example it is necessary to zero the $z$-component of the QM forces to
+!%       get a well behaved simulation of the fracture of two-dimensional graphene.
 !%
 !% Note that tag and attribute names are mapped into variable names by joining
 !% them with an underscore: for example the 'task' attribute within  the 'simulation'
