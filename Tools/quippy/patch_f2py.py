@@ -19,14 +19,14 @@
 """This module patches :mod:`numpy.f2py` at runtime, to customise the C code that
 is generated. We make several changes to f2py:
 
-  1. Allow the Fortran :cfunc:`present` function to work correctly with optional arguments.
+  1. Allow the Fortran :c:func:`present` function to work correctly with optional arguments.
      If an argument to an f2py wrapped function is optional and is not given, replace it
      with ``NULL``.
      
   2. Allow Fortran routines to raise a :exc:`RuntimeError` exception
      with a message by calling an external function
-     :cfunc:`quippy_error_abort`. This is implemented using a
-     :cfunc:`setjmp`/ :cfunc:`longjmp` trap.
+     :c:func:`quippy_error_abort`. This is implemented using a
+     :c:func:`setjmp`/ :c:func:`longjmp` trap.
 
   3. Allow Fortran routines to be interrupted with :kbd:`Ctrl+C` by installing a custom
      interrupt handler before the call into Fortran is made. After the Fortran routine

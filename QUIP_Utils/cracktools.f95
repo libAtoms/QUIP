@@ -282,18 +282,17 @@ contains
   !%>  |           |   |   |   |            |
   !%>  |    1      | 2 | 3 | 4 |     5      |
   !%>  --------------------------------------
-  !% \begin{center}\begin{tabular}{clc}
-  !% \hline \hline
-  !% Region &  Positon & Load \\
-  !% \hline
-  !%   1    &  $x <$ 'l_crack_pos'-'zone_width' & $G$ \\
-  !%   2    &  'l_crack_pos'-'zone_width' $\le x <$ 'l_crack_pos' & $G \to 0$ \\
-  !%   3    &  'l_crack_pos' $< x <$ 'r_crack_pos'& $0$ \\
-  !%   4    &  'r_crack_pos' $< x \le$ 'r_crack_pos'+'zone_width' & $0 \to G$ \\
-  !%   5    &  $x >$ 'r_crack_pos'+'zone_width' & $G$ \\
-  !% \hline 
-  !% \hline
-  !% \end{tabular}\end{center}
+  !%
+  !% =======  ======================================================= ===============
+  !% Region   Positon                                                       Load
+  !% =======  ======================================================= ===============
+  !%   1      :math:`x <`  l_crack_pos - zone_width                         G
+  !%   2      l_crack_pos - zone_width  :math:`\le x <`  l_crack_pos  G :math:`\to` 0 
+  !%   3      l_crack_pos  :math:`< x <`  r_crack_pos                       0
+  !%   4      r_crack_pos  :math:`< x \le`  r_crack_pos + zone_width  0 :math:`\to` G
+  !%   5      :math:`x >`  r_crack_pos + zone_width                         G
+  !% =======  ======================================================= ===============
+
   subroutine crack_uniform_load(at, params, l_crack_pos, r_crack_pos, zone_width, eps, G, apply_load, disp)
     type(Atoms), intent(inout)     :: at
     type(CrackParams), intent(in)  :: params
@@ -1208,17 +1207,14 @@ contains
          (d(3)/ellipse(3))*(d(3)/ellipse(3)) < 1.0_dp
   end function in_ellipse
 
-  !% Select atoms in ellipse around atom 'c'.
-  !% Principal radii of ellipse in $x$,$y$ and $z$ directions
-  !% are given by the components of the vector 'ellipse'
-  !% 'ellipse_bias' shifts ellipse, positive values forward
-  !% On exit 'list' contains indexes of selected atoms, which
-  !% are also reachable by nearest neighbour  bond hopping starting from c.
+  !% Select atoms in ellipse centred on an atom and with given principal radii
   subroutine select_ellipse(at, ellipse, ellipse_bias, list, c)
     type(Atoms), intent(in) :: at
-    real(dp), intent(in) :: ellipse(3), ellipse_bias(3)
-    type(Table), intent(inout) :: list
-    integer, intent(in) :: c
+    real(dp), intent(in) :: ellipse(3)      !% Principal radii of ellipse in $x$, $y$ and $z$ directions
+    real(dp), intent(in) :: ellipse_bias(3) !%  Shift ellipse, positive values forward
+    type(Table), intent(inout) :: list      !% On exit contains indexes of selected atoms, which
+                                            !% are also reachable by nearest neighbour  bond hopping starting from c 
+    integer, intent(in) :: c                !% Ellipse is centred around atom 'c'.
     integer i, old_n
     type(Table) :: ellipselist, nextlist
     

@@ -16,6 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+"""
+There are two classes for reading trajectories: :class:`AtomsReader`
+and :class:`AtomsList`. Use an :class:`AtomsReader` for quick
+read-only access to a trajectory or if you only want to access some of
+the frames. If you want to load the entire file into memory and
+manipulate it use an :class:`AtomsList`.
+"""
+
 import sys, os, fnmatch, re, itertools, glob, operator, warnings, math, logging
 
 import numpy as np
@@ -33,7 +41,7 @@ AtomsReaders = {}
 AtomsWriters = {}
 
 def atoms_reader(source):
-    """Decorator to add a new reader"""
+    """Decorator to mark a function as a reader for a particular file extension"""
     def decorate(func):
         global AtomsReaders
         if not source in AtomsReaders:
@@ -54,6 +62,19 @@ class AtomsReaderMixin(object):
     def write(self, dest=None, format=None, properties=None, prefix=None,
               progress=False, progress_width=80, update_interval=None,
               show_value=True, **kwargs):
+        """
+        Write all frames to `dest`. If `format` is not
+        given it is inferred from the file extension of `dest` (see
+        :ref:`fileformats`). If `properties` is present, it should be a list
+        of property names to include in the output file, e.g. `['species', 'pos']`.
+      
+        `progress`, `progress_width`, `update_interval` and `show_value`
+        are used to control a textual progress bar. The extra arguments
+        in `*args` and `**kwargs` are passed along to the underlying
+        writer routine constructed for writing to `dest`.
+
+        See :ref:`fileformats` for a list of supported file formats.
+        """
         opened = False
         if dest is None:
             dest = self.source
@@ -93,7 +114,61 @@ class AtomsReaderMixin(object):
                 return res
 
 class AtomsReader(AtomsReaderMixin):
-    """Class to read Atoms frames from source"""
+    """
+    An :class:`AtomsReader` reads a series of :class:`Atoms` objects
+    from the trajectory `source` which should be one of the following:
+    
+     * a filename - in this case `format` is inferred from the file
+       extension -- see :ref:`fileformats`
+     * a shell-style glob pattern e.g. `"*.xyz"`
+     * a list of filenames or glob patterns e.g. `["foo*.xyz",
+       "bar*.xyz"]`
+     * an open file or file-like object (e.g. a :class:`CInOutput`
+       object)
+     * any Python `iterator
+       <http://docs.python.org/library/stdtypes.html#iterator-types>`_
+       which yields a sequence of :class:`Atoms` objects
+    
+    `start`, `stop` and `step` can be used to restrict the range of frames
+    read from `source`. The first frame in the file has index zero.
+    
+    `cache_limit` determines how many configurations will be stored in
+    memory. If more than `cache_limit` configurations are read in, the
+    least recently accessed configurations are thrown away. To store
+    everything, use an :class:`AtomsList` instead.
+    
+    Some `sources` understand additional keyword arguments from
+    `**kwargs`. For example the CASTEP file reader can take an
+    `atoms_ref` argument which is a reference :class:`Atoms` object
+    which is used to fill in information which is missing from the
+    input file.
+    
+    All :class:`AtomsReaders` support iteration, so you can loop over
+    the contents using a :keyword:`for` loop::
+    
+       al = AtomsReader('input-file.xyz')
+       for at in al:
+          # process Atoms object `at`
+          print at.energy
+    
+    or using list comprehension::
+    
+       print [at.energy for at in al]
+    
+    In addition to iteration, some sources allow random access. To find
+    out if an :class:`AtomsReader` supports random access, either try
+    to get it's length with :func:`len`, or check if the
+    :attr:`random_access` property is true. If `cache_limit` is large
+    enough to store all the frames in the file, all
+    :class:`AtomsReaders` will allow random access once the entire
+    trajectory has been loaded.
+    
+    If :attr:`randomaccess` is true, you can access individual frames
+    by indexing and slicing, e.g. ``al[i]`` is the i\ :sup:`th`
+    :class:`Atoms` object within ``al`` and ``al[i:j]`` returns objects
+    from `i` upto but not including `j`. Like ordinary Python lists,
+    indices start from 0 and run up to ``len(al)-1``.
+    """
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
                  cache_mem_limit=-1, **kwargs):
@@ -200,6 +275,9 @@ class AtomsReader(AtomsReaderMixin):
 
     @property
     def random_access(self):
+        """
+        Read only property: True if this source supports random access, False if it does not
+        """
         try:
             len(self)
             return True
@@ -207,6 +285,9 @@ class AtomsReader(AtomsReaderMixin):
             return False
 
     def close(self):
+        """
+        Close any open files associated with this :class:`AtomsReader`
+        """
         if self.opened and hasattr(self.reader, 'close'):
             self.reader.close()
 
@@ -269,6 +350,15 @@ class AtomsReader(AtomsReaderMixin):
         self._cache_store(frame, at)
 
     def iterframes(self, reverse=False):
+        """
+        Return an interator over all the frames in this trajectory. This
+        is the default iterator for an :class:`AtomsReader` instance
+        `al`, and can be accessed with ``iter(al)``. 
+
+        If `reverse=True` then the iteration starts with the last frame
+        and goes backwards through the file. This is only possible if
+        :attr:`random_access` is true.
+        """
         if self.random_access:
             # iterate using __getitem__, which automatically goes through LRU cache
 
@@ -319,6 +409,37 @@ class AtomsReader(AtomsReaderMixin):
 
 
 class AtomsList(AtomsReaderMixin, list):
+    """
+    An :class:`AtomsList` is just like an :class:`AtomsReader` except
+    that all frames are read in on initialiased and then stored in
+    memory. This is equivalent to an :class:`AtomsReader` with a
+    `cache_limit` of `None` so an :class:`AtomsList` always
+    supports random access.  
+    
+    The :class:`AtomsList` allows configurations to be added, removed
+    or reordered using the standard Python methods for `mutable
+    sequence types
+    <http://docs.python.org/library/stdtypes.html#mutable-sequence-types>`_
+    (e.g. :meth:`append`, :meth:`extend`, :meth:`index`, etc).
+    
+    The attributes of the component :class:`Atoms` can be accessed as a
+    single array, using the frame number as the first array index. Note
+    that the first index runs from 0 to `len(al)-1`, unlike the other
+    indices which are one-based since the :class:`Atoms` attributes are
+    stored in a :class:`FortranArray`.
+    
+    For example the following statements are all true::
+    
+       al.energy      ==  [at.energy for at in al] # energies of all atoms
+       al.energy[0]   ==  al[0].energy             # energy of first frame
+       all(al.velo[0] ==  al[0].velo)              # velocities of all atoms in first frame
+       al.velo[0,-1]  ==  al[0].velo[-1]           # velocity of last atom in first frame
+    
+    In addition to the standard Python list methods and those of
+    :class:`AtomsReader`, :class:`AtomsList` defined a couple of extras
+    methods.
+    """
+    
     def __init__(self, source=[], format=None, start=None, stop=None, step=None, **kwargs):
         self.source = source
         self.format = format
@@ -379,6 +500,18 @@ class AtomsList(AtomsReaderMixin, list):
         return True
 
     def sort(self, cmp=None, key=None, reverse=False, attr=None):
+        """
+        Sort the AtomsList in place. This is the same as the standard
+        :meth:`list.sort` method, except for the additional `attr`
+        argument. If this is present then the sorted list will be
+        ordered by the :class:`Atoms` attribute `attr`, e.g.::
+        
+           al.sort(attr='energy')
+        
+        will order the configurations by their `energy` (assuming that
+        :attr:`Atoms.params` contains an entry named `energy` for each
+        configuration; otherwise an :exc:`AttributError` will be raised).
+        """
         if attr is None:
             list.sort(self, cmp, key, reverse)
         else:
@@ -390,9 +523,17 @@ class AtomsList(AtomsReaderMixin, list):
         return np.array([func(at) for at in self])
 
 def AtomsWriter(dest, format=None, **kwargs):
-    """Return a file-like object capable of writing Atoms in the specified format.
-       If `format` is not given it is inferred from the file extension of `dest`."""
+    """
+    Returns a file-like object for writing Atoms to `dest` which
+    should be either a filename or an initiliased output object.  If
+    `format` is not given it is inferred from the file extension of
+    `dest`. Example usage::
 
+       out = AtomsWriter('out_file.xyz')
+       for at in seq:
+          out.write(at)
+       out.close()
+    """
     filename, dest, format = infer_format(dest, format, AtomsWriters)
     if format in AtomsWriters:
         writer = AtomsWriters[format](dest, **kwargs)
@@ -472,6 +613,24 @@ class AtomsReaderCopier(object):
 
     
 
+def read(filename, **readargs):
+    """
+    Read Atoms from file `filename`
+
+    File format is inferred from file extension, see :ref:`fileformats`.
+    """
+    return iter(AtomsReader(filename, **readargs)).next()
+
+
+def write(filename, atoms, **writeargs):
+    """
+    Write `atoms` to the file `filename`
+
+    File format is inferred from file extension, see :ref:`fileformats`.
+    """
+    AtomsWriter(filename, **writeargs).write(atoms)
+
+
 def read_dataset(dirs, pattern, **kwargs):
     """
     Read atomic configurations matching glob `pattern` from each of
@@ -527,17 +686,3 @@ def time_ordered_series(source, dt=None):
             filenames.append('%s@%d:%d:%d' % (group[0][0], group[0][1], group[-1][1], group[0][2]))
 
     return filenames
-
-
-def read(filename, **readargs):
-    """
-    Convenience functon to read Atoms from file `filename`
-    """
-    return iter(AtomsReader(filename, **readargs)).next()
-
-
-def write(atoms, filename, **writeargs):
-    """
-    Convenience functon to write `atoms` to the file `filename`
-    """
-    AtomsWriter(filename, **writeargs).write(atoms)

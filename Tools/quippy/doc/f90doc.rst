@@ -16,11 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`f90doc` -- Fortran 90 source code scanner
-===============================================
+:mod:`f90doc` --- Fortran 90 source code scanner
+================================================
 
 .. module:: f90doc
-   :platform: Unix
    :synopsis: Read Fortan 90 sources and extract documenataion strings
 
 .. moduleauthor:: Ian Rutt <i.c.rutt@swansea.ac.uk>

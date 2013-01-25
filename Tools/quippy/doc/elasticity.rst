@@ -1,8 +1,27 @@
-:mod:`quippy.elasticity` -- elasticity calculations
-===================================================
+.. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+.. HQ X
+.. HQ X   quippy: Python interface to QUIP atomistic simulation library
+.. HQ X
+.. HQ X   Copyright James Kermode 2010
+.. HQ X
+.. HQ X   These portions of the source code are released under the GNU General
+.. HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+.. HQ X
+.. HQ X   If you would like to license the source code under different terms,
+.. HQ X   please contact James Kermode, james.kermode@gmail.com
+.. HQ X
+.. HQ X   When using this software, please cite the following reference:
+.. HQ X
+.. HQ X   http://www.jrkermode.co.uk/quippy
+.. HQ X
+.. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-.. currentmodule:: quippy.elasticity
+
+:mod:`quippy.elasticity` --- elasticity calculations
+====================================================
 
 .. automodule:: quippy.elasticity
-  :synopsis: Elasticity calculations
-  :members: elastic_fields, poisson_ratio, youngs_modulus, strain_matrix, stress_matrix, strain_vector, stress_vector, generate_strained_configs, calc_stress, fit_elastic_constants, elastic_constants, atomic_strain, elastic_fields, transform_elasticity, rayleigh_wave_speed
+    :synopsis: Elasticity calculations
+    :members:
+    :inherited-members:
+    :show-inheritance:

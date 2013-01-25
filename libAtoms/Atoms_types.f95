@@ -31,11 +31,11 @@
 !X
 !X  Atoms_types module
 !X
-!% 'Header' module that contains the data structures for
-!%    Atoms
-!%    Connection
-!%    DomainDecomposition
-!% plus methods for manipulating properties.
+!X 'Header' module that contains the data structures for
+!X    1. Atoms
+!X    2. Connection
+!X    3. DomainDecomposition
+!X plus methods for manipulating properties.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -72,7 +72,8 @@ module Atoms_types_module
 
   public :: Connection
   type Connection
-
+     !% The Connection type stores the topology of a set of Atoms
+     !%
      !% We do not use a minimum image convention, rather, collect all the images of a neigbouring atom
      !% that fall withing the neighbour cutoff. The different images are made distinct in the connection list
      !% by having different 'shift' vectors associated with them. 
@@ -85,59 +86,47 @@ module Atoms_types_module
      !% so you should use the interface functions 'atoms_n_neighbours' and 'atoms_neighbour' which 
      !% hide the distiction between the cases $i <= j$ and $i > j$.
      !%
-     !% \begin{tabular}{|c|c|c|c|c|}
-     !% \hline
-     !% \multicolumn{4}{|c|}{'neighbour1(i)%int'} & 'neighbour1(i)%real' \\
-     !% \hline
-     !% 1 & 2 & 3 & 4 & 1 \\
-     !% \hline
-     !% $j$ & 'shift_a' & 'shift_b' & 'shift_c' & $r_{ij}$ \\
-     !% \hline
-     !% \end{tabular}
+     !% :class:`Table` :attr:`neighbour1` (i): $i \le j$ for all $j$ in table, ``intsize=4``, ``realsize=1``
      !%
-     !% \begin{tabular}{|c|c|}
-     !% \hline
-     !% \multicolumn{2}{|c|}{'neighbour2(i)%int'} \\
-     !% \hline
-     !% 1 & 2 \\
-     !% \hline
-     !% $j$ & $n$ \\
-     !% \hline
-     !% \end{tabular}
+     !% 'connect%neighbour1(i)%int'
      !%
-     !% N.B. If $i$ and $j$ are neighbours with shift 'shift',
-     !% then 'norm(atoms%pos(j) - atoms%pos(i) + shift)'
-     !% is a minimum. 
+     !% +----------+----------+----------+----------+
+     !% |    1     |    2     |    3     |    4     |
+     !% +----------+----------+----------+----------+
+     !% |    j     | shift_a  | shift_b  | shift_c  |
+     !% +----------+----------+----------+----------+
+     !%      
+     !% 'connect%neighbour1(i)%real'
+     !%
+     !% +----------+
+     !% |    1     |
+     !% +----------+
+     !% |  r_ij    |
+     !% +----------+
+     !%
+     !% :class:`Table` :attr:`neighbour2` (i): $i > j$ for all $j$ in table, ``intsize =2``, ``realsize=0``
+     !%
+     !% 'connect%neighbour2(i)%int'
+     !%
+     !% +----------+----------+
+     !% |    1     |    2     |
+     !% +----------+----------+
+     !% |    j     |    n     |
+     !% +----------+----------+
+     !%      
+     !% :class:`Table` :attr:`cell` (i,j,k) with ``intsize = 1``, ``realsize = 0``
+     !%
+     !% 'connect%cell(i,j,k)2%int'
+     !%
+     !% +----------+
+     !% |    1     |
+     !% +----------+
+     !% |  atom    |
+     !% +----------+
+     !%
+     !% N.B. If $i$ and $j$ are neighbours with shift 'shift', then
+     !% ``norm(atoms%pos(j) - atoms%pos(i) + shift)`` is a minimum.
      !% Mnemonic: 'shift' is added to $j$ to get closer to $i$.
-
-     ! neighbour1 (i): i <= j for all j in table
-     !
-     ! int: Nint=4                            real: Nreal=1
-     ! -----------------------------------    --------
-     ! | 1 |    2    |    3    |    4    |    |   1  |
-     ! -----------------------------------    --------
-     ! | j | shift_a | shift_b | shift_c |    | r_ij |
-     ! -----------------------------------    --------
-     !
-     !
-     ! neighbour2 (i): i > j for all j in table
-     !
-     ! int: Nint=1   real: Nreal=0
-     ! ---------              --
-     ! | 1 | 2 |              ||
-     ! ---------              --
-     ! | j | n |              ||
-     ! ---------              --
-     !
-     !
-     ! cell(i,j,k)
-     !
-     ! int: Nint=1   real: Nreal=0
-     ! --------             --
-     ! |   1  |             ||
-     ! --------             --
-     ! | atom |             ||
-     ! --------             --
 
      logical                                    :: initialised = .false.
      logical                                    :: cells_initialised = .false.
@@ -229,6 +218,18 @@ module Atoms_types_module
 
   public :: Atoms
   type Atoms
+     !% Representation of an atomic configuration and its associated properties
+     !%
+     !% An atoms object contains atomic numbers, all dynamical variables
+     !% and connectivity information for all the atoms in the simulation cell. 
+     !% It is initialised like this:
+     !%> 	  call initialise(MyAtoms,N,lattice)
+     !% where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
+     !% matrix of lattice vectors given as column vectors, so that 'lattice(:,i)' is the i-th lattice vector.
+     !% 
+     !% Atoms also contains a Connection object, which stores distance information about
+     !% the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
+     !% image convention, all neighbours are stored up to a radius of 'cutoff', including images
 
      ! Self-deallocating object
      logical                               :: own_this = .false.  !% Do I own myself?
@@ -241,10 +242,11 @@ module Atoms_types_module
 
      logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
                                                                            !% default is variable cutoff.
-     real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL, cutoff_break = DEFAULT_NNEIGHTOL
-     !% if 'use_uniform_cutoff' is true, cutoff is the cutoff distance in \AA{}.
-     !% Otherwise, cutoff is a multiplier for 'bond_length(Zi,Zj)'.
-
+     real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL   !% if 'use_uniform_cutoff' is true, cutoff
+                                                                           !% is the cutoff distance in \AA{}.
+                                                                           !% Otherwise, cutoff is a multiplier
+                                                                           !% for 'bond_length(Zi,Zj)'.
+     real(dp)                              ::  cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
      real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
                                               !% Count as nearest neighbour if sum of covalent radii
                                               !% times 'this%nneightol' greater than distance between atoms.
@@ -254,21 +256,15 @@ module Atoms_types_module
      !%\begin{displaymath}
      !%\left(
      !%\begin{array}{ccc}
-     !% | & | & | \\
-     !% \mathbf{a} & \mathbf{b} & \mathbf{c} \\
-     !% | & | & | \\
-     !%\end{array}
+     !% | & | & | \\ \mathbf{a} & \mathbf{b} & \mathbf{c} \\ | & | & | \\ \end{array}
      !%\right)
      !% = \left(
      !%\begin{array}{ccc}
-     !% R_{11} & R_{12} & R_{13} \\
-     !% R_{21} & R_{22} & R_{23} \\
-     !% R_{31} & R_{32} & R_{33} \\
-     !%\end{array}
+     !% R_{11} & R_{12} & R_{13} \\ R_{21} & R_{22} & R_{23} \\  R_{31} & R_{32} & R_{33} \\ \end{array}
      !%\right)
      !%\end{displaymath}
-     !% i.e. $\mathbf{a} = $ 'lattice(:,1)', $\mathbf{b} = $ 'lattice(:,2)' and
-     !% $\mathbf{c} = $ 'lattice(:,3)'.
+     !% i.e. $\mathbf{a}$ = 'lattice(:,1)', $\mathbf{b}$ = 'lattice(:,2)' and
+     !% $\mathbf{c}$ 'lattice(:,3)'.
 
      !  ( | | | | | | )          ( (1,1) (1,2) (1,3) ) 
      ! (  | | | | | |  )        (                     )
@@ -280,9 +276,45 @@ module Atoms_types_module
 
      real(dp),              dimension(3,3) :: g          !% Inverse lattice (stored for speed)
 
-     type(Dictionary) :: properties !% Per-atom data, stored as Dictionary arrays of shape (this%N) or (n_cols,this%N)
-     type(Dictionary) :: params     !% List of key/value pairs read from comment line of XYZ file
+     type(Dictionary) :: properties !% Dictionary of atomic properties. A property is an array
+                                    !% of shape (`m`,`n`) where `n` is the number of atoms and `m` is
+                                    !% either one (for scalar properties) or three (vector
+                                    !% properties). Properties can be integer, real, string or logical.
+                                    !% String properties have a fixed length of ``TABLE_STRING_LENGTH=10``
+                                    !% characters.
+                                    !%
+                                    !% From Fortran, the following default properties are aliased with
+                                    !% arrays within the Atoms type:
+                                    !%
+                                    !%  * ``Z`` - Atomic numbers, dimension is actually $(N)$
+                                    !%  * ``species`` Names of elements
+                                    !%  * ``move_mask`` Atoms with 'move_mask' set to zero are fixed
+                                    !%  * ``damp_mask`` Damping is only applied to those atoms with 'damp_mask' set to 1. By default this is set to 1 for all atoms.
+                                    !%  * ``thermostat_region`` Which thermostat is applied to each atoms. By default this is set to 1 for all atoms.
+                                    !%  * ``travel`` Travel across periodic conditions. $(3,N)$ integer array. See meth:`map_into_cell` below.
+                                    !%  * ``pos`` $(3,N)$ array of atomic positions, in $\mathrm{\AA}$. Position of atom $i$ is 'pos(:,i)'
+                                    !%  * ``mass`` Atomic masses, dimension is $(N)$
+                                    !%  * ``velo`` $(3,N)$ array  of atomic velocities, in $\mathrm{AA}$/fs.
+                                    !%  * ``acc`` $(3,N)$ array  of accelerations in $\mathrm{AA}$/fs$^2$
+                                    !%  * ``avgpos`` $(3,N)$ array  of time-averaged atomic positions.
+                                    !%  * ``oldpos`` $(3,N)$ array  of positions of atoms at previous time step.
+                                    !%  * ``avg_ke`` Time-averaged atomic kinetic energy
+                                    !% 
+                                    !% Custom properties are most conveniently accessed by assign a pointer to
+                                    !% them with the :meth:`assign_pointer` routines.
+                                    !% 
+                                    !% From Python, each property is automatically visible as a
+                                    !% array attribute of the :class:`Atoms` object,
+                                    !% for example the atomic positions are stored in a real vector
+                                    !% property called `pos`, and can be accessed as ``at.pos``.
+                                    !% 
+                                    !% Properties can be added with the :meth:`add_property` method and
+                                    !% removed with :meth:`remove_property`.
 
+     type(Dictionary) :: params     !% Dictionary of parameters. Useful for storing data about this
+                                    !% Atoms object, for example the temperature, total energy or
+                                    !% applied strain. The data stored here is automatically saved to
+                                    !% and loaded from XYZ and NetCDF files.
 
      integer,  pointer, dimension(:)   :: Z      => null()  !% Atomic numbers, dimension is actually $(N)$
      character(1), pointer, dimension(:,:) :: species => null() !% Names of elements
@@ -297,20 +329,20 @@ module Atoms_types_module
 
      integer,  pointer, dimension(:,:) :: travel => null()  !% Travel across periodic conditions. Actually $(3,N)$ array.
                                                             !% See 'map_into_cell' below.
-     real(dp), pointer, dimension(:,:) :: pos    => null()  !% $(3,N)$ array of atomic positions, in \AA. 
+     real(dp), pointer, dimension(:,:) :: pos    => null()  !% $(3,N)$ array of atomic positions, in $\mathrm{AA}$. 
                                                             !% Position of atom $i$ is 'pos(:,i)'
      real(dp), pointer, dimension(:)   :: mass   => null()  !% Atomic masses, dimension is actually $(N)$
 
-     real(dp), pointer, dimension(:,:) :: velo   => null()  !% $(3,N)$ array  of atomic velocities, in \AA/fs.
-     real(dp), pointer, dimension(:,:) :: acc    => null()  !% $(3,N)$ array  of accelerations in \AA/fs$^2$
+     real(dp), pointer, dimension(:,:) :: velo   => null()  !% $(3,N)$ array  of atomic velocities, in $\mathrm{AA}$/fs.
+     real(dp), pointer, dimension(:,:) :: acc    => null()  !% $(3,N)$ array  of accelerations in $\mathrm{AA}$/fs$^2$
      real(dp), pointer, dimension(:,:) :: avgpos => null()  !% $(3,N)$ array  of time-averaged atomic positions.
      real(dp), pointer, dimension(:,:) :: oldpos => null()  !% $(3,N)$ array  of positions of atoms at previous time step.
      real(dp), pointer, dimension(:)   :: avg_ke => null()    !% Time-averaged atomic kinetic energy
 
-     type(Connection)                  :: connect             !% Connectivity object (see above)
-     type(Connection)                  :: hysteretic_connect  !% Hysteretic connectivity object (see above)
+     type(Connection)                  :: connect             !% Connectivity object
+     type(Connection)                  :: hysteretic_connect  !% Hysteretic connectivity object
 
-     type(DomainDecomposition)         :: domain              !% Domain decomposition object (see above)
+     type(DomainDecomposition)         :: domain              !% Domain decomposition object
 
   end type Atoms
 

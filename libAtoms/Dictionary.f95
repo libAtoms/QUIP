@@ -103,6 +103,21 @@ module dictionary_module
 
   public Dictionary
   type Dictionary
+     !% Fortran implementation of a dictionary to store key/value pairs of the following types:
+     !%
+     !% - Integer
+     !% - Real
+     !% - String
+     !% - Complex
+     !% - Logical
+     !% - 1D integer array 
+     !% - 1D real array 
+     !% - 1D complex array
+     !% - 1D logical array
+     !% - 2D integer array
+     !% - 2D real array
+     !% - Arbitrary data, via Fortran ``transform()`` intrinsic
+     
      integer :: N !% number of entries in use
      type(extendable_str), allocatable :: keys(:) !% array of keys
      type(DictEntry), allocatable :: entries(:)    !% array of entries

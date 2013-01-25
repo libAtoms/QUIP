@@ -130,13 +130,34 @@ __all__ = ['QUIP_ROOT', 'QUIP_ARCH', 'QUIP_MAKEFILE',
            'disabled_modules']
 
 wrap_modules = spec['wrap_modules']
+
+mod_names = [ modname for (modname, modfile) in spec['wrap_modules'] ]
+mod_files = [ modfile for (modname, modfile) in spec['wrap_modules'] ]
+
 # Jointly wrap atoms_types, atoms and connection into the respective classes
-del wrap_modules[wrap_modules.index('atoms_types')]
-del wrap_modules[wrap_modules.index('atoms')]
-del wrap_modules[wrap_modules.index('connection')]
-del wrap_modules[wrap_modules.index('domaindecomposition')]
-wrap_modules.append('atoms')
+
+atoms_types_file = mod_files[mod_names.index('atoms_types')]
+
+del mod_files[mod_names.index('atoms_types')]
+del mod_names[mod_names.index('atoms_types')]
+
+del mod_files[mod_names.index('atoms')]
+del mod_names[mod_names.index('atoms')]
+
+del mod_files[mod_names.index('connection')]
+del mod_names[mod_names.index('connection')]
+
+del mod_files[mod_names.index('domaindecomposition')]
+del mod_names[mod_names.index('domaindecomposition')]
+
 merge_modules = {'atoms': ('atoms_types', 'atoms', 'connection', 'domaindecomposition')}
+
+wrap_modules = zip(mod_names, mod_files)
+wrap_modules.append(('atoms', atoms_types_file))
+
+mod_names = [ modname for (modname, modfile) in spec['wrap_modules'] ]
+mod_files = [ modfile for (modname, modfile) in spec['wrap_modules'] ]
+
 
 # List of Fortran modules which have Python wrappers in this package
 python_wrappers = ['periodictable', 'table', 'potential',
@@ -144,10 +165,11 @@ python_wrappers = ['periodictable', 'table', 'potential',
                    'extendable_str', 'structures', 'elasticity']
 modules_name_map = {}
 for mod in python_wrappers:
-    if mod in wrap_modules:
+    if mod in mod_names:
         modules_name_map[mod] = '_'+mod
 
-pymods = wrap_all(_quippy, spec, wrap_modules, merge_modules,
+pymods = wrap_all(_quippy, spec, wrap_modules,
+                  merge_modules,
                   spec['short_names'],
                   prefix='qp_', package='quippy',
                   modules_name_map=modules_name_map,
@@ -165,7 +187,7 @@ for name, mod in pymods.items():
         setattr(sys.modules[__name__], sym, getattr(mod, sym))
     __all__.extend(mod.__all__)
 
-del wrap_modules, merge_modules, modules_name_map
+del wrap_modules, merge_modules, modules_name_map, mod_names, mod_files
 del name, mod, pymods
 
 # Python modules which extend Fortran modules
@@ -232,7 +254,6 @@ import quippy.xyz
 import quippy.netcdf
 import quippy.imd
 import quippy.vasp
-import quippy.vasp_OUTCAR
 import quippy.dan
 
 if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:

@@ -35,14 +35,16 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-#sys.path.append(os.path.abspath('..'))
-#sys.path.append(os.path.abspath('../quippy'))
+sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('../quippy'))
 
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.pngmath', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.pngmath',
+              'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
+              'sphinx.ext.viewcode', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -58,7 +60,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'quippy'
-copyright = u'2008-2010, James Kermode'
+copyright = u'2008-2013, James Kermode'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -214,5 +216,104 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+
 intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None),
                        'ase': ('https://wiki.fysik.dtu.dk/ase/', None)}
+
+
+from quippy.oo_fortran import FortranDerivedType, FortranDerivedTypes
+
+import re
+
+#classnames = [v.__name__ for v in FortranDerivedTypes.values()]
+#classname_re = re.compile('(^|[\W-`]+)((``)?)('+'|'.join([v.__name__ for v in FortranDerivedTypes.values()])+r')\2(?=[\W-`]+)')
+#method_or_attr_re = re.compile('(^|\W+)((``)?)('+'|'.join([v.__name__+'\.([a-zA-Z][a-zA-Z0-9_]*)' for v in FortranDerivedTypes.values()])+r')\2(?=[\W+-`])')
+
+#doc_subs = [(classname_re, r'\1:class:`~.\4`'),
+#            (method_or_attr_re, r'\1:meth:`.\4`')]
+
+doc_subs = []
+
+def process_docstring(app, what, name, obj, options, lines):
+    for i, line in enumerate(lines):
+        for r, s in doc_subs:
+            line = r.sub(s, line)
+        lines[i] = line
+        
+
+        
+def process_signature(app, what, name, obj, options, signature, return_annotation):
+    return (signature, return_annotation)
+
+
+def maybe_skip_member(app, what, name, obj, skip, options):
+    if hasattr(FortranDerivedType, name) and options.inherited_members:
+        print 'Skipping', name
+        return True
+    return skip
+
+from docutils import nodes, utils
+from docutils.parsers.rst.roles import set_classes
+
+def svn_trunk_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    if text[-1] == '>':
+        i = text.index('<')
+        name = text[:i - 1]
+        text = text[i + 1:-1]
+    else:
+        name = text
+    ref = 'https://src.tcm.phy.cam.ac.uk/~jrk33/viewvc/jrk33/repo/trunk/QUIP/%s?view=markup' % text
+    set_classes(options)
+    node = nodes.reference(rawtext, name, refuri=ref,
+                           **options)
+    return [node], []
+
+def svn_release_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    if text[-1] == '>':
+        i = text.index('<')
+        name = text[:i - 1]
+        text = text[i + 1:-1]
+    else:
+        name = text
+    ref = 'http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release/%s?view=markup' % text
+    set_classes(options)
+    node = nodes.reference(rawtext, name, refuri=ref,
+                           **options)
+    return [node], []
+
+
+def mol_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    n = []
+    t = ''
+    while text:
+        if text[0] == '_':
+            n.append(nodes.Text(t))
+            t = ''
+            n.append(nodes.subscript(text=text[1]))
+            text = text[2:]
+        else:
+            t += text[0]
+            text = text[1:]
+    n.append(nodes.Text(t))
+    return n, []
+
+def setup(app):
+    app.connect('autodoc-process-docstring', process_docstring)
+    app.connect('autodoc-process-signature', process_signature)
+    app.connect('autodoc-skip-member', maybe_skip_member)
+    app.add_role('svn', svn_trunk_role)
+    app.add_role('svnrelease', svn_release_role)
+    app.add_role('mol', mol_role)
+
+
+autodoc_member_order = 'groupwise'
+
+def add_line(self, line, source, *lineno):
+    """Append one line of generated reST to the output."""
+    print self.indent + line
+    self.directive.result.append(self.indent + line, source, *lineno)
+
+#import sphinx.ext.autodoc
+#sphinx.ext.autodoc.Documenter.add_line = add_line
+
+numpydoc_show_class_members = False

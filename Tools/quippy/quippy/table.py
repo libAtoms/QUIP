@@ -26,7 +26,6 @@ from quippy.farray import FortranArray
 __all__ = _table.__all__
 
 class Table(_table.Table):
-
     __doc__ = _table.Table.__doc__
     _cmp_skip_fields = ['max_length', 'increment']
 

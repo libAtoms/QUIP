@@ -116,7 +116,10 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, sizeof_fortran_t,
                 raise ValueError("Can't find Fortran module corresponding to file %s" % file)
 
             wrap_mod_name = mod.name.lower()[:-7]
-            wrap_modules.append(wrap_mod_name)
+            rel_filename = file[len(quip_root):]
+            if rel_filename.startswith('/'):
+                rel_filename = rel_filename[1:]
+            wrap_modules.append((wrap_mod_name, rel_filename))
 
             wrapper = '%s/%s_%s_wrap.f90' % (build_dir, modname, wrap_mod_name)
 

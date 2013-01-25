@@ -796,6 +796,7 @@ def elasticity_matrix_to_tensor(C):
 
 def elasticity_tensor_to_matrix(c):
     """Given full tensor c_ijkl, return compressed Voigt form C_ij.
+    
     First checks that c_ijkl obeys required symmetries."""
 
     tol = 1e-10
@@ -818,9 +819,11 @@ def elasticity_tensor_to_matrix(c):
     return C
 
 def transform_elasticity(c, R):
-    """Transform c as a rank-4 tensor by the rotation matrix R and return
-    a new representation c'. If c is a 6x6 matrix it is first converted to 3x3x3x3 form,
-    and then converted back after the transformation."""
+    """Transform c as a rank-4 tensor by the rotation matrix R.
+
+    Returns the new representation c'. If c is a 6x6 matrix it is first
+    converted to 3x3x3x3 form, and then converted back after the
+    transformation."""
 
     made_tensor = False
     if c.shape == (6,6):
@@ -893,31 +896,3 @@ def rayleigh_wave_speed(C, rho, a=4000., b=6000., isotropic=False):
     c_R = bisect(f, vs/2., vs)
     return vs, vp, c_R
 
-
-def youngs_modulus(C, l):
-    """
-    Calculate Youngs modulus :math:`E_l` from 6x6 elastic constants matrix :math:`C_{ij}`.
-
-    This is the modulus for loading in direction with Miller indices
-    given by the three component vector `l`.
-    
-    Formula is from W. Brantley, `Calculated elastic constants for stress
-    problems associated with semiconductor devices`. J. Appl. Phys., 44,
-    534 (1973).
-    """
-    return _elasticity.youngs_modulus(C, l)
-
-
-def poisson_ratio(C, l, m):
-    """
-    Calculate Poisson ratio :math:`\\nu_{lm}` from the 6x6 elastic constant matrix :math:`C_{ij}`.
-
-    `m` and `l` should be Miller indices of two crystallographic
-    directions.  The result is then the response in the `m` direction
-    to pulling in the `l` direction.
-    
-    The formula is from W. Brantley, `Calculated elastic constants for
-    stress problems associated with semiconductor
-    devices`. J. Appl. Phys., 44, 534 (1973).
-    """
-    return _elasticity.poission_ratio(C, l, m)

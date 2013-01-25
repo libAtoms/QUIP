@@ -28,18 +28,83 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!X
-!% Potential module to provide interface to all energy/force/virial 
-!% calculating schemes, including actual calculations, as well as
-!% abstract hybrid schemes such as LOTF, Force Mixing, ONIOM,
-!% and the local energy scheme.
+!%    This module encapsulates all the interatomic potentials implemented in QUIP
+!%    
+!%    A Potential object represents an interatomic potential, a
+!%    tight binding model or an interface to an external code used to
+!%    perform calculations. It is initialised from an `args_str`
+!%    describing the type of potential, and an XML formatted string
+!%    `param_str` giving the parameters.
 !%
-!% It can also be used to geometry optimise an Atoms structure,
-!% using the 'Minim' interface.
+!%    Types of Potential:
+!%    
+!%      ====================  ==========================================================
+!%      `args_str` prefix      Description
+!%      ====================  ==========================================================   
+!%      ``IP``                Interatomic Potential
+!%      ``TB``                Tight Binding Model
+!%      ``FilePot``           File potential, used to communicate with external program
+!%      ``CallbackPot``       Callback potential, computation done by Python function
+!%      ``Sum``               Sum of two other potentials
+!%      ``ForceMixing``       Combination of forces from two other potentials
+!%      ====================  ==========================================================
+!%    
+!%    
+!%    Types of interatomic potential available:
+!%    
+!%      ======================== ==========================================================
+!%      `args_str` prefix        Description
+!%      ======================== ==========================================================   
+!%      ``IP BOP``               Bond order potential for metals
+!%      ``IP BornMayer``         Born-Mayer potential for oxides
+!%                               (e.g. BKS potential for silica)
+!%      ``IP Brenner``           Brenner (1990) potential for carbon
+!%      ``IP Brenner_2002``      Brenner (2002) reactive potential for carbon
+!%      ``IP Brenner_Screened``  Interface to Pastewka et al. screened Brenner reactive
+!%                               potential for carbon
+!%      ``IP Coulomb``           Coulomb interaction: support direct summation,
+!%                               Ewald and damped shifted force Coulomb potential
+!%      ``IP Einstein``          Einstein crystal potential
+!%      ``IP EAM_ErcolAd``       Embedded atom potential of Ercolessi and Adams
+!%      ``IP FB``                Flikkema and Bromley potential
+!%      ``IP FS``	  	  Finnis-Sinclair potential for metals
+!%      ``IP FX``                Wrapper around ttm3f water potential of
+!%                               Fanourgakis-Xantheas
+!%      ``IP GAP``               Gaussian approximation potential
+!%      ``IP Glue``              Generic implementation of 'glue' potential
+!%      ``IP HFdimer``           Simple interatomic potential for an HF dimer, from
+!%                               MP2 calculations
+!%      ``IP KIM``               Interface to KIM, the Knowledgebase of Interatomic
+!%                               potential Models (www.openkim.org)
+!%      ``IP LJ``                Lennard-Jones potential
+!%      ``IP Morse``             Morse potential
+!%      ``IP PartridgeSchwenke`` Partridge-Schwenke model for a water monomer
+!%      ``IP SW``                Stillinger-Weber potential for silicon
+!%      ``IP SW_VP``             Combined Stillinger-Weber and Vashista potential
+!%                               for Si and :mol:`SiO2`.
+!%      ``IP Si_MEAM``           Silicon modified embedded attom potential
+!%      ``IP Sutton_Chen``       Sutton-Chen potential
+!%      ``IP TS``                Tangney-Scandolo polarisable potential for oxides
+!%      ``IP Tersoff``           Tersoff potential for silicon
+!%      ``IP WaterDimer_Gillan`` 2-body potential for water dimer
+!%      ======================== ==========================================================   
+!%    
+!%    Types of tight binding potential available:
+!%    
+!%      ======================= ==========================================================
+!%      `args_str` prefix       Description
+!%      ======================= ==========================================================   
+!%      ``TB Bowler``           Bowler tight binding model 
+!%      ``TB DFTB``             Density functional tight binding
+!%      ``TB GSP``              Goodwin-Skinner-Pettifor tight binding model
+!%      ``TB NRL_TB``           Naval Research Laboratory tight binding model
+!%      ======================= ==========================================================   
+!%    
+!%    Examples of the XML parameters for each of these potential can be
+!%    found in the `QUIP_Core/parameters <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release/QUIP_Core/parameters/>`_
+!%    directory of the QUIP svn repository.
 !%
-!% Potential_LOTF also has to live in this module so that it can call
-!% Potential_minim() without any circular depenendancies.
-!X
+!%!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #ifdef HAVE_LOCAL_E_MIX
@@ -99,6 +164,48 @@ module Potential_module
   public :: hack_restraint_i, hack_restraint_r, hack_restraint_k
 
   public :: Potential
+  !%  Potential type which abstracts all QUIP interatomic potentials
+  !%
+  !%  Provides interface to all energy/force/virial calculating schemes,
+  !%  including actual calculations, as well as abstract hybrid schemes
+  !%  such as LOTF, Force Mixing, ONIOM, and the local energy scheme.
+  !%
+  !%  Typically a Potential is constructed from an initialisation
+  !%  args_str and an XML parameter file, e.g. in Fortran::
+  !%
+  !%      type(InOutput) :: xml_file
+  !%      type(Potential) :: pot
+  !%      ...
+  !%      call initialise(xml_file, 'SW.xml', INPUT)
+  !%      call initialise(pot, 'IP SW', param_file=xml_file)
+  !%
+  !%  Or, equivaently in Python::
+  !%
+  !%      pot = Potential('IP SW', param_filename='SW.xml')
+  !%
+  !%  creates a Stillinger-Weber potential using the parameters from
+  !%  the file 'SW.xml'. The XML parameters can also be given directly
+  !%  as a string, via the `param_str` argument.
+  !%
+  !%  The main workhorse is the :meth:`calc` routine, which is used
+  !%  internally to perform all calculations, e.g. to calculate forces::
+  !%
+  !%      type(Atoms) :: at
+  !%      real(dp) :: force(3,8)
+  !%      ...
+  !%      call diamond(at, 5.44, 14)
+  !%      call randomise(at%pos, 0.01)
+  !%      call set_cutoff(at, cutoff(pot))
+  !%      call calc_connect(at)
+  !%      call calc(pot, at, force=force)
+  !%
+  !%  Note how the 'Atoms%cutoff' attribute is set to the cutoff of
+  !%  this Potential, and then the neighbour lists are built with the
+  !%  :meth:'~quippy.atoms.Atoms.calc_connect' routine.
+  !%
+  !%  A Potential can be used to optimise the geometry of an
+  !%  :class:`~quippy.atoms.Atoms` structure, using the :meth:`minim` routine,
+  !%  (or, in Python, via  the :class:`Minim` wrapper class).
   type Potential
      type(MPI_context) :: mpi
      character(len=STRING_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
@@ -156,16 +263,74 @@ module Potential_module
      module procedure Potential_Print
   end interface
 
+
+  !% Return the cutoff of this 'Potential', in Angstrom. This is the
+  !% minimum neighbour connectivity cutoff that should be used: if
+  !% you're doing MD you'll want to use a slightly larger cutoff so
+  !% that new neighbours don't drift in to range between connectivity
+  !% updates
   public :: Cutoff
   interface Cutoff
      module procedure Potential_Cutoff
   end interface
 
   public :: Calc
+
+  !% Apply this Potential to the Atoms object
+  !% 'at', which must have connectivity information
+  !% (i.e. 'Atoms%calc_connect' should have been called). The
+  !% optional arguments determine what should be calculated and how
+  !% it will be returned. Each physical quantity has a
+  !% corresponding optional argument, which can either be an 'True'
+  !% to store the result inside the Atoms object (i.e. in
+  !% Atoms%params' or in 'Atoms%properties' with the
+  !% default name, a string to specify a different property or
+  !% parameter name, or an array of the the correct shape to
+  !% receive the quantity in question, as set out in the table
+  !% below.
+  !%
+  !%   ================  ============= =============== ================================
+  !%   Array argument    Quantity      Shape           Default storage location
+  !%   ================  ============= =============== ================================
+  !%   'energy'          Energy        '()''  	       'energy' param
+  !%   'local_energy'    Local energy  '(at.n,)'       'local_energy' property
+  !%   'force'           Force         '(3,at.n)'      'force' property
+  !%   'virial'          Virial tensor '(3,3)'         'virial' param
+  !%   'local_virial'    Local virial  '(3,3,at.n)'    'local_virial' property
+  !%   ================  ============= =============== ================================
+  !%
+  !% The 'args_str' argumentis an optional string  containing
+  !% additional arguments which depend on the particular Potential
+  !% being used. 
+  !%
+  !% Not all Potentials support all of these quantities: an error
+  !% will be raised if you ask for something that is not supported.
   interface Calc
      module procedure Potential_Calc
   end interface
 
+  !% Minimise the configuration 'at' under the action of this
+  !% Potential.  Returns number of minimisation steps taken. If
+  !% an error occurs or convergence is not reached within 'max_steps'
+  !% steps, 'status' will be set to 1 on exit.
+  !%
+  !% Example usage (in Python, Fortran code is similar. See
+  !% :ref:'geomopt' section of the quippy tutorial for full
+  !% explanation)::
+  !%
+  !%      at0 = diamond(5.44, 14)
+  !%      at0.calc_connect()
+  !%      pot = Potential('IP SW', param_str='''<SW_params n_types="1">
+  !%              <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
+  !%              <per_type_data type="1" atomic_num="14" />
+  !%
+  !%              <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
+  !%                p="4" q="0" a="1.80" sigma="2.0951" eps="2.1675" />
+  !%
+  !%              <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
+  !%                lambda="21.0" gamma="1.20" eps="2.1675" />
+  !%             </SW_params>''')
+  !%      pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
   public :: Minim
   interface Minim
      module procedure Potential_Minim
@@ -206,6 +371,15 @@ module Potential_module
   logical, save :: parse_in_pot, parse_in_pot_done, parse_matched_label
 
   public :: run
+
+  !% Run 'n_steps' of dynamics using forces from Potential 'pot'.
+  !%
+  !% For each step, forces are evaluated using the Potential
+  !% 'pot' and the DynamicalSystem is advanced by a time 'dt'
+  !% (default 1 fs).  'n_steps' (default 10 steps) are carried out in
+  !% total, with snapshots saved every 'save_interval' steps. The
+  !connectivity is recalculated every 'connect_interval' steps.
+  !'args_str' can be used to supply extra arguments to 'Potential%calc'.
   interface run
      module procedure dynamicalsystem_run
   end interface run

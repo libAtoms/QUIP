@@ -16,11 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`f2py_wrapper_gen` -- Fortran 90 source code wrapping
-==========================================================
+:mod:`f2py_wrapper_gen` --- Fortran 90 source code wrapping
+===========================================================
 
 .. module:: f2py_wrapper_gen
-   :platform: Unix
    :synopsis: Generate simplified Fortran 90 source suitable for f2py
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
