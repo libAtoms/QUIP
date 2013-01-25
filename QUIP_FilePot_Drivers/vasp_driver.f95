@@ -66,7 +66,7 @@ subroutine do_vasp_calc(at, args_str, error)
    character(len=STRING_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
    logical :: do_calc_energy, do_calc_force, do_calc_virial, do_calc_local_energy, persistent, persistent_n_atoms_exist
-   logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
+   logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis, vasp4
    integer :: clean_up_keep_n
    integer :: persistent_restart_interval, persistent_n_atoms
    real(dp) :: persistent_max_wait_time
@@ -109,6 +109,7 @@ subroutine do_vasp_calc(at, args_str, error)
    call param_register(cli, "persistent", "F", persistent, help_string="If true, use persistent connection to a long-running vasp process")
    call param_register(cli, "persistent_restart_interval", "100", persistent_restart_interval, help_string="If persistent, restart vasp this often")
    call param_register(cli, "persistent_max_wait_time", "600", persistent_max_wait_time, help_string="If persistent, never wait more than this long (s) for calculation to finish")
+   call param_register(cli, "vasp4", "F", vasp4, help_string="If true, expect VASP 4.6 syntax in OUTCAR")
    if (.not. param_read_line(cli, args_str, ignore_unknown=.true.,task='do_vasp_calc args_str')) then
       call print("Args:  verbosity INCAR_template kpoints_file potcar_files vasp energy force", PRINT_ALWAYS)
       call print("       virial local_energy clean_up_files ignore_convergence no_use_WAVECAR", PRINT_ALWAYS)
@@ -377,7 +378,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call unlink(trim(run_dir)//"/REFTRAJ_STEP_DONE")
    else ! read regular VASP output (OUTCAR)
       call print("reading vasp output", PRINT_VERBOSE)
-      call read_vasp_output(trim(run_dir), do_calc_energy, do_calc_force, do_calc_virial, converged, error=error)
+      call read_vasp_output(trim(run_dir), do_calc_energy, do_calc_force, do_calc_virial, converged, vasp4=vasp4, error=error)
       PASS_ERROR(error)
    endif
    call system_timer('vasp_filepot/read_output')
@@ -525,10 +526,11 @@ subroutine write_vasp_poscar(at, run_dir, error)
 
 end subroutine write_vasp_poscar
 
-subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_virial, converged, error)
+subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_virial, converged, vasp4, error)
    character(len=*), intent(in) :: run_dir
    logical, intent(in) :: do_calc_energy, do_calc_force, do_calc_virial
    logical, intent(out) :: converged
+   logical, intent(in), optional :: vasp4
    integer, intent(out), optional :: ERROR
 
    type(inoutput) :: outcar_io
@@ -536,12 +538,15 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
    character(len=STRING_LENGTH) :: line
    character(len=STRING_LENGTH)  :: fields(100), t_s
    integer :: n_fields, line_i
+   logical do_vasp4
 
    real(dp) :: energy, virial(3,3), t_pos(3)
    real(dp), pointer :: force_p(:,:)
    integer :: force_start_line_i, virial_start_line_i, read_err
 
    INIT_ERROR(error)
+
+   do_vasp4 = optional_default(.false., vasp4)
 
    if (do_calc_force) then
       if (.not. assign_pointer(at, "force", force_p)) then
@@ -598,10 +603,14 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
 	 else
 	    if (index(trim(line),"FORCE on cell") > 0) then ! found virial
 	       call split_string_simple(trim(line), fields, n_fields, " ", error=error)
-	       if (fields(9) /= "(eV):") then
+	       if (fields(9) /= "(eV):" .and. fields(9) /= "(eV/reduce") then
 		  RAISE_ERROR("read_vasp_output confused by units virial header line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
 	       endif
-	       virial_start_line_i = line_i+13
+               if (do_vasp4) then
+                  virial_start_line_i = line_i+12
+               else
+                  virial_start_line_i = line_i+13
+               end if
 	    endif
 	 endif
       endif
