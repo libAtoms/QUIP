@@ -159,11 +159,6 @@ class Connection(_atoms.Connection):
             yield self[i]
 
     def __getitem__(self, i):
-        if self is self.parent:
-            connect = self.hysteretic_connect
-        else:
-            connect = self.connect
-
         if not self.initialised:
             if self is self.parent.hysteretic_connect:
                 self.calc_connect_hysteretic(self.parent)
@@ -179,9 +174,9 @@ class Connection(_atoms.Connection):
         if not self.fortran_indexing:
             i = i+1 # convert to 1-based indexing
 
-        for n in frange(self.n_neighbours(i, alt_connect=connect)):
+        for n in frange(self.n_neighbours(i)):
             j = self.neighbour(self.parent, i, n, distance, diff,
-                               cosines, shift, alt_connect=connect)
+                               cosines, shift)
             if not self.fortran_indexing:
                 j = j-1
             res.append(NeighbourInfo(j, distance, diff, cosines, shift))
@@ -304,7 +299,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     ASE Atoms objects are fully interoperable.
     """)
 
-    _cmp_skip_fields = ['own_this', 'ref_count', 'domain']
+    _cmp_skip_fields = ['own_this', 'ref_count', 'domain',
+                        'connect', 'hysteretic_connect']
 
     name_map = {'positions'       : 'pos',
                 'numbers'         : 'Z',
@@ -416,6 +412,11 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             self.params.update(info)
 
         self._initialised = True
+
+        # synonyms for backwards compatibility
+        self.neighbours = self.connect
+        self.hysteretic_neighbours = self.hysteretic_connect
+        
 
     def new_array(self, name, a, dtype=None, shape=None):
         # we overrride ase.Atoms.new_array() to allow "special" arrays
