@@ -1809,7 +1809,7 @@ end function cluster_in_out_in
   !% All atoms that are marked with anything other than 'HYBRID_NO_MARK' will
   !% be included in the cluster; this includes active, transition and buffer
   !% atoms.   Atoms added (to satisfy heuristics) will be marked in new property
-  !% modified_//trim(mark_name) as HYBRID_BUFFER_MARK.
+  !% modified_//trim(mark_name) as 'HYBRID_BUFFER_MARK'.
   !% Returns a Table object (cluster_info) which contains info on atoms whose
   !% indices are given in atomlist, possibly with some extras for consistency,
   !% and optionally terminated with Hydrogens, that can be used by carve_cluster().
@@ -2383,23 +2383,23 @@ end function cluster_in_out_in
   !% and buffer regions, and creates a 'weight_region1' property, 
   !% whose values are between 0 and 1. 
   !%
-  !% Atoms marked with HYBRID_ACTIVE_MARK in 'hybrid_mark' get weight
+  !% Atoms marked with 'HYBRID_ACTIVE_MARK' in 'hybrid_mark' get weight
   !% 1.  Neighbour hopping is done up to transition_hops times, over
   !% which the weight linearly decreases to zero with hop count if
   !% 'weight_interpolation=hop_ramp'.  If
-  !% weight_interpolation=distance_ramp, weight is 1 up to
-  !% distance_ramp_inner_radius, and goes linearly to 0 by
-  !% distance_ramp_outer_radius, where distance is calculated from
-  !% distance_ramp_center(1:3).  distance_ramp makes the most sense if
-  !% the HYBRID_ACTIVE_MARK is set on a sphere with radius
+  !% 'weight_interpolation=distance_ramp', weight is 1 up to
+  !% 'distance_ramp_inner_radius', and goes linearly to 0 by
+  !% 'distance_ramp_outer_radius', where distance is calculated from
+  !% 'distance_ramp_center(1:3)'.  'distance_ramp' makes the most sense if
+  !% the 'HYBRID_ACTIVE_MARK' is set on a sphere with radius
   !% distance_ramp_inner_radius from distance_ramp_center, no
-  !% hysteresis, and with transition_hops < 0 so hops continue until
+  !% hysteresis, and with 'transition_hops' < 0 so hops continue until
   !% no more atoms are added.  Transition atoms are marked with
-  !% HYBRID_TRANS_MARK.  If hysteretic_buffer=F (default), buffer
-  !% atoms are selected by hopping buffer_hops times, otherwise
-  !% hysteretically with radii hysteretic_buffer_inner_radius and
-  !% hysteretic_buffer_outer_radius.  Buffer atoms are marked with
-  !% HYBRID_BUFFER_MARK and given weight 0.  If hysteretic_connect is
+  !% 'HYBRID_TRANS_MARK'. If 'hysteretic_buffer=F' (default), buffer
+  !% atoms are selected by hopping 'buffer_hops' times, otherwise
+  !% hysteretically with radii 'hysteretic_buffer_inner_radius' and
+  !% 'hysteretic_buffer_outer_radius'.  Buffer atoms are marked with
+  !% 'HYBRID_BUFFER_MARK' and given weight 0.  If 'hysteretic_connect' is
   !% set, all hops are done on bonds in the hysteretic_connect
   !% structure.
 
@@ -4001,11 +4001,13 @@ type(inoutput), optional :: debugfile
 
   end function bond_energy
 
-  !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
-  !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
-  !% the centre of the QM region (a position in space or a list of atoms).
-  !% Also saves the old $hybrid_mark$ property in $old_hybrid_mark$ property.
-  !% optionally correct selected region with heuristics (as coded in create_cluster_info())
+  !% Updates the core QM flags saved in 'hybrid' and 'hybrid_mark'
+  !% properties.  Do this hysteretically, from 'R_inner' to 'R_outer'
+  !% around 'origin' or 'atomlist', that is the centre of the QM
+  !% region (a position in space or a list of atoms).  Also saves the
+  !% old 'hybrid_mark' property in 'old_hybrid_mark' property.
+  !% optionally correct selected region with heuristics (as coded in
+  !% :func:`create_cluster_info_from_mark`())
   !
   subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
 	     cluster_hopping_nneighb_only,cluster_heuristics_nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, mark_postfix, &

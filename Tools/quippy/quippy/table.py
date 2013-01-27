@@ -23,6 +23,7 @@ from quippy import _table
 from quippy._table import *
 from quippy.farray import FortranArray
 
+__doc__ = _table.__doc__
 __all__ = _table.__all__
 
 class Table(_table.Table):

@@ -202,8 +202,16 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
       newname = sub.name
       spec[shortname.lower()]['routines'][newname.lower()] = \
-          {'doc': '\n'.join(sub.doc),'args':[]}
-      thisdoc = spec[shortname.lower()]['routines'][newname.lower()]['args']
+      {'doc': '\n'.join(sub.doc),'args':[], 'args_str': {}}
+      args_spec = spec[shortname.lower()]['routines'][newname.lower()]['args']
+      args_str_spec = spec[shortname.lower()]['routines'][newname.lower()]['args_str']
+
+      for name, arg in sub.args_str.iteritems():
+         print 'Sub %s setting args_str %s' % (sub.name, arg.name)
+         args_str_spec[arg.name] = {'value': arg.value,
+                                    'type': arg.type,
+                                    'var' : arg.var,
+                                    'doc': '\n'.join(arg.doc)}
 
       # See if this routine is in any interfaces
       for intf in mod.interfaces:
@@ -228,7 +236,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           if not hasattr(arg, 'attributes') and not hasattr(arg, 'type'):
              callback_spec = callback_routines[sub.name.lower()]
              arglines.extend(callback_spec['arglines'])
-             thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': 'callback', 'attributes': callback_spec['attributes']})
+             args_spec.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': 'callback', 'attributes': callback_spec['attributes']})
              callbacklines.extend(['if (.false.) then','call %s(%s)' % (arg.name, callback_spec['call']),'end if'])
              continue
 
@@ -374,7 +382,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           if arg.type.startswith('type'):
               f2py_attributes.append(intent)
               f2py_attributes.append(fintent)
-          thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': arg.type, 'attributes': f2py_attributes})
+          args_spec.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': arg.type, 'attributes': f2py_attributes})
 
           if dims != []:
               for i,d in enumerate(newds):
@@ -383,7 +391,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                   if not 'intent(out)' in attributes:
                       arglines.insert(0,'!f2py intent(hide), depend(%s) :: %s = shape(%s,%d)' % (arg.name, d, arg.name, i))
                   else:
-                      thisdoc.append({'name': d, 'doc': 'shape(%s,%d)' % (arg.name,i), 'type': 'integer', 'attributes':[]})
+                      args_spec.append({'name': d, 'doc': 'shape(%s,%d)' % (arg.name,i), 'type': 'integer', 'attributes':[]})
 
           if charflag is not None:
               newargnames.append(charflag)
@@ -391,7 +399,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               if not 'intent(out)' in attributes:
                   arglines.append('!f2py intent(hide), depend(%s) :: %s = slen(%s)' % (arg.name, charflag, arg.name))
               else:
-                  thisdoc.append({'name':charflag,'doc': 'slen(%s)' % arg.name, 'type': 'integer', 'attributes':[]})
+                  args_spec.append({'name':charflag,'doc': 'slen(%s)' % arg.name, 'type': 'integer', 'attributes':[]})
 
 
           # Do not mess around with character*(1) multidimensional arrays
@@ -513,7 +521,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       if filtertypes is not None and not strip_type(t.name) in filtertypes: continue
 
       spec[shortname.lower()]['types'][t.name] = {'doc': '\n'.join(t.doc), 'elements':{}}
-      thisdoc = spec[shortname.lower()]['types'][t.name]['elements']
+      args_spec = spec[shortname.lower()]['types'][t.name]['elements']
       for el in t.elements:
 
           uses = set()
@@ -537,7 +545,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           if 'pointer' in attributes and dim_list != []: continue
           if mytype.lower() == 'type(c_ptr)': continue
 
-          thisdoc[el.name] = {'doc': '\n'.join(el.doc), 'type': el.type, 'attributes': attributes}
+          args_spec[el.name] = {'doc': '\n'.join(el.doc), 'type': el.type, 'attributes': attributes}
 
           # If it's a proper array (not a pointer) let's write an __array__ routine 
           # which returns shape and data location (suitable for constructing
@@ -607,7 +615,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  indent -= 3
                  println('end subroutine %s%s__array_getitem__%s' % (prefix, t.name, name))
                  println()
-                 thisdoc[el.name]['array_getitem'] = '%s%s__array_getitem__%s' % (prefix, t.name.lower(), name.lower())
+                 args_spec[el.name]['array_getitem'] = '%s%s__array_getitem__%s' % (prefix, t.name.lower(), name.lower())
 
                  println('subroutine %s%s__array_setitem__%s(this, i, the%s)' % (prefix, t.name, name, name))
                  indent += 3
@@ -659,7 +667,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  indent -= 3
                  println('end subroutine %s%s__array_setitem__%s' % (prefix, t.name, name))
                  println()
-                 thisdoc[el.name]['array_setitem'] = '%s%s__array_setitem__%s' % (prefix, t.name.lower(), name.lower())
+                 args_spec[el.name]['array_setitem'] = '%s%s__array_setitem__%s' % (prefix, t.name.lower(), name.lower())
 
                  println('subroutine %s%s__array_len__%s(this, n)' % (prefix, t.name, name))
                  indent += 3
@@ -696,7 +704,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                  indent -= 3
                  println('end subroutine %s%s__array_len__%s' % (prefix, t.name, name))
                  println()
-                 thisdoc[el.name]['array_len'] = '%s%s__array_len__%s' % (prefix, t.name.lower(), name.lower())                 
+                 args_spec[el.name]['array_len'] = '%s%s__array_len__%s' % (prefix, t.name.lower(), name.lower())                 
                  
 
               else:
@@ -745,7 +753,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
                  indent -= 3
                  println('end subroutine %s%s__array__%s' % (prefix, t.name, name))
-                 thisdoc[el.name]['array'] = '%s%s__array__%s' % (prefix, t.name.lower(), name.lower())
+                 args_spec[el.name]['array'] = '%s%s__array__%s' % (prefix, t.name.lower(), name.lower())
                  println()
 
           # For scalars write get/set routines
@@ -823,7 +831,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
               indent -= 3
               println('end subroutine %s%s__get__%s' % (prefix, t.name, name))
-              thisdoc[el.name]['get'] = '%s%s__get__%s' % (prefix, t.name.lower(), name.lower())
+              args_spec[el.name]['get'] = '%s%s__get__%s' % (prefix, t.name.lower(), name.lower())
 
               println()
 
@@ -868,7 +876,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
               indent -= 3
               println('end subroutine %s%s__set__%s' % (prefix, t.name, name))
-              thisdoc[el.name]['set'] = '%s%s__set__%s' % (prefix, t.name.lower(), name.lower())
+              args_spec[el.name]['set'] = '%s%s__set__%s' % (prefix, t.name.lower(), name.lower())
               println()
 
    println()
@@ -943,5 +951,28 @@ def find_public_symbols(file):
       line = line.strip()
       res.extend([field.strip() for field in line.split(',')])
    return res
-                
 
+
+def cmp_nested_dict(a, b, skip_fields=['doc']):
+   """
+   Compare two nested dictionaries a and b
+
+   Return True if they are equivalent, up to differences in keys
+   listed in skip_fields
+   """
+
+   for ka, kb in zip(sorted(a.keys()), sorted(b.keys())):
+      if ka != kb:
+         return False
+      if ka in skip_fields:
+         continue
+      va = a[ka]
+      vb = b[kb]
+      if type(va) != type(vb):
+         return False
+      if isinstance(va, dict):
+         return cmp_nested_dict(va, vb, skip_fields)
+      else:
+         return va == vb
+         
+   return True

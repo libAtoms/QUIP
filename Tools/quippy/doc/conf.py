@@ -262,6 +262,8 @@ def process_signature(app, what, name, obj, options, signature, return_annotatio
 def maybe_skip_member(app, what, name, obj, skip, options):
     if hasattr(FortranDerivedType, name) and options.inherited_members:
         return True
+    if not skip:
+        print name
     return skip
 
 from docutils import nodes, utils
@@ -319,6 +321,7 @@ def setup(app):
 
 
 autodoc_member_order = 'groupwise'
+autoclass_content = 'both'
 
 def add_line(self, line, source, *lineno):
     """Append one line of generated reST to the output."""

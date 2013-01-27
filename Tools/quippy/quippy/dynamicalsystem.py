@@ -73,6 +73,7 @@ _barostat_types = {
     'BAROSTAT_HOOVER_LANGEVIN': 1,
     }
 
+__doc__ = _dynamicalsystem.__doc__
 __all__ = ( _dynamicalsystem.__all__+ ['Dynamics', 'fs'] +
             _thermostat_types.keys() + _barostat_types.keys())
 

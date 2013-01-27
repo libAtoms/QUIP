@@ -144,6 +144,10 @@ string_lengths = {
 
 valid_dim_re = re.compile(r'^(([-0-9.e]+)|(size\([_a-zA-Z0-9\+\-\*\/]*\))|(len\(.*\)))$')
 
+#args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_]*,\s+(['"])([a-zA-Z][a-zA-Z0-9_]*)\1,\s+(['"])(.*?)\3,\s+.+?help_string=([\'"])(.+?)\5\)""")
+
+args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_]*,\s+(['"])([a-zA-Z][a-zA-Z0-9_]*)\1,\s+(['"])(.*?)\3,\s+([a-zA-Z][a-zA-Z0-9_]*),.+?help_string=(['"])(.+?)\6\)""")
+
 def debug(str):
     if do_debug:
         sys.stderr.write(str+'\n')
@@ -451,6 +455,7 @@ class C_subt:
         self.doc=[]
         self.uses=[]
         self.recur=''
+        self.args_str = {}
 
     def __eq__(self, other):
         if other is None: return False
@@ -458,7 +463,8 @@ class C_subt:
                 self.arguments == other.arguments and
                 self.doc == other.doc and
                 self.uses == other.uses and
-                self.recur == other.recur)
+                self.recur == other.recur and
+                self.args_str == other.args_str)
         
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -608,6 +614,7 @@ class C_funct:
         self.ret_val=None
         self.ret_val_doc=[]
         self.recur=''
+        self.args_str = {}
 
     def __eq__(self, other):
         if other is None: return False
@@ -618,7 +625,8 @@ class C_funct:
                 self.uses == other.uses and
                 self.ret_val == other.ret_val and
                 self.ret_val_doc == other.ret_val_doc and
-                self.recur == other.recur)
+                self.recur == other.recur and
+                self.args_str == other.args_str)
         
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -1690,6 +1698,13 @@ def check_subt(cl,file, grab_hold_doc=True):
                     cl = check[1]
                     continue
 
+                # args_str arguments
+                check=check_args_str(cl,file, out.args_str)
+                if check[0]!=None:
+                    cl=check[1]
+                    continue
+
+
 
             m = subt_end.match(cl)
 
@@ -1718,6 +1733,8 @@ def check_subt(cl,file, grab_hold_doc=True):
             for i in out.arguments:
                 if i.name.lower() in argl:
                     ag_temp.append(i)
+                elif i.name.lower() in out.args_str:
+                    out.args_str[i.name.lower()].type = i.type
 
             out.arguments=ag_temp
             out.arguments.sort(key=lambda x:argl.index(x.name.lower()))
@@ -1846,6 +1863,13 @@ def check_funct(cl,file,grab_hold_doc=True):
                     cl=check[1]
                 continue
 
+            # args_str arguments
+            check=check_args_str(cl,file, out.args_str)
+            if check[0]!=None:
+                cl=check[1]
+                continue
+                
+
             m = re.match(funct_end,cl)
 
             if m == None:
@@ -1875,6 +1899,8 @@ def check_funct(cl,file,grab_hold_doc=True):
             if has_args and i.name.lower() in argl and \
                    len([a for a in ag_temp if a.name.lower() == i.name.lower()]) == 0:
                 ag_temp.append(i)
+            if i.name.lower() in out.args_str:
+                out.args_str[i.name.lower()].type = i.type
             if re.search(name_re,i.name)!=None:
                 out.ret_val=i
             if ret_var != None and i.name.lower() == ret_var.lower():
@@ -1900,7 +1926,7 @@ def check_funct(cl,file,grab_hold_doc=True):
 
 def check_type(cl,file):
 
-#    global hold_doc
+    global hold_doc
 
     out=C_type()
 
@@ -1911,10 +1937,10 @@ def check_type(cl,file):
         if decl.match(cl) != None:
             return [None,cl]
 
-#        if hold_doc != None:
-#            for line in hold_doc:
-#                out.doc.append(line)
-#            hold_doc = None
+        if hold_doc != None:
+            for line in hold_doc:
+                out.doc.append(line)
+            hold_doc = None
 
 
         # Get type name
@@ -2204,6 +2230,23 @@ def check_arg(cl,file):
         return [out,cl]
     else:
         return [None,cl]
+
+
+def check_args_str(cl,file, dest):
+
+    m = args_str_re.match(cl)
+    if cl and m is not None:
+        d = C_decl()
+        d.name = m.group(2)
+        d.value = m.group(4)
+        d.var = m.group(5).lower()
+        d.doc = [m.group(7)]
+        dest[d.var] = d # store in funct.args_str or subt.args_str dictionary
+        cl = file.next_line()
+        return [True,cl]
+    else:
+        return [None,cl]
+
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

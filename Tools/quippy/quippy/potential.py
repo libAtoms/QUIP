@@ -24,12 +24,14 @@ import numpy as np
 
 from quippy import _potential
 from quippy._potential import *
+from quippy.oo_fortran import update_doc_string
 from quippy.atoms import Atoms
 from quippy.units import GPA
 from quippy.util import quip_xml_parameters, dict_to_args_str
 from quippy.elasticity import stress_matrix
 from quippy.farray import fzeros
 
+__doc__ = _potential.__doc__
 __all__ = _potential.__all__ + ['force_test', 'Minim']
 
 potlog = logging.getLogger('quippy.potential')
@@ -65,8 +67,7 @@ def calculator_callback_factory(calculator):
 
 
 class Potential(_potential.Potential):
-    __doc__ = _potential.Potential.__doc__ + """
-    
+    __doc__ = update_doc_string(_potential.Potential.__doc__, """
 The :class:`Potential` class also implements the ASE
 :class:`ase.calculators.interface.Calculator` interface via the
 the :meth:`get_forces`, :meth:`get_stress`, :meth:`get_stresses`,
@@ -105,15 +106,15 @@ the `calculator` argument to the :class:`Potential` constructor, e.g.::
    pot = Potential(calculator=MorsePotential)
 
 `cutoff_skin` is used to set the :attr:`cutoff_skin` attribute.
-"""
+""", signature='Potential(args_str[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, fortran_indexing])')
 
     callback_map = {}
 
     def __init__(self, args_str=None, pot1=None, pot2=None, param_str=None,
                  param_filename=None, bulk_scale=None, mpi_obj=None,
-                 callback=None, calculator=None, 
+                 callback=None, calculator=None, cutoff_skin=1.0,
                  fortran_indexing=True, fpointer=None, finalise=True,
-                 cutoff_skin=1.0, error=None, **kwargs):
+                 error=None, **kwargs):
 
         self.atoms = None
         self._prev_atoms = None

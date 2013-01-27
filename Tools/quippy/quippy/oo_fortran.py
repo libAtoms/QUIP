@@ -112,6 +112,19 @@ def fortran_equivalent_type(t):
     else:
         raise TypeError('Unknown type %s' % type(t))
 
+def python_equivalent_type(t):
+    tmap = { 'integer': 'int',
+             'real(dp)': 'float',
+             'logical': 'bool',
+             'character': 'str',
+             'complex(dp)' : 'complex',
+             '' : 'None'}
+    t = tmap.get(t,t)
+    if t.startswith('character('):
+        t = 'str'
+    return t
+    
+
 def type_is_compatible(spec, arg):
     if 'optional' in spec['attributes'] and arg is None:
         return True
@@ -520,7 +533,7 @@ class FortranDerivedType(object):
         :class:`FortranDerivedType` are replaced by their
         :attr:`_fpointer` integer attribute.
 
-        If there is an keyword argument with the name `args_string`
+        If there is an keyword argument with the name `args_str`
         then unexpected keyword arguments are permitted. All the
         undefined keyword arguments are collected together to form a
         dictionary which is converted to string form and used as the the
@@ -590,7 +603,7 @@ class FortranDerivedType(object):
         return newres
 
 
-    def _runinterface(self, name, *args, **kwargs):
+    def _runinterface_complicated(self, name, *args, **kwargs):
         """
         Internal method used to invoke the appropriate routine
         within the Fortran interface `name`. If no routine is found 
@@ -657,6 +670,26 @@ class FortranDerivedType(object):
             wraplog.debug('calling '+rname)
             return routine(self, *args, **kwargs)
 
+
+        raise TypeError('No matching routine found in interface %s' % name)
+
+
+
+    def _runinterface(self, name, *args, **kwargs):
+        if not name in self._interfaces:
+            raise ValueError('Unknown interface %s.%s' % (self.__class__.__name__, name))
+
+        wraplog.debug('Interface %s %s' % (self.__class__.__name__, name))
+
+        for rname, spec, routine in self._interfaces[name]:
+            wraplog.debug('Trying candidate routine %s' % rname)
+            try:
+                return routine(self, *args, **kwargs)
+            except Exception(e):
+                if isinstance(e, RuntimeError):
+                    raise
+                else:
+                    continue
 
         raise TypeError('No matching routine found in interface %s' % name)
 
@@ -740,6 +773,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         all_classes.extend(classes)
 
         pymod = imp.new_module(package+'.'+modules_name_map.get(mod,mod))
+        pymod.__doc__ = curspec['doc']
         pymod.__package__ = package
         
         for name, cls in classes:
@@ -824,7 +858,10 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
 
     wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
     wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
-    wrapinit = lambda name: lambda self, *args, **kwargs: FortranDerivedType.__init__(self, *args, **kwargs)
+    def wrapinit(name, doc=None):
+        init = lambda self, *args, **kwargs: FortranDerivedType.__init__(self, *args, **kwargs)
+        init.__doc__ = doc
+        return init
 
     routines = [x for x in moddoc['routines'].keys()]
     types =  [x for x in moddoc['types'].keys()]
@@ -888,7 +925,6 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
         constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :svn:`%s`.\n' % (cls, modfile))
 
         classdoc = '\n'.join([constructor_doc_lines[0]] + ['\n'] +
-                             process_docstring(moddoc['doc']).split('\n') +
                              process_docstring(moddoc['types'][cls]['doc']).split('\n') +
                              ['\n'] + constructor_doc_lines[1:])
 
@@ -1006,6 +1042,10 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
             
             doc = '\n'.join(moddoc['interfaces'][docname]['doc']) + '\n\n'
 
+            for rname,spec,routine in value:
+                if spec['args_str']:
+                    doc += args_str_table(spec)
+
             doc += 'Wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % intf
 
             for rname,spec,routine in value:
@@ -1026,9 +1066,8 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
                 func.__doc__ = process_docstring(doc)
                 setattr(new_cls, intf, func)
             else:
-                func  = wrapinit(constructor_name)
-                func.__doc__ = process_docstring(doc)
-                new_cls.__init__ = func
+                new_cls.__init__ = wrapinit(constructor_name, doc)
+
 
         # Add properties for get and set routines of scalar type, sub
         # objects, and arrays.
@@ -1273,7 +1312,9 @@ class FortranDerivedTypeArray(object):
 
 doc_subs = [(re.compile(r'([A-Za-z0-9_]+)%([A-Za-z0-9_]+)'), r'\1.\2'), # Fortran attribute access % -> Python .
             (re.compile(r"'(.*?)'"), r"``\1``"), # Single quoted strings to fixed width font
-            (re.compile(r"\$(.*?)\$"), r":math:`\1`")]
+            (re.compile(r"\$(.*?)\$"), r":math:`\1`"), # LaTeX $...$ -> :math:`...`
+            (re.compile(r"(\w+)_(\W)"), r"\1\_\2") # Escape underscores at the end of words
+            ]
 
 def normalise_type_case(type):
     classnames = [c.__name__ for c in FortranDerivedTypes.values()]
@@ -1281,19 +1322,18 @@ def normalise_type_case(type):
     return lower_to_normed.get(type.lower(), type)
 
 def process_docstring(doc):
-    for regexp, repl in doc_subs:
-        doc = regexp.sub(repl, doc)
-
-    # turn verbatim and displayed maths sections into valid Sphinx blockquotes
+    # turn verbatim and displayed maths sections into Sphinx blockquotes
     indent = 0
     lines = doc.split('\n')
-    first_line_in_block = True
-    in_block = False
+    in_verbatim = False
     in_math = False
+    in_literal = False
+    first_line_in_verbatim = False
     for i in range(len(lines)):
         if lines[i].startswith('>'):
-            if not in_block:
-                in_block = True
+            if not in_verbatim:
+                in_verbatim = True
+                first_line_in_verbatim = True
                 indent += 3
                 if lines[i-1] != '':
                     if lines[i-1].endswith(':'):
@@ -1306,11 +1346,21 @@ def process_docstring(doc):
                     else:
                         lines[i-2] += ' ::'
             lines[i] = lines[i].replace('>', '')
-        elif in_block:
-            if lines[i-1] != '':
-                lines[i-1] += '\n'
-            in_block = False
+        elif in_verbatim:
+            if first_line_in_verbatim:
+                first_line_in_verbatim = False
+                if lines[i-1] != '':
+                    lines[i-1] += '\n'
+            in_verbatim = False
             indent -= 3
+
+        if i > 1 and lines[i-1].endswith('::') and not in_literal:
+            literal_start_col = len(lines[i-1]) - len(lines[i-1].lstrip())
+            in_literal = True
+
+        if in_literal and lines[i]:
+            if len(lines[i]) > literal_start_col and lines[i][literal_start_col] != ' ':
+                in_literal = False
 
         if '\\begin{displaymath}' in lines[i]:
             lines[i] = lines[i].replace('\\begin{displaymath}', '\n.. math::\n')
@@ -1322,9 +1372,13 @@ def process_docstring(doc):
             indent -= 3
             in_math = False
 
+        if not in_verbatim and not in_literal and not in_math:
+            for regexp, repl in doc_subs:
+                lines[i] = regexp.sub(repl, lines[i])
+
         lines[i] = ' '*indent + lines[i]
         
-    doc = '\n'.join(lines)
+    doc = inspect.cleandoc('\n'.join(lines))
     return doc
 
 
@@ -1342,11 +1396,11 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
     if format == 'numpydoc':
         arg_header = 'Parameters\n----------\n'
         ret_header = 'Returns\n-------\n'
-        notes_header = 'Notes\n-----\n'
+        ref_header = 'References\n----------\n'
     else:
         arg_header = ''
         ret_header = ''
-        notes_header = ''
+        ref_header = ''
 
     d = fobj.__doc__
     L = d.split('\n')
@@ -1381,9 +1435,12 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
     if doc['doc']:
         final_doc += process_docstring(doc['doc']) + '\n\n'
 
+    got_args_str = False
     if arg_lines_in:
         for arg in doc['args']:
             argname = arg['name'].lower()
+            if argname == 'args_str':
+                got_args_str = True
             if argname in badnames: argname = badnames[argname]
 
             for i, line in enumerate(arg_lines_in):
@@ -1418,16 +1475,82 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
                     if arg['doc']:
                         arg_lines.extend(['    ' + line for line in process_docstring(arg['doc']).split('\n') ])
                 else:
-                    arg_lines.append(':param %s: %s' % (argname, type + ' ' + arg['doc']))
+                    arg_lines.append(':param %s: %s' % (argname, '\n'.join(process_docstring(arg['doc']).split('\n'))))
+                    if type:
+                        arg_lines.append(':type %s: %s' % (argname, type))
+
+    if format != 'sphinx':
+        final_doc += args_str_table(doc)
 
     if arg_lines:
         final_doc += arg_header + '\n'.join(arg_lines) + '\n\n'
     if ret_lines:
         final_doc += ret_header + '\n'.join(ret_lines) + '\n\n'
-    final_doc += notes_header + 'Routine is wrapper around Fortran routine ``%s`` defined in file :svn:`%s`.\n' % (fullname, modfile)
+
+    final_doc += ref_header + '\nRoutine is wrapper around Fortran routine ``%s`` defined in file :svn:`%s`.' % (fullname, modfile)        
             
     func.__doc__ = final_doc
     return func
+
+
+def args_str_table(spec):
+    if not spec['args_str']:
+        return ''
+
+    value_map = {'T': 'True',
+                 'F': 'False'}
+
+    names = ['Name']
+    types = ['Type']
+    defaults = ['Default']
+    docs = ['Comments']
+
+    for name in sorted(spec['args_str'].keys()):
+        arg = spec['args_str'][name]
+        default = 'None'
+        if arg['value']:
+            default = value_map.get(arg['value'], arg['value'])
+        type = python_equivalent_type(arg['type'])
+        doc = arg['doc']
+
+        names.append(name.strip())
+        types.append(type.strip())
+        defaults.append(default.strip())
+        doc = doc.strip()
+        doc = doc[0].capitalize() + doc[1:] # capitalise first letter only
+        docs.append(doc)
+
+    max_name_len = max(len(name) for name in names)
+    max_type_len = max(len(type) for type in types)
+    max_default_len = max(len(default) for default in defaults)
+    
+    cols = (max_name_len, max_type_len, max_default_len, 40)
+    
+    args_str_lines = ['.. rubric:: args_str options','']
+    fmt = '%%-%ds %%-%ds %%-%ds %%-%ds' % cols
+
+    for i, (name, type, default, doc) in enumerate(zip(names, types, defaults, docs)):
+        if i == 0:
+            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))            
+        doc_words = doc.split()
+        while doc_words:
+            doc_line = ''
+            while doc_words:
+                word = doc_words.pop(0)
+                if len(doc_line) + 1 + len(word) > cols[3]:
+                    doc_words.insert(0, word) # put it back
+                    break
+                else:
+                    doc_line = doc_line + ' ' + word
+
+            args_str_lines.append(fmt % (name, type, default, doc_line.strip()))
+            name = type = default = ''
+        if i == 0 or i == len(names)-1:
+            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))            
+
+    args_str_lines.extend(['', ''])
+    
+    return '\n'.join(args_str_lines)
 
 
 
@@ -1531,6 +1654,22 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
         raise TypeError('No matching routine found in interface %s' % name)
 
 
+    def func(*args, **kwargs):
+        wraplog.debug('Interface %s' % name)
+
+        for rname, spec, routine, modfile in routines:
+            wraplog.debug('Trying candidate routine %s' % rname)
+            try:
+                return routine(self, *args, **kwargs)
+            except Exception(e):
+                if isinstance(e, RuntimeError):
+                    raise
+                else:
+                    continue
+
+        raise TypeError('No matching routine found in interface %s' % name)
+
+
     doc = '\n'.join(intf_spec['doc']) + '\n\n'
 
     doc += 'Routine is wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % name
@@ -1552,17 +1691,19 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
     return func
 
 
-def update_doc_string(doc, extra, sections=None):
+def update_doc_string(doc, extra, sections=None, signature=None):
     """
     Insert `extra` in the docstring `doc`, before the first matching section
 
     Searches for each section heading in the list `sections` in turn.
-    If sections is not given, the default is `['Parameters', 'Notes']`.
+    If sections is not given, the default is `['Parameters', 'See also']`.
+    If not sections are found, extra text is appended to end of docstring.
+
     Returns the new doc string, suitable for assigning to cls.__doc__
     """
 
     if sections is None:
-       sections = ['Parameters', 'Notes']
+       sections = ['Parameters', 'See also']
 
     doc = inspect.cleandoc(doc)
     extra = inspect.cleandoc(extra)
@@ -1570,15 +1711,19 @@ def update_doc_string(doc, extra, sections=None):
     extra = '\n' + extra + '\n'
     
     lines = doc.split('\n')
+
+    if signature is not None:
+        lines[0] = signature
+    
     for section in sections:
        indices = [i for i, line in enumerate(lines) if line == section ]
        if len(indices) == 1:
           break
     else:
-       raise ValueError('None of sections "%s" found in doc string "%s"' % (sections, doc))
+        indices = [len(lines)-1] # insert at end
 
     index, = indices
-    doc = '\n'.join(lines[:index] + extra.split('\n') + lines[index:])
+    doc = '\n'.join([line.rstrip() for line in lines[:index] + extra.split('\n') + lines[index:]])
     doc = doc.replace('\n\n\n', '\n\n')
 
     return doc
