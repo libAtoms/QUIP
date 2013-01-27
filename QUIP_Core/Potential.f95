@@ -201,7 +201,7 @@ module Potential_module
   !%
   !%  Note how the 'Atoms%cutoff' attribute is set to the cutoff of
   !%  this Potential, and then the neighbour lists are built with the
-  !%  :meth:'~quippy.atoms.Atoms.calc_connect' routine.
+  !%  :meth:`~quippy.atoms.Atoms.calc_connect` routine.
   !%
   !%  A Potential can be used to optimise the geometry of an
   !%  :class:`~quippy.atoms.Atoms` structure, using the :meth:`minim` routine,
@@ -299,7 +299,7 @@ module Potential_module
   !%   ``local_virial``  Local virial  ``(3,3,at.n)``   ``local_virial`` property
   !%   ================  ============= ================ =========================
   !%
-  !% The 'args_str' argumentis an optional string  containing
+  !% The 'args_str' argument is an optional string  containing
   !% additional arguments which depend on the particular Potential
   !% being used. 
   !%
@@ -315,7 +315,7 @@ module Potential_module
   !% steps, 'status' will be set to 1 on exit.
   !%
   !% Example usage (in Python, Fortran code is similar. See
-  !% :ref:'geomopt' section of the quippy tutorial for full
+  !% :ref:`geomopt` in the quippy tutorial for full
   !% explanation)::
   !%
   !%      at0 = diamond(5.44, 14)

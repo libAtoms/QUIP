@@ -16,12 +16,6 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""
-This module defines the :class:`Atoms`, which stores and manipulates a
-collection of atoms, as well as the :class:`Connection` class which stores
-topology and neighbour lists, and the :class:`DomainDecomposition` class.
-"""
-
 import os
 import weakref
 import copy
@@ -45,6 +39,14 @@ from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import available_modules, FortranDerivedTypes
 
 atomslog = logging.getLogger('quippy.atoms')
+
+__doc__ = (_atoms.__doc__ + """
+
+This module defines the :class:`Atoms`, which stores and manipulates a
+collection of atoms, as well as the :class:`Connection` class which stores
+topology and neighbour lists, and the :class:`DomainDecomposition` class.
+
+""")
 
 __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice_params']
                                    
@@ -295,9 +297,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     The :class:`Atoms` class is inherited from the
     :class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and
-    methods in addition to those listed below. This means that quippy and
-    ASE Atoms objects are fully interoperable.
-    """)
+    methods. This means that quippy and ASE Atoms objects are fully
+    interoperable.""", signature='Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, fortran_indexing, **read_args])')
 
     _cmp_skip_fields = ['own_this', 'ref_count', 'domain',
                         'connect', 'hysteretic_connect']

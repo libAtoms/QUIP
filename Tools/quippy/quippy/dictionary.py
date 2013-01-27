@@ -25,11 +25,11 @@ from quippy.oo_fortran import update_doc_string
 from quippy.dictmixin import DictMixin, ParamReaderMixin
 from quippy.farray import *
 
+__doc__ = _dictionary.__doc__
 __all__ = _dictionary.__all__
 
 class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
     __doc__ = update_doc_string(_dictionary.Dictionary.__doc__, """
-    
     The quippy Python :class:`Dictionary` class is designed to behave
     as much as possible like a true Python dictionary, but since it is
     implemented in Fortran it can only store a restricted range of
@@ -74,7 +74,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
 	>>> d2 = Dictionary('a=1 b=2 c=3')
 	>>> d2.keys(), d2.values()      
 	(['a', 'b', 'c'], [1, 2, 3])
-    """)
+    """, signature='Dictionary([D])')
 
     _interfaces = _dictionary.Dictionary._interfaces
     _interfaces['set_value'] = [ k for k in _dictionary.Dictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]

@@ -4,16 +4,20 @@
 pylab-style interface to quippy and AtomEye, designed for interactive use
 """
 
-from numpy import *
-from quippy import *
-from atomeye import *
-
-from quippy.cinoutput import CInOutputReader
 import os
 import sys
 import inspect
 import itertools
+
 import numpy as np
+from numpy import *
+
+import quippy
+from quippy import *
+from atomeye import *
+
+from quippy.cinoutput import CInOutputReader
+
 
 _viewers = {}
 _current_viewer = None

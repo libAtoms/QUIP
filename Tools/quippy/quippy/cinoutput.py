@@ -29,6 +29,7 @@ import numpy as np
 import __builtin__
 import itertools
 
+__doc__ = _cinoutput.__doc__
 __all__ = _cinoutput.__all__
 
 class CInOutput(_cinoutput.CInOutput):

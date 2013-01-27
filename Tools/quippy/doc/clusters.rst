@@ -23,3 +23,19 @@
 .. automodule:: quippy.clusters
    :synopsis: Cluster carving routines
    :members:
+
+   .. autosummary::
+
+      estimate_origin_extent
+      create_pos_or_list_centred_hybrid_region
+      create_embed_and_fit_lists
+      discard_non_min_images
+      get_hybrid_list
+      construct_hysteretic_region
+      create_hybrid_weights
+      carve_cluster
+      multiple_images
+      create_cluster_info_from_mark
+      create_cluster_simple
+      create_embed_and_fit_lists_from_cluster_mark
+

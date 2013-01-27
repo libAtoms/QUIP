@@ -19,6 +19,7 @@
 from quippy import _extendable_str
 from quippy._extendable_str import *
 
+__doc__ = _extendable_str.__doc__
 __all__ = _extendable_str.__all__
 
 class Extendable_str(_extendable_str.Extendable_str):
