@@ -603,7 +603,7 @@ class FortranDerivedType(object):
         return newres
 
 
-    def _runinterface_complicated(self, name, *args, **kwargs):
+    def _runinterface(self, name, *args, **kwargs):
         """
         Internal method used to invoke the appropriate routine
         within the Fortran interface `name`. If no routine is found 
@@ -675,7 +675,7 @@ class FortranDerivedType(object):
 
 
 
-    def _runinterface(self, name, *args, **kwargs):
+    def _runinterface_simple(self, name, *args, **kwargs):
         if not name in self._interfaces:
             raise ValueError('Unknown interface %s.%s' % (self.__class__.__name__, name))
 
@@ -1654,7 +1654,7 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
         raise TypeError('No matching routine found in interface %s' % name)
 
 
-    def func(*args, **kwargs):
+    def func_simple(*args, **kwargs):
         wraplog.debug('Interface %s' % name)
 
         for rname, spec, routine, modfile in routines:
