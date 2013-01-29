@@ -685,7 +685,7 @@ class FortranDerivedType(object):
             wraplog.debug('Trying candidate routine %s' % rname)
             try:
                 return routine(self, *args, **kwargs)
-            except Exception(e):
+            except Exception as e:
                 if isinstance(e, RuntimeError):
                     raise
                 else:
@@ -766,13 +766,16 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         else:
             curspec = spec[mod]
 
+        pymodname = package+'.'+modules_name_map.get(mod,mod)
+
         classes, routines, mod_params = wrapmod(fobj, curspec, modname=mod, modfile=modfile,
                                                 short_names=short_names,
                                                 params=all_params, prefix=prefix,
-                                                fortran_indexing=fortran_indexing)
+                                                fortran_indexing=fortran_indexing,
+                                                pymodname=pymodname)
         all_classes.extend(classes)
 
-        pymod = imp.new_module(package+'.'+modules_name_map.get(mod,mod))
+        pymod = imp.new_module(pymodname)
         pymod.__doc__ = curspec['doc']
         pymod.__package__ = package
         
@@ -854,7 +857,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
 
 
-def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortran_indexing):
+def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortran_indexing, pymodname):
 
     wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
     wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
@@ -872,35 +875,35 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
 
         wraplog.debug('  Class %s' % cls)
 
-        methods = [ x for x in moddoc['routines'].keys()
+        method_names = [ x for x in moddoc['routines'].keys()
                     if (len(moddoc['routines'][x]['args']) > 0 and
                         moddoc['routines'][x]['args'][0]['type'].lower() == 'type(%s)' % lcls) ]
 
         # Preferentially use initialise_ptr, finalise_ptr if available since this
         # does proper reference counting.
         constructors = \
-            [ x for x in methods if x.startswith('%s_initialise_ptr' % lcls) ] +\
-            [ x for x in methods if (x.startswith('%s_initialise' % lcls) or
+            [ x for x in method_names if x.startswith('%s_initialise_ptr' % lcls) ] +\
+            [ x for x in method_names if (x.startswith('%s_initialise' % lcls) or
                                      x.startswith('%s_init' % lcls) or
                                      x.startswith('%s_allocate' % lcls))]
 
         destructors = \
-            [ x for x in methods if x.startswith('%s_finalise_ptr' % lcls)]+\
-            [ x for x in methods if x.startswith('%s_finalise' % lcls)]
+            [ x for x in method_names if x.startswith('%s_finalise_ptr' % lcls)]+\
+            [ x for x in method_names if x.startswith('%s_finalise' % lcls)]
 
 
         if lcls in short_names:
             scls = short_names[lcls]
             constructors += \
-                [ x for x in methods if x.startswith('%s_initialise_ptr' % scls)
+                [ x for x in method_names if x.startswith('%s_initialise_ptr' % scls)
                   and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ] + \
-                [ x for x in methods if(x.startswith('%s_initialise' % scls) or
+                [ x for x in method_names if(x.startswith('%s_initialise' % scls) or
                                         x.startswith('%s_allocate' % scls))
                   and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ]
 
             destructors += \
-                [ x for x in methods if x.startswith('%s_finalise_ptr' % scls) ] + \
-                [ x for x in methods if x.startswith('%s_finalise' % scls) ]
+                [ x for x in method_names if x.startswith('%s_finalise_ptr' % scls) ] + \
+                [ x for x in method_names if x.startswith('%s_finalise' % scls) ]
 
         if (len(constructors) == 0):
             wraplog.debug("Can't find constructor for type %s. Skipping class" % cls)
@@ -913,7 +916,9 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
         destructor = destructors[0]
         constructor = constructors[0]
 
+        # Name of class, in TitleCase
         tcls = fortran_class_prefix+cls[0].upper()+cls[1:]
+        tcls = tcls[len(fortran_class_prefix):]
 
         if constructor:
             constructor_name = constructor
@@ -921,44 +926,19 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
                                   moddoc['routines'][constructor], constructor, tcls, prefix,
                                   format='numpydoc', skip_this=True, modfile=modfile)
 
-        constructor_doc_lines = constructor.__doc__.split('\n')
-        constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :svn:`%s`.\n' % (cls, modfile))
-
-        classdoc = '\n'.join([constructor_doc_lines[0]] + ['\n'] +
-                             process_docstring(moddoc['types'][cls]['doc']).split('\n') +
-                             ['\n'] + constructor_doc_lines[1:])
-
-        new_cls = type(object)(tcls, (FortranDerivedType,),
-                              {'__doc__': classdoc,
-                               '_moddoc': None,
-                               '_modobj': None,
-                               '_classdoc': None,
-                               '_routines': {},
-                               '_subobjs': {},
-                               '_arrays': {},
-                               '_interfaces': {},
-                               '_elements': {},
-                               })
-        FortranDerivedTypes['type(%s)' % cls.lower()] = new_cls
-        classes.append((tcls, new_cls))
-
-        tcls = tcls[len(fortran_class_prefix):]
-
-        new_cls._classdoc = moddoc['types'][cls]
-        new_cls._moddoc = moddoc
-        new_cls._modobj = modobj
-        new_cls._prefix = prefix
+        _routines = {}
+        _interfaces = {}
+        methods = {}
 
         if constructor:
-            new_cls._routines['__init__'] = (getattr(modobj, prefix+constructor_name), moddoc['routines'][constructor_name])
-            new_cls.__init__ = constructor
-
+            _routines['__init__'] = (getattr(modobj, prefix+constructor_name), moddoc['routines'][constructor_name])
+            
         if destructor:
-            new_cls._routines['__del__'] = (getattr(modobj, prefix+destructor), moddoc['routines'][destructor])
+            _routines['__del__'] = (getattr(modobj, prefix+destructor), moddoc['routines'][destructor])
 
         interfaces = {}
 
-        for name in methods:
+        for name in method_names:
             fullname = name
             if name[:len(lcls)+1] == lcls+'_':
                 name = name[len(lcls)+1:]
@@ -980,19 +960,22 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
                 del routines[routines.index(fullname)]
                 continue
 
-            new_cls._routines[name] = (fobj, doc)
+            _routines[name] = (fobj, doc)
             func = add_doc(wrapmethod(name), fobj, doc, fullname, tcls+'.'+name,
                            prefix, format='numpydoc', skip_this=True, modfile=modfile)
-            setattr(new_cls, name, func)
+            func.__module__ = pymodname
+            methods[name] = func
 
             for intf_name,value in moddoc['interfaces'].iteritems():
                 intf_routines = value['routines']
                 if fullname in intf_routines:
-                    if not intf_name in interfaces: interfaces[intf_name] = []
+                    if not intf_name in interfaces:
+                        interfaces[intf_name] = []
 
                     # regenerate interface documentation in sphinx format and with correct names
                     intf_func = add_doc(wrapmethod(name), fobj, doc, fullname, intf_name,
                                         prefix, format='sphinx', skip_this=True, modfile=modfile)
+                    intf_func.__module__ = pymodname
                     interfaces[intf_name].append((name, moddoc['routines'][fullname], intf_func))
 
             wraplog.debug('    adding method %s' % name)
@@ -1008,30 +991,30 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
             name = special_names.get(name, name)
             
             if len(value) > 1:
-                new_cls._interfaces[name] = value
+                _interfaces[name] = value
             else:
                 # if there's just one routine we want to update the routine, prepending the interface docstring
                 rname, rspec, rfunc = value[0]
-                fobj, rspec = new_cls._routines[rname]
+                fobj, rspec = _routines[rname]
                 rspec['doc'] = '\n'.join(moddoc['interfaces'][orig_name]['doc']) + '\n' + rspec['doc']
 
-                del new_cls._routines[rname]
-                new_cls._routines[name] = (fobj, rspec)
+                del _routines[rname]
+                _routines[name] = (fobj, rspec)
                 if name == '__init__':
                     constructor = add_doc(wrapinit(name), fobj, rspec, rname, name, prefix,
                                           format='numpydoc', skip_this=True, modfile=modfile)
-                    new_cls.__init__ = constructor
+                    __init__ = constructor
                 else:
                     func = add_doc(wrapmethod(name), fobj, rspec, rname, name, prefix,
                                    format='numpydoc', skip_this=True, modfile=modfile)
-                    setattr(new_cls, name, func)
-                    
+                    func.__module__ = pymodname
+                    methods[name] = func                    
 
-        for intf, value in new_cls._interfaces.iteritems():
+        for intf, value in _interfaces.iteritems():
 
             # if there's a routine with same name as interface, move it first
-            if hasattr(new_cls, intf):
-                setattr(new_cls,'__'+intf, getattr(new_cls, intf))
+            if intf in methods:
+                methods['__'+intf] = methods[intf]
 
             docname = intf
             if docname.endswith('_'): docname=docname[:-1]
@@ -1049,9 +1032,9 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
             doc += 'Wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % intf
 
             for rname,spec,routine in value:
-                if hasattr(new_cls, rname):
-                    setattr(new_cls, '_'+rname, getattr(new_cls, rname))
-                    delattr(new_cls, rname)
+                if rname in methods:
+                    methods['_'+rname] = methods[rname]
+                    del methods[rname]
 
                 routine_lines = routine.__doc__.split('\n')
                 signature_line = routine_lines[0]
@@ -1063,11 +1046,41 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
                     '\n'.join(['      %s'   % line for line in routine_lines[1:]])) + '\n\n'
 
             if intf != '__init__':
-                func.__doc__ = process_docstring(doc)
-                setattr(new_cls, intf, func)
+                func.__doc__ = doc
+                func.__module__ = pymodname
+                methods[intf] = func
             else:
-                new_cls.__init__ = wrapinit(constructor_name, doc)
+                constructor = wrapinit(constructor_name, doc)
 
+        constructor_doc_lines = constructor.__doc__.split('\n')
+        constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :svn:`%s`.\n' % (cls, modfile))
+
+        classdoc = '\n'.join([constructor_doc_lines[0]] + ['\n'] +
+                             process_docstring(moddoc['types'][cls]['doc']).split('\n') +
+                             ['\n'] + constructor_doc_lines[1:])
+
+        new_cls = type(object)(tcls, (FortranDerivedType,),
+                              {'__doc__': classdoc,
+                               '_moddoc': None,
+                               '_modobj': None,
+                               '_classdoc': None,
+                               '_routines': _routines,
+                               '_subobjs': {},
+                               '_arrays': {},
+                               '_interfaces': _interfaces,
+                               '_elements': {},
+                               })
+        FortranDerivedTypes['type(%s)' % cls.lower()] = new_cls
+        classes.append((tcls, new_cls))
+
+        new_cls._classdoc = moddoc['types'][cls]
+        new_cls._moddoc = moddoc
+        new_cls._modobj = modobj
+        new_cls._prefix = prefix
+
+        for name, func in methods.iteritems():
+            setattr(new_cls, name, func)
+        new_cls.__init__ = constructor
 
         # Add properties for get and set routines of scalar type, sub
         # objects, and arrays.
@@ -1661,7 +1674,7 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
             wraplog.debug('Trying candidate routine %s' % rname)
             try:
                 return routine(self, *args, **kwargs)
-            except Exception(e):
+            except Exception as e:
                 if isinstance(e, RuntimeError):
                     raise
                 else:
