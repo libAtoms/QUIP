@@ -314,6 +314,8 @@ def find_viewer(source, name=None, recycle=True):
         elif isinstance(source, basestring):
             name = os.path.splitext(os.path.basename(source))[0]
             name = name.replace('-','_').replace('.','_').replace('*','').replace('?','')
+        elif hasattr(source, '__iter__'):
+            name = 'al'
         else:
             name = 'at'
 
