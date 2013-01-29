@@ -778,7 +778,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         all_classes.extend(classes)
 
         pymod = imp.new_module(pymodname)
-        pymod.__doc__ = curspec['doc']
+        pymod.__doc__ = process_docstring(curspec['doc'])
         pymod.__package__ = package
         
         for name, cls in classes:
