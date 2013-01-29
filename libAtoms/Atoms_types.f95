@@ -340,7 +340,7 @@ module Atoms_types_module
      real(dp), pointer, dimension(:)   :: avg_ke => null()    !% Time-averaged atomic kinetic energy
 
      type(Connection)                  :: connect             !% :class:`~.Connection` object
-     type(Connection)                  :: hysteretic_connect  !% Hysteretic :class:`.~Connection` object
+     type(Connection)                  :: hysteretic_connect  !% Hysteretic :class:`~.Connection` object
 
      type(DomainDecomposition)         :: domain              !% Domain decomposition object
 
