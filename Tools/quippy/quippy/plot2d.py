@@ -16,6 +16,12 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+"""
+This module defines some 2D plotting utilities for use with quippy.
+
+The :mod:`matplotlib` package is required.
+"""
+
 from quippy import available_modules
 from quippy.system import print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text, figure
@@ -29,10 +35,16 @@ __all__ = ['plot', 'plot_energy_error', 'plot_max_force_error',
            'plot_rms_stress_error', 'scatter_force_error',
            'force_error_statistics', 'plot_force_error']
 
-# Wrap pylab plot() function to automatically convert FortanArray to standard numpy arrays
 plot = convert_farray_to_ndarray(plot)
+plot.__doc__ = """
+Wrapper around :func:`matplotlib.pyplot.plot` which works with :class:`FortranArray` arguments
+"""
 
 def plot_energy_error(configs, ref_configs, energy_name='energy', energy_ref_name='energy', scale=None, *plot_args, **plot_kwargs):
+    """
+    Plot energy error between Atoms sequences `config` and `ref_configs`
+    """
+    
     p = plot([abs(getattr(at, energy_name) - getattr(ref_at, energy_ref_name))/at.n for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('Energy error per atom / eV')
@@ -40,6 +52,10 @@ def plot_energy_error(configs, ref_configs, energy_name='energy', energy_ref_nam
     return p
 
 def plot_max_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, *plot_args, **plot_kwargs):
+    """
+    Plot maximum force between Atoms sequences `config` and `ref_configs`
+    """
+
     p = plot([abs(getattr(at, force_name) - getattr(ref_at, force_ref_name)).max() for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
     ylabel('Max force error / eV/A')
@@ -47,6 +63,10 @@ def plot_max_force_error(configs, ref_configs, force_name='force', force_ref_nam
     return p
 
 def plot_rms_force_error(configs, ref_configs, force_name='force', force_ref_name='force', scale=None, *plot_args, **plot_kwargs):
+    """
+    Plot root mean square force error between Atoms sequences `config` and `ref_configs`
+    """
+    
     p = plot([np.sqrt(((getattr(at, force_name) - getattr(ref_at, force_ref_name)).reshape(3*at.n)**2).mean())
           for (at, ref_at) in zip(configs, ref_configs)], *plot_args, **plot_kwargs)
     xlim(0,len(configs)-1)
@@ -55,6 +75,10 @@ def plot_rms_force_error(configs, ref_configs, force_name='force', force_ref_nam
     return p
 
 def plot_max_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, *plot_args, **plot_kwargs):
+    """
+    Plot maximum stress component error between Atoms sequences `config` and `ref_configs`
+    """
+
     max_stress_error = []
     for (at, ref_at) in zip(configs, ref_configs):
         if not hasattr(ref_at, virial_name):
@@ -69,6 +93,10 @@ def plot_max_stress_error(configs, ref_configs, virial_name='virial', virial_ref
     return p
 
 def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref_name='virial', scale=None, *plot_args, **plot_kwargs):
+    """
+    Plot root mean square stress component  error between Atoms sequences `config` and `ref_configs`
+    """
+
     rms_stress_error = []
     for (at, ref_at) in zip(configs, ref_configs):
         if not hasattr(ref_at, virial_name):
@@ -83,6 +111,10 @@ def plot_rms_stress_error(configs, ref_configs, virial_name='virial', virial_ref
     return p
 
 def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
+    """
+    Make a scatter plot of force errors between Atoms sequences `config` and `ref_configs`
+    """
+
     ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
@@ -102,6 +134,16 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
 
 
 def force_error_statistics(configs, ref_configs, force_name='force', force_ref_name='force'):
+    """
+    Calculate max, RMS, RM4 and RM8 force error statistics.
+
+    Returns
+    -------
+    res : dict
+       Contains keys for each different `config_type` in `configs`.
+       Each value is a tuple with four components:
+       ``(max_error, rms_error, rm4_error, rm8_error)``.
+    """
     ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
@@ -145,6 +187,9 @@ def force_error_statistics(configs, ref_configs, force_name='force', force_ref_n
 
 
 def plot_force_error(configs, ref_configs, force_name='force', force_ref_name='force', *plot_args, **plot_kwargs):
+    """
+    Plot force error between Atoms sequences `configs` and `ref_configs`
+    """
     ref_force = np.hstack(getattr(ref_configs, force_ref_name))
     ref_force = ref_force.reshape(ref_force.size, order='F')
 
@@ -213,6 +258,10 @@ if 'ase' in available_modules:
 
     def neb_plot(images, normalize=False, smin=0., smax=1., dE=0., plot_images=True,
                  plot_forces=True, plot_ts=True, Efac=1.0, color='k', label=None):
+        """
+        Produce a plot of nudged elastic band `images`
+        """
+        
         s, E, Sfit, Efit, lines = fit(images)
 
         if normalize:
@@ -247,6 +296,10 @@ if 'ase' in available_modules:
                           plot_barrier_E=False, barrier_xfunc=None, barrier_xlabel='', barrier_polydegree=1,
                           label_func=None, pathway_fig=None, barrier_fig=None, barrier_Escale=None, barrier_label=None,
                           barrier_color='k',**plot_args):
+        """
+        Produce multiple nudged elastic band plots
+        """
+
         barrier_E = []
         atoms = []
 
