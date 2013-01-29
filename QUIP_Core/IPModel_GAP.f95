@@ -351,7 +351,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      end if
      
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
-        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial))
+        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=args_str, error=error)
 
      allocate(sparseScore(size(my_descriptor_data%x)))
 
