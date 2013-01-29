@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.linearalgebra` --- linear algebra routines
-=======================================================
+Linear algebra routines
+=======================
 
 .. automodule:: quippy.linearalgebra
     :synopsis: Linear algebra rountines

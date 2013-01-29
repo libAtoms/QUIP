@@ -16,11 +16,10 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.spline` --- cubic spline interpolation
-===================================================
+
+Cubic spline interpolation
+==========================
 
 .. automodule:: quippy.spline
     :synopsis: Cubic spline interpolation
     :members:
-    :inherited-members:
-    :show-inheritance:

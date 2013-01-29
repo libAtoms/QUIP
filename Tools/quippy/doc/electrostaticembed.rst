@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.electrostaticembed` --- tools for electrostatic embedding
-======================================================================
+Tools for electrostatic embedding
+=================================
 
 .. automodule:: quippy.electrostaticembed
     :synopsis:  Tools for electrostatic embedding

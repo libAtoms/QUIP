@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.oo_fortran` --- Fortran 90 derived-type support
-============================================================
+Fortran 90 derived-type support
+===============================
 
 .. automodule:: quippy.oo_fortran
    :synopsis: Fortran 90 derived-type support

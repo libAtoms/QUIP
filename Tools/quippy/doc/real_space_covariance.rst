@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.real_space_covariance` --- representation of atomic environments
-=============================================================================
+Real-space covariance representation of atomic environments
+===========================================================
 
 .. automodule:: quippy.real_space_covariance
     :synopsis: Representation of atomic environments

@@ -16,11 +16,11 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.adjustablepotential` --- `Learn on the Fly` adjustable potential
-=============================================================================
+
+`Learn on the Fly` adjustable potential
+=======================================
 
 .. automodule:: quippy.adjustablepotential
     :synopsis:  `Learn on the Fly` adjustable potential
     :members:
-    :inherited-members:
-    :show-inheritance:
+

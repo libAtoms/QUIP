@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:class:`quippy.dictionary` --- Fortran dictionary for storing key/value pairs
-=============================================================================
+Fortran Dictionary objects for storing key/value pairs
+======================================================
 
 .. automodule:: quippy.dictionary
    :synopsis: Fortran dictionary for storing key/value pairs

@@ -18,11 +18,11 @@
 
 .. _atomeye:
 
-:mod:`atomeye` --- Interface to AtomEye viewer
-==============================================
+AtomEye atomistic configuration viewer
+======================================
 
 .. automodule:: atomeye
-   :synopsis: Interface to AtomEye viewer
+   :synopsis: AtomEye atomistic configuration viewer
    :members:
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>

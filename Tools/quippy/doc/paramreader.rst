@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.paramreader` --- command line argument parser
-==========================================================
+Command line argument parser
+============================
 
 .. automodule:: quippy.paramreader
     :synopsis: Command line argument parser

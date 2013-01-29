@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.plot2d` --- 2D plotting tools
-==========================================
+2D plotting tools
+=================
 
 .. automodule:: quippy.plot2d
    :synopsis: 2D plotting tools

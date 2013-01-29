@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.periodictable` --- element data
-============================================
+Periodic table data
+===================
 
 .. automodule:: quippy.periodictable
    :synopsis: Element data

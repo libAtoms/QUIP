@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.structures` --- structure building routines
-========================================================
+Structure building routines
+===========================
 
 .. automodule:: quippy.structures
     :synopsis: Structure building routines

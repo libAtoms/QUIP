@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.mpi_context` --- MPI parallel interface
-====================================================
+MPI parallel interface
+======================
 
 .. automodule:: quippy.mpi_context
     :synopsis:  MPI parallel interface

@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.topology` --- utilities for topological analysis
-=============================================================
+Utilities for topological analysis
+==================================
 
 .. automodule:: quippy.topology
    :synopsis: utilities for topological analysis

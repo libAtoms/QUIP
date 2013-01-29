@@ -29,7 +29,7 @@ Core functionality
 ------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    atoms.rst
    io.rst
@@ -42,10 +42,8 @@ Structure generation, manipulation and analysis
    crack.rst
    clusters.rst
    find_surface_atoms.rst
-   frametools.rst
    real_space_covariance.rst
    structures.rst
-   surface.rst
    topology.rst
 
 Molecular Dynamics
@@ -85,7 +83,9 @@ Low level routines and datatypes
 
 .. toctree::
    system.rst
+   connection.rst
    dictionary.rst
+   domaindecomposition.rst
    table.rst
    mpi_context.rst
    paramreader.rst

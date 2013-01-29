@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.quaternions` --- quaternions and rotation
-======================================================
+Quaternions and rotation
+========================
 
 .. automodule:: quippy.quaternions
     :synopsis: Quaternions and rotation

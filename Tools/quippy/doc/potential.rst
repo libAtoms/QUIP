@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.potential` --- evaluate interatomic potentials
-===========================================================
+Potential objects
+=================
 
 .. automodule:: quippy.potential
     :synopsis: Evaluate interatomic potentials

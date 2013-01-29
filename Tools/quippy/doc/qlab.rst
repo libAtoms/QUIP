@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`qlab` --- interactive visualisation of atomic systems
-===========================================================
+Interactive visualisation of atomic systems
+===========================================
 
 .. automodule:: qlab
    :synopsis: Interactive visualisation of atomic systems

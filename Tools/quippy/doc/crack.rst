@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.crack` - tools for fracture simulations
-====================================================
+Tools for fracture simulations
+==============================
 
 .. automodule:: quippy.crack
    :synopsis: Tools for fracture simulations
