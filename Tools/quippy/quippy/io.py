@@ -32,6 +32,7 @@ from quippy.system import mem_info
 from quippy.util import infer_format, parse_slice, time_ordered_glob
 from quippy.mockndarray import mockNDarray
 from quippy.atoms import Atoms
+from quippy.farray import FortranArray
 
 __all__ = ['AtomsReaders', 'AtomsWriters', 'atoms_reader',
            'AtomsReader', 'AtomsWriter', 'AtomsList',
