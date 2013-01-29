@@ -34,12 +34,10 @@
 !%  This module holds a collection of our units and conversion factors.
 !%  We use Angstroms (\AA), eVs, and femtoseconds (fs).
 !%
-!% \begin{description}
-!%  \item[Length:]   Angstroms    $=    \mathrm{a.u.} \times \mathtt{Bohr}$
-!%  \item[Energy:]   eV           $=    \mathrm{a.u.} \times \mathtt{Hartree}$
-!%  \item[Time:]     fs
-!%  \item[Mass:]     $ E T^2 / L^2 = \mathrm{a.u.} \times \mathtt{Hartree} \times \mathtt{AU\_fs}^2 / \mathtt{Bohr}^2 $
-!% \end{description}
+!%  - Length:   Angstroms    $=    \mathrm{a.u.} \times \mathtt{Bohr}$
+!%  - Energy:   eV           $=    \mathrm{a.u.} \times \mathtt{Hartree}$
+!%  - Time:     fs
+!%  - Mass:     $ E T^2 / L^2 = \mathrm{a.u.} \times \mathtt{Hartree} \times \mathtt{AU\_fs}^2 / \mathtt{Bohr}^2 $
 !%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
