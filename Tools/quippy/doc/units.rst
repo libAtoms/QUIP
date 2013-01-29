@@ -16,8 +16,9 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.units` --- units and physical constants
-====================================================
+
+Units and physical constants
+============================
 
 .. automodule:: quippy.units
     :synopsis:  Units and physical constants

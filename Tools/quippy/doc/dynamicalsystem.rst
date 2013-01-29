@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.dynamicalsystem` --- run molecular dynamics simulations
-====================================================================
+Molecular Dynamics
+==================
 
 .. automodule:: quippy.dynamicalsystem
     :synopsis: Run molecular dynamics simulations

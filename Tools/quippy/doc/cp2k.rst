@@ -18,8 +18,8 @@
 
 .. _cp2k:
 
-:mod:`quippy.cp2k` --- CP2K I/O and interface
-=============================================
+CP2K I/O and driver
+===================
 
 .. automodule:: quippy.cp2k
     :synopsis:  CP2K I/O

@@ -17,9 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-=====================
- Visualisation Tools
-=====================
+Visualisation Tools
+===================
 
 .. toctree::
    atomeye.rst

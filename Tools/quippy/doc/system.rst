@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.system` --- Low-level routines
-===========================================
+Low-level system routines
+=========================
 
 .. automodule:: quippy.system
     :synopsis:  Low-level routines

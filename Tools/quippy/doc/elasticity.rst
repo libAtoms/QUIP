@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.elasticity` --- elasticity calculations
-====================================================
+Elasticity calculations
+=======================
 
 .. automodule:: quippy.elasticity
     :synopsis: Elasticity calculations

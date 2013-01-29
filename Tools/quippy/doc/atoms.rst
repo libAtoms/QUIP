@@ -16,28 +16,16 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.atoms` --- representation of atomic configurations
-===============================================================
+Atoms objects
+=============
 
 .. automodule:: quippy.atoms
    :synopsis: Representation of atomic configurations
 
-Atoms objects
--------------
-
 .. autoclass:: Atoms
-    :members:
-    :inherited-members:
-    :show-inheritance:
-
-.. autosummary::
-    make_lattice
-    get_lattice_params
-    bond_length
-    termination_bond_rescale
-    cell_volume
-    map_into_cell
-    parse_atom_mask
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 .. autofunction::     make_lattice
 .. autofunction::     get_lattice_params
@@ -46,33 +34,3 @@ Atoms objects
 .. autofunction::     cell_volume
 .. autofunction::     map_into_cell
 .. autofunction::     parse_atom_mask
-
-
-Connection objects
-------------------
-
-.. autoclass:: Connection
-    :members:
-    :inherited-members:
-    :show-inheritance:
-
-.. autosummary::
-    fit_box_in_cell
-    divide_cell
-    get_min_max_images
-    max_cutoff
-
-.. autofunction::       fit_box_in_cell
-.. autofunction::       divide_cell
-.. autofunction::       get_min_max_images
-.. autofunction::       max_cutoff
-
-
-DomainDecomposition objects
----------------------------
-
-.. autoclass:: DomainDecomposition
-    :members:
-    :inherited-members:
-    :show-inheritance:
-

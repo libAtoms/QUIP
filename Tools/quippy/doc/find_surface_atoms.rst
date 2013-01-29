@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.find_surface_atoms` --- identification of atoms on surfaces
-========================================================================
+Identification of atoms on surfaces
+===================================
 
 .. automodule:: quippy.find_surface_atoms
    :synopsis: identification of atoms on surfaces

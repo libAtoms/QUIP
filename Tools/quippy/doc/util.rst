@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.util` --- Python utility functions
-===============================================
+Utility functions
+=================
 
 .. automodule:: quippy.util
    :synopsis: Python utility functions

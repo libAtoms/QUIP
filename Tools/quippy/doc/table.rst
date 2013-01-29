@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.table` --- Fortran type for dynamically extendable arrays
-======================================================================
+Fortran :class:`Table` for dynamically extendable arrays
+========================================================
 
 .. automodule:: quippy.table
     :synopsis:  Fortran type for dynamically extendable arrays

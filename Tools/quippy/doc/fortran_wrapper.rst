@@ -19,7 +19,7 @@
 .. _wrapping-fortran-90-code:
 
 
-Appendix: Wrapping Fortran 90 Code
+Appendix: wrapping Fortran 90 Code
 **********************************
 
 This section describes the machinery involved in connecting between

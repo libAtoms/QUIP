@@ -60,6 +60,7 @@ tutorial, but when you want to do something more than once it's worth
 saving the commands in a script file. Just create a text file with the
 extension ``.py``.
 
+.. contents::
 
 Getting Started
 ---------------
@@ -67,12 +68,20 @@ Getting Started
 Let's start by firing up Python and importing quippy::
 
    $ python
-   >>> from quippy import *
+   >>> from qlab import *
 
 The ``>>>`` is the Python prompt, at which you type commands. Here
-we've asked Python to import all the names defined in quippy.
+we've asked Python to import all the names defined in :mod:`qlab`,
+which is a convenience module that gives us access to all the
+``quippy`` functionality.
 
-Now, let's create an :class:`Atoms` object. This is the fundamental
+Alternatively, if you have the `ipython <http://ipython.scipy.org>`_
+improved interactive shell installed, you can start quippy and load
+all the required modules with a helper script::
+
+   $ quippy
+
+Now, let's create an :class:`~.Atoms` object. This is the fundamental
 class in quippy, and it represents a collection of atoms which together
 make up a crystal or molecule. We'll make an 8-atom silicon unit cell::
 
@@ -89,7 +98,7 @@ number of atoms::
     8
 
 We can save our new atoms to an XYZ file, and then re-read it by
-passing the filename to the :class:`Atoms` constructor. Let's do that,
+passing the filename to the :class:`~.Atoms` constructor. Let's do that,
 and check that what we get back is the same as the original::
 
    >>> dia.write('diamond.xyz')
@@ -158,7 +167,7 @@ Atoms objects, residing at different memory locations.
       >>> print b
       []
 
-   To make a copy of a more complex object like an array or an :class:`Atoms` instance
+   To make a copy of a more complex object like an array or an :class:`~.Atoms` instance
    you should use the :meth:`~Atoms.copy` method, e.g. ::
 
       >>> a = diamond(5.44, 14)
@@ -178,9 +187,9 @@ Atoms objects, residing at different memory locations.
 Various different file formats are supported, see :ref:`fileformats`.
 
 If you have the optional :mod:`atomeye` module installed, you can visualise
-your new Atoms object::
+your new Atoms object by creating an :class:`~qlab.AtomsViewer`::
 
-     >>> dia.show()
+     >>> view(dia)
 
 .. image:: si8.png
    :align: center
@@ -188,17 +197,19 @@ your new Atoms object::
 An AtomEye window should pop up with a 3D representation of the
 silicon crystal. Right clicking on an atom prints information about it::
 
-   frame 0, atom 3 clicked
-   Z = 14
-   pos = [ 2.72  2.72  0.  ] (norm 3.846661)
-   species = Si
+  Atom 3
+  ------
+
+  pos             =  [ 2.72  2.72  0.  ]
+  species         =  Si
+  z               =  14
     
 The positions and atomic numbers of each atom are available in the ``pos``
 and ``z`` :attr:`~Atoms.properties`::
 
     >>> print dia.z
     [14 14 14 14 14 14 14 14]
-    >>> print dia.pos
+    >>> print dia.pos.T
     [[ 0.    0.    0.  ]
      [ 1.36  1.36  1.36]
      [ 2.72  2.72  0.  ]
@@ -208,10 +219,14 @@ and ``z`` :attr:`~Atoms.properties`::
      [ 0.    2.72  2.72]
      [ 1.36  4.08  4.08]]
 
-Atomic properties are stored in arrays (actually, in a special type of array
-called a :class:`FortranArray`), so it's easy to access parts of the data.
-Array indexing and slicing works in the same way as in Fortran, except that
-square brackets are used::
+Note that we print the :func:`~numpy.transpose` of the
+position array using the :attr:`~numpy.ndarray.T` attribute, since the
+actual ``dia.pos`` array has 3 rows and ``len(dia) == 8`` columns,
+which isn't very convenient for printing. Atomic properties are stored
+in arrays (actually, in a special type of array called a
+:class:`~farray.FortranArray`), so it's easy to access parts of the data.
+Array indexing and slicing works in the same way as in Fortran, except
+that square brackets are used::
 
    >>> print dia.pos[1,1]   # x coordinate of atom 1
    0.0
@@ -230,18 +245,20 @@ You can also do fancier indexing as we'll see below.
 Manipulating Atoms
 ------------------
 
-Let's make a more complex structure to play with, a :func:`supercell`
-of 3 x 3 x 3 alpha quartz unit cells::
+Let's make a more complex structure to play with, a :func:`~structures.supercell`
+of 3 x 3 x 3 :func:`~.alpha_quartz` unit cells::
 
    >>> unit = alpha_quartz(4.92, 5.40, 0.4697, 0.4135, 0.2669, 0.1191)
    >>> aq = supercell(unit, 3, 3, 3)
+   >>> view(aq) # only do this if AtomEye plugin is installed
 
 .. image:: alphaquartz.png
    :align: center
 
-This cell contains 243 atoms. Let's look at the lattice vectors, which
-are stored in a 3 x 3 matrix with ``a = aq.lattice[:,1]``, ``b =
-aq.lattice[:,2]`` and ``c = aq.lattice[:,3]``::
+This cell contains 243 atoms. Let's look at the
+:attr:`~.Atoms.lattice` vectors, which are stored in a 3 x 3 matrix
+with ``a = aq.lattice[:,1]``, ``b = aq.lattice[:,2]`` and ``c =
+aq.lattice[:,3]``::
 
    >>> print aq.lattice
    [[  7.38         7.38         0.        ]
@@ -250,45 +267,47 @@ aq.lattice[:,2]`` and ``c = aq.lattice[:,3]``::
 
 We can convert from a cartesian representation to cell lengths and
 angles to confirm that the cell has trigonal symmetry, using a
-function called :func:`get_lattice_params`. To get online help on any
+function called :func:`~.get_lattice_params`. To get online help on any
 anything from within Python, you type ``help(name)``. In ipython, it's
 even easier, just postfix the name with a question mark (or two
 question marks for even more information). Here's the help for
-:func:`get_lattice_params`::
+:func:`~/get_lattice_params`::
 
    >>> help(get_lattice_params)
-   Help on function get_lattice_params in module quippy.xyz_netcdf:
-
    get_lattice_params(lattice)
-       Return 6-tuple of cell lengths and angles a,b,c,alpha,beta,gamma
+       Wrapper around Fortran :func:`get_lattice_params_`
+    
+       Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
 
 From this we can see that this function takes a 3x3  matrix `lattice`
 and returns six numbers: the three cell lengths and three cell
-angles. Let's call it for the lattice associated with our new
+angles. Let's call it with the lattice associated with our new
 alpha-quartz Atoms object::
 
    >>> a, b, c, alpha, beta, gamma =  get_lattice_params(aq.lattice)
    >>> print a, b, c
    14.76 14.76 16.2
-   >>> print alpha*180.0/PI, beta*180.0/PI, gamma*180.0/PI
+   >>> print degrees((alpha, beta, gamma))
    90.0 90.0 120.0
 
 So we have :math:`a = b \ne c`, and :math:`\alpha = \beta \ne \gamma`,
-i.e. trigonal symmetry. Let's try out some of the more advanced indexing
-operations. Firstly, logical operations on arrays return arrays, which
-can be used for indexing::
+i.e. trigonal symmetry.
 
-   >>> (aq.z == 8).count()      # number of Oxygen atoms
+Let's try out some of the more advanced indexing operations. Firstly,
+logical operations on arrays return arrays, which can be used for
+indexing::
+
+   >>> print (aq.z == 8).sum()      # number of Oxygen atoms
    162
-   >>> (aq.z == 14).count()     # number of Silicon atoms
+   >>> print (aq.z == 14).sum()     # number of Silicon atoms
    81
-   >>> aq.pos[aq.z == 8]        # positions of the Oxygen atoms
+   >>> aq.pos[aq.z == 8]      # positions of the Oxygen atoms
    ...
 
 Secondly, it's also possible to specify a list of indices, and to use
 negative numbers to count backwards from the end of an array::
 
-   >>> print aq.pos[:, [1,-1]]   # positions of first and last atoms
+   >>> print aq.pos[:, [1,-1]].T   # positions of first and last atoms
    [[ 1.155462   -2.00131889  3.6       ]
     [ 9.544062   -1.7618594   8.35686   ]]
 
@@ -301,38 +320,18 @@ of the Silicon atoms to +2.8 ::
    aq.charge[aq.z == 8]  = -1.4
    aq.charge[aq.z == 14] =  2.8
 
-.. .. warning::     
-   
-..    In view of the way Python assignment works (see warning above), you
-..    should be careful not to overwrite array attributes. If you want to
-..    set all coordinates to zero you should do::
+If you have :mod:`atomeye` installed, you can colour the atoms by the
+new charge property using::
 
-..       dia.pos[:] = 0.0
-
-..    and never ::
-
-..       dia.pos = 0.0
-
-..    since the latter overwrites the `dia.pos` attribute, which is a
-..    reference to the relevant colums in the underlying Fortran array
-..    within the :attr:`~Atoms.data` Table, with a single floating point
-..    value (If you do this by accident you can recreate the array
-..    references with the :meth:`~quippy.oo_fortran.FortranDerivedType._update`
-..    method). 
-
-..    This caveat applies only to atomic properties arrays, since they're
-..    dynamically generated. It's okay to assign directly to derived type
-..    scalar attributes such as :attr:`~Atoms.cutoff`. Trying to assign
-..    to array attributes such as :attr:`~Atoms.lattice` will raise an
-..    exception.
-
+   aux_property_coloring('charge')
 
 Here's an example of making a new Atoms object containing only
 the atoms with positive y coordinates. We first ensure all atoms
-are within the first unit cell using :meth:`~Atoms.map_into_cell`::
+are within the first unit cell using :meth:`~.Atoms.map_into_cell`::
 
    >>> aq.map_into_cell()
    >>> aq2 = aq.select(aq.pos[2,:] > 0)
+   >>> view(aq2) # only if AtomEye is available
 
 .. image:: alphaquartz2.png
    :align: center
@@ -353,26 +352,49 @@ Atoms objects to and from a variety of file formats, with extended XYZ
 and NetCDF being the natively supported formats. Let's see how we
 might construct a simple script to load and analyse some simulation data.
 
-The data files used in this section can be found in the
-file:`'examples/'` directory within the quippy source tree. The first
-example is :file:`si-1000.xyz`, which contains snapshots from a
-molecular dynamics simulation of silicon with the Stillinger-Weber
-potential, starting from a randomised velocity distribution at a
-temperature of 1000K (see :ref:`moleculardynamics` example).
+The first example is :download:`si-1000.xyz`, which contains snapshots
+from a molecular dynamics simulation of silicon with the
+Stillinger-Weber potential, starting from a randomised velocity
+distribution at a temperature of 1000K (see :ref:`moleculardynamics`
+example).
 
-The :class:`AtomsList` class is used to deal with a series of configurations.
-We can open the an XYZ file and see how many frames it contains like this::
+The :class:`~.AtomsList` class is used to deal with a series of configurations.
+We can open the XYZ file and see how many frames it contains like this::
 
    >>> al = AtomsList('si-1000.xyz')
    >>> print len(al)
    100
 
-If you have the AtomEye extension, ``al.show()`` can be used to
-visualise the entire trajectory at this point: use :kbd:`Insert` and
-:kbd:`Delete` to move forwards and backwards. 
+If you have the AtomEye extension, you can open a viewer with the
+:func:`~qlab.view` function at this point, to allow visualisation of
+the trajectory: use :kbd:`Insert` and :kbd:`Delete` to move forwards
+and backwards::
 
-An :class:`AtomsList` is essentially nothing more than a list of
-:class:`Atoms` objects. You can access the component objects by
+   >>> view(al)
+
+.. note:: 
+
+   The previous two steps can be accompished in one go using the
+   ``quippy`` script from the shell command prompt::
+
+       $ quippy si-1000.xyz
+
+   In this case the trajectory is loaded directly into an
+   :class:`~qlab.AtomsListViewer` class, with a name taken from the
+   basname of the input filename, e.g. ``si_1000`` in this case.
+   You can check the name of the current viewer with the
+   :func:`~qlab.gcv` function::
+  
+       >>> print gcv().name
+       'si_1000'
+       >>> print len(si_1000)
+
+   For the purposes of following along with this tutorial, it's
+   simplest to create the ``al`` :class:`AtomsList` as described
+   above.
+
+An :class:`~.AtomsList` is essentially nothing more than a list of
+:class:`~.Atoms` objects. You can access the component objects by
 indexing, e.g. ``al[i]`` is the ith Atoms object within ``al``.
 
 Let's check the conservation of the total energy in this simulation.
@@ -410,14 +432,13 @@ within the file (length 100 here), the second to the spatial dimension
 
    >>> print al.velo.shape
    (100, 3, 216)
-   >>> print all(al.velo[1] == al[0].velo)
-   True
+   >>> print al.velo[0, :, :] # velocities of first configuration
+   ...
 
 To plot the potential energy as a function of time (assuming
 :mod:`matplotlib` is available), run the commands::
 
    >>> from pylab import *
-   >>> from quippy import *
    >>> plot(al.time, al.energy)
    >>> xlabel('Time / fs')
    >>> ylabel('Energy / eV')
@@ -429,6 +450,7 @@ information about plotting.
 
 .. image:: potentialenergy.png
    :align: center
+   :width: 600px
 
 We can calculate the kinetic energy of each frame with another
 list comprehension::
@@ -438,27 +460,23 @@ list comprehension::
 Alternatively, we could compute the kinetic energy using array
 arithmetic::
 
-   >>> ke = sum(.5*al.mass*sum(al.velo**2,axis=2), axis=2)
+   >>> ke = sum(.5*array(al.mass)*sum(array(al.velo)**2,axis=1), axis=1)
 
-Note the partial sums: the inner sum is over the second axis of
-``al.velo`` which is the spatial dimension, and the outer sum is over
-the second axis of ``.5*al.mass*sum(al.velo**2,axis=1)`` which is the
-atom number (here of length 216). Let's add plots of the kinetic and
-total energies to our graph::
+The :func:`~numpy.array` is used here to combine the trajectory frames
+into a single array, and to convert from Fortran one-based indexing to
+the standard numpy zero-based indexing expected by matplotlib's
+:func:`~matplotlib.pyplot.plot` function. If you want to retain the
+one-based indexing, using :func:`~farray.farray` instead, which
+returns a :class:`~farray.FortranArray`.
+
+Note the partial sums: the inner sum is over axis 1 of ``al.velo``
+which is the spatial dimension, and the outer sum is over axis 1 of
+``.5*array(al.mass)*sum(array(al.velo)**2,axis=1)`` which is the atom
+number (here of length 216). Let's add plots of the kinetic and total
+energies to our graph::
 
    >>> plot(al.time, ke)                              # Plot kinetic energy
    >>> plot(al.time, ke + al.energy)                  # Plot total energy
-
-.. note:: 
-
-   When invoked after importing quippy, the :func:`plot` function
-   automatically converts arrays from :class:`FortranArray` to the
-   standard numpy zero-based form before running the standard
-   :func:`pylab.plot` function. This is why we had to import quippy
-   again after importing :class:`pylab`. It is recommended that 
-   quippy is imported after importing other standard modules of Python. 
-   Also note that in earlier versions you might need to run 
-   ``from quippy.plot2d import *`` after importing quippy.
 
 Here's the graph we get after adding a legend with. 
 
@@ -466,6 +484,7 @@ Here's the graph we get after adding a legend with.
 
 .. image:: totalenergy.png
    :align: center
+   :width: 600px
 
 We can see that the total energy is fairly well conserved, indicating
 that the time-step used for this simulation was appropriate. Let's
@@ -495,10 +514,10 @@ temperature of 500K like this::
    >>> vs = linspace(0.0,0.02,100)  # min, max, number of points
    >>> plot(vs, max_bolt(at.mass[1], 500.0, vs))
 
-(If you want to clear the previous plot first, use the :func:`clf`
-matplotlib function). To add a histogram of the speeds in the last
-frame of our :class:`AtomsList` to the plot, we make use of matplotlibs
-:func:`hist` function::
+(If you want to clear the previous plot first, use the
+:func:`~matplotlib.pyplot.clf` matplotlib function). To add a
+histogram of the speeds in the last frame of our :class:`~.AtomsList` to
+the plot, we make use of matplotlibs :func:`~matplotlib.pyplot.hist` function::
 
    >>> hist(al[-1].velo.norm(), normed=True, bins=20)
 
@@ -516,7 +535,7 @@ form a composite array. The `alpha` parameter to :func:`hist` causes
 the bars to be partially transparent. After setting the axis labels
 and legends, we get the figure shown below.
 
-   >>> xlabel(r'Velocity / $\AA$/fs')
+   >>> xlabel(r'Velocity / $\AA$ fs$^{-1}$')
    >>> ylabel('Frequency')
    >>> legend(['Maxwell-Boltzmann Distribution', 'Simulation Results'])
 
@@ -530,7 +549,7 @@ and legends, we get the figure shown below.
 
 .. image:: velocitydistribution.png
    :align: center
-
+   :width: 600px
 
 .. _moleculardynamics:
 
@@ -549,9 +568,9 @@ a 3 x 3 x 3 supercell of the 8-atom silicon unit cell::
 
    >>> s = supercell(diamond(5.44, 14), 3, 3, 3)
 
-Next we need to create a :class:`Potential` object to represent the
+Next we need to create a :class:`~.Potential` object to represent the
 interatomic force model to be used for calculating energies and
-forces. The :class:`Potential` object is created by with two string
+forces. The :class:`~.Potential` object is created by with two string
 arguments, called `args_str` and `param_str`. The first of these
 identifies the type of potential, and the second is an XML string
 containing the parameters. QUIP contains a database of parameter files
@@ -575,47 +594,51 @@ include the XML string easily::
 
 Alternatively, you can read the XML string from a file::
 
-   >>> pot = Potential('IP SW', param_str=open('sw.xml').read())
+   >>> pot = Potential('IP SW', param_filename='sw.xml')
 
-or search the QUIP parameter database (located under
-:envvar:`QUIP_ROOT`:file:`/QUIP_Core/parameters`)::
+If no XML parameters are given, the QUIP parameter database (located
+in the directory :svn:`/QUIP_Core/parameters`) is searched for
+matching parameters::
   
-   >>> pot = Potential('IP SW', param_str=quip_xml_parameters('SW'))
+   >>> pot = Potential('IP SW')
 
 Our new potential object has several methods, the most important being
-:meth:`~Potential.calc` which is used whenever we want to calculate
-energies, forces or virial stresses. :meth:`~Potential.calc` operates
-on an :class:`Atoms` object. We ask for the quantities we are
+:meth:`~.Potential.calc` which is used whenever we want to calculate
+energies, forces or virial stresses. :meth:`~.Potential.calc` operates
+on an :class:`~.Atoms` object. We ask for the quantities we are
 interested in, which can either be returned in arrays or stored within
 the Atoms object. Let's try to calculate the energy of our silicon cell::
 
     >>> energy = farray(0.0)   # Create a rank-0 array to store energy
     >>> pot.calc(s, energy=energy)  # Do the calculation
-
-In earlier versions, the following error is raised::
-
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 438, in <lambda>
-        wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
-      File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 316, in _runroutine
-       res = fobj(*newargs, **newkwargs)
-    RuntimeError: Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.
-
-The :exc:`RuntimeError` exception
-gets raised whenever something goes wrong within a Fortran routine. In
-this case we need to calculate the atomic connectivity before we can
-evaluate the energy. To do this we need to choose a cutoff distance,
-which we can do in sensible fashion by adding a "crust" distance to
-the cutoff of the potential itself (the crust should be chosen so that
-no atom moves further than this distance inbetween recalculations of
-the connectivity). ::
-
-    >>> s.set_cutoff(pot.cutoff() + 2.0)    # crust of 2.0 Angstrom
-    >>> s.calc_connect()
-    >>> pot.calc(s, energy=energy)
     >>> print energy
     -936.325908705
+
+.. note::
+
+   In earlier versions of ``quippy``, the following error may be raised::
+
+       Traceback (most recent call last):
+	 File "<stdin>", line 1, in <module>
+	 File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 438, in <lambda>
+	   wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
+	 File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 316, in _runroutine
+	  res = fobj(*newargs, **newkwargs)
+       RuntimeError: Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.
+
+   The :exc:`RuntimeError` exception gets raised whenever something goes
+   wrong within a Fortran routine. In this case we need to calculate the
+   atomic connectivity before we can evaluate the energy. To do this we
+   need to choose a cutoff distance, which we can do in sensible fashion
+   by adding a "crust" distance to the cutoff of the potential itself
+   (the crust should be chosen so that no atom moves further than this
+   distance inbetween recalculations of the connectivity). ::
+
+       >>> s.set_cutoff(pot.cutoff() + 2.0)    # crust of 2.0 Angstrom
+       >>> s.calc_connect()
+       >>> pot.calc(s, energy=energy)
+       >>> print energy
+       -936.325908705
 
 
 If we now calculate forces for our crystal, we find their all almost
@@ -633,93 +656,70 @@ positions a little. ::
    >>> c.calc_connect()
    >>> pot.calc(c, force=True)
    
-The extended AtomEye plugin can draw arrows to represent these forces::
+The extended AtomEye plugin can draw arrows to represent these forces
+using the :func:`~atomeye.draw_arrows` function::
 
-   >>> c.show(arrows='force')
+   >>> view(c)
+   >>> draw_arrows('force')
 
 .. image:: forces.png
    :align: center
-
+   :width: 600px
 
 To perform a molecular dynamics calculation using our potential, we
-need to create a :class:`DynamicalSystem` object from our :class:`Atoms`
+need to create a :class:`~.DynamicalSystem` object from our :class:`~.Atoms`
 object. This stores all the dynamical variables and has methods
 to advance the simulation using the Velocity-Verlet algorithm. We'll
-construct a DynamicalSystem, randomise the initial velocities to 1000K,
-and then zero the total momentum. ::
+construct a DynamicalSystem, and randomise the initial velocities to 1000K::
 
    >>> ds = DynamicalSystem(s)
    >>> ds.rescale_velo(1000.0)
-   >>> ds.zero_momentum()
 
 The molecular dynamics loop would then look something like this::
 
     n_steps          = 100           # Number of simulation steps
     dt               = 1.0           # Time-step, in fs
     connect_interval = 10            # How frequently to update connectivity    
-
     ds.atoms.calc_connect() 
     for n in range(n_steps):
-       ds.advance_verlet1(dt)
-       pot.calc(ds.atoms, force=True, energy=True)
-       ds.advance_verlet2(dt, ds.atoms.force)
-       ds.print_status(epot=ds.atoms.energy)
-       if n % connect_interval == 0:
-	  ds.atoms.calc_connect()
+        ds.advance_verlet1(dt)
+        pot.calc(ds.atoms, force=True, energy=True)
+        ds.advance_verlet2(dt, ds.atoms.force)
+        ds.print_status(epot=ds.atoms.energy)
+        if n % connect_interval == 0:
+            ds.atoms.calc_connect()
 
-:meth:`~DynamicalSystem.advance_verlet1` advances the velocities by
-half the time-step `dt` and the positions by the full time-step.  We
-then calculate at new forces from our potential at `r(t+dt)`.  Finally
-:meth:`~DynamicalSystem.advance_verlet2` advances the velocities by
-the second half time-step. :meth:`~DynamicalSystem.print_status`
+:meth:`~.DynamicalSystem.advance_verlet1` advances the velocities by
+half the time-step :math:`\delta t` and the positions by the full
+time-step.  We then calculate at new forces from our potential at
+:math:`\mathbf{r}(t+\delta t)`.  Finally
+:meth:`~.DynamicalSystem.advance_verlet2` advances the velocities by
+the second half time-step. :meth:`~.DynamicalSystem.print_status`
 prints a status line with the current time, temperature, total energy,
 etc.
 
 .. note::
 
-   **Advanced Example - Generators**
-
-   DynamicalSystem has a :meth:`~DynamicalSystem.run` method which
-   implements an MD loop like the example above as a generator. This
-   means it's evaluated lazily, only calculating succesive time-steps
-   when necessary.  The following code creates a generator called
-   `traj` which yields every tenth frame in the MD simulation. The
-   `results` generator loops over `traj`, returning the total energy.
-
-   ::
+   :class:`~.DynamicalSystem` has a :meth:`~.DynamicalSystem.run` method which
+   implements an MD loop like the example and returns a list of
+   snapshots::
 
       traj    = ds.run(pot, dt=1.0, n_steps=1000, save_interval=10)
-      results = ( at.energy for at in traj )
+      energies = [ at.energy for at in traj ]
 
-   Executing ``results.next()`` grabs one result from the generator
-   pipeline. Alternatively, ``list(results)`` forces the entire
-   trajectory to run in one go.
-
-   The :meth:`~DynamicalSystem.run` method also has an `out` argument
-   which can be used in conjunction with `write_interval` 
-   to write frames to a file as the simulation runs, for example
-   to write every 100th frame to :file:`traj.xyz`::
+   The :meth:`~DynamicalSystem.run` method also has an `trajectory`
+   argument which can be used in conjunction with `write_interval` to
+   write frames to a file as the simulation runs, for example to write
+   every 100th frame to :file:`traj.xyz`::
 
       outfile = CInOutput('traj.xyz', OUTPUT)
-      traj = ds.run(pot, dt=1.0, n_steps=1000, out=outfile, write_interval=100)
-      list(traj) # exhaust the generator
+      traj = ds.run(pot, dt=1.0, n_steps=1000, trajectory=outfile, write_interval=100)
       outfile.close()
 
-   A final example use of the :meth:`~DynamicalSystem.run` generator
-   is to attach it to use it to construct an :class:`AtomsList` object
-   which can be shown in AtomEye. Then pressing :kbd:`Delete` to load
-   the next frame will cause the simulation to advance
-   correspondingly.
-
-   ::
-
-      al = AtomsList(ds.run(pot, dt=1.0, n_steps=1000))
-      al.show()
-   
-
-   See this `presentation
-   <http://www.dabeaz.com/generators-uk/index.html>`_ by David Beazley
-   for (much!) more about generators.
+   See also the :class:`~dynamicalsystem.Dynamics` wrapper around the
+   :class:`~dynamicalsystem.DynamicalSystem` class, which makes it
+   compatible with the ASE :class:`~ase.md.MolecularDynamics`
+   interface.
 
 .. _geomopt:
 
@@ -727,12 +727,16 @@ Structural optimisation
 -----------------------
 
 If you want to optimise the positions and/or the lattice of an atomic
-configuration, you'll need to use the :meth:`Potential.minim` method.
-In this tutorial we'll consider the Stillinger-Weber potential we defined above.
-Let's use this to relax the positions and lattice of a cubic Si cell using
-conjugate-gradients (``cg``), to a tolerance of :math:`|\mathbf{f}|^2 < 10^{-7}`,
-using a maximum of 100 steps.
+configuration, you'll need to use either the
+:meth:`potential.Potential.minim` method or the
+:class:`potential.Minim` helper class.
 
+In this tutorial we'll consider the Stillinger-Weber potential we
+defined above.  Let's use this to relax the positions and lattice of a
+cubic Si cell using conjugate-gradients (``cg``), to a tolerance of
+:math:`|\mathbf{f}|^2 < 10^{-7}`, using a maximum of 100 steps.
+
+   >>> pot = Potential('IP SW')
    >>> at0 = diamond(5.44, 14)
    >>> at0.set_cutoff(pot.cutoff() + 2.0)   #crust of 2.0 Angstrom
    >>> at0.calc_connect()
@@ -758,10 +762,29 @@ lattice properties of the minimised configuration::
    >>> a, b, c, alpha, beta, gamma = get_lattice_params(at0.lattice)
    >>> print (a, b, c)
    (5.4309497787368581, 5.4309497787368581 5.4309497787368581)
-   >>> print (alpha*180.0/PI, beta*180.0/PI, gamma*180.0/PI)
+   >>> print degrees((alpha,beta,gamma))
    (90.0, 90.0, 90.0)
 
-i.e. we get a cubic lattice constant of 5.4309498 A, which is correct for this potential.
+i.e. we get a cubic cell with lattice constant of 5.4309498 A, which
+is correct for this potential.
+
+To use the :class:`potential.Minim` class instead, which implements the ASE
+`optimizer inferface
+<https://wiki.fysik.dtu.dk/ase/ase/optimize.html>`_, do the
+following::
+
+   >>> pot = Potential('IP SW')
+   >>> at0 = diamond(5.44, 14)
+   >>> at0.set_calculator(pot)
+   >>> minimiser = Minim(at0)
+   >>> minimiser.run(fmax=1e-3)
+   >>> print np.diag(at0.cell)
+   [ 5.43094978  5.43094978  5.43094978]
+
+Note the :meth:`.Atoms.set_calculator` call, and that it is no longer
+necessary to set the :attr:`.Atoms.cutoff`, since :class:`~.Minim`
+takes care of this.
+
 
 Bulk Modulus Calculations
 -------------------------
@@ -794,40 +817,36 @@ Here is a Python function which implements this relation::
      return e
 
 We want to calculate the energy for a variety of cell volumes. The
-routine below takes an initial configuration `at0` and first 
-compresses and then expands it in increments of `eps`. To achieve 
-this we exploit the :meth:`~Atoms.set_lattice` method making sure 
-that `scale_positions` is true so that all atomic positions are 
-scaled appropriately. If `relax` is true we then minimise with 
-respect to the internal degrees of freedom (the atom positions). 
-Finally, we calculate the energy. ::
+routine below takes an initial configuration `at0` and first
+compresses and then expands it in increments of `eps`. To achieve this
+we exploit the :meth:`.Atoms.set_lattice` method making sure that
+`scale_positions` is true so that all atomic positions are scaled
+appropriately. Finally, we set the calculator and calculate the
+energy using :meth:`.Atoms.get_potential_energy` and cell volume using
+:meth:`.Atoms.get_volume`. ::
 
-   def compress_expand(at0, metapot, eps=1e-3, relax=False):
-      for i in frange(-5,5):
-         at = at0.copy()
-         at.set_lattice((1.0 + eps*i) * at.lattice, scale_positions=True)
-         at.calc_connect()
-         if relax:
-            metapot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-         metapot.calc(at, energy=True)
-         at.volume = at.cell_volume()
-         yield at
+   def compress_expand(at0, pot, eps=1e-3, relax=False):
+       volumes = []
+       energies = []
+       for i in frange(-5,5):
+           at = at0.copy()
+           at.set_lattice((1.0 + eps*i) * at.lattice, scale_positions=True)
+           at.set_calculator(pot)
+           volumes.append(at.get_volume())
+           energies.append(at.get_potential_energy())
 
-:func:`compress_expand` is a generator: rather than returning a single
-result is uses the :keyword:`yield` statement to return a series of
-configurations. We can use this as a source for an AtomsList::
+       return (volumes, energies)
 
+We can use this function to plot an energy-volume curve::
+
+   >>> pot = Potential('IP SW')
    >>> at0 = diamond(5.43, 14)
-   >>> configs = AtomsList(compress_expand(at0, pot))
-   >>> plot(configs.volume, configs.energy, 'o')
+   >>> volumes, energies = compress_expand(at0, pot)
+   >>> plot(volumes, energies, 'bo', label='Unrelaxed')
    
-We can repeat with internal relaxation turned on::
-
-   >>> relaxed_configs = AtomsList(compress_expand(at0, pot, relax=True))
-   >>> plot(relaxed_configs.volume, relaxed_configs.energy, 'o')
-
 .. image:: energyvolume1.png
    :align: center
+   :width: 600px
 
 Fitting the equation of state requires the :mod:`scipy.optimize`
 module, so you need `scipy <http://www.scipy.org>`_ installed to run
@@ -865,24 +884,17 @@ Here's a function to estimate initial values for the four parameters `eo`, `vo`,
 
 We can carry out the fit by calling this function::
 
-   >>> vo, eo, bo, bop = birch_fit(configs.energy, configs.volume)
-   Volume vo = 160.177976999 A^3
-   Energy eo = -34.6800268878 eV
-   Bulk modulus bo =  1.78075170982 eV/A^3 = 285.312038947 GPa
-   dB/dP (T=0) bop =  19.6902877922
+  >>> vo, eo, bo, bop = birch_fit(energies, volumes)
+  Volume vo = 160.187030023 A^3
+  Energy eo = -34.6800000521 eV
+  Bulk modulus bo =  0.632823864562 eV/A^3 = 101.39103958 GPa
+  dB/dP (T=0) bop =  2.9275321357
 
-Repeating for the relaxed configurations gives results in better agreement with experiment::
-
-   >>> vo2, eo2, bo2, bop2 = birch_fit(relaxed_configs.energy, relaxed_configs.volume)
-   Volume vo = 160.187033408 A^3
-   Energy eo = -34.6800000528 eV
-   Bulk modulus bo =  0.63282410954 eV/A^3 = 101.39107883 GPa
-   dB/dP (T=0) bop =  2.92639511085
-
-We can add plots of the fitted equations to our graph::
+We can add a plot of the fitted equations to our graph::
 
    >>> vs = linspace(157, 163, 100)
    >>> plot(vs, birch_energy(vo , eo , bo , bop , vs))
-   >>> plot(vs, birch_energy(vo2, eo2, bo2, bop2, vs))
 
 .. image:: energyvolume2.png
+   :align: center
+   :width: 600px

@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.polarization` --- tools for polarizable potentials
-===============================================================
+Tools for polarizable potentials
+================================
 
 .. automodule:: quippy.polarization
     :synopsis: Tools for polarizable potentials

@@ -16,8 +16,8 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.io` --- read and write atomic configurations
-=========================================================
+AtomsList and AtomsReader objects for I/O
+=========================================
 
 .. automodule:: quippy.io
    :synopsis: Read and write atomic configurations

@@ -29,21 +29,22 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys, os, glob
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.append(os.path.abspath('..'))
-sys.path.append(os.path.abspath('../quippy'))
+build_lib_dir, = glob.glob(os.path.abspath('../build.%s/lib.*' % os.environ['QUIP_ARCH']))
+sys.path.insert(0, build_lib_dir)
 
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.pngmath',
-              'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
+              'modcontents', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
               'sphinx.ext.viewcode', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -68,7 +69,7 @@ copyright = u'2008-2013, James Kermode'
 #
 # The short X.Y version.
 import os
-version=os.popen('svnversion -n ..').read()
+version=os.popen('svnversion').read()
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -218,52 +219,34 @@ latex_documents = [
 
 
 intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None),
-                       'ase': ('https://wiki.fysik.dtu.dk/ase/', None)}
+                       'ase': ('https://wiki.fysik.dtu.dk/ase/', None),
+                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+                       'matplotlib': ('http://matplotlib.org/', None)}
 
 
 from quippy.oo_fortran import FortranDerivedType, FortranDerivedTypes
 
 import re
 
-classnames = [v.__name__ for v in FortranDerivedTypes.values()]
-classname_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__ for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
-method_or_attr_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__+'\.([a-zA-Z][a-zA-Z0-9_]*)' for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
+# classnames = [v.__name__ for v in FortranDerivedTypes.values()]
+# classname_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__ for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
+# method_or_attr_re = re.compile('(^|\s+)((``)?)('+'|'.join([v.__name__+'\.([a-zA-Z][a-zA-Z0-9_]*)' for v in FortranDerivedTypes.values()])+r')\2(?=[\s\W]+)')
 
-doc_subs = [(classname_re, r'\1:class:`~.\4`'),
-            (method_or_attr_re, r'\1:meth:`.\4`')]
+# doc_subs = [(classname_re, r'\1:class:`~.\4`'),
+#             (method_or_attr_re, r'\1:meth:`.\4`')]
+
+global_options = None
 
 def process_docstring(app, what, name, obj, options, lines):
-    pass
-
-def _process_docstring_regexp(app, what, name, obj, options, lines):
-    in_block = False
-    indent = 0
-    for i, line in enumerate(lines):
-        #print in_block, line, indent,  len(line) - len(line.lstrip()) <= indent
-        if not in_block:
-            if line.endswith('::'):
-                in_block = True
-                indent = len(line) - len(line.lstrip())
-                continue
-        
-            for r, s in doc_subs:
-                line = r.sub(s, line)
-            lines[i] = line
-        else:
-            if not len(line) - len(line.lstrip()) <= indent:
-                in_block = False
-        
-
+    global global_options
+    global_options = options
         
 def process_signature(app, what, name, obj, options, signature, return_annotation):
     return (signature, return_annotation)
 
-
 def maybe_skip_member(app, what, name, obj, skip, options):
     if hasattr(FortranDerivedType, name) and options.inherited_members:
         return True
-    if not skip:
-        print name
     return skip
 
 from docutils import nodes, utils
@@ -321,14 +304,53 @@ def setup(app):
 
 
 autodoc_member_order = 'groupwise'
-autoclass_content = 'both'
+#autoclass_content = 'both'
 
 def add_line(self, line, source, *lineno):
     """Append one line of generated reST to the output."""
-    print self.indent + line
+    sys.stdout.write(self.indent + line + '\n')
     self.directive.result.append(self.indent + line, source, *lineno)
+
+# Uncomment two lines below to debug autodoc rst output
 
 #import sphinx.ext.autodoc
 #sphinx.ext.autodoc.Documenter.add_line = add_line
 
-numpydoc_show_class_members = False
+# Monkey patch numpydoc to exclude methods and attributes inherited
+# from base classes, and to include attributes wrapped by Python
+# properties
+
+numpydoc_show_class_members = True
+
+import inspect
+import pydoc
+import numpydoc
+import numpydoc.docscrape
+
+@property
+def methods(self):
+    if self._cls is None:
+        return []
+    do_inherited = False
+    if global_options is not None and hasattr(global_options, 'inherited_members'):
+        do_inherited = global_options.inherited_members
+
+    return [name for name,func in inspect.getmembers(self._cls)
+            if not name.startswith('_') and callable(func) and
+            (do_inherited or not any(hasattr(base, name) for base in self._cls.__bases__)) and
+            pydoc.getdoc(getattr(self._cls, name))]
+
+@property
+def properties(self):
+    if self._cls is None:
+        return []
+    do_inherited = False
+    if global_options is not None and hasattr(global_options, 'inherited_members'):        
+        do_inherited = global_options.inherited_members
+    return [name for name,func in inspect.getmembers(self._cls) if not name.startswith('_') and
+            (do_inherited or not any(hasattr(base, name) for base in self._cls.__bases__)) and
+            (func is None or isinstance(getattr(self._cls, name), property)) and
+            pydoc.getdoc(getattr(self._cls, name))]
+
+numpydoc.docscrape.ClassDoc.methods = methods
+numpydoc.docscrape.ClassDoc.properties = properties

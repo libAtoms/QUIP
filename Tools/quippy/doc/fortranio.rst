@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.fortranio` --- Fortran input/output
-================================================
+Fortran input/output
+====================
 
 .. automodule:: quippy.fortranio
    :synopsis: Fortran input/output

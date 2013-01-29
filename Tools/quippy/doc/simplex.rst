@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-:mod:`quippy.simplex` --- Nelder and Mead minimisation algorithm
-================================================================
+Nelder and Mead minimisation algorithm
+======================================
 
 .. automodule:: quippy.simplex
    :synopsis: Nelder and Mead minimisation algorithm
