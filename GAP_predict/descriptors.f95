@@ -755,12 +755,13 @@ module descriptors_module
 
    endsubroutine cplx_3d_array2_finalise
 
-   subroutine fourier_SO4_calc(this,at,i,U,dU,error)
+   subroutine fourier_SO4_calc(this,at,i,U,dU,args_str,error)
       type(fourier_SO4_type), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(in) :: i
       type(cplx_2d), dimension(:), allocatable, intent(inout) :: U
       type(cplx_3d), dimension(:,:), allocatable, intent(inout), optional :: dU
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       complex(dp), dimension(:,:), allocatable :: Uc, Up
@@ -2172,65 +2173,67 @@ module descriptors_module
 
    endsubroutine descriptor_str_add_species
 
-   subroutine descriptor_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine descriptor_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(descriptor), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       INIT_ERROR(error)
 
       selectcase(this%descriptor_type)
          case(DT_BISPECTRUM_SO4)
-            call calc(this%descriptor_bispectrum_SO4,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_bispectrum_SO4,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_BISPECTRUM_SO3)
-            call calc(this%descriptor_bispectrum_SO3,at,descriptor_out,do_descriptor,do_grad_descriptor,error=error)
+            call calc(this%descriptor_bispectrum_SO3,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error=error)
          case(DT_BEHLER)
-            call calc(this%descriptor_behler,at,descriptor_out,do_descriptor,do_grad_descriptor,error=error)
+            call calc(this%descriptor_behler,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error=error)
          case(DT_DISTANCE_2b)
-            call calc(this%descriptor_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_COORDINATION)
-            call calc(this%descriptor_coordination,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_coordination,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_ANGLE_3B)
-            call calc(this%descriptor_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_CO_ANGLE_3B)
-            call calc(this%descriptor_co_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_co_angle_3b,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_CO_DISTANCE_2b)
-            call calc(this%descriptor_co_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_co_distance_2b,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_COSNX)
-            call calc(this%descriptor_cosnx,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_cosnx,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_TRIHIS)
-            call calc(this%descriptor_trihis,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_trihis,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_WATER_MONOMER)
-            call calc(this%descriptor_water_monomer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_water_monomer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_WATER_DIMER)
-            call calc(this%descriptor_water_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_water_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_A2_DIMER)
-            call calc(this%descriptor_A2_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_A2_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_AB_DIMER)
-            call calc(this%descriptor_AB_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_AB_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_BOND_REAL_SPACE)
-            call calc(this%descriptor_bond_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_bond_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_ATOM_REAL_SPACE)
-            call calc(this%descriptor_atom_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_atom_real_space,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_POWER_SO3)
-            call calc(this%descriptor_power_so3,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_power_so3,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_POWER_SO4)
-            call calc(this%descriptor_power_so4,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_power_so4,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_SOAP)
-            call calc(this%descriptor_soap,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+            call calc(this%descriptor_soap,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case default
             RAISE_ERROR("descriptor_calc: unknown descriptor type "//this%descriptor_type,error)
       endselect
 
    endsubroutine descriptor_calc
 
-   subroutine bispectrum_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine bispectrum_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(bispectrum_SO4), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(cplx_2d), dimension(:), allocatable :: U
@@ -2346,9 +2349,9 @@ module descriptors_module
          enddo
 
          if(my_do_grad_descriptor) then
-            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,error=error)
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,args_str,error=error)
          else
-            call fourier_SO4_calc(this%fourier_SO4,at,i,U,error=error)
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,args_str=args_str,error=error)
          endif
 
          if(my_do_descriptor) then
@@ -2473,11 +2476,12 @@ module descriptors_module
 
    endsubroutine bispectrum_SO4_calc
 
-   subroutine bispectrum_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine bispectrum_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(bispectrum_so3), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
@@ -2743,11 +2747,12 @@ module descriptors_module
 
    endsubroutine bispectrum_so3_calc
 
-   subroutine behler_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine behler_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(behler), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -2915,11 +2920,12 @@ module descriptors_module
 
    endsubroutine behler_calc
 
-   subroutine distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(distance_2b), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor, Zi1, Zi2, Zj1, Zj2
@@ -3009,11 +3015,12 @@ module descriptors_module
 
    endsubroutine distance_2b_calc
 
-   subroutine coordination_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine coordination_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(coordination), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -3110,11 +3117,12 @@ module descriptors_module
 
    endsubroutine coordination_calc
 
-   subroutine angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(angle_3b), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor, Zk1, Zk2, Zj1, Zj2
@@ -3250,11 +3258,12 @@ module descriptors_module
 
    endsubroutine angle_3b_calc
 
-   subroutine co_angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine co_angle_3b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(co_angle_3b), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(descriptor) :: my_coordination
@@ -3335,7 +3344,7 @@ module descriptors_module
       enddo
 
       call initialise(my_coordination,'coordination cutoff='//this%coordination_cutoff//' coordination_transition_width='//this%coordination_transition_width,error)
-      call calc(my_coordination,at,descriptor_coordination,do_descriptor,do_grad_descriptor,error)
+      call calc(my_coordination,at,descriptor_coordination,do_descriptor,do_grad_descriptor,args_str,error)
       
       i_desc = 0
       do i = 1, at%N
@@ -3432,11 +3441,12 @@ module descriptors_module
 
    endsubroutine co_angle_3b_calc
 
-   subroutine co_distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine co_distance_2b_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(co_distance_2b), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(descriptor) :: my_coordination
@@ -3509,7 +3519,7 @@ module descriptors_module
       enddo
 
       call initialise(my_coordination,'coordination cutoff='//this%coordination_cutoff//' coordination_transition_width='//this%coordination_transition_width,error)
-      call calc(my_coordination,at,descriptor_coordination,.true.,do_grad_descriptor,error)
+      call calc(my_coordination,at,descriptor_coordination,.true.,do_grad_descriptor,args_str,error)
       
       i_desc = 0
       do i = 1, at%N
@@ -3573,11 +3583,12 @@ module descriptors_module
 
    endsubroutine co_distance_2b_calc
 
-   subroutine cosnx_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine cosnx_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(cosnx), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -3775,11 +3786,12 @@ module descriptors_module
 
    endsubroutine cosnx_calc
 
-   subroutine trihis_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine trihis_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(trihis), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -3896,11 +3908,12 @@ module descriptors_module
 
    endsubroutine trihis_calc
 
-   subroutine water_monomer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine water_monomer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(water_monomer), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -4000,11 +4013,12 @@ module descriptors_module
 
    endsubroutine water_monomer_calc
 
-   subroutine water_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine water_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(water_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -4205,11 +4219,12 @@ module descriptors_module
 
    endsubroutine water_dimer_calc
 
-   subroutine A2_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine A2_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(A2_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -4316,11 +4331,12 @@ module descriptors_module
 
    endsubroutine A2_dimer_calc
 
-   subroutine AB_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine AB_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(AB_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -4434,11 +4450,12 @@ module descriptors_module
 
    endsubroutine AB_dimer_calc
 
-   subroutine bond_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine bond_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(bond_real_space), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(atoms) :: at_copy
@@ -4790,11 +4807,12 @@ module descriptors_module
 
    endsubroutine bond_real_space_calc
 
-   subroutine atom_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine atom_real_space_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(atom_real_space), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       logical :: my_do_descriptor, my_do_grad_descriptor
@@ -4930,11 +4948,12 @@ module descriptors_module
 
    endsubroutine atom_real_space_calc
 
-   subroutine power_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine power_so3_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(power_so3), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
@@ -5158,11 +5177,12 @@ module descriptors_module
 
    endsubroutine power_so3_calc
 
-   subroutine power_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine power_SO4_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(power_SO4), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(cplx_2d), dimension(:), allocatable :: U
@@ -5262,9 +5282,9 @@ module descriptors_module
          enddo
 
          if(my_do_grad_descriptor) then
-            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,error=error)
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,dU,args_str,error=error)
          else
-            call fourier_SO4_calc(this%fourier_SO4,at,i,U,error=error)
+            call fourier_SO4_calc(this%fourier_SO4,at,i,U,args_str=args_str,error=error)
          endif
 
          if(my_do_descriptor) then
@@ -5303,11 +5323,12 @@ module descriptors_module
 
    endsubroutine power_SO4_calc
 
-   subroutine soap_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,error)
+   subroutine soap_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
       type(soap), intent(in) :: this
       type(atoms), intent(in) :: at
       type(descriptor_data), intent(out) :: descriptor_out
       logical, intent(in), optional :: do_descriptor, do_grad_descriptor
+      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
       type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
