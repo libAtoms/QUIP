@@ -106,6 +106,8 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
                                                  connect_interval, trajectory,
                                                  args_str)
 
+    run.__doc__ = _dynamicalsystem.DynamicalSystem.run.__doc__
+
 
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(dynamicalsystem)'] = DynamicalSystem

@@ -81,7 +81,7 @@
 !%      ``IP PartridgeSchwenke`` Partridge-Schwenke model for a water monomer
 !%      ``IP SW``                Stillinger-Weber potential for silicon
 !%      ``IP SW_VP``             Combined Stillinger-Weber and Vashista potential
-!%                               for Si and :mol:`SiO2`.
+!%                               for Si and :mol:`SiO_2`.
 !%      ``IP Si_MEAM``           Silicon modified embedded attom potential
 !%      ``IP Sutton_Chen``       Sutton-Chen potential
 !%      ``IP TS``                Tangney-Scandolo polarisable potential for oxides
@@ -372,14 +372,6 @@ module Potential_module
 
   public :: run
 
-  !% Run 'n_steps' of dynamics using forces from Potential 'pot'.
-  !%
-  !% For each step, forces are evaluated using the Potential
-  !% 'pot' and the DynamicalSystem is advanced by a time 'dt'
-  !% (default 1 fs).  'n_steps' (default 10 steps) are carried out in
-  !% total, with snapshots saved every 'save_interval' steps. The
-  !connectivity is recalculated every 'connect_interval' steps.
-  !'args_str' can be used to supply extra arguments to 'Potential%calc'.
   interface run
      module procedure dynamicalsystem_run
   end interface run
@@ -2043,6 +2035,15 @@ end subroutine pack_pos_dg
 #include "Potential_Cluster_routines.f95"
 #include "Potential_Hybrid_utils.f95"
 
+
+  !% Run 'n_steps' of dynamics using forces from Potential 'pot'.
+  !%
+  !% For each step, forces are evaluated using the Potential
+  !% 'pot' and the DynamicalSystem is advanced by a time 'dt'
+  !% (default 1 fs).  'n_steps' (default 10 steps) are carried out in
+  !% total, with snapshots saved every 'save_interval' steps. The
+  !% connectivity is recalculated every 'connect_interval' steps.
+  !% 'args_str' can be used to supply extra arguments to 'Potential%calc'.
   subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str, error)
     type(DynamicalSystem), intent(inout), target :: this
     type(Potential), intent(inout) :: pot

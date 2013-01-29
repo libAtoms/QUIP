@@ -197,16 +197,17 @@ module dynamicalsystem_module
 
    !% Add a new thermostat to this DynamicalSystem. 'type' should
    !% be one of the following thermostat types:
-   !%  * 'THERMOSTAT_NONE'
-   !%  * 'THERMOSTAT_LANGEVIN'
-   !%  * 'THERMOSTAT_NOSE_HOOVER'
-   !%  * 'THERMOSTAT_NOSE_HOOVER_LANGEVIN'
-   !%  * 'THERMOSTAT_LANGEVIN_NPT'
-   !%  * 'THERMOSTAT_LANGEVIN_PR'
-   !%  * 'THERMOSTAT_NPH_ANDERSEN'
-   !%  * 'THERMOSTAT_NPH_PR'
-   !%  * 'THERMOSTAT_LANGEVIN_OU'
-   !%  * 'THERMOSTAT_LANGEVIN_NPT_NB'
+   !%
+   !% * 'THERMOSTAT_NONE'
+   !% * 'THERMOSTAT_LANGEVIN'
+   !% * 'THERMOSTAT_NOSE_HOOVER'
+   !% * 'THERMOSTAT_NOSE_HOOVER_LANGEVIN'
+   !% * 'THERMOSTAT_LANGEVIN_NPT'
+   !% * 'THERMOSTAT_LANGEVIN_PR'
+   !% * 'THERMOSTAT_NPH_ANDERSEN'
+   !% * 'THERMOSTAT_NPH_PR'
+   !% * 'THERMOSTAT_LANGEVIN_OU'
+   !% * 'THERMOSTAT_LANGEVIN_NPT_NB'
    !%
    !% 'T' is the target temperature. 'Q' is the Nose-Hoover coupling constant. Only one
    !% of 'tau' or 'gamma' should be given. 'p' is the external
