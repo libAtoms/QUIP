@@ -498,7 +498,7 @@ class Minim(Optimizer):
 
     This class is a wrapper around the
     :meth:`quippy.potential.Potential.minim` routine, compatible with
-    the ASE `ASE Optimizer inferface <https://wiki.fysik.dtu.dk/ase/ase/optimize.html>`_.
+    the ASE `optimizer inferface <https://wiki.fysik.dtu.dk/ase/ase/optimize.html>`_.
 
     `method` should be one of ``"sd"``, (steepest descent), ``"cg"``
     (conjugate gradients, the default), ``"cg_n"`` (Noam Bernstein's conjugate gradients
@@ -545,8 +545,8 @@ class Minim(Optimizer):
 
         # we will do the calculation in place, to minimise number of copies,
         # unless atoms is not a quippy Atoms
+        self._atoms = atoms
         if not isinstance(atoms, Atoms):
-            self._atoms = atoms
             potlog.warn('Minim atoms is not quippy.Atoms instance, copy forced!')
             atoms = Atoms(atoms)
         self.atoms = atoms
