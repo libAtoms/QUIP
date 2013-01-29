@@ -38,6 +38,8 @@ from quippy.dictmixin import PuPyDictionary
 from quippy import fortran_indexing # default value
 import quippy.arraydata as arraydata
 
+__all__ = ['FortranDerivedType', 'FortranDerivedTypes', 'wrap_all']
+
 major, minor = sys.version_info[0:2]
 
 if (major, minor) < (2, 5):
