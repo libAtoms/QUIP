@@ -31,8 +31,8 @@ from quippy.farray import FortranArray, fidentity, fzeros, frange, farray, gcd
 import numpy as np
 
 __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
-                                        'quartz_params', 'alpha_quartz', 'get_bulk_params',
-                                        'alpha_quartz_cubic', 'get_quartz_params', 'get_bond_lengths',
+                                        'quartz_params', 'get_bulk_params',
+                                        'get_quartz_params', 'get_bond_lengths',
                                         'MillerIndex', 'MillerPlane', 'MillerDirection', 'angle_between']
 
 class MillerIndex(quippy_array):
@@ -526,38 +526,6 @@ quartz_params = {'experiment': {'a': 4.9160,
                               'z': 0.10973603276909905}
                  }
 
-def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3.0):
-    """Primitive 9-atom orthorhombic alpha quartz cell"""
-
-    from math import sqrt
-
-    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
-    a2 = farray((0.5*a,  0.5*sqrt(3.0)*a, 0.0))
-    a3 = farray((0.0,    0.0,             c))
-
-    lattice = fzeros((3,3))
-    lattice[:,1] = a1
-    lattice[:,2] = a2
-    lattice[:,3] = a3
-
-    at = Atoms(n=9,lattice=lattice)
-
-    at.set_atoms((14,14,14,8,8,8,8,8,8))
-
-    z += 2.0/3.0
-
-    at.pos[:,1] =  u*a1 + 2.0/3.0*a3
-    at.pos[:,2] =  u*a2 + 1.0/3.0*a3
-    at.pos[:,3] = -u*a1 - u*a2
-    at.pos[:,4] =  x*a1 + y*a2 + z*a3
-    at.pos[:,5] = -y*a1 + (x-y)*a2  + (2.0/3.0 + z)*a3
-    at.pos[:,6] = (y-x)*a1 - x*a2   + (1.0/3.0 + z)*a3
-    at.pos[:,7] = y*a1 + x*a2 - z*a3
-    at.pos[:,8] = -x*a1 + (y-x)*a2 + (2.0/3.0 - z)*a3
-    at.pos[:,9] = (x - y)*a1 - y*a2 + (1.0/3.0 - z)*a3
-
-    return at
-
 def get_quartz_params(at):
 
     assert at.n == 9
@@ -587,27 +555,6 @@ def get_quartz_params(at):
     print 'z      = ', z
 
     return {'a':a, 'c':c, 'u':u, 'x':x, 'y':y, 'z':z}
-
-
-def alpha_quartz_cubic(*args, **kwargs):
-    """Non-primitive 18-atom cubic quartz cell."""
-
-    from quippy import supercell
-
-    a0 = alpha_quartz(*args, **kwargs)
-    at = supercell(a0, 4, 4, 1)
-    at.map_into_cell()
-
-    lattice = fzeros((3,3))
-    lattice[1,1] = a0.lattice[1,1]*2.0
-    lattice[2,2] = a0.lattice[2,2]*2.0
-    lattice[3,3] = a0.lattice[3,3]
-
-    g = np.linalg.inv(lattice)
-    t = np.dot(g, at.pos)
-    cubic = at.select(np.logical_and(t >= -0.5, t < 0.5).all(axis=1))
-    cubic.set_lattice(lattice)
-    return cubic
 
 
 def get_bond_lengths(at):
