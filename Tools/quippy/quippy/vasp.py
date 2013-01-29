@@ -99,7 +99,7 @@ def VASP_POSCAR_Reader(poscar, species=None):
 
    yield at
 
-class VaspWriter(object):
+class VASPWriter(object):
    """
    Writer for VASP POSCAR format
    """
@@ -230,9 +230,9 @@ class VaspWriter(object):
 		  self.out.write("%.12f %.12f %.12f\n" % (at.velo[1,i_at], at.velo[2,i_at], at.velo[3,i_at]))
 
 
-AtomsWriters['vasp'] = VaspWriter
-AtomsWriters['VASP'] = VaspWriter
-AtomsWriters['POSCAR'] = VaspWriter
+AtomsWriters['vasp'] = VASPWriter
+AtomsWriters['VASP'] = VASPWriter
+AtomsWriters['POSCAR'] = VASPWriter
 
 
 @atoms_reader('OUTCAR')

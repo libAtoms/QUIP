@@ -32,6 +32,8 @@ from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.periodictable import ElementMass, atomic_number
 from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
 
+__all__ = ['PosCelWriter', 'PosCelReader']
+
 class PosCelWriter(object):
 
     def __init__(self, basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',

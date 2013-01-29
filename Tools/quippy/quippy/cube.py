@@ -22,6 +22,8 @@ from quippy.units import BOHR
 from quippy.farray import *
 import sys, numpy
 
+__all__ = ['CubeWriter', 'CubeReader']
+
 class CubeWriter(object):
 
     def __init__(self, f, comment=None, data=None, origin=None, extent=None, comment2=None):

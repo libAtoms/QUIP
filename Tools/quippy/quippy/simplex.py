@@ -23,6 +23,8 @@ method of Nelder and Mead.
 Code adapted from chapter 10 of Numerical Recipes (3rd edition).
 """
 
+__all__ = ['DownhillSimplex']
+
 import numpy as np
 
 class Converged(Exception):

@@ -23,6 +23,8 @@ from types import StringType
 import sys
 import numpy as np
 
+__all__ = ['DanWriter']
+
 class DanWriter(object):
 
     def __init__(self, out, pos_field='pos', atom_type=None, value=None,

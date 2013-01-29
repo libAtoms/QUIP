@@ -18,6 +18,8 @@ from atomeye import *
 
 from quippy.cinoutput import CInOutputReader
 
+__alldoc__ = ['AtomsViewer', 'AtomsListViewer', 'AtomsReaderViewer',
+              'read', 'view', 'gcv', 'scv', 'iterviewers', 'highlight_qm_region']
 
 _viewers = {}
 _current_viewer = None
@@ -418,6 +420,7 @@ for name, method in inspect.getmembers(QuippyViewer, inspect.ismethod):
     if name.startswith('_'):
         continue
     setattr(sys.modules[__name__], name, current_viewer_method_wrapper(method))
+    __alldoc__.append(name)
 
 del name, method, current_viewer_method_wrapper
 
