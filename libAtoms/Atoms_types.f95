@@ -243,7 +243,7 @@ module Atoms_types_module
      logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
                                                                            !% default is variable cutoff.
      real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL   !% if 'use_uniform_cutoff' is true, cutoff
-                                                                           !% is the cutoff distance in \AA{}.
+                                                                           !% is the cutoff distance in $\mathrm{\AA}$
                                                                            !% Otherwise, cutoff is a multiplier
                                                                            !% for 'bond_length(Zi,Zj)'.
      real(dp)                              ::  cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
@@ -276,7 +276,7 @@ module Atoms_types_module
 
      real(dp),              dimension(3,3) :: g          !% Inverse lattice (stored for speed)
 
-     type(Dictionary) :: properties !% Dictionary of atomic properties. A property is an array
+     type(Dictionary) :: properties !% :class:`~.Dictionary` of atomic properties. A property is an array
                                     !% of shape (`m`,`n`) where `n` is the number of atoms and `m` is
                                     !% either one (for scalar properties) or three (vector
                                     !% properties). Properties can be integer, real, string or logical.
@@ -311,7 +311,7 @@ module Atoms_types_module
                                     !% Properties can be added with the :meth:`add_property` method and
                                     !% removed with :meth:`remove_property`.
 
-     type(Dictionary) :: params     !% Dictionary of parameters. Useful for storing data about this
+     type(Dictionary) :: params     !% :class:`~.Dictionary` of parameters. Useful for storing data about this
                                     !% Atoms object, for example the temperature, total energy or
                                     !% applied strain. The data stored here is automatically saved to
                                     !% and loaded from XYZ and NetCDF files.
@@ -339,8 +339,8 @@ module Atoms_types_module
      real(dp), pointer, dimension(:,:) :: oldpos => null()  !% $(3,N)$ array  of positions of atoms at previous time step.
      real(dp), pointer, dimension(:)   :: avg_ke => null()    !% Time-averaged atomic kinetic energy
 
-     type(Connection)                  :: connect             !% Connectivity object
-     type(Connection)                  :: hysteretic_connect  !% Hysteretic connectivity object
+     type(Connection)                  :: connect             !% :class:`~.Connection` object
+     type(Connection)                  :: hysteretic_connect  !% Hysteretic :class:`.~Connection` object
 
      type(DomainDecomposition)         :: domain              !% Domain decomposition object
 
