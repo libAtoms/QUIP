@@ -35,7 +35,7 @@
 !% G. S. Fanourgakis and S. S. Xantheas, Journal of Chemical Physics 128, 074506 (2008)
 !% This is a wrapper for a code downloaded from http://www.pnl.gov/science/ttm3f.asp
 !% WARNING: it does not deal with periodic boundary conditions
-!% UNITS: KCal/mol for energies and Angstroms for distance
+!% UNITS: KCal/mol for energies and Angstroms for distance for the original FX code, of course the QUIP calculator converts to eVs. 
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -107,6 +107,10 @@ subroutine IPModel_FX_Initialise_str(this, args_str, param_str, error)
 
   call Finalise(this)
 
+#ifndef HAVE_FX
+  RAISE_ERROR('IPModel_FX_Calc: FX model was not compiled in. Check the HAVE_FX flag in the Makefiles.', error)
+#else
+
   call initialise(params)
   call param_register(params, 'return_two_body', 'F', this%return_two_body, help_string="if set, return the two_body energy and force as the main return data")
   call param_register(params, 'return_one_body', 'F', this%return_one_body, help_string="if set, return the one_body energy and force as the main return data")
@@ -127,7 +131,7 @@ subroutine IPModel_FX_Initialise_str(this, args_str, param_str, error)
   if(this%do_two_body_weight) then
      call initialise(this%two_body_weight, (/this%two_body_weight_roo - this%two_body_weight_delta, this%two_body_weight_roo + this%two_body_weight_delta/), (/1.0_dp, 0.0_dp/), 0.0_dp, 0.0_dp)
   end if
-
+#endif
 end subroutine IPModel_FX_Initialise_str
 
 subroutine IPModel_FX_Finalise(this)
@@ -164,6 +168,10 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   INIT_ERROR(error)
 
+#ifndef HAVE_FX
+  RAISE_ERROR('IPModel_FX_Calc: FX model was not compiled in. Check the HAVE_FX flag in the Makefiles.', error)
+#else
+
   if(present(local_e)) then
      RAISE_ERROR('IPModel_FX_Calc: local_e calculation requested but not supported yet.', error)
   end if
@@ -199,8 +207,10 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      do_OHH_ordercheck = this%OHH_ordercheck
   end if
 
+
   call nttm3f_readXYZ(at%N/3, at%Z, at%pos, RR, rindex, do_OHH_ordercheck)
   call ttm3f(at%N/3,RR, dRR, energy, this%polarM, this%vdwC, this%vdwD, this%vdwE)
+
 
   if(present(e)) e=energy * KCAL_MOL * this%E_scale
   if(present(f)) then
@@ -321,6 +331,8 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      end if
   endif
 
+#endif
+
 end subroutine IPModel_FX_Calc
 
 
@@ -328,6 +340,10 @@ subroutine IPModel_FX_Print(this, file)
   type(IPModel_FX), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
   call Print("IPModel_FX : ", file=file)
+
+#ifndef HAVE_FX
+  call Print("   not compiled in. Check the HAVE_FX flag in the Makefiles.", file=file)
+#else
   call print("polarisable model for water", file=file)
   call print("by G. S. Fanourgakis and S. S. Xantheas", file=file)
   call print("Journal of Chemical Physics 128, 074506 (2008)", file=file)
@@ -345,6 +361,7 @@ subroutine IPModel_FX_Print(this, file)
   else
      call print("SKIPPING reordering of atoms into OHHOHH.. order and checking O-H cutoff distances")
   end if
+#endif
 end subroutine IPModel_FX_Print
 
 
