@@ -2267,9 +2267,11 @@ contains
     call system_set_random_seeds(actual_seed)
 
     ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
+!$OMP parallel
     do i = 1, 100
        ran_dummy = ran()
     enddo
+!$OMP end parallel
 
     call print('System::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
