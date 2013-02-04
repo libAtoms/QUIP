@@ -290,7 +290,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   ! Has to be allocated as it's in the reduction clause.
   allocate(local_e_in(at%N))
-  local_e_in = this%e0 !0.0_dp
+  local_e_in = 0.0_dp
 
   allocate(f_in(3,at%N))
   f_in = 0.0_dp
@@ -371,8 +371,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
         call system_timer('IPModel_GAP_Calc_gp_predict')
         if(present(e) .or. present(local_e)) then
-           local_e_in( min(i,size(local_e_in)) ) = local_e_in( min(i,size(local_e_in)) ) + &
-                e_i * my_descriptor_data%x(i)%covariance_cutoff
+           local_e_in( my_descriptor_data%x(i)%ci ) = local_e_in( my_descriptor_data%x(i)%ci ) + this%e0 + &
+                e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
         endif
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
@@ -383,11 +383,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               e_i * my_descriptor_data%x(i)%grad_covariance_cutoff(:,n)
               if( present(f) ) then
                  f_in(:,j) = f_in(:,j) - f_gp
-                 if(my_descriptor_data%atom_based) f_in(:,i) = f_in(:,i) + f_gp
               endif
               if( present(virial) .or. present(local_virial) ) then
                  virial_in(:,:,j) = virial_in(:,:,j) - (pos .outer. f_gp)
-                 if(my_descriptor_data%atom_based) virial_in(:,:,i) = virial_in(:,:,i) + (at%pos(:,i) .outer. f_gp)
               endif
            enddo
         endif
