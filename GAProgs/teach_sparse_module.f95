@@ -373,10 +373,6 @@ contains
                       do k = 1, 3
                          call gp_addCoordinateDerivatives(this%my_gp,my_descriptor_data%x(i)%grad_data(:,k,n),i_coordinate, &
                          force_loc(k,j), xloc(i), dcutoff_in=my_descriptor_data%x(i)%grad_covariance_cutoff(k,n) )
-
-                         if(my_descriptor_data%atom_based) call gp_addCoordinateDerivatives( &
-                            this%my_gp,-my_descriptor_data%x(i)%grad_data(:,k,n),i_coordinate, &
-                            force_loc(k,i), xloc(i), dcutoff_in=-my_descriptor_data%x(i)%grad_covariance_cutoff(k,n))
                       enddo
                    enddo
                 enddo
