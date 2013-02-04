@@ -33,6 +33,7 @@ module descriptors_module
    use linearalgebra_module
    use dictionary_module
    use paramreader_module
+   use atoms_types_module
    use atoms_module
    use topology_module
 
@@ -95,7 +96,7 @@ module descriptors_module
    type descriptor_data_mono
       real(dp), dimension(:), allocatable :: data
       real(dp), dimension(:,:,:), allocatable :: grad_data
-      integer, dimension(:), allocatable :: ii
+      integer, dimension(:), allocatable :: ci, ii
       real(dp), dimension(:,:), allocatable :: pos
       logical :: has_data
       logical, dimension(:), allocatable :: has_grad_data
@@ -384,7 +385,6 @@ module descriptors_module
 
    type descriptor_data
       type(descriptor_data_mono), dimension(:), allocatable :: x
-      logical :: atom_based = .false.
    endtype descriptor_data
 
    type cplx_1d
@@ -662,6 +662,7 @@ module descriptors_module
          do i = 1, size(this%x)
             if(allocated(this%x(i)%data)) deallocate(this%x(i)%data)
             if(allocated(this%x(i)%grad_data)) deallocate(this%x(i)%grad_data)
+            if(allocated(this%x(i)%ci)) deallocate(this%x(i)%ci)
             if(allocated(this%x(i)%ii)) deallocate(this%x(i)%ii)
             if(allocated(this%x(i)%pos)) deallocate(this%x(i)%pos)
             if(allocated(this%x(i)%has_grad_data)) deallocate(this%x(i)%has_grad_data)
@@ -2236,6 +2237,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       type(cplx_2d), dimension(:), allocatable :: U
       type(cplx_3d), dimension(:,:), allocatable :: dU
 
@@ -2261,6 +2267,29 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("bispectrum_SO4_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("bispectrum_SO4_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       species_map = 0
       do i = 1, size(this%species_Z)
          if(this%species_Z(i) == 0) then
@@ -2280,18 +2309,28 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = bispectrum_SO4_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
+
       allocate(descriptor_out%x(n_descriptors))
 
       i_desc = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
 
          i_desc = i_desc + 1
 
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -2318,9 +2357,16 @@ module descriptors_module
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
+
          if(my_do_grad_descriptor) then
             ! dU is not allocated, allocate and zero it
             allocate( dU(0:this%j_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
@@ -2534,7 +2580,7 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = bispectrum_so3_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
 
@@ -2546,6 +2592,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -2596,7 +2643,11 @@ module descriptors_module
             enddo
          enddo
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
+
          if(my_do_grad_descriptor) then
             allocate( dfourier_so3(0:this%l_max,this%n_max,0:n_neighbours(at,i,max_dist=this%cutoff)) )
             do n = 0, n_neighbours(at,i,max_dist=this%cutoff)
@@ -2755,6 +2806,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       logical :: my_do_descriptor, my_do_grad_descriptor
       integer :: d, i, j, k, n, m, a, b, i_desc, l_n_neighbours, n_i, m_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
@@ -2778,20 +2834,52 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("behler_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("behler_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       call finalise(descriptor_out)
 
       d = behler_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
 
       allocate(descriptor_out%x(n_descriptors))
 
       i_desc = 0
       do i = 1, at%N
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -2814,9 +2902,15 @@ module descriptors_module
 
       i_desc = 0
       do i = 1, at%N
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
@@ -2950,13 +3044,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = distance_2b_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(2))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -2990,6 +3085,7 @@ module descriptors_module
             i_desc = i_desc + 1
             if(my_do_descriptor) then
                descriptor_out%x(i_desc)%data(1) = r_ij
+               descriptor_out%x(i_desc)%ci(1:2) = (/i,j/)
                descriptor_out%x(i_desc)%has_data = .true.
 
                descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij,this%cutoff,0.5_dp)
@@ -3023,6 +3119,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       logical :: my_do_descriptor, my_do_grad_descriptor
       integer :: d, i, j, n, i_n, l_n_neighbours, i_desc, n_descriptors, n_cross
       integer, dimension(3) :: shift
@@ -3042,20 +3143,52 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("coordination_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("coordination_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       call finalise(descriptor_out)
 
       d = coordination_dimensions(this,error)
 
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
+
       allocate(descriptor_out%x(n_descriptors))
       i_desc = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
 
          i_desc = i_desc + 1
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
 
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
@@ -3081,9 +3214,15 @@ module descriptors_module
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
@@ -3147,13 +3286,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = angle_3b_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i)%has_data = .false.
          endif
 
@@ -3214,6 +3354,7 @@ module descriptors_module
                   descriptor_out%x(i_desc)%data(1) = r_ij + r_ik
                   descriptor_out%x(i_desc)%data(2) = (r_ij - r_ik)**2
                   descriptor_out%x(i_desc)%data(3) = r_jk !cos_ijk
+                  descriptor_out%x(i_desc)%ci(1) = i
                   descriptor_out%x(i_desc)%has_data = .true.
 
                   descriptor_out%x(i_desc)%covariance_cutoff = fc_j*fc_k
@@ -3291,7 +3432,7 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = co_angle_3b_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       i_desc = 0
@@ -3322,6 +3463,7 @@ module descriptors_module
                if(my_do_descriptor) then
                   allocate(descriptor_out%x(i_desc)%data(d))
                   descriptor_out%x(i_desc)%data = 0.0_dp
+                  allocate(descriptor_out%x(i_desc)%ci(1))
                   descriptor_out%x(i_desc)%has_data = .false.
                endif
 
@@ -3388,6 +3530,7 @@ module descriptors_module
                   descriptor_out%x(i_desc)%data(2) = (r_ij - r_ik)**2
                   descriptor_out%x(i_desc)%data(3) = r_jk !cos_ijk
                   descriptor_out%x(i_desc)%data(4) = descriptor_coordination%x(i)%data(1)
+                  descriptor_out%x(i_desc)%ci(1) = i
                   descriptor_out%x(i_desc)%has_data = .true.
 
                   descriptor_out%x(i_desc)%covariance_cutoff = fc_j*fc_k
@@ -3474,7 +3617,7 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = co_distance_2b_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
 
       allocate(descriptor_out%x(n_descriptors))
@@ -3496,6 +3639,7 @@ module descriptors_module
             if(my_do_descriptor) then
                allocate(descriptor_out%x(i_desc)%data(d))
                descriptor_out%x(i_desc)%data = 0.0_dp
+               allocate(descriptor_out%x(i_desc)%ci(2))
                descriptor_out%x(i_desc)%has_data = .false.
             endif
 
@@ -3535,9 +3679,11 @@ module descriptors_module
 
             i_desc = i_desc + 1
             if(my_do_descriptor) then
-               descriptor_out%x(i_desc)%data(1) = r_ij
+               descriptor_out%x(i_desc)%ci(1:2) = (/i,j/)
+               
                descriptor_out%x(i_desc)%has_data = .true.
 
+               descriptor_out%x(i_desc)%data(1) = r_ij
                descriptor_out%x(i_desc)%data(2) = descriptor_coordination%x(i)%data(1) + descriptor_coordination%x(j)%data(1)
                descriptor_out%x(i_desc)%data(3) = (descriptor_coordination%x(i)%data(1) - descriptor_coordination%x(j)%data(1))**2
 
@@ -3591,6 +3737,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       logical :: my_do_descriptor, my_do_grad_descriptor
       integer :: d, i, j, k, n, m, a, b, i_desc, i_cosnx, l_n_neighbours, n_i, n_descriptors, n_cross
       integer, dimension(3) :: shift_ij
@@ -3613,6 +3764,29 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("bispectrum_SO4_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("bispectrum_SO4_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       species_map = 0
       do i = 1, size(this%species_Z)
          if(this%species_Z(i) == 0) then
@@ -3625,18 +3799,27 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = cosnx_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
 
       allocate(descriptor_out%x(n_descriptors))
 
       i_desc = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -3667,9 +3850,15 @@ module descriptors_module
       i_desc = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i) 
@@ -3808,6 +3997,7 @@ module descriptors_module
       if(.not. this%initialised) then
          RAISE_ERROR("trihis_calc: descriptor object not initialised", error)
       endif
+      RAISE_ERROR("trihis_calc: ab686 noted that routine needs updating. Remove this line if you know what you are doing, then proceed.", error)
 
       my_do_descriptor = optional_default(.false., do_descriptor)
       my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
@@ -3823,6 +4013,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -3839,7 +4030,10 @@ module descriptors_module
 
       do i = 1, at%N
 
-         if(my_do_descriptor) descriptor_out%x(i)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i)%ci(1) = i
+            descriptor_out%x(i)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i)%ii(0) = i
             descriptor_out%x(i)%pos(:,0) = at%pos(:,i) 
@@ -3939,13 +4133,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = water_monomer_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i)%ci(3))
             descriptor_out%x(i)%has_data = .false.
             descriptor_out%x(i)%covariance_cutoff = 1.0_dp
          endif
@@ -3982,6 +4177,7 @@ module descriptors_module
          u2 = v2 / r2
 
          if(my_do_descriptor) then
+            descriptor_out%x(i)%ci(:) = water_monomer_index(:,i)
             descriptor_out%x(i)%has_data = .true.
             descriptor_out%x(i)%data(1) = r1+r2 
             descriptor_out%x(i)%data(2) = (r1-r2)**2
@@ -4051,13 +4247,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = water_dimer_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(6))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4151,6 +4348,7 @@ module descriptors_module
             r_AH2_BH2 = norm(diff_AH2_BH2)
 
             if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%ci(:) = (/ water_monomer_index(:,i),water_monomer_index(:,j) /)
                descriptor_out%x(i_desc)%has_data = .true.
                descriptor_out%x(i_desc)%data(:) = (/r_AO_BO, &
                   r_AO_AH1, r_AO_AH2, r_AO_BH1, r_AO_BH2, r_BO_AH1, r_BO_AH2, r_BO_BH1, r_BO_BH2, &
@@ -4250,13 +4448,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = A2_dimer_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(4))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4299,6 +4498,7 @@ module descriptors_module
             i_desc = i_desc + 1
 
             if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%ci(:) = (/ iA1, iA2, iB1, iB2 /)
                descriptor_out%x(i_desc)%has_data = .true.
                descriptor_out%x(i_desc)%data(:) = (/ r_A1_A2, r_B1_B2, r_A1_B1, r_A1_B2, r_A2_B1, r_A2_B2/)
             endif
@@ -4362,13 +4562,14 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = AB_dimer_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
       do i = 1, n_descriptors
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(4))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4417,6 +4618,7 @@ module descriptors_module
             i_desc = i_desc + 1
 
             if(my_do_descriptor) then
+               descriptor_out%x(i_desc)%ci(:) = (/ AB_monomer_index(:,i),AB_monomer_index(:,j) /)
                descriptor_out%x(i_desc)%has_data = .true.
                descriptor_out%x(i_desc)%data(:) = (/ r_A1_B1, r_A2_B2, r_A1_A2, r_B1_B2, r_A1_B2, r_A2_B1 /)
             endif
@@ -4488,7 +4690,7 @@ module descriptors_module
 
       call finalise(descriptor_out)
 
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
 
@@ -4622,6 +4824,7 @@ module descriptors_module
             if(my_do_descriptor) then
                allocate(descriptor_out%x(i_desc)%data(2 + (1 + 2 * ij_neighbours) * ij_neighbours))
 
+               allocate(descriptor_out%x(i_desc)%ci(2))
                !descriptor_out%x(i_desc)%data = 0.0_dp
 
                do m = 1, ij_neighbours
@@ -4658,6 +4861,7 @@ module descriptors_module
 
                descriptor_out%x(i_desc)%covariance_cutoff = coordination_function(r_ij, this%bond_cutoff, this%bond_transition_width)
 
+               descriptor_out%x(i_desc)%ci(:) = (/ i, j /)
                descriptor_out%x(i_desc)%has_data = .true.
             endif
 
@@ -4841,10 +5045,9 @@ module descriptors_module
 
       call finalise(descriptor_out)
 
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
 
       allocate(descriptor_out%x(n_descriptors))
-      descriptor_out%atom_based = .true.
 
       i_desc = 0
       do i = 1, at%N
@@ -4856,6 +5059,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -4886,6 +5090,7 @@ module descriptors_module
          i_n = 0
 
          if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
             descriptor_out%x(i_desc)%has_data = .true.
          endif
 
@@ -4956,6 +5161,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
       type(cplx_1d), dimension(:,:), allocatable :: fourier_so3
 
@@ -4984,6 +5194,29 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("bispectrum_SO4_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("bispectrum_SO4_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       species_map = 0
       do i = 1, size(this%species_Z)
          if(this%species_Z(i) == 0) then
@@ -4996,19 +5229,28 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = power_so3_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
 
       allocate(descriptor_out%x(n_descriptors))
 
       i_desc = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
             descriptor_out%x(i_desc)%has_data = .false.
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
@@ -5050,9 +5292,15 @@ module descriptors_module
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          do a = 1, this%n_max
             do l = 0, this%l_max
                fourier_so3(l,a)%m(:) = CPLX_ZERO
@@ -5220,7 +5468,7 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = power_SO4_dimensions(this,error)
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
       allocate(descriptor_out%x(n_descriptors))
 
       i_desc = 0
@@ -5232,7 +5480,8 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i_desc)%data(d))
             descriptor_out%x(i_desc)%data = 0.0_dp
-            descriptor_out%x(i_desc)%has_data = .true.
+            descriptor_out%x(i_desc)%has_data = .false.
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
 
@@ -5260,7 +5509,10 @@ module descriptors_module
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
@@ -5331,6 +5583,11 @@ module descriptors_module
       character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
 
+      type(Dictionary) :: params
+      character(STRING_LENGTH) :: atom_mask_name
+      logical :: has_atom_mask_name
+      logical, dimension(:), pointer :: atom_mask_pointer
+
       type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
       type(cplx_2d), dimension(:), allocatable :: grad_SphericalY_ij
 
@@ -5373,6 +5630,29 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      if(present(args_str)) then
+         call initialise(params)
+         
+         call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+         help_string="Name of a logical property in the atoms object. For atoms where this property is descriptors are " // &
+         "calculated.")
+
+         if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='bispectrum_SO4_calc args_str')) then
+            RAISE_ERROR("bispectrum_SO4_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         endif
+         
+         call finalise(params)
+
+         if( has_atom_mask_name ) then
+            if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+               RAISE_ERROR("bispectrum_SO4_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            endif
+         else
+            atom_mask_pointer => null()
+         endif
+
+      endif
+
       allocate(rs_index(2,this%n_max*this%n_species))
       i = 0
       do i_species = 1, this%n_species
@@ -5385,10 +5665,15 @@ module descriptors_module
       call finalise(descriptor_out)
 
       d = soap_dimensions(this,error)
+
+      if(associated(atom_mask_pointer)) then
+         call descriptor_sizes(this,at,n_descriptors,n_cross,mask=atom_mask_pointer,error=error)
+      else
+         call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
+      endif
+
       allocate(descriptor_i(d))
       if(my_do_grad_descriptor) allocate(grad_descriptor_i(d,3))
-
-      call descriptor_sizes(this,at,n_descriptors,n_cross,error)
 
       allocate(descriptor_out%x(n_descriptors))
 
@@ -5423,6 +5708,9 @@ module descriptors_module
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
 
          i_desc = i_desc + 1
 
@@ -5430,6 +5718,7 @@ module descriptors_module
             allocate(descriptor_out%x(i_desc)%data(d))
             !slow, no need
 	    !descriptor_out%x(i_desc)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc)%ci(1))
             descriptor_out%x(i_desc)%has_data = .false.
             descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
          endif
@@ -5456,9 +5745,15 @@ module descriptors_module
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(associated(atom_mask_pointer)) then
+            if(.not. atom_mask_pointer(i)) cycle
+         endif
          i_desc = i_desc + 1
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%has_data = .true.
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%ci(1) = i
+            descriptor_out%x(i_desc)%has_data = .true.
+         endif
          if(my_do_grad_descriptor) then
             descriptor_out%x(i_desc)%ii(0) = i
             descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
@@ -6498,63 +6793,65 @@ module descriptors_module
 
    endfunction soap_cutoff
 
-   subroutine descriptor_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine descriptor_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(descriptor), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       INIT_ERROR(error)
 
       selectcase(this%descriptor_type)
          case(DT_BISPECTRUM_SO4)
-            call bispectrum_SO4_sizes(this%descriptor_bispectrum_SO4,at,n_descriptors,n_cross,error=error)
+            call bispectrum_SO4_sizes(this%descriptor_bispectrum_SO4,at,n_descriptors,n_cross,mask,error=error)
          case(DT_BISPECTRUM_SO3)
-            call bispectrum_SO3_sizes(this%descriptor_bispectrum_SO3,at,n_descriptors,n_cross,error=error)
+            call bispectrum_SO3_sizes(this%descriptor_bispectrum_SO3,at,n_descriptors,n_cross,mask,error=error)
          case(DT_BEHLER)
-            call behler_sizes(this%descriptor_behler,at,n_descriptors,n_cross,error=error)
+            call behler_sizes(this%descriptor_behler,at,n_descriptors,n_cross,mask,error=error)
          case(DT_DISTANCE_2b)
-            call distance_2b_sizes(this%descriptor_distance_2b,at,n_descriptors,n_cross,error=error)
+            call distance_2b_sizes(this%descriptor_distance_2b,at,n_descriptors,n_cross,mask,error=error)
          case(DT_COORDINATION)
-            call coordination_sizes(this%descriptor_coordination,at,n_descriptors,n_cross,error=error)
+            call coordination_sizes(this%descriptor_coordination,at,n_descriptors,n_cross,mask,error=error)
          case(DT_ANGLE_3B)
-            call angle_3b_sizes(this%descriptor_angle_3b,at,n_descriptors,n_cross,error=error)
+            call angle_3b_sizes(this%descriptor_angle_3b,at,n_descriptors,n_cross,mask,error=error)
          case(DT_CO_ANGLE_3B)
-            call co_angle_3b_sizes(this%descriptor_co_angle_3b,at,n_descriptors,n_cross,error=error)
+            call co_angle_3b_sizes(this%descriptor_co_angle_3b,at,n_descriptors,n_cross,mask,error=error)
          case(DT_CO_DISTANCE_2b)
-            call co_distance_2b_sizes(this%descriptor_co_distance_2b,at,n_descriptors,n_cross,error=error)
+            call co_distance_2b_sizes(this%descriptor_co_distance_2b,at,n_descriptors,n_cross,mask,error=error)
          case(DT_COSNX)
-            call cosnx_sizes(this%descriptor_cosnx,at,n_descriptors,n_cross,error=error)
+            call cosnx_sizes(this%descriptor_cosnx,at,n_descriptors,n_cross,mask,error=error)
          case(DT_TRIHIS)
-            call trihis_sizes(this%descriptor_trihis,at,n_descriptors,n_cross,error=error)
+            call trihis_sizes(this%descriptor_trihis,at,n_descriptors,n_cross,mask,error=error)
          case(DT_WATER_MONOMER)
-            call water_monomer_sizes(this%descriptor_water_monomer,at,n_descriptors,n_cross,error=error)
+            call water_monomer_sizes(this%descriptor_water_monomer,at,n_descriptors,n_cross,mask,error=error)
          case(DT_WATER_DIMER)
-            call water_dimer_sizes(this%descriptor_water_dimer,at,n_descriptors,n_cross,error=error)
+            call water_dimer_sizes(this%descriptor_water_dimer,at,n_descriptors,n_cross,mask,error=error)
          case(DT_A2_DIMER)
-            call A2_dimer_sizes(this%descriptor_A2_dimer,at,n_descriptors,n_cross,error=error)
+            call A2_dimer_sizes(this%descriptor_A2_dimer,at,n_descriptors,n_cross,mask,error=error)
          case(DT_AB_DIMER)
-            call AB_dimer_sizes(this%descriptor_AB_dimer,at,n_descriptors,n_cross,error=error)
+            call AB_dimer_sizes(this%descriptor_AB_dimer,at,n_descriptors,n_cross,mask,error=error)
          case(DT_BOND_REAL_SPACE)
-            call bond_real_space_sizes(this%descriptor_bond_real_space,at,n_descriptors,n_cross,error=error)
+            call bond_real_space_sizes(this%descriptor_bond_real_space,at,n_descriptors,n_cross,mask,error=error)
          case(DT_ATOM_REAL_SPACE)
-            call atom_real_space_sizes(this%descriptor_atom_real_space,at,n_descriptors,n_cross,error=error)
+            call atom_real_space_sizes(this%descriptor_atom_real_space,at,n_descriptors,n_cross,mask,error=error)
          case(DT_POWER_SO3)
-            call power_so3_sizes(this%descriptor_power_so3,at,n_descriptors,n_cross,error=error)
+            call power_so3_sizes(this%descriptor_power_so3,at,n_descriptors,n_cross,mask,error=error)
          case(DT_POWER_SO4)
-            call power_so4_sizes(this%descriptor_power_so4,at,n_descriptors,n_cross,error=error)
+            call power_so4_sizes(this%descriptor_power_so4,at,n_descriptors,n_cross,mask,error=error)
          case(DT_SOAP)
-            call soap_sizes(this%descriptor_soap,at,n_descriptors,n_cross,error=error)
+            call soap_sizes(this%descriptor_soap,at,n_descriptors,n_cross,mask,error=error)
          case default
             RAISE_ERROR("descriptor_sizes: unknown descriptor type "//this%descriptor_type,error)
       endselect
 
    endsubroutine descriptor_sizes
 
-   subroutine bispectrum_SO4_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine bispectrum_SO4_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(bispectrum_SO4), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6570,16 +6867,20 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine bispectrum_SO4_sizes
 
-   subroutine bispectrum_SO3_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine bispectrum_SO3_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(bispectrum_SO3), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
       integer :: i
 
@@ -6594,16 +6895,20 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine bispectrum_SO3_sizes
 
-   subroutine behler_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine behler_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(behler), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6617,15 +6922,19 @@ module descriptors_module
       n_descriptors = 0
       n_cross = 0
       do i = 1, at%N
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
    endsubroutine behler_sizes
 
-   subroutine distance_2b_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine distance_2b_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(distance_2b), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, n
@@ -6660,10 +6969,11 @@ module descriptors_module
 
    endsubroutine distance_2b_sizes
 
-   subroutine coordination_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine coordination_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(coordination), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6678,16 +6988,20 @@ module descriptors_module
       n_cross = 0
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine coordination_sizes
 
-   subroutine angle_3b_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine angle_3b_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(angle_3b), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, k, n, m
@@ -6705,6 +7019,9 @@ module descriptors_module
 
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
 
          do n = 1, n_neighbours(at,i)
             j = neighbour(at, i, n, distance = r_ij)
@@ -6731,10 +7048,11 @@ module descriptors_module
 
    endsubroutine angle_3b_sizes
 
-   subroutine co_angle_3b_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine co_angle_3b_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(co_angle_3b), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, k, n, m, n_neighbours_coordination
@@ -6752,6 +7070,9 @@ module descriptors_module
 
       do i = 1, at%N
          if( (this%Z /=0) .and. (at%Z(i) /= this%Z) ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
 
          n_neighbours_coordination = n_neighbours(at,i,max_dist=this%coordination_cutoff)
 
@@ -6780,10 +7101,11 @@ module descriptors_module
 
    endsubroutine co_angle_3b_sizes
 
-   subroutine co_distance_2b_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine co_distance_2b_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(co_distance_2b), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       real(dp) :: r_ij
@@ -6817,10 +7139,11 @@ module descriptors_module
 
    endsubroutine co_distance_2b_sizes
 
-   subroutine cosnx_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine cosnx_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(cosnx), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6836,16 +7159,20 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine cosnx_sizes
 
-   subroutine trihis_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine trihis_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(trihis), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6861,15 +7188,19 @@ module descriptors_module
       n_cross = 0
 
       do i = 1, at%N
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_cross = n_cross + n_neighbours(at,i) + 1
       enddo
 
    endsubroutine trihis_sizes
 
-   subroutine water_monomer_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine water_monomer_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(water_monomer), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -6892,10 +7223,11 @@ module descriptors_module
 
    endsubroutine water_monomer_sizes
 
-   subroutine water_dimer_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine water_dimer_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(water_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, n
@@ -6923,10 +7255,11 @@ module descriptors_module
       enddo
    endsubroutine water_dimer_sizes
 
-   subroutine A2_dimer_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine A2_dimer_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(A2_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, iA1, iA2, iB1, iB2
@@ -6969,10 +7302,11 @@ module descriptors_module
 
    endsubroutine A2_dimer_sizes
 
-   subroutine AB_dimer_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine AB_dimer_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(AB_dimer), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i, j, n_monomers, iA1, iA2, iB1, iB2
@@ -7024,10 +7358,11 @@ module descriptors_module
 
    endsubroutine AB_dimer_sizes
 
-   subroutine bond_real_space_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine bond_real_space_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(bond_real_space), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       type(atoms) :: at_copy
@@ -7070,10 +7405,11 @@ module descriptors_module
 
    endsubroutine bond_real_space_sizes
 
-   subroutine atom_real_space_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine atom_real_space_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(atom_real_space), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -7088,15 +7424,19 @@ module descriptors_module
       n_cross = 0
 
       do i = 1, at%N
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff)*2 
       enddo
 
    endsubroutine atom_real_space_sizes
 
-   subroutine power_so3_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine power_so3_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(power_so3), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -7112,16 +7452,20 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine power_so3_sizes
 
-   subroutine power_SO4_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine power_SO4_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(power_SO4), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -7137,16 +7481,20 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
 
    endsubroutine power_SO4_sizes
 
-   subroutine soap_sizes(this,at,n_descriptors,n_cross,error)
+   subroutine soap_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(soap), intent(in) :: this
       type(atoms), intent(in) :: at
       integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
       integer, optional, intent(out) :: error
 
       integer :: i
@@ -7162,6 +7510,9 @@ module descriptors_module
 
       do i = 1, at%N
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
+         if(present(mask)) then
+            if(.not. mask(i)) cycle
+         endif
          n_descriptors = n_descriptors + 1
          n_cross = n_cross + n_neighbours(at,i,max_dist=this%cutoff) + 1
       enddo
