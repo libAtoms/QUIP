@@ -379,7 +379,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 #endif
 	  endif
 	endif
-	if (present(f) .or. present(virial)) then
+	if (present(f) .or. present(virial) .or. present(local_virial)) then
 	  call df3_dr(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)
 	  drij_dri = drij
 	  drij_drj = -drij
