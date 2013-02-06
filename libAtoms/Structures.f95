@@ -55,7 +55,7 @@ module  structures_module
   private
 
   public :: slab, find_motif
-  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, rutile, diamond, supercell, structure_from_file, fcc, &
+  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, supercell, structure_from_file, fcc, &
    fcc_11b2_edge_disloc, fcc_disloc_malc, disloc_noam, fcc_z111_ortho, fcc_z111, fcc_z100, bulk, unit_slab, slab_width_height_nz, &
    slab_nx_ny_nz, bcc, transform
 
@@ -339,12 +339,13 @@ contains
     at%pos(:, 2) = lat .mult. (/  0.5_DP,  0.5_DP,  0.5_DP  /)
   endsubroutine fcc_z100
 
+  !% Construct a bulk primitive cell with a given lattice type and lattice parameters
   subroutine bulk(at, lat_type, a, c, u, x, y, z, atnum)
     type(Atoms), intent(out) :: at
-    character(len=*), intent(in) :: lat_type
-    real(dp), intent(in) :: a
+    character(len=*), intent(in) :: lat_type !% One of 'diamond', 'bcc', 'fcc', 'alpha_quartz', 'anatase_cubic', 'anatase', or 'rutile'
+    real(dp), intent(in) :: a !% Principal lattice constant 
     real(dp), intent(in), optional :: c, u, x, y, z
-    integer, intent(in), optional :: atnum(:) ! atomic numbers
+    integer, intent(in), optional :: atnum(:) !% Optionally specify atomic numbers
 
     if(trim(lat_type).eq.'diamond') then
        call diamond(at, a, atnum)
@@ -1722,7 +1723,8 @@ contains
    allocate(unit_cell(a1%n))
    unit_cell = .false.
    do i=1,a1%n
-      t = g .mult. a1%pos(:,i)
+      ! add small shift to avoid coincidental alignment
+      t = g .mult. a1%pos(:,i) + (/0.01_dp, 0.02_dp, 0.03_dp/) 
       if (all(t >= -0.5) .and. all(t < 0.5)) unit_cell(i) = .true.
    end do
 
