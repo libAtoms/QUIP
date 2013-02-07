@@ -21,6 +21,17 @@ Potential objects
 
 .. automodule:: quippy.potential
     :synopsis: Evaluate interatomic potentials
+
+.. autoclass:: Potential
     :members:
     :inherited-members:
     :show-inheritance:
+
+.. autoclass:: ForceMixingPotential
+    :members:
+    :show-inheritance:
+
+.. autoclass:: Minim
+    :members:
+
+.. autofunction:: force_test

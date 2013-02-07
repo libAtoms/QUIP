@@ -27,9 +27,11 @@ Connection objects
     :inherited-members:
     :show-inheritance:
 
-.. autosummary::
-    fit_box_in_cell
-    divide_cell
-    get_min_max_images
-    max_cutoff
+.. autofunction:: fit_box_in_cell
+
+.. autofunction:: divide_cell
+
+.. autofunction:: get_min_max_images
+
+.. autofunction::  max_cutoff
 

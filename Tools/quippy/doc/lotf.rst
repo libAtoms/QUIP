@@ -17,10 +17,14 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-`Learn on the Fly` adjustable potential
-=======================================
+`Learn on the Fly` embedding scheme
+===================================
+
+.. automodule:: quippy.lotf
+   :synopsis: `Learn on the Fly` dynamics
+   :members:
 
 .. automodule:: quippy.adjustablepotential
-    :synopsis:  `Learn on the Fly` adjustable potential
-    :members:
+   :synopsis:  `Learn on the Fly` adjustable potential
+   :members:
 

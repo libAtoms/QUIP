@@ -51,7 +51,7 @@ Molecular Dynamics
 
 .. toctree::
    dynamicalsystem.rst
-   adjustablepotential.rst
+   lotf.rst
 
 Additional tools for Potentials
 -------------------------------
