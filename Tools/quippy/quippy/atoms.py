@@ -238,9 +238,9 @@ class PropertiesWrapper(DictMixin):
     def __getitem__(self, key):
         at = self.atref()
         res = at.properties[at.name_map.get(key, key)].view(np.ndarray).T
-        if res.dtype == 'int32':   # convert dtype int32 -> int
-            res = res.astype(int)
-            atomslog.debug('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
+        #if res.dtype == 'int32':   # convert dtype int32 -> int
+        #    res = res.astype(int)
+        #    atomslog.debug('Making copy of arrays["%s"] since quippy/ASE dtypes incompatible' % key)
         return res
 
     def __setitem__(self, key, value):
