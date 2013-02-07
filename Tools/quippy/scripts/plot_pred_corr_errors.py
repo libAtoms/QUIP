@@ -34,6 +34,7 @@ p.add_option('-D', '--no-display', action='store_false', help='Do not display fi
 p.add_option('-t', '--title', action='store', help='Title for plot', default='Predictor-corrector Force Errors')
 p.add_option('-T', '--tex', action='store_true', help='Use LaTeX to render all text')
 p.add_option('-n', '--n-cycles', action='store_true', help='Show the number of predictor-corrector cycles in legend')
+p.add_option('-e', '--extrap-steps', action='store', type=int, help='Length of predictor-corrector extrapolation')
 p.add_option('-L', '--legend', action='store_true', help='Draw a figure legend')
 
 opt, filenames = p.parse_args()
@@ -42,6 +43,8 @@ if opt.tex:
     print 'Using LaTeX fonts'
     rc('text', usetex=True)
     rc('font',**{'family':'serif','serif':['Computer Modern']})
+
+extrap_steps = opt.extrap_steps
 
 titles = np.array([['RMS error - extrapolation', 'RMS error - interpolation'],
                    ['Max error - extrapolation', 'Max error - interpolation']])
@@ -69,7 +72,8 @@ for filename, label, color in zip(filenames, opt.label, colors):
     print "processing file", filename
     print "label", label
 
-    extrap_steps = int(os.popen('grep extrapolate_steps %s' % filename).read().split()[2])
+    if extrap_steps is None:
+        extrap_steps = int(os.popen('grep extrapolate_steps %s' % filename).read().split()[2])
     extrap_data = np.loadtxt(os.popen('grep "^E err" %s' % filename), usecols=(2,3,4))
     interp_data = np.loadtxt(os.popen('grep "^I err" %s' % filename), usecols=(2,3,4))
 
