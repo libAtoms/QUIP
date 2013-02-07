@@ -30,7 +30,7 @@ import __builtin__
 import itertools
 
 __doc__ = _cinoutput.__doc__
-__all__ = _cinoutput.__all__
+__all__ = _cinoutput.__all__ + ['CInOutputReader', 'CInOutputWriter']
 
 class CInOutput(_cinoutput.CInOutput):
     def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
@@ -83,6 +83,8 @@ class CInOutput(_cinoutput.CInOutput):
             
         return at
 
+    read.__doc__ = _cinoutput.CInOutput.read.__doc__
+
     def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
               shuffle=None, deflate=None, deflate_level=None, estr=None, update_index=None):
 
@@ -97,6 +99,8 @@ class CInOutput(_cinoutput.CInOutput):
                                    deflate_level=deflate_level, estr=estr, update_index=update_index)
         if estr is not None:
             return str(estr)
+
+    write.__doc__ = _cinoutput.CInOutput.write.__doc__
     
 
 from quippy import FortranDerivedTypes

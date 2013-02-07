@@ -105,7 +105,18 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
                         # if it's a single string, join it and strip it
                         at.params[name] = ''.join(var[frame]).strip()
                     else:
-                        at.params[name] = var[frame].T
+                        if name == 'cutoff':
+                            at.set_cutoff(var[frame], at.cutoff_break)
+                        elif name == 'cutoff_factor':
+                            at.set_cutoff_factor(var[frame], at.cutoff_break)
+                        elif name == 'cutoff_break':
+                            at.set_cutoff(at.cutoff, var[frame])
+                        elif name == 'cutoff_factor_break':
+                            at.set_cutoff_factor(var[frame], at.cutoff_break)
+                        elif name == 'nneightol':
+                            at.nneightol = var[frame]
+                        else:
+                            at.params[name] = var[frame].T
 
         if 'cell_rotated' in source.variables:
             cell_rotated = source.variables['cell_rotated'][frame]
@@ -225,8 +236,19 @@ class NetCDFWriter(object):
             assert self.dest.variables[name].dimensions == dims
             self.dest.variables[name][self.frame] = getattr(at, origname.lower()).T
 
-        for name in at.params.keys():
-            t, s = at.params.get_type_and_size()
+        params = at.params.copy()
+        params['nneightol'] = at.nneightol
+        if at.use_uniform_cutoff:
+            params['cutoff'] = at.cutoff
+            if at.cutoff_break != at.cutoff:
+                params['cutoff_break'] = at.cutoff_break
+        else:
+            params['cutoff_factor'] = at.cutoff
+            if at.cutoff_break != at.cutoff:
+                params['cutoff_factor_break'] = at.cutoff_break
+
+        for name in params.keys():
+            t, s = params.get_type_and_size()
             dtype, dims = param_type_to_dype_dims[(name, t)]
 
             if not name in self.dest.variables:
@@ -236,7 +258,7 @@ class NetCDFWriter(object):
             assert self.dest.variables.type == t
             assert self.dest.variables.dimensions == dims
 
-            self.dest.variables[name][self.frame] = at.params[name]
+            self.dest.variables[name][self.frame] = params[name]
 
         self.frame += 1
 

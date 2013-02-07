@@ -123,6 +123,15 @@ def PuPyXYZReader(xyz):
         lattice = params.get_value('Lattice') # make a copy
         del params['Lattice']
 
+        # Get speccial params entries:
+        #   nneightol, cutoff, cutoff_break, cutoff_factor, cutoff_break_factor
+        special_params = {}
+        for key in ['nneightol', 'cutoff', 'cutoff_break',
+                    'cutoff_factor', 'cutoff_break_factor']:
+            special_params[key] = params.get(key)
+            if key in params:
+                del params[key]
+
         props_dtype = _props_dtype(properties)
 
         converters = [_getconv(props_dtype.fields[name][0]) \
@@ -142,6 +151,14 @@ def PuPyXYZReader(xyz):
 
         # Empty dictionary passed for properties to avoid creating pos, species, z.
         at = Atoms(n=n,lattice=lattice,params=params,properties={})
+
+        # Set the special attributes nneightol, cutoff, cutoff_break, use_uniform_cutoff
+        if special_params.get('nneightol'):
+            at.nneightol = special_params['nneightol']
+        if special_params.get('cutoff'):
+            at.set_cutoff(special_params['cutoff'], special_params['cutoff_break'])
+        elif special_params.get('cutoff_factor'):
+            at.set_cutoff_factor(special_params['cutoff_factor'], special_params['cutoff_break_factor'])
 
         for p in properties:
             ptype, cols = properties[p]
@@ -209,11 +226,14 @@ class PuPyXYZWriter(object):
             else:
                 raise TypeError('bad property type %d' % t)
 
-        def properties_comment(self, properties=None):
+        def properties_comment(self, properties=None, params=None):
             if properties is None:
                 props = self.properties.keys()
             else:
                 props = properties
+
+            if params is None:
+                params = self.params
 
             pmap = { T_INTEGER_A: 'I',
                      T_REAL_A: 'R',
@@ -229,7 +249,7 @@ class PuPyXYZWriter(object):
                                           [pmap[self.properties.get_type_and_size(k)[0]] for k in props],
                                           [str(ncols(self.properties, k)) for k in props])))
 
-            return props_str, lattice_str+' Properties='+props_str+' '+str(self.params)
+            return props_str, lattice_str+' Properties='+props_str+' '+str(params)
 
 
         if properties is None:
@@ -253,7 +273,19 @@ class PuPyXYZWriter(object):
         if pos.shape != (3, at.n) or pos.dtype.kind != 'f':
             raise ValueError('Second property must be position like')
 
-        props_str, comment = properties_comment(at, props)
+        # Set extra params entries for cutoff etc.
+        params = at.params.copy()
+        params['nneightol'] = at.nneightol
+        if at.use_uniform_cutoff:
+            params['cutoff'] = at.cutoff
+            if at.cutoff != at.cutoff_break:
+                params['cutoff_break'] = at.cutoff_break
+        else:
+            params['cutoff_factor'] = at.cutoff
+            if at.cutoff != at.cutoff_break:
+                params['cutoff_break_factor'] = at.cutoff_break
+
+        props_str, comment = properties_comment(at, props, params)
 
         subprops = OrderedDict.frompairs([(k, at.properties[k]) for k in props])
         data = np.zeros(at.n, _props_dtype(parse_properties(props_str)))
