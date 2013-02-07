@@ -442,7 +442,7 @@ contains
   end function einstein_frequencies
   
   
-    subroutine elastic_fields(at, a, C11, C12, C44, Cij)
+  subroutine elastic_fields(at, a, C11, C12, C44, Cij)
     type(Atoms), intent(inout) :: at
     real(dp), intent(in) :: a
     real(dp), intent(in), optional :: C11, C12, C44
@@ -544,7 +544,7 @@ contains
     ngood = 0
     do i=1,at%N
 
-       call print('Atom '//i)
+       call print('Atom '//i, PRINT_VERBOSE)
 
        ! Count number of nearest neighbours
        nn = 0
@@ -712,7 +712,7 @@ contains
 
     end do
 
-    call print('Processed '//ngood//' of '//at%N//' atoms.')
+    call print('Processed '//ngood//' of '//at%N//' atoms.', PRINT_VERBOSE)
 
   end subroutine elastic_fields
 
