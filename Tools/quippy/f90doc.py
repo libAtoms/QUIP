@@ -463,8 +463,7 @@ class C_subt:
                 self.arguments == other.arguments and
                 self.doc == other.doc and
                 self.uses == other.uses and
-                self.recur == other.recur and
-                self.args_str == other.args_str)
+                self.recur == other.recur)
         
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -625,8 +624,7 @@ class C_funct:
                 self.uses == other.uses and
                 self.ret_val == other.ret_val and
                 self.ret_val_doc == other.ret_val_doc and
-                self.recur == other.recur and
-                self.args_str == other.args_str)
+                self.recur == other.recur)
         
     def __ne__(self, other):
         return not self.__eq__(other)
