@@ -629,6 +629,8 @@ def write(filename, atoms, **writeargs):
 
     File format is inferred from file extension, see :ref:`fileformats`.
     """
+    if not isinstance(atoms, Atoms):
+        atoms = Atoms(atoms)
     AtomsWriter(filename, **writeargs).write(atoms)
 
 
