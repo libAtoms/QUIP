@@ -48,6 +48,7 @@ Classical interatomic potentials:
 - Partridge-Schwenke (water monomer)
 - Si-MEAM (silicon)
 - Stillinger-Weber (carbon, silicon, germanium)
+- Stillinger-Weber + Vashishta (silicon/silica interfaces)
 - Sutton-Chen
 - Tangney-Scandolo (silica, titania etc)
 - Tersoff (silicon, carbon)

@@ -1,1 +1,0 @@
-/Users/jameskermode/Dropbox/ADGLASS-School-Trieste/adglass2013.rst

@@ -36,9 +36,6 @@ extension.
 
 The quippy native formats are :ref:`extendedxyz` and :ref:`netcdf`.
 
-.. module:: quippy.cinoutput
-   :synopsis: XYZ and NetCDF I/O using fast C routines
-
 The standard implementation of both these formats is in C in the files
 :file:`xyz.c` and :file:`netcdf.c` in the `libAtoms` package. It is
 this version which is wrapped by the
@@ -290,6 +287,14 @@ attribute must be added to the NetCDF variable, with one of the following values
 See the :mod:`quippy.netcdf` module for a reference implementation of the
 NetCDF reading and writing routines, in pure Python.
 
+CInOutput objects
+-----------------
+
+.. automodule:: quippy.cinoutput
+   :synopsis: XYZ and NetCDF I/O using fast C routines
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 .. _asap:
 
