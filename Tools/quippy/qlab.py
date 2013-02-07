@@ -272,6 +272,9 @@ class AtomsViewer(Atoms, QuippyViewer):
         self.shallow_copy_from(source)
         self.redraw()
 
+    def reload(self):
+        self.update_source(self.source)
+
     def copy(self):
         return Atoms.copy(self)
 
@@ -294,6 +297,10 @@ class AtomsReaderViewer(AtomsReader, QuippyViewer):
         AtomsReader.__init__(self, source, **kwargs)
         self.redraw()
 
+    def reload(self):
+        self.update_source(self.source)
+        self.last()
+
 class AtomsListViewer(AtomsList, QuippyViewer):
     """
     Subclass of AtomsList and AtomEyeViewer
@@ -306,6 +313,10 @@ class AtomsListViewer(AtomsList, QuippyViewer):
         del self[:]
         AtomsList.__init__(self, source, **kwargs)
         self.redraw()
+
+    def reload(self):
+        self.update_source(self.source)
+        self.last()
 
 def find_viewer(source, name=None, recycle=True):
     global _viewers, _current_viewer
@@ -338,7 +349,7 @@ def find_viewer(source, name=None, recycle=True):
         print 'Creating viewer named %s' % name
         return (name, None)
         
-def read(source, name=None, recycle=True, loadall=False, inject=True,
+def show(source, name=None, recycle=True, loadall=False, inject=True,
          fortran_indexing=True, **kwargs):
     """
     Read atoms from `source` and open in an AtomEye viewer window.
@@ -379,8 +390,8 @@ def read(source, name=None, recycle=True, loadall=False, inject=True,
         parent_frame.f_globals[viewer.name] = viewer
     return viewer
 
-# make 'view' a synonym for 'read'
-view = read
+# make 'view' a synonym for 'show'
+view = show
 
 def gcv():
     """
