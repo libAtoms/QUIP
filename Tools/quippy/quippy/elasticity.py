@@ -20,6 +20,7 @@ from quippy import available_modules
 if 'scipy' in available_modules:
     from scipy import stats
 from farray import *
+from quippy.atoms import Atoms
 from quippy import _elasticity
 from quippy._elasticity import *
 import numpy as np
@@ -27,8 +28,9 @@ __all__ = _elasticity.__all__ + ['strain_matrix', 'stress_matrix', 'strain_vecto
                                  'stress_vector', 'generate_strained_configs',
                                  'calc_stress', 'fit_elastic_constants',
                                  'elastic_constants', 'atomic_strain',
-                                 'elastic_fields', 'transform_elasticity',
-                                 'rayleigh_wave_speed']
+                                 'elastic_fields_fortran', 'elastic_fields',
+                                 'AtomResolvedStressField',
+                                 'transform_elasticity', 'rayleigh_wave_speed']
 
 def strain_matrix(strain_vector):
     """
@@ -467,6 +469,8 @@ def atomic_strain(at, r0, crystal_factor=1.0):
     return strain/crystal_factor
 
 
+elastic_fields_fortran = elastic_fields # Fortran elastic fields routine
+
 def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=None,
                    save_reference=False, use_reference=False, mask=None, interpolate=False,
                    cutoff_factor=1.2, system='tetrahedric'):
@@ -736,6 +740,78 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
     at.cutoff, at.use_uniform_cutoff = save_cutoff, save_use_uniform_cutoff
 
 
+class AtomResolvedStressField(object):
+    """
+    Calculator interface to :func:`elastic_fields_fortran` and :func:`elastic_fields`
+
+    Computes local stresses from atom resolved strain tensor and linear elasticity.
+
+    Parameters
+    ----------
+    bulk: :class:`.Atoms` object, optional
+       If present, override `a` and ``cij`` with bulk.cell[0,0] and
+       ``bulk.get_calculator().get_elastic_constants(bulk)``. This means
+       `bulk` should be the relaxed cubic unit cell.
+    a : float, optional
+       Lattice constant
+    cij : array_like, optional
+       6 x 6 matrix of elastic constants :math:`C_{ij}`.
+       Can be obtained with :meth:`.Potential.get_elastic_constants'.
+    method : str
+       Which routine to use: one of "fortran" or "python".
+    **extra_args : dict
+       Extra arguments to be passed along to python :func:`elastic_fields`, e.g.
+       for non-cubic cells.
+    """
+
+    def __init__(self,  bulk=None, a=None, cij=None, method='fortran', **extra_args):
+        if method not in ['fortran', 'python']:
+            raise ValueError('method should be one of "fortran" or "python"')
+        self.method = method
+        self.a = a
+        self.cij = farray(cij)
+        self.extra_args = extra_args
+        if bulk is not None:
+            self.a = bulk.cell[0,0]
+            calc = bulk.get_calculator()
+            if calc is None:
+                raise RuntimeError('bulk Atoms passed to AtomResolvedStressField has no calculator!')
+            self.cij = farray(calc.get_elastic_constants(bulk))
+        
+
+    def get_stresses(self, atoms):
+        """
+        Returns local stresses on `atoms` as a ``(len(atoms), 3, 3)`` array
+        """
+        if not isinstance(atoms, Atoms):
+            atoms = Atoms(atoms)
+        
+        sigma = np.zeros((len(atoms), 3, 3))
+        if self.method == 'fortran':
+            elastic_fields_fortran(atoms, a=self.a, cij=self.cij)
+            
+            sigma[:,0,0], sigma[:,1,1], sigma[:,2,2], sigma[:,1,2], sigma[:,0,2], sigma[:,0,1] = \
+               atoms.sig_xx, atoms.sig_yy, atoms.sig_zz, atoms.sig_yz, atoms.sig_xz, atoms.sig_xy
+        else:
+            elastic_fields(atoms, a=self.a, cij=self.cij, **self.extra_args)
+
+            sigma[:,0,0], sigma[:,1,1], sigma[:,2,2], sigma[:,1,2], sigma[:,0,2], sigma[0,1] = atoms.stress
+
+        # Fill in symmetric components
+        sigma[:,1,0] = sigma[:,0,1]
+        sigma[:,2,1] = sigma[:,1,2]
+        sigma[:,2,0] = sigma[:,0,2]
+
+        return sigma
+
+
+    def get_stress(self, atoms):
+        """
+        Returns total stress on `atoms`, as a 6-element array
+        """
+        stresses = self.get_stresses(atoms)
+        return stresses.sum(axis=0)
+        
 
 def elasticity_matrix_to_tensor(C):
     """Given a 6x6 elastic matrix in compressed Voigt notation, return
