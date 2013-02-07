@@ -109,7 +109,7 @@ class Table(_table.Table):
         See Table.from_atom_indices for more details.
         """
         return cls.from_atom_indices(atoms, list=list,
-                                       force_fortran_indexing=force_fortran_indexing)
+                                     force_fortran_indexing=force_fortran_indexing)
 
 
     @classmethod
@@ -120,7 +120,7 @@ class Table(_table.Table):
         See Table.from_atom_indices for more details.
         """
         return cls.from_atom_indices(atoms, mask=mask,
-                                       force_fortran_indexing=force_fortran_indexing)
+                                     force_fortran_indexing=force_fortran_indexing)
 
 
     def to_atom_list(self, atoms=None):
