@@ -133,7 +133,7 @@ class TestCalculator_SW_Potential(QuippyTestCase):
 
    def test_stress(self):
       from quippy.elasticity import stress_vector
-      self.assertArrayAlmostEqual(self.ase_at.get_stress(), stress_vector(-self.v_ref*GPA/self.at.cell_volume()))
+      self.assertArrayAlmostEqual(self.ase_at.get_stress(), stress_vector(-self.v_ref/self.at.cell_volume()))
 
    def test_numeric_forces(self):
       self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.ase_at), self.f_ref.T, tol=1e-4)
