@@ -39,7 +39,7 @@ p.add_option('-n', '--no-interactive', action='store_true', help="""Exit when do
 p.add_option('-e', '--exec-code', action='append', help="""Python statements to execute on startup""")
 p.add_option('-c', '--chain', action='store_true', help="""Chain all input files together""")
 p.add_option('-t', '--time-ordered-series', action='store_true', help="""Join all input files, ordering by time and discarding duplicates""")
-p.add_option('--read-args', action='store', help="""Extra arguments to be passed to read() routine.""")
+p.add_option('--view-args', action='store', help="""Extra arguments to be passed to view() routine.""")
 p.add_option('--atom-range', action='store', help="""Range of atoms to include: should be followed by two arguments, min
 and max 1-based atom indices. Using a reduced atom range dramatically
 speeds up reading of large XYZ trajectories.""", nargs=2)
@@ -49,15 +49,15 @@ opt, args = p.parse_args()
 if opt.chain and opt.time_ordered_series:
     p.error('-c/--chain and -t/--time-ordered-series are mutually exclusive')
 
-read_args = {}
+view_args = {}
 if opt.atom_range is not None:
-    read_args['range'] = opt.atom_range
-if opt.read_args is not None:
-    read_args.update(eval("dict(%s)" % opt.read_args))
+    view_args['range'] = opt.atom_range
+if opt.view_args is not None:
+    view_args.update(eval("dict(%s)" % opt.view_args))
 
 viewers = []
 if opt.chain:
-    v = read(args, loadall=opt.loadall, name='at', **read_args)
+    v = view(args, loadall=opt.loadall, name='at', **view_args)
     __all__.append('at')
     viewers.append(v)
 elif opt.time_ordered_series:
@@ -65,12 +65,12 @@ elif opt.time_ordered_series:
         pattern, = args
     except:
         p.error('when -t/--time-ordered-series is present, only one argument should be given')
-    v = read(time_ordered_series(pattern), loadall=opt.loadall, name='at', **read_args)
+    v = view(time_ordered_series(pattern), loadall=opt.loadall, name='at', **view_args)
     __all__.append('at')
     viewers.append(at)    
 else:
     for filename in args:
-        v = read(filename, loadall=opt.loadall, **read_args)
+        v = view(filename, loadall=opt.loadall, **view_args)
         __all__.append(v.name)
         viewers.append(v)
 
