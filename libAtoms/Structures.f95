@@ -57,7 +57,9 @@ module  structures_module
   public :: slab, find_motif
   public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, supercell, structure_from_file, fcc, &
    fcc_11b2_edge_disloc, fcc_disloc_malc, disloc_noam, fcc_z111_ortho, fcc_z111, fcc_z100, bulk, unit_slab, slab_width_height_nz, &
-   slab_nx_ny_nz, bcc, transform
+   slab_nx_ny_nz, bcc, transform, arbitrary_supercell, find_compatible_supercells, bond_angle_mean_dev, map_nearest_atoms, &
+   delaunay_reduce, min_neighbour_dist, remove_too_close_atoms, surface_unit_cell
+
 
   interface slab
      module procedure slab_width_height_nz, slab_nx_ny_nz
@@ -3221,5 +3223,104 @@ subroutine anatase(at, a, c, u)
       end do
 
    end subroutine bond_angle_mean_dev
+
+   subroutine surface_unit_cell(i_out, surf_v, lat, third_vec_normal, tol, max_n)
+      integer, intent(out) :: i_out(3,3) !% combination of primitive lattice vectors to create supercell (surf_lattice = latt . i_out).  column i specifies output pbc vector i.
+      real(dp), intent(in) :: surf_v(3) !% surface vector
+      real(dp), intent(in) :: lat(3,3) !% lattice
+      logical, intent(in), optional :: third_vec_normal
+      real(dp), intent(in), optional :: tol
+      integer, intent(in), optional :: max_n
+
+      logical :: my_third_vec_normal
+      real(dp) :: my_tol
+      integer :: my_max_n
+
+      integer :: i1, i2, i3, j1, j2, j3
+      real(dp) :: v1(3), v2(3), v3(3), v1_cross_v2(3), v1_cross_v2_norm, surf_v_hat(3)
+      real(dp) :: smallest_so_far, most_normal_so_far
+      real(dp) :: cell(3,3), cell_vol
+
+      my_max_n = optional_default(5, max_n)
+      my_tol = optional_default(1.0e-6_dp, tol)
+      my_third_vec_normal = optional_default(.false., third_vec_normal)
+
+      surf_v_hat = surf_v/norm(surf_v)
+
+      smallest_so_far = 1.0e38_dp
+      do i1 = -my_max_n, my_max_n
+      do i2 = -my_max_n, my_max_n
+      do i3 = -my_max_n, my_max_n
+	 v1 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
+	 do j1 = -my_max_n, my_max_n
+	 do j2 = -my_max_n, my_max_n
+	 do j3 = -my_max_n, my_max_n
+	    v2 = lat(:,1)*j1 + lat(:,2)*j2 + lat(:,3)*j3
+	    v1_cross_v2 = (v1 .cross. v2)
+	    v1_cross_v2_norm = norm(v1_cross_v2)
+
+	    if (v1_cross_v2_norm <= my_tol) cycle ! v1 and v2 are parallel
+	    if ((v1_cross_v2 .dot. surf_v_hat)/v1_cross_v2_norm < 1.0_dp-my_tol) cycle ! v1 cross v2 is not parallel to surf_v
+
+	    if (v1_cross_v2_norm < smallest_so_far-my_tol) then ! v1 cross v2 is smallest than best so far, pick it
+	       i_out(:,1) = (/ i1, i2, i3 /)
+	       i_out(:,2) = (/ j1, j2, j3 /)
+	       smallest_so_far = v1_cross_v2_norm
+	       most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
+	    else if (v1_cross_v2_norm <= smallest_so_far + my_tol) then ! v1 cross v2 is as good as best so far, check for normalness
+	       if (abs((v1 .dot. v2) / (norm(v1)*norm(v2))) < most_normal_so_far) then ! v1 more normal to v2, pick them
+		  i_out(:,1) = (/ i1, i2, i3 /)
+		  i_out(:,2) = (/ j1, j2, j3 /)
+		  smallest_so_far = v1_cross_v2_norm
+		  most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
+	       endif
+	    endif
+	 end do
+	 end do
+	 end do
+      end do
+      end do
+      end do
+
+      if (smallest_so_far >= 1.0e38_dp) then
+	 call system_abort("failed to find a proper unit cell v1,v2")
+      endif
+
+      v1 = matmul(lat, i_out(:,1))
+      v2 = matmul(lat, i_out(:,2))
+      cell(:,1) = v1
+      cell(:,2) = v2
+      v1_cross_v2 = (v1 .cross. v2)
+      v1_cross_v2_norm = norm(v1_cross_v2)
+
+      smallest_so_far = 1.0e38_dp
+      do i1 = -my_max_n, my_max_n
+      do i2 = -my_max_n, my_max_n
+      do i3 = -my_max_n, my_max_n
+	 v3 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
+
+	 cell(:,3) = v3
+	 cell_vol = cell_volume(cell)
+	 if (cell_vol < my_tol) cycle ! v3 is in v1-v2 plane
+	 if (my_third_vec_normal .and. abs(v1_cross_v2 .dot. v3)/(v1_cross_v2_norm*norm(v3)) < 1.0_dp-my_tol) cycle ! need v3 normal to surface, and it's not sufficiently parallel to v1 x v2
+	 if (cell_vol < smallest_so_far-my_tol) then ! volume is smaller, pick it
+	    i_out(:,3) = (/ i1, i2, i3 /)
+	    smallest_so_far = cell_vol
+	    most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
+	 else if (cell_vol <= smallest_so_far+my_tol) then ! equal, check for normalness
+	    if (abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm)) > most_normal_so_far) then ! this v3 more normal to surface (i.e. more parallel to v1_cross_v2), pick it
+	       i_out(:,3) = (/ i1, i2, i3 /)
+	       smallest_so_far = cell_vol
+	       most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
+	    endif
+	 endif
+      end do
+      end do
+      end do
+      if (smallest_so_far >= 1.0e38_dp) then
+	 call system_abort("failed to find a proper unit cell v3")
+      endif
+
+   end subroutine surface_unit_cell
 
 end module structures_module
