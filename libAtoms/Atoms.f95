@@ -872,10 +872,11 @@ contains
       
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_logical
+
    subroutine atoms_set_param_value_str(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
-      character(1), intent(in) :: value(:)
+      character(len=*), intent(in) :: value
       
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_str
@@ -938,7 +939,7 @@ contains
    subroutine atoms_get_param_value_str(this, key, value, error)
       type(Atoms), intent(in) :: this
       character(len=*), intent(in) :: key
-      character(1), intent(out) :: value(:)
+      character(STRING_LENGTH), intent(out) :: value
       integer, intent(out), optional :: error
       
       INIT_ERROR(error)
