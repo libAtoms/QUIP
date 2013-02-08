@@ -136,9 +136,9 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, sizeof_fortran_t,
                                                  filtertypes=filtertypes, prefix=prefix, callback_routines=callback_routines,
                                                  public_symbols=public_symbols, sizeof_fortran_t=sizeof_fortran_t)
 
-            if (not os.path.exists(wrapper) or
-                (not f2py_wrapper_gen.cmp_nested_dict(new_spec[wrap_mod_name],
-                                                      fortran_spec.get(wrap_mod_name, None)))):
+            if (not os.path.exists(wrapper) or new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
+                #                (not f2py_wrapper_gen.cmp_nested_dict(new_spec[wrap_mod_name],
+                #                                       fortran_spec.get(wrap_mod_name, None)))):
                 print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
                 wrapperf = open(wrapper, 'w')
                 wrapperf.write(tmpf.getvalue())
