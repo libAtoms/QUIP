@@ -52,7 +52,7 @@ class LOTFDynamics(MolecularDynamics):
 
     def __init__(self, atoms, timestep, extrapolate_steps,
                  trajectory=None, logfile=None, loginterval=1,
-                 check_force_error=True, qm_update_func=None):
+                 check_force_error=False, qm_update_func=None):
 
         MolecularDynamics.__init__(self, atoms, timestep,
                                    trajectory, logfile, loginterval)
@@ -271,7 +271,7 @@ class LOTFDynamics(MolecularDynamics):
 
         Number of LOTF cycles is given by ``step/extrapolate_steps``.
         """
-        lotf_steps = max(1, steps/extrapolate_steps)
+        lotf_steps = max(1, steps/self.extrapolate_steps)
         for i in range(lotf_steps):
             self.step()
    
