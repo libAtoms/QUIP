@@ -13,7 +13,7 @@ integer :: surf_i(3,3)
 type(Dictionary) :: cli_params
 real(dp) :: F(3,3), old_axes(3,3), old_axes_inv(3,3), new_axes(3,3), z_min, z_max, z_vacuum
 integer :: n3_min, n3_max
-character(len=1) :: comment(1024), Z_order(1024)
+character(len=STRING_LENGTH) :: comment, Z_order
 character(len=STRING_LENGTH) :: verbosity
 
 call system_initialise(verbosity=PRINT_SILENT)
@@ -106,12 +106,10 @@ call set_lattice(at_slab_cut, old_axes, .false.)
 
 ! print out final slab
 
-comment=''
 call get_param_value(at_prim, "VASP_Comment", comment)
-comment = s2a(trim(a2s(comment))//" surf_v "//surf_v)
+comment = trim(comment)//" surf_v "//surf_v
 call set_param_value(at_slab_cut, "VASP_Comment", comment)
 
-Z_order=''
 call get_param_value(at_prim, "VASP_Z_order", Z_order)
 call set_param_value(at_slab_cut, "VASP_Z_order", Z_order)
 
@@ -134,22 +132,17 @@ subroutine write_vasp(at, filename, fix_order)
    integer :: sorted_Zs(at%N)
    integer, allocatable :: uniq_Zs(:)
    integer :: i, j
-   character(len=1) :: comment(1024), Z_order(1024)
-   character(len=1024) :: Z_order_str
+   character(len=STRING_LENGTH) :: comment, Z_order
    integer :: n_species, i_species, Ns(100)
 
    call initialise(io, filename)
-   comment = ''
    call get_param_value(at, "VASP_Comment", comment)
 
-   Z_order = ''
-   if (get_value(at%params, 'VASP_Z_order', Z_order)) then
-      Z_order_str = trim(a2s(Z_order))
-   else
-      Z_order_str = ''
+   if (.not. get_value(at%params, 'VASP_Z_order', Z_order)) then
+      Z_order = ''
    endif
 
-   call print(trim(a2s(comment)), file=io, verbosity=PRINT_ALWAYS)
+   call print(trim(comment), file=io, verbosity=PRINT_ALWAYS)
    call print(1.0_dp, file=io, verbosity=PRINT_ALWAYS)
    call print(at%lattice(:,1), file=io, verbosity=PRINT_ALWAYS)
    call print(at%lattice(:,2), file=io, verbosity=PRINT_ALWAYS)
@@ -158,8 +151,8 @@ subroutine write_vasp(at, filename, fix_order)
       sorted_Zs = at%Z
       call sort_array(sorted_Zs)
       call uniq(sorted_Zs, uniq_Zs)
-      if (len_trim(Z_order_str) > 0) then
-	 read(unit=Z_order_str, fmt=*) line, uniq_Zs
+      if (len_trim(Z_order) > 0) then
+	 read(unit=Z_order, fmt=*) line, uniq_Zs
       endif
 
       line = ""
@@ -222,7 +215,7 @@ subroutine read_vasp(at, filename)
    character(*), intent(in) :: filename
 
    type(Inoutput) :: io
-   character(len=1024) :: comment, Z_order
+   character(len=STRING_LENGTH) :: comment, Z_order
    character(len=10) :: species(100)
    integer :: n_species, i, j, N_tot
    integer :: Ns(100), species_Zs(100)
@@ -283,12 +276,12 @@ subroutine read_vasp(at, filename)
    endif
 
    if (len_trim(comment) == 0) then
-      call set_param_value(at, "VASP_Comment", s2a("none"))
+      call set_param_value(at, "VASP_Comment", "none")
    else
-      call set_param_value(at, "VASP_Comment", s2a(trim(comment)))
+      call set_param_value(at, "VASP_Comment", trim(comment))
    endif
 
-   call set_param_value(at, "VASP_Z_order", s2a(trim(Z_order)))
+   call set_param_value(at, "VASP_Z_order", trim(Z_order))
 
    call finalise(io)
 
