@@ -3351,10 +3351,11 @@ type(inoutput), optional :: debugfile
       if (present(n_connectivity_hops) .or. present(min_images_only) .or. present(cluster_hopping_nneighb_only)) &
 	call print("WARNING: do_loop_atoms_no_connectivity, but specified unused arg n_connectivity_hops " // present(n_connectivity_hops) // &
 	  " min_images_only " // present(min_images_only) // " cluster_hopping_nneighb_only " // present(cluster_hopping_nneighb_only), PRINT_ALWAYS)
-       call print('WARNING: check if your cell is greater than the radius, looping only works in that case.',PRINT_ALWAYS)
-       if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) then
-	 RAISE_ERROR('too small cell', error)
-       endif
+       ! jrk33: disabled this warning - should be fine with small cells since distance_min_image is used.
+       ! call print('WARNING: check if your cell is greater than the radius, looping only works in that case.',PRINT_ALWAYS)
+       !if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) then
+       !RAISE_ERROR('too small cell', error)
+       !endifx
        do i = 1,at%N
 	 if (present(debugfile)) call print("check atom i " // i // " Z " // at%Z(i) // " pos " // at%pos(:,i), file=debugfile)
 	 if (do_add_only_heavy_atoms .and. at%Z(i) == 1) cycle
