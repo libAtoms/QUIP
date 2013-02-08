@@ -436,9 +436,7 @@ contains
        ! half step epsilon_v drag 
        if (this%finite_strain_formulation) then
 	  call inverse(this%epsilon_r, F_inv)
-	  vel_decay = transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
-	  vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
-	  this%epsilon_v = this%epsilon_v .mult. vel_decay
+	  this%epsilon_v = this%epsilon_v .mult. transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
        else
 	  this%epsilon_v = this%epsilon_v * exp(-0.5_dp*dt*this%gamma_epsilon)
        endif
@@ -447,22 +445,12 @@ contains
 
        ! half step barostat drag part of v
        vel_decay = matrix_exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
-       vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
        at%velo = vel_decay .mult. at%velo
 
        ! half step position affine defomration
        pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
-       pos_scale = 0.5_dp*(pos_scale + transpose(pos_scale))
        lattice_p = at%lattice
-! call print("lattice initial 00")
-! call print(at%lattice)
-! call print("pos_scale")
-! write (unit=*, fmt='(3F40.35)') pos_scale(1,:)
-! write (unit=*, fmt='(3F40.35)') pos_scale(2,:)
-! write (unit=*, fmt='(3F40.35)') pos_scale(3,:)
        call set_lattice(at, pos_scale .mult. lattice_p, scale_positions=.false.)
-! call print("lattice final")
-! call print(at%lattice)
        at%pos = pos_scale .mult. at%pos
 
     end select
@@ -490,26 +478,19 @@ contains
     select case(this%type)
 
       case(BAROSTAT_HOOVER_LANGEVIN)
-        !TIME_PROPAG_TEX 60 
-        !TIME_PROPAG_TEX 60 {\color {blue}
-        !TIME_PROPAG_TEX 60 after Verlet pos step, before force calc (barostat\_post\_pos\_pre\_calc)
-        !TIME_PROPAG_TEX 60
-        !TIME_PROPAG_TEX 60 $$ (r,h) = \exp\left( (\tau/2) \epsilon_v \right) (r,h) $$
-        !TIME_PROPAG_TEX 60 }
-        !TIME_PROPAG_TEX 60 
-        if (.not. present(virial)) call system_abort("barostat_post_pos_pre_calc needs virial")
+       !TIME_PROPAG_TEX 60 
+       !TIME_PROPAG_TEX 60 {\color {blue}
+       !TIME_PROPAG_TEX 60 after Verlet pos step, before force calc (barostat\_post\_pos\_pre\_calc)
+       !TIME_PROPAG_TEX 60
+       !TIME_PROPAG_TEX 60 $$ (r,h) = \exp\left( (\tau/2) \epsilon_v \right) (r,h) $$
+       !TIME_PROPAG_TEX 60 }
+       !TIME_PROPAG_TEX 60 
+       if (.not. present(virial)) call system_abort("barostat_post_pos_pre_calc needs virial")
 
         ! half step position affine defomration
-        pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
-        pos_scale = 0.5_dp*(pos_scale + transpose(pos_scale))
+	pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
         lattice_p = at%lattice
-! call print("lattice initial 10")
-! call print(at%lattice)
-! call print("pos_scale")
-! call print(pos_scale)
         call set_lattice(at, pos_scale .mult. lattice_p, scale_positions=.false.)
-! call print("lattice final")
-! call print(at%lattice)
         at%pos = pos_scale .mult. at%pos
 
     end select
@@ -562,7 +543,6 @@ contains
 
        !Decay the velocities for dt/2 again barostat part
        vel_decay = matrix_exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
-       vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
        at%velo(:,:) = vel_decay .mult. at%velo(:,:)
 
        this%epsilon_r = this%epsilon_r + dt*this%epsilon_v
@@ -589,28 +569,15 @@ contains
        rand_f_cell(3,2) = rand_f_cell(2,3)
 
        kinetic_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
-       kinetic_virial = 0.5_dp*(kinetic_virial + transpose(kinetic_virial))
-! call print("virial")
-! call print(virial)
-! call print("kinetic_virial")
-! call print(kinetic_virial)
-! call print("stress_ext")
-! call print(this%stress_ext)
-! call print("rand_f_cell")
-! call print(rand_f_cell)
        if (this%finite_strain_formulation) then
 	  F_det = matrix3x3_det(this%epsilon_r)
 	  call inverse(transpose(this%epsilon_r), F_T_inv)
 
 	  this%epsilon_f = (3.0_dp*(virial+kinetic_virial+volume_p*(this%epsilon_r .mult. this%stress_ext .mult. transpose(this%epsilon_r))/F_det + &
 				    3.0_dp/this%Ndof*kinetic_virial) + rand_f_cell) .mult. F_T_inv
-! call print("epsilon_f finite strain")
-! call print(this%epsilon_f)
        else
 	  this%epsilon_f = 3.0_dp*(virial+kinetic_virial+volume_p*this%stress_ext + &
 				   3.0_dp/this%Ndof*kinetic_virial) + rand_f_cell
-! call print("epsilon_f infinitesimal strain")
-! call print(this%epsilon_f)
        endif
 
        if (this%diagonal_strain .or. this%hydrostatic_strain) then
@@ -627,24 +594,16 @@ contains
 	   this%epsilon_f(3,3) = epsilon_f_hydrostatic
 	 endif
        endif
-! call print("epsilon_f final value")
-! call print(this%epsilon_f)
 
-! call print("epsilon_v initial")
-! call print(this%epsilon_v)
        ! half step with epsilon force
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_epsilon
        ! half step with epsilon drag
        if (this%finite_strain_formulation) then
 	  call inverse(this%epsilon_r, F_inv)
-	  vel_decay = transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
-	  vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
-	  this%epsilon_v = this%epsilon_v .mult. vel_decay 
+	  this%epsilon_v = this%epsilon_v .mult. transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
        else
 	  this%epsilon_v = this%epsilon_v * exp(-0.5_dp*dt*this%gamma_epsilon)
        endif
-! call print("epsilon_v final")
-! call print(this%epsilon_v)
 
        call print("BAROSTAT_KE "//barostat_KE(this))
 
