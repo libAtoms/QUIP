@@ -709,7 +709,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             for ase_name, value in other.arrays.iteritems():
                 quippy_name = self.name_map.get(ase_name, ase_name)
                 if ase_name not in standard_ase_arrays:
-                    self.add_property(quippy_name, value)
+                    self.add_property(quippy_name, np.transpose(value))
 
             self.constraints = copy.deepcopy(other.constraints)
             self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
