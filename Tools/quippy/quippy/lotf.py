@@ -288,7 +288,6 @@ class LOTFDynamics(MolecularDynamics):
                       lotf_do_init=True,
                       lotf_do_fit=True,
                       lotf_do_interp=False)
-        self.calc.forces = None
         return self.calc.get_forces(atoms)
 
 
@@ -309,7 +308,6 @@ class LOTFDynamics(MolecularDynamics):
                       lotf_do_qm=False,
                       lotf_do_fit=False,                 
                       lotf_do_interp=False)
-        self.calc.forces = None
         return self.calc.get_forces(atoms)
 
 
@@ -329,7 +327,6 @@ class LOTFDynamics(MolecularDynamics):
                       lotf_do_interp=True,
                       lotf_do_fit=False,
                       lotf_interp=interp_frac)
-        self.calc.forces = None
         return self.calc.get_forces(atoms)
 
 
@@ -346,7 +343,6 @@ class LOTFDynamics(MolecularDynamics):
                       lotf_do_map=False,
                       lotf_do_fit=True,
                       lotf_do_interp=False)
-        self.calc.forces = None # force a recalculation
         return self.calc.get_forces(atoms)
 
 
@@ -364,7 +360,6 @@ class LOTFDynamics(MolecularDynamics):
                       lotf_do_map=False,
                       lotf_do_fit=False,
                       lotf_do_interp=False)
-        self.calc.forces = None # force a recalculation if atoms haven't moved
         return self.calc.get_forces(atoms)
 
 
