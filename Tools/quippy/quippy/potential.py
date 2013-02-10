@@ -299,6 +299,20 @@ with `atoms` to the new :class:`Potential` instance, by calling
         Potential.callback_map[str(id(self))] = callback
 
 
+    def wipe(self):
+        """
+        Mark all quantities as needing to be recalculated
+        """
+        self.energy = None
+        self.energies = None
+        self.forces = None
+        self.stress = None
+        self.stresses = None
+        self.numeric_forces = None
+        self.elastic_constants = None
+        self.unrelaxed_elastic_constants = None
+
+
     def update(self, atoms):
         """
         Set the :class:`~quippy.atoms.Atoms` object associated with this :class:`Potential` to `atoms`.
@@ -321,15 +335,8 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if self._prev_atoms is not None and self._prev_atoms.equivalent(self.atoms):
             return
 
-        # mark all quantities as needing to be recalculated
-        self.energy = None
-        self.energies = None
-        self.forces = None
-        self.stress = None
-        self.stresses = None
-        self.numeric_forces = None
-        self.elastic_constants = None
-        self.unrelaxed_elastic_constants = None
+        # Mark all quantities as needing to be recalculated
+        self.wipe()
 
         # do we need to reinitialise _prev_atoms?
         if self._prev_atoms is None or len(self._prev_atoms) != len(self.atoms) or not self.atoms.connect.initialised:
@@ -577,9 +584,13 @@ with `atoms` to the new :class:`Potential` instance, by calling
         Set one or more calc_args parameters for this Potential
 
         All calc_args are passed to :meth:`calc` whenever energies,
-        forces or stresses need to be re-computed.
+        forces or stresses need to be computed.
+
+        After updating the calc_args, :meth:`set` calls :meth:`wipe`
+        to mark all quantities as needing to be recaculated.
         """
         self._calc_args.update(kwargs)
+        self.wipe()
 
 
     def get_calc_args(self):
