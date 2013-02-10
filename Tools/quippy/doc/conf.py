@@ -36,8 +36,8 @@ import sys, os, glob
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.append(os.path.abspath('..'))
-build_lib_dir, = glob.glob(os.path.abspath('../build.%s/lib.*' % os.environ['QUIP_ARCH']))
-sys.path.insert(0, build_lib_dir)
+#build_lib_dir, = glob.glob(os.path.abspath('../build.%s/lib.*' % os.environ['QUIP_ARCH']))
+#sys.path.insert(0, build_lib_dir)
 
 # -- General configuration -----------------------------------------------------
 
