@@ -748,10 +748,10 @@ class AtomResolvedStressField(object):
 
     Parameters
     ----------
-    bulk: :class:`.Atoms` object, optional
-       If present, override `a` and ``cij`` with bulk.cell[0,0] and
+    bulk: Atoms object, optional
+       If present, set `a` and ``cij`` from ``bulk.cell[0,0]`` and
        ``bulk.get_calculator().get_elastic_constants(bulk)``. This means
-       `bulk` should be the relaxed cubic unit cell.
+       `bulk` should be a relaxed cubic unit cell.
     a : float, optional
        Lattice constant
     cij : array_like, optional
