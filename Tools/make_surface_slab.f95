@@ -116,17 +116,17 @@ call set_param_value(at_slab_cut, "VASP_Z_order", Z_order)
 call print("at_slab_cut", verbosity=PRINT_VERBOSE)
 if (current_verbosity() >= PRINT_VERBOSE) call write(at_slab_cut, "stdout")
 
-call write_vasp(at_slab_cut, "stdout", fix_order=.true.)
+call write_vasp(at_slab_cut, "stdout", fix_order=.true., cartesian=.false.)
 
 call verbosity_pop()
 call system_finalise()
 
 contains
 
-subroutine write_vasp(at, filename, fix_order)
+subroutine write_vasp(at, filename, fix_order, cartesian)
    type(Atoms), intent(in) :: at
    character(*), intent(in) :: filename
-   logical, intent(in) :: fix_order
+   logical, intent(in) :: fix_order, cartesian
 
    type(inoutput) :: io
    integer :: sorted_Zs(at%N)
@@ -168,12 +168,21 @@ subroutine write_vasp(at, filename, fix_order)
 
       call print(trim(line), file=io, verbosity=PRINT_ALWAYS)
 
-      call print("Cartesian")
-      do i=1, size(uniq_Zs)
-	 do j=1, at%N
-	    if (at%Z(j) == uniq_Zs(i)) call print(at%pos(:,j), file=io, verbosity=PRINT_ALWAYS)
+      if (cartesian) then
+	 call print("Cartesian")
+	 do i=1, size(uniq_Zs)
+	    do j=1, at%N
+	       if (at%Z(j) == uniq_Zs(i)) call print(at%pos(:,j), file=io, verbosity=PRINT_ALWAYS)
+	    end do
 	 end do
-      end do
+      else
+	 call print("Direct")
+	 do i=1, size(uniq_Zs)
+	    do j=1, at%N
+	       if (at%Z(j) == uniq_Zs(i)) call print(matmul(at%g,at%pos(:,j)), file=io, verbosity=PRINT_ALWAYS)
+	    end do
+	 end do
+      endif
 
       deallocate(uniq_Zs)
    else
@@ -198,10 +207,17 @@ subroutine write_vasp(at, filename, fix_order)
       end do
       call print(Ns(1:n_species), file=io, verbosity=PRINT_ALWAYS)
 
-      call print("Cartesian")
-      do i=1, at%N
-	 call print(at%pos(:,i), file=io, verbosity=PRINT_ALWAYS)
-      end do
+      if (cartesian) then
+	 call print("Cartesian")
+	 do i=1, at%N
+	    call print(at%pos(:,i), file=io, verbosity=PRINT_ALWAYS)
+	 end do
+      else
+	 call print("Direct")
+	 do i=1, at%N
+	    call print(matmul(at%g,at%pos(:,i)), file=io, verbosity=PRINT_ALWAYS)
+	 end do
+      endif
    end if
 
 
