@@ -2940,6 +2940,12 @@ subroutine anatase(at, a, c, u)
     ! calculate how big a simple supercell we need to encompass new arbitrary supercell
     new_lat = matmul(a_in%lattice, real(i1,dp))
     dup_n1 = 0; dup_n2 = 0; dup_n3 = 0
+    max_n1 = -1000000
+    max_n2 = -1000000
+    max_n3 = -1000000
+    min_n1 = 1000000
+    min_n2 = 1000000
+    min_n3 = 1000000
     do f1=0,1
     do f2=0,1
     do f3=0,1
