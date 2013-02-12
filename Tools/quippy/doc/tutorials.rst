@@ -27,3 +27,4 @@ The following tutorials are available:
 
    tutorial.rst
    adglass.rst
+   adaptive-qmmm.rst

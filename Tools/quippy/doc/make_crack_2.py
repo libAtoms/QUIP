@@ -67,7 +67,8 @@ si_bulk = bulk('Si', 'diamond', a=5.44, cubic=True)
 
 # Stillinger-Weber (SW) classical interatomic potential, from QUIP
 mm_pot = Potential(mm_init_args,
-                   param_filename=param_file)
+                   param_filename=param_file,
+                   fortran_indexing=False)
 
 
 # ***** Find eqm. lattice constant ******
@@ -147,98 +148,3 @@ print('Surface energy of %s surface %.4f J/m^2\n' %
       (cleavage_plane, gamma / (units.J / units.m ** 2)))
 
 
-# ***** Setup crack slab supercell *****
-
-# Now we will build the full crack slab system,
-# approximately matching requested width and height
-nx = int(width / unit_slab.cell[0, 0])
-ny = int(height / unit_slab.cell[1, 1])
-
-# make sure ny is even so slab is centered on a bond
-if ny % 2 == 1:
-    ny += 1
-
-# make a supercell of unit_slab
-crack_slab = unit_slab * (nx, ny, 1)
-
-# open up the cell along x and y by introducing some vaccum
-crack_slab.center(vacuum, axis=0)
-crack_slab.center(vacuum, axis=1)
-
-# centre the slab on the origin
-crack_slab.positions[:, 0] -= crack_slab.positions[:, 0].mean()
-crack_slab.positions[:, 1] -= crack_slab.positions[:, 1].mean()
-
-orig_width = (crack_slab.positions[:, 0].max() -
-              crack_slab.positions[:, 0].min())
-orig_height = (crack_slab.positions[:, 1].max() -
-               crack_slab.positions[:, 1].min())
-
-print(('Made slab with %d atoms, original width and height: %.1f x %.1f A^2' %
-       (len(crack_slab), orig_width, orig_height)))
-
-top = crack_slab.positions[:, 1].max()
-bottom = crack_slab.positions[:, 1].min()
-left = crack_slab.positions[:, 0].min()
-right = crack_slab.positions[:, 0].max()
-
-# fix atoms in the top and bottom rows
-fixed_mask = ((abs(crack_slab.positions[:, 1] - top) < 1.0) |
-              (abs(crack_slab.positions[:, 1] - bottom) < 1.0))
-const = FixAtoms(mask=fixed_mask)
-crack_slab.set_constraint(const)
-print('Fixed %d atoms\n' % fixed_mask.sum())
-
-
-# ****** Apply initial strain ramp *****
-
-strain = G_to_strain(initial_G, E, nu, orig_height)
-
-crack_slab.positions[:, 1] += thin_strip_displacement_y(
-                                 crack_slab.positions[:, 0],
-                                 crack_slab.positions[:, 1],
-                                 strain,
-                                 left + crack_seed_length,
-                                 left + crack_seed_length + strain_ramp_length)
-
-print('Applied initial load: strain=%.4f, G=%.2f J/m^2' %
-      (strain, initial_G / (units.J / units.m**2)))
-
-
-# ***** Relaxation of crack slab  *****
-
-# optionally, relax the slab, keeping top and bottom rows fixed
-print('Relaxing slab...')
-crack_slab.set_calculator(mm_pot)
-minim = Minim(crack_slab, relax_positions=True, relax_cell=False)
-minim.run(fmax=relax_fmax)
-
-# Find initial position of crack tip
-crack_pos = find_crack_tip_stress_field(crack_slab, calc=mm_pot)
-print 'Found crack tip at position %s' % crack_pos
-
-# Save all calculated materials properties inside the Atoms object
-crack_slab.info['nneightol'] = 1.3 # nearest neighbour tolerance
-crack_slab.info['LatticeConstant'] = a0
-crack_slab.info['C11'] = c[0, 0]
-crack_slab.info['C12'] = c[0, 1]
-crack_slab.info['C44'] = c[3, 3]
-crack_slab.info['YoungsModulus'] = E
-crack_slab.info['PoissonRatio_yx'] = nu
-crack_slab.info['SurfaceEnergy'] = gamma
-crack_slab.info['OrigWidth'] = orig_width
-crack_slab.info['OrigHeight'] = orig_height
-crack_slab.info['CrackDirection'] = crack_direction
-crack_slab.info['CleavagePlane'] = cleavage_plane
-crack_slab.info['CrackFront'] = crack_front
-crack_slab.info['strain'] = strain
-crack_slab.info['G'] = initial_G
-crack_slab.info['CrackPos'] = crack_pos
-crack_slab.info['is_cracked'] = False
-
-
-# ******** Save output file **********
-
-# save results in extended XYZ format, including extra properties and info
-print('Writing crack slab to file %s' % output_file)
-write(output_file, crack_slab)
