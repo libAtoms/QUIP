@@ -453,7 +453,9 @@ class AtomsList(AtomsReaderMixin, list):
         self._stop   = stop
         self._step   = step
         self.fortran_indexing = fortran_indexing
-        tmp_ar = AtomsReader(source, format, start, stop, step, fortran**kwargs)
+        tmp_ar = AtomsReader(source, format, start, stop, step,
+                             fortran_indexing=fortran_indexing,
+                             **kwargs)
         list.__init__(self, list(iter(tmp_ar)))
         tmp_ar.close()
 
