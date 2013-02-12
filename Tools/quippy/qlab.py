@@ -19,7 +19,7 @@ from atomeye import *
 from quippy.cinoutput import CInOutputReader
 
 __alldoc__ = ['AtomsViewer', 'AtomsListViewer', 'AtomsReaderViewer',
-              'read', 'view', 'gcv', 'scv', 'iterviewers', 'highlight_qm_region']
+              'read', 'view', 'gcv', 'gcat', 'scv', 'iterviewers', 'highlight_qm_region']
 
 _viewers = {}
 _current_viewer = None
@@ -407,6 +407,12 @@ def gcv():
         raise ValueError('No viewers are currently open!')
     return _current_viewer
 
+def gcat():
+    """
+    Return the current Atoms object being visualised by the current viewer
+    """
+    return gcv().gcat()
+
 def scv(viewer):
     """
     Set the current AtomEye viewer to `viewer`.
@@ -434,6 +440,8 @@ def current_viewer_method_wrapper(method, *args, **kwargs):
 # Bring all QuippyViewer methods into the top-level name space
 for name, method in inspect.getmembers(QuippyViewer, inspect.ismethod):
     if name.startswith('_'):
+        continue
+    if hasattr(sys.modules[__name__], name):
         continue
     setattr(sys.modules[__name__], name, current_viewer_method_wrapper(method))
     __alldoc__.append(name)
