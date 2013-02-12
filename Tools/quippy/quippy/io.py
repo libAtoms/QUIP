@@ -172,7 +172,7 @@ class AtomsReader(AtomsReaderMixin):
     """
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
-                 cache_mem_limit=-1, **kwargs):
+                 cache_mem_limit=-1, fortran_indexing=True, **kwargs):
 
         def file_exists(f):
             return f == "stdin" or os.path.exists(f) or len(glob.glob(f)) > 0
@@ -185,6 +185,8 @@ class AtomsReader(AtomsReaderMixin):
 
         self.cache_mem_limit = cache_mem_limit
         logging.debug('AtomsReader memory limit %r' % self.cache_mem_limit)
+
+        self.fortran_indexing = fortran_indexing
 
         self._source_len = None
         self._cache_dict = {}
@@ -340,6 +342,7 @@ class AtomsReader(AtomsReaderMixin):
                 at.source = self.source
             if not hasattr(at, 'frame'):
                 at.frame = frame
+            at.fortran_indexing = self.fortran_indexing
             return at
 
         elif isinstance(frame, slice):
@@ -395,6 +398,7 @@ class AtomsReader(AtomsReaderMixin):
                     at.source = self.source
                 if not hasattr(at, 'frame'):
                     at.frame = frame
+                at.fortran_indexing = self.fortran_indexing
                 yield at
 
             # once iteration is finished, random access will be possible if all frames fitted inside cache
@@ -441,13 +445,15 @@ class AtomsList(AtomsReaderMixin, list):
     methods.
     """
     
-    def __init__(self, source=[], format=None, start=None, stop=None, step=None, **kwargs):
+    def __init__(self, source=[], format=None, start=None, stop=None, step=None,
+                 fortran_indexing=True, **kwargs):
         self.source = source
         self.format = format
         self._start  = start
         self._stop   = stop
         self._step   = step
-        tmp_ar = AtomsReader(source, format, start, stop, step, **kwargs)
+        self.fortran_indexing = fortran_indexing
+        tmp_ar = AtomsReader(source, format, start, stop, step, fortran**kwargs)
         list.__init__(self, list(iter(tmp_ar)))
         tmp_ar.close()
 
@@ -483,6 +489,7 @@ class AtomsList(AtomsReaderMixin, list):
             res = []
             for i in idx:
                 at = list.__getitem__(self,i)
+                at.fortran_indexing = self.fortran_indexing
                 res.append(at)
         else:
             res = list.__getitem__(self, idx)
@@ -574,7 +581,7 @@ class AtomsSequenceReader(object):
             for len, reader, source in zip(self.lengths, self.readers, self.sources):
                 if index >= idx and index < idx+len:
                     at = reader[index-idx]
-                    at.source = source 
+                    at.source = source
                     return at
                 idx = idx+len
 
