@@ -461,7 +461,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.calc_elastic_constants(self.atoms, fd=cij_dx,
                                         args_str=self.get_calc_args_str(),
                                         c=cij, relax_initial=False, return_relaxed=False)
-            if not self.fortran_indexing:
+            if not self.atoms.fortran_indexing:
                 cij = cij.view(np.ndarray)
             self.elastic_constants = cij
 
