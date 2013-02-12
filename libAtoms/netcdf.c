@@ -126,8 +126,8 @@ void replace_fill_values(fortran_t *params, fortran_t *properties, int irep, dou
 
 void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *dimids, 
 			      int frame_dim_id, int spatial_dim_id, int atom_dim_id, 
-			      int label_dim_id, int string_dim_id,
-			      int n_spatial, int n_atom, int n_label, int n_string,
+			      int label_dim_id, int string_dim_id, int spatial2_dim_id,
+			      int n_spatial, int n_atom, int n_label, int n_string, int n_spatial2,
 			      int *type, int *is_param, int *is_property, int *is_global, int *shape, int *error)
 {
   int type_map[3][13];
@@ -203,6 +203,15 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
       shape[0] = n_spatial;
+    }
+    else if (spatial2_dim_id != 0 && dimids[0] == frame_dim_id && dimids[1] == spatial2_dim_id) {
+      // tensor per-frame parameter
+      *is_param = 1;
+      *type = type_map[ndims-1][vartype];
+      if (*type == -1) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+      }
+      shape[0] = n_spatial2;
     } else if (dimids[0] == frame_dim_id && dimids[1] == string_dim_id) {
       // string per-frame parameter
       *is_param = 1;
@@ -233,6 +242,16 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
 	shape[0] = n_spatial;
 	shape[1] = n_atom;
       }
+      else if (spatial2_dim_id != 0 && dimids[2] == spatial2_dim_id) {
+	// tensor per atom property
+	*is_property = 1;
+	*type = type_map[ndims-1][vartype];
+	if (*type == -1) {
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	}
+	shape[0] = n_spatial2;
+	shape[1] = n_atom;
+      }
     } else if (dimids[0] == frame_dim_id && dimids[1] == spatial_dim_id && dimids[2] == spatial_dim_id) {
       // per-frame integer or real 2D parameter array 
       *is_param = 1;
@@ -255,8 +274,8 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
 
 void convert_to_netcdf_type(char *key, int type, int *shape, 
 			    int frame_dim_id, int spatial_dim_id, int atom_dim_id, 
-			    int label_dim_id, int string_dim_id,
-			    int n_spatial, int n_atom, int n_label, int n_string,
+			    int label_dim_id, int string_dim_id, int spatial2_dim_id,
+			    int n_spatial, int n_atom, int n_label, int n_string, int n_spatial2,
 			    nc_type *vartype, int *ndims, int *dims, int *error)
 {
   INIT_ERROR;
@@ -299,26 +318,32 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
     dims[1] = string_dim_id;
   } else if (type == T_INTEGER_A || type == T_LOGICAL_A || type == T_REAL_A) {
     *ndims = 2;
-    if (shape[0] == n_spatial) 
+    if (shape[0] == n_spatial) {
       dims[1] = spatial_dim_id;
-    else if (shape[0] == n_atom)
+    } else if (shape[0] == n_atom) {
       dims[1] = atom_dim_id;
-    else {
+    } else if (spatial2_dim_id != 0 && shape[0] == n_spatial2) {
+      dims[1] = spatial2_dim_id;
+    } else {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d for key %s", shape[0], key);
     }
   } else if (type == T_INTEGER_A2 || type == T_REAL_A2) {
     *ndims = 3;
-    if (shape[0] == n_spatial)
+    if (shape[0] == n_spatial) {
       dims[2] = spatial_dim_id;
-    else {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial for key %s", shape[0], key);
+    } else if (spatial2_dim_id != 0 && shape[0] == n_spatial2) {
+      dims[2] = spatial2_dim_id;
+    } else {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial or n_spatial2 for key %s", shape[0], key);
     }
-    if (shape[1] == n_spatial)
+    if (shape[1] == n_spatial) {
       dims[1] = spatial_dim_id;
-    else if (shape[1] == n_atom)
+    } else if (shape[1] == n_atom) {
       dims[1] = atom_dim_id;
-    else {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial or n_atom for key %s", shape[1], key);
+    } else if (spatial2_dim_id != 0 && shape[1] == n_spatial2) {
+      dims[1] = spatial2_dim_id;
+    } else {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial or n_spatial2 or n_atom for key %s", shape[1], key);
     }
   } else if (type == T_CHAR_A) {
     *ndims = 3;
@@ -332,7 +357,7 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
     else {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_atom for key %s", shape[2], key);      
     }
-  } 
+  }
 }
 
 
@@ -350,8 +375,8 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   void *data, *tmp_data;
   int is_param, is_property, is_global;
   int frame_dim_id, spatial_dim_id, atom_dim_id, cell_spatial_dim_id,
-    cell_angular_dim_id, label_dim_id, string_dim_id;
-  int n_spatial, n_frame, n_label, n_string;
+    cell_angular_dim_id, label_dim_id, string_dim_id, spatial2_dim_id;
+  int n_spatial, n_frame, n_label, n_string, n_spatial2;
   int tmp_type, tmp_shape[2], tmp_error;
   INIT_ERROR;
 
@@ -369,14 +394,23 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     // No strings in this file
     string_dim_id = 0;
   }
+  if (nc_inq_dimid(nc_id, "spatial2", &spatial2_dim_id) != NC_NOERR) {
+    spatial2_dim_id = 0;
+  }
 
   // Get sizes of dimensions
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
   n_spatial = (int)tmp_sizet;
   if (n_spatial != 3) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_netcdf: number of spatial dimensions = %d != 3", n_spatial);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: number of spatial dimensions = %d != 3", n_spatial);
   }
-
+  if (spatial2_dim_id != 0) {
+    NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial2_dim_id, &tmp_sizet));
+    n_spatial2 = (int)tmp_sizet;
+    if (n_spatial2 != 9) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: number of spatial dimensions**2 = %d != 9", n_spatial2);
+    }
+  }
   NETCDF_CHECK(nc_inq_dimlen(nc_id, frame_dim_id, &tmp_sizet));
   n_frame = (int)tmp_sizet;
   NETCDF_CHECK(nc_inq_dimlen(nc_id, atom_dim_id, &tmp_sizet));
@@ -476,8 +510,8 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     if (strcmp(varname,"velocities") == 0)
       strncpy(varname,"velo",NC_MAX_NAME);    
     convert_from_netcdf_type(varname, vartype, ndims, dimids, 
-			     frame_dim_id, spatial_dim_id, atom_dim_id, label_dim_id, string_dim_id,
-			     n_spatial, *n_atom, n_label, n_string,
+			     frame_dim_id, spatial_dim_id, atom_dim_id, label_dim_id, string_dim_id, spatial2_dim_id,
+			     n_spatial, *n_atom, n_label, n_string, n_spatial2,
 			     &type, &is_param, &is_property, &is_global, shape, error);
     PASS_ERROR;
 
@@ -623,10 +657,10 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   int natts, newfile;
   int nvars, ngatts, unlimdimid, newvar;
   int frame_dim_id, spatial_dim_id, atom_dim_id, cell_spatial_dim_id,
-    cell_angular_dim_id, label_dim_id, string_dim_id;
+    cell_angular_dim_id, label_dim_id, string_dim_id, spatial2_dim_id;
   int spatial_var_id, cell_spatial_var_id, cell_angular_var_id, cell_lengths_var_id, cell_angles_var_id, 
     cell_rotated_var_id, cell_lattice_var_id;
-  int n_spatial, n_frame;
+  int n_spatial, n_frame, n_spatial2;
   int n, type, type_att, shape[2], var_id, tmp_type, tmp_shape[2], tmp_error;
   char key[C_KEY_LEN];
   void *data, *tmp_data;
@@ -677,6 +711,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     
     // Dimensions
     n_spatial = 3;
+    n_spatial2 = 9;
     NETCDF_CHECK(nc_def_dim(nc_id, "frame", NC_UNLIMITED, &frame_dim_id));
     NETCDF_CHECK(nc_def_dim(nc_id, "spatial", n_spatial, &spatial_dim_id));
     NETCDF_CHECK(nc_def_dim(nc_id, "atom", n_atom, &atom_dim_id));
@@ -684,7 +719,8 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_def_dim(nc_id, "cell_angular", n_spatial, &cell_angular_dim_id));
     NETCDF_CHECK(nc_def_dim(nc_id, "label", n_label, &label_dim_id));
     NETCDF_CHECK(nc_def_dim(nc_id, "string", n_string, &string_dim_id));
-      
+    NETCDF_CHECK(nc_def_dim(nc_id, "spatial2", n_spatial2, &spatial2_dim_id));
+
     // Label variables
     dims[0] = spatial_dim_id;
     NETCDF_CHECK(nc_def_var(nc_id, "spatial", NC_CHAR, 1, dims, &spatial_var_id));
@@ -722,6 +758,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_inq_dimid(nc_id, "cell_angular", &cell_angular_dim_id));
     NETCDF_CHECK(nc_inq_dimid(nc_id, "label", &label_dim_id));
     NETCDF_CHECK(nc_inq_dimid(nc_id, "string", &string_dim_id));
+    NETCDF_CHECK(nc_inq_dimid(nc_id, "spatial2", &spatial2_dim_id));
     
     // Check sizes of dimensions
     NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
@@ -746,6 +783,14 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
     if (tmp_sizet != n_string) {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: n_string defined in file = %d != %d", (int)tmp_sizet, n_string);
+    }
+
+    if (spatial2_dim_id != 0) {
+      NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial2_dim_id, &tmp_sizet));
+      n_spatial2 = (int)tmp_sizet;
+      if (tmp_sizet != 9) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: n_spatial2 defined in file = %d != %d", (int)tmp_sizet, n_spatial2);
+      }
     }
 
     // Inquire label variables
@@ -852,8 +897,13 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       if (strcasecmp(key, "Lattice") == 0 || strcasecmp(key, "Properties") == 0) continue;
 
       // Find equivalent NetCDF type and dimensions
+
+      debug("%s n_spatial %d n_spatial2 %d spatial_dim_id %d spatial2_dim_id %d\n",
+	    key, n_spatial, n_spatial2, spatial_dim_id, spatial2_dim_id);
+
       convert_to_netcdf_type(key, type, shape, frame_dim_id, spatial_dim_id, atom_dim_id,
-			     label_dim_id, string_dim_id, n_spatial, n_atom, n_label, n_string,
+			     label_dim_id, string_dim_id, spatial2_dim_id, 
+			     n_spatial, n_atom, n_label, n_string, n_spatial2,
 			     &vartype, &ndims, dims, error);
       PASS_ERROR;
 
@@ -1051,7 +1101,7 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
 {
   int nc_id, retval;
   int frame_dim_id, spatial_dim_id, atom_dim_id, cell_spatial_dim_id,
-    cell_angular_dim_id, label_dim_id, string_dim_id, n_spatial;
+    cell_angular_dim_id, label_dim_id, string_dim_id, n_spatial, spatial2_dim_id, n_spatial2;
   size_t tmp_sizet;
 
   INIT_ERROR;
@@ -1069,6 +1119,11 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
     // No strings in this file
     string_dim_id = 0;
   }
+  if (nc_inq_dimid(nc_id, "spatial2", &spatial2_dim_id) != NC_NOERR) {
+    // No spatial2s in this file
+    spatial2_dim_id = 0;
+  }
+
 
   // Get sizes of dimensions
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
@@ -1088,17 +1143,28 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
     *n_string = (int)tmp_sizet;
   }
   else {
-    n_string = 0;
+    *n_string = 0;
+  }
+  if (spatial2_dim_id != 0) {
+    NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial2_dim_id, &tmp_sizet));
+    n_spatial2 = (int)tmp_sizet;
+    if (n_spatial2 != 9) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "query_netcdf: number of spatial dimensions**2 = %d != 9", n_spatial2);
+    }
+  }
+  else {
+    n_spatial2 = 0;
   }
 
-  debug("query_netcdf: dimension Information:\n");
+  debug("query_netcdf: dimension information:\n");
   debug("  frame_dim_id = %d, n_frame = %d\n", frame_dim_id, *n_frame);
   debug("  spatial_dim_id = %d, n_spatial = %d\n", spatial_dim_id, n_spatial);
   debug("  atom_dim_id = %d, n_atom = %d\n", atom_dim_id, *n_atom);
   debug("  cell_spatial_dim_id = %d\n", cell_spatial_dim_id);
   debug("  cell_angular_dim_id = %d\n", cell_angular_dim_id);
   debug("  label_dim_id = %d, n_label = %d\n", label_dim_id, *n_label);
-  debug("  string_dim_id = %d, n_string = %d\n\n", string_dim_id, *n_string);
+  debug("  string_dim_id = %d, n_string = %d\n", string_dim_id, *n_string);
+  debug("  spatial2_dim_id = %d, n_spatial2 = %d\n\n", spatial2_dim_id, n_spatial2);
 
   NETCDF_CHECK(nc_close(nc_id));
 }
@@ -1123,7 +1189,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
 }
 
-void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error)
+void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *n_spatial2, int *error)
 {
   INIT_ERROR;
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");

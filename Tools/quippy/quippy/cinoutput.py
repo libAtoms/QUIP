@@ -117,11 +117,8 @@ class CInOutputReader(object):
                                     no_compute_index=no_compute_index, one_frame_per_file=one_frame_per_file,
                                     indices=indices, string=string)
             self.netcdf_file = None
-            if self.source.string is None:
-                try:
-                    self.netcdf_file = netcdf_file(source)
-                except (RuntimeError, AssertionError, IOError):
-                    pass
+            if self.source.string is None and source.endswith('.nc'):
+                self.netcdf_file = netcdf_file(source)
         else:
             self.opened = False
             self.source = source
@@ -150,7 +147,11 @@ class CInOutputReader(object):
                 break
 
     def close(self):
-        if self.opened: self.source.close()
+        if self.opened:
+            self.source.close()
+        if self.netcdf_file:
+            self.netcdf_file.close()
+            self.netcdf_file = None
 
     def __len__(self):
         return len(self.source)
@@ -164,7 +165,10 @@ class CInOutputReader(object):
                 return self.netcdf_file.__getattr__(name)
             except AttributeError:
                 try:
-                    return farray(self.netcdf_file.variables[name][:])
+                    a = self.netcdf_file.variables[name][:]
+                    if self.fortran_indexing:
+                        a = farray(a)
+                    return a
                 except KeyError:
                     raise AttributeError('Attribute %s not found' % name)
         else:
