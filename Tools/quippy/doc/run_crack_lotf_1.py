@@ -23,7 +23,12 @@ from quippy.crack import (get_strain,
                           get_energy_release_rate,
                           ConstantStrainRate,
                           find_crack_tip_stress_field)
-                         
+
+# additional requirements for the QM/MM simulation:
+from quippy.potential import ForceMixingPotential
+from quippy.lotf import LOTFDynamics, update_hysteretic_qm_region
+
+                        
 # ******* Start of parameters ***********
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -35,13 +40,22 @@ cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
 tip_move_tol = 6.0               # Distance tip has to move before crack 
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
-traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
+traj_file = 'traj.nc'            # Trajectory output file
 traj_interval = 10               # Number of time steps between
                                  # writing output frames
 param_file = 'params.xml'        # Filename of XML file containing
                                  # potential parameters
 mm_init_args = 'IP SW'           # Initialisation arguments for
                                  # classical potential
+
+# additional parameters for the QM/MM simulation:
+qm_init_args = 'TB DFTB'         # Initialisation arguments for QM potential
+qm_inner_radius = 7.0*units.Ang  # Inner hysteretic radius for QM region
+qm_outer_radius = 9.0*units.Ang  # Inner hysteretic radius for QM region
+check_force_error = False        # Set to True to check accuracy of
+                                 # predictor-corrector at each step
+extrapolate_steps = 10           # Number of steps for predictor-corrector
+                                 # interpolation and extrapolation
 
 # ******* End of parameters *************
 
@@ -84,7 +98,40 @@ mm_pot = Potential(mm_init_args,
 # compute forces, to save time when locating the crack tip
 mm_pot.set_default_quantities(['stresses'])
 
-atoms.set_calculator(mm_pot)
+# Density functional tight binding (DFTB) potential
+qm_pot = Potential(qm_init_args,
+                   param_filename=param_file)
+
+# Parameters which control how the QM calculation is carried out:
+# we use a single cluster, periodic in the z direction and terminated
+# with hydrogen atoms. The positions of the outer layer of buffer atoms
+# are not randomised.
+qm_args_str = ('single_cluster cluster_periodic_z '+
+               'carve_cluster terminate randomise_buffer=F')
+
+# Construct the QM/MM potential, which mixes QM and MM forces
+qmmm_pot = ForceMixingPotential(pot1=mm_pot, pot2=qm_pot,
+                                qm_args_str=qm_args_str,
+                                fit_hops=4,
+                                lotf_spring_hops=3,
+                                buffer_hops=4)
+
+# Use the force mixing potential as the Atoms' calculator
+atoms.set_calculator(qmmm_pot)
+
+
+# *** Set up the initial QM region ****
+
+qm_list = update_hysteretic_qm_region(atoms, [], orig_crack_pos,
+                                      qm_inner_radius, qm_outer_radius)
+qmmm_pot.set_qm_atoms(qm_list)
+
+# *** Milestone 3.1 -- exit early - we don't want to run the classical MD! ***
+
+import sys
+sys.exit(0)
+
+# **** no changes compared to run_crack_classical.py below here yet ****
 
 # ********* Setup and run MD ***********
 
@@ -105,7 +152,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
                   '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
 
-    atoms.info['label'] = 'D'                  # Label for the status line
+    atoms.info['label'] = 'D'                # Label for the status line
     atoms.info['time'] = dynamics.get_time()/units.fs
     atoms.info['temperature'] = (atoms.get_kinetic_energy() /
                                  (1.5*units.kB*len(atoms)))

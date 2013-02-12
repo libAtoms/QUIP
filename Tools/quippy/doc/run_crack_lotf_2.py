@@ -23,7 +23,12 @@ from quippy.crack import (get_strain,
                           get_energy_release_rate,
                           ConstantStrainRate,
                           find_crack_tip_stress_field)
-                         
+
+# additional requirements for the QM/MM simulation:
+from quippy.potential import ForceMixingPotential
+from quippy.lotf import LOTFDynamics, update_hysteretic_qm_region
+
+                        
 # ******* Start of parameters ***********
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -42,6 +47,13 @@ param_file = 'params.xml'        # Filename of XML file containing
                                  # potential parameters
 mm_init_args = 'IP SW'           # Initialisation arguments for
                                  # classical potential
+
+# additional parameters for the QM/MM simulation:
+qm_init_args = 'TB DFTB'         # Initialisation arguments for QM potential
+qm_inner_radius = 8.0*units.Ang  # Inner hysteretic radius for QM region
+qm_outer_radius = 10.0*units.Ang  # Inner hysteretic radius for QM region
+extrapolate_steps = 10           # Number of steps for predictor-corrector
+                                 # interpolation and extrapolation
 
 # ******* End of parameters *************
 
@@ -84,7 +96,36 @@ mm_pot = Potential(mm_init_args,
 # compute forces, to save time when locating the crack tip
 mm_pot.set_default_quantities(['stresses'])
 
-atoms.set_calculator(mm_pot)
+# Density functional tight binding (DFTB) potential
+qm_pot = Potential(qm_init_args,
+                   param_filename=param_file)
+
+# Construct the QM/MM potential, which mixes QM and MM forces.
+# The qm_args_str parameters control how the QM calculation is carried out:
+# we use a single cluster, periodic in the z direction and terminated
+# with hydrogen atoms. The positions of the outer layer of buffer atoms
+# are not randomised.
+qmmm_pot = ForceMixingPotential(pot1=mm_pot,
+                                pot2=qm_pot,
+                                qm_args_str='single_cluster cluster_periodic_z carve_cluster '+
+                                            'terminate cluster_hopping=F randomise_buffer=F',
+                                fit_hops=4,
+                                lotf_spring_hops=3,
+                                hysteretic_buffer=True,
+                                hysteretic_buffer_inner_radius=7.0,
+                                hysteretic_buffer_outer_radius=9.0,
+                                cluster_hopping_nneighb_only=False,
+                                min_images_only=True)
+
+# Use the force mixing potential as the Atoms' calculator
+atoms.set_calculator(qmmm_pot)
+
+
+# *** Set up the initial QM region ****
+
+qm_list = update_hysteretic_qm_region(atoms, [], orig_crack_pos,
+                                      qm_inner_radius, qm_outer_radius)
+qmmm_pot.set_qm_atoms(qm_list)
 
 # ********* Setup and run MD ***********
 
@@ -93,7 +134,7 @@ atoms.set_calculator(mm_pot)
 MaxwellBoltzmannDistribution(atoms, 2.0*sim_T)
 
 # Initialise the dynamical system
-dynamics = VelocityVerlet(atoms, timestep)
+dynamics = LOTFDynamics(atoms, timestep, extrapolate_steps)
 
 # Print some information every time step
 def printstatus():
@@ -105,7 +146,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
                   '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
 
-    atoms.info['label'] = 'D'                  # Label for the status line
+    atoms.info['label'] = dynamics.state_label  # Label for the status line
     atoms.info['time'] = dynamics.get_time()/units.fs
     atoms.info['temperature'] = (atoms.get_kinetic_energy() /
                                  (1.5*units.kB*len(atoms)))
@@ -118,8 +159,8 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
 
     print log_format % atoms.info
 
-
 dynamics.attach(printstatus)
+
 
 # Check if the crack has advanced, and stop incrementing the strain if it has
 def check_if_cracked(atoms):
@@ -132,9 +173,27 @@ def check_if_cracked(atoms):
 
 dynamics.attach(check_if_cracked, 1, atoms)
 
+
+# Function to update the QM region at the beginning of each extrapolation cycle   
+def update_qm_region(atoms):
+   crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
+   qm_list = qmmm_pot.get_qm_atoms()
+   qm_list = update_hysteretic_qm_region(atoms, qm_list, crack_pos,
+                                         qm_inner_radius, qm_outer_radius)
+   qmmm_pot.set_qm_atoms(qm_list)
+
+dynamics.set_qm_update_func(update_qm_region)
+
+
 # Save frames to the trajectory every `traj_interval` time steps
+# but only when interpolating
 trajectory = AtomsWriter(traj_file)
-dynamics.attach(trajectory, traj_interval, atoms)
+
+def traj_writer(dynamics):
+   if dynamics.state == LOTFDynamics.Interpolation:
+      trajectory.write(dynamics.atoms)
+   
+dynamics.attach(traj_writer, traj_interval, dynamics)
 
 # Start running!
 dynamics.run(nsteps)
