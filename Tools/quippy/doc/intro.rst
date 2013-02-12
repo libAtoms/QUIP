@@ -348,7 +348,7 @@ Maxwell-Boltzmann distribution of atomic velocities
 
 .. math::
 
-    f(v)\,\mathrm{d}v = 4 pi \left( \frac{m}{2 pi k_B T} \right)^{3/2} v^2 exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v
+    f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v
  
 ::
 
