@@ -209,7 +209,7 @@ Keep your `ipython` session open as we'll need it later. Open the
 like this:
 
 .. image:: quartz.png
-  :width: 600
+  :width: 300
   :align: center
 
 You can also download :download:`quartz.xyz` for comparison.
