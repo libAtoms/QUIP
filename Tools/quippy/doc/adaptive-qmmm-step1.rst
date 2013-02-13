@@ -13,25 +13,248 @@ geometry.
 Theoretical background
 ----------------------
 
-We need to know a little bit about:
+Fracture is the main lifetime limiting failure mode of many materials, from
+metals to ceramics and glasses. There are two broad classes of
+fracture: *brittle* and *ductile*. 
 
-1. Fracture of silicon - it is known to be brittle with atomically smooth
-fracture surfaces
-
-.. image:: lawn-fracture-silicon.png
+.. figure:: brittle-vs-ductile.png
    :align: center
    :width: 600
 
-2. Thin strip loading
+   Brittle and ductile failure of steel, at low and high temperature
+   respectively. Image credit: `Internet Electron Microscopy website, UMIST   
+   <http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html>`_
 
-3. Interatomic potentials, specifically the SW potential
+In brittle fracture, there is no plastic deformation, and failure is along
+particular low-energy cleavage planes. In contrast, ductile materials such as
+steel tend to fail with a large amount of plastic deformation (or 'necking'),
+pulling apart to leave rough fracture surfaces. The same patterns are evident
+upon closer examination: brittle cracks are found to be atomically sharp,
+proceeding bond by bond, while ductile cracks remain rough at the microscale,
+driven by the formation and coalescence of microscopic voids.
 
-4. Elasticity - to relate strain :math:`epsilon` with energy flow to crack
-tip :math:`G`
+.. figure:: brittle-vs-ductile-microscale.png
+   :align: center
+   :width: 600
 
-Elastic constant matrix :math:`C_{ij}`, Young's modulus :math:`E` and Poisson
-ratio :math:`nu`.
+   Brittle and ductile failure mechanisms, for silica and aluminimum respectively.
+   Image credits: C. Marlière and A. Weck.
 
+Silicon is known to be an ideally brittle material, as shown by the image below.
+Below the brittle to ductile transtion, at around 500 :math:`^\circ`\ C, silicon
+cleaves atomically smooth fracture surfaces (left and centre panel; sample in
+central panel is tilted to show the crack front). At higher temperatures,
+fracture is ductile, with the emission of multiple dislocations from the tip
+(right panel).
+
+.. _si_tem_images:
+
+.. figure:: lawn-fracture-silicon.png
+   :align: center
+   :width: 600
+
+   Transmission electron microscopy (TEM) images of a crack in silicon.
+   Image reproduced from [Lawn1993]_.
+
+.. _theory_griffith:
+
+Fracture Mechanics
+^^^^^^^^^^^^^^^^^^
+
+The study of fracture mechanics dates back around 100 years, to Griffith, who
+first proposed a thermodynamic energy balance criteria to understand when cracks
+will propagate [Griffith1921]_. Griffith's key idea was that stress concentrates
+at pre-existing flaws, and was motivated by the observation that materials break
+at much lower loads than the theoretical stress needed to break their chemical
+bonds For example, in glass, the theoretical strength is given by
+
+.. math:: 
+
+   \sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}
+
+where :math:`E`, :math:`\gamma` and :math:`a` are the Young's modulus, surface
+energy and bond length, respectively.
+
+For a slowly-moving crack of length :math:`c` in an infinite plane, the
+well-known Griffith criterion for fracture propagation is based on thermodynamic
+energy balance between the release of elastic energy in an area :math:`\sim
+c^2`, and the cost of creating new surfaces, :math:`\sim c`, as illustrated
+below.
+
+.. image:: griffith-criterion.png
+   :align: center
+   :width: 600
+
+This leads to a Griffith fracture strength for glass of
+
+.. math::
+
+   \sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}
+
+which is much lower than the theoretical strength. Here the additional
+parameters are :math:`\rho`, the radius of curvature and the crack
+length :math:`c`. The effect of stress concentration increases for sharper and
+longer cracks.
+
+The Griffith criterion leads to a critical length :math:`c0` below which it is
+not energetically favourable for cracks to grow, since the elastic energy
+released does not exceed the surface energy cost. Below :math:`c0`, cracks
+prefer to close up, meaning that not all flaws are unstable. This explains why
+it makes sense to measure the length of cracks e.g. on aeroplanes, so that small
+flaws can be identified and treated before they become critical.
+
+In fracture mechanics it is common to use the energy release rate :math:`G` to
+describe the flow of energy to a crack tip. :math:`G` is the driving force for
+crack propagation. It is defined by
+
+.. math::
+
+   G = - \frac{\partial U_E}{\partial c}
+
+where :math:`U_E` is the total strain energy and :math:`c` is the crack length.
+The Griffith criterion can be reformulated in terms of :math:`G` to show that
+crack propagation becomes favourable when
+
+.. math::
+   
+   G > 2\gamma
+
+where :math:`\gamma` is the surface energy density, i.e. when the energy flow to
+the crack tip exceeds the cost of creating two new surfaces.
+
+.. _theory_atomic_fracture:
+
+Atomic scale modelling of fracture
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Much work has been done to understand fracture at the continuum level (see, e.g.
+[Freund1998]_ and [Lawn1993]_), but here we would like to simulate fracture at
+the atomic level, to examine the combined effects of stress and chemistry (`
+'chemomechanics'). A first approach would be to use classical interatomic
+potentials to carry out molecular dynamics (MD). However, as we will see
+in :ref:`step2`, most classical potentials fail to accurately reproduce brittle
+fracture. This is due to stress concentration which has been shown to diverge
+as :math:`\sigma \sim 1/\sqrt{r}` near a crack tip [Irwin1948]_, leading to
+anharmonic stretching and rupture of bonds, which is typically not well captured
+by simple interatomic potentials. 
+
+.. _irwin_sig_yy:
+
+.. figure:: irwin-sig-yy.png
+   :width: 300
+   :align: center
+
+   Irwin near-field solution for :math:`\sigma_{yy}` for a singular crack.
+   Black is zero stress and yellow very high stress; note the divergence at the
+   crack tip.
+
+Most potentials overestimate what is called the *lattice trapping barrier*, the
+energy barrier to bond breaking at a crack tip that arises from the periodicity
+of the crystalline lattice (in contrast to continuum methods where the crack tip
+advances continuously). This means that when fracture eventually does occur,
+there is too much energy available, which is then dissipated by a variety of
+plasticity mechanisms such as dislocation emission, leads to results in contrast
+with the expected brittle behaviour.
+
+Interestingly, however, continuum theories and simple potentials do capture the
+details of stress concentration surprisingly close to the crack tip, as
+illustrated in the figure below.
+
+.. figure:: atomistic-vs-continuum.png
+   :width: 400
+   :align: center
+
+   Atomic and continuum calculations for the stress along the line ahead of a
+   crack tip in silicon. Agreement is excellent beyond ~ 2 nm from the tip. 
+   Reproduced from G. Singh, J.R. Kermode, A. De Vita, R.W. Zimmerman, 
+   *in prep.* (2013).
+
+The region where atomistic and continuum theories disagree is the
+non-linear *process zone*, where chemically interesting things are happening.
+Here, we would like to treat this region at a quantum mechanical (QM) level.
+
+.. _theory_multiscale:
+
+Coupled multiscale approach
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+QM approaches such as density functional theory (DFT) do correctly describe
+bond-breaking in silicon. However, the strong bidirectional coupling between
+bond-breaking at the crack tip and the long-range stress field driving fracture
+necessitate a multiscale approach. The boundaries of the model system must be
+placed far enough away from the crack tip not to affect the results, which means
+that large cells containing tens to hundreds of thousands of atoms are needed;
+the current capabilities of most QM approaches. Fracture is perhaps the
+archetypical coupled multiscale problem, with thousands of atoms contributing to
+the elastic relaxation of the near-tip region. We will describe how classical
+and QM descriptions can be coupled to study problems in fracture using the
+'Learn on the Fly' (LOTF approach) in :ref:`more detail <theory3>` later in this
+tutorial.
+
+.. figure:: multiscale-coupling.png
+   :width: 500
+   :align: center
+
+   Hierarchy of materials modelling techniques, showing simultaneous coupling
+   of QM methods and empirical interatomic potentials. Image source: G. Csányi.
+
+.. _theory_elasticity:
+
+Thin strip loading geometry and elasticity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We will use the thin strip fracture loading geometry illustrated below for our
+fracture simulations, where the load is applied by displacing the top and bottom
+surfaces.
+
+.. image:: thin-strip.png
+   :align: center
+   :width: 500
+
+The advantage of this setup is that the energy release rate `G` does not depend
+on the crack length, and can be found analytically by considering the energetics
+of an advancing crack.
+ 
+The horizontal edges of the strip are given a uniform normal
+displacement :math:`\delta`, so the applied strain is
+:math:`\epsilon_0 = \delta / h`.  Far ahead of the crack, the strip is
+in uniaxial tension: :math:`\epsilon_{yy} \to \epsilon_0` as :math:`x
+\to \infty`.
+ 
+The stress far ahead of the crack is given by :math:`\sigma_{0} = E'
+\epsilon_{0}`, and therefore the elastic energy per unit length and
+per unit thickness far ahead of the crack tip is
+ 
+.. math::
+   W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}
+
+where :math:`E'` is the effective Young's modulus.
+ 
+Far behind the tip, the energy density is zero. Since no energy
+disappears through the clamped edges, if the crack is to advance by
+unit distance, a vertical strip of material with energy density
+:math:`W_\infty` is effectively replaced by a strip with energy
+density zero.
+ 
+The energy supplied to the crack tip is therefore equal to :math:`W_\infty`,
+so the energy release rate is simply
+ 
+.. math::
+  G = W_\infty = \frac{\delta^2 E'}{h}
+
+In our simulations we will use periodic boundary conditions in the :math:`z`
+direction, so we have plane strain loading (:math:`\epsilon_{zz} = 0`), which
+means that the effective Young's modulus :math:`E'` is given by
+:math:`E/(1-\nu^2)`, where :math:`E` is the Young's modulus in the :math:`y` relevant
+direction and :math:`\nu` is the Poisson ratio, so finally we have
+ 
+.. math::
+  G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}
+
+We can see that, in order to relate the strain we apply to the system with the
+energy release rate, we will need to calculate the Young's modulus and Poisson
+ratio for our model silicon. We will see how to do this from the elastic
+constant matrix :math:`C_{ij}` :ref:`below <youngs_modulus_and_poisson_ratio>`.
 
 
 1.1 Building the bulk unit cell (30 minutes)
@@ -65,8 +288,8 @@ the interatomic potentials plus some special purpose functionality.
 
    For interactive use, it is convenient to import everything from the
    entire `quippy` package with ``from qlab import *`` as described
-   above.  We chose not to do that in these scripts to make it clear
-   where each function we are using is defined, and to make it easier
+   in the :ref:`practical` section. We chose not to do that in these scripts to
+   make it clear where each function we are using is defined, and to make it easier
    to look them up in the online documentation.
 
 .. _parameters:
@@ -216,22 +439,24 @@ off-diagonal components of the lattice are exactly zero. ::
 Milestone 1.1
 ^^^^^^^^^^^^^
 
-At this point your script should look something like :download:`make_crack_1.py`
+At this point your script should look something like :ref:`make_crack_1`
 
 
 1.2 Calculation of elastic and surface properties of silicon (30 minutes)
 -------------------------------------------------------------------------
 
+.. _youngs_modulus_and_poisson_ratio:
+
 Calculation of the Young's modulus and the Poisson ratio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Following the discussion in the :ref:`theory1` section, we need to calculate
-some elastic properties of our model silicon. To calculate the Young's modulus
-`E` along the direction perpendicular to the cleavage plane, and the Poisson
-ratio :math:`\nu` in the :math:`xy` plane, we need the :math:`6 \times 6` matrix
-of the elastic constants :math:`C_{ij}`. This matrix `c` can be calculated using
-the :meth:`~quippy.potential.Potential.get_elastic_constants` method of the
-`mm_pot` Potential object. ::
+Following the discussion in the :ref:`theory_elasticity` section, we need to
+calculate some elastic properties of our model silicon. To calculate the Young's
+modulus `E` along the direction perpendicular to the cleavage plane, and the
+Poisson ratio :math:`\nu` in the :math:`xy` plane, we need the :math:`6 \times
+6` matrix of the elastic constants :math:`C_{ij}`. This matrix `c` can be
+calculated using the :meth:`~quippy.potential.Potential.get_elastic_constants`
+method of the `mm_pot` Potential object. ::
 
     c = mm_pot. ...             # Get the 6x6 c matrix
     print('Elastic constants (GPa):')  
@@ -258,6 +483,8 @@ As a check, for the :math:`(111)[0\bar{1}1]` crack system, you
 should get a Young's modulus of 142.8 GPa and a Poisson ratio of
 0.265.
 
+
+.. _surface_energy:
 
 Calculation of the surface energy of the cleavage plane
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -566,14 +793,26 @@ Milestone 1.3
 ^^^^^^^^^^^^^
 
 At this point your final script should look something like
-:download:`make_crack.py`, and your XYZ file like
-:download:`crack.xyz`.
+:ref:`make_crack`, and your XYZ file like :download:`crack.xyz`.
 
 When you are ready, proceed to :ref:`step2`.
 
 
 References
 ----------
+
+.. [Griffith1921] Griffith, A. A.The Phenomena of Rupture and Flow in Solids.
+   Philosophical Transactions of the Royal Society A: Mathematical, Physical and
+   Engineering Sciences, 221(582-593), 163–198. (1921)
+   http://www.dx.doi.org/10.1098/rsta.1921.0006
+
+.. [Lawn1993] Lawn, B. R.Fracture of Brittle Solids --- Second Edition.
+   (Cambridge Univ Pr, 1993)
+
+.. [Freund1998] Freund, L.Dynamic fracture mechanics. Cambridge University
+   Press, (Cambridge, 1998)
+
+.. [Irwin1948] Irwin, G. R. Fracturing of Metals. (1948)
 
 .. [AtomEye] Li, J. AtomEye: an efficient atomistic configuration
    viewer. Modell. Simul. Mater. Sci. Eng. (2003).

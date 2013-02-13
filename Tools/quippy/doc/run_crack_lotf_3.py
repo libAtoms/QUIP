@@ -1,11 +1,13 @@
 """
-run_crack_classical.py
+run_crack_lotf_3.py
 
-Script to run classical molecular dynamics for a crack slab,
+Script to run LOTF molecular dynamics for a crack slab,
 incrementing the load in small steps until fracture starts.
 
+This version checks the predictor-corrector force errors.
+
 James Kermode <james.kermode@kcl.ac.uk>
-January 2013
+February 2013
 """
 
 import numpy as np
@@ -51,7 +53,7 @@ mm_init_args = 'IP SW'           # Initialisation arguments for
 # additional parameters for the QM/MM simulation:
 qm_init_args = 'TB DFTB'         # Initialisation arguments for QM potential
 qm_inner_radius = 8.0*units.Ang  # Inner hysteretic radius for QM region
-qm_outer_radius = 10.0*units.Ang  # Inner hysteretic radius for QM region
+qm_outer_radius = 10.0*units.Ang # Inner hysteretic radius for QM region
 extrapolate_steps = 10           # Number of steps for predictor-corrector
                                  # interpolation and extrapolation
 
