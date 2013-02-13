@@ -118,7 +118,10 @@ class CInOutputReader(object):
                                     indices=indices, string=string)
             self.netcdf_file = None
             if self.source.string is None and source.endswith('.nc'):
-                self.netcdf_file = netcdf_file(source)
+                try:
+                    self.netcdf_file = netcdf_file(source)
+                except AssertionError:
+                    pass
         else:
             self.opened = False
             self.source = source
