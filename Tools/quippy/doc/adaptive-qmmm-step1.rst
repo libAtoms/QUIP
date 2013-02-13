@@ -8,8 +8,6 @@ use for both the classical and QM/MM simulations. As described in
 :ref:`theory` above, we will use a ~2D model system in the thin strip
 geometry.
 
-.. contents::
-
 .. _theory1:
 
 Theoretical background

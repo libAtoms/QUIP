@@ -8,8 +8,6 @@ produced in :ref:`step1`. If you had problems completing the first part, you
 can :download:`download it here <crack.xyz>` instead. Start by creating a new
 empty script, named ``run_crack_classical.py``.
 
-.. contents::
-
 Theoretical background
 ----------------------
 
@@ -27,29 +25,27 @@ were determined by fitting experimental data with the constraint that the
 diamond-like structure must be the most stable periodic arrangement of particles
 al low pressures. 
 
-Although this potential has not been fitted to the Si elastic
-constants, it gives a reasonable description of all of them, as we will see
-later during this tutorial. - **don't we see this already in step1?**
-
-As we will see during this step, the SW potential fails to describe the brittle
-fracture of silicon. Although a number of interatomic potentials have been
-developed to go beyond the basic description of Si provided by the SW potential
-(e.g. [Swadener2002]_, [Vink2002]_ [Buehler2006]_, [Pizzagalli2013]_) they are
-usually not sufficiently transferable to provide a general description of the
-inherently quantum-mechanical processes occurring at the tip of a crack. As a
-consequence, hybrid QM/MM methods are necessary to perform accurate MD
-simulations of brittle fracture in Si. Here, we will use the SW potential
-because its simple functional form and its speed make it a suitable choice for a
-multiscale QM/MM approach, where only an accurate description of the Si crystal
-far from the crack tip is required.
+Although this potential has not been fitted to the Si elastic constants, it
+gives a reasonable description of all of them. As we will see during this step,
+however, the SW potential fails to describe the brittle fracture of silicon.
+Although a number of interatomic potentials have been developed to go beyond the
+basic description of Si provided by the SW potential (e.g. [Swadener2002]_,
+[Vink2001]_ [Buehler2006]_, [Pizzagalli2013]_) they are usually not sufficiently
+transferable to provide a general description of the inherently
+quantum-mechanical processes occurring at the tip of a crack. As a consequence,
+hybrid QM/MM methods are necessary to perform accurate MD simulations of brittle
+fracture in Si. Here, we will use the SW potential because its simple functional
+form and its speed make it a suitable choice for a multiscale QM/MM approach,
+where only an accurate description of the Si crystal far from the crack tip is
+required.
 
 In this step, we will use the SW potential to perform classical MD simulation of
 the crack propagation in the NVE ensemble. The velocity Verlet scheme
 [FrenkelSmit2001]_ will be used to integrate Newton's equations of motion.
 
 
-2.1 Initialising of the atomic system (20 minutes)
---------------------------------------------------
+2.1 Initialisation of the atomic system (20 minutes)
+----------------------------------------------------
 
 Import the relevant modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -91,7 +87,7 @@ in the comments on the right of each line::
     timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
     cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                      # for neighbour calculations
-    tip_move_tol = 6.0               # Distance tip has to move before crack 
+    tip_move_tol = 10.0              # Distance tip has to move before crack 
                                      # is taken to be running
     strain_rate = 1e-5*(1/units.fs)  # Strain rate
     traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -112,9 +108,9 @@ in :ref:`step1` from the `input_file` ``crack.xyz``. Note that the
 atom indices in the range :math:`1 \ldots N`, which would not be consistent with
 the python indexing used in ASE (:math:`0\ldots N-1`).
 
-It is also necessary to read in the original height of the slab and
-the original crack position, which were saved in ``crack.xyz`` at the
-end of :ref:`Step 1 <step1>`::
+It is also necessary to read in the original width and height of the slab and
+the original crack position, which were saved in ``crack.xyz`` at the end
+of :ref:`Step 1 <step1>`::
 
     print 'Loading atoms from file %s' % input_file 
     atoms = ...                                     # Load atoms from file
@@ -327,7 +323,7 @@ Milestone 2.2
 
 If you have problems you can download the complete version of the
 :download:`run_crack_classical.py` script. Leave your classical MD simulation
-running and move onto the next section of the tutorial.
+running and move on to the next section of the tutorial.
 
 The first few lines produced by the ``run_crack_classical.py`` script should
 look something like this::
@@ -374,7 +370,7 @@ The first step is to import everything from `quippy` using the
    from qlab import *
    view("traj.nc", fortran_indexing=False)
 
-As we saw in :ref:`earlier <latticeconstant>`, this will open an AtomEye viewer
+As we saw :ref:`earlier <latticeconstant>`, this will open an AtomEye viewer
 window containing a visual representation of your crack system (as before
 ``fortran_indexing=False`` is used to number the atoms starting from zero). You
 can use the `Insert` and `Delete` keys to move forwards or backwards through the
@@ -437,13 +433,13 @@ the :math:`j`\ th component of the force between atoms :math:`k` and
 near zero temperature, and it is common to use the second term to
 define a per-atom stress tensor.
 
-Note, however that this requires a definition of the atomic volume. By
-default the :meth:`~quippy.potential.Potential.get_stresses` function
-simply divides the total cell volume by the number of atoms to get the
-volumer per atom. This is not a very good approximation for our cell,
-which contains a lot of empty vacuum, so the volume per atom comes out
-much too large, and the stress components much too small, e.g. the
-peak stress, which you can print in units of GPa with::
+Note, however, that this requires a definition of the atomic volume. By default
+the :meth:`~quippy.potential.Potential.get_stresses` function simply divides the
+total cell volume by the number of atoms to get the volume per atom. This is
+not a very good approximation for our cell, which contains a lot of empty
+vacuum, so the volume per atom comes out much too large, and the stress
+components much too small, e.g. the peak stress, which you can print in units of
+GPa with::
 
    print mm_sigma.max()/units.GPa
 
@@ -536,15 +532,21 @@ and near the right hand side at the end, then run the command::
    render_movie('movie.mp4')
 
 This function renders each frame to a ``.png`` file, before combining the
-snapshots with the `ffmpeg <http://www.ffmpeg.org/>`_ tool to make an MPEG4
-movie.
+snapshots with the `ffmpeg <http://www.ffmpeg.org/>`_ tool to make a movie like
+this one:
 
 .. raw:: html
 
-   <video width="600" height="380"  controls="controls"
-   poster="https://dl.dropbox.com/s/z394zg942hldtu2/classical-111.jpg">
-   <source src="https://dl.dropbox.com/s/wxdgryqo7rd1dla/classical-111.mp4" type="video/mp4; codecs='H.264, aac'" />
-   </video>
+    <center>
+    <video width="720" height="360"  controls="controls" poster="_movies/classical-111-poster.jpg">
+      <source src="_movies/classical-111.out.mp4" type='video/mp4' />
+      <source src="_movies/classical-111.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
+      <source src="_movies/classical-111.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+      <p><b>Your browser does not support HTML5 video.
+	<a href="_movies/classical-111.out.mp4">Download</a> the video instead.
+      </b></p>
+    </video>
+    </center>
 
 
 The example movie above makes the ductile nature of the fracture propagation
@@ -752,7 +754,7 @@ Atoms object, you can use the following code::
 Colour your atoms by the :math:`\sigma_{yy}` component of the
 atom-resolved stress field, and compare with the local virial stress
 results. Add the atom resolved :math:`\sigma_{yy}` values along
-:math:`y = 0` to your plot. Do you notice any significant differenes?
+:math:`y = 0` to your plot. Do you notice any significant differences?
 Repeat the minimisation of the crack slab with a lower value of
 `relax_fmax` (e.g. :math:`1 \times 10^{-3}` eV/A). Do the stress
 components computed using the two methods change much?

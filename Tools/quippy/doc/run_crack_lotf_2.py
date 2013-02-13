@@ -37,7 +37,7 @@ nsteps = 10000                   # Total number of timesteps to run for
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 6.0               # Distance tip has to move before crack 
+tip_move_tol = 10.0              # Distance tip has to move before crack 
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
 traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -160,7 +160,6 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     print log_format % atoms.info
 
 dynamics.attach(printstatus)
-
 
 # Check if the crack has advanced, and stop incrementing the strain if it has
 def check_if_cracked(atoms):

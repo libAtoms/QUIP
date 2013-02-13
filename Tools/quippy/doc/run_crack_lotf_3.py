@@ -33,11 +33,11 @@ from quippy.lotf import LOTFDynamics, update_hysteretic_qm_region
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
 sim_T = 300.0*units.kB           # Simulation temperature
-nsteps = 10000                   # Total number of timesteps to run for
+nsteps = 200                     # Total number of timesteps to run for (reduced)
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 6.0               # Distance tip has to move before crack 
+tip_move_tol = 10.0              # Distance tip has to move before crack 
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
 traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -50,10 +50,8 @@ mm_init_args = 'IP SW'           # Initialisation arguments for
 
 # additional parameters for the QM/MM simulation:
 qm_init_args = 'TB DFTB'         # Initialisation arguments for QM potential
-qm_inner_radius = 7.0*units.Ang  # Inner hysteretic radius for QM region
-qm_outer_radius = 9.0*units.Ang  # Inner hysteretic radius for QM region
-check_force_error = False        # Set to True to check accuracy of
-                                 # predictor-corrector at each step
+qm_inner_radius = 8.0*units.Ang  # Inner hysteretic radius for QM region
+qm_outer_radius = 10.0*units.Ang  # Inner hysteretic radius for QM region
 extrapolate_steps = 10           # Number of steps for predictor-corrector
                                  # interpolation and extrapolation
 
@@ -102,19 +100,22 @@ mm_pot.set_default_quantities(['stresses'])
 qm_pot = Potential(qm_init_args,
                    param_filename=param_file)
 
-# Parameters which control how the QM calculation is carried out:
+# Construct the QM/MM potential, which mixes QM and MM forces.
+# The qm_args_str parameters control how the QM calculation is carried out:
 # we use a single cluster, periodic in the z direction and terminated
 # with hydrogen atoms. The positions of the outer layer of buffer atoms
 # are not randomised.
-qm_args_str = ('single_cluster cluster_periodic_z '+
-               'carve_cluster terminate randomise_buffer=F')
-
-# Construct the QM/MM potential, which mixes QM and MM forces
-qmmm_pot = ForceMixingPotential(pot1=mm_pot, pot2=qm_pot,
-                                qm_args_str=qm_args_str,
+qmmm_pot = ForceMixingPotential(pot1=mm_pot,
+                                pot2=qm_pot,
+                                qm_args_str='single_cluster cluster_periodic_z carve_cluster '+
+                                            'terminate cluster_hopping=F randomise_buffer=F',
                                 fit_hops=4,
                                 lotf_spring_hops=3,
-                                buffer_hops=4)
+                                hysteretic_buffer=True,
+                                hysteretic_buffer_inner_radius=7.0,
+                                hysteretic_buffer_outer_radius=9.0,
+                                cluster_hopping_nneighb_only=False,
+                                min_images_only=True)
 
 # Use the force mixing potential as the Atoms' calculator
 atoms.set_calculator(qmmm_pot)
@@ -133,8 +134,7 @@ qmmm_pot.set_qm_atoms(qm_list)
 MaxwellBoltzmannDistribution(atoms, 2.0*sim_T)
 
 # Initialise the dynamical system
-dynamics = LOTFDynamics(atoms, timestep, extrapolate_steps,
-                        check_force_error=check_force_error)
+dynamics = LOTFDynamics(atoms, timestep, extrapolate_steps, check_force_error=True)
 
 # Print some information every time step
 def printstatus():
@@ -146,7 +146,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
                   '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
 
-    atoms.info['label'] = 'D'                # Label for the status line
+    atoms.info['label'] = dynamics.state_label  # Label for the status line
     atoms.info['time'] = dynamics.get_time()/units.fs
     atoms.info['temperature'] = (atoms.get_kinetic_energy() /
                                  (1.5*units.kB*len(atoms)))
@@ -159,14 +159,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
 
     print log_format % atoms.info
 
-    if check_force_error:
-       print '%s err %10.1f%12.6f%12.6f' % (dynamics.state_label,
-                                            dynamics.get_time()/units.fs,
-                                            dynamics.rms_force_error,
-                                            dynamics.max_force_error)
-
 dynamics.attach(printstatus)
-
 
 # Check if the crack has advanced, and stop incrementing the strain if it has
 def check_if_cracked(atoms):
@@ -188,8 +181,8 @@ def update_qm_region(atoms):
                                          qm_inner_radius, qm_outer_radius)
    qmmm_pot.set_qm_atoms(qm_list)
 
-if not check_force_error:
-   dynamics.set_qm_update_func(update_qm_region)
+# Next line is commented out when checking the predictor/corrector errors
+#dynamics.set_qm_update_func(update_qm_region)
 
 
 # Save frames to the trajectory every `traj_interval` time steps
@@ -199,8 +192,19 @@ trajectory = AtomsWriter(traj_file)
 def traj_writer(dynamics):
    if dynamics.state == LOTFDynamics.Interpolation:
       trajectory.write(dynamics.atoms)
-   
-dynamics.attach(traj_writer, traj_interval, dynamics)
+
+# Don't bother to write a trajectory when testing force errors
+#dynamics.attach(traj_writer, traj_interval, dynamics)
+
+def log_pred_corr_errors(dynamics, logfile):
+    logfile.write('%s err %10.1f%12.6f%12.6f\n' % (dynamics.state_label,
+                                                   dynamics.get_time()/units.fs,
+                                                   dynamics.rms_force_error,
+                                                   dynamics.max_force_error))
+logfile = open('pred-corr-error.txt', 'w')
+dynamics.attach(log_pred_corr_errors, 1, dynamics, logfile)
 
 # Start running!
 dynamics.run(nsteps)
+
+logfile.close()

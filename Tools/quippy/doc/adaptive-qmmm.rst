@@ -77,7 +77,7 @@ command::
    In [1]: from qlab import *
 
 You should prepare your Python scripts in a text editor and then run
-then from within `ipython` with the `run
+then from within `ipython` with the `%run
 <http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing>`_
 command. For example::
 
@@ -92,8 +92,8 @@ names etc. as given those here.
 You can also execute individual Python statements by typing them
 directly into the `ipython` shell. This is very useful for debugging
 and for interactive visualisation (described in more detail
-below). Finally, it's possible to copy and paste code into ipython
-using the `paste` and `cpaste` commands.
+below). Finally, it's possible to copy and paste code into `ipython`
+using the `%paste` or `%cpaste` commands.
 
 You can follow the links below to read more documentation for
 functions and classes we will be using, and for `quippy` routines you

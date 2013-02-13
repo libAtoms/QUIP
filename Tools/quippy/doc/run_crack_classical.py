@@ -32,7 +32,7 @@ nsteps = 10000                   # Total number of timesteps to run for
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 6.0               # Distance tip has to move before crack 
+tip_move_tol = 10.0              # Distance tip has to move before crack 
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
 traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -129,6 +129,7 @@ def check_if_cracked(atoms):
     if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) > tip_move_tol:
         atoms.info['is_cracked'] = True
         del atoms.constraints[atoms.constraints.index(strain_atoms)]
+
 
 dynamics.attach(check_if_cracked, 1, atoms)
 
