@@ -465,14 +465,16 @@ def highlight_qm_region(at=None, run_suffix=''):
     at.z[(at.z == 8) & (hybrid_mark == 1)] = 7
     at.set_atoms(at.z)
     if highlight_qm_region.first_time:
+        save_block = gcv().block
+        gcv().block = True
         redraw()
-        wait()
         rcut_patch('Si', 'Si', +0.3)
         rcut_patch('Al', 'Al', -0.55)
         run_command('change_normal_color 13 0.0 0.0 0.7 1.2')
         run_command('change_normal_color 5 0.9 0.4 0 1.5')
         run_command('change_normal_color 7 0.0 0.7 0.7 0.7')
         highlight_qm_region.first_time = False
+        gcv().block = save_block
     redraw()
 
 
