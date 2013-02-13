@@ -380,7 +380,8 @@ class LOTFDynamics(MolecularDynamics):
 
 
 
-def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius, qm_outer_radius):
+def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
+                                qm_outer_radius, use_avgpos=False):
     """
     Update the QM region in `atoms`
 
@@ -408,7 +409,7 @@ def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius, 
     qm_table = Table.from_atom_list(atoms, old_qm_list)
     construct_hysteretic_region(qm_table, atoms, inner_radius=qm_inner_radius,
                                 outer_radius=qm_outer_radius,
-                                centre=qm_centre, use_avgpos=False,
+                                centre=qm_centre, use_avgpos=use_avgpos,
                                 loop_atoms_no_connectivity=True)
     qm_list = qm_table.to_atom_list()
     
