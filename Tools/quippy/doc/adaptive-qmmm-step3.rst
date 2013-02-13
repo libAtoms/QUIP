@@ -12,7 +12,7 @@ don't have it, you can :download:`download it here <run_crack_classical.py>`,
 and the ``crack.xyz`` input file from :ref:`step1`, which you
 can :download:`also download here <crack.xyz>`.
 
-.. contents::
+.. _theory3:
 
 Theoretical background
 ----------------------
@@ -29,12 +29,12 @@ Standard QM/MM techniques, usually developed for biological systems, adopt
 energy-based approaches. The total energy of the system is written as the sum 
 of the QM energy, the MM energy and a QM/MM term, often specifically devised
 for any particular system, that takes care of the interaction between the two regions.
-While this approaches allows the definition of a total energy, which is 
+While this approach allows the definition of a total energy, which is 
 conserved during the dynamics, the forces used to propagate the MD are not accurate
 enough because of the spurious effects due to the presence of the boundary
 between the QM and the MM regions. Moreover, the necessity to suitably "terminate"
 the QM region, does not allow the QM region to move during the simulation, which
-is however reqired if we want to follow the motion of the crack tip.
+is however required if we want to follow the motion of the crack tip.
 
 The LOTF scheme adopts a force-based scheme instead, which allows the QM region
 to move during the MD simulation and accurate forces to be calculated even at
@@ -71,11 +71,11 @@ typically XX Angstrom, or YY hops, for Si.
 Once the accurate QM forces have been obtained, only the QM forces on the
 atoms belonging to the original QM region are used in the MD. The QM forces
 on the atoms in the buffer region, which are affected by the presence of 
-the outer QM surface, are discared and replaced by the MM forces.
+the outer QM surface, are discarded and replaced by the MM forces.
 In this way, we can obtain the desired forces on al atoms of the system. These
 can be used in the MD simulation, provided that the conservation of the
 total momentum is restored. This is simply done by dividing the total force
-by the number of MM+buffr atoms, and subtracting this quantity from all
+by the number of MM+buffer atoms, and subtracting this quantity from all
 the MM forces **This is not very clear but it is pretty late...**.     
 
 Hysteretic selection of the QM region
@@ -137,11 +137,10 @@ the `param_filename` to the Potential constructor (note that the single file
 The QM/MM potential is constructed using quippy's
 :class:`quippy.potential.ForceMixingPotential` class. Here, `pot1` is the low
 precision, i.e. MM potential, and `pot2` is the high precision, i.e. QM
-potential, and `qm_args_str` are the parameters defined above. `fit_hops` is the
-number of hops used to define the fitting region, `lotf_spring_hops` defines the
-length of the springs in the LOTF *adjustable potential*, while `buffer_hops` is
-the number of hops used to define the buffer region used for the embedded QM
-force calculation.::
+potential. `fit_hops` is the number of hops used to define the fitting region,
+`lotf_spring_hops` defines the length of the springs in the LOTF *adjustable
+potential*, while the hysteretic buffer options control the buffer region
+region used for the embedded QM force calculation.::
 
 qmmm_pot = ForceMixingPotential(pot1=mm_pot,
                                 pot2=qm_pot,
@@ -220,7 +219,7 @@ which can also be displayed with ``aux_property_colouring("hybrid")``
 Initialising the Dynamics
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The definition of the initial temperature of the system shold be left as
+The definition of the initial temperature of the system should be left as
 in :ref:`step2`. Don't forget to remove the temporary lines added above which
 quit the script after setting up the initial QM region!
 
@@ -420,32 +419,73 @@ QM core and buffer regions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``"hybrid_mark"`` property is used internally to identify which atoms are
-used for the core QM region and buffer regions:
+used for the QM active and buffer regions:
 
 .. image:: crack-hybrid-mark.png
    :align: center
    :width: 600
 
-Evolution of Crack Position and Temperature
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The central green atoms have ``hybrid_mark == HYBRID_ACTIVE_MARK``, and they are
+the atoms for which QM forces are used to propagate the dynamics. Classical
+forces are used for all other atoms, including the red buffer region, where
+``hybrid_mark == HYBRID_BUFFER_MARK``. As explained :ref:`above <theory3>` The purpose of the buffer region is only
+to give accurate QM forces on the active atoms. 
 
-.. image:: lotf-temperature-crack-position.png
+Evolution of energy release rate and crack position
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You should find that in the LOTF simulation, the crack now advances
+monotonically, with a constant crack velocity of around 2500 m/s, and at about
+half the energy release rate of the classical case (6 J/m\
+:superscript:`2` vs 12 J/m\ :superscript:`2`).
+
+.. image:: lotf-energy-release-rate-crack-position.png
    :align: center
    :width: 600
 
-The crack length now increases monotonically, with a constant crack velocity of
-around 2700 m/s
+The temperature still goes up, but more gently than in the classical
+case, since the flow of energy to the crack tip is closer to the
+energy consumed by creating the new surfaces. Some heat is generated
+at the QM/MM border; usually this would be controlled with a gentle
+Langevin thermostat, which we have omitted here in the interests of
+simplicity.
 
-The temperature still goes up, but more gently than in the classical case, since
-the flow of energy to the crack tip is closer to the energy consumed by creating
-the new surfaces. Some heat is generated at the QM/MM border; usually this would
-be controlled with a gentle Langevin thermostat, which we have omitted here in
-the interests of simplicity.
 
 Comparison with classical dynamics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO: make a movie comparing classical and LOTF dynamics**
+Here is a movie of a typical LOTF simulation on the :math:`(111)` cleavage
+plane. We have passed the :func:`~qlab.highlight_qm_region` function as the
+`hook` argument to :func:`~qlab.render_movie`, which colours the QM atoms in
+each frame dark blue:
+
+.. raw:: html
+
+    <center>
+    <video width="640" height="360"  controls="controls" poster="_movies/lotf-111-poster.jpg">
+      <source src="_movies/lotf-111.out.mp4" type='video/mp4' />
+      <source src="_movies/lotf-111.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
+      <source src="_movies/lotf-111.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+      <p><b>Your browser does not support HTML5 video.
+	<a href="_movies/lotf-111.out.mp4">Download</a> the video instead.
+      </b></p>
+    </video>
+    </center>
+
+And here is a head-to-head comparison of SW and LOTF dynamics:
+
+.. raw:: html
+
+    <center>
+    <video width="640" height="720"  controls="controls" poster="_movies/classical-vs-lotf-poster.jpg">
+      <source src="_movies/classical-vs-lotf.out.mp4" type='video/mp4' />
+      <source src="_movies/classical-vs-lotf.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
+      <source src="_movies/classical-vs-lotf.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+      <p><b>Your browser does not support HTML5 video.
+	<a href="_movies/classical-vs-lotf.out.mp4">Download</a> the video instead.
+      </b></p>
+    </video>
+    </center>
 
 
 3.4 Extension tasks
@@ -463,24 +503,28 @@ the QM region by commenting out the line::
 
    dynamics.set_qm_update_func(update_qm_region)
 
-Let's create a logfile to save the force errors at each step during the
-interpolation and extrapolation::
-  
-    logfile = open('pred-corr-error.txt', 'w')
+Let's create a logfile to save the force errors at each step during
+the interpolation and extrapolation. Add the following code before the
+:meth:`dynamics.run()` call::
 
-To save these results, add the following code before the :meth:`dynamics.run()` call::
-
-    def log_pred_corr_errors(dynamics):
+    def log_pred_corr_errors(dynamics, logfile):
 	logfile.write('%s err %10.1f%12.6f%12.6f\n' % (dynamics.state_label,
 						       dynamics.get_time()/units.fs,
 						       dynamics.rms_force_error,
 						       dynamics.max_force_error))
-    dynamics.attach(log_pred_corr_errors, 1, dynamics)
+    logfile = open('pred-corr-error.txt', 'w')
+    dynamics.attach(log_pred_corr_errors, 1, dynamics, logfile)
+
+Finally, change the total number of steps (via the `nsteps` parameter) to a much
+smaller number (e.g. 200 steps), close the logfile after the ``dynamics.run()``
+line::
+
+    logfile.close()
 
 Once the dynamics have run for a few LOTF cycles, you can plot the results with
 a shell script called ``plot_pred_corr_errors.py``::
 
-   plot_pred_corr_errors.py -e 10 lotf_check_force_error.out
+   plot_pred_corr_errors.py -e 10 pred-corr-error.txt
 
 The ``-e 10`` argument is used to specify the number of extrapolate steps. This
 produces a set of four plots giving the RMS and maximum force errors during
@@ -494,7 +538,11 @@ Note that the scale is different on the extrapolation and interpolation plots!
 Try varying the `extrapolate_steps` parameter and seeing what the effect on
 force errors is. You could also try changing the `lotf_spring_hops` and
 `fit_hops` parameters, which control the maximum length of the corrective
-springs added to the potential and the size of the fit region, respectively.
+springs added to the potential and the size of the fit region,
+respectively.
+
+Here is a final version of the ``run_crack_lotf.py`` script including
+checking of the force errors: :download:`run_crack_lotf_3.py`.
 
 QM region size
 ^^^^^^^^^^^^^^

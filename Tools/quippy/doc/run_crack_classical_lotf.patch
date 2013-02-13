@@ -1,5 +1,5 @@
---- run_crack_classical.py	2013-02-11 19:31:01.000000000 +0000
-+++ run_crack_lotf_2.py	2013-02-12 11:08:25.000000000 +0000
+--- run_crack_classical.py	2013-02-12 13:04:25.000000000 +0000
++++ run_crack_lotf_2.py	2013-02-12 13:06:31.000000000 +0000
 @@ -23,7 +23,12 @@
                            get_energy_release_rate,
                            ConstantStrainRate,
@@ -84,19 +84,19 @@
      atoms.info['time'] = dynamics.get_time()/units.fs
      atoms.info['temperature'] = (atoms.get_kinetic_energy() /
                                   (1.5*units.kB*len(atoms)))
-@@ -118,9 +159,9 @@
+@@ -118,7 +159,6 @@
  
      print log_format % atoms.info
  
 -
  dynamics.attach(printstatus)
  
-+
  # Check if the crack has advanced, and stop incrementing the strain if it has
- def check_if_cracked(atoms):
-     crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
-@@ -132,9 +173,27 @@
+@@ -130,12 +170,29 @@
+         atoms.info['is_cracked'] = True
+         del atoms.constraints[atoms.constraints.index(strain_atoms)]
  
+-
  dynamics.attach(check_if_cracked, 1, atoms)
  
 +
