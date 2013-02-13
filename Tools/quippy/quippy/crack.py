@@ -988,7 +988,7 @@ def get_stress_intensity_factor(atoms):
 
 
 def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
-                           use_avg_stress=True, avg_decay=0.01, calc=None,
+                           use_avg_stress=True, avg_decay=0.005, calc=None,
                            verbose=False):
     """
     Perform a least squares fit of near-tip stress field to Irwin solution
@@ -1154,13 +1154,13 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
 
     atoms.info['K'] = params['K']
     atoms.info['sigma0'] = (params['sxx0'], params['syy0'], params['sxy0'])
-    atoms.info['CrackPos'] = np.array((params['x0'], params['y0'], 0.0))
+    atoms.info['CrackPos'] = np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
 
     return params
 
 
 def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
-                                use_avg_stress=True, avg_decay=0.01,
+                                use_avg_stress=True, avg_decay=0.005,
                                 calc=None):
     """
     Find the position of the crack tip by fitting to the Irwin `K`-field solution
@@ -1175,7 +1175,7 @@ def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
 
     params = fit_crack_stress_field(atoms, r_range, fix_params, use_avg_stress, avg_decay, calc)
 
-    return np.array((params['x0'], params['y0'], 0.0))
+    return np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
     
 
 def plot_stress_fields(atoms, r_range=None, fix_params=None,
