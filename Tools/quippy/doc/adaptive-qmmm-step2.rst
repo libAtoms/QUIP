@@ -321,8 +321,8 @@ molecular dynamics methodology
 Milestone 2.2
 ^^^^^^^^^^^^^
 
-If you have problems you can download the complete version of the
-:download:`run_crack_classical.py` script. Leave your classical MD simulation
+If you have problems you can look at the complete version of the
+:ref:`run_crack_classical` script. Leave your classical MD simulation
 running and move on to the next section of the tutorial.
 
 The first few lines produced by the ``run_crack_classical.py`` script should
@@ -351,6 +351,8 @@ the beginning of the simulation. In the early stages of the calculation, the
 strain and `G` are both increasing, and the temperature is rapidly falling
 towards ``sim_T = 300`` as anticipated.
 
+.. _visualisation2:
+
 2.3 Visualisation and Analysis (as time permits)
 ------------------------------------------------
 
@@ -375,19 +377,39 @@ window containing a visual representation of your crack system (as before
 ``fortran_indexing=False`` is used to number the atoms starting from zero). You
 can use the `Insert` and `Delete` keys to move forwards or backwards through the
 trajectory, or `Ctrl+Insert` and `Ctrl+Delete` to jump to the first or last
-frame --- note the frame number in the title bar of the window. You can repeat
-the ``view("traj.nc")`` command as your simulation progresses to reload the
-file.
+frame -- note that the focus must be on the AtomEye viewer window when you use
+any keyboard shortcuts. The current frame number is shown in the title bar of
+the window. 
+
+The function :func:`~qlab.gcat` (short for "get current atoms") returns a
+reference to the :class:`~.Atoms` object currently being visualised (i.e. to the
+current frame from the trajectory file). Similarly, the :func:`~qlab.gcv`
+function returns a reference to the entire trajectory currently being viewed as
+an :class:`~qlab.AtomsReaderViewer` object. 
+
+You can change the frame increment rate by setting
+the :attr:`~atomeye.AtomEyeViewer.delta` attribute of the viewer, e.g. to
+advance by ten frames at a time::
+
+   gcv().delta = 10
+
+Or, to jump directly to frame 100::
+
+   gcv().frame = 100
+
+You can repeat the ``view("traj.nc", fortran_indexing=False)``
+command as your simulation progresses to reload the file (you can use `Ctrl+R`
+in the `ipython` console to search backwards in the session history to save
+typing).
+
+.. _stress_analysis:
 
 Stress field analysis
 ^^^^^^^^^^^^^^^^^^^^^
 
-The function :func:`~qlab.gcat` (short for "get current atoms")
-returns a reference to the :class:`~.Atoms` object currently being
-visualised (i.e. to the current frame from the trajectory file). You
-can use this to compute and display the instantaneous principal
-per-atom stress :math:`\sigma_{yy}` as computed by the SW potential for a
-configuration near the beginning of your dynamical simulation::
+To compute and display the instantaneous principal per-atom
+stress :math:`\sigma_{yy}` as computed by the SW potential for a configuration
+near the beginning of your dynamical simulation::
 
    mm_pot = Potential('IP SW', param_filename='params.xml')
    at = gcat()
@@ -463,12 +485,15 @@ use a mask to select the relevant atoms, as we did when fixing the edge atoms
 above. You can use the matplotlib :func:`~matplotlib.pyplot.plot` function to
 produce a plot.
 
+.. _time_avg_stress:
+
 Time-averaged stress field
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By now, you should have a few picoseconds of dynamics in your trajectory
-file. Reload with ``view("traj.nc")`` to see what is happening. Here is what the
-instantaenous :math:`\sigma_{yy}` looks like after 5 ps of dynamics:
+By now, you should have a few picoseconds of dynamics in your trajectory file.
+Reload with ``view("traj.nc")`` to see what is happening. You can jump to the
+end with `Ctrl+Delete`, or by typing `last()` into the `ipython` console. Here
+is what the instantaneous :math:`\sigma_{yy}` looks like after 5 ps of dynamics:
 
 .. image:: classical-crack-sigma-yy.png
    :align: center
@@ -493,6 +518,8 @@ You should find that the crack tip is more well defined in the average stress:
 .. image:: classical-crack-sigma-yy-average.png
    :align: center
    :width: 600
+
+.. _coordination:
 
 Geometry and coordination analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -520,6 +547,8 @@ mechanisms, such as dislocation emission from the crack tip.
    :align: center
    :width: 600
 
+
+.. _render_movie:
 
 Rendering a movie of the simulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -552,13 +581,11 @@ this one:
 The example movie above makes the ductile nature of the fracture propagation
 much clearer. We see local amorphisation, the formation of
 strange *sp*\ :superscript:`2` tendrils, and temporary crack arrest. Comparing
-again with the TEM images makes it clear that, as a description of fracture in
-real silicon, the SW potential falls some way short.
+again with the :ref:`experimental TEM images <si_tem_images>` makes it clear
+that, as a description of fracture in real silicon, the SW potential falls some
+way short.
 
-.. image:: lawn-fracture-silicon.png
-   :align: center
-   :width: 600
-
+.. _postion_crack_tip:
 
 Position of the crack tip
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -591,16 +618,15 @@ inspection of the crack system would tell you. Do you think it's
 accurate enough to use as the basis for selecting a region around the
 crack tip to be treated at the QM level?
 
+.. _plot_G_and_crack_pos_x:
 
 Evolution of energy release rate and crack position
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Similar to :func:`~qlab.gcat`, the :func:`~qlab.gcv` function returns
-a reference to the entire trajectory currently being viewed as an
-:class:`~qlab.AtomsReaderViewer` object. For :ref:`netcdf`
-trajectories, the :attr:`AtomsReaderViewer.reader.netcdf_file``
-attribute provides direct access to the underlying NetCDF file using
-the Python `netCDF4 module
+For :ref:`netcdf` trajectories,
+the :attr:`AtomsReaderViewer.reader.netcdf_file`` attribute of the current
+viewer object :func:`~qlab.gcv` provides direct access to the underlying NetCDF
+file using the Python `netCDF4 module
 <http://code.google.com/p/netcdf4-python/>`_::
 
   traj = gcv()
@@ -639,6 +665,8 @@ don't see any motion of the crack tip until :math:`G ~ 11` J/m\
 the high strain rate and small system used here, and how much to the
 choice of interatomic potential? How would you check this?
 
+
+.. _plot_temperature:
 
 Temperature and velocity analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -762,6 +790,8 @@ components computed using the two methods change much?
 .. You can also use the :func:`~quippy.crack.plot_stress_fields` function
 .. to plot the atom-resolved and Irwin continuum near-tip stress fields,
 .. and the residual error between them after fitting.
+
+When you are ready, proceed to :ref:`step3`.
 
 
 References

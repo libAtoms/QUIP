@@ -1,5 +1,20 @@
---- run_crack_classical.py	2013-02-12 13:04:25.000000000 +0000
-+++ run_crack_lotf_2.py	2013-02-12 13:06:31.000000000 +0000
+--- run_crack_classical.py	2013-02-13 12:34:28.000000000 +0000
++++ run_crack_lotf_2.py	2013-02-13 13:09:24.000000000 +0000
+@@ -1,11 +1,11 @@
+ """
+-run_crack_classical.py
++run_crack_lotf_2.py
+ 
+-Script to run classical molecular dynamics for a crack slab,
++Script to run LOTF molecular dynamics for a crack slab,
+ incrementing the load in small steps until fracture starts.
+ 
+ James Kermode <james.kermode@kcl.ac.uk>
+-January 2013
++February 2013
+ """
+ 
+ import numpy as np
 @@ -23,7 +23,12 @@
                            get_energy_release_rate,
                            ConstantStrainRate,
@@ -21,7 +36,7 @@
 +# additional parameters for the QM/MM simulation:
 +qm_init_args = 'TB DFTB'         # Initialisation arguments for QM potential
 +qm_inner_radius = 8.0*units.Ang  # Inner hysteretic radius for QM region
-+qm_outer_radius = 10.0*units.Ang  # Inner hysteretic radius for QM region
++qm_outer_radius = 10.0*units.Ang # Inner hysteretic radius for QM region
 +extrapolate_steps = 10           # Number of steps for predictor-corrector
 +                                 # interpolation and extrapolation
 +

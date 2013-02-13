@@ -1,11 +1,11 @@
 """
-run_crack_classical.py
+run_crack_classical_1.py
 
 Script to run classical molecular dynamics for a crack slab,
 incrementing the load in small steps until fracture starts.
 
 James Kermode <james.kermode@kcl.ac.uk>
-January 2013
+February 2013
 """
 
 import numpy as np
