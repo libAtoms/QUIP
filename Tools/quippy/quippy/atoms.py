@@ -301,7 +301,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     interoperable.""", signature='Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, fortran_indexing, **read_args])')
 
     _cmp_skip_fields = ['own_this', 'ref_count', 'domain',
-                        'connect', 'hysteretic_connect']
+                        'connect', 'hysteretic_connect', 'source']
 
     name_map = {'positions'       : 'pos',
                 'numbers'         : 'Z',
