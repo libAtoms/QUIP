@@ -21,7 +21,7 @@ Visualisation Tools
 ===================
 
 .. toctree::
-   atomeye.rst
    qlab.rst
+   atomeye.rst
    plot2d.rst
 
