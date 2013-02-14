@@ -392,11 +392,11 @@ You can change the frame increment rate by setting
 the :attr:`~atomeye.AtomEyeViewer.delta` attribute of the viewer, e.g. to
 advance by ten frames at a time::
 
-   gcv().delta = 10
+   set_delta(10)
 
 Or, to jump directly to frame 100::
 
-   gcv().frame = 100
+   set_frame(100)
 
 You can repeat the ``view("traj.nc", fortran_indexing=False)``
 command as your simulation progresses to reload the file (you can use `Ctrl+R`
@@ -423,7 +423,7 @@ The `mm_sigma` array has shape `(len(atoms), 3, 3)`, i.e. it is
 made up of a :math:`3 \times 3` stress tensor :math:`\sigma_{ij}` for
 each atom. The `sigma_yy` array is the ``[1, 1]`` component of each of
 these arrays, i.e. :math:`\sigma_{yy}`. To read off the value of the
-stress on a particular atom, `Ctrl+Right Click` on it. As before, this
+stress on a particular atom, just `right click` on it. As before, this
 prints various information in the `ipython` console. The `_show`
 property corresponds to the values currently being used to colour the
 atoms. You will see that :math:`\sigma_{yy}` is very strongly peaked
@@ -561,23 +561,11 @@ and near the right hand side at the end, then run the command::
 
    render_movie('movie.mp4')
 
-This function renders each frame to a ``.png`` file, before combining the
+This function renders each frame to a ``.jpg`` file, before combining the
 snapshots with the `ffmpeg <http://www.ffmpeg.org/>`_ tool to make a movie like
 this one:
 
-.. raw:: html
-
-    <center>
-    <video width="720" height="360"  controls="controls" poster="_movies/classical-111-poster.jpg">
-      <source src="_movies/classical-111.out.mp4" type='video/mp4' />
-      <source src="_movies/classical-111.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/classical-111.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/classical-111.out.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
-
+.. video:: classical-111 720 360
 
 The example movie above makes the ductile nature of the fracture propagation
 much clearer. We see local amorphisation, the formation of
@@ -661,7 +649,7 @@ In this case the crack actually arrests for a while at around :math:`t
 fracture, indicating that our simulation is failing to match well
 with experiment. According to Griffith's criterion, fracture should
 initiate at :math:`2\gamma \sim 2.7` J/m\ :superscript:`2`, whereas we
-don't see any motion of the crack tip until :math:`G ~ 11` J/m\
+don't see any motion of the crack tip until :math:`G \sim 11` J/m\
 :superscript:`2`. How much of this difference do you think is due to
 the high strain rate and small system used here, and how much to the
 choice of interatomic potential? How would you check this?
@@ -772,9 +760,9 @@ Finally if we assume linear elasticity applies, the atomistic stress
 can be computed simply as :math:`\bm\sigma = C \bm\epsilon` where
 :math:`C` is the :math:`6\times6` matrix of elastic constants.
 
-The :class:`~quippy.elasticity.AtomResolvedStressField` implements
-this approach. To use it to calculate the stress in your `crack_slab`
-Atoms object, you can use the following code::
+The :class:`~quippy.elasticity.AtomResolvedStressField` class
+implements this approach. To use it to calculate the stress in your
+`crack_slab` Atoms object, you can use the following code::
 
    arsf = AtomResolvedStressField(bulk=si_bulk)
    crack_slab.set_calculator(arsf)

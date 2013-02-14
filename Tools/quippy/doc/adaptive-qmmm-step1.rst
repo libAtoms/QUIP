@@ -40,7 +40,7 @@ driven by the formation and coalescence of microscopic voids.
    Image credits: C. Marlière and A. Weck.
 
 Silicon is known to be an ideally brittle material, as shown by the image below.
-Below the brittle to ductile transtion, at around 500 :math:`^\circ`\ C, silicon
+Below the brittle to ductile transtion, at around :math:`500^\circ`\ C, silicon
 cleaves atomically smooth fracture surfaces (left and centre panel; sample in
 central panel is tilted to show the crack front). At higher temperatures,
 fracture is ductile, with the emission of multiple dislocations from the tip
@@ -74,11 +74,11 @@ bonds For example, in glass, the theoretical strength is given by
 where :math:`E`, :math:`\gamma` and :math:`a` are the Young's modulus, surface
 energy and bond length, respectively.
 
-For a slowly-moving crack of length :math:`c` in an infinite plane, the
+For a slowly-moving crack of length `c` in an infinite plane, the
 well-known Griffith criterion for fracture propagation is based on thermodynamic
-energy balance between the release of elastic energy in an area :math:`\sim
-c^2`, and the cost of creating new surfaces, :math:`\sim c`, as illustrated
-below.
+energy balance between the release of elastic energy in an area
+proportional to `c` and the cost of creating new surfaces,
+proportioanl to `c`\ :superscript:`2`, as illustrated below.
 
 .. image:: griffith-criterion.png
    :align: center
@@ -92,12 +92,12 @@ This leads to a Griffith fracture strength for glass of
 
 which is much lower than the theoretical strength. Here the additional
 parameters are :math:`\rho`, the radius of curvature and the crack
-length :math:`c`. The effect of stress concentration increases for sharper and
+length `c`. The effect of stress concentration increases for sharper and
 longer cracks.
 
-The Griffith criterion leads to a critical length :math:`c0` below which it is
+The Griffith criterion leads to a critical length :math:`c_0` below which it is
 not energetically favourable for cracks to grow, since the elastic energy
-released does not exceed the surface energy cost. Below :math:`c0`, cracks
+released does not exceed the surface energy cost. Below :math:`c_0`, cracks
 prefer to close up, meaning that not all flaws are unstable. This explains why
 it makes sense to measure the length of cracks e.g. on aeroplanes, so that small
 flaws can be identified and treated before they become critical.
@@ -110,7 +110,7 @@ crack propagation. It is defined by
 
    G = - \frac{\partial U_E}{\partial c}
 
-where :math:`U_E` is the total strain energy and :math:`c` is the crack length.
+where :math:`U_E` is the total strain energy and `c` is the crack length.
 The Griffith criterion can be reformulated in terms of :math:`G` to show that
 crack propagation becomes favourable when
 
@@ -126,16 +126,17 @@ the crack tip exceeds the cost of creating two new surfaces.
 Atomic scale modelling of fracture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Much work has been done to understand fracture at the continuum level (see, e.g.
-[Freund1998]_ and [Lawn1993]_), but here we would like to simulate fracture at
-the atomic level, to examine the combined effects of stress and chemistry (`
-'chemomechanics'). A first approach would be to use classical interatomic
-potentials to carry out molecular dynamics (MD). However, as we will see
-in :ref:`step2`, most classical potentials fail to accurately reproduce brittle
-fracture. This is due to stress concentration which has been shown to diverge
-as :math:`\sigma \sim 1/\sqrt{r}` near a crack tip [Irwin1948]_, leading to
-anharmonic stretching and rupture of bonds, which is typically not well captured
-by simple interatomic potentials. 
+Much work has been done to understand fracture at the continuum level
+(see, e.g.  [Freund1998]_ and [Lawn1993]_), but here we would like to
+simulate fracture at the atomic level, to examine the combined effects
+of stress and chemistry ('chemomechanics'). A first approach would be
+to use classical interatomic potentials to carry out molecular
+dynamics (MD). However, as we will see in :ref:`step2`, most classical
+potentials fail to accurately reproduce brittle fracture. This is due
+to stress concentration which has been shown to diverge as
+:math:`\sigma \sim 1/\sqrt{r}` near a crack tip [Irwin1948]_, leading
+to anharmonic stretching and rupture of bonds, which is typically not
+well captured by simple interatomic potentials.
 
 .. _irwin_sig_yy:
 
@@ -177,18 +178,19 @@ Here, we would like to treat this region at a quantum mechanical (QM) level.
 Coupled multiscale approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-QM approaches such as density functional theory (DFT) do correctly describe
-bond-breaking in silicon. However, the strong bidirectional coupling between
-bond-breaking at the crack tip and the long-range stress field driving fracture
-necessitate a multiscale approach. The boundaries of the model system must be
-placed far enough away from the crack tip not to affect the results, which means
-that large cells containing tens to hundreds of thousands of atoms are needed;
-the current capabilities of most QM approaches. Fracture is perhaps the
-archetypical coupled multiscale problem, with thousands of atoms contributing to
-the elastic relaxation of the near-tip region. We will describe how classical
-and QM descriptions can be coupled to study problems in fracture using the
-'Learn on the Fly' (LOTF approach) in :ref:`more detail <theory3>` later in this
-tutorial.
+QM approaches such as density functional theory (DFT) do correctly
+describe bond-breaking in silicon. However, the strong bidirectional
+coupling between bond-breaking at the crack tip and the long-range
+stress field driving fracture necessitate a multiscale approach. The
+boundaries of the model system must be placed far enough away from the
+crack tip not to affect the results, which means that large cells
+containing tens to hundreds of thousands of atoms are needed, beyond
+the current capabilities of most QM approaches. Fracture is perhaps
+the archetypical coupled multiscale problem, with thousands of atoms
+contributing to the elastic relaxation of the near-tip region. We will
+describe how classical and QM descriptions can be coupled to study
+problems in fracture using the 'Learn on the Fly' (LOTF approach) in
+:ref:`more detail <theory3>` later in this tutorial.
 
 .. figure:: multiscale-coupling.png
    :width: 500

@@ -98,7 +98,7 @@ usually be achieved by scaling the classical model in space and energy to match
 the lattice constant and bulk modulus of the QM model (for simplicity we omit
 this step in this tutorial, but the mismatch here is not too big).
 
-.. _hysteretic_selection:
+.. _hysteretic:
 
 Hysteretic selection of the QM active and buffer regions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -299,13 +299,13 @@ the `param_filename` to the Potential constructor (note that the single file
     qm_pot = ...  # Initialise DFTB potential
 
 The QM/MM potential is constructed using quippy's
-:class:`quippy.potential.ForceMixingPotential` class. Here, `pot1` is the low
-precision, i.e. MM potential, and `pot2` is the high precision, i.e. QM
-potential. `fit_hops` is the number of hops used to define the fitting region,
-`lotf_spring_hops` defines the length of the springs in the LOTF *adjustable
-potential*, while the hysteretic buffer options control the size of
-the :ref:`hysteretic <hysteretic_selection>` :ref:`buffer region <buffer>` region
-used for the embedded QM force calculation. ::
+:class:`quippy.potential.ForceMixingPotential` class. Here, `pot1` is
+the low precision, i.e. MM potential, and `pot2` is the high
+precision, i.e. QM potential. `fit_hops` is the number of hops used to
+define the fitting region, `lotf_spring_hops` defines the length of
+the springs in the LOTF *adjustable potential*, while the hysteretic
+buffer options control the size of the :ref:`hysteretic <hysteretic>` :ref:`buffer
+region <buffer>` region used for the embedded QM force calculation. ::
 
   qmmm_pot = ForceMixingPotential(pot1=mm_pot,
 				  pot2=qm_pot,
@@ -334,11 +334,12 @@ Set up the initial QM region
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now, we can set up the list of atoms in the initial QM region using
-the :func:`~quippy.lotf.update_hysteretic_qm_region` function, defined in
-quippy. Here we need to provide the Atoms' system, the centre of the QM region
-(i.e. the position of the crack tip), as well as the inner and outer radius of
-the hysteretic QM region. Note that the `old_qm_list` attribute must be an empty
-list (``[]``) in this initial case::
+the :func:`~quippy.lotf.update_hysteretic_qm_region` function, defined
+in quippy. Here we need to provide the :class:`~.Atoms` system, the
+centre of the QM region (i.e. the position of the crack tip), and the
+the inner and outer radius of the :ref:`hysteretic <hysteretic>` QM
+region. Note that the `old_qm_list` attribute must be an empty list
+(``[]``) in this initial case::
 
     qm_list = ...             # Define the list of atoms in the QM region
 
@@ -420,7 +421,7 @@ Updating the QM region
 
 We need to define a function that updates the QM region at the
 beginning of each extrapolation cycle. As before, we need to find the
-position of the crack tip and then update the hysteretic QM
+position of the crack tip and then update the :ref:`hysteretic <hysteretic>` QM
 region. Note that now a previous QM region exists and its atoms should
 be passed to the :func:`~quippy.lotf.update_hysteretic_qm_region`
 function. The current QM atom list can be obtained with the
@@ -546,7 +547,7 @@ adjustable parameters. During this time the strain is incremented as normal::
     E            9.0  376.965040     0.08435      5.0107      -30.67    (-0.07)
     E           10.0  344.184506     0.08436      5.0119      -30.69    (-0.08)
 
-At the end of the extrapolation, it's time for a QM forcer evaluation and
+At the end of the extrapolation, it's time for a QM force evaluation and
 another fit. Now the force errors are a little larger, but the fit is still very good::
 
     Optimising 1484 adjustable parameters
@@ -646,51 +647,18 @@ plane. To colour the QM atoms dark blue, we passed
 the :func:`~qlab.highlight_qm_region` function as the `hook` argument
 to :func:`~qlab.render_movie`:
 
-.. raw:: html
 
-    <center>
-    <video width="640" height="360"  controls="controls" poster="_movies/lotf-111-poster.jpg">
-      <source src="_movies/lotf-111.out.mp4" type='video/mp4' />
-      <source src="_movies/lotf-111.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/lotf-111.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/lotf-111.out.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
+.. video:: lotf-111 640 360
 
 During the LOTF dynamics, the time-averaged stress field smoothly tracks the
 crack tip, as can be seen in this movie, where atoms are coloured by
 their :math:`\sigma_{yy}` component:
 
-.. raw:: html
-
-    <center>
-    <video width="640" height="360"  controls="controls" poster="_movies/elastic-poster.jpg">
-      <source src="_movies/elastic.mp4" type='video/mp4' />
-      <source src="_movies/elastic.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/elastic.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/elastic.out.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
-
+.. video:: elastic 640 360
 
 And here is a head-to-head comparison of SW and LOTF dynamics:
 
-.. raw:: html
-
-    <center>
-    <video width="640" height="720"  controls="controls" poster="_movies/classical-vs-lotf-poster.jpg">
-      <source src="_movies/classical-vs-lotf.out.mp4" type='video/mp4' />
-      <source src="_movies/classical-vs-lotf.out.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/classical-vs-lotf.out.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/classical-vs-lotf.out.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
+.. video:: classical-vs-lotf 640 720
 
 Fracture initiates much earlier in the LOTF case, i.e. at a much reduced energy
 release rate, and is much more brittle, with none of the artificial plasticity
@@ -704,18 +672,7 @@ fracture instabilities [Fineberg1991]_. If you have time you can investigate
 this in the :ref:`extension task on size and strain rate effects
 <system_size_and_strain_rate>`.
 
-.. raw:: html
-
-    <center>
-    <video width="640" height="720"  controls="controls" poster="_movies/clas-vs-lotf-poster.jpg">
-      <source src="_movies/clas-vs-lotf.mp4" type='video/mp4' />
-      <source src="_movies/clas-vs-lotf.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/clas-vs-lotf.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/clas-vs-lotf.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
+.. video:: clas-vs-lotf 640 720
 
 Although it is beyond the scope of this tutorial, you might be interested to
 know that using an overall larger system, bigger QM region, lower strain rate,
@@ -725,18 +682,7 @@ gives an improved description of the fracture surfaces, which reconstruct to
 form a Pandey :math:`\pi`\ -bonded chain, with it's characteristic alternating
 pentagons and heptagons:
 
-.. raw:: html
-
-    <center>
-    <video width="640" height="360"  controls="controls" poster="_movies/silicon-111-dft-1400-poster.jpg">
-      <source src="_movies/silicon-111-dft-1400.mp4" type='video/mp4' />
-      <source src="_movies/silicon-111-dft-1400.ogv" type='video/ogg; codecs="theora, vorbis"'' />
-      <source src="_movies/silicon-111-dft-1400.webm" type='video/webm; codecs="vp8.0, vorbis"' />
-      <p><b>Your browser does not support HTML5 video.
-	<a href="_movies/silicon-111-dft-1400.mp4">Download</a> the video instead.
-      </b></p>
-    </video>
-    </center>
+.. video:: silicon-111-dft-1400 640 360
 
 .. _plot_G_and_crack_pos_x_lotf:
 

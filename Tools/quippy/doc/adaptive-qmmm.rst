@@ -1,10 +1,10 @@
 .. currentmodule:: quippy
 
+.. _qmmm_tutorial:
+
 *******************************
 QM/MM MD of Fracture in Silicon
 *******************************
-
-**DRAFT -- not yet ready for public use**
 
 This tutorial has been prepared for use at a hands-on session at the
 `ADGLASS Winter School on Advanced Molecular Dynamics Simulations

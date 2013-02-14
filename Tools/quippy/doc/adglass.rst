@@ -57,6 +57,7 @@ aligned with the :math:`(0001)` plane, and the `z` axis with the
 uniaxial tension in the `y` direction with a strain of 23%.
 
 .. image:: quartz_seed_crack.png
+  :width: 600
   :align: center
 
 Download the following input files:
@@ -140,6 +141,7 @@ propagate in a fairly steady way, similar to the snapshot shown below
 rate of about 2 picoseconds per hour).
 
 .. image:: quartz_running_crack.png
+   :width: 600
    :align: center
 
 The simulation is run in the `NVT` ensemble, where the number of atoms

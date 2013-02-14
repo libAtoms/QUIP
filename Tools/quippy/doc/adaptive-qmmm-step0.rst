@@ -66,7 +66,7 @@ command::
    In [1]: from qlab import *
 
 You should prepare your Python scripts in a text editor and then run
-then from within `ipython` with the `%run
+them from within `ipython` with the `%run
 <http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing>`_
 command. For example::
 

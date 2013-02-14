@@ -22,6 +22,8 @@
 quippy
 ======
 
+.. module:: quippy
+
 quippy is a Python interface to the `libAtoms/QUIP <http://www.libatoms.org>`_
 molecular dynamics framework.  
 
