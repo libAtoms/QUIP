@@ -112,3 +112,4 @@ where an script for that stage of the tutorial is provided. If you run
 out of time, just skip ahead to the next milestone, download the
 script and then continue with the next section.
 
+Continue with :ref:`step1`.
