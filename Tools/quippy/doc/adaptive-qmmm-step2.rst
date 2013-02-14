@@ -191,9 +191,10 @@ the neighbour list needs to be updated (see the attribute
 :attr:`~quippy.potential.Potential.cutoff_skin`). Moreover, we request
 the potential to compute per-atom stresses whenever we compute forces
 using :meth:`~quippy.potential.Potential.set_default_quantities`, to
-save time when locating the crack tip (as discussed :ref:`above
-<find_crack_tip>`. The :meth:`~quippy.atoms.Atoms.set_calculator`
-method should then be used to set the calculator to the SW potential::
+save time when locating the crack tip (discussed in more detail
+:ref:`below <position_crack_tip>`). The
+:meth:`~quippy.atoms.Atoms.set_calculator` method should then be used
+to set the calculator to the SW potential::
 
     mm_pot = ...   # Initialise the SW potential with cutoff_skin
     mm.pot.set_default_quantities(['stresses'])
@@ -585,7 +586,7 @@ again with the :ref:`experimental TEM images <si_tem_images>` makes it clear
 that, as a description of fracture in real silicon, the SW potential falls some
 way short.
 
-.. _postion_crack_tip:
+.. _position_crack_tip:
 
 Position of the crack tip
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -793,46 +794,3 @@ components computed using the two methods change much?
 
 When you are ready, proceed to :ref:`step3`.
 
-
-References
-----------
-
-.. [Stillinger1985] Stillinger, F. H., & Weber, T. A. Computer simulation
-   of local order in condensed phases of silicon. Physical Review B,
-   31(8), 5262–5271. (1985). http://link.aps.org/doi/10.1103/PhysRevB.31.5262
-
-.. [Swadener2002] Swadener, J. G., Baskes, M. I., & Nastasi, M. Molecular
-   Dynamics Simulation of Brittle Fracture in Silicon. Phys. Rev. Lett. 89
-   085503 (2002). http://dx.doi.org/10.1103/PhysRevLett.89.085503
-
-.. [Vink2001] Vink, R. L. C., Barkema, G. T., Van der Weg, W. F., & Mousseau, N.
-   Fitting the Stillinger–Weber potential to amorphous silicon. Journal
-   of Non-Crystalline Solids, 282(2-3), 248–255. (2001).
-   http://dx.doi.org/10.1016/S0022-3093(01)00342-8
-
-.. [Buehler2006] Buehler, M., Van Duin, A., & Goddard, W. (2006). Multiparadigm
-   Modeling of Dynamical Crack Propagation in Silicon Using a Reactive Force
-   Field. Physical Review Letters, 96(9), 95505. (2006)
-   http://dx.doi.org/10.1103/PhysRevLett.96.095505
-
-.. [Pizzagalli2013] Pizzagalli, L., Godet, J., Guénolé, J., Brochard, S., Holmstrom, E.,
-   Nordlund, K., & Albaret, T. A new parametrization of the Stillinger-Weber
-   potential for an improved description of defects and plasticity of silicon.
-   Journal of physics. Condensed matter 25(5), 055801. (2013)
-   http://www.dx.doi.org/10.1088/0953-8984/25/5/055801
-
-.. [FrenkelSmit2001] Frenkel, D., & Smit, B. *Understanding Molecular Simulation*,
-    Academic. (New York, 2001). 
-
-.. [Zimmerman2004] Zimmerman, J. A., Webb, E. B., Hoyt, J. J., Jones,
-   R. E., Klein, P. A., & Bammann, D. J. Calculation of stress in
-   atomistic simulation. Modell. Simul. Mater. Sci. Eng. (2004).
-   http://stacks.iop.org/0965-0393/12/S319
-
-.. [Moras2010] Moras, G., Choudhury, R., Kermode, J. R., Csányi, G.,
-   Payne, M. C., & De Vita, A. Hybrid Quantum/Classical Modeling of
-   Material Systems: The Learn on the Fly Molecular Dynamics
-   Scheme. In T. Dumitrica (Ed.), Trends in Computational
-   Nanomechanics: Transcending Length and Time Scales
-   (pp. 1–23). Springer (2010)
-   http:///dx.doi.org/10.1007/978-1-4020-9785-0_1

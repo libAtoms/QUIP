@@ -19,9 +19,9 @@ Theoretical background
 
 In this last part of the tutorial, we will perform an accurate MD simulation of
 Si fracture using the "Learn on the fly" (LOTF) hybrid QM/MM technique
-[Csanyi2004]_ In the present case, all atoms that are not suitably described by
-the [Stillinger1985]_ potential (our MM scheme) will have be treated
-quantum-mechanically with the DFTB method [Elsterner1998]_. These atoms are
+[Csanyi2004]_. In the present case, all atoms that are not suitably described by
+the [Stillinger1985]_ potential (our MM scheme) will be treated
+quantum-mechanically with the DFTB method [Elstner1998]_. These atoms are
 those in the vicinity of the crack tip, where highly strained Si-Si bonds are
 present, and where formation and rupture of chemical bonds occurs during the
 crack propagation.
@@ -30,12 +30,12 @@ Standard QM/MM techniques, usually developed for biological systems, adopt
 energy-based approaches. The total energy of the system is written as a combination  
 of the QM energy, the MM energy and a QM/MM term, often specifically devised
 for a particular system, that takes care of the interaction between the two regions.
-While this approach allows the definition of a total energy, which is 
+While this approach allows the definition of a total energy which is 
 conserved during the dynamics, the forces used to propagate the MD are not accurate
 enough because of the spurious effects due to the presence of the boundary
 between the QM and the MM regions. Moreover, the necessity to suitably "terminate"
 the QM region, does not allow the QM region to move during the simulation, which
-is however required if we want to follow the motion of the crack tip.
+is, however, required if we want to follow the motion of a crack tip.
 
 The LOTF scheme adopts a force-based scheme instead, which allows the QM region
 to move during the MD simulation and accurate forces to be calculated even at
@@ -60,7 +60,7 @@ would be calculated by carving the QM region out of the system and chemically
 terminating the resulting Si dangling bonds, for instance with H atoms. Even by
 using more complex termination strategies, it is generally not possible to
 mimic the presence of the surrounding MM system, and the forces on the atoms
-close to the artificially created "QM surface" would not be accurate.
+close to the artificially created "QM surface" are not accurate.
 
 To solve this problem, at the expense of an increased computational cost, we
 increase the size of the QM region by adding a "buffer region", as illustrated
@@ -88,8 +88,8 @@ atoms in the buffer region, which are strongly affected by the presence of the
 outer QM surface, are discarded and replaced by the MM forces (as illustrated
 above). In this way, we can obtain the desired forces on all atoms in the
 system. These forces can be used in the MD simulation, provided that the
-conservation of the total momentum is restored. This can be enforces by
-distributing subtracting the (typically small) mean force, so that the final
+conservation of the total momentum is restored. This can be enforced by
+subtracting the (typically small) mean force, so that the final
 QM/MM forces sum to zero.
 
 It is important to have good elastic matching between the QM and MM models, so
@@ -144,7 +144,7 @@ around the QM atoms.
 
 Here we will use inner and outer buffer radii of 7 A and 9 A, respectively. This
 leads to overall QM active + buffer clusters with a radius of 15--19 A,
-containing around 150 atom including terminating hydrogens (see
+containing around 150 atoms, including terminating hydrogens (see
 the :ref:`example cluster <cluster>` below).
 
 Further tricks which can be used to stabilise the QM and buffer region include
@@ -187,7 +187,7 @@ forces on the QM atoms. Of course a very small error on these forces
 (typically :math:`\sim 10^{-3}` eV/A) is caused by requiring our forces to be
 the gradient of a single Hamiltonian. This is however of the same order as the
 error introduced by forcing the total sum of the forces to zero, and less than
-the error associated with computing QM forces with using cluster with a finite
+the error associated with computing QM forces using clusters with a finite
 buffer radius (which can be as much as :math:`\sim 0.1` eV/A compared to a
 reference QM calculation in the full system with PBC). The figure below
 illustrates the force fitting process.
@@ -214,7 +214,7 @@ The predictor-corrector scheme works as follows, with reference to the illustrat
 
    1. **Initialisation.** The QM region is selected, the buffered QM/MM forces are
    calculated and the parameters of the adjustable potential are adjusted to
-   reproduce the difference between Qm and MM forces in the fitting region.
+   reproduce the difference between QM and MM forces in the fitting region.
 
    2. **MD predictor: Extrapolation.** The
    classical :math:`V_\mathrm{SW}+V_\mathrm{adj}` is used
@@ -902,54 +902,3 @@ relations that can help us out here? How would you estimate the effect of the
 artificially high strain rate we have been forced to impose here.
 
 
-References
-----------
-
-.. [Stillinger1985] Stillinger, F. H., & Weber, T. A. Computer simulation
-   of local order in condensed phases of silicon. Physical Review B,
-   31(8),
-   5262–5271. (1985). http://link.aps.org/doi/10.1103/PhysRevB.31.5262
-
-.. [Elsterner1998] Elsterner, M., Porezag, D., Jungnickel, G., Elsner, J.,
-   Haugk, M., Frauenheim, T., Suhai, S., et
-   al. Self-consistent-charge density-functional tight-binding
-   method for simulations of complex materials
-   properties. Phys. Rev. B. 58 7260 (1998).
-   http://prola.aps.org/abstract/PRB/v58/i11/p7260_1
-
-.. [Csanyi2004] Csányi, G., Albaret, T., Payne, M., & De Vita,
-   A. 'Learn on the Fly': A Hybrid Classical and Quantum-Mechanical
-   Molecular Dynamics Simulation. Physical Review Letters,
-   93(17), 175503. (2004)
-   http://prl.aps.org/abstract/PRL/v93/i17/e175503>
-
-.. [Csanyi2005] Csányi, G., Albaret, T., Moras, G., Payne, M. C., & De Vita, A. 
-   Multiscale hybrid simulation methods for material systems. J. Phys.: Cond
-   Mat. 17 R691-R703 (2005).
-   http://stacks.iop.org/0953-8984/17/i=27/a=R02?key=crossref.f572d9a616845900307c923f5f385044
-
-.. [Moras2010] Moras, G., Choudhury, R., Kermode, J. R., Csányi, G.,
-   Payne, M. C., & De Vita, A. Hybrid Quantum/Classical Modeling of
-   Material Systems: The Learn on the Fly Molecular Dynamics
-   Scheme. In T. Dumitrica (Ed.), Trends in Computational
-   Nanomechanics: Transcending Length and Time Scales
-   (pp. 1–23). Springer (2010)
-   http:///dx.doi.org/10.1007/978-1-4020-9785-0_1
-
-.. [Kermode2008a] Kermode, J. R. Multiscale Hybrid Simulation of Brittle
-   Fracture. PhD Thesis, University of Cambridge (2008).
-   http://www.jrkermode.co.uk/Publications
-
-.. [Bernstein2009] Bernstein, N., Kermode, J. R., & Csányi,
-   G. Hybrid atomistic simulation methods for materials
-   systems. Reports on Progress in Physics,
-   72(2), 026501 (2009). http://dx.doi.org/10.1088/0034-4885/72/2/026501
-
-.. [Kermode2008] Kermode, J. R., Albaret, T., Sherman, D., Bernstein,
-   N., Gumbsch, P., Payne, M. C., Csányi, G., and A. De Vita. Low-speed
-   fracture instabilities in a brittle crystal. Nature, 455,
-   1224–1227 (2008). http://www.nature.com/doifinder/10.1038/nature07297
-
-.. [Fineberg1991] Fineberg, J., Gross, S., Marder, M., & Swinney, H.
-   Instability in dynamic fracture. Physical Review Letters, 67(4), 
-   457–460  (1991). http://dx.doi.org/10.1103/PhysRevLett.67.457
