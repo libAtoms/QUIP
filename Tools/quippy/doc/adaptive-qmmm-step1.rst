@@ -4,9 +4,8 @@ Step 1: Setup of the Silicon model system
 =========================================
 
 The first stage of this tutorial is to build the model system we will
-use for both the classical and QM/MM simulations. As described in
-:ref:`theory` above, we will use a ~2D model system in the thin strip
-geometry.
+use for both the classical and QM/MM simulations. We will use an
+apprimately 2D model system in the :ref:`thin strip geometry <thin_strip>`
 
 .. _theory1:
 
@@ -198,10 +197,10 @@ tutorial.
    Hierarchy of materials modelling techniques, showing simultaneous coupling
    of QM methods and empirical interatomic potentials. Image source: G. Csányi.
 
-.. _theory_elasticity:
+.. _thin_strip:
 
-Thin strip loading geometry and elasticity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Thin strip loading geometry and elasticity theory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We will use the thin strip fracture loading geometry illustrated below for our
 fracture simulations, where the load is applied by displacing the top and bottom
@@ -381,15 +380,16 @@ should type in at the `ipython` prompt::
    :align: center
    :width: 300
 
-This will pop up an [AtomEye]_ window showing the 8-atom silicon cell,
-with the unit cell boundary drawn with a thick black line. You can
-rotate the system with the left mouse button, translate by holding
-`Control` and tracking, or translate within the periodic boundaries by
-holding `Shift` and dragging. Zoom in and out by dragging with the
-right mouse button (or scroll wheel, if you have one). Press `b` to
-toggle the display of bonds. For more help on `AtomEye` see its `web
-page <http://mt.seas.upenn.edu/Archive/Graphics/A>`_ or the
-documentation for the :mod:`qlab` and :mod:`atomeye` modules.
+This will pop up an AtomEye [Li2003]_ window showing the 8-atom
+silicon cell, with the unit cell boundary drawn with a thick black
+line. You can rotate the system with the left mouse button, translate
+by holding `Control` and tracking, or translate within the periodic
+boundaries by holding `Shift` and dragging. Zoom in and out by
+dragging with the right mouse button (or scroll wheel, if you have
+one). Press `b` to toggle the display of bonds. For more help on
+`AtomEye` see its `web page
+<http://mt.seas.upenn.edu/Archive/Graphics/A>`_ or the documentation
+for the :mod:`qlab` and :mod:`atomeye` modules.
 
 Now, we initialise the Stillinger-Weber (SW) classical interatomic
 potential using quippy's :class:`~quippy.potential.Potential` class ::
@@ -439,7 +439,7 @@ off-diagonal components of the lattice are exactly zero. ::
 Milestone 1.1
 ^^^^^^^^^^^^^
 
-At this point your script should look something like :ref:`make_crack_1`
+At this point your script should look something like :ref:`make_crack`.
 
 
 1.2 Calculation of elastic and surface properties of silicon (30 minutes)
@@ -450,7 +450,7 @@ At this point your script should look something like :ref:`make_crack_1`
 Calculation of the Young's modulus and the Poisson ratio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Following the discussion in the :ref:`theory_elasticity` section, we need to
+Following the discussion :ref:`above <thin_strip>` section, we need to
 calculate some elastic properties of our model silicon. To calculate the Young's
 modulus `E` along the direction perpendicular to the cleavage plane, and the
 Poisson ratio :math:`\nu` in the :math:`xy` plane, we need the :math:`6 \times
@@ -797,24 +797,4 @@ At this point your final script should look something like
 
 When you are ready, proceed to :ref:`step2`.
 
-
-References
-----------
-
-.. [Griffith1921] Griffith, A. A.The Phenomena of Rupture and Flow in Solids.
-   Philosophical Transactions of the Royal Society A: Mathematical, Physical and
-   Engineering Sciences, 221(582-593), 163–198. (1921)
-   http://www.dx.doi.org/10.1098/rsta.1921.0006
-
-.. [Lawn1993] Lawn, B. R.Fracture of Brittle Solids --- Second Edition.
-   (Cambridge Univ Pr, 1993)
-
-.. [Freund1998] Freund, L.Dynamic fracture mechanics. Cambridge University
-   Press, (Cambridge, 1998)
-
-.. [Irwin1948] Irwin, G. R. Fracturing of Metals. (1948)
-
-.. [AtomEye] Li, J. AtomEye: an efficient atomistic configuration
-   viewer. Modell. Simul. Mater. Sci. Eng. (2003).
-   Modified version: http://jrkermode.co.uk/AtomEye
 

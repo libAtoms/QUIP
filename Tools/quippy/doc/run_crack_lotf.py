@@ -1,5 +1,5 @@
 """
-run_crack_lotf_2.py
+run_crack_lotf.py
 
 Script to run LOTF molecular dynamics for a crack slab,
 incrementing the load in small steps until fracture starts.

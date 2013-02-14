@@ -13,7 +13,7 @@ but, not, however of brittle fracture as we will see. Since the focus
 of this tutorial is on embedding schemes, we will use an approximate
 quantum mechanical method which demonstrates the technique while
 remaining fast enough to carry out calculations during the time
-available, namely Density Functional Tight Binding [Elsterner1998]_.
+available, namely Density Functional Tight Binding [Elstner1998]_.
 
 The tutorial is divided into three sections. At the end of each
 section there are extension tasks which you can complete if you have
@@ -111,35 +111,4 @@ spend on it. At the end of each subsection there is a *Milestone*
 where an script for that stage of the tutorial is provided. If you run
 out of time, just skip ahead to the next milestone, download the
 script and then continue with the next section.
-
-References
-==========
-
-.. [Stillinger1985] Stillinger, F. H., & Weber, T. A. Computer simulation
-   of local order in condensed phases of silicon. Physical Review B,
-   31(8),
-   5262–5271. (1985). http://link.aps.org/doi/10.1103/PhysRevB.31.5262
-
-.. [Elsterner1998] Elsterner, M., Porezag, D., Jungnickel, G., Elsner, J.,
-   Haugk, M., Frauenheim, T., Suhai, S., et
-   al. Self-consistent-charge density-functional tight-binding
-   method for simulations of complex materials
-   properties. Phys. Rev. B. 58 7260 (1998).
-   http://prola.aps.org/abstract/PRB/v58/i11/p7260_1
-
-.. [Csanyi2004] Csányi, G., Albaret, T., Payne, M., & De Vita,
-   A. 'Learn on the Fly': A Hybrid Classical and Quantum-Mechanical
-   Molecular Dynamics Simulation. Physical Review Letters,
-   93(17), 175503. (2004)
-   http://prl.aps.org/abstract/PRL/v93/i17/e175503>
-
-.. [Bernstein2009] Bernstein, N., Kermode, J. R., & Csányi,
-   G. Hybrid atomistic simulation methods for materials
-   systems. Reports on Progress in Physics,
-   72(2), 026501 (2009). http://dx.doi.org/10.1088/0034-4885/72/2/026501
-
-.. [Kermode2008] Kermode, J. R., Albaret, T., Sherman, D., Bernstein,
-   N., Gumbsch, P., Payne, M. C., Csányi, G., and A. De Vita. Low-speed
-   fracture instabilities in a brittle crystal. Nature, 455,
-   1224–1227 (2008). http://www.nature.com/doifinder/10.1038/nature07297
 

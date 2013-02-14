@@ -22,3 +22,4 @@ This tutorial has been prepared for use at a hands-on session at the
    adaptive-qmmm-step2.rst
    adaptive-qmmm-step3.rst
    adaptive-qmmm-solutions.rst
+   adaptive-qmmm-references.rst

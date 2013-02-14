@@ -24,7 +24,7 @@ Overview of ``libAtoms`` and ``QUIP``
   mechanics, and is also able to call external packages.
 
 - Various hybrid combinations are also supported in the style of
-  QM/MM, including `Learn on the Fly` scheme (LOTF) [Csanyi2004]_ 
+  QM/MM, including `Learn on the Fly` scheme (LOTF) [LOTF]_ 
 
 - `quippy <http://www.jrkermode.co.uk/quippy>`_ is a Python interface
   to libAtoms and QUIP.
@@ -586,7 +586,7 @@ Summary:
 References
 ----------
 
-.. [Csanyi2004] Csányi, G., Albaret, T., Payne, M., & De Vita,
+.. [LOTF] Csányi, G., Albaret, T., Payne, M., & De Vita,
    A. 'Learn on the Fly': A Hybrid Classical and Quantum-Mechanical
    Molecular Dynamics Simulation. Physical Review Letters,
    93(17), 175503. (2004) http://prl.aps.org/abstract/PRL/v93/i17/e175503>
