@@ -93,6 +93,8 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
             if name is None:
                 continue
 
+            name = str(name) # in case it's a unicode string
+
             if 'frame' in var.dimensions:
                 if 'atom' in var.dimensions:
                     # It's a property
@@ -148,7 +150,7 @@ class NetCDFWriter(object):
         else:
             self.dest = dest
 
-    def write(self, at):
+    def write(self, at, **kwargs):
         remap_names_rev = {'pos': 'coordinates',
                            'velocities': 'velo'}
 
@@ -248,15 +250,15 @@ class NetCDFWriter(object):
                 params['cutoff_factor_break'] = at.cutoff_break
 
         for name in params.keys():
-            t, s = params.get_type_and_size()
-            dtype, dims = param_type_to_dype_dims[(name, t)]
+            t, s, shape, = params.get_type_and_size(name)
+            dtype, dims = param_type_to_dtype_dim[t]
 
             if not name in self.dest.variables:
                 self.dest.createVariable(name, dtype, dims)
                 self.dest.variables[name].type = t
 
-            assert self.dest.variables.type == t
-            assert self.dest.variables.dimensions == dims
+            assert self.dest.variables[name].type == t
+            assert self.dest.variables[name].dimensions == dims
 
             self.dest.variables[name][self.frame] = params[name]
 
