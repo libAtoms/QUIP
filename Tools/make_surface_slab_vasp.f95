@@ -134,6 +134,7 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
    integer :: i, j
    character(len=STRING_LENGTH) :: comment, Z_order
    integer :: n_species, i_species, Ns(100)
+   real(dp) :: new_lattice(3,3), new_lattice_inv(3,3)
 
    call initialise(io, filename)
    call get_param_value(at, "VASP_Comment", comment)
@@ -143,10 +144,21 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
    endif
 
    call print(trim(comment), file=io, verbosity=PRINT_ALWAYS)
+
    call print(1.0_dp, file=io, verbosity=PRINT_ALWAYS)
-   call print(at%lattice(:,1), file=io, verbosity=PRINT_ALWAYS)
-   call print(at%lattice(:,2), file=io, verbosity=PRINT_ALWAYS)
-   call print(at%lattice(:,3), file=io, verbosity=PRINT_ALWAYS)
+   if (scalar_triple_product(at%lattice(:,1), at%lattice(:,2), at%lattice(:,3)) < 0.0_dp) then
+      new_lattice(:,1) = at%lattice(:,2)
+      new_lattice(:,2) = at%lattice(:,1)
+      new_lattice(:,3) = at%lattice(:,3)
+      call matrix3x3_inverse (new_lattice, new_lattice_inv)
+   else
+      new_lattice = at%lattice
+      new_lattice_inv = at%g
+   endif
+   call print(new_lattice(:,1), file=io, verbosity=PRINT_ALWAYS)
+   call print(new_lattice(:,2), file=io, verbosity=PRINT_ALWAYS)
+   call print(new_lattice(:,3), file=io, verbosity=PRINT_ALWAYS)
+
    if (fix_order) then
       sorted_Zs = at%Z
       call sort_array(sorted_Zs)
@@ -179,7 +191,7 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
 	 call print("Direct")
 	 do i=1, size(uniq_Zs)
 	    do j=1, at%N
-	       if (at%Z(j) == uniq_Zs(i)) call print(matmul(at%g,at%pos(:,j)), file=io, verbosity=PRINT_ALWAYS)
+	       if (at%Z(j) == uniq_Zs(i)) call print(matmul(new_lattice_inv,at%pos(:,j)), file=io, verbosity=PRINT_ALWAYS)
 	    end do
 	 end do
       endif
@@ -215,11 +227,10 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
       else
 	 call print("Direct")
 	 do i=1, at%N
-	    call print(matmul(at%g,at%pos(:,i)), file=io, verbosity=PRINT_ALWAYS)
+	    call print(matmul(new_lattice_inv,at%pos(:,i)), file=io, verbosity=PRINT_ALWAYS)
 	 end do
       endif
    end if
-
 
    call finalise(io)
 
