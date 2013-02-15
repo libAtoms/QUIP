@@ -88,6 +88,7 @@ p.add_option('-W', '--width', action='store', help="""Width of output movie, in 
 p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
 p.add_option('--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", type='float')
 p.add_option('-c', '--centre', action='store', help="Atom index or position on which to centre view")
+p.add_option('-S', '--split-output', action='store', help="Split into multiple files labeled by number with this many digits", type='int', default=0)
 
 # CASTEP specific output options
 p.add_option('--cell-template', action='store', help='Template .cell file, to be used when writing CASTEP .cell files')
@@ -272,8 +273,18 @@ def process(at, frame):
             write_args['cell_template'] = opt.cell_template
             write_args['param_template'] = opt.param_template
 
+        if (opt.split_output > 0):
+	    num_format = (".%%0%dd" % opt.split_output)
+	    outfile_cur = os.path.splitext(outfile_orig)[0]+(num_format % frame)+os.path.splitext(outfile_orig)[1]
+	    try:
+	        outfile_use = AtomsWriter(outfile_cur, format=opt.format, **init_args)
+	    except RuntimeError, re:
+	        p.error(str(re))
+	else:
+	    outfile_use = outfile
+
         if opt.properties is None:
-            outfile.write(at, **write_args)
+            outfile_use.write(at, **write_args)
         else:
 
             # Convert from frac_pos to pos
@@ -288,9 +299,9 @@ def process(at, frame):
 
             try:
                 # Try to do the filtering at the writing stage
-                outfile.write(at, **write_args)
+                outfile_use.write(at, **write_args)
             except TypeError:
-                p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
+                p.error('Cannot specify property filtering when writing to file "%s"' % outfile_use)
 
 
 # Build dictionaries of arguments for AtomsWriter constructor
@@ -323,13 +334,22 @@ if opt.format is None or opt.format == '':
 if opt.aspect is None:
     opt.aspect = 0.75
 
+
 stdout = False
 if outfile is not None:
     stdout = outfile == 'stdout'
-    try:
-        outfile = AtomsWriter(outfile, format=opt.format, **init_args)
-    except RuntimeError, re:
-        p.error(str(re))
+    if (stdout and opt.split_output > 0):
+        p.error("Can't split output for stdout")
+    if (opt.split_output > 0):
+        outfile_orig = outfile
+    else:
+        try:
+	    outfile = AtomsWriter(outfile, format=opt.format, **init_args)
+        except RuntimeError, re:
+	    p.error(str(re))
+else:
+    if (opt.split_output > 0):
+        p.error("Can't split output for outfile None")
 
 read_args = {}
 if opt.atoms_ref is not None:
