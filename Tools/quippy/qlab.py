@@ -872,9 +872,19 @@ def normal_coloring():
 
 def aux_property_coloring(auxprop):
     """
-    Colour the atoms by the auxiliary property with name or index `auxprop`.
+    Colour the currently viewed atoms according to `auxprop`.
 
-    See :ref:`qlab_atom_colouring` for more details.
+    Overloaded to allow 
+    See :ref:`qlab_atom_coloring` for more details and examples.
+
+    Parameters
+    ----------
+    auxprop : str, array_like, int or list
+       Values to use to colour the atoms. Should be either the
+       name of a scalar field entry in :attr:`~.Atoms.properties`
+       (or equivalently, :attr:`~Atoms.arrays`) such as ``"charge"``,
+       a float, int or bool array of shape ``(len(gcat()),)``, or an
+       atom index or list of atom indices to highlight particular atoms.
     """
     gcv().aux_property_coloring(auxprop)
 
@@ -1086,7 +1096,6 @@ def draw_arrows(property, scale_factor=0.0, head_height=0.1,
 
     Parameters
     ----------
-
     property : string
        Name of the array to use for arrow vectors.
        Use ``None`` to turn off previous arrows.
