@@ -1278,6 +1278,34 @@ def thin_strip_displacement_y(x, y, strain, a, b):
     Strain is increased from 0 to strain over distance :math:`a <= x <= b`.
     Region :math:`x < a` is rigidly shifted up/down by ``strain*height/2``.
 
+    Here is an example of how to use this function on an artificial
+    2D square atomic lattice. The positions are plotted before (left)
+    and after (right) applying the displacement, and the horizontal and
+    vertical lines show the `strain` (red), `a` (green) and `b` (blue)
+    parameters. ::
+
+       import matplotlib.pyplot as plt
+       import numpy as np
+
+       w = 1; h = 1; strain = 0.1; a = -0.5; b =  0.0
+       x = np.linspace(-w, w, 20)
+       y = np.linspace(-h, h, 20)
+       X, Y = np.meshgrid(x, y)
+       u_y = thin_strip_displacement_y(X, Y, strain, a, b)
+
+       for i, disp in enumerate([0, u_y]):
+           plt.subplot(1,2,i+1)
+           plt.scatter(X, Y + disp, c='k', s=5)
+           for y in [-h, h]:
+               plt.axhline(y, color='r', linewidth=2, linestyle='dashed')
+               plt.axhline(y*(1+strain), color='r', linewidth=2)
+           for x, c in zip([a, b], ['g', 'b']):
+               plt.axvline(x, color=c, linewidth=2)
+
+    .. image:: thin-strip-displacement-y.png
+       :width: 600
+       :align: center
+
     Parameters
     ----------
     x : array
@@ -1304,20 +1332,6 @@ def thin_strip_displacement_y(x, y, strain, a, b):
                    (1 - f) * shift * np.sign(y[middle]))
     
     return u_y
-
-
-def test_thin_strip_y_displacement():
-    """
-    Simple test of :func:`thin_strip_y_displacement`
-
-    Generates fake atomic positions, applies strain ramp and plots results.
-    """
-    from pylab import scatter
-    x = np.linspace(-1, 1)
-    y = np.linspace(-1, 1)
-    X, Y = np.meshgrid(x, y)
-    u_y = thin_strip_y_displacement(X, Y, 0.1, -0.5, 0.)
-    scatter(X, Y + u_y)
 
 
 def print_crack_system(crack_direction, cleavage_plane, crack_front):
