@@ -1325,10 +1325,12 @@ class FortranDerivedTypeArray(object):
         self.setfunc(self.parent._fpointer, i, value._fpointer)
 
 
+# regexp magic to convert old f90doc documentation syntax to something more compatible with ResT
 doc_subs = [(re.compile(r'([A-Za-z0-9_]+)%([A-Za-z0-9_]+)'), r'\1.\2'), # Fortran attribute access % -> Python .
             (re.compile(r"'(.*?)'"), r"``\1``"), # Single quoted strings to fixed width font
-            (re.compile(r"\$(.*?)\$"), r":math:`\1`"), # LaTeX $...$ -> :math:`...`
-            (re.compile(r"(\w+)_(\W)"), r"\1\_\2") # Escape underscores at the end of words
+            (re.compile(r"(\w+)_(\W)"), r"\1\_\2"), # Escape underscores at the end of words...
+            (re.compile(r"\$(.*?)(\\_)(.*?)\$"), r'$\1_\3$'), # ... except in math mode
+            (re.compile(r"\$(.*?)\$"), r":math:`\1`") # LaTeX $...$ -> :math:`...`
             ]
 
 def normalise_type_case(type):
