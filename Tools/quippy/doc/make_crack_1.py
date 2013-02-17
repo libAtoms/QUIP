@@ -46,7 +46,7 @@ crack_seed_length = 40.0*units.Ang   # Length of seed crack
 strain_ramp_length = 30.0*units.Ang  # Distance over which strain is ramped up
 initial_G = 5.0*(units.J/units.m**2) # Initial energy flow to crack tip
 
-relax_fmax = 0.1*units.eV/units.Ang  # Maximum force criteria for relaxation
+relax_fmax = 0.025*units.eV/units.Ang  # Maximum force criteria for relaxation
 
 param_file = 'params.xml'            # XML file containing interatomic potential parameters
 mm_init_args = 'IP SW'               # Initialisation arguments for the classical potential
