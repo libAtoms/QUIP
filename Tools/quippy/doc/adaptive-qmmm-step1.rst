@@ -3,260 +3,9 @@
 Step 1: Setup of the Silicon model system
 =========================================
 
-The first stage of this tutorial is to build the model system we will
+The first task in this tutorial is to build the model system we will
 use for both the classical and QM/MM simulations. We will use an
-apprimately 2D model system in the :ref:`thin strip geometry <thin_strip>`
-
-.. _theory1:
-
-Theoretical background
-----------------------
-
-Fracture is the main lifetime limiting failure mode of many materials, from
-metals to ceramics and glasses. There are two broad classes of
-fracture: *brittle* and *ductile*. 
-
-.. figure:: brittle-vs-ductile.png
-   :align: center
-   :width: 600
-
-   Brittle and ductile failure of steel, at low and high temperature
-   respectively. Image credit: `Internet Electron Microscopy website, UMIST   
-   <http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html>`_
-
-In brittle fracture, there is no plastic deformation, and failure is along
-particular low-energy cleavage planes. In contrast, ductile materials such as
-steel tend to fail with a large amount of plastic deformation (or 'necking'),
-pulling apart to leave rough fracture surfaces. The same patterns are evident
-upon closer examination: brittle cracks are found to be atomically sharp,
-proceeding bond by bond, while ductile cracks remain rough at the microscale,
-driven by the formation and coalescence of microscopic voids.
-
-.. figure:: brittle-vs-ductile-microscale.png
-   :align: center
-   :width: 600
-
-   Brittle and ductile failure mechanisms, for silica and aluminimum respectively.
-   Image credits: C. Marlière and A. Weck.
-
-Silicon is known to be an ideally brittle material, as shown by the image below.
-Below the brittle to ductile transtion, at around :math:`500^\circ`\ C, silicon
-cleaves atomically smooth fracture surfaces (left and centre panel; sample in
-central panel is tilted to show the crack front). At higher temperatures,
-fracture is ductile, with the emission of multiple dislocations from the tip
-(right panel).
-
-.. _si_tem_images:
-
-.. figure:: lawn-fracture-silicon.png
-   :align: center
-   :width: 600
-
-   Transmission electron microscopy (TEM) images of a crack in silicon.
-   Image reproduced from [Lawn1993]_.
-
-.. _theory_griffith:
-
-Fracture Mechanics
-^^^^^^^^^^^^^^^^^^
-
-The study of fracture mechanics dates back around 100 years, to Griffith, who
-first proposed a thermodynamic energy balance criteria to understand when cracks
-will propagate [Griffith1921]_. Griffith's key idea was that stress concentrates
-at pre-existing flaws, and was motivated by the observation that materials break
-at much lower loads than the theoretical stress needed to break their chemical
-bonds For example, in glass, the theoretical strength is given by
-
-.. math:: 
-
-   \sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}
-
-where :math:`E`, :math:`\gamma` and :math:`a` are the Young's modulus, surface
-energy and bond length, respectively.
-
-For a slowly-moving crack of length `c` in an infinite plane, the
-well-known Griffith criterion for fracture propagation is based on thermodynamic
-energy balance between the release of elastic energy in an area
-proportional to `c` and the cost of creating new surfaces,
-proportioanl to `c`\ :superscript:`2`, as illustrated below.
-
-.. image:: griffith-criterion.png
-   :align: center
-   :width: 600
-
-This leads to a Griffith fracture strength for glass of
-
-.. math::
-
-   \sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}
-
-which is much lower than the theoretical strength. Here the additional
-parameters are :math:`\rho`, the radius of curvature and the crack
-length `c`. The effect of stress concentration increases for sharper and
-longer cracks.
-
-The Griffith criterion leads to a critical length :math:`c_0` below which it is
-not energetically favourable for cracks to grow, since the elastic energy
-released does not exceed the surface energy cost. Below :math:`c_0`, cracks
-prefer to close up, meaning that not all flaws are unstable. This explains why
-it makes sense to measure the length of cracks e.g. on aeroplanes, so that small
-flaws can be identified and treated before they become critical.
-
-In fracture mechanics it is common to use the energy release rate :math:`G` to
-describe the flow of energy to a crack tip. :math:`G` is the driving force for
-crack propagation. It is defined by
-
-.. math::
-
-   G = - \frac{\partial U_E}{\partial c}
-
-where :math:`U_E` is the total strain energy and `c` is the crack length.
-The Griffith criterion can be reformulated in terms of :math:`G` to show that
-crack propagation becomes favourable when
-
-.. math::
-   
-   G > 2\gamma
-
-where :math:`\gamma` is the surface energy density, i.e. when the energy flow to
-the crack tip exceeds the cost of creating two new surfaces.
-
-.. _theory_atomic_fracture:
-
-Atomic scale modelling of fracture
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Much work has been done to understand fracture at the continuum level
-(see, e.g.  [Freund1998]_ and [Lawn1993]_), but here we would like to
-simulate fracture at the atomic level, to examine the combined effects
-of stress and chemistry ('chemomechanics'). A first approach would be
-to use classical interatomic potentials to carry out molecular
-dynamics (MD). However, as we will see in :ref:`step2`, most classical
-potentials fail to accurately reproduce brittle fracture. This is due
-to stress concentration which has been shown to diverge as
-:math:`\sigma \sim 1/\sqrt{r}` near a crack tip [Irwin1948]_, leading
-to anharmonic stretching and rupture of bonds, which is typically not
-well captured by simple interatomic potentials.
-
-.. _irwin_sig_yy:
-
-.. figure:: irwin-sig-yy.png
-   :width: 300
-   :align: center
-
-   Irwin near-field solution for :math:`\sigma_{yy}` for a singular crack.
-   Black is zero stress and yellow very high stress; note the divergence at the
-   crack tip.
-
-Most potentials overestimate what is called the *lattice trapping barrier*, the
-energy barrier to bond breaking at a crack tip that arises from the periodicity
-of the crystalline lattice (in contrast to continuum methods where the crack tip
-advances continuously). This means that when fracture eventually does occur,
-there is too much energy available, which is then dissipated by a variety of
-plasticity mechanisms such as dislocation emission, leads to results in contrast
-with the expected brittle behaviour.
-
-Interestingly, however, continuum theories and simple potentials do capture the
-details of stress concentration surprisingly close to the crack tip, as
-illustrated in the figure below.
-
-.. figure:: atomistic-vs-continuum.png
-   :width: 400
-   :align: center
-
-   Atomic and continuum calculations for the stress along the line ahead of a
-   crack tip in silicon. Agreement is excellent beyond ~ 2 nm from the tip. 
-   Reproduced from G. Singh, J.R. Kermode, A. De Vita, R.W. Zimmerman, 
-   *in prep.* (2013).
-
-The region where atomistic and continuum theories disagree is the
-non-linear *process zone*, where chemically interesting things are happening.
-Here, we would like to treat this region at a quantum mechanical (QM) level.
-
-.. _theory_multiscale:
-
-Coupled multiscale approach
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-QM approaches such as density functional theory (DFT) do correctly
-describe bond-breaking in silicon. However, the strong bidirectional
-coupling between bond-breaking at the crack tip and the long-range
-stress field driving fracture necessitate a multiscale approach. The
-boundaries of the model system must be placed far enough away from the
-crack tip not to affect the results, which means that large cells
-containing tens to hundreds of thousands of atoms are needed, beyond
-the current capabilities of most QM approaches. Fracture is perhaps
-the archetypical coupled multiscale problem, with thousands of atoms
-contributing to the elastic relaxation of the near-tip region. We will
-describe how classical and QM descriptions can be coupled to study
-problems in fracture using the 'Learn on the Fly' (LOTF approach) in
-:ref:`more detail <theory3>` later in this tutorial.
-
-.. figure:: multiscale-coupling.png
-   :width: 500
-   :align: center
-
-   Hierarchy of materials modelling techniques, showing simultaneous coupling
-   of QM methods and empirical interatomic potentials. Image source: G. Csányi.
-
-.. _thin_strip:
-
-Thin strip loading geometry and elasticity theory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We will use the thin strip fracture loading geometry illustrated below for our
-fracture simulations, where the load is applied by displacing the top and bottom
-surfaces.
-
-.. image:: thin-strip.png
-   :align: center
-   :width: 500
-
-The advantage of this setup is that the energy release rate `G` does not depend
-on the crack length, and can be found analytically by considering the energetics
-of an advancing crack.
- 
-The horizontal edges of the strip are given a uniform normal
-displacement :math:`\delta`, so the applied strain is
-:math:`\epsilon_0 = \delta / h`.  Far ahead of the crack, the strip is
-in uniaxial tension: :math:`\epsilon_{yy} \to \epsilon_0` as :math:`x
-\to \infty`.
- 
-The stress far ahead of the crack is given by :math:`\sigma_{0} = E'
-\epsilon_{0}`, and therefore the elastic energy per unit length and
-per unit thickness far ahead of the crack tip is
- 
-.. math::
-   W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}
-
-where :math:`E'` is the effective Young's modulus.
- 
-Far behind the tip, the energy density is zero. Since no energy
-disappears through the clamped edges, if the crack is to advance by
-unit distance, a vertical strip of material with energy density
-:math:`W_\infty` is effectively replaced by a strip with energy
-density zero.
- 
-The energy supplied to the crack tip is therefore equal to :math:`W_\infty`,
-so the energy release rate is simply
- 
-.. math::
-  G = W_\infty = \frac{\delta^2 E'}{h}
-
-In our simulations we will use periodic boundary conditions in the :math:`z`
-direction, so we have plane strain loading (:math:`\epsilon_{zz} = 0`), which
-means that the effective Young's modulus :math:`E'` is given by
-:math:`E/(1-\nu^2)`, where :math:`E` is the Young's modulus in the :math:`y` relevant
-direction and :math:`\nu` is the Poisson ratio, so finally we have
- 
-.. math::
-  G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}
-
-We can see that, in order to relate the strain we apply to the system with the
-energy release rate, we will need to calculate the Young's modulus and Poisson
-ratio for our model silicon. We will see how to do this from the elastic
-constant matrix :math:`C_{ij}` :ref:`below <youngs_modulus_and_poisson_ratio>`.
-
+approximately 2D model system in the :ref:`thin strip geometry <thin_strip>`
 
 1.1 Building the bulk unit cell (30 minutes)
 --------------------------------------------
@@ -300,10 +49,10 @@ Definition of the simulation parameters
 
 Let's first define the parameters needed to construct our model
 system. There are three possible crack systems. For now, we will use
-the first (uncommented) one, :math:`(111)[0\bar{1}1]`, which
+the first (uncommented) one, :math:`(111)[01\bar{1}]`, which
 means a crack propagating on the :math:`(111)` cleavage plane (the
 lowest surface energy of all silicon surfaces) with the crack front
-along the :math:`[0\bar{1}1]` direction::
+along the :math:`[01\bar{1}]` direction::
 
     # System 1. (111)[0-11]
     crack_direction = (-2, 1, 1)      # Miller index of x-axis
@@ -340,10 +89,12 @@ widely used units of J/m\ :superscript:`2`.
 Next we define some parameters related to the classical interatomic
 potential::
 
-    relax_fmax = 0.1*units.eV/units.Ang  # Maximum force criteria for relaxation
+    relax_fmax = 0.025*units.eV/units.Ang  # Maximum force criteria
 
-    param_file = 'params.xml'            # XML file containing interatomic potential parameters
-    mm_init_args = 'IP SW'               # Initialisation arguments for the classical potential
+    param_file = 'params.xml'            # XML file containing
+                                         # interatomic potential parameters
+    mm_init_args = 'IP SW'               # Initialisation arguments
+                                         # for the classical potential
 
 And finally the output file::
 
@@ -360,7 +111,7 @@ Finding the equilibrium lattice constant for Si
 
 To find the Si equilibrium lattice constant `a0` with the SW potential,
 let's first build the 8-atom diamond cubic cell for silicon, with an initial
-guess at lattice constant of :math:`5.44~\AA`. This can be done using the 
+guess at lattice constant of 5.44 A. This can be done using the 
 :func:`~ase.structure.bulk` function from the :mod:`ase.structure` module::
 
     si_bulk = ...            # Build the 8-atom diamond cubic cell for Si
@@ -430,9 +181,11 @@ vector. ::
     a0 = ...                                # Get the lattice constant
     print('Lattice constant %.3f A\n' % a0)
 
+As a check, you should find a value for `a0` of around 5.431 A.
+
 Once you have obtained `a0`, you should replace the `si_bulk` object
 with a new bulk cell using this lattice constant, so that the
-off-diagonal components of the lattice are exactly zero. ::
+off-diagonal components of the lattice are exactly zero::
 
    si_bulk = ...   # Make a new 8-atom bulk cell with correct a0
    si_bulk. ...    # re-attach the SW potential as a calculator
@@ -441,7 +194,7 @@ off-diagonal components of the lattice are exactly zero. ::
 Milestone 1.1
 ^^^^^^^^^^^^^
 
-At this point your script should look something like :ref:`make_crack`.
+At this point your script should look something like :download:`make_crack_1.py`.
 
 
 1.2 Calculation of elastic and surface properties of silicon (30 minutes)
@@ -460,18 +213,18 @@ Poisson ratio :math:`\nu` in the :math:`xy` plane, we need the :math:`6 \times
 calculated using the :meth:`~quippy.potential.Potential.get_elastic_constants`
 method of the `mm_pot` Potential object. ::
 
-    c = mm_pot. ...             # Get the 6x6 c matrix
+    c = mm_pot. ...             # Get the 6x6 C_ij matrix
     print('Elastic constants (GPa):')  
     print((c / units.GPa).round(0))    
     print('')                          
 
 Here, the :attr:`~ase.units.GPa` constant from the `ase.units module
 <https://wiki.fysik.dtu.dk/ase/ase/units.html>`_ module is used to
-convert from pressure units of eV/A\ :superscript:`3` into `GPa`.
+convert from pressure units of eV/A\ :superscript:`3` into GPa.
 
 The Young's modulus `E` and the Poisson ratio `\nu` can now be calculated, 
 given `c`, the `cleavage_plane` and the `crack_direction` (defined in the
-:ref:`Parameters section <parameters>` above), using the functions
+:ref:`parameters section <parameters>` above), using the functions
 :func:`~quippy.elasticity.youngs_modulus` and
 :func:`~quippy.elasticity.poisson_ratio` from the
 :mod:`quippy.elasticity` module. ::
@@ -481,7 +234,7 @@ given `c`, the `cleavage_plane` and the `crack_direction` (defined in the
     nu = ...                                             # Get nu
     print('Poisson ratio % .3f\n' % nu)                  
 
-As a check, for the :math:`(111)[0\bar{1}1]` crack system, you
+As a check, for the :math:`(111)[01\bar{1}]` crack system, you
 should get a Young's modulus of 142.8 GPa and a Poisson ratio of
 0.265.
 
@@ -491,15 +244,16 @@ should get a Young's modulus of 142.8 GPa and a Poisson ratio of
 Calculation of the surface energy of the cleavage plane
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To calculate the surface energy `gamma` of the `cleavage plane`, 
-we build a Si slab unit cell aligned with the requested crystallographic
-orientation. The orientation of the crack system can be printed using
-the following command::
+To calculate the surface energy per unit area `gamma` of the
+`cleavage_plane`, we build a Si slab unit cell aligned with the
+requested crystallographic orientation. The orientation of the crack
+system can be printed using the following command::
 
     print_crack_system(crack_direction, cleavage_plane, crack_front)
 
-The new unit slab can be obtained using the :func:`ase.lattice.cubic.Diamond` 
-from the :mod:`ase.lattice` module, which is used as follows::
+The new unit slab can be obtained using the
+:func:`ase.lattice.cubic.Diamond <lattice.cubic.Diamond>` 
+from the :mod:`ase.lattice <lattice>` module, which is used as follows::
 
     unit_slab = Diamond(directions=[crack_direction,
 				    cleavage_plane,
@@ -512,18 +266,20 @@ from the :mod:`ase.lattice` module, which is used as follows::
     print(unit_slab.cell)
     print('')                
 
-You can visualise the new cell with ``view(unit_slab)`` (again, type this at the
-`ipython` prompt, not added to the script file):
+You can visualise the new cell with ``view(unit_slab)`` (type this at
+the `ipython` prompt after running the script as it is so far, don't
+add it to the script file):
 
 .. image:: unit_slab.png
    :align: center
    :width: 400
 
-We now shift the `unit_slab` vertically so that we will open up along
-a :math:`(111)` glide plane, the lowest energy surface termination
-(see e.g. `this image
-<http://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif>`_ for
-details), and then map the positions back into the unit cell::
+We now shift the `unit_slab` vertically so that we will open up a
+surface along a :math:`(111)` glide plane, cutting vertically aligned
+bonds (see e.g. `this image
+<http://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif>`_). This
+choice gives the lowest energy surface. We then map the positions back
+into the unit cell::
 
     unit_slab.positions[:, 1] += (unit_slab.positions[1, 1] -
                                   unit_slab.positions[0, 1]) / 2.0
@@ -547,12 +303,12 @@ plane as required.
 
 We now make a copy of the `unit_slab` and create a `surface` unit cell
 with surfaces parallel to the `cleavage_plane`. We can use the
-:meth:`ase.atoms.Atoms.center` method which, besides centering the
+:meth:`ase.atoms.Atoms.center` method which, besides centring the
 atoms in the unit cell, allows some vacuum to be added on both sides
 of the slab along a specified axis (use ``axis=0`` for the `x`-axis,
-``axis=1`` for the `y`-axis). The amount of vacuum you add is not
-critical, but could be taken from the `vacuum` parameter in the
-:ref:`Parameters section <parameters>` above::
+or ``axis=1`` for the `y`-axis, etc.). The amount of vacuum you add is
+not critical, but could be taken from the `vacuum` parameter in the
+:ref:`parameters section <parameters>` above::
 
     surface = unit_slab.copy() 
     surface. ...               # Add vacuum along y axis
@@ -586,7 +342,11 @@ list-method `len` (e.g. `len(si_bulk)` gives the number of atoms in
           (cleavage_plane, gamma / (units.J / units.m ** 2)))
 
 As a check, you should obtain :math:`\gamma_{(111)}` = 1.36 J/m\
-:superscript:`2`.
+:superscript:`2`. You may want to verify that this result is converged
+with respect to the number of layers in the system (note the cutoff
+distance of the SW potential, which you can obtain with
+``mm_pot.cutoff()``, is about 3.93 A, just beyond the second neighbour
+distance).
 
 Milestone 1.2
 ^^^^^^^^^^^^^
@@ -605,7 +365,7 @@ system and to apply the requested strain field.
 
 We start by building the full slab system. First, we need to find the number 
 of `unit_slab` cells along `x` and `y` that approximately match `width` and 
-`height` (see :ref:`Parameters section <parameters>`). 
+`height` (see :ref:`parameters section <parameters>`). 
 Note that the python function :py:func:`int` can be used to 
 convert a floating point number into an integer, truncating towards zero:: 
 
@@ -624,18 +384,19 @@ The crack supercell is now simply obtained by replicating `unit_slab`
     crack_slab = unit_slab * (nx, ny, 1)
 
 As we did before for the `surface` system, `vacuum` has to be introduced along 
-the `x` and `y` axes (*Hint:* use the :meth:`~ase.atoms.Atoms.center` method) ::
+the `x` and `y` axes (*Hint:* use the :meth:`~ase.atoms.Atoms.center`
+method twice) ::
 
     crack_slab. ...     # Add vacuum along x
     crack_slab. ...     # Add vacuum along y
 
-The `crack_slab` is now centered on the origin to make it simpler to
-apply strain::
+The `crack_slab` is now centered on the origin in the `xy` plane to
+make it simpler to apply strain::
 
     crack_slab.positions[:, 0] -= crack_slab.positions[:, 0].mean()
     crack_slab.positions[:, 1] -= crack_slab.positions[:, 1].mean()
 
-and its original width and height values are saved and will later be used to
+and its original width and height values are saved, and will later be used to
 measure the strain::
 
     orig_width = (crack_slab.positions[:, 0].max() -
@@ -646,7 +407,7 @@ measure the strain::
     print(('Made slab with %d atoms, original width and height: %.1f x %.1f A^2' %
            (len(crack_slab), orig_width, orig_height)))
 
-The original `y` coordinates of `crack_slab` top and bottom and the 
+The original `y` coordinates of the top and bottom of the slab and the 
 original `x` coordinates of the left and right surfaces are also saved::
 
     top = crack_slab.positions[:, 1].max()
@@ -672,17 +433,18 @@ Setting constraints to fix the edge atoms
 During the MD simulations, the positions of the top and bottom rows of
 atoms will be kept fixed. More precisely, these rows of atoms will
 only be moved rigidly when the strain is applied and will not move in
-response to forces from the interatomic potential. To do this, we
-initialise a `fixed_mask` array, that is `True` for each atom whose
-position needs to be fixed, and `False` otherwise::
+response to forces from the interatomic potential (see the
+:ref:`discussion of the thin strip geometry above<thin_strip>`). To do
+this, we initialise a `fixed_mask` array that is `True` for each atom
+whose position needs to be fixed, and `False` otherwise::
 
     fixed_mask = ((abs(crack_slab.positions[:, 1] - top) < 1.0) |
                   (abs(crack_slab.positions[:, 1] - bottom) < 1.0)) 
 
 Note that the ``|`` operator is shorthand for a logical 'or'
-operation. After doing ``view(crack_slab)``,
-you can colour the atoms by `fixed_mask` using the
-:func:`~qlab.aux_property_coloring` function ::
+operation. After re-running the latest version of your script and
+executing ``view(crack_slab)``, you can colour the atoms by
+`fixed_mask` using the :func:`~qlab.aux_property_coloring` function ::
 
     aux_property_coloring(fixed_mask)
 
@@ -705,15 +467,16 @@ then attach the constraint to `crack_slab` using
 To create the crack seed, we now apply the initial strain ramp. First,
 we need to convert the chosen energy release rate `initial_G` into a
 strain. This can be done using the :func:`~quippy.crack.G_to_strain`
-function which implements the thin strip equation described in the
-:ref:`theory1` section above. The `strain` is then used to displace the
-`y` coordinate of the atomic positions according to the strain ramp
-produced by the :func:`~quippy.crack.thin_strip_displacement_y`
+function which implements the :ref:`thin strip equation described
+above <thin_strip_equation>`. The `strain` is then used to displace
+the `y` coordinate of the atomic positions according to the strain
+ramp produced by the :func:`~quippy.crack.thin_strip_displacement_y`
 function. Here, the `crack_seed_length` and the `strain_ramp_length`
-parameters must be used. The objective is that atoms to the left of ``left +
-crack_seed_length`` should be rigidly shifted vertically, and those to
-the right of ``left + crack_seed_length + strain_ramp_length`` should
-be uniformly strained, with a transition region in between. ::
+parameters should be used. The objective is that atoms to the left of
+``left + crack_seed_length`` should be rigidly shifted vertically, and
+those to the right of ``left + crack_seed_length +
+strain_ramp_length`` should be uniformly strained, with a transition
+region in between. ::
 
     strain = ...                       # Convert G into strain
     crack_slab.positions[:, 1] += ...  # update the atoms positions along y
@@ -736,7 +499,7 @@ attached to `crack_slab` and the minimiser
 :class:`~quippy.potential.Minim` initialised (note that here it does
 not make sense to relax the cell since we have vacuum in two
 directions). We can then perform the minimisation until the maximum
-force is below the `relax_fmax` defined in the :ref:`Parameters
+force is below the `relax_fmax` defined in the :ref:`parameters
 section <parameters>`::
 
     print('Relaxing slab')
@@ -760,13 +523,19 @@ position of the crack tip.  This is provided by the
     crack_pos = find_crack_tip_stress_field(crack_slab, calc=mm_pot)
     print 'Found crack tip at position %s' % crack_pos
 
+This function works by fitting the components of the Irwin crack
+stress field to the per-atom stresses calculated by the classical SW
+potential, allowing the origin of the analytical stress field to move
+during the fit. Then, we simply this point to be the current crack
+position.
+
 Saving the output file
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Finally, we can save all the calculated materials properties inside the
 `crack_slab` :class:`~ase.atoms.Atoms` object, before writing it to disk::
  
-    crack_slab.info['nneightol'] = 1.35 # set nearest neighbour tolerance
+    crack_slab.info['nneightol'] = 1.30 # set nearest neighbour tolerance
     crack_slab.info['LatticeConstant'] = a0
     crack_slab.info['C11'] = c[0, 0]
     crack_slab.info['C12'] = c[0, 1]
@@ -786,7 +555,7 @@ Finally, we can save all the calculated materials properties inside the
 
 We can save our results, including all the extra properties and
 information, in :ref:`extendedxyz` in the `output_file`, whose name is
-defined in the :ref:`Parameters section <parameters>`::
+defined in the :ref:`parameters section <parameters>`::
 
     print('Writing crack slab to file %s' % output_file)
     write(crack_slab, output_file)

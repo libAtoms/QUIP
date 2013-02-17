@@ -8,42 +8,6 @@ produced in :ref:`step1`. If you had problems completing the first part, you
 can :download:`download it here <crack.xyz>` instead. Start by creating a new
 empty script, named ``run_crack_classical.py``.
 
-Theoretical background
-----------------------
-
-In addition to what was needed for :ref:`step1`, we need to know a little about
-classical MD, and the failure of most empirical classical interatomic potentials
-to predict brittle fracture correctly.
-
-The Stillinger-Weber [Stillinger1985]_ interatomic potential provides a fairly good
-description of many properties of crystalline and amorphous silicon. Its
-functional form is a two- and three-body expansion suitable for the
-representation of highly directional covalent bonds between Si atoms. In
-particular, the three-body term stabilises the ideal tetrahedral structure with
-respect to all the other possible structures. The parameters of the SW potential
-were determined by fitting experimental data with the constraint that the
-diamond-like structure must be the most stable periodic arrangement of particles
-al low pressures. 
-
-Although this potential has not been fitted to the Si elastic constants, it
-gives a reasonable description of all of them. As we will see during this step,
-however, the SW potential fails to describe the brittle fracture of silicon.
-Although a number of interatomic potentials have been developed to go beyond the
-basic description of Si provided by the SW potential (e.g. [Swadener2002]_,
-[Vink2001]_ [Buehler2006]_, [Pizzagalli2013]_) they are usually not sufficiently
-transferable to provide a general description of the inherently
-quantum-mechanical processes occurring at the tip of a crack. As a consequence,
-hybrid QM/MM methods are necessary to perform accurate MD simulations of brittle
-fracture in Si. Here, we will use the SW potential because its simple functional
-form and its speed make it a suitable choice for a multiscale QM/MM approach,
-where only an accurate description of the Si crystal far from the crack tip is
-required.
-
-In this step, we will use the SW potential to perform classical MD simulation of
-the crack propagation in the NVE ensemble. The velocity Verlet scheme
-[FrenkelSmit2001]_ will be used to integrate Newton's equations of motion.
-
-
 2.1 Initialisation of the atomic system (20 minutes)
 ----------------------------------------------------
 
@@ -120,7 +84,7 @@ of :ref:`Step 1 <step1>`::
 
 Note that we make a copy of the ``CrackPos`` entry in the
 :attr:`~quippy.atoms.info` dictionary, since otherwise
-`orig_crack_pos` will continue to refer to the current crack position
+`orig_crack_pos` would continue to refer to the current crack position
 as it is updated during the dynamical simulation.
 
 
@@ -172,7 +136,7 @@ Verlet update at each MD step. Note that in this case
 all atoms, while :meth:`~constraints.adjust_forces` makes no changes
 to the forces.
 
-The two constraints just defined need to be attached to our `atoms` object using
+The two constraints just defined need to be attached to our `atoms` object
 (see :meth:`~quippy.atoms.Atoms.set_constraint` plus this `ASE` example of
 `combining constraints
 <https://wiki.fysik.dtu.dk/ase/ase/constraints.html#combining-constraints>`_)::
@@ -236,13 +200,13 @@ each time step of the MD simulation. The information can be saved
 inside the :attr:`~quippy.atoms.Atoms.info` dictionary, so that it
 also gets saved to the trajectory file `traj_file`.
 
-The elapsed simulation time during can be obtained with
+The elapsed simulation time can be obtained with
 ``dynamics.get_time()`` (note that the time unit in ASE is
-:math:`\mathrm{\AA}^{-1}\sqrt{\mathrm{eV}/\mathrm{amu}}`, not `fs`). You should
-use the :meth:`~ase.atoms.Atoms.get_kinetic_energy` method to calculate the
-temperature (*Note*: you will need the :attr:`units.kB` constant, which gives
-the value of the Boltzmann constant in eV/K), and the functions
-:func:`~quippy.crack.get_strain` and
+:math:`\mathrm{\AA}\sqrt{\mathrm{amu}/\mathrm{eV}}`, not `fs`). You
+should use the :meth:`~ase.atoms.Atoms.get_kinetic_energy` method to
+calculate the temperature (*Note*: you will need the :attr:`units.kB`
+constant, which gives the value of the Boltzmann constant in eV/K),
+and the functions :func:`~quippy.crack.get_strain` and
 :func:`~quippy.crack.get_energy_release_rate` to return the current
 strain energy release rate, respectively. ::
 
@@ -253,14 +217,15 @@ strain energy release rate, respectively. ::
     ---------------------------------------------------------------------------------"""
     
         log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
-                      '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
+            '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
         
         atoms.info['label'] = 'D'                # Label for the status line
-        atoms.info['time'] = ...                 # Get simulation time, and convert to fs
+        atoms.info['time'] = ...                 # Get simulation time
+	                                         # and convert to fs
         atoms.info['temperature'] = ...          # Get temperature in K
         atoms.info['strain'] = ...               # Get strain
-        atoms.info['G'] = ...                    # Get energy release rate, and convert to J/m^2
-
+        atoms.info['G'] = ...                    # Get energy release rate,
+	                                         # and convert to J/m^2
         crack_pos = ...                          # Find crack tip as in step 1
  	atoms.info['crack_pos_x'] = crack_pos[0]
 	atoms.info['d_crack_pos_x'] = crack_pos[0] - orig_crack_pos[0]
@@ -408,15 +373,15 @@ typing).
 Stress field analysis
 ^^^^^^^^^^^^^^^^^^^^^
 
-To compute and display the instantaneous principal per-atom
-stress :math:`\sigma_{yy}` as computed by the SW potential for a configuration
-near the beginning of your dynamical simulation::
+To compute and display the instantaneous principal per-atom stress
+:math:`\sigma_{yy}` as computed by the SW potential for a
+configuration near the beginning of your dynamical simulation::
 
    mm_pot = Potential('IP SW', param_filename='params.xml')
    at = gcat()
    at.set_calculator(mm_pot)
    mm_sigma = at.get_stresses()
-   sigma_yy = mm_stress[:,1,1]
+   sigma_yy = mm_sigma[:,1,1]
    aux_property_coloring(sigma_yy)
 
 The `mm_sigma` array has shape `(len(atoms), 3, 3)`, i.e. it is
@@ -449,7 +414,7 @@ stress tensor, which is given by
 
 where :math:`k` and :math:`l` are atom indices, :math:`ijk` are Cartesian
 indicies, :math:`\Omega` is the cell volume, :math:`m^{(k)}`,
-:math:`u^{(k)}`, :math:`x^{(k)}` and `f^{(k)}` are respectively the
+:math:`u^{(k)}`, :math:`x^{(k)}` and :math:`f^{(k)}` are respectively the
 mass, velocity, position of atom :math:`k` and :math:`f^{kl}_j` is
 the :math:`j`\ th component of the force between atoms :math:`k` and
 :math:`l`. The first term is a kinetic contribution which vanishes at
@@ -540,7 +505,7 @@ over-coordinated (red) atoms near the crack tip.
 
 Here is a typical snapshot at the end of 10 ps of dynamics. Note the
 large number of defects, indicating that the fracture surface is not
-atomically smooth as we know it it found to be in experiments. In your
+atomically smooth as we find it to be in experiments. In your
 simulation you may be able to spot signs of energy dissipation
 mechanisms, such as dislocation emission from the crack tip.
 
@@ -596,7 +561,7 @@ angular dependence is given by the set of universal functions
 You can verify this by comparing the position detected by
 :func:`~quippy.crack.find_crack_tip_stress_field`,  stored in the
 `crack_pos` attribute, with the positions of atoms that visually look
-to be near the tip --- `Ctrl+Right click` on atoms in the AtomEye
+to be near the tip --- `right click` on atoms in the AtomEye
 viewer window to print information about them, including their
 positions.
 
@@ -613,7 +578,7 @@ Evolution of energy release rate and crack position
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For :ref:`netcdf` trajectories,
-the :attr:`AtomsReaderViewer.reader.netcdf_file`` attribute of the current
+the :attr:`AtomsReaderViewer.reader.netcdf_file` attribute of the current
 viewer object :func:`~qlab.gcv` provides direct access to the underlying NetCDF
 file using the Python `netCDF4 module
 <http://code.google.com/p/netcdf4-python/>`_::

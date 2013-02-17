@@ -2,9 +2,9 @@
 
 .. _qmmm_tutorial:
 
-*******************************
-QM/MM MD of Fracture in Silicon
-*******************************
+****************************************
+Adaptive QM/MM MD of Fracture in Silicon
+****************************************
 
 This tutorial has been prepared for use at a hands-on session at the
 `ADGLASS Winter School on Advanced Molecular Dynamics Simulations
@@ -18,6 +18,7 @@ This tutorial has been prepared for use at a hands-on session at the
    :maxdepth: 2
 
    adaptive-qmmm-step0.rst
+   adaptive-qmmm-theory.rst
    adaptive-qmmm-step1.rst
    adaptive-qmmm-step2.rst
    adaptive-qmmm-step3.rst
