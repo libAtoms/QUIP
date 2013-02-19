@@ -298,7 +298,9 @@ subroutine read_vasp(at, filename)
 
    call set_atoms(at, at%Z)
 
-   if (.not. cartesian) then
+   if (cartesian) then
+      at%pos = at%pos * lattice_scale
+   else
       at%pos = matmul(at%lattice, at%pos)
    endif
 
