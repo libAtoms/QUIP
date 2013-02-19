@@ -83,6 +83,9 @@ module barostat_module
      real(dp) :: epsilon_r(3,3) = reshape( (/ 1.0_dp, 0.0_dp, 0.0_dp,    0.0_dp, 1.0_dp, 0.0_dp,    0.0_dp, 0.0_dp, 1.0_dp /), (/ 3, 3 /) ) !% Value of deformation gradient
      logical :: hydrostatic_strain = .true., diagonal_strain = .true., finite_strain_formulation=.false.
 
+     real(dp) :: lattice0(3,3), lattice0_inv(3,3), F_tmp_norm
+     logical :: lattice0_initialised = .false.
+
   end type barostat
 
   interface initialise
@@ -154,6 +157,7 @@ contains
     else
       this%epsilon_r = 0.0_dp; call add_identity(this%epsilon_r)
     endif
+    this%lattice0_initialised = .false.
 
     select case(this%type)
 
@@ -231,6 +235,7 @@ contains
     this%epsilon_f = 0.0_dp
     this%epsilon_r = 0.0_dp; call add_identity(this%epsilon_r)
     this%T = -1.0_dp
+    this%lattice0_initialised = .false.
 
   end subroutine barostat_finalise
 
@@ -410,7 +415,7 @@ contains
     real(dp),         intent(in)    :: dt
     real(dp), dimension(3,3), optional, intent(in) :: virial
 
-    real(dp) :: vel_decay(3,3), pos_scale(3,3), lattice_p(3,3), F_inv(3,3)
+    real(dp) :: vel_decay(3,3), pos_scale(3,3), lattice_p(3,3), F_inv(3,3), F_tmp(3,3)
 
     select case(this%type)
 
@@ -433,10 +438,19 @@ contains
 
        if (.not. present(virial)) call system_abort("barostat_pre_vel1 needs virial")
 
+       if (.not. this%lattice0_initialised) then
+	  this%lattice0_initialised = .true.
+	  this%lattice0 = at%lattice
+	  call matrix3x3_inverse(this%lattice0, this%lattice0_inv)
+	  this%F_tmp_norm = 0.0_dp
+       endif
+
        ! half step epsilon_v drag 
        if (this%finite_strain_formulation) then
-	  call inverse(this%epsilon_r, F_inv)
-	  this%epsilon_v = this%epsilon_v .mult. transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
+	  call matrix3x3_inverse(this%epsilon_r, F_inv)
+	  vel_decay = transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
+	  vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
+	  this%epsilon_v = this%epsilon_v .mult. vel_decay
        else
 	  this%epsilon_v = this%epsilon_v * exp(-0.5_dp*dt*this%gamma_epsilon)
        endif
@@ -445,13 +459,22 @@ contains
 
        ! half step barostat drag part of v
        vel_decay = matrix_exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
        at%velo = vel_decay .mult. at%velo
 
        ! half step position affine defomration
        pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
-       lattice_p = at%lattice
-       call set_lattice(at, pos_scale .mult. lattice_p, scale_positions=.false.)
-       at%pos = pos_scale .mult. at%pos
+       pos_scale = 0.5_dp*(pos_scale + transpose(pos_scale))
+       lattice_p = pos_scale .mult. at%lattice
+       ! remove any rotation from new lattice
+       F_tmp = lattice_p .mult. this%lattice0_inv
+       F_tmp = 0.5_dp*(F_tmp + transpose(F_tmp))
+       if (abs(deviation_from_identity(F_tmp) - this%F_tmp_norm) > 5.0e-2) then
+	 call print_warning("barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
+       endif
+       this%F_tmp_norm = deviation_from_identity(F_tmp)
+       lattice_p = F_tmp .mult. this%lattice0
+       call set_lattice(at, lattice_p, scale_positions=.true.)
 
     end select
 
@@ -473,29 +496,58 @@ contains
     real(dp),         intent(in)    :: dt
     real(dp), dimension(3,3), optional, intent(in) :: virial
 
-    real(dp) :: pos_scale(3,3), lattice_p(3,3)
+    real(dp) :: pos_scale(3,3), lattice_p(3,3), F_tmp(3,3)
 
     select case(this%type)
 
       case(BAROSTAT_HOOVER_LANGEVIN)
-       !TIME_PROPAG_TEX 60 
-       !TIME_PROPAG_TEX 60 {\color {blue}
-       !TIME_PROPAG_TEX 60 after Verlet pos step, before force calc (barostat\_post\_pos\_pre\_calc)
-       !TIME_PROPAG_TEX 60
-       !TIME_PROPAG_TEX 60 $$ (r,h) = \exp\left( (\tau/2) \epsilon_v \right) (r,h) $$
-       !TIME_PROPAG_TEX 60 }
-       !TIME_PROPAG_TEX 60 
-       if (.not. present(virial)) call system_abort("barostat_post_pos_pre_calc needs virial")
+        !TIME_PROPAG_TEX 60 
+        !TIME_PROPAG_TEX 60 {\color {blue}
+        !TIME_PROPAG_TEX 60 after Verlet pos step, before force calc (barostat\_post\_pos\_pre\_calc)
+        !TIME_PROPAG_TEX 60
+        !TIME_PROPAG_TEX 60 $$ (r,h) = \exp\left( (\tau/2) \epsilon_v \right) (r,h) $$
+        !TIME_PROPAG_TEX 60 }
+        !TIME_PROPAG_TEX 60 
+        if (.not. present(virial)) call system_abort("barostat_post_pos_pre_calc needs virial")
 
         ! half step position affine defomration
-	pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
-        lattice_p = at%lattice
-        call set_lattice(at, pos_scale .mult. lattice_p, scale_positions=.false.)
-        at%pos = pos_scale .mult. at%pos
+        pos_scale = matrix_exp(0.5_dp*dt*this%epsilon_v)
+        pos_scale = 0.5_dp*(pos_scale + transpose(pos_scale))
+        lattice_p = pos_scale .mult. at%lattice
+        ! remove any rotation from new lattice
+        F_tmp = lattice_p .mult. this%lattice0_inv
+        F_tmp = 0.5_dp*(F_tmp + transpose(F_tmp))
+        if (abs(deviation_from_identity(F_tmp) - this%F_tmp_norm) > 5.0e-2) then
+	   call print_warning("barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
+        endif
+        this%F_tmp_norm = deviation_from_identity(F_tmp)
+        lattice_p = F_tmp .mult. this%lattice0
+        call set_lattice(at, lattice_p, scale_positions=.true.)
 
     end select
 
   end subroutine barostat_post_pos_pre_calc
+
+  function deviation_from_identity(a)
+     real(dp), intent(in) :: a(:, :)
+     real(dp) :: deviation_from_identity
+
+     integer :: i, j
+
+     deviation_from_identity = 0.0_dp
+     do i=1, size(a, 1)
+     do j=1, size(a, 2)
+       if (i == j) then
+	  deviation_from_identity = deviation_from_identity + (a(i,j)-1.0_dp)**2
+       else
+	  deviation_from_identity = deviation_from_identity + (a(i,j))**2
+       endif
+     end do
+     end do
+
+     deviation_from_identity = sqrt(deviation_from_identity)
+
+  end function deviation_from_identity
 
   subroutine barostat_post_calc_pre_vel2(this,at,dt,virial)
     
@@ -543,6 +595,7 @@ contains
 
        !Decay the velocities for dt/2 again barostat part
        vel_decay = matrix_exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
        at%velo(:,:) = vel_decay .mult. at%velo(:,:)
 
        this%epsilon_r = this%epsilon_r + dt*this%epsilon_v
@@ -569,9 +622,10 @@ contains
        rand_f_cell(3,2) = rand_f_cell(2,3)
 
        kinetic_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
+       kinetic_virial = 0.5_dp*(kinetic_virial + transpose(kinetic_virial))
        if (this%finite_strain_formulation) then
 	  F_det = matrix3x3_det(this%epsilon_r)
-	  call inverse(transpose(this%epsilon_r), F_T_inv)
+	  call matrix3x3_inverse(transpose(this%epsilon_r), F_T_inv)
 
 	  this%epsilon_f = (3.0_dp*(virial+kinetic_virial+volume_p*(this%epsilon_r .mult. this%stress_ext .mult. transpose(this%epsilon_r))/F_det + &
 				    3.0_dp/this%Ndof*kinetic_virial) + rand_f_cell) .mult. F_T_inv
@@ -599,8 +653,10 @@ contains
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_epsilon
        ! half step with epsilon drag
        if (this%finite_strain_formulation) then
-	  call inverse(this%epsilon_r, F_inv)
-	  this%epsilon_v = this%epsilon_v .mult. transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
+	  call matrix3x3_inverse(this%epsilon_r, F_inv)
+	  vel_decay = transpose(matrix_exp(-0.5_dp*dt*this%gamma_epsilon*F_inv))
+	  vel_decay = 0.5_dp*(vel_decay + transpose(vel_decay))
+	  this%epsilon_v = this%epsilon_v .mult. vel_decay 
        else
 	  this%epsilon_v = this%epsilon_v * exp(-0.5_dp*dt*this%gamma_epsilon)
        endif
