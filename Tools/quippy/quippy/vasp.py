@@ -35,7 +35,7 @@ def VASP_POSCAR_Reader(poscar, species=None):
    
    p = open(poscar, 'r')
    comment = p.readline().rstrip()
-   l = p.readline().strip(); lc_factor=np.real(l)
+   l = p.readline().strip(); lc_factor=float(l)
    l = p.readline().strip(); a1 = np.real(l.split())
    l = p.readline().strip(); a2 = np.real(l.split())
    l = p.readline().strip(); a3 = np.real(l.split())
@@ -75,6 +75,8 @@ def VASP_POSCAR_Reader(poscar, species=None):
    lat[:,2] = a2[0:3]
    lat[:,3] = a3[0:3]
 
+   lat *= lc_factor
+
    at = Atoms(n=n, lattice=lat)
    if (len(comment) > 0):
       at.params['VASP_Comment'] = comment
@@ -88,7 +90,7 @@ def VASP_POSCAR_Reader(poscar, species=None):
 	 if (coord_direct):
 	    at.pos[:,ii] = np.dot(at.lattice[:,:],pos[:])
 	 else:
-	    at.pos[:,ii] = pos[:]
+	    at.pos[:,ii] = pos[:]*lc_factor
          at.species[:,ii] = at_species[ti]
          ii += 1
 
