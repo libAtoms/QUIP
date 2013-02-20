@@ -687,7 +687,7 @@ class FortranDerivedType(object):
             wraplog.debug('Trying candidate routine %s' % rname)
             try:
                 return routine(self, *args, **kwargs)
-            except Exception as e:
+            except Exception, e:
                 if isinstance(e, RuntimeError):
                     raise
                 else:
@@ -1395,7 +1395,11 @@ def process_docstring(doc):
 
         lines[i] = ' '*indent + lines[i]
         
-    doc = inspect.cleandoc('\n'.join(lines))
+    try:
+       doc = inspect.cleandoc('\n'.join(lines))
+    except AttributeError:
+       doc = '\n'.join(lines)
+
     return doc
 
 
@@ -1678,7 +1682,7 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
             wraplog.debug('Trying candidate routine %s' % rname)
             try:
                 return routine(self, *args, **kwargs)
-            except Exception as e:
+            except Exception, e:
                 if isinstance(e, RuntimeError):
                     raise
                 else:
@@ -1722,8 +1726,11 @@ def update_doc_string(doc, extra, sections=None, signature=None):
     if sections is None:
        sections = ['Parameters', 'See also']
 
-    doc = inspect.cleandoc(doc)
-    extra = inspect.cleandoc(extra)
+    try:
+       doc = inspect.cleandoc(doc)
+       extra = inspect.cleandoc(extra)
+    except AttributeError:
+       pass
 
     extra = '\n' + extra + '\n'
     
