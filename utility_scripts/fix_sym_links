@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Workaround for viewvc tarball export bug which loses symbolic links
 # (see http://viewvc.tigris.org/issues/show_bug.cgi?id=487)
