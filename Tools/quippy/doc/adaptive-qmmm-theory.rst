@@ -311,7 +311,7 @@ QM/MM Force Mixing and the 'Learn on the Fly' scheme
 
 In this last part of the tutorial, we will perform an accurate MD simulation of
 Si fracture using the "Learn on the fly" (LOTF) hybrid QM/MM technique
-[Csanyi2004]_. In the present case, all atoms that are not suitably described by
+[DeVita1998]_, [Csanyi2004]_. In the present case, all atoms that are not suitably described by
 the [Stillinger1985]_ potential (our MM scheme) will be treated
 quantum-mechanically with the DFTB method [Elstner1998]_. These atoms are
 those in the vicinity of the crack tip, where highly strained Si-Si bonds are
@@ -329,12 +329,13 @@ between the QM and the MM regions. Moreover, the necessity to suitably "terminat
 the QM region, does not allow the QM region to move during the simulation, which
 is, however, required if we want to follow the motion of a crack tip.
 
-The LOTF scheme adopts a force-based scheme instead, which allows the QM region
-to move during the MD simulation and accurate forces to be calculated even at
-the boundaries of the two regions. While the details of the scheme have been
-thoroughly presented in a number of articles [Csanyi2004]_, [Csanyi2005]_,
-[Moras2010]_, [Kermode2008a]_, [Bernstein2009]_, we will here briefly explain
-the basic concepts that will allow us to perform the crack simulation.
+The LOTF scheme adopts a force-based scheme instead, which allows the
+QM region to move during the MD simulation and accurate forces to be
+calculated even at the boundaries of the two regions. While the
+details of the scheme have been thoroughly presented in a number of
+articles [DeVita1998]_, [Csanyi2004]_, [Csanyi2005]_, [Moras2010]_,
+[Kermode2008a]_, [Bernstein2009]_, we will here briefly explain the
+basic concepts that will allow us to perform the crack simulation.
 
 .. _buffer:
 

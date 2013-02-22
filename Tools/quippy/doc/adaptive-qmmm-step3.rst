@@ -131,7 +131,7 @@ your `ipython` session (remember to do a ``from qlab import *`` first if you
 haven't already)::
 
    view(atoms)
-   aux_property_colouring(qmmm_pot.get_qm_atoms())
+   aux_property_coloring(qmmm_pot.get_qm_atoms())
 
 .. image:: crack-initial-qm-region.png
    :align: center
@@ -140,7 +140,7 @@ haven't already)::
 In the image above, the red atoms are QM and the blue atom classical.
 Internally, this list is actually saved as a :attr:`property
 <~quippy.atoms.Atoms.properties>` inside the Atoms object named ``"hybrid"``,
-which can also be displayed with ``aux_property_colouring("hybrid")``
+which can also be displayed with ``aux_property_coloring("hybrid")``
 
 
 3.2 Setup and run the adaptive QM/MM MD (20 minutes)
@@ -224,7 +224,7 @@ writes to the trajectory file if the state of the dynamical systems is
             trajectory.write(dynamics.atoms) 
 
 As before, we attach this function to the dynamical system, passing
-`traj_interval` and and extra argument of `atoms` which gets passed along to the
+`traj_interval` and and extra argument of `dynamics` which gets passed along to the
 `traj_writer` function (see the :meth:`~quippy.lotf.LOTFDynamics.attach`
 method)::
 

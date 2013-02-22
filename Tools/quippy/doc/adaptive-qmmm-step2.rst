@@ -161,7 +161,7 @@ save time when locating the crack tip (discussed in more detail
 to set the calculator to the SW potential::
 
     mm_pot = ...   # Initialise the SW potential with cutoff_skin
-    mm.pot.set_default_quantities(['stresses'])
+    mm_pot.set_default_quantities(['stresses'])
     atoms. ...     # Set the calculator
 
 Milestone 2.1

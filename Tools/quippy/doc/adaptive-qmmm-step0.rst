@@ -21,13 +21,13 @@ extension tasks at the end which you can complete if you have time. In
 the first section we will prepare the model fracture system for our
 simulations. In the second part, we will carry out classical molecular
 dynamics, and in the third part of the tutorial, the 'Learn on the
-Fly' [Csanyi2004]_ embedding scheme will be used to carry out coupled
-classical and quantum calculations. One of the main advantages of the
-LOTF approach is that the QM region can be moved during the simulation
-(*adaptive* QM/MM). You can read more details about multiscale
-embedding methods applied to materials systems in [Bernstein2009]_,
-and more about brittle fracture in silicon investigated with the
-'Learn on the Fly' technique in [Kermode2008]_.
+Fly' ([DeVita1998]_, [Csanyi2004]_) embedding scheme will be used to
+carry out coupled classical and quantum calculations. One of the main
+advantages of the LOTF approach is that the QM region can be moved
+during the simulation (*adaptive* QM/MM). You can read more details
+about multiscale embedding methods applied to materials systems in
+[Bernstein2009]_, and more about brittle fracture in silicon
+investigated with the 'Learn on the Fly' technique in [Kermode2008]_.
 
 .. _practical:
 
