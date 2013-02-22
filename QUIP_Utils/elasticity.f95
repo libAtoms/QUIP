@@ -256,7 +256,7 @@ contains
 
   end function youngs_modulus
 
-  !% Calculate Poisson ratio $v_{lm}$ from $6\times6$ elastic
+  !% Calculate Poisson ratio $\nu_{lm}$ from $6\times6$ elastic
   !% constant matrix $C_{ij}$. This is the response in $m$ direction 
   !% to pulling in $l$ direction. Result is dimensionless.
   !% Formula is from W. Brantley, Calculated elastic constants for stress problems associated 
