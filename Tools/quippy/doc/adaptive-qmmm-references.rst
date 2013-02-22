@@ -22,6 +22,10 @@ References
    Mat. 17 R691-R703 (2005).
    <http://stacks.iop.org/0953-8984/17/i=27/a=R02?key=crossref.f572d9a616845900307c923f5f385044>`_
 
+.. [DeVita1998] De Vita, A., & Car, R. A novel scheme for
+   accurate MD simulations of large systems. Mater. Res. Soc. Symp. Proc, 491, 473–480 (1998).
+
+
 .. [Elstner1998] Elstner, M., Porezag, D., Jungnickel, G., Elsner, J.,
    Haugk, M., Frauenheim, T., Suhai, S., et
    al. Self-consistent-charge density-functional tight-binding
