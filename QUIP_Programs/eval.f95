@@ -83,6 +83,7 @@ implicit none
 
   real(dp) :: E0
   real(dp), pointer :: local_E0(:)
+  real(dp), pointer :: local_v0(:,:)
   real(dp), pointer :: F0(:,:)
   real(dp) :: V0(3,3), P0(3,3)
   real(dp) :: c(6,6), c0(6,6), cij_dx 
@@ -317,7 +318,10 @@ implicit none
 	   if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
 	   if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
 	   if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
-	   if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+           if (do_local) then
+              if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
+              if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
+           endif
 	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
 	   HANDLE_ERROR(error)
 	endif
@@ -480,7 +484,10 @@ implicit none
         if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
 	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
 	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
-        if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+        if (do_local) then
+          if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
+          if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
+        endif
 
         if(.not. do_E) then
            call print("Cannot do E vs V without E calculation being requested", PRINT_ALWAYS)
@@ -515,14 +522,20 @@ implicit none
 	if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
 	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
 	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
-	if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+        if (do_local) then
+           if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
+           if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
+        endif
 
 	call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
 	HANDLE_ERROR(error)
 	if (do_E) call get_param_value(at, 'energy', E0)
 	if (do_F) call assign_property_pointer(at, "force", F0)
 	if (do_V) call get_param_value(at, "virial", V0)
-	if (do_local) call assign_property_pointer(at, "local_energy", local_E0)
+        if (do_local) then
+           if (do_E) call assign_property_pointer(at, "local_energy", local_E0)
+           if (do_v) call assign_property_pointer(at, "local_virial", local_v0)
+        endif
 
 	call print(pot)
 
