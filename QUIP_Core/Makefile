@@ -53,7 +53,7 @@ TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
 TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
 TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
 
-IP_F95_FILES = IPEwald Yukawa IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_TS IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Coulomb IPModel_Sutton_Chen IPModel_FX IPModel_HFdimer IPModel_BornMayer IPModel_Custom IPModel_Template IPModel_SW_VP IPModel_WaterDimer_Gillan
+IP_F95_FILES = IPEwald Yukawa IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_TS IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Coulomb IPModel_Sutton_Chen IPModel_FX IPModel_HFdimer IPModel_BornMayer IPModel_Custom IPModel_Template IPModel_SW_VP IPModel_WaterDimer_Gillan IPModel_WaterTrimer_Gillan
 
 ifeq (${HAVE_ASAP},1)
   IP_F95_FILES += IPModel_ASAP

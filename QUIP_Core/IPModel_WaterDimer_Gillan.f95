@@ -31,7 +31,7 @@
 !X
 !X IPModel_WaterDimer_Gillan
 !X
-!% Interaction of two water dimers, parametrised by Mike Gillan in 2011
+!% Interaction of two water molecules, parametrised by Mike Gillan in 2011
 !% 
 !% only expected to be accurate at long range (> 5 A). Parameters are
 !% fitted to MP2 AVTZ energies
@@ -1021,4 +1021,4 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 
 
 
-end module IPModel_WaterDimer_Gillan_module
+  end module IPModel_WaterDimer_Gillan_module
