@@ -151,7 +151,6 @@ contains
     this%type = type
     this%epsilon_v = 0.0_dp
     this%epsilon_f = 0.0_dp
-    this%epsilon_f = 0.0_dp
     if (present(deformation_grad)) then
       this%epsilon_r = deformation_grad
     else
