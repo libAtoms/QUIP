@@ -1189,7 +1189,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
 }
 
-void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *n_spatial2, int *error)
+void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error)
 {
   INIT_ERROR;
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
