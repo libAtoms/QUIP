@@ -744,6 +744,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def __getattr__(self, name):
         #print 'getattr', name
         #if name in self.properties:
+        if name == '_fpointer':
+            raise AttributeError('Atoms object not initialised!')
         try:
             return self.properties[name]
         except KeyError:
@@ -924,13 +926,13 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 getattr(self, name.lower())[:] = value
 
     def __getstate__(self):
-        es = Extendable_str()
-        self.write('', estr=es, format='xyz')
-        return str(es)
+        return self.write('string')
 
     def __setstate__(self, state):
-        es = Extendable_str(state)
-        self.read_from('', estr=es, format='xyz')
+        self.read_from(state, format='string')
+
+    def __reduce__(self):
+        return (Atoms, (), self.__getstate__(), None, None)
 
     def mem_estimate(self):
         """Estimate memory usage of this Atoms object, in bytes"""
