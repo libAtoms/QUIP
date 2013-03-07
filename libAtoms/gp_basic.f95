@@ -423,7 +423,8 @@ function f_predict_grad_r(self, r, kernel)
       return
    endif
 
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, &
+      kernel, self%k_grad)
    call dgemv('N', size(self%k_grad,1), size(self%k_grad,2), 1.0_dp, self%k_grad(1,1), size(self%k_grad,1), &
       self%Cmat_inv_v(1), 1, 0.0_dp, f_predict_grad_r(1), 1)
 end function f_predict_grad_r
@@ -486,7 +487,8 @@ function f_predict_grad_var_r(self, r, kernel)
 
    ! From Lockwood and Anitescu preprint ANL/MCS-P1808-1110 "Gradient-Enhanced Universal Kriging for Uncertainty Propagation"
    ! Eq. 2.22, not including last term which is relevant only for underlying polynomial basis (which we don't have)
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, &
+      kernel, self%k_grad)
 
    ! first term should be second derivative of covariance, but it's hard wired for now
    f_predict_grad_var_r = self%f_var/self%len_scale_sq 
@@ -532,8 +534,10 @@ function f_predict_var_grad_r(self, r, kernel)
       return
    endif
 
-   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k)
-   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k_grad)
+   call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, &
+      kernel, self%k)
+   call g_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, &
+      kernel, self%k_grad)
 
    f_predict_var_grad_r = 0.0_dp
    if (self%sparsified) then
@@ -676,8 +680,10 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_
    if (present(g_f) .or. present(g_g)) then
       do i=1, n_dof
 	 if (periodicity(i) /= 0.0_dp) then
-	    dexp_arg_i(i,:) = 2.0_dp*sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)*cos(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)*TWO_PI/periodicity(i) / len_scale_sq(i)
-	    if (present(g_g)) ddexp_arg_i(i,:) = (-sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2+cos(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2)*(TWO_PI/periodicity(i))**2/len_scale_sq(i)
+	    dexp_arg_i(i,:) = 2.0_dp*sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)*cos(TWO_PI/periodicity(i)* &
+	       (x2(i,:)-x1(i))/2.0_dp)*TWO_PI/periodicity(i) / len_scale_sq(i)
+	    if (present(g_g)) ddexp_arg_i(i,:) = (-sin(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2+ &
+	       cos(TWO_PI/periodicity(i)*(x2(i,:)-x1(i))/2.0_dp)**2)*(TWO_PI/periodicity(i))**2/len_scale_sq(i)
 	 else
 	    dexp_arg_i(i,:) = (x2(i,:)-x1(i))/len_scale_sq(i)
 	    if (present(g_g)) ddexp_arg_i(i,:) = 1.0_dp/len_scale_sq(i)
@@ -687,7 +693,8 @@ subroutine SE_kernel_r_rr(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_
    if (present(f_g) .or. present(g_g)) then
       do j=1, n_dof
 	 if (periodicity(j) /= 0.0_dp) then
-	    dexp_arg_j(j,:) = -2.0_dp*sin(TWO_PI/periodicity(j)*(x2(j,:)-x1(j))/2.0_dp)*cos(TWO_PI/periodicity(j)*(x2(j,:)-x1(j))/2.0_dp)*TWO_PI/periodicity(j) / len_scale_sq(j)
+	    dexp_arg_j(j,:) = -2.0_dp*sin(TWO_PI/periodicity(j)*(x2(j,:)-x1(j))/2.0_dp)*cos(TWO_PI/periodicity(j)* &
+	       (x2(j,:)-x1(j))/2.0_dp)*TWO_PI/periodicity(j) / len_scale_sq(j)
 	 else
 	    dexp_arg_j(j,:) = -(x2(j,:)-x1(j))/len_scale_sq(j)
 	 endif
