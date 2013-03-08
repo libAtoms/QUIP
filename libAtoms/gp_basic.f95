@@ -38,7 +38,7 @@ private
 public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad, f_predict_var_grad, f_predict_grad_var
 public :: SE_kernel_r_rr
 
-integer, parameter :: dp = 8
+integer, parameter :: dp = selected_real_kind(15,307)
 
 real(dp), parameter :: TWO_PI = 2.0_dp*3.14159265358979_dp
 
