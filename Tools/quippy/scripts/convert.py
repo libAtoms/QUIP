@@ -47,7 +47,9 @@ include in output file. For example:
 The default is to output all parameters.
 For XYZ output these parameters are in addition to the special
 parameters "Lattice" and "Properties" which are always written.
-The original order of parameters in the input file is preserved.""")
+If list is the string 'NONE', no additional properties are printed.
+The original order of parameters in the input file is preserved.
+""")
 p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz
 Supported formats: %s.""" % ', '.join([s for s in AtomsWriters.keys() if isinstance(s, str)]))
 p.add_option('-I', '--in-format', action='store', help="""Explicitly specify input format, e.g. --in-format=xyz
@@ -163,7 +165,10 @@ if opt.properties is not None:
         opt.properties = parse_comma_colon_list(opt.properties)
 
 if opt.params is not None:
-    opt.params = parse_comma_colon_list(opt.params)
+    if opt.params == 'NONE':
+        opt.params = []
+    else:
+        opt.params = parse_comma_colon_list(opt.params)
 
 if opt.atoms_ref is not None:
     opt.atoms_ref = Atoms(opt.atoms_ref)
