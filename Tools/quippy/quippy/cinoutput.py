@@ -187,7 +187,7 @@ def CInOutputStdinReader(source='stdin'):
     while True:
         try:
             yield source.read()
-        except RuntimeError:
+        except (RuntimeError, EOFError):
             break
 
 class CInOutputWriter(object):
