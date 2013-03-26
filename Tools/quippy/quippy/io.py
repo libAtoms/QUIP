@@ -255,8 +255,17 @@ class AtomsReader(AtomsReaderMixin):
             if format in AtomsReaders:
                 self.reader = AtomsReaders[format](self.reader, **kwargs)
 
+        # check if reader is still a string or list of strings - indicates missing files or unknown format
         if isinstance(self.reader, basestring):
-            raise IOError("Don't know how to read Atoms from file '%s'" % self.reader)
+            raise IOError("Cannot read Atoms from file %s" % self.reader)
+        elif isinstance(self.reader, list):
+            is_list_of_strings = True
+            for item in self.reader:
+                if not isinstance(item, basestring):
+                    is_list_of_strings = False
+                    break
+            if is_list_of_strings:
+                raise IOError("Cannot read Atoms from files %s" % self.reader)
 
         if isinstance(self.reader, AtomsReader):
             self.reader = AtomsReaderCopier(self.reader)
@@ -335,7 +344,8 @@ class AtomsReader(AtomsReaderMixin):
             if frame < 0: frame = frame + len(self)
 
             if not self._cache_fetch(frame):
-                self._cache_store(frame, self.reader[frame])
+                at = self.reader[frame]
+                self._cache_store(frame, at)
 
             at = self._cache_dict[frame]
             if not hasattr(at, 'source'):

@@ -369,44 +369,46 @@ if opt.read_args is not None:
 if opt.time_ordered_series:
     infiles = time_ordered_series(infiles)
 
-if opt.load_all:
-    all_configs = AtomsList(infiles,
-                            format=opt.in_format,
-                            **read_args)[opt.range.start:opt.range.stop:opt.range.step]
-else:
-    all_configs = AtomsReader(infiles,
-                              format=opt.in_format,
-                              start=opt.range.start,
-                              stop=opt.range.stop,
-                              step=opt.range.step,
-                              **read_args)
-
 try:
-    show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 and sys.stderr.isatty() and not opt.load_all
-except AttributeError:
-    show_progress = False
+    if opt.load_all:
+        all_configs = AtomsList(infiles,
+                                format=opt.in_format,
+                                **read_args)[opt.range.start:opt.range.stop:opt.range.step]
+    else:
+        all_configs = AtomsReader(infiles,
+                                  format=opt.in_format,
+                                  start=opt.range.start,
+                                  stop=opt.range.stop,
+                                  step=opt.range.step,
+                                  **read_args)
 
-if show_progress:
-    from quippy.progbar import ProgressBar
-    pb = ProgressBar(0,len(all_configs),80,showValue=True)
-
-if opt.exec_before is not None:
-    exec(opt.exec_before)
-for i, at in enumerate(all_configs):
     try:
-        process(at, i)
-    except (IndexError, ValueError, RuntimeError), re:
-        p.error(str(re))
-    if show_progress: pb(i)
-
-if show_progress:
-    print
-
-if opt.exec_after is not None:
-    exec(opt.exec_after)
-
-if outfile is not None:
-    try:
-        outfile.close()
+        show_progress = not opt.extract_params and not stdout and not opt.no_print_at and len(all_configs) > 1 and sys.stderr.isatty() and not opt.load_all
     except AttributeError:
-        pass
+        show_progress = False
+
+    if show_progress:
+        from quippy.progbar import ProgressBar
+        pb = ProgressBar(0,len(all_configs),80,showValue=True)
+
+    if opt.exec_before is not None:
+        exec(opt.exec_before)
+
+    for i, at in enumerate(all_configs):
+        process(at, i)
+        if show_progress: pb(i)
+
+    if show_progress:
+        print
+
+    if opt.exec_after is not None:
+        exec(opt.exec_after)
+
+    if outfile is not None:
+        try:
+            outfile.close()
+        except AttributeError:
+            pass
+
+except (IndexError, ValueError, RuntimeError, IOError), re:
+    p.error(str(re))
