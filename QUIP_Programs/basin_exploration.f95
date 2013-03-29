@@ -11,7 +11,7 @@ real(dp), allocatable :: sample_pos(:,:), sample_grad(:,:), sample_noise(:, :)
 
 integer :: i_cycle, n_cycles, i_candidate, n_candidates
 real(dp), allocatable :: rv(:), cur_pos(:)
-real(dp) :: simplex_step_length, shooting_step_length, gaussian_width
+real(dp) :: simplex_step_length, shooting_step_length, gaussian_width, step_var_target
 integer, allocatable :: candidate_i_sample(:)
 real(dp), allocatable :: candidate_pos(:,:), candidate_E(:), candidate_prob(:)
 real(dp) :: sampling_T
@@ -22,7 +22,7 @@ call system_initialise(verbosity=PRINT_SILENT)
 read *, n_dim
 read *, n_cycles, n_candidates
 read *, sampling_T
-read *, simplex_step_length, shooting_step_length
+read *, simplex_step_length, shooting_step_length, step_var_target
 read *, gaussian_width
 
 print *, "n_dim ", n_dim
@@ -65,7 +65,7 @@ do i_cycle=1, n_cycles
   ! generate candidates
   do i_candidate=1, n_candidates
     candidate_i_sample(i_candidate) = int(ran_uniform()*n_samples)+1
-    call generate_sample_pos(candidate_pos(:,i_candidate), sample_pos(:, candidate_i_sample(i_candidate)), gp)
+    call generate_sample_pos(candidate_pos(:,i_candidate), sample_pos(:, candidate_i_sample(i_candidate)), gp, step_var_target)
     candidate_E(i_candidate) = f_predict(gp, candidate_pos(:, i_candidate), SE_kernel_r_rr)
   end do
 
@@ -99,25 +99,50 @@ call system_finalise()
 
 contains
 
-subroutine generate_sample_pos(new_pos, init_pos, gp)
+subroutine generate_sample_pos(new_pos, init_pos, gp, step_var_target)
   real(dp), intent(out) :: new_pos(:)
   real(dp), intent(in) :: init_pos(:)
   type(gp_basic), intent(inout) :: gp
+  real(dp), intent(in) :: step_var_target
 
   real(dp) :: rv(size(new_pos))
+  real(dp) :: prev_var, new_var
+  real(dp) :: step_size, step_frac
 
   integer :: n_dim, i_dim
 
   n_dim = size(new_pos)
 
+  step_size = shooting_step_length
+
+#define generate_doubling_interp
+
   do i_dim=1, n_dim
     rv(i_dim) = ran_normal()
   end do
   rv = rv / norm(rv)
-  new_pos = sample_pos(:, i_sample) + shooting_step_length*rv
-  do while (f_predict_var(gp, new_pos, SE_kernel_r_rr) < 0.10_dp)
-    new_pos = new_pos + shooting_step_length*rv
+  new_pos = sample_pos(:, i_sample) + step_size*rv
+  prev_var = 0.0_dp
+  new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
+  ! print *, "first new pos var ", new_pos, new_var
+  do while (new_var < step_var_target)
+#ifdef generate_doubling_interp
+    step_size = 2.0_dp * step_size
+#endif
+    new_pos = new_pos + step_size*rv
+    prev_var = new_var
+    new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
+    ! print *, "new pos var ", new_pos, new_var
   end do
+
+#ifdef generate_doubling_interp
+  ! print *, "final vars ", prev_var, new_var
+  ! prev_var + step_frac*(new_var-prev_var) = step_var_target
+  step_frac = (step_var_target-prev_var)/(new_var-prev_var)
+  new_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+  new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
+#endif
+  ! print *, "candidate final pos var ", new_pos, new_var
 
 end subroutine generate_sample_pos
 
@@ -128,22 +153,36 @@ subroutine print_gp(gp, sample_pos, i_label)
 
   integer:: i, j
   real(dp) :: pos(size(sample_pos,1)), origin(size(sample_pos,1))
-  real(dp) :: true_fval, offset
+  real(dp) :: true_fval, err_offset, plot_offset
 
   integer :: grid_size = 40
+  integer :: err_count
+  real(dp) :: err
 
 
+  ! align origin (minimum) for error offset
+  origin = 0.0_dp ! ; origin(1) = -5.0_dp
+  call eval_func(origin, err_offset)
+  err_offset = err_offset - f_predict(gp, origin, SE_kernel_r_rr)
+
+  ! align far field for plot offset
   origin = 0.0_dp; origin(1) = -5.0_dp
-  call eval_func(origin, offset)
-  offset = offset - f_predict(gp, origin, SE_kernel_r_rr)
+  call eval_func(origin, plot_offset)
+  plot_offset = plot_offset - f_predict(gp, origin, SE_kernel_r_rr)
 
   open (unit=100, file="gp."//i_label, status="unknown")
+  err = 0.0_dp
+  err_count = 0
   do i=0, grid_size
   do j=0, grid_size
     pos = 0.0_dp
     pos(1:2) = (/ 5.0*(2.0*(real(i, dp)/real(grid_size, dp)-0.5_dp)), 5.0*(2.0*(real(j, dp)/real(grid_size, dp)-0.5_dp)) /)
     call eval_func(pos, true_fval)
-    write (unit=100, fmt=*) f_predict(gp, pos, SE_kernel_r_rr)+offset, f_predict_var(gp, pos, SE_kernel_r_rr), true_fval, pos(1:2)
+    write (unit=100, fmt=*) f_predict(gp, pos, SE_kernel_r_rr)+plot_offset, f_predict_var(gp, pos, SE_kernel_r_rr), true_fval, pos(1:2)
+    if (f_predict_var(gp, pos, SE_kernel_r_rr) < 0.1_dp) then
+       err = err + (f_predict(gp, pos, SE_kernel_r_rr)+err_offset-true_fval)**2
+       err_count = err_count + 1
+    endif
   end do
   end do
   write (unit=100, fmt='(A)') ""
@@ -151,6 +190,10 @@ subroutine print_gp(gp, sample_pos, i_label)
   do i=1, size(sample_pos, 2)
     write(unit=100, fmt=*) sample_pos(:, i)
   end do
+  write (unit=100, fmt='(A)') ""
+  write (unit=100, fmt='(A)') ""
+  err = sqrt(err/real(err_count,dp))
+  write (unit=100, fmt='("ERR ",I6,F10.5)') err_count, err
 
   close (unit=100)
 
