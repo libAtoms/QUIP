@@ -3,60 +3,62 @@ use libatoms_module
 use gp_basic_module
 implicit none
 
+integer :: n_dim
+
 type (gp_basic) :: gp
 integer :: i_sample, n_samples
 real(dp), allocatable :: sample_pos(:,:), sample_grad(:,:), sample_noise(:, :)
-integer :: pos_init(2)
 
 integer :: i_cycle, n_cycles, i_candidate, n_candidates
-real(dp) :: rv(2), dpos(2),cur_pos(2)
+real(dp), allocatable :: rv(:), cur_pos(:)
 real(dp) :: simplex_step_length, shooting_step_length, gaussian_width
 integer, allocatable :: candidate_i_sample(:)
 real(dp), allocatable :: candidate_pos(:,:), candidate_E(:), candidate_prob(:)
 real(dp) :: sampling_T
+real(dp), allocatable :: len_scale(:), periodicity(:)
 
 call system_initialise(verbosity=PRINT_SILENT)
 
-n_cycles = 500
-n_samples = 500
-n_candidates = 10
-sampling_T = 0.1_dp
+read *, n_dim
+read *, n_cycles, n_candidates
+read *, sampling_T
+read *, simplex_step_length, shooting_step_length
+read *, gaussian_width
 
-pos_init=(/ 0.0_dp, 0.0_dp /)
+print *, "n_dim ", n_dim
+print *, "n_cycles n_candidates ", n_cycles, n_candidates
+print *, "sampling_T ", sampling_T
+print *, "simplex_step_length shooting_step_length ",simplex_step_length, shooting_step_length
+print *, "gaussian_width ", gaussian_width
 
-allocate(sample_pos(2,3+n_cycles), sample_grad(2,3+n_cycles), sample_noise(2, 3+n_cycles))
+allocate(rv(n_dim), cur_pos(n_dim))
+allocate(len_scale(n_dim), periodicity(n_dim))
 
-simplex_step_length=0.25_dp
-shooting_step_length=0.10_dp
-gaussian_width=0.5_dp
+! n_cycles = 500
+! n_candidates = 1000
+! sampling_T = 0.01_dp
+! 
+! simplex_step_length=0.25_dp
+! shooting_step_length=0.10_dp
+! gaussian_width=0.5_dp
 
-sample_pos(:,1) = pos_init
-call eval_grad(sample_pos(:,1), sample_grad(:,1), sample_noise(:,1))
-rv = (/ ran_normal(), ran_normal () /)
-rv = simplex_step_length*rv/norm(rv)
-sample_pos(:,2) = rv
-call eval_grad(sample_pos(:,2), sample_grad(:,2), sample_noise(:,2))
-rv = (/ ran_normal(), ran_normal () /)
-dpos = sample_pos(:,1) - sample_pos(:,2)
-rv = rv - (rv .dot. dpos)*dpos/(norm(dpos)**2)
-sample_pos(:,3) = 0.5_dp*(sample_pos(:,1)+sample_pos(:,2)) + simplex_step_length*sqrt(3.0_dp)/2.0_dp*rv/norm(rv)
-call eval_grad(sample_pos(:,3), sample_grad(:,3), sample_noise(:,3))
-n_samples = 3
+len_scale = gaussian_width
+periodicity = 0.0_dp
 
-! print *, "sample_pos ", sample_pos(:,1)
-! print *, "sample_pos ", sample_pos(:,2)
-! print *, "sample_pos ", sample_pos(:,3)
+allocate(sample_pos(n_dim,n_dim+1+n_cycles), sample_grad(n_dim,n_dim+1+n_cycles), sample_noise(n_dim, n_dim+1+n_cycles))
 
-call initialise(gp, (/ gaussian_width, gaussian_width /), (/ 0.0_dp, 0.0_dp /), 0.25_dp, SE_kernel_r_rr, &
-  g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples))
-call print_gp(gp)
+call create_simplex(sample_pos(:,1:n_dim+1))
+sample_pos(:,1:n_dim+1) = simplex_step_length*sample_pos(:,1:n_dim+1) 
+n_samples = n_dim+1
 do i_sample=1, n_samples
-  print *, sample_pos(1:2,i_sample)
+   call eval_grad(sample_pos(:,i_sample), sample_grad(:,i_sample), sample_noise(:,i_sample))
 end do
-print *, ""
-print *, ""
 
-allocate(candidate_i_sample(n_candidates), candidate_pos(2,n_candidates), candidate_E(n_candidates))
+call initialise(gp, len_scale, periodicity, 0.25_dp, SE_kernel_r_rr, &
+  g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples))
+call print_gp(gp, sample_pos(:, 1:n_samples), 0)
+
+allocate(candidate_i_sample(n_candidates), candidate_pos(n_dim,n_candidates), candidate_E(n_candidates))
 allocate(candidate_prob(0:n_candidates))
 
 do i_cycle=1, n_cycles
@@ -78,22 +80,19 @@ do i_cycle=1, n_cycles
   do i_candidate=1, n_candidates
     if (rv(1) >= candidate_prob(i_candidate-1) .and. rv(1) < candidate_prob(i_candidate)) then
       cur_pos = candidate_pos(:,i_candidate)
+      print *, i_cycle, " selected sample pos, E ",cur_pos, candidate_E(i_candidate)
       exit
     end if
   end do
+
 
   ! evaluate at cur_pos
   n_samples = n_samples + 1
   sample_pos(:, n_samples) = cur_pos
   call eval_grad(sample_pos(:,n_samples), sample_grad(:,n_samples), sample_noise(:,n_samples))
-  call initialise(gp, (/ gaussian_width, gaussian_width /), (/ 0.0_dp, 0.0_dp /), 0.25_dp, SE_kernel_r_rr, &
+  call initialise(gp, len_scale, periodicity, 0.25_dp, SE_kernel_r_rr, &
     g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples))
-  call print_gp(gp)
-  do i_sample=1, n_samples
-    print *, sample_pos(1:2,i_sample)
-  end do
-  print *, ""
-  print *, ""
+  call print_gp(gp, sample_pos(:, 1:n_samples), i_cycle)
 end do
 
 call system_finalise()
@@ -101,61 +100,130 @@ call system_finalise()
 contains
 
 subroutine generate_sample_pos(new_pos, init_pos, gp)
-  real(dp), intent(out) :: new_pos(2)
-  real(dp), intent(in) :: init_pos(2)
+  real(dp), intent(out) :: new_pos(:)
+  real(dp), intent(in) :: init_pos(:)
   type(gp_basic), intent(inout) :: gp
 
-  rv = (/ ran_normal(), ran_normal() /)
+  real(dp) :: rv(size(new_pos))
+
+  integer :: n_dim, i_dim
+
+  n_dim = size(new_pos)
+
+  do i_dim=1, n_dim
+    rv(i_dim) = ran_normal()
+  end do
   rv = rv / norm(rv)
-  new_pos = sample_pos(:, i_sample)
-  new_pos = new_pos + shooting_step_length*rv
+  new_pos = sample_pos(:, i_sample) + shooting_step_length*rv
   do while (f_predict_var(gp, new_pos, SE_kernel_r_rr) < 0.10_dp)
     new_pos = new_pos + shooting_step_length*rv
   end do
+
 end subroutine generate_sample_pos
 
-subroutine print_gp(gp)
+subroutine print_gp(gp, sample_pos, i_label)
   type(gp_basic), intent(inout) :: gp
+  real(dp), intent(in) :: sample_pos(:,:)
+  integer, intent(in) :: i_label
 
   integer:: i, j
-  real(dp) :: pos(2)
-  real(dp) :: fv
+  real(dp) :: pos(size(sample_pos,1)), origin(size(sample_pos,1))
+  real(dp) :: true_fval, offset
 
   integer :: grid_size = 40
 
+
+  origin = 0.0_dp; origin(1) = -5.0_dp
+  call eval_func(origin, offset)
+  offset = offset - f_predict(gp, origin, SE_kernel_r_rr)
+
+  open (unit=100, file="gp."//i_label, status="unknown")
   do i=0, grid_size
   do j=0, grid_size
-    pos = (/ 5.0*(2.0*(real(i, dp)/real(grid_size, dp)-0.5_dp)), 5.0*(2.0*(real(j, dp)/real(grid_size, dp)-0.5_dp)) /)
-    call eval_func(pos, fv)
-    write (unit=*, fmt=*) pos, f_predict(gp, pos, SE_kernel_r_rr), f_predict_var(gp, pos, SE_kernel_r_rr), fv
+    pos = 0.0_dp
+    pos(1:2) = (/ 5.0*(2.0*(real(i, dp)/real(grid_size, dp)-0.5_dp)), 5.0*(2.0*(real(j, dp)/real(grid_size, dp)-0.5_dp)) /)
+    call eval_func(pos, true_fval)
+    write (unit=100, fmt=*) f_predict(gp, pos, SE_kernel_r_rr)+offset, f_predict_var(gp, pos, SE_kernel_r_rr), true_fval, pos(1:2)
   end do
   end do
-  write (unit=*, fmt='(A)') ""
-  write (unit=*, fmt='(A)') ""
-end subroutine
+  write (unit=100, fmt='(A)') ""
+  write (unit=100, fmt='(A)') ""
+  do i=1, size(sample_pos, 2)
+    write(unit=100, fmt=*) sample_pos(:, i)
+  end do
+
+  close (unit=100)
+
+end subroutine print_gp
 
 subroutine eval_func(pos, func)
-  real(dp), intent(in) :: pos(2)
+  real(dp), intent(in) :: pos(:)
   real(dp), intent(out) :: func
 
-  real(dp) :: r0(2) = (/ 0.0_dp, 0.0_dp /)
-  real(dp) :: r1(2) = (/ 3.0_dp, 0.0_dp /)
+  real(dp) :: r0(size(pos)), r1(size(pos))
+
+  r0 = 0.0_dp
+  r1 = 0.0_dp; r1(1) = 3.0_dp
 
   func = -exp(-normsq(pos-r0)) - exp(-normsq(pos-r1))
 
 end subroutine eval_func
 
 subroutine eval_grad(pos, grad, noise)
-  real(dp), intent(in) :: pos(2)
-  real(dp), intent(out) :: grad(2), noise(2)
+  real(dp), intent(in) :: pos(:)
+  real(dp), intent(out) :: grad(:), noise(:)
 
-  real(dp) :: r0(2) = (/ 0.0_dp, 0.0_dp /)
-  real(dp) :: r1(2) = (/ 3.0_dp, 0.0_dp /)
+  integer  :: i_dim
+  real(dp) :: r0(size(pos)), r1(size(pos))
 
-  ! E = -exp(-|pos-0|^2) - exp(-|pos-(2,0)|^2)
-  grad = exp(-normsq(pos-r0))*2.0_dp*(pos-r0) + exp(-normsq(pos-r1))*2.0_dp*(pos-r1) + 0.01_dp*(/ ran_normal(), ran_normal() /)
+  n_dim = size(pos)
+
+  if (size(grad) /= n_dim ) then
+     call system_abort("eval_grad got grad with bad dimensions "//shape(grad))
+  endif
+  if (size(noise) /= n_dim ) then
+     call system_abort("eval_grad got noise with bad dimensions "//shape(noise))
+  endif
+
+  r0 = 0.0_dp
+  r1 = 0.0_dp; r1(1) = 3.0_dp
+
+  grad = exp(-normsq(pos-r0))*2.0_dp*(pos-r0) + exp(-normsq(pos-r1))*2.0_dp*(pos-r1)
+  do i_dim=1, n_dim
+    grad(i_dim) = grad(i_dim) + 0.01_dp*ran_normal()
+  end do
   noise = 0.01_dp**2
 
 end subroutine eval_grad
+
+subroutine create_simplex(pos)
+   real(dp) :: pos(:, :)
+
+   integer :: n_dim, i_dim
+   real(dp) :: target_dot, cur_dot
+
+   n_dim = size(pos, 1)
+   if (size(pos, 2) /= n_dim + 1) then
+      call system_abort("create_simple got pos with bad dimensions "//shape(pos))
+   endif
+
+   target_dot = -1.0_dp / real(n_dim, dp)
+
+   pos = 0.0_dp
+   ! first vector
+   pos(:,1) = 0.0_dp; pos(1,1) = 1.0_dp
+   ! all others
+   do i_dim=2, n_dim+1
+      if (i_dim == 2) then
+	 cur_dot = 0.0_dp
+      else
+	 cur_dot = pos(1:i_dim-2, i_dim) .dot. pos(1:i_dim-2, i_dim-1)
+      endif
+      pos(i_dim-1, i_dim:n_dim+1) = (target_dot - cur_dot)/pos(i_dim-1,i_dim-1)
+      pos(i_dim, i_dim) = sqrt(1.0_dp-normsq(pos(1:i_dim-1,i_dim)))
+   end do
+
+   pos = pos / norm(pos(:,1)-pos(:,2))
+end subroutine create_simplex
 
 end program
