@@ -105,7 +105,7 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, step_var_target)
   type(gp_basic), intent(inout) :: gp
   real(dp), intent(in) :: step_var_target
 
-  real(dp) :: rv(size(new_pos))
+  real(dp) :: rv(size(new_pos)), new_interpolated_pos(size(new_pos))
   real(dp) :: prev_var, new_var
   real(dp) :: step_size, step_frac
 
@@ -116,6 +116,7 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, step_var_target)
   step_size = shooting_step_length
 
 #define generate_doubling_interp
+#define generate_doubling_interp_repeat
 
   do i_dim=1, n_dim
     rv(i_dim) = ran_normal()
@@ -124,7 +125,7 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, step_var_target)
   new_pos = sample_pos(:, i_sample) + step_size*rv
   prev_var = 0.0_dp
   new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
-  ! print *, "first new pos var ", new_pos, new_var
+  print *, "predict_var initial ", new_var
   do while (new_var < step_var_target)
 #ifdef generate_doubling_interp
     step_size = 2.0_dp * step_size
@@ -132,17 +133,31 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, step_var_target)
     new_pos = new_pos + step_size*rv
     prev_var = new_var
     new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
-    ! print *, "new pos var ", new_pos, new_var
+    print *, "predict_var shooting ", new_var
   end do
 
 #ifdef generate_doubling_interp
-  ! print *, "final vars ", prev_var, new_var
+  print *, "final vars ", prev_var, new_var
   ! prev_var + step_frac*(new_var-prev_var) = step_var_target
   step_frac = (step_var_target-prev_var)/(new_var-prev_var)
-  new_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
-  new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
+  new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+#ifdef generate_doubling_interp_repeat
+  prev_var = f_predict_var(gp, new_interpolated_pos, SE_kernel_r_rr)
+  print *, "predict_var initial interpolation ", prev_var
+  do while (prev_var < step_var_target)
+     step_size = (1.0_dp-step_frac)*step_size
+     step_frac = 0.5_dp
+     new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+     prev_var = f_predict_var(gp, new_interpolated_pos, SE_kernel_r_rr)
+     print *, "predict_var interpolation ", prev_var
+  end do
 #endif
-  ! print *, "candidate final pos var ", new_pos, new_var
+  new_pos = new_interpolated_pos
+  !
+  new_var = f_predict_var(gp, new_pos, SE_kernel_r_rr)
+  !
+#endif
+  print *, "candidate final pos var ", new_pos, new_var
 
 end subroutine generate_sample_pos
 
