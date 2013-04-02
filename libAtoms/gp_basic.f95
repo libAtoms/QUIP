@@ -267,6 +267,12 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodicity, f_var, kernel, f
 		      n_f, f_r, n_g, g_r, &
 		      self%f_var, self%len_scale_sq, self%periodicity, kernel, Kmn)
 
+      ! "jitter" (ABP e-mail 14 Aug)
+      if (present(jitter)) then
+	 do i=1, size(Kmm,1)
+	    Kmm(i,i) = Kmm(i,i) + jitter
+	 end do
+      endif
       ! we'll need Kmm^{-1} for variance
       call gp_matrix_initialise(self%Kmm, Kmm)
 
@@ -294,13 +300,6 @@ subroutine gp_basic_initialise_nd(self, len_scale, periodicity, f_var, kernel, f
 	 1.0_dp, Kmn(1,1), size(Kmn,1), siginvsq_Knm(1,1), size(siginvsq_Knm,1), &
 	 1.0_dp, Cmat(1,1), size(Cmat,1))
       ! Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
-
-      ! "jitter" (ABP e-mail 14 Aug)
-      if (present(jitter)) then
-	 do i=1, size(Cmat,1)
-	    Cmat(i,i) = Cmat(i,i) + jitter
-	 end do
-      endif
 
       call gp_matrix_initialise(self%Cmat, Cmat)
       ! self%Cmat is now (K_{mm} + K_{mn} \Sigma^{-2} K_{nm})
