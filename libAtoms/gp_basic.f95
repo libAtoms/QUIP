@@ -88,7 +88,7 @@ end interface f_predict_grad
 
 !% predict a function variance from a gp
 interface f_predict_var
-   module procedure f_predict_var_r
+   module procedure f_predict_var_r, f_predict_var_rr
 end interface f_predict_var
 
 !% predict the variance of a gradient of a function from a gp
@@ -453,7 +453,7 @@ function f_predict_var_r(self, r, kernel)
 
    f_predict_var_r = self%f_var
    if (self%sparsified) then
-      ! from Wlliams and Rasumussen, Gaussian Processes for Machine Learning, MIT Press, 2007 Eq. 8.27
+      ! from Wlliams and Rasumussen, Gaussian Processes for Machine Learning, MIT Press, 2006 Eq. 8.27
       call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
       f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
       call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
@@ -463,6 +463,54 @@ function f_predict_var_r(self, r, kernel)
       f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
    endif
 end function f_predict_var_r
+
+function f_predict_var_rr(self, rr, kernel)
+   type(gp_basic), intent(inout) :: self
+   real(dp), intent(in) :: rr(:,:)
+   interface
+      subroutine kernel(x1, x2, f_var, len_scale_sq, periodicity, f_f, g_f, f_g, g_g)
+	 integer, parameter :: dp = 8
+	 real(dp), intent(in) :: x1(:), x2(:,:), f_var, len_scale_sq(:)
+	 real(dp), intent(in) :: periodicity(:)
+	 real(dp), optional, intent(out) :: f_f(:), g_f(:,:), f_g(:), g_g(:,:)
+      end subroutine kernel
+   end interface
+   real(dp) :: f_predict_var_rr(size(rr,2))
+
+   real(dp), external :: ddot
+   integer :: i
+   real(dp), allocatable :: kk(:,:), mat_inv_kk(:,:)
+
+   if (.not. self%initialised) then
+      f_predict_var_rr = 0.0_dp
+      return
+   endif
+
+   allocate(kk(size(self%k, 1), size(rr, 2)), mat_inv_kk(size(self%k,1), size(rr,2)))
+   do i=1, size(rr, 2)
+      call f_kernel_vec(rr(:,i), self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, kk(:,i))
+      ! print *, "kernel var size ", size(self%k), " num above 1% ",count(self%k > 0.01_dp*maxval(self%k))
+   end do
+
+   f_predict_var_rr = self%f_var
+   if (self%sparsified) then
+      ! from Wlliams and Rasumussen, Gaussian Processes for Machine Learning, MIT Press, 2006 Eq. 8.27
+      call Matrix_QR_Solve(self%Kmm, kk, mat_inv_kk)
+      do i=1, size(rr, 2)
+	 f_predict_var_rr(i) = f_predict_var_rr(i) - ddot(size(kk,1), kk(1,i), 1, mat_inv_kk(1,i), 1)
+      end do
+      call Matrix_QR_Solve(self%Cmat, kk, mat_inv_kk)
+      do i=1, size(rr, 2)
+	 f_predict_var_rr(i) = f_predict_var_rr(i) + ddot(size(kk,1), kk(1,i), 1, mat_inv_kk(1,i), 1)
+      end do
+   else
+      call Matrix_QR_Solve(self%noise_Kmm, kk, mat_inv_kk)
+      do i=1, size(rr, 2)
+	 f_predict_var_rr(i) = f_predict_var_rr(i) - ddot(size(kk,1), kk(1,i), 1, mat_inv_kk(1,i), 1)
+      end do
+   endif
+   deallocate(kk, mat_inv_kk)
+end function f_predict_var_rr
 
 function f_predict_grad_var_r(self, r, kernel)
    type(gp_basic), intent(inout) :: self
@@ -866,7 +914,7 @@ subroutine GP_Matrix_GetQR(this,q,r)
   endif
 
   if( info /= 0 ) then
-     print *,'GP_Matrix_QR_Factorise: ',(info),'-th parameter had an illegal value.'
+     print *,'GP_Matrix_GetQR: ',(info),'-th parameter had an illegal value.'
      stop
   endif
 
