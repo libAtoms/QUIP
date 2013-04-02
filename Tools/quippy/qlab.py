@@ -862,7 +862,7 @@ def toggle_small_cell_mode():
      1. clip cell - some neigbours may be lost (default)
      2. replicate cell along narrow directions
     """
-    self.toggle_small_cell_mode()
+    gcv().toggle_small_cell_mode()
 
 def normal_coloring():
     """
