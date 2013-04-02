@@ -449,9 +449,11 @@ function f_predict_var_r(self, r, kernel)
    endif
 
    call f_kernel_vec(r, self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, self%k)
+   ! print *, "kernel var size ", size(self%k), " num above 1% ",count(self%k > 0.01_dp*maxval(self%k))
 
    f_predict_var_r = self%f_var
    if (self%sparsified) then
+      ! from Wlliams and Rasumussen, Gaussian Processes for Machine Learning, MIT Press, 2007 Eq. 8.27
       call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
       f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
       call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
