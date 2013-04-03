@@ -13,7 +13,7 @@ real(dp), allocatable :: sample_pos(:,:), sample_grad(:,:), sample_noise(:, :)
 
 integer :: i_cycle, n_cycles, i_candidate, n_candidates
 real(dp), allocatable :: rv(:), cur_pos(:)
-real(dp) :: simplex_step_length, shooting_step_length, gaussian_width, step_var_target
+real(dp) :: simplex_step_length, shooting_step_length, gaussian_width, min_mindist, step_var_target
 integer, allocatable :: candidate_i_sample(:)
 real(dp), allocatable :: candidate_pos(:,:), candidate_E(:), candidate_prob(:)
 real(dp) :: sampling_T
@@ -22,7 +22,7 @@ real(dp), allocatable :: len_scale(:), periodicity(:), sparse_len_scale(:)
 integer :: n_sparse_samples
 integer, allocatable :: g_sparse_set(:)
 
-logical :: doubling_interp, doubling_interp_repeat
+logical :: doubling_interp, doubling_interp_repeat, generate_from_mindist
 integer :: gp_guess_sparsify
 
 call system_initialise(verbosity=PRINT_SILENT, enable_timing=.true.)
@@ -31,17 +31,17 @@ call verbosity_push(PRINT_NORMAL)
 read *, n_dim
 read *, n_cycles, n_candidates
 read *, sampling_T
-read *, simplex_step_length, shooting_step_length, step_var_target
+read *, simplex_step_length, shooting_step_length, step_var_target, min_mindist
 read *, gaussian_width
-read *, doubling_interp, doubling_interp_repeat, gp_guess_sparsify
+read *, doubling_interp, doubling_interp_repeat, gp_guess_sparsify, generate_from_mindist
 
 print *, "n_dim ", n_dim
 print *, "n_cycles n_candidates ", n_cycles, n_candidates
 print *, "sampling_T ", sampling_T
-print *, "simplex_step_length shooting_step_length ",simplex_step_length, shooting_step_length
+print *, "simplex_step_length shooting_step_length, min_mindist ",simplex_step_length, shooting_step_length, min_mindist
 print *, "gaussian_width ", gaussian_width
-print *, "doubling_interp, doubling_interp_repeat, gp_guess_sparsify ", &
-          doubling_interp, doubling_interp_repeat, gp_guess_sparsify
+print *, "doubling_interp, doubling_interp_repeat, gp_guess_sparsify, generate_from_mindist ", &
+          doubling_interp, doubling_interp_repeat, gp_guess_sparsify, generate_from_mindist
 
 allocate(rv(n_dim), cur_pos(n_dim))
 allocate(len_scale(n_dim), periodicity(n_dim), sparse_len_scale(n_dim))
@@ -95,8 +95,9 @@ call system_timer("generate")
   ! generate candidates
   do i_candidate=1, n_candidates
     candidate_i_sample(i_candidate) = int(ran_uniform()*n_samples)+1
-    call generate_sample_pos(candidate_pos(:,i_candidate), sample_pos(:, candidate_i_sample(i_candidate)), gp, gp_sparse, step_var_target, &
-      doubling_interp, doubling_interp_repeat)
+    call generate_sample_pos(candidate_pos(:,i_candidate), sample_pos(:, candidate_i_sample(i_candidate)), gp, gp_sparse, &
+      shooting_step_length, step_var_target, min_mindist, &
+      sample_pos(:,1:n_samples), doubling_interp, doubling_interp_repeat, generate_from_mindist)
     candidate_E(i_candidate) = f_predict(gp, candidate_pos(:, i_candidate), SE_kernel_r_rr)
   end do
 call system_timer("generate")
@@ -153,61 +154,78 @@ call system_finalise()
 
 contains
 
-subroutine generate_sample_pos(new_pos, init_pos, gp, gp_for_var, step_var_target, doubling_interp, doubling_interp_repeat)
+subroutine generate_sample_pos(new_pos, init_pos, gp, gp_for_var, step_length, step_var_target, min_mindist, sample_pos, &
+   doubling_interp, doubling_interp_repeat, generate_from_mindist)
   real(dp), intent(out) :: new_pos(:)
   real(dp), intent(in) :: init_pos(:)
   type(gp_basic), intent(inout) :: gp, gp_for_var
-  real(dp), intent(in) :: step_var_target
-  logical, intent(in) :: doubling_interp, doubling_interp_repeat
+  real(dp), intent(in) :: step_length, step_var_target, min_mindist
+  real(dp), intent(in) :: sample_pos(:,:)
+  logical, intent(in) :: doubling_interp, doubling_interp_repeat, generate_from_mindist
 
   real(dp) :: rv(size(new_pos)), new_interpolated_pos(size(new_pos))
   real(dp) :: prev_var, new_var
-  real(dp) :: step_size, step_frac
+  real(dp) :: step_size, step_frac, min_mindist_sq, cur_mindist_sq
 
-  integer :: n_dim, i_dim
+  integer :: n_dim, i_dim, n_samples
 
   n_dim = size(new_pos)
 
-  step_size = shooting_step_length
+  step_size = step_length
 
   do i_dim=1, n_dim
     rv(i_dim) = ran_normal()
   end do
   rv = rv / norm(rv)
-  new_pos = sample_pos(:, i_sample) + step_size*rv
-  prev_var = 0.0_dp
-  new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
-  print *, "predict_var initial ", new_var
-  do while (new_var < step_var_target)
-    if (doubling_interp) step_size = 2.0_dp * step_size
-    new_pos = new_pos + step_size*rv
-    prev_var = new_var
-    new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
-    print *, "predict_var shooting ", new_var
-  end do
+  if (generate_from_mindist) then
+     min_mindist_sq = min_mindist**2
+     new_pos = init_pos + step_size*rv
+     n_samples = size(sample_pos, 2)
+     cur_mindist_sq = minval(sum((sample_pos-spread(new_pos, 2, n_samples))**2, dim=1))
+     do while (cur_mindist_sq < min_mindist_sq)
+	new_pos = new_pos + step_size*rv
+	cur_mindist_sq = minval(sum((sample_pos-spread(new_pos, 2, n_samples))**2, dim=1))
+     end do
+     print *, "final mindist ", sqrt(cur_mindist_sq)
+     !!
+     !! print *, "final mindist variance ", f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
+     !!
+  else
+     new_pos = init_pos + step_size*rv
+     prev_var = 0.0_dp
+     new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
+     print *, "predict_var initial ", new_var
+     do while (new_var < step_var_target)
+       if (doubling_interp) step_size = 2.0_dp * step_size
+       new_pos = new_pos + step_size*rv
+       prev_var = new_var
+       new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
+       print *, "predict_var shooting ", new_var
+     end do
 
-  if (doubling_interp) then
-     print *, "final vars ", prev_var, new_var
-     ! prev_var + step_frac*(new_var-prev_var) = step_var_target
-     step_frac = (step_var_target-prev_var)/(new_var-prev_var)
-     new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
-     if (doubling_interp_repeat) then
-	prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
-	print *, "predict_var initial interpolation ", prev_var
-	do while (prev_var < step_var_target)
-	   step_size = (1.0_dp-step_frac)*step_size
-	   step_frac = 0.5_dp
-	   new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+     if (doubling_interp) then
+	print *, "final vars ", prev_var, new_var
+	! prev_var + step_frac*(new_var-prev_var) = step_var_target
+	step_frac = (step_var_target-prev_var)/(new_var-prev_var)
+	new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+	if (doubling_interp_repeat) then
 	   prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
-	   print *, "predict_var interpolation ", prev_var
-	end do
-     endif ! doubling_interp_repeat
-     new_pos = new_interpolated_pos
-  endif ! doubling_interp
-  !
-  new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
-  print *, "candidate final pos var ", new_pos, new_var, f_predict_var(gp, new_pos, SE_kernel_r_rr)
-  !
+	   print *, "predict_var initial interpolation ", prev_var
+	   do while (prev_var < step_var_target)
+	      step_size = (1.0_dp-step_frac)*step_size
+	      step_frac = 0.5_dp
+	      new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+	      prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
+	      print *, "predict_var interpolation ", prev_var
+	   end do
+	endif ! doubling_interp_repeat
+	new_pos = new_interpolated_pos
+     endif ! doubling_interp
+     !!
+     !! new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
+     !! print *, "candidate final pos var ", new_pos, new_var, f_predict_var(gp, new_pos, SE_kernel_r_rr)
+     !!
+   endif
 
 end subroutine generate_sample_pos
 
