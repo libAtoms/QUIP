@@ -22,12 +22,12 @@ contains
       character(len=1024) :: value
       integer :: status, di_status, tau_status, t0_status
       integer :: n
-      integer :: atom_1, atom_2, atom_3
+      integer :: atom_1, atom_2, atom_3, Z
       real(dp) :: k
       character(len=1024) :: bound_str
       integer :: bound
       real(dp) :: c
-      real(dp) :: d, plane_n(3), di, p
+      real(dp) :: d, plane_n(3), di, p, q(3), SF
       real(dp) :: t0, tau
       real(dp) :: egap
       real(dp) :: tol
@@ -314,6 +314,24 @@ contains
 		  call constrain_atom_plane(parse_ds, atom_1, plane_n, tol=tol, print_summary=print_summary)
 	       endif
 	    endif
+
+	 else if (name == 'struct_factor_like') then
+
+	    call QUIP_FoX_get_value(attributes, "Z", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read Z in struct_factor_like "//trim(type_str))
+	    read (value, *) Z
+	    call QUIP_FoX_get_value(attributes, "q", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like "//trim(type_str))
+	    read (value, *) q
+	    call QUIP_FoX_get_value(attributes, "SF", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like "//trim(type_str))
+	    read (value, *) SF
+	    if (parse_in_restraints) then
+	       call constrain_struct_factor_like(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
+	    else
+	       call constrain_struct_factor_like(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
+	    endif
+
 	 else
 	    call system_abort("unknown " // trim(type_str) //" type '"//name//"' in " // trim(type_str) //"s xml stanza")
 	 endif

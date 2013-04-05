@@ -77,19 +77,19 @@
 
 
 typedef struct{
-  void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
+  void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
 } VCONSTRAINTSUB_TABLE;
 
-VCONSTRAINTSUB_TABLE constraintsub_table[20];
+VCONSTRAINTSUB_TABLE constraintsub_table[21];
 static int nconstraintsub = 0;
 
-void register_constraint_sub_(void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*)){
+void register_constraint_sub_(void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*)){
   constraintsub_table[nconstraintsub++].sub = sub;
 }
 
-void call_constraint_sub_(int* i, double* pos, double* velo, double* mass, double* t, 
+void call_constraint_sub_(int* i, double* pos, double* velo, double* mass, double *lattice, double* t, 
 			  double* data, double* C, double* dC_dr, double* dC_dt, double* dcoll_dr, double* Z_coll, double* target_v){
-  constraintsub_table[*i].sub(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v);
+  constraintsub_table[*i].sub(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v);
 }
 
 // some systems might not support isnan() from Fortran so wrap it here
