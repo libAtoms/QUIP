@@ -97,7 +97,8 @@ module dynamicalsystem_module
 	     constrain_bondlength_dev_pow, &
 	     constrain_bondlength_diff, &
 	     constrain_gap_energy, &
-	     constrain_atom_plane
+	     constrain_atom_plane, &
+	     constrain_struct_factor_like
 
    !Different integration types. Stored in group%type. Used by advance_verlet to integrate
    !the equations of motion in different ways. 
@@ -2865,6 +2866,64 @@ contains
      call ds_add_constraint(this,(/i/),PLANE_FUNC,(/plane_n,use_d/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
 
    end subroutine constrain_atom_plane
+
+   !% Constrain an atom to lie in a particluar plane
+   subroutine constrain_struct_factor_like(this,Z,q,target_sf,restraint_k,bound,tol,print_summary)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: Z
+     real(dp),              intent(in)    :: q(3)
+     real(dp),              intent(in)    :: target_sf
+     real(dp), optional,    intent(in)    :: restraint_k, tol
+     integer,  optional,    intent(in)    :: bound
+     logical,  optional,    intent(in)    :: print_summary
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: STRUCT_FACTOR_LIKE_FUNC
+
+     integer :: i, ii
+     integer, allocatable :: atom_indices(:)
+
+     !Report bad atom indices
+     if ( Z /= 0) then
+        if (count(this%atoms%Z == Z) == 0) then
+	   call system_abort('Constrain_struct_factor_like: No atoms (out of '//this%atoms%N//') with Z='//Z)
+	end if
+     end if
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        STRUCT_FACTOR_LIKE_FUNC = register_constraint(STRUCT_FACTOR_LIKE)
+        first_call = .false.
+     end if
+
+     if (Z == 0) then
+	allocate(atom_indices(this%atoms%n))
+	do i=1, this%atoms%N
+	    atom_indices(i) = i
+	end do
+     else
+	allocate(atom_indices(count(this%atoms%Z == Z)))
+	ii = 0
+	do i=1, this%atoms%N
+	   if (Z == 0) then
+	      ii = ii + 1
+	      atom_indices(ii) = i
+	   else
+	      if (this%atoms%Z(i) == Z) then
+		 ii = ii + 1
+		 atom_indices(ii) = i
+	      endif
+	   endif
+	end do
+     endif
+
+     !Add the constraint
+     call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_FUNC,(/q(1),q(2),q(3),target_sf/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     
+     deallocate(atom_indices)
+
+   end subroutine constrain_struct_factor_like
 
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
