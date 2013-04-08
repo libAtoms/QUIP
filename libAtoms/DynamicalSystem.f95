@@ -2868,12 +2868,12 @@ contains
    end subroutine constrain_atom_plane
 
    !% Constrain an atom to lie in a particluar plane
-   subroutine constrain_struct_factor_like(this,Z,q,target_sf,restraint_k,bound,tol,print_summary)
+   subroutine constrain_struct_factor_like(this,Z,q,SF_r,SF_i,restraint_k,bound,tol,print_summary)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: Z
      real(dp),              intent(in)    :: q(3)
-     real(dp),              intent(in)    :: target_sf
+     real(dp),              intent(in)    :: SF_r, SF_i
      real(dp), optional,    intent(in)    :: restraint_k, tol
      integer,  optional,    intent(in)    :: bound
      logical,  optional,    intent(in)    :: print_summary
@@ -2919,7 +2919,7 @@ contains
      endif
 
      !Add the constraint
-     call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_FUNC,(/q(1),q(2),q(3),target_sf/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+     call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_FUNC,(/q(1),q(2),q(3),SF_r,SF_i/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
      
      deallocate(atom_indices)
 
