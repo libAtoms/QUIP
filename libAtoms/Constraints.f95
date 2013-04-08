@@ -1692,7 +1692,7 @@ contains
 
     dC_dt = dC_dR .dot. velo
 
-    call print ("STRUCT_FACTOR_LIKE SF "//SF_real//" "//SF_imag//" |SF| "//SF)
+    call print ("STRUCT_FACTOR_LIKE SF "//SF_real//" "//SF_imag//" |SF| "//SF_mag)
 
   end subroutine STRUCT_FACTOR_LIKE
 
