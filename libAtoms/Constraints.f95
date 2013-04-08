@@ -1681,14 +1681,19 @@ contains
       SF_real = SF_real + cos(frac_pos .dot. SF_Q)
       SF_imag = SF_imag + sin(frac_pos .dot. SF_Q)
     end do
-    C = ((SF_real-target_SF_r)**2 + (SF_imag-target_SF_i)**2)/real(n,dp)
+    SF_real = SF_real/real(n,dp)
+    SF_imag = SF_imag/real(n,dp)
+    C = sqrt((SF_real-target_SF_r)**2 + (SF_imag-target_SF_i)**2)
     do i=0, n-1
       frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
-      dC_dR(i*3+1:i*3+3) = -2.0_dp/real(n,dp)*(SF_real-target_SF_r)*sin(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv) + &
-                            2.0_dp/real(n,dp)*(SF_imag-target_SF_i)*cos(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv)
+      dC_dR(i*3+1:i*3+3) = 0.5_dp*(1.0_dp/C)*( &
+	 -2.0_dp/real(n,dp)*(SF_real-target_SF_r)*sin(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv) + &
+	  2.0_dp/real(n,dp)*(SF_imag-target_SF_i)*cos(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv) )
     end do
 
     dC_dt = dC_dR .dot. velo
+
+    call print ("STRUCT_FACTOR_LIKE SF "//SF_real//" "//SF_imag)
 
   end subroutine STRUCT_FACTOR_LIKE
 
