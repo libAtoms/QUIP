@@ -1661,12 +1661,15 @@ contains
     real(dp),                       intent(out) :: target_v
     !local variables                             
     integer :: i, n
+    real(dp) :: target_SF_r, target_SF_i
     real(dp) :: SF_Q(3), frac_pos(3), lattice_inv(3,3)
     real(dp) :: SF_real, SF_imag
 
-    if (size(data) /= 4) call system_abort("STRUCT_FACTOR_LIKE needs data of 3 q components and target value")
+    if (size(data) /= 5) call system_abort("STRUCT_FACTOR_LIKE needs data of 3 q components and target value")
     SF_Q(1:3) = data(1:3)*2.0_dp*PI
-    target_v = data(4)
+    target_SF_r = data(4)
+    target_SF_i = data(5)
+    target_v = 0.0_dp
 
     n = size(pos)/3
 
@@ -1678,11 +1681,11 @@ contains
       SF_real = SF_real + cos(frac_pos .dot. SF_Q)
       SF_imag = SF_imag + sin(frac_pos .dot. SF_Q)
     end do
-    C = (SF_real**2 + SF_imag**2)/real(n,dp) - target_v
+    C = ((SF_real-target_SF_r)**2 + (SF_imag-target_SF_i)**2)/real(n,dp)
     do i=0, n-1
       frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
-      dC_dR(i*3+1:i*3+3) = -2.0_dp/real(n,dp)*SF_real*sin(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv) + &
-                            2.0_dp/real(n,dp)*SF_imag*cos(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv)
+      dC_dR(i*3+1:i*3+3) = -2.0_dp/real(n,dp)*(SF_real-target_SF_r)*sin(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv) + &
+                            2.0_dp/real(n,dp)*(SF_imag-target_SF_i)*cos(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv)
     end do
 
     dC_dt = dC_dR .dot. velo

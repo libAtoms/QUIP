@@ -27,7 +27,7 @@ contains
       character(len=1024) :: bound_str
       integer :: bound
       real(dp) :: c
-      real(dp) :: d, plane_n(3), di, p, q(3), SF
+      real(dp) :: d, plane_n(3), di, p, q(3), SF_r, SF_i
       real(dp) :: t0, tau
       real(dp) :: egap
       real(dp) :: tol
@@ -323,13 +323,16 @@ contains
 	    call QUIP_FoX_get_value(attributes, "q", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like "//trim(type_str))
 	    read (value, *) q
-	    call QUIP_FoX_get_value(attributes, "SF", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like "//trim(type_str))
-	    read (value, *) SF
+	    call QUIP_FoX_get_value(attributes, "SF_r", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF_r in struct_factor_like "//trim(type_str))
+	    read (value, *) SF_r
+	    call QUIP_FoX_get_value(attributes, "SF_i", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF_i in struct_factor_like "//trim(type_str))
+	    read (value, *) SF_i
 	    if (parse_in_restraints) then
-	       call constrain_struct_factor_like(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
+	       call constrain_struct_factor_like(parse_ds, Z, q, SF_r, SF_i, restraint_k=k, bound=bound, print_summary=print_summary)
 	    else
-	       call constrain_struct_factor_like(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
+	       call constrain_struct_factor_like(parse_ds, Z, q, SF_r, SF_i, tol=tol, print_summary=print_summary)
 	    endif
 
 	 else
