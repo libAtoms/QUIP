@@ -5696,6 +5696,9 @@ module descriptors_module
 
       if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
 
+      has_atom_mask_name = .false.
+      atom_mask_pointer => null()
+
       if(present(args_str)) then
          call initialise(params)
          
