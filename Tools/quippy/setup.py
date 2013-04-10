@@ -426,7 +426,8 @@ f2py_info = get_info('f2py')
 arraydata_ext = Extension(name='quippy.arraydata', 
                           sources=['arraydatamodule.c'] + f2py_info['sources'],
                           include_dirs=f2py_info['include_dirs']+include_dirs,
-                          define_macros=[('SIZEOF_FORTRAN_T', sizeof_fortran_t)])
+                          define_macros=[('SIZEOF_FORTRAN_T', sizeof_fortran_t)],
+                          extra_link_args=extra_link_args)
 
 
 # _quippy extension module
