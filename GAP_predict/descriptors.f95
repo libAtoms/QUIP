@@ -5974,11 +5974,14 @@ module descriptors_module
                enddo !l
             enddo !jb
          enddo !ia
-         descriptor_i(d) = this%covariance_sigma0
 
+         descriptor_i(d) = 0.0_dp
          norm_descriptor_i = sqrt(dot_product(descriptor_i,descriptor_i))
 
-         if(my_do_descriptor) descriptor_out%x(i_desc)%data = descriptor_i / norm_descriptor_i
+         if(my_do_descriptor) then
+            descriptor_out%x(i_desc)%data = descriptor_i / norm_descriptor_i
+            descriptor_out%x(i_desc)%data(d) = this%covariance_sigma0
+         endif
 
          if(my_do_grad_descriptor) then
 ! soap_calc 33 takes 0.047 s
