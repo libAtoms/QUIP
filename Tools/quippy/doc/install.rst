@@ -155,7 +155,7 @@ Mandatory settings
    important to put all the `-D` options needed here and not in
    :makevar:`QUIPPY_F90FLAGS`.
 
-:makevar:`QUIPPY_MATHS_LINKOPTS` or :makevar:`MATHS_LINKOPTS` or :makevar:`DEFAULT_MATHS_LINKOPTS`
+:makevar:`MATHS_LINKOPTS`
    Library options needed to link to BLAS and LAPACK libraries, e.g. for ATLAS::
  
    -llapack -lf77blas -lcblas -latlas
