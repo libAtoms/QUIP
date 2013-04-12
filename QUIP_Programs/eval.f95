@@ -221,17 +221,16 @@ implicit none
 
   call Initialise(mpi_glob)
 
-  if(trim(init_args) .ne. '') then
-     call print ("Using init args: " // trim(init_args))
-     if(has_bulk_scale) then
-        call initialise(infile, trim(bulk_scale_file))
-        call read(bulk_scale, infile, error=error)
-        call finalise(infile)
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
-        call finalise(bulk_scale)
-     else
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
-     end if
+  call print ("Using param_file: " // trim(param_file))
+  call print ("Using init args: " // trim(init_args))
+  if(has_bulk_scale) then
+     call initialise(infile, trim(bulk_scale_file))
+     call read(bulk_scale, infile, error=error)
+     call finalise(infile)
+     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+     call finalise(bulk_scale)
+  else
+     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)

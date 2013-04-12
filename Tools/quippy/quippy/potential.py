@@ -158,20 +158,20 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if init_args is None and param_str is None:
             raise ValueError('Need one of init_args,param_str,param_filename')
 
-        if init_args is None:
-            xml_label = param_str[:param_str.index('\n')].translate(None,'<>')
-            init_args = 'xml_label=%s' % xml_label
-
-        if init_args.lower().startswith('callbackpot'):
-            if not 'label' in init_args:
-                init_args = init_args + ' label=%d' % id(self)
-        else:
-            # if param_str missing, try to find default set of QUIP params
-            if param_str is None and pot1 is None and pot2 is None:
-                param_str = quip_xml_parameters(init_args)
+        if init_args is not None:
+            if init_args.lower().startswith('callbackpot'):
+                if not 'label' in init_args:
+                    init_args = init_args + ' label=%d' % id(self)
+            else:
+                # if param_str missing, try to find default set of QUIP params
+                if param_str is None and pot1 is None and pot2 is None:
+                    param_str = quip_xml_parameters(init_args)
 
         if kwargs != {}:
-            init_args = init_args + ' ' + dict_to_args_str(kwargs)
+            if init_args is not None:
+                init_args = init_args + ' ' + dict_to_args_str(kwargs)
+            else:
+                init_args = dict_to_args_str(kwargs)
 
         _potential.Potential.__init__(self, init_args, pot1=pot1, pot2=pot2,
                                          param_str=param_str,
