@@ -27,7 +27,7 @@ quippy
 quippy is a Python interface to the `libAtoms/QUIP <http://www.libatoms.org>`_
 molecular dynamics framework.  
 
-The quippy interface is principally maintained by James Kermode. 
+The quippy interface is principally maintained by `James Kermode <http://www.jrkermode.co.uk>`_. 
 The main libAtoms/QUIP contributors are:
 
 * University of Cambridge: Albert P. Bartók, Gábor Csányi, Wojciech Szlachta, Csilla Várnai
