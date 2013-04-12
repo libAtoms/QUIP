@@ -780,6 +780,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
                 offset = 10
             except IndexError:
                 offset = 7
+                n_atoms = 0
+                while 'xxxxxxxxxxx' not in castep_output[cell_first_line+offset+n_atoms]:
+                   n_atoms += 1
 
         if atoms_ref is not None:
             # If we were passed in an Atoms object, construct mapping from
