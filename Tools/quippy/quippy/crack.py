@@ -987,9 +987,8 @@ def get_stress_intensity_factor(atoms):
     return K
 
 
-def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
-                           use_avg_stress=True, avg_decay=0.005, calc=None,
-                           verbose=False):
+def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_params=None,
+                           sigma=None, avg_sigma=None, avg_decay=0.005, calc=None, verbose=False):
     """
     Perform a least squares fit of near-tip stress field to Irwin solution
 
@@ -1024,13 +1023,21 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
        position (from the ``CrackPos`` entry in ``atoms.info``). If
        r_range is ``None``, fit is carried out for all atoms.
 
+    initial_params : dict
+       Names and initial values of parameters. Missing initial values
+       are guessed from Atoms object.
+
     fix_params : dict
        Names and values of parameters to fix during the fit,
        e.g. ``{y0: 0.0}`` to constrain the fit to the line y=0
 
-    use_avg_stress : bool
-       If true, use time-averaged stress for fit. Exponential moving
-       average of stress field is kept in ``avg_stress`` property.
+    sigma : None or array with shape (len(atoms), 3, 3)
+       Explicitly provide the per-atom stresses. Avoids calling Atoms'
+       calculators :meth:`~.get_stresses` method.
+
+    avg_sigma : None or array with shape (len(atoms), 3, 3)
+       If present, use this array to accumulate the time-averaged
+       stress field. Useful when processing a trajectory.
 
     avg_decay : real
        Factor by which average stress is attenuated at each step.
@@ -1057,41 +1064,46 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
     """
 
     params = {}
+    if initial_params is not None:
+       params.update(initial_params)
 
-    # Guess for stress intensity factor K
-    if 'K' in atoms.info:
-        params['K'] = atoms.info['K']
-    else:
-        try:
-            params['K'] = get_stress_intensity_factor(atoms)
-        except KeyError:
-            params['K'] = 1.0*MPA_SQRT_M
+    if 'K' not in params:
+       # Guess for stress intensity factor K
+       if 'K' in atoms.info:
+           params['K'] = atoms.info['K']
+       else:
+           try:
+               params['K'] = get_stress_intensity_factor(atoms)
+           except KeyError:
+               params['K'] = 1.0*MPA_SQRT_M
 
-    # Guess for far-field stress
-    if 'sigma0' in atoms.info:
-       params['sxx0'], params['syy0'], params['sxy0'] = atoms.info['sigma0']
-    else:
+    if 'sxx0' not in params or 'syy0' not in params or 'sxy0' not in params:
+       # Guess for far-field stress
+       if 'sigma0' in atoms.info:
+          params['sxx0'], params['syy0'], params['sxy0'] = atoms.info['sigma0']
+       else:
+          try:
+              E = atoms.info['YoungsModulus']
+              nu = atoms.info['PoissonRatio_yx']
+              Ep = E/(1-nu**2)
+              params['syy0'] = Ep*atoms.info['strain']
+              params['sxx0'] = nu*params['syy0']
+              params['sxy0'] = 0.0
+          except KeyError:
+              params['syy0'] = 0.0
+              params['sxx0'] = 0.0
+              params['sxy0'] = 0.0
+
+    if 'x0' not in params or 'y0' not in params:
+       # Guess for crack position
        try:
-           E = atoms.info['YoungsModulus']
-           nu = atoms.info['PoissonRatio_yx']
-           Ep = E/(1-nu**2)
-           params['syy0'] = Ep*atoms.info['strain']
-           params['sxx0'] = nu*params['syy0']
-           params['sxy0'] = 0.0
+           params['x0'], params['y0'], _ = atoms.info['CrackPos']
        except KeyError:
-           params['syy0'] = 0.0
-           params['sxx0'] = 0.0
-           params['sxy0'] = 0.0
+           params['x0'] = (atoms.positions[:, 0].min() +
+                           (atoms.positions[:, 0].max() - atoms.positions[:, 0].min())/3.0)
+           params['y0'] = 0.0
 
-    # Guess for crack position
-    try:
-        params['x0'], params['y0'], _ = atoms.info['CrackPos']
-    except KeyError:
-        params['x0'] = (atoms.positions[:, 0].min() +
-                        (atoms.positions[:, 0].max() - atoms.positions[:, 0].min())/3.0)
-        params['y0'] = 0.0
-
-    # Overrride any fixed parameters
+    # Override any fixed parameters
     if fix_params is not None:
         params.update(fix_params)
 
@@ -1099,20 +1111,18 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
     y = atoms.positions[:, 1]
     r = np.sqrt((x - params['x0'])**2 + (y - params['y0'])**2)
 
-    # Get local stresses, then zero components out of the xy plane
-    if calc is None:
-        calc = atoms.get_calculator()
-    sigma = calc.get_stresses(atoms)
+    # Get local stresses
+    if sigma is None:
+       if calc is None:
+           calc = atoms.get_calculator()
+       sigma = calc.get_stresses(atoms)
 
-    if use_avg_stress:
-       if 'avg_sigma' not in atoms.arrays:
-          atoms.new_array('avg_sigma', sigma.reshape((len(atoms), 9), order='F'))
-       avg_sigma = atoms.get_array('avg_sigma').reshape((len(atoms), 3, 3), order='F')
-       avg_sigma = np.exp(-avg_decay)*avg_sigma + (1.0 - np.exp(-avg_decay))*sigma
-       atoms.set_array('avg_sigma', avg_sigma.reshape((len(atoms), 9), order='F'))
+    # Update avg_sigma in place
+    if avg_sigma is not None:
+       avg_sigma[...] = np.exp(-avg_decay)*avg_sigma + (1.0 - np.exp(-avg_decay))*sigma
+       sigma = avg_sigma.copy()
 
-       sigma = avg_sigma
-
+    # Zero components out of the xy plane
     sigma[:,2,2] = 0.0
     sigma[:,0,2] = 0.0
     sigma[:,2,0] = 0.0
@@ -1160,7 +1170,7 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), fix_params=None,
 
 
 def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
-                                use_avg_stress=True, avg_decay=0.005,
+                                avg_sigma=None, avg_decay=0.005,
                                 calc=None):
     """
     Find the position of the crack tip by fitting to the Irwin `K`-field solution
@@ -1173,13 +1183,13 @@ def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
     fit_crack_stress_field
     """
 
-    params = fit_crack_stress_field(atoms, r_range, fix_params, use_avg_stress, avg_decay, calc)
+    params = fit_crack_stress_field(atoms, r_range, fix_params, avg_sigma, avg_decay, calc)
 
     return np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
     
 
 def plot_stress_fields(atoms, r_range=None, fix_params=None,
-                       use_avg_stress=True, avg_decay=0.01, calc=None):
+                       avg_sigma=None, avg_decay=0.01, calc=None):
     """
     Fit and plot atomistic and continuum stress fields
 
@@ -1194,7 +1204,7 @@ def plot_stress_fields(atoms, r_range=None, fix_params=None,
     from pylab import griddata, meshgrid, subplot, cla, contourf, colorbar, draw, title, clf, gca
 
     params = fit_crack_stress_field(atoms, r_range, fix_params,
-                                    use_avg_stress, avg_decay, calc)
+                                    avg_sigma, avg_decay, calc)
 
     K, x0, y0, sxx0, syy0, sxy0 = (params['K'], params['x0'], params['y0'],
                                    params['sxx0'], params['syy0'], params['sxy0'])
