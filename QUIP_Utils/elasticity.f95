@@ -451,7 +451,7 @@ contains
     real(dp) :: C(6,6), strain(6), stress(6), b
     real(dp), dimension(3) :: n1,n2,n3, d
     real(dp), dimension(3,3) :: rotXYZ, E123, EEt, V, S, R, SS, Sig, RSigRt, RtE, SigEvecs
-    integer :: i, j, m, nn, ngood
+    integer :: i, j, m, nn, ngood, maxnn
 
     real(dp), pointer, dimension(:) :: S_xx_sub1, S_yy_sub1, S_zz_sub1, S_yz, S_xz, S_xy, &
          Sig_xx, Sig_yy, Sig_zz, Sig_yz, Sig_xz, Sig_xy, SigEval1, SigEval2, SigEval3, &
@@ -459,8 +459,8 @@ contains
 
     real(dp), pointer, dimension(:,:) :: SigEvec1, SigEvec2, SigEvec3
     logical :: dum
-    real(dp), dimension(4) :: dist
-    real(dp), dimension(3,4) :: ndiff
+    real(dp), dimension(:), allocatable :: dist
+    real(dp), dimension(:,:), allocatable :: ndiff
 
 
     rotXYZ = 0.0_dp
@@ -539,6 +539,19 @@ contains
     dum = assign_pointer(at, 'energy_density', energy_density)
 
     call calc_connect(at)
+
+    ! Check max number of nearest neighbours
+    maxnn = 0
+    do i=1,at%N
+       nn = 0
+       do m=1, n_neighbours(at,i)
+          if (is_nearest_neighbour(at,i,m)) nn = nn + 1
+       end do
+       if (nn > maxnn) maxnn = nn
+    end do
+    call print('Max number of nearest neighbours: '//maxnn, PRINT_VERBOSE)
+
+    allocate(dist(maxnn), ndiff(3,maxnn))
 
     ! Loop over all atoms
     ngood = 0
@@ -713,6 +726,7 @@ contains
     end do
 
     call print('Processed '//ngood//' of '//at%N//' atoms.', PRINT_VERBOSE)
+    deallocate(dist, ndiff)
 
   end subroutine elastic_fields
 
