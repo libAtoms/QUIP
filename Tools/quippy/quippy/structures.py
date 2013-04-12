@@ -75,7 +75,7 @@ class MillerIndex(quippy_array):
     def __array_finalize__(self, obj):
         if obj is None:
             return
-        self.type = getattr(obj, 'type', None)
+        self.type = getattr(obj, 'type', 'direction')
 
     def __repr__(self):
         return ('%s(['+'%d'*len(self)+'])') % ((self.__class__.__name__,) + tuple(self))
@@ -93,7 +93,7 @@ class MillerIndex(quippy_array):
         s += bopen
         for component in self:
             if component < 0:
-                s += '\bar{%d}' % component
+                s += r'\bar{%d}' % abs(component)
             else:
                 s += '%d' % component
         s += bclose
