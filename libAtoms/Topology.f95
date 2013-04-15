@@ -67,7 +67,9 @@ public :: next_motif, find_motif_backbone
              QMMM_RUN_CORE, &
              QMMM_RUN_EXTENDED, &
              find_water_monomer, find_A2_monomer, find_AB_monomer, &
-	     find_molecule_ids
+	     find_molecule_ids, &
+             find_general_monomer, &
+             find_monomer_pairs
 
 
 !parameters for Run_Type
@@ -2740,5 +2742,132 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
        end do ! ji
      end  do ! i
    end function find_motif_backbone
+
+   subroutine find_general_monomer(at,monomer_index,signature,cutoff,general_ordercheck,use_smooth_cutoff,error)
+     type(atoms), intent(in) :: at
+     integer, intent(in), dimension(:) :: signature
+     real(dp), dimension(:), allocatable :: r
+     real(dp) :: r_ij, cutoff
+     integer, dimension(1) :: temp
+     integer, dimension(:), allocatable :: indices
+     integer, dimension(:,:), allocatable :: monomer_index, monomer_index_working
+     integer, intent(out), optional :: error
+     logical, optional :: use_smooth_cutoff, general_ordercheck
+     integer :: i, j, k, n, Z_uniq_index, Z_uniq, Z_uniq_pos, monomers_found
+     logical, dimension(at%N) :: is_associated
+     logical :: do_general_ordercheck, my_use_smooth_cutoff
+
+     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff) !Pending discussions with PP
+     do_general_ordercheck = optional_default(.true.,general_ordercheck)
+
+     allocate(monomer_index(size(signature),0))
+     allocate(monomer_index_working(size(signature),0))
+     allocate(r(size(signature)))
+     allocate(indices(size(signature)))
+
+     monomers_found = 0
+     is_associated = .false.
+     if(do_general_ordercheck) then
+        do i = 1, at%N
+           if(.not. is_associated(i) .and. any(signature .eq. at%Z(i))) then
+              r = cutoff ! initialise distances
+              indices = 0 ! initialise indices
+              temp = minloc(signature, signature .eq. at%Z(i)) ! will return location of first element of signature with correct Z
+              indices(temp(1))=i
+              r(temp(1))=0.0
+
+              do n = 1, n_neighbours(at, i)
+                 j = neighbour(at, i, n, distance=r_ij)
+                 if(is_associated(j) .or. .not. any(signature .eq. at%Z(j)) ) cycle
+
+                 do k=1,maxval(signature)
+                   if (at%Z(j) .eq. k) then
+                     if(r_ij .lt. maxval(r, mask = signature .eq. at%Z(j)) ) then
+                       temp =  maxloc(r, mask = signature .eq. at%Z(j))
+                       r(temp(1)) = r_ij
+                       indices(temp(1)) = j
+                       exit
+                     end if
+                   end if
+                 end do
+              end do
+
+              if(any(indices .eq. 0)) cycle ! couldn't make a monomer with i as central atom
+
+              monomers_found = monomers_found + 1 ! number of monomers found so far
+              do k=1,size(signature)
+                is_associated(indices(k))=.true.
+              end do
+
+              deallocate(monomer_index_working)
+              allocate(monomer_index_working(size(monomer_index,1),size(monomer_index,2)))
+              monomer_index_working =monomer_index
+              deallocate(monomer_index)
+              allocate(monomer_index(size(monomer_index_working,1),size(monomer_index_working,2)+1))
+              monomer_index(:,:-2) = monomer_index_working
+              monomer_index(:,monomers_found) = indices
+           end if
+        end do
+      else
+        RAISE_ERROR("Finding general monomers without order checking not supported", error)
+      end if
+   end subroutine find_general_monomer
+
+   subroutine find_monomer_pairs(at,monomer_pairs,monomer_one_index,monomer_two_index,monomers_identical,cutoff,error)
+   ! finds pairs of monomers combined into dimer if *any pair* of atoms are within cutoff. Returns 2 by n array of pairs, 
+   ! the elements of which refer to the second index of the monomer_one_index and monomer_two_index matrices respectively. 
+     type(atoms), intent(in) :: at
+     logical, intent(in) :: monomers_identical
+     integer, intent(in), dimension(:,:) :: monomer_one_index, monomer_two_index
+     integer, intent(out), optional :: error
+     integer, dimension(:,:), allocatable, intent(out) :: monomer_pairs
+     integer, dimension(:,:), allocatable :: monomer_pairs_working
+     integer, dimension(:), allocatable :: atomic_index_one, atomic_index_two
+     integer :: i, j, i_atomic, j_atomic, n, i_desc
+     real(dp) :: r_one_two
+     real(dp), intent(in) :: cutoff
+     real(dp), dimension(3) :: diff_one_two
+     integer, dimension(3) :: shift_one_two
+     integer, dimension(2) :: temp
+
+     allocate(monomer_pairs(2,0))
+     allocate(monomer_pairs_working(2,0))
+     allocate(atomic_index_one(size(monomer_one_index,1)))
+     allocate(atomic_index_two(size(monomer_two_index,1)))
+     i_desc=0
+
+     do i=1,size(monomer_one_index,2)
+       atomic_index_one = monomer_one_index(:,i)
+       do i_atomic =1,size(monomer_one_index,1)
+        !loop over neighbours, check within cutoff and correct Z
+         do n = 1, n_neighbours(at,atomic_index_one(i_atomic))
+
+           j_atomic = neighbour(at,atomic_index_one(i_atomic),n,distance=r_one_two, diff=diff_one_two, shift=shift_one_two)
+           if( r_one_two >= cutoff ) cycle
+           temp = maxloc(monomer_two_index, monomer_two_index .eq. j_atomic)
+           if (any(temp .eq. 0)) cycle
+           j = temp(2)
+           if (any(monomer_pairs(2,:) .eq. j .and. monomer_pairs(1,:) .eq. i)) cycle !check if this pair has already been found.
+           if (monomers_identical) then     !check equivalent pair hasn't already been found
+             if (j .eq. i) cycle
+             if (any(monomer_pairs(2,:) .eq. i .and. monomer_pairs(1,:) .eq. j)) cycle
+           end if
+
+           i_desc = i_desc + 1
+           deallocate(monomer_pairs_working)
+           allocate(monomer_pairs_working(2,size(monomer_pairs,2)))
+           monomer_pairs_working = monomer_pairs
+           deallocate(monomer_pairs)
+           allocate(monomer_pairs(2,i_desc))
+           monomer_pairs(:,:-2) = monomer_pairs_working
+           monomer_pairs(:,i_desc) = (/ i,j /)
+
+         end do
+       end do
+     end do
+
+   end subroutine find_monomer_pairs  
+
+
 
 end module topology_module
