@@ -33,9 +33,10 @@ module descriptors_module
    use linearalgebra_module
    use dictionary_module
    use paramreader_module
-   use atoms_types_module
    use atoms_module
+   use atoms_types_module
    use topology_module
+   use permutation_maker_module
 
    implicit none
 
@@ -89,6 +90,8 @@ module descriptors_module
    integer, parameter, public :: DT_POWER_SO4       = 18
    integer, parameter, public :: DT_SOAP            = 19
    integer, parameter, public :: DT_AN_MONOMER      = 20
+   integer, parameter, public :: DT_GENERAL_MONOMER = 21
+   integer, parameter, public :: DT_GENERAL_DIMER   = 22
 
    integer, parameter :: NP_WATER_DIMER    = 8
    integer, parameter :: NP_A2_DIMER       = 8
@@ -358,7 +361,7 @@ module descriptors_module
 
       logical :: initialised = .false.
    endtype soap
-
+ 
    type AN_monomer
       real(dp) :: cutoff
       integer :: atomic_number
@@ -368,6 +371,24 @@ module descriptors_module
       logical :: do_atomic = .false.
 
    endtype AN_monomer
+
+   type general_monomer
+      type(permutation_data_type) :: permutation_data
+      integer, dimension(:), allocatable :: signature
+      !real(dp), dimension(:,:) :: cutoff_mat
+      real(dp) :: cutoff, cutoff_transition_width
+      logical :: atom_ordercheck, internal_swaps_only, use_smooth_cutoff
+      logical :: initialised = .false.
+   endtype general_monomer
+
+   type general_dimer
+      type(permutation_data_type) :: permutation_data
+      integer, dimension(:), allocatable :: signature_one, signature_two
+      !real(dp), dimension(:,:) :: cutoff_mat
+      real(dp) :: cutoff, cutoff_transition_width, monomer_one_cutoff, monomer_two_cutoff
+      logical :: atom_ordercheck, internal_swaps_only, use_smooth_cutoff
+      logical :: initialised = .false.
+   endtype general_dimer
 
    type descriptor
       integer :: descriptor_type = DT_NONE
@@ -392,11 +413,13 @@ module descriptors_module
       type(power_SO4)       :: descriptor_power_SO4
       type(soap)            :: descriptor_soap
       type(AN_monomer)      :: descriptor_AN_monomer
-
+      type(general_monomer) :: descriptor_general_monomer
+      type(general_dimer)   :: descriptor_general_dimer
    endtype
 
    type descriptor_data
       type(descriptor_data_mono), dimension(:), allocatable :: x
+      logical :: atom_based = .false.
    endtype descriptor_data
 
    type cplx_1d
@@ -430,8 +453,8 @@ module descriptors_module
       bispectrum_SO4_initialise, bispectrum_SO3_initialise, behler_initialise, distance_2b_initialise, &
       coordination_initialise, angle_3b_initialise, co_angle_3b_initialise, co_distance_2b_initialise, cosnx_initialise, trihis_initialise, &
       water_monomer_initialise, water_dimer_initialise, A2_dimer_initialise, AB_dimer_initialise, &
-      bond_real_space_initialise, atom_real_space_initialise, power_so3_initialise, power_SO4_initialise, soap_initialise, &
-      AN_monomer_initialise
+      bond_real_space_initialise, atom_real_space_initialise, power_so3_initialise, power_SO4_initialise, soap_initialise, AN_monomer_initialise, &
+      general_monomer_initialise, general_dimer_initialise
    endinterface initialise
    public :: initialise
 
@@ -440,28 +463,28 @@ module descriptors_module
       bispectrum_SO4_finalise, bispectrum_SO3_finalise, behler_finalise, distance_2b_finalise, coordination_finalise, angle_3b_finalise, co_angle_3b_finalise, &
       co_distance_2b_finalise, cosnx_finalise, trihis_finalise, water_monomer_finalise, water_dimer_finalise, &
       A2_dimer_finalise, AB_dimer_finalise, bond_real_space_finalise, atom_real_space_finalise, power_so3_finalise, power_SO4_finalise, soap_finalise, &
-      AN_monomer_finalise
+      AN_monomer_finalise, general_monomer_finalise, general_dimer_finalise
    endinterface finalise
    public :: finalise
 
    interface calc
       module procedure descriptor_calc, bispectrum_SO4_calc, bispectrum_SO3_calc, behler_calc, distance_2b_calc, coordination_calc, angle_3b_calc, co_angle_3b_calc, &
       co_distance_2b_calc, cosnx_calc, trihis_calc, water_monomer_calc, water_dimer_calc, A2_dimer_calc, AB_dimer_calc, bond_real_space_calc, atom_real_space_calc, &
-      power_so3_calc, power_SO4_calc, soap_calc, AN_monomer_calc
+      power_so3_calc, power_SO4_calc, soap_calc, AN_monomer_calc, general_monomer_calc, general_dimer_calc
    endinterface calc
    public :: calc
 
    interface cutoff
       module procedure descriptor_cutoff, bispectrum_SO4_cutoff, bispectrum_SO3_cutoff, behler_cutoff, distance_2b_cutoff, coordination_cutoff, angle_3b_cutoff, co_angle_3b_cutoff, &
       co_distance_2b_cutoff, cosnx_cutoff, trihis_cutoff, water_monomer_cutoff, water_dimer_cutoff, A2_dimer_cutoff, AB_dimer_cutoff, bond_real_space_cutoff, atom_real_space_cutoff, &
-      power_so3_cutoff, power_SO4_cutoff, soap_cutoff, AN_monomer_cutoff
+      power_so3_cutoff, power_SO4_cutoff, soap_cutoff, AN_monomer_cutoff, general_monomer_cutoff, general_dimer_cutoff
    endinterface cutoff
    public :: cutoff
 
    interface descriptor_sizes
       module procedure descriptor_sizes, bispectrum_SO4_sizes, bispectrum_SO3_sizes, behler_sizes, distance_2b_sizes, coordination_sizes, angle_3b_sizes, co_angle_3b_sizes, &
       co_distance_2b_sizes, cosnx_sizes, trihis_sizes, water_monomer_sizes, water_dimer_sizes, A2_dimer_sizes, AB_dimer_sizes, bond_real_space_sizes, atom_real_space_sizes, &
-      power_so3_sizes, power_SO4_sizes, soap_sizes, AN_monomer_sizes
+      power_so3_sizes, power_SO4_sizes, soap_sizes, AN_monomer_sizes, general_monomer_sizes, general_dimer_sizes
    endinterface descriptor_sizes
    public :: descriptor_sizes
 
@@ -480,7 +503,8 @@ module descriptors_module
       type(Dictionary) :: params
       logical :: is_bispectrum_so4, is_bispectrum_so3, is_behler, is_distance_2b, is_coordination, is_angle_3b, &
          is_co_angle_3b, is_co_distance_2b, is_cosnx, is_trihis, is_water_monomer, is_water_dimer, is_A2_dimer, &
-         is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, is_soap, is_AN_monomer
+         is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, is_soap, &
+         is_AN_monomer, is_general_monomer, is_general_dimer
 
       INIT_ERROR(error)
 
@@ -505,6 +529,8 @@ module descriptors_module
       call param_register(params, 'power_so4', 'false', is_power_so4, help_string="Type of descriptor is power_so4.")
       call param_register(params, 'soap', 'false', is_soap, help_string="Type of descriptor is soap.")
       call param_register(params, 'AN_monomer', 'false', is_AN_monomer, help_string="Type of descriptor is AN_monomer.")
+      call param_register(params, 'general_monomer', 'false', is_general_monomer, help_string="Type of descriptor is general_monomer.")
+      call param_register(params, 'general_dimer', 'false', is_general_dimer, help_string="Type of descriptor is general_dimer.")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='descriptor_initialise args_str')) then
          RAISE_ERROR("descriptor_initialise failed to parse args_str='"//trim(args_str)//"'", error)
@@ -512,8 +538,8 @@ module descriptors_module
       call finalise(params)
 
       if (count( (/is_bispectrum_so4, is_bispectrum_so3, is_behler, is_distance_2b, is_coordination, is_angle_3b, is_co_angle_3b, is_co_distance_2b, &
-      is_cosnx, is_trihis, is_water_monomer, is_water_dimer, is_A2_dimer, is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, is_soap, &
-      is_AN_monomer /) ) /= 1) then
+      is_cosnx, is_trihis, is_water_monomer, is_water_dimer, is_A2_dimer, is_AB_dimer, is_bond_real_space, is_atom_real_space, is_power_so3, is_power_so4, &
+      is_soap, is_AN_monomer, is_general_monomer, is_general_dimer/) ) /= 1) then
          RAISE_ERROR("descriptor_initialise found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
       endif
 
@@ -559,6 +585,10 @@ module descriptors_module
          get_descriptor_type = DT_SOAP
       elseif( is_AN_monomer ) then
          get_descriptor_type = DT_AN_MONOMER
+      elseif( is_general_monomer ) then
+         get_descriptor_type = DT_GENERAL_MONOMER
+      elseif( is_general_dimer ) then
+         get_descriptor_type = DT_GENERAL_DIMER
       endif
 
    endfunction get_descriptor_type
@@ -615,6 +645,10 @@ module descriptors_module
          call initialise(this%descriptor_soap,args_str,error)
       case(DT_AN_MONOMER)
          call initialise(this%descriptor_AN_monomer,args_str,error)
+      case(DT_GENERAL_MONOMER)
+         call initialise(this%descriptor_general_monomer,args_str,error)
+      case(DT_GENERAL_DIMER)
+         call initialise(this%descriptor_general_dimer,args_str,error)
       endselect
 
    endsubroutine descriptor_initialise
@@ -664,8 +698,10 @@ module descriptors_module
             call finalise(this%descriptor_power_so4,error)
          case(DT_SOAP)
             call finalise(this%descriptor_soap,error)
-         case(DT_AN_MONOMER)
-            call finalise(this%descriptor_AN_monomer,error)
+         case(DT_GENERAL_MONOMER)
+            call finalise(this%descriptor_general_monomer,error)
+         case(DT_GENERAL_DIMER)
+            call finalise(this%descriptor_general_dimer,error)
       endselect
 
       this%descriptor_type = DT_NONE
@@ -784,8 +820,8 @@ module descriptors_module
       integer, intent(in) :: i
       type(cplx_2d), dimension(:), allocatable, intent(inout) :: U
       type(cplx_3d), dimension(:,:), allocatable, intent(inout), optional :: dU
-      character(len=*), intent(in), optional :: args_str 
       integer, optional, intent(out) :: error
+      character(len=*), intent(in), optional :: args_str 
 
       complex(dp), dimension(:,:), allocatable :: Uc, Up
       complex(dp), dimension(:,:,:), allocatable :: dUc, dUp
@@ -2165,6 +2201,157 @@ module descriptors_module
 
    endsubroutine AN_monomer_finalise
 
+   subroutine general_monomer_initialise(this,args_str,error)
+      type(general_monomer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+      integer :: i,n_atoms,j
+      integer, dimension(8) :: input_signature
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff for general_monomer-type descriptors")
+      call param_register(params, 'signature', '0 0 0 0 0 0 0 0', input_signature, help_string="Integer array containing atomic numbers of monomer, padded with zeroes to length 8")
+      call param_register(params, 'atom_ordercheck', 'true', this%atom_ordercheck, help_string="T: find molecules. F: not currently supported")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='general_monomer_initialise args_str')) then
+         RAISE_ERROR("general_monomer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+     n_atoms = count(input_signature .ne. 0)
+     allocate(this%signature(n_atoms))
+     j=1
+     do i=1,8
+       if (input_signature(i) .ne. 0) then
+         this%signature(j) = input_signature(i)
+         j = j+1
+       end if
+     end do
+
+      call permutation_data_initialise(this%permutation_data,this%signature,error=error)
+
+!!$      Z_uniq=0
+!!$      do i=1,maxval(this%signature) !This sets Z_uniq to the highest atomic number appearing only once in signature
+!!$        if (count(this%signature .eq. i) .ne. 1) cycle
+!!$        Z_uniq=i
+!!$      end do 
+!!$      this%Z_uniq=Z_uniq
+
+      this%initialised = .true.
+
+   endsubroutine general_monomer_initialise
+
+   subroutine general_monomer_finalise(this,error)
+      type(general_monomer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%signature=0
+
+      this%initialised = .false.
+
+   endsubroutine general_monomer_finalise
+
+   subroutine general_dimer_initialise(this,args_str,error)
+      type(general_dimer), intent(inout) :: this
+      character(len=*), intent(in) :: args_str
+      integer, optional, intent(out) :: error
+      integer :: i,j, n_atoms_one, n_atoms_two
+      integer, dimension(8) :: input_signature_one, input_signature_two
+
+      type(Dictionary) :: params
+
+      INIT_ERROR(error)
+
+      call finalise(this)
+
+      call initialise(params)
+      call param_register(params, 'cutoff', '0.00', this%cutoff, help_string="Cutoff(intermolecular) for general_dimer-type descriptors")
+      call param_register(params, 'monomer_one_cutoff', '0.00', this%monomer_one_cutoff, help_string="Cutoff(mono1) for general_dimer-type descriptors")
+      call param_register(params, 'monomer_two_cutoff', '0.00', this%monomer_two_cutoff, help_string="Cutoff(mono2) for general_dimer-type descriptors")
+      call param_register(params, 'cutoff_transition_width', '0.50', this%cutoff_transition_width, help_string="Width of smooth cutoff region for general_dimer-type descriptors")
+      call param_register(params, 'internal_swaps_only', 'true', this%internal_swaps_only, help_string="F: energies will be symmetrised over swaps of nuclei between monomers")
+      call param_register(params, 'atom_ordercheck', 'true', this%atom_ordercheck, help_string="T: find molecules. F: not currently supported")
+      call param_register(params, 'signature_one', PARAM_MANDATORY, input_signature_one, help_string="Integer array containing atomic numbers of monomer one, padded with zeroes to length 8")
+      call param_register(params, 'signature_two', PARAM_MANDATORY, input_signature_two, help_string="Integer array containing atomic numbers of monomer two, padded with zeroes to length 8")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='general_dimer_initialise args_str')) then
+         RAISE_ERROR("general_dimer_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+
+      n_atoms_one = count(input_signature_one .ne. 0)
+      allocate(this%signature_one(n_atoms_one))
+      j=1
+      do i=1,8
+        if (input_signature_one(i) .ne. 0) then
+          this%signature_one(j) = input_signature_one(i)
+          j = j+1
+        end if
+      end do
+
+      n_atoms_two = count(input_signature_two .ne. 0)
+      allocate(this%signature_two(n_atoms_two))
+      j=1
+      do i=1,8
+        if (input_signature_two(i) .ne. 0) then
+          this%signature_two(j) = input_signature_two(i)
+          j = j+1
+        end if
+      end do
+
+      call permutation_data_initialise(this%permutation_data,this%signature_one,this%signature_two,this%internal_swaps_only,error)
+
+!!$      Z_uniq_one=0
+!!$      Z_uniq_two=0
+!!$      do i=1,maxval(this%signature_one) !This sets Z_uniq_one to the highest atomic number appearing only once in signature_one
+!!$        if (count(this%signature_one .eq. i) .ne. 1) cycle
+!!$        Z_uniq_one=i
+!!$        if (count(this%signature_one .ne. this%signature_two) .eq. 0) then !monomers identical
+!!$          Z_uniq_two = Z_uniq_one
+!!$        else
+!!$          do j=1,maxval(this%signature_two) !This sets Z_uniq to the highest atomic number appearing only once in signature_two
+!!$            if (count(this%signature_two .eq. j) .ne. 1 .or. j .eq. Z_uniq_one) cycle
+!!$            Z_uniq_two=j
+!!$          end do 
+!!$        end if
+!!$      end do 
+!!$      this%Z_uniq_one=Z_uniq_one
+!!$      this%Z_uniq_two=Z_uniq_two
+
+      this%initialised = .true.
+   endsubroutine general_dimer_initialise
+
+   subroutine general_dimer_finalise(this,error)
+      type(general_dimer), intent(inout) :: this
+      integer, optional, intent(out) :: error
+
+      INIT_ERROR(error)
+      if(.not. this%initialised) return
+      this%cutoff = 0.0_dp
+      this%cutoff_transition_width = 0.0_dp
+      this%monomer_one_cutoff = 0.0_dp
+      this%monomer_two_cutoff = 0.0_dp
+      this%atom_ordercheck = .true.
+      this%internal_swaps_only = .true.
+      this%use_smooth_cutoff = .false.
+      if(allocated(this%signature_one)) deallocate(this%signature_one)
+      if(allocated(this%signature_two)) deallocate(this%signature_two)
+
+      this%initialised = .false.
+
+   endsubroutine general_dimer_finalise
+
+
    subroutine descriptor_str_add_species(this,species,descriptor_str,error)
       character(len=*), intent(in) :: this
       integer, dimension(:), intent(in) :: species
@@ -2229,7 +2416,7 @@ module descriptors_module
                enddo
             enddo
          enddo
-      case(DT_WATER_MONOMER,DT_WATER_DIMER,DT_A2_DIMER,DT_AB_DIMER,DT_TRIHIS,DT_BOND_REAL_SPACE,DT_ATOM_REAL_SPACE,DT_AN_MONOMER)
+      case(DT_GENERAL_MONOMER,DT_GENERAL_DIMER,DT_WATER_MONOMER,DT_WATER_DIMER,DT_A2_DIMER,DT_AB_DIMER,DT_TRIHIS,DT_BOND_REAL_SPACE,DT_ATOM_REAL_SPACE,DT_AN_MONOMER)
          allocate(descriptor_str(1))
          descriptor_str(1) = trim(this)
       case default
@@ -2289,6 +2476,10 @@ module descriptors_module
             call calc(this%descriptor_soap,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case(DT_AN_MONOMER)
             call calc(this%descriptor_AN_monomer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
+         case(DT_GENERAL_MONOMER)
+            call calc(this%descriptor_general_monomer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
+         case(DT_GENERAL_DIMER)
+            call calc(this%descriptor_general_dimer,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
          case default
             RAISE_ERROR("descriptor_calc: unknown descriptor type "//this%descriptor_type,error)
       endselect
@@ -6297,6 +6488,396 @@ module descriptors_module
 
    endsubroutine AN_monomer_calc
 
+   subroutine general_monomer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
+      type(general_monomer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor!, use_smooth_cutoff
+      character(len=*), intent(in), optional :: args_str 
+      integer, optional, intent(out) :: error
+
+      logical :: my_do_descriptor, my_do_grad_descriptor
+      integer :: d, n_descriptors, n_cross, monomer_size, i, i_atomic, j_atomic, k, start, finish
+      integer, dimension(3) :: temp_shift
+      real(dp), dimension(:), allocatable :: dist_vec
+      real(dp), dimension(:,:), allocatable :: interatomic_distances
+      real(dp), dimension(:,:,:), allocatable :: interatomic_vectors
+      integer, dimension(:), allocatable :: atomic_index
+      integer, dimension(:,:), allocatable :: general_monomer_index, shifts
+
+
+      INIT_ERROR(error)
+
+      call system_timer('general_monomer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_monomer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      monomer_size=size(this%signature)
+      d = general_monomer_dimensions(this,error)
+      call descriptor_sizes(this,at,n_descriptors,n_cross,error=error) 
+
+      allocate(shifts(monomer_size,3))
+      allocate(dist_vec(d))
+      allocate(atomic_index(monomer_size))
+      allocate(interatomic_vectors(monomer_size,monomer_size,3))
+      allocate(interatomic_distances(monomer_size,monomer_size))
+      interatomic_vectors = 0.0_dp
+      interatomic_distances = 0.0_dp
+
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+            descriptor_out%x(i)%covariance_cutoff = 1.0_dp
+         endif
+         if(my_do_grad_descriptor) then
+            allocate(descriptor_out%x(i)%grad_data(d,3,monomer_size))
+            allocate(descriptor_out%x(i)%ci(monomer_size))
+            allocate(descriptor_out%x(i)%pos(3,monomer_size))
+            allocate(descriptor_out%x(i)%has_grad_data(monomer_size))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ci = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,monomer_size))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+         endif
+      enddo
+
+      allocate(general_monomer_index(monomer_size,n_descriptors))
+      call find_general_monomer(at,general_monomer_index,this%signature,this%cutoff,this%atom_ordercheck,this%use_smooth_cutoff,error)
+
+      do i = 1, n_descriptors
+
+         atomic_index = general_monomer_index(:,i) !stores the indices of atoms in this monomer
+write(*,*) "THE ATOMS IN THE MONOMER ARE : "// atomic_index
+         !calc all positions relative to atom 1
+         do i_atomic=2,monomer_size
+           temp_shift=0
+           interatomic_vectors(1,i_atomic,:) = diff_min_image(at,atomic_index(1),atomic_index(i_atomic),shift=temp_shift)
+           shifts(i_atomic,:) = temp_shift
+         end do
+
+         !find other relative positions through vector addition
+         do j_atomic=2,monomer_size
+           do i_atomic=2,j_atomic-1
+             interatomic_vectors(i_atomic,j_atomic,:) = interatomic_vectors(1,j_atomic,:) -interatomic_vectors(1,i_atomic,:) 
+           end do
+         end do
+
+         !Now convert vectors to scalar distances
+         do i_atomic=1,monomer_size
+           do j_atomic=i+1,monomer_size
+             interatomic_distances(i_atomic,j_atomic) = norm(interatomic_vectors(i_atomic,j_atomic,:))
+           end do
+         end do       
+!!$do i_atomic=1,size(interatomic_distances,1)
+!!$  write(*,'(6F12.8)') interatomic_distances(i_atomic,:)
+!!$end do
+         !and convert this NxN matrix into the required vector length N(N-1)/2
+         start = 1
+         do i_atomic=1,monomer_size
+           finish=start + monomer_size-i_atomic
+           dist_vec(start:finish) = interatomic_distances(i_atomic,i_atomic+1:monomer_size)  
+           start = finish
+         end do
+
+         if(my_do_descriptor) then
+            descriptor_out%x(i)%ci(:) = atomic_index
+            descriptor_out%x(i)%has_data = .true.
+            descriptor_out%x(i)%data = dist_vec 
+         endif
+
+         if(my_do_grad_descriptor) then
+!!$write(*,*) "doing grad descriptor"
+            descriptor_out%x(i)%ii(:) = atomic_index
+!!$do i_atomic=1,at%N
+!!$write(*,*) at%pos(:,atomic_index(i_atomic))
+!!$end do
+            descriptor_out%x(i)%pos(:,1) = at%pos(:,atomic_index(1))
+            do i_atomic =2,monomer_size
+              descriptor_out%x(i)%pos(:,i_atomic) = at%pos(:,atomic_index(i_atomic)) + matmul(at%lattice,shifts(i_atomic,:))
+            end do
+
+            !build the grad_data matrix
+            descriptor_out%x(i)%has_grad_data(:) = .true.
+            do k=1,d
+             !find the pair of atoms contributing to this descriptor
+             do i_atomic=1,monomer_size
+               do j_atomic=i+1,monomer_size
+                 if (interatomic_distances(i_atomic,j_atomic)==dist_vec(k)) then
+                   descriptor_out%x(i)%grad_data(k,:,i_atomic) = -interatomic_vectors(i_atomic,j_atomic,:) / interatomic_distances(i_atomic,j_atomic)  ! descriptor wrt atom i_atomic
+                   descriptor_out%x(i)%grad_data(k,:,j_atomic) = -descriptor_out%x(i)%grad_data(k,:,i_atomic)        ! 1st descriptor wrt j_atomic
+!write(*,*) "descriptor dimension "//k//" wrt atoms "//atomic_index(i_atomic)//" and "//atomic_index(j_atomic)            
+                 end if
+               end do
+             end do
+            end do
+
+       
+         endif
+
+      enddo
+      deallocate(shifts)
+      deallocate(dist_vec)
+      deallocate(atomic_index)
+      deallocate(interatomic_vectors)
+      deallocate(interatomic_distances)
+      deallocate(general_monomer_index)
+      call system_timer('general_monomer_calc')
+
+   endsubroutine general_monomer_calc
+
+   subroutine general_dimer_calc(this,at,descriptor_out,do_descriptor,do_grad_descriptor,args_str,error)
+
+      type(general_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      type(descriptor_data), intent(out) :: descriptor_out
+      logical, intent(in), optional :: do_descriptor, do_grad_descriptor!, use_smooth_cutoff
+      character(len=*), intent(in), optional :: args_str 
+      integer, optional, intent(out) :: error
+      real(dp) :: r_one_two
+
+      logical :: my_do_descriptor, my_do_grad_descriptor, monomers_identical, use_smooth_cutoff, done_this_monomer
+      integer :: d, n_descriptors, n_cross, dimer_size, i, j, k, n, i_atomic, j_atomic, start, finish, i_desc
+      integer :: monomer_one_size, monomer_two_size, n_monomer_one, n_monomer_two
+      integer, dimension(1) :: unit_array
+      real(dp), dimension(3) :: diff_one_two
+      real(dp), dimension(:), allocatable :: dist_vec
+      real(dp), dimension(:,:), allocatable :: interatomic_distances
+      real(dp), dimension(:,:,:), allocatable :: interatomic_vectors
+      integer, dimension(3) :: temp_shift, shift_one_two
+      integer, dimension(:), allocatable :: atomic_index, atomic_index_one, atomic_index_two
+      integer, dimension(:,:), allocatable :: monomer_one_index, monomer_two_index, shifts, monomer_pairs
+
+
+      INIT_ERROR(error)
+      use_smooth_cutoff = .false.
+      call system_timer('general_dimer_calc')
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_dimer_calc: descriptor object not initialised", error)
+      endif
+
+      my_do_descriptor = optional_default(.false., do_descriptor)
+      my_do_grad_descriptor = optional_default(.false., do_grad_descriptor)
+      if (count(this%signature_one .ne. this%signature_two) .eq. 0) then
+        monomers_identical = .True.
+      else
+        monomers_identical = .False.
+      end if
+      monomer_one_size =size(this%signature_one) 
+      monomer_two_size =size(this%signature_two)
+      dimer_size = monomer_one_size + monomer_two_size
+
+      if( .not. my_do_descriptor .and. .not. my_do_grad_descriptor ) return
+
+      call finalise(descriptor_out)
+
+      d = general_dimer_dimensions(this,error)
+
+      allocate(shifts(dimer_size,3))
+      allocate(dist_vec(d))
+      allocate(atomic_index(dimer_size))
+      allocate(atomic_index_one(monomer_one_size))
+      allocate(atomic_index_two(monomer_two_size))
+      allocate(interatomic_vectors(dimer_size,dimer_size,3))
+      allocate(interatomic_distances(dimer_size,dimer_size))
+      interatomic_vectors = 0.0_dp
+      interatomic_distances = 0.0_dp
+
+      call find_general_monomer(at,monomer_one_index,this%signature_one,this%monomer_one_cutoff,this%atom_ordercheck,use_smooth_cutoff,error)
+      if (monomers_identical) then
+        allocate(monomer_two_index(size(monomer_one_index,1),size(monomer_one_index,2)))
+        monomer_two_index = monomer_one_index
+      else
+        call find_general_monomer(at,monomer_two_index,this%signature_two,this%monomer_two_cutoff,this%atom_ordercheck,use_smooth_cutoff,error)
+      end if
+!!$
+!!$do n =1, size(monomer_one_index,2)
+!!$  write(*,*) monomer_one_index(:,n)
+!!$end do
+!!$do n =1, size(monomer_two_index,2)
+!!$  write(*,*) monomer_two_index(:,n)
+!!$end do
+      n_monomer_one = size(monomer_one_index,2)
+      n_monomer_two = size(monomer_two_index,2)
+!write(*,*) "ready to find pairs!"
+      call find_monomer_pairs(at,monomer_pairs,monomer_one_index,monomer_two_index,monomers_identical,this%cutoff,error)
+      n_descriptors = size(monomer_pairs,2)
+!write(*,*) "ready to construct "//n_descriptors //" descriptors"
+      allocate(descriptor_out%x(n_descriptors))
+      do i = 1, n_descriptors
+         if(my_do_descriptor) then
+            allocate(descriptor_out%x(i)%data(d))
+            allocate(descriptor_out%x(i)%ci(dimer_size))
+            descriptor_out%x(i)%data = 0.0_dp
+            descriptor_out%x(i)%has_data = .false.
+            descriptor_out%x(i)%covariance_cutoff = 1.0_dp !will need to modify this when handling more stuff
+         endif
+         if(my_do_grad_descriptor) then 
+            allocate(descriptor_out%x(i)%grad_data(d,3,dimer_size))
+            allocate(descriptor_out%x(i)%ii(dimer_size))
+            allocate(descriptor_out%x(i)%pos(3,dimer_size))
+            allocate(descriptor_out%x(i)%has_grad_data(dimer_size))
+            descriptor_out%x(i)%grad_data = 0.0_dp
+            descriptor_out%x(i)%ii = 0
+            descriptor_out%x(i)%pos = 0.0_dp
+            descriptor_out%x(i)%has_grad_data = .false.
+
+            allocate(descriptor_out%x(i)%grad_covariance_cutoff(3,dimer_size))
+            descriptor_out%x(i)%grad_covariance_cutoff = 0.0_dp
+
+         endif
+      enddo
+
+
+      i_desc = 0
+      do i = 1, n_monomer_one 
+         if (.not. any(monomer_pairs(1,:) .eq. i)) cycle
+         done_this_monomer = .false.
+         !get indices of monomer and calc internal distances   
+         atomic_index_one = monomer_one_index(:,i) !store the indices of atoms in this monomer
+
+         !calc all positions relative to atom 1
+         do i_atomic=2,monomer_one_size
+           temp_shift=0
+           interatomic_vectors(1,i_atomic,:) = diff_min_image(at,atomic_index_one(1),atomic_index_one(i_atomic),shift=temp_shift)
+           shifts(i_atomic,:) = temp_shift
+         end do
+
+         !find other relative positions through vector addition
+         do j_atomic=2,monomer_one_size
+           do i_atomic=2,j_atomic-1
+             interatomic_vectors(i_atomic,j_atomic,:) = interatomic_vectors(1,j_atomic,:) -interatomic_vectors(1,i_atomic,:) 
+           end do
+         end do
+
+         !Now convert vectors to scalar distances
+         do i_atomic=1,monomer_one_size
+           do j_atomic=i+1,monomer_one_size
+             interatomic_distances(i_atomic,j_atomic) = norm(interatomic_vectors(i_atomic,j_atomic,:))
+           end do
+         end do    
+
+         ! Loop through monomers paired with this one to make dimers
+         do while (.not. done_this_monomer)
+           unit_array = maxloc(monomer_pairs(2,:), monomer_pairs(1,:) .eq. i) ! find a monomer paired with i
+           if (all(unit_array .eq. 0)) then
+             done_this_monomer = .true.
+             exit
+           end if
+           !get indices of monomer two
+           j = monomer_pairs(2,unit_array(1))
+           monomer_pairs(:,unit_array(1)) = 0 ! make sure this pair isn't found again
+           atomic_index_two = monomer_two_index(:,j)
+           atomic_index=(/atomic_index_one,atomic_index_two/)
+
+           i_desc = i_desc + 1 
+
+write(*,*) "THE ATOMS IN THE DIMER ARE: "//atomic_index
+
+           !calc all positions relative to atom 1 of monomer one
+           temp_shift=0
+           do i_atomic=monomer_one_size+1,dimer_size
+             interatomic_vectors(1,i_atomic,:) = diff_min_image(at,atomic_index(1),atomic_index(i_atomic),shift=temp_shift)
+             shifts(i_atomic,:) = temp_shift
+           end do
+
+           !find other relative positions through vector addition
+           do j_atomic=monomer_one_size+1,dimer_size
+             do i_atomic=2,j_atomic-1
+               interatomic_vectors(i_atomic,j_atomic,:) = interatomic_vectors(1,j_atomic,:) -interatomic_vectors(1,i_atomic,:)
+             end do
+           end do
+
+!find all positions the slow way to check
+!!$           do j_atomic=monomer_one_size+1,dimer_size
+!!$             do i_atomic=2,j_atomic-1
+!!$write(*,*) "Matrix Indices"
+!!$write(*,*) i_atomic//"  "//j_atomic
+!!$write(*,*) "Atoms"
+!!$write(*,*) atomic_index(i_atomic) //"  "// atomic_index(j_atomic) 
+!!$               if (norm(interatomic_vectors(i_atomic,j_atomic,:) -  diff_min_image(at,atomic_index(i_atomic),atomic_index(j_atomic),shift=temp_shift)) &
+!!$                    .ge. 0.000001) write(*,*) "doesn't agree" // norm(interatomic_vectors(i_atomic,j_atomic,:) -  diff_min_image(at,atomic_index(i_atomic),atomic_index(j_atomic),shift=temp_shift))
+!!$             end do
+!!$           end do
+
+           !Now convert vectors to scalar distances
+           do i_atomic=1,dimer_size
+             do j_atomic=monomer_one_size+1,dimer_size
+               interatomic_distances(i_atomic,j_atomic) = norm(interatomic_vectors(i_atomic,j_atomic,:))
+             end do
+           end do  
+
+
+           !Now take the whole matrix of scalar distances and combine into 1D array
+           start = 1
+           do i_atomic=1,dimer_size
+             finish=start + dimer_size-i_atomic
+             dist_vec(start:finish) = interatomic_distances(i_atomic,i_atomic+1:dimer_size)  
+             start = finish
+           end do
+write(*,*) "list of distances: "//dist_vec
+
+            if(my_do_descriptor) then
+              descriptor_out%x(i)%has_data = .true.
+              descriptor_out%x(i)%data = dist_vec 
+              descriptor_out%x(i)%ci(:) = atomic_index 
+              ! Some covariance cutoff stuff to be implemented- see water example above
+
+            endif
+
+            if(my_do_grad_descriptor) then !calc grads and update
+              descriptor_out%x(i)%ii(:) = atomic_index 
+              descriptor_out%x(i_desc)%pos(:,1) = at%pos(:,atomic_index(1))
+              do i_atomic=2,dimer_size
+                descriptor_out%x(i)%pos(:,i_atomic) = at%pos(:,atomic_index(i_atomic)) + matmul(at%lattice,shifts(i_atomic,:))
+              end do
+
+              !build the grad_data matrix
+              descriptor_out%x(i)%has_grad_data(:) = .true.
+              do k=1,d
+               !find the pair of atoms contributing to this component
+               do i_atomic=1,dimer_size
+                 do j_atomic=i_atomic+1,dimer_size
+                   if (interatomic_distances(i_atomic,j_atomic)==dist_vec(k)) then
+                     descriptor_out%x(i_desc)%grad_data(k,:,i_atomic) = -interatomic_vectors(i_atomic,j_atomic,:) / interatomic_distances(i_atomic,j_atomic)  ! descriptor wrt atom i_atomic 
+                     descriptor_out%x(i_desc)%grad_data(k,:,j_atomic) = -descriptor_out%x(i_desc)%grad_data(k,:,i_atomic)        ! descriptor wrt j_atomic          
+                   end if
+                 end do
+               end do
+              end do
+              ! Some covariance cutoff stuff to be implemented- see water example above
+!!$do k=1,d
+!!$  write(*,*) "component number: " //k
+!!$  do i_atomic=1,dimer_size
+!!$      write(*,*) descriptor_out%x(i_desc)%grad_data(k,:,i_atomic)
+!!$  end do
+!!$end do
+
+            endif
+         enddo
+      enddo
+
+      deallocate(monomer_one_index)
+      deallocate(monomer_two_index)
+      call system_timer('general_dimer_calc')
+
+   endsubroutine general_dimer_calc
+
    function descriptor_dimensions(this,error)
       type(descriptor), intent(in) :: this
       integer, optional, intent(out) :: error
@@ -6345,6 +6926,10 @@ module descriptors_module
             descriptor_dimensions = soap_dimensions(this%descriptor_soap,error)
          case(DT_AN_MONOMER)
             descriptor_dimensions = AN_monomer_dimensions(this%descriptor_AN_monomer,error)
+         case(DT_GENERAL_MONOMER)
+            descriptor_dimensions = general_monomer_dimensions(this%descriptor_general_monomer,error)
+         case(DT_GENERAL_DIMER)
+            descriptor_dimensions = general_dimer_dimensions(this%descriptor_general_dimer,error)
          case default
             RAISE_ERROR("descriptor_dimensions: unknown descriptor type "//this%descriptor_type,error)
       endselect
@@ -6675,6 +7260,42 @@ module descriptors_module
 
    endfunction AN_monomer_dimensions
 
+   function general_monomer_dimensions(this,error) result(i)
+      type(general_monomer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_monomer_dimensions: descriptor object not initialised", error)
+      endif
+      if(.not. this%permutation_data%initialised) then
+         RAISE_ERROR("general_monomer_dimensions: descriptor object's permutation data not initialised", error)
+      endif
+
+     i = size(this%permutation_data%dist_vec)
+
+   endfunction general_monomer_dimensions
+
+   function general_dimer_dimensions(this,error) result(i)
+      type(general_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_dimer_dimensions: descriptor object not initialised", error)
+      endif
+      if(.not. this%permutation_data%initialised) then
+         RAISE_ERROR("general_monomer_dimensions: descriptor object's permutation data not initialised", error)
+      endif
+
+     i = size(this%permutation_data%dist_vec)
+
+   endfunction general_dimer_dimensions
+
    function descriptor_cutoff(this,error)
       type(descriptor), intent(in) :: this
       integer, optional, intent(out) :: error
@@ -6723,6 +7344,10 @@ module descriptors_module
             descriptor_cutoff = cutoff(this%descriptor_soap,error)
          case(DT_AN_MONOMER)
             descriptor_cutoff = cutoff(this%descriptor_AN_monomer,error)
+         case(DT_GENERAL_MONOMER)
+            descriptor_cutoff = cutoff(this%descriptor_general_monomer,error)
+         case(DT_GENERAL_DIMER)
+            descriptor_cutoff = cutoff(this%descriptor_general_dimer,error)
          case default
             RAISE_ERROR("descriptor_cutoff: unknown descriptor type "//this%descriptor_type,error)
       endselect
@@ -7029,6 +7654,36 @@ module descriptors_module
 
    endfunction AN_monomer_cutoff
 
+   function general_monomer_cutoff(this,error) 
+      type(general_monomer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: general_monomer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_monomer_cutoff: descriptor object not initialised", error)
+      endif
+
+      general_monomer_cutoff = this%cutoff
+
+   endfunction general_monomer_cutoff
+
+   function general_dimer_cutoff(this,error) 
+      type(general_dimer), intent(in) :: this
+      integer, optional, intent(out) :: error
+      real(dp) :: general_dimer_cutoff
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_dimer_cutoff: descriptor object not initialised", error)
+      endif
+
+      general_dimer_cutoff = this%cutoff
+
+   endfunction general_dimer_cutoff
+
    subroutine descriptor_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(descriptor), intent(in) :: this
       type(atoms), intent(in) :: at
@@ -7079,12 +7734,15 @@ module descriptors_module
             call soap_sizes(this%descriptor_soap,at,n_descriptors,n_cross,mask,error=error)
          case(DT_AN_MONOMER)
             call AN_monomer_sizes(this%descriptor_AN_monomer,at,n_descriptors,n_cross,mask,error=error)
+         case(DT_GENERAL_MONOMER)
+            call general_monomer_sizes(this%descriptor_general_monomer,at,n_descriptors,n_cross,mask,error=error)
+         case(DT_GENERAL_DIMER)
+            call general_dimer_sizes(this%descriptor_general_dimer,at,n_descriptors,n_cross,mask,error=error)
          case default
             RAISE_ERROR("descriptor_sizes: unknown descriptor type "//this%descriptor_type,error)
       endselect
 
    endsubroutine descriptor_sizes
-
    subroutine bispectrum_SO4_sizes(this,at,n_descriptors,n_cross,mask,error)
       type(bispectrum_SO4), intent(in) :: this
       type(atoms), intent(in) :: at
@@ -7783,11 +8441,53 @@ module descriptors_module
 
    endsubroutine AN_monomer_sizes
 
+   subroutine general_monomer_sizes(this,at,n_descriptors,n_cross,mask,error)
+      type(general_monomer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
+      integer, optional, intent(out) :: error
+
+      integer :: i
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_monomer_sizes: descriptor object not initialised", error)
+      endif
+      n_descriptors = 1
+      n_cross=4
+
+   endsubroutine general_monomer_sizes
+
+   subroutine general_dimer_sizes(this,at,n_descriptors,n_cross,mask,error)
+   ! this is a dummy subroutine which just returns the result for a single dimer. For general molecules it's not trivial to count the number 
+   ! of monomers or dimers, so it's not done in advance. The arrays monomer_one_index and monomer_two_index are built without knowing their
+   ! final sizes at the outset
+      type(general_dimer), intent(in) :: this
+      type(atoms), intent(in) :: at
+      integer, intent(out) :: n_descriptors, n_cross
+      logical, dimension(:), intent(in), optional :: mask
+      integer, optional, intent(out) :: error
+
+      integer :: i, j, n
+      real(dp) :: r_ij
+
+      INIT_ERROR(error)
+
+      if(.not. this%initialised) then
+         RAISE_ERROR("general_dimer_sizes: descriptor object not initialised", error)
+      endif
+      n_descriptors = 1
+      n_cross=7
+   
+   endsubroutine general_dimer_sizes
+
    function descriptor_n_permutations(this,error)
       type(descriptor), intent(in) :: this
       integer, optional, intent(out) :: error
 
-      integer :: descriptor_n_permutations
+      integer :: descriptor_n_permutations, i
 
       INIT_ERROR(error)
 
@@ -7809,6 +8509,16 @@ module descriptors_module
             else
                descriptor_n_permutations = factorial(this%descriptor_AN_monomer%N)
             endif
+         case(DT_GENERAL_MONOMER)
+            if (.not. this%descriptor_general_monomer%permutation_data%initialised)then
+              RAISE_ERROR("descriptor_n_permutations: permutation_data not initialised "//this%descriptor_type,error) 
+            end if
+            descriptor_n_permutations = this%descriptor_general_monomer%permutation_data%n_perms
+         case(DT_GENERAL_DIMER)
+            if (.not. this%descriptor_general_dimer%permutation_data%initialised)then
+              RAISE_ERROR("descriptor_n_permutations: permutation_data not initialised "//this%descriptor_type,error) 
+            end if
+            descriptor_n_permutations = this%descriptor_general_dimer%permutation_data%n_perms
          case default
             RAISE_ERROR("descriptor_permutations: unknown descriptor type "//this%descriptor_type,error)
       endselect
@@ -7816,7 +8526,7 @@ module descriptors_module
    endfunction descriptor_n_permutations
 
    subroutine descriptor_permutations(this,permutations,error)
-      type(descriptor), intent(in) :: this
+      type(descriptor), intent(inout) :: this
       integer, dimension(:,:), intent(out) :: permutations
       integer, optional, intent(out) :: error
 
@@ -7863,10 +8573,10 @@ module descriptors_module
 
             if(this%descriptor_AN_monomer%do_atomic) then
                atom_permutations(1,:) = 0
-               call generate_permutations(atom_permutations(2:this%descriptor_AN_monomer%N,:))
+               call generate_AN_permutations(atom_permutations(2:this%descriptor_AN_monomer%N,:))
                atom_permutations = atom_permutations + 1
             else
-               call generate_permutations(atom_permutations(:,:))
+               call generate_AN_permutations(atom_permutations(:,:))
             endif
 
             i = 0
@@ -7895,13 +8605,32 @@ module descriptors_module
             enddo
             deallocate(distance_matrix,atom_permutations)
 
+         case(DT_GENERAL_MONOMER)
+            if (.not. this%descriptor_general_monomer%permutation_data%initialised) then
+              RAISE_ERROR("descriptor_permutations: permutation_data not initialised "//this%descriptor_type,error)
+            else if (this%descriptor_general_monomer%permutation_data%perm_number /= 1) then
+              RAISE_ERROR("descriptor_permutations: permutation_data%perm_number must be initialised to one"//this%descriptor_type,error)
+            end if
+
+            call next(1,this%descriptor_general_monomer%permutation_data%counter,this%descriptor_general_monomer%permutation_data%rank, this%descriptor_general_monomer%permutation_data%perm_array,&
+                                                                  this%descriptor_general_monomer%permutation_data%dist_vec_permutations,this%descriptor_general_monomer%permutation_data%perm_number)
+            permutations=this%descriptor_general_monomer%permutation_data%dist_vec_permutations
+         case(DT_GENERAL_DIMER)
+            if (.not. this%descriptor_general_dimer%permutation_data%initialised)then
+              RAISE_ERROR("descriptor_permutations: permutation_data not initialised "//this%descriptor_type,error)
+            else if (this%descriptor_general_dimer%permutation_data%perm_number /= 1) then
+              RAISE_ERROR("descriptor_permutations: permutation_data%perm_number must be initialised to one"//this%descriptor_type,error)
+            end if
+            call next(1,this%descriptor_general_dimer%permutation_data%counter,this%descriptor_general_dimer%permutation_data%rank, this%descriptor_general_dimer%permutation_data%perm_array, &
+                                                                     this%descriptor_general_dimer%permutation_data%dist_vec_permutations,this%descriptor_general_dimer%permutation_data%perm_number)
+            permutations=this%descriptor_general_dimer%permutation_data%dist_vec_permutations
          case default
             RAISE_ERROR("descriptor_permutations: unknown descriptor type "//this%descriptor_type,error)
       endselect
 
    endsubroutine descriptor_permutations
 
-   subroutine generate_permutations(this,list,error)
+   subroutine generate_AN_permutations(this,list,error)
       integer, dimension(:,:), intent(out) :: this
       integer, dimension(:), intent(in), optional :: list
       integer, optional, intent(out) :: error
@@ -7959,7 +8688,7 @@ module descriptors_module
          this(:,p) = my_list
       enddo
 
-   endsubroutine generate_permutations
+   endsubroutine generate_AN_permutations
 
    subroutine real_space_fourier_coefficients(at,l_max,atom_coefficient)
       type(atoms), intent(in) :: at
