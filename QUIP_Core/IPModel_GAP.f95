@@ -393,7 +393,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end do
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
-
      if(do_sparseScore) then
         do i = 1, size(my_descriptor_data%x)
            call print('DESCRIPTOR '//i//' SPARSE_SCORE = '//sparseScore(i))
@@ -438,7 +437,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if (allocated(atom_mask_reverse_lookup)) deallocate(atom_mask_reverse_lookup)
 
 #endif
-
 end subroutine IPModel_GAP_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
