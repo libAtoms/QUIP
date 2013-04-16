@@ -419,7 +419,6 @@ module descriptors_module
 
    type descriptor_data
       type(descriptor_data_mono), dimension(:), allocatable :: x
-      logical :: atom_based = .false.
    endtype descriptor_data
 
    type cplx_1d
@@ -6562,7 +6561,7 @@ module descriptors_module
       do i = 1, n_descriptors
 
          atomic_index = general_monomer_index(:,i) !stores the indices of atoms in this monomer
-write(*,*) "THE ATOMS IN THE MONOMER ARE : "// atomic_index
+!write(*,*) "THE ATOMS IN THE MONOMER ARE : "// atomic_index
          !calc all positions relative to atom 1
          do i_atomic=2,monomer_size
            temp_shift=0
@@ -6787,7 +6786,7 @@ write(*,*) "THE ATOMS IN THE MONOMER ARE : "// atomic_index
 
            i_desc = i_desc + 1 
 
-write(*,*) "THE ATOMS IN THE DIMER ARE: "//atomic_index
+!write(*,*) "THE ATOMS IN THE DIMER ARE: "//atomic_index
 
            !calc all positions relative to atom 1 of monomer one
            temp_shift=0
@@ -6830,7 +6829,7 @@ write(*,*) "THE ATOMS IN THE DIMER ARE: "//atomic_index
              dist_vec(start:finish) = interatomic_distances(i_atomic,i_atomic+1:dimer_size)  
              start = finish
            end do
-write(*,*) "list of distances: "//dist_vec
+!write(*,*) "list of distances: "//dist_vec
 
             if(my_do_descriptor) then
               descriptor_out%x(i)%has_data = .true.
@@ -8526,7 +8525,8 @@ write(*,*) "list of distances: "//dist_vec
    endfunction descriptor_n_permutations
 
    subroutine descriptor_permutations(this,permutations,error)
-      type(descriptor), intent(inout) :: this
+      type(descriptor), intent(in) :: this
+      type(permutation_data_type) :: my_permutation_data
       integer, dimension(:,:), intent(out) :: permutations
       integer, optional, intent(out) :: error
 
@@ -8612,18 +8612,21 @@ write(*,*) "list of distances: "//dist_vec
               RAISE_ERROR("descriptor_permutations: permutation_data%perm_number must be initialised to one"//this%descriptor_type,error)
             end if
 
-            call next(1,this%descriptor_general_monomer%permutation_data%counter,this%descriptor_general_monomer%permutation_data%rank, this%descriptor_general_monomer%permutation_data%perm_array,&
-                                                                  this%descriptor_general_monomer%permutation_data%dist_vec_permutations,this%descriptor_general_monomer%permutation_data%perm_number)
-            permutations=this%descriptor_general_monomer%permutation_data%dist_vec_permutations
+            my_permutation_data = this%descriptor_general_monomer%permutation_data
+            call next(my_permutation_data, 1)
+            permutations=my_permutation_data%dist_vec_permutations
+
          case(DT_GENERAL_DIMER)
             if (.not. this%descriptor_general_dimer%permutation_data%initialised)then
               RAISE_ERROR("descriptor_permutations: permutation_data not initialised "//this%descriptor_type,error)
             else if (this%descriptor_general_dimer%permutation_data%perm_number /= 1) then
               RAISE_ERROR("descriptor_permutations: permutation_data%perm_number must be initialised to one"//this%descriptor_type,error)
             end if
-            call next(1,this%descriptor_general_dimer%permutation_data%counter,this%descriptor_general_dimer%permutation_data%rank, this%descriptor_general_dimer%permutation_data%perm_array, &
-                                                                     this%descriptor_general_dimer%permutation_data%dist_vec_permutations,this%descriptor_general_dimer%permutation_data%perm_number)
-            permutations=this%descriptor_general_dimer%permutation_data%dist_vec_permutations
+
+            my_permutation_data = this%descriptor_general_dimer%permutation_data 
+            call next(my_permutation_data, 1)
+            permutations=my_permutation_data%dist_vec_permutations
+
          case default
             RAISE_ERROR("descriptor_permutations: unknown descriptor type "//this%descriptor_type,error)
       endselect

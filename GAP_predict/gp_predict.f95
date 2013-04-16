@@ -1739,9 +1739,7 @@ module gp_predict_module
 
       call system_timer('gpFull_covarianceMatrix_sparse_LinearAlgebra')
       call initialise(LA_covariance_subY_subY,this%covariance_subY_subY)
-do i_y=1, size(this%covariance_subY_subY,1)
-write(*,*) this%covariance_subY_subY(i_y,:)
-enddo
+
       call Matrix_Solve(LA_covariance_subY_subY, this%covariance_subY_y, this%inverse_sparse_full,error=error)
       call finalise(LA_covariance_subY_subY)
       call system_timer('gpFull_covarianceMatrix_sparse_LinearAlgebra')

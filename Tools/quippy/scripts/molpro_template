@@ -1,0 +1,10 @@
+memory,100,M
+basis,avdz
+geom=
+charge=-1
+rks,b-lyp,maxit=200
+force
+
+
+
+
