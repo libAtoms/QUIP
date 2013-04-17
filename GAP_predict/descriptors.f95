@@ -3307,7 +3307,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(2))
+            allocate(descriptor_out%x(i)%ci(2))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -3549,7 +3549,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(1))
+            allocate(descriptor_out%x(i)%ci(1))
             descriptor_out%x(i)%has_data = .false.
          endif
 
@@ -4269,7 +4269,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(1))
+            allocate(descriptor_out%x(i)%ci(1))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4510,7 +4510,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(6))
+            allocate(descriptor_out%x(i)%ci(6))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4535,7 +4535,7 @@ module descriptors_module
       enddo
 
       allocate(water_monomer_index(3,n_monomers))
-      call find_water_monomer(at,water_monomer_index,OHH_ordercheck=this%OHH_ordercheck,error=error)
+      call find_water_monomer(at,water_monomer_index,OHH_ordercheck=this%OHH_ordercheck,monomer_cutoff=this%monomer_cutoff,error=error)
 
       i_desc = 0
       do i = 1, n_monomers
@@ -4711,7 +4711,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(4))
+            allocate(descriptor_out%x(i)%ci(4))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
@@ -4825,7 +4825,7 @@ module descriptors_module
          if(my_do_descriptor) then
             allocate(descriptor_out%x(i)%data(d))
             descriptor_out%x(i)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(4))
+            allocate(descriptor_out%x(i)%ci(4))
             descriptor_out%x(i)%has_data = .false.
          endif
          if(my_do_grad_descriptor) then
