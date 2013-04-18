@@ -2216,7 +2216,7 @@ contains
     logical, optional :: common_seed
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
-
+!$  character(len=SYSTEM_STRING_LENGTH) :: omp_stacksize
     integer:: actual_seed, i, ran_dummy
     integer:: values(20) ! for time inquiry function
     logical :: use_common_seed
@@ -2239,6 +2239,12 @@ contains
 !$OMP parallel
 !$OMP master
 !$  call print('System::Hello World: OpenMP parallelisation with '//OMP_get_num_threads()//' threads')
+!$  call get_env_var('OMP_STACKSIZE',omp_stacksize)
+!$  if(len_trim(omp_stacksize) == 0) then
+!$     call print_warning('System::Hello World: environment variable OMP_STACKSIZE not set explicitly. The default value - system and compiler dependent - may be too small for some applications.')
+!$  else
+!$     call print('System::Hello World: OMP_STACKSIZE='//trim(omp_stacksize))
+!$  endif
 !$OMP end master
 !$OMP end parallel
     if(present(seed)) then
