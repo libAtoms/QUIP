@@ -2408,14 +2408,15 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
   end subroutine delete_metal_connects
 
-  subroutine find_water_monomer(at,water_index,OHH_ordercheck,error)
+  subroutine find_water_monomer(at,water_index,OHH_ordercheck,monomer_cutoff,error)
 
      type(atoms), intent(in) :: at
      integer, dimension(3,at%N/3), intent(out) :: water_index
      logical, intent(in), optional :: OHH_ordercheck
+     real(dp), intent(in), optional :: monomer_cutoff
      integer, intent(out), optional :: error
 
-     real(dp) :: r, roh1, roh2
+     real(dp) :: r, roh1, roh2, my_monomer_cutoff
      integer :: i, j, n, h1, h2, oindex, iO, iH1, iH2
      logical, dimension(at%N) :: H_associated
      logical :: do_OHH_ordercheck
@@ -2426,6 +2427,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      H_associated = .false.
 
      do_OHH_ordercheck = optional_default(.true.,OHH_ordercheck)
+     my_monomer_cutoff = optional_default(at%cutoff, monomer_cutoff)
 
      if(do_OHH_ordercheck) then
         do i = 1, at%N
@@ -2433,8 +2435,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
               oindex = oindex + 1
 
 
-              roh1 = 1.3_dp ! initialise smaller oh distance
-              roh2 = 1.3_dp ! initialise larger oh distance
+              roh1 = my_monomer_cutoff ! initialise smaller oh distance
+              roh2 = my_monomer_cutoff ! initialise larger oh distance
               h1 = 0
               h2 = 0
               do n = 1, n_neighbours(at, i)
@@ -2455,7 +2457,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
                  end if
               end do
               if(h1 == 0 .or. h2 == 0) then
-                 RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2//" with cutoff of 1.3 A", error)
+                 RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2//" with cutoff of "//my_monomer_cutoff//" A", error)
 !                 call write(at, "stdout")
               end if
               H_associated(h1) = .true.
