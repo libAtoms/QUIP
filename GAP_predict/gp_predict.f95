@@ -1739,7 +1739,6 @@ module gp_predict_module
 
       call system_timer('gpFull_covarianceMatrix_sparse_LinearAlgebra')
       call initialise(LA_covariance_subY_subY,this%covariance_subY_subY)
-
       call Matrix_Solve(LA_covariance_subY_subY, this%covariance_subY_y, this%inverse_sparse_full,error=error)
       call finalise(LA_covariance_subY_subY)
       call system_timer('gpFull_covarianceMatrix_sparse_LinearAlgebra')
@@ -1985,8 +1984,9 @@ module gp_predict_module
       real(dp) :: gpCoordinates_Covariance
 
       integer :: i_p, x_i_size, x_j_size, i
-      real(dp) :: covarianceExp, covarianceDiag_x_x_i, covarianceDiag_x_x_j
+      real(dp) :: covarianceExp, covarianceDiag_x_x_i, covarianceDiag_x_x_j, covarianceExp_ii, covarianceExp_jj, gpCoordinates_Covariance_ii, gpCoordinates_Covariance_jj, normalisation
       real(dp), dimension(:), pointer :: x_i, x_j, grad_Covariance_Diag_i, grad_Covariance_Diag_j
+      real(dp), dimension(:), allocatable :: grad_Covariance_ii, grad_Covariance_jj, xI_xI, xI_xI_theta2, xJ_xJ, xJ_xJ_theta2
       real(dp), dimension(this%d) :: xI_xJ_theta2, xI_xJ
 
       INIT_ERROR(error)
@@ -2141,6 +2141,71 @@ module gp_predict_module
             !   gpCoordinates_Covariance = gpCoordinates_Covariance + covarianceExp*fc_i*fc_j
             !endif
          enddo
+
+         if( this%n_permutations > 1 ) then
+            gpCoordinates_Covariance_ii = 0.0_dp
+            gpCoordinates_Covariance_jj = 0.0_dp
+
+            allocate(xI_xI(this%d), xI_xI_theta2(this%d), xJ_xJ(this%d), xJ_xJ_theta2(this%d))
+
+            if(present(grad_Covariance_i)) then
+               allocate(grad_Covariance_ii(this%d))
+               grad_Covariance_ii = 0.0_dp
+            endif
+
+            if(present(grad_Covariance_j)) then
+               allocate(grad_Covariance_jj(this%d))
+               grad_Covariance_jj = 0.0_dp
+            endif
+
+            do i_p = 1, this%n_permutations
+
+               xI_xI = (x_i(this%permutations(:,i_p)) - x_i)
+               xI_xI_theta2 = xI_xI / this%theta**2
+
+               xJ_xJ = (x_j(this%permutations(:,i_p)) - x_j)
+               xJ_xJ_theta2 = xJ_xJ / this%theta**2
+
+               covarianceExp_ii = this%delta**2 * exp( -0.5_dp * dot_product(xI_xI_theta2,xI_xI) )
+               covarianceExp_jj = this%delta**2 * exp( -0.5_dp * dot_product(xJ_xJ_theta2,xJ_xJ) )
+
+               gpCoordinates_Covariance_ii = gpCoordinates_Covariance_ii + covarianceExp_ii
+               gpCoordinates_Covariance_jj = gpCoordinates_Covariance_jj + covarianceExp_jj
+
+               if(present(grad_Covariance_i)) then
+                  grad_Covariance_ii = grad_Covariance_ii - covarianceExp_ii * xI_xI_theta2
+               endif
+
+               if(present(grad_Covariance_j)) then
+                  grad_Covariance_jj = grad_Covariance_jj - covarianceExp_jj * xJ_xJ_theta2
+               endif
+
+               if(present(grad2_Covariance)) then
+                  RAISE_ERROR('grad2_Covariance for n_permutations > 1 not implemented yet',error)
+               endif
+            enddo
+
+            normalisation = sqrt(gpCoordinates_Covariance_ii * gpCoordinates_Covariance_jj)
+
+            if(present(grad_Covariance_i)) then
+               grad_Covariance_i = grad_Covariance_i / normalisation - grad_Covariance_ii * gpCoordinates_Covariance / normalisation / gpCoordinates_Covariance_ii
+            endif
+
+            if(present(grad_Covariance_j)) then
+               grad_Covariance_j = grad_Covariance_j / normalisation - grad_Covariance_jj * gpCoordinates_Covariance / normalisation / gpCoordinates_Covariance_jj
+            endif
+            
+            gpCoordinates_Covariance = gpCoordinates_Covariance / normalisation
+
+            if(allocated(grad_Covariance_ii)) deallocate(grad_Covariance_ii)
+            if(allocated(grad_Covariance_jj)) deallocate(grad_Covariance_jj)
+            if(allocated(xI_xI)) deallocate(xI_xI)
+            if(allocated(xI_xI_theta2)) deallocate(xI_xI_theta2)
+            if(allocated(xJ_xJ)) deallocate(xJ_xJ)
+            if(allocated(xJ_xJ_theta2)) deallocate(xJ_xJ_theta2)
+         else
+            normalisation = 1.0_dp
+         endif
 
          gpCoordinates_Covariance = gpCoordinates_Covariance + this%f0**2
       endif
@@ -3712,14 +3777,14 @@ module gp_predict_module
 
       real(dp) :: gpCoordinates_Predict
 
-      real(dp) :: covarianceExp
+      real(dp) :: covarianceExp, gpCoordinates_Covariance_ii, gpCoordinates_Covariance_jj, covarianceExp_ii, covarianceExp_jj, normalisation
       real(dp), pointer :: fc_i
       real(dp), dimension(:), pointer :: x_i
       real(dp), dimension(this%d) :: xI_xJ_theta
       real(dp), dimension(this%n_sparseX) :: k
       integer :: i_sparseX, i_p
       real(dp) :: delta, covariance_x_x, diag_covariance
-      real(dp), allocatable :: covariance_x_xStars(:), alpha_scaled(:)
+      real(dp), dimension(:), allocatable :: covariance_x_xStars, alpha_scaled, grad_Covariance_jj, xI_xI_theta, xJ_xJ_theta
       real(dp), dimension(:), pointer :: xPrime_i
       real(dp), dimension(:), allocatable, target :: grad_kStar, k_mm_k
       real(dp), dimension(:,:), allocatable, target :: grad_k
@@ -3743,7 +3808,10 @@ module gp_predict_module
       if(present(gradPredict)) then
          allocate(grad_k(size(xStar),this%n_sparseX))
          grad_k = 0.0_dp
+         if( this%n_permutations > 1 ) allocate(grad_Covariance_jj(this%d))
       endif
+
+      if( this%n_permutations > 1 ) allocate(xI_xI_theta(this%d), xJ_xJ_theta(this%d))
 
       if (this%covariance_type == COVARIANCE_DOT_PRODUCT) then
 	 allocate(covariance_x_xStars(this%n_sparseX))
@@ -3789,6 +3857,37 @@ module gp_predict_module
 		  if(present(gradPredict)) grad_k(:,i_sparseX) = grad_k(:,i_sparseX) + covarianceExp*xI_xJ_theta / this%theta
 		  k(i_sparseX) = k(i_sparseX) + covarianceExp
 	       enddo
+
+               if( this%n_permutations > 1 ) then
+
+                  gpCoordinates_Covariance_ii = 0.0_dp
+                  gpCoordinates_Covariance_jj = 0.0_dp
+                  !gpCoordinates_Covariance_ii => this%sparseCovariance(i_sparseX)
+
+                  if(present(gradPredict)) grad_Covariance_jj = 0.0_dp
+
+                  do i_p = 1, this%n_permutations
+                     xI_xI_theta = (x_i(this%permutations(:,i_p)) - x_i) / this%theta
+                     xJ_xJ_theta = ( xStar(this%permutations(:,i_p)) - xStar(:) ) / this%theta
+                     covarianceExp_ii = this%delta**2 * exp( -0.5_dp * dot_product(xI_xI_theta,xI_xI_theta) )
+                     covarianceExp_jj = this%delta**2 * exp( -0.5_dp * dot_product(xJ_xJ_theta,xJ_xJ_theta) )
+                     gpCoordinates_Covariance_ii = gpCoordinates_Covariance_ii + covarianceExp_ii
+                     gpCoordinates_Covariance_jj = gpCoordinates_Covariance_jj + covarianceExp_jj
+
+                     if(present(gradPredict)) then
+                        grad_Covariance_jj = grad_Covariance_jj + covarianceExp_jj * xJ_xJ_theta / this%theta
+                     endif
+                  enddo
+
+                  normalisation = sqrt(gpCoordinates_Covariance_ii * gpCoordinates_Covariance_jj)
+
+                  if(present(gradPredict)) then
+                     grad_k(:,i_sparseX) = grad_k(:,i_sparseX) / normalisation - grad_Covariance_jj * k(i_sparseX) / normalisation / gpCoordinates_Covariance_jj
+                  endif
+
+                  k(i_sparseX) = k(i_sparseX) / normalisation
+
+               endif
 	       k(i_sparseX) = k(i_sparseX) * fc_i + this%f0**2
 	       if(present(gradPredict)) grad_k(:,i_sparseX) = grad_k(:,i_sparseX) * fc_i
 	    endif
@@ -3829,6 +3928,9 @@ module gp_predict_module
       if(allocated(alpha_scaled)) deallocate(alpha_scaled)
       if(allocated(grad_k)) deallocate(grad_k)
       if(allocated(grad_kStar)) deallocate(grad_kStar)
+      if(allocated(grad_Covariance_jj)) deallocate(grad_Covariance_jj)
+      if(allocated(xI_xI_theta)) deallocate(xI_xI_theta)
+      if(allocated(xJ_xJ_theta)) deallocate(xJ_xJ_theta)
 
    endfunction gpCoordinates_Predict
 
