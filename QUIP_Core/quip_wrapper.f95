@@ -50,7 +50,7 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
   implicit none
 
   integer, intent(in) :: N
-  real(dp), dimension(3,3), intent(in) :: lattice
+  real(dp), dimension(3,3), intent(inout) :: lattice
   character(len=3), dimension(N), intent(in) :: symbol
   character(len=STRING_LENGTH) :: args_str
   real(dp), dimension(3,N), intent(in) :: coord
@@ -63,6 +63,8 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
   type(MPI_context), save :: mpi_glob
 
   integer :: i
+  real(dp) :: cut, clustlenx, clustleny, clustlenz, boxlenx, boxleny, boxlenz
+  real(dp), dimension(3) :: upper, lower
 
   logical, save :: first_run = .true.
 
@@ -79,6 +81,22 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
   if( .not. first_run .and. (N /= at%N) ) then
      call finalise(at)
      call initialise(at,N,lattice)
+  endif
+
+  if(lattice(1,1) == 0.0_dp) then
+     lower = minval(coord, dim=2)
+     upper = maxval(coord, dim=2)
+     cut = cutoff(pot)
+
+     clustlenx = abs(upper(1) - lower(1))
+     clustleny = abs(upper(2) - lower(2))
+     clustlenz = abs(upper(3) - lower(3))
+
+     boxlenx = clustlenx + 2*cut + 1.0_dp
+     boxleny = clustleny + 2*cut + 1.0_dp
+     boxlenz = clustlenz + 2*cut + 1.0_dp
+
+     lattice = reshape((/ boxlenx, 0.0_dp, 0.0_dp, 0.0_dp, boxleny, 0.0_dp, 0.0_dp, 0.0_dp, boxlenz /), shape(lattice))
   endif
 
   call set_lattice(at,lattice, scale_positions=.false.)
