@@ -33,7 +33,7 @@ This is the top level directory for QUIP, libAtoms and friends.
 1) decide your architecture by looking at the Makefiles/README, and
 define an environmental variable QUIP_ARCH, e.g. 
 
-   export QUIP_ARCH=darwin_x86_64_gfortran
+   export QUIP_ARCH=linux_x86_64_ifort_icc
 
 You may well need to create your own Makefiles/Makefile.${QUIP_ARCH}
 file based on an existing file.
