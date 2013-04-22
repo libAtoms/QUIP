@@ -72,10 +72,10 @@ module minimization_module
   end interface
 
   ! LBFGS stuff
-  external LB2
+  external QUIPLB2
   integer::MP,LP
   real(dp)::GTOL,STPMIN,STPMAX
-  common /lb3/MP,LP,GTOL,STPMIN,STPMAX
+  common /quiplb3/MP,LP,GTOL,STPMIN,STPMAX
 
 CONTAINS
 

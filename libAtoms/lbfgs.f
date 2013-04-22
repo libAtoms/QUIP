@@ -196,9 +196,9 @@ C    ON THE DRIVER:
 C
 C    The program that calls LBFGS must contain the declaration:
 C
-C                       EXTERNAL LB2
+C                       EXTERNAL QUIPLB2
 C
-C    LB2 is a BLOCK DATA that defines the default values of several
+C    QUIPLB2 is a BLOCK DATA that defines the default values of several
 C    parameters described in the COMMON section. 
 C
 C 
@@ -208,7 +208,7 @@ C
 C     The subroutine contains one common area, which the user may wish to
 C    reference:
 C 
-         COMMON /LB3/MP,LP,GTOL,STPMIN,STPMAX
+         COMMON /QUIPLB3/MP,LP,GTOL,STPMIN,STPMAX
 C 
 C    MP  is an INTEGER variable with default value 6. It is used as the
 C        unit number for the printing of the monitoring information
@@ -242,7 +242,7 @@ C
 C
 C  GENERAL INFORMATION
 C 
-C    Other routines called directly:  DAXPY, DDOT, LB1, MCSRCH
+C    Other routines called directly:  DAXPY, DDOT, QUIPLB1, MCSRCH
 C 
 C    Input/Output  :  No input; diagnostic messages on unit MP and
 C                     error messages on unit LP.
@@ -308,7 +308,7 @@ C
       FTOL= 1.0D-4
       MAXFEV= 20
 C
-      IF(IPRINT(1).GE.0) CALL LB1(IPRINT,ITER,NFUN,
+      IF(IPRINT(1).GE.0) CALL QUIPLB1(IPRINT,ITER,NFUN,
      *                     GNORM,N,M,X,F,G,STP,FINISH)
 C
 C    --------------------
@@ -413,7 +413,7 @@ C
       XNORM= DMAX1(1.0D0,XNORM)
       IF (GNORM/XNORM .LE. EPS) FINISH=.TRUE.
 C
-      IF(IPRINT(1).GE.0) CALL LB1(IPRINT,ITER,NFUN,
+      IF(IPRINT(1).GE.0) CALL QUIPLB1(IPRINT,ITER,NFUN,
      *               GNORM,N,M,X,F,G,STP,FINISH)
       IF (FINISH) THEN
          IFLAG=0
@@ -454,7 +454,7 @@ C
 C     LAST LINE OF SUBROUTINE LBFGS
 C
 C
-      SUBROUTINE LB1(IPRINT,ITER,NFUN,
+      SUBROUTINE QUIPLB1(IPRINT,ITER,NFUN,
      *                     GNORM,N,M,X,F,G,STP,FINISH)
 C
 C     -------------------------------------------------------------
@@ -465,7 +465,7 @@ C
       INTEGER IPRINT(2),ITER,NFUN,LP,MP,N,M,I
       DOUBLE PRECISION X(N),G(N),F,GNORM,STP,GTOL,STPMIN,STPMAX
       LOGICAL FINISH
-      COMMON /LB3/MP,LP,GTOL,STPMIN,STPMAX
+      COMMON /QUIPLB3/MP,LP,GTOL,STPMIN,STPMAX
 C
       IF (ITER.EQ.0)THEN
            WRITE(MP,10)
@@ -529,10 +529,10 @@ C   ----------------------------------------------------------
 C     DATA 
 C   ----------------------------------------------------------
 C
-      BLOCK DATA LB2
+      BLOCK DATA QUIPLB2
       INTEGER LP,MP
       DOUBLE PRECISION GTOL,STPMIN,STPMAX
-      COMMON /LB3/MP,LP,GTOL,STPMIN,STPMAX
+      COMMON /QUIPLB3/MP,LP,GTOL,STPMIN,STPMAX
       DATA MP,LP,GTOL,STPMIN,STPMAX/6,6,9.0D-01,1.0D-20,1.0D+20/
       END
 C
@@ -649,7 +649,7 @@ C
       DOUBLE PRECISION F,STP,FTOL,GTOL,XTOL,STPMIN,STPMAX
       DOUBLE PRECISION X(N),G(N),S(N),WA(N)
       INTEGER MP,LP
-      COMMON /LB3/MP,LP,GTOL,STPMIN,STPMAX
+      COMMON /QUIPLB3/MP,LP,GTOL,STPMIN,STPMAX
       SAVE
 C
 C                     SUBROUTINE MCSRCH
