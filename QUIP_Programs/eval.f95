@@ -110,7 +110,7 @@ implicit none
   type(bispectrum_so4) :: bis
 #endif
 
-  logical do_calc, did_anything
+  logical do_calc, did_anything, did_help, param_file_exists
   logical test_ok
   integer error
 
@@ -201,7 +201,7 @@ implicit none
   call param_register(cli_params, 'EvsV_NdVsteps', '1', EvsV_NdVsteps, help_string="number of times to increase the volume when doing EvsV")
   
 
-  if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
+  if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
     call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)
@@ -216,10 +216,15 @@ implicit none
   end if
   call finalise(cli_params)
 
+  if(did_help) call system_abort("Run without --help")
+
   call print ("Using calc args: " // trim(calc_args))
   call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
+
+  inquire(file=trim(param_file), exist=param_file_exists)
+  if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
 
   call print ("Using param_file: " // trim(param_file))
   call print ("Using init args: " // trim(init_args))
