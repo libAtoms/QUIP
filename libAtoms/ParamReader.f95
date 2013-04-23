@@ -339,13 +339,14 @@ module paramreader_module
     !% Read and parse line and update the key/value pairs stored by
     !% in a Dictionary object. Returns false if an error is encountered parsing
     !% the line.
-    function param_read_line(dict, myline, ignore_unknown, check_mandatory, task) result(status)
+    function param_read_line(dict, myline, ignore_unknown, check_mandatory, task, did_help) result(status)
 
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       character(len=*), intent(in) :: myline  !% Line to parse
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       logical, intent(in), optional :: check_mandatory !% If true, check for missing mandatory parameters
       character(len=*), intent(in), optional :: task
+      logical, intent(out), optional :: did_help
       logical :: status
 
       character(len=STRING_LENGTH) :: field
@@ -362,6 +363,8 @@ module paramreader_module
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
       my_check_mandatory=optional_default(.true., check_mandatory)
+
+      if(present(did_help)) did_help = .false.
 
       call split_string(myline," ,","''"//'""'//'{}', final_fields, num_pairs, matching=.true.)
 
@@ -408,9 +411,10 @@ module paramreader_module
          end if
 
 	 if (trim(key) == "--help") then
-	    call param_print_help(dict)
-	    cycle
-	 endif
+            if(present(did_help)) did_help = .true.
+            call param_print_help(dict)
+            cycle
+         endif
            
          ! Extract this value
          if (.not. get_value(dict, key, data, i=entry_i)) then
@@ -503,13 +507,14 @@ module paramreader_module
     !% arguments that we should look at, in order, if it's not given we look
     !% at all arguments.  Returns false if fails, or if optional check that
     !% all mandatory values have been specified fails.
-    function param_read_args(dict, args, check_mandatory,ignore_unknown,task,command_line) result(status)
+    function param_read_args(dict, args, check_mandatory,ignore_unknown,task,command_line, did_help) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       integer, dimension(:), intent(in), optional :: args !% Argument indices to use
       logical, intent(in), optional :: check_mandatory !% Should we check if all mandatory parameters have been given
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       character(len=*), intent(in), optional :: task
       character(len=*), intent(out), optional :: command_line
+      logical, intent(out), optional :: did_help
       logical :: status
 
       integer :: i, nargs
@@ -566,7 +571,7 @@ module paramreader_module
       deallocate(xargs)
 
       ! Then parse this string, and return success or failure
-      status = param_read_line(dict, my_command_line,ignore_unknown=my_ignore_unknown, task=task)
+      status = param_read_line(dict, my_command_line,ignore_unknown=my_ignore_unknown, task=task, did_help=did_help)
       if (.not. status) return
 
       status = .true.
