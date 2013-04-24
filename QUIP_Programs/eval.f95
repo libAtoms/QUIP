@@ -262,6 +262,7 @@ implicit none
   endif
   if(has_pressure) external_pressure = reshape(pressure, (/3,3/))
 
+  if( eval_port_status == 0 ) call system_command('echo 0 | nc 127.0.0.1 '//eval_port) ! send a signal that eval is ready to evaluate
   ! main loop over frames
   do 
      call read(at, infile, error=error)
