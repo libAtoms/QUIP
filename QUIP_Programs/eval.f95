@@ -112,7 +112,8 @@ implicit none
 
   logical do_calc, did_anything, did_help, param_file_exists
   logical test_ok
-  integer error
+  integer error, eval_port_status, eval_port
+  character(STRING_LENGTH) :: eval_port_str
 
   integer i, n_iter, j
 
@@ -217,6 +218,13 @@ implicit none
   call finalise(cli_params)
 
   if(did_help) call system_abort("Run without --help")
+
+  call get_env_var("EVAL_PORT",eval_port_str, eval_port_status)
+  if(eval_port_status == 0) then
+     eval_port = string_to_int(trim(eval_port_str))
+  else
+     eval_port = 32768
+  endif
 
   call print ("Using calc args: " // trim(calc_args))
   call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
@@ -622,6 +630,7 @@ implicit none
 
      call write(at, 'stdout', prefix='AT')
 
+     if( eval_port_status == 0 ) call system_command('echo '//at%N//' | nc 127.0.0.1 '//eval_port)
      call finalise(at)
 
   enddo
