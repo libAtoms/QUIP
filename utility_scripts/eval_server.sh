@@ -37,6 +37,7 @@ function init_eval {
    EVAL_PID=$(( ${GREP1_PID} - 1 ))
    GREP2_PID=$(( ${GREP1_PID} - 2 ))
    TAIL_PID=$(( ${GREP1_PID} - 3 ))
+   EVAL_STARTED=$(nc -l ${EVAL_PORT})
    echo "done"
 }
 
@@ -89,6 +90,7 @@ function help_init_eval {
 
 function quit_eval {
    echo "eval server exiting..."
+   trap - SIGINT SIGTERM
    kill -INT ${GREP1_PID} ${EVAL_PID} ${GREP2_PID} ${TAIL_PID} 
    wait ${GREP1_PID} ${EVAL_PID} ${GREP2_PID} ${TAIL_PID} 2>/dev/null
    rm -rf ${TMP_INPUT} ${TMP_OUTPUT}
