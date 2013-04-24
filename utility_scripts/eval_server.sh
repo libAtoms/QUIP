@@ -1,6 +1,7 @@
 #!/bin/bash
 
 QUIP_DIR=~/QUIP/build.linux_x86_64_gfortran
+export GFORTRAN_UNBUFFERED_ALL=Y
 
 trap quit_eval SIGINT SIGTERM
 
@@ -26,12 +27,12 @@ function init_eval {
    EVAL_PORT=`( netstat  -atn | awk '{printf "%s\n%s\n", $4, $4}' | grep -oE '[0-9]*$'; seq 32768 61000 ) | sort -n | uniq -u | head -n 1`
    export EVAL_PORT
 
-   TMP_INPUT=$(mktemp -u)
+   TMP_INPUT=$(mktemp -u /tmp/temp.XXXXX)
    mkfifo $TMP_INPUT
 
-   TMP_OUTPUT=$(mktemp)
+   TMP_OUTPUT=$(mktemp /tmp/temp.XXXXX)
 
-   stdbuf -i0 -o0 tail -f ${TMP_INPUT} | stdbuf -i0 -o0 ${QUIP_DIR}/eval param_file=${PARAM_FILE} init_args={${INIT_ARGS}} e f relax relax_tol=1.0e-8 >${TMP_OUTPUT} 2>/dev/null &
+   tail -f ${TMP_INPUT} | grep --line-buffered '' | ${QUIP_DIR}/eval param_file=${PARAM_FILE} init_args={${INIT_ARGS}} e f relax relax_tol=1.0e-8 | grep --line-buffered '' >${TMP_OUTPUT} 2>/dev/null &
    EVAL_PID=$!
    TAIL_PID=$(( ${EVAL_PID} - 1 ))
    echo "done"
@@ -71,9 +72,9 @@ function run_eval {
       return
    fi
   
-   stdbuf -i0 -o0 cat ${INPUT_FILE} >>${TMP_INPUT}
+   cat ${INPUT_FILE} | grep --line-buffered '' >>${TMP_INPUT}
    N_ATOMS=$(nc -l ${EVAL_PORT})
-   grep "^AT" ${TMP_OUTPUT} | tail -$((${N_ATOMS}+2)) | colrm 1 3 >>${OUTPUT_FILE}
+   grep --line-buffered "^AT" ${TMP_OUTPUT} | tail -$((${N_ATOMS}+2)) | colrm 1 3 >>${OUTPUT_FILE}
 }
 
 function help_run_eval {
