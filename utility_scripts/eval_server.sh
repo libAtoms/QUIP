@@ -32,9 +32,11 @@ function init_eval {
 
    TMP_OUTPUT=$(mktemp /tmp/temp.XXXXX)
 
-   tail -f ${TMP_INPUT} | grep --line-buffered '' | ${QUIP_DIR}/eval param_file=${PARAM_FILE} init_args={${INIT_ARGS}} e f relax relax_tol=1.0e-8 | grep --line-buffered '' >${TMP_OUTPUT} 2>/dev/null &
-   EVAL_PID=$!
-   TAIL_PID=$(( ${EVAL_PID} - 1 ))
+   tail -f ${TMP_INPUT} | grep --line-buffered '' | ${QUIP_DIR}/eval param_file=${PARAM_FILE} init_args={${INIT_ARGS}} e f relax relax_tol=1.0e-8  2>/dev/null | grep --line-buffered '' >${TMP_OUTPUT} &
+   GREP1_PID=$!
+   EVAL_PID=$(( ${GREP1_PID} - 1 ))
+   GREP2_PID=$(( ${GREP1_PID} - 2 ))
+   TAIL_PID=$(( ${GREP1_PID} - 3 ))
    echo "done"
 }
 
@@ -87,9 +89,8 @@ function help_init_eval {
 
 function quit_eval {
    echo "eval server exiting..."
-   echo "" >${TMP_INPUT}
-   kill -TERM ${TAIL_PID}
-   # kill -TERM ${EVAL_PID}
+   kill -INT ${GREP1_PID} ${EVAL_PID} ${GREP2_PID} ${TAIL_PID} 
+   wait ${GREP1_PID} ${EVAL_PID} ${GREP2_PID} ${TAIL_PID} 2>/dev/null
    rm -rf ${TMP_INPUT} ${TMP_OUTPUT}
    echo "done"
 }
