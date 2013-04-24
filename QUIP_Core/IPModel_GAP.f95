@@ -371,7 +371,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
         call system_timer('IPModel_GAP_Calc_gp_predict')
         if(present(e) .or. present(local_e)) then
-           local_e_in( my_descriptor_data%x(i)%ci ) = local_e_in( my_descriptor_data%x(i)%ci ) + this%e0 + &
+           local_e_in( my_descriptor_data%x(i)%ci ) = local_e_in( my_descriptor_data%x(i)%ci ) + &
                 e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
         endif
         if(present(f) .or. present(virial) .or. present(local_virial)) then
@@ -413,8 +413,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   endif
 
   if(present(f)) f = this%E_scale*f
-  if(present(e)) e = this%E_scale*sum(local_e_in)
-  if(present(local_e)) local_e = this%E_scale*local_e_in
+  if(present(e)) e = this%E_scale*(sum(local_e_in) + this%e0*at%N)
+  if(present(local_e)) local_e = this%E_scale*(local_e_in + this%e0)
   if(present(virial)) virial = this%E_scale*sum(virial_in,dim=3)
 
   if(present(local_virial)) then
