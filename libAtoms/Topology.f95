@@ -69,7 +69,8 @@ public :: next_motif, find_motif_backbone
              find_water_monomer, find_A2_monomer, find_AB_monomer, &
 	     find_molecule_ids, &
              find_general_monomer, &
-             find_monomer_pairs
+             find_monomer_pairs, &
+             find_monomer_triplets
 
 
 !parameters for Run_Type
@@ -2869,6 +2870,79 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      end do
 
    end subroutine find_monomer_pairs  
+
+   subroutine find_monomer_triplets(at,monomer_triplets,monomer_pairs,monomer_one_index,monomer_two_index,monomer_three_index,one_three_identical,two_three_identical,cutoff,error)
+   ! loops through pairs of monomers made by find_monomer_pairs above and makes trimers if a third monomer is within cutoff. Returns 3 by n array, 
+   ! the elements of which refer to the second index of the monomer_one_index, monomer_two_index, and monomer_three_index matrices respectively. 
+     type(atoms), intent(in) :: at
+     logical, intent(in) :: one_three_identical, two_three_identical
+     integer, intent(in), dimension(:,:) :: monomer_one_index, monomer_two_index, monomer_three_index
+     integer, intent(out), optional :: error
+     integer, dimension(:,:), intent(in) :: monomer_pairs
+     integer, dimension(:,:), intent(out), allocatable :: monomer_triplets
+     integer, dimension(:,:), allocatable :: monomer_triplets_working
+     integer, dimension(:), allocatable :: atomic_index_one_two, atomic_index_one, atomic_index_two
+     integer :: i, j, k, m, n, m_atomic, k_atomic, i_desc
+     real(dp) :: dist
+     real(dp), intent(in) :: cutoff
+     real(dp), dimension(3) :: diff
+     integer, dimension(3) :: shift
+     integer, dimension(2) :: temp
+
+     allocate(monomer_triplets(3,0))
+     allocate(monomer_triplets_working(3,0))
+     allocate(atomic_index_one(size(monomer_one_index,1)))
+     allocate(atomic_index_two(size(monomer_two_index,1)))
+     allocate(atomic_index_one_two(size(monomer_one_index,1)+size(monomer_two_index,1)))
+     i_desc=0
+
+     do m=1,size(monomer_pairs,2) ! m is the index of the monomer pair
+       i = monomer_pairs(1,m)
+       j = monomer_pairs(2,m)
+!       atomic_index_one =  monomer_index_one(:,i)     
+!       atomic_index_two =  monomer_index_two(:,i) 
+       atomic_index_one_two = (/monomer_one_index(:,i), monomer_two_index(:,i) /)
+
+       do m_atomic =1,size(atomic_index_one_two)
+        !loop over neighbours, check within cutoff and is belongs to a monomer_three
+         do n = 1, n_neighbours(at,atomic_index_one_two(m_atomic))
+
+           k_atomic = neighbour(at,atomic_index_one(m_atomic),n,distance=dist, diff=diff, shift=shift)
+           if( dist >= cutoff ) cycle
+           temp = maxloc(monomer_three_index, monomer_three_index .eq. k_atomic)
+           if (any(temp .eq. 0)) cycle
+           k = temp(2)
+
+           if (any(monomer_triplets(1,:) .eq. i .and. monomer_triplets(2,:) .eq. j .and. monomer_triplets(3,:) .eq. k )) cycle !check if this triplet has already been found.
+
+          !check equivalent triplet hasn't already been found
+           if (one_three_identical) then
+             if (k .eq. i) cycle
+             if (any(monomer_triplets(1,:) .eq. k .and. monomer_triplets(2,:) .eq. j .and. monomer_triplets(3,:) .eq. i )) cycle
+           end if
+           if (two_three_identical) then
+             if (k .eq. j) cycle
+             if (any(monomer_triplets(1,:) .eq. i .and. monomer_triplets(2,:) .eq. k .and. monomer_triplets(3,:) .eq. j )) cycle 
+           end if
+           if (one_three_identical .and. two_three_identical) then ! permutations where i and j are switched were already excluded in monomer pairs
+             if (any(monomer_triplets(1,:) .eq. k .and. monomer_triplets(2,:) .eq. i .and. monomer_triplets(3,:) .eq. j )) cycle 
+             if (any(monomer_triplets(1,:) .eq. j .and. monomer_triplets(2,:) .eq. k .and. monomer_triplets(3,:) .eq. i )) cycle 
+           end if
+
+           i_desc = i_desc + 1
+           deallocate(monomer_triplets_working)
+           allocate(monomer_triplets_working(3,size(monomer_triplets,2)))
+           monomer_triplets_working = monomer_triplets
+           deallocate(monomer_triplets)
+           allocate(monomer_triplets(3,i_desc))
+           monomer_triplets(:,:-2) = monomer_triplets_working
+           monomer_triplets(:,i_desc) = (/ i, j, k /)
+
+         end do
+       end do
+     end do
+
+   end subroutine find_monomer_triplets  
 
 
 
