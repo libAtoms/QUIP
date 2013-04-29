@@ -357,7 +357,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 !$omp parallel default(none) private(i,gradPredict, e_i,n,j,pos,f_gp) shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_sparseScore,sparseScore,f) reduction(+:local_e_in,f_in,virial_in)
 
-!$omp do
+!$omp do schedule(dynamic)
      do i = 1, size(my_descriptor_data%x)
         if( .not. my_descriptor_data%x(i)%has_data ) cycle
 
