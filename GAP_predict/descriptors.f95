@@ -5933,25 +5933,30 @@ module descriptors_module
       logical :: has_atom_mask_name
       logical, dimension(:), pointer :: atom_mask_pointer
 
-      type(cplx_1d), dimension(:), allocatable :: SphericalY_ij
-      type(cplx_2d), dimension(:), allocatable :: grad_SphericalY_ij
+      type(cplx_1d), dimension(:), allocatable, save :: SphericalY_ij
+      type(cplx_2d), dimension(:), allocatable, save :: grad_SphericalY_ij
 
       !SPEED type(cplx_1d), dimension(:,:,:), allocatable :: fourier_so3
       !SPEED type(cplx_2d), dimension(:,:,:), allocatable :: grad_fourier_so3
-      type(real_1d), dimension(:,:,:), allocatable :: fourier_so3_r, fourier_so3_i
+      type(real_1d), dimension(:,:,:), allocatable, save :: fourier_so3_r, fourier_so3_i
       type(real_2d), dimension(:,:,:), allocatable :: grad_fourier_so3_r, grad_fourier_so3_i
       real(dp), allocatable :: t_g_r(:,:), t_g_i(:,:), t_f_r(:,:), t_f_i(:,:), t_g_f_rr(:,:), t_g_f_ii(:,:)
       integer :: alpha
 
       logical :: my_do_descriptor, my_do_grad_descriptor
-      integer :: d, i, j, n, a, b, k, l, m, i_desc, i_pow, l_n_neighbours, n_i, n_descriptors, n_cross, i_species, j_species, ia, jb
+      integer :: d, i, j, n, a, b, k, l, m, i_pow, l_n_neighbours, n_i, n_descriptors, n_cross, i_species, j_species, ia, jb, i_desc_i
       integer, dimension(3) :: shift_ij
+      integer, dimension(:), allocatable :: i_desc
       integer, dimension(:,:), allocatable :: rs_index
       real(dp) :: r_ij, arg_bess, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm, mo_spher_bess_fi_ki_lp, exp_p, exp_m, f_cut, df_cut, norm_descriptor_i
       real(dp), dimension(3) :: u_ij, d_ij
-      real(dp), dimension(:,:), allocatable :: radial_fun, radial_coefficient, grad_radial_fun, grad_radial_coefficient, grad_descriptor_i
-      real(dp), dimension(:), allocatable :: descriptor_i
+      real(dp), dimension(:,:), allocatable, save :: radial_fun, radial_coefficient, grad_radial_fun, grad_radial_coefficient, grad_descriptor_i
+      real(dp), dimension(:), allocatable, save :: descriptor_i
       integer, dimension(116) :: species_map
+!$omp threadprivate(radial_fun, radial_coefficient, grad_radial_fun, grad_radial_coefficient)
+!$omp threadprivate(fourier_so3_r, fourier_so3_i)
+!$omp threadprivate(SphericalY_ij,grad_SphericalY_ij)
+!$omp threadprivate(descriptor_i, grad_descriptor_i)
 
       INIT_ERROR(error)
 
@@ -6020,10 +6025,13 @@ module descriptors_module
          call descriptor_sizes(this,at,n_descriptors,n_cross,error=error)
       endif
 
-      allocate(descriptor_i(d))
-      if(my_do_grad_descriptor) allocate(grad_descriptor_i(d,3))
 
       allocate(descriptor_out%x(n_descriptors))
+      allocate(i_desc(at%N))
+
+!$omp parallel default(none) shared(this,my_do_grad_descriptor,d) private(i_species, a, l)
+      allocate(descriptor_i(d))
+      if(my_do_grad_descriptor) allocate(grad_descriptor_i(d,3))
 
       allocate(radial_fun(0:this%l_max, this%n_max), radial_coefficient(0:this%l_max, this%n_max)) 
       !SPEED allocate(fourier_so3(0:this%l_max,this%n_max,this%n_species), SphericalY_ij(0:this%l_max))
@@ -6051,8 +6059,10 @@ module descriptors_module
          allocate(SphericalY_ij(l)%m(-l:l))
          if(my_do_grad_descriptor) allocate(grad_SphericalY_ij(l)%mm(3,-l:l))
       enddo
+!$omp end parallel
 
       i_desc = 0
+      i_desc_i = 0
       do i = 1, at%N
 
          if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
@@ -6060,52 +6070,56 @@ module descriptors_module
             if(.not. atom_mask_pointer(i)) cycle
          endif
 
-         i_desc = i_desc + 1
+         i_desc_i = i_desc_i + 1
+         i_desc(i) = i_desc_i
 
          if(my_do_descriptor) then
-            allocate(descriptor_out%x(i_desc)%data(d))
+            allocate(descriptor_out%x(i_desc_i)%data(d))
             !slow, no need
-	    !descriptor_out%x(i_desc)%data = 0.0_dp
-            allocate(descriptor_out%x(i_desc)%ci(1))
-            descriptor_out%x(i_desc)%has_data = .false.
-            descriptor_out%x(i_desc)%covariance_cutoff = 1.0_dp
+	    !descriptor_out%x(i_desc_i)%data = 0.0_dp
+            allocate(descriptor_out%x(i_desc_i)%ci(1))
+            descriptor_out%x(i_desc_i)%has_data = .false.
+            descriptor_out%x(i_desc_i)%covariance_cutoff = 1.0_dp
          endif
          if(my_do_grad_descriptor) then
             l_n_neighbours = n_neighbours(at,i,max_dist=this%cutoff)
 
-            allocate(descriptor_out%x(i_desc)%grad_data(d,3,0:l_n_neighbours))
-            allocate(descriptor_out%x(i_desc)%ii(0:l_n_neighbours))
-            allocate(descriptor_out%x(i_desc)%pos(3,0:l_n_neighbours))
-            allocate(descriptor_out%x(i_desc)%has_grad_data(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc_i)%grad_data(d,3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc_i)%ii(0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc_i)%pos(3,0:l_n_neighbours))
+            allocate(descriptor_out%x(i_desc_i)%has_grad_data(0:l_n_neighbours))
 	    ! slow, no need
-            ! descriptor_out%x(i_desc)%grad_data = 0.0_dp
-            descriptor_out%x(i_desc)%grad_data(:,:,0) = 0.0_dp
-            descriptor_out%x(i_desc)%ii = 0
-            descriptor_out%x(i_desc)%pos = 0.0_dp
-            descriptor_out%x(i_desc)%has_grad_data = .false.
+            ! descriptor_out%x(i_desc_i)%grad_data = 0.0_dp
+            descriptor_out%x(i_desc_i)%grad_data(:,:,0) = 0.0_dp
+            descriptor_out%x(i_desc_i)%ii = 0
+            descriptor_out%x(i_desc_i)%pos = 0.0_dp
+            descriptor_out%x(i_desc_i)%has_grad_data = .false.
 
-            allocate(descriptor_out%x(i_desc)%grad_covariance_cutoff(3,0:l_n_neighbours))
-            descriptor_out%x(i_desc)%grad_covariance_cutoff = 0.0_dp
+            allocate(descriptor_out%x(i_desc_i)%grad_covariance_cutoff(3,0:l_n_neighbours))
+            descriptor_out%x(i_desc_i)%grad_covariance_cutoff = 0.0_dp
          endif
       enddo
 
-      i_desc = 0
+!$omp parallel do schedule(dynamic) default(none) shared(this, at, descriptor_out, my_do_descriptor, my_do_grad_descriptor, d, i_desc, species_map, rs_index) &
+!$omp private(i, j, i_species, j_species, a, b, l, m, n, n_i, r_ij, u_ij, d_ij, shift_ij, i_pow, ia, jb, alpha, i_desc_i) &
+!$omp private(grad_fourier_so3_r,grad_fourier_so3_i,t_g_r, t_g_i, t_f_r, t_f_i, t_g_f_rr, t_g_f_ii) &
+!$omp private(f_cut, df_cut, arg_bess, exp_p, exp_m, mo_spher_bess_fi_ki_l, mo_spher_bess_fi_ki_lp, mo_spher_bess_fi_ki_lm, mo_spher_bess_fi_ki_lmm, norm_descriptor_i)
       do i = 1, at%N
 
-         if( at%Z(i) /= this%Z .and. this%Z /=0 ) cycle
-         if(associated(atom_mask_pointer)) then
-            if(.not. atom_mask_pointer(i)) cycle
+         if(i_desc(i) == 0) then
+            cycle
+         else
+            i_desc_i = i_desc(i)
          endif
-         i_desc = i_desc + 1
 
          if(my_do_descriptor) then
-            descriptor_out%x(i_desc)%ci(1) = i
-            descriptor_out%x(i_desc)%has_data = .true.
+            descriptor_out%x(i_desc_i)%ci(1) = i
+            descriptor_out%x(i_desc_i)%has_data = .true.
          endif
          if(my_do_grad_descriptor) then
-            descriptor_out%x(i_desc)%ii(0) = i
-            descriptor_out%x(i_desc)%pos(:,0) = at%pos(:,i)
-            descriptor_out%x(i_desc)%has_grad_data(0) = .true.
+            descriptor_out%x(i_desc_i)%ii(0) = i
+            descriptor_out%x(i_desc_i)%pos(:,0) = at%pos(:,i)
+            descriptor_out%x(i_desc_i)%has_grad_data(0) = .true.
             !SPEED allocate( grad_fourier_so3(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
             allocate( grad_fourier_so3_r(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
             allocate( grad_fourier_so3_i(0:this%l_max,this%n_max,n_neighbours(at,i,max_dist=this%cutoff)) )
@@ -6144,9 +6158,9 @@ module descriptors_module
             i_species = species_map(at%Z(j))
 
             if(my_do_grad_descriptor) then
-               descriptor_out%x(i_desc)%ii(n_i) = j
-               descriptor_out%x(i_desc)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
-               descriptor_out%x(i_desc)%has_grad_data(n_i) = .true.
+               descriptor_out%x(i_desc_i)%ii(n_i) = j
+               descriptor_out%x(i_desc_i)%pos(:,n_i) = at%pos(:,j) + matmul(at%lattice,shift_ij)
+               descriptor_out%x(i_desc_i)%has_grad_data(n_i) = .true.
             endif
 
             f_cut = coordination_function(r_ij,this%cutoff, this%cutoff_transition_width)
@@ -6258,8 +6272,8 @@ module descriptors_module
          norm_descriptor_i = sqrt(dot_product(descriptor_i,descriptor_i))
 
          if(my_do_descriptor) then
-            descriptor_out%x(i_desc)%data = descriptor_i / norm_descriptor_i
-            descriptor_out%x(i_desc)%data(d) = this%covariance_sigma0
+            descriptor_out%x(i_desc_i)%data = descriptor_i / norm_descriptor_i
+            descriptor_out%x(i_desc_i)%data(d) = this%covariance_sigma0
          endif
 
          if(my_do_grad_descriptor) then
@@ -6361,12 +6375,12 @@ module descriptors_module
 
                grad_descriptor_i(d, 1:3) = 0.0_dp
 
-               descriptor_out%x(i_desc)%grad_data(:,:,n_i) = grad_descriptor_i / norm_descriptor_i
+               descriptor_out%x(i_desc_i)%grad_data(:,:,n_i) = grad_descriptor_i / norm_descriptor_i
                do k = 1, 3
-                  descriptor_out%x(i_desc)%grad_data(:,k,n_i) = descriptor_out%x(i_desc)%grad_data(:,k,n_i) - descriptor_i * dot_product(descriptor_i,grad_descriptor_i(:,k)) / norm_descriptor_i**3
+                  descriptor_out%x(i_desc_i)%grad_data(:,k,n_i) = descriptor_out%x(i_desc_i)%grad_data(:,k,n_i) - descriptor_i * dot_product(descriptor_i,grad_descriptor_i(:,k)) / norm_descriptor_i**3
                enddo
 
-               descriptor_out%x(i_desc)%grad_data(:,:,0) = descriptor_out%x(i_desc)%grad_data(:,:,0) - descriptor_out%x(i_desc)%grad_data(:,:,n_i)
+               descriptor_out%x(i_desc_i)%grad_data(:,:,0) = descriptor_out%x(i_desc_i)%grad_data(:,:,0) - descriptor_out%x(i_desc_i)%grad_data(:,:,n_i)
             enddo !ni
 	    deallocate(t_f_r, t_f_i)
 	    deallocate(t_g_r, t_g_i)
@@ -6388,6 +6402,7 @@ module descriptors_module
          endif
 
       enddo ! i
+!$omp end parallel do
 
       !SPEED if(allocated(fourier_so3)) then
       !SPEED    do i_species = 1, this%n_species
@@ -6399,6 +6414,8 @@ module descriptors_module
       !SPEED    enddo
       !SPEED    deallocate(fourier_so3)
       !SPEED endif
+
+!$omp parallel default(none) private(i_species, a, l)
       if(allocated(fourier_so3_r)) then
          do i_species = lbound(fourier_so3_r,3), ubound(fourier_so3_r,3)
             do a = lbound(fourier_so3_r,2), ubound(fourier_so3_r,2)
@@ -6440,7 +6457,10 @@ module descriptors_module
       if(allocated(grad_radial_coefficient)) deallocate(grad_radial_coefficient)
       if(allocated(descriptor_i)) deallocate(descriptor_i)
       if(allocated(grad_descriptor_i)) deallocate(grad_descriptor_i)
+!$omp end parallel
+
       if(allocated(rs_index)) deallocate(rs_index)
+      if(allocated(i_desc)) deallocate(i_desc)
 
       call system_timer('soap_calc')
 
