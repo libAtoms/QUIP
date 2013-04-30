@@ -38,6 +38,7 @@ module clustering_module
   integer, parameter  :: n_trial = 10
   integer, parameter  :: n_trial_k_med = 100
   real(dp), parameter :: cluster_jitter = 1.0e-7_dp
+  real(dp), parameter :: KMEANS_THRESHOLD = 1.0e-6_dp
 
   type lst
      integer, dimension(:), allocatable :: object
@@ -69,7 +70,12 @@ module clustering_module
      n = size(x,2)
 
      if( present(theta) ) then
-        my_theta => theta
+        if( size(theta) == d) then
+           my_theta => theta
+        else
+           allocate(my_theta(d))
+           my_theta = theta(1)
+        endif
      else
         allocate(my_theta(d))
 
@@ -84,11 +90,25 @@ module clustering_module
      endif
 
      do i = 1, n
-        do j = i, n
-           dm(j,i) = normsq( (x(:,j) - x(:,i)) / my_theta ) + cluster_jitter*ran_uniform()
-           dm(i,j) = dm(j,i)
+        do j = i + 1, n
+           dm(j,i) = cluster_jitter*ran_uniform()
         enddo
         dm(i,i) = 0.0_dp
+     enddo
+
+!$omp parallel do default(none) shared(dm,n,x,my_theta) private(i,j) schedule(dynamic)
+     do i = 1, n
+        do j = i + 1, n
+           dm(j,i) = dm(j,i) + sqrt( sum( ( (x(:,j) - x(:,i)) / my_theta )**2 ) )
+           dm(i,j) = dm(j,i)
+        enddo
+     enddo
+!$omp end parallel do
+
+     do i = 1, n
+        do j = i + 1, n
+           dm(i,j) = dm(j,i)
+        enddo
      enddo
 
      if( present(theta) ) then
@@ -218,7 +238,7 @@ module clustering_module
      integer, dimension(:), allocatable :: sub_cluster1, sub_cluster2, sub_cluster1_min, sub_cluster2_min
      integer, dimension(1) :: ml
      integer  :: stat, i, j, k, km, m, n, nc, &
-     & lo_med, hi_med, lo_med_new, hi_med_new, lo_med_min, hi_med_min, n1, n2, n1_min, n2_min
+     lo_med, hi_med, lo_med_new, hi_med_new, lo_med_min, hi_med_min, n1, n2, n1_min, n2_min, iter
 
      n = size(x,2)
 
@@ -228,7 +248,9 @@ module clustering_module
      allocate(my_cluster%dm(n,n),stat=stat)
      if(stat /=0 ) call system_abort('bisect_kmedoids: could not allocate dm matrix.')
 
+     call print('Started distance matrix calculation',verbosity=PRINT_NERD)
      call distance_matrix(x,my_cluster%dm,theta_fac=theta_fac,theta=theta)
+     call print('Finished distance matrix calculation',verbosity=PRINT_NERD)
 
      ! start clustering
      my_cluster%N = 1                               ! start with one big cluster
@@ -247,7 +269,11 @@ module clustering_module
      ! main loop starts here, bisects initial clusters until desired number of
      ! clusters are found
                                                        
+     iter = 0
      do
+        iter = iter + 1
+        call print("Starting iteration "//iter,verbosity=PRINT_NERD)
+
         if( my_cluster%N == n_clusters_in )  exit
         max_sse = -1.0_dp                                 ! select cluster with greatest sse
         do j = 1, my_cluster%N
@@ -446,7 +472,7 @@ module clustering_module
      real(dp), dimension(:), intent(in), target, optional :: theta
 
      real(dp), dimension(:), pointer :: my_theta => null()
-     real(dp) :: my_theta_fac, d_min, d_ij
+     real(dp) :: my_theta_fac, d_min, d_ij, d_total, d_total_prev
 
      real(dp), dimension(:,:), allocatable :: cluster_centre
      integer, dimension(:), allocatable :: cluster_info
@@ -483,14 +509,17 @@ module clustering_module
      cluster_info = 0
 
      iter = 0
+     d_total = huge(1.0_dp)
      do 
         iter = iter + 1
         call print("iteration: "//iter,verbosity=PRINT_NERD)
         cluster_same = .true.
 
+        d_total_prev = d_total
+        d_total = 0.0_dp
 !$omp parallel do default(none) shared(n,m,x,cluster_info,cluster_centre,my_theta) &
 !$omp reduction(.and.:cluster_same) &
-!$omp private(i,j,d_min,d_ij,cluster_info_old)
+!$omp private(i,j,d_min,d_ij,cluster_info_old) reduction(+:d_total)
         do i = 1, n
            d_min = huge(0.0_dp)
            cluster_info_old = cluster_info(i)
@@ -502,8 +531,10 @@ module clustering_module
               endif
            enddo
            if( cluster_info_old /= cluster_info(i) ) cluster_same = cluster_same .and. .false.
+           d_total = d_total + d_min
         enddo
 !$omp end parallel do        
+        call print("d_total: "//d_total,verbosity=PRINT_NERD)
 
 !$omp parallel do default(none) shared(x,cluster_centre,cluster_info,m,d) private(j,k)
         do j = 1, m
@@ -513,6 +544,7 @@ module clustering_module
         enddo
 !$omp end parallel do
         if( cluster_same ) exit
+        if( (d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
      enddo
 
      do j = 1, m
