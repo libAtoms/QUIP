@@ -2151,8 +2151,8 @@ contains
 
     call date_and_time(values=values)
     call print("")
-    call print('System::Finalise: '//date_and_time_string(values))
-    call print("System::Finalise: Bye-Bye!")
+    call print('libAtoms::Finalise: '//date_and_time_string(values))
+    call print("libAtoms::Finalise: Bye-Bye!")
     call finalise(mainlog)
     call finalise(errorlog)
 #ifdef _MPI
@@ -2228,12 +2228,12 @@ contains
 
     call date_and_time(values=values)
 
-    call print('System::Hello World: '//date_and_time_string(values))
-    call print('System::Hello World: SVN version  '//current_version())
-    call print('System::Hello World: QUIP_ARCH    '//QUIP_ARCH)
-    call print('System::Hello World: compiled on  '//__DATE__//' at '//__TIME__)
+    call print('libAtoms::Hello World: '//date_and_time_string(values))
+    call print('libAtoms::Hello World: SVN version  '//current_version())
+    call print('libAtoms::Hello World: QUIP_ARCH    '//QUIP_ARCH)
+    call print('libAtoms::Hello World: compiled on  '//__DATE__//' at '//__TIME__)
 #ifdef _MPI
-    call print('System::Hello World: MPI parallelisation with '//mpi_n_procs()//' processes')
+    call print('libAtoms::Hello World: MPI parallelisation with '//mpi_n_procs()//' processes')
 #endif
 !   Open MP stuff
 !$OMP parallel
@@ -2258,9 +2258,9 @@ contains
        if (present(common_seed)) use_common_seed = common_seed
 #ifdef _MPI
        if (.not. use_common_seed) then
-          call print('system::Hello World: MPI run with different seeds on each process')
+          call print('libAtoms::Hello World: MPI run with different seeds on each process')
        else
-          call print('system::Hello World: MPI run with the same seed on each process')
+          call print('libAtoms::Hello World: MPI run with the same seed on each process')
 
           ! Broadcast seed from process 0 to all others
           call MPI_Bcast(actual_seed, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, PRINT_ALWAYS)
@@ -2269,7 +2269,7 @@ contains
 #endif
     end if
 
-    call print('System::Hello World: Random Seed = '//actual_seed)
+    call print('libAtoms::Hello World: Random Seed = '//actual_seed)
     call system_set_random_seeds(actual_seed)
 
     ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
@@ -2279,7 +2279,7 @@ contains
     enddo
 !$OMP end parallel
 
-    call print('System::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
+    call print('libAtoms::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
   end subroutine hello_world
 
@@ -2352,7 +2352,7 @@ contains
   subroutine system_reseed_rng(new_seed)
     integer, intent(in) :: new_seed
 
-    call print('System::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,PRINT_VERBOSE)
+    call print('libAtoms::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,PRINT_VERBOSE)
     call system_set_random_seeds(new_seed)
   end subroutine system_reseed_rng
 
