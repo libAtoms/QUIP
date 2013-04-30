@@ -450,7 +450,7 @@ module clustering_module
 
      real(dp), dimension(:,:), allocatable :: cluster_centre
      integer, dimension(:), allocatable :: cluster_info
-     integer :: d, n, m, i, j, k, cluster_info_old
+     integer :: d, n, m, i, j, k, cluster_info_old, iter
      logical :: cluster_same
 
      d = size(x,1)
@@ -482,9 +482,15 @@ module clustering_module
      cluster_centre = x(:,cluster_index)
      cluster_info = 0
 
+     iter = 0
      do 
+        iter = iter + 1
+        call print("iteration: "//iter,verbosity=PRINT_NERD)
         cluster_same = .true.
 
+!$omp parallel do default(none) shared(n,m,x,cluster_info,cluster_centre,my_theta) &
+!$omp reduction(.and.:cluster_same) &
+!$omp private(i,j,d_min,d_ij,cluster_info_old)
         do i = 1, n
            d_min = huge(0.0_dp)
            cluster_info_old = cluster_info(i)
@@ -495,14 +501,17 @@ module clustering_module
                  cluster_info(i) = j
               endif
            enddo
-           if( cluster_info_old /= cluster_info(i) ) cluster_same = .false.
+           if( cluster_info_old /= cluster_info(i) ) cluster_same = cluster_same .and. .false.
         enddo
+!$omp end parallel do        
 
+!$omp parallel do default(none) shared(x,cluster_centre,cluster_info,m,d) private(j,k)
         do j = 1, m
            do k = 1, d
               cluster_centre(k,j) = sum(x(k,:),mask=(cluster_info==j)) / count(cluster_info==j)
            enddo
         enddo
+!$omp end parallel do
         if( cluster_same ) exit
      enddo
 
