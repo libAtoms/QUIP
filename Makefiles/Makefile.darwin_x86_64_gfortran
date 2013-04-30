@@ -40,7 +40,7 @@ FPP = gfortran -E -x f95-cpp-input -P
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEBUG = -g -DDUMP_CORE_ON_ABORT
+DEBUG = 
 OPTIM = -O3
 
 DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN
@@ -53,6 +53,7 @@ LIBTOOL = libtool -static
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
 NETCDF4_EXTRA_LIBS= -lz 
+
 
 ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
 	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
