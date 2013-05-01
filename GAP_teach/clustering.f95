@@ -568,6 +568,123 @@ module clustering_module
 
   endsubroutine cluster_kmeans
 
+  ! https://sites.google.com/site/dataclusteringalgorithms/fuzzy-c-means-clustering-algorithm
+  subroutine cluster_fuzzy_cmeans(x,cluster_index,theta_fac,theta,fuziness)
+     real(dp), dimension(:,:), intent(in) :: x
+     integer, dimension(:), intent(out) :: cluster_index
+     real(dp), intent(in), optional :: theta_fac
+     real(dp), dimension(:), intent(in), target, optional :: theta
+     real(dp), intent(in), optional :: fuziness
+
+     real(dp), dimension(:), pointer :: my_theta => null()
+     real(dp) :: my_theta_fac, d_min, d_ij, d_ik, d_total, d_total_prev
+
+     real(dp), dimension(:,:), allocatable :: cluster_centre
+     real(dp), dimension(:,:), allocatable :: w
+     real(dp), dimension(:), allocatable :: wx_j
+     real(dp) :: w_j, w_old
+     integer :: d, n, m, i, j, k, iter
+     logical :: cluster_same
+
+     d = size(x,1)
+     n = size(x,2)
+     m = size(cluster_index)
+     if( m > n ) call system_abort('cluster_fuzzy_cmeans: required number of clusters ('//m//') greater than total number of points ('//n//')')
+
+     my_theta_fac = optional_default(1.0_dp, theta_fac)
+     if( present(theta) ) then
+        if( size(theta) == d) then
+           my_theta => theta
+        else
+           allocate(my_theta(d))
+           my_theta = theta(1)
+        endif
+     else
+        allocate(my_theta(d))
+        do i = 1, d
+           my_theta(i) = ( maxval(x(i,:)) - minval(x(i,:)) )
+           if( my_theta(i) .feq. 0.0_dp ) my_theta(i) = 1.0_dp
+        enddo
+        my_theta = my_theta * my_theta_fac
+     endif
+
+     allocate(cluster_centre(d,m), w(n,m), wx_j(d))
+
+     call fill_random_integer(cluster_index, n) !choose random points as cluster centres.
+
+     cluster_centre = x(:,cluster_index)
+     w = 0.0_dp
+
+     iter = 0
+     d_total = huge(1.0_dp)
+     do
+        iter = iter + 1
+        call print("iteration: "//iter,verbosity=PRINT_NERD)
+        cluster_same = .true.
+
+        d_total_prev = d_total
+        d_total = 0.0_dp
+        ! Calculate fuzzy membership
+        do i = 1, n
+           do j = 1, m
+              w_old = w(i,j)
+              w(i,j) = 0.0_dp
+
+              d_ij = sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2)
+
+              do k = 1, m
+                 d_ik = sum(( (cluster_centre(:,k) - x(:,i))/my_theta )**2)
+
+                 w(i,j) = w(i,j) + (d_ij / d_ik)**(0.5_dp * real(fuziness, dp) - 1.0_dp)
+              enddo
+
+              w(i,j) = 1.0_dp / w(i,j)
+              if( w_old .fne. w(i,j) ) cluster_same = cluster_same .and. .false.
+
+              d_total = d_total + d_ij * w(i,j)**(real(fuziness, dp))
+           enddo
+        enddo
+        call print("d_total: "//d_total,verbosity=PRINT_NERD)
+
+        ! Calculate fuzzy centres
+        do j = 1, m
+           w_j = 0.0_dp
+           wx_j = 0.0_dp
+
+           do i = 1, n
+              w_j = w_j + w(i,j)**(real(fuziness, dp))
+              wx_j = wx_j + x(:,i) * w(i,j)**(real(fuziness, dp))
+           enddo
+
+           cluster_centre(:,j) = wx_j / w_j
+        enddo
+
+        if( cluster_same ) exit
+        if( (d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
+     enddo
+
+     ! Allocate cluster centres to nearest points
+     do j = 1, m
+        d_min = huge(0.0_dp)
+        do i = 1, n
+           d_ij = sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2)
+           if( d_ij < d_min ) then
+              d_min = d_ij
+              cluster_index(j) = i
+           endif
+        enddo
+     enddo
+
+     deallocate(cluster_centre, w, wx_j)
+
+     if(present(theta)) then
+        my_theta => null()
+     else
+        deallocate(my_theta)
+     endif
+
+  endsubroutine cluster_fuzzy_cmeans
+
   subroutine select_uniform(x,index_out)
      real(dp), dimension(:,:), intent(in) :: x
      integer, dimension(:), intent(out) :: index_out
