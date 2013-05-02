@@ -33,7 +33,7 @@ module clustering_module
   implicit none
   private
 
-  public :: pivot, bisect_kmedoids, cluster_kmeans, select_uniform
+  public :: pivot, bisect_kmedoids, cluster_kmeans, select_uniform, cluster_fuzzy_cmeans
 
   integer, parameter  :: n_trial = 10
   integer, parameter  :: n_trial_k_med = 100
@@ -544,7 +544,7 @@ module clustering_module
         enddo
 !$omp end parallel do
         if( cluster_same ) exit
-        if( (d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
+        if( abs(d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
      enddo
 
      do j = 1, m
@@ -569,12 +569,12 @@ module clustering_module
   endsubroutine cluster_kmeans
 
   ! https://sites.google.com/site/dataclusteringalgorithms/fuzzy-c-means-clustering-algorithm
-  subroutine cluster_fuzzy_cmeans(x,cluster_index,theta_fac,theta,fuziness)
+  subroutine cluster_fuzzy_cmeans(x,cluster_index,theta_fac,theta,fuzziness)
      real(dp), dimension(:,:), intent(in) :: x
      integer, dimension(:), intent(out) :: cluster_index
      real(dp), intent(in), optional :: theta_fac
      real(dp), dimension(:), intent(in), target, optional :: theta
-     real(dp), intent(in), optional :: fuziness
+     real(dp), intent(in), optional :: fuzziness
 
      real(dp), dimension(:), pointer :: my_theta => null()
      real(dp) :: my_theta_fac, d_min, d_ij, d_ik, d_total, d_total_prev
@@ -582,7 +582,7 @@ module clustering_module
      real(dp), dimension(:,:), allocatable :: cluster_centre
      real(dp), dimension(:,:), allocatable :: w
      real(dp), dimension(:), allocatable :: wx_j
-     real(dp) :: w_j, w_old
+     real(dp) :: w_j, w_old, my_fuzziness
      integer :: d, n, m, i, j, k, iter
      logical :: cluster_same
 
@@ -592,6 +592,7 @@ module clustering_module
      if( m > n ) call system_abort('cluster_fuzzy_cmeans: required number of clusters ('//m//') greater than total number of points ('//n//')')
 
      my_theta_fac = optional_default(1.0_dp, theta_fac)
+     my_fuzziness = optional_default(4.0_dp, fuzziness)
      if( present(theta) ) then
         if( size(theta) == d) then
            my_theta => theta
@@ -613,6 +614,12 @@ module clustering_module
      call fill_random_integer(cluster_index, n) !choose random points as cluster centres.
 
      cluster_centre = x(:,cluster_index)
+     do i = 1, m
+        do j = 1, d
+           cluster_centre(j,i) = cluster_centre(j,i) + ( ran_uniform() - 0.5_dp ) * cluster_jitter
+        enddo
+     enddo
+
      w = 0.0_dp
 
      iter = 0
@@ -630,18 +637,18 @@ module clustering_module
               w_old = w(i,j)
               w(i,j) = 0.0_dp
 
-              d_ij = sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2)
+              d_ij = sqrt(sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2))
 
               do k = 1, m
-                 d_ik = sum(( (cluster_centre(:,k) - x(:,i))/my_theta )**2)
+                 d_ik = sqrt(sum(( (cluster_centre(:,k) - x(:,i))/my_theta )**2))
 
-                 w(i,j) = w(i,j) + (d_ij / d_ik)**(0.5_dp * real(fuziness, dp) - 1.0_dp)
+                 w(i,j) = w(i,j) + (d_ij / d_ik)**(2.0_dp / my_fuzziness - 1.0_dp)
               enddo
 
               w(i,j) = 1.0_dp / w(i,j)
               if( w_old .fne. w(i,j) ) cluster_same = cluster_same .and. .false.
 
-              d_total = d_total + d_ij * w(i,j)**(real(fuziness, dp))
+              d_total = d_total + d_ij * w(i,j)**my_fuzziness
            enddo
         enddo
         call print("d_total: "//d_total,verbosity=PRINT_NERD)
@@ -652,15 +659,16 @@ module clustering_module
            wx_j = 0.0_dp
 
            do i = 1, n
-              w_j = w_j + w(i,j)**(real(fuziness, dp))
-              wx_j = wx_j + x(:,i) * w(i,j)**(real(fuziness, dp))
+              w_j = w_j + w(i,j)**my_fuzziness
+              wx_j = wx_j + x(:,i) * w(i,j)**my_fuzziness
            enddo
 
            cluster_centre(:,j) = wx_j / w_j
         enddo
 
+print*,cluster_same, d_total, d_total_prev        
         if( cluster_same ) exit
-        if( (d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
+        if( abs(d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
      enddo
 
      ! Allocate cluster centres to nearest points
