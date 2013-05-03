@@ -577,14 +577,15 @@ module clustering_module
      real(dp), intent(in), optional :: fuzziness
 
      real(dp), dimension(:), pointer :: my_theta => null()
-     real(dp) :: my_theta_fac, d_min, d_ij, d_ik, d_total, d_total_prev
+     real(dp) :: my_theta_fac, d_min, d_ij, d_total, d_total_prev
 
      real(dp), dimension(:,:), allocatable :: cluster_centre
      real(dp), dimension(:,:), allocatable :: w
-     real(dp), dimension(:), allocatable :: wx_j
-     real(dp) :: w_j, w_old, my_fuzziness
-     integer :: d, n, m, i, j, k, iter
+     real(dp), dimension(:), allocatable, save :: wx_j, d_i
+     real(dp) :: w_j, w_old, my_fuzziness, alpha
+     integer :: d, n, m, i, j, iter
      logical :: cluster_same
+!$omp threadprivate(d_i, wx_j)
 
      d = size(x,1)
      n = size(x,2)
@@ -609,7 +610,10 @@ module clustering_module
         my_theta = my_theta * my_theta_fac
      endif
 
-     allocate(cluster_centre(d,m), w(n,m), wx_j(d))
+     allocate(cluster_centre(d,m), w(n,m))
+!$omp parallel     
+     allocate(d_i(m), wx_j(d))
+!$omp end parallel     
 
      call fill_random_integer(cluster_index, n) !choose random points as cluster centres.
 
@@ -632,28 +636,31 @@ module clustering_module
         d_total_prev = d_total
         d_total = 0.0_dp
         ! Calculate fuzzy membership
+!$omp parallel do default(none) shared(n,m,my_theta,my_fuzziness,w,x,cluster_centre) &
+!$omp private(i,j,alpha,w_old) reduction(.and.:cluster_same) reduction(+:d_total)
         do i = 1, n
+           alpha = 0.0_dp
+           do j = 1, m
+              d_i(j) = sqrt(sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2))
+              alpha = alpha + 1.0_dp / d_i(j)**(2.0_dp / (my_fuzziness - 1.0_dp))
+           enddo
+
            do j = 1, m
               w_old = w(i,j)
               w(i,j) = 0.0_dp
 
-              d_ij = sqrt(sum(( (cluster_centre(:,j) - x(:,i))/my_theta )**2))
-
-              do k = 1, m
-                 d_ik = sqrt(sum(( (cluster_centre(:,k) - x(:,i))/my_theta )**2))
-
-                 w(i,j) = w(i,j) + (d_ij / d_ik)**(2.0_dp / my_fuzziness - 1.0_dp)
-              enddo
-
-              w(i,j) = 1.0_dp / w(i,j)
+              w(i,j) = 1.0_dp / d_i(j)**(2.0_dp / (my_fuzziness - 1.0_dp)) / alpha
               if( w_old .fne. w(i,j) ) cluster_same = cluster_same .and. .false.
 
-              d_total = d_total + d_ij * w(i,j)**my_fuzziness
+              d_total = d_total + d_i(j)**2 * w(i,j)**my_fuzziness
            enddo
         enddo
+!$omp end parallel do
         call print("d_total: "//d_total,verbosity=PRINT_NERD)
 
         ! Calculate fuzzy centres
+!$omp parallel do default(none) shared(m,n,w,x,my_fuzziness,cluster_centre) &
+!$omp private(i,j,w_j)
         do j = 1, m
            w_j = 0.0_dp
            wx_j = 0.0_dp
@@ -665,8 +672,13 @@ module clustering_module
 
            cluster_centre(:,j) = wx_j / w_j
         enddo
+!$omp end parallel do
 
-print*,cluster_same, d_total, d_total_prev        
+        call print("cluster_same: "//cluster_same,verbosity=PRINT_NERD)
+        call print("d_total: "//d_total,verbosity=PRINT_NERD)
+        call print("d_total_prev: "//d_total_prev,verbosity=PRINT_NERD)
+        call print("d_total-d_total_prev: "//(d_total-d_total_prev),verbosity=PRINT_NERD)
+
         if( cluster_same ) exit
         if( abs(d_total - d_total_prev) / d_total < KMEANS_THRESHOLD ) exit
      enddo
@@ -683,7 +695,11 @@ print*,cluster_same, d_total, d_total_prev
         enddo
      enddo
 
-     deallocate(cluster_centre, w, wx_j)
+     deallocate(cluster_centre, w)
+!$omp parallel     
+     if(allocated(d_i)) deallocate(d_i)
+     if(allocated(wx_j)) deallocate(wx_j)
+!$omp end parallel     
 
      if(present(theta)) then
         my_theta => null()

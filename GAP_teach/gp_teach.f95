@@ -140,6 +140,10 @@ module gp_teach_module
             call print('Finished kmeans clustering')
          case(GP_SPARSE_COVARIANCE)
             call sparse_covariance(this,sparseX_index,config_type_index)
+         case(GP_SPARSE_FUZZY)
+            call print('Started fuzzy cmeans clustering')
+            call cluster_fuzzy_cmeans(this%x(:,config_type_index), sparseX_index, theta=this%theta,fuzziness=2.0_dp)
+            call print('Finished fuzzy cmeans clustering')
          case(GP_SPARSE_UNIQ)
             exit
          case default
