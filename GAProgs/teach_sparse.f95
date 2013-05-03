@@ -166,7 +166,7 @@ program teach_sparse_program
      help_string="Number of sparse teaching points in each config type. Format: {type1:50:type2:100}")
 
      call param_register(params, 'sparse_method', 'RANDOM', sparse_method_str, &
-     help_string="Sparsification method. RANDOM(default), PIVOT, CLUSTER, KMEANS")
+     help_string="Sparsification method. RANDOM(default), PIVOT, CLUSTER, KMEANS, UNIQ, FUZZY")
 
      call param_register(params, 'theta_fac', '1.0', main_teach_sparse%theta_fac_string(i_coordinate), &
      help_string="Width of Gaussians, determined from multiplying the range of each descriptor by theta_fac. &
@@ -216,6 +216,8 @@ program teach_sparse_program
         main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_COVARIANCE
      case('uniq')
         main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_UNIQ
+     case('fuzzy')
+        main_teach_sparse%sparse_method(i_coordinate) = GP_SPARSE_FUZZY
      case default
         call system_abort("unknown sparse method "//trim(sparse_method_str))
      endselect
