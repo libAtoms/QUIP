@@ -161,6 +161,9 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
+  real(dp), dimension(:), allocatable :: local_e_in
+  real(dp), dimension(:,:), allocatable :: f_in
+  real(dp), dimension(:,:,:), allocatable :: local_virial_in
   logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
@@ -182,19 +185,31 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   if (present(e)) e = 0.0_dp
   if (present(local_e)) then
      call check_size('Local_E',local_e,(/at%N/),'IPModel_Glue_Calc', error)
-     local_e = 0.0_dp
   endif
+
+  if(present(e) .or. present(local_e)) then
+     allocate(local_e_in(at%N))
+     local_e_in = 0.0_dp
+  endif
+
   if (present(f)) then
-     call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Glue_Calc', error)
-     f = 0.0_dp
+     call check_size('Force',f,(/3,at%N/),'IPModel_Glue_Calc', error)
+     allocate(f_in(3,at%N))
+     f_in = 0.0_dp
   end if
-  if (present(virial)) virial = 0.0_dp
+
   if (present(local_virial)) then
-     call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Glue_Calc', error)
+     call check_size('Local_virial',local_virial,(/9,at%N/),'IPModel_Glue_Calc', error)
      local_virial = 0.0_dp
   endif
 
+  if(present(virial) .or. present(local_virial)) then
+     allocate(local_virial_in(3,3,at%N))
+     local_virial_in = 0.0_dp
+  endif
+
   atom_mask_pointer => null()
+
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -220,6 +235,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   endif
 
   ! Iterate over atoms
+!$omp parallel do default(none) shared(this,at,atom_mask_pointer,local_e_in,local_virial_in,e,f,virial,local_e,local_virial) &
+!$omp private(i,ji,j,rho_local,drho_i_dri,drho_i_drij,drho_i_drij_outer_rij,ti,tj,r_ij_mag,r_ij_hat,potential_deriv) reduction(+:f_in)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
@@ -245,7 +262,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
       endif
     end do ! ji
     potential_deriv = eam_spline_potential_deriv(this, ti, rho_local)
-    if(present(f)) f(:,i) = f(:,i) + drho_i_dri * potential_deriv
+    if(present(f)) f_in(:,i) = f_in(:,i) + drho_i_dri * potential_deriv
 
     ! Iterate over neighbours again to sum forces
     do ji=1, n_neighbours(at, i)
@@ -253,15 +270,24 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
       tj = get_type(this%type_of_atomic_num, at%Z(j))
      
       if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then         
-          f(:,j) = f(:,j) - potential_deriv * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
+          f_in(:,j) = f_in(:,j) - potential_deriv * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
       endif
     end do ! ji
-    if(present(local_e)) local_e(i) = eam_spline_potential(this, ti, rho_local)
-    if(present(e)) e = e + eam_spline_potential(this, ti, rho_local)
-    if(present(virial) .or. present(local_virial)) virial_i = potential_deriv * drho_i_drij_outer_rij
-    if(present(virial))  virial = virial - virial_i
-    if(present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
+    if(present(local_e) .or. present(e)) local_e_in(i) = eam_spline_potential(this, ti, rho_local)
+    if(present(virial) .or. present(local_virial)) local_virial_in(:,:,i) = local_virial_in(:,:,i) - potential_deriv * drho_i_drij_outer_rij
   end do ! i
+!$omp end parallel do  
+
+  if(present(e)) e = sum(local_e_in)
+  if(present(f)) f = f_in
+  if(present(local_e)) local_e = local_e_in
+  if(present(virial)) virial = sum(local_virial_in,dim=3)
+  if(present(local_virial)) local_virial = reshape(local_virial_in,(/9,at%N/))
+
+  if(allocated(local_e_in)) deallocate(local_e_in)
+  if(allocated(f_in)) deallocate(f_in)
+  if(allocated(local_virial_in)) deallocate(local_virial_in)
+
 end subroutine IPModel_Glue_Calc
 
 function glue_cutoff(this, ti)
