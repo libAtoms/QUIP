@@ -1526,7 +1526,7 @@ module gp_predict_module
 
             covariance_subY_currentX_y = 0.0_dp
             covariance_subY_currentX_suby = 0.0_dp
-!$omp parallel do default(none) shared(this,i_coordinate,covariance_x_sparseX,grad_Covariance_i,i_sparseX) private(i_x,i_y,i_globalY) reduction(+:covariance_subY_currentX_y)
+!$omp parallel do schedule(dynamic) default(none) shared(this,i_coordinate,covariance_x_sparseX,grad_Covariance_i,i_sparseX) private(i_x,i_y,i_globalY) reduction(+:covariance_subY_currentX_y)
             do i_x = 1, this%coordinate(i_coordinate)%n_x
                ! loop over all data
 
@@ -1546,7 +1546,7 @@ module gp_predict_module
                endif
             enddo
 
-!$omp parallel do default(none) shared(this,i_coordinate,i_sparseX,grad_Covariance_i,covariance_x_sparseX) private(i_xPrime,i_yPrime,i_x,i_global_yPrime,covariance_xPrime_sparseX) reduction(+:covariance_subY_currentX_y)
+!$omp parallel do schedule(dynamic) default(none) shared(this,i_coordinate,i_sparseX,grad_Covariance_i,covariance_x_sparseX) private(i_xPrime,i_yPrime,i_x,i_global_yPrime,covariance_xPrime_sparseX) reduction(+:covariance_subY_currentX_y)
 	    do i_xPrime = 1, this%coordinate(i_coordinate)%n_xPrime
 	       ! loop over all derivative data
 
@@ -1576,7 +1576,7 @@ module gp_predict_module
             if(allocated(grad_Covariance_i)) deallocate(grad_Covariance_i)
             if(allocated(covariance_x_sparseX)) deallocate(covariance_x_sparseX)
 
-!$omp parallel do default(none) shared(this,i_coordinate,covariance_x_sparseX,grad_Covariance_i,i_sparseX,i_global_sparseX) private(j_sparseX,j_global_sparseX) reduction(+:covariance_subY_currentX_suby)
+!$omp parallel do schedule(dynamic) default(none) shared(this,i_coordinate,covariance_x_sparseX,grad_Covariance_i,i_sparseX,i_global_sparseX) private(j_sparseX,j_global_sparseX) reduction(+:covariance_subY_currentX_suby)
             do j_sparseX = 1, this%coordinate(i_coordinate)%n_sparseX
                ! loop over sparse points of each descriptor
 
@@ -1840,7 +1840,7 @@ module gp_predict_module
       do i_coordinate = 1, this%n_coordinate
          ! loop over different descriptor types
 
-!!$omp parallel default(none) private(j_x, j_y, j_globalY, i_x, i_y, i_globalY, covariance_x_x, i_xPrime, i_yPrime, i_global_yPrime, j_global_yPrime, j_xPrime, j_yPrime) shared(this,i_coordinate)
+!!$omp parallel schedule(dynamic) default(none) private(j_x, j_y, j_globalY, i_x, i_y, i_globalY, covariance_x_x, i_xPrime, i_yPrime, i_global_yPrime, j_global_yPrime, j_xPrime, j_yPrime) shared(this,i_coordinate)
 !!$omp do
          do j_x = 1, this%coordinate(i_coordinate)%n_x
             ! loop over all data
