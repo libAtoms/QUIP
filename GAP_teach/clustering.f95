@@ -534,7 +534,7 @@ module clustering_module
            d_total = d_total + d_min
         enddo
 !$omp end parallel do        
-        call print("d_total: "//d_total,verbosity=PRINT_NERD)
+        call print("cluster_kmeans iteration="//iter//" d_total="//d_total)
 
 !$omp parallel do default(none) shared(x,cluster_centre,cluster_info,m,d) private(j,k)
         do j = 1, m
@@ -656,7 +656,7 @@ module clustering_module
            enddo
         enddo
 !$omp end parallel do
-        call print("d_total: "//d_total,verbosity=PRINT_NERD)
+        call print("cluster_fuzzy_cmeans iteration="//iter//" d_total="//d_total)
 
         ! Calculate fuzzy centres
 !$omp parallel do default(none) shared(m,n,w,x,my_fuzziness,cluster_centre) &
