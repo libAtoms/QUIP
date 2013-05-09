@@ -180,8 +180,8 @@ with `atoms` to the new :class:`Potential` instance, by calling
                                          fortran_indexing=fortran_indexing,
                                          fpointer=fpointer, finalise=finalise,
                                          error=error)
-
-        if init_args.lower().startswith('callbackpot'):
+        
+        if init_args is not None and init_args.lower().startswith('callbackpot'):
             _potential.Potential.set_callback(self, Potential.callback)
 
             if callback is not None:
