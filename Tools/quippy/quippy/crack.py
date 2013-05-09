@@ -1104,8 +1104,9 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
            params['y0'] = 0.0
 
     # Override any fixed parameters
-    if fix_params is not None:
-        params.update(fix_params)
+    if fix_params is None:
+       fix_params = {}
+    params.update(fix_params)
 
     x = atoms.positions[:, 0]
     y = atoms.positions[:, 1]
@@ -1137,23 +1138,35 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
     if verbose:
        print 'Fitting on %r atoms' % sigma[mask,1,1].shape
     
-    def objective_function(params, x, y, sigma):
-        params = dict(zip(('K', 'x0', 'y0', 'sxx0', 'syy0', 'sxy0'), params))
+    def objective_function(params, x, y, sigma, var_params):
+        params = dict(zip(var_params, params))
         if fix_params is not None:
             params.update(fix_params)
         irwin_sigma = IrwinStressField(**params).get_stresses(atoms)
         delta_sigma = sigma[mask,:,:] - irwin_sigma[mask,:,:]
         return delta_sigma.reshape(delta_sigma.size)
 
-    initial_params = (params['K'], params['x0'], params['y0'],
-                      params['sxx0'], params['syy0'], params['sxy0'])
+    # names and values of parameters which can vary in this fit
+    var_params = sorted([key for key in params.keys() if key not in fix_params.keys() ])
+    initial_params = [params[key] for key in var_params]
 
     from scipy.optimize import leastsq
-    fitted_params, success = leastsq(objective_function,
-                                     initial_params,
-                                     args=(x, y, sigma))
+    fitted_params, cov, infodict, mesg, success = leastsq(objective_function,
+                                                         initial_params,
+                                                         args=(x, y, sigma, var_params),
+                                                         full_output=True)
 
-    params = dict(zip(('K', 'x0', 'y0', 'sxx0', 'syy0', 'sxy0'), fitted_params))
+    params = dict(zip(var_params, fitted_params))
+    params.update(fix_params)
+
+    # estimate variance in parameter estimates
+    if cov is None:
+       # singular covariance matrix
+       err = dict(zip(var_params, [0.]*len(fitted_params)))
+    else:
+       s_sq = (objective_function(fitted_params, x, y, sigma, var_params)**2).sum()/(sigma.size-len(fitted_params))
+       cov = cov * s_sq
+       err = dict(zip(var_params, np.sqrt(np.diag(cov))))
     
     if verbose:
        print 'K = %.3f MPa sqrt(m)' % (params['K']/MPA_SQRT_M)
@@ -1166,12 +1179,12 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
     atoms.info['sigma0'] = (params['sxx0'], params['syy0'], params['sxy0'])
     atoms.info['CrackPos'] = np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
 
-    return params
+    return params, err
 
 
-def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
-                                avg_sigma=None, avg_decay=0.005,
-                                calc=None):
+
+def find_crack_tip_stress_field(atoms, r_range=None, initial_params=None, fix_params=None,
+                                sigma=None, avg_sigma=None, avg_decay=0.005, calc=None):
     """
     Find the position of the crack tip by fitting to the Irwin `K`-field solution
 
@@ -1183,13 +1196,14 @@ def find_crack_tip_stress_field(atoms, r_range=None, fix_params=None,
     fit_crack_stress_field
     """
 
-    params = fit_crack_stress_field(atoms, r_range, fix_params, avg_sigma, avg_decay, calc)
+    params, err = fit_crack_stress_field(atoms, r_range, initial_params, fix_params, sigma,
+                                         avg_sigma, avg_decay, calc)
 
     return np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
     
 
-def plot_stress_fields(atoms, r_range=None, fix_params=None,
-                       avg_sigma=None, avg_decay=0.01, calc=None):
+def plot_stress_fields(atoms, r_range=None, initial_params=None, fix_params=None,
+                       sigma=None, avg_sigma=None, avg_decay=0.005, calc=None):
     """
     Fit and plot atomistic and continuum stress fields
 
@@ -1203,8 +1217,8 @@ def plot_stress_fields(atoms, r_range=None, fix_params=None,
 
     from pylab import griddata, meshgrid, subplot, cla, contourf, colorbar, draw, title, clf, gca
 
-    params = fit_crack_stress_field(atoms, r_range, fix_params,
-                                    avg_sigma, avg_decay, calc)
+    params, err = fit_crack_stress_field(atoms, r_range, initial_params, fix_params, sigma,
+                                         avg_sigma, avg_decay, calc)
 
     K, x0, y0, sxx0, syy0, sxy0 = (params['K'], params['x0'], params['y0'],
                                    params['sxx0'], params['syy0'], params['sxy0'])
@@ -1224,7 +1238,9 @@ def plot_stress_fields(atoms, r_range=None, fix_params=None,
     else:
        mask = Ellipsis
 
-    atom_sigma = atoms.get_stresses()
+    atom_sigma = sigma
+    if atom_sigma is None:
+       atom_sigma = atoms.get_stresses()
 
     grid_sigma = np.dstack([griddata(x[mask]-x0, y[mask]-y0, atom_sigma[mask,0,0], X, Y),
                             griddata(x[mask]-x0, y[mask]-y0, atom_sigma[mask,1,1], X, Y),
