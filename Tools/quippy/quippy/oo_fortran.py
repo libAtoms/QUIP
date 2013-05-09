@@ -172,7 +172,7 @@ def type_is_compatible(spec, arg):
             # Check each dimension matches
             return all([x == y for (x,y) in zip(adims,dims)])
 
-def process_in_args(args, kwargs, inargs, prefix):
+def process_in_args(args, kwargs, inargs, prefix, args_str_args, routine_name):
     # Process positional arguments
     newargs = []
     modargs = []
@@ -221,6 +221,9 @@ def process_in_args(args, kwargs, inargs, prefix):
         k = prefix+k
         if got_args_str:
             if k != prefix+'args_str' and (k not in kwarg_lookup or (k in kwarg_lookup and not type_is_compatible(kwarg_lookup[k], a))):
+                if k[len(prefix):] not in args_str_args:
+                    wraplog.warn('Converting unexpected keyword argument "%s" to routine "%s()" to an args_str argument - is this a typo?' %
+                                 (k[len(prefix):], routine_name))
                 args_str_kwargs[k[len(prefix):]] = a
                 continue
         if k not in kwarg_lookup:
@@ -570,12 +573,13 @@ class FortranDerivedType(object):
         #outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
 
         inargs  = [ x for x in doc['args'] if not 'intent(out)' in x['attributes'] ]
-        outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]        
+        outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]
+        args_str_args = doc['args_str']
         
         if not name.startswith('__init__'):
             # Put self at beginning of args list
             args = tuple([self] + list(args))
-        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, self._prefix)
+        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, self._prefix, args_str_args, name)
 
         try:
             res = fobj(*newargs, **newkwargs)
@@ -1580,13 +1584,14 @@ def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True, 
     fobj = getattr(modobj, prefix+name)
 
     inargs  = [ x for x in doc['args'] if not 'intent(out)' in x['attributes'] ]
-    outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]        
+    outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]
+    args_str_args = doc['args_str']
 
     #inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
     #outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
 
     def func(*args, **kwargs):
-        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, prefix)
+        newargs, modargs, newkwargs, modkwargs = process_in_args(args, kwargs, inargs, prefix, args_str_args, name)
 
         try:
             res = fobj(*newargs, **newkwargs)
