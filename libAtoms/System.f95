@@ -3320,5 +3320,29 @@ end function pad
     end do
   end function lower_case
 
+  subroutine progress(total,current, name)
+     integer, intent(in) :: total, current
+     character(len=*), intent(in) :: name
+
+     integer :: current_percent, k
+
+     character(len=17)::bar="???% |          |"
+
+     if(total >= current) then
+        current_percent = ceiling( 100.0_dp * real(current,dp) / real(total,dp) )
+
+        write(unit=bar(1:3),fmt="(i3)") current_percent
+
+        do k = 1, current_percent / 10
+          bar(6+k:6+k)="*"
+        enddo
+        ! print the progress bar.
+        write(unit=mainlog%unit,fmt="(a1,a,$)") ,char(13), trim(name) // " " // bar
+     else
+        write(unit=mainlog%unit,fmt=*)
+     endif
+
+   end subroutine progress
+
 
 end module system_module
