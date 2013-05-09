@@ -497,7 +497,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 	   'Database was created with a different version of the code.' // &
 	   'Version of code used to generate the database is '//trim(value) //'.'// &
 	   'Version of current code is '//current_version() // &
-	   'Please update your code.')
+	   '. Please update your code.')
      endif
 
   elseif(parse_in_ip .and. name == 'GAP_data') then
