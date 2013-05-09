@@ -40,7 +40,7 @@ module gp_predict_module
    use iso_c_binding, only : C_NULL_CHAR
    ! use libatoms_module
    use error_module
-   use system_module, only : dp, qp, optional_default, reallocate, NUMERICAL_ZERO, system_timer, string_to_numerical, print_warning
+   use system_module, only : dp, qp, optional_default, reallocate, NUMERICAL_ZERO, system_timer, string_to_numerical, print_warning, progress
    use units_module
    use linearalgebra_module
    use extendable_str_module
@@ -1515,6 +1515,9 @@ module gp_predict_module
          call system_timer('gpFull_covarianceMatrix_sparse_Coordinate'//i_coordinate)
 
          call system_timer('gpFull_covarianceMatrix_sparse_Coordinate'//i_coordinate//'_sparse')
+
+         call print('Started sparse covariance matrix calculation of coordinate '//i_coordinate)
+
          do i_sparseX = 1, this%coordinate(i_coordinate)%n_sparseX
             ! loop over sparse points of each descriptor
 
@@ -1590,7 +1593,10 @@ module gp_predict_module
             this%covariance_subY_y(i_global_sparseX,:) = this%covariance_subY_y(i_global_sparseX,:) + covariance_subY_currentX_y
             this%covariance_subY_subY(:,i_global_sparseX) = this%covariance_subY_subY(:,i_global_sparseX) + covariance_subY_currentX_suby
 
+            if(mod(i_sparseX,100) == 0) call progress(this%coordinate(i_coordinate)%n_sparseX, i_sparseX, "Covariance matrix")
          enddo
+         call progress(this%coordinate(i_coordinate)%n_sparseX, i_sparseX, "Covariance matrix")
+         call print('Finished sparse covariance matrix calculation of coordinate '//i_coordinate)
          call system_timer('gpFull_covarianceMatrix_sparse_Coordinate'//i_coordinate//'_sparse')
 
          select case(this%covariance_method)
