@@ -55,7 +55,7 @@ module  structures_module
   private
 
   public :: slab, find_motif
-  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, supercell, structure_from_file, fcc, &
+  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, water, supercell, structure_from_file, fcc, &
    diamond2, graphite, graphite_rhombohedral, beta_tin, beta_tin4, bcc1, hcp, wurtzite, sh, sh2, imma, &
    fcc_11b2_edge_disloc, fcc_disloc_malc, disloc_noam, fcc_z111_ortho, fcc_z111, fcc_z100, bulk, unit_slab, slab_width_height_nz, &
    slab_nx_ny_nz, bcc, transform, arbitrary_supercell, find_compatible_supercells, bond_angle_mean_dev, map_nearest_atoms, &
