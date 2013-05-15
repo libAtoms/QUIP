@@ -114,14 +114,14 @@ program force_gaussian_prediction
    real(dp), dimension(:), allocatable           :: max_value, mean_value, deviation_value
    real(dp), dimension(:), allocatable           :: r_grid, m_grid, sigma, theta_array, covariance_pred,force_magntd_data,force_magntd_data_select, force_proj_ivs_pred, force_proj_qm, distance_confs
    real(dp), parameter                           :: TOL_REAL=1e-7_dp, SCALE_IVS=100.0_dp
-   real(dp)                                      :: force(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
+   real(dp)                                      :: x, force(3), error_xyz(3), feature_inner_matrix(3,3), feature_inv(3,3), kappa
    real(dp), dimension(:,:,:), allocatable       :: feature_matrix_norm, feature_matrix, feature_matrix_pred
-   real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, out_u, out_vt
+   real(dp), dimension(:,:), allocatable         :: force_proj_ivs, force_proj_ivs_select, inv_covariance, distance_ivs, out_u, out_vt, geometry_matrix
    real(dp), dimension(:,:), allocatable, target :: covariance, distance_matrix, force_covariance_matrix, covariance_tiny
    real(dp), dimension(:,:), allocatable         :: feature_matrix_norm_pred, feature_matrix_norm_pred_t
    real(dp), dimension(:,:), pointer             :: force_ptr, force_ptr_mm,force_ptr_tb, force_ptr_tff
    integer                                       :: i,j, k,m, n, t,  n_center_atom, n_loop, preci, r_mesh, m_mesh, error 
-   integer                                       :: add_vector, n_relevant_confs, func_type, selector, temp_integer, ii
+   integer                                       :: add_vector, n_teach, func_type, selector, temp_integer, ii
    integer	                 		 :: local_ml_optim_size, dimension_mark(3)
    integer, dimension(:), allocatable            :: distance_index, mark_zero_ivs 
    logical  :: bonding_direction, spherical_cluster_teach, spherical_cluster_pred, do_gp, fix_sigma,print_dist_stati, least_sq, fixed_iv,  print_at, do_svd, print_data, do_teach, print_verbosity, update_data
@@ -147,7 +147,7 @@ program force_gaussian_prediction
    call param_register(params, 'm_mesh', '6',   m_mesh, "grid finess of m")
    call param_register(params, 'func_type', '0', func_type, "which kernel function is used to build the covariance matrix")
    call param_register(params, 'do_gp',  'F', do_gp, "true for doing a gaussian processes")
-   call param_register(params, 'n_relevant_confs', '200', n_relevant_confs, "the number of relevant confs you would like to do machine learning with")
+   call param_register(params, 'n_teach', '500', n_teach, "the number of relevant confs you would like to do machine learning with")
    call param_register(params, 'print_dist_stati', 'F', print_dist_stati, "set true to print out the distance on every single dimension of the IVs space")
    call param_register(params, 'spherical_cluster_teach', 'T', spherical_cluster_teach, "only the first atom in the cluster are considered when doing teaching")
    call param_register(params, 'spherical_cluster_pred', 'T', spherical_cluster_pred, "only the first atom in the cluster are considered when doing predicting")
@@ -420,9 +420,11 @@ if (.not. do_teach) then
 
     do t=1, n
        read(2) force_proj_ivs(:, t), force_magntd_data(t)
+       !write(*,*) "%", force_proj_ivs(:, t), force_magntd_data(t)
        do i=1, 3
           read(3) feature_matrix(:,i,t)
        enddo
+       !write(*,*) "$", feature_matrix(:,:,t)
     enddo
     close(2)
     close(3)
@@ -450,23 +452,24 @@ endif
 ! the following part can be changed to a subroutine
 call print_title('starting the predicting process')
 
-if (n_relevant_confs > n) then
-  n_relevant_confs = n
-  call print("the Actual Number of Configs for Prediction: "//n_relevant_confs)
+if (n_teach > n) then
+  n_teach = n
+  call print("the Actual Number of Configs for Prediction: "//n_teach)
   call print("WARNNING: Trying to select more configurations than the database has")
 endif
 
-allocate(covariance_pred(n_relevant_confs))
+allocate(covariance_pred(n_teach))
 allocate(feature_matrix_norm_pred(k,3))
 allocate(force_proj_ivs_pred(k))
 allocate(mark_zero_ivs(k))
-allocate(covariance(n_relevant_confs,n_relevant_confs)) 
+allocate(geometry_matrix(3,k))
+allocate(covariance(n_teach,n_teach)) 
 if (local_ml_optim_size > 0) then 
    allocate(distance_matrix(local_ml_optim_size,local_ml_optim_size), force_covariance_matrix(local_ml_optim_size,local_ml_optim_size), covariance_tiny(local_ml_optim_size,local_ml_optim_size))
 endif
-allocate(inv_covariance(n_relevant_confs,n_relevant_confs))
-allocate(force_proj_ivs_select(k, n_relevant_confs))
-allocate(force_magntd_data_select(n_relevant_confs))
+allocate(inv_covariance(n_teach,n_teach))
+allocate(force_proj_ivs_select(k, n_teach))
+allocate(force_magntd_data_select(n_teach))
 
 
 call initialise(in, test_file, INPUT)
@@ -557,7 +560,7 @@ do i=1, in%n_frame
       ! do the sorting and selection
       call sorting_configuration(feature_matrix_pred(:,:,n_center_atom), feature_matrix, feature_matrix_norm_pred, feature_matrix_norm, sigma, distance_confs, distance_index)
       call print("Min and Max DISTANCE with Index after Sorting: "//distance_confs(1)//" and "// &
-           distance_confs(n_relevant_confs)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_relevant_confs))
+           distance_confs(n_teach)//"  the INDEX: "//distance_index(1)//" and "//distance_index(n_teach))
    
      dist_shift_factor = 0.2_dp        ! distance shifted with a given factor
  
@@ -568,7 +571,7 @@ do i=1, in%n_frame
 
      if (.false.) then        ! massive output, only for testing use
          call print("Detail on the teaching information")
-         do ii = 1, n_relevant_confs
+         do ii = 1, n_teach
             call print("Index: "//distance_index(ii)//" Distance: "//distance_confs(ii))
             call print("Force in IVs space: "//force_proj_ivs(:,distance_index(ii)))
          enddo
@@ -598,11 +601,11 @@ do i=1, in%n_frame
       
       
       ! Generate covariance matrix
-      do t = 1, n_relevant_confs  ! loop to generate the covariance matrix of the learning set
+      do t = 1, n_teach  ! loop to generate the covariance matrix of the learning set
          covariance(t,t) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(t)), &
                 feature_matrix_norm(:,:,distance_index(t)), feature_matrix_norm(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
          if (do_gp) covariance(t,t) = covariance(t,t) + sigma_error**2
-         do j = t+1, n_relevant_confs ! above diagonal
+         do j = t+1, n_teach ! above diagonal
             covariance(t,j) = cov(feature_matrix(:,:,distance_index(t)), feature_matrix(:,:,distance_index(j)), &
                  feature_matrix_norm(:,:,distance_index(t)), feature_matrix_norm(:,:,distance_index(j)), sigma, sigma_covariance, func_type=func_type)
             covariance(j,t) = covariance(t,j)  
@@ -621,14 +624,14 @@ do i=1, in%n_frame
       call system_timer('Inverting the Covariance Matrix')
       
 
-      do t=1, n_relevant_confs
+      do t=1, n_teach
          force_proj_ivs_select(:,t)=force_proj_ivs(:,distance_index(t))
          force_magntd_data_select(t) = force_magntd_data(distance_index(t))  
       enddo
       
       ! the test configuration covariance vector
       
-      do t= 1, n_relevant_confs
+      do t= 1, n_teach
         covariance_pred(t) = cov(feature_matrix_pred(:,:,n_center_atom), feature_matrix(:,:,distance_index(t)), feature_matrix_norm_pred, &
                                          feature_matrix_norm(:,:,distance_index(t)), sigma, sigma_covariance, func_type=func_type)
       enddo
@@ -718,16 +721,29 @@ do i=1, in%n_frame
    call print("Max deviation Component of LS : "//maxval(abs( matmul(feature_matrix_norm_pred, force) - force_proj_ivs_pred(:) )) )
 
    kappa = cov(feature_matrix_pred(:,:,n_center_atom), feature_matrix_pred(:,:,n_center_atom), feature_matrix_norm_pred, feature_matrix_norm_pred, sigma, sigma_covariance, func_type=func_type) + sigma_error**2
-   ! the uncertainty by Gaussian Processes
+   ! the passing of  uncertainty from  Gaussian Processes to the Force Vector
    error_gp = sqrt(abs(kappa - covariance_pred .dot. matmul(inv_covariance, covariance_pred)))
-      
-   call print("Uncertainty from GP : "//error_gp)
-   call print("Summed uncertainty :"//sqrt( (error_gp**2 + error_ls**2)/ 2.0_dp) )
+   geometry_matrix = feature_inv .mult. transpose(feature_matrix_norm_pred) 
+   do j=1, 3  ! Deviation in each Cartesian Components
+      error_xyz(j) = sum(abs(geometry_matrix(j,:))) * error_gp
+   enddo
 
-   error_frame = error_frame + sqrt(error_gp**2 + error_ls**2) 
+
+   x=0.0_dp  ! the magnitude
+   do j=1, 3
+      x=x+ abs(force(j)*error_xyz(j))
+   enddo
+   if (norm(force) > TOL_REAL) x=x/norm(force)
+  
+   call print("Uncertainty in Cartesian Coordinate: "//error_xyz)   
+   call print("Uncertainty from GPs : "//norm(error_xyz)//" :"//x)
+   call print("Summed uncertainty :"//sqrt(( x**2 + error_ls**2)/ 2.0_dp))
+
+   !error_frame = error_frame + (x**2 + error_ls**2) / 2.0 
+   error_frame = error_frame + error_ls**2
  enddo  ! loop over positions
 
-   error_frame = error_frame / n_loop
+   error_frame = sqrt(error_frame / n_loop)
    call print("Error Bar of the Frame :"//error_frame)
 
    !to do update the database
@@ -772,7 +788,7 @@ do i=1, in%n_frame
    endif ! whether update database
 
    if (print_at) then 
-       call write(at_in, out_file, append=.false.)   ! write the output configurations with predicted force
+       call write(at_in, out_file, append=.true.)   ! write the output configurations with predicted force
    endif
 
    deallocate(feature_matrix_pred)   ! because it is defined within the loop
@@ -780,6 +796,7 @@ enddo    ! loop over frames
 
 call finalise(in)
 
+deallocate(geometry_matrix)
 deallocate(r_grid, m_grid, sigma)
 deallocate(force_proj_ivs_pred)
 deallocate(feature_matrix_norm)
@@ -808,8 +825,8 @@ contains
       integer                             :: i, j, n_center_atom
 
       internal_vector = 0.0_dp
-      do i=1, atoms_n_neighbours(at, n_center_atom)
-          j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r) 
+      do i=1, n_neighbours(at, n_center_atom)
+          j = neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r) 
           if  (bonding_direction)  then
                  internal_vector = internal_vector + (delta_r *exp(-((delta_r_len/r0)**m)) /delta_r_len)
           else
@@ -828,8 +845,8 @@ contains
       integer                             :: i, j, n_center_atom
 
       internal_vector_prim = 0.0_dp
-      do i=1, atoms_n_neighbours(at, n_center_atom)
-          j = atoms_neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r)
+      do i=1, n_neighbours(at, n_center_atom)
+          j = neighbour(at, n_center_atom, i, distance=delta_r_len, diff=delta_r)
           alpha = delta_r_len / r0
           if (bonding_direction) then
                    internal_vector_prim = internal_vector_prim - (delta_r * exp(-(alpha**m)) *(alpha**m) *log(alpha) /delta_r_len)
@@ -1148,19 +1165,20 @@ end if !on condition of matrix inverting
 
     real(dp), intent(in)                        ::  ivs_direction_matrix(:,:), internal_component_matrix(:)
     real(dp), intent(out)                       ::  target_force(3)
-    real(dp)                                    ::  converting_matrix(3,3), converting_matrix_inv(3,3), force_value_matrix(3), const
-    integer                                     ::  i, j, t, n_counter, s
+    real(dp), allocatable                       ::  force_array(:,:)
+    real(dp)                                    ::  const=0.1_dp, f_deviv(3), converting_matrix(3,3), converting_matrix_inv(3,3), force_value_matrix(3)
+    integer                                     ::  i, j, t, f_counter, s
 
-    n_counter=0
+    f_counter=0
 
-    target_force=0.0_dp
+    s=size(internal_component_matrix)  ! the number of internal directions, equavalent to 'k'
+    allocate(force_array(s*(s-1)*(s-2)/6,3)) ! number of combinations: C_{k}^{3}
+    force_array=0.0_dp
 
-    s=size(internal_component_matrix)
-
-    do i=1, s
-       do j=1, s
-          do t=1, s
-             if ((i>j) .and. (j>t)) then
+    do i=1, s-2
+       do j=i+1, s-1
+          do t=j+1, s
+               f_counter = f_counter + 1
                converting_matrix(:,1)=ivs_direction_matrix(i,:)
                converting_matrix(:,2)=ivs_direction_matrix(j,:)
                converting_matrix(:,3)=ivs_direction_matrix(t,:)
@@ -1168,26 +1186,35 @@ end if !on condition of matrix inverting
                force_value_matrix(2)=internal_component_matrix(j)
                force_value_matrix(3)=internal_component_matrix(t)
 
-               ! a criteria needed here to decide whether or not to do inversing 
-               const=0.01_dp
-
                if ((norm(converting_matrix(:,1) .cross. converting_matrix(:,2)) > const) .and. (norm(converting_matrix(:,2) &
                            .cross. converting_matrix(:,3)) > const) .and. (norm(converting_matrix(:,3) .cross. converting_matrix(:,1)) > const)) then
-                  write(*,*) "the converting matrix", converting_matrix
-                  call inverse_svd_threshold(converting_matrix, 10.0_dp, result_inv=converting_matrix_inv)
-                  target_force=transpose(converting_matrix_inv) .mult. force_value_matrix
-                  write(*,*) "the inverse matrix : ", converting_matrix_inv
-                  write(*,*) "the number of sequence of ivs:", i, j, t
-                  if (.true.) call print("Target Force Distribution : "//target_force(1)//" "//target_force(2)//" "//target_force(3))
-                  n_counter = n_counter + 1
-                endif     ! orientational condition
-             endif        ! condition of i<j<t
+                 f_counter = f_counter + 1
+
+                 write(*,*) "the converting matrix", converting_matrix
+                 call inverse_svd_threshold(converting_matrix, 10.0_dp, result_inv=converting_matrix_inv)
+                 force_array(f_counter,:)=transpose(converting_matrix_inv) .mult. force_value_matrix
+                 write(*,*) "the inverse matrix : ", converting_matrix_inv
+                 write(*,*) "the number of sequence of ivs:", i, j, t
+                 call print("Target Force Distribution : "//force_array(f_counter,1)//" "//force_array(f_counter,2)//" "//force_array(f_counter,3))
+               endif
            enddo
        enddo
      enddo
 
-  target_force=target_force / real(n_counter,dp)
-
+   do i=1, 3
+      target_force(i) = sum(force_array(:,i)) / real(f_counter, dp)
+   enddo
+   f_deviv=0.0_dp
+   do j=1, 3
+      do i=1,f_counter
+        f_deviv(j) = f_deviv(j) + (force_array(i,j)-target_force(j))**2 
+     enddo
+   enddo
+   do j=1, 3
+      f_deviv(j) = sqrt(f_deviv(j)/ real(f_counter,dp))
+   enddo
+   write(*,*) "deviation of the prediction: ", f_deviv
+   deallocate(force_array)
  end subroutine real_expection_sampling_components
 
 
