@@ -66,7 +66,7 @@
        ! Minimise initial cell
        call verbosity_push_decrement()
        steps = minim(pot, at0, 'cg', 1e-6_dp, 100, &
-            'FAST_LINMIN', do_pos=.true.,do_lat=.true., do_print=.false., args_str=args_str)
+            'LINMIN_DERIV', do_pos=.true.,do_lat=.true., do_print=.false., args_str=args_str)
        call verbosity_pop()
     end if
 
@@ -81,7 +81,7 @@
           ! Minimise positions with lattice fixed
           call verbosity_push_decrement()
           steps = minim(pot, at1, 'cg', 1e-6_dp, 100, &
-               'FAST_LINMIN', do_pos=.true.,do_lat=.false., do_print=.false., args_str=args_str)
+               'LINMIN_DERIV', do_pos=.true.,do_lat=.false., do_print=.false., args_str=args_str)
           call verbosity_pop()
        end if
 
