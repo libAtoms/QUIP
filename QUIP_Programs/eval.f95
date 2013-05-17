@@ -360,11 +360,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         else if (do_c0ij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         else
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"

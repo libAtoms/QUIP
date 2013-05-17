@@ -1036,6 +1036,7 @@ contains
   end function next_non_separator
 
   !% outdated - please use split_string
+<<<<<<< HEAD
   !% Parse a string into fields delimited by certain characters. On exit
   !% the 'fields' array will contain one field per entry and 'num_fields'
   !% gives the total number of fields. 'status' will be given the error status
@@ -1193,10 +1194,172 @@ contains
 
   end function find_closing_delimiter
 
+=======
+>>>>>>> 8b15705c6ec1e4c7475498124c88272b70c3faae
   !% Parse a string into fields delimited by certain characters. On exit
   !% the 'fields' array will contain one field per entry and 'num_fields'
   !% gives the total number of fields. 'status' will be given the error status
   !% (if present) and so can be used to tell if an end-of-file occurred.
+<<<<<<< HEAD
+=======
+  subroutine parse_string(this, delimiters, fields, num_fields, matching, error)
+
+    character(*),               intent(in)    :: this
+    character(*),               intent(in)    :: delimiters
+    character(*), dimension(:), intent(inout) :: fields
+    integer,                    intent(out)   :: num_fields
+    logical, optional,          intent(in)    :: matching
+    integer, optional,          intent(out)   :: error
+
+    integer                                   :: field_start, length
+    integer :: delim_pos
+    integer :: n_delims, i
+    character(len=len(delimiters)) :: opening_delims, closing_delims
+    character(len=1) :: opening_delim
+    integer :: opening_delim_index
+    logical :: do_matching
+
+
+    do_matching = optional_default(.false., matching)
+
+    INIT_ERROR(error)
+
+    field_start = 1
+    num_fields = 0
+    length = len_trim(this)
+
+    if (do_matching) then
+      if (mod(len(delimiters),2) == 0) then
+	do i=1, len(delimiters)/2
+	  opening_delims(i:i) = delimiters(2*(i-1)+1:2*(i-1)+1)
+	  closing_delims(i:i) = delimiters(2*(i-1)+2:2*(i-1)+2)
+	end do
+	n_delims = len(delimiters)/2
+      else
+         RAISE_ERROR("parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)), error)
+      endif
+    else
+      n_delims = len(delimiters)
+      opening_delims(1:n_delims) = delimiters(1:n_delims)
+      closing_delims(1:n_delims) = delimiters(1:n_delims)
+    endif
+
+    do
+      delim_pos = scan(this(field_start:length), opening_delims(1:n_delims))
+      if (delim_pos == 0) then ! didn't find opening delimiter
+	if (len_trim(this(field_start:length)) == 0) then !...and the rest of the string is blank...
+	  !... then we've finished
+	  exit
+	else !otherwise, there's one field left to get
+	  if (length >= field_start) then
+	    num_fields = num_fields + 1
+	    if (num_fields > size(fields)) then
+              RAISE_ERROR("parse_string ran out of space for fields", error)
+            endif
+            fields(num_fields) = this(field_start:length)
+	  endif
+	  return
+	end if
+      endif
+      ! get here if we found an opening delimiter
+      delim_pos = delim_pos + field_start - 1
+      if (delim_pos /= field_start) then ! found an opening delimiter after some text
+	! save text in a field, and jump over it
+	if (delim_pos-1 >= field_start) then
+	  num_fields = num_fields + 1
+          if (num_fields > size(fields)) then
+             RAISE_ERROR("parse_string ran out of space for fields", error)
+          endif
+	  fields(num_fields) = this(field_start:delim_pos-1)
+	end if
+	field_start = delim_pos
+      endif
+      field_start = field_start + 1
+      if (do_matching) then
+	opening_delim = this(delim_pos:delim_pos)
+	opening_delim_index = index(opening_delims(1:n_delims), opening_delim)
+	delim_pos = find_closing_delimiter(this(field_start:length), closing_delims(opening_delim_index:opening_delim_index), opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
+      else
+	delim_pos = find_closing_delimiter(this(field_start:length), closing_delims, opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
+      endif
+      if (delim_pos == 0) then ! didn't find closing delimiter
+	if (do_matching) then
+	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), PRINT_ALWAYS)
+	  call print("parse_string string='"//this//"'", PRINT_ALWAYS)
+          RAISE_ERROR("parse_string failed to find closing delimiter", error)
+	else
+	  delim_pos = length-field_start+2
+	endif
+      endif
+      delim_pos = delim_pos + field_start - 1
+      if (delim_pos-1 >= field_start) then
+	num_fields = num_fields + 1
+        if (num_fields > size(fields)) then
+          RAISE_ERROR("parse_string ran out of space for fields", error)
+        endif
+	fields(num_fields) = this(field_start:delim_pos-1)
+      endif
+      field_start = delim_pos+1
+      if (field_start > length) return
+    end do
+
+  end subroutine parse_string
+
+  recursive function find_closing_delimiter(this, closing_delim, opening_delims, closing_delims, matching) result(pos)
+    character(len=*), intent(in) :: this
+    character(len=*), intent(in) :: closing_delim
+    character(len=*), intent(in) :: opening_delims, closing_delims
+    logical :: matching
+    integer :: pos
+
+    integer :: length, first_matching_closing_delim, first_opening_delim
+    integer :: opening_delim_index
+    character(len=1) :: opening_delim
+    integer :: substring_end_pos
+
+    pos = 0
+
+    do
+      if (matching) then
+	first_matching_closing_delim = scan(this, closing_delim)
+      else
+	first_matching_closing_delim = scan(this, closing_delims)
+      endif
+      first_opening_delim = scan(this, opening_delims)
+      if ((first_opening_delim > 0) .and. (first_opening_delim < first_matching_closing_delim)) then
+	length = len(this)
+	if (matching) then
+	  opening_delim = this(first_opening_delim:first_opening_delim)
+	  opening_delim_index = index(opening_delims, opening_delim)
+	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+	    closing_delims(opening_delim_index:opening_delim_index), opening_delims, closing_delims, matching)
+	else
+	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+	    closing_delims, opening_delims, closing_delims, matching)
+	endif
+	if (substring_end_pos == 0) &
+	  call system_abort("find_closing_delimiter failed to find substring closing delimiter '"// &
+	    closing_delims(opening_delim_index:opening_delim_index)//"' in string '"//this// &
+	    "' for substring starting at "//(first_opening_delim+1))
+	substring_end_pos = substring_end_pos + first_opening_delim+1 - 1
+	pos = find_closing_delimiter(this(substring_end_pos+1:length), closing_delim, opening_delims, &
+	  closing_delims, matching) + substring_end_pos+1 - 1
+	return
+      else
+	pos=first_matching_closing_delim
+	return
+      endif
+    end do
+
+    return
+
+  end function find_closing_delimiter
+
+  !% Parse a string into fields delimited by certain characters. On exit
+  !% the 'fields' array will contain one field per entry and 'num_fields'
+  !% gives the total number of fields. 'status' will be given the error status
+  !% (if present) and so can be used to tell if an end-of-file occurred.
+>>>>>>> 8b15705c6ec1e4c7475498124c88272b70c3faae
   subroutine parse_string_orig(this, delimiters, fields, num_fields)
 
     character(*),               intent(in)    :: this
@@ -1637,9 +1800,15 @@ contains
     type(Inoutput), intent(in)     :: this
     real(dp), intent(out) :: da(:)
     integer, optional, intent(out) :: status
+<<<<<<< HEAD
 
     integer :: my_status
 
+=======
+
+    integer :: my_status
+
+>>>>>>> 8b15705c6ec1e4c7475498124c88272b70c3faae
     if (this%action == OUTPUT) call system_abort('read_line: Cannot read from an output file ('//trim(adjustl(this%filename))//')')
 
     if (present(status)) then
@@ -2271,6 +2440,7 @@ contains
 
     call print('libAtoms::Hello World: Random Seed = '//actual_seed)
     call system_set_random_seeds(actual_seed)
+<<<<<<< HEAD
 
     ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
 !$OMP parallel
@@ -2279,6 +2449,16 @@ contains
     enddo
 !$OMP end parallel
 
+=======
+
+    ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
+!$OMP parallel
+    do i = 1, 100
+       ran_dummy = ran()
+    enddo
+!$OMP end parallel
+
+>>>>>>> 8b15705c6ec1e4c7475498124c88272b70c3faae
     call print('libAtoms::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
   end subroutine hello_world
@@ -3326,7 +3506,13 @@ end function pad
 
      integer :: current_percent, k
 
+<<<<<<< HEAD
      character(len=17)::bar="???% |          |"
+=======
+     character(len=17) :: bar
+
+     bar="???% |          |"
+>>>>>>> 8b15705c6ec1e4c7475498124c88272b70c3faae
 
      if(total >= current) then
         current_percent = ceiling( 100.0_dp * real(current,dp) / real(total,dp) )
