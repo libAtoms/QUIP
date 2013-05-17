@@ -3326,7 +3326,9 @@ end function pad
 
      integer :: current_percent, k
 
-     character(len=17)::bar="???% |          |"
+     character(len=17) :: bar
+
+     bar="???% |          |"
 
      if(total >= current) then
         current_percent = ceiling( 100.0_dp * real(current,dp) / real(total,dp) )
