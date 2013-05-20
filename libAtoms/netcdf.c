@@ -706,7 +706,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "ConventionVersion", strlen("1.0"), "1.0"));
     NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "application", strlen("libAtoms"), "libAtoms"));
     NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "program", strlen("netcdf.c"), "netcdf.c"));
-    NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "programVersion", strlen(SVN_VERSION), SVN_VERSION));
+    NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "programVersion", strlen(GIT_VERSION), GIT_VERSION));
     NETCDF_CHECK(nc_put_att_text(nc_id, NC_GLOBAL, "title", strlen("Atoms Object"), "Atoms Object"));
     
     // Dimensions

@@ -187,7 +187,7 @@ status_no_Failed $make_status; make_ok=$?
 status_no_Failed $quippy_status; quippy_ok=$?
 
 if [ -d QUIP_test ]; then
-   cd QUIP_test; cur_rev=`svnversion -n`; cd ..
+   cd QUIP_test; cur_rev=`gitversion -n`; cd ..
 else
    rm -f mail_msg.txt
    (echo "testing of HEAD version failed to even create a QUIP_test directory"; echo "ls -l"; ls -l) > mail_msg.txt

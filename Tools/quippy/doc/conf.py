@@ -69,7 +69,7 @@ copyright = u'2008-2013, James Kermode'
 #
 # The short X.Y version.
 import os
-version=os.popen('svnversion').read()
+version=os.popen('gitversion').read()
 # The full version, including alpha/beta/rc tags.
 release = version
 

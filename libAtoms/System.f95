@@ -3166,8 +3166,8 @@ end function pad
 
     integer :: last_num
 
-#ifdef SVN_VERSION    
-    string = SVN_VERSION
+#ifdef GIT_VERSION    
+    string = GIT_VERSION
 #else    
     string = "0"
 #endif
