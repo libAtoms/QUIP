@@ -2229,7 +2229,7 @@ contains
     call date_and_time(values=values)
 
     call print('libAtoms::Hello World: '//date_and_time_string(values))
-    call print('libAtoms::Hello World: SVN version  '//current_version())
+    call print('libAtoms::Hello World: git version  '//current_version())
     call print('libAtoms::Hello World: QUIP_ARCH    '//QUIP_ARCH)
     call print('libAtoms::Hello World: compiled on  '//__DATE__//' at '//__TIME__)
 #ifdef _MPI
@@ -3161,26 +3161,13 @@ end function pad
   end function link_run_directory
 
   function current_version()
-    integer :: current_version
-    character(len=SYSTEM_STRING_LENGTH) :: string
-
-    integer :: last_num
+    character(len=SYSTEM_STRING_LENGTH) :: current_version
 
 #ifdef GIT_VERSION    
-    string = GIT_VERSION
+    current_version = trim(GIT_VERSION)
 #else    
-    string = "0"
+    current_version = "<exported>"
 #endif
-
-    do last_num=0, len(trim(string))
-      if (last_num == len(trim(string))) exit
-      if (scan(string(last_num+1:last_num+1),'0123456789') /= 1) exit
-    end do
-    if (last_num > 0) then
-       current_version = string_to_int(string(1:last_num))
-    else
-       current_version = 0
-    endif
 
   endfunction current_version
 
