@@ -253,16 +253,16 @@ def find_wrap_sources(makefile, quip_root):
     targets.append((quip_root, 'libAtoms/libatoms.a'))
 
     if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
-        gp_dir = os.path.join(quip_root, 'GAP_predict')
+        gp_dir = os.path.join(quip_root, 'GAP')
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
-        targets.extend([(quip_root, 'GAP_predict/libgap_predict.a')])
+        targets.extend([(quip_root, 'GAP/libgap_predict.a')])
 
     if 'HAVE_GP_TEACH' in makefile and int(makefile['HAVE_GP_TEACH']) == 1:
-        gp_dir = os.path.join(quip_root, 'GAP_teach')
+        gp_dir = os.path.join(quip_root, 'GAP-filler/GAP_teach')
         source_dirs.append(gp_dir)
         libraries.append('gap_teach')
-        targets.extend([(quip_root, 'GAP_teach/libgap_teach.a')])
+        targets.extend([(quip_root, 'GAP-filler/GAP_teach/libgap_teach.a')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
