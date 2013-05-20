@@ -54,7 +54,7 @@ use atoms_module
 use mpi_context_module
 use QUIP_Common_module
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GAP
 use descriptors_module
 use gp_predict_module
 #endif
@@ -107,7 +107,7 @@ type IPModel_GAP
 
   character(len=STRING_LENGTH) :: label
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GAP
   type(gpSparse) :: my_gp
   type(descriptor), dimension(:), allocatable :: my_descriptor
 #endif
@@ -150,8 +150,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call Finalise(this)
 
   ! now initialise the potential
-#ifndef HAVE_GP_PREDICT
-  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP_PREDICT')
+#ifndef HAVE_GAP
+  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GAP')
 #else
 
   call initialise(params)
@@ -186,7 +186,7 @@ end subroutine IPModel_GAP_Initialise_str
 
 subroutine IPModel_GAP_Finalise(this)
   type(IPModel_GAP), intent(inout) :: this
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GAP
   if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
   if (allocated(this%qw_cutoff_f)) deallocate(this%qw_cutoff_f)
   if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
@@ -233,7 +233,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GAP
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp_k, water_monomer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w
@@ -492,7 +492,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      endif
 
      call QUIP_FoX_get_value(attributes, 'svn_version', value, status)
-     if( (status == 0) .and. (string_to_int(value) > current_version()) ) then
+     if( (status == 0) .and. (string_to_int(value) > string_to_int(current_version()) ) ) then
 	call system_abort( &
 	   'Database was created with a different version of the code.' // &
 	   'Version of code used to generate the database is '//trim(value) //'.'// &
@@ -770,7 +770,7 @@ subroutine IPModel_GAP_Print (this, file)
   type(Inoutput), intent(inout),optional :: file
   integer :: i
 
-#ifdef HAVE_GP_PREDICT
+#ifdef HAVE_GAP
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
   call Print("IPModel_GAP : j_max = "//this%j_max, file=file)

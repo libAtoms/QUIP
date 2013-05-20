@@ -47,16 +47,16 @@ endif
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
 MODULES = ThirdParty libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
-GP = 
+GAP = 
 
-ifeq (${HAVE_GP_PREDICT},1)
+ifeq (${HAVE_GAP},1)
 MODULES += GAP 
-GP += GAP/libgap_predict.a
+GAP += GAP/libgap_predict.a
 endif
 
-ifeq (${HAVE_GP_TEACH},1)
-MODULES += GAP-filler/GAP_teach GAP-filler/GAProgs 
-GP += GAP-filler/GAP_teach/libgap_teach.a
+ifeq (${HAVE_GAP_FILLER},1)
+MODULES += GAP-filler
+GAP += GAP-filler/libgap_teach.a
 endif
 
 FOX = FoX-4.0.3
@@ -88,56 +88,50 @@ ${MODULES}:  ${BUILDDIR}
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
-ifeq (${HAVE_GP_PREDICT},1)
+ifeq (${HAVE_GAP},1)
 GAP: libAtoms/libatoms.a ${FOX}
 endif
 
-ifeq (${HAVE_GP_TEACH},1)
-GAP-filler/GAP_teach: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a
-GAP-filler/GAProgs: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
+ifeq (${HAVE_GAP_FILLER},1)
+GAP-filler: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 endif
 
-QUIP_Core: libAtoms/libatoms.a ${FOX} ${GP}
-QUIP_Util: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a
-QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils 
-QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
-Tests: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
+QUIP_Core: libAtoms/libatoms.a ${FOX} ${GAP}
+QUIP_Util: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a
+QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils 
+QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
+Tests: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 
-ifeq (${HAVE_GP_PREDICT},1)
+ifeq (${HAVE_GAP},1)
 GAP/%: libAtoms/libatoms.a ${FOX}
 	ln -sf ${PWD}/GAP/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP -I${PWD} -I${PWD}/Makefiles $${targ#GAP/}
 	rm ${BUILDDIR}/Makefile
 endif
 
-ifeq (${HAVE_GP_TEACH},1)
-GAP-filler/GAP_teach/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a
-	ln -sf ${PWD}/GAP-filler/GAP_teach/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler/GAP_teach -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/GAP_teach/}
-	rm ${BUILDDIR}/Makefile
-
-GAP-filler/GAProgs/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
-	ln -sf ${PWD}/GAP-filler/GAProgs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/GAProgs/}
+ifeq (${HAVE_GAP_FILLER},1)
+GAP-filler/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
+	ln -sf ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/}
 	rm ${BUILDDIR}/Makefile
 endif
 
-QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
+QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 	ln -sf ${PWD}/QUIP_FilePot_Drivers/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_FilePot_Drivers -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_FilePot_Drivers/}
 	rm ${BUILDDIR}/Makefile
 
-QUIP_Programs/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
+QUIP_Programs/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
-QUIP_Core/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core
+QUIP_Core/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
-QUIP_Utils/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
+QUIP_Utils/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 	ln -sf ${PWD}/QUIP_Utils/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Utils -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Utils/}
 	rm ${BUILDDIR}/Makefile
@@ -147,7 +141,7 @@ libAtoms/%: libAtoms
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
-Tools/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils/libquiputils.a Tools
+Tools/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils/libquiputils.a Tools
 	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile

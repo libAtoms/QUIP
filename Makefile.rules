@@ -97,14 +97,14 @@ ifeq (${HAVE_FX},1)
   DEFINES += -DHAVE_FX
   SYSLIBS += ${FX_LIB}
 endif
-ifeq (${HAVE_GP_TEACH},1)
-  DEFINES += -DHAVE_GP_TEACH
-  HAVE_GP_PREDICT = 1
+ifeq (${HAVE_GAP_FILLER},1)
+  DEFINES += -DHAVE_GAP_FILLER
+  HAVE_GAP = 1
   GP_LIB += -lgap_teach
   GP_LIBFILE += libgap_teach.a
 endif
-ifeq (${HAVE_GP_PREDICT},1)
-  DEFINES += -DHAVE_GP_PREDICT
+ifeq (${HAVE_GAP},1)
+  DEFINES += -DHAVE_GAP
   GP_LIB += -lgap_predict
   GP_LIBFILE += libgap_predict.a
 endif
