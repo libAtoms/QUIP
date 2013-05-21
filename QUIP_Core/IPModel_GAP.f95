@@ -65,6 +65,12 @@ private
 
 include 'IPModel_interface.h'
 
+#ifdef GAP_VERSION
+   integer, parameter :: gap_version = GAP_VERSION
+#else
+   integer, parameter :: gap_version = 0
+#endif
+
 ! this stuff is here for now, but it should live somewhere else eventually
 ! lower down in the GP
 
@@ -492,11 +498,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      endif
 
      call QUIP_FoX_get_value(attributes, 'svn_version', value, status)
-     if( (status == 0) .and. (string_to_int(value) > string_to_int(current_version()) ) ) then
+     if( (status == 0) .and. (string_to_int(value) > gap_version ) ) then
 	call system_abort( &
 	   'Database was created with a different version of the code.' // &
 	   'Version of code used to generate the database is '//trim(value) //'.'// &
-	   'Version of current code is '//current_version() // &
+	   'Version of current code is '//gap_version // &
 	   '. Please update your code.')
      endif
 
