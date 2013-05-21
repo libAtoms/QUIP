@@ -7,5 +7,5 @@ if [ -f "$QUIP_ROOT/STABLE_VERSION" ]; then
    echo -ne $(cat $QUIP_ROOT/STABLE_VERSION)
    exit 0
 else
-   echo "$(git config --get remote.origin.url) $(git describe --always --tags --dirty)"
+   echo "$(git config --get remote.origin.url),$(git describe --always --tags --dirty)"
 fi
