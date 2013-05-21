@@ -252,17 +252,17 @@ def find_wrap_sources(makefile, quip_root):
     libraries.append('atoms')
     targets.append((quip_root, 'libAtoms/libatoms.a'))
 
-    if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
+    if 'HAVE_GAP' in makefile and int(makefile['HAVE_GAP']) == 1:
         gp_dir = os.path.join(quip_root, 'GAP')
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
         targets.extend([(quip_root, 'GAP/libgap_predict.a')])
 
-    if 'HAVE_GP_TEACH' in makefile and int(makefile['HAVE_GP_TEACH']) == 1:
-        gp_dir = os.path.join(quip_root, 'GAP-filler/GAP_teach')
+    if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
+        gp_dir = os.path.join(quip_root, 'GAP-filler/')
         source_dirs.append(gp_dir)
         libraries.append('gap_teach')
-        targets.extend([(quip_root, 'GAP-filler/GAP_teach/libgap_teach.a')])
+        targets.extend([(quip_root, 'GAP-filler/libgap_teach.a')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
@@ -333,7 +333,7 @@ if 'QUIPPY_LDFLAGS' in makefile:
     extra_link_args.extend(makefile['QUIPPY_LDFLAGS'].split())
 
 # Preprocessor macros
-macros = [('GIT_VERSION',r'\"%s\"' % os.popen('%s/utility_scripts/gitversion -n .' % quip_root).read())]
+macros = [('GIT_VERSION',r'\"%s\"' % os.popen('%s/utility_scripts/gitversion' % quip_root).read().strip())]
 for defn in makefile['DEFINES'].split():
     if defn[:2] == '-D':
         if '=' in defn:
