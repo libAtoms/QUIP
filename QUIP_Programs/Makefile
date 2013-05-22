@@ -72,4 +72,3 @@ clean:
 	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} crack makecrack
 
 allclean : clean
-

@@ -100,8 +100,6 @@ endif
 ifeq (${HAVE_GAP_FILLER},1)
   DEFINES += -DHAVE_GAP_FILLER
   HAVE_GAP = 1
-  GP_LIB += -lgap_teach
-  GP_LIBFILE += libgap_teach.a
 endif
 ifeq (${HAVE_GAP},1)
   DEFINES += -DHAVE_GAP

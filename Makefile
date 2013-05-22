@@ -56,7 +56,6 @@ endif
 
 ifeq (${HAVE_GAP_FILLER},1)
 MODULES += GAP-filler
-GAP += GAP-filler/libgap_teach.a
 endif
 
 FOX = FoX-4.0.3
@@ -110,7 +109,7 @@ GAP/%: libAtoms/libatoms.a ${FOX}
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
+GAP-filler/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a QUIP_Core/libquip_core.a QUIP_Utils
 	ln -sf ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/}
 	rm ${BUILDDIR}/Makefile
