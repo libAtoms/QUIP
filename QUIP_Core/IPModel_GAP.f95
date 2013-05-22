@@ -107,8 +107,6 @@ type IPModel_GAP
 
   logical :: do_pca = .false.
 
-  logical :: do_lammps = .false., do_fast_gap = .false., do_fast_gap_dgemv = .false.
-
   character(len=256) :: coordinates             !% Coordinate system used in GAP database
 
   character(len=STRING_LENGTH) :: label
@@ -164,12 +162,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   this%label=''
 
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'lammps', 'false', this%do_lammps, help_string="The way forces on local/ghost atoms are calculated. " // &
-   "By default, cross terms are accumulated on the central atom. If >>lammps<< is set, cross-terms are accumulated on the neighbours.")
-  call param_register(params, 'fast_gap', 'false', this%do_fast_gap, help_string="If true, activate various speedups to gp_predict.  " // &
-   "Switches >>lammps<< to true, which may change amount of buffer needed around atoms in atom_mask_name")
-  call param_register(params, 'fast_gap_dgemv', 'false', this%do_fast_gap_dgemv, help_string="If true, used dgemv instead of many " // &
-   "dot_product() calls in GAP forces. Introduces some overhead in sorting of sparse points by Z.")
   call param_register(params, 'E_scale', '1.0', this%E_scale, help_string="rescaling factor for the potential")
 
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Initialise_str args_str')) &
@@ -241,30 +233,22 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 #ifdef HAVE_GAP
   real(dp), pointer :: w_e(:)
-  real(dp) :: e_i, f_gp_k, water_monomer_energy
-  real(dp), dimension(:), allocatable   :: local_e_in, w
+  real(dp) :: e_i
+  real(dp), dimension(:), allocatable   :: local_e_in
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  real(dp), dimension(:,:,:,:), allocatable   :: dvec
-  real(dp), dimension(:,:), allocatable   :: vec
-  real(dp), dimension(:,:,:), allocatable   :: jack
-  integer, dimension(:,:), allocatable :: water_monomer_index
-  integer :: d, i, j, k, l, m, n, nei_max, iAo, iBo, n_water_pair
+  integer :: d, i, j, n, i_coordinate, n_local_e
 
-  real(dp), dimension(:,:), allocatable :: covariance, pca_matrix, f_in
+  real(dp), dimension(:,:), allocatable :: f_in
 
-  integer, dimension(3) :: shift
   real(dp), dimension(3) :: pos, f_gp
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  logical :: has_atom_mask_name, do_atom_mask_lookup, do_lammps, do_fast_gap, do_fast_gap_dgemv, force_calc_new_x_star, new_x_star
+  logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
 
   real(dp), dimension(:), allocatable :: sparseScore
   logical :: do_rescale_r, do_rescale_E, do_sparseScore
-
-  integer :: n_atoms_eff, ii, ji, jj, i_coordinate, n_local_e
-  integer, allocatable, dimension(:) :: atom_mask_lookup, atom_mask_reverse_lookup
 
   type(descriptor_data) :: my_descriptor_data
   real(dp), dimension(:), allocatable :: gradPredict
@@ -308,20 +292,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   atom_mask_pointer => null()
 
-  do_lammps = .false.
   do_sparseScore = .false.
   if(present(args_str)) then
      call initialise(params)
      
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, &
      help_string="Name of a logical property in the atoms object. For atoms where this property is true, energies, forces, virials etc. are " // &
-      "calculated.  Cross-terms are attributed to atoms depending on the >>lammps<< flag.")
-     call param_register(params, 'lammps', ""//this%do_lammps, do_lammps, help_string="The way forces on local/ghost atoms are calculated. " // &
-      "By default, cross terms are accumulated on the central atom. If >>lammps<< is set, cross-terms are accumulated on the neighbours.")
-     call param_register(params, 'fast_gap', ""//this%do_fast_gap, do_fast_gap, help_string="If true, activate various speedups to gp_predict.  " // &
-      "Switches >>lammps<< to true, which may change amount of buffer needed around atoms in atom_mask_name")
-     call param_register(params, 'fast_gap_dgemv', ""//this%do_fast_gap_dgemv, do_fast_gap_dgemv, help_string="If true, used dgemv instead of many " // &
-      "dot_product() calls in GAP forces. Introduces some overhead in sorting of sparse points by Z.")
+      "calculated")
      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
      call param_register(params, 'sparseScore', 'F', do_sparseScore, help_string="Compute score for each test point.")
@@ -343,6 +320,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   endif
 
+  if( associated(atom_mask_pointer) ) then
+     n_local_e = count(atom_mask_pointer)
+  else
+     n_local_e = at%N
+  endif
+
   do i_coordinate = 1, this%my_gp%n_coordinate
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
@@ -361,10 +344,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      allocate(sparseScore(size(my_descriptor_data%x)))
 
-     n_local_e = 0
 !$omp parallel default(none) private(i,gradPredict, e_i,n,j,pos,f_gp) &
 !$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_sparseScore,sparseScore,f) &
-!$omp reduction(+:local_e_in,f_in,virial_in,n_local_e)
+!$omp reduction(+:local_e_in,f_in,virial_in)
 
 !$omp do schedule(dynamic)
      do i = 1, size(my_descriptor_data%x)
@@ -382,7 +364,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(present(e) .or. present(local_e)) then
            local_e_in( my_descriptor_data%x(i)%ci ) = local_e_in( my_descriptor_data%x(i)%ci ) + &
                 e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
-           n_local_e = n_local_e + 1
         endif
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
@@ -436,15 +417,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(f_in)) deallocate(f_in)
   if(allocated(virial_in)) deallocate(virial_in)
-  if(allocated(w)) deallocate(w)
-  if(allocated(covariance)) deallocate(covariance)
-  if(allocated(dvec)) deallocate(dvec)
-  if(allocated(vec)) deallocate(vec)
-  if(allocated(jack)) deallocate(jack)
-  if(allocated(water_monomer_index)) deallocate(water_monomer_index)
   atom_mask_pointer => null()
-  if (allocated(atom_mask_lookup)) deallocate(atom_mask_lookup)
-  if (allocated(atom_mask_reverse_lookup)) deallocate(atom_mask_reverse_lookup)
 
 #endif
 end subroutine IPModel_GAP_Calc
@@ -469,7 +442,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=1024) :: value
 
-  integer :: ti, ri
+  integer :: ri
 
   if(name == 'GAP_params') then ! new GAP stanza
      
