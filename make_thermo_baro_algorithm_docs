@@ -1,4 +1,0 @@
-#!/bin/bash
-
-fgrep TIME_PROPAG_TEX libAtoms/*f95 | sort -k3n -s  | sed 's/.*TEX [0-9]*//' > thermo_baro_algorithm_contents.tex ; pdflatex thermo_baro_algorithm.tex 
-
