@@ -428,7 +428,8 @@ end subroutine
 !% Smooth cutoff function from D.J. Cole \emph{et al.}, J. Chem. Phys. {\bf 127}, 204704 (2007).
 subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
 
-  real(dp) x,R,D,fc,dfc_dx
+  real(dp), intent(in) :: x,R,D
+  real(dp), intent(out) :: fc,dfc_dx
   real(dp), parameter :: pi = dacos(-1.0d0)
 
   if (x .lt. (R-D)) then
