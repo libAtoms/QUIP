@@ -74,7 +74,7 @@ type IPModel_TS
   real(dp), allocatable, dimension(:) :: pol, z, pseudise_sigma
   real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
 
-  real(dp) :: cutoff_coulomb, cutoff_ms
+  real(dp) :: cutoff_coulomb, cutoff_ms, smoothlength_ms
 
   character(len=STRING_LENGTH) :: label
   logical :: initialised, tdip_sr
@@ -233,7 +233,7 @@ end subroutine asap_short_range_dipole_moments
 !% Morse-stretch potential, defined by
 !% \begin{displaymath}
 !% U_ij = D_ij \left[ e^{\gamma_{ij}\left( 1 - r_{ij}/r^0_{ij} \right)} 
-!%                  - 2 e^{\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
+!%                  - 2 e^{\gamma_{ij}/2\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
 !% \end{displaymath}
 subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 #ifdef _OPENMP
@@ -249,7 +249,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), dms, gammams, rms
    real(dp) :: exponentms, factorms, phi, de
-   real(dp) :: dforce
+   real(dp) :: dforce, fc, dfc_dr
    real(dp) :: elimitij(this%n_types, this%n_types)
    logical :: i_is_min_image, j_is_min_image
 
@@ -267,7 +267,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
       end do
    end do
 
-   !$omp parallel default(none) shared(this, mpi, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e)
+   !$omp parallel default(none) shared(this, mpi, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, fc, dfc_dr)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -297,7 +297,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
       do m = 1, n_neighbours(at, i)
          
          j = neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
-         
+
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
 
@@ -311,6 +311,8 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 
          r_ij = r_ij/BOHR
 
+         call smooth_cutoff(r_ij, this%cutoff_ms-this%smoothlength_ms, this%smoothlength_ms, fc, dfc_dr)
+
          tj = get_type(this%type_of_atomic_num, at%Z(j))
 
          dms = this%d_ms(ti,tj)
@@ -322,7 +324,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
          phi = exp(exponentms)
 
          if (present(e) .or. present(local_e)) then
-            de = dms*(phi-2.0_dp*sqrt(phi)) - elimitij(ti, tj)
+            de = (dms*(phi - 2.0_dp*sqrt(phi)) - elimitij(ti, tj))*fc
 
             if (present(e)) then
                if (i_is_min_image .and. j_is_min_image) then
@@ -339,7 +341,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
          end if
 
          if (present(f) .or. present(virial)) then
-            dforce  = -dms*(factorms*phi - factorms*dsqrt(phi))
+            dforce  = -dms*(factorms*phi - factorms*dsqrt(phi))*fc + (dms*(phi - 2.0_dp*sqrt(phi)) - elimitij(ti, tj))*dfc_dr
 
             if (present(f)) then
                private_f(:,i) = private_f(:,i) + dforce*u_ij
@@ -721,6 +723,7 @@ subroutine IPModel_TS_Print(this, file)
   call Print("IPModel_TS : n_types = " // this%n_types, file=file)
   call Print("IPModel_TS : betapol = "//this%betapol//" maxipol = "//this%maxipol//" tolpol = "//this%tolpol//" pred_order = "//this%pred_order, file=file)
   call Print("IPModel_TS : yukalpha = "//this%yukalpha//" yuksmoothlength = "//this%yuksmoothlength, file=file)
+  call Print("IPModel_TS : cutoff_coulomb = "//this%cutoff_coulomb//" cutoff_ms = "//this%cutoff_ms//" smoothlength_ms="//this%smoothlength_ms, file=file)
 
   do ti=1, this%n_types
     call Print ("IPModel_TS : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
@@ -845,6 +848,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "cutoff_ms", value, status)
       if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find cutoff_ms")
       read (value, *) parse_ip%cutoff_ms
+
+      parse_ip%smoothlength_ms = 0.0_dp
+      call QUIP_FoX_get_value(attributes, "smoothlength_ms", value, status)
+      if (status == 0) read (value, *) parse_ip%smoothlength_ms
 
       call QUIP_FoX_get_value(attributes, "betapol", value, status)
       if (status == 0) read (value, *) parse_ip%betapol
