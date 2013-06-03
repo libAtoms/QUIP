@@ -34,13 +34,9 @@ if hasattr(quippy, 'Potential'):
    except RuntimeError:
       got_asap2 = False
 
-   # If True, validate TS against original ASAP potential.
+   # If possible, validate TS against original ASAP potential.
    # Otherwise, we compare to reference data in this file.
-   do_compare_p1_p2 = False
-
-   if do_compare_p1_p2 and not got_asap1:
-      # Original ASAP is not available
-      do_compare_p1_p2 = False
+   do_compare_p1_p2 = got_asap1 and got_asap2
 
    if got_asap2:
       class PotTestMixin:
@@ -83,9 +79,9 @@ if hasattr(quippy, 'Potential'):
             self.assertArrayAlmostEqual(f1, f2, tol=1e-6)
             self.assertArrayAlmostEqual(v1, v2, tol=1e-6)
             if hasattr(at1, 'dipoles') and hasattr(at2, 'dipoles'):
-               self.assertArrayAlmostEqual(at1.dipoles, at2.dipoles/BOHR, tol=1e-6)
+               self.assertArrayAlmostEqual(at1.dipoles, at2.dipoles, tol=1e-6)
 
-            return e2, f2.T, v2, local_e2, at2.dipoles
+            return e2, f2.T, v2, local_e2, at2.dipoles.copy()
 
 
          def compare_ref(self, at, ref):
