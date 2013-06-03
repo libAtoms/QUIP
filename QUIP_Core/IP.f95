@@ -570,7 +570,7 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_brenner_2002%cutoff
 #ifdef HAVE_ASAP
   case (FF_ASAP)
-     IP_cutoff = maxval(this%ip_asap%cutoff)*BOHR
+     IP_cutoff = max(this%ip_asap%cutoff_ms, this%ip_asap%cutoff_coulomb)*BOHR
 #endif
   case (FF_TS)
      IP_cutoff = max(this%ip_TS%cutoff_ms, this%ip_TS%cutoff_coulomb)*BOHR

@@ -65,7 +65,7 @@ type IPModel_ASAP
   real :: raggio, a_ew, gcut
   integer :: iesr(3)
 
-  real(dp) :: cutoff(4)
+  real(dp) :: cutoff_coulomb, cutoff_ms
 
   character(len=STRING_LENGTH) :: label
   logical :: initialised
@@ -526,7 +526,8 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       raggio = this%raggio
       a_ew = this%a_ew
       gcut = this%gcut
-      rcut = this%cutoff
+      rcut(1) = this%cutoff_coulomb
+      rcut(3) = this%cutoff_ms
       iesr = this%iesr
 
       call print('tewald :'//tewald)
@@ -647,6 +648,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       pred_order = this%pred_order
 
       tpol = any(dabs(pol) > 1.0e-6_dp)
+      tpolvar = tpol
+      call Print('tpol = '//tpol)
+      call Print('tpolvar = '//tpolvar)
       call Print('Polarisation: '//pol)
 
       bpol = 0.0_dp
@@ -780,6 +784,7 @@ subroutine IPModel_ASAP_Print(this, file)
   call Print("IPModel_ASAP : n_types = " // this%n_types //" n_atoms = "//this%n_atoms, file=file)
   call Print("IPModel_ASAP : betapol = "//this%betapol//" maxipol = "//this%maxipol//" tolpol = "//this%tolpol//" pred_order = "//this%pred_order, file=file)
   call Print("IPModel_ASAP : yukalpha = "//this%yukalpha//" yuksmoothlength = "//this%yuksmoothlength, file=file)
+  call Print("IPModel_ASAP : cutoff_coulomb = "//this%cutoff_coulomb//" cutoff_ms = "//this%cutoff_ms, file=file)
 
   do ti=1, this%n_types
     call Print ("IPModel_ASAP : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
@@ -887,9 +892,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%C_pol(parse_ip%n_types,parse_ip%n_types))
       parse_ip%C_pol = 0.0_dp
 
-      call Quip_fox_get_value(attributes, "cutoff", val, status)
-      if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find cutoff")
-      read (val, *) parse_ip%cutoff
+      call QUIP_FoX_get_value(attributes, "cutoff_coulomb", val, status)
+      if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find cutoff_coulomb")
+      read (val, *) parse_ip%cutoff_coulomb
+
+      call QUIP_FoX_get_value(attributes, "cutoff_ms", val, status)
+      if (status /= 0) call system_abort ("IPModel_TS_read_params_xml cannot find cutoff_ms")
+      read (val, *) parse_ip%cutoff_ms
 
       call Quip_fox_get_value(attributes, "betapol", val, status)
       if (status == 0) read (val, *) parse_ip%betapol
