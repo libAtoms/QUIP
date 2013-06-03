@@ -432,7 +432,18 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   if(present(f)) f = this%E_scale*f_in
   if(present(e)) e = this%E_scale*(sum(local_e_in) + this%e0*n_local_e)
-  if(present(local_e)) local_e = this%E_scale*(local_e_in + this%e0)
+  if(present(local_e)) then
+     local_e = local_e_in
+     if( associated(atom_mask_pointer) ) then
+        do i = 1, at%N
+           if( atom_mask_pointer(i) ) local_e(i) = local_e(i) + this%e0
+        enddo
+     else
+        local_e = local_e + this%e0
+     endif
+     local_e = local_e * this%E_scale
+  endif
+
   if(present(virial)) virial = this%E_scale*sum(virial_in,dim=3)
 
   if(present(local_virial)) then
