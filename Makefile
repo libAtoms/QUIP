@@ -233,3 +233,9 @@ quippy:
 
 test:
 	${MAKE} -C Tests -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}
+
+GIT_SUBDIRS=GAP GAP-filler
+
+git_pull_all:
+	git pull
+	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
