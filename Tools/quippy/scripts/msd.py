@@ -19,9 +19,8 @@ ar = AtomsReader(opt.infile, step=opt.interval)
 aw = AtomsWriter(opt.outfile)
 
 step=0
+eff_step=0
 for at in ar:
-   step += 1
-
    at.undo_pbc_jumps(persistent=False)
    at.undo_com_motion(persistent=False)
    if (opt.mask != ""):
@@ -34,10 +33,14 @@ for at in ar:
 
    aw.write(at)
 
-   if ((step % 100) == 0):
-      sys.stderr.write("%1d" % (step/100))
-   elif ((step % 10) == 0):
+   step += opt.interval
+   eff_step += 1
+
+   if ((eff_step % 100) == 0):
+      sys.stderr.write("%1d" % (eff_step/100))
+   elif ((eff_step % 10) == 0):
       sys.stderr.write(".")
 
-if (step >= 10):
+
+if (eff_step >= 10):
    sys.stderr.write("\n")
