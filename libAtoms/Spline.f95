@@ -396,7 +396,7 @@ contains
        B(I+1,I+1)  =  1.0_dp/(this%x(i+1)-this%x(i))
     end do
 
-    call matrix_inverse(A,Ainv)
+    call inverse(A,Ainv)
 
     y2_matrix1 = Ainv .mult. B
 

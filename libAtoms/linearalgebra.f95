@@ -60,7 +60,7 @@ module linearalgebra_module
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
   public :: diagonalise, uniq, find_indices, inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
-  public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, matrix_inverse
+  public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
 
@@ -6439,5 +6439,77 @@ CONTAINS
      endif
 
   endsubroutine find_nonzero_chunk_real1d
+
+
+ subroutine inverse_svd_threshold(in_matrix, thresh, result_inv, u_out, vt_out)
+
+   real(dp), intent(in)                                               ::         in_matrix(:,:), thresh
+   real(dp), dimension(:,:), optional, intent(out)                    ::         u_out, vt_out
+   real(dp), intent(out), dimension(:,:), optional                    ::         result_inv
+   real(dp), allocatable                                              ::         w(:), sigmainv(:,:), u(:,:), vt(:,:)
+   real(dp), allocatable                                              ::         work(:)
+   real(dp), parameter                                                ::         TOL_SVD = 1e-13_dp
+   integer                                                            ::         n_dimension, info, i, lwork, j
+
+   call print('entering inverse_svd_threshold')
+
+   n_dimension = size(in_matrix(:,1))
+!   call print('Dimension of the Matrix : '//n_dimension)
+
+   allocate(w(n_dimension), sigmainv(n_dimension,n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
+   lwork = -1
+   allocate(work(1))
+   call DGESVD('A','A',n_dimension,n_dimension,in_matrix,n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
+
+   lwork = work(1)
+   deallocate(work)
+   allocate(work(lwork))
+
+   call DGESVD('A','A',n_dimension, n_dimension, in_matrix, n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
+   call print("DGESVD finished with exit code "//info)
+   deallocate(work)
+
+ if (present(result_inv)) then
+ 
+   if (info /= 0) then
+          if (info < 0) then
+                 write(line,'(a,i0)')'SVD: Problem with argument ',-info
+                 call system_abort(line)
+          else
+                 call system_abort('SVD: DBDSQR (called from DGESVD) did not converge')
+          end if
+   end if
+
+   sigmainv = 0.0_dp
+   j = 0
+
+   do i=1, n_dimension
+       if (w(i) < thresh*TOL_SVD) then
+            sigmainv(i,i) = 0.0_dp
+            j = j + 1
+       else
+           sigmainv(i,i) = 1.0_dp/w(i)
+       end if
+   end do
+ 
+   call print("the number of zero singular values : "//j)
+
+  if (n_dimension<=3) then  ! DEBUGGING use
+  endif
+  result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
+
+end if !on condition of matrix inverting  
+
+   if (present(u_out))      u_out=u
+   if (present(vt_out))     vt_out=vt
+
+   deallocate(w)
+   deallocate(sigmainv)
+   deallocate(u)
+   deallocate(vt)
+
+   call print('finished  inverse_svd_threshold')
+
+ end subroutine inverse_svd_threshold
 
 end module linearalgebra_module

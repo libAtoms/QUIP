@@ -3930,7 +3930,7 @@ type(inoutput), optional :: debugfile
     b(9) = rjk * vjk
 
     ! Invert
-    call matrix_inverse(A,A_inv)
+    call inverse(A,A_inv)
     x = A_inv .mult. b
 
     call print('Momentum before update = '//momentum(this,(/i,j,k/)))
