@@ -6451,10 +6451,10 @@ CONTAINS
    real(dp), parameter                                                ::         TOL_SVD = 1e-13_dp
    integer                                                            ::         n_dimension, info, i, lwork, j
 
-   call print('entering inverse_svd_threshold')
+   call print('entering inverse_svd_threshold', verbosity=PRINT_VERBOSE)
 
    n_dimension = size(in_matrix(:,1))
-!   call print('Dimension of the Matrix : '//n_dimension)
+!   call print('Dimension of the Matrix : '//n_dimension, verbosity=PRINT_VERBOSE)
 
    allocate(w(n_dimension), sigmainv(n_dimension,n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
    lwork = -1
@@ -6466,7 +6466,7 @@ CONTAINS
    allocate(work(lwork))
 
    call DGESVD('A','A',n_dimension, n_dimension, in_matrix, n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
-   call print("DGESVD finished with exit code "//info)
+   call print("DGESVD finished with exit code "//info, verbosity=PRINT_VERBOSE)
    deallocate(work)
 
  if (present(result_inv)) then
@@ -6483,6 +6483,9 @@ CONTAINS
    sigmainv = 0.0_dp
    j = 0
 
+   call print("values "// w, verbosity=PRINT_VERBOSE)
+   call print("smallest, largest value : "//minval(abs(w))//" "//maxval(abs(w)), verbosity=PRINT_VERBOSE)
+
    do i=1, n_dimension
        if (w(i) < thresh*TOL_SVD) then
             sigmainv(i,i) = 0.0_dp
@@ -6492,7 +6495,7 @@ CONTAINS
        end if
    end do
  
-   call print("the number of zero singular values : "//j)
+   call print("the number of zero singular values : "//j, verbosity=PRINT_VERBOSE)
 
   if (n_dimension<=3) then  ! DEBUGGING use
   endif
