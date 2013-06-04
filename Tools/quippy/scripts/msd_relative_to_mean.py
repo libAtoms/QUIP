@@ -20,6 +20,7 @@ ar=AtomsReader(opt.infile, step=opt.interval)
 mean_pos = None
 n=0
 step=0
+step_eff=0
 for at in ar:
    if (step >= opt.min_step):
       if mean_pos is None:
@@ -29,6 +30,15 @@ for at in ar:
 	 mean_pos[:,:] += at.pos[:,:]
 	 n += 1
    step += opt.interval
+   step_eff += 1
+
+   if (step_eff % 100) == 0:
+      sys.stderr.write("%d" % (step_eff/100))
+   else:
+      if (step_eff % 10) == 0:
+	 sys.stderr.write(".")
+
+sys.stderr.write("\n")
 
 mean_pos /= float(n)
 
@@ -37,6 +47,7 @@ aw=AtomsWriter(opt.outfile)
 displ = None
 n=0
 step=0
+step_eff=0
 for at in ar:
    if (step >= opt.min_step):
       displ = at.pos - mean_pos
@@ -49,3 +60,11 @@ for at in ar:
       at.msd_displ_mag[:] = np.sum(displ*displ, axis=0)
       aw.write(at)
    step += opt.interval
+   step_eff += 1
+
+   if (step_eff % 100) == 0:
+      sys.stderr.write("%d" % (step_eff/100))
+   elif (step_eff % 10) == 0:
+	 sys.stderr.write(".")
+
+sys.stderr.write("\n")

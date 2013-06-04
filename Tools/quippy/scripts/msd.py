@@ -37,7 +37,7 @@ for at in ar:
    eff_step += 1
 
    if ((eff_step % 100) == 0):
-      sys.stderr.write("%1d" % (eff_step/100))
+      sys.stderr.write("%d" % (eff_step/100))
    elif ((eff_step % 10) == 0):
       sys.stderr.write(".")
 
