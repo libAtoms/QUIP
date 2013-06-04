@@ -54,7 +54,7 @@ for at in ar:
       if displ is None:
 	 if not hasattr(at, "msd_displ"):
 	    at.add_property("msd_displ", displ)
-	 if not hasattr(at, "msd_displ_amg"):
+	 if not hasattr(at, "msd_displ_mag"):
 	    at.add_property("msd_displ_mag", np.sum(displ*displ, axis=0))
       at.msd_displ[:,:] = displ
       at.msd_displ_mag[:] = np.sum(displ*displ, axis=0)
