@@ -3005,7 +3005,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
 end subroutine line_scan
 
 ! Interface is made to imitate the existing interface.
-  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status)
+  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian)
     
     implicit none
     
@@ -3059,7 +3059,16 @@ end subroutine line_scan
     integer, intent(in), optional :: hook_print_interval
     character(len=1), optional, intent(inout) :: am_data(:)
     integer, optional, intent(out) :: status
-    
+    optional :: writehessian
+    INTERFACE 
+       subroutine writehessian(x,data,filename)
+         use system_module
+         real(dp) :: x(:)
+         character(len=1)::data(:)
+         character(*) :: filename
+       end subroutine writehessian
+    end INTERFACE
+ 
 
    
     logical :: doSD, doCG,doLBFGS,doTRLBFGS,doTRLSR1,doprecon,done
@@ -3427,7 +3436,9 @@ end subroutine line_scan
       !if(n_iter == 23) then
       !  call writevec(local_energy,'le2.dat')
       !end if 
-    
+      if (mod(n_iter,10) .eq. 0) then
+        call writehessian(x,am_data,'out' // n_iter)
+      end if
 
       !call print(alpha) 
       alpvec(n_iter) = alpha
@@ -3612,7 +3623,7 @@ end subroutine line_scan
     !call exit() 
 
     su = -g*(smartdotproduct(g,g,doefunc)/smartdotproduct(g,Bg,doefunc)) 
-    !call print(su)
+    !iall print(su)
     lsu = sqrt(smartdotproduct(su,su,doefunc))  
     !call print(su) 
     !descentcheck = smartdotproduct(su,g,doefunc) 
@@ -5796,23 +5807,6 @@ end subroutine line_scan
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) precon%preconrowlengths
     close(outid)
-
-  end subroutine
-
-  subroutine writeapproxhessian(x,dfunc,data,filename)
-    real(dp) :: x(:)
-    INTERFACE
-      function dfunc(x,data)
-        use system_module
-        real(dp)::x(:)
-        character(len=1),optional::data(:)
-        real(dp)::dfunc(size(x))
-      end function dfunc
-    END INTERFACE
-    character(len=1) :: data(:)
-    character(*) :: filename
-
-    real(dp) :: eps = 10.0**(-5)
 
   end subroutine
 
