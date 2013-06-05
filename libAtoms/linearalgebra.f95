@@ -6480,12 +6480,13 @@ CONTAINS
           end if
    end if
 
-   sigmainv = 0.0_dp
-   j = 0
-
-   call print("values "// w, verbosity=PRINT_VERBOSE)
+   do j=1, size(w)
+      call print("svd values "// j//" "//w(j), verbosity=PRINT_VERBOSE)
+   end do
    call print("smallest, largest value : "//minval(abs(w))//" "//maxval(abs(w)), verbosity=PRINT_VERBOSE)
 
+   sigmainv = 0.0_dp
+   j = 0
    do i=1, n_dimension
        if (w(i) < thresh*TOL_SVD) then
             sigmainv(i,i) = 0.0_dp

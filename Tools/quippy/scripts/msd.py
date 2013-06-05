@@ -2,6 +2,7 @@
 
 from quippy import *
 import sys, optparse;
+import numpy as np
 
 ################################################################################
 
