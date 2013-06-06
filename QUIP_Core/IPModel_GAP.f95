@@ -223,7 +223,7 @@ end subroutine IPModel_GAP_Finalise
 
 subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_GAP), intent(inout) :: this
-  type(Atoms), intent(in) :: at
+  type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
@@ -251,6 +251,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   logical :: do_rescale_r, do_rescale_E, do_sparseScore
 
   type(descriptor_data) :: my_descriptor_data
+  type(extendable_str) :: my_args_str
   real(dp), dimension(:), allocatable :: gradPredict
 
   INIT_ERROR(error)
@@ -291,6 +292,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
   atom_mask_pointer => null()
+  has_atom_mask_name = .false.
+  atom_mask_name = ""
 
   do_sparseScore = .false.
   if(present(args_str)) then
@@ -318,8 +321,30 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         RAISE_ERROR("IPModel_GAP_Calc: rescaling of potential at the calc() stage with r_scale and E_scale not yet implemented!", error)
      end if
 
+     my_args_str = trim(args_str)
+  else
+     my_args_str = ""
   endif
 
+  if( present(mpi) ) then
+     if(mpi%active) then
+        if(has_atom_mask_name) then
+           RAISE_ERROR("IPModel_GAP: atom_mask_name "//trim(atom_mask_name)//" present while running MPI version. &
+              The use of atom_mask_name is intended for serial-compiled code called from an external parallel code, such as LAMMPS",error)
+        endif
+
+        if( has_property(at,"mpi_local_mask") ) then
+           RAISE_ERROR("IPModel_GAP: mpi_local_mask property already present", error)
+        endif
+        call add_property(at,'mpi_local_mask',.false.,ptr = atom_mask_pointer, overwrite=.true., error=error) 
+        my_args_str = my_args_str//" atom_mask_name=mpi_local_mask"
+
+        do i = 1, at%N
+           if (mod(i-1, mpi%n_procs) == mpi%my_proc) atom_mask_pointer(i) = .true.
+        enddo
+     endif
+  endif
+           
   if( associated(atom_mask_pointer) ) then
      n_local_e = count(atom_mask_pointer)
   else
@@ -340,7 +365,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      end if
      
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
-        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=args_str, error=error)
+        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
 
      allocate(sparseScore(size(my_descriptor_data%x)))
 
@@ -395,15 +420,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   enddo
 
-  if(present(f)) f = f_in
-
   if (present(mpi)) then
-     if(present(f)) call sum_in_place(mpi,f)
-     if(present(virial) .or. present(local_virial)) call sum_in_place(mpi,virial_in)
-     if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
+     if( mpi%active ) then
+        if(present(f)) call sum_in_place(mpi,f_in)
+        if(present(virial) .or. present(local_virial)) call sum_in_place(mpi,virial_in)
+        if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
+
+        call remove_property(at,'mpi_local_mask', error=error) 
+     endif
   endif
 
-  if(present(f)) f = this%E_scale*f
+  if(present(f)) f = this%E_scale*f_in
   if(present(e)) e = this%E_scale*(sum(local_e_in) + this%e0*n_local_e)
   if(present(local_e)) local_e = this%E_scale*(local_e_in + this%e0)
   if(present(virial)) virial = this%E_scale*sum(virial_in,dim=3)
@@ -418,6 +445,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(allocated(f_in)) deallocate(f_in)
   if(allocated(virial_in)) deallocate(virial_in)
   atom_mask_pointer => null()
+  call finalise(my_args_str)
 
 #endif
 end subroutine IPModel_GAP_Calc
