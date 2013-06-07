@@ -3154,7 +3154,7 @@ end subroutine line_scan
       allocate(LBFGSrho(LBFGSm))
       allocate(LBFGSz(N))
       allocate(LBFGSq(N))
-      !allocate(LBFGSbuf1(N))
+      allocate(LBFGSbuf1(N))
       LBFGScount = 0
       LBFGSrho = 0.0
       if(doTRLBFGS) then
@@ -3353,6 +3353,7 @@ end subroutine line_scan
         end if
         LBFGSbuf1 = LBFGSz
         !call print(k_out)
+        !call exit()
         !LBFGSz = LBFGSq
         do I = 1,n_back
           thisind = LBFGSm - n_back + I 
