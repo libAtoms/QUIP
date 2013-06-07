@@ -808,8 +808,8 @@ module Potential_Precon_Minim_module
     fx = energy_func_local(x,data,lepp)
     fx = KahanSum(lepp)
     hxcount = 1
-    do I = 1,(am%minim_at%N)
-      
+    do I = 1,(am%minim_at%N) ! Loop over atoms
+      call print(I)
       thisneighcount = n_neighbours(am%minim_at,I)
       !call print(x)
       !call exit() 
@@ -817,19 +817,23 @@ module Potential_Precon_Minim_module
         call print("Not enough memory was allocated for Hessian, increase value of nneigh")
       end if
             
-      do II = 1,3
+      do II = 1,3 ! Loop over coordinates of atom I
         hx = 3*(I-1) + II
                   
-          do J = 1,thisneighcount
-          thisind = neighbour(am%minim_at,I,J,index=thisotherind) 
-          do JJ = 1,3 
+          do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
+          if (J > 1) then
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          else
+          thisind = I
+          end if
+          do JJ = 1,3 ! Loop over coordinates of atom J
             hy = 3*(thisind-1) + JJ
             
             if(hy .eq. hx) then
             xpp = x
             xmm = x
-            xpp(hx) = xpp(hx) + eps
-            xmm(hx) = xmm(hx) - eps
+            xpp(hx+9) = xpp(hx+9) + eps
+            xmm(hx+9) = xmm(hx+9) - eps
 
             fpp = energy_func_local(xpp,data,lepp)
             fmm = energy_func_local(xmm,data,lemm)
@@ -838,7 +842,7 @@ module Potential_Precon_Minim_module
             hess(hxcount) = (fpp - 2.0*fx + fmm)/(eps**2.0)
             hessinds(hxcount,1) = hx
             hessinds(hxcount,2) = hx
-            call print(I // ' ' // II  // ' '// J// ' '//JJ//' ' // thisind //  ' '// hx // ' '//hy// ' '//hess(hxcount))
+            !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
             
             elseif(hy .gt. hx) then
@@ -846,14 +850,14 @@ module Potential_Precon_Minim_module
             xpm = x
             xmp = x
             xmm = x
-            xpp(hx) = xpp(hx) + eps
-            xpp(hy) = xpp(hy) + eps
-            xpm(hx) = xpm(hx) + eps
-            xpm(hy) = xpm(hy) - eps
-            xmp(hx) = xmp(hx) - eps
-            xmp(hy) = xmp(hy) + eps
-            xmm(hx) = xmm(hx) - eps
-            xmm(hy) = xmm(hy) - eps
+            xpp(hx+9) = xpp(hx+9) + eps
+            xpp(hy+9) = xpp(hy+9) + eps
+            xpm(hx+9) = xpm(hx+9) + eps
+            xpm(hy+9) = xpm(hy+9) - eps
+            xmp(hx+9) = xmp(hx+9) - eps
+            xmp(hy+9) = xmp(hy+9) + eps
+            xmm(hx+9) = xmm(hx+9) - eps
+            xmm(hy+9) = xmm(hy+9) - eps
          
            
             fpp = energy_func_local(xpp,data,lepp)
@@ -864,10 +868,10 @@ module Potential_Precon_Minim_module
             fpm = KahanSum(lepm)
             fmp = KahanSum(lemp)
             fmm = KahanSum(lemm)
-            hess(hxcount) = (fpp + fmm - fmp - fpm)/(eps**2.0)
+            hess(hxcount) = (fpp + fmm - fmp - fpm)/(4.0*eps**2.0)
             hessinds(hxcount,1) = hx
             hessinds(hxcount,2) = hy
-            call print(I // ' ' // II  // ' '// J// ' '//JJ//' ' // thisind //  ' '// hx // ' '//hy// ' '//hess(hxcount))
+            !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
             endif
             !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 

@@ -3387,6 +3387,8 @@ end subroutine line_scan
         if (abortcount >= 5) then
           call print(' Extended Minim aborted due to multiple bad search directions, possibly reached machine precision')
           call print('  |df|^2 = '// normsqgrad // ', tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
+          
+          call writehessian(x,am_data,'outfinal')
           exit
         end if
         cycle
@@ -3436,18 +3438,19 @@ end subroutine line_scan
       !if(n_iter == 23) then
       !  call writevec(local_energy,'le2.dat')
       !end if 
-      if (mod(n_iter,10) .eq. 0) then
-        call writehessian(x,am_data,'out' // n_iter)
-      end if
-
-      !call print(alpha) 
+         !call print(alpha) 
       alpvec(n_iter) = alpha
       
       !alpha = 0.0000000001 
     
       xold = x
       x = x + alpha*s
-      
+     if(doLBFGS) then
+       if (mod(n_iter,10) .eq. 0) then
+        call writehessian(x,am_data,'out' // n_iter)
+      end if
+end if
+  
       
       elseif (doTRLBFGS .or. doTRLSR1) then
 
