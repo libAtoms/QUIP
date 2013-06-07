@@ -5049,7 +5049,7 @@ end subroutine line_scan
   
     real(dp), allocatable :: output(:),le(:)
     integer :: I 
-    real(dp) :: stepsize = 10**(-3.0)
+    real(dp),parameter :: stepsize = 10**(-3.0)
     integer :: N = 1000
     real(dp) :: g(size(x))
     real(dp) :: f
@@ -5571,8 +5571,8 @@ end subroutine line_scan
 
 
  step = deltat*v
- stepsize = norm2(step)
- call print(deltat // " "// norm2(v) // " "// stepsize) 
+ !stepsize = norm2(step)
+ !call print(deltat // " "// norm2(v) // " "// stepsize) 
  
  if (stepsize > maxstep) then
    step = (maxstep/stepsize)*step
