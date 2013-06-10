@@ -3418,6 +3418,7 @@ end subroutine line_scan
           call print('  |df|^2 = '// normsqgrad // ', tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
           
           call writehessian(x,am_data,'outfinal')
+          
           exit
         end if
         cycle
@@ -3476,7 +3477,8 @@ end subroutine line_scan
       x = x + alpha*s
      !if(doLBFGS) then
        if (mod(n_iter,10) .eq. 0) then
-        call writehessian(x,am_data,'out' // n_iter)
+        !call writehessian(x,am_data,'out' // n_iter)
+        !call writeprecon(pr,'preconout' // n_iter)
       end if
 !end if
   
@@ -5808,7 +5810,16 @@ end subroutine line_scan
     close(outid)
   
   end subroutine
+ 
+  subroutine writeprecon(precon,filename)
+    type(precon_data) :: precon
+    character(*) :: filename
 
+    call writepreconcoeffs(precon,filename // 'coeffs')
+    call writepreconindices(precon,filename // 'indices')
+    call writepreconindices(precon,filename // 'lengths')
+  end subroutine
+  
   subroutine writepreconcoeffs(precon,filename)
     type(precon_data) :: precon
     character(*) :: filename
@@ -5840,6 +5851,12 @@ end subroutine line_scan
     write(outid,*) precon%preconrowlengths
     close(outid)
 
+  end subroutine
+
+  subroutine writeLBFGS(LBFGSs,LBFGSy,n_back,filename)
+    real(dp):: LBFGSs(:,:), LBFGSy(:,:)
+    integer :: n_back
+    character(*) :: filename
   end subroutine
 
 end module minimization_module
