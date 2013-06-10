@@ -3386,7 +3386,7 @@ end subroutine line_scan
       elseif (doFD) then
         
         FDHess = gethessian(x,am_data)
-        call writemat(FDHess,'densehess' // I)
+        call writemat(FDHess,'densehess' // n_iter)
         s = -g
         call dgesv(size(x),1,FDHess,size(x),IPIV,s,size(x),INFO) 
       else
