@@ -414,7 +414,7 @@ module Potential_Precon_Minim_module
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
     !call print(use_method)   
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
-            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessian)
+            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
 !       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
  !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
  
@@ -906,6 +906,184 @@ module Potential_Precon_Minim_module
   
   end function
 
+  subroutine writeapproxhessiangrad(x,data,filename)
+    
+    implicit none
 
+    real(dp) :: x(:)
+    character(len=1) :: data(:)
+    character(*) :: filename
+
+    type(potential_minimise) :: am
+
+    real(dp),parameter :: eps = 10.0**(-3)
   
+    real(dp), allocatable :: hess(:)
+    integer, allocatable :: hessinds(:,:)
+    real(dp),allocatable :: gp(:,:), gm(:,:), g(:), xm(:)
+
+    integer :: I,J,II,JJ,N
+    integer :: hx, hy, thisind, hxcount
+    integer :: nneigh = 500
+    integer :: thisneighcount, thisotherind
+
+    N = size(x)
+    am = transfer(data,am)
+    allocate(xm(N),g(N))
+    allocate(gp(N,N-9))
+    allocate(gm(N,N-9))
+    allocate(hessinds(3*am%minim_at%N*nneigh,2))
+    allocate(hess(3*am%minim_at%N*nneigh))
+  
+    hess = 0.0
+    hessinds = 0  
+    gp = 0.0
+    gm = 0.0
+    call verbosity_push_decrement()
+    do I = 10,N
+      xm = x
+      xm(I) = xm(I) + 1.0*eps
+      g = gradient_func(xm,data)
+      !call print(g)
+      !call exit()
+      gp(1:N,I-9) = g     
+      xm(I) = xm(I) - 2.0*eps
+      g = gradient_func(xm,data)
+      gm(1:N,I-9) = g     
+      !call print(gp(1:N,I-9)) 
+    end do
+    call verbosity_pop()
+    !call exit()
+   hxcount = 1
+    do I = 1,(am%minim_at%N) ! Loop over atoms
+      !call print(I)
+      thisneighcount = n_neighbours(am%minim_at,I)
+      !call print(x)
+      !call exit() 
+      if(thisneighcount > 3*nneigh) then
+        call print("Not enough memory was allocated for Hessian, increase value of nneigh")
+      end if
+            
+      do II = 1,3 ! Loop over coordinates of atom I
+        hx = 3*(I-1) + II
+                  
+          do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
+          if (J > 1) then
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          else
+          thisind = I
+          end if
+          do JJ = 1,3 ! Loop over coordinates of atom J
+            hy = 3*(thisind-1) + JJ
+            if (hy >= hx) then
+            !call print(hx //" "//hy//" "//gp(hy+9,hx) // " "// gm(hy+9,hx) // " "// gp(hx+9,hy)// " "//gm(hx+9,hy))
+     !call print(gp(1:N,1))
+    !call exit()
+            hess(hxcount) = (gp(hy+9,hx) - gm(hy+9,hx))/(4.0*eps) + (gp(hx+9,hy) - gm(hx+9,hy))/(4.0*eps)
+            hessinds(hxcount,1) = hx
+            hessinds(hxcount,2) = hy
+            !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
+            hxcount = hxcount + 1
+            end if
+            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 
+          end do
+        end do
+      end do
+    end do
+    !call exit()
+    call writevec(hess,filename // 'hess.dat')
+    call writematint(hessinds, filename // 'hessinds.dat')
+    !call exit() 
+  end subroutine 
+  
+  function getapproxhessian(x,data) result(hessout)
+    
+    implicit none
+
+    real(dp) :: x(:)
+    character(len=1) :: data(:)
+    real(dp) :: hessout(size(x),size(x))
+
+    type(potential_minimise) :: am
+
+    real(dp),parameter :: eps = 10.0**(-3)
+  
+    real(dp),allocatable :: gp(:,:), gm(:,:), g(:), xm(:)
+    real(dp) :: hesscoeff
+    integer :: I,J,II,JJ,N
+    integer :: hx, hy, thisind, hxcount
+    integer :: nneigh = 500
+    integer :: thisneighcount, thisotherind
+
+    N = size(x)
+    am = transfer(data,am)
+    allocate(xm(N),g(N))
+    allocate(gp(N,N-9))
+    allocate(gm(N,N-9))
+  
+    hessout = 0.0_dp
+    
+    gp = 0.0
+    gm = 0.0
+    call verbosity_push_decrement()
+    do I = 10,N
+      xm = x
+      xm(I) = xm(I) + 1.0*eps
+      g = gradient_func(xm,data)
+      !call print(g)
+      !call exit()
+      gp(1:N,I-9) = g     
+      xm(I) = xm(I) - 2.0*eps
+      g = gradient_func(xm,data)
+      gm(1:N,I-9) = g     
+      !call print(gp(1:N,I-9)) 
+    end do
+    call verbosity_pop()
+    !call exit()
+   hxcount = 1
+    do I = 1,9
+      hessout(I,I) = 1
+    end do
+    do I = 1,(am%minim_at%N) ! Loop over atoms
+      !call print(I)
+      thisneighcount = n_neighbours(am%minim_at,I)
+      !call print(x)
+      !call exit() 
+      if(thisneighcount > 3*nneigh) then
+        call print("Not enough memory was allocated for Hessian, increase value of nneigh")
+      end if
+            
+      do II = 1,3 ! Loop over coordinates of atom I
+        hx = 3*(I-1) + II
+                  
+          do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
+          if (J > 1) then
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          else
+          thisind = I
+          end if
+          do JJ = 1,3 ! Loop over coordinates of atom J
+            hy = 3*(thisind-1) + JJ
+            if (hy >= hx) then
+            !call print(hx //" "//hy//" "//gp(hy+9,hx) // " "// gm(hy+9,hx) // " "// gp(hx+9,hy)// " "//gm(hx+9,hy))
+     !call print(gp(1:N,1))
+    !call exit()
+            hesscoeff = (gp(hy+9,hx) - gm(hy+9,hx))/(4.0*eps) + (gp(hx+9,hy) - gm(hx+9,hy))/(4.0*eps)
+            hessout(hx+9,hy+9) = hessout(hx+9,hy+9) + hesscoeff
+            if (hy > hx) then
+            hessout(hy+9,hx+9) = hessout(hy+9,hx+9) + hesscoeff
+            end if
+            !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
+            hxcount = hxcount + 1
+            end if
+            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 
+          end do
+        end do
+      end do
+    end do
+    !call exit()
+    !call exit() 
+  end function 
+  
+
 end module

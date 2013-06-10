@@ -3005,7 +3005,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
 end subroutine line_scan
 
 ! Interface is made to imitate the existing interface.
-  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian)
+  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian)
     
     implicit none
     
@@ -3068,10 +3068,20 @@ end subroutine line_scan
          character(*) :: filename
        end subroutine writehessian
     end INTERFACE
+    optional :: gethessian
+    INTERFACE 
+       function gethessian(x,data)
+         use system_module
+         real(dp) :: x(:)
+         character(len=1)::data(:)
+         real(dp) :: gethessian(size(x),size(x))
+       end function gethessian
+    end INTERFACE
  
 
+
    
-    logical :: doSD, doCG,doLBFGS,doTRLBFGS,doTRLSR1,doprecon,done
+    logical :: doFD,doSD, doCG,doLBFGS,doTRLBFGS,doTRLSR1,doprecon,done
     logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente
     logical :: doefunc(3)
     real(dp),allocatable :: x(:),xold(:),s(:),sold(:),g(:),gold(:),pg(:),pgold(:)
@@ -3097,6 +3107,10 @@ end subroutine line_scan
     real(dp) :: TReta = 0.25
     real(dp) :: TRr = 10.0**(-8)
     
+    real(dp), allocatable :: FDhess(:,:)
+    integer, allocatable :: IPIV(:)
+    integer :: INFO
+
     N = size(x_in)
 
     !allocate NLCG vectors
@@ -3124,6 +3138,7 @@ end subroutine line_scan
       my_hook_print_interval = optional_default(100000, hook_print_interval)
     endif
 
+    doFD = .false.
     doCG = .FALSE.
     doSD = .FALSE.
     doLBFGS = .false.
@@ -3137,6 +3152,8 @@ end subroutine line_scan
       doLBFGS = .TRUE.
     else if (trim(method) == 'preconTRLBFGS') then
       doTRLBFGS = .true.
+    else if (trim(method) == 'FD') then
+      doFD = .true.
     else
       call print('Unrecognized minim method, exiting')
       call exit()
@@ -3168,6 +3185,11 @@ end subroutine line_scan
         LBFGSd = 0.0_dp
         LBFGSl = 0.0_dp
       end if
+    end if
+
+    if(doFD) then
+      allocate(FDHess(size(x),size(x)))
+      allocate(IPIV(size(x)))
     end if
 
     doefunc = .false.
@@ -3248,7 +3270,7 @@ end subroutine line_scan
    abortcount = 0
    do
 
-      if(doSD .or. doCG .or. doLBFGS) then
+      if(doSD .or. doCG .or. doLBFGS .or. doFD) then
       gold = g
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
@@ -3361,6 +3383,12 @@ end subroutine line_scan
           LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
         end do
         s = -LBFGSz
+      elseif (doFD) then
+        
+        FDHess = gethessian(x,am_data)
+        call writemat(FDHess,'densehess' // I)
+        s = -g
+        call dgesv(size(x),1,FDHess,size(x),IPIV,s,size(x),INFO) 
       else
         
         s = -pg
@@ -3446,11 +3474,11 @@ end subroutine line_scan
     
       xold = x
       x = x + alpha*s
-     if(doLBFGS) then
+     !if(doLBFGS) then
        if (mod(n_iter,10) .eq. 0) then
         call writehessian(x,am_data,'out' // n_iter)
       end if
-end if
+!end if
   
       
       elseif (doTRLBFGS .or. doTRLSR1) then
