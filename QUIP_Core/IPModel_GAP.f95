@@ -420,16 +420,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   enddo
 
-  if (present(mpi)) then
-     if( mpi%active ) then
-        if(present(f)) call sum_in_place(mpi,f_in)
-        if(present(virial) .or. present(local_virial)) call sum_in_place(mpi,virial_in)
-        if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
-
-        call remove_property(at,'mpi_local_mask', error=error) 
-     endif
-  endif
-
   if(present(f)) f = this%E_scale*f_in
   if(present(e)) e = this%E_scale*(sum(local_e_in) + this%e0*n_local_e)
   if(present(local_e)) then
@@ -455,6 +445,19 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(f_in)) deallocate(f_in)
   if(allocated(virial_in)) deallocate(virial_in)
+
+  if (present(mpi)) then
+     if( mpi%active ) then
+        if(present(f)) call sum_in_place(mpi,f)
+        if(present(virial)) call sum_in_place(mpi,virial)
+        if(present(local_virial)) call sum_in_place(mpi,local_virial)
+        if(present(e)) e = sum(mpi,e)
+        if(present(local_e) ) call sum_in_place(mpi,local_e)
+
+        call remove_property(at,'mpi_local_mask', error=error) 
+     endif
+  endif
+  
   atom_mask_pointer => null()
   call finalise(my_args_str)
 
