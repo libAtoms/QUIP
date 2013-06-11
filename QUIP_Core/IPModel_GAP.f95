@@ -323,7 +323,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      my_args_str = trim(args_str)
   else
-     my_args_str = ""
+     call initialise(my_args_str)
   endif
 
   if( present(mpi) ) then
@@ -337,7 +337,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            RAISE_ERROR("IPModel_GAP: mpi_local_mask property already present", error)
         endif
         call add_property(at,'mpi_local_mask',.false.,ptr = atom_mask_pointer, overwrite=.true., error=error) 
-        my_args_str = my_args_str//" atom_mask_name=mpi_local_mask"
+        call concat(my_args_str," atom_mask_name=mpi_local_mask")
 
         do i = 1, at%N
            if (mod(i-1, mpi%n_procs) == mpi%my_proc) atom_mask_pointer(i) = .true.
