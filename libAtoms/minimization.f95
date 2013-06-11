@@ -3082,7 +3082,7 @@ end subroutine line_scan
 
    
     logical :: doFD,doSD, doCG,doLBFGS,doTRLBFGS,doTRLSR1,doprecon,done
-    logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente
+    logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente,doLSunit
     logical :: doefunc(3)
     real(dp),allocatable :: x(:),xold(:),s(:),sold(:),g(:),gold(:),pg(:),pgold(:)
     real(dp) :: alpha,alphamax, beta,betanumer,betadenom,f
@@ -3199,6 +3199,7 @@ end subroutine line_scan
     doLSstandard = .FALSE.
     doLSnone = .FALSE.
     doLSMoreThuente = .false.
+    doLSunit = .false.
 
     if ( present(efuncroutine) ) then
       if (trim(efuncroutine) == 'basic') then
@@ -3232,6 +3233,9 @@ end subroutine line_scan
       elseif (trim(linminroutine) == 'morethuente') then
         call print('Using More & Thuente minpack linesearch')
         doLSMoreThuente = .TRUE.
+      elseif (trim(linminroutine) == 'unit') then
+        call print('Using fixed stepsize of 1')
+        doLSunit = .true.
       else
         call print('Unrecognized linmin routine')
         call exit() 
@@ -3459,6 +3463,8 @@ end subroutine line_scan
         !call print('moo2')
       elseif (doLSMoreThuente) then
         alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
+      elseif (doLSunit) then
+        alpha = 1.0
       elseif (doLSnone) then
         !do nothing
         this_ls_count = 0
