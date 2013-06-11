@@ -3465,6 +3465,7 @@ end subroutine line_scan
         alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
       elseif (doLSunit) then
         alpha = 1.0
+        f = func(x+s,am_data) 
       elseif (doLSnone) then
         !do nothing
         this_ls_count = 0
