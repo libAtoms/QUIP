@@ -129,14 +129,14 @@ subroutine tsParams_initialise(this)
 
    this%simulation_hybrid     = .false. 
    this%simulation_restart    = .false.
-   this%simulation_method     = 'neb'
+   this%simulation_method     = 'sm'
    this%simulation_spring_constant = 0.1 
    this%simulation_newtangent      = .true. 
    this%simulation_climbing        = .false. 
    this%simulation_climbing_steps  = 10 
-   this%simulation_freq_rep        = 5
+   this%simulation_freq_rep        = 1
 
-   this%minim_gfac       = 0.1
+   this%minim_gfac       = 0.01
    this%minim_force_tol  = 0.001_dp
    this%minim_energy_tol = 0.01_dp 
    this%minim_max_steps  = 10 
