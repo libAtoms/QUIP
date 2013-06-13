@@ -220,13 +220,6 @@ def process(at, frame):
     if opt.centre is not None:
         write_args['centre'] = eval(opt.centre)
 
-    # Filter parameters
-    if opt.params is not None:
-        for k in at.params.keys():
-            k = k.lower()
-            if not k in opt.params:
-                del at.params[k]
-
     # Rename properties and parameters
     if opt.rename is not None:
         for (old, new) in opt.rename:
@@ -238,6 +231,13 @@ def process(at, frame):
                 del at.params[old]
             else:
                 raise AttributeError('Cannont rename: no property or parameter named "%s" exists' % old)
+
+    # Filter parameters - after any renaming has taken place
+    if opt.params is not None:
+        for k in at.params.keys():
+            k = k.lower()
+            if not k in opt.params:
+                del at.params[k]
 
     # Remove properties and parameters
     if opt.remove is not None:
