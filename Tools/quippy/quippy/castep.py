@@ -1208,7 +1208,7 @@ class CastepPotential(Potential):
             self.cell = cell
 
         if isinstance(param, str):
-            self.param = CastepParam(cell)
+            self.param = CastepParam(param)
         else:
             self.param = param
 
