@@ -64,7 +64,6 @@ orig_dir = os.getcwd()
 xyzfile = sys.argv[1]
 outfile = sys.argv[2]
 geom="geom_plain.xyz"
-#geomfile=open(geom,'w') #This holds the plain xyz files for molpro input
 log.info("output to", outfile)
 
 if len(sys.argv) < 3:
@@ -73,12 +72,18 @@ if len(sys.argv) < 3:
 args_str = ''
 if len(sys.argv) > 3:
    args_str = ' '.join(sys.argv[3:])
-calc_args_str = parse_params(args_str)
-
+calc_args_str = parse_params(args_str) #sits in util module, turns key=val pairs into dict
+                                       # what if I made it so that you passed append_lines="hf;ccsd(t)-f12;angstrom etc etc separated by ';'"
+                                       # then calc_args_str['append_lines'].split(';') makes a list of lines to be written.
+ 
 stem = os.path.basename(xyzfile)
 if stem[-4:] == '.xyz': # Remove extension
    stem = stem[:-4]
 logfile=stem+".log.xyz"
+
+# remove old input file, if it's there
+if os.path.exists(stem+'/'+stem):
+   os.remove(stem+'/'+stem)
 
 #----------------------------------------------------------------
 # Parameters
@@ -86,14 +91,22 @@ logfile=stem+".log.xyz"
 
 
 # Template used for input file
+# need to allow option for this to be blank so long as append_lines was read
 if os.environ.has_key('MOLPRO_TEMPLATE'):
    MOLPRO_TEMPLATE = os.environ['MOLPRO_TEMPLATE']
 elif 'template' in calc_args_str:
    MOLPRO_TEMPLATE = calc_args_str['template']
    del calc_args_str['template']
 else:
-   MOLPRO_TEMPLATE = 'template'
+   MOLPRO_TEMPLATE = orig_dir+'/template'
 
+# extra lines (if any) to be appended to the template file
+lines_to_append= []
+if 'append_lines' in calc_args_str:
+   log.info(calc_args_str['append_lines'])
+   lines_to_append = calc_args_str['append_lines'].split(' ')
+   del calc_args_str['append_lines']
+   log.info(str(lines_to_append))
 # Command used to execute molpro, with a %s where seed name should go
 if os.environ.has_key('MOLPRO'):
    MOLPRO = os.environ['MOLPRO']
@@ -112,7 +125,7 @@ TEST_MODE = False
 if 'test_mode' in calc_args_str:
    TEST_MODE = calc_args_str['test_mode']
    del calc_args_str['test_mode']
-TEST_MODE=True
+
 
 # Working directory for MOLPRO. Set this to a local scratch
 # directory if network file performance is poor.
@@ -121,9 +134,15 @@ if 'working_dir' in calc_args_str:
    WORKING_DIR = calc_args_str['working_dir']
    del calc_args_str['working_dir']
 
+ENERGY_FROM=None
+if 'energy_from' in calc_args_str:
+   ENERGY_FROM = calc_args_str['energy_from']
+   log.info("the energy of the frame is from "+ENERGY_FROM)
+   del calc_args_str['energy_from']
+
 BATCH_READ=False
 BATCH_QUEUE=False
-extract_forces=False
+
 #forces will only be calculated by molpro if you request them
 #extract_forces just determines whether they are passed to Atoms object
 
@@ -133,24 +152,23 @@ if MOLPRO_TEMPLATE[-4:] != '.xml':
     # Read template input file
    try:
       datafile = molpro.MolproDatafile(MOLPRO_TEMPLATE)
-      datafile.write()
+      #datafile.write()
 
    except IOError:
       die("Can't open input file %s" % MOLPRO_TEMPLATE)
    except ValueError, message:
       die(str(message))
-   # update geometry entry if not already present
-   #params[0].__setitem__('geometry',"="+geom)
+
     # need to add XML handling here
 
 
 # Read extended XYZ input file containing cluster
-#log.info(xyzfile)
 cluster = Atoms(xyzfile)
 
 # remove old output file, if it's there
 if os.path.exists(outfile):
    os.remove(outfile)
+
 
 path = WORKING_DIR+'/'+stem
 
@@ -176,11 +194,17 @@ if not BATCH_READ:
    else:
       old_cluster = cluster
 
+   # Append given lines to template
+   if len(lines_to_append) > 0:
+       template_file = open(MOLPRO_TEMPLATE,'a')
+       for line in lines_to_append:
+          template_file.write(line+"\n")
+       template_file.close()
    # Read template into MolproDatafile object
    datafile = MolproDatafile(datafile=MOLPRO_TEMPLATE)
-   
-   # Update the reference to the geometry file
-   if 'GEOM' not in datafile._keys:
+
+   # Update the reference to the geometry file, or create one if it's not there   
+   if 'GEOMETRY' not in datafile._keys and 'GEOM' not in datafile._keys:
       temp=MolproDatafile()
       if 'MEMORY' in datafile._keys:
          temp['MEMORY'] =datafile['MEMORY']
@@ -191,16 +215,21 @@ if not BATCH_READ:
             temp[key]=datafile[key]
       datafile = temp.copy()
    else:
-      datafile['GEOM'].append('='+geom)
+      try:
+          datafile['GEOM'].append('='+geom)
+      except:
+          datafile['GEOMETRY'].append('='+geom)
 
    # And write to the molpro input file
-   datafile.write(datafile=stem)
+   #datafile.write(datafile=stem)
    # write an ordinary xyz file (i.e. just species and positions)
    cluster.write(dest=geom, properties=['species','pos'])
 
    #check if FORCE keyword present
+   extract_forces=False
    if 'FORCE' in datafile._keys:
       extract_forces=True
+      
 
 # now invoke MolPro
 if not BATCH_READ and not BATCH_QUEUE:
@@ -208,7 +237,7 @@ if not BATCH_READ and not BATCH_QUEUE:
       log.error('molpro run failed')
 
 # parse the XML output for energy, forces
-cluster = molpro.read_xml_output(stem+'.xml', extract_forces, datafile=datafile, cluster=cluster)
+cluster = molpro.read_xml_output(stem+'.xml', energy_from=ENERGY_FROM, extract_forces=extract_forces, datafile=datafile, cluster=cluster)
 
 oldxyzfile=stem+'.xyz.old'
 # Save cluster for comparison with next time

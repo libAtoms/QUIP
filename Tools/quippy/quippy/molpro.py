@@ -71,7 +71,7 @@ class MolproDatafile(OrderedDict):
         if key is not None:
             self[key].append(line)
         else:
-            nonalpha = re.compile('[^a-zA-Z0-9]')
+            nonalpha = re.compile('[^a-zA-Z0-9()\-]')
             separator = re.findall(nonalpha,line)
 
             if len(separator) > 0:
@@ -303,38 +303,42 @@ class MolproDatafile(OrderedDict):
                 self['geometry'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(np.dot(at.g,at.pos[:,i])))
 
 
-def read_xml_output(xmlfile, extract_forces=False, datafile=None, cluster=None):
+def read_xml_output(xmlfile,energy_from=None, extract_forces=False, datafile=None, cluster=None):
     #parse an xml output file and return cluster with updated info
     # datafile tells which energies, forces to look for, cluster Atoms object which gets returned, this is echoed in the xml file so can be left out
     # If extract_forces is not given and the FORCE keyword is found in datafile, the default is to set extract_forces=True
+
+    log = logging.getLogger('molpro_driver')
     
     if datafile is None:
         datafile=MolproDatafile(xml=xmlfile)
         if 'FORCE' in datafile:
             extract_forces=True
 
-    energyDict = OrderedDict()
-    energyDict['CCSD(T)'] = "total energy"
-    energyDict['RKS'] = "Energy"
-    energyDict['RHF'] = "Energy"
-    energyDict['HF'] = "Energy"
+    energy_names = OrderedDict()
+    energy_names['CCSD(T)-F12'] = ["total energy"]
+    energy_names['RKS'] = ["Energy"]
+    energy_names['RHF'] = ["Energy"]
+    energy_names['HF'] = ["Energy"]
     #etc
     
-    gradientDict = OrderedDict()
-    gradientDict['CCSD(T)'] =""
-    gradientDict['RKS'] ='RKS GRADIENT'
+    gradient_names = OrderedDict()
+    gradient_names['CCSD(T)'] =[""]
+    gradient_names['RKS'] =['RKS GRADIENT']
 
-    methods=OrderedDict()
-    methods['HF']="RHF"
-    methods['CCSD(T)']="CCSD(T)-F12a"
+    all_methods=OrderedDict()
+    all_methods['HF']=["RHF"]
+    all_methods['CCSD(T)-F12']=["CCSD(T)-F12a","CCSD(T)-F12b"]
+
+    if energy_from is None:
+        log.critical("don't know which energy to extract, use keyword energy_from with options"+str([all_methods[k] for k in iter(all_methods)]).replace('[','').replace(']',''))
+
     #loop through datafile to look for methods.
-
-    #print(datafile._keys)
-    #print(energyDict._keys)
-    for key in energyDict._keys:
-        if key in datafile._keys:
-            methods[key] =''
-
+    calcs=[] #holds the keys for getting correct method, energy_name, gradient_name
+    data_keys_upper = [key.upper() for key in datafile._keys]
+    for key in all_methods._keys:
+       if key in data_keys_upper:
+           calcs.append(key)
     dom = minidom.parse(xmlfile)    
 
     elements=[]
@@ -355,27 +359,31 @@ def read_xml_output(xmlfile, extract_forces=False, datafile=None, cluster=None):
         position_matrix=farray(position_matrix).T
         if not 'ANGSTROM' in datafile._keys and not 'angstrom' in datafile._keys:
             position_matrix = position_matrix * (1.0/0.529177249)
-            #print(position_matrix)
         cluster.pos[:,:]=position_matrix
         #note this leaves the lattice undefined
 
     #now look for each of these energies in xml file
-    for method in methods._keys:
-        props = dom.documentElement.getElementsByTagName('property')
-        n_energy = 1
-        for prop in props:
-            #print(prop.attributes['name'].value)
-            #            print(prop.attributes['method'].value)
-            if  prop.attributes['method'].value==method and prop.attributes['name'].value == energyDict[method]:
-                if n_energy == 1:
-                    energy_param_name = method+"_Energy"
-                else:
-                    energy_param_name = method+"_Energy_%s" %str(n_energy)
-                n_energy+= 1
+    energy_found=False
+    props = dom.documentElement.getElementsByTagName('property')
+    for prop in props:
+        prop_name = prop.attributes['name'].value.encode('ascii','ignore')
+        prop_method = prop.attributes['method'].value.encode('ascii','ignore')
+        for calc in calcs:
+            if prop_name in energy_names[calc] and prop_method in all_methods[calc]:
+                energy_param_name="_".join([prop_method,prop_name])
+                energy_param_name=energy_param_name.replace(" ","_")
+                #log.info("found "+energy_param_name)
                 energy_param=prop.attributes['value'].value.encode('ascii','ignore')
-                cluster.params[energy_param_name] = float(energy_param)
-    #try just calling one of these the energy
-    cluster.params['energy']=0.0
+                cluster.params[energy_param_name] = float(energy_param)*27.21138386
+                if prop_method == energy_from:
+                    cluster.params['Energy']=float(energy_param)*27.21138386
+                    energy_found=True
+
+    if not energy_found:
+        log.critical("couldn't find energy from "+energy_from)
+                      
+        
+                
     # read gradients if requested
     if extract_forces:
         if not cluster.has_property('force'):
@@ -414,7 +422,7 @@ def run_molpro(datafile, molpro, stem, test_mode=False):
     log = logging.getLogger('molpro_driver')
 
     #write datafile
-    datafile.write()
+    datafile.write(stem)
 
     #check command line
     if not '%s' in molpro: molpro = molpro + ' %s'
