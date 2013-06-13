@@ -966,7 +966,7 @@ CONTAINS
                 else
                    ! we have not bracketed yet, but can take this point and extrapolate to a bigger stepsize
                    old_eps = new_eps
-                   new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
+                   if(abs(dirdx_new-dirdx1) .fne. 0.0_dp) new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
                    call print("we have not bracketed yet, extrapolating: "//new_eps, PRINT_NORMAL)
                    extrap_steps = extrap_steps + 1
                    if(new_eps > 5.0_dp*old_eps) then
@@ -1154,7 +1154,7 @@ CONTAINS
              else
                 ! we have not bracketed yet, but can take this point and extrapolate to a bigger stepsize
                 old_eps = new_eps
-                new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
+                if((dirdx_new-dirdx1) .fne. 0.0_dp) new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
                 call print("we have not bracketed yet, extrapolating: "//new_eps, PRINT_NORMAL)
                 if(new_eps > 5.0_dp*old_eps) then
                    ! extrapolation is too large, let's just move closer
