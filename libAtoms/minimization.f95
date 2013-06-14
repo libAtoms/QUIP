@@ -1487,7 +1487,9 @@ CONTAINS
     do_linmin_deriv = .FALSE.
     if(present(linminroutine)) then
        if(do_lbfgs) &
-          call print("Minim warning: a linminroutine was specified for LBFGS")
+          call print("Minim warning: a linminroutine was specified for use with LBFGS")
+       if(do_sd2) &
+          call print("Minim warning: a linminroutine was specified for use with two-point steepest descent SD2")
        if(trim(linminroutine) .EQ. "FAST_LINMIN") then
           do_fast_linmin =.TRUE.
           call print("Using FAST_LINMIN linmin", PRINT_NORMAL)
@@ -1837,7 +1839,7 @@ CONTAINS
              if (present(status)) status = 1
              cycle !continue
           end if
-       end if ! .not. do_bfgs
+       end if ! .not. do_bfgs and .not. do_sd2
 
        !**********************************************************************
        !*
