@@ -3096,7 +3096,7 @@ end subroutine line_scan
     real(dp) :: dotpgout
     type (precon_data) :: hess
     real(dp),allocatable :: LBFGSs(:,:), LBFGSy(:,:), LBFGSa(:,:), LBFGSb(:,:), LBFGSalp(:), LBFGSbet(:), LBFGSrho(:), LBFGSq(:), LBFGSz(:), LBFGSbuf1(:), LBFGSbuf2(:)
-    real(dp),allocatable :: LBFGSd(:,:), LBFGSl(:,:)
+    real(dp),allocatable :: LBFGSdlr(:,:)
     integer :: LBFGSm, LBFGScount
     integer :: I, n_back,thisind
     integer :: k_out
@@ -3178,12 +3178,10 @@ end subroutine line_scan
         allocate(LBFGSb(N,LBFGSm))
         allocate(TRBs(N))
         allocate(local_energycand((size(x)-9)/3))
-        allocate(LBFGSd(LBFGSm,LBFGSm))
-        allocate(LBFGSl(LBFGSm,LBFGSm))
+        allocate(LBFGSdlr(LBFGSm,LBFGSm))
         LBFGSy = 0.0_dp
         LBFGSs = 0.0_dp
-        LBFGSd = 0.0_dp
-        LBFGSl = 0.0_dp
+        LBFGSdlr = 0.0_dp
       end if
     end if
 
@@ -3486,6 +3484,7 @@ end subroutine line_scan
        if (mod(n_iter,10) .eq. 0) then
         !call writehessian(x,am_data,'out' // n_iter)
         !call writeprecon(pr,'preconout' // n_iter)
+        call writeLBFGS(LBFGSs,LBFGSy,n_back,'LBFGS'//n_iter)
       end if
 !end if
   
@@ -3507,15 +3506,20 @@ end subroutine line_scan
         end if  
 
         !call print(LBFGScount)
-        !n_back = min(LBFGSm,LBFGScount)
-        n_back = 0
-        if (n_iter == 1) then
-        s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSb,LBFGSrho,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
-        else
-        s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSb,LBFGSrho,LBFGSbufin=LBFGSbuf1,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
-        end if
-        normsqs = smartdotproduct(s,s,doefunc)
+        n_back = min(LBFGSm,LBFGScount)
+        !n_back = 0
+        !call print(LBFGScount)
+  !      if (n_iter == 1) then
+          !s = -apply_precon(g,pr,doefunc)
+        !s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSb,LBFGSrho,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
+          !s = LBFGSdoglegv2(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
+  !      else
+        !s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSb,LBFGSrho,LBFGSbufin=LBFGSbuf1,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
+          !s = LBFGSdoglegv2(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,LBFGSbufin=LBFGSbuf1,LBFGSbufout=LBFGSbuf1,TRBs=TRBs)
+   !     end if
         
+        s = LBFGSsteihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,LBFGSbufin=LBFGSbuf1,LBFGSbufout=LBFGSbuf1,TRBs=TRBs) 
+        normsqs = smartdotproduct(s,s,doefunc)
         !call print(s)
         !call exit()
     
@@ -3531,7 +3535,8 @@ end subroutine line_scan
          
         TRared = calcdeltaE(doefunc,f,fcand,local_energy,local_energycand)
         TRpred = -( smartdotproduct(g,s,doefunc) + 0.5*(smartdotproduct(s,TRBs,doefunc)) )
-        !call print(TRpred)
+        !call print(s)
+        !call print(normsqs)
         TRrho = TRared/TRpred
         
         !call print(s)
@@ -3561,23 +3566,23 @@ end subroutine line_scan
           normsqgrad = smartdotproduct(g,g,doefunc)
           call build_precon(pr,am_data)
           if (doTRLBFGS) then
+            
             LBFGSs(1:N,1:(LBFGSm-1)) = LBFGSs(1:N,2:LBFGSm)
             LBFGSy(1:N,1:(LBFGSm-1)) = LBFGSy(1:N,2:LBFGSm)
             LBFGSb(1:N,1:(LBFGSm-1)) = LBFGSb(1:N,2:LBFGSm)
             LBFGSrho(1:(LBFGSm-1)) = LBFGSrho(2:LBFGSm)
-            LBFGSd(1:LBFGSm,1:LBFGSm) = LBFGSd(2:LBFGSm,2:LBFGSm)
-            LBFGSl(1:LBFGSm,1:LBFGSm) = LBFGSl(2:LBFGSm,2:LBFGSm)
+            LBFGSdlr(1:(LBFGSm-1),1:(LBFGSm-1)) = LBFGSdlr(2:LBFGSm,2:LBFGSm)
             
             LBFGSs(1:N,LBFGSm) = x - xold
             LBFGSy(1:N,LBFGSm) = g - gold
             LBFGSb(1:N,LBFGSm) = LBFGSy(1:N,LBFGSm)/sqrt(smartdotproduct(LBFGSy(1:N,LBFGSm),LBFGSs(1:N,1),doefunc)) 
             LBFGSrho(LBFGSm) = 1.0/smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,LBFGSm),doefunc)
-            LBFGSd(LBFGsm,LBFGSm) = smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,LBFGSm),doefunc)
-            do I = 2,(n_back+1)
-              thisind = LBFGSm - n_back + I + 1
-              LBFGSl(LBFGSm,I-1) = smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,thisind),doefunc)
+            !LBFGSdlr(LBFGsm,LBFGSm) = smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,LBFGSm),doefunc)
+            do I = 1,(n_back)
+              thisind = LBFGSm - I + 1
+              LBFGSdlr(LBFGSm,thisind) = smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,thisind),doefunc)
+              LBFGSdlr(thisind,LBFGSm) = smartdotproduct(LBFGSs(1:N,thisind),LBFGSy(1:N,LBFGSm),doefunc)
             end do
-             
             LBFGScount = LBFGScount + 1
           end if
         end if
@@ -3726,48 +3731,172 @@ end subroutine line_scan
     end do
     end if
   end function
-
-  function calc_Bk_mult_v(Sk,Yk,B0,Lk,Dk,v) result(Bkv)
-    
-    real(dp) :: Sk(:,:), Yk(:,:), Lk(:,:), Dk(:,:), v(:)
-    type(precon_data) :: B0
-    real(dp) :: Bkv(size(v))
-    
-    real(dp) :: B0v(size(v))
-    real(dp), allocatable :: stage1(:)
-    real(dp), allocatable :: centremat(:,:), B0Sk(:,:)
-
-    integer :: N,M
-
-    integer, allocatable :: IPIV(:)
-    integer :: info
-
-    N = size(Sk,dim=1)
-    M = size(Sk,dim=2)
-
-    allocate(stage1(2*M))
-    allocate(centremat(2*M,2*M))
-    allocate(B0Sk(N,M))
-
-    allocate(IPIV(N))
-
-    B0v(1:9) = v
-    B0v(10:) = do_mat_mult_vec(B0,v)
-    
-    stage1(1:M) = matmul(transpose(Sk),B0v)
-    stage1((M+1):(2*M)) = matmul(transpose(Yk),v)
+ 
+  function LBFGSsteihaug(x,g,pr,Delta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,LBFGSbufin,LBFGSbufout,TRBs) result(s)
   
-    B0Sk = do_mat_mult_vecs(B0,Sk)
+    real(dp) :: x(:),g(:)
+    type(precon_data) :: pr
+    real(dp) :: Delta
+    logical :: doefunc(:)
+    integer :: n_back
+    real(dp):: LBFGSs(:,:), LBFGSy(:,:), LBFGSdlr(:,:)
+    real(dp), optional, intent(in) :: LBFGSbufin(:)
+    real(dp), optional, intent(out) :: LBFGSbufout(:)
+    real(dp), optional, intent(out) :: TRBs(:)
+    real(dp) :: s(size(x))
+    real(dp) :: a,b,c,tau
    
-    centremat(1:M,1:M) = matmul(transpose(Sk),B0sk)
-    centremat((M+1):(2*M),1:M) = transpose(Lk)
-    centremat(1:M,(M+1):(2*M)) = Lk
-    centremat((M+1):(2*M),(M+1):(2*M)) = Dk 
-   
-    call dgesv(2*M,1,centremat,2*M,IPIV,stage1,2*M,INFO) 
+    real(dp) :: d(size(x)), Bd(size(x)), r(size(x)),rtilde(size(x)), z(size(x)), zcand(size(x))
+    real(dp) :: alpn,alpd,betn,alp,bet,normzcand,normr
+    integer :: thisind,I,J,K,N,thisind2
+    integer :: LBFGSm
+    real(dp) :: LBFGSd(n_back,n_back), LBFGSl(n_back,n_back)
+    real(dp) :: eps = 10.0**(-5)
+    real(dp) :: deltak
+
+    LBFGSm = size(LBFGSs,dim=2)
+    N = size(x)    
+
+    deltak=pr%energy_scale 
+    !Extract submatrices of S^T*Y
+    LBFGSd = 0.0
+    LBFGSl = 0.0
+    do I = 1,n_back
+      do J = 1,n_back
+        if (I == J) LBFGSd(I,J) = LBFGSdlr(I,J)
+        if (I > J) LBFGSl(I,J) = LBFGSdlr(I,J)
+      end do
+    end do
     
-    Bkv = B0v - (matmul(B0Sk,stage1(1:M)) + matmul(Yk,stage1((M+1):2*M)))
+    !Main Steihaug loop
+    z = 0.0
+    r = -g
+    if (present(LBFGSbufin)) then
+      rtilde = apply_precon(r,pr,doefunc,init=LBFGSbufin)
+    else
+      rtilde = apply_precon(r,pr,doefunc)
+    end if
+    d = rtilde
+    do     
+      Bd = calc_LBFGS_Bk_mult_v(LBFGSs(1:,(LBFGSm-n_back+1):),LBFGSy(1:,(LBFGSm-n_back+1):),LBFGSl,LBFGSd,deltak,d)
+      alpd = smartdotproduct(d,Bd,doefunc)
+      if (alpd <= 0.0) then 
+        a = Pdotproduct(d,d,pr,doefunc)
+        b = 2.0*Pdotproduct(z,d,pr,doefunc)
+        c = Pdotproduct(z,z,pr,doefunc) - Delta**2.0
+        tau = (-b + sqrt(b**2.0 -4.0*a*c))/(2.0*a)
+        s = z + tau*d
+        exit
+      end if
+      alpn = smartdotproduct(r,rtilde,doefunc)
+      alp = alpn/ alpd
+      zcand = z + alp*d
+      normzcand = sqrt(Pdotproduct(zcand,zcand,pr,doefunc))
+      if (normzcand >=  Delta) then
+        a = Pdotproduct(d,d,pr,doefunc)
+        b = 2.0*Pdotproduct(z,d,pr,doefunc)
+        c = Pdotproduct(z,z,pr,doefunc) - Delta**2.0
+        tau = (-b + sqrt(b**2.0 -4.0*a*c))/(2.0*a)
+        s = z + tau*d
+        !call print(a// ' '// b// ' '//c// ' '//tau//' '//b**2.0-4.0*a*c)
+        exit
+        !call print(d)
+        !call print(sqrt(normsq(s))) 
+      end if
+      z = zcand
+      r = r - alp*Bd
+      normr = Pdotproduct(r,r,pr,doefunc)
+      if (normr < eps) then
+        s = z
+        call print("hmm")
+        exit
+      endif
+      rtilde = apply_precon(r,pr,doefunc,init=rtilde)
+      betn = smartdotproduct(r,rtilde,doefunc)
+      bet = betn/alpn
+      d = rtilde + bet*d
+    end do
+    if(present(TRBs)) then
+      TRBs = calc_LBFGS_Bk_mult_v(LBFGSs(1:,(LBFGSm-n_back+1):),LBFGSy(1:,(LBFGSm-n_back+1):),LBFGSl,LBFGSd,deltak,s)
+    end if
+    if(present(LBFGSbufout)) then
+      LBFGSbufout = rtilde
+    end if
+   end function
+  
+  function Pdotproduct(v1,v2,pr,doefunc)
+    
+    real(dp) :: v1(:),v2(:)
+    type(precon_data) :: pr
+    logical :: doefunc(:)
+    real(dp) :: Pdotproduct
+
+    real(dp) :: Pv(size(v2))
+    
+    Pv(1:9) = v2(1:9)
+    Pv(10:) = do_mat_mult_vec(pr,v2(10:))
+
+    Pdotproduct = smartdotproduct(v1,Pv,doefunc)
   end function
+
+  function calc_LBFGS_Bk_mult_v(LBFGSs,LBFGSy,LBFGSl,LBFGSd,deltak,v) result(Bkv)
+    
+    real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSl(:,:), LBFGSd(:,:), deltak, v(:)
+    real(dp) :: Bkv(size(v))
+
+    integer :: n_back
+    integer :: INFO
+    integer, allocatable :: IPIV(:)
+    real(dp), allocatable :: midmat(:,:), midvec(:)
+    
+    n_back = size(LBFGSs,dim=2)
+    Bkv = deltak*v
+    if (n_back>=1) then
+      allocate(IPIV(n_back*2))
+      allocate(midmat(2*n_back,2*n_back),midvec(2*n_back))
+    
+      midvec(1:n_back) = deltak*matmul(transpose(LBFGSs),v)
+      midvec((n_back+1):) = matmul(transpose(LBFGSy),v)
+    
+      midmat(1:n_back,1:n_back) =  deltak*matmul(transpose(LBFGSs),LBFGSs)
+      midmat((n_back+1):,1:n_back) = LBFGSl
+      midmat(1:n_back,(n_back+1):) = LBFGSl
+      midmat((n_back+1):,(n_back+1):) = -LBFGSd
+  
+      call dgesv(n_back*2,1,midmat,n_back*2,IPIV,midvec,n_back*2,INFO)
+      
+      Bkv =  Bkv - deltak*matmul(LBFGSs,midvec(1:n_back)) - matmul(LBFGSy,midvec((n_back+1):))
+    end if
+  end function
+ 
+  function calc_LBFGS_Hk_mult_v(LBFGSs,LBFGSy,LBFGSd,LBFGSrinv,gammak,v) result(Hkv)
+    
+    real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSrinv(:,:), gammak, v(:)
+    real(dp) :: Hkv(size(v))
+
+    integer :: n_back
+    integer :: INFO
+    real(dp), allocatable :: midmat(:,:), midvec(:)
+    
+    n_back = size(LBFGSs,dim=2)
+    Hkv = gammak*v
+    if (n_back>=1) then
+      allocate(midmat(2*n_back,2*n_back),midvec(2*n_back))
+  
+      midvec(1:n_back) = matmul(transpose(LBFGSs),v)
+      midvec((n_back+1):) = gammak*matmul(transpose(LBFGSy),v)
+    
+      midmat = 0.0
+      midmat(1:n_back,1:n_back) =  matmul(transpose(LBFGSrinv),matmul(LBFGSd + gammak*matmul(transpose(LBFGSy),LBFGSy),LBFGSrinv))
+      midmat((n_back+1):,1:n_back) = -LBFGSrinv
+      midmat(1:n_back,(n_back+1):) = -transpose(LBFGSrinv)
+      
+      midvec = matmul(midmat,midvec)
+      
+      Hkv =  Hkv + matmul(LBFGSs,midvec(1:n_back)) + gammak*matmul(LBFGSy,midvec((n_back+1):))
+    end if
+   end function
+
 
   function calc_amax(g,length_scale)
 
@@ -4701,6 +4830,14 @@ end subroutine line_scan
       end if 
 
       if (betn < my_res2 .and. k >= 10 ) then
+        !call print(' '// betn // ' '// k)
+        ap_result(10:gs) = x
+        if(present(k_out)) k_out = k
+        
+        !call print(k)
+        exit
+      end if
+      if (betn < 10.0**(-14) ) then
         !call print(' '// betn // ' '// k)
         ap_result(10:gs) = x
         if(present(k_out)) k_out = k
@@ -5864,6 +6001,21 @@ end subroutine line_scan
     real(dp):: LBFGSs(:,:), LBFGSy(:,:)
     integer :: n_back
     character(*) :: filename
+    integer :: outid1 = 10
+    integer :: outid2 = 11
+    integer :: M
+    M = size(LBFGSs,dim=2)
+    
+    open(unit=outid1,file=(filename//'s'),action="write",status="replace")
+    write(outid1,*) LBFGSs(1:,(M-n_back+1):)
+    close(outid1)
+
+    open(unit=outid2,file=(filename//'y'),action="write",status="replace")
+    write(outid2,*) LBFGSy(1:,(M-n_back+1):)
+    close(outid2)
+
+
+  
   end subroutine
 
 end module minimization_module
