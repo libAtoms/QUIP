@@ -429,12 +429,11 @@ contains
           if (this%format == NETCDF_FORMAT) then
              RAISE_ERROR('cinoutput_read: indices argument not yet supported for NetCDF files', error)
           end if
-          
           n_index = size(indices)
-          if (n_index /= 0) then
-             allocate(c_indices(n_index))
-             c_indices(:) = indices
-          end if
+          allocate(c_indices(n_index))
+          c_indices(:) = indices
+       else
+          allocate(c_indices(0))
        end if
 
        call initialise(selected_properties)
@@ -631,9 +630,7 @@ contains
        PASS_ERROR(error)
     endif
 
-    if (present(indices)) then
-       if (n_index /= 0) deallocate(c_indices)
-    end if
+    deallocate(c_indices)
 
   end subroutine cinoutput_read
 
