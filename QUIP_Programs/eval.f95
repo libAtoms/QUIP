@@ -40,7 +40,7 @@ use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module
-#ifdef HAVE_GP_PREDICT_OBS
+#ifdef HAVE_GAP
 use descriptors_module
 #endif
 
@@ -102,13 +102,12 @@ implicit none
   real(dp) :: mycutoff
   logical :: do_create_residue_labels, fill_in_mass
 
-#ifdef HAVE_GP_PREDICT_OBS
-  real(dp), allocatable :: vec(:)
-  integer :: bispectrum_jmax
-  logical :: do_print_bispectrum
-  type(fourier_so4) :: f_hat
-  type(bispectrum_so4) :: bis
+#ifdef HAVE_GAP
+  type(descriptor) :: eval_descriptor
 #endif
+  real(dp), dimension(:,:), allocatable :: descriptor_array
+  character(STRING_LENGTH) :: descriptor_str
+  logical :: has_descriptor_str
 
   logical do_calc, did_anything, did_help, param_file_exists
   logical test_ok
@@ -192,10 +191,8 @@ implicit none
   call param_register(cli_params, 'hack_restraint_i', '0 0', hack_restraint_i, help_string="indices of 2 atom to apply restraint potential to")
   call param_register(cli_params, 'hack_restraint_k', '0.0', hack_restraint_k, help_string="strength of restraint potential")
   call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
-#ifdef HAVE_GP_PREDICT_OBS
-  call param_register(cli_params, 'print_bispectrum', 'F', do_print_bispectrum,  help_string="print the bispectrum for each atom. cutoff and jmax are controlled by separate arguments")
-  call param_register(cli_params, 'bispectrum_jmax', '5', bispectrum_jmax, help_string="jmax for calculating the bispectrum when print_bispectrum is True")
-#endif
+
+  call param_register(cli_params, 'descriptor_str', '', descriptor_str,  help_string="Descriptor initialisation string", has_value_target=has_descriptor_str)
 
   call param_register(cli_params, 'EvsV', 'F', do_EvsV, help_string="compute energy vs volume curve")
   call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
@@ -236,7 +233,19 @@ implicit none
 
   call print ("Using param_file: " // trim(param_file))
   call print ("Using init args: " // trim(init_args))
-  if(has_bulk_scale) then
+
+  if ( has_descriptor_str ) then
+#ifdef HAVE_GAP
+     call initialise(eval_descriptor, trim(descriptor_str))
+     if( mycutoff < 0.0_dp ) then
+        mycutoff = cutoff(eval_descriptor)
+     elseif( mycutoff < cutoff(eval_descriptor) ) then
+        call system_abort("mycutoff = "//mycutoff//" which is less than the descriptor cutoff "//cutoff(eval_descriptor))
+     endif
+#else
+     call system_abort("To print descriptors, HAVE_GAP must be enabled")
+#endif
+  elseif(has_bulk_scale) then
      call initialise(infile, trim(bulk_scale_file))
      call read(bulk_scale, infile, error=error)
      call finalise(infile)
@@ -263,6 +272,8 @@ implicit none
   if(has_pressure) external_pressure = reshape(pressure, (/3,3/))
 
   if( eval_port_status == 0 ) call system_command('echo 0 | nc 127.0.0.1 '//eval_port) ! send a signal that eval is ready to evaluate
+
+
   ! main loop over frames
   do 
      call read(at, infile, error=error)
@@ -525,9 +536,7 @@ implicit none
 #ifdef HAVE_TB
      if (do_absorption) do_calc = .true.
 #endif
-#ifdef HAVE_GP_PREDICT_OBS
-     if ( do_print_bispectrum ) do_calc = .true.
-#endif
+     if ( has_descriptor_str ) do_calc = .true.
 
      if ((.not. did_anything .or. do_calc) .and. (do_E .or. do_F .or. do_V .or. do_local)) then
 	did_anything = .true.
@@ -612,18 +621,17 @@ implicit none
      endif
 #endif
 
-#ifdef HAVE_GP_PREDICT_OBS
-     if ( do_print_bispectrum ) then
-        call initialise(f_hat, bispectrum_jmax, 1.2_dp*mycutoff/(PI-0.02_dp), mycutoff)
-        allocate(vec(j_max2d(bispectrum_jmax)))
+#ifdef HAVE_GAP
+     if ( has_descriptor_str ) then
+	did_anything = .true.
+        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),at%N))
+        call calc(eval_descriptor,at,descriptor_array)
+        mainlog%prefix = "DESC"
         do i = 1, at%N
-           call fourier_transform(f_hat, at, i)
-           call calc_bispectrum(bis, f_hat)
-           call bispectrum2vec(bis, vec)
-           call print("BIS "//vec, PRINT_ALWAYS, mainlog)
+           call print(""//descriptor_array(:,i), PRINT_ALWAYS, mainlog)
         end do
-        call finalise(f_hat)
-        deallocate(vec)
+        mainlog%prefix = ""
+        deallocate(descriptor_array)
      end if
 #endif
 
@@ -635,6 +643,10 @@ implicit none
      call finalise(at)
 
   enddo
+
+#ifdef HAVE_GAP
+  call finalise(eval_descriptor)
+#endif
 
   call system_finalise()
 
