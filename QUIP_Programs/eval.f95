@@ -181,7 +181,7 @@ implicit none
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
-  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, cg, pcg, lbfgs, cg_n, fire")
+  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, sd2, cg, pcg, lbfgs, cg_n, fire")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
