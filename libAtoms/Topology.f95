@@ -2855,17 +2855,17 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
              if (j .eq. i) cycle
              if (any(monomer_pairs(2,:) .eq. i .and. monomer_pairs(1,:) .eq. j)) cycle !check equivalent pair hasn't already been found
            end if
-!now forcibly double count
-do k=1,2
-           i_desc = i_desc + 1
-           deallocate(monomer_pairs_working)
-           allocate(monomer_pairs_working(2,size(monomer_pairs,2)))
-           monomer_pairs_working = monomer_pairs
-           deallocate(monomer_pairs)
-           allocate(monomer_pairs(2,i_desc))
-           monomer_pairs(:,:-2) = monomer_pairs_working
-           monomer_pairs(:,i_desc) = (/ i,j /)
-end do
+           !now forcibly double count
+           do k=1,2
+             i_desc = i_desc + 1
+             deallocate(monomer_pairs_working)
+             allocate(monomer_pairs_working(2,size(monomer_pairs,2)))
+             monomer_pairs_working = monomer_pairs
+             deallocate(monomer_pairs)
+             allocate(monomer_pairs(2,i_desc))
+             monomer_pairs(:,:-2) = monomer_pairs_working
+             monomer_pairs(:,i_desc) = (/ i,j /)
+           end do
          end do
        end do
      end do
