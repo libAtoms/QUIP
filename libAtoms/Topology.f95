@@ -2826,7 +2826,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      integer, dimension(:,:), allocatable, intent(out) :: monomer_pairs
      integer, dimension(:,:), allocatable :: monomer_pairs_working
      integer, dimension(:), allocatable :: atomic_index_one, atomic_index_two
-     integer :: i, j, i_atomic, j_atomic, n, i_desc
+     integer :: i, j, i_atomic, j_atomic, n, i_desc, k
      real(dp) :: r_one_two
      real(dp), intent(in) :: cutoff
      real(dp), dimension(3) :: diff_one_two
@@ -2851,11 +2851,12 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            if (any(temp .eq. 0)) cycle
            j = temp(2)
            if (any(monomer_pairs(2,:) .eq. j .and. monomer_pairs(1,:) .eq. i)) cycle !check if this pair has already been found.
-           if (monomers_identical) then     !check equivalent pair hasn't already been found
+           if (monomers_identical) then     
              if (j .eq. i) cycle
-             if (any(monomer_pairs(2,:) .eq. i .and. monomer_pairs(1,:) .eq. j)) cycle
+             if (any(monomer_pairs(2,:) .eq. i .and. monomer_pairs(1,:) .eq. j)) cycle !check equivalent pair hasn't already been found
            end if
-
+!now forcibly double count
+do k=1,2
            i_desc = i_desc + 1
            deallocate(monomer_pairs_working)
            allocate(monomer_pairs_working(2,size(monomer_pairs,2)))
@@ -2864,7 +2865,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            allocate(monomer_pairs(2,i_desc))
            monomer_pairs(:,:-2) = monomer_pairs_working
            monomer_pairs(:,i_desc) = (/ i,j /)
-
+end do
          end do
        end do
      end do

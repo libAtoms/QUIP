@@ -625,6 +625,7 @@ implicit none
      if ( has_descriptor_str ) then
 	did_anything = .true.
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),at%N))
+call print("calling descriptor calc")
         call calc(eval_descriptor,at,descriptor_array)
         mainlog%prefix = "DESC"
         do i = 1, at%N
