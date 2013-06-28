@@ -59,7 +59,7 @@ while(<>) {
 	fi
     done
 
-    ../Tools/f90doc.py -n -l -p *.f95 > $base.tex
+    ../Tools/quippy/f90doc.py -n -l -p *.f95 > $base.tex
 done
 
 cat > quip-reference-manual.tex <<EOF
