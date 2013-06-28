@@ -55,7 +55,7 @@
 !%    \item    Simple potential for an HF dimer ({\bf IPModel_HFdimer})
 !%    \item    2-body potential for water dimer ({\bf IPModel_WaterDimer_Gillan})
 !%    \item    Born-Mayer potential ({\bf IPModel_BornMayer})
-!%    \item    Customised (hardwired) potential (\{\bf IPModel_Custom})
+!%    \item    Customised (hardwired) potential ({\bf IPModel_Custom})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.

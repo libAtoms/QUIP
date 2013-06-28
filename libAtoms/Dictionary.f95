@@ -2991,8 +2991,9 @@ contains
   end subroutine dictionary_bcast
 
   !% Copy extendable string from 'in' to 'out', expanding variables formatted
-  !% as '$KEY' or '${KEY}' using values in this Dictionary. An error
-  !% is raised a key is not found, or if 
+  !% as '\$KEY' or '\$\{KEY\}' using values in this Dictionary. An error
+  !% is raised if a key is not found, or if the string ends with a dollar sign or braces aren't matched
+  !XXX backslashes are for f90doc.py; of course it actually means '$KEY' and '${KEY}'
   subroutine dictionary_expand_string(this, in, out, error)
     type(Dictionary), intent(in) :: this
     type(Extendable_str), intent(inout) :: in

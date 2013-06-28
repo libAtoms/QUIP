@@ -58,7 +58,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
    type(Atoms), intent(inout)      :: at
    real(dp), dimension(:), intent(in) :: charge !% charges, in units of the electronic charge
    real(dp), intent(in) :: cutoff  !% cutoff distance in A
-   real(dp), intent(in) :: alpha  !% inverse screening length, in A^-1
+   real(dp), intent(in) :: alpha  !% inverse screening length, in $A^{-1}$
    real(dp), intent(in) :: smoothlength !% distance over which potential is smoothly turned off, in A
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
@@ -286,7 +286,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
    real(dp), intent(in)            :: charge(:) !% charges, in units of the electronic charge
    real(dp), intent(in) :: dip(:,:) !% (3,N) array of dipoles moments in units of (electron charge)*A
    real(dp), intent(in) :: cutoff  !% cutoff distance in A
-   real(dp), intent(in) :: alpha  !% inverse screening length, in A^-1
+   real(dp), intent(in) :: alpha  !% inverse screening length, in $A^{-1}$
    real(dp), intent(in) :: smoothlength !% distance over which potential is smoothly turned off, in A
    real(dp), intent(in) :: pol(:) !% polarisabilities of each species, ordered by type_num
    real(dp), intent(in) :: b_pol(:,:), c_pol(:,:) !% parameters for Madden short-range dipole moments

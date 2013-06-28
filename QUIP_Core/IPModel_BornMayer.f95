@@ -31,7 +31,7 @@
 !X
 !X IPModel_BornMayer
 !X
-!% BornMayer potential of the form V_{ij} = A_{ij} exp(-b_{ij} r_{ij}) - c_{ij}/r_{ij}^6
+!% BornMayer potential of the form $V_{ij} = A_{ij} exp(-b_{ij} r_{ij}) - c_{ij}/r_{ij}^6$
 !% Use together with an IPModel_Coulomb to include long range forces
 !%
 !X

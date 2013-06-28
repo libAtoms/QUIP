@@ -66,7 +66,7 @@ module barostat_module
   !% modified for arbitrary strain based on (but not exactly using)
   !% formulation in E. Tadmor and R. Miller Modeling Materials: Continuum, Atomistic and Multiscale 
   !% Techniques (Cambridge University Press, 2011). Chap 9.5.  Their 
-  !% definition of stress (factors of F, F^T, J, and F^-T) for finite strain is 
+  !% definition of stress (factors of $F$, $F^T$, $J$, and $F^{-T}$) for finite strain is 
   !% optionally used, but certain terms in EOM are excluded, and their discretization 
   !% is entirely ignored.
 
