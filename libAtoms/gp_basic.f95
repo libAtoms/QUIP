@@ -642,7 +642,14 @@ subroutine kernel_mat(l_n_f, l_f_r, l_n_g, l_g_r, r_n_f, r_f_r, r_n_g, r_g_r, f_
       if (r_n_g > 0) call kernel(l_g_r(1:n_dof,i), r_g_r(1:n_dof,:), f_var, len_scale_sq(1:n_dof), periodicity(1:n_dof), &
 				 g_g=mat(i_glob:i_glob+n_dof-1,r_n_f+1:r_n_f+r_n_g*n_dof))
    end do
-end subroutine
+end subroutine !XXX work-around for f90doc.py
+! STJ 28/06/13: for some bizarre reason in check_subt() in f90doc.py the
+! variable cl has the value 'end subroutine kernel' instead of just
+! 'end subroutine' *if there is no comment*. WITH the comment it's all fine.
+! Or if it actually said 'end subroutine kernel_mat'. But with nothing after
+! the 'end subroutine', check_subt() never finishes till it reaches the end
+! of file and then crashes on cl being None (which is returned from
+! f90file.next_line())
 
 subroutine f_kernel_vec(r, n_f, f_r, n_g, g_r, f_var, len_scale_sq, periodicity, kernel, vec)
    real(dp), intent(in) :: r(:)
