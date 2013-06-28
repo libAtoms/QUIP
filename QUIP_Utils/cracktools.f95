@@ -283,15 +283,15 @@ contains
   !%>  |    1      | 2 | 3 | 4 |     5      |
   !%>  --------------------------------------
   !%
-  !% =======  ======================================================= ===============
-  !% Region   Positon                                                       Load
-  !% =======  ======================================================= ===============
-  !%   1      :math:`x <`  l_crack_pos - zone_width                         G
-  !%   2      l_crack_pos - zone_width  :math:`\le x <`  l_crack_pos  G :math:`\to` 0 
-  !%   3      l_crack_pos  :math:`< x <`  r_crack_pos                       0
-  !%   4      r_crack_pos  :math:`< x \le`  r_crack_pos + zone_width  0 :math:`\to` G
-  !%   5      :math:`x >`  r_crack_pos + zone_width                         G
-  !% =======  ======================================================= ===============
+  !%> ======  ===========================================  ======
+  !%> Region  Position                                      Load
+  !%> ======  ===========================================  ======
+  !%>   1     x < l_crack_pos - zone_width                 G
+  !%>   2     l_crack_pos - zone_width <= x < l_crack_pos  G -> 0
+  !%>   3     l_crack_pos < x <  r_crack_pos               0
+  !%>   4     r_crack_pos < x <= r_crack_pos + zone_width  0 -> G
+  !%>   5     x > r_crack_pos + zone_width                 G
+  !%> ======  ===========================================  ======
 
   subroutine crack_uniform_load(at, params, l_crack_pos, r_crack_pos, zone_width, eps, G, apply_load, disp)
     type(Atoms), intent(inout)     :: at
