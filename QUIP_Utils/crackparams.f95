@@ -136,7 +136,7 @@ module CrackParams_module
      real(dp) :: thermalise_wait_time  !% Minimium thermalisation time at each load before changing to (almost) microcanoical MD. Unit:~fs.
      real(dp) :: thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD     
      real(dp) :: tau                   !% Thermostat time constant during (almost) microcanonical MD. Unit:~fs.
-     logical  :: per_atom_tau          !% Use per-atom thermostat time constant (property name 'per_atom_tau', overrides md%tau for atoms where property > 0) during (almost) microcanonical MD. Logical.
+     logical  :: per_atom_tau          !% Use per-atom thermostat time constant (property name 'per_atom_tau', overrides md%tau for atoms where $\text{property} > 0$) during (almost) microcanonical MD. Logical.
      real(dp) :: wait_time             !% Minimum wait time between loadings. Unit:~fs.
      real(dp) :: interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
      real(dp) :: calc_connect_interval !% How often should connectivity be recalculated?
@@ -147,7 +147,7 @@ module CrackParams_module
      real(dp) :: smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
      real(dp) :: damping_time !% Time constant for damped molecular dynamics
      real(dp) :: stanza_time !% Time to run in this MD stanza before moving to next one
-     real(dp) :: max_runtime !% If >= 0, exit cleanly if elapsed runtime (in seconds) is >= this
+     real(dp) :: max_runtime !% If $\ge 0$, exit cleanly if elapsed runtime (in seconds) is $\ge$ this
      real(dp) :: crack_find_tip_interval !% Print position of crack tip at this frequency
      character(len=3) :: ensemble !$ MD ensmble: NVE only NVT are supported
 

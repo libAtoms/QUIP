@@ -1245,8 +1245,8 @@ contains
 
 
   !% Returns true if atom 'i' is near to an open surface of slab.
-  !% Open surfaces are planes at $x = \pm$'OrigWidth/2' and $y = \pm$'OrigHeight/2'
-  !% Near to means within 'edge_gap' of the surface.
+  !% Open surfaces are planes at $x = \pm$'OrigWidth/2' and $y = \pm$'OrigHeight/2'.
+  !% "Near to" means within 'edge_gap' of the surface.
   function crack_is_edge_atom(slab, i, edge_gap)
     type(Atoms), intent(in) :: slab
     integer, intent(in) :: i

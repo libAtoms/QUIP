@@ -318,19 +318,19 @@ module Potential_module
   !% :ref:`geomopt` in the quippy tutorial for full
   !% explanation)::
   !%
-  !%      at0 = diamond(5.44, 14)
-  !%      at0.calc_connect()
-  !%      pot = Potential('IP SW', param_str='''<SW_params n_types="1">
-  !%              <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
-  !%              <per_type_data type="1" atomic_num="14" />
-  !%
-  !%              <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
-  !%                p="4" q="0" a="1.80" sigma="2.0951" eps="2.1675" />
-  !%
-  !%              <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
-  !%                lambda="21.0" gamma="1.20" eps="2.1675" />
-  !%             </SW_params>''')
-  !%      pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+  !%>      at0 = diamond(5.44, 14)
+  !%>      at0.calc_connect()
+  !%>      pot = Potential('IP SW', param_str='''<SW_params n_types="1">
+  !%>              <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
+  !%>              <per_type_data type="1" atomic_num="14" />
+  !%>
+  !%>              <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
+  !%>                p="4" q="0" a="1.80" sigma="2.0951" eps="2.1675" />
+  !%>
+  !%>              <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
+  !%>                lambda="21.0" gamma="1.20" eps="2.1675" />
+  !%>             </SW_params>''')
+  !%>      pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
   public :: Minim
   interface Minim
      module procedure Potential_Minim

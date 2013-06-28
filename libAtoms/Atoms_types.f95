@@ -74,8 +74,8 @@ module Atoms_types_module
   type Connection
      !% The Connection type stores the topology of a set of Atoms
      !%
-     !% We do not use a minimum image convention, rather, collect all the images of a neigbouring atom
-     !% that fall withing the neighbour cutoff. The different images are made distinct in the connection list
+     !% We do not use a minimum image convention, rather, collect all the images of a neigbouring atoms
+     !% that fall within the neighbour cutoff. The different images are made distinct in the connection list
      !% by having different 'shift' vectors associated with them. 
      !%
      !% To save storage, the 'neighbour1' table contains all information about the connection
@@ -90,42 +90,42 @@ module Atoms_types_module
      !%
      !% 'connect%neighbour1(i)%int'
      !%
-     !% +----------+----------+----------+----------+
-     !% |    1     |    2     |    3     |    4     |
-     !% +----------+----------+----------+----------+
-     !% |    j     | shift_a  | shift_b  | shift_c  |
-     !% +----------+----------+----------+----------+
+     !%> +----------+----------+----------+----------+
+     !%> |    1     |    2     |    3     |    4     |
+     !%> +----------+----------+----------+----------+
+     !%> |    j     | shift_a  | shift_b  | shift_c  |
+     !%> +----------+----------+----------+----------+
      !%      
      !% 'connect%neighbour1(i)%real'
      !%
-     !% +----------+
-     !% |    1     |
-     !% +----------+
-     !% |  r_ij    |
-     !% +----------+
+     !%> +----------+
+     !%> |    1     |
+     !%> +----------+
+     !%> |  r_ij    |
+     !%> +----------+
      !%
      !% :class:`Table` :attr:`neighbour2` (i): $i > j$ for all $j$ in table, ``intsize =2``, ``realsize=0``
      !%
      !% 'connect%neighbour2(i)%int'
      !%
-     !% +----------+----------+
-     !% |    1     |    2     |
-     !% +----------+----------+
-     !% |    j     |    n     |
-     !% +----------+----------+
+     !%> +----------+----------+
+     !%> |    1     |    2     |
+     !%> +----------+----------+
+     !%> |    j     |    n     |
+     !%> +----------+----------+
      !%      
      !% :class:`Table` :attr:`cell` (i,j,k) with ``intsize = 1``, ``realsize = 0``
      !%
      !% 'connect%cell(i,j,k)2%int'
      !%
-     !% +----------+
-     !% |    1     |
-     !% +----------+
-     !% |  atom    |
-     !% +----------+
+     !%> +----------+
+     !%> |    1     |
+     !%> +----------+
+     !%> |  atom    |
+     !%> +----------+
      !%
      !% N.B. If $i$ and $j$ are neighbours with shift 'shift', then
-     !% ``norm(atoms%pos(j) - atoms%pos(i) + shift)`` is a minimum.
+     !% 'norm(atoms%pos(j) - atoms%pos(i) + shift)' is a minimum.
      !% Mnemonic: 'shift' is added to $j$ to get closer to $i$.
 
      logical                                    :: initialised = .false.

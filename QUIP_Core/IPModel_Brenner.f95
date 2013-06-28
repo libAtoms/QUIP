@@ -144,7 +144,7 @@ end subroutine IPModel_Brenner_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !% This routine computes energy, forces and the virial.
-!% Derivatives by James Kermode <jrk33@cam.ac.uk>.
+!% Derivatives by James Kermode  jrk33@cam.ac.uk
 subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Brenner), intent(inout) :: this
   type(Atoms), intent(in) :: at

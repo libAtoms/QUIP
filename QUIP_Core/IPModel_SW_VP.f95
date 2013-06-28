@@ -850,78 +850,78 @@ end function df2OO_dr
 !% XML param reader functions.
 !% An example for the input file.
 !%  
-!% <SW_VP_potential>
-!%  <Potential label="SW_VP_Potential" init_args="Sum init_args_pot1={IP SW_VP} init_args_pot2={IP Coulomb}"/>
-!%
-!%   <Coulomb_params n_types="3" cutoff="6.0" method="ewald" ewald_error="1.0e-3" label="default_ewald">
-!%   <!-- <per_type_data type="1" atomic_num="1" charge="1.0"/>
-!%      <per_type_data type="2" atomic_num="8" charge="-0.8"/>
-!%      <per_type_data type="3" atomic_num="14" charge="1.6"/> charge can be directly read from extended xyz file -->
-!%   </Coulomb_params>
-!%
-!%
-!%  <SW_VP_params n_types="3" label="PRB_31_plus_H">
-!%  <comment> Danny potential J ChemPhys 127, 204704(2007).The potential has to be called as a pot_init_args='Sum init_args_pot1={IP SW_VP} init_args_pot2={IP Coulomb}'</comment>
-!%  <per_type_data type="1" atomic_num="1" />
-!%  <per_type_data type="2" atomic_num="8" />
-!%  <per_type_data type="3" atomic_num= "14"/>
-!%  <per_pair_data atnum_i="1" atnum_j="1" AA="0.0" BB="0.0"
-!%        p="0" q="0" a="1.0" sigma="1.0" eps="0.0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0" />
-!%  <per_pair_data atnum_i="1" atnum_j="8" AA="0.0" BB="0.0"
-!%        p="0" q="0" a="1.0" sigma="1.0" eps="0.0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0" />
-!%  <per_pair_data atnum_i="1" atnum_j="14" AA="8.581214" BB="0.0327827"
-!%        p="4" q="0" a="1.25" sigma="2.537884" eps="0.000" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0"/>
-!%  <per_pair_data atnum_i="8" atnum_j="8" AA="0.0" BB="0.0"
-!%        p="0" q="0" a="4.43" sigma="1.24" eps="14.39" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="51.692" D_OOprime="1.536"/>
-!%  <per_pair_data atnum_i="8" atnum_j="14" AA="0.0" BB="0.0"
-!%        p="0" q="0" a="4.43" sigma="1.24" eps="14.39" C_0="14.871" C_1="2.178" D_SiO="3.072" C_OOprime="0.0" D_OOprime="0.0"/>
-!%  <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
-!%        p="4" q="0" a="1.80" sigma="2.0951" eps="0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0.0" D_OOprime="0.0"/>
-!%
-!%  <!-- triplet terms: atnum_c is the center atom, neighbours j and k -->
-!%  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="1"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="8"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="14"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="1"  atnum_j="8"  atnum_k="8"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="1"  atnum_j="8"  atnum_k="14"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="1"  atnum_j="14" atnum_k="14"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="1"
-!%        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
-!%  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="8"
-!%        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
-!%  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="14"
-!%        lambda="0.521" gamma1="1" gamma2="1" d1="2.6" d2="2.6"  costheta0="-0.5373"  eps="14.39" />
-!%  <per_triplet_data atnum_c="8" atnum_j="8" atnum_k="8"
-!%        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
-!%  <per_triplet_data atnum_c="8" atnum_j="8" atnum_k="14"
-!%        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
-!%  <per_triplet_data atnum_c="8" atnum_j="14" atnum_k="14"
-!%        lambda="1.4" gamma1="1" gamma2="1" d1="2.6" d2="2.6"  costheta0="-0.777"  eps="14.39" />
-!%  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="1"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="8"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="14"
-!%        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
-!%  <per_triplet_data atnum_c="14" atnum_j="8"  atnum_k="8"
-!%        lambda="0.350" gamma1="1" gamma2="1" d1="2.6" d2="2.6" costheta0="-0.333" eps="14.39" />
-!%  <!--In original paper, the c=14,j=14,k=8 term is listed, hence d2 and d1 and gamma1 and gamma2 are interchanged  -->
-!%  <per_triplet_data atnum_c="14" atnum_j="8" atnum_k="14"
-!%        lambda="3.164" gamma1="4.06" gamma2="0.52" d1="3.981" d2="2.933"  costheta0="-0.333" eps="14.39" /> 
-!%  <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
-!%        lambda="3.164" gamma1="2.51" gamma2="2.51" d1="3.771" d2="3.771" costheta0="-0.333"  eps="14.39" />
-!%  </SW_VP_params>
-!%
-!%  <constraints N="1">
-!% <!-- All OH-bond lengths have to be constrained to avoid coulomb clash between OH for surfaces-->
-!%  </constraints>
-!% </SW_VP_potential>
+!%> <SW_VP_potential>
+!%>  <Potential label="SW_VP_Potential" init_args="Sum init_args_pot1={IP SW_VP} init_args_pot2={IP Coulomb}"/>
+!%>
+!%>   <Coulomb_params n_types="3" cutoff="6.0" method="ewald" ewald_error="1.0e-3" label="default_ewald">
+!%>   <!-- <per_type_data type="1" atomic_num="1" charge="1.0"/>
+!%>      <per_type_data type="2" atomic_num="8" charge="-0.8"/>
+!%>      <per_type_data type="3" atomic_num="14" charge="1.6"/> charge can be directly read from extended xyz file -->
+!%>   </Coulomb_params>
+!%>
+!%>
+!%>  <SW_VP_params n_types="3" label="PRB_31_plus_H">
+!%>  <comment> Danny potential J ChemPhys 127, 204704(2007).The potential has to be called as a pot_init_args='Sum init_args_pot1={IP SW_VP} init_args_pot2={IP Coulomb}'</comment>
+!%>  <per_type_data type="1" atomic_num="1" />
+!%>  <per_type_data type="2" atomic_num="8" />
+!%>  <per_type_data type="3" atomic_num= "14"/>
+!%>  <per_pair_data atnum_i="1" atnum_j="1" AA="0.0" BB="0.0"
+!%>        p="0" q="0" a="1.0" sigma="1.0" eps="0.0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0" />
+!%>  <per_pair_data atnum_i="1" atnum_j="8" AA="0.0" BB="0.0"
+!%>        p="0" q="0" a="1.0" sigma="1.0" eps="0.0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0" />
+!%>  <per_pair_data atnum_i="1" atnum_j="14" AA="8.581214" BB="0.0327827"
+!%>        p="4" q="0" a="1.25" sigma="2.537884" eps="0.000" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0" D_OOprime="0"/>
+!%>  <per_pair_data atnum_i="8" atnum_j="8" AA="0.0" BB="0.0"
+!%>        p="0" q="0" a="4.43" sigma="1.24" eps="14.39" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="51.692" D_OOprime="1.536"/>
+!%>  <per_pair_data atnum_i="8" atnum_j="14" AA="0.0" BB="0.0"
+!%>        p="0" q="0" a="4.43" sigma="1.24" eps="14.39" C_0="14.871" C_1="2.178" D_SiO="3.072" C_OOprime="0.0" D_OOprime="0.0"/>
+!%>  <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
+!%>        p="4" q="0" a="1.80" sigma="2.0951" eps="0" C_0="0.0" C_1="0.0" D_SiO="0" C_OOprime="0.0" D_OOprime="0.0"/>
+!%>
+!%>  <!-- triplet terms: atnum_c is the center atom, neighbours j and k -->
+!%>  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="1"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="8"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="1"  atnum_j="1"  atnum_k="14"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="1"  atnum_j="8"  atnum_k="8"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="1"  atnum_j="8"  atnum_k="14"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="1"  atnum_j="14" atnum_k="14"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="1"
+!%>        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="8"
+!%>        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="1" atnum_k="14"
+!%>        lambda="0.521" gamma1="1" gamma2="1" d1="2.6" d2="2.6"  costheta0="-0.5373"  eps="14.39" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="8" atnum_k="8"
+!%>        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="8" atnum_k="14"
+!%>        lambda="3.46" gamma1="0.48" gamma2="0.48" d1="1.24" d2="1.24"  costheta0="-0.5373"  eps="0.0" />
+!%>  <per_triplet_data atnum_c="8" atnum_j="14" atnum_k="14"
+!%>        lambda="1.4" gamma1="1" gamma2="1" d1="2.6" d2="2.6"  costheta0="-0.777"  eps="14.39" />
+!%>  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="1"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="8"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="14"
+!%>        lambda="21.0" gamma1="1.20" gamma2="1.20" d1="1.80" d2="1.80" costheta0="-0.333" eps="0.0" />
+!%>  <per_triplet_data atnum_c="14" atnum_j="8"  atnum_k="8"
+!%>        lambda="0.350" gamma1="1" gamma2="1" d1="2.6" d2="2.6" costheta0="-0.333" eps="14.39" />
+!%>  <!--In original paper, the c=14,j=14,k=8 term is listed, hence d2 and d1 and gamma1 and gamma2 are interchanged  -->
+!%>  <per_triplet_data atnum_c="14" atnum_j="8" atnum_k="14"
+!%>        lambda="3.164" gamma1="4.06" gamma2="0.52" d1="3.981" d2="2.933"  costheta0="-0.333" eps="14.39" /> 
+!%>  <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
+!%>        lambda="3.164" gamma1="2.51" gamma2="2.51" d1="3.771" d2="3.771" costheta0="-0.333"  eps="14.39" />
+!%>  </SW_VP_params>
+!%>
+!%>  <constraints N="1">
+!%> <!-- All OH-bond lengths have to be constrained to avoid coulomb clash between OH for surfaces-->
+!%>  </constraints>
+!%> </SW_VP_potential>
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

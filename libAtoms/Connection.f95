@@ -1781,7 +1781,7 @@ contains
   !%>      ...
   !%>   end do
   !%
-  !% if distance > max_dist, return 0, and do not waste time calculating other quantities
+  !% if distance $>$ max_dist, return 0, and do not waste time calculating other quantities
   function connection_neighbour(this, at, i, n, distance, diff, cosines, shift, index, max_dist, jn, error) result(j)
     type(Connection),   intent(in)  :: this
     type(Atoms),        intent(in)  :: at

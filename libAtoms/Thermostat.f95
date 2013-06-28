@@ -36,8 +36,8 @@
 !% Each thermostat has its own section in the 'thermostat_pre_vel1-4' subroutines,
 !% which interleave the usual velocity verlet steps.
 !%
-!% All Langevin variants with Q > 0 are open Langevin, from Jones \& Leimkuhler 
-!% preprint "Adaptive Stochastic Methods for Nonequilibrium Sampling"
+!% All Langevin variants with $Q > 0$ are open Langevin, from Jones \& Leimkuhler 
+!% preprint ``Adaptive Stochastic Methods for Nonequilibrium Sampling"
 !%
 !% Langevin steps for THERMOSTAT_ALL_PURPOSE use Ornstein-Uhlenbeck steps as
 !% recommended by B. Leimkuhler, private comm.

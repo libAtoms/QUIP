@@ -40,8 +40,8 @@
 !% matrix of lattice vectors given as column vectors, so that lattice(:,i) is the i-th lattice vector.
 !% 
 !% Atoms also contains a Connection object, which stores distance information about
-!% the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
-!% image convention, all neighbours are stored up to a radius of 'cutoff', including images
+!% the atom neighbours after 'calc_connect' has been called. Rather than using a minimum
+!% image convention, all neighbours are stored up to a radius of 'cutoff', including images.
 !% 
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -362,12 +362,12 @@ module  atoms_module
      module procedure atoms_shuffle
   endinterface
 
-  !% Neighbor list stuf
+  !% Neighbour list stuff
   interface n_neighbours
      module procedure atoms_n_neighbours
   endinterface
 
-  !% Neighbor list stuf
+  !% Neighbour list stuff
   interface neighbour_index
      module procedure atoms_neighbour_index
   endinterface
@@ -1315,8 +1315,8 @@ contains
   !% Return the index of the $n^{\mbox{\small{th}}}$ neighbour of atom $i$. Together with the
   !% previous function, this facilites a loop over the neighbours of atom $i$. Optionally, we
   !% return other geometric information, such as distance, direction cosines and difference vector,
-  !% and also an direct index into the neighbour tables. If $i <= j$, this is an index into 'neighbour1(i)',
-  !% if $i > j$, it is an index into 'neighbour1(j)'
+  !% and also a direct index into the neighbour tables. If $i <= j$, this is an index into 'neighbour1(i)';
+  !% if $i > j$, it is an index into 'neighbour1(j)'.
   !%
   !%>   do n = 1,atoms_n_neighbours(at, i)
   !%>      j = atoms_neighbour(at, i, n, distance, diff, cosines, shift, index)
@@ -1324,7 +1324,7 @@ contains
   !%>      ...
   !%>   end do
   !%
-  !% If distance > max_dist, return 0, and do not waste time calculating other quantities.
+  !% If distance $>$ max_dist, return 0, and do not waste time calculating other quantities.
   !% 'alt_connect' has the same meaning as 'n_neighbours'.
   !%
   !% Here's a typical loop construct in Python. Note how `r` and `u`

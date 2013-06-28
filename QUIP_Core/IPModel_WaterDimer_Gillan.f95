@@ -33,7 +33,7 @@
 !X
 !% Interaction of two water molecules, parametrised by Mike Gillan in 2011
 !% 
-!% only expected to be accurate at long range (> 5 A). Parameters are
+!% only expected to be accurate at long range ($> 5 \AA$). Parameters are
 !% fitted to MP2 AVTZ energies
 !%
 !% Energy only

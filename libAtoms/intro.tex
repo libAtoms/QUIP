@@ -47,16 +47,16 @@ When using this software, please cite the following reference:
 library for developing molecular dynamics codes. It has been designed
 to be extensible and efficient, and can be used both serially and on
 large parallel computers that offer an implementation of the MPI
-library. At present the parallisation is at a very early stage, and
-there is no parallelisation of data. The fundamental design principal
-behind the developement of \textsc{libAtoms} is the idea of
+library. At present the parallelisation is at a very early stage, and
+there is no parallelisation of data. The fundamental design principle
+behind the development of \textsc{libAtoms} is the idea of
 \emph{expressive programming} --- this involves making sensible use of
 high level language features to produce clear and easily understood
 code that is as close as possible to the abstract algorithm that is
 being implemented.
 
 \textsc{libAtoms} is structured as a series of Fortran modules, each of which
-can be thought as self contained entities rather like C++ classes. Most
+can be thought of as self-contained entities rather like C++ classes. Most
 modules define a type that takes its name from that of the module
 (for example the `Atoms' type in the module \texttt{Atoms\_module}),
 and a series of subroutines and functions that operate on objects
@@ -131,7 +131,7 @@ stack to control the amount of output produced by its subroutines and
 functions. The possible values, in increasing order, of verbosity are:
 \texttt{ERROR=-10}, \texttt{SILENT=-1}, \texttt{NORMAL=0},
 \texttt{VERBOSE=1}, \texttt{NERD=2} and \texttt{ANAL=3}.  Printing
-interfaces for objects normally print the their own structure at some 
+interfaces for objects normally print their own structure at some 
 level of detail, and contained substructures at a lower level of detail.  
 Other subroutines normally print their output at some detail level, and
 request lower level subroutines to print at a lower detail level.
@@ -193,7 +193,7 @@ This behaviour is implemented for printing interfaces as in this example
 \end{verbatim}
 \end{boxedminipage}
 
-Printing of low level entities (strings, numbers, arrays) take an optional
+Printing of low-level entities (strings, numbers, arrays) takes an optional
 verbosity parameter that sets the minimum verbosity level at which that
 print will actually occur.  Functions that want to produce output at
 different levels of detail (e.g. the \texttt{minim()} function) can use

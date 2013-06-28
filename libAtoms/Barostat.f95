@@ -34,8 +34,8 @@
 !% This module contains the implementations for all the barostats available
 !% in libAtoms: Langevin thermalized Hoover
 !%
-!% With Q > 0, use adaptive (aka open) Langevin, from Jones \& Leimkuhler 
-!% preprint "Adaptive Stochastic Methods for Nonequilibrium Sampling"
+!% With $Q > 0$, use adaptive (aka open) Langevin, from Jones \& Leimkuhler 
+!% preprint ``Adaptive Stochastic Methods for Nonequilibrium Sampling"
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
