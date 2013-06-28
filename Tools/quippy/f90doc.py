@@ -557,7 +557,7 @@ class C_subt:
         if self.recur=='':            
             print_line( sections[depth]+r""" {Subroutine \texttt{"""+self.name)
         else:
-            print_line( sections[depth],r"""{Recursive subroutine \texttt{""",self.name)
+            print_line( sections[depth]+r"""{Recursive subroutine \texttt{"""+self.name)
             
             #        if depth==0:
             #            print "} (in file "+latex_escape(fn)+")}"
@@ -764,10 +764,10 @@ class C_funct:
                 f.latex_compact(depth,short_doc=short_doc)
 
         
-        #        print_line(sections[depth+1]+"{Return value --- ",)
+        #        print_line(sections[depth+1]+"{Return value --- ")
 
 
-        print_line(r"\item[Return value --- ",)
+        print_line(r"\item[Return value --- ")
 
         self.ret_val.latex_rv()
         print_line(r"]\mbox{} \par\noindent")
@@ -1137,14 +1137,14 @@ class C_interface:
 
 
         if self.functs != []:
-            #            print_line(sections[depth+1]+"{Return value --- ",)
+            #            print_line(sections[depth+1]+"{Return value --- ")
 
             ret_types = [a.ret_val.type+str(a.ret_val.attributes) for a in self.functs]
 
             if len(filter(lambda x: x != self.functs[0].ret_val.type+str(self.functs[0].ret_val.attributes), \
                           ret_types)) == 0:
                 
-                print_line(r"\item[Return value --- ",)
+                print_line(r"\item[Return value --- ")
                 self.functs[0].ret_val.latex_rv()
                 print_line("]")
                 for a in self.functs[0].ret_val_doc:
