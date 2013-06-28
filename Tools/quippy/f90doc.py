@@ -2232,6 +2232,8 @@ def check_arg(cl,file):
 
 def check_args_str(cl,file, dest):
 
+    if cl is None:
+        return [None,cl]
     m = args_str_re.match(cl)
     if cl and m is not None:
         d = C_decl()
