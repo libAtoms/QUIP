@@ -192,10 +192,10 @@ def print_line(str):
             pass
 
     if displaymath:
-        if re.search(r'\\end{(displaymath|equation|eqnarray)}',str):
+        if re.search(r'\\end{(displaymath|equation|eqnarray)\*?}',str):
             displaymath = False
     else:
-        if re.search(r'\\begin{(displaymath|equation|eqnarray)}',str):
+        if re.search(r'\\begin{(displaymath|equation|eqnarray)\*?}',str):
             displaymath = True
 
     # Escape % and # everywhere
@@ -1712,6 +1712,7 @@ def check_subt(cl,file, grab_hold_doc=True):
             elif m.group(1).lower() == out.name.lower() or m.group(1) == '':
                 break
 
+            debug('WARNING - found "end subroutine" line with mismatching label %r (expected %r)' % (m.group(1), out.name))
             # If no joy, get next line
             cl=file.next_line()
 
