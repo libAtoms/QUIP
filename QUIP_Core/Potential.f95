@@ -208,7 +208,7 @@ module Potential_module
   !%  (or, in Python, via  the :class:`Minim` wrapper class).
   type Potential
      type(MPI_context) :: mpi
-     character(len=STRING_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
+     character(len=STRING_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args, calc_args = ""
 
      logical :: is_simple = .false.
      type(Potential_simple) :: simple
@@ -416,7 +416,7 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
   INIT_ERROR(error)
 
   if (len_trim(param_filename) > 0) call initialise(io, param_filename, INPUT, master_only=.true.)
-  call initialise(this, args_str, io, bulk_scale, mpi_obj, error=error)
+  call initialise(this, args_str, io, bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
   PASS_ERROR(error)
   call finalise(io)
 
@@ -494,6 +494,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   call initialise(params)
   call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="Label in xml file Potential stanza to match")
+  call param_register(params, 'calc_args', '', this%calc_args, help_string="Default calc_args that are passed each time calc() is called")
   if(.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(my_args_str)//"'", error)
   endif
@@ -894,29 +895,29 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     ! do actual calculation using args_str
     if (this%is_simple) then
-       call Calc(this%simple, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       call Calc(this%simple, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_sum) then
-       call Calc(this%sum, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       call Calc(this%sum, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_forcemixing) then
-       call Calc(this%forcemixing, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       call Calc(this%forcemixing, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_evb) then
-       call Calc(this%evb, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       call Calc(this%evb, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
-      call Calc(this%local_e_mix, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+      call Calc(this%local_e_mix, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
       PASS_ERROR(error)
 #endif /* HAVE_local_e_mix */
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
-      call Calc(this%oniom, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+      call Calc(this%oniom, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
       PASS_ERROR(error)
 #endif /* HAVE_ONIOM */
     else if (this%is_cluster) then
-       call Calc(this%cluster, at, trim(args_str)//" "//trim(extra_args_str), error=error)
+       call Calc(this%cluster, at, trim(this%calc_args)//" "//trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else
       RAISE_ERROR('Potential_Calc: no potential type is set',error)
@@ -1031,6 +1032,35 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   end function potential_cutoff
 
 
+  subroutine potential_set_calc_args_str(this, args_str, error)
+     type(Potential), intent(inout) :: this
+     character(len=*), intent(in) :: args_str
+     integer, intent(out), optional :: error
+
+     INIT_ERROR(error)
+
+     if(len_trim(args_str) > len(this%calc_args)) then
+        RAISE_ERROR('potential_set_calc_args_str: args_str longer than the avaiable calc_args field', error)
+     endif
+
+     this%calc_args = trim(args_str)
+
+  endsubroutine potential_set_calc_args_str
+
+  function potential_get_calc_args_str(this, error)
+     type(Potential), intent(inout) :: this
+     integer, intent(out), optional :: error
+     character(len=STRING_LENGTH) :: potential_get_calc_args_str
+
+     INIT_ERROR(error)
+
+     if(len_trim(this%calc_args) > len(potential_get_calc_args_str)) then
+        RAISE_ERROR('potential_get_calc_args_str: calc_args field too long', error)
+     endif
+
+     potential_get_calc_args_str = trim(this%calc_args)
+
+  endfunction potential_get_calc_args_str
 
   !*************************************************************************
   !*
