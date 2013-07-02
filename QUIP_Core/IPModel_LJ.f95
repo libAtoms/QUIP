@@ -38,6 +38,13 @@
 !% \end{equation} 
 !% For parameters see Ashcroft and Mermin, {\it Solid State Physics}. 
 !%
+!% NB: The energy calculation in the code is
+!% \begin{equation*}
+!%   V(r) = \epsilon_{12} (\sigma/r)^{12} - \epsilon_6 (\sigma/r)^6
+!% \end{equation*}
+!% (plus energy and linear force shift, if applicable)
+!% hence the factor 4 has to be included in the potential XML file.
+!%
 !% The IPModel_LJ object contains all the parameters read from a
 !% 'LJ_params' XML stanza.
 !X
