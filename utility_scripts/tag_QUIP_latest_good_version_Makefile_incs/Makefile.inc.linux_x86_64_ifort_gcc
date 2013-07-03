@@ -5,8 +5,8 @@
 # DEBUG=-DDUMP_CORE_ON_ABORT
 # CDEBUG=
 MATH_LINKOPTS=${LAPACK_LIBPATH} ${LAPACK_LIB_STATIC}
-FOX_LIBDIR=${QUIP_ROOT}/ThirdParty/FoX-4.0.3/objs.linux_x86_64_ifort_gcc/lib
-FOX_INCDIR=${QUIP_ROOT}/ThirdParty/FoX-4.0.3/objs.linux_x86_64_ifort_gcc/finclude
+FOX_LIBDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_ifort_gcc/lib
+FOX_INCDIR=${QUIP_ROOT}/FoX-4.0.3/objs.linux_x86_64_ifort_gcc/finclude
 HAVE_EXTERNAL_FOX=0
 NETCDF_LIBDIR=/share/apps/local/lib
 NETCDF4=1

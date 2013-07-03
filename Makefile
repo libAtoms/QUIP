@@ -59,7 +59,7 @@ MODULES += GAP-filler/GAP_teach GAP-filler/GAProgs
 GP += GAP-filler/GAP_teach/libgap_teach.a
 endif
 
-FOX = ThirdParty/FoX-4.0.3
+FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
 default: ${MODULES}
