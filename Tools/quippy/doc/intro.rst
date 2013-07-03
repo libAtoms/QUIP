@@ -24,7 +24,7 @@ Overview of ``libAtoms`` and ``QUIP``
   mechanics, and is also able to call external packages.
 
 - Various hybrid combinations are also supported in the style of
-  QM/MM, including `Learn on the Fly` scheme (LOTF) [LOTF]_ 
+  QM/MM, including `Learn on the Fly` scheme [LOTF]_ 
 
 - `quippy <http://www.jrkermode.co.uk/quippy>`_ is a Python interface
   to libAtoms and QUIP.
@@ -112,7 +112,7 @@ Scripting intefaces also bring increased flexibility:
 - Good for less experienced programmers:
   high level languages generally more fault tolerant
 
-Finally, scripting ingterfaces can bring improvements to the code
+Finally, scripting interfaces can bring improvements to the code
 being wrapped:
 
 * Simplify top level programs
@@ -192,7 +192,7 @@ interfaces to ``f2py``
 Overview of ``quippy`` capabilities
 -----------------------------------
 
-* ``quippy`` is a aeneral purpose tool for:
+* ``quippy`` is a general purpose tool for:
 
   - Manipulating atomic configurations
   - Visualising and analysing results 
@@ -231,7 +231,7 @@ Python interactive session::
 Interactive visualisation with ``AtomEye``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``quippy`` include a :mod:`atomeye <plugin>` to the [AtomEye]_ atomic
+``quippy`` includes a :mod:`atomeye <plugin>` to the [AtomEye]_ atomic
 visualisation programme. To print values, and visualise structure::
     
     >>> dia.pos[1]
