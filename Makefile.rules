@@ -137,6 +137,10 @@ ifeq (${HAVE_CGAL},1)
   SYSLIBS += $(addprefix -L,${CGAL_LIBDIR})
   SYSLIBS += -lCGAL -lgmpxx -lmpfr -lgmp -lboost_thread-mt -lstdc++ #/usr/lib/libstdc++.6.dylib
 endif
+ifeq (${HAVE_THIRDPARTY},1)
+  DEFINES += -DHAVE_THIRDPARTY
+endif
+
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
 LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS} ${CUSTOM_LINKOPTS}

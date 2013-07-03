@@ -48,7 +48,9 @@ module ElectrostaticEmbed_module
   use QUIP_Common_module
   use Functions_module
   use Potential_module
+#ifdef HAVE_THIRDPARTY
   use cube_tools
+#endif
 
   implicit none
   private
@@ -56,7 +58,10 @@ module ElectrostaticEmbed_module
   integer, private, parameter :: nspins = 2
 
   public :: extent_to_ngrid, assign_grid_coordinates, calc_electrostatic_potential, &
-       write_electrostatic_potential_cube, make_periodic_potential
+#ifdef HAVE_THIRDPARTY
+       write_electrostatic_potential_cube, &
+#endif
+       make_periodic_potential
 
 contains
 
@@ -114,6 +119,7 @@ contains
 
   end subroutine assign_grid_coordinates
 
+#ifdef HAVE_THIRDPARTY
   subroutine write_electrostatic_potential_cube(at, filename, ngrid, origin, extent, pot, &
        write_efield, flip_sign, convert_to_atomic_units, error)
     type(Atoms), intent(inout) :: at
@@ -253,7 +259,7 @@ contains
     deallocate(cube%voxels)
 
   end subroutine write_electrostatic_potential_cube
-
+#endif
 
   subroutine make_periodic_potential(at, real_grid, ngrid, is_periodic, cutoff_radius, cutoff_width, mark_name, pot, error)
     type(Atoms), intent(inout) :: at

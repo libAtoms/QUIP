@@ -46,7 +46,13 @@ endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
-MODULES = ThirdParty libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
+MODULES =
+
+ifeq (${HAVE_THIRDPARTY},1)
+  MODULES += ThirdParty
+endif
+
+MODULES += libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
 GAP = 
 
 ifeq (${HAVE_GAP},1)
@@ -145,10 +151,15 @@ Tools/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils/l
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
+ifeq (${HAVE_THIRDPARTY},1)
 ThirdParty/%: 
 	ln -sf ${PWD}/ThirdParty/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/ThirdParty -I${PWD} -I${PWD}/Makefiles $${targ#ThirdParty/}
 	rm ${BUILDDIR}/Makefile
+else
+ThirdParty:
+	@echo "Placeholder ThirdParty rule"
+endif
 
 ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
