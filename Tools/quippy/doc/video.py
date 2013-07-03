@@ -16,7 +16,7 @@ versions are expected in the _movies/ directory, and a poster frame named
 
 from docutils import nodes, statemachine
 from docutils.parsers.rst import directives
-from sphinx.util.compat import Directive, directive_dwim
+from sphinx.util.compat import Directive
 
 class Video(Directive):
 
