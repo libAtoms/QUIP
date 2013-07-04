@@ -43,7 +43,10 @@ else
 default:
 endif
 
-LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
+LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
+ifeq (${HAVE_THIRDPARTY},1)
+LIBS += -lthirdparty
+endif
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 PROGRAMS = evb_driver
