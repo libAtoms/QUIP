@@ -2378,17 +2378,18 @@ contains
 
   end function dictionary_parse_value
 
-  function dictionary_write_string(this, real_format, entry_sep, char_a_sep, error)
+  function dictionary_write_string(this, real_format, entry_sep, char_a_sep, quote_char, error)
     type(Dictionary), intent(in) :: this
     character(len=*), optional, intent(in) :: real_format !% Output format for reals, default is 'f9.3'
     character(1), optional, intent(in) :: entry_sep !% Entry seperator, default is single space
     character(1), optional, intent(in) :: char_a_sep !% Output separator for character arrays, default is ','
+    character(1), optional, intent(in) :: quote_char !% Character to use to quote output fields containing whitespace, default is '"'
     type(extendable_str) :: str
     character(len=STRING_LENGTH) :: dictionary_write_string
     integer, intent(out), optional :: error
 
     integer :: i, j, k
-    character(1) :: my_char_a_sep, my_entry_sep
+    character(1) :: my_char_a_sep, my_entry_sep, my_quote_char
     character(255) :: my_real_format, tmp_string
 
     INIT_ERROR(error)
@@ -2397,6 +2398,7 @@ contains
     my_real_format = optional_default('f9.3',real_format)
     my_char_a_sep = optional_default(',',char_a_sep)
     my_entry_sep = optional_default(' ',entry_sep)
+    my_quote_char = optional_default('"', quote_char)
 
     do i=1,this%N
 
@@ -2430,24 +2432,24 @@ contains
           if (index(string(this%entries(i)%s), ' ') == 0) then
              call concat(str, string(this%entries(i)%s))
           else
-             call concat(str, '"'//string(this%entries(i)%s)//'"')
+             call concat(str, my_quote_char//string(this%entries(i)%s)//my_quote_char)
           end if
 
        case(T_INTEGER_A)
-          call concat(str, '"'//this%entries(i)%i_a//'"')
+          call concat(str, my_quote_char//this%entries(i)%i_a//my_quote_char)
 
        case(T_REAL_A)
           write (line, '('//size(this%entries(i)%r_a)//trim(my_real_format)//')') this%entries(i)%r_a
-          call concat(str, '"'//trim(adjustl(line))//'"')
+          call concat(str, my_quote_char//trim(adjustl(line))//my_quote_char)
 
        case(T_COMPLEX_A)
-          call concat(str, '"'//this%entries(i)%c_a//'"')
+          call concat(str, my_quote_char//this%entries(i)%c_a//my_quote_char)
 
        case(T_LOGICAL_A)
-          call concat(str, '"'//this%entries(i)%l_a//'"')
+          call concat(str, my_quote_char//this%entries(i)%l_a//my_quote_char)
 
        case(T_CHAR_A)
-          call concat(str,'"')
+          call concat(str,my_quote_char)
           do j=1,size(this%entries(i)%s_a,2)
              tmp_string = ''
              do k=1,size(this%entries(i)%s_a,1)
@@ -2455,21 +2457,21 @@ contains
              end do
              call concat(str, trim(tmp_string)//my_char_a_sep)
           end do
-          call concat(str,'"')
+          call concat(str,my_quote_char)
 
        case(T_INTEGER_A2)
-          call concat(str, '"('//shape(this%entries(i)%i_a2)//') ')
-          call concat(str, ' '//reshape(this%entries(i)%i_a2,(/size(this%entries(i)%i_a2)/))//'"')
+          call concat(str, my_quote_char//'('//shape(this%entries(i)%i_a2)//') ')
+          call concat(str, ' '//reshape(this%entries(i)%i_a2,(/size(this%entries(i)%i_a2)/))//my_quote_char)
 
        case(T_REAL_A2)
-          call concat(str, '"('//shape(this%entries(i)%r_a2)//') ')
-          call concat(str, reshape(this%entries(i)%r_a2,(/size(this%entries(i)%r_a2)/))//'"')
+          call concat(str, my_quote_char//'('//shape(this%entries(i)%r_a2)//') ')
+          call concat(str, reshape(this%entries(i)%r_a2,(/size(this%entries(i)%r_a2)/))//my_quote_char)
 
        case(T_DATA)
-          call concat(str, 'DATA"'//this%entries(i)%d%d//'"')
+          call concat(str, 'DATA'//my_quote_char//this%entries(i)%d%d//my_quote_char)
 
        case(T_DICT)
-          call concat(str, 'DATA"'//this%entries(i)%d%d//'"')
+          call concat(str, 'DATA'//my_quote_char//this%entries(i)%d%d//my_quote_char)
        end select
     end do
 

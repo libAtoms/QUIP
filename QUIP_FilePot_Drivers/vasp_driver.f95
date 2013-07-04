@@ -275,7 +275,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("writing INCAR", PRINT_VERBOSE)
       call initialise(io, trim(run_dir)//"/INCAR", action=OUTPUT, error=error)
       PASS_ERROR(error)
-      call print(write_string(incar_dict, entry_sep=quip_new_line), file=io)
+      call print(write_string(incar_dict, entry_sep=quip_new_line, quote_char=' '), file=io)
       call finalise(io)
 
       ! write KPOINTS if needed
