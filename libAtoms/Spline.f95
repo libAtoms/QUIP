@@ -55,6 +55,7 @@ module spline_module
      real(dp)                            ::yp1,ypn  !% Endpoint derivatives
      ! whether y2 has been initialised or not
      logical                             ::y2_initialised = .false. 
+     logical                             :: initialised = .false.
   end type Spline
 
   interface initialise
@@ -108,6 +109,7 @@ contains
 
     ! compute y2
     call spline_y2calc(this)
+    this%initialised = .true.
   end subroutine spline_init
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -124,6 +126,7 @@ contains
     if(allocated(this%y))  deallocate(this%y)
     if(allocated(this%y2)) deallocate(this%y2)
     this%y2_initialised = .false.
+    this%initialised = .false.
   end subroutine spline_finalise
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
