@@ -45,11 +45,9 @@ private
 
 include 'IPModel_interface.h'
 
-public :: SplineDataContainer
 type SplineDataContainer
-    real(dp), allocatable :: spline_potential(:,:)
-    real(dp), allocatable :: spline_density(:,:)
-    real(dp) :: density_y1, density_yn
+    real(dp), allocatable, dimension(:,:) :: data
+    real(dp) :: y1, yn
 end type SplineDataContainer
 
 public :: IPModel_Glue
@@ -62,19 +60,19 @@ type IPModel_Glue
   real(dp) :: cutoff = 0.0_dp
   real(dp), allocatable, dimension(:) :: poly
 
-  real(dp), allocatable :: density_extent(:), density_scale(:)
-
-  type(SplineDataContainer), allocatable :: spline_data(:)
+  type(SplineDataContainer), allocatable, dimension(:) :: spline_data_potential, spline_data_density
+  type(SplineDataContainer), allocatable, dimension(:,:) :: spline_data_pair
   type(Spline), allocatable :: potential(:)
+  type(Spline), allocatable :: pair(:,:)
   type(Spline), allocatable :: density(:)
 
   character(len=STRING_LENGTH) :: label
 
 end type IPModel_Glue
 
-logical, private :: parse_in_ip, parse_matched_label, parse_in_density_potential, parse_in_neighbours_potential, parse_in_density
+logical, private :: parse_in_ip, parse_matched_label, parse_in_density_potential, parse_in_neighbours_potential, parse_in_density, parse_in_potential_pair
 type(IPModel_Glue), private, pointer :: parse_ip
-integer :: parse_curr_type = 0, parse_curr_point, parse_n_neighbours
+integer :: parse_curr_type_i = 0, parse_curr_type_j = 0, parse_curr_point, parse_n_neighbours
 
 interface Initialise
   module procedure IPModel_Glue_Initialise_str
@@ -99,7 +97,6 @@ subroutine IPModel_Glue_Initialise_str(this, args_str, param_str)
   character(len=*), intent(in) :: args_str, param_str
 
   type(Dictionary) :: params
-  character(len=STRING_LENGTH) label
 
   call Finalise(this)
 
@@ -117,37 +114,64 @@ end subroutine IPModel_Glue_Initialise_str
 
 subroutine IPModel_Glue_Finalise(this)
   type(IPModel_Glue), intent(inout) :: this
-  integer :: i
+  integer :: i, j
 
   ! Add finalisation code here
 
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
   
-  if (allocated(this%density_extent)) deallocate(this%density_extent)
-  if (allocated(this%density_scale)) deallocate(this%density_scale)
-
-  if (allocated(this%spline_data)) then
-    do i=1,this%n_types
-      if(allocated(this%spline_data(i)%spline_potential)) deallocate(this%spline_data(i)%spline_potential)
-      if(allocated(this%spline_data(i)%spline_density)) deallocate(this%spline_data(i)%spline_density)
-    end do
-    deallocate(this%spline_data)
-    deallocate(this%poly)
+  if (allocated(this%spline_data_density)) then
+     do i=1,this%n_types
+        if(allocated(this%spline_data_density(i)%data)) deallocate(this%spline_data_density(i)%data)
+     enddo
+     deallocate(this%spline_data_density)
   endif
 
+  if (allocated(this%spline_data_potential)) then
+     do i=1,this%n_types
+        if(allocated(this%spline_data_potential(i)%data)) deallocate(this%spline_data_potential(i)%data)
+     enddo
+     deallocate(this%spline_data_potential)
+  endif
+
+  if (allocated(this%spline_data_pair)) then
+     do i=1,this%n_types
+        do j=1,this%n_types
+           if(allocated(this%spline_data_pair(j,i)%data)) deallocate(this%spline_data_pair(j,i)%data)
+        enddo
+     enddo
+     deallocate(this%spline_data_pair)
+  endif
+
+  if(allocated(this%poly)) deallocate(this%poly)
+
   if (allocated(this%potential)) then
-    do i=1,this%n_types
-      call finalise(this%potential(i))
-      call finalise(this%density(i))
-    end do
-    deallocate(this%potential)
+     do i=1,this%n_types
+        call finalise(this%potential(i))
+     enddo
+     deallocate(this%potential)
+  endif
+
+  if (allocated(this%density)) then
+     do i=1,this%n_types
+        call finalise(this%density(i))
+     enddo
+     deallocate(this%density)
+  endif
+
+  if (allocated(this%pair)) then
+     do i=1,this%n_types
+        do j = 1, this%n_types
+            call finalise(this%pair(j,i))
+        enddo
+     enddo
+     deallocate(this%pair)
   endif
 
   this%n_types = 0
   this%label = ''
 end subroutine IPModel_Glue_Finalise
-
 
 subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Glue), intent(inout):: this
@@ -172,13 +196,13 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   integer :: i, ji, j, ti, tj  
 
   ! If only Fortran allow you to declare variables somewhere else
-  real(dp) :: r_ij_mag, r_ij_hat(3) ! Neighbour vector info
+  real(dp) :: r_ij_mag, r_ij_hat(3), pair_e_ij, dpair_e_ij ! Neighbour vector info
   real(dp) :: rho_local ! Accumulator for local electron density
 
   ! For calculating forces and the virial tensor
   real(dp) :: drho_i_drij
   real(dp) :: drho_i_dri(3), potential_deriv
-  real(dp), dimension(3,3) :: drho_i_drij_outer_rij, virial_i
+  real(dp), dimension(3,3) :: drho_i_drij_outer_rij
     
   INIT_ERROR(error)
 
@@ -236,7 +260,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   ! Iterate over atoms
 !$omp parallel do default(none) shared(this,at,atom_mask_pointer,local_e_in,local_virial_in,e,f,virial,local_e,local_virial) &
-!$omp private(i,ji,j,rho_local,drho_i_dri,drho_i_drij,drho_i_drij_outer_rij,ti,tj,r_ij_mag,r_ij_hat,potential_deriv) reduction(+:f_in)
+!$omp private(i,ji,j,rho_local,drho_i_dri,drho_i_drij,drho_i_drij_outer_rij,ti,tj,r_ij_mag,r_ij_hat,potential_deriv, pair_e_ij, dpair_e_ij) reduction(+:f_in)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
@@ -256,10 +280,21 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           rho_local = rho_local + eam_density(this, tj, r_ij_mag)
-          drho_i_drij = eam_density_deriv(this, tj, r_ij_mag)
-          drho_i_dri = drho_i_dri + drho_i_drij * r_ij_hat
-          drho_i_drij_outer_rij = drho_i_drij_outer_rij + drho_i_drij*(r_ij_hat .outer. r_ij_hat) * r_ij_mag
+          if( present(f) .or. present(virial) .or. present(local_virial) ) then
+             drho_i_drij = eam_density_deriv(this, tj, r_ij_mag)
+             drho_i_dri = drho_i_dri + drho_i_drij * r_ij_hat
+             drho_i_drij_outer_rij = drho_i_drij_outer_rij + drho_i_drij*(r_ij_hat .outer. r_ij_hat) * r_ij_mag
+          endif
       endif
+
+      if( r_ij_mag < pair_cutoff(this,ti,tj) ) then
+         pair_e_ij = eam_spline_pair(this,ti,tj,r_ij_mag)
+         if( present(local_e) .or. present(e) ) local_e_in(i) = local_e_in(i) + 0.5_dp * pair_e_ij
+         if( present(f) .or. present(virial) .or. present(local_virial) ) dpair_e_ij = eam_spline_pair_deriv(this,ti, tj, r_ij_mag)
+         if( present(f) ) f_in(:,i) = f_in(:,i) + dpair_e_ij * r_ij_hat
+         if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,i) = local_virial_in(:,:,i) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
+      endif
+
     end do ! ji
     potential_deriv = eam_spline_potential_deriv(this, ti, rho_local)
     if(present(f)) f_in(:,i) = f_in(:,i) + drho_i_dri * potential_deriv
@@ -269,11 +304,11 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
       j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
      
-      if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then         
+      if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then
           f_in(:,j) = f_in(:,j) - potential_deriv * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
       endif
     end do ! ji
-    if(present(local_e) .or. present(e)) local_e_in(i) = eam_spline_potential(this, ti, rho_local)
+    if(present(local_e) .or. present(e)) local_e_in(i) = local_e_in(i) + eam_spline_potential(this, ti, rho_local)
     if(present(virial) .or. present(local_virial)) local_virial_in(:,:,i) = local_virial_in(:,:,i) - potential_deriv * drho_i_drij_outer_rij
   end do ! i
 !$omp end parallel do  
@@ -290,24 +325,52 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
 end subroutine IPModel_Glue_Calc
 
-function glue_cutoff(this, ti)
+function glue_cutoff(this, ti, error)
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
+  integer, intent(out), optional :: error
   real(dp) :: glue_cutoff
   
-  !glue_cutoff = this%density_extent(ti)*10
+  INIT_ERROR(error)
+
+  if( .not. this%density(ti)%initialised ) then
+      RAISE_ERROR("glue_cutoff: spline not initialised", error)
+  endif
+
   glue_cutoff = max_knot(this%density(ti))
 
 end function glue_cutoff
 
-function eam_density(this, ti, r)
+function pair_cutoff(this, ti, tj, error)
+  type(IPModel_Glue), intent(in) :: this
+  integer, intent(in) :: ti, tj
+  integer, intent(out), optional :: error
+  real(dp) :: pair_cutoff
+  
+  INIT_ERROR(error)
+
+  if( .not. this%pair(ti,tj)%initialised ) then
+     pair_cutoff = 0.0_dp 
+  else
+     pair_cutoff = max_knot(this%pair(ti,tj))
+  endif
+
+end function pair_cutoff
+
+function eam_density(this, ti, r, error)
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
   real(dp), intent(in) :: r
+  integer, intent(out), optional :: error
   real(dp) :: eam_density
   
+  INIT_ERROR(error)
+
+  if( .not. this%density(ti)%initialised ) then
+      RAISE_ERROR("eam_density: spline not initialised", error)
+  endif
+
   if (r < glue_cutoff(this, ti)) then
-    !eam_density = this%density_scale(ti) * exp(-r/this%density_extent(ti))
     !eam_density = spline_value(this%density(ti),r) 
     eam_density = this%poly(ti)*(glue_cutoff(this, ti)-r)**3
   else
@@ -315,14 +378,20 @@ function eam_density(this, ti, r)
   endif
 end function eam_density
 
-function eam_density_deriv(this, ti, r)
+function eam_density_deriv(this, ti, r, error)
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
   real(dp), intent(in) :: r
+  integer, intent(out), optional :: error
   real(dp) :: eam_density_deriv
 
+  INIT_ERROR(error)
+
+  if( .not. this%density(ti)%initialised ) then
+      RAISE_ERROR("eam_density_deriv: spline not initialised", error)
+  endif
+
   if (r < glue_cutoff(this, ti)) then
-    !eam_density_deriv = - this%density_scale(ti)/this%density_extent(ti) * exp(-r/this%density_extent(ti))
     !eam_density_deriv = spline_deriv(this%density(ti),r)
     eam_density_deriv = -3.0_dp * this%poly(ti)*(glue_cutoff(this, ti)-r)**2
   else
@@ -330,68 +399,85 @@ function eam_density_deriv(this, ti, r)
   endif
 end function eam_density_deriv
 
-function eam_spline_potential(this, ti, rho)
+function eam_spline_potential(this, ti, rho, error)
   ! Evaluate the potential spline at r for the ti^th species
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
-  integer :: last
   real(dp), intent(in) :: rho
+  integer, intent(out), optional :: error
   real(dp) :: eam_spline_potential
 
-  real(dp) :: min_rho
-  real(dp) :: max_rho
+  INIT_ERROR(error)
 
-  !min_rho = min_knot(this%potential(ti))
-  !max_rho = max_knot(this%potential(ti))
-
-  !if (rho < min_rho) then
-  !  !eam_spline_potential = this%potential(ti)%y(1) + (rho - this%potential(ti)%x(1)) * spline_deriv(this%potential(ti), min_rho)
-  !  eam_spline_potential = this%potential(ti)%y(1) + (rho - this%potential(ti)%x(1)) * this%potential(ti)%yp1
-  !  eam_spline_potential = this%potential(ti)%y(1) + (rho - this%potential(ti)%x(1)) * this%potential(ti)%yp1
-  !elseif (rho >= max_rho) then
-  !  last = size(this%potential(ti)%x)
-  !  !eam_spline_potential = this%potential(ti)%y(last) + (rho - this%potential(ti)%x(last)) * spline_deriv(this%potential(ti), max_rho)
-  !  eam_spline_potential = this%potential(ti)%y(last) + (rho - this%potential(ti)%x(last)) * this%potential(ti)%ypn
-  !else
-  !  eam_spline_potential = spline_value(this%potential(ti), rho)
-  !endif
+  if( .not. this%potential(ti)%initialised ) then
+      RAISE_ERROR("eam_spline_potential: spline not initialised", error)
+  endif
 
   eam_spline_potential = spline_value(this%potential(ti), rho)
 
 end function eam_spline_potential
 
-function eam_spline_potential_deriv(this, ti, rho)
+function eam_spline_potential_deriv(this, ti, rho, error)
   ! Evaluate the potential spline derivitive at r for the ti^th species
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
   real(dp), intent(in) :: rho
+  integer, intent(out), optional :: error
   real(dp) :: eam_spline_potential_deriv
 
-  real(dp) :: min_rho
-  real(dp) :: max_rho
+  INIT_ERROR(error)
 
-  !min_rho = min_knot(this%potential(ti))
-  !max_rho = max_knot(this%potential(ti))
+  if( .not. this%potential(ti)%initialised ) then
+      RAISE_ERROR("eam_spline_potential_deriv: spline not initialised", error)
+  endif
 
-  !if (rho < min_rho) then
-  !  !eam_spline_potential_deriv = spline_deriv(this%potential(ti), min_rho)
-  !  eam_spline_potential_deriv = this%potential(ti)%yp1
-  !elseif (rho >= max_rho) then
-  !  !eam_spline_potential_deriv = spline_deriv(this%potential(ti), max_rho)
-  !  eam_spline_potential_deriv = this%potential(ti)%ypn
-  !else
-  !  eam_spline_potential_deriv = spline_deriv(this%potential(ti), rho)
-  !endif
   eam_spline_potential_deriv = spline_deriv(this%potential(ti), rho)
 
 end function eam_spline_potential_deriv
 
+function eam_spline_pair(this, ti, tj, rho, error)
+  ! Evaluate the potential spline at r for the ti^th species
+  type(IPModel_Glue), intent(in) :: this
+  integer, intent(in) :: ti, tj
+  real(dp), intent(in) :: rho
+  integer, intent(out), optional :: error
+  real(dp) :: eam_spline_pair
+
+  INIT_ERROR(error)
+
+  if( .not. this%pair(ti,tj)%initialised ) then
+     eam_spline_pair = 0.0_dp
+  else
+     eam_spline_pair = spline_value(this%pair(ti,tj), rho)
+  endif
+
+
+end function eam_spline_pair
+
+function eam_spline_pair_deriv(this, ti, tj, rho, error)
+  ! Evaluate the potential spline derivitive at r for the ti^th species
+  type(IPModel_Glue), intent(in) :: this
+  integer, intent(in) :: ti, tj
+  real(dp), intent(in) :: rho
+  integer, intent(out), optional :: error
+  real(dp) :: eam_spline_pair_deriv
+
+  INIT_ERROR(error)
+
+  if( .not. this%pair(ti,tj)%initialised ) then
+     eam_spline_pair_deriv = 0.0_dp
+  else
+     eam_spline_pair_deriv = spline_deriv(this%pair(ti, tj), rho)
+  endif
+
+
+end function eam_spline_pair_deriv
 
 subroutine IPModel_Glue_Print(this, file)
   type(IPModel_Glue), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj
+  integer :: ti
 
   call Print("IPModel_Glue : Glue Potential", file=file)
   call Print("IPModel_Glue : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
@@ -407,37 +493,11 @@ subroutine IPModel_Glue_Print(this, file)
 
 end subroutine IPModel_Glue_Print
 
-subroutine sort_spline(this, ti)
-  type(IPModel_Glue), intent(inout), target :: this
-  integer :: m, ti, num_potential_points
-  real(dp) :: temp1, temp2
-  logical :: finished
-
-  ! Knuth forgive me, for I have written bubble sort. Reimplement this as quicksort or something that isn't dreadful
-  num_potential_points = size(this%spline_data(ti)%spline_potential(1,:))
-  finished = .false.
-
-  do while (finished .neqv. .true.)
-      finished = .true.
-      do m=2, num_potential_points
-          if (this%spline_data(ti)%spline_potential(1,m-1) > this%spline_data(ti)%spline_potential(1,m)) then
-              temp1 = this%spline_data(ti)%spline_potential(1,m-1)
-              temp2 = this%spline_data(ti)%spline_potential(2,m-1)
-              this%spline_data(ti)%spline_potential(1,m-1) = this%spline_data(ti)%spline_potential(1,m)
-              this%spline_data(ti)%spline_potential(2,m-1) = this%spline_data(ti)%spline_potential(2,m)
-              this%spline_data(ti)%spline_potential(1,m) = temp1
-              this%spline_data(ti)%spline_potential(2,m) = temp2
-              finished = .false.
-          end if
-      end do
-  end do
-end subroutine sort_spline
-
 subroutine IPModel_Glue_read_params_xml(this, param_str)
   type(IPModel_Glue), intent(inout), target :: this
   character(len=*), intent(in) :: param_str
-  integer :: ti, num_potential_points, m
-  real(dp) :: grad_upper, grad_lower
+  integer :: ti, tj
+  real(dp) :: max_cutoff
   type(xml_t) :: fxml
 
   if (len(trim(param_str)) <= 0) return
@@ -456,39 +516,39 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
     call system_abort("IPModel_Glue_read_params_xml parsed file, but n_types = 0")
   endif
 
-  do ti=1, this%n_types
-    call sort_spline(this, ti)
-    !do m=1, size(this%spline_data(ti)%spline_potential(1,:))
-    !  call print (ti // " " // this%spline_data(ti)%spline_potential(1,m) // " " // this%spline_data(ti)%spline_potential(2,m))
-    !end do
-  end do
-
   ! Initialise the spline data structures with the spline data
-  do ti=1, this%n_types
-    num_potential_points = size(this%spline_data(ti)%spline_potential(1,:))
+  do ti = 1, this%n_types
   
-    grad_upper = (this%spline_data(ti)%spline_potential(2,num_potential_points) - this%spline_data(ti)%spline_potential(2,num_potential_points-1)) / &
-                 (this%spline_data(ti)%spline_potential(1,num_potential_points) - this%spline_data(ti)%spline_potential(1,num_potential_points-1))
+     if(allocated(this%spline_data_density(ti)%data)) then
+        call initialise(this%density(ti), this%spline_data_density(ti)%data(:,1), this%spline_data_density(ti)%data(:,2), &
+           this%spline_data_density(ti)%y1, this%spline_data_density(ti)%yn)
+     endif
+     if(allocated(this%spline_data_potential(ti)%data)) then
+        call initialise(this%potential(ti), this%spline_data_potential(ti)%data(:,1), this%spline_data_potential(ti)%data(:,2), 2.0e30_dp,2.0e30_dp)
+     endif
 
-    grad_lower = (this%spline_data(ti)%spline_potential(2,2) - this%spline_data(ti)%spline_potential(2,1)) / &
-                 (this%spline_data(ti)%spline_potential(1,2) - this%spline_data(ti)%spline_potential(1,1))
+     do tj = 1, this%n_types
+        if(allocated(this%spline_data_pair(tj,ti)%data)) then
+           call initialise(this%pair(tj,ti), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), 0.0_dp, 0.0_dp)
+           call initialise(this%pair(ti,tj), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), 0.0_dp, 0.0_dp)
+        endif
+     enddo
 
-    !call initialise(this%potential(ti), this%spline_data(ti)%spline_potential(1,:), this%spline_data(ti)%spline_potential(2,:), grad_lower, grad_upper)
-    call initialise(this%potential(ti), this%spline_data(ti)%spline_potential(1,:), this%spline_data(ti)%spline_potential(2,:),2.0e30_dp,2.0e30_dp)
-    call initialise(this%density(ti), this%spline_data(ti)%spline_density(1,:), this%spline_data(ti)%spline_density(2,:), this%spline_data(ti)%density_y1, this%spline_data(ti)%density_yn)
-
-    this%poly(ti) = dot_product(this%spline_data(ti)%spline_density(2,:), (glue_cutoff(this,ti) - &
-      this%spline_data(ti)%spline_density(1,:))**3) / &
-      dot_product((glue_cutoff(this,ti)-this%spline_data(ti)%spline_density(1,:))**3, &
-      (glue_cutoff(this,ti)-this%spline_data(ti)%spline_density(1,:))**3)
+     this%poly(ti) = dot_product(this%spline_data_density(ti)%data(:,2), (glue_cutoff(this,ti) - &
+        this%spline_data_density(ti)%data(:,1))**3) / &
+        dot_product((glue_cutoff(this,ti)-this%spline_data_density(ti)%data(:,1))**3, &
+        (glue_cutoff(this,ti)-this%spline_data_density(ti)%data(:,1))**3)
   end do
 
+  max_cutoff = 0.0_dp
   ! Find the largest cutoff
-  do ti=1, this%n_types
-    if(glue_cutoff(this,ti) > this%cutoff) then
-      this%cutoff = glue_cutoff(this,ti)
-    endif
-  end do
+  do ti = 1, this%n_types
+     max_cutoff = max(glue_cutoff(this,ti),max_cutoff)
+     do tj = 1, this%n_types
+        max_cutoff = max(pair_cutoff(this,tj,ti),max_cutoff)
+     enddo
+  enddo
+  this%cutoff = max_cutoff
 
 end subroutine IPModel_Glue_read_params_xml
 
@@ -506,10 +566,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=STRING_LENGTH) :: value
 
-  logical shifted
-  integer ti, tj
+  integer :: ti, tj, num_points
   real(dp) :: v
-  integer num_points
 
   if (name == 'Glue_params') then ! new Template stanza
 
@@ -538,22 +596,19 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       if (status == 0) then
         read (value, *), parse_ip%n_types
       else
-        call system_abort("Can't find n_types in Template_params")
+        call system_abort("Can't find n_types in Glue_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       parse_ip%atomic_num = 0
  
-      allocate(parse_ip%density_extent(parse_ip%n_types))
-      parse_ip%density_extent = 0
-
-      allocate(parse_ip%density_scale(parse_ip%n_types))
-      parse_ip%density_scale = 0
-
       ! Allocate n_types spline data objects for further allocation
-      allocate(parse_ip%spline_data(parse_ip%n_types))
+      allocate(parse_ip%spline_data_density(parse_ip%n_types))
+      allocate(parse_ip%spline_data_potential(parse_ip%n_types))
+      allocate(parse_ip%spline_data_pair(parse_ip%n_types,parse_ip%n_types))
 
       ! Allocate the splines
+      allocate(parse_ip%pair(parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%potential(parse_ip%n_types))
       allocate(parse_ip%density(parse_ip%n_types))
       allocate(parse_ip%poly(parse_ip%n_types))
@@ -566,7 +621,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find type")
     read (value, *) ti ! This is the index of this particular species
 
-    parse_curr_type = ti
+    parse_curr_type_i = ti
 
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find atomic_num")
@@ -581,16 +636,22 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
-  elseif (parse_in_ip .and. parse_curr_type /= 0 .and. name == 'density') then
+  elseif (parse_in_ip .and. name == 'per_pair_data') then
+
+    call QUIP_FoX_get_value(attributes, "type1", value, status)
+    if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find type")
+    read (value, *) ti ! This is the index of this particular species
+
+    parse_curr_type_i = ti
+
+    call QUIP_FoX_get_value(attributes, "type2", value, status)
+    if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find type")
+    read (value, *) tj ! This is the index of this particular species
+
+    parse_curr_type_j = tj
+
+  elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. name == 'density') then
     ! Density is modelled as scale*exp(-extent*x). Could probably determine scale from normalization, but I won't.
-
-    !call QUIP_FoX_get_value(attributes, "a", value, status)
-    !if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no a")
-    !read (value, *) parse_ip%density_extent(parse_curr_type) ! characteristic extent of the electron density for this element in angstrom
-
-    !call QUIP_FoX_get_value(attributes, "scale", value, status)
-    !if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no scale")
-    !read (value, *) parse_ip%density_scale(parse_curr_type) ! scale of the electron density for this element
 
     parse_in_density = .true.
     parse_curr_point = 1
@@ -601,16 +662,16 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, "density_y1", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_y1")
-    read (value, *) parse_ip%spline_data(parse_curr_type)%density_y1 ! scale of the electron density for this element
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%y1 ! scale of the electron density for this element
 
     call QUIP_FoX_get_value(attributes, "density_yn", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_yn")
-    read (value, *) parse_ip%spline_data(parse_curr_type)%density_yn ! scale of the electron density for this element
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%yn ! scale of the electron density for this element
 
     ! Allocate num_points in the current type
-    allocate(parse_ip%spline_data(parse_curr_type)%spline_density(2, num_points))
+    allocate(parse_ip%spline_data_density(parse_curr_type_i)%data(num_points,2))
   
-  elseif (parse_in_ip .and. parse_curr_type /= 0 .and. name == 'potential_density') then
+  elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. name == 'potential_density') then
     
     ! Potential supplied as density vs. energy
     parse_in_density_potential = .true.
@@ -621,9 +682,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) num_points ! scale of the electron density for this element
 
     ! Allocate num_points in the current type
-    allocate(parse_ip%spline_data(parse_curr_type)%spline_potential(2, num_points))
+    allocate(parse_ip%spline_data_potential(parse_curr_type_i)%data(num_points,2))
   
-  elseif (parse_in_ip .and. parse_curr_type /= 0 .and. name == 'potential_neighbours') then
+  elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. name == 'potential_neighbours') then
     
     ! Potential supplied as distance to nearest neighbour vs. energy, along with number of neighbours
     parse_in_neighbours_potential = .true.
@@ -638,8 +699,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) num_points ! scale of the electron density for this element
 
     ! Allocate num_points in the current type
-    allocate(parse_ip%spline_data(parse_curr_type)%spline_potential(2, num_points))
+    allocate(parse_ip%spline_data_potential(parse_curr_type_i)%data(num_points,2))
     
+  elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. parse_curr_type_j /= 0 .and. name == 'potential_pair') then
+    
+    ! Pair potential
+    parse_in_potential_pair = .true.
+    parse_curr_point = 1
+
+    call QUIP_FoX_get_value(attributes, "num_points", value, status)
+    if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml potential_pair but no num_points")
+    read (value, *) num_points ! scale of the electron density for this element
+
+    ! Allocate num_points in the current type
+    allocate(parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data(num_points,2))
+  
   elseif (parse_in_ip .and. name == 'point') then
     
     if (parse_in_density_potential) then
@@ -648,18 +722,33 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       !  Potential defined as a rho->E map
       !
       
-      if (parse_curr_point > size(parse_ip%spline_data(parse_curr_type)%spline_potential(1,:))) call system_abort ("IPModel_Glue got too " // &
-	"many points " // parse_curr_point // " type " // parse_curr_type // " in potential_density")
+      if (parse_curr_point > size(parse_ip%spline_data_density(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
+	"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_density")
 
       call QUIP_FoX_get_value(attributes, "rho", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find rho")
       read (value, *) v
-      parse_ip%spline_data(parse_curr_type)%spline_potential(1, parse_curr_point) = v
+      parse_ip%spline_data_potential(parse_curr_type_i)%data(parse_curr_point,1) = v
 
       call QUIP_FoX_get_value(attributes, "E", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find E")
       read (value, *) v
-      parse_ip%spline_data(parse_curr_type)%spline_potential(2, parse_curr_point) = v
+      parse_ip%spline_data_potential(parse_curr_type_i)%data(parse_curr_point,2) = v
+
+   elseif (parse_in_potential_pair) then
+
+      if (parse_curr_point > size(parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data,1)) call system_abort ("IPModel_Glue got too " // &
+	"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_pair")
+
+      call QUIP_FoX_get_value(attributes, "r", value, status)
+      if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find r")
+      read (value, *) v
+      parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data(parse_curr_point,1) = v
+
+      call QUIP_FoX_get_value(attributes, "E", value, status)
+      if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find E")
+      read (value, *) v
+      parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data(parse_curr_point,2) = v
 
     elseif (parse_in_neighbours_potential) then
 
@@ -667,22 +756,22 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       !  Potential defined as a a->E map for N nearest neighbours
       !
 
-      if (parse_curr_point > size(parse_ip%spline_data(parse_curr_type)%spline_potential(1,:))) call system_abort ("IPModel_Glue got too " // &
-"many points " // parse_curr_point // " type " // parse_curr_type // " in potential_neighbours")
+      if (parse_curr_point > size(parse_ip%spline_data_potential(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
+"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_neighbours")
 
       call QUIP_FoX_get_value(attributes, "a", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find a")
       read (value, *) v
       
       ! This implies that the denstiy must be defined above the potential
-      parse_ip%spline_data(parse_curr_type)%spline_potential(1, parse_curr_point) = eam_density(parse_ip, parse_curr_type, v) * parse_n_neighbours
+      parse_ip%spline_data_potential(parse_curr_type_i)%data(parse_curr_point,1) = eam_density(parse_ip, parse_curr_type_i, v) * parse_n_neighbours
 
       call QUIP_FoX_get_value(attributes, "E", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find E")
       read (value, *) v
-      parse_ip%spline_data(parse_curr_type)%spline_potential(2, parse_curr_point) = v
+      parse_ip%spline_data_potential(parse_curr_type_i)%data(parse_curr_point,2) = v
 
-      ! call print(parse_ip%spline_data(parse_curr_type)%spline_potential(1, parse_curr_point) // " " // parse_ip%spline_data(parse_curr_type)%spline_potential(2, parse_curr_point) // " " )
+      ! call print(parse_ip%spline_data(parse_curr_type_i)%spline_potential(1, parse_curr_point) // " " // parse_ip%spline_data(parse_curr_type_i)%spline_potential(2, parse_curr_point) // " " )
 
     elseif (parse_in_density) then
 
@@ -690,22 +779,22 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       !  Potential defined as a a->E map for N nearest neighbours
       !
 
-      if (parse_curr_point > size(parse_ip%spline_data(parse_curr_type)%spline_density(1,:))) call system_abort ("IPModel_Glue got too " // &
-"many points " // parse_curr_point // " type " // parse_curr_type // " in density")
+      if (parse_curr_point > size(parse_ip%spline_data_density(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
+"many points " // parse_curr_point // " type " // parse_curr_type_i // " in density")
 
       call QUIP_FoX_get_value(attributes, "a", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find a")
       read (value, *) v
       
       ! This implies that the denstiy must be defined above the potential
-      parse_ip%spline_data(parse_curr_type)%spline_density(1, parse_curr_point) = v
+      parse_ip%spline_data_density(parse_curr_type_i)%data(parse_curr_point,1) = v
 
       call QUIP_FoX_get_value(attributes, "rho", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find rho")
       read (value, *) v
-      parse_ip%spline_data(parse_curr_type)%spline_density(2, parse_curr_point) = v
+      parse_ip%spline_data_density(parse_curr_type_i)%data(parse_curr_point,2) = v
 
-      ! call print(parse_ip%spline_data(parse_curr_type)%spline_potential(1, parse_curr_point) // " " // parse_ip%spline_data(parse_curr_type)%spline_potential(2, parse_curr_point) // " " )
+      ! call print(parse_ip%spline_data(parse_curr_type_i)%spline_potential(1, parse_curr_point) // " " // parse_ip%spline_data(parse_curr_type_i)%spline_potential(2, parse_curr_point) // " " )
 
     endif
 
@@ -725,12 +814,17 @@ subroutine IPModel_endElement_handler(URI, localname, name)
       parse_in_ip = .false.
     elseif (name == 'potential_density') then
       parse_in_density_potential = .false.
+    elseif (name == 'potential_pair') then
+      parse_in_potential_pair = .false.
     elseif (name == 'potential_neighbours') then
       parse_in_neighbours_potential = .false.
     elseif (name == 'density') then
       parse_in_density = .false.
     elseif (name == 'per_type_data') then
-      parse_curr_type = 0
+      parse_curr_type_i = 0
+    elseif (name == 'per_pair_data') then
+      parse_curr_type_i = 0
+      parse_curr_type_j = 0
     endif
   endif
 
