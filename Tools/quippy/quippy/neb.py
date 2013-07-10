@@ -1,3 +1,6 @@
+# Adapted from ase.neb module, released under GPLv2.1
+# Modified to fix jumps across PBC by James Kermode <james.kermode@gmail.com>
+
 import numpy as np
 import sys
 import os
@@ -7,8 +10,8 @@ import optparse
 from math import sqrt
 from math import atan, pi
 
+from quippy.io import AtomsList
 from ase.parallel import world, rank, size
-from ase.io import read
 
 __all__ = ['StoredValuesCalculator', 'NEB']
 
@@ -22,14 +25,6 @@ def pbc_diff(a, b):
     bb.pos[:] = b.pos
     bb.undo_pbc_jumps() #     b.pos = b.pos - (np.dot(b.lattice, np.floor(np.dot(b.g, (b.pos-a.pos))+0.5)))
     return aa.get_positions() - bb.get_positions()
-
-def diff_min_image(a, b):
-    diff = a.pos - b.pos + (np.dot(a.lattice, np.floor(np.dot(a.g, (b.pos-a.pos))+0.5)))
-    return diff.view(np.ndarray).T
-
-
-diff_min_image = pbc_diff
-
 
 class StoredValuesCalculator:
     """Return forces and energies stored in Atoms' arrays dictionary"""
@@ -112,7 +107,7 @@ class NEB:
             final = self.nimages + final
         n = final - initial
         pos1 = self.images[initial].get_positions()
-        d = diff_min_image(self.images[final], self.images[initial]) / n
+        d = pbc_diff(self.images[final], self.images[initial]) / n
         for i in range(1, n):
             self.images[initial + i].set_positions(pos1 + i * d)
             
@@ -161,10 +156,10 @@ class NEB:
            towards the neighboring top energy image, is currently
            supported."""
         images = self.images
-        t_m = diff_min_image(images[1], images[0]) # images[1].get_positions() - images[0].get_positions()
+        t_m = pbc_diff(images[1], images[0]) # images[1].get_positions() - images[0].get_positions()
         self.tangents[0] = t_m.copy()
         for i in range(1, self.nimages - 1):
-            t_p = diff_min_image(images[i+1], images[i])
+            t_p = pbc_diff(images[i+1], images[i])
             #(images[i + 1].get_positions() - images[i].get_positions())
             e = self.energies[i]
             e_m = self.energies[i - 1]
@@ -198,7 +193,7 @@ class NEB:
             #r = [0.0]
             self.energies[i] = 0.0
             for j in range(1, i+1):
-                dr = diff_min_image(self.images[j], self.images[j-1])
+                dr = pbc_diff(self.images[j], self.images[j-1])
                 f_dr = -np.vdot(self.forces['real'][j], dr)
                 self.energies[i] += f_dr
                 
@@ -295,7 +290,7 @@ class NEB:
     def get_image_distances(self):
         s = [0]
         for i in range(len(self.images)-1):
-            s.append(s[-1] + np.sqrt(((diff_min_image(self.images[i+1], self.images[i])**2).sum())))
+            s.append(s[-1] + np.sqrt(((pbc_diff(self.images[i+1], self.images[i])**2).sum())))
         return s
 
     def get_norm_image_spring_force(self, i):
@@ -306,8 +301,8 @@ class NEB:
         #p = self.images[i].get_positions()
         #p_p = self.images[i + 1].get_positions()
 
-        t_m = diff_min_image(self.images[i], self.images[i-1])  #p  - p_m
-        t_p = diff_min_image(self.images[i+1], self.images[i])  #p_p - p
+        t_m = pbc_diff(self.images[i], self.images[i-1])  #p  - p_m
+        t_p = pbc_diff(self.images[i+1], self.images[i])  #p_p - p
         
         nt_m = np.vdot(t_m, t_m)**0.5
         nt_p = np.vdot(t_p, t_p)**0.5
@@ -318,8 +313,8 @@ class NEB:
         #p_m = self.images[i - 1].get_positions()
         #p = self.images[i].get_positions()
         #p_p = self.images[i + 1].get_positions()
-        t_m = diff_min_image(self.images[i], self.images[i-1])  #p  - p_m
-        t_p = diff_min_image(self.images[i+1], self.images[i])  #p_p - p
+        t_m = pbc_diff(self.images[i], self.images[i-1])  #p  - p_m
+        t_p = pbc_diff(self.images[i+1], self.images[i])  #p_p - p
         return (t_p - t_m) * self.k
 
     def get_image_spring_force(self, i):
@@ -369,13 +364,57 @@ class NEB:
                 at.write(filename)
 
     def fit(self):
-        from ase.neb import fit0
-        
         E = self.energies.copy()
         F = self.forces['real'].copy()
         R = [i.get_positions() for i in self.images]
+
+        # inlined ase.neb.fit0() to fix PBC issues
         
-        s, E, Sfit, Efit, lines = fit0(E, F, R)
+        E = np.array(E) - E[0]
+        n = len(E)
+        Efit = np.empty((n - 1) * 20 + 1)
+        Sfit = np.empty((n - 1) * 20 + 1)
+
+        s = [0]
+        for i in range(n - 1):
+            s.append(s[-1] + sqrt(((pbc_diff(self.images[i+1],
+                                             self.images[i])**2).sum())))
+        lines = []
+        for i in range(n):
+            if i == 0:
+                d = R[1] - R[0]
+                ds = 0.5 * s[1]
+            elif i == n - 1:
+                d = R[-1] - R[-2]
+                ds = 0.5 * (s[-1] - s[-2])
+            else:
+                d = R[i + 1] - R[i - 1]
+                ds = 0.25 * (s[i + 1] - s[i - 1])
+
+            d = d / sqrt((d**2).sum())
+            dEds = -(F[i] * d).sum()
+            x = np.linspace(s[i] - ds, s[i] + ds, 3)
+            y = E[i] + dEds * (x - s[i])
+            lines.append((x, y))
+
+            if i > 0:
+                s0 = s[i - 1]
+                s1 = s[i]
+                x = np.linspace(s0, s1, 20, endpoint=False)
+                c = np.linalg.solve(np.array([(1, s0,   s0**2,     s0**3),
+                                              (1, s1,   s1**2,     s1**3),
+                                              (0,  1,  2 * s0, 3 * s0**2),
+                                              (0,  1,  2 * s1, 3 * s1**2)]),
+                                    np.array([E[i - 1], E[i], dEds0, dEds]))
+                y = c[0] + x * (c[1] + x * (c[2] + x * c[3]))
+                Sfit[(i - 1) * 20:i * 20] = x
+                Efit[(i - 1) * 20:i * 20] = y
+
+            dEds0 = dEds
+
+        Sfit[-1] = s[-1]
+        Efit[-1] = E[-1]
+        
         self.s = s
         self.barrier = max(Efit)
         return s, E, Sfit, Efit, lines
@@ -412,4 +451,3 @@ class NEB:
         xlabel('Reaction coordinate $s$')
         ylabel(r'$\Delta E$ / eV')
         xlim(smin-0.05*(smax-smin), smax+0.05*(smax-smin))
-
