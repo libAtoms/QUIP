@@ -1128,77 +1128,93 @@ def check_pspots(cluster, cell, param, orig_dir):
             raise ValueError('spin polarised set to true but got even number of electrons!')
 
 
-def run_castep(cell, param, stem, castep, castep_log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False):
+def run_castep(cell, param, stem, castep, castep_log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False, copy_in_files=None, subdir=None):
     "Invoke castep and return True if it completed successfully"
 
     log = logging.getLogger('castep_driver')
 
-    # Write parameter file ...
-    param.write(stem+'.param')
-    # ... and cell file
-    cell.write(stem+'.cell')
+    orig_dir = os.getcwd()
+    try:
+        if subdir is not None:
+            if not os.path.exists(subdir):
+                os.makedirs(subdir)
+            os.chdir(subdir)
 
-    if not '%s' in castep: castep = castep + ' %s'
+        # Write parameter file ...
+        param.write(stem+'.param')
+        # ... and cell file
+        cell.write(stem+'.cell')
 
-    if test_mode:
-        log.info('test mode: not running castep')
+        if copy_in_files is not None:
+            for pspot in copy_in_files:
+                shutil.copyfile(pspot, os.path.join(os.getcwd(), os.path.basename(pspot)))
 
-        # Simulate making check file
-        check_file = open(stem+'.check','w')
-        check_file.close()
+        if not '%s' in castep: castep = castep + ' %s'
 
-    else:
-        # Remove old output file and error files
-        try:
-            os.remove(stem+'.castep')
-        except:
-            pass
-        for f in glob.glob('%s*.err' % stem):
-            os.remove(f)
+        if test_mode:
+            log.info('test mode: not running castep')
 
-        os.system(castep % stem)
+            ## Simulate making check file
+            #check_file = open(stem+'.check','w')
+            #check_file.close()
 
-    if save_all_check_files:
-        if os.path.exists('%s.check' % stem):
-            n = 0
-            while os.path.exists('%s.check.%d' % (stem, n)):
-                n += 1
-            shutil.copyfile('%s.check' % stem, '%s.check.%d' % (stem, n))
+        else:
+            # Remove old output file and error files
+            try:
+                os.remove(stem+'.castep')
+            except:
+                pass
+            for f in glob.glob('%s*.err' % stem):
+                os.remove(f)
 
-    if save_all_input_files:
-        if os.path.exists('%s.cell' % stem):
-            n = 0
-            while os.path.exists('%s.cell.%d' % (stem, n)):
-                n += 1
-            shutil.copyfile('%s.cell' % stem, '%s.cell.%d' % (stem, n))
-        if os.path.exists('%s.param' % stem):
-            n = 0
-            while os.path.exists('%s.param.%d' % (stem, n)):
-                n += 1
-            shutil.copyfile('%s.param' % stem, '%s.param.%d' % (stem, n))
+            os.system(castep % stem)
 
-    err_files = glob.glob('%s*.err' % stem)
-    got_error = False
-    if (len(err_files) > 0):
-        for f in err_files:
-            error_text = open(f).read().strip()
-            if error_text != '':
-                got_error = True
-                log.error(error_text)
+        if save_all_check_files:
+            if os.path.exists('%s.check' % stem):
+                n = 0
+                while os.path.exists('%s.check.%d' % (stem, n)):
+                    n += 1
+                shutil.copyfile('%s.check' % stem, '%s.check.%d' % (stem, n))
 
-    # Write log file here so that it will always be written
-    if castep_log is not None and os.path.exists('%s.castep' % stem):
-        logf = open(castep_log, 'a')
-        castep_output = open('%s.castep' % stem, 'r').readlines()
-        logf.writelines(castep_output)
-        logf.close()
+        if save_all_input_files:
+            if os.path.exists('%s.cell' % stem):
+                n = 0
+                while os.path.exists('%s.cell.%d' % (stem, n)):
+                    n += 1
+                shutil.copyfile('%s.cell' % stem, '%s.cell.%d' % (stem, n))
+            if os.path.exists('%s.param' % stem):
+                n = 0
+                while os.path.exists('%s.param.%d' % (stem, n)):
+                    n += 1
+                shutil.copyfile('%s.param' % stem, '%s.param.%d' % (stem, n))
+
+        err_files = glob.glob('%s*.err' % stem)
+        got_error = False
+        if (len(err_files) > 0):
+            for f in err_files:
+                error_text = open(f).read().strip()
+                if error_text != '':
+                    got_error = True
+                    log.error(error_text)
+
+        # Write log file here so that it will always be written
+        if castep_log is not None and os.path.exists('%s.castep' % stem):
+            logf = open(castep_log, 'a')
+            castep_output = open('%s.castep' % stem, 'r').readlines()
+            logf.writelines(castep_output)
+            logf.close()
+
+    finally:
+        os.chdir(orig_dir)
 
     return not got_error
 
 from quippy import Potential
 
 class CastepPotential(Potential):
-    def __init__(self, cell=None, param=None, castep_exec='castep %s', stem='castep_callback', test_mode=False, little_clusters=False):
+    def __init__(self, cell=None, param=None, castep_exec='castep %s', stem='castep_callback', test_mode=False,
+                 little_clusters=False, copy_in_files=None, subdir=None):
+
         Potential.__init__(self, 'CallbackPot little_clusters=%s' % ({True: 'T', False: 'F'}[little_clusters]))
         self.set_callback(self.run)
 
@@ -1229,34 +1245,44 @@ class CastepPotential(Potential):
             param = CastepParam()
         param.update_from_atoms(at)
 
-        n = 0
-        while True:
-            stem = '%s_%05d' % (self.stem, n)
-            n += 1
-            if not os.path.exists(stem+'.castep'): break
+        stem = self.stem
+        if os.path.exists(stem+'.castep'):
+            n = 0
+            while True:
+                stem = '%s_%05d' % (self.stem, n)
+                n += 1
+                if not os.path.exists(stem+'.castep'): break
 
-        run_castep(cell, param, stem, self.castep_exec, test_mode=self.test_mode)
+        run_castep(cell, param, stem, self.castep_exec, test_mode=self.test_mode, 
+                   copy_in_files=self.copy_in_files, subdir=self.subdir)
 
-        print 'Reading from file %s' % (stem+'.castep')
-        result = Atoms(stem+'.castep', atoms_ref=at)
+        if not self.test_mode:
+            print 'Reading from file %s' % (stem+'.castep')
+            result = Atoms(stem+'.castep', atoms_ref=at)
 
-        # Update params -- this includes contents of .cell and .param templates
-        at.params.update(result.params)
+            # Update params -- this includes contents of .cell and .param templates
+            at.params.update(result.params)
 
-        # Energy and force
-        at.params['energy'] = float(result.energy)
-        at.add_property('force', result.force, overwrite=True)
+            # Energy and force
+            at.params['energy'] = float(result.energy)
+            at.add_property('force', result.force, overwrite=True)
 
-        # Virial stress tensor
-        if hasattr(result, 'virial'):
-            at.params['virial'] = result.virial
+            # Virial stress tensor
+            if hasattr(result, 'virial'):
+                at.params['virial'] = result.virial
+            else:
+                at.params['virial'] = fzeros((3,3))
+
+            # Add popn_calculate output and force components
+            for k in result.properties.keys():
+                if k.startswith('popn_') or k.startswith('force_'):
+                    at.add_property(k, getattr(result, k), overwrite=True)
         else:
+            print 'Test mode: setting energy, force and virial to zeros'
+            at.params['energy'] = 0.
+            at.add_property('force', 0., n_cols=3, overwrite=True)
             at.params['virial'] = fzeros((3,3))
 
-        # Add popn_calculate output and force components
-        for k in result.properties.keys():
-            if k.startswith('popn_') or k.startswith('force_'):
-                at.add_property(k, getattr(result, k), overwrite=True)
 
 
 def read_formatted_potential(filename):
