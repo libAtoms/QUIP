@@ -256,13 +256,12 @@ def find_wrap_sources(makefile, quip_root):
         gp_dir = os.path.join(quip_root, 'GAP')
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
-        targets.extend([(quip_root, 'GAP/libgap_predict.a')])
+        targets.extend([(quip_root, 'GAP')])
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
         gp_dir = os.path.join(quip_root, 'GAP-filler/')
         source_dirs.append(gp_dir)
-        libraries.append('gap_teach')
-        targets.extend([(quip_root, 'GAP-filler/libgap_teach.a')])
+        targets.extend([(quip_root, 'GAP-filler')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
