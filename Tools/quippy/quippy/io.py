@@ -708,3 +708,43 @@ def time_ordered_series(source, dt=None):
             filenames.append('%s@%d:%d:%d' % (group[0][0], group[0][1], group[-1][1], group[0][2]))
 
     return filenames
+
+
+@atoms_reader('traj')
+def ASEReader(source):
+    """
+    Helper routine to load from ASE trajectories
+    """
+    from ase.io import read
+    from quippy.elasticity import stress_matrix
+    
+    for at in read(source, index=slice(None,None,None)):
+        f = None
+        try:
+            f = at.get_forces()
+        except RuntimeError:
+            pass
+
+        e = None
+        try:
+            e = at.get_potential_energy()
+        except RuntimeError:
+            pass
+
+        v = None
+        try:
+            v = -stress_matrix(at.get_stress())*at.get_volume()
+        except RuntimeError:
+            pass
+
+        at = Atoms(at) # convert to quippy Atoms
+        if f is not None:
+            at.add_property('force', f.T)
+        if e is not None:
+            at.params['energy'] = e
+        if v is not None:
+            at.params['virial'] = v
+            
+        yield at
+
+    
