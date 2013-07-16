@@ -547,7 +547,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         expected to be an iterator returning :class:`Atoms` objects.
         """
 
-        if isinstance(source, basestring) and '@' in source:
+        if isinstance(source, basestring) and '@' in os.path.basename(source):
             source, frame = source.split('@')
             frame = parse_slice(frame)
             if 'frame' in kwargs:
