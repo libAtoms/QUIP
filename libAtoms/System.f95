@@ -292,11 +292,11 @@ module system_module
   !% returns the optional argument value if it's present, otherwise
   !% the default value
   private :: optional_default_l, optional_default_i, optional_default_r
-  private :: optional_default_c, optional_default_z
+  private :: optional_default_c, optional_default_ca, optional_default_z
   private :: optional_default_ia, optional_default_ra
   interface optional_default
     module procedure optional_default_l, optional_default_i, optional_default_r
-    module procedure optional_default_c, optional_default_z
+    module procedure optional_default_c, optional_default_ca, optional_default_z
     module procedure optional_default_ia, optional_default_ra
   end interface optional_default
 
@@ -2852,6 +2852,19 @@ contains
     endif
 
   end function optional_default_c
+
+  pure function optional_default_ca(def, opt_val)
+    character(len=*), dimension(:), intent(in) :: def
+    character(len=*), dimension(:), intent(in), optional :: opt_val
+    character(SYSTEM_STRING_LENGTH), dimension(size(def)) :: optional_default_ca
+
+    if (present(opt_val)) then
+      optional_default_ca = opt_val
+    else
+      optional_default_ca = def
+    endif
+
+  end function optional_default_ca
 
   subroutine enable_timing()
     system_do_timing = .true.
