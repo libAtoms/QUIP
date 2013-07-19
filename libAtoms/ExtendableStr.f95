@@ -199,21 +199,22 @@ pure function extendable_str_len(this)
   extendable_str_len = this%len
 end function extendable_str_len
 
-subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim)
+subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim, lf_to_whitespace)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: str
-  logical, intent(in), optional :: keep_lf, add_lf_if_missing, no_trim
+  logical, intent(in), optional :: keep_lf, add_lf_if_missing, no_trim, lf_to_whitespace
 
   character, allocatable :: t(:)
   integer str_len
   integer add_len, new_len
   integer i
-  logical my_keep_lf, my_add_lf_if_missing, my_no_trim
+  logical my_keep_lf, my_add_lf_if_missing, my_no_trim, my_lf_to_whitespace
   logical :: add_lf
 
   my_keep_lf = optional_default(.true., keep_lf)
   my_add_lf_if_missing = optional_default(.false., add_lf_if_missing)
   my_no_trim = optional_default(.false., no_trim)
+  my_lf_to_whitespace = optional_default(.false., lf_to_whitespace)
 
   if (my_no_trim) then
       str_len = len(str)
@@ -265,8 +266,15 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim)
     endif
 
     do i=1, str_len
-       if (.not. my_keep_lf .and. str(i:i) == quip_new_line) cycle
-       this%s(this%len+1) = str(i:i)
+       if ( ( .not. my_keep_lf .or. my_lf_to_whitespace ) .and. str(i:i) == quip_new_line) then
+          if(my_lf_to_whitespace) then
+             this%s(this%len+1) = " "
+          else
+             cycle
+          endif
+       else
+          this%s(this%len+1) = str(i:i)
+       endif
        this%len = this%len + 1
     end do
 
