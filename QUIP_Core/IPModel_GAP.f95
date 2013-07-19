@@ -233,14 +233,15 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
 #ifdef HAVE_GAP
   real(dp), pointer :: w_e(:)
-  real(dp) :: e_i
+  real(dp) :: e_i, e_i_cutoff
   real(dp), dimension(:), allocatable   :: local_e_in
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  integer :: d, i, j, n, i_coordinate, n_local_e
+  integer :: d, i, j, n, m, i_coordinate, n_local_e
 
   real(dp), dimension(:,:), allocatable :: f_in
 
   real(dp), dimension(3) :: pos, f_gp
+  real(dp), dimension(3,3) :: virial_i
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
   logical :: has_atom_mask_name
@@ -367,7 +368,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
      allocate(sparseScore(size(my_descriptor_data%x)))
 
-!$omp parallel default(none) private(i,gradPredict, e_i,n,j,pos,f_gp) &
+!$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i) &
 !$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_sparseScore,sparseScore,f) &
 !$omp reduction(+:local_e_in,f_in,virial_in)
 
@@ -385,8 +386,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
         call system_timer('IPModel_GAP_Calc_gp_predict')
         if(present(e) .or. present(local_e)) then
-           local_e_in( my_descriptor_data%x(i)%ci ) = local_e_in( my_descriptor_data%x(i)%ci ) + &
-                e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
+
+           e_i_cutoff = e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
+
+           do n = 1, size(my_descriptor_data%x(i)%ci)
+              local_e_in( my_descriptor_data%x(i)%ci(n) ) = local_e_in( my_descriptor_data%x(i)%ci(n) ) + e_i_cutoff
+           enddo
         endif
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
@@ -399,7 +404,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  f_in(:,j) = f_in(:,j) - f_gp
               endif
               if( present(virial) .or. present(local_virial) ) then
-                 virial_in(:,:,i) = virial_in(:,:,i) - (pos .outer. f_gp)
+                 virial_i = (pos .outer. f_gp) / size(my_descriptor_data%x(i)%ci)
+                 do m = 1, size(my_descriptor_data%x(i)%ci)
+                    virial_in(:,:,my_descriptor_data%x(i)%ci(m)) = virial_in(:,:,my_descriptor_data%x(i)%ci(m)) - virial_i
+                 enddo
               endif
            enddo
         endif
