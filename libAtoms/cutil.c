@@ -187,6 +187,20 @@ void fread_array_d_(int *size, double *v, char *filename) {
    fclose(fp);
 }
 
+void fwc_l_(char *filename, int *size) {
+   FILE *fp;
+
+   int lines=0;
+
+   fp = fopen(filename, "r");
+   if (fp == NULL)
+      exit(EXIT_FAILURE);
+   while (EOF != (fscanf(fp,"%*[^\n]"), fscanf(fp,"%*c"))) {
+      ++lines;
+   };
+   fclose(fp);
+   *size = lines;
+}
 
 int pointer_to_(void *p) {
   return ((int) p);
