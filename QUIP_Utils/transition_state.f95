@@ -79,7 +79,7 @@ contains
 !--------------------------------------------------------------------------      
 subroutine TS_Initialise(this,params) 
  type(TS), intent(inout) :: this
- type(tsParams)          :: params
+ type(tsParams), intent(in) :: params
 
  select case(params%simulation_method)
 
@@ -95,7 +95,7 @@ end subroutine TS_Initialise
 !--------------------------------------------------------------------------
 subroutine TS_Initialise_interp(this,at_in,at_fin,params)
   type(TS), intent(inout)               :: this 
-  type(tsParams)                        :: params
+  type(tsParams), intent(in)            :: params
   type(Atoms), intent(inout)            :: at_in 
   type(Atoms), intent(inout)            :: at_fin
   integer                               :: im
@@ -139,7 +139,7 @@ end subroutine TS_Initialise_interp
 !-----------------------------------------------------------------------------
 subroutine TS_Initialise_nointerp(this,at_ref,conf,params)
   type(TS), intent(inout)               :: this 
-  type(tsParams)                        :: params
+  type(tsParams), intent(in)            :: params
   type(Atoms), intent(in)               :: at_ref
   real(dp), dimension(this%cos%N,3*at_ref%N) :: conf 
   integer                               :: im
