@@ -93,6 +93,11 @@ interface initialise
    module procedure tsParams_initialise 
 end interface
 
+public :: finalise
+interface finalise
+   module procedure tsParams_finalise
+end interface finalise
+
 public :: print
 interface print
    module procedure tsParams_print
@@ -148,6 +153,13 @@ subroutine tsParams_initialise(this)
    this%chain_mobile_last  = .false.
    this%chain_mobile_first = .false.
 end subroutine tsParams_initialise
+
+subroutine tsParams_finalise(this)
+  type(tsParams), intent(inout) :: this
+  
+  ! do nothing
+
+end subroutine tsParams_finalise
 
 subroutine tsParams_read_xml(this, xmlfile)
   type(tsParams), intent(inout), target :: this
