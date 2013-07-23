@@ -2238,12 +2238,12 @@ contains
 !   Open MP stuff
 !$OMP parallel
 !$OMP master
-!$  call print('System::Hello World: OpenMP parallelisation with '//OMP_get_num_threads()//' threads')
+!$  call print('libAtoms::Hello World: OpenMP parallelisation with '//OMP_get_num_threads()//' threads')
 !$  call get_env_var('OMP_STACKSIZE',omp_stacksize)
 !$  if(len_trim(omp_stacksize) == 0) then
-!$     call print_warning('System::Hello World: environment variable OMP_STACKSIZE not set explicitly. The default value - system and compiler dependent - may be too small for some applications.')
+!$     call print_warning('libAtoms::Hello World: environment variable OMP_STACKSIZE not set explicitly. The default value - system and compiler dependent - may be too small for some applications.')
 !$  else
-!$     call print('System::Hello World: OMP_STACKSIZE='//trim(omp_stacksize))
+!$     call print('libAtoms::Hello World: OMP_STACKSIZE='//trim(omp_stacksize))
 !$  endif
 !$OMP end master
 !$OMP end parallel
