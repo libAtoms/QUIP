@@ -711,14 +711,20 @@ def time_ordered_series(source, dt=None):
 
 
 @atoms_reader('traj')
+@atoms_reader('cfg')
 def ASEReader(source):
     """
     Helper routine to load from ASE trajectories
     """
     from ase.io import read
+    from ase.atoms import Atoms as AseAtoms
     from quippy.elasticity import stress_matrix
+
+    images = read(source, index=slice(None,None,None))
+    if isinstance(images, AseAtoms):
+        images = [images]
     
-    for at in read(source, index=slice(None,None,None)):
+    for at in images:
         f = None
         try:
             f = at.get_forces()
@@ -747,4 +753,20 @@ def ASEReader(source):
             
         yield at
 
+class ASEWriter(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def write(self, at, **writeargs):
+        from ase.io import write
+        from ase.atoms import Atoms as AseAtoms
+        ase_at = AseAtoms(at)
+        write(self.filename, ase_at, **writeargs)
+
+    def close(self):
+        pass
+
+AtomsWriters['traj'] = ASEWriter
+AtomsWriters['cfg'] = ASEWriter
     
