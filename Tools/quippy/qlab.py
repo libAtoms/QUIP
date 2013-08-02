@@ -367,12 +367,16 @@ class QuippyViewer(AtomEyeViewer):
             sys.stdout.flush()
 
     def _redraw_hook(self, atoms):
-        print 'Properties:'
-        for key, value  in atoms.properties.iteritems():
-            print '%-10s shape %r' % (key, value.shape)
-        print '\nParams:'
-        for (key, value) in atoms.params.iteritems():
-            print '%-20s = %r' % (key, value)
+        if hasattr(atoms, 'properties'):
+           print 'Properties:'
+           for key, value  in atoms.properties.iteritems():
+               print '%-10s shape %r' % (key, value.shape)
+        if hasattr(atoms, 'params'):
+           print '\nParams:'
+           for (key, value) in atoms.params.iteritems():
+               print '%-20s = %r' % (key, value)
+        if hasattr(atoms, 'source'):
+            print '%-20s = %r' % ('source', atoms.source)
 
     def show(self, property=None, frame=None, arrows=None):
         """
