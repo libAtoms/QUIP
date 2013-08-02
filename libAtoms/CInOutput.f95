@@ -506,6 +506,7 @@ contains
        end if
        BCAST_PASS_ERROR(error, this%mpi)
        call finalise(selected_properties)
+       deallocate(c_indices)
 
        if (get_value(tmp_params, 'cutoff', cutoff)) then
           if (get_value(tmp_params, 'cutoff_break', cutoff_break)) then
@@ -629,8 +630,6 @@ contains
        call comm_atoms_to_all(at%domain, at, error=error)
        PASS_ERROR(error)
     endif
-
-    deallocate(c_indices)
 
   end subroutine cinoutput_read
 
