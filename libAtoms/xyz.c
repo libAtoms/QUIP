@@ -632,7 +632,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       if (!error_occured) {
 	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
-	strncat(linep, tmpbuf, LINESIZE-strlen(linep)-1);
+	strncat(linep, tmpbuf, LINESIZE-line_offset);
 
       } else {
 	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linep);
@@ -640,7 +640,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     } else {
       // Put in a bogus lattice
       sprintf(tmpbuf, " Lattice=\"0 0 0 0 0 0 0 0 0\"");
-      strncat(linep, tmpbuf, LINESIZE-strlen(linep)-1);
+      strncat(linep, tmpbuf, LINESIZE-line_offset);
     }
   }
 
@@ -648,7 +648,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     // No Properties key. Add a default one.
     if ((p = strstr(linep, "\n")) != NULL) *p = '\0';
     if ((p = strstr(linep, "\r")) != NULL) *p = '\0';
-    strncat(linep, " Properties=species:S:1:pos:R:3",LINESIZE-strlen(linep)-1);
+    strncat(linep, " Properties=species:S:1:pos:R:3",LINESIZE-line_offset);
   }
 
   // Parse parameters. First split on ", ', { or }
@@ -680,7 +680,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   // Finally, split on '=' to get key/value pairs
   for (i=0; i<nfields; i++) {
-    strncpy(linep, finalfields[i], LINESIZE);
+    strncpy(linep, finalfields[i], LINESIZE-line_offset);
     if ((p = strchr(linep,'=')) == NULL) {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "Badly formed key/value pair %s\n", linep);
     }
@@ -693,7 +693,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     //if (strcasecmp(param_key, "Lattice") == 0 ||
     //strcasecmp(param_key, "Properties") == 0) continue;
 
-    strncpy(linep, param_value, LINESIZE);
+    strncpy(linep, param_value, LINESIZE-line_offset);
     k = 0;
     p = linep;
     while ((p1 = strsep(&p, " ")) != NULL) {
