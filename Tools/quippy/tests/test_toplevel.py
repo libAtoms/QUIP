@@ -19,6 +19,9 @@
 import unittest, glob, os, sys, quippy
 from quippy import QUIP_ROOT, QUIP_ARCH, QUIP_MAKEFILE
 from quippytest import *
+import os
+
+mpirun = os.environ.get('MPIRUN', 'mpirun')
 
 mpi_n_cores = [1, 2, 4]
 
@@ -53,11 +56,11 @@ if 'mpi' in quippy.available_modules:
             setattr(Test_TopLevel, '%s_MPI_%d_cores' % (os.path.basename(script), cores),
                     make_test(script,{'QUIP_ROOT': QUIP_ROOT,
                                       'QUIP_ARCH': QUIP_ARCH,
-                                      'MPIRUN': 'mpirun -n %d' % cores}))
+                                      'MPIRUN': '%s -np %d' % (mpirun, cores)}))
 
     for cores in mpi_n_cores:
         setattr(Test_TopLevel, 'test_python_MPI_%d_cores' % cores,
-                make_test('mpirun -n %d python %s/Tools/quippy/tests/test_mpi.py' % (cores, QUIP_ROOT),
+                make_test('%s -np %d python %s/Tools/quippy/tests/test_mpi.py' % (mpirun, cores, QUIP_ROOT),
                           {'QUIP_ROOT': QUIP_ROOT,
                            'QUIP_ARCH': QUIP_ARCH,
                            'PYTHONPATH': ':'.join(sys.path)}))
