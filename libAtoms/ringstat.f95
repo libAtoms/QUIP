@@ -42,7 +42,7 @@
 
 module ringstat_module
   use error_module
-  use system_module, only : dp
+  use system_module, only : dp, operator(//)
   use linearalgebra_module
   use atoms_module
 
@@ -66,7 +66,7 @@ contains
 
     ! ---
 
-    integer, parameter  :: MAX_WALKER = 4096
+    integer, parameter  :: MAX_WALKER = 8192
 
     ! ---
 
@@ -100,7 +100,7 @@ contains
 
                 n_new_walker              = n_new_walker+1
                 if (n_new_walker > MAX_WALKER) then
-                   RAISE_ERROR("MAX_WALKER exceeded.", error)
+                   RAISE_ERROR("MAX_WALKER ("//MAX_WALKER//") exceeded.", error)
                 endif
 
                 new_walker(n_new_walker)  = j
@@ -171,7 +171,7 @@ contains
 
   !% Look for the "shortest path" ring starting at atom *at*,
   !% look only for atoms where *mask* is true
-  subroutine count_sp_rings(at, cutoff, dist, max_ring_len, stat, mask, error)
+  subroutine count_sp_rings(at, cutoff, dist, max_ring_len, stat, mask, rings_out, dr_out, error)
     implicit none
 
     type(Atoms), intent(in)                     :: at
@@ -180,11 +180,13 @@ contains
     integer, intent(in)                         :: max_ring_len
     integer, intent(inout)                      :: stat(max_ring_len)
     logical, intent(in), optional               :: mask(at%N)
+    integer, intent(out), optional              :: rings_out(:, :)
+    real(dp), intent(out), optional             :: dr_out(:, :, :)
     integer, intent(out), optional            :: error
 
     ! ---
 
-    integer, parameter   :: MAX_WALKER  = 4096
+    integer, parameter   :: MAX_WALKER  = 16384
 
     real(DP), parameter  :: EPS  = 0.0001_DP
 
@@ -213,13 +215,25 @@ contains
     integer   :: new_rings(max_ring_len, MAX_WALKER)
     real(DP)  :: new_dr(3, max_ring_len, MAX_WALKER)
 
-    integer   :: no(at%N)
+    integer   :: no(at%N), n_rings_out
 
     ! ---
 
 !    allocate(done(at%connect%neighbour1%t%N+at%connect%neighbour2%t%N))
 
     INIT_ERROR(error)
+
+    if (present(rings_out)) then
+       if (size(rings_out,1) < max_ring_len+1) then
+          RAISE_ERROR('size(rings_out,1) < max_ring_len+1', error)
+       end if
+       if (.not. present(dr_out)) then
+          RAISE_ERROR('rings_out is present but dr_out is not', error)
+       end if
+       rings_out(:,:) = 0
+       dr_out(:,:,:) = 0.0_dp
+       n_rings_out = 0
+    end if
 
     cutoff_sq  = cutoff**2
 
@@ -287,7 +301,7 @@ contains
 
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
+                                           RAISE_ERROR("MAX_WALKER ("//MAX_WALKER//") exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = j
@@ -309,7 +323,7 @@ contains
                                         ! Reverse search direction
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
+                                           RAISE_ERROR("MAX_WALKER ("//MAX_WALKER//") exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = -j
@@ -375,6 +389,16 @@ contains
                                         enddo
 
                                         if (is_sp) then
+                                           if (present(rings_out)) then
+                                              n_rings_out = n_rings_out + 1
+                                              if (n_rings_out > size(rings_out,2)) then
+                                                 RAISE_ERROR('Too many rings to store in rings_out', error)
+                                              end if
+                                              ! save atoms around the ring
+                                              rings_out(:, n_rings_out) = (/ring_len(k), rings(1:ring_len(k), k) /) 
+                                              ! save displacement vectors around the ring
+                                              dr_out(:, 1:ring_len(k), n_rings_out) = dr(:, 1:ring_len(k), k)
+                                           end if
                                            stat(ring_len(k))  = stat(ring_len(k))+1
                                         endif
 
@@ -386,7 +410,7 @@ contains
 
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
+                                           RAISE_ERROR("MAX_WALKER ("//MAX_WALKER//") exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = -j
