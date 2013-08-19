@@ -19,7 +19,7 @@
 
 from quippy import *
 from numpy import *
-import sys, optparse, os
+import sys, optparse, os, warnings
 
 
 p = optparse.OptionParser(usage='%prog [options] ( <input file> [ <output file> ] | <input file> [ <input file> ... ] [ (-o|--output) <output file> ] )')
@@ -247,7 +247,7 @@ def process(at, frame):
             elif remove in at.params:
                 del at.params[remove]
             else:
-                raise AttributeError('Cannot remove: no property or parameter named "%s" exists' % old)
+                warnings.warn('Cannot remove: no property or parameter named "%s" exists' % remove)
 
     # Verbose output
     if opt.verbose and frame == 0:
