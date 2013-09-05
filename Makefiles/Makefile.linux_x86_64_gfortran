@@ -43,7 +43,7 @@ DEBUG= -g -DDUMP_CORE_ON_ABORT
 OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -Wunused -fPIC
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -fPIC
 F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC
 CFLAGS += -fPIC 
 CPLUSPLUSFLAGS += -fPIC 

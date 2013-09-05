@@ -166,7 +166,7 @@ program ts_main
      call initialise(tts,ds_in%atoms,conf, params)
   endif
 
-  call print(tts, params, mpi)
+  call print(tts)
   if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
      do im =1, tts%cos%N
        call initialise(outimage, 'image.'//im//'.xyz', action=OUTPUT)
@@ -179,7 +179,7 @@ program ts_main
 
   call print_title('Transition state calculation')
   if (.not. params%simulation_hybrid) then
-     call calc(tts,classicalpot,niter, params, file_res, mpi)
+     call calc(tts,classicalpot, niter, params, file_res, mpi)
   else
      call calc(tts,hybrid_pot, niter, params, file_res, mpi)
   endif

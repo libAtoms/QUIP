@@ -44,7 +44,7 @@ DEBUG =
 OPTIM = -O3
 
 DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore 
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
 CFLAGS += -fPIC
 
