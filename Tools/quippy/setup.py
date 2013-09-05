@@ -283,7 +283,7 @@ def find_wrap_sources(makefile, quip_root):
 
     if do_tools:
         wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95', 'ts_params.f95', 'transition_state.f95']]
-        wrap_types += ['tsparams', 'images', 'chain_of_states', 'ts']
+        wrap_types += ['realspacecovariance', 'tsparams', 'images', 'chain_of_states', 'ts']
 
     if do_crack:
         wrap_sources += [os.path.join(quip_utils_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
