@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-from quippy import *
-from itertools import izip
-import optparse, sys
+import optparse, sys, re
 
 p = optparse.OptionParser(usage='%prog file1 [file2 ... ]')
 p.add_option('-c', '--check_time_steps', action='store_true', default=False, help="""check that all configs agree on i and time""")
 p.add_option('-f', '--file', action='store', default="stdout", help="""output file""")
 opt, args = p.parse_args()
+
+from quippy import *
+from itertools import izip
 
 if (len(args) == 0):
   print "Need at least one input file"
@@ -26,24 +27,28 @@ co = CInOutput(opt.file,OUTPUT)
 config_i = 0
 for configs_to_merge in izip(*ar):
   config_i += 1
-  print config_i
+  sys.stderr.write("%d\n" % config_i)
   for i in range(len(args)):
     if (i == 0):
       at = configs_to_merge[0].copy()
 
     # figure out property name - should be more clever
-    if (args[i].count("-pos-") == 1):
+    if re.search("-pos[-.]",args[i]) is not None:
       in_name="pos"
       out_name="pos"
       unit_conv=1.0
-    elif (args[i].count("-vel-") == 1):
+    elif re.search("-vel[-.]",args[i]) is not None:
       in_name="velo"
       out_name="velo"
       unit_conv=HARTREE*BOHR/HBAR
-    elif (args[i].count("-frc-") == 1):
+    elif re.search("-frc[-.]",args[i]) is not None:
       in_name="frc"
       out_name="force"
       unit_conv=HARTREE/BOHR
+    elif re.search("-fmlabels[-.]",args[i]) is not None:
+      in_name=""
+      out_name="label"
+      unit_conv=1.0
     else:
       print "Don't know what property comes from file names '%s', aborting" % args[i]
       sys.exit(2)
