@@ -28,7 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-module tsParams_module
+module tsparams_module
 
 use libAtoms_module
 use QUIP_Common_module
@@ -38,9 +38,9 @@ implicit none
 
 private
 
-public :: tsParams
+public :: tsparams
 
-type tsParams
+type tsparams
 
    character(STRING_LENGTH) :: classical_args !% Arguments used to initialise classical potential
    character(STRING_LENGTH) :: classical_args_str !% Arguments used by Calc Potential
@@ -85,12 +85,12 @@ type tsParams
   
 end type tsparams
 
-type(tsParams), pointer :: parse_ts
+type(tsparams), pointer :: parse_ts
 logical :: parse_in_ts
 
 public :: initialise
 interface initialise
-   module procedure tsParams_initialise 
+   module procedure tsparams_Initialise 
 end interface
 
 public :: finalise
@@ -100,19 +100,19 @@ end interface finalise
 
 public :: print
 interface print
-   module procedure tsParams_print
+   module procedure tsparams_print
 end interface
 
 public :: read_xml
 interface read_xml
-   module procedure tsParams_read_xml
+   module procedure tsparams_read_xml
 end interface
 
 
 contains
 
-subroutine tsParams_initialise(this)
-  type(tsParams), intent(inout) :: this
+subroutine tsparams_Initialise(this)
+  type(tsparams), intent(inout) :: this
 
    this%classical_args     = 'IP SW' 
    this%classical_args_str = ' ' 
@@ -120,12 +120,11 @@ subroutine tsParams_initialise(this)
 
    ! QM parameters
    this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
-!'
    this%qm_args_str              = ' '
 
    this%minim_end               = .false.
    this%minim_end_method            = 'cg'
-   this%minim_end_tol               = 1e-3_dp  ! normsq(force) eV/A
+   this%minim_end_tol               = 1e-6_dp  ! normsq(force) eV/A
    this%minim_end_eps_guess         = 0.01_dp  ! Angstrom
    this%minim_end_max_steps         = 1000     ! number
 
@@ -144,7 +143,7 @@ subroutine tsParams_initialise(this)
    this%minim_gfac       = 0.01
    this%minim_force_tol  = 0.001_dp
    this%minim_energy_tol = 0.01_dp 
-   this%minim_max_steps  = 10 
+   this%minim_max_steps  = 1000
 
    this%chain_first_conf  = 'first.xyz'
    this%chain_last_conf   = 'last.xyz'
@@ -152,7 +151,7 @@ subroutine tsParams_initialise(this)
    this%chain_nimages    = 10
    this%chain_mobile_last  = .false.
    this%chain_mobile_first = .false.
-end subroutine tsParams_initialise
+end subroutine tsparams_Initialise
 
 subroutine tsParams_finalise(this)
   type(tsParams), intent(inout) :: this
@@ -181,16 +180,16 @@ subroutine tsParams_read_xml(this, xmlfile)
   parse_in_ts = .false.
 
   call parse(fxml, &
-       startElement_handler = tsParams_startElement_handler, &
-       endElement_handler = tsParams_endElement_handler)
+       startElement_handler = tsparams_startElement_handler, &
+       endElement_handler = tsparams_endElement_handler)
 
   call close_xml_t(fxml)
 
   call Finalise(ss)
 
-end subroutine tsParams_read_xml
+end subroutine tsparams_read_xml
 
-subroutine tsParams_startElement_handler(URI, localname, name, attributes)
+subroutine tsparams_startElement_handler(URI, localname, name, attributes)
   character(len=*), intent(in)   :: URI  
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name 
@@ -375,9 +374,9 @@ subroutine tsParams_startElement_handler(URI, localname, name, attributes)
 
   endif
 
-end subroutine tsParams_startElement_handler
+end subroutine tsparams_startElement_handler
 
-subroutine tsParams_endElement_handler(URI, localname, name)
+subroutine tsparams_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: URI  
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name 
@@ -388,13 +387,13 @@ subroutine tsParams_endElement_handler(URI, localname, name)
      endif
   endif
 
-end subroutine tsParams_endElement_handler
+end subroutine tsparams_endElement_handler
 
 
-subroutine tsParams_print(this,file)
-  type(tsParams), intent(in) :: this
+subroutine tsparams_print(this,file)
+  type(tsparams), intent(in) :: this
   type(Inoutput), optional, intent(in) :: file
 
-end subroutine tsParams_print
+end subroutine tsparams_print
 
-end module tsParams_module
+end module tsparams_module

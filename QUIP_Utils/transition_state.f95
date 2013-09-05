@@ -36,26 +36,27 @@ use tsParams_module
 
 implicit none
 
-type Images 
-  type(Atoms) :: at
+type images 
+  type(atoms) :: at
   logical     :: mobile
   real(dp)    :: energy
   real(dp)    :: frac 
-end type Images 
+end type images 
 
-type Chain_of_states 
+type chain_of_states 
   integer         :: N                          !% Number of images belonging to the elastic band
   type(Images), allocatable, dimension(:)    :: image   !% images 
-end type Chain_of_states 
+end type chain_of_states 
 
 type TS
-  type (Chain_of_states)     :: cos 
+  type (chain_of_states)     :: cos 
   logical                    :: lneb
   logical                    :: lsm
+  type (tsparams)            :: params
 end type TS 
 
 interface initialise 
-  module procedure TS_Initialise, TS_Initialise_interp,  TS_Initialise_nointerp
+  module procedure TS_Initialise_interp,  TS_Initialise_nointerp
 end interface initialise 
 
 interface Finalise
@@ -67,8 +68,12 @@ interface Calc
 end interface Calc
 
 interface Print 
-  module procedure TS_print_energy, TS_print, TS_print_forces
+  module procedure TS_print
 end interface Print 
+
+interface write
+   module procedure TS_write
+end interface
 
 interface fix 
   module procedure TS_fix
@@ -92,18 +97,36 @@ subroutine TS_Initialise(this,params)
  end select 
 
 end subroutine TS_Initialise
+
 !--------------------------------------------------------------------------
-subroutine TS_Initialise_interp(this,at_in,at_fin,params)
+subroutine TS_Initialise_interp(this,at_in,at_fin,N,params)
   type(TS), intent(inout)               :: this 
-  type(tsParams), intent(in)            :: params
   type(Atoms), intent(inout)            :: at_in 
   type(Atoms), intent(inout)            :: at_fin
+  integer,optional                      :: N
+  type(tsParams),optional               :: params
   integer                               :: im
   logical, allocatable                  :: lmobile(:)
 
   call finalise(this) 
 
-  call Initialise(this,params)
+  if(present(params)) then
+     this%params = params
+  else
+     call Initialise(this%params)
+  end if
+
+  select case(this%params%simulation_method)
+  case("neb")
+     this%lneb = .true.
+  case("sm")
+     this%lsm = .true.
+  case("default")
+     stop "Warning:: I do not recognise the method!"   
+  end select
+
+
+  if(present(N)) this%cos%N = N
 
   allocate(this%cos%image(this%cos%N))
   this%cos%image(1:this%cos%N)%mobile = .true.
@@ -120,7 +143,7 @@ subroutine TS_Initialise_interp(this,at_in,at_fin,params)
   enddo 
 
   if(this%cos%image(1)%at%N.ne. this%cos%image(this%cos%N)%at%N) then
-    call system_abort('NEB Initialise: # of Atoms in first and last images are different')
+    call system_abort('TS: Initialise: # of Atoms in first and last images are different')
   endif
 !'
 
@@ -128,8 +151,8 @@ subroutine TS_Initialise_interp(this,at_in,at_fin,params)
 
   allocate(lmobile(this%cos%N))
   lmobile             = .true.
-  lmobile(1)          = params%chain_mobile_first 
-  lmobile(this%cos%N) = params%chain_mobile_last 
+  lmobile(1)          = this%params%chain_mobile_first 
+  lmobile(this%cos%N) = this%params%chain_mobile_last 
   call fix(this,lmobile)
   deallocate(lmobile)
 
@@ -139,15 +162,29 @@ end subroutine TS_Initialise_interp
 !-----------------------------------------------------------------------------
 subroutine TS_Initialise_nointerp(this,at_ref,conf,params)
   type(TS), intent(inout)               :: this 
-  type(tsParams), intent(in)            :: params
   type(Atoms), intent(in)               :: at_ref
   real(dp), dimension(this%cos%N,3*at_ref%N) :: conf 
+  type(tsParams),optional                        :: params
   integer                               :: im
   logical, allocatable                  :: lmobile(:)
 
   call finalise(this)
 
-  call Initialise(this,params)
+
+  if(present(params)) then
+     this%params = params
+  else
+     call Initialise(this%params)
+  end if
+
+  select case(this%params%simulation_method)
+  case("neb")
+     this%lneb = .true.
+  case("sm")
+     this%lsm = .true.
+  case("default")
+     stop "Warning:: I do not recognise the method!"   
+  end select
 
   allocate(this%cos%image(this%cos%N))
   this%cos%image(:)%mobile = .true.
@@ -165,8 +202,8 @@ subroutine TS_Initialise_nointerp(this,at_ref,conf,params)
 
   allocate(lmobile(this%cos%N))
   lmobile          = .true.
-  lmobile(1)          = params%chain_mobile_first 
-  lmobile(this%cos%N) = params%chain_mobile_last
+  lmobile(1)          = this%params%chain_mobile_first 
+  lmobile(this%cos%N) = this%params%chain_mobile_last
   call fix(this,lmobile)
   deallocate(lmobile)
 
@@ -230,56 +267,73 @@ subroutine TS_Finalise(this)
 end subroutine TS_Finalise 
 
 !------------------------------------------------------------------------------
-subroutine TS_Calc(this,pot,niter,params,file, mpi)
+subroutine TS_Calc(this,pot,niterout,params,xyzlogfile)
   type(TS), intent(inout)               :: this 
   type(Potential), intent(inout)    :: pot
-  type(tsParams)                        :: params
-  integer,   intent(inout)              :: niter 
-  type(Inoutput), intent(inout)         :: file
-  type(MPI_context)                     :: mpi
-  real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: forces
+  type(tsParams),optional               :: params
+  type(CInoutput), intent(inout), optional :: xyzlogfile
+  integer, optional, intent(out) :: niterout
+
+
+  real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: forces, forces_old, oldpos
   real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: tau 
   real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: forces_pot, forces_spring 
   real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: forces2
   real(dp), dimension(this%cos%N,3,this%cos%image(1)%at%N) :: forces_4c
   real(dp), dimension(this%cos%N)                          :: energy, gfac, error
   real(dp)                                                 :: fnorma, gmaxstepfact, rmaxstep, energy_save
-  logical                                                  :: lcheck(this%cos%N) 
-  integer                                                  :: i, im, iat, is
+  logical                                                  :: lcheck(this%cos%N), do_fixed_step
+  integer                                                  :: i, iat, is, niter
   real(dp)                                                 :: energy_temp
+  type(tsParams) :: myparams
 
-  rmaxstep   = 0.1d0
-  gfac       = params%minim_gfac 
-  forces_pot = 0.d0
+
+  if(present(params)) then
+     myparams = params
+  else
+     myparams = this%params
+  end if
+
+  rmaxstep   = 0.1_dp
+  gfac       = myparams%minim_gfac 
+  forces_pot = 0.0_dp
   do i = 1, this%cos%N
     call calc_connect(this%cos%image(i)%at)
-    if(.not.params%simulation_hybrid) then
-      call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=params%classical_args_str)
+    energy_temp = 0.0_dp
+    if(.not.myparams%simulation_hybrid) then
+      call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=myparams%classical_args_str)
       call integrate_forces(this, i, forces_pot, energy_temp)
-      call print('Check Integration Forces '// i // " " // this%cos%image(i)%energy // " " // energy_temp)
+      call print('Check energy and force integral '// i // " " // this%cos%image(i)%energy // " " // energy_temp)
     else
       call calc(pot,this%cos%image(i)%at,force=forces_pot(i,:,:))
       call integrate_forces(this, i, forces_pot, this%cos%image(i)%energy)
+      call print('Force integral '// i // " " // this%cos%image(i)%energy)
     endif
+
     energy(i) = this%cos%image(i)%energy
-    call print(this,i, file, mpi)
-    if(params%io_verbosity.gt.PRINT_NORMAL) call print(this,i, forces_pot(i,:,:), mpi)
+
   enddo
 
+  ! print starting config
+  if(present(xyzlogfile)) call write(this,xyzlogfile)
+  
   lcheck = .false.
 
-  steepest_loop : DO niter = 1, params%minim_max_steps 
-    tau = 0._dp
-    call calc_tangent(this,params%simulation_newtangent,energy,tau)
+  do_fixed_step = .true.
 
+  steepest_loop : DO niter = 1, myparams%minim_max_steps 
+    tau = 0._dp
+    call calc_tangent(this,myparams%simulation_newtangent,energy,tau)
+    forces_old = forces
     call calc_force_perp(this, forces_pot, tau, forces)
-    do im = 1, this%cos%N 
-      call print('NEB: image ' // im // ' perpendicular REAL ' // (sqrt(sum(forces(im,:,:)*forces(im,:,:) )) ), PRINT_NORMAL ) 
+    call print('TS: ================ Tangent force^2 ==============')
+    do i = 1, this%cos%N 
+      call print('TS: image ' // i // ' tangent force^2 ' // (sqrt(sum(forces(i,:,:)*forces(i,:,:) )) ), PRINT_NORMAL ) 
     enddo
 
     if(this%lneb) then
-      call calc_spring(this, tau, forces_spring, params%simulation_spring_constant) 
-      if(niter.gt.params%simulation_climbing_steps.and.params%simulation_climbing) then
+      call calc_spring(this, tau, forces_spring, myparams%simulation_spring_constant) 
+      if(niter.gt.myparams%simulation_climbing_steps.and.myparams%simulation_climbing) then
         is = isaddle(this) 
         do i = 1, this%cos%N
           if(i.eq.is) then
@@ -293,18 +347,18 @@ subroutine TS_Calc(this,pot,niter,params,file, mpi)
         forces = forces + forces_spring
       endif
 
-      do im=1, this%cos%N 
-        call print('NEB: image ' // im // ' parallel spring ' // (sqrt(sum(forces_spring(im,:,:)*forces_spring(im,:,:) )) ), PRINT_NORMAL) 
+      do i=1, this%cos%N 
+        call print('TS: NEB: image ' // i // ' parallel spring ' // (sqrt(sum(forces_spring(i,:,:)*forces_spring(i,:,:) )) ), PRINT_NORMAL) 
       enddo
 
     endif
 
     forces2 = forces * forces
 
+    ! loop over images
     do i = 1, this%cos%N
 
        if(.not.this%cos%image(i)%mobile) then 
-         if(mod(niter,params%io_print_interval).eq.0) call print(this,i,file,mpi)
          cycle
        endif
        fnorma  = 0.0_dp
@@ -320,51 +374,68 @@ subroutine TS_Calc(this,pot,niter,params,file, mpi)
        energy_save = energy(i)
        if(.not.this%cos%image(i)%mobile) cycle
 
+       if(niter == 1 .or. do_fixed_step .or. maxval(abs(forces(i,:,:))) > 0.5_dp) then
+          gfac(i) = 0.01_dp
+       else
+          gfac(i) = -((this%cos%image(i)%at%pos-oldpos(i,:,:)) .dot. (this%cos%image(i)%at%pos-oldpos(i,:,:)))/((this%cos%image(i)%at%pos-oldpos(i,:,:)) .dot. (forces(i,:,:)-forces_old(i,:,:)))
+       end if
+       oldpos(i,:,:) = this%cos%image(i)%at%pos(:,:)
+
        do iat =  1, this%cos%image(i)%at%N
           if(associated(this%cos%image(i)%at%move_mask)) then
              if(this%cos%image(i)%at%move_mask(iat).eq.0)  cycle 
           end if
-         this%cos%image(i)%at%pos(:,iat) =  this%cos%image(i)%at%pos(:,iat) + gfac(i) * forces(i,:,iat) * gmaxstepfact
+          !this%cos%image(i)%at%pos(:,iat) =  this%cos%image(i)%at%pos(:,iat) + gfac(i) * forces(i,:,iat) * gmaxstepfact
+          this%cos%image(i)%at%pos(:,iat) = this%cos%image(i)%at%pos(:,iat) + gfac(i) * forces(i,:,iat)
 
        enddo 
 
        call calc_connect(this%cos%image(i)%at)
        
-       if(.not.params%simulation_hybrid) then
-          call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=params%classical_args_str)
+       if(.not.myparams%simulation_hybrid) then
+          call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=myparams%classical_args_str)
        else
           call calc(pot,this%cos%image(i)%at,force=forces_pot(i,:,:))
           call integrate_forces(this, i, forces_pot, this%cos%image(i)%energy)
        endif
 
        energy(i) = this%cos%image(i)%energy
-       if(niter.gt.1) call check(this, energy_save, energy(i), params%minim_energy_tol, params%minim_force_tol, fnorma, error(i), lcheck(i))
-    
+       if(niter.gt.1) call check(this, energy_save, energy(i), myparams%minim_energy_tol, myparams%minim_force_tol, fnorma, error(i), lcheck(i))
 
-       if(mod(niter,params%io_print_interval).eq.0) then
-          call print(this,i,file,mpi)
-       endif
-    enddo
+    enddo ! end loop over images
+
+    if(mod(niter,myparams%io_print_interval).eq.0) then
+       call print ("TS: ================ Path energy ===================")
+       do i = 1, this%cos%N
+          call print ("TS: image="// i // " Energy="// this%cos%image(i)%energy // " deltaE=" // this%cos%image(i)%energy-this%cos%image(1)%energy )
+       end do
+    end if
 
     if(all(lcheck(:))) then
-       call print ('convergence reached at step ' // niter)
+       call print ('TS: convergence reached at step ' // niter)
        exit
     endif
 
-    if(this%lsm.and. mod(niter,params%simulation_freq_rep).eq.0) then
-      call calc_reparameterisation(this)
+    if(this%lsm.and. mod(niter,myparams%simulation_freq_rep).eq.0) then
+       call calc_reparameterisation(this)
+       do_fixed_step = .true.
+    else
+       do_fixed_step = .false.
     endif
 
-    if(mod(niter,params%io_print_interval).eq.0) then
-       call TS_print_xyz(this, niter, mpi)
+    if(mod(niter,myparams%io_print_interval).eq.0) then
+       if(present(xyzlogfile)) call write(this, xyzlogfile)
        is = isaddle(this)
-       call print("Iter " // niter // "; Saddle in = " // is )
+       call print("TS: iter " // niter // "; Saddle index = " // is )
     endif
 !"
   end do steepest_loop
   niter = niter - 1 
+
+  if(present(niterout)) niterout = niter
           
-end subroutine TS_Calc 
+end subroutine TS_Calc
+
 !----------------------------------------------------------------------------
 subroutine calc_tangent(this,lnewtangent,energy, tau)
 !----------------------------------------------------------------------------
@@ -596,6 +667,8 @@ endif
 
 return
 end function interp1
+
+
 !--------------------------------------------------------------------
 subroutine check(this, e_old, e_new, toll, force_tol, fnorma, error, lcheck)
  type(TS) :: this
@@ -654,7 +727,6 @@ subroutine integrate_forces  (this, final_image, forces_pot, ene)
       ene = ene + 4.0_dp/3.0_dp*f_dr
     end if
   enddo
-  call print ('NEB: Forces Integration ' // final_image // " " // ene)
 
 end subroutine integrate_forces  
 !------------------------------------------------------------------
@@ -666,93 +738,52 @@ subroutine TS_fix(this,lfix)
    
 end subroutine TS_fix
 !------------------------------------------------------------------
-subroutine TS_print_xyz(this, iter, mpi) 
+
+subroutine TS_write(this, file) 
   type(TS)          :: this
-  type(MPI_context) :: mpi
-  integer           :: iter
-  type(CInOutput)   :: outimage
+  type(CInOutput)   :: file
   integer           :: im
 
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-    do im =1, this%cos%N
-      call initialise(outimage, 'neb.'//im//'.'//iter//'.xyz', action=OUTPUT)
-      call write(outimage, this%cos%image(im)%at)
-      call finalise(outimage)
-    enddo
-   end if
+  do im =1, this%cos%N
+     call write(this%cos%image(im)%at, file)
+  enddo
 
-end subroutine TS_print_xyz
+end subroutine TS_write
+
+
 !-----------------------------------------------------------------
-subroutine TS_print_energy(this, im, file, mpi) 
-  type(TS)                      :: this
-  type(MPI_context)             :: mpi
-  type(Inoutput), intent(inout) :: file
-  integer                       :: im
-
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-    call Print ("image= "// im // " Energy= "// this%cos%image(im)%energy, file=file)
-    if(im.eq.this%cos%N) call Print ("    ", file=file)
-  endif
-
-end subroutine TS_print_energy
-!-----------------------------------------------------------------
-subroutine TS_print_forces(this, i, forces,mpi) 
-  type(TS)            :: this
-  type(InOUtput)      :: inforces
-  type(MPI_context)   :: mpi
-  integer, intent(in) :: i 
-  real(dp), dimension(3,this%cos%image(1)%at%N) :: forces
-  integer             :: ii
-  character(len=20)   :: filename
-
-
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-   call print('Printing potential forces on image ' // i )
-   write (filename,'(a,i0)') 'forces.',i 
-   call initialise(inforces,filename, action=OUTPUT)
-   do ii = 1, this%cos%image(1)%at%N
-     call print(ii // " " // (forces(:,ii)), file=inforces)
-   enddo
-   call finalise(inforces)
-  endif
-
-end subroutine TS_print_forces
-!-----------------------------------------------------------------
-subroutine TS_print(this, params, mpi) 
+subroutine TS_print(this) 
   type(TS)          :: this
-  type(tsParams)    :: params
-  type(MPI_context) :: mpi
   
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-    call print( '       ')
-    call Print_title('Parameters')
-    call Print('Chain of state with ' // this%cos%N // ' images')
-!'      
-    if(this%cos%image(1)%mobile) then 
-         call print ('First image: mobile')
-    else
-         call print ('First image: frozen')
-    endif
-    if(this%cos%image(this%cos%N)%mobile) then 
-         call print ('Last image : mobile')
-    else
-         call print ('Last image : frozen')
-    endif
+  call print( '       ')
+  call Print_title('Parameters')
+  call Print('Chain of state with ' // this%cos%N // ' images')
+  !'      
+  if(this%cos%image(1)%mobile) then 
+     call print ('First image: mobile')
+  else
+     call print ('First image: frozen')
+  endif
+  if(this%cos%image(this%cos%N)%mobile) then 
+     call print ('Last image : mobile')
+  else
+     call print ('Last image : frozen')
+  endif
   
-   call print( '       ')
-   if(this%lneb) then
-       call print ('Transition state compute with NEB')
-       call print ('Climbing image ' // params%simulation_climbing)
-       call print ('Spring Constant ' // params%simulation_spring_constant)
-       call print ('Climbing Image method ' // params%simulation_climbing)
-   else
-       call print ('Transition state compute with String method')
-       call print ('Reparameterisation performed every ' // params%simulation_freq_rep // ' steps')
-   endif 
-   call print ('Tangent computed with the newtangent method ' // params%simulation_newtangent)
- endif
+  call print( '       ')
+  if(this%lneb) then
+     call print ('Transition state compute with NEB')
+     call print ('Climbing image ' // this%params%simulation_climbing)
+     call print ('Spring Constant ' // this%params%simulation_spring_constant)
+     call print ('Climbing Image method ' // this%params%simulation_climbing)
+  else
+     call print ('Transition state compute with String method')
+     call print ('Reparameterisation performed every ' // this%params%simulation_freq_rep // ' steps')
+  endif
+  call print ('Tangent computed with the newtangent method ' // this%params%simulation_newtangent)
 
 end subroutine TS_print
+
 !------------------------------------------------------------------
 function isaddle(this)
   type(TS) :: this
@@ -767,7 +798,7 @@ function isaddle(this)
        Emax = this%cos%image(i)%energy 
     endif
   enddo
-  if(isaddle.gt. this%cos%N) stop 'isaddle function error'
+  if(isaddle.gt. this%cos%N) call system_abort('TS: saddle point not found!')
 end function
 
 end module ts_module
