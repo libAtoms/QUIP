@@ -93,6 +93,7 @@ type analysis
   ! adfd stuff
   real(dp) :: adfd_zone_center(3)
   character(STRING_LENGTH) :: adfd_center_mask_str, adfd_neighbour_1_mask_str, adfd_neighbour_2_mask_str
+  logical :: adfd_dist_bin_rc2
   real(dp) :: adfd_neighbour_1_max_dist
   real(dp) :: adfd_zone_width, adfd_dist_bin_width
   integer :: adfd_n_zones, adfd_n_dist_bins, adfd_n_angle_bins
@@ -245,6 +246,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'adfd_neighbour_1_mask', '', this%adfd_neighbour_1_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_neighbour_1_max_dist', '-1.0', this%adfd_neighbour_1_max_dist, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_neighbour_2_mask', '', this%adfd_neighbour_2_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'adfd_dist_bin_rc2', '', this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
 
     ! r-dep KE distribution
     call param_register(params, 'KEdf_radial_zone_center', '0.0 0.0 0.0', this%KEdf_radial_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -370,6 +372,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'adfd_neighbour_1_mask', trim(prev%adfd_neighbour_1_mask_str), this%adfd_neighbour_1_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_neighbour_1_max_dist', ''//prev%adfd_neighbour_1_max_dist, this%adfd_neighbour_1_max_dist, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_neighbour_2_mask', trim(prev%adfd_neighbour_2_mask_str), this%adfd_neighbour_2_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'adfd_dist_bin_rc2', ''//prev%adfd_dist_bin_rc2, this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
 
     ! geometry
     call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -610,13 +613,13 @@ subroutine do_analyses(a, time, frame, at)
           call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
 	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
             a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
-            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, &
+            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, a(i_a)%adfd_dist_bin_rc2, &
             a(i_a)%adfd_angle_bin_pos, a(i_a)%adfd_dist_bin_pos, a(i_a)%adfd_zone_pos)
         else
           call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
 	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
             a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
-            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str)
+            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, a(i_a)%adfd_dist_bin_rc2)
         endif
       else if (a(i_a)%KEdf_radial) then
 	call reallocate_data(a(i_a)%KEdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%KEdf_radial_n_bins, a(i_a)%KEdf_radial_n_zones /) )
@@ -1398,20 +1401,21 @@ end subroutine propdf_radial_calc
 
 subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist_bins, zone_width, n_zones, &
 		     center_mask_str, neighbour_1_mask_str, neighbour_1_max_dist, neighbour_2_mask_str, & 
-		     angle_bin_pos, dist_bin_pos, zone_pos)
+		     dist_bin_rc2, angle_bin_pos, dist_bin_pos, zone_pos)
   real(dp), intent(inout) :: adfd(:,:,:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: zone_center(3), dist_bin_width, zone_width
   integer, intent(in) :: n_angle_bins, n_dist_bins, n_zones
   character(len=*), intent(in) :: center_mask_str, neighbour_1_mask_str, neighbour_2_mask_str
   real(dp), intent(in) :: neighbour_1_max_dist
+  logical, intent(in) :: dist_bin_rc2
   real(dp), intent(inout), optional :: angle_bin_pos(:), dist_bin_pos(:), zone_pos(:)
 
   logical, allocatable :: center_mask_a(:), neighbour_1_mask_a(:), neighbour_2_mask_a(:)
   integer :: i_at, j_at, k_at, i_dist_bin, i_angle_bin, i_zone, ji, ki
   integer, allocatable :: n_in_zone(:)
   real(dp) :: dist_bin_inner_rad, dist_bin_outer_rad, angle_bin_width, angle_bin_min, angle_bin_max
-  real(dp) :: r, r_ij, r_jk, jik_angle
+  real(dp) :: r, r_ij, r_ik, r_jk, jik_angle
 
   allocate(center_mask_a(at%N), neighbour_1_mask_a(at%N), neighbour_2_mask_a(at%N))
   call is_in_mask(center_mask_a, at, center_mask_str)
@@ -1443,7 +1447,7 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
   end if
 
   adfd = 0.0_dp
-  call set_cutoff(at, n_dist_bins*dist_bin_width)
+  call set_cutoff(at, 2*n_dist_bins*dist_bin_width)
   call calc_connect(at)
   do i_at=1, at%N ! center atom
     if (.not. center_mask_a(i_at)) cycle
@@ -1465,11 +1469,15 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
 	if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
       endif
       do ki=1, n_neighbours(at, i_at)
-	k_at = neighbour(at, i_at, ki)
+	k_at = neighbour(at, i_at, ki, distance=r_ik)
 	if (k_at == i_at .or. k_at == j_at) cycle
 	if (.not. neighbour_2_mask_a(k_at)) cycle
 	r_jk = distance_min_image(at, j_at, k_at)
-	i_dist_bin = int(r_jk/dist_bin_width)+1
+	if (dist_bin_rc2) then
+	   i_dist_bin = int(r_ik/dist_bin_width)+1
+	else
+	   i_dist_bin = int(r_jk/dist_bin_width)+1
+	endif
 	if (i_dist_bin > n_dist_bins) cycle
 ! call print("doing triplet ijk " // i_at // " " // j_at // " "// k_at, PRINT_ALWAYS)
 ! call print("  Zijk " // at%Z(i_at) // " " // at%Z(j_at) // " " // at%Z(k_at), PRINT_ALWAYS)
