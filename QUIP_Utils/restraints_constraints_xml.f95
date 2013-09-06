@@ -315,21 +315,55 @@ contains
 	       endif
 	    endif
 
-	 else if (name == 'struct_factor_like') then
+	 else if (name == 'struct_factor_like_mag') then
 
 	    call QUIP_FoX_get_value(attributes, "Z", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read Z in struct_factor_like "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read Z in struct_factor_like_mag "//trim(type_str))
 	    read (value, *) Z
 	    call QUIP_FoX_get_value(attributes, "q", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like_mag "//trim(type_str))
 	    read (value, *) q
 	    call QUIP_FoX_get_value(attributes, "SF", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like_mag "//trim(type_str))
 	    read (value, *) SF
 	    if (parse_in_restraints) then
-	       call constrain_struct_factor_like(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
+	       call constrain_struct_factor_like_mag(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
 	    else
-	       call constrain_struct_factor_like(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
+	       call constrain_struct_factor_like_mag(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
+	    endif
+
+	 else if (name == 'struct_factor_like_r') then
+
+	    call QUIP_FoX_get_value(attributes, "Z", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read Z in struct_factor_like_r "//trim(type_str))
+	    read (value, *) Z
+	    call QUIP_FoX_get_value(attributes, "q", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like_r "//trim(type_str))
+	    read (value, *) q
+	    call QUIP_FoX_get_value(attributes, "SF", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like_r "//trim(type_str))
+	    read (value, *) SF
+	    if (parse_in_restraints) then
+	       call constrain_struct_factor_like_r(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
+	    else
+	       call constrain_struct_factor_like_r(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
+	    endif
+
+	 else if (name == 'struct_factor_like_i') then
+
+	    call QUIP_FoX_get_value(attributes, "Z", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read Z in struct_factor_like_i "//trim(type_str))
+	    read (value, *) Z
+	    call QUIP_FoX_get_value(attributes, "q", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read q in struct_factor_like_i "//trim(type_str))
+	    read (value, *) q
+	    call QUIP_FoX_get_value(attributes, "SF", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read SF in struct_factor_like_i "//trim(type_str))
+	    read (value, *) SF
+	    if (parse_in_restraints) then
+	       call constrain_struct_factor_like_i(parse_ds, Z, q, SF, restraint_k=k, bound=bound, print_summary=print_summary)
+	    else
+	       call constrain_struct_factor_like_i(parse_ds, Z, q, SF, tol=tol, print_summary=print_summary)
 	    endif
 
 	 else

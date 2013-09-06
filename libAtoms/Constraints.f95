@@ -143,7 +143,8 @@ module constraints_module
 
   public :: constraint, initialise, finalise, print, register_constraint, add_restraint_forces
   public :: BONDANGLECOS, BONDLENGTH, BONDLENGTH_SQ, BONDLENGTH_DEV_POW, BONDLENGTH_DIFF, GAP_ENERGY, PLANE
-  public :: CRACK_TIP_CURVATURE, CRACK_TIP_GRADIENT, CRACK_TIP_POSITION, STRUCT_FACTOR_LIKE
+  public :: CRACK_TIP_CURVATURE, CRACK_TIP_GRADIENT, CRACK_TIP_POSITION
+  public :: STRUCT_FACTOR_LIKE_MAG, STRUCT_FACTOR_LIKE_R, STRUCT_FACTOR_LIKE_I
   public :: CUBIC_BONDLENGTH_SQ
   public :: CONSTRAINT_WARNING_TOLERANCE, LOWER_BOUND, UPPER_BOUND, BOTH_UPPER_AND_LOWER_BOUNDS, BOUND_STRING
   public :: constraint_store_gradient, constraint_calculate_values_at, constraint_amend, shake, rattle
@@ -1650,7 +1651,7 @@ contains
 
   end subroutine CRACK_TIP_POSITION
 
-  subroutine STRUCT_FACTOR_LIKE(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+  subroutine STRUCT_FACTOR_LIKE_MAG(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp), intent(in) :: lattice(3,3)
@@ -1665,7 +1666,7 @@ contains
     real(dp) :: SF_Q(3), frac_pos(3), lattice_inv(3,3)
     real(dp) :: SF_real, SF_imag, SF_mag
 
-    if (size(data) /= 4) call system_abort("STRUCT_FACTOR_LIKE needs data of 3 q components and target value")
+    if (size(data) /= 4) call system_abort("STRUCT_FACTOR_LIKE_MAG needs data of 3 q components and target value")
     SF_Q(1:3) = data(1:3)*2.0_dp*PI
     target_v = data(4)
 
@@ -1692,9 +1693,89 @@ contains
 
     dC_dt = dC_dR .dot. velo
 
-    call print ("STRUCT_FACTOR_LIKE SF "//SF_real//" "//SF_imag//" |SF| "//SF_mag)
+    call print ("STRUCT_FACTOR_LIKE_MAG SF "//SF_real//" "//SF_imag//" |SF| "//SF_mag)
 
-  end subroutine STRUCT_FACTOR_LIKE
+  end subroutine STRUCT_FACTOR_LIKE_MAG
+
+  subroutine STRUCT_FACTOR_LIKE_R(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp), intent(in) :: lattice(3,3)
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    integer :: i, n
+    real(dp) :: target_SF_r, target_SF_i
+    real(dp) :: SF_Q(3), frac_pos(3), lattice_inv(3,3)
+    real(dp) :: SF_real
+
+    if (size(data) /= 4) call system_abort("STRUCT_FACTOR_LIKE_R needs data of 3 q components and target value")
+    SF_Q(1:3) = data(1:3)*2.0_dp*PI
+    target_v = data(4)
+
+    n = size(pos)/3
+
+    call matrix3x3_inverse(lattice, lattice_inv)
+    SF_real = 0.0_dp
+    do i=0, n-1
+      frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
+      SF_real = SF_real + cos(frac_pos .dot. SF_Q)
+    end do
+    SF_real = SF_real/real(n,dp)
+    C = SF_real - target_v
+    do i=0, n-1
+      frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
+      dC_dR(i*3+1:i*3+3) = -1.0_dp/real(n,dp)*sin(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv)
+    end do
+
+    dC_dt = dC_dR .dot. velo
+
+    call print ("STRUCT_FACTOR_LIKE_R SF "//SF_real)
+
+  end subroutine STRUCT_FACTOR_LIKE_R
+
+  subroutine STRUCT_FACTOR_LIKE_I(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
+    real(dp), intent(in) :: lattice(3,3)
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    integer :: i, n
+    real(dp) :: target_SF_r, target_SF_i
+    real(dp) :: SF_Q(3), frac_pos(3), lattice_inv(3,3)
+    real(dp) :: SF_imag
+
+    if (size(data) /= 4) call system_abort("STRUCT_FACTOR_LIKE_I needs data of 3 q components and target value")
+    SF_Q(1:3) = data(1:3)*2.0_dp*PI
+    target_v = data(4)
+
+    n = size(pos)/3
+
+    call matrix3x3_inverse(lattice, lattice_inv)
+    SF_imag = 0.0_dp
+    do i=0, n-1
+      frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
+      SF_imag = SF_imag + sin(frac_pos .dot. SF_Q)
+    end do
+    SF_imag = SF_imag/real(n,dp)
+    C = SF_imag - target_v
+    do i=0, n-1
+      frac_pos(1:3) = matmul(lattice_inv, pos(i*3+1:i*3+3))
+      dC_dR(i*3+1:i*3+3) = 1.0_dp/real(n,dp)*cos(frac_pos .dot. SF_Q)*matmul(SF_Q, lattice_inv)
+    end do
+
+    dC_dt = dC_dR .dot. velo
+
+    call print ("STRUCT_FACTOR_LIKE_I "//SF_imag)
+
+  end subroutine STRUCT_FACTOR_LIKE_I
 
 
    subroutine add_restraint_forces(at, Nrestraints, restraints, t, f, E, store_restraint_force)
