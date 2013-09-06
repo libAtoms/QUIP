@@ -239,3 +239,7 @@ GIT_SUBDIRS=GAP GAP-filler
 git_pull_all:
 	git pull
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
+
+distribution:
+	git archive HEAD | bzip2 > ../QUIP.distribution.`date +%Y-%m-%d`.tar.bz2
+	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git archive HEAD | bzip2 > ../../$$d.distribution.`date +%Y-%m-%d`.tar.bz2; popd; fi; done
