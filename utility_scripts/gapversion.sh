@@ -5,7 +5,7 @@ function git_date
    if [ -e $1 ]
    then
       DATE=$(git log -n1 --format="%at" $1)
-      [ $? -eq 0 ] && echo $DATE || echo 0
+      [[ $? -eq 0 && ! -z $DATE ]] && echo $DATE || echo 0
    else
       echo 0
    fi
