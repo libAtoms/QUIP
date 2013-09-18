@@ -45,7 +45,7 @@ PROGRAMS = eval md \
   metapot_test tabletest ts_calculation \
   fix_traj_latest randomise_calc \
   quip_wrapper_example quip_wrapper2_example test_cova \
-  slice_sample
+  slice_sample order_atoms_as_molecules
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
