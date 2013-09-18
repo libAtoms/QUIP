@@ -39,7 +39,7 @@ implicit none
 
   type(Atoms) at, at2
   logical, dimension(:), allocatable :: atomdone
-  integer error, i, j, k, jj
+  integer error, i, j, k, jj, nn
 
   
   call system_initialise(verbosity=PRINT_SILENT)
@@ -54,31 +54,39 @@ implicit none
 	endif
      endif
 
-     call set_cutoff(at, 0.0_dp)
+     call set_cutoff(at, 1.2_dp)
      call calc_connect(at)
 
      call initialise(at2, at%N, at%lattice)
      allocate(atomdone(at%N))
      atomdone = .false.
      k = 1
+     call print(at)
+
      do i=1,at%N
         if(atomdone(i) .eqv. .true.) cycle
         at2%species(:,k) = at%species(:,i)
         at2%pos(:,k) = at%pos(:,i)
         k = k+1
         atomdone(i) = .true.
-        do j=1,n_neighbours(at, i)
-           jj = neighbour(at, i, j)
-           at2%species(:,k) = at%species(:,jj)
-           at2%pos(:,k) = at%pos(:,jj)
-           k = k+1
-           atomdone(jj) = .true.
-        end do
+        nn = n_neighbours(at, i)
+        if(nn > 0) then
+           do j=1,nn
+              jj = neighbour(at, i, j)
+              if(atomdone(jj) .eqv. .true.) cycle
+              at2%species(:,k) = at%species(:,jj)
+              at2%pos(:,k) = at%pos(:,jj)
+              k = k+1
+              atomdone(jj) = .true.
+           end do
+        endif
      end do
+     deallocate(atomdone)
 
      call verbosity_push(PRINT_NORMAL)
      call write(at2, 'stdout')
      call verbosity_pop()
+     call finalise(at2)
 
   enddo
   call system_finalise()
