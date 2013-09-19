@@ -407,7 +407,7 @@ subroutine TS_Calc(this,pot,niterout,params,xyzlogfile)
     if(mod(niter,myparams%io_print_interval).eq.0) then
        call print ("TS: ================ Path energy ===================")
        do i = 1, this%cos%N
-          call print ("TS: image="// i // " Energy="// this%cos%image(i)%energy // " deltaE=" // this%cos%image(i)%energy-this%cos%image(1)%energy )
+          call print ("TS: image="// i // " Energy="// this%cos%image(i)%energy // " deltaE=" // (this%cos%image(i)%energy-this%cos%image(1)%energy) )
        end do
     end if
 
