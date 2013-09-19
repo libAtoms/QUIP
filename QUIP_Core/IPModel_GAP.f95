@@ -404,10 +404,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  f_in(:,j) = f_in(:,j) - f_gp
               endif
               if( present(virial) .or. present(local_virial) ) then
-                 virial_i = (pos .outer. f_gp) / size(my_descriptor_data%x(i)%ci)
-                 do m = 1, size(my_descriptor_data%x(i)%ci)
-                    virial_in(:,:,my_descriptor_data%x(i)%ci(m)) = virial_in(:,:,my_descriptor_data%x(i)%ci(m)) - virial_i
-                 enddo
+                 virial_i = ((pos-my_descriptor_data%x(i)%pos(:,0)) .outer. f_gp)
+                 virial_in(:,:,j) = virial_in(:,:,j) - virial_i
+
+                 !virial_i = (pos .outer. f_gp) / size(my_descriptor_data%x(i)%ci)
+                 !do m = 1, size(my_descriptor_data%x(i)%ci)
+                 !   virial_in(:,:,my_descriptor_data%x(i)%ci(m)) = virial_in(:,:,my_descriptor_data%x(i)%ci(m)) - virial_i
+                 !enddo
               endif
            enddo
         endif

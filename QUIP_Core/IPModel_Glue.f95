@@ -185,7 +185,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  real(dp), dimension(:), allocatable :: local_e_in
+  real(dp), dimension(:), allocatable :: local_e_in, rho_local 
   real(dp), dimension(:,:), allocatable :: f_in
   real(dp), dimension(:,:,:), allocatable :: local_virial_in
   logical :: has_atom_mask_name
@@ -195,14 +195,10 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   ! Loop variables
   integer :: i, ji, j, ti, tj  
 
-  ! If only Fortran allow you to declare variables somewhere else
   real(dp) :: r_ij_mag, r_ij_hat(3), pair_e_ij, dpair_e_ij ! Neighbour vector info
-  real(dp) :: rho_local ! Accumulator for local electron density
 
   ! For calculating forces and the virial tensor
-  real(dp) :: drho_i_drij
-  real(dp) :: drho_i_dri(3), potential_deriv
-  real(dp), dimension(3,3) :: drho_i_drij_outer_rij
+  real(dp) :: dpotential_drho_drho_i_drij(3), dpotential_drho
     
   INIT_ERROR(error)
 
@@ -259,59 +255,75 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   endif
 
   ! Iterate over atoms
-!$omp parallel do default(none) shared(this,at,atom_mask_pointer,local_e_in,local_virial_in,e,f,virial,local_e,local_virial) &
-!$omp private(i,ji,j,rho_local,drho_i_dri,drho_i_drij,drho_i_drij_outer_rij,ti,tj,r_ij_mag,r_ij_hat,potential_deriv, pair_e_ij, dpair_e_ij) reduction(+:f_in)
+  allocate(rho_local(at%N))
+  rho_local = 0.0_dp
+
+!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local) private(i,j,ji,ti,tj,r_ij_mag)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
-    rho_local = 0.0_dp ! Local density from neighbours
-    drho_i_dri = 0.0_dp
-    drho_i_drij = 0.0_dp
-    drho_i_drij_outer_rij = 0.0_dp
-    
+     ! Get the type of this species from its atomic number
+     ti = get_type(this%type_of_atomic_num, at%Z(i))
+ 
+     ! Iterate over our nighbours
+     do ji = 1, n_neighbours(at, i)
+        j = neighbour(at, i, ji, distance = r_ij_mag)
+        tj = get_type(this%type_of_atomic_num, at%Z(j))
+ 
+        if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
+           rho_local(i) = rho_local(i) + eam_density(this, tj, r_ij_mag)
+        endif
+     enddo
+  enddo
+!$omp end parallel do
+
+  ! Iterate over atoms
+!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local,local_e_in,e,f,virial,local_e,local_virial) &
+!$omp private(i,ji,j,ti,tj,r_ij_mag,r_ij_hat,dpotential_drho, dpotential_drho_drho_i_drij, pair_e_ij, dpair_e_ij) reduction(+:f_in,local_virial_in)
+  do i = 1, at%N
+     if(associated(atom_mask_pointer)) then
+        if(.not. atom_mask_pointer(i)) cycle
+     endif
+
     ! Get the type of this species from its atomic number
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
+    dpotential_drho = eam_spline_potential_deriv(this, ti, rho_local(i))
+
     ! Iterate over our nighbours
-    do ji=1, n_neighbours(at, i)
-      j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
-      tj = get_type(this%type_of_atomic_num, at%Z(j))
-      if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
-          rho_local = rho_local + eam_density(this, tj, r_ij_mag)
+    do ji = 1, n_neighbours(at, i)
+       j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
+       tj = get_type(this%type_of_atomic_num, at%Z(j))
+
+       if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           if( present(f) .or. present(virial) .or. present(local_virial) ) then
-             drho_i_drij = eam_density_deriv(this, tj, r_ij_mag)
-             drho_i_dri = drho_i_dri + drho_i_drij * r_ij_hat
-             drho_i_drij_outer_rij = drho_i_drij_outer_rij + drho_i_drij*(r_ij_hat .outer. r_ij_hat) * r_ij_mag
+             dpotential_drho_drho_i_drij = dpotential_drho * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
           endif
-      endif
 
-      if( r_ij_mag < pair_cutoff(this,ti,tj) ) then
-         pair_e_ij = eam_spline_pair(this,ti,tj,r_ij_mag)
-         if( present(local_e) .or. present(e) ) local_e_in(i) = local_e_in(i) + 0.5_dp * pair_e_ij
-         if( present(f) .or. present(virial) .or. present(local_virial) ) dpair_e_ij = eam_spline_pair_deriv(this,ti, tj, r_ij_mag)
-         if( present(f) ) f_in(:,i) = f_in(:,i) + dpair_e_ij * r_ij_hat
-         if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,i) = local_virial_in(:,:,i) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
-      endif
+          if(present(f)) then
+             f_in(:,j) = f_in(:,j) - dpotential_drho_drho_i_drij
+             f_in(:,i) = f_in(:,i) + dpotential_drho_drho_i_drij
+          endif
 
-    end do ! ji
-    potential_deriv = eam_spline_potential_deriv(this, ti, rho_local)
-    if(present(f)) f_in(:,i) = f_in(:,i) + drho_i_dri * potential_deriv
+          if(present(virial) .or. present(local_virial)) local_virial_in(:,:,j) = local_virial_in(:,:,j) - ( dpotential_drho_drho_i_drij .outer. r_ij_hat ) * r_ij_mag
+       endif
 
-    ! Iterate over neighbours again to sum forces
-    do ji=1, n_neighbours(at, i)
-      j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
-      tj = get_type(this%type_of_atomic_num, at%Z(j))
-     
-      if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then
-          f_in(:,j) = f_in(:,j) - potential_deriv * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
-      endif
-    end do ! ji
-    if(present(local_e) .or. present(e)) local_e_in(i) = local_e_in(i) + eam_spline_potential(this, ti, rho_local)
-    if(present(virial) .or. present(local_virial)) local_virial_in(:,:,i) = local_virial_in(:,:,i) - potential_deriv * drho_i_drij_outer_rij
+       if( r_ij_mag < pair_cutoff(this,ti,tj) ) then
+          pair_e_ij = eam_spline_pair(this,ti,tj,r_ij_mag)
+          if( present(local_e) .or. present(e) ) local_e_in(i) = local_e_in(i) + 0.5_dp * pair_e_ij
+          if( present(f) .or. present(virial) .or. present(local_virial) ) dpair_e_ij = eam_spline_pair_deriv(this,ti, tj, r_ij_mag)
+          if( present(f) ) f_in(:,i) = f_in(:,i) + dpair_e_ij * r_ij_hat
+          if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,i) = local_virial_in(:,:,i) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
+       endif
+
+    enddo ! ji
+
+    if(present(local_e) .or. present(e)) local_e_in(i) = local_e_in(i) + eam_spline_potential(this, ti, rho_local(i))
   end do ! i
 !$omp end parallel do  
+
 
   if(present(e)) e = sum(local_e_in)
   if(present(f)) f = f_in
@@ -319,6 +331,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   if(present(virial)) virial = sum(local_virial_in,dim=3)
   if(present(local_virial)) local_virial = reshape(local_virial_in,(/9,at%N/))
 
+  if(allocated(rho_local)) deallocate(rho_local)
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(f_in)) deallocate(f_in)
   if(allocated(local_virial_in)) deallocate(local_virial_in)
