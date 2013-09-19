@@ -1190,7 +1190,7 @@ class Atoms(object):
             return Atom(atoms=self, index=i)
 
         import copy
-        from ase.constraints import FixConstraint
+        #from ase.constraints import FixConstraint
 
         atoms = self.__class__(cell=self._cell, pbc=self._pbc, info=self.info)
         # TODO: Do we need to shuffle indices in adsorbate_info too?
@@ -1205,20 +1205,20 @@ class Atoms(object):
         atoms.constraints = copy.deepcopy(self.constraints)
         condel = []
         for con in atoms.constraints:
-            if isinstance(con, FixConstraint):
-                try:
-                    con.index_shuffle(i)
-                except IndexError:
-                    condel.append(con)
+            #if isinstance(con, FixConstraint):
+            #    try:
+            #        con.index_shuffle(i)
+            #    except IndexError:
+            #        condel.append(con)
         for con in condel:
             atoms.constraints.remove(con)
         return atoms
 
     def __delitem__(self, i):
-        from ase.constraints import FixAtoms
-        check_constraint = np.array([isinstance(c, FixAtoms)
-                                     for c in self._constraints])
-        if len(self._constraints) > 0 and not check_constraint.all():
+        #from ase.constraints import FixAtoms
+        #check_constraint = np.array([isinstance(c, FixAtoms)
+        #                             for c in self._constraints])
+        if len(self._constraints) > 0:  #and not check_constraint.all():
             raise RuntimeError('Remove constraint using set_constraint() ' +
                                'before deleting atoms.')
         mask = np.ones(len(self), bool)
@@ -1741,8 +1741,11 @@ class Atoms(object):
 
     def write(self, filename, format=None):
         """Write yourself to a file."""
-        from ase.io import write
-        write(filename, self, format)
+
+        raise NotImplementedError
+        
+        #from ase.io import write
+        #write(filename, self, format)
 
     def edit(self):
         """Modify atoms interactively through ag viewer.
@@ -1754,8 +1757,10 @@ class Atoms(object):
         please set matplotlib.use('gtk') before calling this
         method.
         """
-        from ase.gui.images import Images
-        from ase.gui.gui import GUI
+        raise NotImplementedError
+    
+        #from ase.gui.images import Images
+        #from ase.gui.gui import GUI
         images = Images([self])
         gui = GUI(images)
         gui.run()
