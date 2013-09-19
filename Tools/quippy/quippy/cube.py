@@ -20,7 +20,8 @@ from quippy.atoms import Atoms
 from quippy.io import AtomsReaders, AtomsWriters
 from quippy.units import BOHR
 from quippy.farray import *
-import sys, numpy
+import sys
+import numpy as np
 
 __all__ = ['CubeWriter', 'CubeReader']
 
@@ -64,7 +65,7 @@ class CubeWriter(object):
         origin = self.origin
         if origin is None and 'origin' in at.params:
             origin = at.params['origin']
-        if origin is None: origin = (0., 0., 0.)
+        if origin is None: origin = np.array([0., 0., 0.])
 
         self.f.write(comment1.strip()+'\n')
         self.f.write(comment2.strip()+'\n')
@@ -78,7 +79,7 @@ class CubeWriter(object):
         if extent is None:
             extent = at.lattice
         if extent.shape == (3,):
-            extent = numpy.diag(extent)
+            extent = np.diag(extent)
         extent = farray(extent)
 
         for i in (1,2,3):
@@ -90,7 +91,7 @@ class CubeWriter(object):
         for i in frange(at.n):
             self.f.write('%d 0.0 %f %f %f\n' % (at.z[i], at.pos[1,i]/BOHR, at.pos[2,i]/BOHR, at.pos[3,i]/BOHR))
 
-        padded_data = numpy.zeros([s+1 for s in data.shape])
+        padded_data = np.zeros([s+1 for s in data.shape])
         padded_data[:-1,:-1,:-1] = data
         padded_data[-1,:,:] = padded_data[0,:,:]
         padded_data[:,-1,:] = padded_data[:,0,:]
@@ -136,7 +137,7 @@ def CubeReader(f, property_name='charge', discard_repeat=True):
     at.set_atoms(at.z)
 
     # Rest of file is volumetric data
-    data = numpy.fromiter((float(x) for x in f.read().split()),float,count=-1)
+    data = np.fromiter((float(x) for x in f.read().split()),float,count=-1)
     if data.size != shape[0]*shape[1]*shape[2]:
         raise IOError("Bad array length - expected shape %r, but got size %d" % (shape, data.size))
 
@@ -156,9 +157,9 @@ def CubeReader(f, property_name='charge', discard_repeat=True):
 
     # save grids in at.grid_x, at.grid_y, at.grid_z
     if at.is_orthorhombic:
-        at.grid_x, at.grid_y, at.grid_z = numpy.mgrid[origin[1]:origin[1]+at.lattice[1,1]:shape[0]*1j,
-                                                      origin[2]:origin[2]+at.lattice[2,2]:shape[1]*1j,
-                                                      origin[3]:origin[3]+at.lattice[3,3]:shape[2]*1j]
+        at.grid_x, at.grid_y, at.grid_z = np.mgrid[origin[1]:origin[1]+at.lattice[1,1]:shape[0]*1j,
+                                                   origin[2]:origin[2]+at.lattice[2,2]:shape[1]*1j,
+                                                   origin[3]:origin[3]+at.lattice[3,3]:shape[2]*1j]
 
     if opened:
         f.close()
