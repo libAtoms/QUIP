@@ -307,6 +307,11 @@ implicit none
      did_anything=.false.
      do_calc = .false.
 
+     if( do_test .and. do_V .and. do_local ) then
+        did_anything = .true.
+        call test_local_virial(pot,at,trim(calc_args))
+     endif
+
      if (do_test .or. do_n_test) then
 	did_anything = .true.
         if (do_test) then

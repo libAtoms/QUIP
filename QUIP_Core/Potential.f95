@@ -395,6 +395,11 @@ module Potential_module
      module procedure potential_bulk_modulus
   end interface bulk_modulus
 
+  public :: test_local_virial
+  interface test_local_virial
+     module procedure potential_test_local_virial
+  end interface test_local_virial
+
   contains
 
   !*************************************************************************
@@ -1228,6 +1233,72 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     deallocate(am_data)
 
   end function potential_minim
+
+  subroutine potential_test_local_virial(this, at, args_str)
+    type(Atoms), intent(inout), target :: at
+    type(Potential), target, intent(inout) :: this
+    character(len=*), intent(in), optional :: args_str
+
+    real(dp) :: dx, r_ik
+    real(dp), dimension(3) :: diff_ik
+    real(dp), dimension(3,3) :: virial
+    real(dp), dimension(:), allocatable :: local_energy_p, local_energy_m
+    real(dp), dimension(:,:), allocatable :: tmp_local_virial, pos0
+    real(dp), dimension(:,:,:), allocatable :: local_virial, local_virial_fd
+
+    integer :: d, i, k, n, alpha
+
+    call print_warning("TLV: potential_test_local_virial: your cell has to be big enough so no multiple images are used for any atom.")
+
+    if(at%cutoff < cutoff(this)) call set_cutoff(at,cutoff(this))
+
+    call calc_connect(at)
+
+    allocate(tmp_local_virial(9,at%N), local_virial(3,3,at%N), local_virial_fd(3,3,at%N), &
+       local_energy_p(at%N), local_energy_m(at%N), pos0(3,at%N))
+
+    call calc(this,at,local_virial = tmp_local_virial, virial = virial)
+    local_virial = reshape(tmp_local_virial,(/3,3,at%N/))
+
+    call print("TLV: RMS difference between virial and local virial summed over atoms = "//sqrt( sum( (virial - sum(local_virial,dim=3))**2 ) ))
+
+    pos0 = at%pos
+
+    dx = 1.0_dp
+
+    print"(a,a16,a20)", "TLV", "dx", "RMS"
+    do d = 1, 10
+       dx = dx * 0.1_dp
+       local_virial_fd = 0.0_dp
+
+       do i = 1, at%N
+
+          do alpha = 1, 3
+             at%pos(alpha,i) = pos0(alpha,i) + dx
+             call calc_connect(at)
+             call calc(this,at,local_energy=local_energy_p,args_str=args_str)
+
+             at%pos(alpha,i) = pos0(alpha,i) - dx
+             call calc_connect(at)
+             call calc(this,at,local_energy=local_energy_m,args_str=args_str)
+
+             at%pos(alpha,i) = pos0(alpha,i) 
+             call calc_connect(at)
+
+             do n = 1, n_neighbours(at,i)
+                k = neighbour(at,i,n,distance = r_ik, diff = diff_ik)
+
+                if( r_ik > cutoff(this) ) cycle
+
+                local_virial_fd(:,alpha,i) = local_virial_fd(:,alpha,i) + diff_ik * ( local_energy_p(k) - local_energy_m(k) ) / 2.0_dp / dx
+             enddo
+          enddo
+       enddo
+
+       print"(a,f16.10,e20.10)", "TLV", dx, sqrt(sum((local_virial_fd - local_virial)**2))
+    enddo
+
+  endsubroutine potential_test_local_virial
 
   subroutine undo_travel(at)
     type(Atoms), intent(inout) :: at
