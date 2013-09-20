@@ -315,7 +315,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
           if( present(local_e) .or. present(e) ) local_e_in(i) = local_e_in(i) + 0.5_dp * pair_e_ij
           if( present(f) .or. present(virial) .or. present(local_virial) ) dpair_e_ij = eam_spline_pair_deriv(this,ti, tj, r_ij_mag)
           if( present(f) ) f_in(:,i) = f_in(:,i) + dpair_e_ij * r_ij_hat
-          if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,i) = local_virial_in(:,:,i) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
+          if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,j) = local_virial_in(:,:,j) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
        endif
 
     enddo ! ji
