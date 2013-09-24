@@ -2009,7 +2009,7 @@ end subroutine pack_pos_dg
      if(name == 'Potential') then ! new Potential stanza
 
         if(parse_in_pot) &
-           call system_abort("Potential_startElement_handler entered <Potential> with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
+           call system_abort("Potential_startElement_handler entered <Potential> with parse_in true. Probably a forgotten /> at the end of a tag.")
 
         if(parse_matched_label) return ! we already found an exact match for this label
 
