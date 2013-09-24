@@ -109,7 +109,7 @@ implicit none
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str
 
-  logical do_calc, did_anything, did_help, param_file_exists
+  logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
   integer error, eval_port_status, eval_port
   character(STRING_LENGTH) :: eval_port_str
@@ -126,9 +126,9 @@ implicit none
   call verbosity_push(verbosity_of_str(trim(verbosity)))
   call finalise(cli_params)
 
-  call enable_timing()
 
   call initialise(cli_params)
+  call param_register(cli_params, 'timing', 'F', do_timing, help_string="Enable system timer")
   call param_register(cli_params, 'at_file', 'stdin', at_file, help_string="input file for atoms, xyz or nc format")
   call param_register(cli_params, 'param_file', 'quip_params.xml', param_file, help_string="input file for potential xml parameters")
   call param_register(cli_params, 'E', 'F', do_E, help_string="Calculate energy")
@@ -197,24 +197,22 @@ implicit none
   call param_register(cli_params, 'EvsV', 'F', do_EvsV, help_string="compute energy vs volume curve")
   call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
   call param_register(cli_params, 'EvsV_NdVsteps', '1', EvsV_NdVsteps, help_string="number of times to increase the volume when doing EvsV")
-  
+
+
+
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
-    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
-    call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)
-    call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
-    call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
-    call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [bulk_scale=file] [calc_args='str'] [pre_relax_calc_args='str']", PRINT_ALWAYS)
-    call print("  [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim]", PRINT_ALWAYS)
-    call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
-    call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
-    call system_abort("Confused by CLI arguments")
+    call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
+    call print("", PRINT_ALWAYS)
+    call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
+    call system_abort("")
   end if
   call finalise(cli_params)
 
   if(did_help) call system_abort("Run without --help")
+
+  if(do_timing) call enable_timing()  
 
   call get_env_var("EVAL_PORT",eval_port_str, eval_port_status)
   if(eval_port_status == 0) then
@@ -275,6 +273,7 @@ implicit none
 
 
   ! main loop over frames
+  do_print_pot = .true. ! print the pot on the first iteration
   do 
      call read(at, infile, error=error)
      if (error /= 0) then
@@ -559,7 +558,10 @@ implicit none
            if (do_v) call assign_property_pointer(at, "local_virial", local_v0)
         endif
 
-	call print(pot)
+        if(do_print_pot) then
+           call print(pot)
+           do_print_pot = .false.
+        end if
 
         if (do_E) then
            call print ("Energy=" // E0)
