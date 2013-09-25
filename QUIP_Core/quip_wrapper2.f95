@@ -44,7 +44,7 @@
 ! stress: kbar
 subroutine quip_wrapper2(N,Z, frac_coord,lattice,args_str,mpi_communicator,energy,force,stress)
 
-  use system_module, only : dp, system_initialise, PRINT_VERBOSE
+  use system_module, only : dp, system_initialise, PRINT_SILENT
   use units_module
   use mpi_context_module
   use dictionary_module
@@ -73,14 +73,14 @@ subroutine quip_wrapper2(N,Z, frac_coord,lattice,args_str,mpi_communicator,energ
   logical, save :: first_run = .true.
 
   if( first_run ) then
-     call system_initialise(verbosity=PRINT_VERBOSE)
+     call system_initialise(verbosity=PRINT_SILENT)
      call Initialise(mpi_glob, communicator=mpi_communicator)
      call Potential_Filename_Initialise(pot, args_str=trim(args_str), param_filename="quip_params.xml",mpi_obj=mpi_glob)
 !     call verbosity_push(PRINT_NORMAL)
 !     call Print(pot)
 !     call verbosity_pop()
-     call print(N)
-     call print(lattice)
+!     call print(N)
+!     call print(lattice)
      call initialise(at,N,lattice)
      first_run = .false.
   endif
@@ -92,9 +92,7 @@ subroutine quip_wrapper2(N,Z, frac_coord,lattice,args_str,mpi_communicator,energ
 
   call set_lattice(at,lattice, scale_positions=.false.)
   
-  do i = 1, at%N
-     at%Z(i) = Z(i)
-  enddo 
+  call set_atoms(at, Z)
   at%pos = matmul(lattice,frac_coord)
 
   call set_cutoff(at,cutoff(pot)+0.5_dp)

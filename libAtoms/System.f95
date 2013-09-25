@@ -56,12 +56,16 @@ module system_module
 
 #ifdef HAVE_QP
   integer, parameter :: qp = 16 
+#elsif TEN_DIGIT_PRECISION
+  integer, parameter :: qp = selected_real_kind(10) !kind(1.0d0)
 #else
   integer, parameter :: qp = 8
 #endif
   
 #ifdef QUAD_PRECISION
   integer, parameter :: dp = 16 ! kind(1.0d0)
+#elsif TEN_DIGIT_PRECISION
+  integer, parameter :: dp = selected_real_kind(10) !kind(1.0d0)
 #else
   integer, parameter :: dp = 8 ! kind(1.0d0)
 #endif
