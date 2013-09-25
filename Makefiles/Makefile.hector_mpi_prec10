@@ -1,0 +1,66 @@
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# H0 X
+# H0 X   libAtoms+QUIP: atomistic simulation library
+# H0 X
+# H0 X   Portions of this code were written by
+# H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# H0 X
+# H0 X   Copyright 2006-2010.
+# H0 X
+# H0 X   These portions of the source code are released under the GNU General
+# H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# H0 X
+# H0 X   If you would like to license the source code under different terms,
+# H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+# H0 X
+# H0 X   Portions of this code were written by Noam Bernstein as part of
+# H0 X   his employment for the U.S. Government, and are not subject
+# H0 X   to copyright in the USA.
+# H0 X
+# H0 X
+# H0 X   When using this software, please cite the following reference:
+# H0 X
+# H0 X   http://www.libatoms.org
+# H0 X
+# H0 X  Additional contributions by
+# H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# H0 X
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# declarations
+
+F77 = ftn
+F90 = ftn
+F95 = ftn
+CC = cc
+CPLUSPLUS = CC
+LINKER = ftn
+FPP = ftn -E -x f95-cpp-input
+
+SAMPLE_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
+DEBUG= -g -DDUMP_CORE_ON_ABORT
+OPTIM = -O3
+
+DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DFTN -DFORTRAN_UNDERSCORE -D_MPI -DMPI_1 -DTEN_DIGIT_PRECISION
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -Wunused
+F77FLAGS += -x f77-cpp-input -fno-second-underscore 
+CFLAGS += -fPIC 
+CPLUSPLUSFLAGS += -fPIC 
+
+AR_ADD = src
+
+ATOMEYE_LIBS = -L/usr/lib -Wl,-Bstatic  -lm \
+   -lutil -Wl,-Bdynamic -lXpm -lXext -lX11 -ljpeg -lpthread  -Wl,-Bstatic   \
+   -lreadline -lpng  -lncurses -lz -lnetcdf  -lhdf5_hl -lhdf5  \
+   -llapack -lf77blas -lcblas -latlas -Wl,-Bdynamic
+
+QUIPPY_FCOMPILER = gnu95
+QUIPPY_F90FLAGS = -ffree-line-length-none
+QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DFTN -DFORTRAN_UNDERSCORE
+QUIPPY_CPP = gfortran -E -x f95-cpp-input
+QUIPPY_DEBUG = 0
+
+export DEFAULT_MATH_LINKOPTS =
+
+FPP_PRE_TARGET_STRING = -o
