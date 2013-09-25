@@ -1205,6 +1205,7 @@ class Atoms(object):
         atoms.constraints = copy.deepcopy(self.constraints)
         condel = []
         for con in atoms.constraints:
+            pass
             #if isinstance(con, FixConstraint):
             #    try:
             #        con.index_shuffle(i)
