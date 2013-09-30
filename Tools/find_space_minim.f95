@@ -156,45 +156,6 @@ subroutine hook(x,dx,E,done,do_print,data)
 
 end subroutine hook
 
-
-subroutine find_closest(at, r, closest_list)
-  type(Atoms), intent(in) :: at
-  real(dp), intent(in) :: r(3)
-  integer, intent(out) :: closest_list(:)
-
-  integer :: n_p, i_p, j
-  real(dp) :: prev_dist
-  real(dp), allocatable :: r_a(:)
-  real(dp), allocatable :: closest_r(:)
-
-  n_p = size(closest_list)
-
-  allocate(r_a(at%N))
-  allocate(closest_r(n_p))
-
-  if (at%N < n_p) call system_abort("not enought points ("//at%N//") in atoms object (need "//n_p//")")
-
-  do i_p=1, at%N
-    r_a(i_p) = distance_min_image(at, i_p, r)
-  end do
-
-  prev_dist = -1e38_dp
-  do i_p=1, n_p
-    closest_r(i_p) = 1.0e38_dp
-    closest_list(i_p) = -1
-    do j=1, at%N
-      if (r_a(j) < closest_r(i_p) .and. r_a(j) >= prev_dist .and. .not. any(j == closest_list(1:i_p-1))) then
-        closest_list(i_p) = j
-        closest_r(i_p) = r_a(j)
-      endif
-    end do
-    prev_dist = closest_r(i_p)
-  end do
-
-  deallocate(r_a, closest_r)
-
-end subroutine find_closest
-
 end module find_space_minim_mod
 
 program find_space_minim

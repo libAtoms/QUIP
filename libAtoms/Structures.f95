@@ -59,7 +59,7 @@ module  structures_module
    diamond2, graphite, graphite_rhombohedral, beta_tin, beta_tin4, bcc1, hcp, wurtzite, sh, sh2, imma, &
    fcc_11b2_edge_disloc, fcc_disloc_malc, disloc_noam, fcc_z111_ortho, fcc_z111, fcc_z100, bulk, unit_slab, slab_width_height_nz, &
    slab_nx_ny_nz, bcc, transform, arbitrary_supercell, find_compatible_supercells, bond_angle_mean_dev, map_nearest_atoms, &
-   delaunay_reduce, min_neighbour_dist, remove_too_close_atoms, surface_unit_cell
+   delaunay_reduce, min_neighbour_dist, remove_too_close_atoms, surface_unit_cell, find_closest, void_analysis
 
 
   interface slab
@@ -3329,5 +3329,118 @@ subroutine anatase(at, a, c, u)
       endif
 
    end subroutine surface_unit_cell
+
+
+subroutine find_closest(at, r, closest_list)
+  type(Atoms), intent(in) :: at
+  real(dp), intent(in) :: r(3)
+  integer, intent(out) :: closest_list(:)
+
+  integer :: n_p, i_p, j
+  real(dp) :: prev_dist
+  real(dp), allocatable :: r_a(:)
+  real(dp), allocatable :: closest_r(:)
+
+  n_p = size(closest_list)
+
+  allocate(r_a(at%N))
+  allocate(closest_r(n_p))
+
+  if (at%N < n_p) call system_abort("not enought points ("//at%N//") in atoms object (need "//n_p//")")
+
+  do i_p=1, at%N
+    r_a(i_p) = distance_min_image(at, i_p, r)
+  end do
+
+  prev_dist = -1e38_dp
+  do i_p=1, n_p
+    closest_r(i_p) = 1.0e38_dp
+    closest_list(i_p) = -1
+    do j=1, at%N
+      if (r_a(j) < closest_r(i_p) .and. r_a(j) >= prev_dist .and. .not. any(j == closest_list(1:i_p-1))) then
+        closest_list(i_p) = j
+        closest_r(i_p) = r_a(j)
+      endif
+    end do
+    prev_dist = closest_r(i_p)
+  end do
+
+  deallocate(r_a, closest_r)
+
+end subroutine find_closest
+
+subroutine void_analysis(at, grid_size, cutoff, grid, radii)
+  type(Atoms), intent(in) :: at
+  real(dp), intent(in) :: grid_size, cutoff
+
+  real(dp), intent(inout) :: grid(:,:), radii(:)
+
+  real(dp) :: min_x, min_y, min_z, max_x, max_y, max_z, dx, dy, dz
+  integer :: nx, ny, nz, i, j, k, n, a(1)
+  logical changed
+
+  min_x = minval(at%pos(1,:))
+  min_y = minval(at%pos(2,:))
+  min_z = minval(at%pos(3,:))
+
+  max_x = maxval(at%pos(1,:))
+  max_y = maxval(at%pos(2,:))
+  max_z = maxval(at%pos(3,:))
+
+  nx = int((max_x-min_x)/grid_size)
+  ny = int((max_y-min_y)/grid_size)
+  nz = int((max_z-min_z)/grid_size)
+
+  dx = (max_x - min_x)/(real(nx-1, dp))
+  dy = (max_y - min_y)/(real(ny-1, dp))
+  dz = (max_z - min_z)/(real(nz-1, dp))
+
+  call print('nx='//nx//' dx='//dx)
+  call print('ny='//ny//' dy='//dy)
+  call print('nz='//nz//' dz='//dz)
+
+  if (size(grid, 1) /= 3) then
+     call system_abort('void_analysis: size(grid, 2) /= 3')
+  end if
+
+  if (.not. (size(grid, 2) >= nx*ny*nz)) then
+     call system_abort('void_analysis: size(grid, 1)='//(size(grid, 1))//' must be >= nx*ny*nz='//(nx*ny*nz))
+  end if
+
+  if (.not. (size(radii) >= nx*ny*nz)) then
+     call system_abort('void_analysis: size(radii)='//(size(radii, 1))//' must be >= nx*ny*nz='//(nx*ny*nz))
+  end if
+
+  !allocate(grid(nx*ny*nz,3), radii(nx*ny*nz))
+
+  ! populate grid
+  n = 1
+  do i=1,nx
+     do j=1,ny
+        do k=1,nz
+           grid(:, n) = (/ min_x + (i-1)*dx, &
+                           min_y + (j-1)*dy, &
+                           min_z + (k-1)*dz /)
+           n = n + 1
+        end do
+     end do
+  end do
+
+  ! find distance from each grid point to nearest atom. That is void radius at that point.
+  do i=1, size(grid, 2)
+     call find_closest(at, grid(:, i), a)
+     radii(i) = distance_min_image(at, a(1), grid(:, i))
+  end do
+
+  ! Remove grid points with radii < cutoff
+  where (radii < cutoff)
+     radii = 0.0_dp
+  end where
+
+  ! TODO agglomerative merging of overlapping grid points
+
+  !deallocate(grid, radii)
+ 
+end subroutine void_analysis
 
 end module structures_module
