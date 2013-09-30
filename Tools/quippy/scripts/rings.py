@@ -68,6 +68,7 @@ with -1 being the last frame.""")
 p.add_option('-s', '--supercell', action='store', type=int, nargs=3, help="Make a supercell from input structure before computing ring statistics.")
 p.add_option('-t', '--tetra', action='store_true', help="Convert Si-O-Si bonds in tetrahedra to Si-Si bonds.")
 p.add_option('-p', '--plot', action='store_true')
+p.add_option('-n', '--no-clear', action='store_true', help="Do not clear figure before plotting. Useful for comparisons")
 
 opt, infiles = p.parse_args()
 
@@ -170,7 +171,8 @@ for infile in infiles:
         np.savetxt(outfile, np.c_[rings_array.T, ring_centers])
 
         if opt.plot:
-            plt.clf()
+            if not opt.no_clear:
+                plt.clf()
             plt.plot(ring_sizes, rings_per_si, 'o-', label=basename)
             plt.xlabel('Ring size')
             plt.ylabel('Rings per Si')
