@@ -39,41 +39,46 @@ class CubeWriter(object):
             self.opened = False
             self.f = f
 
-        self.comment1 = comment
-        self.comment2 = comment2
+        self.comment = comment
         self.data = data
         self.origin = origin
         self.extent = extent
+        self.comment2 = comment2
 
     def write(self, at):
-        data = self.data
+
+        comment  = self.comment
+        data     = self.data
+        origin   = self.origin
+        extent   = self.extent
+        comment2 = self.comment2
+        
         if data is None and hasattr(at, 'data'):
             data = at.data
         if data is None:
             raise ValueError("Cannot write .cube file without any volumetric data")
 
-        comment1 = self.comment1
-        if comment1 is None and 'comment1' in at.params:
-            comment1 = at.params['comment1']
-        if comment1 is None: comment1 = ''
+        if comment is None and 'comment' in at.params:
+            comment = at.params['comment1']
+        if comment is None: comment = ''
 
-        comment2 = self.comment2
+        comment2 = comment2
         if comment2 is None and 'comment2' in at.params:
             comment2 = at.params['comment2']
         if comment2 is None: comment2 = ''
 
-        origin = self.origin
+        origin = origin
         if origin is None and 'origin' in at.params:
             origin = at.params['origin']
-        if origin is None: origin = np.array([0., 0., 0.])
+        if origin is None: origin = [0., 0., 0.]
+        origin = farray(origin)
 
-        self.f.write(comment1.strip()+'\n')
+        self.f.write(comment.strip()+'\n')
         self.f.write(comment2.strip()+'\n')
 
         origin_x, origin_y, origin_z = origin/BOHR
         self.f.write('%d %f %f %f\n' % (at.n, origin_x, origin_y, origin_z))
 
-        extent = self.extent
         if extent is None and 'extent' in at.params:
             extent = at.params['extent']
         if extent is None:
