@@ -202,6 +202,36 @@ void fwc_l_(char *filename, int *size) {
    *size = lines;
 }
 
+void fwrite_line_to_file_(char *filename, char *line, char *mode) {
+   FILE *fp;
+
+   fp = fopen(filename, mode);
+   fprintf(fp, "%s\n", line);
+   fclose(fp);
+}
+
+void fappend_file_to_file_(char *filename_to, char *filename_from) {
+   FILE *fp_to, *fp_from;
+   char ch;
+
+   fp_to = fopen(filename_to, "a");
+   fp_from = fopen(filename_from, "r");
+
+   while( ( ch = fgetc(fp_from) ) != EOF )
+      fputc(ch,fp_to);
+
+   fclose(fp_to);
+   fclose(fp_from);
+}
+
+void frm_file_(char *filename) {
+   int ret;
+
+   ret = remove(filename);
+
+}
+
+
 int pointer_to_(void *p) {
   return ((int) p);
 }
