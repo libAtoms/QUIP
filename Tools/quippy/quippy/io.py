@@ -172,7 +172,7 @@ class AtomsReader(AtomsReaderMixin):
     """
 
     def __init__(self, source, format=None, start=None, stop=None, step=None,
-                 cache_mem_limit=-1, fortran_indexing=True, **kwargs):
+                 cache_mem_limit=-1, fortran_indexing=True, rename=None, **kwargs):
 
         def file_exists(f):
             return f == "stdin" or os.path.exists(f) or len(glob.glob(f)) > 0
@@ -195,6 +195,8 @@ class AtomsReader(AtomsReaderMixin):
 
         self.opened = False
         self.reader = source
+
+        self.rename = rename
 
         if isinstance(self.reader, basestring):
             if '@' in self.reader:
@@ -345,6 +347,7 @@ class AtomsReader(AtomsReaderMixin):
 
             if not self._cache_fetch(frame):
                 at = self.reader[frame]
+                at = self.filter(at)
                 self._cache_store(frame, at)
 
             at = self._cache_dict[frame]
@@ -422,6 +425,23 @@ class AtomsReader(AtomsReaderMixin):
     def __reversed__(self):
         return self.iterframes(reverse=True)
 
+    def filter(self, at):
+        """
+        Apply read-time filters to `at`
+        """
+        if self.rename is not None:
+            for (old, new) in self.rename:
+                if old in at.properties:
+                    print 'renaming %s to %s, and removing %s' % (old, new, old)
+                    at.properties[new] = at.properties[old]
+                    del at.properties[old]
+                elif old in at.params:
+                    at.params[new] = at.params[old]
+                    del at.params[old]
+                else:
+                    raise AttributeError('Cannont rename: no property or parameter named "%s" exists' % old)
+        return at
+
 
 class AtomsList(AtomsReaderMixin, list):
     """
@@ -456,7 +476,7 @@ class AtomsList(AtomsReaderMixin, list):
     """
     
     def __init__(self, source=[], format=None, start=None, stop=None, step=None,
-                 fortran_indexing=True, **kwargs):
+                 fortran_indexing=True, rename=None, **kwargs):
         self.source = source
         self.format = format
         self._start  = start
@@ -465,6 +485,7 @@ class AtomsList(AtomsReaderMixin, list):
         self.fortran_indexing = fortran_indexing
         tmp_ar = AtomsReader(source, format, start, stop, step,
                              fortran_indexing=fortran_indexing,
+                             rename=rename,
                              **kwargs)
         list.__init__(self, list(iter(tmp_ar)))
         tmp_ar.close()

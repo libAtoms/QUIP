@@ -556,11 +556,11 @@ class AtomsReaderViewer(AtomsReader, QuippyViewer):
     Subclass of AtomsReader and AtomEyeViewer
     """
     def __init__(self, source=None, name=None, cache=True, verbose=True,
-                 fortran_indexing=None, **kwargs):
+                 rename=None, fortran_indexing=None, **kwargs):
         if cache:
             total_mem, free_mem = mem_info()
             kwargs['cache_mem_limit'] = 0.5*free_mem
-        AtomsReader.__init__(self, source, fortran_indexing=fortran_indexing, **kwargs)
+        AtomsReader.__init__(self, source, fortran_indexing=fortran_indexing, rename=rename, **kwargs)
         QuippyViewer.__init__(self, name, verbose=verbose, fortran_indexing=fortran_indexing)
 
     def update_source(self, source, cache=True, **kwargs):
@@ -581,8 +581,8 @@ class AtomsListViewer(AtomsList, QuippyViewer):
     """
     Subclass of AtomsList and AtomEyeViewer
     """
-    def __init__(self, source=None, name=None, fortran_indexing=None, **kwargs):
-        AtomsList.__init__(self, source, fortran_indexing=fortran_indexing, **kwargs)
+    def __init__(self, source=None, name=None, fortran_indexing=None, rename=None, **kwargs):
+        AtomsList.__init__(self, source, fortran_indexing=fortran_indexing, rename=rename, **kwargs)
         QuippyViewer.__init__(self, name, fortran_indexing=fortran_indexing)
 
     def update_source(self, source, **kwargs):
@@ -628,7 +628,7 @@ def find_viewer(source, name=None, recycle=True):
         
 
 def view(source, name=None, recycle=True, loadall=False, inject=True,
-         fortran_indexing=None, **kwargs):
+         rename=None, fortran_indexing=None, **kwargs):
     """
     Read atoms from `source` and open in an AtomEye viewer window.
 
@@ -649,7 +649,7 @@ def view(source, name=None, recycle=True, loadall=False, inject=True,
     name, viewer = find_viewer(source, name, recycle)
 
     if viewer is None:
-        tmp_reader = AtomsReader(source, fortran_indexing=fortran_indexing, **kwargs)
+        tmp_reader = AtomsReader(source, fortran_indexing=fortran_indexing, rename=rename, **kwargs)
 
         if isinstance(source, Atoms) or (tmp_reader.random_access and len(tmp_reader) == 1):
             viewer = AtomsViewer(source, name, fortran_indexing=fortran_indexing, **kwargs)
@@ -659,7 +659,7 @@ def view(source, name=None, recycle=True, loadall=False, inject=True,
                                          fortran_indexing=fortran_indexing,
                                          **kwargs)
             else:
-                viewer = AtomsReaderViewer(source, name=name,
+                viewer = AtomsReaderViewer(source, name=name, rename=rename,
                                            fortran_indexing=fortran_indexing,
                                            **kwargs)
     else:
