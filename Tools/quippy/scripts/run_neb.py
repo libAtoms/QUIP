@@ -197,6 +197,7 @@ elif not opt.dry_run:
     optimizer.run(fmax=opt.fmax)
     if os.path.exists('%s-optimized.xyz' % basename):
         os.unlink('%s-optimized.xyz' % basename)
+    neb.get_forces(all=True)
     neb.write('%s-optimized.xyz' % basename)
 
 if opt.plot:

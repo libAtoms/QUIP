@@ -222,8 +222,9 @@ class NEB:
         if all:
             self.forces['real'][0] = images[0].get_forces()
             self.forces['real'][-1] = images[-1].get_forces()
-            self.energies[0] = images[0].get_potential_energy()
-            self.energies[-1] = images[-1].get_potential_energy()
+            if not self.integrate_forces:
+                self.energies[0] = images[0].get_potential_energy()
+                self.energies[-1] = images[-1].get_potential_energy()
 
         if not self.parallel:
             # Do all images - one at a time:
@@ -264,7 +265,9 @@ class NEB:
                 root = (i - 1) * size // (self.nimages - 2)
                 world.broadcast(self.energies[i : i + 1], root)
 
-        if self.integrate_forces:
+        if all and self.integrate_forces:
+            # fill in the first and last energies by force integration
+            self.energies[0] = 0.
             self.calculate_image_energies(len(self.images)-1)
 
 
