@@ -450,7 +450,7 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
      call initialise(es)
   endif
 
-  call initialise(this, args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
+  call initialise(this, args_str=args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
   PASS_ERROR(error)
   call finalise(es)
 
