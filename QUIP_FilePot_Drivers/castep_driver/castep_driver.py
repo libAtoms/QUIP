@@ -290,6 +290,12 @@ def castep_run(cell, param,  stem, castep, log=None):
       logf.writelines(castep_output)
       logf.close()
 
+   # Write log file here so that it will always be written
+   if log is not None and os.path.exists('%s.magres' % stem):
+      logf = open('%s.magres_log' % stem, 'a')
+      magres_output = open('%s.magres' % stem, 'r').readlines()
+      logf.writelines(magres_output)
+      logf.close()
    return not got_error
 
 
