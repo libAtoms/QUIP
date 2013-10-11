@@ -432,7 +432,6 @@ class AtomsReader(AtomsReaderMixin):
         if self.rename is not None:
             for (old, new) in self.rename:
                 if old in at.properties:
-                    print 'renaming %s to %s, and removing %s' % (old, new, old)
                     at.properties[new] = at.properties[old]
                     del at.properties[old]
                 elif old in at.params:
