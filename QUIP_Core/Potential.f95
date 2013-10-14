@@ -802,6 +802,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
           end if
        end if
     end if
+    
+    calc_energy = ""
+    calc_virial = ""
+    calc_force = ""
+    calc_local_energy = ""
+    calc_local_virial = ""
 
     call initialise(params)
     call param_register(params, "energy", "", calc_energy, help_string="If present, calculate energy and put it in field with this string as name")

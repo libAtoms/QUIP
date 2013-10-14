@@ -16,7 +16,7 @@ module Potential_Precon_Minim_module
   use paramreader_module, only : param_register, param_read_line
   use mpi_context_module, only : mpi_context
   use table_module, only : table, find, int_part, wipe, append, finalise
-  use minimization_module , only : minim, n_minim, fire_minim, test_gradient, n_test_gradient, precon_data, preconminim, preconMEP
+  use minimization_module , only : minim, n_minim, fire_minim, test_gradient, n_test_gradient, precon_data, preconminim, precondimer
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, diff_min_image, set_lattice, is_nearest_neighbour, distance_min_image, &
@@ -33,10 +33,15 @@ module Potential_Precon_Minim_module
      module procedure Precon_Potential_Minim
   end interface
  
-  public :: Precon_MEP
-  interface Precon_MEP
-     module procedure Precon_Potential_MEP
+  public :: Precon_Dimer
+  interface Precon_Dimer
+     module procedure Precon_Potential_Dimer
   end interface
+
+!  public :: Precon_MEP
+!  interface Precon_MEP
+!     module procedure Precon_Potential_MEP
+!  end interface
  
   contains
 
@@ -166,6 +171,7 @@ module Potential_Precon_Minim_module
           !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs0.dat')
           if (this%precon_id == "LJ") then
             thiscoeff = this%energy_scale *( thisdist/this%length_scale)**(-6.0_dp)
+            thiscoeff = max(thiscoeff,5.0*this%energy_scale)
             this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
             this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
           else if (this%precon_id == "C1") then
@@ -414,7 +420,7 @@ module Potential_Precon_Minim_module
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
     !call print(use_method)   
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
-            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
+            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity)
 !       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
  !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
  
@@ -434,17 +440,15 @@ module Potential_Precon_Minim_module
     deallocate(am_data)
 
   end function 
-
-  function Precon_Potential_MEP(this,allat,at1,at2, method, convergence_tol, max_steps, linminroutine,efuncroutine,k, do_print, print_inoutput, print_cinoutput, &
+  
+  function Precon_Potential_Dimer(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,NatMax,fix_ends,res2,mat_mult_max_iter,max_sub,deltat)
+       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub)
     
     implicit none
     
-    type(Potential), intent(in), target :: this !% potential to evaluate energy/forces with
-    type(Atoms), intent(inout), target, dimension(:) :: allat
-    type(Atoms), intent(in), target :: at1 !% start of the chain
-    type(Atoms), intent(in), target :: at2 !% end of the chain !Number of states in the chain
+    type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
+    type(Atoms), intent(inout), target :: at !% starting configuration
     character(*), intent(in)    :: method !% passed to precon_minim()
 ! Options for method
 ! 'preconSD' - preconditioned steepest descent
@@ -453,6 +457,12 @@ module Potential_Precon_Minim_module
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
                                                     !% 'convergence_tol'. 
     integer,      intent(in)    :: max_steps  !% Maximum number of steps
+    
+    character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
+!Options for efuncroutine
+! 'basic' - naive summation (default)
+! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy) 
+    
     character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
 ! Options for linminroutine
 ! 'basic' - simple backtracking, each iteration satisfies armijo
@@ -460,8 +470,6 @@ module Potential_Precon_Minim_module
 ! 'standard' - bracket and zoom by cubic interpolation, with bisection as backup, each iteration satisfies wolfe
 ! 'none' - no linesearch, relies on estimating alpha from previous gradients etc, very dangerous
 
-    character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
-    real(dp), optional ::k
     logical, optional :: do_print !% if true, print configurations using minim's hook()
     type(inoutput), intent(inout), optional, target :: print_inoutput !% inoutput object to print configs to, needed if do_print is true
     type(cinoutput), intent(inout), optional, target :: print_cinoutput !% cinoutput object to print configs to, needed if do_print is true
@@ -479,40 +487,41 @@ module Potential_Precon_Minim_module
 
     real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
     real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
-    real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances
+    real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances, assuming first neighbours contribute much more to the energy, if the potential is more or less 'flat' then may need to include second neighbours
     integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125 
-    integer :: status
-    integer, intent(in), optional :: NatMax
-    logical, intent(in), optional :: fix_ends
+    
     real(dp), intent(in), optional :: res2 !criteria for the residual squared of the approximate preconditioner inverse, probably dont need to change this
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting
-    real(dp), optional :: deltat
 
-    integer :: Precon_Potential_MEP
-    type (potential_minimise), allocatable, dimension(:) :: am 
-    real (dp), allocatable, dimension(:) :: x1, x2
-    real (dp), allocatable, dimension(:,:) :: allx
-    integer :: I, Nd, Nat
-    integer :: am_data_size
-    character, dimension(1) :: am_mold
+    integer:: Precon_Potential_Dimer
+
+    character(len=STRING_LENGTH) :: use_method
+
+    logical :: my_use_precond
+    integer n_iter, n_iter_tot
+    real(dp), allocatable :: x(:)
     real(dp) :: deform_grad(3,3)
     logical my_do_print
-    character(len=100) :: use_method
-    character, allocatable, dimension(:,:) :: am_data
-    real(dp) :: var 
-    real(dp) :: myk
-    
-    type (precon_data), allocatable, dimension (:) :: pr
-    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
-    integer :: my_nneigh, my_mat_mult_max_iter,my_max_sub
-    character(10) :: my_precon_id
-    integer :: n_iter
-    logical :: my_fix_ends
+    logical done
+    real(dp) :: my_eps_guess
 
-    my_fix_ends = .true.
-    if( present(fix_ends) ) my_fix_ends = fix_ends
-    
+    real(dp) :: initial_E, final_E, mass
+    type(potential_minimise) am
+    integer :: am_data_size
+    character, allocatable :: am_data(:)
+    character, dimension(1) :: am_mold
+    integer :: status
+
+    type (precon_data) :: pr
+    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
+    integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
+    character(10) :: my_precon_id
+
+
+
+    INIT_ERROR(error)
+
     my_precon_id = optional_default('ID',precon_id)
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
       call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
@@ -526,61 +535,42 @@ module Potential_Precon_Minim_module
       call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
     end if
 
-    myk = 1.0
-    if (present(k)) myk=k
-     
-    Nat = size(allat)
-    allocate(am(Nat))
-    allocate(pr(Nat))
- 
-    ! build the Atoms types 
-    do I = 1,Nat
-      call initialise(allat(I),at1%N,at1%lattice)
-    end do
-     
-    ! just for now most Atoms are copies of at1
-    do I = 1,(Nat-1)
-      allat(I) = at1
-    end do
-    allat(Nat) = at2
 
+    am_data_size = size(transfer(am, am_mold))
+    allocate(am_data(am_data_size))
 
-    Nd = 9+at1%N*3
-    call print("Nd " // Nd)
-    
-    ! setup minimization
     use_method = trim(method)
-    do I = 1,Nat
-    call calc_connect(allat(I))
-    am(I)%minim_at => allat(I)
-    am(I)%pos_lat_preconditioner_factor = am(I)%minim_pos_lat_preconditioner*am(I)%minim_at%N
+
+    call calc_connect(at)
+    am%minim_at => at
+    am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
 
     if (present(args_str)) then
-      am(I)%minim_args_str = args_str
+      am%minim_args_str = args_str
     else
-      am(I)%minim_args_str = ""
+      am%minim_args_str = ""
     endif
-    am(I)%minim_pot => this
+    am%minim_pot => this
 
     if (.not.present(do_pos) .and. .not. present(do_lat)) then
-      am(I)%minim_do_pos = .true.
-      am(I)%minim_do_lat = .true.
+      am%minim_do_pos = .true.
+      am%minim_do_lat = .true.
     else
-      am(I)%minim_do_pos = optional_default(.false., do_pos)
-      am(I)%minim_do_lat = optional_default(.false., do_lat)
+      am%minim_do_pos = optional_default(.false., do_pos)
+      am%minim_do_lat = optional_default(.false., do_lat)
     endif
 
-    am(I)%external_pressure = 0.0_dp
+    am%external_pressure = 0.0_dp
     if (present(external_pressure)) then
-       am(I)%external_pressure = external_pressure
-       if( (am(I)%external_pressure(1,1) .fne. am(1)%external_pressure(2,2)) .or. &
-       & (am(I)%external_pressure(1,1) .fne. am(1)%external_pressure(3,3)) .or. &
-       & (am(I)%external_pressure(1,2) .fne. 0.0_dp) .or. &
-       & (am(I)%external_pressure(1,3) .fne. 0.0_dp) .or. &
-       & (am(I)%external_pressure(2,1) .fne. 0.0_dp) .or. &
-       & (am(I)%external_pressure(2,3) .fne. 0.0_dp) .or. &
-       & (am(I)%external_pressure(3,1) .fne. 0.0_dp) .or. &
-       & (am(I)%external_pressure(3,2) .fne. 0.0_dp) ) then
+       am%external_pressure = external_pressure
+       if( (am%external_pressure(1,1) .fne. am%external_pressure(2,2)) .or. &
+       & (am%external_pressure(1,1) .fne. am%external_pressure(3,3)) .or. &
+       & (am%external_pressure(1,2) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(1,3) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(2,1) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(2,3) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
              call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
@@ -595,7 +585,7 @@ module Potential_Precon_Minim_module
 
     if (my_do_print) then
        if (present(print_cinoutput)) then
-          am(I)%minim_cinoutput_movie => print_cinoutput
+          am%minim_cinoutput_movie => print_cinoutput
           if (this%is_forcemixing) &
                this%forcemixing%minim_cinoutput_movie => print_cinoutput
 #ifdef HAVE_LOCAL_E_MIX
@@ -608,59 +598,278 @@ module Potential_Precon_Minim_module
 #endif /* HAVE_ONIOM */
        end if
     else
-      nullify(am(I)%minim_cinoutput_movie)
+      nullify(am%minim_cinoutput_movie)
     endif
 
-    am(I)%minim_n_eval_e = 0
-    am(I)%minim_n_eval_f = 0
+    am%minim_n_eval_e = 0
+    am%minim_n_eval_f = 0
 
-    allocate(am(I)%last_connect_x(Nd))
-    am(I)%last_connect_x=1.0e38_dp
-    end do
-
-    allocate(x1(Nd))
-    allocate(x2(Nd))
-    allocate(allx(Nd,Nat))
-    
+    allocate(x(9+am%minim_at%N*3))
+    allocate(am%last_connect_x(size(x)))
+    am%last_connect_x=1.0e38_dp
     deform_grad = 0.0_dp; call add_identity(deform_grad)
-    call pack_pos_dg(am(1)%minim_at%pos, deform_grad, x1, am(1)%pos_lat_preconditioner_factor)
-    call pack_pos_dg(am(Nat)%minim_at%pos, deform_grad, x2, am(Nat)%pos_lat_preconditioner_factor)
-    allx(1:Nd,1) = x1
-    allx(1:Nd,Nat) = x2
-        
-    ! place atoms linearly along the path 
-    do I=2,(Nat-1)
-      var = (I-1.0)/(Nat-1.0)
-      allx(1:Nd,I) = x1 + var*(x2-x1) 
-      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
-    end do
+    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
-    am_data_size = size(transfer(am, am_mold))
-
+    am_data = transfer(am, am_data)
     my_nneigh = optional_default(125,nneigh)
     my_energy_scale = optional_default(1.0_dp,energy_scale)
     my_length_scale = optional_default(1.0_dp,length_scale)
     my_precon_cutoff = optional_default(cutoff(this),precon_cutoff)
-    my_res2 = optional_default(10.0_dp**(-10.0_dp),res2)
-    my_mat_mult_max_iter = optional_default(am(1)%minim_at%N*3,mat_mult_max_iter)
-    my_max_sub = optional_default(200,max_sub)
+    my_res2 = optional_default(10.0_dp**(-5.0_dp),res2)
+    my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
+    my_max_sub = 30
+    
+    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
+    !call print(use_method)   
+    n_iter = precondimer(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
+            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
+!       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
+ !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
+ 
+    
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
+    call calc_connect(am%minim_at)
+    n_iter_tot = n_iter
+    done = .true.
+    deallocate(am%last_connect_x)
+    deallocate(x)
+    call print("MINIM_N_EVAL E " // am%minim_n_eval_e // " F " // am%minim_n_eval_f // &
+      " EF " // am%minim_n_eval_ef, PRINT_VERBOSE)
 
-    allocate(am_data(am_data_size,Nat))     
-    do I=1,Nat
-      am_data(1:am_data_size,I) = transfer(am(I), am_data(1:am_data_size,I))
-      call allocate_precon(pr(I),allat(I),my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
-    end do
-   
-    n_iter = preconMEP(allx,energy_func, gradient_func, build_precon, pr, use_method,my_fix_ends, convergence_tol, max_steps, linminroutine=linminroutine,efuncroutine=efuncroutine,k=myk, &
-               hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data,status=status,deltat=deltat)
+    Precon_Potential_Dimer = n_iter_tot
 
-    do I=1,Nat
-      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
-    end do
-   
+    deallocate(am_data)
 
-  
-  end function
+  end function 
+
+
+!  function Precon_Potential_MEP(this,allat,at1,at2, method, convergence_tol, max_steps, linminroutine,efuncroutine,k, do_print, print_inoutput, print_cinoutput, &
+!       do_pos, do_lat, args_str,external_pressure, &
+!       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,NatMax,fix_ends,res2,mat_mult_max_iter,max_sub,deltat)
+!    
+!    implicit none
+!    
+!    type(Potential), intent(in), target :: this !% potential to evaluate energy/forces with
+!    type(Atoms), intent(inout), target, dimension(:) :: allat
+!    type(Atoms), intent(in), target :: at1 !% start of the chain
+!    type(Atoms), intent(in), target :: at2 !% end of the chain !Number of states in the chain
+!    character(*), intent(in)    :: method !% passed to precon_minim()
+!! Options for method
+!! 'preconSD' - preconditioned steepest descent
+!! 'preconCG' - preconditioned safeguarded Polak-Ribiere conjugate gradient
+!
+!    real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
+!                                                    !% 'convergence_tol'. 
+!    integer,      intent(in)    :: max_steps  !% Maximum number of steps
+!    character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
+!! Options for linminroutine
+!! 'basic' - simple backtracking, each iteration satisfies armijo
+!! 'basicpp' - cubic backtracking,  tries to satisfy armijo
+!! 'standard' - bracket and zoom by cubic interpolation, with bisection as backup, each iteration satisfies wolfe
+!! 'none' - no linesearch, relies on estimating alpha from previous gradients etc, very dangerous
+!
+!    character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
+!    real(dp), optional ::k
+!    logical, optional :: do_print !% if true, print configurations using minim's hook()
+!    type(inoutput), intent(inout), optional, target :: print_inoutput !% inoutput object to print configs to, needed if do_print is true
+!    type(cinoutput), intent(inout), optional, target :: print_cinoutput !% cinoutput object to print configs to, needed if do_print is true
+!    logical, optional :: do_pos, do_lat !% do relaxation w.r.t. positions and/or lattice (if neither is included, do both)
+!    character(len=*), intent(in), optional :: args_str !% arguments to pass to calc()
+!    real(dp), dimension(3,3), optional :: external_pressure
+!    integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
+!    integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
+!    
+!    character(*), intent(in),optional :: precon_id
+!! Eventually will support multiple preconditioners for now just supports:
+!! 'ID' - identity preconditioner (default) i.e. no preconditioner
+!! 'C1' - binary connectivity precontioner
+!! 'LJ' - connectivity preconditioner based on LJ potential 
+!
+!    real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
+!    real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
+!    real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances
+!    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125 
+!    integer :: status
+!    integer, intent(in), optional :: NatMax
+!    logical, intent(in), optional :: fix_ends
+!    real(dp), intent(in), optional :: res2 !criteria for the residual squared of the approximate preconditioner inverse, probably dont need to change this
+!    integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
+!    integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting
+!    real(dp), optional :: deltat
+!
+!    integer :: Precon_Potential_MEP
+!    type (potential_minimise), allocatable, dimension(:) :: am 
+!    real (dp), allocatable, dimension(:) :: x1, x2
+!    real (dp), allocatable, dimension(:,:) :: allx
+!    integer :: I, Nd, Nat
+!    integer :: am_data_size
+!    character, dimension(1) :: am_mold
+!    real(dp) :: deform_grad(3,3)
+!    logical my_do_print
+!    character(len=100) :: use_method
+!    character, allocatable, dimension(:,:) :: am_data
+!    real(dp) :: var 
+!    real(dp) :: myk
+!    
+!    type (precon_data), allocatable, dimension (:) :: pr
+!    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
+!    integer :: my_nneigh, my_mat_mult_max_iter,my_max_sub
+!    character(10) :: my_precon_id
+!    integer :: n_iter
+!    logical :: my_fix_ends
+!
+!    my_fix_ends = .true.
+!    if( present(fix_ends) ) my_fix_ends = fix_ends
+!    
+!    my_precon_id = optional_default('ID',precon_id)
+!    if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
+!      call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
+!    end if
+!  
+!    if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
+!      call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
+!    end if
+!  
+!    if ((present(precon_cutoff) .eqv. .false.) .and. (trim(my_precon_id) /= 'ID')) then
+!      call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
+!    end if
+!
+!    myk = 1.0
+!    if (present(k)) myk=k
+!     
+!    Nat = size(allat)
+!    allocate(am(Nat))
+!    allocate(pr(Nat))
+! 
+!    ! build the Atoms types 
+!    do I = 1,Nat
+!      call initialise(allat(I),at1%N,at1%lattice)
+!    end do
+!     
+!    ! just for now most Atoms are copies of at1
+!    do I = 1,(Nat-1)
+!      allat(I) = at1
+!    end do
+!    allat(Nat) = at2
+!
+!
+!    Nd = 9+at1%N*3
+!    call print("Nd " // Nd)
+!    
+!    ! setup minimization
+!    use_method = trim(method)
+!    do I = 1,Nat
+!    call calc_connect(allat(I))
+!    am(I)%minim_at => allat(I)
+!    am(I)%pos_lat_preconditioner_factor = am(I)%minim_pos_lat_preconditioner*am(I)%minim_at%N
+!
+!    if (present(args_str)) then
+!      am(I)%minim_args_str = args_str
+!    else
+!      am(I)%minim_args_str = ""
+!    endif
+!    am(I)%minim_pot => this
+!
+!    if (.not.present(do_pos) .and. .not. present(do_lat)) then
+!      am(I)%minim_do_pos = .true.
+!      am(I)%minim_do_lat = .true.
+!    else
+!      am(I)%minim_do_pos = optional_default(.false., do_pos)
+!      am(I)%minim_do_lat = optional_default(.false., do_lat)
+!    endif
+!
+!    am(I)%external_pressure = 0.0_dp
+!    if (present(external_pressure)) then
+!       am(I)%external_pressure = external_pressure
+!       if( (am(I)%external_pressure(1,1) .fne. am(1)%external_pressure(2,2)) .or. &
+!       & (am(I)%external_pressure(1,1) .fne. am(1)%external_pressure(3,3)) .or. &
+!       & (am(I)%external_pressure(1,2) .fne. 0.0_dp) .or. &
+!       & (am(I)%external_pressure(1,3) .fne. 0.0_dp) .or. &
+!       & (am(I)%external_pressure(2,1) .fne. 0.0_dp) .or. &
+!       & (am(I)%external_pressure(2,3) .fne. 0.0_dp) .or. &
+!       & (am(I)%external_pressure(3,1) .fne. 0.0_dp) .or. &
+!       & (am(I)%external_pressure(3,2) .fne. 0.0_dp) ) then
+!          if(trim(use_method) /= 'fire') then
+!             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+!             use_method = 'fire'
+!          endif
+!       endif
+!    endif
+!
+!    my_do_print = optional_default(.false., do_print)
+!
+!    if (my_do_print .and. .not. present(print_inoutput) .and. .not. present(print_cinoutput)) &
+!         call system_abort("potential_minim: do_print is true, but no print_inoutput or print_cinoutput present")
+!
+!    if (my_do_print) then
+!       if (present(print_cinoutput)) then
+!          am(I)%minim_cinoutput_movie => print_cinoutput
+!          if (this%is_forcemixing) &
+!               this%forcemixing%minim_cinoutput_movie => print_cinoutput
+!#ifdef HAVE_LOCAL_E_MIX
+!          if (this%is_local_e_mix) &
+!               this%local_e_mix%minim_cinoutput_movie => print_cinoutput
+!#endif /* HAVE_LOCAL_E_MIX */
+!#ifdef HAVE_ONIOM
+!          if (this%is_oniom) &
+!               this%oniom%minim_cinoutput_movie => print_cinoutput
+!#endif /* HAVE_ONIOM */
+!       end if
+!    else
+!      nullify(am(I)%minim_cinoutput_movie)
+!    endif
+!
+!    am(I)%minim_n_eval_e = 0
+!    am(I)%minim_n_eval_f = 0
+!
+!    allocate(am(I)%last_connect_x(Nd))
+!    am(I)%last_connect_x=1.0e38_dp
+!    end do
+!
+!    allocate(x1(Nd))
+!    allocate(x2(Nd))
+!    allocate(allx(Nd,Nat))
+!    
+!    deform_grad = 0.0_dp; call add_identity(deform_grad)
+!    call pack_pos_dg(am(1)%minim_at%pos, deform_grad, x1, am(1)%pos_lat_preconditioner_factor)
+!    call pack_pos_dg(am(Nat)%minim_at%pos, deform_grad, x2, am(Nat)%pos_lat_preconditioner_factor)
+!    allx(1:Nd,1) = x1
+!    allx(1:Nd,Nat) = x2
+!        
+!    ! place atoms linearly along the path 
+!    do I=2,(Nat-1)
+!      var = (I-1.0)/(Nat-1.0)
+!      allx(1:Nd,I) = x1 + var*(x2-x1) 
+!      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
+!    end do
+!
+!    am_data_size = size(transfer(am, am_mold))
+!
+!    my_nneigh = optional_default(125,nneigh)
+!    my_energy_scale = optional_default(1.0_dp,energy_scale)
+!    my_length_scale = optional_default(1.0_dp,length_scale)
+!    my_precon_cutoff = optional_default(cutoff(this),precon_cutoff)
+!    my_res2 = optional_default(10.0_dp**(-10.0_dp),res2)
+!    my_mat_mult_max_iter = optional_default(am(1)%minim_at%N*3,mat_mult_max_iter)
+!    my_max_sub = optional_default(200,max_sub)
+!
+!    allocate(am_data(am_data_size,Nat))     
+!    do I=1,Nat
+!      am_data(1:am_data_size,I) = transfer(am(I), am_data(1:am_data_size,I))
+!      call allocate_precon(pr(I),allat(I),my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
+!    end do
+!   
+!    n_iter = preconMEP(allx,energy_func, gradient_func, build_precon, pr, use_method,my_fix_ends, convergence_tol, max_steps, linminroutine=linminroutine,efuncroutine=efuncroutine,k=myk, &
+!               hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data,status=status,deltat=deltat)
+!
+!    do I=1,Nat
+!      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
+!    end do
+!   
+!
+!  
+!  end function
  
   ! compute energy
   function energy_func_local(x, am_data, local_energy_inout)
@@ -688,6 +897,8 @@ module Potential_Precon_Minim_module
     ! Note: TB will return 0 for cutoff(am%minim_pot), but TB does its own calc_connect, so doesn't matter
     max_atom_rij_change = max_rij_change(am%last_connect_x, x, cutoff(am%minim_pot), &
       1.0_dp/am%pos_lat_preconditioner_factor)
+    !call print(max_atom_rij_change// ' '//am%minim_at%cutoff // ' '// cutoff(am%minim_pot))
+    !call print(am%minim_at%connect%neighbour1(302)%t%int(1,1:))
 
     call print("energy_func got x " // x, PRINT_NERD)
 
@@ -696,17 +907,21 @@ module Potential_Precon_Minim_module
 
     ! Safety factor of 1.1, just in case
     ! Note: TB will return 0 for cutoff(am%minim_pot), but TB does its own calc_connect, so doesn't matter
-    if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
-      call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
-        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_connect(am%minim_at)
-      am%last_connect_x = x
-    else
-      call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
-        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_dists(am%minim_at)
-    end if
-
+!    if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
+!      call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
+!        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
+!      call calc_connect(am%minim_at)
+!      am%last_connect_x = x
+!    else
+!      !call print("rah")
+!      call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
+!        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
+!      call calc_dists(am%minim_at)
+!    end if
+ 
+    call calc_connect(am%minim_at)
+    am%last_connect_x = x
+ 
     call print("energy_func using am%minim_at", PRINT_NERD)
     if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
 
@@ -996,13 +1211,13 @@ module Potential_Precon_Minim_module
     !call exit() 
   end subroutine 
   
-  function getapproxhessian(x,data) result(hessout)
+  subroutine getapproxhessian(x,data,hessout)
     
     implicit none
 
-    real(dp) :: x(:)
-    character(len=1) :: data(:)
-    real(dp) :: hessout(size(x),size(x))
+    real(dp),intent(in) :: x(:)
+    character(len=1),intent(in) :: data(:)
+    real(dp),intent(inout) :: hessout(:,:)
 
     type(potential_minimise) :: am
 
@@ -1040,7 +1255,7 @@ module Potential_Precon_Minim_module
     end do
     call verbosity_pop()
     !call exit()
-   hxcount = 1
+    hxcount = 1
     do I = 1,9
       hessout(I,I) = 1
     end do
@@ -1081,9 +1296,110 @@ module Potential_Precon_Minim_module
         end do
       end do
     end do
+    deallocate(xm,g,gp,gm)
     !call exit()
     !call exit() 
+  end subroutine 
+
+  subroutine getfdhconnectivity(rows,diag,rn,data)
+
+    implicit none
+
+    integer, intent(inout) :: rows(:), diag(:)
+    character(len=1),intent(in) :: data(:)
+    integer, intent(out) :: rn
+
+    type(potential_minimise) :: am
+    integer :: rowsindex
+    integer :: thisneighcount,thisind
+    integer :: I, J, II, JJ, hx, hy
+    integer :: buffer(300)
+    integer :: bufferindex
+    integer :: cleanN
+
+    diag(1:9) = (/1, 2, 3, 4, 5, 6, 7, 8, 9/)
+    rows(1:9) = (/1, 2, 3, 4, 5, 6, 7, 8, 9/)
+    am = transfer(data,am)
+    
+    rowsindex = 10 
+    do I = 1,(am%minim_at%N)
+      thisneighcount = n_neighbours(am%minim_at,I)
+           
+      do II = 1,3 ! Loop over coordinates of atom I
+         
+        hx = 3*(I-1) + II + 9
+        diag(hx) = rowsindex 
+        buffer = 3*am%minim_at%N + 10
+        bufferindex = 1
+        do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
+          
+          if (J > 1) then
+            thisind = neighbour(am%minim_at,I,J-1) 
+          else
+            thisind = I
+          end if
+          !if (thisind >= I) then 
+          do JJ = 1,3
+            hy = 3*(thisind-1) + JJ + 9
+            if (hy>=hx) then
+            buffer(bufferindex) = hy
+            bufferindex = bufferindex+1
+            !rows(rowsindex) = hy
+            !rowsindex = rowsindex + 1
+            end if
+          end do
+          !end if
+        end do
+        !call print(" ")
+        !call print(buffer)        
+        call fdhcleaner(buffer,3*am%minim_at%N+10,cleanN)
+        !call print(buffer(1:cleanN))
+        rows(rowsindex:(rowsindex+cleanN-1)) = buffer(1:cleanN)
+        rowsindex = rowsindex + cleanN
+      end do
+    end do 
+    rn = rowsindex-1
+  end subroutine  
+
+ recursive function qsort( data ) result( sorted ) 
+    integer, dimension(:), intent(in) :: data 
+    integer, dimension(1:size(data))  :: sorted 
+    if ( size(data) > 1 ) then 
+      sorted = (/ qsort( pack( data(2:), abs(data(2:)) <= abs(data(1)) )  ), data(1), qsort( pack( data(2:), abs(data(2:)) > abs(data(1)) ) ) /) 
+    else 
+      sorted = data    
+    endif 
   end function 
+
+  subroutine fdhcleaner(data,data_max,cleanN)
   
+    implicit none
+
+    integer, intent(inout) :: data(:)
+    integer, intent(in) :: data_max
+    integer, intent(out) :: cleanN
+
+    integer :: I, N
+
+    N = size(data)
+    data = qsort(data)
+    
+    !call print(data)
+    !call exit()
+    I = 1
+    do
+      !call print(I // ' ' // N // ' '// data(I:) //  ' '// data_max)
+      if (data(I) == data(I+1)) then
+        data(I+1:N-1) = data(I+2:N)
+      else 
+        I = I+1
+      end if
+      if(I == N .or. data(I) >= data_max) then
+        exit
+      end if
+    end do
+    cleanN = I-1
+
+  end subroutine
 
 end module
