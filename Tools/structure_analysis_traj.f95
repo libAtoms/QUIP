@@ -28,7 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-! do various structural analysis to a trajcetory, save an intermediate file
+! do various structural analysis to a trajectory, save an intermediate file
 ! to be postprocessed (mean, variance, correlation, etc)
 ! #/vol density on a radial mesh
 ! #/vol density on a grid
@@ -187,6 +187,7 @@ subroutine analysis_read(this, prev, args_str)
   logical :: dummy_l_1, dummy_l_2
 
   call initialise(params)
+  ! dummy parameters required for some (undocumented) reason...
   call param_register(params, 'infile', '', dummy_c_1, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'commandfile', '', dummy_c_2, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'decimation', '0', dummy_i_1, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -457,7 +458,7 @@ subroutine analysis_read(this, prev, args_str)
     call system_abort("Specified "//(/ this%density_radial, this%density_grid, this%KE_density_radial, &
       this%rdfd, this%adfd, this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
       this%water_orientation_silica /)// &
-      " types of analysis.  Possiblities: density_radial, density_grid, KE_density_radial, rdfd, adfd, KEdf_radial, propdf_radial, geometry, " // &
+      " types of analysis.  Possibilities: density_radial, density_grid, KE_density_radial, rdfd, adfd, KEdf_radial, propdf_radial, geometry, " // &
       " density_axial_silica, num_hbond_silica, water_orientation_silica.")
 
 end subroutine analysis_read
