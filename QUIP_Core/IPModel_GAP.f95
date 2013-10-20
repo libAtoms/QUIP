@@ -236,7 +236,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: e_i, e_i_cutoff
   real(dp), dimension(:), allocatable   :: local_e_in
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  integer :: d, i, j, n, m, i_coordinate, n_local_e
+  integer :: d, i, j, n, m, i_coordinate, n_local_e, i_pos0
 
   real(dp), dimension(:,:), allocatable :: f_in
 
@@ -343,6 +343,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         do i = 1, at%N
            if (mod(i-1, mpi%n_procs) == mpi%my_proc) atom_mask_pointer(i) = .true.
         enddo
+
+        call concat(my_args_str," mpi_active=T mpi_n_procs="//mpi%n_procs//" mpi_my_proc="//mpi%my_proc)
      endif
   endif
            
@@ -368,7 +370,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
      allocate(sparseScore(size(my_descriptor_data%x)))
 
-!$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i) &
+!$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0) &
 !$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_sparseScore,sparseScore,f) &
 !$omp reduction(+:local_e_in,f_in,virial_in)
 
@@ -394,6 +396,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         endif
         if(present(f) .or. present(virial) .or. present(local_virial)) then
+           i_pos0 = lbound(my_descriptor_data%x(i)%ii,1)
+
            do n = lbound(my_descriptor_data%x(i)%ii,1), ubound(my_descriptor_data%x(i)%ii,1)
               if( .not. my_descriptor_data%x(i)%has_grad_data(n) ) cycle
               j = my_descriptor_data%x(i)%ii(n)
@@ -404,7 +408,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
                  f_in(:,j) = f_in(:,j) - f_gp
               endif
               if( present(virial) .or. present(local_virial) ) then
-                 virial_i = ((pos-my_descriptor_data%x(i)%pos(:,0)) .outer. f_gp)
+                 virial_i = ((pos-my_descriptor_data%x(i)%pos(:,i_pos0)) .outer. f_gp)
                  virial_in(:,:,j) = virial_in(:,:,j) - virial_i
 
                  !virial_i = (pos .outer. f_gp) / size(my_descriptor_data%x(i)%ci)
