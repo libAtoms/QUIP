@@ -123,7 +123,10 @@ clean:
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
-LIBS = -L. -lquip_core ${GP_LIB} -latoms -lthirdparty
+LIBS = -L. -lquip_core ${GP_LIB} -latoms
+ifeq (${HAVE_THIRDPARTY},1)
+  LIBS += -lthirdparty
+endif
 
 ifeq (${USE_MAKEDEP},1)
 ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}

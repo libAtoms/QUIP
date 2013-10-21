@@ -51,7 +51,10 @@ endif
 
 all: ${PROGRAMS}
 
-LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms -lthirdparty
+LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
+ifeq (${HAVE_THIRDPARTY},1)
+  LIBS += -lthirdparty
+endif
 LIBFILES = libatoms.a libquip_core.a ${GP_LIBFILE} libquiputils.a
 
 .PHONY: clean allclean test
