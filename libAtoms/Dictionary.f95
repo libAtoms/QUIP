@@ -2615,6 +2615,7 @@ contains
     else
        allocate(this%entries(n))
        allocate(this%keys(n))
+       this%N = 0
     endif
 
   end subroutine extend_entries
