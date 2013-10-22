@@ -39,4 +39,5 @@ CC = mpicc
 CPLUSPLUS = mpiCC 
 LINKER = mpif90 
 
-DEFINES += -D_MPI -DMPI_1
+DEFINES += -D_MPI
+#DEFINES += -DMPI_1
