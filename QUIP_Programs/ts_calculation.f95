@@ -40,8 +40,8 @@ program ts_main
   type(Potential)     :: classicalpot, qmpot
   type(Potential) :: hybrid_pot
   type(Atoms)         :: at_in, at_fin, at_image
-  type(inoutput)      :: xmlfile, file_res
-  type(Cinoutput)     :: in_in, in_fin, in_image, outimage 
+  type(inoutput)      :: xmlfile
+  type(Cinoutput)     :: in_in, in_fin, in_image, outimage, file_res
   type(TS)            :: tts 
   type(Dictionary)    :: pot_params
   type(MPI_Context)   :: mpi
@@ -150,7 +150,7 @@ program ts_main
      endif
    
      call print_title('Initialisation of the chain of state interpolating between the first and last image')
-     call initialise(tts,ds_in%atoms,ds_fin%atoms,params)
+     call initialise(tts,ds_in%atoms,ds_fin%atoms,params=params)
 
 ! if you want to start from previous configuration for the path
   else
@@ -179,9 +179,9 @@ program ts_main
 
   call print_title('Transition state calculation')
   if (.not. params%simulation_hybrid) then
-     call calc(tts,classicalpot, niter, params, file_res, mpi)
+     call calc(tts,classicalpot, niter, params, file_res)
   else
-     call calc(tts,hybrid_pot, niter, params, file_res, mpi)
+     call calc(tts,hybrid_pot, niter, params, file_res)
   endif
   call print('Number or Iterations :  ' // niter )
 
