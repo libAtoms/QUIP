@@ -2863,7 +2863,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
              monomer_pairs_working = monomer_pairs
              deallocate(monomer_pairs)
              allocate(monomer_pairs(2,i_desc))
-             monomer_pairs(:,:-2) = monomer_pairs_working
+             monomer_pairs(:,:i_desc-1) = monomer_pairs_working
              monomer_pairs(:,i_desc) = (/ i,j /)
            end do
          end do
@@ -2936,7 +2936,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            monomer_triplets_working = monomer_triplets
            deallocate(monomer_triplets)
            allocate(monomer_triplets(3,i_desc))
-           monomer_triplets(:,:-2) = monomer_triplets_working
+           monomer_triplets(:,:i_desc-1) = monomer_triplets_working
            monomer_triplets(:,i_desc) = (/ i, j, k /)
 
          end do
