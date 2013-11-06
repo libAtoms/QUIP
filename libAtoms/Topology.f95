@@ -2807,7 +2807,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
               monomer_index_working =monomer_index
               deallocate(monomer_index)
               allocate(monomer_index(size(monomer_index_working,1),size(monomer_index_working,2)+1))
-              monomer_index(:,:-2) = monomer_index_working
+              monomer_index(:,:monomers_found-1) = monomer_index_working
               monomer_index(:,monomers_found) = indices
            end if
         end do
