@@ -71,7 +71,7 @@ module  atoms_module
   public :: atoms, initialise, initialise_ptr, is_initialised, is_domain_decomposed, shallowcopy, finalise
   public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff, set_cutoff_factor, cutoff, cutoff_break
   public :: add_atoms, remove_atoms, get_param_value, set_param_value, has_property, remove_property
-  public :: distance, distance_min_image, diff, diff_min_image, print, set_lattice, select, cell_volume, map_into_cell
+  public :: distance, distance_min_image, diff, diff_min_image, print, set_lattice, select, cell_volume, map_into_cell, unskew_cell
   public :: bcast, copy_properties, transform_basis, rotate, index_to_z_index, z_index_to_index
   public :: calc_connect, calc_connect_hysteretic, is_min_image, set_comm_property, set_Zs, sort
   public :: shuffle, n_neighbours, neighbour, centre_of_mass, realpos, atoms_copy_without_connect
@@ -295,6 +295,13 @@ module  atoms_module
   !%  coordinates satisfy $-0.5 \le t_x,t_y,t_z < 0.5$
   interface map_into_cell
     module procedure atoms_map_into_cell
+  end interface
+
+  private :: atoms_unskew_cell
+  !%  Unskew lattice so the cosines of the lattice angles fall between
+  !%  $-0.5$ and $0.5$
+  interface unskew_cell
+    module procedure atoms_unskew_cell
   end interface
 
   private :: atoms_bcast
@@ -1885,6 +1892,72 @@ contains
 
   end subroutine atoms_map_into_cell
 
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  ! 
+  !% Unskew lattice so the cosines of the lattice angles fall between
+  !% $-0.5$ and $0.5$
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine atoms_unskew_cell(this, error)
+    type(Atoms), intent(inout) :: this
+    integer,     intent(out), optional     :: error
+
+    real(dp), dimension(3,3) :: lattice
+    real(dp), dimension(3) :: lengths, angles
+    integer :: i, j, k, tmp_i, max_angle(1)
+
+    INIT_ERROR(error)
+
+    lattice = this%lattice
+
+    do
+       do i = 1, 3
+          lengths(i) = sqrt(sum(lattice(:,i)**2))
+       enddo
+ 
+       k = 0
+  
+       do i = 1, 3
+          do j = i+1, 3
+             k = k+1
+             angles(k) = dot_product(lattice(:,i),lattice(:,j)) / lengths(i) / lengths(j)
+          enddo
+       enddo
+
+       if( all( abs(angles) <= 0.5_dp ) ) exit
+
+       max_angle = maxloc(abs(angles))
+
+       selectcase(max_angle(1))
+       case(1)
+          i = 1
+          j = 2
+       case(2)
+          i = 1
+          j = 3
+       case(3)
+          i = 2
+          j = 3
+       case default
+          RAISE_ERROR("atoms_unskew_cell: max_angle not between 1 and 3", error)
+       endselect
+
+       if(lengths(i) > lengths(j)) then
+          tmp_i = j
+          j = i
+          i = tmp_i
+       endif
+
+       lattice(:,j) = lattice(:,j) - nint(angles(max_angle(1))) * lattice(:,i)
+
+    enddo
+
+    call set_lattice(this,lattice,.true.,remap=.true.,reconnect=.true.)
+
+
+  end subroutine atoms_unskew_cell
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
