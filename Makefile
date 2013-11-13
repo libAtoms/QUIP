@@ -52,7 +52,7 @@ ifeq (${HAVE_THIRDPARTY},1)
   MODULES += ThirdParty
 endif
 
-MODULES += libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers AlbertProgs # Tests
+MODULES += libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
 GAP = 
 
 ifeq (${HAVE_GAP},1)
@@ -130,10 +130,6 @@ QUIP_Programs/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
-
-AlbertProgs/%: libAtoms/libatoms.a ${FOX} ${GP} QUIP_Core/libquip_core.a QUIP_Utils
-	ln -sf ${PWD}/AlbertProgs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/AlbertProgs -I${PWD} -I${PWD}/Makefiles $${targ#AlbertProgs/}
 
 QUIP_Core/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
