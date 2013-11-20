@@ -25,7 +25,7 @@ program descriptors_wrapper_example
   coord(1,7) =   1.79283079d0; coord(2,7) =    -2.48879868d0; coord(3,7) =     1.55589928d0;
   coord(1,8) =  -1.54238274d0; coord(2,8) =     1.54656737d0; coord(3,8) =    -0.12887274d0;
 
-  descriptor_str ="soap n_max=10 l_max=10 atom_sigma=0.5 cutoff=2.7 cutoff_transition_width=0.5"
+  descriptor_str ="soap n_max=10 l_max=10 atom_sigma=0.5 cutoff=3.0 cutoff_transition_width=0.5"
 
   call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,4,distances)
 
