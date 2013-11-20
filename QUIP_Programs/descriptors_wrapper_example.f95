@@ -27,18 +27,18 @@ program descriptors_wrapper_example
 
   descriptor_str ="soap n_max=10 l_max=10 atom_sigma=0.5 cutoff=3.0 cutoff_transition_width=0.5"
 
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,4,distances)
+  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,0,.false.,distances)
 
   print*,'Distances'
   print*, distances
 
   coord(1,4) =  -1.42817712d0 - 0.0221501781132952d0; coord(2,4) =    -1.89404678d0 + 0.00468815192049838d0; coord(3,4) =    -1.94681516d0 + 0.0457506835434298d0;
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,4,distances)
+  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,4,.false.,distances)
 
   print*,'Distances'
   print*, distances
 
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,0,distances)
+  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,0,.false.,distances)
 
   print*,'Distances'
   print*, distances
