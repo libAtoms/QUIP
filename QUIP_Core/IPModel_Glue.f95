@@ -202,6 +202,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
     
   INIT_ERROR(error)
 
+
   if (present(e)) e = 0.0_dp
   if (present(local_e)) then
      call check_size('Local_E',local_e,(/at%N/),'IPModel_Glue_Calc', error)
@@ -210,12 +211,16 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   if(present(e) .or. present(local_e)) then
      allocate(local_e_in(at%N))
      local_e_in = 0.0_dp
+  else
+     allocate(local_e_in(1))
   endif
 
   if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_Glue_Calc', error)
      allocate(f_in(3,at%N))
      f_in = 0.0_dp
+  else
+     allocate(f_in(1,1))
   end if
 
   if (present(local_virial)) then
@@ -226,6 +231,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   if(present(virial) .or. present(local_virial)) then
      allocate(local_virial_in(3,3,at%N))
      local_virial_in = 0.0_dp
+  else
+     allocate(local_virial_in(1,1,1))
   endif
 
   atom_mask_pointer => null()
