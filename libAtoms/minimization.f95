@@ -2910,6 +2910,8 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	       normsq(g_i) // " " // N_evals // " INITIAL_VAL")
 
     if (normsq(g_i) .lt. accuracy) then
+        call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.g_i) // " " // &
+		  normsq(g_i) // " " // N_evals // " FINAL_VAL")
 	call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, PRINT_VERBOSE)
 	final_E = initial_E
 	return
@@ -3011,6 +3013,9 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     endif
 
     final_E = E_i
+
+    call print("cg_n " // 0.0_dp // " " // final_E // " " // (g_i.dot.h_i) // " " // &
+	    normsq(g_i) // " " // N_evals // " FINAL_VAL")
 
 end function n_minim
 
