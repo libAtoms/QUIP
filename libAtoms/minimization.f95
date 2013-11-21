@@ -5432,7 +5432,7 @@ end subroutine line_scan
         if (pr%multI) then
           x(target_elements) = b(target_elements)/pr%preconcoeffs(1,I,1) 
         end if
-        
+       !call print(pr%preconcoeffs(1,I,1)) 
         do J = 2,(pr%preconrowlengths(I))
         
           thisind = pr%preconindices(J,I)
@@ -6155,22 +6155,26 @@ end subroutine line_scan
        end subroutine gethessian
     end INTERFACE
 
-    integer :: N,k
-    real(dp), allocatable :: x(:), x1(:), x2(:), Fvec(:), F0(:), F1(:), F2(:), Nvec(:), Fper(:), Fdagg(:), Fperstar(:), F0star(:), Ndagg(:), xdagg(:)
-    real(dp), allocatable :: x1star(:), x2star(:), Nvecstar(:), theta(:), F1star(:), F2star(:), Fstar(:), thetastar(:), Fdaggstar(:), searchdir(:)
-    real(dp) :: deltaR = 10.0_dp**(-1)
+    integer :: N,k,k2
+    real(dp), allocatable :: x(:), x1(:), x2(:), Fvec(:), F0(:), F1(:), F2(:), Nvec(:), Fper(:), Fdagg(:), Fperstar(:), F0star(:), Ndagg(:), xdagg(:), pF1(:),pF2(:)
+    real(dp), allocatable :: x1star(:), x2star(:), Nvecstar(:), theta(:), F1star(:), F2star(:), Fstar(:), thetastar(:), Fdaggstar(:), searchdir(:),oldsearchdir(:)
+    real(dp) :: deltaR = 0.05
     real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
     real(dp) :: dtheta = pi/1000.0_dp
     real(dp) :: dx = 1.0_dp/1000.0_dp
-    real(dp) :: E, E0, E1, E2,  gamm, deltatheta, deltax, F, Fdash, nfper,Fnorm, CN, CNstar, E0star, E1star, E2star, deltaxnum, deltaxden
-    real(dp), allocatable :: local_energycand(:)
+    real(dp) :: E, E0, E1, E2,  gamm, deltatheta, deltax, F, Fdash, nfper,Fnorm, CN, CNstar, E0star, E1star, E2star, deltaxnum, deltaxden, olddeltatheta
+    real(dp), allocatable :: local_energy(:)
     logical :: doefunc(3)
+    real(dp) :: d0,d1,d2,nf,C,ff1,ff2
     
     N = size(x_in)
         
+    allocate(local_energy( (N - 9)/3 ) )
     allocate(x(N),x1(N),x2(N),Fvec(N),F1(N),F2(N),Nvec(N),Fper(N),F0(N),Fdagg(N),Fdaggstar(N),F0star(N),Ndagg(N),xdagg(N))  
-    allocate(x1star(N),x2star(N),Nvecstar(N),theta(N),F1star(N),F2star(N),Fstar(N),thetastar(N),Fperstar(N),searchdir(N))
+    allocate(x1star(N),x2star(N),Nvecstar(N),theta(N),F1star(N),F2star(N),Fstar(N),thetastar(N),Fperstar(N),searchdir(N),pF1(N),pF2(N),oldsearchdir(N))
     doefunc = .false.
+    
+    open(1,file='dimerplot.dat',status='replace',access='stream',action='write')
     
     if ( present(efuncroutine) ) then
       if (trim(efuncroutine) == 'basic') then
@@ -6178,11 +6182,11 @@ end subroutine line_scan
         call print('Using naive summation of local energies')
       elseif (trim(efuncroutine) == 'kahan') then
         doefunc(2) = .true.
-        allocate(local_energycand((size(x)-9)/3))
+!        allocate(local_energycand((size(x)-9)/3))
         call print('Using Kahan summation of local energies')
       elseif (trim(efuncroutine) == 'doublekahan') then
         doefunc(3) = .true.
-        allocate(local_energycand((size(x)-9)/3))
+!        allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
       end if
     else 
@@ -6199,140 +6203,44 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
+    
+!    call random_seed()
+!    call random_number(Nvec)
+!    Nvec(1:9) = 0
     Nvec = Nvec/sqrt(smartdotproduct(Nvec,Nvec,doefunc))
     
+
+#ifndef _OPENMP
+    call verbosity_push_decrement(2)
+#endif
+    F0 = dfunc(x,am_data)
+#ifndef _OPENMP
+    call verbosity_pop()
+#endif
+  
+    nf = smartdotproduct(F0,F0,doefunc)
+    call print("Dimer midpoint gradient norm = "//nf)
+       
+    deltax = 0.01_dp 
     k = 0
     do
-!      x1 = x + deltaR*Nvec
-!      x2 = x - deltaR*Nvec
-!
-!      x1star = x + (Nvec*cos(dtheta) + theta*sin(dtheta))*deltaR
-!      Nvecstar = (x1star - x)
-!      Nvecstar = Nvecstar/sqrt(smartdotproduct(Nvecstar,Nvecstar,doefunc))
-!      x2star = x - deltaR*Nvecstar
-! 
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F1 = dfunc(x1,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F2 = dfunc(x2,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!  
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F1star = dfunc(x1star,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!  
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F2star = dfunc(x2star,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      Fnorm = sqrt(smartdotproduct(F1-F2,F1-F2,doefunc)) 
-!      
-      !Fper = (F1 - smartdotproduct(F1,Nvec,doefunc)) + (F2 - smartdotproduct(F2,Nvec,doefunc)) 
-      !theta = Fper
-      !theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
+      call build_precon(pr,am_data)
+      k2 = 0
+      olddeltatheta = 2.1*pi
       do
-        call dorotate(x,Nvec,deltaR,dfunc,am_data,doefunc,theta,deltatheta)
-        !call print("Rotating dimer with \Delta\Theta = " // deltatheta)
-        !call exit()
+        
+        call dorotate(x,Nvec,deltaR,dfunc,am_data,doefunc,theta,deltatheta,pr)
+        !deltatheta = 0.0_dp
+        call print("   Rotating dimer with \Delta\Theta = " // deltatheta)
         x1 = x + (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
         Nvec = (x1 - x)
         Nvec = Nvec/sqrt(smartdotproduct(Nvec,Nvec,doefunc))
-        if (abs(deltatheta) <= 10.0_dp**(-5.0) ) then
+        if (abs(deltatheta) <= 10.0_dp**(-10.0) .or. k2 >=20 .or. deltatheta > olddeltatheta/10.0) then
           exit
         end if
+        olddeltatheta = deltatheta
+        k2 = k2 + 1
       end do
-!     
-      call dotranslate(x,Nvec,deltaR,dfunc,am_data,doefunc,searchdir,deltax)
-      call print("Translating dimer with \Delta x = " // deltax)
-      x = x + deltax*searchdir            
-      !exit
-!   
-!      Fperstar =  (F1star - smartdotproduct(F1star,Nvecstar,doefunc)) - (F2star - smartdotproduct(F2star,Nvecstar,doefunc))
-!      thetastar = Fperstar
-!      thetastar = thetastar/sqrt(smartdotproduct(thetastar,thetastar,doefunc)) 
-!   
-!      F = (smartdotproduct(F1star-F2star,thetastar,doefunc) + smartdotproduct(F1-F2,theta,doefunc))/2.0_dp   
-!      Fdash = (smartdotproduct(F1star-F2star,thetastar,doefunc) - smartdotproduct(F1-F2,theta,doefunc))/dtheta
-!      deltatheta = -0.5_dp*atan(2.0_dp*F/Fdash) + 0.5_dp*deltatheta
-! 
-!      !call print("Rotating, F = " // F // ', Fdash = ' // Fdash)
-!      x1 = x + (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
-!      Nvec = (x1 - x)
-!      Nvec = Nvec/sqrt(smartdotproduct(Nvec,Nvec,doefunc))
-!      x2 = x - deltaR*Nvec
-!       
-!
-!       
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F0 = dfunc(x,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F1 = dfunc(x1,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F2 = dfunc(x2,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-! 
-!      CN = smartdotproduct(F2 - F1, Nvec,doefunc)/(2.0_dp*deltaR)
-!      if (CN > 0) then
-!        Fdagg = - smartdotproduct(F0,Nvec,doefunc)*Nvec
-!      else
-!        Fdagg = F0 - 2.0_dp*smartdotproduct(F0,Nvec,doefunc)*Nvec
-!      end if
-!
-!      Ndagg = Fdagg/sqrt(smartdotproduct(Fdagg,Fdagg,doefunc)) 
-!      xdagg = x + dx*Ndagg 
-!
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F0star = dfunc(xdagg,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!
-!      if (CN > 0) then
-!        Fdaggstar = - smartdotproduct(F0star,Nvec,doefunc)*Nvec
-!      else
-!        Fdaggstar = F0star - 2.0_dp*smartdotproduct(F0star,Nvec,doefunc)*Nvec
-!      end if
-!
-!      deltaxnum = smartdotproduct(Fdaggstar + Fdagg, Ndagg, doefunc)/2.0_dp
-!      deltaxden = smartdotproduct(Fdaggstar - Fdagg, Ndagg, doefunc)/dx
-!      deltax = - deltaxnum/deltaxden + dx/2.0_dp
-!
-!      !x = x + deltax*Ndagg
  
       x1 = x + Nvec*deltaR
       x2 = x - Nvec*deltaR
@@ -6352,113 +6260,275 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call print ("||Net force|| = " //sqrt(smartdotproduct(F1+F2,F1+F2,doefunc)/4.0))
 
-      Fnorm = sqrt(smartdotproduct(F1-F2,F1-F2,doefunc))
-            
-      !call print("k = "//k // " Dimer F norm = " // Fnorm)
-      if (Fnorm <=convergence_tol) then
-        exit
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      f = func(x,am_data,local_energy=local_energy)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      F0 = dfunc(x,am_data)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+      
+      pF1 = apply_precon_gs(F1,pr,doefunc=doefunc,force_k=20)
+      pF2 = apply_precon_gs(F2,pr,doefunc=doefunc,force_k=20)
+      !pF1 = -F1
+      !pF2 = -F2
+
+
+      d1 = smartdotproduct(F1,Nvec,doefunc)
+      d2 = smartdotproduct(F2,Nvec,doefunc) 
+      searchdir = (pF1 - 2.0_dp*Nvec*smartdotproduct(pF1,NVec,doefunc)) + (pF2 - 2.0_dp*Nvec*smartdotproduct(pF2,Nvec,doefunc))
+      d0 = smartdotproduct(searchdir,F0,doefunc)
+      !call dotranslate(x,searchdir,func,f,d0,local_energy,am_data,doefunc,deltax)
+      deltax = 1.0
+      call print(deltax)
+      x = x + deltax*searchdir            
+ 
+      x1 = x + Nvec*deltaR
+      x2 = x - Nvec*deltaR
+     
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      ff1 = func(x1,am_data)
+      ff2 = func(x2,am_data)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+
+      write(1) x1(9+13)
+      write(1) x1(9+14)
+      write(1) ff1
+      write(1) x2(9+13)
+      write(1) x2(9+14)
+      write(1) ff2
+    
+    
+      oldsearchdir = searchdir 
+      if ( k > 0 .and. smartdotproduct(oldsearchdir,searchdir,doefunc) < 0) then
+        deltaR = deltaR/2.0
+        call print("Dimer trajectory reversed, halfing dimer length")
       end if
       k = k + 1
-      if(k>=5) then
-        exit
-        end if
-    end do
- 
+    if ( k >= max_steps) then
+      exit
+    end if
+   end do
+   close(1)
+   x_in = x 
   end function
 
-  subroutine dotranslate(x,Nvec,deltaR,dfunc,am_data,doefunc,searchdir,deltax)
-  
-    real(dp) :: x(:), Nvec(:), deltaR
-    INTERFACE
-      function dfunc(x,data)
-        use system_module
-        real(dp)::x(:)
-        character(len=1),optional::data(:)
-        real(dp)::dfunc(size(x))
-      end function dfunc
-    END INTERFACE
-    character(len=1), intent(inout) :: am_data(:)
+  subroutine dotranslated(x,Nvec,deltaR,searchdir,F10,F20,dfunc,data,doefunc,alpha,amaxin)
+ 
+    real(dp) :: x(:), Nvec(:),deltaR, searchdir(:), F10(:), F20(:)
+    INTERFACE 
+       function dfunc(x,data)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp)::dfunc(size(x))
+       end function dfunc
+    end INTERFACE
+    character(len=1), intent(inout) :: data(:)
     logical :: doefunc(:)
-    real(dp),intent(out):: deltax
-    real(dp),intent(out):: searchdir(size(x))
-    real(dp) :: dx, dxm2, dxm1
-    real(dp) :: force,forcem1, forcem2
-    integer :: k
-    integer, parameter :: kmax = 100
+    real(dp),intent(out):: alpha
+    real(dp),intent(in),optional :: amaxin
+    integer, parameter :: ls_it_max = 1000
    
-    real(dp) :: x1(size(x)), x2(size(x)), F1(size(x)), F2(size(x)), F(size(x))
+    real(dp) :: C = 0.9_dp
+    integer :: ls_it
+    real(dp) :: amax
+    real(dp) :: deltaE
+    real(dp) :: NF1, NF0, F1(size(x)), F2(size(x))
+    
 
-    x1 = x + Nvec*deltaR
-    x2 = x - Nvec*deltaR
+    alpha = alpha*4.0
+    if (present(amaxin)) then
+      amax = amaxin
+    else
+      amax = 4.1*alpha
+    end if
+
+    if(alpha>amax) alpha = amax
+    
+
+    NF0 = sqrt(smartdotproduct(F1+F2,F1+F2,doefunc))
+    ls_it = 1
+    do
+
+      !f1 = func(x+alpha*s,data)
  
 #ifndef _OPENMP
-    call verbosity_push_decrement(2)
+        call verbosity_push_decrement()
 #endif
-    F1 = dfunc(x1,am_data)
+       F1 = dfunc((x+alpha*searchdir) + deltaR*Nvec,data)
+       F2 = dfunc((x+alpha*searchdir) - deltaR*Nvec,data)
 #ifndef _OPENMP
-    call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    F2 = dfunc(x2,am_data)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
-    
-    F = F1 - F2
-    searchdir = F
-    dxm2 = 0.0_dp
-    forcem2 = smartdotproduct(F,searchdir,doefunc)
-     
-    dxm1 = 10.0_dp**(-3.0) 
-    forcem1 = getsearchdirforce(x,Nvec,searchdir,deltaR,dxm1,dfunc,am_data,doefunc)
-    
-    k = 0
-    do 
+        call verbosity_pop()
+#endif     
+       
+       NF1 = sqrt(smartdotproduct(F1+F2,F1+F2,doefunc))
+        
+       deltaE = NF1 - NF0
+       !call print(local_energy1)
+       !call exit()
+       !call print(alpha // " "//f1//" "//f0)
+       if ( deltaE < 0 ) then
+        exit
+      end if
 
-      dx = dxm1 - forcem1*(dxm2 - dxm1)/(forcem2 - forcem1)
-      force = getsearchdirforce(x,Nvec,searchdir,deltaR,dx,dfunc,am_data,doefunc)
-      !call print("Dimer rotating, iteration k = " // k // " Rotation force = "//forcem1 // " \Delta\Theta = " // dtheta)
-      call print("Force = " // force // ", delta x = " //dx)   
-      if (abs(force) <= 10.0_dp**(-10.0_dp)) then
-        deltax = dx
+      if(ls_it>ls_it_max) then
         exit
       end if
       
-      dxm2 = dxm1
-      forcem2 = forcem1
-
-      dxm1 = dx
-      forcem1 = force
-
-      k = k + 1
-      if (k >= kmax) then
-        call print("Failed to rotate the dimer sucessfully about the given axis")
+      ls_it = ls_it + 1
+      alpha = alpha/4.0_dp
+      
+      if (alpha <1.0e-15) then
         exit
-      end if 
+      end if
+       
     end do
 
-
-    do
-      if ( abs(force) <= 10.0_dp**(-5.0)) then
-        exit
-      end if 
-    end do
-
-    !C = smartdotproduct(F2-F1,Nvec,doefunc)
-    !if ( C > 0.0_dp) then
-    !  searchdir = - Nvec
-    !else 
-    !  searchdir = Nvec
-    !end if
-
-   
+  
   end subroutine
 
-  subroutine dorotate(x,Nvec,deltaR,dfunc,am_data,doefunc,theta,deltatheta) 
+
+  subroutine dotranslate(x,Nvec,func,f0,d0,local_energy,data,doefunc,alpha,amaxin)
+ 
+    real(dp) :: x(:), Nvec(:)
+    INTERFACE 
+       function func(x,data,local_energy)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp), intent(inout),optional :: local_energy(:)
+         real(dp)::func
+       end function func
+    end INTERFACE
+    real(dp) :: f0, d0, local_energy(:)
+    character(len=1), intent(inout) :: data(:)
+    logical :: doefunc(:)
+    real(dp),intent(out):: alpha
+    real(dp),intent(in),optional :: amaxin
+    type(precon_data) :: pr
+    integer, parameter :: ls_it_max = 1000
+   
+    real(dp) :: C = 0.9_dp
+    integer :: ls_it
+    real(dp) :: f1,local_energy1(size(local_energy))
+    real(dp) :: amax
+    real(dp) :: deltaE
+    
+
+    alpha = alpha*4.0
+    if (present(amaxin)) then
+      amax = amaxin
+    else
+      amax = 4.1*alpha
+    end if
+
+    if(alpha>amax) alpha = amax
+    
+    ls_it = 1
+    do
+
+      !f1 = func(x+alpha*s,data)
+ 
+#ifndef _OPENMP
+        call verbosity_push_decrement()
+#endif
+        f1 = func(x+alpha*Nvec,data,local_energy1)
+#ifndef _OPENMP
+        call verbosity_pop()
+#endif     
+      
+       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy)
+       !call print(local_energy1)
+       !call exit()
+       !call print(alpha // " "//f1//" "//f0)
+       if ( abs(deltaE) < abs(C*alpha*d0)) then
+        exit
+      end if
+
+      if(ls_it>ls_it_max) then
+        exit
+      end if
+      
+      ls_it = ls_it + 1
+      alpha = alpha/4.0_dp
+      
+      if (alpha <1.0e-15) then
+        exit
+      end if
+       
+    end do
+
+    f0 = f1
+    local_energy = local_energy1
+   !call exit() 
+  
+  end subroutine
+
+  subroutine dimerroot(x,Nvec,d1,d2,deltaR,dfunc,am_data,doefunc)
+   
+    implicit none
+    
+    real(dp) :: x(:), Nvec(:),d1,d2,deltaR 
+    INTERFACE 
+       function dfunc(x,data)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp)::dfunc(size(x))
+       end function dfunc
+    end INTERFACE
+    character(len=1), intent(inout) :: am_data(:)
+    logical :: doefunc(:)
+    
+    real(dp) :: TOL = 10.0_dp**(-8.0)
+    real(dp) :: step, g(size(x)), d0
+    real(dp) :: tau =  (sqrt(5.0_dp)-1.0_dp)/2.0_dp
+    real(dp) :: a,b,gx(size(x)),dx,xx
+
+    a = -deltaR
+    b = deltaR
+    xx = 0.0_dp
+    do while( abs(b-a)> TOL) 
+ 
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      gx = dfunc(x+Nvec*xx,am_data)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+      dx = smartdotproduct(gx,Nvec,doefunc)
+      call print("Searching,  a="//a// ", b="//b //", x="//xx //", fx="//dx)
+      if (dx < 0.0_dp) then
+        a = xx
+      else
+        b = xx 
+      end if
+      xx = (b+a)/2.0_dp
+
+    end do
+   
+    x = x + step*Nvec
+    
+  end subroutine
+
+
+  subroutine dorotate(x,Nvec,deltaR,dfunc,am_data,doefunc,theta,deltatheta,pr) 
   
     real(dp),intent(in) :: x(:), Nvec(:), deltaR
     INTERFACE
@@ -6473,7 +6543,7 @@ end subroutine line_scan
     logical :: doefunc(:)
     real(dp),intent(out) :: theta(size(x))
     real(dp),intent(out) :: deltatheta
-    
+    type(precon_data) :: pr
     
     integer :: k
     integer, parameter :: kmax = 100
@@ -6500,19 +6570,23 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
-    !F = (F1 + F2)/2.0
-    Fper = (F1 - Nvec*smartdotproduct(F1,Nvec,doefunc)) - (F2 - Nvec*smartdotproduct(F2,Nvec,doefunc)) 
-    !Fper = F - smartdotproduct(F,Nvec,doefunc)
     
+    F1 = apply_precon_gs(F1,pr,doefunc=doefunc,force_k=20)
+    F2 = apply_precon_gs(F2,pr,doefunc=doefunc,force_k=20)
+    !call print(F1)
+    Fper = (F1 - Nvec*smartdotproduct(F1,Nvec,doefunc)) - (F2 - Nvec*smartdotproduct(F2,Nvec,doefunc)) 
+    !theta = F1
     theta = Fper
     theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
     !call print(smartdotproduct(Fper,Nvec,doefunc))
     !call exit()
-    dthetam2 = 0.0_dp
-    forcem2 = smartdotproduct(Fper,theta,doefunc) 
+    dthetam2 = -pi*10.0_dp**(-3.0_dp)
+    !forcem2 = smartdotproduct(Fper,theta,doefunc) 
+    !call print(x1)
+    forcem2 = getrotforce(x,Nvec,theta,deltaR,dthetam2,dfunc,am_data,doefunc,pr)
     
-    dthetam1 = pi/4.0_dp 
-    forcem1 = getrotforce(x,Nvec,theta,deltaR,dthetam1,dfunc,am_data,doefunc)
+    dthetam1 = pi*10.0_dp**(-3.0_dp)
+    forcem1 = getrotforce(x,Nvec,theta,deltaR,dthetam1,dfunc,am_data,doefunc,pr)
     
     k = 0
     do 
@@ -6524,11 +6598,14 @@ end subroutine line_scan
       elseif (dtheta < -pi/2.0_dp) then
         dtheta = dtheta + pi
       end if
-      
-      force = getrotforce(x,Nvec,theta,deltaR,dtheta,dfunc,am_data,doefunc)
-      !call print("Dimer rotating, iteration k = " // k // " Rotation force = "//forcem1 // " \Delta\Theta = " // dtheta)
+      if ( abs(deltatheta) <= 10.0_dp**(-10.0_dp) ) then 
+        deltatheta = dtheta
+        exit
+      end if
+     ! call print("Dimer rotating, iteration k = " // k // " Rotation force = "//forcem1 // " \Delta\Theta = " // dtheta)
+      force = getrotforce(x,Nvec,theta,deltaR,dtheta,dfunc,am_data,doefunc,pr)
        
-      if (abs(force) <= 10.0_dp**(-10.0_dp)) then
+      if (abs(force) <= 10.0_dp**(-10.0_dp) ) then  
         deltatheta = dtheta
         exit
       end if
@@ -6586,12 +6663,12 @@ end subroutine line_scan
     call verbosity_pop()
 #endif
     F = F1 - F2
-    force = smartdotproduct(F1-F2,Nvec,doefunc) 
+    force = smartdotproduct(F1-F2,searchdir,doefunc) 
     
   end function
 
 
-  function getrotforce(x,Nvec,thetavec,deltaR,dtheta,dfunc,am_data,doefunc) result(force)
+  function getrotforce(x,Nvec,thetavec,deltaR,dtheta,dfunc,am_data,doefunc,pr) result(force)
   
     implicit none
 
@@ -6607,6 +6684,7 @@ end subroutine line_scan
     character(len=1), intent(inout) :: am_data(:)
     logical :: doefunc(:)
     real(dp) :: force
+    type(precon_data) :: pr
 
     real(dp) :: x1(size(x)), x2(size(x)), Nvecstar(size(x)), Fperstar(size(x)), F1(size(x)), F2(size(x)), F(size(x))
 
@@ -6614,7 +6692,6 @@ end subroutine line_scan
     Nvecstar = (x1 - x)
     Nvecstar = Nvecstar/sqrt(smartdotproduct(Nvecstar,Nvecstar,doefunc))
     x2 = x - deltaR*Nvecstar
- 
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
@@ -6630,143 +6707,15 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
-    
+   
+    !F1 = apply_precon_gs(F1,pr,doefunc,force_k=20)
+    !F2 = apply_precon_gs(F2,pr,doefunc,force_k=20)
+    !Fperstar = Nvecstar*smartdotproduct(F1,Nvecstar,doefunc) -  Nvecstar*smartdotproduct(F2,Nvecstar,doefunc)
     Fperstar = (F1 - Nvecstar*smartdotproduct(F1,Nvecstar,doefunc)) - (F2 - Nvecstar*smartdotproduct(F2,Nvecstar,doefunc)) 
     !F = (F1 + F2)/2.0
     force = smartdotproduct(Fperstar,thetavec,doefunc) 
-    
+    !force = smartdotproduct(Nvecstar,F2-F1,doefunc)
+
   end function
-
-!  subroutine rot_min(x,N,deltaR,doefunc,dfunc,am_data)
-!
-!    implicit none
-!
-!    real(dp) :: x(:), N(:), deltaR
-!    logical :: doefunc(:)
-!    INTERFACE
-!       function dfunc(x,data)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp)::dfunc(size(x))
-!       end function dfunc
-!    END INTERFACE
-!    character(len=1) :: am_data(:)
-!  
-!    real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-!    real(dp) :: dtheta = pi/1000.0_dp
-! 
-!    real(dp) :: x1star(size(x)), x2star(size(x)), F1star(size(x)), F2star(size(x)), Fstar(size(x)), Nstar(size(x)), F1(size(x)), F2(size(x)), Fvec(size(x))
-!    real(dp) :: theta(size(x)), thetastar(size(x)),  x1(size(x)), x2(size(x)), Fper(size(x)), Fperstar(size(x))
-!    real(dp) :: F, Fdash, deltatheta
-!
-!    x1 = x + deltaR*N
-!    x2 = x - deltaR*N
-!
-!    x1star = x + (N*cos(dtheta) + theta*sin(dtheta))*deltaR
-!    Nstar = (x1star - x)/deltaR
-!    x2star = x - deltaR*Nstar
-! 
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F1 = dfunc(x1,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F2 = dfunc(x2,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-!  
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F1star = dfunc(x1star,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-!  
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F2star = dfunc(x2star,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-!      
-!    Fper = (F1 - smartdotproduct(F1,N,doefunc)) + (F2 - smartdotproduct(F2,N,doefunc)) 
-!    theta = Fper
-!    theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
-!   
-!    Fperstar =  (F1star - smartdotproduct(F1star,N,doefunc)) + (F2star - smartdotproduct(F2star,N,doefunc))
-!    thetastar = Fperstar
-!    thetastar = thetastar/sqrt(smartdotproduct(thetastar,thetastar,doefunc)) 
-!   
-!    F = (smartdotproduct(F1star-F2star,thetastar,doefunc) + smartdotproduct(F1-F2,theta,doefunc))/2.0_dp   
-!    Fdash = (smartdotproduct(F1star-F2star,thetastar,doefunc) - smartdotproduct(F1-F2,theta,doefunc))/dtheta
-!    deltatheta = -0.5_dp*atan(2.0_dp*F/Fdash) - 0.5_dp*deltatheta
-!    do while (abs(F) >= 10.0_dp**(-3))
-! 
-!      !call print("Rotating, F = " // F // ', Fdash = ' // Fdash)
-!      x1 = x + (N*cos(deltatheta) + theta*sin(deltatheta))*deltaR
-!      N = (x1 - x)
-!      N = N/sqrt(smartdotproduct(N,N,doefunc))
-!      x2 = x - deltaR*Nstar
-!      exit
-!      x1star = x + (N*cos(dtheta) + theta*sin(dtheta))*deltaR
-!      Nstar = (x1star - x)/deltaR
-!      x2star = x - deltaR*Nstar
-!       
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F1 = dfunc(x1,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F2 = dfunc(x2,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F1star = dfunc(x1star,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!  
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      F2star = dfunc(x2star,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      Fper = (F1 - smartdotproduct(F1,N,doefunc)) + (F2 - smartdotproduct(F2,N,doefunc)) 
-!      theta = Fper
-!      theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
-!   
-!      Fperstar =  (F1star - smartdotproduct(F1star,N,doefunc)) + (F2star - smartdotproduct(F2star,N,doefunc))
-!      thetastar = Fperstar
-!      thetastar = thetastar/sqrt(smartdotproduct(thetastar,thetastar,doefunc)) 
-!   
-!      F = (smartdotproduct(F1star-F2star,thetastar,doefunc) + smartdotproduct(F1-F2,theta,doefunc))/2.0_dp   
-!      Fdash = (smartdotproduct(F1star-F2star,thetastar,doefunc) - smartdotproduct(F1-F2,theta,doefunc))/dtheta
-!      deltatheta = -0.5_dp*atan(2.0_dp*F/Fdash)
-!        
-!    end do
-!  end subroutine
-
 end module minimization_module
 
