@@ -45,7 +45,7 @@ module rigidbody_module
   implicit none
   private
 
-  public :: rigidbody, initialise, finalise, print
+  public :: rigidbodymodel, rigidbody, initialise, finalise, print
 
   type RigidBodyModel
   !% Object used as a reference by the RigidBody type.
