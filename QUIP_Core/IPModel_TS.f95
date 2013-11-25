@@ -474,6 +474,8 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       end if
       call finalise(params)
    else
+      efield_name = 'efield'
+      dipoles_name = 'dipoles'
       save_dipole_velo = .false.
       restart = .false.
       applied_efield = .false.
@@ -484,6 +486,8 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       source_mask_name = ''
       pseudise = .false.
       grid_size = 0.0_dp
+      r_scale = 1.0_dp
+      E_scale = 1.0_dp
    end if
 
    if (present(e)) e = 0.0_dp
