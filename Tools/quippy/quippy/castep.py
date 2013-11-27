@@ -1231,6 +1231,8 @@ class CastepPotential(Potential):
         self.castep_exec = castep_exec
         self.stem = stem
         self.test_mode = test_mode
+        self.copy_in_files = copy_in_files
+        self.subdir = subdir
 
     def run(self, at):
         if self.cell is not None:
