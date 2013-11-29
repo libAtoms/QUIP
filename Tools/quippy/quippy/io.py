@@ -775,13 +775,19 @@ def ASEReader(source):
 
 class ASEWriter(object):
 
-    def __init__(self, filename):
+    def __init__(self, filename, translate=None):
         self.filename = filename
+        self.translate = translate
 
     def write(self, at, **writeargs):
         from ase.io import write
         from ase.atoms import Atoms as AseAtoms
         ase_at = AseAtoms(at)
+
+        if self.translate is not None:
+            disp = np.dot(ase_at.cell, self.translate)
+            ase_at.positions += disp
+
         write(self.filename, ase_at, **writeargs)
 
     def close(self):
