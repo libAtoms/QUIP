@@ -20,9 +20,18 @@ class SubdirCalculator:
         self.calc_args = calc_args
 
     def get_potential_energy(self, at):
+        if self.chdir:
+            old_dir = os.getcwd()
+            image_dir = os.path.join(old_dir, 'image-%d' % at.image)
+            os.chdir(image_dir)
+
         calc_args = self.calc_args + " energy=energy"
         self.pot.calc(at, args_str=calc_args)
-        return at.energy
+
+        if self.chdir:
+            os.chdir(old_dir)
+
+        return at.energy    
 
     def get_forces(self, at):
         at.set_cutoff(self.pot.cutoff())
