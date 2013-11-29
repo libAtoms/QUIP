@@ -1466,7 +1466,7 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
             if argname in badnames: argname = badnames[argname]
 
             for i, line in enumerate(arg_lines_in):
-                if line.startswith('  %s :' % argname): break
+                if line.strip().startswith('%s :' % argname): break
             else:
                 raise ValueError('%s not found in lines %r' % (argname, arg_lines_in))
 
