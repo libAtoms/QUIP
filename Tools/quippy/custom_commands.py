@@ -339,10 +339,10 @@ class build_ext(_build_ext):
         self.build_extensions()
 
         # Make sure that scons based extensions are complete.
-        if self.inplace:
-            cmd = self.reinitialize_command('scons')
-            cmd.inplace = 1
-        self.run_command('scons')
+        #if self.inplace:
+        #    cmd = self.reinitialize_command('scons')
+        #    cmd.inplace = 1
+        #self.run_command('scons')
 
 
     def build_extension(self, ext):
