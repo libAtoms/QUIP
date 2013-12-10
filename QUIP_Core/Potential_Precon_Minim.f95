@@ -245,7 +245,53 @@ module Potential_Precon_Minim_module
     !call exit()
 
   end subroutine
- 
+
+  subroutine getdenseC1precon(prmat,at,cutoff)
+
+    implicit none
+
+    real(dp), intent(inout) :: prmat(:,:) !The dense precon matrix will be stored here, it should be (N*3+9)x(N*3+9)
+    type (Atoms), target :: at ! The atoms the precon will be built from
+    real(dp) :: cutoff
+    type (precon_data) :: pr
+    character, allocatable :: am_data(:)
+    character, dimension(1) :: am_mold
+    type (potential_minimise) :: am
+    integer :: I, J, target_elements(3), row_elements(3), thisind, am_data_size, K
+    real(dp) :: scoeff
+
+    call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20)
+    
+    am%minim_at => at
+    am_data_size = size(transfer(am, am_mold))
+    allocate(am_data(am_data_size))
+    am_data = transfer(am, am_data)
+    call build_precon(pr,am_data) 
+    prmat = 0.0
+    do I = 1,9
+      prmat(I,I) = 1.0
+    end do
+    do I = 1,size(pr%preconindices,DIM=2)
+      
+      !call print(pr%preconindices(1:pr%preconrowlengths(I),I))
+      target_elements = (/ I*3-2+9, I*3-1+9, I*3+9 /)
+      if (pr%preconrowlengths(I) >= 1) then
+      do J = 1,(pr%preconrowlengths(I))
+        
+        thisind = pr%preconindices(J,I)
+        row_elements = (/ thisind*3-2+9, thisind*3-1+9, thisind*3+9/)
+       
+        scoeff = pr%preconcoeffs(J,I,1) 
+        !call print(scoeff)
+        do K = 1,3
+          prmat(row_elements(K),target_elements(K)) = prmat(row_elements(K),target_elements(K)) + scoeff
+          prmat(target_elements(K),row_elements(K)) = prmat(target_elements(K),row_elements(K)) + scoeff
+        end do 
+      end do
+      end if 
+    end do  
+  end subroutine 
+   
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub)
@@ -258,6 +304,7 @@ module Potential_Precon_Minim_module
 ! Options for method
 ! 'preconSD' - preconditioned steepest descent
 ! 'preconCG' - preconditioned safeguarded Polak-Ribiere conjugate gradient
+! 'preconLBFGS - preconditioned LBFGS
 
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
                                                     !% 'convergence_tol'. 
@@ -266,12 +313,11 @@ module Potential_Precon_Minim_module
     character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
 !Options for efuncroutine
 ! 'basic' - naive summation (default)
-! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy) 
+! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy, if it does turn this on) 
     
     character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
 ! Options for linminroutine
 ! 'basic' - simple backtracking, each iteration satisfies armijo
-! 'basicpp' - cubic backtracking,  tries to satisfy armijo
 ! 'standard' - bracket and zoom by cubic interpolation, with bisection as backup, each iteration satisfies wolfe
 ! 'none' - no linesearch, relies on estimating alpha from previous gradients etc, very dangerous
 
@@ -293,11 +339,11 @@ module Potential_Precon_Minim_module
     real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
     real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
     real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances, assuming first neighbours contribute much more to the energy, if the potential is more or less 'flat' then may need to include second neighbours
-    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125 
+    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125, only necessary to edit if you run out of memory
     
     real(dp), intent(in), optional :: res2 !criteria for the residual squared of the approximate preconditioner inverse, probably dont need to change this
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
-    integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting
+    integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting, probably dont need to change this
 
     integer:: Precon_Potential_Minim
 
