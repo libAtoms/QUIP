@@ -43,7 +43,6 @@ use phonons_module
 #ifdef HAVE_GAP
 use descriptors_module
 #endif
-use potential_precon_minim_module
 
 implicit none
 
@@ -65,9 +64,7 @@ implicit none
   real(dp) :: phonons_dx
   real(dp) :: phonons_path_start(3), phonons_path_end(3)
   integer :: phonons_path_steps
-  logical :: do_torque, precond_n_minim, precond_fancy
-  character(len=STRING_LENGTH) :: precond_fancy_method
-  real(dp) :: precond_fancy_cutoff, my_precond_fancy_cutoff, precond_fancy_e_scale
+  logical :: do_torque, precond_n_minim
   real(dp) :: fire_minim_dt0
   real(dp) :: fire_minim_dt_max
   real(dp) :: tau(3)
@@ -182,10 +179,6 @@ implicit none
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
-  call param_register(cli_params, 'precond_fancy', 'F', precond_fancy, help_string="activate fancy minimization with fancy preconditioners.  Completely changes meaningful settings for minim_method and linmin_method")
-  call param_register(cli_params, 'precond_fancy_method', 'LJ', precond_fancy_method, help_string="preconditioner method for fancy preconditioner, right now LJ or C1")
-  call param_register(cli_params, 'precond_fancy_cutoff', '-1.0', precond_fancy_cutoff, help_string="cutoff distance for fancy preconditioner (cutoff(pot) if not specified)")
-  call param_register(cli_params, 'precond_fancy_e_scale', '10.0', precond_fancy_e_scale, help_string="energy scale for fancy preconditioner")
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, sd2, cg, pcg, lbfgs, cg_n, fire")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
@@ -362,38 +355,15 @@ implicit none
 	endif
         if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
-	   if (precond_fancy) then
-	      my_precond_fancy_cutoff = precond_fancy_cutoff
-	      if (my_precond_fancy_cutoff < 0.0) my_precond_fancy_cutoff = cutoff(pot)
-	      n_iter = precon_minim(pot, at, method=trim(minim_method), convergence_tol=relax_tol, max_steps=relax_iter, linminroutine=trim(linmin_method), &
-	         do_print=.true., print_cinoutput=relax_io, &
-		 do_pos=do_F, do_lat=do_V, args_str=calc_args, external_pressure=external_pressure/GPA, &
-		 hook_print_interval=relax_print_interval, &
-		 precon_id=trim(precond_fancy_method), length_scale=cutoff(pot), energy_scale=precond_fancy_e_scale, precon_cutoff=my_precond_fancy_cutoff)
-	   else
-	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), &
-		   do_print = .true., print_cinoutput = relax_io, &
-		   do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
-		   use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
-	      call finalise(relax_io) 
-	   endif
+	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+		eps_guess=relax_eps, &
+		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
+           call finalise(relax_io) 
         else
-	   if (precond_fancy) then
-	      my_precond_fancy_cutoff = precond_fancy_cutoff
-	      if (my_precond_fancy_cutoff < 0.0) my_precond_fancy_cutoff = cutoff(pot)
-	      n_iter = precon_minim(pot, at, method=trim(minim_method), convergence_tol=relax_tol, max_steps=relax_iter, linminroutine=trim(linmin_method), &
-	         do_print=.false., &
-		 do_pos=do_F, do_lat=do_V, args_str=calc_args, external_pressure=external_pressure/GPA, &
-		 hook_print_interval=relax_print_interval, &
-		 precon_id=trim(precond_fancy_method), length_scale=cutoff(pot), energy_scale=precond_fancy_e_scale, precon_cutoff=my_precond_fancy_cutoff)
-	   else
-	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), &
-		   do_print = .false., &
-		   do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
-		   use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
-	   endif
+	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
+		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
+		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
         call print('Cell Volume: '//cell_volume(at)//' A^3')

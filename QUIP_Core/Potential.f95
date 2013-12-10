@@ -351,16 +351,6 @@ module Potential_module
      module procedure potential_set_callback
   end interface
 
-  ! Allow Potential_Precon_Minim access to some Potential Functions
-  public :: energy_func
-  public :: gradient_func
-  public :: print_hook
-  public :: pack_pos_dg
-  public :: unpack_pos_dg
-  public :: fix_atoms_deform_grad
-  public :: prep_atoms_deform_grad
-  public :: max_rij_change
-
   public :: potential_minimise
   type Potential_minimise
      real(dp) :: minim_pos_lat_preconditioner = 1.0_dp
