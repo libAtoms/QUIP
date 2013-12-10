@@ -43,8 +43,6 @@ module minimization_module
   use error_module
   use system_module
   use linearalgebra_module
-  use GALAHAD_GLTR_double
-  use GALAHAD_FDH_double
   implicit none
   private
   SAVE
@@ -3017,11 +3015,12 @@ end subroutine line_scan
     
     real(dp),     intent(inout) :: x_in(:) !% Starting position
     INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -3129,23 +3128,6 @@ end subroutine line_scan
     real(dp) :: SR1testLHS,SR1testRHS
     logical :: SR1doupdate
 
-    type(GLTR_data_type) :: GLTR_data
-    type(GLTR_control_type) :: GLTR_control
-    type(GLTR_info_type) :: GLTR_inform
-  
-    integer :: GLTR_n
-    real(dp) :: GLTR_radius, GLTR_f
-    real(dp), allocatable :: GLTR_X(:), GLTR_R(:), GLTR_VECTOR(:), GLTR_buf(:)
-    integer :: GLTR_count
-
-    type(FDH_data_type) :: FDH_data
-    type(FDH_control_type) :: FDH_control
-    type(FDH_inform_type) :: FDH_inform
-    integer, allocatable :: FDH_rows(:), FDH_diag(:), FDH_rows_buffer(:)
-    integer :: FDH_rn
-    real(dp), allocatable :: FDH_H(:), FDH_stepsize(:)
-    type(NLPT_userdata_type) :: FDH_userdata
-
     N = size(x_in)
 
     !allocate NLCG vectors
@@ -3203,18 +3185,6 @@ end subroutine line_scan
     else if (trim(method) == 'preconSHLSR1') then
       doSHLSR1 = .true.
       call print ("Using Steihaug trust region limited memory SR1")
-    else if (trim(method) == 'preconGHLBFGS') then
-      doGHLBFGS = .true.
-      call print ("Using Galahads' GLTR trust region limited memory BFGS")
-    else if (trim(method) == 'preconGHLSR1') then
-      doGHLSR1 = .true.
-      call print ("Using Galahads' GLTR trust region limited memory SR1")
-    else if (trim(method) == 'preconGHFD') then
-      doGHFD = .true.
-      call print ("Using Galahads' GLTR trust region with FD based Hessian")
-    else if (trim(method) == 'preconGHFDH') then
-      doGHFDH = .true.
-      call print ("Using Galahads' GLTR trust region with sparse FD based Hessian")
     else if (trim(method) == 'preconSHFD') then
       doSHFD = .true.
       call print ("Using Steihaug trust region with FD based Hessian")
@@ -3225,7 +3195,7 @@ end subroutine line_scan
       call exit()
     end if
 
-    if (doLBFGS .or. doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doGHLBFGS .or. doGHLSR1 .or. doSHFD) then
+    if (doLBFGS .or. doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doSHFD) then
 
       LBFGSm = 20
       if ( present(LM) ) LBFGSm = LM    
@@ -3246,29 +3216,19 @@ end subroutine line_scan
       LBFGSdlr = 0.0_dp 
       LBFGSrho = 0.0
     end if
-    if(doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doGHLBFGS .or.doGHLSR1 .or. doGHFD .or. doSHFD .or. doGHFDH) then
+    if(doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doSHFD ) then
       allocate(xcand(N))
       allocate(LBFGSb(N,LBFGSm))
       allocate(TRBs(N))
    end if
-    if(doSHLSR1 .or. doGHLSR1) then
+    if(doSHLSR1) then
       allocate(SR1testvec(N))
     end if
-    if(doGHLBFGS .or. doGHLSR1 .or. doGHFD .or. doGHFDH) then
-      allocate(GLTR_X(N),GLTR_R(N),GLTR_VECTOR(N),GLTR_buf(N))
-    end if
-
     if(doFD  .or. doSHFD) then
       allocate(FDHess(N,N))
       allocate(IPIV(N))
     end if
    
-    if (doGHFDH) then
-      allocate(FDH_diag(N))
-      FDH_diag = 0
-      allocate(FDH_rows_buffer(N*50))
-    end if
-    
     doefunc = .false.
 
     doLSbasic = .FALSE.
@@ -3325,20 +3285,9 @@ end subroutine line_scan
       doLSbasic = .TRUE.
     end if
     end if
-   
-    !if (doLSstandard) call print('rah')
-    !call exit()
-    
-    !call print(method // linminroutine)
-
-    !call print(my_hook_print_interval)
-    
-    !call exit()    
-
+ 
     x = x_in
     
-    !call print("boo")
-
     !Main Loop
     this_ls_count = 0
     total_ls_count = 0
@@ -3346,7 +3295,7 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
-    f = func(x,am_data,local_energy)
+    f = func(x,am_data,local_energy,g)
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
@@ -3358,14 +3307,6 @@ end subroutine line_scan
    do
 
       if(doSD .or. doCG .or. doLBFGS .or. doFD) then
-      gold = g
-#ifndef _OPENMP
-      call verbosity_push_decrement(2)
-#endif
-      g = dfunc(x,am_data)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
       normsqgrad = smartdotproduct(g,g,doefunc)
 
       if ( normsqgrad < convergence_tol ) then
@@ -3425,19 +3366,14 @@ end subroutine line_scan
           LBFGSs(1:N,LBFGSm) = x - xold
           LBFGSy(1:N,LBFGSm) = g - gold
           LBFGSrho(LBFGSm) = 1.0/smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,LBFGSm),doefunc)
-        
-
-        !call print(LBFGSrho)
-
         end if
-  
         n_back = min(LBFGSm,LBFGScount,n_iter-1)
         !n_back = 0
         LBFGSq = g
         do I = 1,n_back
           thisind = LBFGSm - I + 1
           LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
-          !call print(LBFGSalp(I))
+          !call print(LBFGSy(1:N,thisind))
           LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)  
         end do
         if (n_iter == 1) then 
@@ -3446,9 +3382,6 @@ end subroutine line_scan
           LBFGSz = apply_precon(LBFGSq,pr,doefunc,init=LBFGSbuf1,k_out=k_out)
         end if
         LBFGSbuf1 = LBFGSz
-        !call print(k_out)
-        !call exit()
-        !LBFGSz = LBFGSq
         do I = 1,n_back
           thisind = LBFGSm - n_back + I 
           LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
@@ -3467,16 +3400,8 @@ end subroutine line_scan
       
       end if
       
-      !call print(g)
-      !call print(pg)
-      !call exit()
-
-
-      !call print(s)
-      !call print(' ')
       dirderivvec(n_iter) = smartdotproduct(g,s,doefunc)
       dotpgout = -dirderivvec(n_iter)/(norm(g)*norm(s))
-      !call print(dotpgout)
       
       if (dirderivvec(n_iter) > 0) then
         call print('Problem, directional derivative of search direction = '// dirderivvec(n_iter))
@@ -3502,31 +3427,24 @@ end subroutine line_scan
       !initial guess of alpha
       alpha = init_alpha(alpvec,dirderivvec,n_iter)
 
-      !linesearch
-    
-      !if(n_iter == 23) then
-      !  call writevec(local_energy,'le1.dat')
-      !  call writevec(g,'grad.dat')
-      !end if 
-      !call print("moo")    
-      if(n_iter == 1 .and. (doCG .or. doSD)) then 
+     if(n_iter == 1 .and. (doCG .or. doSD)) then 
         alpha = calc_amax(s,pr%length_scale) 
       elseif (doLBFGS) then
         alpha = 1.0 
       else
         alpha = init_alpha(alpvec,dirderivvec,n_iter)
       end if
-      !call print(alpha) 
+      
+      gold = g
       amax = calc_amax(s,pr%length_scale) 
-      !call print(amax)
       if (doLSbasic) then
-        alpha = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
+        alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
       elseif (doLSbasicpp) then
         alpha = linesearch_basic_pp(x,s,f,alpha,func,dfunc,am_data,dirderivvec(n_iter),this_ls_count)
         !call print('moo2')
       elseif (doLSstandard) then
-        alpha = linesearch_standard(x,s,f,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
+        alpha = linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo2')
       elseif (doLSMoreThuente) then
         alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
@@ -3537,36 +3455,19 @@ end subroutine line_scan
         !do nothing
         this_ls_count = 0
       end if
-      !call print("rah")
       total_ls_count = total_ls_count + this_ls_count
-      !alpha = 1.0 
-      !if(n_iter == 23) then
-      !  call writevec(local_energy,'le2.dat')
-      !end if 
-         !call print(alpha) 
       alpvec(n_iter) = alpha
       
-      !alpha = 0.0000000001 
-    
       xold = x
       x = x + alpha*s
-     !if(doLBFGS) then
-!       if (mod(n_iter,10) .eq. 0.and. doLBFGS) then
-        !call writehessian(x,am_data,'out' // n_iter)
-        !call writeprecon(pr,'preconout' // n_iter)
-        !call writeLBFGS(LBFGSs,LBFGSy,n_back,'LBFGS'//n_iter)
-!      end if
-!end if
-  
-      
-      elseif (doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doGHLBFGS .or. doGHLSR1 .or. doSHFD .or. doGHFD .or. doGHFDH) then
+        
+      elseif (doDLLBFGS .or. doSHLBFGS .or. doSHLSR1  .or. doSHFD ) then
         if (n_iter == 1) then
 #ifndef _OPENMP
           call verbosity_push_decrement(2)
 #endif
-          g = dfunc(x,am_data)
+          f = func(x,am_data,local_energy,g)
           normsqgrad = smartdotproduct(g,g,doefunc)
-          f = func(x,am_data,local_energy)
           TRDelta = 1.0 
           call build_precon(pr,am_data)
 #ifndef _OPENMP
@@ -3574,7 +3475,6 @@ end subroutine line_scan
 #endif
           call print(trim(method)//" iter = 0 f = "//f// ' |g|^2 = '// normsqgrad,PRINT_NORMAL)
         end if  
-        !call print(LBFGScount)
         n_back = min(LBFGSm,LBFGScount)
         
         if (doSHLBFGS) then
@@ -3583,201 +3483,8 @@ end subroutine line_scan
           s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doSR1=.true.) 
         elseif (doSHFD) then
           call gethessian(x,am_data,FDHess)
-          !s = -g
           s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doFD=.true.,FDhess=FDHess) 
-        elseif (doGHLBFGS) then
-          
-          call GLTR_initialize( GLTR_data, GLTR_control, GLTR_inform)
-            
-            !GLTR_control%itmax = 20
-            GLTR_control%lanczos_itmax = 20
-        !GLTR_control%print_level = 1 
-            GLTR_control%unitm = .false.
-            GLTR_control%stop_relative = 10.0_dp**(-5.0)
-            GLTR_n = N
-            GLTR_radius = TRDelta
-            GLTR_f = f
-            GLTR_X = 0.0_dp
-            GLTR_R = g
-            GLTR_count = 0
-            do
-              call GLTR_solve( GLTR_n, GLTR_radius, GLTR_f, GLTR_X, GLTR_R, GLTR_VECTOR, GLTR_data, GLTR_control, GLTR_inform)
-              !call print(GLTR_inform%mnormx)
-              if (GLTR_inform%status == 0 ) then
-                s = GLTR_x
-                exit
-              else if (GLTR_inform%status == 2 .or. GLTR_inform%status == 6) then
-                GLTR_buf = apply_precon_gs(GLTR_VECTOR,pr,doefunc,force_k=20)
-                !if(n_iter == 2) then
-                !call writevec(GLTR_buf,'buf')
-                !call writevec(GLTR_VECTOR,'vec') 
-                !call writeprecon(pr,'pr')
-                !call exit()
-                !end if
-                GLTR_VECTOR = GLTR_buf
-                !call print("checked precon")
-              else if (GLTR_inform%status == 3 .or. GLTR_inform%status == 7) then
-                GLTR_buf = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,GLTR_VECTOR,pr,doefunc)
-                !GLTR_buf = GLTR_VECTOR
-                !if(n_iter == 3 .and. GLTR_count >= 1) then
-                !call writevec(GLTR_buf,'buf')
-                !call writevec(GLTR_VECTOR,'vec') 
-                !call writeprecon(pr,'pr')
-                !call writemat(LBFGSdlr,'dlr')
-                !call writemat(LBFGSl,'ll')
-                !call writemat(LBFGSd,'dd')
-                !call writeLBFGS(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),n_back,'LBFGS')
-                !call exit()
-                !end if
-                GLTR_VECTOR = GLTR_buf
-              else if (GLTR_inform%status == 5) then
-                GLTR_R = g
-              end if
-              GLTR_count = GLTR_count + 1
-            end do
-          call GLTR_terminate( GLTR_data, GLTR_control, GLTR_inform) 
-        elseif (doGHLSR1) then
-          
-          call GLTR_initialize( GLTR_data, GLTR_control, GLTR_inform)
-            
-            !GLTR_control%print_level = 1 
-          !GLTR_control%itmax = 20
-          GLTR_control%lanczos_itmax = 20
-          GLTR_control%unitm = .false.
-          GLTR_control%stop_relative = 10.0_dp**(-3.0)
-          GLTR_n = N
-          GLTR_radius = TRDelta
-          GLTR_f = f
-          GLTR_X = 0.0_dp
-          GLTR_R = g
-          do
-            call GLTR_solve( GLTR_n, GLTR_radius, GLTR_f, GLTR_X, GLTR_R, GLTR_VECTOR, GLTR_data, GLTR_control, GLTR_inform)
-            !call print(GLTR_inform%mnormx)
-            if (GLTR_inform%status == 0 ) then
-              s = GLTR_x
-              exit
-            else if (GLTR_inform%status == 2 .or. GLTR_inform%status == 6) then
-              GLTR_buf = apply_precon_gs(GLTR_VECTOR,pr,doefunc,force_k=20)
-              call writevec(GLTR_buf,'gsout')
-              GLTR_VECTOR = GLTR_buf
-              !call print("checked precon")
-            else if (GLTR_inform%status == 3 .or. GLTR_inform%status == 7) then
-              GLTR_buf = calc_LSR1_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,GLTR_VECTOR,pr,doefunc)
-              GLTR_VECTOR = GLTR_buf
-            else if (GLTR_inform%status == 5) then
-              GLTR_R = g
-            end if
-          end do
-          call GLTR_terminate( GLTR_data, GLTR_control, GLTR_inform) 
-        
-        elseif (doGHFD) then
-          call gethessian(x,am_data,FDHess)
-          call GLTR_initialize( GLTR_data, GLTR_control, GLTR_inform)
-            
-            !GLTR_control%print_level = 1 
-            GLTR_control%unitm = .false.
-            GLTR_control%stop_relative = 10.0_dp**(-3.0)
-            GLTR_n = N
-            GLTR_radius = TRDelta
-            GLTR_f = f
-            GLTR_X = 0.0_dp
-            GLTR_R = g
-            do
-              call GLTR_solve( GLTR_n, GLTR_radius, GLTR_f, GLTR_X, GLTR_R, GLTR_VECTOR, GLTR_data, GLTR_control, GLTR_inform)
-              !call print(GLTR_inform%mnormx)
-              if (GLTR_inform%status == 0 ) then
-                s = GLTR_x
-                exit
-              else if (GLTR_inform%status == 2 .or. GLTR_inform%status == 6) then
-                GLTR_buf = apply_precon_gs(GLTR_VECTOR,pr,doefunc,force_k=20)
-                GLTR_VECTOR = GLTR_buf
-                !call print("checked precon")
-              else if (GLTR_inform%status == 3 .or. GLTR_inform%status == 7) then
-                GLTR_buf = smartmatmul(FDHess,GLTR_VECTOR,doefunc)
-                GLTR_VECTOR = GLTR_buf
-              else if (GLTR_inform%status == 5) then
-                GLTR_R = g
-              end if
-            end do
-           
-            call GLTR_terminate( GLTR_data, GLTR_control, GLTR_inform) 
-          
-        elseif (doGHFDH) then
-            
-            call FDH_initialize(FDH_data, FDH_control, FDH_inform)
-            FDH_control%print_level = 10
-            call getfdhconnectivity(FDH_rows_buffer,FDH_diag,FDH_rn,am_data)
-            !call print(FDH_rn)
-            allocate(FDH_rows(FDH_rn))
-            !call exit()
-            !call print(FDH_rn)
-            !call print(FDH_diag)
-            !call print(FDH_rows(10:117))
-            !call print(" ")
-            !call print(FDH_rows(1:FDH_rn))
-            !call exit()
-            FDH_rows = FDH_rows_buffer(1:FDH_rn)
-            !call writeveci(FDH_rows,"FDH_rows")
-            !call writeveci(FDH_diag,"FDH_diag")
-              
-            !call print(FDH_rows)
-            !call print(FDH_rows(FDH_diag)) 
-            call FDH_analyse(N,FDH_rn,FDH_rows,FDH_diag,FDH_data,FDH_control,FDH_inform)
-            !call print(FDH_rows(1:FDH_rn))
-            !call print(FDH_diag)
-            !call print(FDH_inform%status)
-            !call print(FDH_inform%bad_row)
-            
-            !call exit()
-            !call print(FDH_diag(1:12))
-            
-            do
-              call FDH_estimate(N,FDH_rn,FDH_rows(1:FDH_rn),FDH_diag,x,g,FDH_stepsize,FDH_H(1:FDH_rn),FDH_data,FDH_control,FDH_inform,FDH_userdata)
-              if (FDH_inform%status == 1) then
-#ifndef _OPENMP
-                call verbosity_push_decrement(2)
-#endif
-                FDH_data%G = dfunc(FDH_data%x,am_data)
-#ifndef _OPENMP
-                call verbosity_pop()
-#endif
-                FDH_data%eval_status = 0 
-              elseif (FDH_inform%status == 0) then
-                exit
-              end if
-            end do
-             
-            call GLTR_initialize( GLTR_data, GLTR_control, GLTR_inform)
-            
-            !GLTR_control%print_level = 1 
-            GLTR_control%unitm = .false.
-            GLTR_control%stop_relative = 10.0_dp**(-3.0)
-            GLTR_n = N
-            GLTR_radius = TRDelta
-            GLTR_f = f
-            GLTR_X = 0.0_dp
-            GLTR_R = g
-            do
-              call GLTR_solve( GLTR_n, GLTR_radius, GLTR_f, GLTR_X, GLTR_R, GLTR_VECTOR, GLTR_data, GLTR_control, GLTR_inform)
-              !call print(GLTR_inform%mnormx)
-              if (GLTR_inform%status == 0 ) then
-                s = GLTR_x
-                exit
-              else if (GLTR_inform%status == 2 .or. GLTR_inform%status == 6) then
-                GLTR_buf = apply_precon_gs(GLTR_VECTOR,pr,doefunc,force_k=20)
-                GLTR_VECTOR = GLTR_buf
-                !call print("checked precon")
-              else if (GLTR_inform%status == 3 .or. GLTR_inform%status == 7) then
-                GLTR_buf = fdhmultiply(GLTR_VECTOR,FDH_rows(1:FDH_rn),FDH_H(1:FDH_rn),FDH_diag)
-                GLTR_VECTOR = GLTR_buf
-              else if (GLTR_inform%status == 5) then
-                GLTR_R = g
-              end if
-            end do
-            deallocate(FDH_rows)
-            call GLTR_terminate( GLTR_data, GLTR_control, GLTR_inform) 
-           
-        elseif (doDLLBFGS) then
+             elseif (doDLLBFGS) then
           s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr) 
         end if  
         xcand = x + s
@@ -3786,25 +3493,21 @@ end subroutine line_scan
 #ifndef _OPENMP
         call verbosity_push_decrement(2)
 #endif
-        !f = func(x,am_data,local_energy)
         fcand = func(xcand,am_data,local_energycand)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
         !call print(f // '     '//fcand)      
-        if (doDLLBFGS .or. doSHLBFGS .or. doGHLBFGS) then
+        if (doDLLBFGS .or. doSHLBFGS) then
           TRBs = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,s,pr,doefunc)
-        elseif (doSHLSR1 .or. doGHLSR1) then
+        elseif (doSHLSR1) then
           TRBs = calc_LSR1_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,s,pr,doefunc)
-        elseif (doGHFD .or. doSHFD) then
+        elseif ( doSHFD) then
           TRBs = smartmatmul(FDHess,s,doefunc)
         end if
 
         TRared = calcdeltaE(doefunc,f,fcand,local_energy,local_energycand)
-        !call print(f-fcand // '     ' // TRared)
         TRpred = -( smartdotproduct(g,s,doefunc) + 0.5*(smartdotproduct(s,TRBs,doefunc)) )
-        !call print(smartdotproduct(-g,s,doefunc)// '     '// smartdotproduct(s,TRBs,doefunc) // '     ' // TRared// '     '//TRpred)
-        !call print(f // '   '// ftest // '   '// fcand)
         TRrho = TRared/TRpred
        
         if (TRrho < 0) then
@@ -3844,15 +3547,14 @@ end subroutine line_scan
         end if
         
         SR1doupdate = .false.
-        if (doSHLSR1 .or. doGHLSR1) then
+        if (doSHLSR1) then
           SR1testvec = g - gold - calc_LSR1_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,x-xold,pr,doefunc)
           SR1testLHS = abs(smartdotproduct(x-xold,SR1testvec,doefunc))
           SR1testRHS = 10.0**(-8.0)*sqrt(Pdotproduct(x-xold,x-xold,pr,doefunc))*sqrt(Pdotproduct(SR1testvec,SR1testvec,pr,doefunc))
-          !call print(SR1testLHS // ' '//SR1testRHS)
           if(SR1testLHS >= SR1testRHS) SR1doupdate = .true.
         end if
          
-        if (doDLLBFGS .or. doSHLBFGS .or. doGHLBFGS .or. SR1doupdate) then
+        if (doLBFGS .or. doDLLBFGS .or. doSHLBFGS .or. SR1doupdate) then
            
           LBFGSs(1:N,1:(LBFGSm-1)) = LBFGSs(1:N,2:LBFGSm)
           LBFGSy(1:N,1:(LBFGSm-1)) = LBFGSy(1:N,2:LBFGSm)
@@ -3913,137 +3615,6 @@ end subroutine line_scan
     
   end function
 
-!  function LBFGSdogleg(x,g,pr,Delta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSb,LBFGSrho,LBFGSbufin,LBFGSbufout,TRBs,func,am_data) result(s)
-!  
-!    implicit none
-!
-!    real(dp) :: x(:),g(:)
-!    type(precon_data) :: pr
-!    real(dp) :: Delta
-!    logical :: doefunc(:)
-!    integer :: n_back
-!    real(dp):: LBFGSs(:,:), LBFGSy(:,:), LBFGSb(:,:), LBFGSrho(:)
-!    real(dp), optional, intent(in) :: LBFGSbufin(:)
-!    real(dp), optional, intent(out) :: LBFGSbufout(:)
-!    real(dp), optional, intent(out) :: TRBs(:)
-!    optional :: func
-!    INTERFACE 
-!       function func(x,data,local_energy)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp), intent(inout),optional :: local_energy(:)
-!         real(dp)::func
-!       end function func
-!    end INTERFACE
-!    character(1), optional :: am_data(:)
-!    
-!    real(dp) :: xcand(size(x)), f
-!    real(dp) :: s(size(x))
-!    real(dp) :: a,b,c
-!   
-!    real(dp) :: sqn(size(x)), Bg(size(x)), su(size(x)), LBFGSq(size(x)), LBFGSz(size(x))
-!    real(dp) :: LBFGSalp(n_back), LBFGSbet(n_back), LBFGSa(size(x),n_back)
-!    integer :: thisind,I,K,N,thisind2
-!    integer :: LBFGSm
-!    real(dp) :: lsu,lsqn,tau,descentcheck
-!
-!     LBFGSm = size(LBFGSs,dim=2)
-!    !call print(LBFGSm)   
-!    !xcand = x
-!    !f = func(xcand,am_data)
-!
-!   N = size(x)    
-!    ! Apply limited memory direct Hessian for steepest descent direction
-!    do K = 1,n_back
-!      !call print(LBFGSb(1:N,K))
-!      thisind = LBFGSm - n_back + K
-!      LBFGSa(1:N,thisind) = do_mat_mult_vec(pr,LBFGSs(1:N,thisind))
-!      do I = 1,K-1
-!        thisind2 = LBFGSm - n_back + I
-!        LBFGSa(1:N,thisind) = LBFGSa(1:N,thisind) + smartdotproduct(LBFGSb(1:N,thisind2),LBFGSs(1:N,thisind),doefunc)*LBFGSb(1:N,thisind2) &
-!                                     - smartdotproduct(LBFGSa(1:N,thisind2),LBFGSs(1:N,thisind),doefunc)*LBFGSa(1:N,thisind2)
-!      end do
-!      LBFGSa(1:N,thisind) = LBFGSa(1:N,thisind)/sqrt(smartdotproduct(LBFGSs(1:N,thisind),LBFGSa(1:N,thisind),doefunc)) 
-!    end do
-!    
-!    Bg= do_mat_mult_vec(pr,g(1:))
-!    !call print(n_back)
-!    do K = 1,n_back
-!      thisind = LBFGSm - n_back + K
-!      Bg = Bg + LBFGSb(1:N,thisind)*smartdotproduct(LBFGSb(1:N,thisind),g,doefunc) - LBFGSa(1:N,thisind)*smartdotproduct(LBFGSa(1:N,thisind),g,doefunc)
-!      !call print(LBFGSy(1:N,K))
-!      !call print(LBFGSb(1:N,thisind))
-!    end do
-!    !call exit() 
-!
-!    su = -g*(smartdotproduct(g,g,doefunc)/smartdotproduct(g,Bg,doefunc)) 
-!    !iall print(su)
-!    lsu = sqrt(smartdotproduct(su,su,doefunc))  
-!    !call print(su) 
-!    !descentcheck = smartdotproduct(su,g,doefunc) 
-!    !if (lsu >= Delta) then !if steepest descent is outside the radius
-!    !if(lsu>Delta)then
-!    if(.false.) then
-!    s = (Delta/lsu)*su
-!    else
-!    ! Apply limited memory inverse Hessian to the gradient for quasi-Newton direction
-!    LBFGSq = g
-!    !call print(LBFGSrho) 
-!    !call print(g)
-!    do I = 1,n_back
-!      thisind = LBFGSm - I + 1
-!      LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
-!      !call print(I // ' '//n_back//' ' //thisind// ' ' //LBFGSrho(thisind))
-!      LBFGSq = LBFGSq - LBFGSalp(I)*LBFGSy(1:N,I)  
-!    end do
-!
-!    if (.not. present(LBFGSbufin)) then 
-!      LBFGSz = apply_precon(LBFGSq,pr,doefunc)
-!    else
-!      LBFGSz = apply_precon(LBFGSq,pr,doefunc,init=LBFGSbufin)
-!    end if
-!
-!    if (present(LBFGSbufout)) then
-!      LBFGSbufout = LBFGSz
-!    end if    
-!    do I = 1,n_back
-!      thisind = LBFGSm - n_back + I
-!      LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
-!      !call print(LBFGSbet(I))
-!      LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
-!    end do
-!    sqn  = -LBFGSz
-!    !call print(sqn)
-!    lsqn = sqrt(smartdotproduct(sqn,sqn,doefunc))
-!    ! Check radius of quasi-Newton point and dog-leg if necessary
-!    descentcheck = smartdotproduct(sqn,g,doefunc) 
-!    !call print(descentcheck)
-!    !if (lsqn  <= Delta) then !if quasi newton is inside radius
-!    if (.true.) then
-!      s = sqn
-!    else !sd inside radius, qn outside
-!      a = smartdotproduct(sqn-su,sqn-su,doefunc)
-!      b = 2.0*smartdotproduct(su,sqn-su,doefunc)
-!      c = smartdotproduct(su,su,doefunc) - Delta**2.0
-!      !tau = (Delta**2.0 - lsu**2.0 - lsqn**2.0)/(2.0*smartdotproduct(su,sqn,doefunc))
-!      tau = (-b + sqrt(b**2.0 -4.0*a*c))/(2.0*a)
-!      !call print(norm(su) // " "// norm(sqn)// ' '//Delta)
-!      s = su + tau*(sqn-su)
-!      !call print(a // ' ' // b // ' '//c)
-!      !call print(b**2.0-4.0*a*c)
-!    end if
-!    end if
-!
-!    if (present(TRBs)) then
-!    TRBs = do_mat_mult_vec(pr,s(1:))
-!    do K = 1,n_back
-!      thisind = LBFGSm - n_back + K
-!      TRBs = TRBs + LBFGSb(1:N,thisind)*smartdotproduct(LBFGSb(1:N,thisind),s,doefunc) - LBFGSa(1:N,thisind)*smartdotproduct(LBFGSa(1:N,thisind),s,doefunc)
-!    end do
-!    end if
-!  end function
-
   function fdhmultiply(x,FDH_rows,FDH_H,FDH_diag)
   
     real(dp) :: x(:), FDH_H(:)
@@ -4096,7 +3667,6 @@ end subroutine line_scan
     LBFGSd = 0.0
     LBFGSl = 0.0
     LBFGSrinv = 0.0
-    !call print(LBFGSd(n_back-5:,n_back-5:))
     do I = 1,n_back
       do J = 1,n_back
         if (I <= J) LBFGSr(I,J) = LBFGSdlr(LBFGSm-n_back+I,LBFGSm-n_back+J)
@@ -4106,11 +3676,8 @@ end subroutine line_scan
     end do
  
     Bg = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,g,pr,doefunc)
-    !Bg = g
     su = -(smartdotproduct(g,g,doefunc)/smartdotproduct(g,Bg,doefunc))*g
     sunorm = sqrt(Pdotproduct(su,su,pr,doefunc))
-    !if(.true.) then
-    !  s = su/sunorm*Delta
     if (sunorm >=  Delta) then
       s = su*Delta/sunorm
     else 
@@ -4170,22 +3737,17 @@ end subroutine line_scan
     !Extract submatrices of S^T*Y
     LBFGSd = 0.0_dp
     LBFGSl = 0.0_dp
-    !call print(LBFGSd(n_back-5:,n_back-5:))
     do I = 1,n_back
       do J = 1,n_back
         if (I == J) LBFGSd(I,J) = LBFGSdlr(LBFGSm-n_back+I,LBFGSm-n_back+J)
         if (I > J) LBFGSl(I,J) = LBFGSdlr(LBFGSm-n_back+I,LBFGSm-n_back+J)
       end do
     end do
+    
     !Main Steihaug loop
     z = 0.0_dp
     r = -g
-    !if (present(LBFGSbuf)) then
-    !  rtilde = apply_precon(r,pr,doefunc,init=LBFGSbuf)
-    !  LBFGSbuf = rtilde
-    !else
     rtilde = apply_precon_gs(r,pr,doefunc,force_k=10)
-    !end if
     d = rtilde
     do     
       if(present(doSR1)) then
@@ -4196,21 +3758,17 @@ end subroutine line_scan
         BD = smartmatmul(FDhess,d,doefunc)
       end if
       alpd = smartdotproduct(d,Bd,doefunc)
-      !call print(alpd)
       if (alpd <= 0.0) then 
         a = Pdotproduct(d,d,pr,doefunc)
         b = 2.0*Pdotproduct(z,d,pr,doefunc)
         c = Pdotproduct(z,z,pr,doefunc) - Delta**2.0
         tau = (-b + sqrt(b**2.0 -4.0*a*c))/(2.0*a)
         s = z + tau*d
-        !call print("bmm")
-        !call exit()
         exit
       end if
       alpn = smartdotproduct(r,rtilde,doefunc)
       alp = alpn/alpd
       zcand = z + alp*d
-      !call print(alpn)
       normzcand = sqrt(Pdotproduct(zcand,zcand,pr,doefunc))
       if (normzcand >=  Delta) then
         a = Pdotproduct(d,d,pr,doefunc)
@@ -4218,27 +3776,16 @@ end subroutine line_scan
         c = Pdotproduct(z,z,pr,doefunc) - Delta**2.0
         tau = (-b + sqrt(b**2.0 -4.0*a*c))/(2.0*a)
         s = z + tau*d
-        !call print("smm")
         exit
       end if
       z = zcand
       r = r - alp*Bd
       normr = sqrt(Pdotproduct(r,r,pr,doefunc))
-      !call print(normr // ' '// eps//' '// normzcand // ' '//Delta)
       if (normr < eps) then
         s = z
-        !call print("hmm")
         exit
       endif
-      !call print(normr // '' //  eps)
-      !LBFGSbufinterior = rtilde - alp*d 
-      !if (first_cg .eqv. .true.) then
-      !  rtilde = apply_precon_gs(r,pr,doefunc,res2=10.0_dp**(-5.0),k_out=cg_iter_count)
-      !  first_cg = .false.
-      !  call print(cg_iter_count)
-      !else
       rtilde = apply_precon_gs(r,pr,doefunc,force_k=20)
-      !endif
       betn = smartdotproduct(r,rtilde,doefunc)
       bet = betn/alpn
       d = rtilde + bet*d
@@ -4274,14 +3821,8 @@ end subroutine line_scan
     integer :: INFO
     integer, allocatable :: IPIV(:)
     real(dp), allocatable :: midmat(:,:), midvec(:)
-    
-    !call writemat(LBFGSs,'LBFGSs')
-    !call writemat(LBFGSy,'LBFGSy')
-    !call writemat(LBFGSl,'LBFGSl')
-    !call writemat(LBFGSd,'LBFGSd')
-    !call writevec(v,'LBFGSv') 
-
     n_back = size(LBFGSs,dim=2)
+
     Bkv = do_mat_mult_vec(pr,v,doefunc)
     if (n_back>=1) then
       allocate(IPIV(n_back*2))
@@ -4344,27 +3885,25 @@ end subroutine line_scan
     allocate(LBFGSq(N),LBFGSz(N),LBFGSbet(n_back),LBFGSalp(n_back),LBFGSrho(n_back))
     
     do I =1,n_back
-          LBFGSrho(I) = 1.0/smartdotproduct(LBFGSs(1:N,I),LBFGSy(1:N,I),doefunc)
+      LBFGSrho(I) = 1.0/smartdotproduct(LBFGSs(1:N,I),LBFGSy(1:N,I),doefunc)
     end do
     LBFGSq = v
-        do I = 1,n_back
-          thisind = n_back - I + 1
+    do I = 1,n_back
+      thisind = n_back - I + 1
 
-          LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
-          !call print(LBFGSalp(I))
-          LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)  
-        end do
-        LBFGSz = apply_precon(LBFGSq,pr,doefunc)
-        !call print(k_out)
-        !call exit()
-        !LBFGSz = LBFGSq
-        do I = 1,n_back
-          thisind = I 
-          LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
-          LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
-        end do
-        Hkv = LBFGSz
- 
+      LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
+      LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)  
+    end do
+      
+    LBFGSz = apply_precon(LBFGSq,pr,doefunc)
+    
+    do I = 1,n_back
+      thisind = I 
+
+      LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
+      LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
+    end do
+    Hkv = LBFGSz
 
    end function
 
@@ -4407,21 +3946,23 @@ end subroutine line_scan
   end function
   
   !basic linear backtracking linesearch, relies on changing initial alpha to increase step size
-  function linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
+  function linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
 
     implicit none
 
     real(dp) :: x(:)
     real(dp) :: s(:)
     real(dp), intent(inout) :: f
+    real(dp), intent(inout) :: g(:)
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
    INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -4435,7 +3976,7 @@ end subroutine line_scan
     integer,parameter :: ls_it_max = 1000
     real(dp),parameter :: C = 10.0_dp**(-4.0)
     integer :: ls_it
-    real(dp) :: f1, f0, d0
+    real(dp) :: f1, f0, d0, g1(size(g))
     real(dp) :: amax
     real(dp) :: local_energy0(size(local_energy)),local_energy1(size(local_energy))
     real(dp) :: deltaE,deltaE2
@@ -4459,18 +4000,13 @@ end subroutine line_scan
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
-        f1 = func(x+alpha*s,data,local_energy1)
+        f1 = func(x+alpha*s,data,local_energy1,g1)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif     
       
       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
-      !deltaE2 = calcdeltaE((/.true.,.false./),f1,f0,local_energy0,local_energy1)
-
-      !call print(deltaE // ' ' // deltaE2)
-
-      !call print(alpha)
-
+      !call print(deltaE)
       if ( deltaE < C*alpha*d0) then
         exit
       end if
@@ -4490,6 +4026,7 @@ end subroutine line_scan
 
     linesearch_basic = alpha
     f = f1
+    g = g1
     local_energy = local_energy1
     !linesearch_basic = 15.0
     if(present(n_iter_final)) n_iter_final = ls_it
@@ -4506,12 +4043,13 @@ end subroutine line_scan
     real(dp) :: f
     real(dp) :: alpha
     INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp)::func
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
        end function func
     end INTERFACE
     INTERFACE
@@ -4599,19 +4137,21 @@ end subroutine line_scan
 
 
   ! standard two stage lineseach from N&W
-  function linesearch_standard(x,s,f,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
+  function linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
     implicit none
     real(dp) :: x(:)
     real(dp) :: s(:)
     real(dp), intent(inout) :: f
+    real(dp), intent(inout) :: g(:)
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
     INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -4667,27 +4207,17 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      f1 = func(x+a1*s,data,local_energy1)
+      f1 = func(x+a1*s,data,local_energy1,g1)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
 
       ls_it = ls_it + 1
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      g1 = dfunc(x+a1*s,data)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
-      
+     
       d1 = smartdotproduct(s,g1,doefunc)
       
       deltaE = calcdeltaE(doefunc,f1,f,local_energy1,local_energy)
       deltaE0 = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
-
-!      call print(x+a1*s)
-!      call print(dfunc(x+a1*s,data))
 
       if ( deltaE > C1*a1*d .OR. (deltaE0 >= 0.0   .AND. ls_it > 1 )) then
         dozoom = .TRUE.
@@ -4704,7 +4234,6 @@ end subroutine line_scan
 
       if ( abs(d1) <= C2*abs(d) ) then
         dozoom = .FALSE.
-        !call print('skipping zoom ' // d1 // ' '// d)        
         exit 
       end if
 
@@ -4722,7 +4251,7 @@ end subroutine line_scan
 
       if(ls_it>ls_it_max) then
         call print('Ran out of line search iterations in phase 1')
-        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+        a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
         n_iter_final = n_iter_final + ls_it
         dozoom = .FALSE.   
         exit
@@ -4730,7 +4259,7 @@ end subroutine line_scan
 
       if(a1 >= amax) then
         call print('Bracketing failed to find an interval, reverting to basic linesearch')
-        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+        a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
         n_iter_final = n_iter_final + ls_it
         dozoom = .FALSE.   
         exit
@@ -4754,17 +4283,12 @@ end subroutine line_scan
       
       ls_it = ls_it+1
       do
-        
-        
-       ! at = (alo+ahi)/2.0_dp 
-    !    call print( (/alo,ahi,flo,fhi,dlo,dhi/) )
-       
         at = cubic_min(alo,flo,dlo,ahi,fhi,dhi)
         
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
-        ft = func(x+at*s,data,local_energyT)
+        ft = func(x+at*s,data,local_energyT,gt)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
@@ -4773,9 +4297,6 @@ end subroutine line_scan
         deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
         deltaETlo = calcdeltaE(doefunc,ft,flo,local_energyT,local_energylo)
       
-        !call print(at // ' '// alo// ' '// ahi// ' ' // ft // ' '// flo// ' '//fhi)
-
-        !if ( deltaET >  C1*at*d .OR. ft >= flo) then
         if ( deltaET >  C1*at*d .OR. deltaETlo >= 0.0) then
           
           ahi = at
@@ -4783,26 +4304,14 @@ end subroutine line_scan
           local_energyhi = local_energyT
 
         else 
-
-
-#ifndef _OPENMP
-          call verbosity_push_decrement()
-#endif
-          gt = dfunc(x+at*s,data)
-#ifndef _OPENMP
-          call verbosity_pop()
-#endif
-          dt = dot_product(gt,s)
+         dt = dot_product(gt,s)
          
-         ! call print(dt // ' '// -C2*d)
           
           if ( abs(dt) <= C2*abs(d) ) then
 
             a1 = at
             f1 = ft
             local_energy1 = local_energyT
-            
-       !     call print(ft // ' '//f)
             
             exit
 
@@ -4832,7 +4341,7 @@ end subroutine line_scan
             exit
           else
             call print('Bracket lowpoint no good, doing a step of basic linesearch with original initial inputs')
-            a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+            a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
             n_iter_final = n_iter_final + ls_it
             exit
           end if
@@ -4840,7 +4349,7 @@ end subroutine line_scan
 
         if(ls_it>ls_it_max) then
           call print('Ran out of line search iterations in phase 2')
-          a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+          a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
           n_iter_final = n_iter_final + ls_it
           exit
         end if
@@ -4853,6 +4362,8 @@ end subroutine line_scan
     n_iter_final = ls_it
     linesearch_standard = a1
     f = f1
+    local_energy = local_energy1
+    g = g1
   end function linesearch_standard
 
   function linesearch_morethuente(x,s,finit,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
@@ -4863,11 +4374,12 @@ end subroutine line_scan
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
     INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -5928,11 +5440,12 @@ end subroutine line_scan
    subroutine sanity(x,func,dfunc,data)
     real(dp) :: x(:)
     INTERFACE 
-      function func(x,data,local_energy)
+      function func(x,data,local_energy,gradient)
         use system_module
         real(dp)::x(:)
         character(len=1),optional::data(:)
         real(dp), intent(inout),optional :: local_energy(:)
+        real(dp), intent(inout),optional :: gradient(:)
         real(dp)::func
       end function func
     end INTERFACE
@@ -6089,11 +5602,12 @@ end subroutine line_scan
     
     real(dp),     intent(inout) :: x_in(:) !% Starting position
     INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -6232,7 +5746,7 @@ end subroutine line_scan
       k2 = 0
       olddeltatheta = 2.1*pi
       do
-        call dorotate(x,Nvec,deltaR,func,dfunc,am_data,doefunc,deltatheta,pr)
+        !call dorotate(x,Nvec,deltaR,func,dfunc,am_data,doefunc,deltatheta,pr)
         if (abs(deltatheta) <= 10.0_dp**(-10.0) .or. k2 >=20 .or. deltatheta > olddeltatheta/10.0) then
           exit
         end if
@@ -6372,11 +5886,12 @@ end subroutine line_scan
     real(dp) :: e1,e2
     real(dp) :: local_energy1(:), local_energy2(:)
     INTERFACE 
-      function func(x,data,local_energy)
+      function func(x,data,local_energy,gradient)
         use system_module
         real(dp)::x(:)
         character(len=1),optional::data(:)
         real(dp), intent(inout),optional :: local_energy(:)
+        real(dp), intent(inout),optional :: gradient(:)
         real(dp)::func
       end function func
     end INTERFACE
@@ -6431,14 +5946,14 @@ end subroutine line_scan
 
     do
       
-      x1star = x + (Nvec*cos(deltadtheta) + thetavec*sin(deltatheta))*deltaR
-      x2star = x - (Nvec*cos(deltadtheta) + thetavec*sin(deltatheta))*deltaR
+      x1star = x + (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
+      x2star = x - (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
  
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      e11 = func(x1star,data,local_energy11)
-      e21 = func(x2star,data,local_energy21)
+      e11 = func(x1star,am_data,local_energy11)
+      e21 = func(x2star,am_data,local_energy21)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif     
@@ -6446,22 +5961,22 @@ end subroutine line_scan
       deltaE1 = calcdeltaE(doefunc,e11,e1,local_energy11,local_energy1)
       deltaE2 = calcdeltaE(doefunc,e21,e2,local_energy21,local_energy2)
       
-      !call print(alpha // " "//deltaE)
-      if ( (deltaE1 + deltaE2) < C*deltatheta*d0) then
-        exit
-      end if
-
-      if(ls_it>ls_it_max) then
-        exit
-      end if
-      
-      ls_it = ls_it + 1
-       = alpha/4.0_dp
-      
-      if (alpha <1.0e-15) then
-        exit
-      end if
-         
+!      !call print(alpha // " "//deltaE)
+!      if ( (deltaE1 + deltaE2) < C*deltatheta*d0) then
+!        exit
+!      end if
+!
+!      if(ls_it>ls_it_max) then
+!        exit
+!      end if
+!      
+!      ls_it = ls_it + 1
+!     !  = alpha/4.0_dp
+!      
+!      if (alpha <1.0e-15) then
+!        exit
+!      end if
+!         
        
     end do 
 
@@ -6760,11 +6275,12 @@ end subroutine
     real(dp), intent(inout) :: local_energy1(:),local_energy2(:)
     real(dp) :: alpha
    INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -6858,11 +6374,12 @@ end subroutine
     real(dp), intent(inout) :: local_energy1(:),local_energy2(:)
     real(dp) :: alpha
    INTERFACE 
-       function func(x,data,local_energy)
+       function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
          character(len=1),optional::data(:)
          real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
          real(dp)::func
        end function func
     end INTERFACE

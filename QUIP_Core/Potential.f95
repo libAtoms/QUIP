@@ -360,6 +360,8 @@ module Potential_module
   public :: fix_atoms_deform_grad
   public :: prep_atoms_deform_grad
   public :: max_rij_change
+  public :: constrain_virial_post
+
 
   public :: potential_minimise
   type Potential_minimise

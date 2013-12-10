@@ -879,17 +879,20 @@ module Potential_Precon_Minim_module
 !  end function
  
   ! compute energy
-  function energy_func_local(x, am_data, local_energy_inout)
+  function energy_func_local(x, am_data, local_energy_inout,gradient_inout)
     real(dp) :: x(:)
     character(len=1), optional :: am_data(:)
     real(dp) :: energy_func_local
-    real(dp), intent(inout),optional :: local_energy_inout(:)
+    real(dp), intent(inout),optional :: local_energy_inout(:), gradient_inout(:)
 
     real(dp) :: max_atom_rij_change
     real(dp) :: deform_grad(3,3)
     type(potential_minimise)  :: am
     real(dp) , allocatable :: le(:)
-
+    real(dp) , allocatable :: f(:,:)
+    real(dp) :: virial(3,3),  deform_grad_inv(3,3)
+    integer :: i
+    integer, pointer, dimension(:) :: move_mask, fixed_pot
     call system_timer("energy_func")
 
     if (.not. present(am_data)) call system_abort("potential_minimise energy_func must have am_data")
@@ -912,20 +915,6 @@ module Potential_Precon_Minim_module
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
-    ! Safety factor of 1.1, just in case
-    ! Note: TB will return 0 for cutoff(am%minim_pot), but TB does its own calc_connect, so doesn't matter
-!    if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
-!      call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
-!        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-!      call calc_connect(am%minim_at)
-!      am%last_connect_x = x
-!    else
-!      !call print("rah")
-!      call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
-!        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-!      call calc_dists(am%minim_at)
-!    end if
- 
     call calc_connect(am%minim_at)
     am%last_connect_x = x
  
@@ -933,18 +922,58 @@ module Potential_Precon_Minim_module
     if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
 
     allocate(le(am%minim_at%n))
-    call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, args_str = am%minim_args_str)
-    call print ("energy_func got energy " // energy_func_local, PRINT_NERD)
-    
-    !call print(size(le),PRINT_ALWAYS)
-    !call print(size(local_energy_inout),PRINT_ALWAYS)
-    !call print("rah")
-    !call exit()
-    
-    if (present(local_energy_inout)) then 
-    local_energy_inout = le
-    end if
+    if( .not. present(gradient_inout) ) then
+      call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, args_str = am%minim_args_str)
+    else
+      allocate(f(3,am%minim_at%N))
+      f = 0.0_dp
+      virial = 0.0_dp
+      if (am%minim_do_pos .and. am%minim_do_lat) then
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, force = f, virial = virial, args_str = am%minim_args_str)
+      else if (am%minim_do_pos) then
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, force = f, args_str = am%minim_args_str)
+      else
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, virial = virial, args_str = am%minim_args_str)
+      endif
 
+
+    ! zero forces if fixed by potential
+      if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_pot", fixed_pot)) then
+        do i=1, am%minim_at%N
+          if (fixed_pot(i) /= 0) f(:,i) = 0.0_dp
+        end do
+      endif
+
+    ! Zero force on any fixed atoms
+      if (assign_pointer(am%minim_at, 'move_mask', move_mask)) then
+        do i=1,am%minim_at%N
+          if (move_mask(i) == 0) f(:,i) = 0.0_dp
+        end do
+      end if
+
+      call print ("gradient_func got f", PRINT_NERD)
+      call print(f, PRINT_NERD)
+      call print ("gradient_func got virial", PRINT_NERD)
+      call print(virial, PRINT_NERD)
+
+      virial = virial - am%external_pressure*cell_volume(am%minim_at)
+      call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
+      call print(virial, PRINT_NERD)
+
+      f = transpose(deform_grad) .mult. f
+
+      call inverse(deform_grad, deform_grad_inv)
+      virial = virial .mult. transpose(deform_grad_inv)
+
+      call constrain_virial_post(am%minim_at, virial)
+
+      call pack_pos_dg(-f, -virial, gradient_inout, 1.0_dp/am%pos_lat_preconditioner_factor)
+    end if
+    if (present(local_energy_inout)) then 
+      local_energy_inout = le
+    end if
+  
+    call print ("energy_func got energy " // energy_func_local, PRINT_NERD)
     energy_func_local = energy_func_local + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
     call print ("energy_func got enthalpy " // energy_func_local, PRINT_NERD)
 
