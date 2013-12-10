@@ -134,7 +134,10 @@ module Potential_Precon_Minim_module
       !call print("rah")  
       !if(am%minim_at%move_mask(I) == 1) then
       
-      if(this%has_fixed .and.am%minim_at%move_mask(I) == 0) cycle
+      if(this%has_fixed .and.am%minim_at%move_mask(I) == 0) then
+        this%preconcoeffs(1,I,1) = 1.0
+        cycle
+      end if
       
       thisneighcount = n_neighbours(am%minim_at,I)
       thisneighcountlocal = n_neighbours(am%minim_at,I,max_dist=this%cutoff)
@@ -233,6 +236,10 @@ module Potential_Precon_Minim_module
 
       !end if
     end do
+    else
+    do I = 1,(am%minim_at%N)
+      this%preconcoeffs(1,I,1) = 1.0
+    end do 
     end if
 
     !call exit()
@@ -551,14 +558,16 @@ module Potential_Precon_Minim_module
       am%minim_args_str = ""
     endif
     am%minim_pot => this
-
-    if (.not.present(do_pos) .and. .not. present(do_lat)) then
-      am%minim_do_pos = .true.
-      am%minim_do_lat = .true.
-    else
-      am%minim_do_pos = optional_default(.false., do_pos)
-      am%minim_do_lat = optional_default(.false., do_lat)
-    endif
+    
+!      am%minim_do_lat = .false.
+    am%minim_do_lat = .false.
+!  if (.not.present(do_pos) .and. .not. present(do_lat)) then
+!      am%minim_do_pos = .true.
+!      am%minim_do_lat = .true.
+!    else
+!      am%minim_do_pos = optional_default(.false., do_pos)
+!      am%minim_do_lat = optional_default(.false., do_lat)
+!    endif
 
     am%external_pressure = 0.0_dp
     if (present(external_pressure)) then
@@ -634,8 +643,6 @@ module Potential_Precon_Minim_module
     done = .true.
     deallocate(am%last_connect_x)
     deallocate(x)
-    call print("MINIM_N_EVAL E " // am%minim_n_eval_e // " F " // am%minim_n_eval_f // &
-      " EF " // am%minim_n_eval_ef, PRINT_VERBOSE)
 
     Precon_Potential_Dimer = n_iter_tot
 
