@@ -560,6 +560,10 @@ class AtomsReaderViewer(AtomsReader, QuippyViewer):
         if cache:
             total_mem, free_mem = mem_info()
             kwargs['cache_mem_limit'] = 0.5*free_mem
+        if fortran_indexing is None:
+            fortran_indexing = False
+            if hasattr(source, 'fortran_indexing'):
+                fortran_indexing = source.fortran_indexing
         AtomsReader.__init__(self, source, fortran_indexing=fortran_indexing, rename=rename, **kwargs)
         QuippyViewer.__init__(self, name, verbose=verbose, fortran_indexing=fortran_indexing)
 
@@ -582,6 +586,10 @@ class AtomsListViewer(AtomsList, QuippyViewer):
     Subclass of AtomsList and AtomEyeViewer
     """
     def __init__(self, source=None, name=None, fortran_indexing=None, rename=None, **kwargs):
+        if fortran_indexing is None:
+            fortran_indexing = False
+            if hasattr(source, 'fortran_indexing'):
+                fortran_indexing = source.fortran_indexing
         AtomsList.__init__(self, source, fortran_indexing=fortran_indexing, rename=rename, **kwargs)
         QuippyViewer.__init__(self, name, fortran_indexing=fortran_indexing)
 
