@@ -3097,7 +3097,7 @@ end subroutine line_scan
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
     logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente,doLSunit
     logical :: doefunc(3)
-    real(dp),allocatable :: x(:),xold(:),s(:),sold(:),g(:),gold(:),pg(:),pgold(:),xcand(:)
+    real(dp),allocatable :: x(:),xold(:),s(:),sold(:),g(:),gold(:),pg(:),pgold(:),xcand(:),gcand(:)
     real(dp) :: alpha,alphamax, beta,betanumer,betadenom,f
     integer :: n_iter,N, abortcount
     real(dp),allocatable :: alpvec(:),dirderivvec(:)
@@ -3218,6 +3218,7 @@ end subroutine line_scan
     end if
     if(doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doSHFD ) then
       allocate(xcand(N))
+      allocate(gcand(N))
       allocate(LBFGSb(N,LBFGSm))
       allocate(TRBs(N))
    end if
@@ -3484,7 +3485,7 @@ end subroutine line_scan
         elseif (doSHFD) then
           call gethessian(x,am_data,FDHess)
           s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doFD=.true.,FDhess=FDHess) 
-             elseif (doDLLBFGS) then
+        elseif (doDLLBFGS) then
           s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr) 
         end if  
         xcand = x + s
@@ -3493,7 +3494,7 @@ end subroutine line_scan
 #ifndef _OPENMP
         call verbosity_push_decrement(2)
 #endif
-        fcand = func(xcand,am_data,local_energycand)
+        fcand = func(xcand,am_data,local_energycand,gcand)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
@@ -3534,13 +3535,7 @@ end subroutine line_scan
           x = xcand
           f = fcand     
           local_energy = local_energycand     
-#ifndef _OPENMP
-          call verbosity_push_decrement(2)
-#endif
-          g = dfunc(x,am_data)
-#ifndef _OPENMP
-          call verbosity_pop()
-#endif
+          g = gcand
           normsqgrad = smartdotproduct(g,g,doefunc)
           call build_precon(pr,am_data)
         
