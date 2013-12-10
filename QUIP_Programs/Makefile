@@ -47,18 +47,13 @@ PROGRAMS = eval md \
   quip_wrapper_example quip_wrapper2_example descriptors_wrapper_example test_cova \
   slice_sample order_atoms_as_molecules
 
-DAVE_PROGRAMS = davetest davetest2 davetest3 davetest4 \
-  davetest5 davetest6 davetestMEP davetestMEP2 buildtestxyz \
-  davetestMEP3 davetestGabor davetestGabor2 davetestGabor3 davetestChristoph
-
-
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
 endif
 
 default: 
 
-all: ${PROGRAMS} ${DAVE_PROGRAMS}
+all: ${PROGRAMS}
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
 ifeq (${HAVE_CP2K},1)
