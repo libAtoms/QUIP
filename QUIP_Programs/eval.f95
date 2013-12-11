@@ -114,7 +114,7 @@ implicit none
   logical test_ok
   integer error
 
-  integer i, n_iter, j
+  integer i, n_iter, j, n_descriptors, n_cross
 
   call system_initialise()
 
@@ -668,11 +668,12 @@ implicit none
 #ifdef HAVE_GAP
      if ( has_descriptor_str ) then
 	did_anything = .true.
-        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),at%N))
-call print("calling descriptor calc")
+        call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
+        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
+
         call calc(eval_descriptor,at,descriptor_array)
         mainlog%prefix = "DESC"
-        do i = 1, at%N
+        do i = 1, n_descriptors
            call print(""//descriptor_array(:,i), PRINT_ALWAYS, mainlog)
         end do
         mainlog%prefix = ""
