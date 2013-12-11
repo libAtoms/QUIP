@@ -470,7 +470,7 @@ end subroutine potential_initialise_inoutput
 
 recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  character(len=*), optional, intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(Potential), optional, intent(in), target :: pot1 !% Optional first Potential upon which this Potential is based
   type(Potential), optional, intent(in), target :: pot2 !% Optional second potential
   character(len=*), optional, intent(in) :: param_str !% contents of xml parameter file for potential initializers, if needed
@@ -483,13 +483,31 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
   real(dp) :: target_vol, target_B, r_scale, vol, B
-  character(len=STRING_LENGTH) :: my_args_str, init_args_str
+  character(len=STRING_LENGTH) :: my_args_str, init_args_str, first_tag, xml_label
   type(Atoms) :: bulk
-  integer :: it
+  integer :: it, tag_start, tag_end
 
   INIT_ERROR(error)
 
   call finalise(this)
+
+  my_args_str = ''
+  if (present(args_str)) my_args_str = args_str
+
+  ! Default init_args are xml_label=LABEL, extracting LABEL from first XML tag
+  if (len_trim(my_args_str) == 0) then
+     if (.not. present(param_str)) then
+        RAISE_ERROR('No init_args given and param_str not present', error)
+     end if
+     if (len_trim(param_str) == 0) then
+        RAISE_ERROR('No init_args given and param_str is empty', error)
+     end if
+     tag_start = index(param_str, '<')
+     tag_end = index(param_str, '>')
+     xml_label = param_str(tag_start+1:tag_end-1)
+     call print_warning('Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"')
+     my_args_str = 'Potential xml_label='//xml_label
+  end if
 
   call initialise(params)
   call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="Label in xml file Potential stanza to match")
