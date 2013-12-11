@@ -4,19 +4,20 @@
 # used by quippy and AtomEye for Fortran<->C interoperability
 
 
-cat > build.${QUIP_ARCH}/Makefile.tmp <<EOF
-ifeq (${QUIP_ARCH},)
+cat > build.${QUIP_ARCH}/Makefile <<EOF
+ifeq (\${QUIP_ARCH},)
   include Makefile.arch
 else
-  include Makefile.${QUIP_ARCH}
+  include Makefile.\${QUIP_ARCH}
 endif
 include Makefile.inc
 include Makefile.rules
+
+sizeof_fortran_t: sizeof_fortran_t.f90
+	\${F90} \$< -o \$@
 EOF
 
 cd build.${QUIP_ARCH}
-F90=$(make -f Makefile.tmp -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} -I ${QUIP_ROOT} -p 2> /dev/null | grep '^F90'| awk '{print $3}')
-rm Makefile.tmp
 
 cat > sizeof_fortran_t.f90 <<EOF
 program sizeof_fortran_t
@@ -32,8 +33,10 @@ program sizeof_fortran_t
 end program sizeof_fortran_t
 EOF
 
-${F90} sizeof_fortran_t.f90 -o sizeof_fortran_t
+make -I ../Makefiles -I.. sizeof_fortran_t > /dev/null
 echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
 
 rm sizeof_fortran_t.f90
 rm sizeof_fortran_t
+rm Makefile
+
