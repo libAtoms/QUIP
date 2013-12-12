@@ -704,7 +704,7 @@ class Minim(Optimizer):
         self._atoms = atoms
         if not isinstance(atoms, Atoms):
             potlog.warn('Minim atoms is not quippy.Atoms instance, copy forced!')
-            atoms = Atoms(atoms, fortran_indexing=False)
+            atoms = Atoms(atoms)
         self.atoms = atoms
 
         self.nsteps = 0
@@ -804,8 +804,7 @@ class ForceMixingPotential(Potential):
 
     def __init__(self, pot1, pot2, bulk_scale=None, mpi_obj=None,
                  callback=None, calculator=None, cutoff_skin=1.0, atoms=None,
-                 qm_list=None, fortran_indexing=True, fpointer=None, finalise=True,
-                 error=None, **kwargs):
+                 qm_list=None, fpointer=None, finalise=True, error=None, **kwargs):
 
         args_str = 'ForceMixing'
         Potential.__init__(self, args_str,
