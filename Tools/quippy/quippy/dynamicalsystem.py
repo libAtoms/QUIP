@@ -154,10 +154,6 @@ class Dynamics(object):
             atoms = Atoms(atoms)
         self.atoms = atoms
 
-        fortran_indexing = False
-        if hasattr(atoms, 'fortran_indexing'):
-            fortran_indexing = atoms.fortran_indexing
-
         if self.atoms.has('masses'):
             if self.atoms.has_property('mass'):
                 if abs(self.atoms.mass/MASSCONVERT - self.atoms.get_masses()) > 1e-3:
@@ -184,7 +180,7 @@ class Dynamics(object):
                 self.atoms.set_momenta(np.zeros_like(self.atoms.positions))
                 self.atoms.add_property('velo', 0., n_cols=3)            
 
-        self._ds = DynamicalSystem(self.atoms, fortran_indexing=fortran_indexing)
+        self._ds = DynamicalSystem(self.atoms)
 
         if initialtemperature is not None:
             if not all(abs(self._ds.atoms.velo) < 1e-3):

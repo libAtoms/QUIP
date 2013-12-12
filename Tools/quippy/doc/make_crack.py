@@ -11,6 +11,7 @@ from ase.lattice.cubic import Diamond
 from ase.constraints import FixAtoms
 import ase.units as units
 
+from quippy import set_fortran_indexing
 from quippy.atoms import Atoms
 from quippy.potential import Potential, Minim
 from quippy.elasticity import youngs_modulus, poisson_ratio
@@ -55,6 +56,7 @@ output_file = 'crack.xyz'            # File to which structure will be written
 
 # ******* End of parameters *************
 
+set_fortran_indexing(False)
 
 # ********** Build unit cell ************
 

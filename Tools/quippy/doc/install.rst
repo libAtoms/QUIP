@@ -52,12 +52,7 @@ Essential:
  * A fortran compiler:
 
    * ifort 10 or later (tested with 10.1.015 and 11.0.084)
-   * gfortran 4.3.3 or later (tested with svn version of 4.3.3 branch, available by
-     anonymous svn from `svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_3_release 
-     <svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_3_release>`_, and with stable 4.4 release)
-     With 4.3.2 or earlier you run into an 
-     `internal compiler error <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735>`_, 
-     reported by Steve Winfield and now fixed.
+   * gfortran 4.3.3 or later
    * Others that should work but haven't been tested: `pathf95`, `g95`, `pgf95`, `xlf95`
 
 Optional:
@@ -66,53 +61,39 @@ Optional:
  * `matplotlib <http://matplotlib.sourceforge.net>`_ is a useful plotting library which integrates well with ipython
  * `AtomEye <http://mt.seas.upenn.edu/Archive/Graphics/A3/A3.html>`_
    atomistic configuration viewer.  A modified version of AtomEye
-   which integrates with quippy is available from the QUIP `svn
-   repository <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye>`_
+   which integrates with quippy is available from my `GitHub
+   repository <https://www.github.com/jameskermode/AtomEye>`_
  * `scipy <http://www.scipy.org>`_ provides more scientific
    functionality e.g. least squares fitting, optimisation, etc.
 
 Getting quippy
 --------------
 
-If you have an account on the QUIP `svn repository server
-<https://camtools.cam.ac.uk/access/wiki/site/5b59f819-0806-4a4d-0046-bcad6b9ac70f/svnrepository.html>`_, 
-you should checkout a copy of the QUIP trunk::
+You can download QUIP and quippy from our public `GitHub repository
+<https://www.github.com/libAtoms/QUIP>`_ ::
 
-  svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/QUIP QUIP
-
-If you don't have an account, you can download the `current snapshot
-<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release?view=tar>`_
-(~ 6MB) of the svn repository as a tarball. Extracting this archive will create a
-:file:`QUIP` tree.
+  git clone https://github.com/libAtoms/QUIP.git
 
 We'll use the environment variable :envvar:`QUIP_ROOT` to refer
-to the root of the QUIP tree. The :file:`libAtoms`, :file:`QUIP_Core`,
-:file:`QUIP_Util` and :file:`QUIP_Programs` directories contain
-Fortran 95 source code. quippy itself lives in the
-:file:`{QUIP_ROOT}/Tools/quippy` directory
+to the root of the QUIP tree::
 
-If you want to include the AtomEye extension, you should check it out
-under :file:`${QUIP_ROOT}/Tools`, and then compile it as a Python extension
-module::
+  export QUIP_ROOT=~/QUIP/
 
-  cd ${QUIP_ROOT}/Tools
-  svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye AtomEye
+The :file:`libAtoms`, :file:`QUIP_Core`, :file:`QUIP_Util` and
+:file:`QUIP_Programs` directories contain Fortran 95 source
+code. quippy itself lives in the :file:`{QUIP_ROOT}/Tools/quippy`
+directory.
+
+If you want to use the :mod:`atomeye` extension, you should check it
+out and compile it as a Python extension module::
+
+  git clone https://www.github.com/jameskermode/AtomEye
   cd AtomEye/Python
   python setup.py install
 
 .. note::
    If you've previously compiled AtomEye as an exectuable, you should do
    a `make clean` first.
-
-   It's important that the :envvar:`QUIP_ROOT` is correctly set so that AtomEye
-   can find the rest of QUIP, e.g. ::
-
-     export QUIP_ROOT=~/QUIP/
-
-Again, if you don't have an account you can download a `snapshot
-<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye?view=tar>`_
-(~ 2MB) which you should extract under :file:`${QUIP_ROOT}/Tools`
-
 
 Configuring quippy
 ------------------

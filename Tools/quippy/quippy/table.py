@@ -21,6 +21,7 @@ import numpy as np
 import quippy
 from quippy import _table
 from quippy._table import *
+from quippy import get_fortran_indexing, set_fortran_indexing
 from quippy.farray import FortranArray
 
 __doc__ = _table.__doc__
@@ -66,9 +67,9 @@ class Table(_table.Table):
         If force_fortran_indexing is True (the default), all atom indices
         are converted to Fortran 1-based indexing.
         """
-        orig_fortran_indexing = atoms.fortran_indexing
-        atoms.fortran_indexing = force_fortran_indexing
-
+        orig_fortran_indexing = get_fortran_indexing()
+        set_fortran_indexing(force_fortran_indexing)
+        
         try:
             if mask is None and list is None:
                 raise ValueError('Either mask or list must be present.')
@@ -82,20 +83,20 @@ class Table(_table.Table):
                     raise ValueError('size of mask must equal number of atoms')
                 mask = mask.astype(bool)
                 # use indexing style given by force_fortran_indexing
-                list = atoms.indices[mask].nonzero()[0]
+                list = atoms.indices[mask]
 
-            self = cls(4,0,0,0, fortran_indexing=force_fortran_indexing)
+            self = cls(4,0,0,0)
             self.append(blank_rows=len(list))
             self.int[:,:] = 0
 
-            if self.fortran_indexing:
+            if get_fortran_indexing():
                 first_column = 1
             else:
                 first_column = 0
             self.int[first_column,:] = list
             
         finally:
-            atoms.fortran_indexing = orig_fortran_indexing
+            set_fortran_indexing(orig_fortran_indexing)
 
         self.atoms = weakref.ref(atoms)
         return self
@@ -128,12 +129,8 @@ class Table(_table.Table):
         Return list of atom indices that this Table represents.
 
         Indices returns are 0-based or 1-based depending on value of
-        atoms.fortran_indexing.
+        :func:`~quippy.get_fortran_indexing`.
 
-        This assumes that indexing scheme of Table contents is consistent
-        with self.fortran_indexing (this is true if Table was constructed
-        by Table.from_atom_indices).
-  
         If `atoms` is not present, the Atoms object passed to
         Table.from_atom_indices is used, or an exception is raised if this
         Table was not created in that way.
@@ -146,15 +143,11 @@ class Table(_table.Table):
             if atoms is None:
                 raise ValueError('weakref to Table.atoms has expired')
                 
-        if self.fortran_indexing:
+        if get_fortran_indexing():
             first_column = 1
         else:
             first_column = 0
         indices = self.int[first_column,:].copy()
-        if self.fortran_indexing and not atoms.fortran_indexing:
-            indices -= 1
-        elif not self.fortran_indexing and atoms.fortran_indexing:
-            indices += 1
         return list(indices)
 
 
@@ -163,11 +156,7 @@ class Table(_table.Table):
         Return mask for atom indices that this Table represents
 
         Result is either an array of an FortranArray, depending on
-        value of atoms.fortran_indexing.
-
-        This assumes that indexing scheme of Table contents is consistent
-        with self.fortran_indexing (this is true if Table was constructed
-        by Table.from_atom_indices).
+        value of :func:`~quippy.get_fortran_indexing`.
 
         If `atoms` is not present, the Atoms object passed to
         Table.from_atom_indices is used, or an exception is raised if this
@@ -175,7 +164,7 @@ class Table(_table.Table):
         """
 
         mask = np.zeros(len(atoms), dtype=bool)
-        if atoms.fortran_indexing:
+        if get_fortran_indexing():
             mask = mask.view(FortranArray)
         mask[self.to_atom_list(atoms)] = True
         return mask

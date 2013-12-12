@@ -597,7 +597,7 @@ Alternatively, you can read the XML string from a file::
    >>> pot = Potential('IP SW', param_filename='sw.xml')
 
 If no XML parameters are given, the QUIP parameter database (located
-in the directory :svn:`/QUIP_Core/parameters`) is searched for
+in the directory :git:`/QUIP_Core/parameters`) is searched for
 matching parameters::
   
    >>> pot = Potential('IP SW')

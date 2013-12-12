@@ -24,6 +24,7 @@ import numpy as np
 
 from quippy import _potential
 from quippy._potential import *
+from quippy import get_fortran_indexing
 from quippy.clusters import HYBRID_NO_MARK, HYBRID_ACTIVE_MARK
 from quippy.oo_fortran import update_doc_string
 from quippy.atoms import Atoms
@@ -124,14 +125,14 @@ with `atoms` to the new :class:`Potential` instance, by calling
     array in :attr:`.Atoms.arrays` containing volumes for each atom.
 
 """,
-    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms, fortran_indexing])')
+    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms])')
 
     callback_map = {}
 
     def __init__(self, init_args=None, pot1=None, pot2=None, param_str=None,
                  param_filename=None, bulk_scale=None, mpi_obj=None,
                  callback=None, calculator=None, cutoff_skin=1.0, atoms=None,
-                 fortran_indexing=True, fpointer=None, finalise=True,
+                 fpointer=None, finalise=True,
                  error=None, **kwargs):
 
         self.atoms = None
@@ -177,7 +178,6 @@ with `atoms` to the new :class:`Potential` instance, by calling
                                          param_str=param_str,
                                          bulk_scale=bulk_scale,
                                          mpi_obj=mpi_obj,
-                                         fortran_indexing=fortran_indexing,
                                          fpointer=fpointer, finalise=finalise,
                                          error=error)
         
@@ -329,7 +329,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.atoms = weakref.proxy(atoms)
         else:
             potlog.debug('Potential atoms is not quippy.Atoms instance, copy forced!')
-            self.atoms = Atoms(atoms, fortran_indexing=False)
+            self.atoms = Atoms(atoms)
 
         # check if atoms has changed since last call
         if self._prev_atoms is not None and self._prev_atoms.equivalent(self.atoms):
@@ -461,7 +461,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.calc_elastic_constants(self.atoms, fd=cij_dx,
                                         args_str=self.get_calc_args_str(),
                                         c=cij, relax_initial=False, return_relaxed=False)
-            if not self.atoms.fortran_indexing:
+            if not get_fortran_indexing():
                 cij = cij.view(np.ndarray)
             self.elastic_constants = cij
 
@@ -471,7 +471,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.calc_elastic_constants(self.atoms, fd=cij_dx,
                                         args_str=self.get_calc_args_str(),
                                         c0=c0ij, relax_initial=False, return_relaxed=False)
-            if not self.fortran_indexing:
+            if not get_fortran_indexing():
                 c0ij = c0ij.view(np.ndarray)
             self.unrelaxed_elastic_constants = c0ij
 
@@ -811,8 +811,7 @@ class ForceMixingPotential(Potential):
         Potential.__init__(self, args_str,
                            pot1=pot1, pot2=pot2, bulk_scale=bulk_scale,
                            mpi_obj=mpi_obj, cutoff_skin=cutoff_skin,
-                           atoms=atoms, fortran_indexing=fortran_indexing,
-                           fpointer=fpointer, finalise=finalise,
+                           atoms=atoms, fpointer=fpointer, finalise=finalise,
                            error=error)
         if qm_list is not None:
             self.set_qm_atoms(qm_list)

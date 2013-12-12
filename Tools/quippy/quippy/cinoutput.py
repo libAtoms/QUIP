@@ -19,7 +19,7 @@
 from quippy import _cinoutput
 from quippy._cinoutput import *
 
-from quippy import netcdf_file
+from quippy import netcdf_file, get_fortran_indexing
 from quippy.system import INPUT, OUTPUT, INOUT
 from quippy.atoms import Atoms
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
@@ -169,7 +169,7 @@ class CInOutputReader(object):
             except AttributeError:
                 try:
                     a = self.netcdf_file.variables[name][:]
-                    if self.fortran_indexing:
+                    if get_fortran_indexing():
                         a = farray(a)
                     return a
                 except KeyError:

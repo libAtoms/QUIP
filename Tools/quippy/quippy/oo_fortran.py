@@ -35,7 +35,7 @@ import numpy as np
 from quippy.farray import *
 from quippy.util import args_str, is_interactive_shell
 from quippy.dictmixin import PuPyDictionary
-from quippy import fortran_indexing # default value
+from quippy import get_fortran_indexing
 import quippy.arraydata as arraydata
 
 __all__ = ['FortranDerivedType', 'FortranDerivedTypes', 'wrap_all']
@@ -263,7 +263,7 @@ def process_in_args(args, kwargs, inargs, prefix, args_str_args, routine_name):
 
     return tuple(newargs), tuple(modargs), newkwargs, modkwargs
 
-def process_results(res, args, kwargs, inargs, outargs, prefix, fortran_indexing):
+def process_results(res, args, kwargs, inargs, outargs, prefix):
     newres = []
 
     madeseq = False
@@ -277,7 +277,7 @@ def process_results(res, args, kwargs, inargs, outargs, prefix, fortran_indexing
             if spec['type'].startswith('type'):
                 newres.append(FortranDerivedTypes[spec['type'].lower()](fpointer=r,finalise=True))
             elif isinstance(r, np.ndarray):
-                if fortran_indexing:
+                if get_fortran_indexing():
                     # Convert to one-based FortranArray
                     r = r.view(FortranArray)
                 newres.append(r)
@@ -328,7 +328,6 @@ class FortranDerivedType(object):
     _elements = {}
     _cmp_skip_fields = []
     _cmp_tol = 1e-8
-    _fortran_indexing = fortran_indexing
 
     _prefix = ''
 
@@ -350,11 +349,6 @@ class FortranDerivedType(object):
             self._finalise = kwargs['finalise']
             del kwargs['finalise']
 
-        if 'fortran_indexing' in kwargs:
-            self.fortran_indexing = kwargs['fortran_indexing']
-            #print 'setting %s fortran_indexing id %d to %r' % (self.__class__.__name__, id(self), self.fortran_indexing)
-            del kwargs['fortran_indexing']
-
         orig_args = args
         orig_kwargs = kwargs.copy()
 
@@ -369,15 +363,6 @@ class FortranDerivedType(object):
 
     def __len__(self):
         return self.n        
-
-    def _set_fortran_indexing(self, fortran_indexing):
-        self._fortran_indexing = fortran_indexing
-        self._subobjs_cache = {}
-
-    def _get_fortran_indexing(self):
-        return self._fortran_indexing
-
-    fortran_indexing = property(_get_fortran_indexing, _set_fortran_indexing)
 
     def is_same_fortran_object(self, other):
         """Test if `self` and `other` point to the same Fortan object."""
@@ -599,7 +584,7 @@ class FortranDerivedType(object):
             raise
 
         if not name.startswith('__init__'):
-            newres = process_results(res, args, kwargs, inargs, outargs, self._prefix, self.fortran_indexing)
+            newres = process_results(res, args, kwargs, inargs, outargs, self._prefix)
         else:
             newres = res
 
@@ -724,7 +709,7 @@ def flatten_list_of_dicts(dictlist):
     return modout
 
 
-def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map, fortran_indexing):
+def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules_name_map):
     """
     Returns tuple `(classes, routines, params)` suitable for
     importing into top-level package namespace. `topmod` should be an
@@ -774,7 +759,6 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         classes, routines, mod_params = wrapmod(fobj, curspec, modname=mod, modfile=modfile,
                                                 short_names=short_names,
                                                 params=all_params, prefix=prefix,
-                                                fortran_indexing=fortran_indexing,
                                                 pymodname=pymodname)
         all_classes.extend(classes)
 
@@ -819,14 +803,14 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                 method_name = special_names.get(method_name, method_name)
 
                 wrapped_routine = wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix,
-                                              fortran_indexing=fortran_indexing, skip_this=True, modfile=modfile)
+                                              skip_this=True, modfile=modfile)
                 FortranRoutines[cls.__name__+'.'+method_name] = wrapped_routine
                 setattr(cls, method_name, wrapped_routine)
                 wraplog.debug('  added method %s to class %s' % (method_name, cls.__name__))
 
             else:
                 wrapped_routine = wraproutine(fobj, modspec, routine, routine, prefix,
-                                              fortran_indexing=fortran_indexing, skip_this=True, modfile=modfile)
+                                              skip_this=True, modfile=modfile)
                 for intf_name,intf_spec in modspec['interfaces'].iteritems():
                     if routine in intf_spec['routines']:
                         if not intf_name in interfaces: interfaces[intf_name] = (mod, intf_spec, [], modfile)
@@ -860,7 +844,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
 
 
 
-def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortran_indexing, pymodname):
+def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymodname):
 
     wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
     wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
@@ -1056,7 +1040,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, fortr
                 constructor = wrapinit(constructor_name, doc)
 
         constructor_doc_lines = constructor.__doc__.split('\n')
-        constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :svn:`%s`.\n' % (cls, modfile))
+        constructor_doc_lines.append('Class is wrapper around Fortran type ``%s`` defined in file :git:`%s`.\n' % (cls, modfile))
 
         classdoc = '\n'.join([constructor_doc_lines[0]] + ['\n'] +
                              process_docstring(moddoc['types'][cls]['doc']).split('\n') +
@@ -1206,8 +1190,7 @@ def wrap_obj_get(name):
             try:
                 obj = self._subobjs_cache[tuple(p)]
             except KeyError:
-                obj = self._subobjs_cache[tuple(p)] = FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False,
-                                                                                       fortran_indexing=self.fortran_indexing)
+                obj = self._subobjs_cache[tuple(p)] = FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False)
                 obj.parent = weakref.proxy(self)
             return obj
 
@@ -1230,7 +1213,7 @@ def wrap_array_get(name, reshape=True):
             arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
-            if self.fortran_indexing:
+            if get_fortran_indexing():
                 a = FortranArray(a, doc, parent=self)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
@@ -1249,7 +1232,8 @@ def wrap_array_set(name, reshape=True):
             arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
-            if self.fortran_indexing: a = FortranArray(a, doc)
+            if get_fortran_indexing: 
+                a = FortranArray(a, doc)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 a = a[nshape]
@@ -1266,33 +1250,30 @@ def wrap_derived_type_array_get(name):
     def func(self):
         getfunc, setfunc, lenfunc, doc, arraytype = self._arrays[name]
         return FortranDerivedTypeArray(self, getfunc, setfunc,
-                                       lenfunc, doc, arraytype,
-                                       self.fortran_indexing)
+                                       lenfunc, doc, arraytype)
     return func
 
 def wrap_derived_type_array_set(name):
     def func(self, value):
         getfunc, setfunc, lenfunc, doc, arraytype = self._arrays[name]
         a = FortranDerivedTypeArray(self, getfunc, setfunc,
-                                    lenfunc, doc, arraytype,
-                                    self.fortran_indexing)
+                                    lenfunc, doc, arraytype)
         for i,v in zip(a.indices, value):
             a[i] = v
         
     return func        
 
 class FortranDerivedTypeArray(object):
-    def __init__(self, parent, getfunc, setfunc, lenfunc, doc, arraytype, fortran_indexing):
+    def __init__(self, parent, getfunc, setfunc, lenfunc, doc, arraytype):
         self.parent = weakref.proxy(parent)
         self.getfunc = getfunc
         self.setfunc = setfunc
         self.lenfunc = lenfunc
         self.doc = doc
         self.arraytype = arraytype
-        self.fortran_indexing = fortran_indexing
 
     def iterindices(self):
-        if self.fortran_indexing:
+        if get_fortran_indexing():
             return iter(frange(len(self)))
         else:
             return iter(range(len(self)))
@@ -1310,18 +1291,17 @@ class FortranDerivedTypeArray(object):
         return self.lenfunc(self.parent._fpointer)
 
     def __getitem__(self, i):
-        if not self.fortran_indexing:
+        if not get_fortran_indexing():
             i += 1
         pp = self.getfunc(self.parent._fpointer, i)
         try:
             obj = p._subobjs_cache[tuple(pp)]
         except KeyError:
-            obj = p._subobjs_cache[tuple(pp)] = FortranDerivedTypes[self.arraytype.lower()](fpointer=pp,finalise=False,
-                                                                                            fortran_indexing=self.fortran_indexing)
+            obj = p._subobjs_cache[tuple(pp)] = FortranDerivedTypes[self.arraytype.lower()](fpointer=pp,finalise=False)
         return obj
 
     def __setitem__(self, i, value):
-        if not self.fortran_indexing:
+        if not get_fortran_indexing():
             i += 1
         self.setfunc(self.parent._fpointer, i, value._fpointer)
 
@@ -1431,7 +1411,7 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
     arg_lines = []
     ret_lines = []
 
-    signature_line = L[1]
+    signature_line = L[0]
 
     if '.' in name:
         signature_line = signature_line.replace(name[:name.index('.')].lower()+'_', '')
@@ -1509,7 +1489,7 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
     if ret_lines:
         final_doc += ret_header + '\n'.join(ret_lines) + '\n\n'
 
-    final_doc += ref_header + '\nRoutine is wrapper around Fortran routine ``%s`` defined in file :svn:`%s`.' % (fullname, modfile)        
+    final_doc += ref_header + '\nRoutine is wrapper around Fortran routine ``%s`` defined in file :git:`%s`.' % (fullname, modfile)        
             
     func.__doc__ = final_doc
     return func
@@ -1576,7 +1556,7 @@ def args_str_table(spec):
 
 
 
-def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True, skip_this=False, modfile=None):
+def wraproutine(modobj, moddoc, name, shortname, prefix, skip_this=False, modfile=None):
     doc = moddoc['routines'][name]
     fobj = getattr(modobj, prefix+name)
 
@@ -1609,7 +1589,7 @@ def wraproutine(modobj, moddoc, name, shortname, prefix, fortran_indexing=True, 
         except:
             raise
 
-        newres = process_results(res, args, kwargs, inargs, outargs, prefix, fortran_indexing)
+        newres = process_results(res, args, kwargs, inargs, outargs, prefix)
 
         return newres
 
@@ -1701,8 +1681,10 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
 
         # regenerate routine documentation, using sphinx format rather than numpydoc format
         tmp_routine = add_doc(routine, routine._fobj, spec, rname, name, prefix, format='sphinx', modfile=modfile)
+
         
         routine_lines = tmp_routine.__doc__.split('\n')
+
         doc +=        ('  .. function :: %s\n' % routine_lines[0] +
             '\n'.join(['     %s'   % line for line in routine_lines[1:]])) + '\n'
 

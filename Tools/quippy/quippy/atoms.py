@@ -36,7 +36,7 @@ from quippy.units import N_A, MASSCONVERT
 from quippy.periodictable import ElementMass
 from quippy.extendable_str import Extendable_str
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
-from quippy import available_modules, FortranDerivedTypes
+from quippy import available_modules, FortranDerivedTypes, get_fortran_indexing
 
 atomslog = logging.getLogger('quippy.atoms')
 
@@ -104,7 +104,7 @@ class Connection(_atoms.Connection):
     a particular pair `(i,j)` and has attributes `j`, `distance`,
     `diff`, `cosines` and `shift`.
 
-    If self.fortran_indexing is True, atom and neighbour indices
+    If ``fortran_indexing`` is True, atom and neighbour indices
     start from 1; otherwise they are numbered from zero.
 
     If connectivity information has not already been calculated
@@ -173,17 +173,17 @@ class Connection(_atoms.Connection):
         shift = fzeros(3, dtype=np.int32)
 
         res = []
-        if not self.fortran_indexing:
+        if not get_fortran_indexing():
             i = i+1 # convert to 1-based indexing
 
         for n in frange(self.n_neighbours(i)):
             j = self.neighbour(self.parent, i, n, distance, diff,
                                cosines, shift)
-            if not self.fortran_indexing:
+            if not get_fortran_indexing():
                 j = j-1
             res.append(NeighbourInfo(j, distance, diff, cosines, shift))
 
-        if self.fortran_indexing:
+        if get_fortran_indexing():
             res = farray(res) # to give 1-based indexing
         return res
 
@@ -298,7 +298,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     The :class:`Atoms` class is inherited from the
     :class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and
     methods. This means that quippy and ASE Atoms objects are fully
-    interoperable.""", signature='Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, fortran_indexing, **read_args])')
+    interoperable.""", signature='Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, **read_args])')
 
     _cmp_skip_fields = ['own_this', 'ref_count', 'domain',
                         'connect', 'hysteretic_connect', 'source']
@@ -314,7 +314,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                  scaled_positions=None, cell=None, pbc=None, constraint=None,
                  calculator=None, info=None, n=None, lattice=None,
                  properties=None, params=None, fixed_size=None,
-                 fortran_indexing=True, fpointer=None, finalise=True,
+                 fpointer=None, finalise=True,
                  **readargs):
 
         # check for mutually exclusive options
@@ -337,7 +337,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         _atoms.Atoms.__init__(self, n=n, lattice=lattice,
                               properties=properties,
                               params=params, fixed_size=fixed_size,
-                              fortran_indexing=fortran_indexing,
                               fpointer=fpointer, finalise=finalise)
 
         self._ase_arrays = PropertiesWrapper(self)
@@ -485,11 +484,11 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def _indices(self):
         """Return array of atoms indices
 
-        If fortran_indexing is True, returns FortranArray containing
+        If global ``fortran_indexing`` is True, returns FortranArray containing
         numbers 1..self.n.  Otherwise, returns a standard numpuy array
         containing numbers in range 0..(self.n-1)."""
 
-        if self.fortran_indexing:
+        if get_fortran_indexing():
             return farray(list(frange(len(self))))
         else:
             return np.array(list(range(len(self))))
@@ -659,8 +658,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         """
         
         other = self.__class__(n=self.n, lattice=self.lattice,
-                               properties=self.properties, params=self.params,
-                               fortran_indexing=self.fortran_indexing)
+                               properties=self.properties, params=self.params)
 
         # copy any normal (not Fortran) attributes
         for k, v in self.__dict__.iteritems():
@@ -684,8 +682,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         self.__class__.__del__(self)
         if isinstance(other, _atoms.Atoms):
             _atoms.Atoms.__init__(self, n=other.n, lattice=other.lattice,
-                                  properties=other.properties, params=other.params,
-                                  fortran_indexing=other.fortran_indexing)
+                                  properties=other.properties, params=other.params)
 
             self.use_uniform_cutoff = other.use_uniform_cutoff
             self.cutoff = other.cutoff
@@ -810,8 +807,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         """Return a dictionary containing the properties of the atom with
            index `i`. If fortran_indexing=True (the default), `i` should be in
            range 1..self.n, otherwise it should be in range 0..(self.n-1)."""
-        if (self.fortran_indexing and (i < 1 or i > self.n)) or \
-            (not self.fortran_indexing and (i < 0 or i > self.n-1)):
+        if (get_fortran_indexing() and (i < 1 or i > self.n)) or \
+            (not get_fortran_indexing() and (i < 0 or i > self.n-1)):
             raise IndexError('Atoms index out of range')
         atom = {}
         atom['_index'] = i

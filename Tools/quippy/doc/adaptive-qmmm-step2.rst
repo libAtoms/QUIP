@@ -67,8 +67,8 @@ Setup of the atomic structure
 
 As a first step, we need to initialise the
 :class:`~quippy.atoms.Atoms` object by loading the atomic structure created
-in :ref:`step1` from the `input_file` ``crack.xyz``. Note that the
-`fortran_indexing` parameter should be set to `False`. Otherwise `quippy` uses
+in :ref:`step1` from the `input_file` ``crack.xyz``. Note that the global
+`fortran_indexing` setting should be set to `False`. Otherwise `quippy` uses
 atom indices in the range :math:`1 \ldots N`, which would not be consistent with
 the python indexing used in ASE (:math:`0\ldots N-1`).
 
@@ -336,7 +336,8 @@ The first step is to import everything from `quippy` using the
 :func:`~qlab.view` function::
 
    from qlab import *
-   view("traj.nc", fortran_indexing=False)
+   set_fortran_indexing(False)
+   view("traj.nc")
 
 As we saw :ref:`earlier <latticeconstant>`, this will open an AtomEye viewer
 window containing a visual representation of your crack system (as before
@@ -363,7 +364,7 @@ Or, to jump directly to frame 100::
 
    set_frame(100)
 
-You can repeat the ``view("traj.nc", fortran_indexing=False)``
+You can repeat the ``view("traj.nc")``
 command as your simulation progresses to reload the file (you can use `Ctrl+R`
 in the `ipython` console to search backwards in the session history to save
 typing).

@@ -39,10 +39,33 @@ if os.path.exists(quippyrc):
 if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
     cfg.read(os.environ['QUIPPY_CFG'])
 
-fortran_indexing = True
+_fortran_indexing = True
+
+def set_fortran_indexing(fortran_indexing):
+    """
+    Global setting for ``fortran_indexing``.
+
+    Set to ``True`` to use 1-based indices on all arrays using the
+    :class:`~quippy.farray.FortranArray` wrapper class or ``False`` to
+    use conventional numpy 0-based array indexing. Default setting is
+    ``True``, but can be overridden in the ``~/.quippprc`` config
+    file.
+    """
+    global _fortran_indexing
+    _fortran_indexing = fortran_indexing
+
+def get_fortran_indexing():
+    """
+    Return the current ``fortran_indexing`` global setting.
+
+    ``True`` for 1-based indexing; ``False`` for 0-based indexing.
+    """
+    global _fortran_indexing
+    return _fortran_indexing
+    
 if 'general' in cfg.sections():
     if 'fortran_indexing' in cfg.options('general'):
-        fortran_indexing = int(cfg.get('general', 'fortran_indexing'))
+        set_fortran_indexing(bool(cfg.get('general', 'fortran_indexing')))
 
 if 'logging' in cfg.sections():
     if 'level' in cfg.options('logging'):
@@ -127,7 +150,8 @@ else:
 
 __all__ = ['QUIP_ROOT', 'QUIP_ARCH', 'QUIP_MAKEFILE',
            'available_modules', 'unavailable_modules',
-           'disabled_modules']
+           'disabled_modules', 
+           'set_fortran_indexing', 'get_fortran_indexing']
 
 wrap_modules = spec['wrap_modules']
 
@@ -172,8 +196,7 @@ pymods = wrap_all(_quippy, spec, wrap_modules,
                   merge_modules,
                   spec['short_names'],
                   prefix='qp_', package='quippy',
-                  modules_name_map=modules_name_map,
-                  fortran_indexing=fortran_indexing)
+                  modules_name_map=modules_name_map)
 
 # Add modules to quippy package and to sys.modules
 for name, mod in pymods.items():
@@ -230,7 +253,7 @@ import quippy.fortranio
 from quippy.fortranio import *
 __all__.extend(quippy.fortranio.__all__)
 
-if fortran_indexing:
+if get_fortran_indexing():
    import quippy.farray
    __all__.extend(quippy.farray.__all__)
    from quippy.farray import *

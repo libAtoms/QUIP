@@ -15,6 +15,7 @@ from ase.md.verlet import VelocityVerlet
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 import ase.units as units
 
+from quippy import set_fortran_indexing
 from quippy.atoms import Atoms
 from quippy.potential import Potential
 from quippy.io import AtomsWriter
@@ -45,11 +46,12 @@ mm_init_args = 'IP SW'           # Initialisation arguments for
 
 # ******* End of parameters *************
 
+set_fortran_indexing(False)
 
 # ********** Read input file ************
 
 print 'Loading atoms from file %s' % input_file
-atoms = Atoms(input_file, fortran_indexing=False)
+atoms = Atoms(input_file)
 
 orig_height = atoms.info['OrigHeight']
 orig_crack_pos = atoms.info['CrackPos'].copy()

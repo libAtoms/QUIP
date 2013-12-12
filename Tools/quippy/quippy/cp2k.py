@@ -41,7 +41,7 @@ class CP2KPotential(Potential):
 
     Calls do_cp2k_calc() in QUIP_FilePot_Drivers/cp2k_driver_module.f95 to do the heavy lifting
     """
-    def __init__(self, fortran_indexing=True,
+    def __init__(self,
                  fpointer=None, finalise=True,
                  error=None):
         Potential.__init__(self, callback=self.do_cp2k_calc)

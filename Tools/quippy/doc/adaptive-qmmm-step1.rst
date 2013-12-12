@@ -21,6 +21,7 @@ script named ``make_crack.py`` and add the following lines::
     from ase.constraints import FixAtoms
     import ase.units as units
 
+    from quippy import set_fortran_indexing
     from quippy.potential import Potential, Minim
     from quippy.elasticity import youngs_modulus, poisson_ratio
     from quippy.io import write

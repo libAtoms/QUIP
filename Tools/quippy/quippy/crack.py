@@ -703,7 +703,7 @@ def make_crack_advance_map(atoms, tol=1e-3):
 
     # convert from ase.Atoms to quippy.Atoms, so we can use faster
     # neighbour lists in Fortran code
-    tmp_atoms = Atoms(atoms, fortran_indexing=False)
+    tmp_atoms = Atoms(atoms)
     tmp_atoms.set_cutoff(max_step_length + .1)
     tmp_atoms.calc_connect()
 
@@ -753,7 +753,7 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     # Make a copy of atoms as a quippy.Atoms instance, overwriting
     # positions with time-averages values if they are available, and
     # then calculate connectivity using nneightol
-    tmp_atoms = Atoms(atoms, fortran_indexing=False)
+    tmp_atoms = Atoms(atoms)
     if 'avgpos' in tmp_atoms.arrays:
         tmp_atoms.set_positions(tmp_atoms.arrays['avgpos'])
     tmp_atoms.set_cutoff_factor(nneightol)

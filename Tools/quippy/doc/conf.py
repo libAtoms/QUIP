@@ -252,32 +252,24 @@ def maybe_skip_member(app, what, name, obj, skip, options):
 from docutils import nodes, utils
 from docutils.parsers.rst.roles import set_classes
 
-def svn_trunk_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+def get_github_url(view, path):
+    return 'https://github.com/{project}/{view}/{branch}/{path}'.format(
+        project='libAtoms/QUIP',
+        view=view,
+        branch='public',
+        path=path)
+
+def github_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     if text[-1] == '>':
         i = text.index('<')
         name = text[:i - 1]
         text = text[i + 1:-1]
     else:
         name = text
-    ref = 'https://src.tcm.phy.cam.ac.uk/~jrk33/viewvc/jrk33/repo/trunk/QUIP/%s?view=markup' % text
+    ref = get_github_url('blob', name)
     set_classes(options)
-    node = nodes.reference(rawtext, name, refuri=ref,
-                           **options)
+    node = nodes.reference(rawtext, name, refuri=ref, **options)
     return [node], []
-
-def svn_release_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    if text[-1] == '>':
-        i = text.index('<')
-        name = text[:i - 1]
-        text = text[i + 1:-1]
-    else:
-        name = text
-    ref = 'http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release/%s?view=markup' % text
-    set_classes(options)
-    node = nodes.reference(rawtext, name, refuri=ref,
-                           **options)
-    return [node], []
-
 
 def mol_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     n = []
@@ -298,8 +290,8 @@ def setup(app):
     app.connect('autodoc-process-docstring', process_docstring)
     app.connect('autodoc-process-signature', process_signature)
     app.connect('autodoc-skip-member', maybe_skip_member)
-    app.add_role('svn', svn_release_role)
-    app.add_role('svnrelease', svn_release_role)
+
+    app.add_role('git', github_role)
     app.add_role('mol', mol_role)
 
 

@@ -21,6 +21,7 @@ import numpy as np
 
 from quippy import _dictionary
 from quippy._dictionary import *
+from quippy import get_fortran_indexing
 from quippy.oo_fortran import update_doc_string
 from quippy.dictmixin import DictMixin, ParamReaderMixin
 from quippy.farray import *
@@ -154,7 +155,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         import _quippy, arraydata
         if key in self and self.get_type_and_size(key)[0] in Dictionary._array_types:
             a = arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key)
-            if self.fortran_indexing:
+            if get_fortran_indexing():
                 a = FortranArray(a, parent=self)
             return a
         else:
