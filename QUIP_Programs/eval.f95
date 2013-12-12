@@ -201,7 +201,7 @@ implicit none
 
 
 
-  if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
+  if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
 <<<<<<< HEAD
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
