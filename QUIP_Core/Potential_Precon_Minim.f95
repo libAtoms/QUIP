@@ -3,7 +3,6 @@
 module Potential_Precon_Minim_module
 
 
-  use Atoms_ll_module
   use Potential_Module, only : Potential, potential_minimise, energy_func, gradient_func, cutoff, max_rij_change, calc, print_hook
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
