@@ -4,7 +4,7 @@ module Potential_Precon_Minim_module
 
 
   use Atoms_ll_module
-  use Potential_Module
+  use Potential_Module, only : Potential, potential_minimise, energy_func, gradient_func, cutoff, max_rij_change, calc, print_hook
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
    optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push,verbosity_push_increment, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
@@ -100,7 +100,7 @@ module Potential_Precon_Minim_module
     type (potential_minimise) :: am
 
     real(dp) :: conconstant 
-    integer :: I,J,thisneigh,thisneighcount,thisneighcountlocal,thisind,thisind2
+    integer :: I,J,thisneighcount,thisneighcountlocal,thisind,thisind2
     real(dp) :: thisdist, thiscoeff
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
@@ -349,15 +349,12 @@ module Potential_Precon_Minim_module
 
     character(len=STRING_LENGTH) :: use_method
 
-    logical :: my_use_precond
     integer n_iter, n_iter_tot
     real(dp), allocatable :: x(:)
     real(dp) :: deform_grad(3,3)
     logical my_do_print
     logical done
-    real(dp) :: my_eps_guess
 
-    real(dp) :: initial_E, final_E, mass
     type(potential_minimise) am
     integer :: am_data_size
     character, allocatable :: am_data(:)
@@ -551,15 +548,12 @@ module Potential_Precon_Minim_module
 
     character(len=STRING_LENGTH) :: use_method
 
-    logical :: my_use_precond
     integer n_iter, n_iter_tot
     real(dp), allocatable :: x(:)
     real(dp) :: deform_grad(3,3)
     logical my_do_print
     logical done
-    real(dp) :: my_eps_guess
 
-    real(dp) :: initial_E, final_E, mass
     type(potential_minimise) am
     integer :: am_data_size
     character, allocatable :: am_data(:)
@@ -1079,9 +1073,8 @@ module Potential_Precon_Minim_module
     real(dp),parameter :: eps = 10.0**(-5)
     integer,parameter :: nneigh = 500
     real(dp), allocatable :: hess(:)
-    integer, allocatable :: hessinds(:,:),hxcounts(:)
-    integer :: I, J, N, thisneighcount, thisind, thisotherind, II, JJ, hxcount
-    real(dp) :: deform_grad(3,3)
+    integer, allocatable :: hessinds(:,:)! ,hxcounts(:)
+    integer :: I, J, thisneighcount, thisind, thisotherind, II, JJ, hxcount
     real(dp), allocatable :: xpp(:), xpm(:), xmm(:), xmp(:), lepp(:), lepm(:), lemm(:), lemp(:)
     real(dp) :: fpp, fpm, fmm, fmp
     integer :: hx,hy
