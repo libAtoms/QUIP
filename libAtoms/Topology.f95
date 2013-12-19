@@ -2859,11 +2859,12 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
        mean_pos_one = mean_pos_one / monomer_one_size
 
        do i_atomic =1,size(monomer_one_index,1)
-         !loop over neighbours, check within cutoff and belong to an occurrence of monomer_two
+         !loop over neighbours, check at least one pair of heavy atoms within cutoff and belong to an occurrence of monomer_two
+         if (at%Z(atomic_index_one(i_atomic)) == 1) cycle
          do n = 1, n_neighbours(at,atomic_index_one(i_atomic))
 
            i_neighbour = neighbour(at,atomic_index_one(i_atomic),n,distance=r_one_two,shift=shift_one_two)
-
+           if (at%Z(i_neighbour) == 1 ) cycle
            if( r_one_two >= cutoff ) cycle
            temp2d = maxloc(monomer_two_index, monomer_two_index .eq. i_neighbour)
            if (any(temp2d .eq. 0)) cycle                                     ! atom i_neighbour does not belong to the type of monomer we're looking for
