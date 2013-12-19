@@ -388,7 +388,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
         """
         Perform a calculation of `quantities` for `atoms` using this Potential.
 
-        Automatically determines if a new calculation is required of if previous
+        Automatically determines if a new calculation is required or if previous
         results are still appliciable (i.e. if the atoms haven't moved since last call)
         Called internally by :meth:`get_potential_energy`, :meth:`get_forces`, etc.
         """
