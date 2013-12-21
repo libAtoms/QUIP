@@ -2853,10 +2853,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      do i=1,size(monomer_one_index,2)
        atomic_index_one = monomer_one_index(:,i)
        mean_pos_one = 0.0_dp
-       do i_atomic =1,monomer_one_size
-         mean_pos_one = mean_pos_one + at%pos(:,atomic_index_one(i_atomic))
+       do i_atomic =2,monomer_one_size
+         mean_pos_one = mean_pos_one + diff_min_image(at,atomic_index_one(1),atomic_index_one(i_atomic))
        end do
        mean_pos_one = mean_pos_one / monomer_one_size
+       mean_pos_one = mean_pos_one + at%pos(:,atomic_index_one(1))
 
        do i_atomic =1,size(monomer_one_index,1)
          !loop over neighbours, check at least one pair of heavy atoms within cutoff and belong to an occurrence of monomer_two
@@ -2872,10 +2873,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
            atomic_index_two = monomer_two_index(:,j)
            mean_pos_two=0.0_dp
-           do j_atomic =1,monomer_two_size
-             mean_pos_two = mean_pos_two + at%pos(:,atomic_index_two(j_atomic))
+           do j_atomic =2,monomer_two_size
+             mean_pos_two = mean_pos_two + diff_min_image(at,atomic_index_two(1),atomic_index_two(j_atomic))
            end do
            mean_pos_two = mean_pos_two / monomer_two_size
+           mean_pos_two = mean_pos_two + at%pos(:,atomic_index_two(1))
 
            temp_dist = distance_min_image(at,i_neighbour,mean_pos_two,shift=shift_two)
 
