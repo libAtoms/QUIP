@@ -331,9 +331,9 @@ subroutine do_vasp_calc(at, args_str, error)
 	 call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
 	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
 	 call print(at%N, file=persistent_io)
-	 call print(at%lattice(:,1), file=persistent_io)
-	 call print(at%lattice(:,2), file=persistent_io)
-	 call print(at%lattice(:,3), file=persistent_io)
+	 call print(at%lattice(1,:), file=persistent_io)
+	 call print(at%lattice(2,:), file=persistent_io)
+	 call print(at%lattice(3,:), file=persistent_io)
 	 do i=1, at%N
 	    call print(matmul(at%g, at%pos(:,i)), file=persistent_io)
 	 end do
