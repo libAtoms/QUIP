@@ -65,9 +65,11 @@ implicit none
   real(dp) :: phonons_dx
   real(dp) :: phonons_path_start(3), phonons_path_end(3)
   integer :: phonons_path_steps
-  logical :: do_torque, do_precond
+  logical :: do_torque, do_cg_n_precond
   real(dp) :: fire_minim_dt0
   real(dp) :: fire_minim_dt_max
+  character(len=STRING_LENGTH) precond_minim_method, precond_method, precond_e_method
+  real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file
@@ -178,9 +180,15 @@ implicit none
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
-  call param_register(cli_params, 'precond', 'F', do_precond, help_string="activate preconditioner in minim routine.  Probably a bad idea in combination with cg_n if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
-  call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
-  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, sd2, cg, pcg, lbfgs, cg_n, fire")
+  call param_register(cli_params, 'cg_n_precond', 'F', do_cg_n_precond, help_string="activate preconditioner for cg_n minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
+  call param_register(cli_params, 'precond_minim_method', 'preconLBFGS', precond_minim_method, help_string="preconditioner minimization method for minim_method=precon, preconLBFGS or preconCG")
+  call param_register(cli_params, 'precond_method', 'C1', precond_method, help_string="preconditioner method for preconditioner, right now LJ or C1")
+  call param_register(cli_params, 'precond_e_method', 'basic', precond_e_method, help_string="preconditioner method for summing energy: basic, kahan, doublekahan (kahan type only when local energy is available).")
+  call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
+  call param_register(cli_params, 'precond_len_scale', '0.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
+  call param_register(cli_params, 'precond_e_scale', '10.0', precond_e_scale, help_string="energy scale for preconditioner")
+  call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
+  call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
@@ -386,20 +394,42 @@ implicit none
 	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
 	   HANDLE_ERROR(error)
 	endif
+	if (trim(linmin_method) == 'default') then
+	   if(trim(minim_method) == 'precond') then
+	      linmin_method = 'standard'
+	   else
+	      linmin_method = 'FAST_LINMIN'
+	   endif
+	endif
+	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
+	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
         if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
-	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
-		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-		eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=do_precond, hook_print_interval=relax_print_interval) 
-           call finalise(relax_io) 
+           if(trim(minim_method) == 'precond') then
+              n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
+	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
+		 do_print = .true., print_cinoutput=relax_io, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
+		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method))
+	   else
+	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
+		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
+	   endif
+	   call finalise(relax_io) 
         else
-           if(do_precond .and. trim(minim_method) .ne. 'cg_n') then
-              n_iter = precon_minim(pot, at, 'preconLBFGS', relax_tol, relax_iter, linminroutine='standard', do_print = .false., efuncroutine='kahan', hook_print_interval=relax_print_interval, length_scale=4.0_dp, precon_id='LJ')
+           if(trim(minim_method) == 'precond') then
+              n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
+	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
+		 do_print = .false., &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
+		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method))
            else
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=do_precond, hook_print_interval=relax_print_interval) 
+                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
            end if
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')

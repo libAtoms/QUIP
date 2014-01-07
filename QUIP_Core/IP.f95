@@ -821,9 +821,9 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial,
     n_groups = this%mpi_glob%n_procs / pgroup_size
     if (n_groups*pgroup_size == this%mpi_glob%n_procs) then
       call setup_parallel_groups(this, this%mpi_glob, pgroup_size)
-      call system_timer("IP_parallel", do_always = .true.)
+      call system_timer("IP_parallel", do_always = .true., do_print = .false.)
       call calc(this, at, energy, local_e, f, virial, local_virial, args_str)
-      call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time)
+      call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time, do_print = .false.)
       this_time = max(this%mpi_glob, this_time)
       call print("IP_Setup_Parallel "//pgroup_size//' '//this_time, PRINT_VERBOSE)
       if (this_time > prev_time) then

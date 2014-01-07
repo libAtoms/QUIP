@@ -3317,14 +3317,8 @@ end subroutine line_scan
         exit
       end if
 
-#ifndef _OPENMP
-      if (my_hook_print_interval == 1 .or. mod(n_iter,my_hook_print_interval) == 1) call verbosity_push_increment()
-#endif
       call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha &
-                  // ' last ls_iter = ' // this_ls_count,PRINT_VERBOSE)
-#ifndef _OPENMP
-      if (my_hook_print_interval == 1 .or. mod(n_iter,my_hook_print_interval) == 1) call verbosity_pop()
-#endif
+                  // ' last ls_iter = ' // this_ls_count,PRINT_NORMAL)
       ! call the hook function
       if (present(hook)) then 
          call hook(x, g, f, done, (mod(n_iter-1,my_hook_print_interval) == 0), am_data)
@@ -3586,16 +3580,7 @@ end subroutine line_scan
         exit
       end if
 
-
-
-#ifndef _OPENMP
-        if (my_hook_print_interval == 1 .or. mod(n_iter,my_hook_print_interval) == 1) call verbosity_push_increment()
-#endif
-
-        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad // '  |s|^2 = ' //normsqs //' rho = ' // TRrho// ' Delta^2 = '// TRDelta**2,PRINT_VERBOSE)
-#ifndef _OPENMP
-        if (my_hook_print_interval == 1 .or. mod(n_iter,my_hook_print_interval) == 1) call verbosity_pop()
-#endif
+      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad // '  |s|^2 = ' //normsqs //' rho = ' // TRrho// ' Delta^2 = '// TRDelta**2,PRINT_NORMAL)
      end if
 
 
@@ -3608,7 +3593,7 @@ end subroutine line_scan
     
     x_in = x
     
-  end function
+  end function preconminim
 
   function fdhmultiply(x,FDH_rows,FDH_H,FDH_diag)
   
@@ -4194,7 +4179,6 @@ end subroutine line_scan
       amax = 100.0_dp*alpha
     end if
    
-
     !begin bracketing
     ls_it = 1
     do 
