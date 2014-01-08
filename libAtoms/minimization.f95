@@ -71,6 +71,7 @@ module minimization_module
     real(dp) :: energy_scale,length_scale,cutoff,res2
     logical :: has_fixed = .FALSE.
   end type precon_data
+  integer, parameter :: E_FUNC_BASIC=1, E_FUNC_KAHAN=2, E_FUNC_DOUBLEKAHAN=3
 
   interface minim
      module procedure minim
@@ -3096,7 +3097,7 @@ end subroutine line_scan
   
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
     logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente,doLSunit
-    logical :: doefunc(3)
+    integer :: doefunc
     real(dp),allocatable :: x(:),xold(:),s(:),sold(:),g(:),gold(:),pg(:),pgold(:),xcand(:),gcand(:)
     real(dp) :: alpha,alphamax, beta,betanumer,betadenom,f
     integer :: n_iter,N, abortcount
@@ -3230,7 +3231,6 @@ end subroutine line_scan
       allocate(IPIV(N))
     end if
    
-    doefunc = .false.
 
     doLSbasic = .FALSE.
     doLSbasicpp = .FALSE.
@@ -3239,21 +3239,22 @@ end subroutine line_scan
     doLSMoreThuente = .false.
     doLSunit = .false.
 
+    doefunc = 0
     if ( present(efuncroutine) ) then
       if (trim(efuncroutine) == 'basic') then
-        doefunc(1) = .true.
+        doefunc = E_FUNC_BASIC
         call print('Using naive summation of local energies')
       elseif (trim(efuncroutine) == 'kahan') then
-        doefunc(2) = .true.
+        doefunc = E_FUNC_KAHAN
         allocate(local_energycand((size(x)-9)/3))
         call print('Using Kahan summation of local energies')
       elseif (trim(efuncroutine) == 'doublekahan') then
-        doefunc(3) = .true.
+        doefunc = E_FUNC_DOUBLEKAHAN
         allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
       end if
     else 
-      doefunc(1) = .TRUE.
+      doefunc = E_FUNC_BASIC
        call print('Using naive summation of local energies by default')
     end if
     
@@ -3628,7 +3629,7 @@ end subroutine line_scan
     real(dp) :: x(:),g(:)
     type(precon_data) :: pr
     real(dp) :: Delta
-    logical :: doefunc(:)
+    integer :: doefunc
     integer :: n_back
     real(dp):: LBFGSs(:,:), LBFGSy(:,:), LBFGSdlr(:,:)
     real(dp) :: s(size(x))
@@ -3688,7 +3689,7 @@ end subroutine line_scan
     real(dp) :: x(:),g(:)
     type(precon_data) :: pr
     real(dp) :: Delta
-    logical :: doefunc(:)
+    integer :: doefunc
     integer :: n_back
     real(dp):: LBFGSs(:,:), LBFGSy(:,:), LBFGSdlr(:,:)
     logical, optional :: doSR1,doBFGS,doFD
@@ -3778,7 +3779,7 @@ end subroutine line_scan
     
     real(dp) :: v1(:),v2(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: Pdotproduct
 
     real(dp) :: Pv(size(v2))
@@ -3794,7 +3795,7 @@ end subroutine line_scan
     
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSl(:,:), LBFGSd(:,:), v(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: Bkv(size(v))
 !
     integer :: n_back
@@ -3855,7 +3856,7 @@ end subroutine line_scan
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSrinv(:,:), gammak, v(:)
     real(dp) :: Hkv(size(v))
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
   
     integer :: I,J,n_back,thisind,N
     real(dp), allocatable :: LBFGSq(:),LBFGSz(:),LBFGSalp(:),LBFGSbet(:),LBFGSrho(:)
@@ -3893,7 +3894,7 @@ end subroutine line_scan
 
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSl(:,:), v(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: Bkv(size(v))
 
     integer :: n_back, INFO
@@ -3946,7 +3947,7 @@ end subroutine line_scan
          real(dp)::func
        end function func
     end INTERFACE
-    logical :: doefunc(:)
+    integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: linesearch_basic
     integer, optional, intent(out) :: n_iter_final
@@ -4143,7 +4144,7 @@ end subroutine line_scan
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
-    logical :: doefunc(:)
+    integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d
     real(dp) :: linesearch_standard
@@ -4370,7 +4371,7 @@ end subroutine line_scan
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
-    logical :: doefunc(:)
+    integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d
     real(dp) :: linesearch_morethuente
@@ -4737,6 +4738,7 @@ end subroutine line_scan
     
     real(dp) :: g(:) !to apply to
     type (precon_data) :: pr
+    integer :: doefunc
     real(dp),optional :: init(size(g))
     real(dp),optional :: res2
     integer,optional :: max_iter
@@ -4747,7 +4749,6 @@ end subroutine line_scan
     real(dp) :: ap_result(size(g))
     integer :: k_out_internal
     
-    logical :: doefunc(:) 
     logical :: do_force_k
     
     real(dp) :: x(size(g))
@@ -4882,7 +4883,7 @@ end subroutine line_scan
  
     real(dp) :: b(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp), optional :: init(:), res2
     integer, optional :: max_iter, k_out, force_k
     real(dp) :: ap_result(size(b))
@@ -4934,9 +4935,9 @@ end subroutine line_scan
           
             scoeff = pr%preconcoeffs(J,I,1)  
           
-            if(doefunc(1) .eqv. .true.) then
+            if(doefunc == E_FUNC_BASIC) then
               x(target_elements) = x(target_elements) - scoeff*x(row_elements)/pr%preconcoeffs(1,I,1)
-            elseif(doefunc(2) .eqv. .true. .or. doefunc(3) .eqv. .true.) then
+            else
               Y = -scoeff*x(row_elements)/pr%preconcoeffs(1,I,1) - C
               T = x(target_elements) + Y
               C = (T - x(target_elements)) - Y
@@ -4989,7 +4990,7 @@ end subroutine line_scan
 
     real(dp) :: b(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp), optional :: init(:), res2
     integer, optional :: max_iter, iter_out, force_iter
     real(dp) :: ap_result(size(b))
@@ -5015,7 +5016,7 @@ end subroutine line_scan
 
     real(dp) :: x(:,:)
     type(precon_data) :: pr
-    logical, optional :: doefunc(:)
+    integer :: doefunc
     real(dp) :: apply_precon_vecs(size(x,dim=1),size(x,dim=2))
 
     integer :: I,M
@@ -5031,7 +5032,7 @@ end subroutine line_scan
 
     real(dp) :: x(:,:)
     type(precon_data) :: pr
-    logical, optional :: doefunc(:)
+    integer :: doefunc
     integer :: force_k
     real(dp) :: apply_precon_vecs_gs(size(x,dim=1),size(x,dim=2))
 
@@ -5050,7 +5051,7 @@ end subroutine line_scan
 
     real(dp) :: x(:,:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: do_mat_mult_vecs(size(x,dim=1),size(x,dim=2))
 
     integer :: I,M
@@ -5068,7 +5069,7 @@ end subroutine line_scan
    
     real(dp) :: x(:)
     type(precon_data) :: pr
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: do_mat_mult_vec(size(x))
 
     integer :: I,J,thisind,K,L
@@ -5098,9 +5099,9 @@ end subroutine line_scan
           
           scoeff = pr%preconcoeffs(J,I,1)  
           
-          if(doefunc(1) .eqv. .true.) then
+          if(doefunc == E_FUNC_BASIC) then
             do_mat_mult_vec(target_elements) = do_mat_mult_vec(target_elements) + scoeff*x(row_elements)
-          elseif(doefunc(2) .eqv. .true. .or. doefunc(3) .eqv. .true.) then
+          else
             Y = scoeff*x(row_elements) - C
             T = do_mat_mult_vec(target_elements) + Y
             C = (T - do_mat_mult_vec(target_elements)) - Y
@@ -5201,36 +5202,36 @@ end subroutine line_scan
   end function
 
   function calcdeltaE(doefunc,f1,f0,le1,le0)  
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: f1, f0
     real(dp) :: le1(:), le0(:)
     
     real(dp) :: sorted1(size(le1)),sorted0(size(le0))
     real(dp) :: calcdeltaE 
     
-    if (doefunc(1) .eqv. .true.) then
+    if (doefunc == E_FUNC_BASIC) then
       calcdeltaE = f1 - f0
-    elseif (doefunc(2) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_KAHAN) then
       calcdeltaE =  KahanSum(le1 - le0)
-    elseif (doefunc(3) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_DOUBLEKAHAN) then
       sorted1 = qsort(le1-le0)
       calcdeltaE = DoubleKahanSum(sorted1)
     endif
   end function
 
   function calcE(doefunc,f0,le0)  
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: f0
     real(dp) :: le0(:)
     
     real(dp) :: sorted0(size(le0))
     real(dp) :: calcE 
     
-    if (doefunc(1) .eqv. .true.) then
+    if (doefunc == E_FUNC_BASIC) then
       calcE =  f0
-    elseif (doefunc(2) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_KAHAN) then
       calcE =  KahanSum(le0)
-    elseif (doefunc(3) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_DOUBLEKAHAN) then
       sorted0 = qsort(le0)
       calcE =  DoubleKahanSum(sorted0)
     endif
@@ -5239,7 +5240,7 @@ end subroutine line_scan
 
  
   function smartdotproduct(v1,v2,doefunc)
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: v1(:),v2(:)
     
     real(dp) :: vec(size(v1)),sorted(size(v1))
@@ -5252,11 +5253,11 @@ end subroutine line_scan
      
     vec = v1*v2
 
-    if (doefunc(1) .eqv. .true.) then
+    if (doefunc == E_FUNC_BASIC) then
       smartdotproduct = sum(vec)
-    elseif (doefunc(2) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_KAHAN) then
       smartdotproduct = KahanSum(vec)
-    elseif (doefunc(3) .eqv. .true.) then
+    elseif (doefunc == E_FUNC_DOUBLEKAHAN) then
       sorted = qsort(vec)
       smartdotproduct = DoubleKahanSum(sorted)
     endif
@@ -5266,7 +5267,7 @@ end subroutine line_scan
   function smartmatmulmat(m1,m2,doefunc) result(prod)
     
     real(dp) :: m1(:,:), m2(:,:)
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: prod(size(m1,dim=1),size(m2,dim=2))
 
     integer :: I,J,M,N
@@ -5283,7 +5284,7 @@ end subroutine line_scan
   function smartmatmulvec(m1,m2,doefunc) result(prod)
     
     real(dp) :: m1(:,:), m2(:)
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: prod(size(m1,dim=1))
 
     integer :: I,M
@@ -5403,7 +5404,7 @@ end subroutine line_scan
         f1 = func(xp,data,le1)
         f2 = func(xm,data,le2)
 
-        deltaE = calcdeltaE((/.false.,.true.,.false./) ,f1,f2,le1,le2)
+        deltaE = calcdeltaE(E_FUNC_KAHAN ,f1,f2,le1,le2)
         
         grads(J+1,I) = deltaE/(2.0*eps)
 
@@ -5658,7 +5659,8 @@ end subroutine line_scan
    
     real(dp), allocatable :: local_energy1(:),local_energy2(:)
     
-    logical :: doefunc(3), translateup, doLSbasic, doLSstandard
+    logical :: translateup, doLSbasic, doLSstandard
+    integer :: doefunc
     real(dp) :: d0,d1,d2,nf,C,ff1,ff2,netforce,amax,sdnormup,sdnormdown
     integer :: n_iter_final
     if ( present(linminroutine) ) then
@@ -5679,25 +5681,25 @@ end subroutine line_scan
     allocate(x(N),x1(N),x2(N),F1(N),F2(N),Nvec(N))  
     allocate(pF1(N),pF2(N))
     allocate(searchdirup(N),searchdirdown(N))
-    doefunc = .false.
     
     open(1,file='dimerplot.dat',status='replace',access='stream',action='write')
     
+    doefunc = E_FUNC_BASIC
     if ( present(efuncroutine) ) then
       if (trim(efuncroutine) == 'basic') then
-        doefunc(1) = .true.
+        doefunc = E_FUNC_BASIC
         call print('Using naive summation of local energies')
       elseif (trim(efuncroutine) == 'kahan') then
-        doefunc(2) = .true.
+        doefunc = E_FUNC_KAHAN
 !        allocate(local_energycand((size(x)-9)/3))
         call print('Using Kahan summation of local energies')
       elseif (trim(efuncroutine) == 'doublekahan') then
-        doefunc(3) = .true.
+        doefunc = E_FUNC_DOUBLEKAHAN
 !        allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
       end if
     else 
-      doefunc(1) = .TRUE.
+      doefunc = E_FUNC_BASIC
        call print('Using naive summation of local energies by default')
     end if
     x = x_in
@@ -5883,7 +5885,7 @@ end subroutine line_scan
       end function dfunc
     END INTERFACE
     character(len=1), intent(inout) :: am_data(:)
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp),intent(out) :: deltatheta
     type(precon_data) :: pr
     
@@ -6111,7 +6113,7 @@ end subroutine
       end function dfunc
     END INTERFACE
     character(len=1), intent(inout) :: am_data(:)
-    logical :: doefunc(:)
+    integer :: doefunc
     real(dp) :: force
     type(precon_data) :: pr
 
@@ -6263,7 +6265,7 @@ end subroutine
          real(dp)::func
        end function func
     end INTERFACE
-    logical :: doefunc(:)
+    integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d0
     real(dp) :: linesearch_basic_dimer
@@ -6362,7 +6364,7 @@ end subroutine
          real(dp)::func
        end function func
     end INTERFACE
-    logical :: doefunc(:)
+    integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d0
     real(dp) :: linesearch_basic_dimer_up
