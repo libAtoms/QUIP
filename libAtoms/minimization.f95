@@ -3009,6 +3009,35 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
 
 end subroutine line_scan
 
+function func_wrapper(func, x, data, local_energy, gradient, doefunc)
+    INTERFACE 
+       function func(x,data,local_energy,gradient)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
+         real(dp)::func
+       end function func
+    end INTERFACE
+    real(dp)::x(:)
+    character(len=1),optional::data(:)
+    real(dp), intent(inout),optional :: local_energy(:)
+    real(dp), intent(inout),optional :: gradient(:)
+    integer, intent(in) :: doefunc
+    real(dp)::func_wrapper
+
+    if (doefunc == E_FUNC_BASIC) then
+      func_wrapper = func(x, data, gradient=gradient)
+      if (present(local_energy)) then
+	 local_energy = 0.0_dp
+	 local_energy(1) = func_wrapper
+      endif
+    else
+      func_wrapper = func(x, data, local_energy=local_energy, gradient=gradient)
+    endif
+end function func_wrapper
+
 ! Interface is made to imitate the existing interface.
   function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity)
     
@@ -3046,7 +3075,6 @@ end subroutine line_scan
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
     !% 'convergence_tol'. 
     integer,      intent(in)    :: max_steps  !% Maximum number of 'cg' or 'sd' steps
-    integer::preconminim
     character(*), intent(in), optional :: efuncroutine !% Control of the objective function evaluation
     character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use. 
     integer, optional :: LM
@@ -3092,8 +3120,8 @@ end subroutine line_scan
         character(len=1), intent(in)::data(:)
       end subroutine
     end INTERFACE 
-
-
+    ! result
+    integer::preconminim
   
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
     logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente,doLSunit
@@ -3297,7 +3325,7 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
-    f = func(x,am_data,local_energy,g)
+    f =  func_wrapper(func,x,am_data,local_energy,g,doefunc=doefunc)
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
@@ -3437,16 +3465,16 @@ end subroutine line_scan
         alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
       elseif (doLSbasicpp) then
-        alpha = linesearch_basic_pp(x,s,f,alpha,func,dfunc,am_data,dirderivvec(n_iter),this_ls_count)
+        alpha = linesearch_basic_pp(x,s,f,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count)
         !call print('moo2')
       elseif (doLSstandard) then
-        alpha = linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
+        alpha = linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo2')
       elseif (doLSMoreThuente) then
-        alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,dfunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
+        alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
       elseif (doLSunit) then
         alpha = 1.0
-        f = func(x+s,am_data) 
+        f =  func_wrapper(func,x+s,am_data,doefunc=doefunc) 
       elseif (doLSnone) then
         !do nothing
         this_ls_count = 0
@@ -3462,7 +3490,7 @@ end subroutine line_scan
 #ifndef _OPENMP
           call verbosity_push_decrement(2)
 #endif
-          f = func(x,am_data,local_energy,g)
+          f =  func_wrapper(func,x,am_data,local_energy,g,doefunc=doefunc)
           normsqgrad = smartdotproduct(g,g,doefunc)
           TRDelta = 1.0 
           call build_precon(pr,am_data)
@@ -3489,7 +3517,7 @@ end subroutine line_scan
 #ifndef _OPENMP
         call verbosity_push_decrement(2)
 #endif
-        fcand = func(xcand,am_data,local_energycand,gcand)
+        fcand =  func_wrapper(func,xcand,am_data,local_energycand,gcand,doefunc=doefunc)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
@@ -3976,12 +4004,12 @@ end subroutine line_scan
     ls_it = 1
     do
 
-      !f1 = func(x+alpha*s,data)
+      !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
  
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
-        f1 = func(x+alpha*s,data,local_energy1,g1)
+        f1 =  func_wrapper(func,x+alpha*s,data,local_energy1,g1,doefunc=doefunc)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif     
@@ -4015,7 +4043,7 @@ end subroutine line_scan
   end function
 
   ! Backtracking linesearch with cubic min
-  function linesearch_basic_pp(x,s,f,alpha,func,dfunc,data,d0,n_iter_final,amaxin)
+  function linesearch_basic_pp(x,s,f,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
 
     implicit none
 
@@ -4033,15 +4061,8 @@ end subroutine line_scan
          real(dp), intent(inout),optional :: gradient(:)
        end function func
     end INTERFACE
-    INTERFACE
-       function dfunc(x,data)
-         use system_module
-         real(dp)::x(:)
-         character(len=1),optional::data(:)
-         real(dp)::dfunc(size(x))
-       end function dfunc
-    END INTERFACE
-   character(len=1)::data(:)
+    integer, intent(in) :: doefunc
+    character(len=1)::data(:)
     real(dp) :: linesearch_basic_pp
     integer, optional, intent(out) :: n_iter_final
     real(dp), optional :: amaxin
@@ -4068,24 +4089,16 @@ end subroutine line_scan
     ls_it = 1
     do
 
-      !f1 = func(x+alpha*s,data)
+      !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
 
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      f1 = func(x+a1*s,data)
+      f1 =  func_wrapper(func,x+a1*s,data,gradient=g1,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
 
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      g1 = dfunc(x+a1*s,data)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
- 
       d1 = dot_product(g1,s)
       !call print(alpha)
 
@@ -4118,7 +4131,7 @@ end subroutine line_scan
 
 
   ! standard two stage lineseach from N&W
-  function linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
+  function linesearch_standard(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amaxin)
     implicit none
     real(dp) :: x(:)
     real(dp) :: s(:)
@@ -4136,14 +4149,6 @@ end subroutine line_scan
          real(dp)::func
        end function func
     end INTERFACE
-  INTERFACE
-       function dfunc(x,data)
-         use system_module
-         real(dp)::x(:)
-         character(len=1),optional::data(:)
-         real(dp)::dfunc(size(x))
-       end function dfunc
-    END INTERFACE
     integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d
@@ -4187,7 +4192,7 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      f1 = func(x+a1*s,data,local_energy1,g1)
+      f1 =  func_wrapper(func,x+a1*s,data,local_energy1,g1,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
@@ -4268,7 +4273,7 @@ end subroutine line_scan
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
-        ft = func(x+at*s,data,local_energyT,gt)
+        ft =  func_wrapper(func,x+at*s,data,local_energyT,gt,doefunc=doefunc)
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
@@ -4346,7 +4351,7 @@ end subroutine line_scan
     g = g1
   end function linesearch_standard
 
-  function linesearch_morethuente(x,s,finit,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
+  function linesearch_morethuente(x,s,finit,local_energy,alpha,func,doefunc,data,d,n_iter_final,amaxin)
     implicit none
     real(dp) :: x(:)
     real(dp) :: s(:)
@@ -4363,14 +4368,6 @@ end subroutine line_scan
          real(dp)::func
        end function func
     end INTERFACE
-    INTERFACE
-       function dfunc(x,data)
-         use system_module
-         real(dp)::x(:)
-         character(len=1),optional::data(:)
-         real(dp)::dfunc(size(x))
-       end function dfunc
-    END INTERFACE
     integer :: doefunc
     character(len=1)::data(:)
     real(dp) :: d
@@ -4427,23 +4424,15 @@ end subroutine line_scan
       
       ftest = finit + stp*gtest
     
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      f1 = func(x+stp*s,data,local_energy1)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
-
       ls_it = ls_it + 1
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      g1 = dfunc(x+stp*s,data)
+      f1 =  func_wrapper(func,x+stp*s,data,local_energy1,gradient=g1,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
-     
+
       f = calcE(doefunc,f1,local_energy1)
       g = smartdotproduct(g1,s,doefunc)
      
@@ -5401,8 +5390,8 @@ end subroutine line_scan
         xp(I) = xp(I) + eps
         xm(I) = xm(I) - eps
 
-        f1 = func(xp,data,le1)
-        f2 = func(xm,data,le2)
+        f1 =  func(xp,data,le1)
+        f2 =  func(xm,data,le2)
 
         deltaE = calcdeltaE(E_FUNC_KAHAN ,f1,f2,le1,le2)
         
@@ -5452,7 +5441,7 @@ end subroutine line_scan
     allocate(output(N))
     do I = 1,N
       call print(I // ' of ' // N)
-      f = func(x-I*stepsize*g,data,le)
+      f =  func(x-I*stepsize*g,data,le)
       output(I) = KahanSum(le)
     end do
 
@@ -5741,8 +5730,7 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
-      e1 = func(x1,am_data,local_energy=local_energy1)
-      F1 = dfunc(x1,am_data)
+      e1 =  func_wrapper(func,x1,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
@@ -5750,8 +5738,7 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
-      e2 = func(x2,am_data,local_energy=local_energy2)
-      F2 = dfunc(x2,am_data)
+      e2 =  func_wrapper(func,x2,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
@@ -5810,8 +5797,8 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
-      ff1 = func(x1,am_data)
-      ff2 = func(x2,am_data)
+      ff1 =  func_wrapper(func,x1,am_data,doefunc=doefunc)
+      ff2 =  func_wrapper(func,x2,am_data,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
@@ -5861,7 +5848,7 @@ end subroutine line_scan
   end function
 
 
-  subroutine dorotate(x,Nvec,deltaR,e1,local_energy1,e2,local_energy2,func,dfunc,am_data,doefunc,deltatheta,pr) 
+  subroutine dorotate(x,Nvec,deltaR,e1,local_energy1,e2,local_energy2,func,am_data,doefunc,deltatheta,pr) 
   
     real(dp),intent(inout) :: x(:), Nvec(:), deltaR
     real(dp) :: e1,e2
@@ -5876,14 +5863,6 @@ end subroutine line_scan
         real(dp)::func
       end function func
     end INTERFACE
-    INTERFACE
-      function dfunc(x,data)
-        use system_module
-        real(dp)::x(:)
-        character(len=1),optional::data(:)
-        real(dp)::dfunc(size(x))
-      end function dfunc
-    END INTERFACE
     character(len=1), intent(inout) :: am_data(:)
     integer :: doefunc
     real(dp),intent(out) :: deltatheta
@@ -5904,8 +5883,7 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
-    e1 = func(x1,am_data,local_energy=local_energy1)
-    F1 = dfunc(x1,am_data)
+    e1 =  func_wrapper(func,x1,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
@@ -5913,8 +5891,7 @@ end subroutine line_scan
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
-    e2 = func(x2,am_data,local_energy=local_energy1)
-    F2 = dfunc(x2,am_data)
+    e2 =  func_wrapper(func,x2,am_data,local_energy=local_energy1,gradient=F2,doefunc=doefunc)
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
@@ -5933,8 +5910,8 @@ end subroutine line_scan
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      e11 = func(x1star,am_data,local_energy11)
-      e21 = func(x2star,am_data,local_energy21)
+      e11 =  func_wrapper(func,x1star,am_data,local_energy11,doefunc=doefunc)
+      e21 =  func_wrapper(func,x2star,am_data,local_energy21,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif     
@@ -6077,10 +6054,10 @@ end subroutine
 !#ifndef _OPENMP
 !    call verbosity_push_decrement(2)
 !#endif
-!    e1 = func(x1,am_data)
-!    e2 = func(x2,am_data)
-!    e1star = func(x1star,am_data)
-!    e2star = func(x2star,am_data)
+!    e1 =  func_wrapper(func,x1,am_data,doefunc=doefunc)
+!    e2 =  func_wrapper(func,x2,am_data,doefunc=doefunc)
+!    e1star =  func_wrapper(func,x1star,am_data,doefunc=doefunc)
+!    e2star =  func_wrapper(func,x2star,am_data,doefunc=doefunc)
 !#ifndef _OPENMP
 !    call verbosity_pop()
 !#endif
@@ -6306,8 +6283,8 @@ end subroutine
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      f11 = func(x+Nvec*deltaR+alpha*s,data,local_energy11)
-      f21 = func(x-Nvec*deltaR+alpha*s,data,local_energy21)
+      f11 =  func_wrapper(func,x+Nvec*deltaR+alpha*s,data,local_energy11,doefunc=doefunc)
+      f21 =  func_wrapper(func,x-Nvec*deltaR+alpha*s,data,local_energy21,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif     
@@ -6394,8 +6371,8 @@ end subroutine
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
-      f11 = func(x+Nvec*deltaR+alpha*s,data,local_energy11)
-      f21 = func(x-Nvec*deltaR+alpha*s,data,local_energy21)
+      f11 =  func_wrapper(func,x+Nvec*deltaR+alpha*s,data,local_energy11,doefunc=doefunc)
+      f21 =  func_wrapper(func,x-Nvec*deltaR+alpha*s,data,local_energy21,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
 #endif     
@@ -6497,7 +6474,7 @@ end subroutine
 !#ifndef _OPENMP
 !      call verbosity_push_decrement()
 !#endif
-!      f1 = func(x+a1*s,data,local_energy1)
+!      f1 =  func_wrapper(func,x+a1*s,data,local_energy1,doefunc=doefunc)
 !#ifndef _OPENMP
 !      call verbosity_pop()
 !#endif
@@ -6582,7 +6559,7 @@ end subroutine
 !#ifndef _OPENMP
 !        call verbosity_push_decrement()
 !#endif
-!        ft = func(x+at*s,data,local_energyT)
+!        ft =  func_wrapper(func,x+at*s,data,local_energyT,doefunc=doefunc)
 !#ifndef _OPENMP
 !        call verbosity_pop()
 !#endif
@@ -6731,7 +6708,7 @@ end subroutine
 !#ifndef _OPENMP
 !      call verbosity_push_decrement()
 !#endif
-!      f1 = func(x+a1*s,data,local_energy1)
+!      f1 =  func_wrapper(func,x+a1*s,data,local_energy1,doefunc=doefunc)
 !#ifndef _OPENMP
 !      call verbosity_pop()
 !#endif
@@ -6816,7 +6793,7 @@ end subroutine
 !#ifndef _OPENMP
 !        call verbosity_push_decrement()
 !#endif
-!        ft = func(x+at*s,data,local_energyT)
+!        ft =  func_wrapper(func,x+at*s,data,local_energyT,doefunc=doefunc)
 !#ifndef _OPENMP
 !        call verbosity_pop()
 !#endif
