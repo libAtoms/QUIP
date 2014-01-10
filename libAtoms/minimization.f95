@@ -4013,6 +4013,7 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif     
+      call print("linesearch_basic loop "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//alpha)
       
       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
       !call print(deltaE)
@@ -4032,6 +4033,8 @@ end function func_wrapper
       end if
        
     end do
+
+    call print("linesearch_basic returning "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//alpha)
 
     linesearch_basic = alpha
     f = f1
@@ -4098,6 +4101,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call print("linesearch_basic_pp loop "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
       d1 = dot_product(g1,s)
       !call print(alpha)
@@ -4125,7 +4129,10 @@ end function func_wrapper
 
     end do
 
+    call print("linesearch_basic_pp returning "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = N/A '//' last alpha = '//a1)
+
     linesearch_basic_pp = a1
+    f = f1
     if(present(n_iter_final)) n_iter_final = ls_it
   end function
 
@@ -4196,6 +4203,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call print("linesearch_standard bracket "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
       ls_it = ls_it + 1
      
@@ -4235,16 +4243,24 @@ end function func_wrapper
       end if
 
       if(ls_it>ls_it_max) then
-        call print('Ran out of line search iterations in phase 1')
+        call print('linesearch_standard Ran out of line search iterations in phase 1')
         a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+	! *1 quantities will be copied into function arguments for return at end
+	f1 = f
+	g1 = g
+	local_energy1 = local_energy
         n_iter_final = n_iter_final + ls_it
         dozoom = .FALSE.   
         exit
       end if
 
       if(a1 >= amax) then
-        call print('Bracketing failed to find an interval, reverting to basic linesearch')
+        call print('linesearch_standard Bracketing failed to find an interval, reverting to basic linesearch')
         a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+	! *1 quantities will be copied into function arguments for return at end
+	f1 = f
+	g1 = g
+	local_energy1 = local_energy
         n_iter_final = n_iter_final + ls_it
         dozoom = .FALSE.   
         exit
@@ -4277,6 +4293,7 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
+        call print("linesearch_standard zoom "//" iter = "//ls_it//" f = "//ft// ' |g|^2 = '// normsq(gt)//' last alpha = '//at)
 
         ls_it = ls_it + 1
         deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
@@ -4296,8 +4313,8 @@ end function func_wrapper
 
             a1 = at
             f1 = ft
+	    g1 = gt
             local_energy1 = local_energyT
-            
             exit
 
           end if
@@ -4323,10 +4340,14 @@ end function func_wrapper
           if ( deltaET < C1*at*d) then
             call print('Bracket lowpoint satisfies sufficient decrease, using that')
             a1 = at
+	    f1 = ft
+	    g1 = gt
             exit
           else
             call print('Bracket lowpoint no good, doing a step of basic linesearch with original initial inputs')
             a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+	    f1 = ft
+	    g1 = gt
             n_iter_final = n_iter_final + ls_it
             exit
           end if
@@ -4335,13 +4356,18 @@ end function func_wrapper
         if(ls_it>ls_it_max) then
           call print('Ran out of line search iterations in phase 2')
           a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
+	  f1 = f
+	  g1 = g
+	  local_energy1 = local_energy
           n_iter_final = n_iter_final + ls_it
           exit
         end if
 
         
-      end do  
+      end do  ! zoom loop 
     end if
+
+    call print("linesearch_standard returning "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
     !call print('boo ' // ls_it)
     n_iter_final = ls_it
