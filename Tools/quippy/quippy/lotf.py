@@ -24,13 +24,16 @@ predictor-corrector dynamics within the ASE molecular dynamics framework.
 import numpy as np
 
 from quippy.clusters import (HYBRID_ACTIVE_MARK, HYBRID_NO_MARK,
-                             construct_hysteretic_region)
+                             construct_hysteretic_region,
+                             create_hybrid_weights,
+                             create_cluster_simple)
 from quippy.potential import Potential, ForceMixingPotential
 from quippy.table import Table
 from quippy.system import system_get_random_seed, system_set_random_seeds
+from quippy.util import args_str
 
 
-__all__ = ['LOTFDynamics', 'update_hysteretic_qm_region']
+__all__ = ['LOTFDynamics', 'update_hysteretic_qm_region', 'iter_atom_centered_clusters']
 
 
 from ase.md.md import MolecularDynamics
@@ -421,3 +424,44 @@ def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
         calc.set_qm_atoms(qm_list)
 
     return qm_list
+
+
+def iter_atom_centered_clusters(at, mark_name='hybrid_mark', **cluster_args):
+    """
+    Iterate over all atom-centered (little) clusters in `at`.
+
+    If `at` has a property with name `mark_name` (default `"hybrid_mark"`),
+    only those atoms where ``hybrid_mark == HYBRID_ACTIVE_MARK`` are
+    included. Otherwise, all atoms are included.
+
+    Clusters are constructed by calling
+    :func:`~quippy.clusters.create_hybrid_weights` and
+    :func:`~quippy.clusters.create_cluster_simple` once for each atom
+    of interest, after setting ``hybrid_mark=HYBRID_ACTIVE_MARK`` for that
+    atom only.
+
+    Any keyword arguments given are passed along to both cluster
+    creation functions.
+    """
+    
+    saved_hybrid_mark = None
+    if hasattr(at, mark_name):
+        saved_hybrid_mark = at.properties[mark_name].copy()
+        indices = (saved_hybrid_mark == HYBRID_ACTIVE_MARK).nonzero()[0]
+    else:
+        indices = at.indices
+    
+    at.add_property(mark_name, 0, overwrite=True)
+
+    for i in indices:
+        at.hybrid_mark[:] = 0
+        at.hybrid_mark[i] = True
+        create_hybrid_weights(at, args_str=args_str(cluster_args))
+        c = create_cluster_simple(at, args_str=args_str(cluster_args),
+                                  mark_name=mark_name)
+        yield c
+
+    if saved_hybrid_mark is not None:
+        at.add_property(mark_name, saved_hybrid_mark, overwrite=True)
+    else:
+        del at.properties[mark_name]
