@@ -10,8 +10,8 @@ program socktest
   type(Potential) :: pot
 
   character(STRING_LENGTH) :: ip, tmp
-  integer :: port, client_id, buffsize, z(100), n_atoms, i, n, n_step
-  real(dp) :: e, v(3,3), frac_pos(3,100), lattice(3,3)
+  integer :: port, client_id, buffsize, z(1000), n_atoms, i, n, n_step
+  real(dp) :: e, v(3,3), frac_pos(3,1000), lattice(3,3)
   real(dp), allocatable :: f(:,:)
 
   call system_initialise
@@ -21,7 +21,7 @@ program socktest
   port = string_to_int(tmp)
   call get_cmd_arg(3, tmp)
   client_id = string_to_int(tmp)
-  buffsize = 10000
+  buffsize = 100000
 
   mainlog%prefix = 'CLIENT '//client_id
 
