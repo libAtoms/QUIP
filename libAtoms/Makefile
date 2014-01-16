@@ -84,7 +84,8 @@ LIBATOMS_F95_FILES = \
   k_means_clustering \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_utils_no_module
+  libAtoms_utils_no_module \
+  SocketTools
 
 LIBATOMS_F77_FILES= \
    lbfgs	
@@ -92,7 +93,8 @@ LIBATOMS_F77_FILES= \
 LIBATOMS_C_FILES = \
   cutil\
   netcdf\
-  xyz
+  xyz\
+  sockets
 
 
 LIBATOMS_F77_SOURCES = ${addsuffix .f, ${LIBATOMS_F77_FILES}}
