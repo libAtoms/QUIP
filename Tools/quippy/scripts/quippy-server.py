@@ -3,6 +3,7 @@
 import sys
 import socket
 import subprocess
+import time
 import multiprocessing
 import threading
 import SocketServer
@@ -24,10 +25,16 @@ MSG_FLOAT_SIZE = 25
 MSG_FLOAT_FORMAT = '%25.16f'
 MSG_INT_FORMAT = '%4d'
 
+t_start = time.time()
+
 N_JOBS = int(sys.argv[1])
 
-def pack_atoms_to_reftraj_str(at):
+param_files = ['params.xml']
+remote_host = 'kasparov'
+
+def pack_atoms_to_reftraj_str(at, nstep):
     data = ''
+    data += MSG_INT_FORMAT % nstep + '\n'
     data += MSG_INT_FORMAT % at.n + '\n'
     data += ''.join(MSG_INT_FORMAT % z for z in at.z) + '\n'
     for i in (1, 2, 3):
@@ -70,16 +77,17 @@ def pack_results_to_reftraj_output_str(at):
 
 def unpack_reftraj_output_str_to_results(data):
     lines = data.strip().split('\n')
-    natoms = int(lines[0])
-    energy = float(lines[1])
-    force = farray(np.loadtxt(lines[2:-1])).T
+    nstep = int(lines[0])
+    natoms = int(lines[1])
+    energy = float(lines[2])
+    force = farray(np.loadtxt(lines[3:-1])).T
     v6 = [float(v) for v in lines[-1].split()]
     virial = fzeros((3,3))
     virial[1,1], virial[2,2], virial[3,3], virial[1,2], virial[2,3], virial[1,3] = v6
     virial[2,1] = virial[1,2]
     virial[3,2] = virial[2,3]
     virial[3,1] = virial[1,3]
-    return (natoms, energy, force, virial)
+    return (nstep, natoms, energy, force, virial)
 
 
 class QuippyRequestHandler(SocketServer.StreamRequestHandler):
@@ -97,7 +105,7 @@ class QuippyRequestHandler(SocketServer.StreamRequestHandler):
 
         print '"%s" request from %s:%d client %d' % (request, ip, port, client_id)
         print 'input queue lengths ', ''.join(['%d:%d ' % (i,q.qsize()) for (i,q) in enumerate(input_qs)])
-        print 'output queue lengths ', ''.join(['%d:%d ' % (i,q.qsize()) for (i,q) in enumerate(output_qs)])
+        print 'output queue length %d' % output_q.qsize()
 
         if request == 'A':
             # client is ready for some more work to do
@@ -108,7 +116,7 @@ class QuippyRequestHandler(SocketServer.StreamRequestHandler):
             # results are available from client
             data_size = int(self.rfile.read(MSG_LEN_SIZE))
             data = self.rfile.read(data_size)
-            output_qs[client_id].put(data)
+            output_q.put((client_id, data))
             input_qs[client_id].task_done()
                                     
         else:
@@ -122,7 +130,8 @@ class ThreadedQuippyServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     request_queuesize = 4*N_JOBS
     allow_reuse_address = True
 
-server = ThreadedQuippyServer(('', 8888), QuippyRequestHandler)
+ip = socket.gethostbyname(socket.gethostname())
+server = ThreadedQuippyServer((ip, 8888), QuippyRequestHandler)
 ip, port = server.server_address
 
 server_thread = threading.Thread(target=server.serve_forever)
@@ -130,55 +139,73 @@ server_thread.daemon = True
 print 'Starting threaded quippy server on %s:%d with N_JOBS=%d' % (ip, port, N_JOBS)
 server_thread.start()
 
-# we need an input and an output Queue for each client: this is so
-# that we can exploit wavefunction reuse by sending consecutive
-# clusters belonging to the same atom to the same QM partition
+t_init = time.time()
+
+# we need an input Queue for each client: this is so that we can
+# exploit wavefunction reuse by sending consecutive clusters belonging
+# to the same atom to the same QM partition
 input_qs = [Queue() for i in range(N_JOBS)]
-output_qs = [Queue() for i in range(N_JOBS)]
-cluster_list = [ [] for i in range(N_JOBS)]
+output_q = Queue()
+cluster_map = {}
 
 # setup clusters to be calculated
 d = diamond(5.44, 14)
 at = supercell(d, 2, 2, 2)
 at.rattle(0.05)
 at.calc_connect()
-clusters = list(iter_atom_centered_clusters(at, buffer_hops=2, randomise_buffer=False))
+clusters = list(iter_atom_centered_clusters(at, buffer_hops=4, randomise_buffer=False))
 
-pot = Potential('IP SW')
+pot = Potential('IP SW', param_filename='params.xml')
 
 for i, c in enumerate(clusters):
-    data = pack_atoms_to_reftraj_str(c)
-    qi = i % N_JOBS
-    cluster_list[qi].append(c)
-    input_qs[qi].put(data)
+    client_id, nstep = i % N_JOBS, i // N_JOBS
+    data = pack_atoms_to_reftraj_str(c, nstep)
+    cluster_map[(client_id, nstep)] = (c, i)
+    input_qs[client_id].put(data)
     pot.calc(c, args_str='energy force virial')
 
-# write initial input file for each client
-for i, (input_q, cs) in enumerate(zip(input_qs, cluster_list)):
-    data = input_q.get()
-    c = cs[0]
-    c.write('atoms.%d.xyz' % i)
+t_clus = time.time()
 
-# spawn clients as background processes
+# write initial input file for each client
+for client_id, input_q in enumerate(input_qs):
+    data = input_q.get()
+    c, i = cluster_map[(client_id, 0)]
+    c.write('atoms.%d.xyz' % client_id, real_format=MSG_FLOAT_FORMAT)
+    scp = subprocess.Popen(['scp', 'atoms.%d.xyz' % client_id, remote_host+':'])
+    scp.wait()
+
+t_input = time.time()
+
+for param_file in param_files:
+    scp = subprocess.Popen(['scp', param_file, remote_host+':'])
+    scp.wait()
+
+# spawn remote clients as background processes
 clients = []
 stdouts = []
 for i in range(N_JOBS):
-    stdout = open('client.stdout.%d' % i, 'w')
-    client = subprocess.Popen(['/Users/jameskermode/Code/QUIP/build.darwin_x86_64_gfortran_openmp/socktest', ip, str(port), str(i)],
-                              stderr=stdout)
+    #stdout = open('client.stdout.%d' % i, 'w')
+    client = subprocess.Popen(['ssh', remote_host, 'OMP_NUM_THREADS=1', 
+                               '/home/kermode/QUIP/build.linux_x86_64_gfortran_openmp/socktest',
+                               ip, str(port), str(i)])
+    time.sleep(0.1) # avoid problems with too many SSH connections
     clients.append(client)
 
 print 'All calculations queued, waiting for results.'
+
+t_clientstart = time.time()
 
 # wait for input queues to empty
 for input_q in input_qs:
     input_q.join()
 
+t_clientrun = time.time()
+
 print 'Input queues drained. Shutting down clients.'
 
 # stop the clients by sending them a calculation with zero atoms
 dummy_at = Atoms(n=0, lattice=np.eye(3))
-dummy_data = pack_atoms_to_reftraj_str(dummy_at)
+dummy_data = pack_atoms_to_reftraj_str(dummy_at, 0)
 for input_q in input_qs:
     input_q.put(dummy_data)
 
@@ -194,30 +221,40 @@ for stdout in stdouts:
 
 print 'Client logs flushed.'
 
-print 'Collecting results.'
+t_clientstop = time.time()
 
-print 'Output queue lengths:', [q.qsize() for q in output_qs]
+print 'Collecting results.'
 
 # collect results
 result_at = at.copy()
 result_at.add_property('cluster_force', 0.0, n_cols=3)
-for i, c in enumerate(clusters):
-    data = output_qs[i % N_JOBS].get()
-    natoms, energy, force, virial = unpack_reftraj_output_str_to_results(data)
+
+while output_q.unfinished_tasks:
+    client_id, data = output_q.get()
+    nstep, natoms, energy, force, virial = unpack_reftraj_output_str_to_results(data)
+
+    c, i = cluster_map[(client_id, nstep)]
 
     # compare returned values to the locally-computed energy, force and virial
     assert natoms == c.n
+
+    #print 'ediff', energy, c.energy, abs(energy - c.energy)
+    #print 'fdiff', abs(force - c.force).max()
+    #print 'vdiff', abs(virial - c.virial).max()
+
     assert abs(energy - c.energy) < 1e-7
     assert abs(force - c.force).max() < 1e-6
     assert abs(virial - c.virial).max() < 1e-6
 
     # we only need force on first atom
     result_at.cluster_force[:, i+1] = force[:, 1]
-    output_qs[i % N_JOBS].task_done()
+    output_q.task_done()
 
-print 'Output queues drained.'
-    
-# reference calculation of full system
+print 'Output queue drained.'
+
+t_results = time.time()
+
+# reference calculation on full system
 pot.calc(result_at, args_str='force')
 
 # compare cluster and reference forces
@@ -228,5 +265,18 @@ assert max_force_err < 1.0e-6
 print 'Shutting down quippy server.'
 server.shutdown()
 
+t_shutdown = time.time()
+
+print
+print 'TIMINGS with N_JOBS=%d:' % N_JOBS
+print 'Server setup      %.2f s' % (t_init - t_start)
+print 'Cluster carving   %.2f s' % (t_clus - t_init)
+print 'Send input files  %.2f s' % (t_input - t_clus)
+print 'Client startup    %.2f s' % (t_clientstart - t_input)
+print 'Clients running   %.2f s' % (t_clientrun - t_clientstart)
+print 'Clients shutdown  %.2f s' % (t_clientstop - t_clientrun)
+print 'Collect results   %.2f s' % (t_results - t_clientstop)
+print 'Server shutdown   %.2f s' % (t_shutdown - t_results)
+print 'Total time        %.2f s' % (t_shutdown - t_start)
 
 
