@@ -75,9 +75,9 @@ module SocketTools_module
 
 contains
 
-  subroutine socket_send_data(ip, port, client_id, n_atoms, energy, force, virial, error)
+  subroutine socket_send_data(ip, port, client_id, n_step, n_atoms, energy, force, virial, error)
     character(*), intent(in) :: ip
-    integer, intent(in) :: port, client_id, n_atoms
+    integer, intent(in) :: port, client_id, n_step, n_atoms
     real(dp), intent(in) :: energy, force(:,:), virial(3,3)
     integer, optional, intent(out) :: error
 
@@ -93,12 +93,21 @@ contains
     c_port = port
     c_client_id = client_id
 
-    ! space for n_atoms, 1 energy, 3*N force components and 6 virial components, separated by N+2 newlines
-    data_len = MSG_INT_SIZE + MSG_FLOAT_SIZE*(1 + size(force) + 6) + size(force,2)+2
+    ! space for n_step, n_atoms, 1 energy, 3*N force components and 6 virial components, separated by N+3 newlines
+    data_len = 2*MSG_INT_SIZE + MSG_FLOAT_SIZE*(1 + size(force) + 6) + size(force,2)+3
     allocate(data(data_len))
     i = 1
 
-    ! first line is n_atoms
+    ! first line is n_step
+    write(line, '('//MSG_INT_FORMAT//')'), n_step
+    do j=1,len_trim(line)
+       data(i) = line(j:j)
+       i = i + 1
+    end do
+    data(i) = C_NEW_LINE
+    i = i + 1
+
+    ! second line is n_atoms
     write(line, '('//MSG_INT_FORMAT//')'), n_atoms
     do j=1,len_trim(line)
        data(i) = line(j:j)
@@ -107,7 +116,7 @@ contains
     data(i) = C_NEW_LINE
     i = i + 1
    
-    ! second line is energy
+    ! third line is energy
     write(line, '('//MSG_FLOAT_FORMAT//')'), energy
     do j=1,len_trim(line)
        data(i) = line(j:j)
@@ -155,11 +164,11 @@ contains
     
   end subroutine socket_send_data
   
-  subroutine socket_recv_data(ip, port, client_id, buff_size, n_atoms, z, lattice, frac_pos, error)
+  subroutine socket_recv_data(ip, port, client_id, buff_size, n_step, n_atoms, z, lattice, frac_pos, error)
     character(*), intent(in) :: ip
     integer, intent(in) :: port, client_id
     integer, intent(in) :: buff_size
-    integer, intent(out) :: n_atoms
+    integer, intent(out) :: n_step, n_atoms
     integer, intent(out), dimension(:) :: z
     real(dp), intent(out), dimension(:,:) :: lattice, frac_pos
     integer, optional, intent(out) :: error
@@ -209,16 +218,18 @@ contains
        i = i + 1 ! skip the newline character
 
        if (lineno == 1) then
+          read (line,*) n_step
+       else if (lineno == 2) then
           read (line,*) n_atoms
           if ((size(z) < n_atoms) .or. (size(frac_pos, 2) < n_atoms)) then
              RAISE_ERROR('insufficient space to store received data', error)
           end if
-       else if (lineno == 2) then
+       else if (lineno == 3) then
           read (line, *) (z(n), n=1,n_atoms)
-       else if (lineno > 2 .and. lineno <= 5) then
-          read (line, *) lattice(lineno-2, :)
-       else if (lineno > 5 .and. lineno < 5+n) then
-          read (line, *) frac_pos(1, lineno-5), frac_pos(2, lineno-5), frac_pos(3, lineno-5)
+       else if (lineno > 3 .and. lineno <= 6) then
+          read (line, *) lattice(lineno-3, :)
+       else if (lineno > 6 .and. lineno < 6+n) then
+          read (line, *) frac_pos(1, lineno-6), frac_pos(2, lineno-6), frac_pos(3, lineno-6)
        else
           RAISE_ERROR('unexpected line '//trim(line), error)
        end if
