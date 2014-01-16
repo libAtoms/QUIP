@@ -10,7 +10,7 @@ program socktest
   type(Potential) :: pot
 
   character(STRING_LENGTH) :: ip, tmp
-  integer :: port, client_id, buffsize, z(100), n_atoms, i, n
+  integer :: port, client_id, buffsize, z(100), n_atoms, i, n, n_step
   real(dp) :: e, v(3,3), frac_pos(3,100), lattice(3,3)
   real(dp), allocatable :: f(:,:)
 
@@ -40,18 +40,21 @@ program socktest
      call calc_connect(at)
      call calc(pot, at, energy=e, force=f, virial=v)
 
-     call print('completed calculation '//n//' on '//at%n//' atoms')
-     n = n + 1
+     call print('completed calculation '//n//' on '//at%n//' atoms. energy='//e)
 
      call print('Sending data')
-     call socket_send_data(ip, port, client_id, at%n, e, f, v)
+     call socket_send_data(ip, port, client_id, n, at%n, e, f, v)
      call print('Finished sending data')
+
+     n = n + 1
   
      deallocate(f)
 
      call print('Waiting to receive data...')
-     call socket_recv_data(ip, port, client_id, buffsize, n_atoms, z, lattice, frac_pos)
+     call socket_recv_data(ip, port, client_id, buffsize, n_step, n_atoms, z, lattice, frac_pos)
      call print('Received data')
+
+     call print('n='//n//' n_step='//n_step)
 
      if (n_atoms == 0 .or. n_atoms /= at%n) then
         call print('n_atoms='//n_atoms//', at%n='//at%n//' - shutting down QUIP server')
