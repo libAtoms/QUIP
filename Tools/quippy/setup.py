@@ -391,14 +391,7 @@ default_options= {
     }
 }
 
-got_gfortran45 = False
-if makefile['QUIPPY_FCOMPILER'] == 'gnu95':
-    version = os.popen("gfortran --version | head -1 | sed 's/(.*)//' | awk '{ print $3 }'").read()
-    print version
-    version = [int(s) for s in version.split('.')[0:2]]
-    got_gfortran45 = version[0] == 4 and version[1] == 5
-
-if makefile_test('QUIPPY_DEBUG') or got_gfortran45:
+if makefile_test('QUIPPY_DEBUG'):
     os.environ['FOPT'] = '-O0'
     os.environ['FARCH'] = ''
     macros.append(('DEBUG',None))
