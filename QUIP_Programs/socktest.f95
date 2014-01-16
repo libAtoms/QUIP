@@ -29,7 +29,7 @@ program socktest
   call read(at, 'atoms.'//client_id//'.xyz')
   call potential_filename_initialise(pot, 'IP SW', 'params.xml')
 
-  call print('Connecting to QUIP server on host '//ip//':'//port//' as client '//client_id)
+  call print('Connecting to QUIP server on host '//trim(ip)//':'//port//' as client '//client_id)
 
   n = 0
   do while (.true.)
