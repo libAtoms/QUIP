@@ -57,7 +57,7 @@ implicit none
   call read(at, infile_io, error=error)
   HANDLE_ERROR(error)
   call write(at, outfile_io)
-  i = 1
+  i = 0
   do while (error == 0)
     i = i + n
     call read(at, infile_io, frame=i, error=error)
