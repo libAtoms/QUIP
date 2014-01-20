@@ -63,6 +63,7 @@ module linearalgebra_module
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
+  public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
@@ -6515,5 +6516,80 @@ end if !on condition of matrix inverting
    call print('finished  inverse_svd_threshold')
 
  end subroutine inverse_svd_threshold
+
+  ! polynomial switching function for implementing a cutoff - 
+  ! a sigmoid going from 1 to zero smoothly.
+  ! the first three derivatives are exactly zero at the end points
+  function poly_switch(r,cutoff_in,transition_width)
+
+     real(dp)             :: poly_switch
+     real(dp), intent(in) :: r, cutoff_in, transition_width
+     real(dp) :: x, x4
+
+     if( r > cutoff_in ) then
+         poly_switch = 0.0_dp
+     elseif( r > (cutoff_in-transition_width) ) then
+         x = (r - (cutoff_in - transition_width))/transition_width
+         x4 = x**4
+         poly_switch = 1 - 35.0_dp*(x4) +84.0_dp*(x4*x) - 70.0_dp * (x4*x*x) + 20.0_dp* (x4)*(x**3)
+     else
+         poly_switch = 1.0_dp
+     endif
+
+  end function poly_switch
+
+  function dpoly_switch(r,cutoff_in,transition_width)
+
+     real(dp)             :: dpoly_switch
+     real(dp), intent(in) :: r, cutoff_in, transition_width
+     real(dp) :: x
+
+     if( r > cutoff_in ) then
+         dpoly_switch = 0.0_dp
+     elseif( r > (cutoff_in-transition_width) ) then
+         x = (r - (cutoff_in - transition_width))/transition_width
+         dpoly_switch = 140.0_dp *( (x-1.0_dp)**3 )* (x**3)
+         dpoly_switch = dpoly_switch / transition_width
+     else
+         dpoly_switch = 0.0_dp
+     endif
+
+  end function dpoly_switch
+
+  function d2poly_switch(r,cutoff_in,transition_width)
+
+     real(dp)             :: d2poly_switch
+     real(dp), intent(in) :: r, cutoff_in, transition_width
+     real(dp) :: x
+
+     if( r > cutoff_in ) then
+         d2poly_switch = 0.0_dp
+     elseif( r > (cutoff_in-transition_width) ) then
+         x = (r - (cutoff_in - transition_width))/transition_width
+         d2poly_switch = 420.0_dp * (x-1.0_dp)**2 * (x**2) * (2.0_dp*x-1.0_dp)
+         d2poly_switch = d2poly_switch / (transition_width)**2
+     else
+         d2poly_switch = 0.0_dp
+     endif
+
+  end function d2poly_switch
+
+  function d3poly_switch(r,cutoff_in,transition_width)
+
+     real(dp)             :: d3poly_switch
+     real(dp), intent(in) :: r, cutoff_in, transition_width
+     real(dp) :: x
+
+     if( r > cutoff_in ) then
+         d3poly_switch = 0.0_dp
+     elseif( r > (cutoff_in-transition_width) ) then
+         x = (r - (cutoff_in - transition_width))/transition_width
+         d3poly_switch = 840.0_dp * x * (5.0_dp*(x**3) - 10.0_dp*(x**2) + 6.0_dp*x -1.0_dp )
+         d3poly_switch = d3poly_switch / (transition_width)**3
+     else
+         d3poly_switch = 0.0_dp
+     endif
+
+  end function d3poly_switch
 
 end module linearalgebra_module
