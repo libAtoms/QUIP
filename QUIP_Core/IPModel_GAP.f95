@@ -89,7 +89,7 @@ type IPModel_GAP
   integer, dimension(:), allocatable :: Z
   real(dp), dimension(116) :: z_eff = 0.0_dp
   real(dp), dimension(116) :: w_Z = 1.0_dp
-  real(dp) :: e0 = 0.0_dp
+  real(dp), dimension(116) :: e0 = 0.0_dp
 
   ! qw parameters
   integer :: qw_l_max = 0
@@ -120,7 +120,7 @@ type IPModel_GAP
 
 end type IPModel_GAP
 
-logical, private :: parse_in_ip, parse_matched_label, parse_in_ip_done
+logical, private :: parse_in_ip, parse_in_gap_data, parse_matched_label, parse_in_ip_done
 integer, private :: parse_n_row, parse_cur_row
 
 type(IPModel_GAP), private, pointer :: parse_ip
@@ -236,7 +236,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: e_i, e_i_cutoff
   real(dp), dimension(:), allocatable   :: local_e_in
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  integer :: d, i, j, n, m, i_coordinate, n_local_e, i_pos0
+  integer :: d, i, j, n, m, i_coordinate, i_pos0
 
   real(dp), dimension(:,:), allocatable :: f_in
 
@@ -348,12 +348,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
            
-  if( associated(atom_mask_pointer) ) then
-     n_local_e = count(atom_mask_pointer)
-  else
-     n_local_e = at%N
-  endif
-
   do i_coordinate = 1, this%my_gp%n_coordinate
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
@@ -434,17 +428,20 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   enddo
 
   if(present(f)) f = this%E_scale*f_in
-  if(present(e)) e = this%E_scale*(sum(local_e_in) + this%e0*n_local_e)
-  if(present(local_e)) then
-     local_e = local_e_in
+
+  if(present(e) .or. present(local_e)) then
      if( associated(atom_mask_pointer) ) then
         do i = 1, at%N
-           if( atom_mask_pointer(i) ) local_e(i) = local_e(i) + this%e0
+           if( atom_mask_pointer(i) ) local_e_in(i) = local_e_in(i) + this%e0(at%Z(i))
         enddo
      else
-        local_e = local_e + this%e0
+        do i = 1, at%N
+           local_e_in(i) = local_e_in(i) + this%e0(at%Z(i))
+        enddo
      endif
-     local_e = local_e * this%E_scale
+
+     if(present(e)) e = this%E_scale*sum(local_e_in)
+     if(present(local_e)) local_e = local_e_in * this%E_scale
   endif
 
   if(present(virial)) virial = this%E_scale*sum(virial_in,dim=3)
@@ -497,7 +494,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=1024) :: value
 
-  integer :: ri
+  integer :: ri, Z
 
   if(name == 'GAP_params') then ! new GAP stanza
      
@@ -538,9 +535,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
      call QUIP_FoX_get_value(attributes, 'e0', value, status)
      if(status == 0) then
-        read (value, *) parse_ip%e0
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find e0')
+        read (value, *) parse_ip%e0(1)
+        parse_ip%e0 = parse_ip%e0(1)
      endif
 
      call QUIP_FoX_get_value(attributes, 'do_pca', value, status)
@@ -551,6 +547,23 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      endif
 
      allocate( parse_ip%Z(parse_ip%n_species) )
+     parse_in_gap_data = .true.
+
+  elseif(parse_in_ip .and. parse_in_gap_data .and. name == 'e0') then
+     call QUIP_FoX_get_value(attributes, 'Z', value, status)
+     if(status == 0) then
+        read (value, *) Z
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find Z')
+     endif
+     if( Z > size(parse_ip%e0) ) call system_abort('IPModel_GAP_read_params_xml: attribute Z = '//Z//' > '//size(parse_ip%e0))
+
+     call QUIP_FoX_get_value(attributes, 'value', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%e0(Z)
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find value in e0')
+     endif
 
   elseif(parse_in_ip .and. name == 'water_monomer_params') then
 
@@ -713,6 +726,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
        parse_in_ip = .false.
        parse_in_ip_done = .true.
     elseif(name == 'GAP_data') then
+       parse_in_gap_data = .false.
 
     elseif(name == 'bispectrum_so4_params') then
 
