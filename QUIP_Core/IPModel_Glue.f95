@@ -742,7 +742,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       !  Potential defined as a rho->E map
       !
       
-      if (parse_curr_point > size(parse_ip%spline_data_density(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
+      if (parse_curr_point > size(parse_ip%spline_data_potential(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
 	"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_density")
 
       call QUIP_FoX_get_value(attributes, "rho", value, status)
