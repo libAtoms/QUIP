@@ -1954,7 +1954,7 @@ contains
 
     enddo
 
-    call set_lattice(this,lattice,.true.,remap=.true.,reconnect=.true.)
+    call set_lattice(this,lattice,scale_positions=.false.,remap=.true.,reconnect=.true.)
 
 
   end subroutine atoms_unskew_cell
