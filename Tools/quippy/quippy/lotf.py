@@ -443,25 +443,26 @@ def iter_atom_centered_clusters(at, mark_name='hybrid_mark', **cluster_args):
     Any keyword arguments given are passed along to both cluster
     creation functions.
     """
-    
+
     saved_hybrid_mark = None
+    if hasattr(at, 'hybrid_mark'):
+        saved_hybrid_mark = at.hybrid_mark.copy()
+
     if hasattr(at, mark_name):
-        saved_hybrid_mark = at.properties[mark_name].copy()
-        indices = (saved_hybrid_mark == HYBRID_ACTIVE_MARK).nonzero()[0]
+        indices = (getattr(at, mark_name) == HYBRID_ACTIVE_MARK).nonzero()[0]
     else:
         indices = at.indices
     
-    at.add_property(mark_name, 0, overwrite=True)
+    at.add_property('hybrid_mark', 0, overwrite=True)
 
     for i in indices:
         at.hybrid_mark[:] = 0
         at.hybrid_mark[i] = True
         create_hybrid_weights(at, args_str=args_str(cluster_args))
-        c = create_cluster_simple(at, args_str=args_str(cluster_args),
-                                  mark_name=mark_name)
+        c = create_cluster_simple(at, args_str=args_str(cluster_args))
         yield c
 
     if saved_hybrid_mark is not None:
-        at.add_property(mark_name, saved_hybrid_mark, overwrite=True)
+        at.add_property('hybrid_mark', saved_hybrid_mark, overwrite=True)
     else:
-        del at.properties[mark_name]
+        del at.properties['hybrid_mark']
