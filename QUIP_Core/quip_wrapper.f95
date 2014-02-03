@@ -37,7 +37,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
+subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,force,virial)
 
   use system_module, only : dp, print, system_initialise, PRINT_NORMAL, PRINT_SILENT, verbosity_push, verbosity_pop
   use dictionary_module
@@ -52,7 +52,8 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,energy,force,virial)
   integer, intent(in) :: N
   real(dp), dimension(3,3), intent(inout) :: lattice
   character(len=3), dimension(N), intent(in) :: symbol
-  character(len=STRING_LENGTH) :: args_str
+  integer, intent(in) :: args_str_len
+  character(len=args_str_len) :: args_str
   real(dp), dimension(3,N), intent(in) :: coord
   real(dp), intent(out) :: energy
   real(dp), dimension(3,N), intent(out) :: force
