@@ -103,11 +103,11 @@ module Potential_Precon_Minim_module
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
 
+    call system_timer('build_precon')
     am = transfer(am_data,am)
-    
-    
+        
     call atoms_repoint(am%minim_at)    
-    call set_cutoff(am%minim_at, this%cutoff)
+    call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
     call calc_connect(am%minim_at)
     call calc_dists(am%minim_at)
     
@@ -245,7 +245,9 @@ module Potential_Precon_Minim_module
 
     !call exit()
 
-  end subroutine
+    call system_timer('build_precon')
+
+  end subroutine build_precon
 
   subroutine getdenseC1precon(prmat,at,cutoff)
 
@@ -950,7 +952,7 @@ module Potential_Precon_Minim_module
     !call print(max_atom_rij_change// ' '//am%minim_at%cutoff // ' '// cutoff(am%minim_pot))
     !call print(am%minim_at%connect%neighbour1(302)%t%int(1,1:))
 
-    call print("energy_func got x " // x, PRINT_NERD)
+    if (current_verbosity() >= PRINT_NERD) call print("energy_func got x " // x, PRINT_NERD)
 
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -958,8 +960,10 @@ module Potential_Precon_Minim_module
     call calc_connect(am%minim_at)
     am%last_connect_x = x
  
-    call print("energy_func using am%minim_at", PRINT_NERD)
-    if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
+    if (current_verbosity() >= PRINT_NERD) then
+       call print("energy_func using am%minim_at", PRINT_NERD)
+       call write(am%minim_at, 'stdout')
+    end if
 
     if( .not. present(gradient_inout) ) then
       call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = local_energy_inout, args_str = am%minim_args_str)
@@ -990,14 +994,19 @@ module Potential_Precon_Minim_module
         end do
       end if
 
-      call print ("gradient_func got f", PRINT_NERD)
-      call print(f, PRINT_NERD)
-      call print ("gradient_func got virial", PRINT_NERD)
-      call print(virial, PRINT_NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+         call print ("gradient_func got f", PRINT_NERD)
+         call print(f, PRINT_NERD)
+         call print ("gradient_func got virial", PRINT_NERD)
+         call print(virial, PRINT_NERD)
+      end if
 
       virial = virial - am%external_pressure*cell_volume(am%minim_at)
-      call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
-      call print(virial, PRINT_NERD)
+
+      if (current_verbosity() >= PRINT_NERD) then
+         call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
+         call print(virial, PRINT_NERD)
+      end if
 
       f = transpose(deform_grad) .mult. f
 

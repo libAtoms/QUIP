@@ -1710,14 +1710,18 @@ end subroutine undo_travel
        end do
     end if
 
-    call print ("gradient_func got f", PRINT_NERD)
-    call print(f, PRINT_NERD)
-    call print ("gradient_func got virial", PRINT_NERD)
-    call print(virial, PRINT_NERD)
-
+    if (current_verbosity() >= PRINT_NERD) then
+       call print ("gradient_func got f", PRINT_NERD)
+       call print(f, PRINT_NERD)
+       call print ("gradient_func got virial", PRINT_NERD)
+       call print(virial, PRINT_NERD)
+    end if
     virial = virial - am%external_pressure*cell_volume(am%minim_at)
-    call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
-    call print(virial, PRINT_NERD)
+    
+    if (current_verbosity() >= PRINT_NERD) then
+       call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
+       call print(virial, PRINT_NERD)
+    end if
 
     f = transpose(deform_grad) .mult. f
 
