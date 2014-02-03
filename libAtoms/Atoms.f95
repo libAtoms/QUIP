@@ -1983,6 +1983,8 @@ contains
 #endif
     INIT_ERROR(error)
 
+    call system_timer('calc_dists')
+
     ! Flag to specify whether or not to parallelise calculation.
     ! Only actually run in parallel if parallel==.true. AND
     ! _MPI is #defined. Default to serial mode.
@@ -2072,6 +2074,8 @@ contains
        end if
     end if
 #endif
+
+    call system_timer('calc_dists')
 
   end subroutine calc_dists
 

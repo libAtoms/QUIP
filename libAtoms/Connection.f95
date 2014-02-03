@@ -1016,6 +1016,8 @@ contains
 
     INIT_ERROR(error)
 
+    call system_timer('calc_connect')
+
     this%N = at%N
 
     my_own_neighbour = optional_default(.false., own_neighbour)
@@ -1220,6 +1222,8 @@ contains
           n_neighb(i) = n_neighbours(this, i)
        end do
     end if
+
+    call system_timer('calc_connect')
 
   end subroutine connection_calc_connect
 
