@@ -27,9 +27,9 @@ program quip_wrapper_example
   coord(1,6) = -8.927810d0; coord(2,6) = -6.879853d0; coord(3,6) = -0.621913d0;
 
   args_str="IP GAP label=GAP_2010_9_18_60_1_34_16_996"
-  args_str_length = len(trim(args_str))
+  args_str_length = len_trim(args_str)
 
-  call quip_wrapper(n,lattice,symbol,coord,args_str,args_str_length,energy,force,virial)
+  call quip_wrapper(n,lattice,symbol,coord,trim(args_str),args_str_length,energy,force,virial,.true.,.true.,.true.)
 
   print*,'Energy = ', energy
 

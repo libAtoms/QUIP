@@ -37,12 +37,13 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,force,virial)
+subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,force,virial,do_energy,do_force,do_virial)
 
-  use system_module, only : dp, print, system_initialise, PRINT_NORMAL, PRINT_SILENT, verbosity_push, verbosity_pop
+  use system_module, only : dp, print, system_initialise, system_abort, PRINT_NORMAL, PRINT_SILENT, verbosity_push, verbosity_pop
   use dictionary_module
   use periodictable_module
   use mpi_context_module
+  use atoms_types_module, only : assign_pointer
   use atoms_module
 
   use potential_module
@@ -58,14 +59,17 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,forc
   real(dp), intent(out) :: energy
   real(dp), dimension(3,N), intent(out) :: force
   real(dp), dimension(3,3), intent(out) :: virial
+  logical, intent(in) :: do_energy, do_force, do_virial
   
   type(atoms), save       :: at
   type(Potential), save   :: pot
   type(MPI_context), save :: mpi_glob
 
   integer :: i
+  real(dp), dimension(:,:), pointer :: quip_wrapper_force
   real(dp) :: cut, clustlenx, clustleny, clustlenz, boxlenx, boxleny, boxlenz
   real(dp), dimension(3) :: upper, lower
+  character(len=STRING_LENGTH) :: calc_args
 
   logical, save :: first_run = .true.
 
@@ -110,7 +114,19 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,forc
   call set_cutoff(at,cutoff(pot)+0.5_dp)
   call calc_connect(at)
 
-  call calc(pot,at,energy=energy,force=force,virial=virial)
+  calc_args = ""
+  if(do_energy) calc_args = trim(calc_args)//" energy=quip_wrapper_energy "
+  if(do_force) calc_args = trim(calc_args)//" force=quip_wrapper_force "
+  if(do_virial) calc_args = trim(calc_args)//" virial=quip_wrapper_virial "
+
+  call calc(pot,at,args_str=trim(calc_args))
+
+  if(do_energy) call get_param_value(at, "quip_wrapper_energy", energy)
+  if(do_virial) call get_param_value(at, "quip_wrapper_virial", virial)
+  if(do_force) then
+     if(.not. assign_pointer(at,"quip_wrapper_force",quip_wrapper_force) ) call system_abort("Could not calculate forces")
+     force = quip_wrapper_force
+  endif
 
   first_run = .false.
 
