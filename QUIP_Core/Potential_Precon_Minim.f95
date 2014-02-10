@@ -46,9 +46,6 @@ module Potential_Precon_Minim_module
 
 
   subroutine allocate_precon(this,at,precon_id,nneigh,energy_scale,length_scale,cutoff,res2,max_iter,max_sub)
-    
-
-    
     type (precon_data), intent(inout) :: this
     type (Atoms) :: at
     character(*) :: precon_id
@@ -65,8 +62,10 @@ module Potential_Precon_Minim_module
     this%max_sub = max_sub
 
 
-    if (associated(at%move_mask)) then
-      this%has_fixed = .TRUE.
+    if (has_property(at, 'move_mask')) then
+       this%has_fixed = .TRUE.
+    else
+       this%has_fixed = .FALSE.
     end if
 
     allocate(this%preconrowlengths(at%N))
@@ -108,6 +107,7 @@ module Potential_Precon_Minim_module
     
     
     call atoms_repoint(am%minim_at)    
+    call set_cutoff(am%minim_at, this%cutoff)
     call calc_connect(am%minim_at)
     call calc_dists(am%minim_at)
     
@@ -133,9 +133,11 @@ module Potential_Precon_Minim_module
       !call print("rah")  
       !if(am%minim_at%move_mask(I) == 1) then
       
-      if(this%has_fixed .and.am%minim_at%move_mask(I) == 0) then
-        this%preconcoeffs(1,I,1) = 1.0
-        cycle
+      if(this%has_fixed) then
+	if (am%minim_at%move_mask(I) == 0) then
+	   this%preconcoeffs(1,I,1) = 1.0
+           cycle
+	end if
       end if
       
       thisneighcount = n_neighbours(am%minim_at,I)
@@ -158,13 +160,13 @@ module Potential_Precon_Minim_module
       if (this%precon_id == "LJ" .OR. this%precon_id == "C1") then
         this%preconcoeffs(1,I,1) = conconstant
       end if
-             
+
       nearneighcount = 2
       do J = 1,thisneighcount
-        
+
         thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,max_dist=this%cutoff,index=thisind2) 
         if (thisind > 0) then 
-       
+
           !call print(  I  // ' '// J // ' '// thisneighcount// ' ' // thisind // ' ' // thisdist)
           !call print(  I  //  ' ' // thisind // ' ' //thisind2 // ' ' // thisdist)
           
@@ -927,7 +929,6 @@ module Potential_Precon_Minim_module
     real(dp) :: max_atom_rij_change
     real(dp) :: deform_grad(3,3)
     type(potential_minimise)  :: am
-    real(dp) , allocatable :: le(:)
     real(dp) , allocatable :: f(:,:)
     real(dp) :: virial(3,3),  deform_grad_inv(3,3)
     integer :: i
@@ -960,19 +961,18 @@ module Potential_Precon_Minim_module
     call print("energy_func using am%minim_at", PRINT_NERD)
     if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
 
-    allocate(le(am%minim_at%n))
     if( .not. present(gradient_inout) ) then
-      call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = local_energy_inout, args_str = am%minim_args_str)
     else
       allocate(f(3,am%minim_at%N))
       f = 0.0_dp
       virial = 0.0_dp
       if (am%minim_do_pos .and. am%minim_do_lat) then
-        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, force = f, virial = virial, args_str = am%minim_args_str)
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = local_energy_inout, force = f, virial = virial, args_str = am%minim_args_str)
       else if (am%minim_do_pos) then
-        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, force = f, args_str = am%minim_args_str)
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = local_energy_inout, force = f, args_str = am%minim_args_str)
       else
-        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = le, virial = virial, args_str = am%minim_args_str)
+        call calc(am%minim_pot, am%minim_at, energy = energy_func_local, local_energy = local_energy_inout, virial = virial, args_str = am%minim_args_str)
       endif
 
 
@@ -1007,9 +1007,6 @@ module Potential_Precon_Minim_module
       call constrain_virial_post(am%minim_at, virial)
 
       call pack_pos_dg(-f, -virial, gradient_inout, 1.0_dp/am%pos_lat_preconditioner_factor)
-    end if
-    if (present(local_energy_inout)) then 
-      local_energy_inout = le
     end if
   
     call print ("energy_func got energy " // energy_func_local, PRINT_NERD)
