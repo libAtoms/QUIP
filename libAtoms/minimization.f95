@@ -3921,7 +3921,7 @@ end subroutine line_scan
     real(dp) :: length_scale
     real(dp) :: calc_amax
 
-    calc_amax = 0.1*length_scale/sqrt(normsq(g))
+    calc_amax = 0.5*length_scale/sqrt(normsq(g))
 
   end function
   
