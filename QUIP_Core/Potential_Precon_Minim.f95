@@ -109,7 +109,6 @@ module Potential_Precon_Minim_module
     call atoms_repoint(am%minim_at)    
     call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
     call calc_connect(am%minim_at)
-    call calc_dists(am%minim_at)
     
     if(this%precon_id == "LJ") then 
       conconstant = 1.0_dp/am%minim_at%N
