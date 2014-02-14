@@ -204,3 +204,86 @@ def most_recent_files(dir_pattern, file_pattern, suffix=''):
     """
     return [most_recent_file(os.path.join(dir, file_pattern))+suffix for dir in glob.glob(dir_pattern)]
 
+
+
+def analyse_timings(lines):
+    """
+    Analyse QUIP timing information.
+
+    Lines should be list of lines read from output file, with
+    e.g. readlines().  Returns two dictionaries (timings,
+    summary). `timings` contains entries for each TIMING line, with
+    "wall" and "cpu" keys. `summary` collapses repeated entries and adds
+    statistics for th enumber of calls ("len" key), total time ("sum"), and
+    average time per call ("mean").
+    """
+    timer_lines = [line for line in lines if line.startswith('TIMER')]
+    timings = {}
+    for line in timer_lines:
+        _, label, _, _, cpu, _, _, wall, _, _, _ = line.split()
+        cpu = float(cpu)
+        wall = float(wall)
+        if label not in timings:
+            timings[label] = {'wall': [], 'cpu': []}
+        timings[label]['wall'].append(wall)
+        timings[label]['cpu'].append(cpu)
+
+    summary = {}
+    for label, value in timings.iteritems():
+        summary[label] = {}
+        for key in ['wall', 'cpu']:
+            v = np.array(value[key])
+            summary[label][key] = {'len': len(v),
+                                   'sum': v.sum(),
+                                   'mean': v.mean()}
+    return timings, summary
+
+
+def write_timings(out, timings, order='calls', wall_only=True, cpu_only=False, reverse=True):
+    """
+    Write a formatted summary of QUIP `timings` data to `out`.
+
+    
+    """
+
+    def sort_by_calls(item):
+        key, value = item
+        return value['wall']['len']
+
+    def sort_by_total_wall_time(item):
+        key, value = item
+        return value['wall']['sum']
+
+    def sort_by_total_cpu_time(item):
+        key, value = item            
+        return value['wall']['sum']
+
+    def sort_by_mean_wall_time(item):
+        key, value = item
+        return value['wall']['mean']
+    
+    def sort_by_mean_cpu_time(item):
+        key, value = item
+        return value['cpu']['mean']
+
+    sort_funcs = {}
+    sort_funcs['calls'] = sort_by_calls
+    sort_funcs['total_wall_time'] = sort_by_total_wall_time
+    sort_funcs['total_cpu_time'] = sort_by_total_cpu_time
+    sort_funcs['mean_wall_time'] = sort_by_mean_wall_time
+    sort_funcs['mean_cpu_time'] = sort_by_mean_cpu_time
+
+    timing_types = ['wall', 'cpu']
+    if wall_only:
+        timing_types = ['wall']
+    if cpu_only:
+        timing_types = ['cpu']
+
+    sorted_items = sorted(timings.iteritems(), key=sort_funcs[order])
+    if reverse:
+        sorted_items = reversed(sorted_items)
+
+    for label, value in sorted_items:
+        for key in timing_types:
+            out.write('%-20s calls %-6d total %s %6.2f mean %s %6.2f\n' %
+                        (label, value[key]['len'], key, value[key]['sum'], key, value[key]['mean']))
