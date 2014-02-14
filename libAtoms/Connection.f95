@@ -1075,7 +1075,7 @@ contains
           cutoff = cutoff + cutoff_skin
 
           if (.not. allocated(this%last_connect_pos) .or. &
-               (cutoff >= this%last_connect_cutoff) .or. &
+               (cutoff > this%last_connect_cutoff) .or. &
                (size(this%last_connect_pos, 2) /= at%n) .or. &
                (at%lattice .fne. this%last_connect_lattice)) then
              call print('calc_connect: forcing a rebuild: either first time, atom number mismatch or lattice mismatch', PRINT_VERBOSE)
