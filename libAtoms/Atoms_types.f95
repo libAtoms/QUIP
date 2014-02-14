@@ -148,6 +148,10 @@ module Atoms_types_module
 
      logical, allocatable, dimension(:) :: is_min_image   !% True if i is a minimum image
 
+     real(dp) :: last_connect_cutoff !% Value of cutoff used last time connectivity was updated
+     real(dp), allocatable, dimension(:,:) :: last_connect_pos !% Positions of atoms last time connnectivity was updated
+     real(dp), dimension(3,3) :: last_connect_lattice !% Lattice last time connectivity was updated
+
   end type Connection
 
 
@@ -246,7 +250,8 @@ module Atoms_types_module
                                                                            !% is the cutoff distance in $\mathrm{\AA}$
                                                                            !% Otherwise, cutoff is a multiplier
                                                                            !% for 'bond_length(Zi,Zj)'.
-     real(dp)                              ::  cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
+     real(dp)                              :: cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
+     real(dp)                              :: cutoff_skin = 0.0_dp !% If non-zero, increase cutoff by this amount to reduce calc_connect() frequency
      real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
                                               !% Count as nearest neighbour if sum of covalent radii
                                               !% times 'this%nneightol' greater than distance between atoms.
@@ -421,7 +426,26 @@ module Atoms_types_module
     module procedure lattice_cell_volume
   end interface
 
-  public :: atoms_repoint, atoms_sort, bond_length
+  !% This interface calculates the distance between the nearest periodic images of two points (or atoms).
+
+  !%  Return minimum image distance between two atoms or positions.
+  !%  End points can be specified by any combination of atoms indices
+  !%  'i' and 'j' and absolute coordinates 'u' and 'w'. If 'shift' is
+  !%  present the periodic shift between the two atoms or points will
+  !%  be returned in it.
+  interface distance_min_image
+     module procedure distance8_atom_atom, distance8_atom_vec, distance8_vec_atom, distance8_vec_vec
+  end interface
+
+  !%  Return the minimum image difference vector between two atoms or
+  !%  positions. End points can be specified by any combination of
+  !%  atoms indices 'i' and 'j' and absolute coordinates 'u' and
+  !%  'w'.
+  interface diff_min_image
+     module procedure diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
+  end interface
+
+  public :: atoms_repoint, atoms_sort, bond_length, distance, diff, realpos, distance_min_image, diff_min_image
 
 contains
   
@@ -1530,5 +1554,231 @@ contains
     lattice_Cell_Volume = abs(Scalar_Triple_Product(a,b,c))
 
   end function lattice_cell_volume
+
+
+  !% Difference vector between atoms $i$ and $j$ if they are separated by a shift of 'shift'
+  !% \begin{displaymath}
+  !%   \mathbf{u}_{ij} = \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s}
+  !% \end{displaymath}
+  !% where $\mathbf{R}$ is the 'lattice' matrix and $\mathbf{s}$ the shift
+  function diff(this, i, j, shift)
+    type(Atoms), intent(in)    :: this
+    integer,     intent(in)    :: i,j
+    integer,  dimension(3)     :: shift
+    real(dp), dimension(3) :: diff
+
+    diff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. shift)
+
+  end function diff
+
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !  diff_min_image interface
+  !  
+  !  return relative vector from one position to another, adhering to PBC
+  !  and minimum image conventions
+  ! 
+  !  Flavours are: atom-atom, vector-atom, atom-vector, vector-vector
+  !
+  !  All are accessible using the 'diff_min_image' interface
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+  function diff_atom_atom(this, i, j, shift)
+
+    type(Atoms), intent(in)    :: this
+    integer,     intent(in)    :: i,j
+    integer,  dimension(3), optional     :: shift
+    real(dp), dimension(3)     :: diff_atom_atom
+    real(dp)                   :: dummy
+
+    integer, dimension(3) :: myshift
+
+    dummy = distance_min_image(this,i,j, shift=myshift)
+
+    diff_atom_atom = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
+
+    if (present(shift)) shift = myshift
+
+  end function diff_atom_atom
+
+
+  function diff_vec_atom(this, v, j)
+
+    type(Atoms), intent(in)    :: this
+    real(dp), dimension(3)     :: v
+    integer,     intent(in)    :: j
+    real(dp), dimension(3)     :: diff_vec_atom
+    integer,  dimension(3)     :: shift
+    real(dp)                   :: dummy
+
+    dummy = distance_min_image(this,v,j, shift=shift)
+
+    diff_vec_atom = this%pos(:,j) - v + (this%lattice .mult. shift)
+
+  end function diff_vec_atom
+
+  function diff_atom_vec(this, i, w)
+
+    type(Atoms), intent(in)    :: this
+    integer,     intent(in)    :: i
+    real(dp), dimension(3)     :: w
+    real(dp), dimension(3)     :: diff_atom_vec
+    integer,  dimension(3)     :: shift
+    real(dp)                   :: dummy
+
+    dummy = distance_min_image(this,i,w, shift=shift)
+
+    diff_atom_vec = w - this%pos(:,i) + (this%lattice .mult. shift)
+
+  end function diff_atom_vec
+
+  function diff_vec_vec(this, v, w)
+
+    type(Atoms), intent(in)    :: this
+    real(dp), dimension(3)     :: v, w
+    real(dp), dimension(3)     :: diff_vec_vec
+    integer,  dimension(3)     :: shift
+    real(dp)                   :: dummy
+
+    dummy = distance_min_image(this,v,w, shift=shift)
+
+    diff_vec_vec = w - v + (this%lattice .mult. shift)
+
+  end function diff_vec_vec
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !% Return the real position of atom 'i', taking into account the
+  !% stored travel across the periodic boundary conditions.
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  function realpos(this,i)
+
+    type(Atoms), intent(in) :: this
+    integer,     intent(in) :: i
+    real(dp), dimension(3)  :: realpos
+
+    if (associated(this%travel)) then
+       realpos = (this%lattice .mult. this%travel(:,i)) + this%pos(:,i)
+    else
+       realpos = this%pos(:,i)
+    endif
+
+  end function realpos
+
+
+  !% Return distance between atoms 'i' and 'j' if they are separated by a shift
+  !% of 'shift'.
+  !%
+  !% \begin{displaymath}
+  !%   r_{ij} = \left| \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s} \right|
+  !% \end{displaymath}
+  !% where $\mathbf{R}$ is the 'lattice' matrix and $\mathbf{s}$ the shift.
+
+  function distance(this, i, j, shift)
+    type(Atoms), intent(in)::this
+    integer,     intent(in)::i, j, shift(3)
+    real(dp)::distance
+
+    distance = norm(this%pos(:,j)+(this%lattice .mult. shift)-this%pos(:,i))
+  end function distance
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! distance_min_image interface
+  !
+  ! Actual distance computing routines. 
+  !
+  ! The real work is done in the function that computes the distance
+  ! of two general vector positions.  when atomic indices are
+  ! specified, they are first converted to vector positions.
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  function distance8_atom_atom(this,i,j,shift)
+
+    type(Atoms),                        intent(in)   :: this
+    integer,                            intent(in)   :: i,j
+    integer,  optional, dimension(3),   intent(out)  :: shift
+    real(dp)                                         :: distance8_atom_atom
+
+    distance8_atom_atom = distance8_vec_vec(this,this%pos(:,i),this%pos(:,j),shift)
+
+  end function distance8_atom_atom
+
+  function distance8_atom_vec(this,i,v,shift)
+
+    type(Atoms),                        intent(in)  :: this
+    integer,                            intent(in)  :: i
+    real(dp),           dimension(3),   intent(in)  :: v
+    integer,  optional, dimension(3),   intent(out) :: shift
+    real(dp)                                        :: distance8_atom_vec
+
+    distance8_atom_vec = distance8_vec_vec(this,this%pos(:,i),v,shift)
+
+  end function distance8_atom_vec
+
+  function distance8_vec_atom(this,v,j,shift)
+
+    type(Atoms),                        intent(in)  :: this
+    real(dp),           dimension(3),   intent(in)  :: v
+    integer,                            intent(in)  :: j
+    integer,  optional, dimension(3),   intent(out) :: shift
+    real(dp)                                        :: distance8_vec_atom
+
+    distance8_vec_atom = distance8_vec_vec(this,v,this%pos(:,j),shift)
+
+  end function distance8_vec_atom
+
+  ! This is the general function
+
+  function distance8_vec_vec(this,v,w,shift)
+
+    type(Atoms),                        intent(in)  :: this
+    real(dp),           dimension(3),   intent(in)  :: v,w
+    integer,  optional, dimension(3),   intent(out) :: shift
+    real(dp)                                        :: distance8_vec_vec, dist2, tmp
+    real(dp),           dimension(3)                :: dvw, lattice_coord
+    integer,            dimension(3)                :: init_val
+    integer                                         :: i,j,k, i_shift(3)
+
+    !get the difference vector and convert to lattice co-ordinates
+    !use the precomputed matrix inverse if possible
+    dvw = w - v
+    call map_into_cell(dvw, this%lattice, this%g, i_shift)
+    lattice_coord = this%g .mult. dvw
+
+    init_val = (/0,0,0/)
+
+    !work out which block of 8 cells we are testing
+    where (lattice_coord > 0.0_dp) init_val = -1
+
+    dist2 = huge(1.0_dp) ! effectively +ve infinity
+
+    !now loop over the cells and test
+    do k=init_val(3), init_val(3)+1
+       do j=init_val(2), init_val(2)+1
+          do i=init_val(1), init_val(1)+1
+
+             !construct the shifted vector
+             tmp = normsq(dvw + this%lattice(:,1)*i +this%lattice(:,2)*j + this%lattice(:,3)*k)
+             !test if it is the smallest so far and store the shift if necessary
+             if (tmp < dist2) then
+                dist2 = tmp
+                if (present(shift)) shift = (/i,j,k/) + i_shift
+             end if
+
+          end do
+       end do
+    end do
+
+    distance8_vec_vec = sqrt(dist2)
+
+  end function distance8_vec_vec
+
 
 endmodule Atoms_types_module

@@ -17,8 +17,8 @@ module Potential_Precon_Minim_module
   use table_module, only : table, find, int_part, wipe, append, finalise
   use minimization_module , only : minim, n_minim, fire_minim, test_gradient, n_test_gradient, precon_data, preconminim, precondimer
   use connection_module, only : connection
-  use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer
-  use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, diff_min_image, set_lattice, is_nearest_neighbour, distance_min_image, &
+  use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer, diff_min_image, distance_min_image
+  use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, set_lattice, is_nearest_neighbour, &
    get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
   use cinoutput_module, only : cinoutput, write
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2

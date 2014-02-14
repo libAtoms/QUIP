@@ -343,31 +343,16 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self._prev_atoms = Atoms()
             self._prev_atoms.copy_without_connect(self.atoms)
             self._prev_atoms.add_property('orig_pos', self.atoms.pos)
-            self.atoms.set_cutoff(self.cutoff() + self.cutoff_skin)
-            potlog.debug('Potential doing initial calc_connect() with cutoff %f' % self.atoms.cutoff)
-            self.atoms.calc_connect()
         else:
             # _prev_atoms is OK, update it in place
             self._prev_atoms.z[...] = self.atoms.z
             self._prev_atoms.pos[...] = self.atoms.pos
             self._prev_atoms.lattice[...] = self.atoms.lattice
 
-            self._prev_atoms.undo_pbc_jumps(persistent=True)
-            self._prev_atoms.calc_msd(persistent=True)
-            max_disp_sq = self._prev_atoms.msd_displ_mag.max()
-            potlog.debug('Potential max_disp %f' % sqrt(max_disp_sq))
-
-            if max_disp_sq > self.cutoff_skin**2:
-                # do a calc_connect() if any atoms have moved more than cutoff_skin
-                potlog.debug('Potential calling atoms.calc_connect()')
-                self.atoms.calc_connect()
-                self._prev_atoms.orig_pos[...] = self.atoms.pos
-            else:
-                # just update the neighbour distance tables in place
-                potlog.debug('Potential calling atoms.calc_dists()')
-                self.atoms.calc_dists()
-
-
+        # do a calc_connect(), setting cutoff_skin so full reconnect will only be done when necessary
+        self.atoms.set_cutoff(self.cutoff(), cutoff_skin=self.cutoff_skin)
+        potlog.debug('Potential doing calc_connect() with cutoff %f cutoff_skin %r' % (self.atoms.cutoff, self.cutoff_skin))
+        self.atoms.calc_connect()
 
     # Synonyms for `update` for compatibility with ASE calculator interface
     def initialize(self, atoms):
@@ -765,10 +750,7 @@ class Minim(Optimizer):
         for constraint in self.atoms.constraints:
             if isinstance(constraint, ase.constraints.FixAtoms):
                 self.atoms.add_property('move_mask', 1, overwrite=True)
-                _save = self.atoms.fortran_indexing
-                self.atoms.fortran_indexing = False
-                self.atoms.move_mask[constraint.index] = 0 # 0-based indices
-                self.atoms.fortran_indexing = _save
+                self.atoms.move_mask.view(np.ndarray)[constraint.index] = 0 # 0-based indices
             else:
                 raise NotImplementedError('cannot convert ASE constraint %r to QUIP constraint' % constraint)
 

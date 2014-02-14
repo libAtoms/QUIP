@@ -71,6 +71,7 @@ module AdjustablePotential_module
   use sparse_module
   use minimization_module
 
+  use atoms_types_module
   use atoms_module
   use clusters_module
 

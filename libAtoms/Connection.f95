@@ -52,6 +52,8 @@ module Connection_module
   implicit none
   private
 
+  real(dp), parameter :: CONNECT_LATTICE_TOL = 1e-8_dp
+
   public :: Connection
 
   public :: initialise
@@ -91,6 +93,11 @@ module Connection_module
   interface calc_connect
      module procedure connection_calc_connect
   endinterface
+
+  public :: calc_dists
+  interface calc_dists
+     module procedure connection_calc_dists
+  end interface calc_dists
 
   public :: calc_connect_hysteretic
   interface calc_connect_hysteretic
@@ -161,6 +168,10 @@ contains
     if (this%initialised) call connection_finalise(this)
 
     if (do_fill) call connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess)
+
+    this%last_connect_cutoff = 0.0_dp
+    this%last_connect_lattice(:,:) = 0.0_dp
+
   end subroutine connection_initialise
 
   subroutine connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess, error)
@@ -313,6 +324,8 @@ contains
     if(allocated(this%neighbour2)) deallocate(this%neighbour2)
 
     if (allocated(this%is_min_image)) deallocate(this%is_min_image)
+
+    if (allocated(this%last_connect_pos)) deallocate(this%last_connect_pos)
 
     call connection_cells_finalise(this)
 
@@ -993,14 +1006,21 @@ contains
 
   end subroutine connection_remove_atom
 
-  !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
-  !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
-  !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
-  !% is equivalent to the standard $O(N^2)$ method.
-  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
+
+  !% Fast $O(N)$ connectivity calculation routine. It divides the unit
+  !% cell into similarly shaped subcells, of sufficient size that
+  !% sphere of radius 'cutoff' is contained in a subcell, at least in
+  !% the directions in which the unit cell is big enough. For very
+  !% small unit cells, there is only one subcell, so the routine is
+  !% equivalent to the standard $O(N^2)$ method.  If 'cutoff_skin' is
+  !% present, effective cutoff is increased by this amount, and full
+  !% recalculation of connectivity is only done when any atom has
+  !% moved more than 0.5*cutoff_skin.
+  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, cutoff_skin, error)
     type(Connection), intent(inout)  :: this
     type(Atoms), intent(inout) :: at
     logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb
+    real(dp), intent(in), optional :: cutoff_skin
     integer, intent(out), optional :: error
 
     integer  :: cellsNa,cellsNb,cellsNc
@@ -1009,10 +1029,11 @@ contains
     integer  :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
     integer  :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb
     integer  :: max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
-    real(dp) :: cutoff, density, volume_per_cell
+    real(dp) :: cutoff, density, volume_per_cell, pos_change, max_pos_change
     logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, my_store_n_neighb, do_fill
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:), n_neighb(:)
+
 
     INIT_ERROR(error)
 
@@ -1046,6 +1067,47 @@ contains
           if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
        end do
        cutoff = (2.0_dp * cutoff) * at%cutoff
+    end if
+
+    if (present(cutoff_skin)) then
+       if (cutoff_skin .fne. 0.0_dp) then
+          call print('calc_connect: increasing cutoff from '//cutoff//' by cutoff_skin='//cutoff_skin ,PRINT_VERBOSE)
+          cutoff = cutoff + cutoff_skin
+
+          if (.not. allocated(this%last_connect_pos) .or. &
+               (cutoff >= this%last_connect_cutoff) .or. &
+               (size(this%last_connect_pos, 2) /= at%n) .or. &
+               (at%lattice .fne. this%last_connect_lattice)) then
+             call print('calc_connect: forcing a rebuild: either first time, atom number mismatch or lattice mismatch', PRINT_VERBOSE)
+             call print('calc_connect: maxval(abs(at%lattice - this%last_connect_lattice)) = '//(maxval(abs(at%lattice - this%last_connect_lattice))), PRINT_VERBOSE)
+             if (allocated(this%last_connect_pos)) deallocate(this%last_connect_pos)
+             allocate(this%last_connect_pos(3, at%n))
+             max_pos_change = huge(1.0_dp)
+          else
+             ! FIXME 1. we should also take into account changes in lattice here - for
+             !          now we force a reconnect whenever lattice changes.
+             !       2. it may be possible to further speed up calculation of delta_pos by 
+             !          not calling distance_min_image() every time
+             max_pos_change = 0.0_dp
+             do i=1, at%N
+                pos_change = distance_min_image(at, i, this%last_connect_pos(:, i))
+                if (pos_change > max_pos_change) max_pos_change = pos_change
+             end do
+          end if
+
+          if (max_pos_change < 0.5_dp*cutoff_skin) then
+             call print('calc_connect: max pos change '//max_pos_change//' < 0.5*cutoff_skin, doing a calc_dists() only', PRINT_VERBOSE)
+             call calc_dists(this, at)
+             call system_timer('calc_connect')
+             return
+          end if
+
+          ! We need to do a full recalculation of connectivity. Store the current pos and lattice. 
+          call print('calc_connect: max pos change '//max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_VERBOSE)
+          this%last_connect_pos(:,:) = at%pos
+          this%last_connect_lattice(:,:) = at%lattice
+          this%last_connect_cutoff = cutoff
+       end if
     end if
 
     call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_VERBOSE)
@@ -1226,6 +1288,128 @@ contains
     call system_timer('calc_connect')
 
   end subroutine connection_calc_connect
+
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !% The subroutine 'calc_dists' updates the stored distance tables using 
+  !% the stored connectivity and shifts. This should be called every time
+  !% any atoms are moved (e.g. it is called by 'DynamicalSystem%advance_verlet').
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine connection_calc_dists(this, at, parallel, error)
+    type(Connection), intent(inout) :: this
+    type(Atoms), intent(inout) :: at
+    logical, optional, intent(in) :: parallel
+    integer, optional, intent(out) :: error
+    integer                    :: i, j, n, index
+    integer, dimension(3)      :: shift
+    real(dp), dimension(3)     :: j_pos
+    logical :: do_parallel
+#ifdef _MPI
+    integer:: Nelements, mpi_pos, mpi_old_pos
+    include "mpif.h"
+    real(dp), allocatable :: mpi_send(:), mpi_recv(:)
+#endif
+    INIT_ERROR(error)
+
+    call system_timer('calc_dists')
+
+    ! Flag to specify whether or not to parallelise calculation.
+    ! Only actually run in parallel if parallel==.true. AND
+    ! _MPI is #defined. Default to serial mode.
+    do_parallel = .false.
+    if (present(parallel)) do_parallel = parallel
+
+#ifdef _MPI
+    if (do_parallel) then
+       ! Nelements = sum(this%connect%neighbour1(i)%t%N)
+       Nelements = 0
+       do i=1,at%N
+          Nelements = Nelements + this%neighbour1(i)%t%N
+       end do
+
+       allocate(mpi_send(Nelements))
+       allocate(mpi_recv(Nelements))
+       if (Nelements > 0) then
+	 mpi_send = 0.0_dp
+	 mpi_recv = 0.0_dp
+	end if
+       mpi_pos = 1
+    end if
+#endif
+
+    if (.not.this%initialised) then
+         RAISE_ERROR('CalcDists: Connect is not yet initialised', error)
+      endif
+
+    do i = 1, at%N
+
+#ifdef _MPI
+       if (do_parallel) then
+          mpi_old_pos = mpi_pos
+          mpi_pos = mpi_pos + this%neighbour1(i)%t%N
+
+          ! cycle loop if processor rank does not match
+          if(mod(i, mpi_n_procs()) .ne. mpi_id()) cycle
+       end if
+#endif
+
+       do n = 1, connection_n_neighbours(this, i) 
+
+          j = connection_neighbour_minimal(this, i, n, shift=shift, index=index)
+
+          ! j_pos = at%pos(:,j) + ( at%lattice .mult. shift )
+          j_pos(:) = at%pos(:,j) + ( at%lattice(:,1) * shift(1) + at%lattice(:,2) * shift(2) + at%lattice(:,3) * shift(3) )
+
+          if (i <= j) then
+             this%neighbour1(i)%t%real(1,index) = norm(j_pos - at%pos(:,i))
+          else
+             this%neighbour1(j)%t%real(1,index) = norm(j_pos - at%pos(:,i))
+          end if
+
+       end do
+
+#ifdef _MPI
+       if (do_parallel) then
+	  if (mpi_old_pos <= mpi_pos-1) then
+	    mpi_send(mpi_old_pos:mpi_pos-1) = &
+		 this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N)
+	  end if
+       end if
+#endif
+
+    end do
+
+#ifdef _MPI
+    if (do_parallel) then
+       ! collect mpi results
+       if (Nelements > 0) then
+	 call mpi_allreduce(mpi_send, mpi_recv, &
+	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, PRINT_ALWAYS)
+	 call abort_on_mpi_error(PRINT_ALWAYS, "Calc_Dists: MPI_ALL_REDUCE()")
+       end if
+
+       mpi_pos = 1
+       do i=1, at%N
+	  if (this%neighbour1(i)%t%N > 0) then
+	    this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N) = &
+		 mpi_recv(mpi_pos:mpi_pos+this%neighbour1(i)%t%N-1)
+	    mpi_pos = mpi_pos + this%neighbour1(i)%t%N
+	  endif
+       end do
+
+       if (Nelements > 0) then
+	 deallocate(mpi_send, mpi_recv)
+       end if
+    end if
+#endif
+
+    call system_timer('calc_dists')
+
+  end subroutine connection_calc_dists
+
 
    subroutine get_min_max_images(is_periodic, cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, do_i, do_j, do_k, &
 	 min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)

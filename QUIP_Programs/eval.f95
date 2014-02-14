@@ -102,7 +102,7 @@ implicit none
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
   real(dp), allocatable :: force_const_mat(:,:)
   real(dp) :: eval_froz
-  real(dp) :: mycutoff
+  real(dp) :: mycutoff, mycutoff_skin
   logical :: do_create_residue_labels, fill_in_mass
 
 #ifdef HAVE_GAP
@@ -193,6 +193,7 @@ implicit none
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, help_string="diagonal but nonhydrostatic stress for relaxation", has_value_target=has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, help_string="general off-diagonal stress for relaxation", has_value_target=has_pressure)
   call param_register(cli_params, 'cutoff', '-1.0', mycutoff, help_string="if >= 0, value of cutoff to use, overriding value given by potential.  Useful when neighbor calculations are needed for calculating a PSF file, even though FilePot claims to need cutoff=0")
+  call param_register(cli_params, 'cutoff_skin', '0.5', mycutoff_skin, help_string="Amount to add to potential cutoff when calculating connectivity. Default 0.5.")
   call param_register(cli_params, 'create_residue_labels', 'F', do_create_residue_labels, help_string="if true, create residue labels (for CP2K) before calling calc")
   call param_register(cli_params, 'fill_in_mass', 'F', fill_in_mass, help_string="if true, fill in mass property")
 
@@ -326,9 +327,9 @@ implicit none
      endif
 
      if (mycutoff >= 0.0_dp) then
-	call set_cutoff(at, mycutoff)
+	call set_cutoff(at, mycutoff, cutoff_skin=mycutoff_skin)
      else
-	call set_cutoff(at, cutoff(pot)+0.5_dp)
+	call set_cutoff(at, cutoff(pot), cutoff_skin=mycutoff_skin)
      endif
 
      call calc_connect(at)
