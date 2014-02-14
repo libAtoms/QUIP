@@ -685,6 +685,7 @@ def make_crack_advance_map(atoms, tol=1e-3):
             for target in target_disps:
                 if all(abs(diff - target) < tol):
                     return j
+        return 0
 
     a0 = atoms.info['LatticeConstant']
     cleavage_plane = atoms.info['CleavagePlane']
@@ -797,7 +798,7 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     atoms.set_array('crack_tip', np.array([False]*len(atoms)))
     crack_tip = atoms.arrays['crack_tip']
     crack_tip[tip_atoms] = True
-    return tip_pos, tip_atoms
+    return tip_pos
 
 
 def irwin_modeI_crack_tip_stress_field(K, r, t, xy_only=True,
