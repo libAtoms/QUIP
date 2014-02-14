@@ -747,7 +747,7 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     """
 
     old_tip_pos_y = 0
-    if 'CrackPos' in atoms.info['CrackPos']:
+    if 'CrackPos' in atoms.info:
         old_tip_pos_y = atoms.info['CrackPos'][1]
 
     # Make a copy of atoms as a quippy.Atoms instance, overwriting
@@ -786,7 +786,7 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     # atom indices to the indices of atoms one unit cell to the right
     if 'advance_map' not in atoms.arrays:
         print('Generating crack advance map...')
-        make_crack_advance_map(crack_slab)
+        make_crack_advance_map(atoms)
         
     advance_map = atoms.arrays['advance_map']
     tip_atoms = advance_map[rightmost_uc]
