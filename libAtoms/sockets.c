@@ -13,7 +13,7 @@
 #define MSG_END_MARKER "done."
 #define MSG_END_MARKER_SIZE strlen(MSG_END_MARKER)
 
-int quip_recv_data(char *ip, int port, int client_id, char *data, int *data_len)
+int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *data, int *data_len)
 {
     int sockfd = 0, n = 0;
     char id_str[MSG_LEN_SIZE+1], msg_len_buff[MSG_LEN_SIZE+1], marker[MSG_END_MARKER_SIZE+1];
@@ -45,9 +45,9 @@ int quip_recv_data(char *ip, int port, int client_id, char *data, int *data_len)
        return 1;
     }
 
-    /* say hello and ask server for some Atoms (status 'A')
+    /* say hello
        identify ourselves with an ID number, formatted as an 8-byte ascii string */
-    sprintf(id_str, "A%7d", client_id);
+    sprintf(id_str, "%c%7d", *request_code, client_id);
 
     totalsent = 0;
     while (totalsent < MSG_LEN_SIZE) {
@@ -109,7 +109,7 @@ int quip_recv_data(char *ip, int port, int client_id, char *data, int *data_len)
     return 0;
 }
 
-int quip_send_data(char *ip, int port, int client_id, char *data, int data_len)
+int quip_send_data(char *ip, int port, int client_id, char *request_code, char *data, int data_len)
 {
     int sockfd = 0, n = 0;
     char id_str[MSG_LEN_SIZE+1], msg_len_buff[MSG_LEN_SIZE+1], marker[MSG_END_MARKER_SIZE+1];
@@ -141,9 +141,9 @@ int quip_send_data(char *ip, int port, int client_id, char *data, int data_len)
        return 1;
     }
 
-    /* say hello and tell server we've got some results (status 'R')
+    /* say hello.
        identify ourselves with an ID number, formatted as an 8-byte ascii string */
-    sprintf(id_str, "R%7d", client_id);
+    sprintf(id_str, "%c%7d", *request_code, client_id);
 
     totalsent = 0;
     while (totalsent < MSG_LEN_SIZE) {

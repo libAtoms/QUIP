@@ -43,7 +43,7 @@ program socktest
      call print('completed calculation '//n//' on '//at%n//' atoms. energy='//e)
 
      call print('Sending data')
-     call socket_send_data(ip, port, client_id, n, at%n, e, f, v)
+     call socket_send_reftraj(ip, port, client_id, n, at%n, e, f, v)
      call print('Finished sending data')
 
      n = n + 1
@@ -51,7 +51,7 @@ program socktest
      deallocate(f)
 
      call print('Waiting to receive data...')
-     call socket_recv_data(ip, port, client_id, buffsize, n_step, n_atoms, z, lattice, frac_pos)
+     call socket_recv_reftraj(ip, port, client_id, buffsize, n_step, n_atoms, z, lattice, frac_pos)
      call print('Received data')
 
      call print('n='//n//' n_step='//n_step)

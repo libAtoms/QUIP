@@ -38,6 +38,9 @@ module SocketTools_module
 
   use error_module
   use system_module, only: dp, print, operator(//)
+  use extendable_str_module, only: Extendable_Str
+  use atoms_types_module, only: Atoms
+  use cinoutput_module, only: read, write
 
   implicit none
 
@@ -52,30 +55,32 @@ module SocketTools_module
   integer, parameter :: MAX_ATTEMPTS = 5
 
   interface
-     function quip_recv_data(ip, port, client_id, data, data_len) bind(c)
+     function quip_recv_data(ip, port, client_id, request_code, data, data_len) bind(c)
        use iso_c_binding
        integer(kind=C_INT) :: quip_recv_data
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: ip
        integer(kind=C_INT), intent(in), value :: port, client_id
+       character(kind=C_CHAR,len=1), intent(in) :: request_code
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: data
        integer(kind=C_INT), intent(inout) :: data_len
      end function quip_recv_data
 
-     function quip_send_data(ip, port, client_id, data, data_len) bind(c)
+     function quip_send_data(ip, port, client_id, request_code, data, data_len) bind(c)
        use iso_c_binding
        integer(kind=C_INT) :: quip_send_data
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: ip
        integer(kind=C_INT), intent(in), value :: port, client_id
+       character(kind=C_CHAR,len=1), intent(in) :: request_code
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: data
        integer(kind=C_INT), intent(in), value :: data_len
      end function quip_send_data
   end interface
 
-  public :: socket_recv_data, socket_send_data
+  public :: socket_send_reftraj, socket_recv_reftraj, socket_send_xyz, socket_recv_xyz
 
 contains
 
-  subroutine socket_send_data(ip, port, client_id, n_step, n_atoms, energy, force, virial, error)
+  subroutine socket_send_reftraj(ip, port, client_id, n_step, n_atoms, energy, force, virial, error)
     character(*), intent(in) :: ip
     integer, intent(in) :: port, client_id, n_step, n_atoms
     real(dp), intent(in) :: energy, force(:,:), virial(3,3)
@@ -151,7 +156,8 @@ contains
 
     do attempt = 1, MAX_ATTEMPTS
        call print('calling quip_send_data attempt='//attempt)
-       status = quip_send_data(c_ip, c_port, c_client_id, data, data_len)
+       ! Send data with request code 'R' (results)
+       status = quip_send_data(c_ip, c_port, c_client_id, 'R', data, data_len)
        call print('finished quip_send_data attempt='//attempt)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
@@ -162,9 +168,10 @@ contains
 
     deallocate(data)
     
-  end subroutine socket_send_data
+  end subroutine socket_send_reftraj
+
   
-  subroutine socket_recv_data(ip, port, client_id, buff_size, n_step, n_atoms, z, lattice, frac_pos, error)
+  subroutine socket_recv_reftraj(ip, port, client_id, buff_size, n_step, n_atoms, z, lattice, frac_pos, error)
     character(*), intent(in) :: ip
     integer, intent(in) :: port, client_id
     integer, intent(in) :: buff_size
@@ -190,7 +197,8 @@ contains
 
     do attempt = 1, MAX_ATTEMPTS
        call print('calling quip_recv_data attempt='//attempt)
-       status = quip_recv_data(c_ip, c_port, c_client_id, data, data_len)
+       ! Receive data with request code 'A' (atoms in REFTRAJ format)
+       status = quip_recv_data(c_ip, c_port, c_client_id, 'A', data, data_len)
        call print('finished quip_recv_data attempt='//attempt)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
@@ -199,11 +207,6 @@ contains
        RAISE_ERROR('fatal error receiving data over socket', error)
     end if
 
-    !write (*,*) 'recv got data:'
-    !write (*,*) data(1:data_len)
-    !write (*,*) 'data_len=', data_len
-
-    call print('parsing data')
     i = 1
     lineno = 0
     do while (i < data_len)
@@ -234,10 +237,95 @@ contains
           RAISE_ERROR('unexpected line '//trim(line), error)
        end if
     end do
-    call print('done parsing data')
+    deallocate(data)
+
+  end subroutine socket_recv_reftraj
+
+
+  subroutine socket_send_xyz(ip, port, client_id, at, error)
+    character(*), intent(in) :: ip
+    integer, intent(in) :: port, client_id
+    type(Atoms), intent(inout) :: at
+    integer, optional, intent(out) :: error
+
+    character(len_trim(ip)+1) :: c_ip
+    integer(kind=C_INT) :: c_port, c_client_id, data_len, status
+    character(kind=C_CHAR, len=1), dimension(:), pointer :: data
+    integer i, j, n, attempt
+    type(Extendable_Str) :: estr
+
+    INIT_ERROR(error)
+
+    c_ip = trim(ip)//C_NULL_CHAR
+    c_port = port
+    c_client_id = client_id
+
+    call write(at, estr=estr) ! write Atoms to extendable str
+    ! convert estr to C string
+    data_len = estr%len
+    allocate(data(data_len))
+    do i=1, data_len
+       data(i) = estr%s(i)
+    end do
+    
+    do attempt = 1, MAX_ATTEMPTS
+       call print('socket_send_xyz() calling quip_send_data attempt='//attempt)
+       ! Send data with request code 'R' (results)
+       status = quip_send_data(c_ip, c_port, c_client_id, 'R', data, data_len)
+       if (status == 0) exit
+       call fusleep(100000) ! wait 0.1 seconds
+    end do
+    if (status /= 0) then
+       RAISE_ERROR('fatal error sending data over socket', error)
+    end if
 
     deallocate(data)
 
-  end subroutine socket_recv_data
+  end subroutine socket_send_xyz
+
+  
+  subroutine socket_recv_xyz(ip, port, client_id, buff_size, at, error)
+    character(*), intent(in) :: ip
+    integer, intent(in) :: port, client_id
+    integer, intent(in) :: buff_size
+    type(Atoms), intent(out) :: at
+    integer, optional, intent(out) :: error
+
+    character(len_trim(ip)+1) :: c_ip
+    integer(kind=C_INT) :: c_port, c_client_id, data_len, status
+    character(kind=C_CHAR, len=1), dimension(:), pointer :: data
+    character(len=buff_size) :: fdata
+    integer i, attempt
+
+    INIT_ERROR(error)
+
+    c_ip = trim(ip)//C_NULL_CHAR
+    c_port = port
+    c_client_id = client_id
+
+    data_len = buff_size
+    allocate(data(data_len))
+
+    do attempt = 1, MAX_ATTEMPTS
+       call print('socket_recv_xyz() calling quip_recv_data attempt='//attempt)
+       ! Receive data with request code 'X' (receive atoms in XYZ format)
+       status = quip_recv_data(c_ip, c_port, c_client_id, 'A', data, data_len)
+       if (status == 0) exit
+       call fusleep(100000) ! wait 0.1 seconds
+    end do
+    if (status /= 0) then
+       RAISE_ERROR('fatal error receiving data over socket', error)
+    end if
+    ! convert from C to Fortran string
+    do i=1, data_len
+       fdata(i:i) = data(i)
+    end do
+    ! read from fdata string into Atoms in XYZ format
+    call read(at, str=fdata, error=error)
+    PASS_ERROR(error)
+    deallocate(data)
+
+  end subroutine socket_recv_xyz
+
 
 end module SocketTools_Module
