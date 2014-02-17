@@ -29,7 +29,7 @@ from quippy.clusters import (HYBRID_ACTIVE_MARK, HYBRID_NO_MARK,
                              create_cluster_simple)
 from quippy.potential import Potential, ForceMixingPotential
 from quippy.table import Table
-from quippy.system import system_get_random_seed, system_set_random_seeds
+from quippy.system import system_get_random_seed, system_set_random_seeds, system_timer
 from quippy.util import args_str
 
 
@@ -218,6 +218,9 @@ class LOTFDynamics(MolecularDynamics):
 
         """
 
+        system_timer('lotf_step')
+        system_timer('lotf_extrapolate')
+
         if self.qm_update_func is not None:
             self.qm_update_func(self.atoms)
 
@@ -241,10 +244,14 @@ class LOTFDynamics(MolecularDynamics):
             self.nsteps += 1
 
             self.call_observers()
+        system_timer('lotf_extrapolate')
 
         # Compute QM forces and fit the LOTF adjustable potential to them
+        system_timer('lotf_qm_fit')
         self.fit_forces(self.atoms)
+        system_timer('lotf_qm_fit')
 
+        system_timer('lotf_interpolate')
         self.set_state(saved_state)
         self.state = LOTFDynamics.Interpolation
 
@@ -265,7 +272,8 @@ class LOTFDynamics(MolecularDynamics):
             self.nsteps += 1            
 
             self.call_observers()
-
+        system_timer('lotf_interpolate')
+        system_timer('lotf_step')
 
 
     def run(self, steps):
