@@ -37,11 +37,10 @@ program xyz2pdb
 !  use libatoms_module
 
   use error_module
-  use atoms_types_module,      only: bond_length, assign_pointer, add_property, atoms_sort
+  use atoms_types_module,      only: bond_length, assign_pointer, add_property, atoms_sort, distance_min_image
   use atoms_module,            only: atoms, finalise, &
                                      set_cutoff, &
                                      calc_connect, print, &
-                                     distance_min_image, &
                                      map_into_cell, has_property
   use dictionary_module,       only: dictionary, initialise, finalise, &
                                      set_value, STRING_LENGTH
