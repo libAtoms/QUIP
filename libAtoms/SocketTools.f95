@@ -263,8 +263,8 @@ contains
     
     do attempt = 1, MAX_ATTEMPTS
        call print('socket_send_xyz() calling quip_send_data attempt='//attempt)
-       ! Send data with request code 'R' (results)
-       status = quip_send_data(c_ip, c_port, c_client_id, 'R', data, data_len)
+       ! Send data with request code 'Y' (XYZ results)
+       status = quip_send_data(c_ip, c_port, c_client_id, 'Y', data, data_len)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
     end do
@@ -302,7 +302,7 @@ contains
     do attempt = 1, MAX_ATTEMPTS
        call print('socket_recv_xyz() calling quip_recv_data attempt='//attempt)
        ! Receive data with request code 'X' (receive atoms in XYZ format)
-       status = quip_recv_data(c_ip, c_port, c_client_id, 'A', data, data_len)
+       status = quip_recv_data(c_ip, c_port, c_client_id, 'X', data, data_len)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
     end do
@@ -313,6 +313,7 @@ contains
     do i=1, data_len
        fdata(i:i) = data(i)
     end do
+    !call print('recieved data <'//fdata//'>')
     ! read from fdata string into Atoms in XYZ format
     call read(at, str=fdata, error=error)
     PASS_ERROR(error)
