@@ -20,7 +20,12 @@ ifeq (${QUIP_ARCH},)
 	@exit 1
 endif
 ifeq (${HAVE_EXTERNAL_FOX},0)
-	if [[ -e arch.make ]]; then make distclean; fi  && rm -rf objs.${QUIP_ARCH} && FCFLAGS="-fPIC" FC="${F95}" CC="${CC}" /bin/sh ./configure --disable-dom && make && mv objs objs.${QUIP_ARCH}
+	HOST_ARGS=
+ifneq (${QUIP_HOST},)
+	HOST_ARGS="--host=${QUIP_HOST}"
+endif
+	if [[ -e arch.make ]]; then make distclean; fi  && rm -rf objs.${QUIP_ARCH} && FCFLAGS="-fPIC" FC="${F95}" CC="${CC}" /bin/sh ./configure ${HOST_ARGS} --disable-dom && make && mv objs objs.${QUIP_ARCH}
+endif
 else
 	@echo "HAVE_EXTERNAL_FOX=1 - nothing to be done"
 endif

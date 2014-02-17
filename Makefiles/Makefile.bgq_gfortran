@@ -42,3 +42,6 @@ FPP = mpif90 -E -x f95-cpp-input
 
 DEFINES += -D_MPI -DMPI_1 -DBGQ
 
+HAVE_BGQ = 1
+
+QUIP_HOST=powerpc-bgq-linux # for things that use autoconf, used by e.g. FoX's ./configure script
