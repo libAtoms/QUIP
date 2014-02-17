@@ -33,6 +33,41 @@
 
 #define C_KEY_LEN    256
 
+/* remove trailing underscores if compiling on BG/Q arch */
+#ifdef BGQ
+#define register_constraint_sub_ register_constraint_sub
+#define call_constraint_sub_ call_constraint_sub
+#define fisnan_ fisnan
+#define ffsize_ ffsize
+#define fabort_ fabort
+#define fusleep_ fusleep
+#define system_command_ system_command
+#define c_increase_stack_ c_increase_stack
+#define fwc_l_ fwc_l
+#define fwrite_line_to_file_ fwrite_line_to_file
+#define fappend_file_to_file fappend_file_to_file
+#define frm_file_ frm_file
+#define pointer_to_ pointer_to
+#define c_mem_info_ c_mem_info
+#define register_callbackpot_sub_ register_callbackpot_sub
+#define call_callbackpot_sub_ call_callbackpot_sub
+#define quippy_error_abort_ quippy_error_abort
+#define c_push_error_with_info_ c_push_error_with_info
+#define c_push_error_ c_push_error
+#define c_error_abort_ c_error_abort
+#define c_error_clear_stack_ c_error_clear_stack
+#define c_system_initialise_ c_system_initialise
+#define c_dictionary_initialise_ c_dictionary_initialise
+#define c_dictionary_finalise_ c_dictionary_finalise
+#define c_dictionary_get_n_ c_dictionary_get_n
+#define c_dictionary_get_key_ c_dictionary_get_key
+#define c_dictionary_query_key_ c_dictionary_query_key
+#define c_dictionary_query_index_ c_dictionary_query_index
+#define c_dictionary_add_key_ c_dictionary_add_key
+#define c_extendable_str_concat_ c_extendable_str_concat
+#define abc_to_xyz_ abc_to_xyz
+#endif
+
 /* Dictionary types */
 
 #define T_NONE       0
