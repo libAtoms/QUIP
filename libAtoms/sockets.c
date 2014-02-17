@@ -18,7 +18,7 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     int sockfd = 0, n = 0;
     char id_str[MSG_LEN_SIZE+1], msg_len_buff[MSG_LEN_SIZE+1], marker[MSG_END_MARKER_SIZE+1];
     int msg_len;
-    int sent, totalsent, received, totalreceived;
+    int sent, totalsent, received, totalreceived, status;
 
     struct sockaddr_in serv_addr; 
 
@@ -39,9 +39,9 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
         return 1;
     } 
 
-    if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    if((status = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
-       printf("Connect Failed \n");
+       printf("Connect Failed: status %d, errno=%d\n", status, errno);
        return 1;
     }
 
@@ -114,7 +114,7 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
     int sockfd = 0, n = 0;
     char id_str[MSG_LEN_SIZE+1], msg_len_buff[MSG_LEN_SIZE+1], marker[MSG_END_MARKER_SIZE+1];
     int msg_len;
-    int sent, totalsent, received, totalreceived;
+    int sent, totalsent, received, totalreceived, status;
 
     struct sockaddr_in serv_addr;
 
@@ -135,9 +135,9 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
         return 1;
     }
 
-    if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    if((status = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
-       printf("Connect Failed \n");
+       printf("Connect Failed status=%d, errno=%d \n", status, errno);
        return 1;
     }
 

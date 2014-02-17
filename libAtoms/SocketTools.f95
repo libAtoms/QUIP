@@ -49,9 +49,9 @@ module SocketTools_module
   integer, parameter :: MSG_LEN_SIZE = 8
   integer, parameter :: MSG_END_MARKER_SIZE = 5
   character(MSG_END_MARKER_SIZE), parameter :: MSG_END_MARKER = 'done.'
-  character(6), parameter :: MSG_INT_FORMAT = 'i4'
+  character(6), parameter :: MSG_INT_FORMAT = 'i6'
   character(6), parameter :: MSG_FLOAT_FORMAT = 'f25.16'
-  integer, parameter :: MSG_INT_SIZE = 4, MSG_FLOAT_SIZE = 25
+  integer, parameter :: MSG_INT_SIZE = 6, MSG_FLOAT_SIZE = 25
   integer, parameter :: MAX_ATTEMPTS = 5
 
   interface
@@ -80,9 +80,9 @@ module SocketTools_module
 
 contains
 
-  subroutine socket_send_reftraj(ip, port, client_id, n_step, n_atoms, energy, force, virial, error)
+  subroutine socket_send_reftraj(ip, port, client_id, label, n_atoms, energy, force, virial, error)
     character(*), intent(in) :: ip
-    integer, intent(in) :: port, client_id, n_step, n_atoms
+    integer, intent(in) :: port, client_id, label, n_atoms
     real(dp), intent(in) :: energy, force(:,:), virial(3,3)
     integer, optional, intent(out) :: error
 
@@ -98,13 +98,13 @@ contains
     c_port = port
     c_client_id = client_id
 
-    ! space for n_step, n_atoms, 1 energy, 3*N force components and 6 virial components, separated by N+3 newlines
+    ! space for label, n_atoms, 1 energy, 3*N force components and 6 virial components, separated by N+3 newlines
     data_len = 2*MSG_INT_SIZE + MSG_FLOAT_SIZE*(1 + size(force) + 6) + size(force,2)+3
     allocate(data(data_len))
     i = 1
 
-    ! first line is n_step
-    write(line, '('//MSG_INT_FORMAT//')'), n_step
+    ! first line is label
+    write(line, '('//MSG_INT_FORMAT//')'), label
     do j=1,len_trim(line)
        data(i) = line(j:j)
        i = i + 1
@@ -155,10 +155,8 @@ contains
     !write (*,*) data
 
     do attempt = 1, MAX_ATTEMPTS
-       call print('calling quip_send_data attempt='//attempt)
        ! Send data with request code 'R' (results)
        status = quip_send_data(c_ip, c_port, c_client_id, 'R', data, data_len)
-       call print('finished quip_send_data attempt='//attempt)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
     end do
@@ -170,13 +168,12 @@ contains
     
   end subroutine socket_send_reftraj
 
-  
-  subroutine socket_recv_reftraj(ip, port, client_id, buff_size, n_step, n_atoms, z, lattice, frac_pos, error)
+
+  subroutine socket_recv_reftraj(ip, port, client_id, buff_size, label, n_atoms, lattice, frac_pos, error)
     character(*), intent(in) :: ip
     integer, intent(in) :: port, client_id
     integer, intent(in) :: buff_size
-    integer, intent(out) :: n_step, n_atoms
-    integer, intent(out), dimension(:) :: z
+    integer, intent(out) :: label, n_atoms
     real(dp), intent(out), dimension(:,:) :: lattice, frac_pos
     integer, optional, intent(out) :: error
 
@@ -184,7 +181,7 @@ contains
     integer(kind=C_INT) :: c_port, c_client_id, data_len, status
     character(kind=C_CHAR, len=1), dimension(:), pointer :: data
     character(1024) :: line
-    integer i, j, n, lineno, attempt
+    integer i, j, lineno, attempt
 
     INIT_ERROR(error)
 
@@ -196,10 +193,8 @@ contains
     allocate(data(data_len))
 
     do attempt = 1, MAX_ATTEMPTS
-       call print('calling quip_recv_data attempt='//attempt)
        ! Receive data with request code 'A' (atoms in REFTRAJ format)
        status = quip_recv_data(c_ip, c_port, c_client_id, 'A', data, data_len)
-       call print('finished quip_recv_data attempt='//attempt)
        if (status == 0) exit
        call fusleep(100000) ! wait 0.1 seconds
     end do
@@ -221,18 +216,16 @@ contains
        i = i + 1 ! skip the newline character
 
        if (lineno == 1) then
-          read (line,*) n_step
+          read (line,*) label
        else if (lineno == 2) then
           read (line,*) n_atoms
-          if ((size(z) < n_atoms) .or. (size(frac_pos, 2) < n_atoms)) then
+          if (size(frac_pos, 2) < n_atoms) then
              RAISE_ERROR('insufficient space to store received data', error)
           end if
-       else if (lineno == 3) then
-          read (line, *) (z(n), n=1,n_atoms)
-       else if (lineno > 3 .and. lineno <= 6) then
-          read (line, *) lattice(lineno-3, :)
-       else if (lineno > 6 .and. lineno < 6+n) then
-          read (line, *) frac_pos(1, lineno-6), frac_pos(2, lineno-6), frac_pos(3, lineno-6)
+       else if (lineno > 2 .and. lineno <= 5) then
+          read (line, *) lattice(lineno-2, :)
+       else if (lineno > 5 .and. lineno <= 5+n_atoms) then
+          read (line, *) frac_pos(1, lineno-5), frac_pos(2, lineno-5), frac_pos(3, lineno-5)
        else
           RAISE_ERROR('unexpected line '//trim(line), error)
        end if

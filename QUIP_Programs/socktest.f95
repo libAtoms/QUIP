@@ -8,71 +8,76 @@ program socktest
 
   type(Atoms) :: at
   type(Potential) :: pot
+  type(MPI_context) :: mpi
 
   character(STRING_LENGTH) :: ip, tmp
-  integer :: port, client_id, buffsize, z(1000), n_atoms, i, n, n_step
-  real(dp) :: e, v(3,3), frac_pos(3,1000), lattice(3,3)
-  real(dp), allocatable :: f(:,:)
+  integer :: port, client_id, buffsize, n_atoms, i, n, label
+  real(dp) :: e, v(3,3), lattice(3,3)
+  real(dp), allocatable :: frac_pos(:,:), f(:,:)
 
   call system_initialise
+
+  call initialise(mpi)
+
+  if (mpi%my_proc == 0) then
   
-  call get_cmd_arg(1, ip)
-  call get_cmd_arg(2, tmp)
-  port = string_to_int(tmp)
-  call get_cmd_arg(3, tmp)
-  client_id = string_to_int(tmp)
-  buffsize = 100000
+     call get_cmd_arg(1, ip)
+     call get_cmd_arg(2, tmp)
+     port = string_to_int(tmp)
+     call get_cmd_arg(3, tmp)
+     client_id = string_to_int(tmp)
+     buffsize = 1000000
+     call get_cmd_arg(4, tmp)
+     label = string_to_int(tmp)
+     
+     mainlog%prefix = 'CLIENT '//client_id
 
-  mainlog%prefix = 'CLIENT '//client_id
+     ! Read initial structure from .xyz
+     call read(at, 'atoms.'//client_id//'.xyz')
 
-  ! Read initial structure from .xyz
-  call read(at, 'atoms.'//client_id//'.xyz')
-  call potential_filename_initialise(pot, 'IP SW', 'params.xml')
+     allocate(frac_pos(3, at%n))
 
-  call print('Connecting to QUIP server on host '//trim(ip)//':'//port//' as client '//client_id)
+     call potential_filename_initialise(pot, 'IP SW', 'params.xml')
 
-  n = 0
-  do while (.true.)
+     call print('Connecting to QUIP server on host '//trim(ip)//':'//port//' as client '//client_id)
 
-     allocate(f(3,at%n))
+     n = 0
+     do while (.true.)
 
-     call set_cutoff(at, cutoff(pot))
-     call calc_connect(at)
-     call calc(pot, at, energy=e, force=f, virial=v)
+        allocate(f(3,at%n))
 
-     call print('completed calculation '//n//' on '//at%n//' atoms. energy='//e)
+        call set_cutoff(at, cutoff(pot))
+        call calc_connect(at)
+        do i=1,50
+           call calc(pot, at, energy=e, force=f, virial=v)
+        end do
 
-     call print('Sending data')
-     call socket_send_reftraj(ip, port, client_id, n, at%n, e, f, v)
-     call print('Finished sending data')
+        call print('completed calculation n='//n//' label= '//label//' on '//at%n//' atoms. energy='//e)
+        call socket_send_reftraj(ip, port, client_id, label, at%n, e, f, v)
 
-     n = n + 1
-  
-     deallocate(f)
+        n = n + 1
 
-     call print('Waiting to receive data...')
-     call socket_recv_reftraj(ip, port, client_id, buffsize, n_step, n_atoms, z, lattice, frac_pos)
-     call print('Received data')
+        deallocate(f)
 
-     call print('n='//n//' n_step='//n_step)
+        call socket_recv_reftraj(ip, port, client_id, buffsize, label, n_atoms, lattice, frac_pos)
 
-     if (n_atoms == 0 .or. n_atoms /= at%n) then
-        call print('n_atoms='//n_atoms//', at%n='//at%n//' - shutting down QUIP server')
-        exit
-     end if
+        if (n_atoms == 0 .or. n_atoms /= at%n) then
+           call print('n_atoms='//n_atoms//', at%n='//at%n//' - shutting down QUIP server')
+           exit
+        end if
 
-     do i=1, at%n
-        at%pos(:,i) = at%lattice .mult. frac_pos(:, i)
+        do i=1, at%n
+           at%pos(:,i) = at%lattice .mult. frac_pos(:, i)
+        end do
+
      end do
-     call set_atoms(at, z(1:at%n))
 
-     call print('Setup atoms')
+     call finalise(at)
+     call finalise(pot)
 
-  end do
+     deallocate(frac_pos)
 
-  call finalise(at)
-  call finalise(pot)
-
+  end if
   call system_finalise
 
 end program socktest
