@@ -1425,7 +1425,7 @@ CONTAINS
     integer:: i, extra_report
     real(dp), parameter:: stuck_tol = NUMERICAL_ZERO
     real(dp):: linmin_quality
-    real(dp):: eps
+    real(dp):: eps, alpha
     real(dp):: oldeps
     real(dp), parameter :: default_eps_guess = 0.1_dp ! HACK
     real(dp) :: my_eps_guess
@@ -1443,7 +1443,7 @@ CONTAINS
 
     ! working arrays
     ! Dynamically allocate to avoid stack overflow madness with ifort
-    real(dp),dimension(:), allocatable :: x, y, hdir, gdir, gdir_old, grad_f, grad_f_old
+    real(dp),dimension(:), allocatable :: x, y, hdir, gdir, gdir_old, grad_f, grad_f_old, x_old
     ! for lbfgs
     real(dp), allocatable :: lbfgs_work(:), lbfgs_diag(:)
     integer :: lbfgs_flag
@@ -1472,6 +1472,7 @@ CONTAINS
     call print("Welcome to minim()", PRINT_NORMAL)
     call print("space is "//size(x)//" dimensional", PRINT_NORMAL)
     do_sd = .false.
+    do_sd2 = .false.
     do_cg = .false.
     do_pcg = .false.
     do_lbfgs = .false.
@@ -1479,6 +1480,12 @@ CONTAINS
     if(trim(method).EQ."sd") then
        do_sd = .TRUE.
        call print("Method: Steepest Descent", PRINT_NORMAL)
+    else if(trim(method).EQ."sd2")then
+       do_sd2 = .TRUE.
+       call print("Method: Two-Point Step Size Gradient Methods, J Barzilai and JM Borwein, IMA J Num Anal (1988) 8, 141-148", PRINT_NORMAL)
+       allocate(x_old(size(x)))
+       y=x
+       x_old = x
     else if(trim(method).EQ."cg")then
        do_cg = .TRUE.
        call print("Method: Conjugate Gradients", PRINT_NORMAL)
@@ -1756,7 +1763,7 @@ CONTAINS
        ! obj is the thing we are trying to minimize
        ! are we going down,and enough?
 
-       if(.not. do_lbfgs) then
+       if(.not. do_lbfgs .and. .not. do_sd2) then
           if (.not. do_linmin_deriv) then
              obj = f
              obj_new = f_new
@@ -1906,6 +1913,16 @@ CONTAINS
        
        if(do_sd) then  !steepest descent
           hdir = -1.0_dp * grad_f 
+       elseif(do_sd2) then
+          if(main_counter == 1) then
+             alpha = 1.0e-6_dp
+          else
+             alpha = dot_product(x-x_old,grad_f-grad_f_old) / dot_product(grad_f-grad_f_old,grad_f-grad_f_old)
+          endif
+
+          x_old = x
+          x = x - alpha * grad_f
+          y = x
        else if(do_cg)then ! conjugate gradients
           
           if( bad_cg_counter == max_bad_cg .OR.(resetflag > 0)) then ! reset the conj grad cycle
@@ -1994,6 +2011,7 @@ CONTAINS
 
     deallocate(x)
     deallocate(y, hdir, gdir, gdir_old, grad_f, grad_f_old)
+    if(allocated(x_old)) deallocate(x_old)
 
     if(do_lbfgs) then
        deallocate(lbfgs_diag)
