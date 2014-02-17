@@ -3410,21 +3410,25 @@ contains
   !% amount, and full recalculation of connectivity is only done when
   !% any atom has moved more than 0.5*cutoff_skin - otherwise 
   !% calc_dists() is called to update the stored distance tables.
-  subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, error)
+  subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, max_pos_change, did_rebuild, error)
     type(Atoms),                intent(inout)  :: this
     type(Connection), optional, intent(inout)  :: alt_connect
     logical,          optional, intent(in)     :: own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb
+    real(dp),         optional, intent(out)    :: max_pos_change
+    logical,          optional, intent(out)    :: did_rebuild
     integer,          optional, intent(out)    :: error
 
 
     INIT_ERROR(error)
     if (present(alt_connect)) then
        call calc_connect(alt_connect, this, &
-            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, this%cutoff_skin, error)
+            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, this%cutoff_skin, &
+            max_pos_change, did_rebuild, error)
        PASS_ERROR(error)
     else
        call calc_connect(this%connect, this, &
-            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, this%cutoff_skin, error)
+            own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, this%cutoff_skin, &
+            max_pos_change, did_rebuild, error)
        PASS_ERROR(error)
     endif
 

@@ -1016,11 +1016,13 @@ contains
   !% present, effective cutoff is increased by this amount, and full
   !% recalculation of connectivity is only done when any atom has
   !% moved more than 0.5*cutoff_skin.
-  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, cutoff_skin, error)
+  subroutine connection_calc_connect(this, at, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, cutoff_skin, max_pos_change, did_rebuild, error)
     type(Connection), intent(inout)  :: this
     type(Atoms), intent(inout) :: at
     logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb
     real(dp), intent(in), optional :: cutoff_skin
+    real(dp), intent(out), optional :: max_pos_change
+    logical, intent(out), optional :: did_rebuild
     integer, intent(out), optional :: error
 
     integer  :: cellsNa,cellsNb,cellsNc
@@ -1029,7 +1031,7 @@ contains
     integer  :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
     integer  :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb
     integer  :: max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
-    real(dp) :: cutoff, density, volume_per_cell, pos_change, max_pos_change
+    real(dp) :: cutoff, density, volume_per_cell, pos_change, my_max_pos_change
     logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, my_store_n_neighb, do_fill
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:), n_neighb(:)
@@ -1082,28 +1084,32 @@ contains
              call print('calc_connect: maxval(abs(at%lattice - this%last_connect_lattice)) = '//(maxval(abs(at%lattice - this%last_connect_lattice))), PRINT_VERBOSE)
              if (allocated(this%last_connect_pos)) deallocate(this%last_connect_pos)
              allocate(this%last_connect_pos(3, at%n))
-             max_pos_change = huge(1.0_dp)
+             my_max_pos_change = huge(1.0_dp)
           else
              ! FIXME 1. we should also take into account changes in lattice here - for
              !          now we force a reconnect whenever lattice changes.
              !       2. it may be possible to further speed up calculation of delta_pos by 
              !          not calling distance_min_image() every time
-             max_pos_change = 0.0_dp
+             my_max_pos_change = 0.0_dp
              do i=1, at%N
                 pos_change = distance_min_image(at, i, this%last_connect_pos(:, i))
-                if (pos_change > max_pos_change) max_pos_change = pos_change
+                if (pos_change > my_max_pos_change) my_max_pos_change = pos_change
              end do
           end if
 
-          if (max_pos_change < 0.5_dp*cutoff_skin) then
-             call print('calc_connect: max pos change '//max_pos_change//' < 0.5*cutoff_skin, doing a calc_dists() only', PRINT_VERBOSE)
+          if (present(max_pos_change)) max_pos_change = my_max_pos_change
+
+          if (my_max_pos_change < 0.5_dp*cutoff_skin) then
+             call print('calc_connect: max pos change '//my_max_pos_change//' < 0.5*cutoff_skin, doing a calc_dists() only', PRINT_VERBOSE)
              call calc_dists(this, at)
              call system_timer('calc_connect')
+             if (present(did_rebuild)) did_rebuild = .false.
              return
           end if
 
           ! We need to do a full recalculation of connectivity. Store the current pos and lattice. 
-          call print('calc_connect: max pos change '//max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_VERBOSE)
+          call print('calc_connect: max pos change '//my_max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_VERBOSE)
+          if (present(did_rebuild)) did_rebuild = .true.
           this%last_connect_pos(:,:) = at%pos
           this%last_connect_lattice(:,:) = at%lattice
           this%last_connect_cutoff = cutoff
