@@ -51,7 +51,7 @@
 module IPModel_Coulomb_module
 
 use error_module
-use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//)
+use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -64,6 +64,7 @@ use QUIP_Common_module
 use Yukawa_module
 use IPEwald_module
 use Ewald_module
+use Multipoles_module
 
 implicit none
 private
@@ -105,6 +106,8 @@ type IPModel_Coulomb
   real(dp) :: dsf_alpha = 0.0_dp
 
   character(len=STRING_LENGTH) :: label
+
+  type(Multipole_Moments) :: multipoles
 
 endtype IPModel_Coulomb
 
@@ -310,6 +313,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
       enddo
    endif
 
+
    selectcase(this%method)
    case(IPCoulomb_Method_Direct)
       call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
@@ -357,12 +361,12 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
       deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
       call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
-
    case(IPCoulomb_Method_Multipole_Moments)
       RAISE_ERROR("IPModel_Coulomb_Calc : something went wrong, you shouldn't have got here ",error)
    case default
       RAISE_ERROR("IPModel_Coulomb_Calc: unknown method", error)
    endselect
+
 
    charge => null()
    if(allocated(my_charge)) deallocate(my_charge)
@@ -433,8 +437,8 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
     endElement_handler = IPModel_endElement_handler)
   call close_xml_t(fxml)
 
-  if (this%n_types == 0) then
-    call system_abort("IPModel_Coulomb_read_params_xml parsed file, but n_types = 0")
+  if (this%n_types == 0 .and. this%multipoles%n_monomer_types == 0) then
+    call system_abort("IPModel_Coulomb_read_params_xml parsed file, but n_types = 0 and n_monomer_types = 0")
   endif
 
 end subroutine IPModel_Coulomb_read_params_xml
@@ -451,9 +455,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=STRING_LENGTH) :: value
 
-  integer ti
+  character(len=STRING_LENGTH) :: value, signature_string, pos_type_str, moments_method_str
+  character(len=STRING_LENGTH), dimension(99) :: signature_fields
+
+  logical :: energy_shift, linear_force_shift
+  integer :: ti, tj, i ,n_atoms
 
   if (name == 'Coulomb_params') then ! new Coulomb stanza
 
@@ -571,6 +578,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       else
          read (value, *) parse_ip%dsf_alpha
       endif
+
+
 
     endif
 
@@ -694,6 +703,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%atomic_number
 
   endif
+
 
 end subroutine IPModel_startElement_handler
 
