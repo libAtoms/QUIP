@@ -102,13 +102,19 @@ module Potential_Precon_Minim_module
     real(dp) :: thisdist, thiscoeff
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
+    logical :: did_rebuild
 
     call system_timer('build_precon')
     am = transfer(am_data,am)
         
     call atoms_repoint(am%minim_at)    
     call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
-    call calc_connect(am%minim_at)
+    
+    call calc_connect(am%minim_at,did_rebuild=did_rebuild)
+
+    if (did_rebuild .eqv. .false. .and. this%precon_id == "C1") then
+      return
+    end if
     
     if(this%precon_id == "LJ") then 
       conconstant = 1.0_dp/am%minim_at%N
