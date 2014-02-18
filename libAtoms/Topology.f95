@@ -2746,7 +2746,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      end  do ! i
    end function find_motif_backbone
 
-   subroutine find_general_monomer(at,monomer_index,signature,cutoff,general_ordercheck,use_smooth_cutoff,error)
+   subroutine find_general_monomer(at,monomer_index,signature,is_associated,cutoff,general_ordercheck,use_smooth_cutoff,error)
      type(atoms), intent(in) :: at
      integer, intent(in), dimension(:) :: signature
      real(dp), dimension(:), allocatable :: r
@@ -2757,10 +2757,10 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      integer, intent(out), optional :: error
      logical, optional :: use_smooth_cutoff, general_ordercheck
      integer :: i, j, k, n, Z_uniq_index, Z_uniq, Z_uniq_pos, monomers_found
-     logical, dimension(at%N) :: is_associated
+     logical, dimension(:), intent(inout) :: is_associated
      logical :: do_general_ordercheck, my_use_smooth_cutoff
 
-     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff) !Pending discussions with PP
+     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff) 
      do_general_ordercheck = optional_default(.true.,general_ordercheck)
 
      allocate(monomer_index(size(signature),0))
@@ -2769,10 +2769,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      allocate(indices(size(signature)))
 
      monomers_found = 0
-     is_associated = .false.
      if(do_general_ordercheck) then
         do i = 1, at%N
            if(.not. is_associated(i) .and. any(signature .eq. at%Z(i))) then
+              if (at%Z(i) == 1) cycle ! for now, don't let H be at the centre of a monomer
+
               r = cutoff ! initialise distances
               indices = 0 ! initialise indices
               temp = minloc(signature, signature .eq. at%Z(i)) ! will return location of first element of signature with correct Z
@@ -2814,6 +2815,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
       else
         RAISE_ERROR("Finding general monomers without order checking not supported", error)
       end if
+
+      deallocate(monomer_index_working)
+      deallocate(r)
+      deallocate(indices)
+
    end subroutine find_general_monomer
 
    subroutine find_monomer_pairs(at,monomer_pairs,mean_pos_shifts,monomer_one_index,monomer_two_index,monomers_identical,cutoff,error)
@@ -2996,6 +3002,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
          end do
        end do
      end do
+
+     deallocate(monomer_triplets_working)
+     deallocate(atomic_index_one)
+     deallocate(atomic_index_two)
+     deallocate(atomic_index_one_two)
 
    end subroutine find_monomer_triplets  
 
