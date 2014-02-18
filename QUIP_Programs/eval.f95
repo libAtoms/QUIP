@@ -212,7 +212,6 @@ implicit none
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
-<<<<<<< HEAD
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
     call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
@@ -231,27 +230,11 @@ implicit none
      eval_port = 32768
   endif
 
-=======
-    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
-    call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)
-    call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
-    call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
-    call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [bulk_scale=file] [calc_args='str'] [pre_relax_calc_args='str']", PRINT_ALWAYS)
-    call print("  [verbosity=VERBOSITY(PRINT_NORMAL)] [precond]", PRINT_ALWAYS)
-    call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
-    call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
-    call system_abort("Confused by CLI arguments")
-  end if
-  call finalise(cli_params)
-
->>>>>>> 284cc23... Recover state of development from svn repo
   call print ("Using calc args: " // trim(calc_args))
   call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
-<<<<<<< HEAD
   inquire(file=trim(param_file), exist=param_file_exists)
   if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
 
@@ -277,19 +260,6 @@ implicit none
      call finalise(bulk_scale)
   else
      call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
-=======
-  if(trim(init_args) .ne. '') then
-     call print ("Using init args: " // trim(init_args))
-     if(has_bulk_scale) then
-        call initialise(infile, trim(bulk_scale_file))
-        call read(bulk_scale, infile, error=error)
-        call finalise(infile)
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
-        call finalise(bulk_scale)
-     else
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
-     end if
->>>>>>> 284cc23... Recover state of development from svn repo
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)
@@ -308,12 +278,10 @@ implicit none
   endif
   if(has_pressure) external_pressure = reshape(pressure, (/3,3/))
 
-<<<<<<< HEAD
+#ifndef BGQ
   if( eval_port_status == 0 ) call system_command('echo 0 | nc 127.0.0.1 '//eval_port) ! send a signal that eval is ready to evaluate
+#endif
 
-
-=======
->>>>>>> 284cc23... Recover state of development from svn repo
   ! main loop over frames
   do_print_pot = .true. ! print the pot on the first iteration
   do 
