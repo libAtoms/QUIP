@@ -272,7 +272,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    endif
 
    intramolecular_factor = 0
-   if (intermolecular_only) then ! figure out whether pre_calc needs to add (1), subtract(-1), or ignore(0) interactions between sites on same molecule
+   if (intermolecular_only) then ! figure out whether pre_calc needs to subtract(-1), or ignore(0) interactions between sites on same molecule
      intramolecular_factor = -1 
    end if
 
@@ -306,7 +306,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
       charge => my_charge
       charge = 0.0_dp
       do i = 1, at%N
-         charge(i) = this%charge(this%type_of_atomic_num(at%Z(i)))
+         charge(i) = this%charge(this%type_of_atomic_num(at%Z(i))) 
       enddo
    endif
 
