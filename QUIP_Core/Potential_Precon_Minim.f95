@@ -115,7 +115,7 @@ module Potential_Precon_Minim_module
       !conconstant =this%energy_scale*1.0e-6
       !conconstant = 1.0_dp
     elseif (this%precon_id == "C1") then
-      conconstant = 1.0_dp
+      conconstant = 1.0_dp/am%minim_at%N
     else
       conconstant = 1.0_dp/am%minim_at%N
     end if
@@ -133,10 +133,10 @@ module Potential_Precon_Minim_module
       !if(am%minim_at%move_mask(I) == 1) then
       
       if(this%has_fixed) then
-	if (am%minim_at%move_mask(I) == 0) then
-	   this%preconcoeffs(1,I,1) = 1.0
-           cycle
-	end if
+        if (am%minim_at%move_mask(I) == 0) then
+          this%preconcoeffs(1,I,1) = 1.0
+          cycle
+        end if
       end if
       
       thisneighcount = n_neighbours(am%minim_at,I)
@@ -173,8 +173,8 @@ module Potential_Precon_Minim_module
 
           !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs0.dat')
           if (this%precon_id == "LJ") then
-            thiscoeff = this%energy_scale *( thisdist/this%length_scale)**(-6.0_dp)
-            thiscoeff = max(thiscoeff,5.0*this%energy_scale)
+            thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
+            thiscoeff = min(thiscoeff,this%energy_scale)
             this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
             this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
           else if (this%precon_id == "C1") then
