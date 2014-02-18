@@ -11,11 +11,10 @@ private
 
 #ifdef HAVE_GAP
 public :: calc_steinhardt_bond_order
-#endif
+
 
 contains
 
-#ifdef HAVE_GAP
   subroutine calc_steinhardt_bond_order(this,l,do_q,do_w,cutoff,cutoff_transition_width)
      type(atoms), intent(inout) :: this
      integer, intent(in) :: l
