@@ -40,10 +40,10 @@ use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module
-use Potential_Precon_Minim_module
 #ifdef HAVE_GAP
 use descriptors_module
 #endif
+use Potential_Precon_Minim_module
 
 implicit none
 
@@ -114,7 +114,8 @@ implicit none
 
   logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
-  integer error
+  integer error, eval_port_status, eval_port
+  character(STRING_LENGTH) :: eval_port_str
 
   integer i, n_iter, j, n_descriptors, n_cross
 
