@@ -75,6 +75,14 @@ integer, parameter :: IPCoulomb_Method_Yukawa = 2
 integer, parameter :: IPCoulomb_Method_Ewald  = 3
 integer, parameter :: IPCoulomb_Method_DSF    = 4
 integer, parameter :: IPCoulomb_Method_Ewald_NB  = 5
+integer, parameter :: IPCoulomb_Method_Multipole_Moments = 6
+
+integer, parameter :: Multipole_Position_Atomic = 1
+integer, parameter :: Multipole_Position_Centre_of_Mass = 2
+
+integer, parameter :: Multipole_Moments_Method_Fixed = 1
+integer, parameter :: Multipole_Moments_Method_GAP = 2
+integer, parameter :: Multipole_Moments_Method_Partridge_Schwenke = 3
 
 public :: IPModel_Coulomb
 type IPModel_Coulomb
@@ -152,6 +160,8 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
 	    this%method = IPCoulomb_Method_Ewald_NB
 	 case("dsf")
 	    this%method = IPCoulomb_Method_DSF
+	 case("multipole_moments")
+	    this%method = IPCoulomb_Method_Multipole_Moments
 	 case default
 	    call system_abort ("IPModel_Coulomb_Initialise_str: method "//trim(method_str)//" unknown")
       end select
@@ -159,6 +169,12 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
 
   call IPModel_Coulomb_read_params_xml(this, param_str)
 
+  this%multipoles%initialised=.false.  
+  if (this%multipoles%n_monomer_types /= 0) then
+    ! check for ambiguities / errors in site specification of the monomers 
+     call print("specification of multipoles based on chemical environment")
+     this%multipoles%initialised=.true.
+  end if
   !  Add initialisation code here
 
 end subroutine IPModel_Coulomb_Initialise_str
@@ -179,9 +195,10 @@ subroutine IPModel_Coulomb_Finalise(this)
 
 end subroutine IPModel_Coulomb_Finalise
 
-subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
+recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_Coulomb), intent(inout):: this
-   type(Atoms), intent(inout)      :: at
+   type(Atoms), intent(inout),target  :: at_in
+   type(Atoms), pointer               :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
@@ -192,44 +209,56 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
    type(Dictionary) :: params
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
-   real(dp) :: r_scale, E_scale
-   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z
+   real(dp), dimension(:,:), allocatable :: dummy_force
+   real(dp) :: r_scale, E_scale, e_pre_calc
+   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, intermolecular_only
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
    integer :: n_uniq_Zs
+   type(Atoms),target :: at_dummy
 
    real(dp), allocatable :: gamma_mat(:,:)
 
-   integer :: i, i_Z
+   integer :: i, i_Z, intramolecular_factor
 
    character(len=STRING_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
 
    INIT_ERROR(error)
+   do_f=present(f)
+   do_e=present(e)
 
-   if (present(e)) e = 0.0_dp
-   if (present(local_e)) then
-      call check_size('Local_E',local_e,(/at%N/),'IPModel_Coulomb_Calc', error)
-      local_e = 0.0_dp
-   endif
-   if (present(f)) then
-      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
-      f = 0.0_dp
+   at => at_in
+   if (.not. has_property(at,"dummy_charge")) then
+     if (do_e) e = 0.0_dp
+     if (present(local_e)) then
+        call check_size('Local_E',local_e,(/at%N/),'IPModel_Coulomb_Calc', error)
+        local_e = 0.0_dp
+     endif
+     if (do_f) then
+        call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+        f = 0.0_dp
+     end if
+     if (present(virial)) virial = 0.0_dp
+     if (present(local_virial)) then
+        call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+        local_virial = 0.0_dp
+     endif
+   else
+     if (do_f) then
+        call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+     end if
    end if
-   if (present(virial)) virial = 0.0_dp
-   if (present(local_virial)) then
-      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
-      local_virial = 0.0_dp
-   endif
 
    if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'charge_property_name', 'charge', charge_property_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'atom_mask_name', '', atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
-      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
-      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
+      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
       call param_register(params, 'pairwise_by_Z', 'F',do_pairwise_by_Z, help_string="If true, calculate pairwise contributions to local_e broken down by Z")
+      call param_register(params, 'intermolecular_only', 'F',intermolecular_only, help_string="If true, ignore interactions between multipoles on the same molecule. Default F")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
@@ -242,15 +271,39 @@ subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, a
       charge_property_name = 'charge'
    endif
 
+   intramolecular_factor = 0
+   if (intermolecular_only) then ! figure out whether pre_calc needs to add (1), subtract(-1), or ignore(0) interactions between sites on same molecule
+     intramolecular_factor = -1 
+   end if
 
    if(has_property(at,charge_property_name)) then
       if(.not. assign_pointer(at, charge_property_name, charge)) then
          RAISE_ERROR('IPModel_Coulomb_Calc failed to assign pointer to '//trim(charge_property_name)//' property', error)
       endif
+   else if (this%multipoles%initialised) then
+      call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e,error=error) ! specify positions and values of multipole moments, their derivatives w/r/t atomic positions
+      if (do_e) e_pre_calc = e
+      call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error) ! if multipoles are all charges then we can use other summation method by making a dummy atoms object
+      at => at_dummy
+      if (do_f) then                                                             
+        if (this%method == IPCoulomb_Method_Multipole_Moments) then
+          call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, error = error)               
+        else
+          allocate(dummy_force(3,at%N))                                            ! on recursive call "dummy_charge" is present so this whole block gets skipped 
+          dummy_force=0.0_dp
+          call IPModel_Coulomb_Calc(this, at, e=e, f=dummy_force, virial=virial, args_str=args_str//" charge_property_name = dummy_charge", mpi=mpi, error=error)                                      
+          call Multipole_Moments_Forces_From_Dummy_Atoms(at,this%multipoles,dummy_force,f,error)
+          deallocate(dummy_force)
+        end if
+      else
+        call IPModel_Coulomb_Calc(this, at, e=e, virial=virial, args_str=args_str//" charge_property_name = dummy_charge", mpi=mpi, error=error)
+      end if
+      if (do_e) e = e + e_pre_calc 
+      at => at_in 
+      return
    else
       allocate(my_charge(at%N))
       charge => my_charge
-
       charge = 0.0_dp
       do i = 1, at%N
          charge(i) = this%charge(this%type_of_atomic_num(at%Z(i)))
@@ -304,10 +357,13 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
       deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
       call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
+
+   case(IPCoulomb_Method_Multipole_Moments)
+      RAISE_ERROR("IPModel_Coulomb_Calc : something went wrong, you shouldn't have got here ",error)
    case default
       RAISE_ERROR("IPModel_Coulomb_Calc: unknown method", error)
    endselect
-   
+
    charge => null()
    if(allocated(my_charge)) deallocate(my_charge)
 
@@ -318,7 +374,7 @@ subroutine IPModel_Coulomb_Print(this, file)
   type(IPModel_Coulomb), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti
+  integer :: ti , tj
 
   call Print("IPModel_Coulomb : Coulomb Potential", file=file)
   select case(this%method)
@@ -332,6 +388,8 @@ subroutine IPModel_Coulomb_Print(this, file)
      call Print("IPModel_Coulomb method: Ewald_NB")
   case(IPCoulomb_Method_DSF)
      call Print("IPModel_Coulomb method: Damped Shifted Force Coulomb")
+  case(IPCoulomb_Method_Multipole_Moments)
+     call Print("IPModel_Coulomb method: Direct sum over multipole interactions")
   case default
      call system_abort ("IPModel_Coulomb: method identifier "//this%method//" unknown")
   endselect
@@ -346,6 +404,14 @@ subroutine IPModel_Coulomb_Print(this, file)
          file=file)
     call verbosity_pop()
   end do
+  if (this%multipoles%initialised) then
+    do ti=1,this%multipoles%n_monomer_types
+      call print("IPModel_Coulomb : monomer " // ti // " signature " // this%multipoles%monomer_types(ti)%signature//" moments method : "//this%multipoles%monomer_types(ti)%moments_method, file=file)
+      do tj=1,size(this%multipoles%monomer_types(ti)%site_types)
+        call print("IPModel_Coulomb :   site " // tj // " pos_type " // this%multipoles%monomer_types(ti)%site_types(tj)%pos_type, file=file)
+      end do
+    end do
+  end if
 
 end subroutine IPModel_Coulomb_Print
 
@@ -425,6 +491,15 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%charge(parse_ip%n_types))
       parse_ip%charge = 0.0_dp
 
+      call QUIP_FoX_get_value(attributes, 'n_monomer_types', value, status)
+      if (status /= 0) then
+        value='0'
+      endif
+      read (value, *), parse_ip%multipoles%n_monomer_types
+      allocate(parse_ip%multipoles%monomer_types(parse_ip%multipoles%n_monomer_types))
+
+      
+
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
@@ -442,6 +517,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          parse_ip%method = IPCoulomb_Method_Ewald_NB
       case("dsf")
          parse_ip%method = IPCoulomb_Method_DSF
+      case("multipole_moments")
+         parse_ip%method = IPCoulomb_Method_Multipole_Moments
       case default
          call system_abort ("IPModel_Coulomb_read_params_xml: method "//trim(value)//" unknown")
       endselect
