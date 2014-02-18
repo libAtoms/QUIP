@@ -1433,7 +1433,7 @@ CONTAINS
     real(dp):: gg, dgg, hdirgrad_before, hdirgrad_after
     real(dp):: dcosine, gdirlen, gdirlen_old, normsqgrad_f, normsqgrad_f_old
     real(dp):: obj, obj_new
-    logical:: do_sd, do_cg, do_pcg, do_lbfgs
+    logical:: do_sd, do_sd2, do_cg, do_pcg, do_lbfgs
     integer:: fast_linmin_switchback
     logical:: do_fast_linmin
     logical:: do_linmin_deriv
