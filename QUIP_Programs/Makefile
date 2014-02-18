@@ -47,13 +47,18 @@ PROGRAMS = eval md \
   quip_wrapper_example quip_wrapper2_example descriptors_wrapper_example test_cova \
   slice_sample order_atoms_as_molecules
 
+DAVE_PROGRAMS = davetest davetest2 davetest3 davetest4 \
+  davetest5 davetest6 davetestMEP davetestMEP2 buildtestxyz \
+  davetestMEP3 davetestGabor davetestGabor2 davetestGabor3 davetestChristoph
+
+
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
 endif
 
 default: 
 
-all: ${PROGRAMS}
+all: ${PROGRAMS} ${DAVE_PROGRAMS}
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
 ifeq (${HAVE_CP2K},1)
@@ -68,10 +73,10 @@ LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon crack analytical_free_E_UI DTDE_GP_free_E DTDE_grad_GP_free_E ABF_GP_free_E
 
-${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
+${PROGRAMS} ${EXTRA_PROGRAMS} ${DAVE_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 clean:	
-	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} crack makecrack
+	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} ${DAVE_PROGRAMS} crack makecrack
 
 allclean : clean

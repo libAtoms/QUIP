@@ -128,7 +128,7 @@ module Potential_module
   use paramreader_module, only : param_register, param_read_line
   use mpi_context_module, only : mpi_context
   use table_module, only : table, find, int_part, wipe, append, finalise
-  use minimization_module, only : minim, n_minim, fire_minim, test_gradient, n_test_gradient
+  use minimization_module , only : minim, n_minim, fire_minim, test_gradient, n_test_gradient
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, diff_min_image, set_lattice, is_nearest_neighbour, distance_min_image, &
@@ -351,6 +351,16 @@ module Potential_module
      module procedure potential_set_callback
   end interface
 
+  ! Allow Potential_Precon_Minim access to some Potential Functions
+  public :: energy_func
+  public :: gradient_func
+  public :: print_hook
+  public :: pack_pos_dg
+  public :: unpack_pos_dg
+  public :: fix_atoms_deform_grad
+  public :: prep_atoms_deform_grad
+  public :: max_rij_change
+
   public :: potential_minimise
   type Potential_minimise
      real(dp) :: minim_pos_lat_preconditioner = 1.0_dp
@@ -410,7 +420,7 @@ module Potential_module
 
 recursive subroutine potential_Filename_Initialise(this, args_str, param_filename, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential. Empty string indicates the default potential for this XML file should be created, using xml_label keyword
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   character(len=*), intent(in) :: param_filename !% name of xml parameter file for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
@@ -429,7 +439,7 @@ end subroutine potential_Filename_Initialise
 
 subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential. Empty string indicates the default potential for this XML file should be created, using xml_label keyword
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(InOutput), intent(in) :: io_obj !% name of xml parameter inoutput for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
@@ -458,7 +468,7 @@ end subroutine potential_initialise_inoutput
 
 recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), optional, intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential. Empty string indicates the default potential for this XML file should be created, using xml_label keyword
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(Potential), optional, intent(in), target :: pot1 !% Optional first Potential upon which this Potential is based
   type(Potential), optional, intent(in), target :: pot2 !% Optional second potential
   character(len=*), optional, intent(in) :: param_str !% contents of xml parameter file for potential initializers, if needed
@@ -471,31 +481,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   logical :: has_xml_label, minimise_bulk, has_target_vol, has_target_B, has_r_scale, has_E_scale
   real(dp) :: target_vol, target_B, r_scale, vol, B
-  character(len=STRING_LENGTH) :: my_args_str, init_args_str, first_tag, xml_label
+  character(len=STRING_LENGTH) :: my_args_str, init_args_str
   type(Atoms) :: bulk
-  integer :: it, tag_start, tag_end
+  integer :: it
 
   INIT_ERROR(error)
 
   call finalise(this)
-
-  my_args_str = ''
-  if (present(args_str)) my_args_str = args_str
-
-  ! Default init_args are xml_label=LABEL, extracting LABEL from first XML tag
-  if (len_trim(my_args_str) == 0) then
-     if (.not. present(param_str)) then
-        RAISE_ERROR('No init_args given and param_str not present', error)
-     end if
-     if (len_trim(param_str) == 0) then
-        RAISE_ERROR('No init_args given and param_str is empty', error)
-     end if
-     tag_start = index(param_str, '<')
-     tag_end = index(param_str, '>')
-     xml_label = param_str(tag_start+1:tag_end-1)
-     call print_warning('Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"')
-     my_args_str = 'Potential xml_label='//xml_label
-  end if
 
   call initialise(params)
   call param_register(params, 'xml_label', '', this%xml_label, has_value_target=has_xml_label, help_string="Label in xml file Potential stanza to match")
@@ -509,9 +501,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   if(has_xml_label) then
      call Potential_read_params_xml(this, param_str)
      my_args_str = trim(this%xml_init_args)
-  end if
-  my_args_str = trim(my_args_str)// " " // trim(args_str)
-  
+  endif
+  my_args_str = trim(my_args_str) // " " // trim(args_str)
+
   call initialise(params)
   call param_register(params, 'init_args_pot1', '', this%init_args_pot1, help_string="Argument string for initializing pot1 (for non-simple potentials")
   call param_register(params, 'init_args_pot2', '', this%init_args_pot2, help_string="Argument string for initializing pot2 (for non-simple potentials")
@@ -2282,5 +2274,7 @@ end subroutine pack_pos_dg
     end if
 
   end subroutine constrain_virial_post
+
+
 
 end module Potential_module

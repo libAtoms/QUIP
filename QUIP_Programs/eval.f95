@@ -40,6 +40,7 @@ use potential_module
 use libatoms_misc_utils_module
 use elasticity_module
 use phonons_module
+use Potential_Precon_Minim_module
 #ifdef HAVE_GAP
 use descriptors_module
 #endif
@@ -64,7 +65,7 @@ implicit none
   real(dp) :: phonons_dx
   real(dp) :: phonons_path_start(3), phonons_path_end(3)
   integer :: phonons_path_steps
-  logical :: do_torque, precond_n_minim
+  logical :: do_torque, do_precond
   real(dp) :: fire_minim_dt0
   real(dp) :: fire_minim_dt_max
   real(dp) :: tau(3)
@@ -111,8 +112,7 @@ implicit none
 
   logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
-  integer error, eval_port_status, eval_port
-  character(STRING_LENGTH) :: eval_port_str
+  integer error
 
   integer i, n_iter, j
 
@@ -178,7 +178,7 @@ implicit none
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
-  call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim, help_string="activate preconditioner in Noam's minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
+  call param_register(cli_params, 'precond', 'F', do_precond, help_string="activate preconditioner in minim routine.  Probably a bad idea in combination with cg_n if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method, help_string="linmin method for relaxation (for method=cg)")
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation - sd, sd2, cg, pcg, lbfgs, cg_n, fire")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
@@ -201,8 +201,9 @@ implicit none
 
 
 
-  if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
+  if (.not. param_read_args(cli_params, task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
+<<<<<<< HEAD
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
     call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
@@ -221,11 +222,27 @@ implicit none
      eval_port = 32768
   endif
 
+=======
+    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
+    call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)
+    call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
+    call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
+    call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [bulk_scale=file] [calc_args='str'] [pre_relax_calc_args='str']", PRINT_ALWAYS)
+    call print("  [verbosity=VERBOSITY(PRINT_NORMAL)] [precond]", PRINT_ALWAYS)
+    call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
+    call print("  [minim_method=string(cg)] [cutoff=r]", PRINT_ALWAYS)
+    call system_abort("Confused by CLI arguments")
+  end if
+  call finalise(cli_params)
+
+>>>>>>> 284cc23... Recover state of development from svn repo
   call print ("Using calc args: " // trim(calc_args))
   call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
+<<<<<<< HEAD
   inquire(file=trim(param_file), exist=param_file_exists)
   if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
 
@@ -251,6 +268,19 @@ implicit none
      call finalise(bulk_scale)
   else
      call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+=======
+  if(trim(init_args) .ne. '') then
+     call print ("Using init args: " // trim(init_args))
+     if(has_bulk_scale) then
+        call initialise(infile, trim(bulk_scale_file))
+        call read(bulk_scale, infile, error=error)
+        call finalise(infile)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+        call finalise(bulk_scale)
+     else
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     end if
+>>>>>>> 284cc23... Recover state of development from svn repo
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)
@@ -269,9 +299,12 @@ implicit none
   endif
   if(has_pressure) external_pressure = reshape(pressure, (/3,3/))
 
+<<<<<<< HEAD
   if( eval_port_status == 0 ) call system_command('echo 0 | nc 127.0.0.1 '//eval_port) ! send a signal that eval is ready to evaluate
 
 
+=======
+>>>>>>> 284cc23... Recover state of development from svn repo
   ! main loop over frames
   do_print_pot = .true. ! print the pot on the first iteration
   do 
@@ -358,12 +391,16 @@ implicit none
 	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
 		eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
+		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=do_precond, hook_print_interval=relax_print_interval) 
            call finalise(relax_io) 
         else
-	   n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-		do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=precond_n_minim, hook_print_interval=relax_print_interval) 
+           if(do_precond .and. trim(minim_method) .ne. 'cg_n') then
+              n_iter = precon_minim(pot, at, 'preconLBFGS', relax_tol, relax_iter, linminroutine='standard', do_print = .false., efuncroutine='kahan', hook_print_interval=relax_print_interval, length_scale=4.0_dp, precon_id='LJ')
+           else
+              n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
+                   do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
+                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, use_precond=do_precond, hook_print_interval=relax_print_interval) 
+           end if
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
@@ -375,11 +412,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         else if (do_c0ij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         else
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
@@ -647,7 +684,6 @@ call print("calling descriptor calc")
 
      call write(at, 'stdout', prefix='AT')
 
-     if( eval_port_status == 0 ) call system_command('echo '//at%N//' | nc 127.0.0.1 '//eval_port)
      call finalise(at)
 
   enddo
