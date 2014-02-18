@@ -519,6 +519,103 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
+  elseif (parse_in_ip .and. name == 'monomer') then
+
+    call QUIP_FoX_get_value(attributes, "type", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find type")
+    read (value, *) ti
+    if (ti < 1) call system_abort("IPModel_Coulomb_read_params_xml got monomer type="//ti//" < 1")
+    if (ti > parse_ip%multipoles%n_monomer_types) call system_abort("IPModel_Coulomb_read_params_xml got monomer type="//ti//" > n_types="//parse_ip%multipoles%n_monomer_types)
+
+    call QUIP_FoX_get_value(attributes, "signature", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find signature")
+
+    read (value, *) signature_string
+    call split_string(signature_string,'_','{}',signature_fields(:),n_atoms,matching=.true.) !read the signature
+    allocate(parse_ip%multipoles%monomer_types(ti)%signature(n_atoms))
+    allocate(parse_ip%multipoles%monomer_types(ti)%masses(n_atoms))
+
+    do i=1,n_atoms
+      parse_ip%multipoles%monomer_types(ti)%signature(i) = string_to_int(signature_fields(i)) ! pass it to the monomer type
+    end do
+
+    call QUIP_FoX_get_value(attributes, "monomer_cutoff", value, status)
+    if (size(parse_ip%multipoles%monomer_types(ti)%signature) > 1) then
+      if (status /= 0 ) then
+        call system_abort ("IPModel_Coulomb_read_params_xml cannot find monomer_cutoff")
+      else
+        read (value, *) parse_ip%multipoles%monomer_types(ti)%monomer_cutoff
+      end if
+    else
+        parse_ip%multipoles%monomer_types(ti)%monomer_cutoff = 0.01_dp
+    end if
+
+    call QUIP_FoX_get_value(attributes, "n_sites", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find number of sites")
+    allocate(parse_ip%multipoles%monomer_types(ti)%site_types(string_to_int(value)))
+
+    call QUIP_FoX_get_value(attributes, "moments_method", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find moments_method")
+    read (value, *) moments_method_str
+    if (trim(moments_method_str) /= "") then
+        select case(lower_case(trim(moments_method_str)))
+  	 case("fixed")
+           parse_ip%multipoles%monomer_types(ti)%moments_method = Multipole_Moments_Method_Fixed
+  	 case("gap")
+           parse_ip%multipoles%monomer_types(ti)%moments_method = Multipole_Moments_Method_GAP
+  	 case("partridge_schwenke")
+           parse_ip%multipoles%monomer_types(ti)%moments_method = Multipole_Moments_Method_Partridge_Schwenke
+      case default
+         call system_abort ("IPModel_Coulomb_read_params_xml: moments_method "//trim(value)//" unknown")
+        end select
+    end if
+
+    call QUIP_FoX_get_value(attributes, "step", value, status)
+    if (status /= 0) value = '1D-08'  
+    read (value, *) parse_ip%multipoles%monomer_types(ti)%step
+
+  elseif (parse_in_ip .and. name == 'per_site_data') then
+
+    call QUIP_FoX_get_value(attributes, "monomer", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find which monomer this site belongs to, specify with monomer='n' n=0,1,2...")
+    read (value, *) ti
+    if (ti < 1) call system_abort("IPModel_Coulomb_read_params_xml got monomer type="//ti//" < 1")
+    if (.not. allocated(parse_ip%multipoles%monomer_types(ti)%signature)) call system_abort("IPModel_Coulomb_read_params_xml, site specified but monomer not initialised")
+
+    call QUIP_FoX_get_value(attributes, "site", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find site number (e.g. site='1') ")
+
+    read (value, *) tj
+
+    if (tj < 1) call system_abort("IPModel_Coulomb_read_params_xml got monomer type="//tj//" < 1")
+    if (tj > size(parse_ip%multipoles%monomer_types(ti)%site_types)) call system_abort("IPModel_Coulomb_read_params_xml got site type="//tj//" > n_sites="//size(parse_ip%multipoles%monomer_types(ti)%sites))
+    call QUIP_FoX_get_value(attributes, "charge", value, status)
+    if (status == 0) then
+      read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge    
+      parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = 1
+    else
+      parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge = 0.0_dp
+    end if
+
+    call QUIP_FoX_get_value(attributes, "pos_type", value, status)
+    if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find site pos_type ")    
+    read (value, *) pos_type_str
+
+    if (trim(pos_type_str) /= "") then
+        select case(lower_case(trim(pos_type_str)))
+  	 case("atom")
+           parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Atomic
+  	 case("com")
+           parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Centre_of_Mass
+         case default
+           call system_abort ("IPModel_Coulomb_read_params_xml: pos_type "//trim(value)//" unknown")         
+        end select
+    end if
+
+    call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
+    if (status /= 0) value='0'    
+    read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%atomic_number
+
   endif
 
 end subroutine IPModel_startElement_handler
