@@ -111,7 +111,7 @@ module Potential_Precon_Minim_module
     call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
     
     call calc_connect(am%minim_at,did_rebuild=did_rebuild)
-    if (did_rebuild) then    
+    if (did_rebuild .eqv. .true.) then    
       call print("Connectivity rebuilt by preconditioner",PRINT_NERD)
       am%connectivity_rebuilt = .true.
     end if
@@ -390,9 +390,9 @@ module Potential_Precon_Minim_module
       call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
     end if
   
-    if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
-      call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
-    end if
+!    if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
+!      call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
+!    end if
   
     if ((present(precon_cutoff) .eqv. .false.) .and. (trim(my_precon_id) /= 'ID')) then
       call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
