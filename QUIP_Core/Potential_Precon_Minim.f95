@@ -111,8 +111,14 @@ module Potential_Precon_Minim_module
     call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
     
     call calc_connect(am%minim_at,did_rebuild=did_rebuild)
+    if (did_rebuild) then    
+      call print("Connectivity rebuilt by preconditioner",PRINT_NERD)
+      am%connectivity_rebuilt = .true.
+    end if
 
-    if (did_rebuild .eqv. .false. .and. this%precon_id == "C1") then
+    !Bail out if the preconditioner does not need updating
+    if (am%connectivity_rebuilt .eqv. .false. .and. this%precon_id == "C1") then
+      call print("Saved a recompute",PRINT_NERD)
       return
     end if
     
@@ -157,7 +163,7 @@ module Potential_Precon_Minim_module
      ! call exit()
       
       if(thisneighcountlocal > this%nneigh) then
-        call print("Not enough memory was allocated for preconditioner, increase value of nneigh, undefined behaviour (probably runtime error) follows")
+        call print("Not enough memory was allocated for preconditioner, increase value of nneigh, undefined behaviour (probably runtime error) follows",PRINT_ALWAYS)
       end if
 
       this%preconindices(1,I) = I
@@ -247,7 +253,8 @@ module Potential_Precon_Minim_module
       this%preconcoeffs(1,I,1) = 1.0
     end do 
     end if
-
+    
+    am%connectivity_rebuilt = .false.
     !call exit()
 
     call system_timer('build_precon')
@@ -940,6 +947,8 @@ module Potential_Precon_Minim_module
     real(dp) :: virial(3,3),  deform_grad_inv(3,3)
     integer :: i
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    logical :: did_rebuild
+    
     call system_timer("energy_func")
 
     if (.not. present(am_data)) call system_abort("potential_minimise energy_func must have am_data")
@@ -962,8 +971,13 @@ module Potential_Precon_Minim_module
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
-    call calc_connect(am%minim_at)
+    call calc_connect(am%minim_at,did_rebuild=did_rebuild)
     am%last_connect_x = x
+
+    if (did_rebuild .eqv. .true.) then
+      call print("Connectivity rebuilt in objective function",PRINT_NERD)
+      am%connectivity_rebuilt = .true.
+    end if
  
     if (current_verbosity() >= PRINT_NERD) then
        call print("energy_func using am%minim_at", PRINT_NERD)

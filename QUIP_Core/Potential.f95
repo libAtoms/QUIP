@@ -377,6 +377,9 @@ module Potential_module
      type(Potential), pointer :: minim_pot => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
+    
+    logical :: connectivity_rebuilt = .false.
+
   end type Potential_minimise
 
   type(Potential), pointer :: parse_pot
