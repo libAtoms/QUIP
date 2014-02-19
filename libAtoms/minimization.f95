@@ -4798,6 +4798,8 @@ end function func_wrapper
     real(dp),parameter :: betnstop = 10.0_dp**(-10)
     real(dp),parameter :: alpdstop = 10.0_dp**(-14)
     real(dp),parameter :: alpdsubbstop = 10.0_dp**(-1)
+   
+    call system_timer("apply_precon")
     
     do_force_k = .false.
     if(present(force_k)) then
@@ -4909,6 +4911,7 @@ end function func_wrapper
     end do
     
     !call print(k)
+    call system_timer("apply_precon")
 
   end function apply_precon
   
