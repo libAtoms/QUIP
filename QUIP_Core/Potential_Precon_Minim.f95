@@ -122,19 +122,9 @@ module Potential_Precon_Minim_module
       return
     end if
     
-    if(this%precon_id == "LJ") then 
-      conconstant = 1.0_dp/am%minim_at%N
-      !conconstant =this%energy_scale*1.0e-6
-      !conconstant = 1.0_dp
-    elseif (this%precon_id == "C1") then
-      conconstant = 1.0_dp/am%minim_at%N
-    else
-      conconstant = 1.0_dp/am%minim_at%N
-    end if
-    !call print(am%external_pressure) 
-    !call print(this%precon_id) 
-    !call print(this%cutoff) 
-   
+    conconstant = 1.0_dp/am%minim_at%N
+    conconstant = 1.0_dp
+    
     this%preconrowlengths = 0 
     this%preconindices = 0
     this%preconcoeffs = 0.0
@@ -147,13 +137,14 @@ module Potential_Precon_Minim_module
       if(this%has_fixed) then
         if (am%minim_at%move_mask(I) == 0) then
           this%preconcoeffs(1,I,1) = 1.0
+          this%preconindices(1,I) = I
+          this%preconrowlengths(I) = 1
           cycle
         end if
       end if
       
       thisneighcount = n_neighbours(am%minim_at,I)
       thisneighcountlocal = n_neighbours(am%minim_at,I,max_dist=this%cutoff)
-      this%preconrowlengths(I) = n_neighbours(am%minim_at,I,max_dist=this%cutoff) + 1
       !call print(thisneighcount)
        
      ! call print(thisneighcount // ' ' // thisneighcountlocal)
@@ -172,7 +163,7 @@ module Potential_Precon_Minim_module
         this%preconcoeffs(1,I,1) = conconstant
       end if
 
-      nearneighcount = 2
+      nearneighcount = 1
       do J = 1,thisneighcount
 
         thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,max_dist=this%cutoff,index=thisind2) 
@@ -181,71 +172,86 @@ module Potential_Precon_Minim_module
           !call print(  I  // ' '// J // ' '// thisneighcount// ' ' // thisind // ' ' // thisdist)
           !call print(  I  //  ' ' // thisind // ' ' //thisind2 // ' ' // thisdist)
           
-          this%preconindices(nearneighcount,I) = thisind
 
           !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs0.dat')
-          if (this%precon_id == "LJ") then
-            thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
-            thiscoeff = min(thiscoeff,this%energy_scale)
-            this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
-            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
-          else if (this%precon_id == "C1") then
-            this%preconcoeffs(nearneighcount,I,1) = -1.0
-            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + 1.0
-          elseif (this%precon_id == "LJdense") then
-           
-            ! Coeff 1 
-            thiscoeff = this%energy_scale * (  (thisdiff(1)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
-            this%preconcoeffs(nearneighcount,I,1) = thiscoeff
-            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) - thiscoeff 
+          if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
+              
+            if (this%precon_id == "LJ") then
+              thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
+              thiscoeff = min(thiscoeff,this%energy_scale)
+            else if (this%precon_id == "C1") then
+              thiscoeff = 1.0_dp
+            end if
           
-            ! Coeff 2
-            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(2))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
-            this%preconcoeffs(nearneighcount,I,2) = thiscoeff
-            this%preconcoeffs(1,I,2) = this%preconcoeffs(1,I,2) - thiscoeff 
-            
-            ! Coeff 3
-            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
-            this%preconcoeffs(nearneighcount,I,3) = thiscoeff
-            this%preconcoeffs(1,I,3) = this%preconcoeffs(1,I,3) - thiscoeff 
-            
-            ! Coeff 4
-            thiscoeff = this%energy_scale * (  (thisdiff(2)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
-            this%preconcoeffs(nearneighcount,I,4) = thiscoeff
-            this%preconcoeffs(1,I,4) = this%preconcoeffs(1,I,4) - thiscoeff 
-            
-            ! Coeff 5
-            thiscoeff = this%energy_scale * (  (thisdiff(2)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
-            this%preconcoeffs(nearneighcount,I,5) = thiscoeff
-            this%preconcoeffs(1,I,5) = this%preconcoeffs(1,I,5) - thiscoeff 
- 
-            ! Coeff 6
-            thiscoeff = this%energy_scale * (  (thisdiff(3)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
-            this%preconcoeffs(nearneighcount,I,6) = thiscoeff
-            this%preconcoeffs(1,I,6) = this%preconcoeffs(1,I,6) - thiscoeff 
+            if(this%has_fixed) then
+              if (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I) then
+                  
+                nearneighcount = nearneighcount+1
+                this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
+                this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
+                this%preconindices(nearneighcount,I) = thisind
 
-            !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs1.dat')
-            !call writevec(reshape(this%preconcoeffs(nearneighcount,I,1:6),(/6/)),'coeffs2.dat')
-            !call writevec(thisdiff,'diff.dat')
-            !call exit()
-
+              end if
+            end if
+              
+            !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
+            !this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
+         
+            !nearneighcount = nearneighcount+1
+!          elseif (this%precon_id == "LJdense") then
+!           
+!            ! Coeff 1 
+!            thiscoeff = this%energy_scale * (  (thisdiff(1)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!            this%preconcoeffs(nearneighcount,I,1) = thiscoeff
+!            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) - thiscoeff 
+!          
+!            ! Coeff 2
+!            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(2))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!            this%preconcoeffs(nearneighcount,I,2) = thiscoeff
+!            this%preconcoeffs(1,I,2) = this%preconcoeffs(1,I,2) - thiscoeff 
+!            
+!            ! Coeff 3
+!            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!            this%preconcoeffs(nearneighcount,I,3) = thiscoeff
+!            this%preconcoeffs(1,I,3) = this%preconcoeffs(1,I,3) - thiscoeff 
+!            
+!            ! Coeff 4
+!            thiscoeff = this%energy_scale * (  (thisdiff(2)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!            this%preconcoeffs(nearneighcount,I,4) = thiscoeff
+!            this%preconcoeffs(1,I,4) = this%preconcoeffs(1,I,4) - thiscoeff 
+!            
+!            ! Coeff 5
+!            thiscoeff = this%energy_scale * (  (thisdiff(2)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!            this%preconcoeffs(nearneighcount,I,5) = thiscoeff
+!            this%preconcoeffs(1,I,5) = this%preconcoeffs(1,I,5) - thiscoeff 
+! 
+!            ! Coeff 6
+!            thiscoeff = this%energy_scale * (  (thisdiff(3)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!            this%preconcoeffs(nearneighcount,I,6) = thiscoeff
+!            this%preconcoeffs(1,I,6) = this%preconcoeffs(1,I,6) - thiscoeff 
+!
+!            !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs1.dat')
+!            !call writevec(reshape(this%preconcoeffs(nearneighcount,I,1:6),(/6/)),'coeffs2.dat')
+!            !call writevec(thisdiff,'diff.dat')
+!            !call exit()
+!
           end if
 
-          nearneighcount = nearneighcount+1
 
         end if
       end do
 
 
+      this%preconrowlengths(I) = nearneighcount 
       !end if
     end do
     else
