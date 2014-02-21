@@ -73,6 +73,7 @@ module Potential_simple_module
 #endif
   use FilePot_module
   use CallbackPot_module
+  use SocketPot_module
 
   implicit none
   private
@@ -90,6 +91,7 @@ module Potential_simple_module
      type(IP_type), pointer     :: ip => null()
      type(FilePot_type), pointer     :: filepot => null()
      type(CallbackPot_type), pointer     :: callbackpot => null()
+     type(SocketPot_type), pointer :: socketpot => null()
      logical :: is_wrapper
      logical :: little_clusters
      logical :: force_using_fd
@@ -199,7 +201,7 @@ contains
     type(MPI_context), intent(in), optional :: mpi_obj
     integer, intent(out), optional :: error
 
-    logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot
+    logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot, is_socketpot
     type(Dictionary) :: params
 
     INIT_ERROR(error)
@@ -212,6 +214,7 @@ contains
     call param_register(params, 'FilePot', 'false', is_FilePot, help_string="If true, a potential that interacts with another executable by reading/writing files")
     call param_register(params, 'wrapper', 'false', is_wrapper, help_string="If true, a hardcoded wrapper function")
     call param_register(params, 'CallbackPot', 'false', is_CallbackPot, help_string="If true, a callback potential (calls arbitrary passed by user)")
+    call param_register(params, 'SocketPot', 'false', is_SocketPot, help_string="If true, a socket potential that communicates via TCP/IP sockets")
     call param_register(params, 'little_clusters', 'false', this%little_clusters, help_string="If true, uses little cluster, calculate forces only")
     call param_register(params, 'force_using_fd', 'F', this%force_using_fd, &
       help_string="If true, and if 'force' is also present in the calc argument list, calculate forces using finite difference.")
@@ -224,7 +227,7 @@ contains
     endif
     call finalise(params)
 
-    if (count( (/is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot /) ) /= 1) then
+    if (count( (/is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot, is_socketpot /) ) /= 1) then
       call system_abort("Potential_Simple_Initialise_str found too few or too many Potential_Simple types args_str='"//trim(args_str)//"'")
     endif
 
@@ -274,6 +277,14 @@ contains
           call Initialise(this%callbackpot, args_str, mpi=mpi_obj, error=error)
        end if
        PASS_ERROR(error)
+    else if (is_SocketPot) then
+       allocate(this%SocketPot)
+       if (this%little_clusters) then
+          call Initialise(this%socketpot, args_str, error=error)
+       else
+          call Initialise(this%socketpot, args_str, mpi=mpi_obj, error=error)
+       end if
+       PASS_ERROR(error)
     else if(is_wrapper) then
        this%is_wrapper = .true.
     endif
@@ -302,6 +313,9 @@ contains
     elseif(associated(this%callbackpot)) then
        call Finalise(this%callbackpot)
        deallocate(this%callbackpot)
+    elseif(associated(this%socketpot)) then
+       call Finalise(this%socketpot)
+       deallocate(this%socketpot)
     end if
     this%is_wrapper = .false.
   end subroutine Potential_Simple_Finalise
@@ -320,6 +334,8 @@ contains
        Potential_Simple_cutoff = cutoff(this%filepot)
     elseif(associated(this%callbackpot)) then
        Potential_Simple_cutoff = cutoff(this%callbackpot)
+    elseif(associated(this%socketpot)) then
+       Potential_Simple_cutoff = cutoff(this%socketpot)
     else
        Potential_Simple_cutoff = 0.0_dp
     end if
@@ -1046,6 +1062,87 @@ contains
                 end if
              endif
 
+
+          elseif(associated(this%socketpot)) then
+
+             if (do_calc_local_virial) then
+                if (do_calc_virial) then
+                   if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, forces=at_force_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, forces=at_force_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, forces=at_force_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, virial=virial, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   end if
+                else
+                   if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
+                   end if                
+                end if
+             else ! no local virials
+                if (do_calc_virial) then
+                   if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, virial=virial, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, forces=at_force_ptr, virial=virial, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, virial=virial, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, forces=at_force_ptr, virial=virial, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, virial=virial, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, forces=at_force_ptr, virial=virial, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, virial=virial, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, virial=virial, args_str=args_str, error=error)
+                   end if
+                else
+                   if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, forces=at_force_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, args_str=args_str, error=error)
+                   else if (.not. do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. .not. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, forces=at_force_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. .not. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, args_str=args_str, error=error)
+                   else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
+                      call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
+                   end if                
+                end if
+             endif
+
           elseif(this%is_wrapper) then
              !
              ! put here hardcoded energy and force functions
@@ -1196,6 +1293,8 @@ contains
        call Print(this%filepot, file=file)
     elseif(associated(this%callbackpot)) then
        call Print(this%callbackpot, file=file)
+    elseif(associated(this%socketpot)) then
+       call Print(this%socketpot, file=file)
     elseif(this%is_wrapper) then
        call print("Potential_Simple: wrapper Potential_Simple")
     else
@@ -1251,6 +1350,8 @@ contains
     elseif(associated(this%filepot)) then
        return
     elseif(associated(this%callbackpot)) then
+       return
+    elseif(associated(this%socketpot)) then
        return
     elseif(this%is_wrapper) then
        return

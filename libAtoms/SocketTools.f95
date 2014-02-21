@@ -235,11 +235,12 @@ contains
   end subroutine socket_recv_reftraj
 
 
-  subroutine socket_send_xyz(ip, port, client_id, at, error)
+  subroutine socket_send_xyz(ip, port, client_id, at, error, properties)
     character(*), intent(in) :: ip
     integer, intent(in) :: port, client_id
     type(Atoms), intent(inout) :: at
     integer, optional, intent(out) :: error
+    character(len=*), intent(in), optional :: properties
 
     character(len_trim(ip)+1) :: c_ip
     integer(kind=C_INT) :: c_port, c_client_id, data_len, status
@@ -253,7 +254,7 @@ contains
     c_port = port
     c_client_id = client_id
 
-    call write(at, estr=estr) ! write Atoms to extendable str
+    call write(at, estr=estr, properties=properties) ! write Atoms to extendable str
     ! convert estr to C string
     data_len = estr%len
     allocate(data(data_len))
