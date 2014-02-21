@@ -43,7 +43,7 @@ program socktest2
      call potential_filename_initialise(mmpot, 'IP SW', 'params.xml')
      call print(mmpot)
 
-     call initialise(sockpot, 'SocketPot server_ip="'//trim(ip)//'" server_port='//port//' client_id='//client_id//' property_list=species:pos:hybrid_mark:hybrid_mark_1:hybrid_mark_2:hybrid_mark_3:qm_medoids:qm_cluster')
+     call initialise(sockpot, 'SocketPot server_ip="'//trim(ip)//'" server_port='//port//' client_id='//client_id//' property_list=species:pos:hybrid_mark:hybrid_mark_1:hybrid_mark_2:hybrid_mark_3:qm_medoids:qm_cluster:index')
      call print(sockpot)
 
      call initialise(fmpot, 'ForceMixing '//trim(cluster_args)//' qm_args_str={'//trim(cluster_args)//'}', mmpot, sockpot)
