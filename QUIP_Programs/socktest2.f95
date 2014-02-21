@@ -18,12 +18,12 @@ program socktest2
 
   cluster_args = 'cluster_calc_connect=F min_images_only hysteretic_connect_cluster_radius=10.0 hysteretic_buffer cluster_periodic_z hysteretic_buffer_inner_radius=6.0 single_cluster=T hysteretic_connect=F cluster_hopping=F randomise_buffer=F hysteretic_connect_outer_factor=1.5 hysteretic_buffer_outer_radius=8.0 cluster_hopping_nneighb_only=F hysteretic_connect_inner_factor=1.3'
 
-  call system_initialise(PRINT_VERBOSE, enable_timing=.true.)
+  call system_initialise(PRINT_NORMAL, enable_timing=.true.)
 
   call initialise(mpi)
 
   if (mpi%my_proc == 0) then
-  
+     ! usage: socktest2 <ip> <port> <client_id> <label>
      call get_cmd_arg(1, ip)
      call get_cmd_arg(2, tmp)
      port = string_to_int(tmp)
@@ -62,7 +62,9 @@ program socktest2
         call calc(fmpot, ds%atoms, args_str='force')
         call system_timer('FM_calc')
 
-        call write(ds%atoms, 'traj.xyz', append=.true.)
+        if (mod(n, 10) == 0) then
+           call write(ds%atoms, 'traj.xyz', append=.true.)
+        end if
 
         ! advance the dynamics using QM/MM forces
         call assign_property_pointer(ds%atoms, 'force', force)
