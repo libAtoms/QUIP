@@ -196,130 +196,132 @@ subroutine SocketPot_Calc(this, at, energy, local_e, forces, virial, local_viria
   call param_register(cli, "run_suffix", '', run_suffix, help_string="suffix to apply to property names in this%property_list_prefixes")
 
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
-    RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
+     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif
   call finalise(cli)
 
-  calc_energy = .false.
-  calc_local_e = .false.
-  calc_force = .false.
-  calc_virial = .false.
-  calc_local_virial = .false.
-  if (present(energy)) then
-     energy = 0.0_dp
-     calc_energy = .true.
-  end if
-  if (present(local_e)) then
-     local_e = 0.0_dp
-     calc_local_e = .true.
-  end if
-  if (present(forces)) then
-     forces = 0.0_dp
-     calc_force = .true.
-  end if
-  if (present(virial)) then
-     virial = 0.0_dp
-     calc_virial = .true.
-  end if
-  if (present(local_virial)) then
-     local_virial = 0.0_dp
-     calc_local_virial = .true.
-  end if
-
-  at_copy = at ! work with a copy of original Atoms
-  call set_value(at_copy%params, 'calc_energy', calc_energy)
-  call set_value(at_copy%params, 'calc_local_e', calc_local_e)
-  call set_value(at_copy%params, 'calc_virial', calc_virial)
-  call set_value(at_copy%params, 'calc_force', calc_force)
-  call set_value(at_copy%params, 'calc_local_virial', calc_local_virial)
-  call set_value(at_copy%params, 'label', this%label)
-  if (present(args_str)) then
-     call set_value(at_copy%params, 'calc_args_str', args_str)
-  end if
-
-  property_list = this%property_list
-  if (len_trim(this%property_list_prefixes) /= 0) then
-     call parse_string(this%property_list_prefixes, ':', tmp_properties_array, n_properties, error=error)
-     do i=1, n_properties
-        property_list = trim(property_list)//':'//trim(tmp_properties_array(i))//run_suffix
-     end do
-  end if
-
-  call system_timer('socket_send')
-  call socket_send_xyz(this%ip, this%port, this%client_id, at_copy, properties=property_list)
-  call system_timer('socket_send')
-
-  this%label = this%label + 1
-
-  call system_timer('socket_recv')
-  call socket_recv_xyz(this%ip, this%port, this%client_id, this%buffsize, at_copy)
-  call system_timer('socket_recv')
-
-  if (.not. get_value(at_copy%params, 'label', label)) then
-     RAISE_ERROR('SocketPot_Calc: missing label param in received atoms', error)
-  end if
-  if (label /= this%label) then
-     RAISE_ERROR('SocketPot_Calc: mismatch between labels expected ('//this%label//') and received ('//label//').', error)
-  end if
-
-  if (present(energy)) then
-     if (.not. get_value(at_copy%params, 'energy', energy)) then
-          call print('WARNING SocketPot_calc: "energy" requested but not returned by callback')
-     endif
-  end if
-
-  if (present(local_e)) then
-     if (.not. assign_pointer(at_copy, 'local_e', local_e_ptr)) then
-        call print('WARNING SocketPot_calc: "local_e" requested but not returned by callback')
-     else
-        local_e(:) = local_e_ptr
+  if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
+     calc_energy = .false.
+     calc_local_e = .false.
+     calc_force = .false.
+     calc_virial = .false.
+     calc_local_virial = .false.
+     if (present(energy)) then
+        energy = 0.0_dp
+        calc_energy = .true.
      end if
-  end if
-
-  if (present(forces)) then
-     if (.not. assign_pointer(at_copy, 'force', force_ptr)) then
-        call print('WARNING SocketPot_calc: "forces" requested but not returned by callback')
-     else
-        forces(:,:) = force_ptr
+     if (present(local_e)) then
+        local_e = 0.0_dp
+        calc_local_e = .true.
      end if
-  end if
-
-  if (present(virial)) then
-     if (.not. get_value(at_copy%params, 'virial', virial)) then
-          call print('WARNING SocketPot_calc: "virial" requested but not returned by callback')
+     if (present(forces)) then
+        forces = 0.0_dp
+        calc_force = .true.
      end if
-  end if
-
-  if (present(local_virial)) then
-     if (.not. assign_pointer(at_copy, 'local_virial', local_virial_ptr)) then
-        call print('WARNING SocketPot_calc: "local_virial" requested but not returned by callback')
-     else
-        local_virial(:,:) = local_virial_ptr
+     if (present(virial)) then
+        virial = 0.0_dp
+        calc_virial = .true.
      end if
-  end if
+     if (present(local_virial)) then
+        local_virial = 0.0_dp
+        calc_local_virial = .true.
+     end if
 
-  if (len_trim(read_extra_property_list) > 0) then
-     call copy_properties(at, at_copy, trim(read_extra_property_list))
-  endif
-  
-  if (len_trim(read_extra_param_list) > 0) then
-     call parse_string(read_extra_param_list, ':', tmp_params_array, n_params, error=error)
-     PASS_ERROR(error)
+     at_copy = at ! work with a copy of original Atoms
+     call set_value(at_copy%params, 'calc_energy', calc_energy)
+     call set_value(at_copy%params, 'calc_local_e', calc_local_e)
+     call set_value(at_copy%params, 'calc_virial', calc_virial)
+     call set_value(at_copy%params, 'calc_force', calc_force)
+     call set_value(at_copy%params, 'calc_local_virial', calc_local_virial)
+     call set_value(at_copy%params, 'label', this%label)
+     if (present(args_str)) then
+        call set_value(at_copy%params, 'calc_args_str', args_str)
+     end if
 
-     n_copy = 0
-     do i=1,n_params
-        if (has_key(at_copy%params, trim(tmp_params_array(i)))) then
-           n_copy = n_copy + 1
-           copy_keys(n_copy) = tmp_params_array(i)
-           call print("SocketPot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
-        else if  (has_key(at_copy%params, trim(tmp_params_array(i))//trim(run_suffix))) then
-           n_copy = n_copy + 1
-           copy_keys(n_copy) =  trim(tmp_params_array(i))//trim(run_suffix)
-           call print("SocketPot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+     property_list = this%property_list
+     if (len_trim(this%property_list_prefixes) /= 0) then
+        call parse_string(this%property_list_prefixes, ':', tmp_properties_array, n_properties, error=error)
+        do i=1, n_properties
+           property_list = trim(property_list)//':'//trim(tmp_properties_array(i))//run_suffix
+        end do
+     end if
+
+     call system_timer('socket_send')
+     call socket_send_xyz(this%ip, this%port, this%client_id, at_copy, properties=property_list)
+     call system_timer('socket_send')
+
+     this%label = this%label + 1
+
+     call system_timer('socket_recv')
+     call socket_recv_xyz(this%ip, this%port, this%client_id, this%buffsize, at_copy)
+     call system_timer('socket_recv')
+
+     if (.not. get_value(at_copy%params, 'label', label)) then
+        RAISE_ERROR('SocketPot_Calc: missing label param in received atoms', error)
+     end if
+     if (label /= this%label) then
+        RAISE_ERROR('SocketPot_Calc: mismatch between labels expected ('//this%label//') and received ('//label//').', error)
+     end if
+
+     if (present(energy)) then
+        if (.not. get_value(at_copy%params, 'energy', energy)) then
+           call print('WARNING SocketPot_calc: "energy" requested but not returned by callback')
+        endif
+     end if
+
+     if (present(local_e)) then
+        if (.not. assign_pointer(at_copy, 'local_e', local_e_ptr)) then
+           call print('WARNING SocketPot_calc: "local_e" requested but not returned by callback')
+        else
+           local_e(:) = local_e_ptr
         end if
-     end do
-     
-     call subset(at_copy%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
+     end if
+
+     if (present(forces)) then
+        if (.not. assign_pointer(at_copy, 'force', force_ptr)) then
+           call print('WARNING SocketPot_calc: "forces" requested but not returned by callback')
+        else
+           forces(:,:) = force_ptr
+        end if
+     end if
+
+     if (present(virial)) then
+        if (.not. get_value(at_copy%params, 'virial', virial)) then
+           call print('WARNING SocketPot_calc: "virial" requested but not returned by callback')
+        end if
+     end if
+
+     if (present(local_virial)) then
+        if (.not. assign_pointer(at_copy, 'local_virial', local_virial_ptr)) then
+           call print('WARNING SocketPot_calc: "local_virial" requested but not returned by callback')
+        else
+           local_virial(:,:) = local_virial_ptr
+        end if
+     end if
+
+     if (len_trim(read_extra_property_list) > 0) then
+        call copy_properties(at, at_copy, trim(read_extra_property_list))
+     endif
+
+     if (len_trim(read_extra_param_list) > 0) then
+        call parse_string(read_extra_param_list, ':', tmp_params_array, n_params, error=error)
+        PASS_ERROR(error)
+
+        n_copy = 0
+        do i=1,n_params
+           if (has_key(at_copy%params, trim(tmp_params_array(i)))) then
+              n_copy = n_copy + 1
+              copy_keys(n_copy) = tmp_params_array(i)
+              call print("SocketPot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+           else if  (has_key(at_copy%params, trim(tmp_params_array(i))//trim(run_suffix))) then
+              n_copy = n_copy + 1
+              copy_keys(n_copy) =  trim(tmp_params_array(i))//trim(run_suffix)
+              call print("SocketPot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+           end if
+        end do
+
+        call subset(at_copy%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
+     end if
   end if
 
   if (this%mpi%active) then
