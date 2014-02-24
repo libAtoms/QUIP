@@ -292,7 +292,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    else
       charge_property_name = 'charge'
    endif
-
+! print hello
    intramolecular_factor = 0
    if (intermolecular_only) then ! figure out whether pre_calc needs to subtract(-1), or ignore(0) interactions between sites on same molecule
      intramolecular_factor = -1 
@@ -481,6 +481,7 @@ subroutine IPModel_Coulomb_Print(this, file)
     do ti=1,this%multipoles%n_monomer_types
       call print("IPModel_Coulomb : monomer " // ti // " signature " // this%multipoles%monomer_types(ti)%signature, file=file)
       do tj=1,size(this%multipoles%monomer_types(ti)%site_types)
+        call print("IPModel_Coulomb :   site " // tj // " d " // this%multipoles%monomer_types(ti)%site_types(tj)%d, file=file)
         call print("IPModel_Coulomb :   site " // tj //" charge method : "//this%multipoles%monomer_types(ti)%site_types(tj)%charge_method, file=file)
         call print("IPModel_Coulomb :   site " // tj //" dipole method : "//this%multipoles%monomer_types(ti)%site_types(tj)%dipole_method, file=file)
         call print("IPModel_Coulomb :   site " // tj // " pos_type " // this%multipoles%monomer_types(ti)%site_types(tj)%pos_type, file=file)

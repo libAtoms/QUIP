@@ -610,11 +610,6 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
     if (do_e) e = 0.0_dp
     if (do_f) f = 0.0_dp 
 
-call print("               ") 
-call print("   ITERATION   ") 
-call print("   MOMENTS CONVERGED ? : "//moments_converged) 
-
-!call print(" polarisable map "//polarisable_map)
     if (do_field) then
       do i_dummy=1,at%N
         map =  multipoles%dummy_map(:,i_dummy)
@@ -705,9 +700,7 @@ call print("   MOMENTS CONVERGED ? : "//moments_converged)
           map = multipoles%dummy_map(:,polarisable_map(i_pol))
           i_pos= 3*i_pol -2
           old_dip = induced_dipoles(i_pos:i_pos+2)
-call print("permanent dipole : "//perm_dipoles(i_pos:i_pos+2))
-call print("E field          : "//multipoles%monomer_types(map(1))%sites(map(3),map(2))%e_field)
-call print("induced dipole : "//induced_dipoles(i_pos:i_pos+2))
+
           induced_dipoles(i_pos:i_pos+2) = multipoles%monomer_types(map(1))%sites(map(3),map(2))%e_field * alphas(i_pol)
           multipoles%monomer_types(map(1))%sites(map(3),map(2))%dipole = perm_dipoles(i_pos:i_pos+2) + induced_dipoles(i_pos:i_pos+2)
           do k=1,3
@@ -715,30 +708,23 @@ call print("induced dipole : "//induced_dipoles(i_pos:i_pos+2))
           end do
         end do  
         delta_dip = delta_dip / 3*N_pol
-call print("rms change in dipole moments : "//delta_dip)
+
         if (sqrt(delta_dip) < multipoles%dipole_tolerance) then
           moments_converged = .True.     
         end if
       else if (multipoles%polarisation == Polarisation_Method_GMRES .or. multipoles%polarisation == Polarisation_Method_QR) then
         call initialise(la_pol_matrix,pol_matrix)
-!call print(pol_matrix)
 
         ! solve system with QR or GMRES
         if ( multipoles%polarisation == Polarisation_Method_QR) then
           call LA_Matrix_QR_Factorise(la_pol_matrix,error=error)
           call LA_Matrix_QR_Solve_Vector(la_pol_matrix,perm_field,induced_dipoles,error=error)
         end if
-!call print("perm_dipoles      "//perm_dipoles)
-!call print("perm_field        "//perm_field)
-!call print("induced dipoles   "//induced_dipoles)
-!perm_field = matmul(pol_matrix,induced_dipoles)
-!call print("from soln         "//perm_field)
 
         do i_pol=1,N_pol
           map = multipoles%dummy_map(:,polarisable_map(i_pol))  
           i_pos= 3*i_pol -2
           multipoles%monomer_types(map(1))%sites(map(3),map(2))%dipole = multipoles%monomer_types(map(1))%sites(map(3),map(2))%dipole + induced_dipoles(i_pos:i_pos+2)
-!call print("total dipole : "//multipoles%monomer_types(map(1))%sites(map(3),map(2))%dipole)
         end do
         moments_converged = .True.
       end if
@@ -751,14 +737,12 @@ call print("rms change in dipole moments : "//delta_dip)
           e_ind = e_ind + 0.5_dp * normsq(induced_dipoles(i_pos:i_pos+2)) /alphas(i_pol) 
           !e_ind = e_ind - normsq(multipoles%monomer_types(map(1))%sites(map(3),map(2))%e_field) * 0.5_dp*alphas(i_pol) 
         end do
-  call print("induction energy : "//e_ind)
       end if
     end if
   end do
-call print("e before and after")
-call print(e)
+!  call print("induction energy : "//e_ind)
   if (do_e) e = e + e_ind 
-call print(e)
+
   if (do_f) then  ! translate site gradients into atomic forces
     do i=1,size(multipoles%monomer_types)   
       do i_mono=1,multipoles%monomer_types(i)%n_monomers

@@ -148,17 +148,19 @@ end subroutine Multipole_Site_Finalise
 recursive subroutine Multipole_Moments_Site_Site_Interaction(energy,site_one, site_two, do_energy, do_force, do_field, do_pot, &
    erf_kappa, erfc_kappa, yukawa_alpha, cutoff,smoothlength, error,test)
   real(dp), intent(out) :: energy
-  real(dp) :: e0, e_plus, step=1.0D-8, q
   type(Multipole_Interactions_Site), intent(inout) :: site_one, site_two
   logical :: do_energy, do_force, do_test, do_field, do_pot
   real(dp), optional :: erf_kappa, erfc_kappa, yukawa_alpha, cutoff, smoothlength
   logical, optional,intent(in) :: test
   integer, optional, intent(out) :: error
+
   integer :: i
+  real(dp) :: e0, e_plus, step=1.0D-8, q
   real(dp), dimension(3) :: pos, dip
   logical, dimension(2) :: has_charge, has_dipole 
 
   do_test=optional_default(.false.,test)
+
   if (do_energy)  energy=0.0_dp
 
   if (do_force) then
@@ -184,58 +186,63 @@ recursive subroutine Multipole_Moments_Site_Site_Interaction(energy,site_one, si
 
   has_dipole(1) = (site_one%d .eq. 3 .or. site_one%d .eq. 4)
   has_dipole(2) = (site_two%d .eq. 3 .or. site_two%d .eq. 4)
-call print("energy start"//energy)
+
   if (has_charge(1)) then
     if (has_charge(2)) then                      
       call Multipole_Interactions_Charge_Charge(energy,site_one, site_two,do_energy, do_force, do_field, do_pot,erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
              yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
     end if
-call print("after c-c"//energy)
     if (has_dipole(2)) then 
       call Multipole_Interactions_Charge_Dipole(energy,site_one, site_two,do_energy, do_force, do_field, do_pot,erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
              yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
     end if
   end if
-call print("after c-d"//energy)
   if (has_dipole(1)) then
     if (has_charge(2)) then 
       call Multipole_Interactions_Charge_Dipole(energy,site_two, site_one,do_energy, do_force, do_field, do_pot,erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
              yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
     end if
-call print("after d-c"//energy)
     if (has_dipole(2)) then 
       call Multipole_Interactions_Dipole_Dipole(energy,site_one, site_two,do_energy, do_force, do_field, do_pot,erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
              yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
     end if
-call print("after d-"//energy)
   end if
-  if (has_charge(1) .and. has_dipole(1)) then ! we will have double counted the field from site two
-    site_one%e_field = 0.5_dp * site_one%e_field 
+  if (do_field) then ! we will have double counted the field contributions
+    if (has_charge(1) .and. has_dipole(1)) then 
+      site_one%e_field = 0.5_dp * site_one%e_field 
+    end if
+    if (has_charge(2) .and. has_dipole(2)) then
+      site_two%e_field = 0.5_dp * site_two%e_field 
+    end if
   end if
-  if (has_charge(2) .and. has_dipole(2)) then ! we will have double counted the field from site one
-    site_two%e_field = 0.5_dp * site_two%e_field 
+  if (do_pot) then ! we will have double counted the pot contributions
+    if (has_charge(1) .and. has_dipole(1)) then 
+      site_one%potential = 0.5_dp * site_one%potential
+    end if
+    if (has_charge(2) .and. has_dipole(2)) then
+      site_two%potential = 0.5_dp * site_two%potential 
+    end if
   end if
+
 
   if (do_test) then
     call print("testing gradients of site-site interactions")
-    call print(" diff vec : "//site_two%position-site_one%position)
+!    call print(" diff vec : "//site_two%position-site_one%position)
     e0=energy
     pos=site_one%position
     do i=1,3
       site_one%position(i) = pos(i) + step
       call Multipole_Moments_Site_Site_Interaction(e_plus,site_one, site_two,.true.,.false.,.false.,.false., erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
-             yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
-      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_one%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
+             yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength,test=.false.)
+!      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_one%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
       site_one%position(i) = pos(i)
     end do
     pos=site_two%position
     do i=1,3
       site_two%position(i) = pos(i) + step
       call Multipole_Moments_Site_Site_Interaction(e_plus,site_one, site_two,.true.,.false.,.false.,.false., erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, &
-             yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
-      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
-!      call print("step size : "// step//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
-!      call print("step size : "// step//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" (e-e0) / (grad*step) : " // (e_plus-e0)/(site_two%e_grad_pos(i)*step) )
+             yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength,test=.false.)
+!      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
       site_two%position(i) = pos(i)
     end do
   end if
@@ -383,28 +390,6 @@ subroutine Multipole_Interactions_Dipole_Dipole(energy,site_one, site_two,do_ene
 end subroutine Multipole_Interactions_Dipole_Dipole
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!______DEPRECATED_____________________________________________________________________________________
-
-! propagator is the T tensor in Stone's notation which generates dipolar electric field 
-! at a position 'diff' with respect to the dipole's position.
-! the electric field is given by the matrix product : matmul(propagator,dipole)
-! diff in Angstroms, dipole in Angstroms * electron charge, field in eV / (Angstrom * electron charge)
-function dipole_propagator(diff) result (propagator)
-  real(dp), dimension(3),intent(in) :: diff
-  real(dp), dimension(3) :: r_hat
-  real(dp), dimension(3,3) :: propagator
-  real(dp) :: r
-
-  propagator = 0.0_dp
-  call add_identity(propagator)
-  r=norm(diff)
-  r_hat = diff / r
-
-  propagator = (3.0_dp)*(r_hat .outer. r_hat) - propagator
-  propagator = (HARTREE*BOHR/(r*r*r))*propagator
-
-end function dipole_propagator
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 !______________________________________________________________________________________________________
 !
@@ -478,7 +463,6 @@ function T_rank_zero(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothleng
 
   s0 = s0 + s0_damp + s0_screen
   T_rank_zero = (HARTREE*BOHR)*s0/r
-
 end function T_rank_zero
 
 function T_rank_one(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothlength,error)
@@ -539,7 +523,6 @@ function T_rank_one(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothlengt
 
   s1 = s1+s1_damp+s1_screen
   T_rank_one = -(HARTREE*BOHR)*s1/r3 * diff
-
 end function T_rank_one
 
 function T_rank_two(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothlength,error)
@@ -657,6 +640,8 @@ function T_rank_three(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothlen
   s1_screen=0.0_dp
   s2_damp=0.0_dp
   s2_screen=0.0_dp
+  s3_damp=0.0_dp
+  s3_screen=0.0_dp
 
   if (do_damp .and. do_screen) then
     s2 = -1.0_dp
@@ -708,6 +693,30 @@ function T_rank_three(diff, erf_kappa, erfc_kappa, yukawa_alpha,cutoff,smoothlen
   T_rank_three =   (HARTREE*BOHR)*T_rank_three
 
 end function T_rank_three
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!______DEPRECATED_____________________________________________________________________________________
+
+! propagator is the T tensor in Stone's notation which generates dipolar electric field 
+! at a position 'diff' with respect to the dipole's position.
+! the electric field is given by the matrix product : matmul(propagator,dipole)
+! diff in Angstroms, dipole in Angstroms * electron charge, field in eV / (Angstrom * electron charge)
+function dipole_propagator(diff) result (propagator)
+  real(dp), dimension(3),intent(in) :: diff
+  real(dp), dimension(3) :: r_hat
+  real(dp), dimension(3,3) :: propagator
+  real(dp) :: r
+
+  propagator = 0.0_dp
+  call add_identity(propagator)
+  r=norm(diff)
+  r_hat = diff / r
+
+  propagator = (3.0_dp)*(r_hat .outer. r_hat) - propagator
+  propagator = (HARTREE*BOHR/(r*r*r))*propagator
+
+end function dipole_propagator
 
 function coordination_function(r,cutoff_in,transition_width)
 
@@ -769,5 +778,7 @@ function d3coordination_function(r,cutoff_in,transition_width)
    endif
 
 endfunction d3coordination_function
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 end module multipole_interactions_module
