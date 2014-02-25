@@ -1628,7 +1628,7 @@ end function cluster_in_out_in
        cluster%species(1:3,i) = s2a(ElementName(cluster_info%int(5,i)))
     end do
     ! add properties to cluster
-    call add_property(cluster, 'index', int_part(cluster_info,1))
+    call add_property(cluster, 'index', int_part(cluster_info,1))  !FIXME should we pass overwrite=.true.?
     call add_property(cluster, 'shift', 0, n_cols=3, ptr2=cluster_shift)
     cluster_shift(:,1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
     call add_property(cluster, 'termindex', int_part(cluster_info,6))
