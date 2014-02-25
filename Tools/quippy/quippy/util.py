@@ -20,13 +20,15 @@
 
 import sys, os, xml.dom.minidom
 import glob
+import numpy as np
 from dictmixin import PuPyDictionary
 
 __all__ = ['infer_format', 'args_str', 'dict_to_args_str', 'parse_slice',
            'parse_comma_colon_list', 'loadstring',
            'quip_xml_parameters', 'is_interactive_shell',
            'parse_params', 'args_str_to_dict',
-           'most_recent_file', 'time_ordered_glob', 'most_recent_files']
+           'most_recent_file', 'time_ordered_glob', 'most_recent_files',
+           'analyse_timings', 'write_timings']
 
 def infer_format(file, format, lookup):
     """Infer the correct format to read from or write to `file`
@@ -220,7 +222,7 @@ def analyse_timings(lines):
     timer_lines = [line for line in lines if line.startswith('TIMER')]
     timings = {}
     for line in timer_lines:
-        _, label, _, _, cpu, _, _, wall, _, _, _ = line.split()
+        _, label, _, _, cpu, _, _, wall, _, _, _ = line.split()[:11]
         cpu = float(cpu)
         wall = float(wall)
         if label not in timings:
@@ -242,8 +244,6 @@ def analyse_timings(lines):
 def write_timings(out, timings, order='calls', wall_only=True, cpu_only=False, reverse=True):
     """
     Write a formatted summary of QUIP `timings` data to `out`.
-
-    
     """
 
     def sort_by_calls(item):
