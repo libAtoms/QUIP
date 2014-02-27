@@ -183,19 +183,20 @@ subroutine SocketPot_Calc(this, at, energy, local_e, forces, virial, local_viria
   integer n_params, n_copy, i, n_properties, label
   real(dp), pointer :: local_e_ptr(:), force_ptr(:,:), local_virial_ptr(:,:)
   logical :: calc_energy, calc_local_e, calc_force, calc_virial, calc_local_virial
-  character(STRING_LENGTH) :: my_args_str, tmp_params_array(100), copy_keys(100), read_extra_property_list, &
-       read_extra_param_list, run_suffix, property_list, tmp_properties_array(100)
+  character(STRING_LENGTH) :: my_args_str, tmp_params_array(100), copy_keys(100), property_list, &
+       read_extra_property_list, read_extra_param_list, run_suffix, tmp_properties_array(100)
 
   INIT_ERROR(error)
 
   my_args_str = ''
   if (present(args_str)) my_args_str = args_str
 
-  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read from filepot.out. Overrides init_args version.")
-  call param_register(cli, "read_extra_param_list", trim(this%read_extra_param_list), read_extra_param_list, help_string="extra params to read from filepot.out. Overrides init_args version.")
+  call param_register(cli, "property_list", trim(this%property_list), property_list, help_string="properties to send. Overrides init_args version.")
+  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read. Overrides init_args version.")
+  call param_register(cli, "read_extra_param_list", trim(this%read_extra_param_list), read_extra_param_list, help_string="extra params to read. Overrides init_args version.")
   call param_register(cli, "run_suffix", '', run_suffix, help_string="suffix to apply to property names in this%property_list_prefixes")
 
-  if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
+  if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='socketpot_calc args_str')) then
      RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif
   call finalise(cli)
@@ -238,7 +239,6 @@ subroutine SocketPot_Calc(this, at, energy, local_e, forces, virial, local_viria
         call set_value(at_copy%params, 'calc_args_str', args_str)
      end if
 
-     property_list = this%property_list
      if (len_trim(this%property_list_prefixes) /= 0) then
         call parse_string(this%property_list_prefixes, ':', tmp_properties_array, n_properties, error=error)
         do i=1, n_properties
