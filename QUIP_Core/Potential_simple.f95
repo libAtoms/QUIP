@@ -357,7 +357,7 @@ contains
     logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
     character(len=STRING_LENGTH) :: my_args_str, cluster_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
-    real(dp), pointer, dimension(:) :: weight_region1
+    real(dp), pointer, dimension(:) :: weight_region1, at_prop_ptr_r, cluster_prop_ptr_r
     integer, allocatable, dimension(:) :: hybrid_mark_saved
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), pointer, dimension(:,:) :: f_cluster
@@ -369,7 +369,7 @@ contains
     character(len=STRING_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial
     logical :: do_calc_force, do_calc_energy, do_calc_local_energy, do_calc_virial, do_calc_local_virial
 
-    integer, pointer :: cluster_mark_p(:)
+    integer, pointer :: cluster_mark_p(:), at_prop_ptr_i(:), cluster_prop_ptr_i(:)
     integer, pointer :: old_cluster_mark_p(:)
     character(len=STRING_LENGTH) :: run_suffix
     logical :: force_using_fd
@@ -377,9 +377,9 @@ contains
     logical :: virial_using_fd
     real(dp) :: virial_fd_delta
 
-    character(len=STRING_LENGTH) :: read_extra_param_list
+    character(len=STRING_LENGTH) :: read_extra_param_list, read_extra_property_list
     character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
-    integer :: n_copy, n_params
+    integer :: n_copy, n_params, prop_j
 
     INIT_ERROR(error)
 
@@ -426,8 +426,10 @@ contains
       help_string="If present, calculate virial and put it in field with this string as name")
     call param_register(params, 'local_virial', '', calc_local_virial, &
       help_string="If present, calculate local_virial and put it in field with this string as name")
-    call param_register(params, "read_extra_param_list", '', read_extra_param_list, help_string="if single_cluster=T and carve_cluster=T, copy extra params to copy back from cluster")
-
+    call param_register(params, "read_extra_param_list", '', read_extra_param_list, &
+         help_string="if single_cluster=T and carve_cluster=T, extra params to copy back from cluster")
+    call param_register(params, "read_extra_property_list", '', read_extra_property_list, &
+         help_string="if single_cluster=T and carve_cluster=T, extra properties to copy back from cluster")
 
     if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) then
       RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -659,6 +661,50 @@ contains
                end if
             end do
             call subset(cluster%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
+         end if
+
+         ! do the same for any extra properties to be copied back
+         if (len_trim(read_extra_property_list) > 0) then
+            call parse_string(read_extra_property_list, ':', tmp_params_array, n_params, error=error)
+            PASS_ERROR(error)
+
+            n_copy = 0
+            do i=1,n_params
+               if (has_key(cluster%properties, trim(tmp_params_array(i)))) then
+                  n_copy = n_copy + 1
+                  copy_keys(n_copy) = tmp_params_array(i)
+                  call print("Potential_simple calc() copying property key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+               else if  (has_key(cluster%properties, trim(tmp_params_array(i))//trim(run_suffix))) then
+                  n_copy = n_copy + 1
+                  copy_keys(n_copy) =  trim(tmp_params_array(i))//trim(run_suffix)
+                  call print("Potential_simple calc() copying property key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
+               end if
+            end do
+
+            do j=1, n_copy
+               prop_j = lookup_entry_i(cluster%properties, copy_keys(j))
+               if (cluster%properties%entries(prop_j)%type == T_INTEGER_A) then
+                  if (.not. has_property(at, copy_keys(j))) call add_property(at, copy_keys(j), 0)
+                  call assign_property_pointer(at, copy_keys(j), at_prop_ptr_i, error=error)
+                  PASS_ERROR(error)
+                  call assign_property_pointer(cluster, copy_keys(j), cluster_prop_ptr_i, error=error)
+                  PASS_ERROR(error)
+                  do i=1,cluster%N
+                     at_prop_ptr_i(cluster_index(i)) = cluster_prop_ptr_i(i)
+                  end do
+               else if (cluster%properties%entries(prop_j)%type == T_REAL_A) then
+                  if (.not. has_property(at, copy_keys(j))) call add_property(at, copy_keys(j), 0.0_dp)
+                  call assign_property_pointer(at, copy_keys(j), at_prop_ptr_r, error=error)
+                  PASS_ERROR(error)
+                  call assign_property_pointer(cluster, copy_keys(j), cluster_prop_ptr_r, error=error)
+                  PASS_ERROR(error)
+                  do i=1,cluster%N
+                     at_prop_ptr_r(cluster_index(i)) = cluster_prop_ptr_r(i)
+                  end do
+               else
+                  RAISE_ERROR('unsupported property type '//cluster%properties%entries(prop_j)%type, error)
+               end if
+            end do
          end if
 
 	 call finalise(cluster)
