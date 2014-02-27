@@ -1259,7 +1259,7 @@ program crack
 
               ! Print movie
               if (ds%t - last_print_time >=  params%io_print_interval) then
-
+                 call system_timer('write_movie')
                  last_print_time = ds%t
                  call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
 
@@ -1275,6 +1275,7 @@ program crack
                  else
                     call crack_print(ds%atoms, movie, params)
                  end if
+                 call system_timer('write_movie')
               end if
 
               ! Write checkpoint file
@@ -1400,7 +1401,9 @@ program crack
            write (line, '(i15,a15,f15.4,f15.4)') i, '----', f_dr, integral
         end if
         call print(line)
+        call system_timer('write_movie')
         call crack_print(ds%atoms, movie, params)
+        call system_timer('write_movie')
      end do
 
      write (line, '(a,f15.8,a)') 'Change in energy = ', energy - fd_e0, ' eV'
@@ -1448,7 +1451,9 @@ program crack
         else
            call crack_update_selection(ds%atoms, params)
         end if
+        call system_timer('write_movie')
         call crack_print(ds%atoms, movie, params)
+        call system_timer('write_movie')
      end if
 
      !****************************************************************
@@ -1504,7 +1509,9 @@ program crack
         call print_title('Applying load')
         call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
 
+        call system_timer('write_movie')
         call crack_print(ds%atoms, movie, params)
+        call system_timer('write_movie')
      end do
 
   else
