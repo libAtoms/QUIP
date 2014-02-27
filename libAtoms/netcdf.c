@@ -603,9 +603,9 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       NETCDF_CHECK(nc_get_var1_double(nc_id, i, start, (double *)data));
       break;
     case(T_CHAR):
-      memset(data, ' ', n_string);
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
-      debug("read string value <%s>\n", (char *)data);
+      memset(data+strlen(data), ' ', n_string-strlen(data)); // pad with spaces for fortran
+      //debug("read string value <%s>\n", (char *)data);
       break;
     case(T_INTEGER_A):
     case(T_LOGICAL_A):
@@ -621,7 +621,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       NETCDF_CHECK(nc_get_vara_double(nc_id, i, start, count, (double *)data));
       break;      
     case(T_CHAR_A):
-      memset(data, ' ', (*n_atom)*n_label);
+      memset(data, ' ', (*n_atom)*n_label); // FIXME may need to change padding from '\0' to ' '
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
       break;      
     default:
@@ -667,6 +667,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   fortran_t *dictionaries[2];
   int add_cell_rotated, add_cell_lattice, rotate;
   double new_lattice[3][3];
+  char fill[2] = " ";
 
   INIT_ERROR;
   dictionaries[0] = params;
@@ -920,6 +921,13 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 	debug("write_netcdf: defining variable %s type %d ndims %d dims=[%d %d %d]\n", key, vartype, ndims, dims[0], dims[1], dims[2]);
 	NETCDF_CHECK(nc_def_var(nc_id, key, vartype, ndims, dims, &var_id));
 	newvar = 1;
+
+	// Set _FillValue for char variables to ' ' rather than default of '\0'
+	if (type == T_CHAR || type == T_CHAR_A)  {
+	  NETCDF_CHECK(nc_inq_var(nc_id, var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
+	  NETCDF_CHECK(nc_put_att_text(nc_id, var_id, "_FillValue", strlen(fill), fill));
+	}
+
       } else {
 	NETCDF_CHECK(nc_inq_var(nc_id, var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
 	if (vartype != check_vartype) {
