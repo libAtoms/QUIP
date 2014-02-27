@@ -183,7 +183,7 @@ implicit none
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
   call param_register(cli_params, 'cg_n_precond', 'F', do_cg_n_precond, help_string="activate preconditioner for cg_n minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'precond_minim_method', 'preconLBFGS', precond_minim_method, help_string="preconditioner minimization method for minim_method=precon, preconLBFGS or preconCG")
-  call param_register(cli_params, 'precond_method', 'C1', precond_method, help_string="preconditioner method for preconditioner, right now LJ or C1")
+  call param_register(cli_params, 'precond_method', 'ID', precond_method, help_string="preconditioner method for preconditioner, right now ID or LJ or C1")
   call param_register(cli_params, 'precond_e_method', 'basic', precond_e_method, help_string="preconditioner method for summing energy: basic, kahan, doublekahan (kahan type only when local energy is available).")
   call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
   call param_register(cli_params, 'precond_len_scale', '0.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")

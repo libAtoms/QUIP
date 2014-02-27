@@ -112,17 +112,17 @@ module Potential_Precon_Minim_module
     
     call calc_connect(am%minim_at,did_rebuild=did_rebuild)
     if (did_rebuild .eqv. .true.) then    
-      call print("Connectivity rebuilt by preconditioner",PRINT_NERD)
+      call print("Connectivity rebuilt by preconditioner")
       am%connectivity_rebuilt = .true.
     end if
 
-    !Bail out if the preconditioner does not need updating
-    if (am%connectivity_rebuilt .eqv. .false. .and. this%precon_id == "C1") then
-      call print("Saved a recompute",PRINT_NERD)
-      return
-    end if
-    
-    conconstant = 1.0_dp/am%minim_at%N
+!:     call print(this%precon_id == "C1")
+!:    !Bail out if the preconditioner does not need updating
+!:    if (am%connectivity_rebuilt .eqv. .false. .and. this%precon_id == "C1") then
+!:      call print("Saved a recompute")
+!:      return
+!:    end if
+       conconstant = 1.0_dp/am%minim_at%N
     conconstant = 1.0_dp
     
     this%preconrowlengths = 0 
@@ -158,10 +158,7 @@ module Potential_Precon_Minim_module
       end if
 
       this%preconindices(1,I) = I
-      this%preconcoeffs(1,I,1:) = 0.0
-      if (this%precon_id == "LJ" .OR. this%precon_id == "C1") then
-        this%preconcoeffs(1,I,1) = conconstant
-      end if
+      this%preconcoeffs(1,I,1) = conconstant
 
       nearneighcount = 1
       do J = 1,thisneighcount
@@ -254,13 +251,14 @@ module Potential_Precon_Minim_module
       this%preconrowlengths(I) = nearneighcount 
       !end if
     end do
-    else
+    else if (this%precon_id == 'ID') then
     do I = 1,(am%minim_at%N)
       this%preconcoeffs(1,I,1) = 1.0
+      this%preconrowlengths(I) = 1
+      this%preconindices(1,I) = I
     end do 
     end if
-    
-    am%connectivity_rebuilt = .false.
+   am%connectivity_rebuilt = .false.
     !call exit()
 
     call system_timer('build_precon')
