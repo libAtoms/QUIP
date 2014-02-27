@@ -1317,6 +1317,7 @@ contains
     integer:: Nelements, mpi_pos, mpi_old_pos
     include "mpif.h"
     real(dp), allocatable :: mpi_send(:), mpi_recv(:)
+    integer err
 #endif
     INIT_ERROR(error)
 
@@ -1393,8 +1394,8 @@ contains
        ! collect mpi results
        if (Nelements > 0) then
 	 call mpi_allreduce(mpi_send, mpi_recv, &
-	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, PRINT_ALWAYS)
-	 call abort_on_mpi_error(PRINT_ALWAYS, "Calc_Dists: MPI_ALL_REDUCE()")
+	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, err)
+	 call abort_on_mpi_error(err, "Calc_Dists: MPI_ALL_REDUCE()")
        end if
 
        mpi_pos = 1
