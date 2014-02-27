@@ -327,6 +327,8 @@ program crack
   logical, pointer :: constraint_mask(:)
   integer, allocatable :: constraint_list(:)
 
+  logical :: do_parallel_verlet = .true. ! FIXME get this working
+
   !** Initialisation Code **
 
   nargs = cmd_arg_count()
@@ -410,6 +412,11 @@ program crack
      periodic_clusters = (/ .false., .false., .not. params%qm_little_clusters/)
   endif
 
+  mm_args_str = params%classical_args_str
+  extra_mm_args = ''
+  qm_args_str = ''
+  extra_qm_args = ''
+  extra_args = ''
   if (.not. params%simulation_classical) then
 
      call initialise(pot_params)
@@ -448,7 +455,6 @@ program crack
      call print(hybrid_pot)
 
      ! calc_args
-     mm_args_str = params%classical_args_str
      qm_args_str=' little_clusters='//(params%qm_clusters .and. params%qm_little_clusters)// &
                  ' single_cluster='//(params%qm_clusters .and. .not. params%qm_little_clusters)// &
                  ' terminate='//params%qm_terminate// &
@@ -464,7 +470,6 @@ program crack
                  ' cluster_hopping_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
                  ' '//trim(params%qm_args_str)
      extra_qm_args = ''
-     extra_mm_args = ''
      extra_args = params%qm_extra_args_str
 
      if (params%qm_calc_force_error) then
@@ -479,7 +484,12 @@ program crack
         call finalise(pot_params)
      end if
   end if
-
+  call print('mm_args_str = '//trim(mm_args_str))
+  call print('qm_args_str = '//trim(qm_args_str))
+  call print('extra_qm_args = '//trim(extra_qm_args))
+  call print('extra_mm_args = '//trim(extra_mm_args))
+  call print('extra_args = '//trim(extra_args))
+  
   call finalise(bulk_cell)
 
   ! Look for input file. Check for the following, in order
@@ -744,6 +754,7 @@ program crack
 
         ds%avg_time = params%md(params%md_stanza)%avg_time
 
+        state_string = ''
         if (trim(params%simulation_task) == 'md') then
            if (.not. get_value(ds%atoms%params, "State", state_string)) then
               if (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp) then 
@@ -1039,7 +1050,7 @@ program crack
 
                  ! advance the dynamics
                  call system_timer('advance_verlet')
-                 call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+                 call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING), parallel=do_parallel_verlet)
                  call system_timer('advance_verlet')
                  if (params%simulation_classical) then
                     call ds_print_status(ds, 'E', epot=energy)
@@ -1136,7 +1147,7 @@ program crack
                     end if
 
                     ! advance the dynamics
-                    call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+                    call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING), parallel=do_parallel_verlet)
                     call ds_print_status(ds, 'I')
                     if (params%qm_calc_force_error) call print('I err '//ds%t//' '// &
                          rms_diff(force(:, find(hybrid == 1)), f_fm(:, find(hybrid == 1)))//' '// &
@@ -1209,7 +1220,7 @@ program crack
 
               call print_title('Advance Verlet')
               call system_timer('advance_verlet')
-              call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING))
+              call advance_verlet(ds, params%md(params%md_stanza)%time_step, force, do_calc_dists=(state /= STATE_MD_LOADING), parallel=do_parallel_verlet)
               call system_timer('advance_verlet')
               if (params%simulation_classical) then
                  call ds_print_status(ds, 'D', epot=energy)
