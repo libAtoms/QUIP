@@ -487,6 +487,7 @@
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
+       call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights
 
        if (get_value(params, 'run_suffix', qm_run_suffix)) then
           ! if args_str and qm_args_str both defin a run_suffix, then assert that they match
