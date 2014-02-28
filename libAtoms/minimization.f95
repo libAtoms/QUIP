@@ -5132,9 +5132,11 @@ end function func_wrapper
        
         
         if (pr%multI) then
-          
-          scoeff = pr%preconcoeffs(J,I,1)  
-          
+          !call print(target_elements)
+          !call print(row_elements)
+          !call print(I // ' ' // thisind)
+          !call exit() 
+          scoeff = pr%preconcoeffs(J,I,1)   
           if(doefunc == E_FUNC_BASIC) then
             do_mat_mult_vec(target_elements) = do_mat_mult_vec(target_elements) + scoeff*x(row_elements)
           else
