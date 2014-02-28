@@ -3374,7 +3374,9 @@ end function func_wrapper
       end if
       !if(n_iter == 1) call build_precon(pr,am_data)
       call build_precon(pr,am_data)
-     
+      !call writeprecon(pr,'pr')
+      !call exit() 
+       
       if (doCG .or. doSD) then
         pgold = pg
         if (n_iter > 1) then  
@@ -4879,12 +4881,12 @@ end function func_wrapper
       end if
 
       !CG is not converging
-      if (betn>betnold) then
-        ap_result= x
-        if(present(k_out)) k_out = k
-        call print("CG failed to invert the preconditioner and aborted with |r|^2 = " // betn)
-        exit
-      end if
+!      if (betn>betnold) then
+!        ap_result= x
+!        if(present(k_out)) k_out = k
+!        call print("CG failed to invert the preconditioner and aborted with |r|^2 = " // betn)
+!        exit
+!      end if
     
       p = r + bet*p
       bet = betn/alpn
@@ -5565,7 +5567,7 @@ end function func_wrapper
 
     call writepreconcoeffs(precon,filename // 'coeffs')
     call writepreconindices(precon,filename // 'indices')
-    call writepreconindices(precon,filename // 'lengths')
+    call writepreconrowlengths(precon,filename // 'lengths')
   end subroutine
   
   subroutine writepreconcoeffs(precon,filename)
