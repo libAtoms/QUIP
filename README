@@ -12,7 +12,7 @@
 # X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
 # X
 # X   If you would like to license the source code under different terms,
-# X   please contact Gabor Csanyi, gabor@csanyi.net
+# X   please contact Gabor Csanyi, gc121@cam.ac.uk
 # X
 # X   Portions of this code were written by Noam Bernstein as part of
 # X   his employment for the U.S. Government, and are not subject
@@ -74,6 +74,31 @@ file based on an existing file.
    This will make all the various libraries and combine them into one: 
    build.${QUIP_ARCH}/libquip.a, which is what you need to link (and of course
    LAPACK). 
-   
-3) Some functionality is only available if you check out other packages
+ 
+3) QUIP/libatoms is a "developer's" code, and is not for the faint hearted. A 
+   good start is to use the 'eval' program, which is under QUIP_Programs, and
+   allows the evaluation of properties of an atomic configuration using a variety
+   of models. For example:
+
+   eval at_file=test.xyz init_args='IP LJ' param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
+
+   assuming that you have a file called test.xyz with the following data in it
+   (without the dashes, obviously) representing Cu atoms in a simple cubic lattice:
+
+   ----
+   1
+   Lattice="4 0 0 0 4 0 0 0 4" Properties=Z:I:1:pos:R:3
+   29 0 0 0 
+   ----
+
+   The Lennard-Jones parameters in the above example is defined in the ip.parms.LJ.xml
+   file. 
+
+   Most string arguments can be replaced by '--help' and QUIP programs will then print a 
+   list of allowable keywords with brief help messages as to their usage, so e.g. 'init_args=--help'
+   will give a list of potential model types (and some combinations). The parsing is recursive, so
+   'init_args=IP --help' will then proceed to list the types of interatomic potentials (IP) that are
+   available. 
+
+4) Some functionality is only available if you check out other packages
    within the QUIP tree, e.g. the ThirdParty, GAP and GAP-filler modules.
