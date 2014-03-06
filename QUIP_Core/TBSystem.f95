@@ -43,12 +43,12 @@
 module TBSystem_module
 
 use error_module
-use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), print, verbosity_push_decrement, verbosity_pop
+use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop
 use units_module, only : Hartree, Bohr, PI
 use periodictable_module, only : ElementName
-use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm
-use mpi_context_module, only : mpi_context
-use dictionary_module, only : dictionary
+use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm, print
+use mpi_context_module, only : mpi_context, initialise, finalise
+use dictionary_module, only : dictionary, initialise, finalise
 use paramreader_module, only : param_register, param_read_line
 use atoms_module, only : atoms, n_neighbours, neighbour, assignment(=)
 
@@ -59,7 +59,7 @@ use TB_Common_module
 use TBModel_module, only : tbmodel, initialise, finalise, print, &
    n_orb_sets_of_Z, orb_type_of_orb_set_of_Z, n_orbs_of_orb_set_of_Z, n_orbs_of_Z, n_elecs_of_Z, &
    get_HS_blocks, get_dHS_blocks, get_dHS_masks
-use Matrix_module, only : matrixd
+use Matrix_module, only : matrixd, initialise, finalise, zero
 use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices
 use TB_KPoints_module, only : kpoints, initialise, finalise, calc_phase, print, init_mpi, ksum_distrib_inplace
 use TB_mixing_module, only : do_mix_simple, do_ridders_residual, do_mix_broyden
