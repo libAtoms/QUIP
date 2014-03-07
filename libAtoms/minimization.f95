@@ -2383,7 +2383,7 @@ CONTAINS
           exit
        else if(mod(i, my_hook_print_interval) == 0) then
           f = func(x,data)
-          write (line, '(i4,a,e24.16,a,e24.16,a,f0.3)') i,' f=',f,' df^2=',df2,' dt=', dt
+          write (line, '(i4,a,e24.16,a,e24.16,a,f0.3,a,e24.16)') i,' f=',f,' df^2=',df2,' dt=', dt, 'max(abs(df))=', maxval(abs(force))
           call Print(line, PRINT_NORMAL)
 
           if(present(hook)) then
@@ -3360,11 +3360,11 @@ end function func_wrapper
       if ( normsqgrad < convergence_tol ) then
         call print('Extended minim completed with  |df|^2 = '// normsqgrad // ' < tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
        ! call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |df|^2 = '// normsqgrad// ' max(abs(df)) = '//maxval(abs(g))//' last alpha = '//alpha)
-        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha)
+        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)))
         exit
       end if
 
-      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha &
+      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
                   // ' last ls_iter = ' // this_ls_count,PRINT_NORMAL)
       ! call the hook function
       if (present(hook)) then 
