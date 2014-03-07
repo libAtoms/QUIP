@@ -41,6 +41,14 @@ __all__ = ['AtomsReaders', 'AtomsWriters', 'atoms_reader',
 AtomsReaders = {}
 AtomsWriters = {}
 
+major, minor = sys.version_info[0:2]
+assert (major, minor) >= (2, 4)
+if (major, minor) < (2, 5):
+    all = lambda seq: not False in seq
+    any = lambda seq: True in seq
+    __all__.extend(['all', 'any'])
+del major, minor
+
 def atoms_reader(source):
     """Decorator to mark a function as a reader for a particular file extension"""
     def decorate(func):
