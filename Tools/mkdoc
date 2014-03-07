@@ -38,7 +38,7 @@ cd doctmp
 # names at the end of each subprogram, so that f90doc doesn't get
 # confused
 
-for base in libAtoms QUIP_Core QUIP_Utils; do
+for base in libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers; do
     rm *.f95
     [[ -f ../$base/intro.tex ]] && cp ../$base/intro.tex ${base}_intro.tex
     for f in ../$base/*.f95; do
@@ -75,7 +75,7 @@ cat > quip-reference-manual.tex <<EOF
 %Set depth of contents page
 \setcounter{tocdepth}{2}
 
-\usepackage {makeidx, fancyhdr, boxedminipage, multind, colortbl, sverb}
+\usepackage {makeidx, fancyhdr, boxedminipage, multind, colortbl, sverb, amsmath}
 \usepackage[dvips]{graphicx}
 \pagestyle{fancy}
 
@@ -106,7 +106,7 @@ cat > quip-reference-manual.tex <<EOF
 EOF
 
 
-for base in libAtoms QUIP_Core QUIP_Utils; do
+for base in libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers; do
     escbase=$(echo $base | sed -e 's/_/\\_/')
     echo "\chapter{$escbase}" >> quip-reference-manual.tex
     [[ -f ${base}_intro.tex ]] && echo "\input{${base}_intro.tex}" >> quip-reference-manual.tex
