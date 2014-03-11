@@ -271,7 +271,8 @@
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp, origin(3), extent(3,3)
     integer :: fit_hops
 
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, run_suffix, qm_run_suffix
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, run_suffix, qm_run_suffix, &
+         create_hybrid_weights_params_str
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
@@ -426,8 +427,10 @@
             RAISE_ERROR('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified', error)
        endif
        
-       call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
+       create_hybrid_weights_params_str = write_string(calc_create_hybrid_weights_params)
        call finalise(calc_create_hybrid_weights_params)
+       call create_hybrid_weights(at, create_hybrid_weights_params_str)
+
 
        call system_timer('calc_weights')
 
@@ -487,7 +490,8 @@
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
-       call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights
+       call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights ... 
+       call set_value(params, 'create_hybrid_weights_params', create_hybrid_weights_params_str) ! ... and how we did it
 
        if (get_value(params, 'run_suffix', qm_run_suffix)) then
           ! if args_str and qm_args_str both defin a run_suffix, then assert that they match
