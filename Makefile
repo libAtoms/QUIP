@@ -141,6 +141,7 @@ QUIP_Utils/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_cor
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Utils -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Utils/}
 	rm ${BUILDDIR}/Makefile
 
+libatoms: libAtoms
 libAtoms/%: libAtoms 
 	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
