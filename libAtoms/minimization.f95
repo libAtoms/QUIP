@@ -2363,6 +2363,7 @@ CONTAINS
     Pcount = 0
 
     call Print('Welcome to fire_minim', PRINT_NORMAL)
+    call Print('Attempting to find minimum with tolerance '// tol, PRINT_NORMAL)
 
     velo = 0
     acc = -dfunc(x,data)/mass

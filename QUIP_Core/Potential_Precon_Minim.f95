@@ -123,8 +123,9 @@ module Potential_Precon_Minim_module
 !:      return
 !:    end if
     !conconstant = 1.0_dp/am%minim_at%N
-    conconstant = 1.0_dp
-    
+    !conconstant = 1.0_dp
+    conconstant = 0.1_dp
+
     this%preconrowlengths = 0 
     this%preconindices = 0
     this%preconcoeffs = 0.0
