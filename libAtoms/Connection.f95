@@ -151,13 +151,14 @@ contains
   !% If the optional Atoms argument is present then we calculate
   !% the atomic density to initialise the default lengths of the neighbour
   !% list for efficient memory usage.
-   subroutine connection_initialise(this, N, Nbuffer, pos, lattice, g,  origin, extent, nn_guess, fill)
+   subroutine connection_initialise(this, N, Nbuffer, pos, lattice, g,  origin, extent, nn_guess, store_rij, fill)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
     integer,            intent(in)    :: Nbuffer    ! Buffer size
     real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
+    logical, optional, intent(in) :: store_rij
     logical, optional, intent(in) :: fill
 
     logical :: do_fill
@@ -167,25 +168,26 @@ contains
     ! If already initialised, destroy the existing data and start again
     if (this%initialised) call connection_finalise(this)
 
-    if (do_fill) call connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess)
+    if (do_fill) call connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess, store_rij)
 
     this%last_connect_cutoff = 0.0_dp
     this%last_connect_lattice(:,:) = 0.0_dp
 
   end subroutine connection_initialise
 
-  subroutine connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess, error)
+  subroutine connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess, store_rij, error)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
     integer,            intent(in)    :: Nbuffer    ! Buffer size
     real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
+    logical, optional, intent(in) :: store_rij
     integer, intent(out), optional :: error     
     
     integer                           :: i, do_nn_guess
     real(dp)                          :: extent_inv(3,3), subregion_center(3)
-    logical :: do_subregion
+    logical :: do_subregion, do_store_rij
 
     INIT_ERROR(error)
     do_nn_guess = optional_default(5, nn_guess)
@@ -226,7 +228,12 @@ contains
        endif
        if (.not. associated(this%neighbour1(i)%t)) then
           allocate(this%neighbour1(i)%t)
-          call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
+	  do_store_rij = optional_default(.false., store_rij)
+	  if (do_store_rij) then
+	     call allocate(this%neighbour1(i)%t,4,4, 0, 0, max(do_nn_guess, 1))
+	  else
+	     call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
+	  endif
           this%neighbour1(i)%t%increment = max(do_nn_guess/2, 1)
 
           allocate(this%neighbour2(i)%t)
@@ -484,6 +491,9 @@ contains
 	if (current_verbosity() >= PRINT_ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANAL)
 #endif
 	this%neighbour1(i)%t%real(1,index) = d
+	if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
+	   this%neighbour1(i)%t%real(2:4,index) = pos(1:3,j) + (lattice .mult. shift) - pos(1:3,i)
+	endif
 	return
       endif
     endif
@@ -493,7 +503,7 @@ contains
 #endif
 
     if (d < use_cutoff) then
-       call add_bond(this, pos, lattice, i, j, shift, d, error)
+       call add_bond(this, pos, lattice, i, j, shift, d, error=error)
        PASS_ERROR(error)
     end if
 
@@ -591,15 +601,15 @@ contains
     end do
   end subroutine set_bonds
 
-  subroutine add_bond(this, pos, lattice, i, j, shift, d, error)
+  subroutine add_bond(this, pos, lattice, i, j, shift, d, dv, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
-    real(dp), intent(in), optional :: d
+    real(dp), intent(in), optional :: d, dv(3)
     integer, intent(out), optional :: error
 
-    real(dp) :: dd
+    real(dp) :: dd, ddv(3)
     integer :: ii, jj, index
 
     INIT_ERROR(error)
@@ -619,14 +629,23 @@ contains
       jj = j
     endif
 
+    if (present(dv)) then
+      ddv = dv*sign(1,jj-ii)
+    else
+      ddv = pos(:,jj)+(lattice .mult. (sign(1,jj-ii)*shift)) - pos(:,ii)
+    endif
     if (present(d)) then
       dd = d
     else
-      dd = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+      dd = norm(ddv)
     endif
 
     ! Add full details to neighbour1 for smaller of i and j
-    call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+    if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
+       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd, ddv /))
+    else
+       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+    endif
     if(ii .ne. jj) then		
        index = this%neighbour1(min(ii,jj))%t%N
        ! Put a reference to this in neighbour2 for larger of i and j
@@ -1337,6 +1356,10 @@ contains
           Nelements = Nelements + this%neighbour1(i)%t%N
        end do
 
+       if (size(this%neighbour1(1)%t%real,1) == 4) then
+	 RAISE_ERROR("CalcDists: can't have store_rij set and do_parallel at the same time ", error)
+       endif
+
        allocate(mpi_send(Nelements))
        allocate(mpi_recv(Nelements))
        if (Nelements > 0) then
@@ -1371,8 +1394,14 @@ contains
           j_pos(:) = at%pos(:,j) + ( at%lattice(:,1) * shift(1) + at%lattice(:,2) * shift(2) + at%lattice(:,3) * shift(3) )
 
           if (i <= j) then
+	     if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
+		this%neighbour1(i)%t%real(2:4,index) = j_pos - at%pos(:,i)
+	     endif
              this%neighbour1(i)%t%real(1,index) = norm(j_pos - at%pos(:,i))
           else
+	     if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
+		this%neighbour1(j)%t%real(2:4,index) = j_pos - at%pos(:,i)
+	     endif
              this%neighbour1(j)%t%real(1,index) = norm(j_pos - at%pos(:,i))
           end if
 
@@ -2075,7 +2104,15 @@ contains
 
        if(present(diff) .or. present(cosines)) then
           !mydiff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
-          mydiff = at%pos(:,j) - at%pos(:,i)
+	  if (size(this%neighbour1(i)%t%real,1) == 4) then
+	     if (i <= j) then
+		mydiff = this%neighbour1(i)%t%real(2:4,i_n1n)
+	     else
+		mydiff = -this%neighbour1(j)%t%real(2:4,j_n1n)
+	     endif
+	  else
+	     mydiff = at%pos(:,j) - at%pos(:,i)
+	  endif
           do m=1,3
              ! forall(k=1:3) mydiff(k) = mydiff(k) + this%lattice(k,m) * myshift(m)
              mydiff(1:3) = mydiff(1:3) + at%lattice(1:3,m) * myshift(m)
