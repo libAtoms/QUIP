@@ -100,6 +100,7 @@
 
     call initialise(this%create_hybrid_weights_params)
     call read_string(this%create_hybrid_weights_params, args_str)
+    call remove_value(this%create_hybrid_weights_params, 'forcemixing')
     call remove_value(this%create_hybrid_weights_params, 'run_suffix')
     call remove_value(this%create_hybrid_weights_params, 'minimise_mm')
     call remove_value(this%create_hybrid_weights_params, 'calc_weights')
