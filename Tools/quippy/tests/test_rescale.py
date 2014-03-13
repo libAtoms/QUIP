@@ -381,6 +381,7 @@ class Test_SW_Rescale_Automatic_Factors(QuippyTestCase):
     def test_bulk_modulus(self):
         verbosity_push(PRINT_NERD)
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
+        print 'got b, v = ', b, v
         self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-3)
         verbosity_pop()
 
