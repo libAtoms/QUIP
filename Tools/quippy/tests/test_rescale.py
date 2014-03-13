@@ -379,8 +379,10 @@ class Test_SW_Rescale_Automatic_Factors(QuippyTestCase):
         self.assertArrayAlmostEqual([self.bulk.cell_volume()], [self.target_vol], tol=1e-4)
 
     def test_bulk_modulus(self):
+        verbosity_push(PRINT_NERD)
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
         self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-3)
+        verbosity_pop()
 
 
 class TestRescale_ForceMixing(QuippyTestCase):
