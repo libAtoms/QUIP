@@ -603,9 +603,8 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       NETCDF_CHECK(nc_get_var1_double(nc_id, i, start, (double *)data));
       break;
     case(T_CHAR):
+      memset(data, ' ', n_string); // pad with spaces for fortran
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
-      memset(data+strlen(data), ' ', n_string-strlen(data)); // pad with spaces for fortran
-      //debug("read string value <%s>\n", (char *)data);
       break;
     case(T_INTEGER_A):
     case(T_LOGICAL_A):
