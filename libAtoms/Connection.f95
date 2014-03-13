@@ -569,47 +569,16 @@ contains
 
   end function test_break_bond
 
-  subroutine set_bonds(this, pairs, shifts, error)
-    type(Atoms), intent(inout) :: this
-    integer, intent(in) :: pairs(:,:)
-    integer, intent(in) :: shifts(:,:)
-    integer, intent(out), optional :: error
-
-    integer i
-
-    INIT_ERROR(error)
-    if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this%Nbuffer)
-    else
-       ! otherwise just wipe the connection table
-       call wipe(this%connect)
-    end if
-
-    if (size(pairs,1) /= 2) then
-       RAISE_ERROR("set_bond pairs not a 2xN array", error)
-    end if
-    if (size(shifts,1) /= 3) then
-       RAISE_ERROR("set_bond shifts not a 3xN array", error)
-    end if
-    if (size(pairs,2) /= size(shifts,2)) then
-       RAISE_ERROR("set_bonds called with mismatching pairs and shifts sizes", error)
-    end if
-
-    do i=1, size(pairs,2)
-      call add_bond(this%connect, this%pos, this%lattice, pairs(1,i), pairs(2,i), shifts(:,i), error=error)
-      PASS_ERROR(error)
-    end do
-  end subroutine set_bonds
-
   subroutine add_bond(this, pos, lattice, i, j, shift, d, dv, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
-    real(dp), intent(in), optional :: d, dv(3)
+    real(dp), intent(in) :: d
+    real(dp), intent(in), optional :: dv(3)
     integer, intent(out), optional :: error
 
-    real(dp) :: dd, ddv(3)
+    real(dp) :: ddv(3)
     integer :: ii, jj, index
 
     INIT_ERROR(error)
@@ -630,21 +599,18 @@ contains
     endif
 
     if (present(dv)) then
-      ddv = dv*sign(1,jj-ii)
-    else
-      ddv = pos(:,jj)+(lattice .mult. (sign(1,jj-ii)*shift)) - pos(:,ii)
-    endif
-    if (present(d)) then
-      dd = d
-    else
-      dd = norm(ddv)
+      ddv = dv*sign(1,j-i)
+    else ! dv not present
+      if (size(this%neighbour1(i)%t%real,1) == 4) then
+	 ddv = pos(:,jj) + (lattice .mult. shift) - pos(:,ii)
+      endif
     endif
 
     ! Add full details to neighbour1 for smaller of i and j
     if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
-       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd, ddv /))
+       call append(this%neighbour1(ii)%t, (/jj, shift /), (/ d, ddv /))
     else
-       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+       call append(this%neighbour1(ii)%t, (/jj, shift /), (/ d /))
     endif
     if(ii .ne. jj) then		
        index = this%neighbour1(min(ii,jj))%t%N
@@ -1356,10 +1322,6 @@ contains
           Nelements = Nelements + this%neighbour1(i)%t%N
        end do
 
-       if (size(this%neighbour1(1)%t%real,1) == 4) then
-	 RAISE_ERROR("CalcDists: can't have store_rij set and do_parallel at the same time ", error)
-       endif
-
        allocate(mpi_send(Nelements))
        allocate(mpi_recv(Nelements))
        if (Nelements > 0) then
@@ -1372,7 +1334,13 @@ contains
 
     if (.not.this%initialised) then
          RAISE_ERROR('CalcDists: Connect is not yet initialised', error)
-      endif
+    endif
+
+    if (at%N > 0) then
+       if (size(this%neighbour1(1)%t%real,1) == 4) then ! store_rij was set
+	    RAISE_ERROR("CalcDists: can't have store_rij set", error)
+       endif
+    endif
 
     do i = 1, at%N
 
@@ -1394,14 +1362,8 @@ contains
           j_pos(:) = at%pos(:,j) + ( at%lattice(:,1) * shift(1) + at%lattice(:,2) * shift(2) + at%lattice(:,3) * shift(3) )
 
           if (i <= j) then
-	     if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
-		this%neighbour1(i)%t%real(2:4,index) = j_pos - at%pos(:,i)
-	     endif
              this%neighbour1(i)%t%real(1,index) = norm(j_pos - at%pos(:,i))
           else
-	     if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
-		this%neighbour1(j)%t%real(2:4,index) = j_pos - at%pos(:,i)
-	     endif
              this%neighbour1(j)%t%real(1,index) = norm(j_pos - at%pos(:,i))
           end if
 

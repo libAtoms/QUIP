@@ -40,6 +40,42 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.dia.set_cutoff_factor(1.3)
       self.dia.calc_connect()
 
+   def test_connection_store_rij(self):
+      a = Atoms(n=2,lattice=fzeros ( (3,3) ))
+      a.pos[:,1] = farray( (0.0, 0.0, 0.0) )
+      a.pos[:,2] = farray( (2.0, 0.0, 0.0) )
+      a.set_cutoff(0.5)
+      a.calc_connect()
+      r21 = a.pos[:,2] - a.pos[:,1]
+
+      a.connect.wipe()
+      a.connect.add_bond(a.pos, a.lattice, 1, 2, farray( (0,0,0) ), 2.0, r21)
+      rij_out_rij_1_2__1 = a.neighbours[1][1].diff
+      rij_out_rij_1_2__2 = a.neighbours[2][1].diff
+      self.assertArrayAlmostEqual(r21, rij_out_rij_1_2__1)
+      self.assertArrayAlmostEqual(-r21, rij_out_rij_1_2__2)
+
+      a.connect.wipe()
+      a.connect.add_bond(a.pos, a.lattice, 2, 1, farray( (0,0,0) ), 2.0, -r21)
+      rij_out_rij_2_1__1 = a.neighbours[1][1].diff
+      rij_out_rij_2_1__2 = a.neighbours[2][1].diff
+      self.assertArrayAlmostEqual(r21, rij_out_rij_2_1__1)
+      self.assertArrayAlmostEqual(-r21, rij_out_rij_2_1__2)
+
+      a.connect.wipe()
+      a.connect.add_bond(a.pos, a.lattice, 1, 2, farray( (0,0,0) ), 2.0)
+      rij_out_1_2__1 = a.neighbours[1][1].diff
+      rij_out_1_2__2 = a.neighbours[2][1].diff
+      self.assertArrayAlmostEqual(r21, rij_out_1_2__1)
+      self.assertArrayAlmostEqual(-r21, rij_out_1_2__2)
+
+      a.connect.wipe()
+      a.connect.add_bond(a.pos, a.lattice, 2, 1, farray( (0,0,0) ), 2.0)
+      rij_out_2_1__1 = a.neighbours[1][1].diff
+      rij_out_2_1__2 = a.neighbours[2][1].diff
+      self.assertArrayAlmostEqual(r21, rij_out_2_1__1)
+      self.assertArrayAlmostEqual(-r21, rij_out_2_1__2)
+
    def test_n(self):
       self.assertEqual(self.at.n, 10)
 
@@ -962,7 +998,6 @@ class TestGeometry(QuippyTestCase):
       dia.add_property('mass', [ElementMass[z] for z in dia.z])
       self.assertArrayAlmostEqual(dia.centre_of_mass(),
                                   farray([dia.diff_min_image(1,i) for i in dia.indices]).T.mean(axis=2))
-      
 
 if __name__ == '__main__':
    unittest.main()
