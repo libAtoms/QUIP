@@ -392,15 +392,18 @@ class FortranDerivedType(object):
             self.ref_count = self.ref_count + 1
 
     def __del__(self):
+        if self is None:
+            return
         if not self._finalise:
             return
-        wraplog.debug('Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
+        #wraplog.debug('Freeing %s(fpointer=%r, finalise=%r)' % (self.__class__.__name__, self._fpointer, self._finalise))
         if hasattr(self, '_initialised'):
             del self._initialised
         self._subobjs_cache = {}
         if self._fpointer is not None and not (self._fpointer == 0).all() and '__del__' in self._routines:
             fobj, doc = self._routines['__del__']
-            fobj(self._fpointer)
+            if fobj is not None:
+                fobj(self._fpointer)
             self._fpointer = None
 
 
