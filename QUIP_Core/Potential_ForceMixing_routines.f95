@@ -431,7 +431,7 @@
        create_hybrid_weights_params_str = write_string(calc_create_hybrid_weights_params)
        call finalise(calc_create_hybrid_weights_params)
        call create_hybrid_weights(at, create_hybrid_weights_params_str)
-
+       call set_value(at%params, 'create_hybrid_weights_params', create_hybrid_weights_params_str) ! save how we did the calc_weights call
 
        call system_timer('calc_weights')
 
@@ -491,8 +491,7 @@
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
-       call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights ... 
-       call set_value(params, 'create_hybrid_weights_params', create_hybrid_weights_params_str) ! ... and how we did it
+       call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights
 
        if (get_value(params, 'run_suffix', qm_run_suffix)) then
           ! if args_str and qm_args_str both defin a run_suffix, then assert that they match
