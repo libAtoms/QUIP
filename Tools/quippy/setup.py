@@ -29,6 +29,10 @@ from distutils.dep_util import newer, newer_group
 from custom_commands import *
 from distutils.util import get_platform
 
+def trace_all(frame, event, arg):
+    print event, frame.f_code.co_name, frame.f_code.co_filename,  frame.f_lineno, arg
+#sys.settrace(trace_all)
+
 major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
     sys.stderr.write('Python 2.4 or later is needed to use this package\n')
