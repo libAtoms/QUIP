@@ -605,6 +605,9 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     case(T_CHAR):
       memset(data, ' ', n_string); // pad with spaces for fortran
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
+      if (strnlen(data, n_string) != n_string) { // overwrite '\0' with ' ' to fix _FillValue bugs
+	memset(data+strnlen(data, n_string), ' ', n_string - strnlen(data, n_string));
+      }
       break;
     case(T_INTEGER_A):
     case(T_LOGICAL_A):
