@@ -4877,9 +4877,17 @@ end function func_wrapper
         if(present(k_out)) k_out = k
         exit
       end if
-      bet = betn/alpn
 
+      !CG is not converging
+      if (betn>betnold) then
+        ap_result= x
+        if(present(k_out)) k_out = k
+        call print("CG failed to invert the preconditioner and aborted with |r|^2 = " // betn)
+        exit
+      end if
+    
       p = r + bet*p
+      bet = betn/alpn
       k = k+1
       subk = subk + 1
 

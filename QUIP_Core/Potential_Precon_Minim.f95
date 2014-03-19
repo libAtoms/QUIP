@@ -122,7 +122,7 @@ module Potential_Precon_Minim_module
 !:      call print("Saved a recompute")
 !:      return
 !:    end if
-       conconstant = 1.0_dp/am%minim_at%N
+    conconstant = 1.0_dp/am%minim_at%N
     conconstant = 1.0_dp
     
     this%preconrowlengths = 0 
@@ -161,7 +161,7 @@ module Potential_Precon_Minim_module
       this%preconcoeffs(1,I,1) = conconstant
 
       nearneighcount = 1
-      do J = 1,thisneighcount
+      do J = 1,thisneighcountlocal
 
         thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,max_dist=this%cutoff,index=thisind2) 
         if (thisind > 0) then 

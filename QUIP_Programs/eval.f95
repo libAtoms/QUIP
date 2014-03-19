@@ -187,7 +187,7 @@ implicit none
   call param_register(cli_params, 'precond_e_method', 'basic', precond_e_method, help_string="preconditioner method for summing energy: basic, kahan, doublekahan (kahan type only when local energy is available).")
   call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
   call param_register(cli_params, 'precond_len_scale', '0.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
-  call param_register(cli_params, 'precond_e_scale', '10.0', precond_e_scale, help_string="energy scale for preconditioner")
+  call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
   call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
@@ -400,7 +400,11 @@ implicit none
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
+<<<<<<< HEAD
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2)
+=======
+       length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method))
+>>>>>>> 646909d... further precon_minim testing changes
               call system_timer('precon_minim')
            else
               call system_timer('minim')
