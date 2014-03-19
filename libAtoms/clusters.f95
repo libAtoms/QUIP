@@ -1557,6 +1557,7 @@ end function cluster_in_out_in
     type(CInoutput)                    :: clusterfile
     character(len=255)                :: clusterfilename
     character(len=255)                :: my_mark_name
+    character(STRING_LENGTH)          :: run_suffix
     type(Table) :: outer_layer
     logical :: in_outer_layer, do_map_into_cell
 
@@ -1605,6 +1606,8 @@ end function cluster_in_out_in
       help_string="Use hysteretic connection object for identifying bonds")
     call param_register(params, 'map_into_cell', 'T', do_map_into_cell,&
       help_string="Call map_into_cell (lattice coordinates=[-0.5,0.5)) on cluster")
+    call param_register(params, 'run_suffix', '', run_suffix, &
+         help_string="string to append to names of extra properties added to cluster. NOTE: does not override mark_name argument")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) then
       RAISE_ERROR("carve_cluster failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -1628,12 +1631,12 @@ end function cluster_in_out_in
        cluster%species(1:3,i) = s2a(ElementName(cluster_info%int(5,i)))
     end do
     ! add properties to cluster
-    call add_property(cluster, 'index', int_part(cluster_info,1))  !FIXME should we pass overwrite=.true.?
-    call add_property(cluster, 'shift', 0, n_cols=3, ptr2=cluster_shift)
+    call add_property(cluster, 'index'//trim(run_suffix), int_part(cluster_info,1))
+    call add_property(cluster, 'shift'//trim(run_suffix), 0, n_cols=3, ptr2=cluster_shift)
     cluster_shift(:,1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
-    call add_property(cluster, 'termindex', int_part(cluster_info,6))
-    call add_property(cluster, 'rescale', real_part(cluster_info,4))
-    call add_property(cluster, 'cluster_ident', cluster_info%str(1,1:cluster_info%N))
+    call add_property(cluster, 'termindex'//trim(run_suffix), int_part(cluster_info,6))
+    call add_property(cluster, 'rescale'//trim(run_suffix), real_part(cluster_info,4))
+    call add_property(cluster, 'cluster_ident'//trim(run_suffix), cluster_info%str(1,1:cluster_info%N))
 
     ! Find smallest bounding box for cluster
     ! Find boxes aligned with xyz (maxlen) and with a1 a2 a3 (lat_maxlen)
