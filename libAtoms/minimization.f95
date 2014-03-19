@@ -3364,8 +3364,8 @@ end function func_wrapper
         exit
       end if
 
-      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
-                  // ' last ls_iter = ' // this_ls_count,PRINT_NORMAL)
+      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha &
+                  // ' last ls_iter = ' // this_ls_count // ' amax = '//amax,PRINT_NORMAL)
       ! call the hook function
       if (present(hook)) then 
          call hook(x, g, f, done, (mod(n_iter-1,my_hook_print_interval) == 0), am_data)
@@ -3472,7 +3472,7 @@ end function func_wrapper
       alpha = init_alpha(alpvec,dirderivvec,n_iter)
 
      if(n_iter == 1 .and. (doCG .or. doSD)) then 
-        alpha = calc_amax(s,pr%length_scale) 
+        alpha = calc_amax(s,pr,doefunc) 
       elseif (doLBFGS) then
         alpha = 1.0 
       else
@@ -3480,7 +3480,7 @@ end function func_wrapper
       end if
       
       gold = g
-      amax = calc_amax(s,pr%length_scale) 
+      amax = calc_amax(s,pr,doefunc) 
       if (doLSbasic) then
         alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
@@ -3962,15 +3962,17 @@ end function func_wrapper
 
   end function
 
-  function calc_amax(g,length_scale)
+  function calc_amax(g,pr,doefunc)
+
 
     implicit none
 
     real(dp) :: g(:)
-    real(dp) :: length_scale
+    type(precon_data) :: pr
     real(dp) :: calc_amax
+    integer :: doefunc
 
-    calc_amax = 0.5*length_scale/sqrt(normsq(g))
+    calc_amax = pr%length_scale/sqrt(pdotproduct(g,g,pr,doefunc))
 
   end function
   
@@ -5825,7 +5827,7 @@ end function func_wrapper
       
       if (translateup  .eqv. .false.) then
         
-        amax = calc_amax(searchdirdown,pr%length_scale) 
+        amax = calc_amax(searchdirdown,pr,doefunc) 
         d0 = smartdotproduct(searchdirdown,(F1+F2)/2.0_dp,doefunc)
         if (doLSbasic) then
           deltaxdown = linesearch_basic_dimer(x,Nvec,deltaR,searchdirdown,e1,local_energy1,e2,local_energy2,deltaxdown,func,doefunc,am_data,d0,n_iter_final=n_iter_final,amaxin=amax)
@@ -5837,7 +5839,7 @@ end function func_wrapper
         call print("   Translating orthogonal, alpha  = " // deltaxdown//', d = ' //d0//', f = '//(e1+e2)/2.0_dp// ', |s| = '// sdnormdown)
      else 
  
-        amax = calc_amax(searchdirup,pr%length_scale) 
+        amax = calc_amax(searchdirup,pr,doefunc) 
         d0 = smartdotproduct(searchdirup,(F1+F2)/2.0_dp,doefunc)
         
         if (doLSbasic) then
