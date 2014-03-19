@@ -148,6 +148,8 @@ class Table(_table.Table):
         else:
             first_column = 0
         indices = self.int[first_column,:].copy()
+        if not get_fortran_indexing():
+            indices[:] -= 1
         return list(indices)
 
 
