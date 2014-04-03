@@ -124,7 +124,7 @@ infiles = [ f == '-' and 'stdin' or f for f in infiles ]
 if outfile == '-': outfile = 'stdout'
 
 # check for existing outfile
-if opt.output is None and not (opt.no_print_at or opt.extract_params):
+if opt.output is None and not (opt.no_print_at or opt.extract_params) and not (outfile.endswith('.db') or outfile.endswith('.json')):
     if os.path.exists(outfile):
         p.error('Output file %s specified without -o|--output already exists. Use (-o|--output) filename to overwrite.' % outfile)
 

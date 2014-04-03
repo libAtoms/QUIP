@@ -207,27 +207,31 @@ class AtomsReader(AtomsReaderMixin):
         if isinstance(self.reader, basestring):
             if '@' in self.reader:
                 self.reader, frames = self.reader.split('@')
-                frames = parse_slice(frames)
-                if start is not None or stop is not None or step is not None:
-                    raise ValueError('Conflicting frame references start=%r stop=%r step=%r and @-sytnax %r' %
-                                     (start, stop, step, frames))
-                if isinstance(frames, int):
-                    if frames >= 0:
-                        frames = slice(frames, frames+1,+1)
-                    else:
-                        frames = slice(frames, frames-1,-1)
+                if self.reader.endswith('.db'):
+                    self.reader = self.reader+'@'+frames
+                    format = 'db'
+                else:
+                    frames = parse_slice(frames)
+                    if start is not None or stop is not None or step is not None:
+                        raise ValueError('Conflicting frame references start=%r stop=%r step=%r and @-syntax %r' %
+                                         (start, stop, step, frames))
+                    if isinstance(frames, int):
+                        if frames >= 0:
+                            frames = slice(frames, frames+1,+1)
+                        else:
+                            frames = slice(frames, frames-1,-1)
 
-                self._start, self._stop, self._step = frames.start, frames.stop, frames.step
+                    self._start, self._stop, self._step = frames.start, frames.stop, frames.step
                 
             self.filename = self.reader
             self.opened = True
             if self.reader in AtomsReaders:
                 if format is None:
                     format = self.reader
-            elif format != 'string':
+            elif format != 'string' and format != 'db':
                 self.reader = os.path.expanduser(self.reader)
                 glob_list = sorted(glob.glob(self.reader))
-                if (len(glob_list) == 0):
+                if len(glob_list) == 0:
                     raise IOError("input file '%s' not found" % self.reader)
                 if len(glob_list) > 1:
                     self.reader = glob_list
@@ -796,4 +800,139 @@ class ASEWriter(object):
 
 AtomsWriters['traj'] = ASEWriter
 AtomsWriters['cfg'] = ASEWriter
+
+@atoms_reader('db')
+@atoms_reader('json')
+def ASEDatabaseReader(filename):
+    from ase.db.core import connect, dict2atoms
+    from quippy.elasticity import stress_matrix
+
+    index = None
+    if isinstance(filename, basestring) and ('.json@' in filename or
+                                             '.db@' in filename):
+        filename, index = filename.rsplit('@', 1)
+        if index.isdigit():
+            index = int(index)
+
+    conn = connect(filename)
+            
+    for dct in conn.select(index):
+        at = dict2atoms(dct)
+
+        f = None
+        try:
+            f = at.get_forces()
+        except RuntimeError:
+            pass
+
+        e = None
+        try:
+            e = at.get_potential_energy()
+        except RuntimeError:
+            pass
+
+        v = None
+        try:
+            v = -stress_matrix(at.get_stress())*at.get_volume()
+        except RuntimeError:
+            pass        
+
+        at = Atoms(at) # convert to quippy Atoms
+        if f is not None:
+            at.add_property('force', f.T)
+        if e is not None:
+            at.params['energy'] = e
+        if v is not None:
+            at.params['virial'] = v
+
+        # extract additional info from database
+        at.params['id'] = dct['id']
+        at.params['unique_id'] = dct['unique_id']
+        if 'keywords' in dct:
+            for key in dct['keywords']:
+                at.params[key] = True
+        if 'key_value_pairs' in dct:
+            at.params.update(dct['key_value_pairs'])
+        if 'data' in dct:
+            for (key, value) in dct['data'].items():
+                key = str(key) # avoid unicode strings
+                value = np.array(value)
+                if value.dtype.kind == 'U':
+                    value = value.astype(str)
+                if value.dtype.kind != 'S':
+                    value = value.T
+                try:
+                    at.add_property(key, value)
+                except (TypeError, RuntimeError):
+                    at.params[key] = value
+        
+        yield at
     
+    
+class ASEDatabaseWriter(object):
+    """
+    Write Atoms to :mod:`ase.db` database.
+    """
+    
+    def __init__(self, filename, **kwargs):
+        self.dbfile = filename
+        self.kwargs = kwargs
+
+    def write(self, at, **kwargs):
+        import ase.db
+        from ase.calculators.singlepoint import SinglePointCalculator
+
+        all_kwargs = self.kwargs.copy()
+        all_kwargs.update(kwargs)
+        all_kwargs.update(at.params)
+        
+        energy = at.params.get('energy', None)
+        forces = getattr(at, 'force', None)
+        if forces is not None:
+            forces = forces.T
+        stress = at.params.get('virial', None)
+        if stress is not None:
+            stress = -stress.view(np.ndarray)/at.get_volume()
+        
+        keywords = []
+        orig_calc = at.get_calculator()
+
+        params = {}
+        data = {}
+        skip_params = ['energy', 'virial', 'calculator'] # filter out duplicate data
+        for (key, value) in all_kwargs.items():
+            if key in skip_params:
+                continue
+            if value is None:
+                keywords.append(key)
+            elif (isinstance(value, int)   or isinstance(value, basestring) or
+                isinstance(value, float) or isinstance(value, bool)):
+                # scalar key/value pairs
+                params[key] = value
+            else:
+                # more complicated data structures
+                data[key] = value
+
+        skip_arrays = ['numbers', 'positions', 'species']
+        for (key, value) in at.arrays.items():
+            if key in skip_arrays:
+                continue
+            data[key] = value
+
+        try:
+            calc = SinglePointCalculator(atoms=at, energy=energy, forces=forces, stress=stress)
+            if orig_calc is not None:
+                calc.name = orig_calc.name
+            else:
+                calc.name = all_kwargs.get('calculator', '(unknown)')
+            at.set_calculator(calc)
+            if calc.name != '(unknown)':
+                keywords.append(calc.name)
+
+            database = ase.db.connect(self.dbfile)
+            database.write(at, keywords, data=data, **params)
+        finally:
+            at.set_calculator(orig_calc)
+
+AtomsWriters['db'] = ASEDatabaseWriter
+AtomsWriters['json'] = ASEDatabaseWriter
