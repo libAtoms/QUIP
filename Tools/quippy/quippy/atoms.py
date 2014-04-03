@@ -378,9 +378,9 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         # Make sure argument to ase.Atoms constructor are consistent with
         # properties already present in this Atoms object
-        if symbols is None and momenta is None and self.has_property('velo'):
+        if symbols is None and momenta is None and self.has_property('momenta'):
             momenta = self.get_momenta()
-        if symbols is None and masses is None and self.has_property('mass'):
+        if symbols is None and masses is None and self.has_property('masses'):
             masses = self.get_masses()
         if symbols is None and cell is None:
             cell = self.lattice.T.view(np.ndarray)
