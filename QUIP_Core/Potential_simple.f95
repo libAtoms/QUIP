@@ -62,6 +62,7 @@ module Potential_simple_module
   use table_module
   use atoms_types_module
   use atoms_module
+  use connection_module, only: is_in_subregion
   use cinoutput_module
   use clusters_module
 
@@ -352,13 +353,14 @@ contains
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
 
     integer:: i,j,k,n, zero_loc(1)
-    real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale
+    real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale, cluster_box_buffer
     type(Dictionary) :: params
-    logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E
+    logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E, has_cluster_box_buffer
     character(len=STRING_LENGTH) :: my_args_str, cluster_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
     real(dp), pointer, dimension(:) :: weight_region1, at_prop_ptr_r, cluster_prop_ptr_r
     integer, allocatable, dimension(:) :: hybrid_mark_saved
+    logical, allocatable, dimension(:) :: cluster_mask
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), pointer, dimension(:,:) :: f_cluster
     logical :: do_carve_cluster
@@ -376,6 +378,7 @@ contains
     real(dp) :: force_fd_delta
     logical :: virial_using_fd
     real(dp) :: virial_fd_delta
+    real(dp) :: origin(3), extent(3,3), extent_inv(3,3), subregion_center(3)
 
     character(len=STRING_LENGTH) :: read_extra_param_list, read_extra_property_list
     character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
@@ -404,6 +407,8 @@ contains
       help_string="If true, calculate active region atoms by carving out a cluster")
     call param_register(params, 'little_clusters', 'F', little_clusters, &
       help_string="If true, calculate forces (only) by doing each atom separately surrounded by a little buffer cluster")
+    call param_register(params, 'cluster_box_buffer', '0.', cluster_box_buffer, has_value_target=has_cluster_box_buffer, &
+      help_string="If present, quickly cut out atoms in box within cluster_box_radius of any active atoms, rather than doing it properly")
     call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, &
       help_string="rescale calculated positions (and correspondingly forces) by this factor")
     call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, &
@@ -596,27 +601,51 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, cluster_args_str, mark_name='hybrid_mark'//trim(run_suffix), error=error)
-	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
-         ! Check there are no repeated indices among the non-termination atoms in the cluster
-         n_non_term = count(cluster_info%int(6,1:cluster_info%n) == 0)
-         t = int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/))
-         if (multiple_images(t)) then
-              RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
-	 endif
-         call finalise(t)
+         if (has_cluster_box_buffer) then
+            call print('Doing quick cluster carving using cluster box buffer '//cluster_box_buffer//' A')
+            
+            call estimate_origin_extent(at, hybrid_mark == HYBRID_ACTIVE_MARK, cluster_box_buffer, origin, extent)
+            call matrix3x3_inverse(extent,extent_inv)
+            subregion_center = origin + 0.5_dp*sum(extent,2)
+            allocate(cluster_mask(at%n))
+            do i=1, at%N
+               cluster_mask(i) = is_in_subregion(at%pos(:,i), subregion_center, at%lattice, at%g, extent_inv)
+            end do
+            call select(cluster, at, mask=cluster_mask, orig_index=.true.)
+            deallocate(cluster_mask)
+            
+            ! move orig_index property to index//run_suffix
+            call assign_property_pointer(cluster, 'orig_index', cluster_index, error=error)
+            PASS_ERROR(error)
+            call add_property(cluster, 'index'//trim(run_suffix), cluster_index)
+            call remove_property(cluster, 'orig_index', error=error)
+            PASS_ERROR(error)
+            ! there are no terminating atoms
+            call add_property(cluster, 'termindex'//trim(run_suffix), 0)
+         else
+            cluster_info = create_cluster_info_from_mark(at, cluster_args_str, mark_name='hybrid_mark'//trim(run_suffix), error=error)
+            PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
-	 call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(run_suffix), error=error)
-	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
-	 call finalise(cluster_info)
-	 if (current_verbosity() >= PRINT_NERD) then
-	   call write(cluster, 'stdout', prefix='CLUSTER')
-	 endif
-	 if (.not. assign_pointer(cluster, 'index', cluster_index)) then
+            ! Check there are no repeated indices among the non-termination atoms in the cluster
+            n_non_term = count(cluster_info%int(6,1:cluster_info%n) == 0)
+            t = int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/))
+            if (multiple_images(t)) then
+               RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
+            endif
+            call finalise(t)
+            
+            call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(run_suffix), error=error)
+            PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
+            call finalise(cluster_info)
+         end if
+         if (current_verbosity() >= PRINT_NERD) then
+            call write(cluster, 'stdout', prefix='CLUSTER')
+         endif
+	 if (.not. assign_pointer(cluster, 'index'//trim(run_suffix), cluster_index)) then
 	      RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
 	 endif
-	 if (.not. assign_pointer(cluster, 'termindex', termindex)) then
+	 if (.not. assign_pointer(cluster, 'termindex'//trim(run_suffix), termindex)) then
 	      RAISE_ERROR('Potential_Simple_calc: cluster is missing termindex property', error)
 	 endif
          call print('ARGS1 | '//cluster_args_str,PRINT_VERBOSE)
