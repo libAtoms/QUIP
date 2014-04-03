@@ -137,6 +137,7 @@ module Connection_module
   public :: add_bond, remove_bond, remove_bonds, cell_of_pos, connection_cells_initialise
   public :: connection_fill, divide_cell, fit_box_in_cell, get_min_max_images
   public :: max_cutoff, partition_atoms, cell_n
+  public :: is_in_subregion
 
 contains
 
