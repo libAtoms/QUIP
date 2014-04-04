@@ -929,8 +929,6 @@ class ASEDatabaseWriter(object):
             else:
                 calc.name = all_kwargs.get('calculator', '(unknown)')
             at.set_calculator(calc)
-            if calc.name != '(unknown)':
-                keywords.append(calc.name)
 
             database = ase.db.connect(self.dbfile)
             database.write(at, keywords, data=data, **params)
