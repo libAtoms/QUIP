@@ -905,7 +905,10 @@ class ASEDatabaseWriter(object):
                 continue
             if value is None:
                 keywords.append(key)
-            elif (isinstance(value, int)   or isinstance(value, basestring) or
+            if key == 'config_type':
+                keywords.append(value)
+                
+            if (isinstance(value, int)   or isinstance(value, basestring) or
                 isinstance(value, float) or isinstance(value, bool)):
                 # scalar key/value pairs
                 params[key] = value
