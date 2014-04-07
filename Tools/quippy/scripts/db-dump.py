@@ -1,3 +1,23 @@
+#!/usr/bin/env python
+
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ X
+# HQ X   quippy: Python interface to QUIP atomistic simulation library
+# HQ X
+# HQ X   Copyright James Kermode 2010
+# HQ X
+# HQ X   These portions of the source code are released under the GNU General
+# HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# HQ X
+# HQ X   If you would like to license the source code under different terms,
+# HQ X   please contact James Kermode, james.kermode@gmail.com
+# HQ X
+# HQ X   When using this software, please cite the following reference:
+# HQ X
+# HQ X   http://www.jrkermode.co.uk/quippy
+# HQ X
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 import sys
 import optparse
 
@@ -146,9 +166,48 @@ def run(opt, args, verbosity):
                     print 'Writing config %d %r to %r' % (i, at, writer)
                 writer.write(at)
 
-parser = optparse.OptionParser(
+examples = [
+    'List all columns in database, one per line, then exit',
+    '  db-dump.py Si_GAP.db -C',
+    '',
+    'List columns held for rows with diamond-structure config_type',
+    '  db-dump.py Si_GAP.db config_type=dia -C',
+    '',
+    'Number of rows with DFT total energy below -2e4 eV',
+    '  db-dump.py Si_GAP.db \'dft_energy<-2e4\' -n',
+    '',
+    'Table of all rows and columns (up to default --limit=500 rows)',
+    '  db-dump.py Si_GAP.db -a',
+    '',
+    'Table of all columns for rows matching expression',
+    '  db-dump.py Si_GAP.db config_type=bt -a',
+    '',
+    'Table of specific columns for rows matching expression',
+    '  db-dump.py Si_GAP.db config_type=bt -c id,formula,calc,dft_energy,config_type',
+    '',
+    'Specific columns, in sorted order. Duplicate rows suppressed with -u/--uniq',
+    '  db-dump.py Si_GAP.db -c user,formula,calc,config_type -s config_type -u',
+    '',
+    'Print all information held about any configs less than one hour old',
+    '  db-dump.py Si_GAP.db \'age<1h\' -a',
+    '',
+    'Extract rows with two or fewer atoms to single .xyz file',
+    '  db-dump.py Si_GAP.db \'natoms<=2\' -x primitive.xyz',
+    '',
+    'Extract rows with more than 100 Si atoms to a series of .cell files',
+    '  db-dump.py Si_GAP.db \'Si>100\' -x big-%03d.cell'
+    ]
+
+class OptionParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+                
+parser = OptionParser(
     usage='Usage: %prog db-name [selection] [options]',
-    description='Print a formatted table of data from an ase.db database')
+    description='''Print a formatted table of data from an ase.db database.
+Optionally extracts matching configs and write them to files in any format
+supported by quippy.''',
+    epilog='Examples: \n\n' + '\n'.join(examples) + '\n\n')
 
 add = parser.add_option
 add('-v', '--verbose', action='store_true', default=False)
