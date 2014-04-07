@@ -36,7 +36,7 @@ from quippy.farray import FortranArray
 
 __all__ = ['AtomsReaders', 'AtomsWriters', 'atoms_reader',
            'AtomsReader', 'AtomsWriter', 'AtomsList',
-           'read_dataset', 'time_ordered_series', 'read', 'write']
+           'read_dataset', 'time_ordered_series', 'read', 'write', 'dict2atoms']
 
 AtomsReaders = {}
 AtomsWriters = {}
@@ -801,11 +801,65 @@ class ASEWriter(object):
 AtomsWriters['traj'] = ASEWriter
 AtomsWriters['cfg'] = ASEWriter
 
+def dict2atoms(dct):
+    from ase.db.core import dict2atoms
+    from quippy.elasticity import stress_matrix
+    
+    at = dict2atoms(dct)
+
+    f = None
+    try:
+        f = at.get_forces()
+    except RuntimeError:
+        pass
+
+    e = None
+    try:
+        e = at.get_potential_energy()
+    except RuntimeError:
+        pass
+
+    v = None
+    try:
+        v = -stress_matrix(at.get_stress())*at.get_volume()
+    except RuntimeError:
+        pass        
+
+    at = Atoms(at) # convert to quippy Atoms
+    if f is not None:
+        at.add_property('force', f.T)
+    if e is not None:
+        at.params['energy'] = e
+    if v is not None:
+        at.params['virial'] = v
+
+    # extract additional info from database
+    at.params['id'] = dct['id']
+    at.params['unique_id'] = dct['unique_id']
+    if 'keywords' in dct:
+        for key in dct['keywords']:
+            at.params[key] = True
+    if 'key_value_pairs' in dct:
+        at.params.update(dct['key_value_pairs'])
+    if 'data' in dct:
+        for (key, value) in dct['data'].items():
+            key = str(key) # avoid unicode strings
+            value = np.array(value)
+            if value.dtype.kind == 'U':
+                value = value.astype(str)
+            if value.dtype.kind != 'S':
+                value = value.T
+            try:
+                at.add_property(key, value)
+            except (TypeError, RuntimeError):
+                at.params[key] = value
+
+    return at
+
 @atoms_reader('db')
 @atoms_reader('json')
 def ASEDatabaseReader(filename):
-    from ase.db.core import connect, dict2atoms
-    from quippy.elasticity import stress_matrix
+    from ase.db.core import connect
 
     index = None
     if isinstance(filename, basestring) and ('.json@' in filename or
@@ -817,55 +871,7 @@ def ASEDatabaseReader(filename):
     conn = connect(filename)
             
     for dct in conn.select(index):
-        at = dict2atoms(dct)
-
-        f = None
-        try:
-            f = at.get_forces()
-        except RuntimeError:
-            pass
-
-        e = None
-        try:
-            e = at.get_potential_energy()
-        except RuntimeError:
-            pass
-
-        v = None
-        try:
-            v = -stress_matrix(at.get_stress())*at.get_volume()
-        except RuntimeError:
-            pass        
-
-        at = Atoms(at) # convert to quippy Atoms
-        if f is not None:
-            at.add_property('force', f.T)
-        if e is not None:
-            at.params['energy'] = e
-        if v is not None:
-            at.params['virial'] = v
-
-        # extract additional info from database
-        at.params['id'] = dct['id']
-        at.params['unique_id'] = dct['unique_id']
-        if 'keywords' in dct:
-            for key in dct['keywords']:
-                at.params[key] = True
-        if 'key_value_pairs' in dct:
-            at.params.update(dct['key_value_pairs'])
-        if 'data' in dct:
-            for (key, value) in dct['data'].items():
-                key = str(key) # avoid unicode strings
-                value = np.array(value)
-                if value.dtype.kind == 'U':
-                    value = value.astype(str)
-                if value.dtype.kind != 'S':
-                    value = value.T
-                try:
-                    at.add_property(key, value)
-                except (TypeError, RuntimeError):
-                    at.params[key] = value
-        
+        at = dict2atoms(at)
         yield at
     
     
@@ -901,6 +907,7 @@ class ASEDatabaseWriter(object):
         data = {}
         skip_params = ['energy', 'virial', 'calculator'] # filter out duplicate data
         for (key, value) in all_kwargs.items():
+            key = key.lower()
             if key in skip_params:
                 continue
             if value is None:
@@ -920,6 +927,7 @@ class ASEDatabaseWriter(object):
         for (key, value) in at.arrays.items():
             if key in skip_arrays:
                 continue
+            key = key.lower()
             data[key] = value
 
         try:
