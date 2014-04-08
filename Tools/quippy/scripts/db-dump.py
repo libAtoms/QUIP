@@ -65,7 +65,7 @@ class FullFormatter(Formatter):
         if opts.uniq:
             columns += ['repeat']
         if opts.wiki_table:
-            columns = ['*%s*' % col for col in self.columns]
+            columns = ['*%s*' % col for col in columns]
         table = [columns]
         widths = [0 for col in columns]
         signs = [1 for col in columns]  # left or right adjust
@@ -90,9 +90,7 @@ class FullFormatter(Formatter):
                 row.append(s)
             table.append(row)
             ids.append(dct.id)
-        widths = [w and max(w, len(col))
-                  for w, col in zip(widths, columns)]
-        
+
         if self.sort:
             headline = table.pop(0)
             n = self.columns.index(self.sort)
@@ -100,13 +98,22 @@ class FullFormatter(Formatter):
             table.insert(0, headline)
 
         if opts.uniq:
-            uniq_table = []
+            uniq_table = [table.pop(0)] # header rows
+            first_row = table.pop(0)
+            count = 1
             for row in table:
-                if len(uniq_table) > 0 and row == uniq_table[-1]:
-                    continue
-                uniq_table.append(row)
+                if row == first_row:
+                    count += 1
+                else:
+                    uniq_table.append(first_row + [count])
+                    widths[-1] = max(widths[-1], len(str(count)))
+                    first_row = row
+                    count = 1
             table = uniq_table
-            
+
+        widths = [w and max(w, len(col))
+                  for w, col in zip(widths, columns)]
+        
         for row in table:
             line = '|'.join('%*s' % (w * sign, s)
                               for w, sign, s in zip(widths, signs, row)
