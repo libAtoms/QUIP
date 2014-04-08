@@ -134,7 +134,7 @@ def run(opt, args, verbosity):
     else:
         expressions = []
 
-    if opts.count:
+    if opts.count or opts.uniq:
         opts.limit = 0
 
     rows = con.select(expressions, verbosity=verbosity, limit=opts.limit)
@@ -228,7 +228,7 @@ add = parser.add_option
 add('-v', '--verbose', action='store_true', default=False)
 add('-q', '--quiet', action='store_true', default=False)
 add('-n', '--count', action='store_true',
-    help='Count number of selected rows.')
+    help='Count number of selected rows. Implies --limit=0.')
 add('-C', '--list-columns', action='store_true', default=False,
     help='Print list of available columns and exit.')
 add('-c', '--columns', metavar='col1,col2,...',
@@ -240,7 +240,7 @@ add('-a', '--include-all', action='store_true', default=False,
 add('-s', '--sort', metavar='column',
     help='Sort rows using column.  Default is to sort after ID.')
 add('-u', '--uniq', action='store_true',
-    help='Suppress printing of duplicate rows.')
+    help='Suppress printing of duplicate rows. Implies --limit=0.')
 add('-x', '--extract', metavar='filename',
     help='''Extract matching configs and save to file(s). Use a filename containing a
 "%" expression for multiple files labelled by an index starting from 0,
