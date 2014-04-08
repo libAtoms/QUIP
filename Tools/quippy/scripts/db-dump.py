@@ -60,10 +60,15 @@ class FullFormatter(Formatter):
             return str(value)
         return keyval_func
 
-    def format(self, dcts, uniq=False):
-        table = [self.columns]
-        widths = [0 for col in self.columns]
-        signs = [1 for col in self.columns]  # left or right adjust
+    def format(self, dcts, opts):
+        columns = self.columns
+        if opts.uniq:
+            columns += ['repeat']
+        if opts.wiki_table:
+            columns = ['*%s*' % col for col in self.columns]
+        table = [columns]
+        widths = [0 for col in columns]
+        signs = [1 for col in columns]  # left or right adjust
         ids = []
         fd = sys.stdout
         for dct in dcts:
@@ -86,7 +91,7 @@ class FullFormatter(Formatter):
             table.append(row)
             ids.append(dct.id)
         widths = [w and max(w, len(col))
-                  for w, col in zip(widths, self.columns)]
+                  for w, col in zip(widths, columns)]
         
         if self.sort:
             headline = table.pop(0)
@@ -94,7 +99,7 @@ class FullFormatter(Formatter):
             table.sort(key=lambda row: row[n])
             table.insert(0, headline)
 
-        if uniq:
+        if opts.uniq:
             uniq_table = []
             for row in table:
                 if len(uniq_table) > 0 and row == uniq_table[-1]:
@@ -103,9 +108,12 @@ class FullFormatter(Formatter):
             table = uniq_table
             
         for row in table:
-            fd.write('|'.join('%*s' % (w * sign, s)
+            line = '|'.join('%*s' % (w * sign, s)
                               for w, sign, s in zip(widths, signs, row)
-                              if w > 0))
+                              if w > 0)
+            if opts.wiki_table:
+                line = '|' + line + '|'
+            fd.write(line)
             fd.write('\n')
         return ids 
     
@@ -152,7 +160,7 @@ def run(opt, args, verbosity):
                 return
             
         if verbosity >= 1:
-            f.format(dcts, uniq=opts.uniq)
+            f.format(dcts, opts)
 
         if opts.extract is not None:
             if '%' not in opts.extract:
@@ -233,6 +241,8 @@ e.g. "file-%03d.xyz".''')
 add('--limit', type=int, default=500, metavar='N',
     help='Show only first N rows (default is 500 rows).  Use --limit=0 ' +
     'to show all.')
+add('-w', '--wiki-table', action='store_true',
+    help='Format output as a Wiki table')
 
 opts, args = parser.parse_args()
 verbosity = 1 - opts.quiet + opts.verbose
