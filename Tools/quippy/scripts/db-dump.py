@@ -124,7 +124,8 @@ class FullFormatter(Formatter):
             fd.write('\n')
         return ids 
     
-def run(opt, args, verbosity):
+def run(opts, args, verbosity):
+    args = args[:]
     con = connect(args.pop(0))
     if args:
         if len(args) == 1 and args[0].isdigit():
@@ -155,15 +156,15 @@ def run(opt, args, verbosity):
                 for key in dct.key_value_pairs.keys():
                     if key not in keys:
                         keys.append(key)
-            opt.columns = ','.join(['+'+key for key in keys])
+            opts.columns = ','.join(['+'+key for key in keys])
             
         f = FullFormatter(opts.columns, opts.sort)
-        if verbosity > 1 or opt.list_columns:
+        if verbosity > 1 or opts.list_columns:
             for col in f.columns:
-                if not opt.list_columns:
+                if not opts.list_columns:
                     print 'COLUMN',
                 print col
-            if opt.list_columns:
+            if opts.list_columns:
                 return
             
         if verbosity >= 1:
