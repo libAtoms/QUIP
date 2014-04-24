@@ -372,12 +372,14 @@ class Test_SW_Rescale_Automatic_Factors(QuippyTestCase):
     def test_factors(self):
         self.assertArrayAlmostEqual([self.p.r_scale, self.p.e_scale], [0.990180734136, 1.06610169294])
 
+    @skip
     def test_volume(self):
         verbosity_push_decrement()
         self.p.minim(self.bulk, 'cg', 1e-6, 100, do_lat=True, do_pos=True)
         verbosity_pop()
         self.assertArrayAlmostEqual([self.bulk.cell_volume()], [self.target_vol], tol=1e-4)
 
+    @skip
     def test_bulk_modulus(self):
         verbosity_push(PRINT_NERD)
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
