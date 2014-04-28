@@ -462,7 +462,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   static int have_cached_index;
   char indexname[LINESIZE];
-  int got_index = 0, do_update;
+  int do_update;
   static char *last_filename;
   static long *last_frames;
   static int *last_atoms;
