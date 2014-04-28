@@ -460,6 +460,15 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   int *mask;
   int strip_prefix;
 
+  static int have_cached_index;
+  char indexname[LINESIZE];
+  int got_index = 0, do_update;
+  static char *last_filename;
+  static long *last_frames;
+  static int *last_atoms;
+  static int last_n_frame;
+  static int last_frames_array_size;
+
   debug("entered read_xyz()\n");
 
   INIT_ERROR;
@@ -481,9 +490,44 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   } else if (compute_index) {
     // Not reading from stdin or from a string, so we can compute an index
     debug("read_xyz: computing index for file %s\n", filename);
-    frames_array_size = 0;
-    n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
-    PASS_ERROR;
+
+    got_index = xyz_find_index(filename, indexname, &do_update, error);
+
+    if (have_cached_index && got_index && !do_update && (strcmp(filename, last_filename) == 0)) {
+      // use cached copy
+      frames = last_frames;
+      atoms = last_atoms;
+      n_frame = last_n_frame;
+      frames_array_size = last_frames_array_size;
+    } else {
+      // read index
+      if (have_cached_index) {
+        free(last_filename);
+        free(last_frames);
+        free(last_atoms);
+      }
+
+      frames_array_size = 0;
+
+      n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
+      PASS_ERROR;
+
+      if (n_frame > 1000) {
+        // cache big index files in memory
+
+        last_filename = strdup(filename);
+        if (last_filename == NULL) {
+          RAISE_ERROR("read_xyz: insufficient memory for strdup");
+        }
+
+        last_frames = frames;
+        last_atoms = atoms;
+        last_n_frame = n_frame;
+        last_frames_array_size = frames_array_size;
+
+        have_cached_index = 1;
+      }
+    }
 
     if (frame < 0 || frame >= n_frame) {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: frame %d out of range 0 <= frame < %d", frame, n_frame-1);
@@ -499,8 +543,10 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     if (fseek(in, frames[frame], SEEK_SET) == -1) {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot seek XYZ input file %s", filename);
     }
-    free(frames);
-    free(atoms);
+    if (!have_cached_index) {
+      free(frames);
+      free(atoms);
+    }
   } else {
     // compute_index = 0, so we just open the file and start at the beginning
     in = fopen(filename, "r");
