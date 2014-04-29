@@ -3058,7 +3058,7 @@ function func_wrapper(func, x, data, local_energy, gradient, doefunc)
 end function func_wrapper
 
 ! Interface is made to imitate the existing interface.
-  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity)
+  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity,infoverride)
     
     implicit none
     
@@ -3140,6 +3140,7 @@ end function func_wrapper
       end subroutine
     end INTERFACE 
     ! result
+    real(dp), optional :: infoverride
     integer::preconminim
   
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
@@ -3481,7 +3482,7 @@ end function func_wrapper
       end if
       
       gold = g
-      amax = calc_amax(s,pr,doefunc) 
+      amax = calc_amax(s,pr,doefunc,infoverride) 
       if (doLSbasic) then
         alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
@@ -3963,7 +3964,7 @@ end function func_wrapper
 
   end function
 
-  function calc_amax(g,pr,doefunc)
+  function calc_amax(g,pr,doefunc,infoverride)
 
 
     implicit none
@@ -3971,9 +3972,19 @@ end function func_wrapper
     real(dp) :: g(:)
     type(precon_data) :: pr
     real(dp) :: calc_amax
+    real(dp), optional :: infoverride
     integer :: doefunc
+    real(dp) :: P_amax, inf_amax
+    real(dp) :: infcoeff = 0.5
 
-    calc_amax = pr%length_scale/sqrt(pdotproduct(g,g,pr,doefunc))
+    if (present(infoverride)) then
+      infcoeff = infoverride
+    end if
+
+    P_amax = pr%length_scale/sqrt(pdotproduct(g,g,pr,doefunc))
+    inf_amax = infcoeff/maxval(abs(g))
+    
+    calc_amax = min(P_amax,inf_amax)
 
   end function
   
@@ -5627,7 +5638,7 @@ end function func_wrapper
   
   end subroutine
  
-  function precondimer(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian)
+  function precondimer(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,infoverride)
     
     implicit none
     
@@ -5700,6 +5711,7 @@ end function func_wrapper
          real(dp),intent(inout) :: FDHess(:,:)
        end subroutine gethessian
     end INTERFACE
+    real(dp), optional :: infoverride
 
     integer :: N,k,k2
     real(dp), allocatable :: x(:), x1(:), x2(:), F1(:), F2(:), Nvec(:), pF1(:),pF2(:)
