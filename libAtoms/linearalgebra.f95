@@ -6498,6 +6498,8 @@ CONTAINS
    real(dp), parameter                                                ::         TOL_SVD = 1e-13_dp
    integer                                                            ::         n_dimension, info, i, lwork, j
 
+   real(dp) :: thresh_use
+
    call print('entering inverse_svd_threshold', verbosity=PRINT_VERBOSE)
 
    n_dimension = size(in_matrix(:,1))
@@ -6532,10 +6534,16 @@ CONTAINS
    end do
    call print("smallest, largest value : "//minval(abs(w))//" "//maxval(abs(w)), verbosity=PRINT_VERBOSE)
 
+   if (thresh >= 0.0) then
+      thresh_use = thresh*TOL_SVD
+   else
+      thresh_use = abs(thresh)*TOL_SVD*w(1)
+   endif
+
    sigmainv = 0.0_dp
    j = 0
    do i=1, n_dimension
-       if (w(i) < thresh*TOL_SVD) then
+       if (w(i) < thresh_use) then
             sigmainv(i,i) = 0.0_dp
             j = j + 1
        else
