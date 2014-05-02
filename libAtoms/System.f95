@@ -2257,9 +2257,8 @@ contains
 #ifdef _MPI
        call get_mpi_size_rank(MPI_COMM_WORLD, np, myp)
 #endif
-       actual_seed= (1 + values(8)+values(5)+values(6)+values(7))*(myp+1) ! (hour+minute+seconds+millisecond)*(mpi_rank+1)
-       use_common_seed = .true.
-       if (present(common_seed)) use_common_seed = common_seed
+       actual_seed= (((values(5)*60+values(6))*60+values(7))*1000+values(8))*np+1+myp ! (number of ms since beginning of the day time) * np + rank
+       use_common_seed = optional_default(.true., common_seed)
 #ifdef _MPI
        if (.not. use_common_seed) then
           call print('libAtoms::Hello World: MPI run with different seeds on each process')
