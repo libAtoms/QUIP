@@ -531,12 +531,12 @@ class FortranDerivedType(object):
         variable numbers and types of arguments. For example::
 
             p = Potential('IP SW', xml_string)
-	    p.calc(at, virial=True, energy=True)
+	        p.calc(at, virial=True, energy=True)
 
         is equivalent to::
 
             p = Potential('IP SW', xml_string)
-	    p.calc(at, args_str="virial energy")
+	        p.calc(at, args_str="virial energy")
 	
         The return value us made up of a tuple of the arguments to the
         Fortran routine which are ``intent(out)``. Pointers to Fortran
