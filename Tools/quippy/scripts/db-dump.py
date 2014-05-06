@@ -36,7 +36,7 @@ class FullFormatter(Formatter):
                         'energy', 'fmax', 'pbc', 'size', 'keywords',
                         'charge', 'mass', 'fixed', 'smax', 'magmom']
         
-        if cols is not None:
+        if cols is not None and len(cols) > 0:
             if cols[0] == '+':
                 cols = cols[1:]
             elif cols[0] != '-':
@@ -153,9 +153,10 @@ def run(opts, args, verbosity):
         if opts.include_all or opts.list_columns:
             keys = []
             for dct in dcts:
-                for key in dct.key_value_pairs.keys():
-                    if key not in keys:
-                        keys.append(key)
+                if hasattr(dct, 'key_value_pairs'):
+                    for key in dct.key_value_pairs.keys():
+                        if key not in keys:
+                            keys.append(key)
             opts.columns = ','.join(['+'+key for key in keys])
             
         f = FullFormatter(opts.columns, opts.sort)
