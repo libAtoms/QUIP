@@ -39,7 +39,7 @@ module gp_basic_module
 implicit none
 private
 
-public :: gp_matrix, gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad, f_predict_var_grad, f_predict_grad_var
+public :: gp_basic, initialise, finalise, f_predict, f_predict_var, f_predict_grad, f_predict_var_grad, f_predict_grad_var
 public :: SE_kernel_r_rr
 
 integer, parameter :: dp = selected_real_kind(15,307)
@@ -494,7 +494,8 @@ function f_predict_var_rr(self, rr, kernel)
 
    allocate(kk(size(self%k, 1), size(rr, 2)), mat_inv_kk(size(self%k,1), size(rr,2)))
    do i=1, size(rr, 2)
-      call f_kernel_vec(rr(:,i), self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, kernel, kk(:,i))
+      call f_kernel_vec(rr(:,i), self%m_f, self%f_r, self%m_g, self%g_r, self%f_var, self%len_scale_sq, self%periodicity, &
+	 kernel, kk(:,i))
       ! print *, "kernel var size ", size(self%k), " num above 1% ",count(self%k > 0.01_dp*maxval(self%k))
    end do
 
