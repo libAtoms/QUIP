@@ -565,7 +565,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         opened = False
         if format in AtomsReaders:
-            source = AtomsReaders[format](source, **kwargs)
+            source = AtomsReaders[format](source, format=format, **kwargs)
             opened = True
 
         if isinstance(source, basestring):

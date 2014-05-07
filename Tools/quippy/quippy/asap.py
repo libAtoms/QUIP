@@ -119,7 +119,7 @@ AtomsWriters['pos'] = PosCelWriter
 
 @atoms_reader('pos')
 def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in',
-                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True):
+                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True, format=None):
 
     if basename is not None:
         basename = os.path.splitext(basename)[0]

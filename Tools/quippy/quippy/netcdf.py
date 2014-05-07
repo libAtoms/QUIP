@@ -45,7 +45,7 @@ def netcdf_dimlen(obj, name):
 
 @atoms_reader(netcdf_file)
 @atoms_reader('nc')
-def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
+def NetCDFReader(source, frame=None, start=0, stop=None, step=1, format=None):
 
     opened = False
     if isinstance(source, str):

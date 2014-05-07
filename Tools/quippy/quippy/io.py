@@ -265,7 +265,7 @@ class AtomsReader(AtomsReaderMixin):
             if format is None:
                 format = self.reader.__class__
             if format in AtomsReaders:
-                self.reader = AtomsReaders[format](self.reader, **kwargs)
+                self.reader = AtomsReaders[format](self.reader, format=format, **kwargs)
 
         # check if reader is still a string or list of strings - indicates missing files or unknown format
         if isinstance(self.reader, basestring):
@@ -737,7 +737,7 @@ def time_ordered_series(source, dt=None):
 
 @atoms_reader('traj')
 @atoms_reader('cfg')
-def ASEReader(source):
+def ASEReader(source, format=None):
     """
     Helper routine to load from ASE trajectories
     """
@@ -745,7 +745,13 @@ def ASEReader(source):
     from ase.atoms import Atoms as AseAtoms
     from quippy.elasticity import stress_matrix
 
-    images = read(source, index=slice(None,None,None))
+    format_converter = {
+        'POSCAR': 'vasp',
+        'CONTCAR': 'vasp',
+        'OUTCAR': 'vasp_out'
+        }
+    format = format_converter.get(format, format)
+    images = read(source, index=slice(None,None,None), format=format)
     if isinstance(images, AseAtoms):
         images = [images]
     
@@ -858,7 +864,7 @@ def dict2atoms(dct):
 
 @atoms_reader('db')
 @atoms_reader('json')
-def ASEDatabaseReader(filename):
+def ASEDatabaseReader(filename, format=None):
     from ase.db.core import connect
 
     index = None

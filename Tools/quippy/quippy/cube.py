@@ -108,7 +108,7 @@ class CubeWriter(object):
         if self.opened:  self.f.close()
 
 
-def CubeReader(f, property_name='charge', discard_repeat=True):
+def CubeReader(f, property_name='charge', discard_repeat=True, format=None):
 
     def convert_line(line, *fmts):
         return (f(s) for f,s in zip(fmts, line.split()))
