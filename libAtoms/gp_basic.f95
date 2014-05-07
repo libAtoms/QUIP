@@ -30,6 +30,10 @@
 
 !% A simple Gaussian process module for n-D functions learned from samples of
 !% their values or gradients, with sparsification
+!% Sparsification based on results derived by Albert Bartok-Partay that are
+!% similar to Rasmussen and Williams Eqs. 8.26 and 8.27, but generalized to
+!% non-identity sigma matrices.  Also equivalent (at least for the mean) to
+!% Snelson (2006) Eq. 8 but with Lambda=0
 
 module gp_basic_module
 implicit none
@@ -454,6 +458,8 @@ function f_predict_var_r(self, r, kernel)
    f_predict_var_r = self%f_var
    if (self%sparsified) then
       ! from Wlliams and Rasumussen, Gaussian Processes for Machine Learning, MIT Press, 2006 Eq. 8.27
+      ! modified by Noam Bernstein for non-identity sigma matrix, based on Albert Bartok-Partay's
+      ! expression for the predicted mean (which started from Snelson's Eq. 8 with Lambda=0)
       call Matrix_QR_Solve(self%Kmm, self%k, self%mat_inv_k)
       f_predict_var_r = f_predict_var_r - ddot(size(self%k), self%k(1), 1, self%mat_inv_k(1), 1)
       call Matrix_QR_Solve(self%Cmat, self%k, self%mat_inv_k)
