@@ -285,7 +285,7 @@ contains
 
     l_n_neighbours = n_neighbours(at, i_at)
 
-    if (l_n_neighbours > size(nn_list)) then
+    if (.not. allocated(nn_list) .or. l_n_neighbours > size(nn_list)) then
       if (allocated(nn_list)) deallocate(nn_list)
       allocate(nn_list(l_n_neighbours))
       if (allocated(nn_vec)) deallocate(nn_vec)
