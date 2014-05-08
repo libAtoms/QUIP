@@ -320,7 +320,7 @@ try:
     import ase.io.vasp
     from quippy.io import ASEReader, ASEWriter
 
-    # make old readers accessible with an underscore prefix
+    # make old readers accessible with an underscore prefix
     AtomsReaders['_POSCAR'] = AtomsReaders['POSCAR']
     AtomsReaders['_OUTCAR'] = AtomsReaders['OUTCAR']
 
