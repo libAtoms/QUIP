@@ -244,6 +244,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp), dimension(3,3) :: virial_i
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
+  logical, dimension(:), allocatable :: mpi_local_mask
   logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
@@ -337,14 +338,16 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if( has_property(at,"mpi_local_mask") ) then
            RAISE_ERROR("IPModel_GAP: mpi_local_mask property already present", error)
         endif
-        call add_property(at,'mpi_local_mask',.false.,ptr = atom_mask_pointer, overwrite=.true., error=error) 
-        call concat(my_args_str," atom_mask_name=mpi_local_mask")
 
+        allocate(mpi_local_mask(at%N))
+        call add_property_from_pointer(at,'mpi_local_mask',mpi_local_mask,error=error)
+
+        mpi_local_mask = .false.
         do i = 1, at%N
-           if (mod(i-1, mpi%n_procs) == mpi%my_proc) atom_mask_pointer(i) = .true.
+           if (mod(i-1, mpi%n_procs) == mpi%my_proc) mpi_local_mask(i) = .true.
         enddo
 
-        call concat(my_args_str," mpi_active=T mpi_n_procs="//mpi%n_procs//" mpi_my_proc="//mpi%my_proc)
+        call concat(my_args_str," atom_mask_name=mpi_local_mask mpi_active=T mpi_n_procs="//mpi%n_procs//" mpi_my_proc="//mpi%my_proc)
      endif
   endif
            
@@ -465,6 +468,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(present(local_e) ) call sum_in_place(mpi,local_e)
 
         call remove_property(at,'mpi_local_mask', error=error) 
+        deallocate(mpi_local_mask)
      endif
   endif
   
