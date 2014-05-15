@@ -2507,6 +2507,7 @@ contains
     endif
 
     call finalise(this%keys(this%n))
+    call finalise(this%entries(this%n))
 
     this%N = this%N - 1
     this%cache_invalid = 1
