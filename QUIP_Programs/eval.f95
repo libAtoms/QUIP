@@ -214,7 +214,7 @@ implicit none
 
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
-    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
+    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)]",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
     call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
@@ -233,20 +233,14 @@ implicit none
      eval_port = 32768
   endif
 
-  call print ("Using calc args: " // trim(calc_args))
-  call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
-  inquire(file=trim(param_file), exist=param_file_exists)
-  if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
-
-  call print ("Using param_file: " // trim(param_file))
-  call print ("Using init args: " // trim(init_args))
-
+  ! are we calculating descriptors or potentials? 
   if ( has_descriptor_str ) then
 #ifdef HAVE_GAP
      call initialise(eval_descriptor, trim(descriptor_str))
+     call print("Using descriptor string: "// trim(descriptor_str))
      if( mycutoff < 0.0_dp ) then
         mycutoff = cutoff(eval_descriptor)
      elseif( mycutoff < cutoff(eval_descriptor) ) then
@@ -255,14 +249,24 @@ implicit none
 #else
      call system_abort("To print descriptors, HAVE_GAP must be enabled")
 #endif
-  elseif(has_bulk_scale) then
-     call initialise(infile, trim(bulk_scale_file))
-     call read(bulk_scale, infile, error=error)
-     call finalise(infile)
-     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
-     call finalise(bulk_scale)
   else
-     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     ! we are calculating potentials, so lets try to open the XML file
+     inquire(file=trim(param_file), exist=param_file_exists)
+     if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
+
+     call print ("Using calc args: " // trim(calc_args))
+     call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
+     call print ("Using param_file: " // trim(param_file))
+     call print ("Using init args: " // trim(init_args))
+     if(has_bulk_scale) then
+        call initialise(infile, trim(bulk_scale_file))
+        call read(bulk_scale, infile, error=error)
+        call finalise(infile)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+        call finalise(bulk_scale)
+     else
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     end if
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)
