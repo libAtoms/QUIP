@@ -400,11 +400,7 @@ implicit none
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
-<<<<<<< HEAD
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2)
-=======
-       length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method))
->>>>>>> 646909d... further precon_minim testing changes
               call system_timer('precon_minim')
            else
               call system_timer('minim')
