@@ -113,35 +113,6 @@ module real_space_covariance_module
 
    contains
 
-   function cutoff_function(r,cutoff_in)
-
-      real(dp)             :: cutoff_function
-      real(dp), intent(in) :: r, cutoff_in
-      real(dp), parameter :: S = 0.25_dp
-
-      if( r > cutoff_in ) then
-          cutoff_function = 0.0_dp
-      else
-          cutoff_function = 0.5_dp * ( cos(PI*r/cutoff_in) + 1.0_dp )
-      endif
-
-   endfunction cutoff_function
-
-   function coordination_function(r,cutoff_in,transition_width)
-
-      real(dp)             :: coordination_function
-      real(dp), intent(in) :: r, cutoff_in, transition_width
-
-      if( r > cutoff_in ) then
-          coordination_function = 0.0_dp
-      elseif( r > (cutoff_in-transition_width) ) then
-          coordination_function = 0.5_dp * ( cos(PI*(r-cutoff_in+transition_width)/transition_width) + 1.0_dp )
-      else
-          coordination_function = 1.0_dp
-      endif
-
-   endfunction coordination_function
-
    subroutine realspacecovariance_finalise(this)
      type(realspacecovariance), intent(inout) :: this
      integer i

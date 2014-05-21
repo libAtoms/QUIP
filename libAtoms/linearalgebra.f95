@@ -50,6 +50,52 @@ module linearalgebra_module
   private
   SAVE
 
+    real(dp), parameter :: factorial_table(0:20) = (/&
+       1.0_dp, &
+       1.0_dp, &
+       2.0_dp, &
+       6.0_dp, &
+       24.0_dp, &
+       120.0_dp, &
+       720.0_dp, &
+       5040.0_dp, &
+       40320.0_dp, &
+       362880.0_dp, &
+       3628800.0_dp, &
+       39916800.0_dp, &
+       479001600.0_dp, &
+       6227020800.0_dp, &
+       87178291200.0_dp, &
+       1307674368000.0_dp, &
+       20922789888000.0_dp, &
+       355687428096000.0_dp, &
+       6402373705728000.0_dp, &
+       121645100408832000.0_dp, &
+       2432902008176640000.0_dp/)
+   public :: factorial, factorial_int, factorial2, binom, oscillate
+
+   public :: cos_cutoff_function, dcos_cutoff_function
+
+   interface coordination_function
+      module procedure coordination_function_upper, coordination_function_lower_upper
+   endinterface coordination_function
+   public :: coordination_function
+
+   interface dcoordination_function
+      module procedure dcoordination_function_upper, dcoordination_function_lower_upper
+   endinterface dcoordination_function
+   public :: dcoordination_function
+
+   interface d2coordination_function
+      module procedure d2coordination_function_upper
+   endinterface d2coordination_function
+   public :: d2coordination_function
+
+   interface d3coordination_function
+      module procedure d3coordination_function_upper
+   endinterface d3coordination_function
+   public :: d3coordination_function
+
   public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
@@ -6591,5 +6637,289 @@ end if !on condition of matrix inverting
      endif
 
   end function d3poly_switch
+
+   !#################################################################################
+   !#
+   !% Factorial, real result
+   !#
+   !#################################################################################
+
+    function factorial(n) result(res)
+
+     ! factorial_real
+
+     integer, intent(in) :: n
+     real(dp)            :: res
+     integer :: i
+
+     if (n<0) then
+        call system_abort('factorial: negative argument')
+     elseif(n <= 20) then
+        res = factorial_table(n)
+     else
+        res=1.0_dp
+        do i=2,n
+           res = res*i
+        end do
+     end if
+
+   endfunction factorial
+
+   !#################################################################################
+   !#
+   !% Factorial, integer result
+   !#
+   !#################################################################################
+
+   function factorial_int(n) result(res)
+
+     ! factorial_int
+
+     integer, intent(in) :: n
+     integer             :: res
+     integer :: i
+
+     if (n<0) then
+        call system_abort('factorial_int: negative argument')
+     else
+        res=1
+        do i=2,n
+           res = res*i
+        end do
+     end if
+
+   endfunction factorial_int
+
+   !#################################################################################
+   !#
+   !% Double factorial, real result
+   !#
+   !#################################################################################
+
+   recursive function factorial2(n) result(res)
+
+     ! double factorial
+
+     integer, intent(in) :: n
+     real(dp)            :: res
+     integer :: i
+
+     if( n < -1 ) then
+         call system_abort('factorial2: negative argument')
+     else
+         res = 1.0_dp
+         do i = 2-mod(n,2), n, 2
+            res = res*i
+         enddo
+     endif
+
+   endfunction factorial2
+
+   !#################################################################################
+   !#
+   !% Binomial coefficient, real result
+   !#
+   !#################################################################################
+
+   recursive function binom(n,r) result(res)
+
+     ! binomial coefficients
+
+     integer, intent(in) :: n,r
+     real(dp)            :: res
+     integer             :: i
+
+     if((n<0) .or. (r<0) .or. (n<r)) then
+        res = 0.0_dp
+     else
+        res = 1.0_dp
+        do i = 0, r-1
+           res = real(n-i,dp)/real(r-i,dp) * res
+        enddo
+     endif
+
+   endfunction binom
+
+   !#################################################################################
+   !#
+   !% $ (-1)^n $ function.
+   !#
+   !#################################################################################
+
+   function oscillate(m)
+
+     integer, intent(in) :: m
+     integer :: oscillate
+
+     if( mod(m,2) == 0 ) then
+         oscillate = 1
+     else
+         oscillate = -1
+     endif
+
+   endfunction oscillate
+
+   function cos_cutoff_function(r,cutoff_in)
+
+      real(dp)             :: cos_cutoff_function
+      real(dp), intent(in) :: r, cutoff_in
+      real(dp), parameter :: S = 0.25_dp
+
+      if( r > cutoff_in ) then
+          cos_cutoff_function = 0.0_dp
+      else
+          cos_cutoff_function = 0.5_dp * ( cos(PI*r/cutoff_in) + 1.0_dp )
+      endif
+      !if( r > cutoff_in ) then
+      !    cutoff = 0.0_dp
+      !elseif( r > (cutoff_in-S) ) then
+      !    cutoff = 0.5_dp * ( cos(PI*(r-cutoff_in+S)/S) + 1.0_dp )
+      !else
+      !    cutoff = 1.0_dp
+      !endif
+
+   endfunction cos_cutoff_function
+
+   function dcos_cutoff_function(r,cutoff_in)
+
+      real(dp)             :: dcos_cutoff_function
+      real(dp), intent(in) :: r, cutoff_in
+      real(dp), parameter :: S = 0.25_dp
+
+      if( r > cutoff_in ) then
+          dcos_cutoff_function = 0.0_dp
+      else
+          dcos_cutoff_function = - 0.5_dp * PI * sin(PI*r/cutoff_in) / cutoff_in
+      endif
+      !if( r > r_cut ) then
+      !    dcutoff = 0.0_dp
+      !elseif( r > (cutoff_in-S) ) then
+      !    dcutoff = - 0.5_dp * PI * sin(PI*(r-cutoff_in+S)/S) / S
+      !else
+      !    dcutoff = 0.0_dp
+      !endif
+
+   endfunction dcos_cutoff_function
+
+   function coordination_function_upper(r,cutoff_in,transition_width)
+
+      real(dp)             :: coordination_function_upper
+      real(dp), intent(in) :: r, cutoff_in, transition_width
+
+      if( r > cutoff_in ) then
+          coordination_function_upper = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+          coordination_function_upper = 0.5_dp * ( cos(PI*(r-cutoff_in+transition_width)/transition_width) + 1.0_dp )
+      else
+          coordination_function_upper = 1.0_dp
+      endif
+
+   endfunction coordination_function_upper
+
+   function dcoordination_function_upper(r,cutoff_in,transition_width)
+
+      real(dp)             :: dcoordination_function_upper
+      real(dp), intent(in) :: r, cutoff_in,transition_width
+
+      if( r > cutoff_in ) then
+          dcoordination_function_upper = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+          dcoordination_function_upper = - 0.5_dp * PI * sin(PI*(r-cutoff_in+transition_width)/transition_width) / transition_width
+      else
+          dcoordination_function_upper = 0.0_dp
+      endif
+
+   endfunction dcoordination_function_upper
+
+   function d2coordination_function_upper(r,cutoff_in,transition_width)
+
+      real(dp)             :: d2coordination_function_upper
+      real(dp), intent(in) :: r, cutoff_in,transition_width
+
+      if( r > cutoff_in ) then
+	  d2coordination_function_upper = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+	  d2coordination_function_upper = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width) 
+      else
+	  d2coordination_function_upper = 0.0_dp
+      endif
+
+   endfunction d2coordination_function_upper
+
+   !NB this third derivative is not continuous! 
+   function d3coordination_function_upper(r,cutoff_in,transition_width)
+
+      real(dp)             :: d3coordination_function_upper
+      real(dp), intent(in) :: r, cutoff_in,transition_width
+
+      if( r > cutoff_in ) then
+	  d3coordination_function_upper = 0.0_dp
+      elseif( r > (cutoff_in-transition_width) ) then
+	  d3coordination_function_upper = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width) 
+      else
+	  d3coordination_function_upper = 0.0_dp
+      endif
+
+   endfunction d3coordination_function_upper
+
+
+   function coordination_function_lower_upper(r,lower_cutoff_in,lower_transition_width, upper_cutoff_in, upper_transition_width)
+
+      real(dp)             :: coordination_function_lower_upper
+      real(dp), intent(in) :: r, lower_cutoff_in, lower_transition_width, upper_cutoff_in, upper_transition_width
+
+      coordination_function_lower_upper = coordination_function(r, upper_cutoff_in, upper_transition_width) * coordination_function(-r, -lower_cutoff_in, lower_transition_width)
+
+   endfunction coordination_function_lower_upper
+
+   function dcoordination_function_lower_upper(r,lower_cutoff_in,lower_transition_width, upper_cutoff_in, upper_transition_width)
+
+      real(dp)             :: dcoordination_function_lower_upper
+      real(dp), intent(in) :: r, lower_cutoff_in, lower_transition_width, upper_cutoff_in, upper_transition_width
+
+      dcoordination_function_lower_upper = dcoordination_function(r, upper_cutoff_in, upper_transition_width) * coordination_function(-r, -lower_cutoff_in, lower_transition_width) - &
+         coordination_function(r, upper_cutoff_in, upper_transition_width) * dcoordination_function(-r, -lower_cutoff_in, lower_transition_width)
+
+   endfunction dcoordination_function_lower_upper
+
+!!$
+!!$   function fermi_dirac_function(r,cutoff_in,transition_width)
+!!$
+!!$      real(dp)             :: fermi_dirac_function
+!!$      real(dp), intent(in) :: r, cutoff_in, transition_width
+!!$      real(dp)             :: ex, numerical_zero           
+!!$      numerical_zero = 1e-16_dp
+!!$
+!!$      ex = exp((r-cutoff_in)/transition_width)
+!!$
+!!$      if( ex < numerical_zero ) then
+!!$          fermi_dirac_function= 1.0_dp
+!!$      elseif( 1/ex < numerical_zero) then
+!!$          fermi_dirac_function = 0.0_dp 
+!!$      else
+!!$          fermi_dirac_function = 1.0_dp / (ex + 1.0_dp)
+!!$      endif
+!!$
+!!$   endfunction fermi_dirac_function
+!!$
+!!$
+!!$   function d_ln_fermi_dirac_function(r,cutoff_in,transition_width)
+!!$
+!!$      real(dp)             :: d_ln_fermi_dirac_function
+!!$      real(dp), intent(in) :: r, cutoff_in, transition_width
+!!$      real(dp)             :: ex, numerical_zero           
+!!$      numerical_zero = 1e-16_dp
+!!$
+!!$      ex = exp((r-cutoff_in)/transition_width)
+!!$
+!!$      if( ex < numerical_zero ) then
+!!$          d_ln_fermi_dirac_function = 0.0_dp 
+!!$      else
+!!$          d_ln_fermi_dirac_function = (-1.0_dp/transition_width)* (r) / (1.0_dp + 1/ex)
+!!$      endif
+!!$
+!!$   endfunction d_ln_fermi_dirac_function
+
+
 
 end module linearalgebra_module

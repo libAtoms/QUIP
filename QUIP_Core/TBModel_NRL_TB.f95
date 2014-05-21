@@ -1216,7 +1216,7 @@ function calc_SK_coeff_H(this, SK_type, ti, tj, dist, i_mag)
   u_i_mag = optional_default(1, i_mag)
 
   calc_SK_coeff_H = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist) 
-  calc_SK_coeff_H = calc_SK_coeff_H * cutoff_function(this,  dist, ti, tj)
+  calc_SK_coeff_H = calc_SK_coeff_H * NRLTB_cutoff_function(this,  dist, ti, tj)
 end function calc_SK_coeff_H
 
 function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag)
@@ -1234,8 +1234,8 @@ function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag)
 
   SKd = calc_SK_poly_deriv(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist) 
   SK = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist) 
-  co = cutoff_function(this,  dist, ti, tj)
-  cod = cutoff_function_d(this,  dist, ti, tj)
+  co = NRLTB_cutoff_function(this,  dist, ti, tj)
+  cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
 
   calc_SK_coeff_H_d = SK*cod + SKd*co
 end function calc_SK_coeff_H_d
@@ -1255,7 +1255,7 @@ function calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_t
 
   calc_SK_coeff_S_zero_limit = calc_SK_poly_zero_limit(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
     this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
-  calc_SK_coeff_S_zero_limit = calc_SK_coeff_S_zero_limit * cutoff_function(this,  dist, ti, tj)
+  calc_SK_coeff_S_zero_limit = calc_SK_coeff_S_zero_limit * NRLTB_cutoff_function(this,  dist, ti, tj)
 end function calc_SK_coeff_S_zero_limit
 
 
@@ -1277,8 +1277,8 @@ function calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb
     this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
   SKd = calc_SK_poly_zero_limit_deriv(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
     this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
-  co = cutoff_function(this,  dist, ti, tj)
-  cod = cutoff_function_d(this,  dist, ti, tj)
+  co = NRLTB_cutoff_function(this,  dist, ti, tj)
+  cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
 
   calc_SK_coeff_S_d_zero_limit = SK*cod + SKd*co
 end function calc_SK_coeff_S_d_zero_limit
@@ -1383,7 +1383,7 @@ function onsite_function(this, at, at_i, orb_set_type,i_mag)
     j = neighbour(at, at_i, ji, dist)
     tj = get_type(this%type_of_atomic_num,at%Z(j))
 
-    f_cut = cutoff_function(this, dist, ti, tj)
+    f_cut = NRLTB_cutoff_function(this, dist, ti, tj)
     expv = exp(-this%lambda_sq(tj,u_i_mag)*dist)
     density(tj) = density(tj) + expv*f_cut
   end do
@@ -1422,8 +1422,8 @@ function donsite_function(this, at, at_i, orb_set_type, at_ind, i_mag)
     j = neighbour(at, at_i, ji, dist, cosines = dircos)
     tj = get_type(this%type_of_atomic_num,at%Z(j))
 
-    f_cut = cutoff_function(this, dist, ti, tj)
-    f_cut_d = cutoff_function_d(this, dist, ti, tj)
+    f_cut = NRLTB_cutoff_function(this, dist, ti, tj)
+    f_cut_d = NRLTB_cutoff_function_d(this, dist, ti, tj)
     expv = exp(-this%lambda_sq(tj,u_i_mag)*dist)
     expv_d = expv*(-this%lambda_sq(tj,u_i_mag))
     density(tj) = density(tj) + expv*f_cut
@@ -1474,11 +1474,11 @@ function donsite_poly(abcd, density, density_d)
 end function donsite_poly
 
 
-function cutoff_function(this, r, ti, tj)
+function NRLTB_cutoff_function(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
-  real(dp) :: cutoff_function
+  real(dp) :: NRLTB_cutoff_function
 
   double precision screen_R0
   double precision cutoff_smooth
@@ -1490,19 +1490,19 @@ function cutoff_function(this, r, ti, tj)
 
     expv = exp((r-screen_R0)/abs(this%screen_l(ti,tj)))
 
-    cutoff_smooth = cutoff_func_smooth(this, r, ti, tj)
-    cutoff_function = ( 1.0_dp/(1.0_dp+expv) ) * cutoff_smooth
+    cutoff_smooth = NRLTB_cutoff_func_smooth(this, r, ti, tj)
+    NRLTB_cutoff_function = ( 1.0_dp/(1.0_dp+expv) ) * cutoff_smooth
   else
-    cutoff_function = 0.0_dp
+    NRLTB_cutoff_function = 0.0_dp
   end if
 
-end function cutoff_function
+end function NRLTB_cutoff_function
 
-function cutoff_function_d(this, r, ti, tj)
+function NRLTB_cutoff_function_d(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
-  real(dp) :: cutoff_function_d
+  real(dp) :: NRLTB_cutoff_function_d
 
   double precision screen_R0
   double precision cutoff_smooth, cutoff_smooth_d
@@ -1515,22 +1515,22 @@ function cutoff_function_d(this, r, ti, tj)
     expv = exp((r-screen_R0)/abs(this%screen_l(ti,tj)))
     expv_d = expv * 1.0_dp/abs(this%screen_l(ti,tj))
 
-    cutoff_smooth = cutoff_func_smooth(this, r, ti, tj)
-    cutoff_smooth_d = cutoff_func_smooth_d(this, r, ti, tj)
+    cutoff_smooth = NRLTB_cutoff_func_smooth(this, r, ti, tj)
+    cutoff_smooth_d = NRLTB_cutoff_func_smooth_d(this, r, ti, tj)
 
-    cutoff_function_d = ( 1.0_dp/(1.0_dp+expv) ) * cutoff_smooth_d - &
+    NRLTB_cutoff_function_d = ( 1.0_dp/(1.0_dp+expv) ) * cutoff_smooth_d - &
       (1.0_dp/(1.0_dp+expv)**2)*expv_d * cutoff_smooth
   else
-    cutoff_function_d = 0.0_dp
+    NRLTB_cutoff_function_d = 0.0_dp
   end if
 
-end function cutoff_function_d
+end function NRLTB_cutoff_function_d
 
-function cutoff_func_smooth(this, r, ti, tj)
+function NRLTB_cutoff_func_smooth(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
-  real(dp) :: cutoff_func_smooth
+  real(dp) :: NRLTB_cutoff_func_smooth
 
   double precision R_MIN, R_MAX
 
@@ -1539,7 +1539,7 @@ function cutoff_func_smooth(this, r, ti, tj)
 
 
   if (this%screen_l(ti,tj) .lt. 0.0_dp) then
-    cutoff_func_smooth = 1.0_dp
+    NRLTB_cutoff_func_smooth = 1.0_dp
     return
   endif
 
@@ -1547,20 +1547,20 @@ function cutoff_func_smooth(this, r, ti, tj)
   R_MIN = R_MAX - abs(this%screen_l(ti,tj))
 
   if (r .lt. R_MIN) then 
-    cutoff_func_smooth = 1.0_dp
+    NRLTB_cutoff_func_smooth = 1.0_dp
   else if (r .gt. R_MAX) then
-    cutoff_func_smooth = 0.0_dp
+    NRLTB_cutoff_func_smooth = 0.0_dp
   else
-    cutoff_func_smooth = 1.0_dp - (1.0_dp - cos( (r-R_MIN)*PI / (R_MAX-R_MIN) ))/2.0_dp
+    NRLTB_cutoff_func_smooth = 1.0_dp - (1.0_dp - cos( (r-R_MIN)*PI / (R_MAX-R_MIN) ))/2.0_dp
   end if
 
-end function cutoff_func_smooth
+end function NRLTB_cutoff_func_smooth
 
-function cutoff_func_smooth_d(this, r, ti, tj)
+function NRLTB_cutoff_func_smooth_d(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
-  real(dp) :: cutoff_func_smooth_d
+  real(dp) :: NRLTB_cutoff_func_smooth_d
 
   double precision R_MIN, R_MAX
 
@@ -1569,7 +1569,7 @@ function cutoff_func_smooth_d(this, r, ti, tj)
 
 
   if (this%screen_l(ti,tj) .lt. 0.0_dp) then
-    cutoff_func_smooth_d = 1.0_dp
+    NRLTB_cutoff_func_smooth_d = 1.0_dp
     return
   endif
 
@@ -1577,13 +1577,13 @@ function cutoff_func_smooth_d(this, r, ti, tj)
   R_MIN = R_MAX - abs(this%screen_l(ti,tj))
 
   if (r .lt. R_MIN) then 
-    cutoff_func_smooth_d = 0.0_dp
+    NRLTB_cutoff_func_smooth_d = 0.0_dp
   else if (r .gt. R_MAX) then
-    cutoff_func_smooth_d = 0.0_dp
+    NRLTB_cutoff_func_smooth_d = 0.0_dp
   else
-    cutoff_func_smooth_d = -sin( (r-R_MIN)*PI / (R_MAX-R_MIN) )/2.0_dp * (PI/(R_MAX-R_MIN))
+    NRLTB_cutoff_func_smooth_d = -sin( (r-R_MIN)*PI / (R_MAX-R_MIN) )/2.0_dp * (PI/(R_MAX-R_MIN))
   end if
 
-end function cutoff_func_smooth_d
+end function NRLTB_cutoff_func_smooth_d
 
 end module TBModel_NRL_TB_module

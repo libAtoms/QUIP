@@ -64,6 +64,8 @@ LIBATOMS_F95_FILES = \
   Atoms \
   RigidBody \
   Group \
+  angular_functions \
+  steinhardt_nelson_qw \
   Constraints \
   Thermostat \
   Barostat \
