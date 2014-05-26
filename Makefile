@@ -73,6 +73,8 @@ EXTRA_CLEAN_DIRS = Tools/quippy
 
 EXTRA_ALL_DIRS = Tools
 
+.DEFAULT_GOAL=all
+
 default: ${MODULES}
 
 all: default
