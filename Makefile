@@ -108,7 +108,7 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 
 # general rule to make a module
 
-${MODULES}:  ${BUILDDIR} ${BUILDDIR}/Makefile.inc
+${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
 	cp ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
