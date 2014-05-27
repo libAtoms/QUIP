@@ -27,6 +27,7 @@ from quippy.system import print_title
 from pylab import plot, xlim, ylim, xlabel, ylabel, scatter, draw, gca, hlines, subplot, legend, text, figure
 from quippy.farray import convert_farray_to_ndarray
 from quippy.io import AtomsList
+from quippy.units import GPA
 import numpy as np
 import itertools
 
@@ -121,9 +122,9 @@ def scatter_force_error(configs, ref_configs, force_name='force', force_ref_name
     force = np.hstack(getattr(configs, force_name))
     force = force.reshape(force.size, order='F')
 
-    s = scatter(abs(ref_force), abs(ref_force - force), *plot_args, **plot_kwargs)
-    xlim(0, abs(ref_force).max())
-    ylim(0, abs(ref_force - force).max())
+    s = scatter(np.array(abs(ref_force)), np.array(abs(ref_force - force)), *plot_args, **plot_kwargs)
+    xlim(0, float(abs(ref_force).max()))
+    ylim(0, float(abs(ref_force - force).max()))
     xlabel('Reference forces / eV/A')
     ylabel('Force error / eV/A')
 
