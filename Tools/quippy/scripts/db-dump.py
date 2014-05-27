@@ -117,16 +117,19 @@ class FullFormatter(Formatter):
 
         widths = [w and max(w, len(col))
                   for w, col in zip(widths, columns)]
-        
-        for row in table:
-            line = '|'.join('%*s' % (w * sign, s)
-                              for w, sign, s in zip(widths, signs, row)
-                              if w > 0)
-            if opts.wiki_table:
-                line = '|' + line + '|'
-            fd.write(line)
-            fd.write('\n')
-        return ids 
+
+        columns = [ col for w, col in zip(widths, table[0]) if w > 0]
+
+        if not opts.list_columns:
+            for row in table:
+                line = '|'.join('%*s' % (w * sign, s)
+                                  for w, sign, s in zip(widths, signs, row)
+                                  if w > 0)
+                if opts.wiki_table:
+                    line = '|' + line + '|'
+                fd.write(line)
+                fd.write('\n')
+        return (ids, columns)
     
 def run(opts, args, verbosity):
     args = args[:]
@@ -162,18 +165,17 @@ def run(opts, args, verbosity):
                         if key not in keys:
                             keys.append(key)
             opts.columns = ','.join(['+'+key for key in keys])
-            
+
         f = FullFormatter(opts.columns, opts.sort)
+        if verbosity >= 1:
+            ids, columns = f.format(dcts, opts)
         if verbosity > 1 or opts.list_columns:
-            for col in f.columns:
+            for col in columns:
                 if not opts.list_columns:
                     print 'COLUMN',
                 print col
             if opts.list_columns:
                 return
-            
-        if verbosity >= 1:
-            f.format(dcts, opts)
 
         if opts.extract is not None:
             if '%' not in opts.extract:
