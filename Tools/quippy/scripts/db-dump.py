@@ -23,12 +23,23 @@ import optparse
 
 import numpy as np
 
+from ase.atoms import Atoms as AseAtoms
+from ase.data import atomic_masses
 from ase.db import connect
-from ase.db.cli import plural, cut, Formatter
+from ase.db.cli import plural
+from ase.db.core import float_to_time_string, now
 
 from quippy.io import dict2atoms, AtomsWriter
 
-class FullFormatter(Formatter):
+def cut(txt, length):
+    if len(txt) <= length:
+        return txt
+    return txt[:length - 3] + '...'
+
+class Formatter(object):
+    """
+    Modified version of old ase.db.cli.Formatter class
+    """
     def __init__(self, cols, sort):
         self.sort = sort
         
@@ -53,6 +64,83 @@ class FullFormatter(Formatter):
             if f is None:
                 f = self.keyval_factory(col)
             self.funcs.append(f)
+
+    def id(self, d):
+        return d.id
+    
+    def age(self, d):
+        return float_to_time_string(now() - d.ctime)
+
+    def user(self, d):
+        return d.user
+    
+    def formula(self, d):
+        return AseAtoms(d.numbers).get_chemical_formula()
+
+    def energy(self, d):
+        return d.energy
+
+    def size(self, d):
+        dims = d.pbc.sum()
+        if dims == 0:
+            return ''
+        if dims == 1:
+            return np.linalg.norm(d.cell[d.pbc][0])
+        if dims == 2:
+            return np.linalg.norm(np.cross(*d.cell[d.pbc]))
+        return abs(np.linalg.det(d.cell))
+
+    def pbc(self, d):
+        a, b, c = d.pbc
+        return '%d%d%d' % tuple(d.pbc)
+
+    def calc(self, d):
+        return d.calculator
+
+    def fmax(self, d):
+        c = d.constraints
+        if c is None:
+            f = d.forces
+        if len(c) > 1:
+            f = d.forces
+        c = c[0]
+        if 'mask' in c:
+            f = d.forces[np.invert(c['mask'])]
+        else:
+            f = d.forces
+        return (f**2).sum(axis=1).max()**0.5
+
+    def keywords(self, d):
+        return cut(','.join(d.keywords), 30)
+
+    def keyvals(self, d):
+        return cut(','.join(['%s=%s' % (key, cut(str(value), 8))
+                             for key, value in d.key_value_pairs.items()]), 40)
+
+    def charge(self, d):
+        return d.charge
+
+    def mass(self, d):
+        if 'masses' in d:
+            return d.masses.sum()
+        return atomic_masses[d.numbers].sum()
+
+    def fixed(self, d):
+        c = d.constraints
+        if c is None:
+            return ''
+        if len(c) > 1:
+            return '?'
+        c = c[0]
+        if 'mask' in c:
+            return sum(c['mask'])
+        return len(c['indices'])
+
+    def smax(self, d):
+        return (d.stress**2).max()**0.5
+
+    def magmom(self, d):
+        return d.magmom or ''
 
     def keyval_factory(self, key):
         def keyval_func(d):
@@ -131,6 +219,7 @@ class FullFormatter(Formatter):
                 fd.write('\n')
         return (ids, columns)
     
+
 def run(opts, args, verbosity):
     args = args[:]
     con = connect(args.pop(0))
@@ -166,7 +255,7 @@ def run(opts, args, verbosity):
                             keys.append(key)
             opts.columns = ','.join(['+'+key for key in keys])
 
-        f = FullFormatter(opts.columns, opts.sort)
+        f = Formatter(opts.columns, opts.sort)
         if verbosity >= 1:
             ids, columns = f.format(dcts, opts)
         if verbosity > 1 or opts.list_columns:
