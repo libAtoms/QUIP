@@ -45,7 +45,7 @@ class Formatter(object):
         
         self.columns = ['id', 'age', 'user', 'formula', 'calc',
                         'energy', 'fmax', 'pbc', 'size', 'keywords',
-                        'charge', 'mass', 'fixed', 'smax', 'magmom']
+                        'charge', 'mass', 'fixed', 'smax', 'magmom', 'cell']
         
         if cols is not None and len(cols) > 0:
             if cols[0] == '+':
@@ -90,6 +90,12 @@ class Formatter(object):
             return np.linalg.norm(np.cross(*d.cell[d.pbc]))
         return abs(np.linalg.det(d.cell))
 
+    def cell(self, d):
+        if np.all(np.diag(np.diag(d.cell)) == d.cell):
+            return cut('diag([%.1f, %.1f, %.1f])' % tuple(np.diag(d.cell)), 30)
+        else:
+            return cut('[[%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f]]' % tuple(d.cell.flat), 30)
+
     def pbc(self, d):
         a, b, c = d.pbc
         return '%d%d%d' % tuple(d.pbc)
@@ -116,6 +122,9 @@ class Formatter(object):
     def keyvals(self, d):
         return cut(','.join(['%s=%s' % (key, cut(str(value), 8))
                              for key, value in d.key_value_pairs.items()]), 40)
+
+    def data(self, d):
+        return cut(','.join(d.data.keys()), 30)
 
     def charge(self, d):
         return d.charge
