@@ -32,6 +32,8 @@ from ase.db.core import float_to_time_string, now
 from quippy.io import dict2atoms, AtomsWriter
 
 def cut(txt, length):
+    if length is None or length == 0:
+        return txt
     if len(txt) <= length:
         return txt
     return txt[:length - 3] + '...'
@@ -92,9 +94,9 @@ class Formatter(object):
 
     def cell(self, d):
         if np.all(np.diag(np.diag(d.cell)) == d.cell):
-            return cut('diag([%.1f, %.1f, %.1f])' % tuple(np.diag(d.cell)), 30)
+            return cut('diag([%.1f, %.1f, %.1f])' % tuple(np.diag(d.cell)), self.opts.cut)
         else:
-            return cut('[[%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f]]' % tuple(d.cell.flat), 30)
+            return cut('[[%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f], [%.1f, %.1f, %.1f]]' % tuple(d.cell.flat), self.opts.cut)
 
     def pbc(self, d):
         a, b, c = d.pbc
@@ -117,14 +119,14 @@ class Formatter(object):
         return (f**2).sum(axis=1).max()**0.5
 
     def keywords(self, d):
-        return cut(','.join(d.keywords), 30)
+        return cut(','.join(d.keywords), self.opts.cut)
 
     def keyvals(self, d):
         return cut(','.join(['%s=%s' % (key, cut(str(value), 8))
                              for key, value in d.key_value_pairs.items()]), 40)
 
     def data(self, d):
-        return cut(','.join(d.data.keys()), 30)
+        return cut(','.join(d.data.keys()), self.opts.cut)
 
     def charge(self, d):
         return d.charge
@@ -158,6 +160,7 @@ class Formatter(object):
         return keyval_func
 
     def format(self, dcts, opts):
+        self.opts = opts
         columns = self.columns
         if opts.uniq:
             columns += ['repeat']
@@ -356,6 +359,8 @@ add('--limit', type=int, default=500, metavar='N',
     'to show all.')
 add('-w', '--wiki-table', action='store_true',
     help='Format output as a Wiki table')
+add('--cut', action='store', type=int, default=30,
+    help='Truncate columns after CUT characters. Default 30. Use 0 for no limit')
 
 opts, args = parser.parse_args()
 verbosity = 1 - opts.quiet + opts.verbose
