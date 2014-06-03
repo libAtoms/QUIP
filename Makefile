@@ -38,10 +38,13 @@ ifneq (${QUIP_ARCH},)
 	export QUIP_ARCH
 	include Makefile.config
 	include Makefiles/Makefile.${QUIP_ARCH}
-	include ${BUILDDIR}/Makefile.inc
 	include Makefile.rules
+ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
+	-include ${BUILDDIR}/Makefile.inc	
+endif
+	include Makefile.config
 else
-	BUILDDIR=crap
+	BUILDDIR=dummy
 endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
@@ -67,31 +70,48 @@ endif
 FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
-default: ${MODULES}
 
 EXTRA_ALL_DIRS = Tools
+
+default: ${MODULES}
+
 all: default
 	@for f in ${MODULES} ${EXTRA_ALL_DIRS}; do ${MAKE} $$f/all || exit 1; done
 
-.PHONY: arch ${MODULES} doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH
+
+
+.PHONY: arch ${MODULES} config doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH
 
 arch: 
 ifeq (${QUIP_ARCH},)
 	@echo
 	@echo "You need to define the architecture using the QUIP_ARCH variable"
+	@echo "Check out the Config subdirectory for supported architectures."
 	@echo
 	@exit 1
 endif
+
+
+${BUILDDIR}/Makefile.inc: 
+	@echo
+	@echo "Perhaps you forgot to run \`make config'?"
+	@echo
+	@exit 1
+
 
 ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
 
-${MODULES}:  ${BUILDDIR}
-	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
+# general rule to make a module
+
+${MODULES}:  ${BUILDDIR} ${BUILDDIR}/Makefile.inc
+	cp ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
+
+# dependencies between modules
 
 ifeq (${HAVE_GAP},1)
 GAP: libAtoms/libatoms.a ${FOX}
@@ -109,20 +129,20 @@ Tests: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 
 ifeq (${HAVE_GAP},1)
 GAP/%: libAtoms/libatoms.a ${FOX}
-	ln -sf ${PWD}/GAP/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/GAP/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP -I${PWD} -I${PWD}/Makefiles $${targ#GAP/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a QUIP_Core/libquip_core.a QUIP_Utils
-	ln -sf ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
-	ln -sf ${PWD}/QUIP_FilePot_Drivers/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/QUIP_FilePot_Drivers/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_FilePot_Drivers -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_FilePot_Drivers/}
 	rm ${BUILDDIR}/Makefile
 
@@ -132,29 +152,29 @@ QUIP_Programs/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Core/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core
-	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Utils/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
-	ln -sf ${PWD}/QUIP_Utils/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/QUIP_Utils/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Utils -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Utils/}
 	rm ${BUILDDIR}/Makefile
 
 libatoms: libAtoms
 libAtoms/%: libAtoms 
-	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
 Tools/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils/libquiputils.a Tools
-	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_THIRDPARTY},1)
 ThirdParty/%: 
-	ln -sf ${PWD}/ThirdParty/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/ThirdParty/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/ThirdParty -I${PWD} -I${PWD}/Makefiles $${targ#ThirdParty/}
 	rm ${BUILDDIR}/Makefile
 else
@@ -169,14 +189,14 @@ ${BUILDDIR}: arch
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  echo "clean in $$mods"; \
-	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
+	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
 	done
 
 deepclean: clean
 	-for mods in  ${MODULES} ; do \
 	  echo "deepclean in $$mods"; \
-	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
+	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles deepclean ; \
 	done
 	-for dir in ${EXTRA_CLEAN_DIRS}; do \
@@ -249,3 +269,6 @@ distribution:
 	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar
 	rm GIT_VERSION GAP_VERSION
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git archive HEAD | bzip2 > ../../$$d.distribution.`date +%Y-%m-%d`.tar.bz2; popd; fi; done
+
+
+
