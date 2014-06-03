@@ -36,7 +36,7 @@ export QUIP_ROOT
 ifneq (${QUIP_ARCH},)
 	export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 	export QUIP_ARCH
-	include Makefile.config
+	@echo "Configuring with QUIP_ARCH=$QUIP_ARCH"
 	include Makefiles/Makefile.${QUIP_ARCH}
 	include Makefile.rules
 ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
@@ -155,7 +155,7 @@ QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Programs/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
-	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile	
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
