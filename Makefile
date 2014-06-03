@@ -217,6 +217,9 @@ deepclean: clean
 	  cd $$dir; make clean; \
 	done
 
+distclean: deepclean
+	rm -rf ${BUILDDIR}/Makefile ${BUILDDIR}/Makefile.inc
+
 install:
 	@if [ "x${QUIP_INSTDIR}" == "x" ]; then \
 	  echo "make install needs QUIP_INSTDIR defined"; \
