@@ -58,7 +58,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   integer, intent(in) :: N
   real(dp), dimension(3,N), intent(in), optional :: pos, frac_pos
   real(dp), dimension(3,3), intent(in), optional :: lattice
-  character(len=3), dimension(N), intent(in), optional :: symbol
+  character(len=*), dimension(N), intent(in), optional :: symbol
   integer, dimension(N), intent(in), optional :: Z
   character(len=quip_param_file_len) :: quip_param_file
   integer, intent(in) :: quip_param_file_len
