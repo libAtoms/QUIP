@@ -52,7 +52,11 @@ export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 MODULES =
 
 ifeq (${HAVE_THIRDPARTY},1)
-  MODULES += ThirdParty
+   MODULES += ThirdParty
+   THIRDPARTY_LIBS := libthirdparty.a
+ifeq (${HAVE_FX},1)
+   THIRDPARTY_LIBS += libfx.a
+endif
 endif
 
 MODULES += libAtoms QUIP_Core QUIP_Utils QUIP_Programs QUIP_FilePot_Drivers # Tests
@@ -82,7 +86,7 @@ all: default
 
 
 
-.PHONY: arch ${MODULES} config doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH
+.PHONY: arch ${MODULES} config doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
 
 arch: 
 ifeq (${QUIP_ARCH},)
@@ -106,6 +110,8 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
 
+FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
+FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
 # general rule to make a module
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
@@ -124,7 +130,7 @@ GAP-filler: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a ${GAP} QUIP_Core/lib
 endif
 
 QUIP_Core: libAtoms/libatoms.a ${FOX} ${GAP}
-QUIP_Util: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a
+QUIP_Utils: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a
 QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils 
 QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 Tests: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
@@ -183,6 +189,12 @@ else
 ThirdParty:
 	@echo "Placeholder ThirdParty rule"
 endif
+
+libquip: libquip.a
+
+libquip.a: ThirdParty libAtoms ${FOX} ${GAP} QUIP_Core QUIP_Utils
+	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(subst GAP,${BUILDDIR},${GAP}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
+		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
