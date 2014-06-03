@@ -69,7 +69,7 @@ implicit none
   real(dp) :: fire_minim_dt0
   real(dp) :: fire_minim_dt_max
   character(len=STRING_LENGTH) precond_minim_method, precond_method, precond_e_method
-  real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2
+  real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2, precond_infoverride
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file
@@ -186,9 +186,10 @@ implicit none
   call param_register(cli_params, 'precond_method', 'ID', precond_method, help_string="preconditioner method for preconditioner, right now ID or LJ or C1")
   call param_register(cli_params, 'precond_e_method', 'basic', precond_e_method, help_string="preconditioner method for summing energy: basic, kahan, doublekahan (kahan type only when local energy is available).")
   call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
-  call param_register(cli_params, 'precond_len_scale', '0.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
+  call param_register(cli_params, 'precond_len_scale', '-1.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
+  call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
   call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
@@ -213,7 +214,7 @@ implicit none
 
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
-    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
+    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)]",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
     call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
@@ -232,20 +233,14 @@ implicit none
      eval_port = 32768
   endif
 
-  call print ("Using calc args: " // trim(calc_args))
-  call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
-  inquire(file=trim(param_file), exist=param_file_exists)
-  if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
-
-  call print ("Using param_file: " // trim(param_file))
-  call print ("Using init args: " // trim(init_args))
-
+  ! are we calculating descriptors or potentials? 
   if ( has_descriptor_str ) then
 #ifdef HAVE_GAP
      call initialise(eval_descriptor, trim(descriptor_str))
+     call print("Using descriptor string: "// trim(descriptor_str))
      if( mycutoff < 0.0_dp ) then
         mycutoff = cutoff(eval_descriptor)
      elseif( mycutoff < cutoff(eval_descriptor) ) then
@@ -254,14 +249,24 @@ implicit none
 #else
      call system_abort("To print descriptors, HAVE_GAP must be enabled")
 #endif
-  elseif(has_bulk_scale) then
-     call initialise(infile, trim(bulk_scale_file))
-     call read(bulk_scale, infile, error=error)
-     call finalise(infile)
-     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
-     call finalise(bulk_scale)
   else
-     call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     ! we are calculating potentials, so lets try to open the XML file
+     inquire(file=trim(param_file), exist=param_file_exists)
+     if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
+
+     call print ("Using calc args: " // trim(calc_args))
+     call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
+     call print ("Using param_file: " // trim(param_file))
+     call print ("Using init args: " // trim(init_args))
+     if(has_bulk_scale) then
+        call initialise(infile, trim(bulk_scale_file))
+        call read(bulk_scale, infile, error=error)
+        call finalise(infile)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+        call finalise(bulk_scale)
+     else
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+     end if
   end if
 
   call initialise(infile, trim(at_file), mpi=mpi_glob)
@@ -382,7 +387,7 @@ implicit none
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
-		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2)
+		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2,infoverride = precond_infoverride)
               call system_timer('precon_minim')
 	   else
               call system_timer('minim')
@@ -400,11 +405,7 @@ implicit none
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
-<<<<<<< HEAD
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2)
-=======
-       length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method))
->>>>>>> 646909d... further precon_minim testing changes
               call system_timer('precon_minim')
            else
               call system_timer('minim')
@@ -425,11 +426,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         else if (do_c0ij) then
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c0=c0, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         else
-           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method)
+           call calc_elastic_constants(pot, at, cij_dx, calc_args, c=c, relax_initial=do_cij_relax_initial, relax_tol=relax_tol, relax_method=minim_method, linmin_method=linmin_method)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"

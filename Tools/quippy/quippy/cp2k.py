@@ -126,7 +126,7 @@ def cp2k_run_type(cp2k_output=None, cp2k_input_header=None):
 
 @atoms_reader('cp2k_output.out')
 @atoms_reader('cp2k_output')
-def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None):
+def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None, format=None):
 
     # mapping from run type to (default module index, list of available module)
     run_types = {
@@ -224,7 +224,7 @@ def CP2KOutputReader(fh, module=None, type_map=None, kind_map=None):
 
 @atoms_reader('cp2k_run_dir')
 def CP2KDirectoryReader(run_dir, at_ref=None, proj='quip', calc_qm_charges=None,
-                        calc_virial=False, out_i=None, qm_vacuum=6.0, run_suffix='_extended'):
+                        calc_virial=False, out_i=None, qm_vacuum=6.0, run_suffix='_extended', format=None):
     if at_ref is None:
         filepot_xyz = os.path.join(run_dir, 'filepot.xyz')
         if not os.path.exists(filepot_xyz):

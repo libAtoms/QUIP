@@ -1417,6 +1417,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
   integer, allocatable :: n_in_zone(:)
   real(dp) :: dist_bin_inner_rad, dist_bin_outer_rad, angle_bin_width, angle_bin_min, angle_bin_max
   real(dp) :: r, r_ij, r_ik, r_jk, jik_angle
+  integer :: sj(3), sk(3)
+  real(dp) :: c_ij(3), c_ik(3)
 
   allocate(center_mask_a(at%N), neighbour_1_mask_a(at%N), neighbour_2_mask_a(at%N))
   call is_in_mask(center_mask_a, at, center_mask_str)
@@ -1448,7 +1450,7 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
   end if
 
   adfd = 0.0_dp
-  call set_cutoff(at, 2*n_dist_bins*dist_bin_width)
+  call set_cutoff(at, max(neighbour_1_max_dist,2*n_dist_bins*dist_bin_width))
   call calc_connect(at)
   do i_at=1, at%N ! center atom
     if (.not. center_mask_a(i_at)) cycle
@@ -1461,8 +1463,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
     endif
     n_in_zone(i_zone) = n_in_zone(i_zone) + 1
     do ji=1, n_neighbours(at, i_at)
-      j_at = neighbour(at, i_at, ji, distance=r_ij)
-      if (j_at == i_at) cycle
+      j_at = neighbour(at, i_at, ji, shift=sj, cosines=c_ij, distance=r_ij)
+      if (r_ij == 0.0_dp) cycle
       if (.not. neighbour_1_mask_a(j_at)) cycle
       if (neighbour_1_max_dist > 0.0_dp) then
 	if (r_ij > neighbour_1_max_dist) cycle
@@ -1470,8 +1472,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
 	if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
       endif
       do ki=1, n_neighbours(at, i_at)
-	k_at = neighbour(at, i_at, ki, distance=r_ik)
-	if (k_at == i_at .or. k_at == j_at) cycle
+	k_at = neighbour(at, i_at, ki, shift=sk, cosines=c_ik, distance=r_ik)
+	if (r_ik == 0.0_dp .or. (k_at == j_at .and. all (sj == sk))) cycle
 	if (.not. neighbour_2_mask_a(k_at)) cycle
 	r_jk = distance_min_image(at, j_at, k_at)
 	if (dist_bin_rc2) then
@@ -1488,7 +1490,8 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
 ! call print("  r_ij " // diff_min_image(at,i_at,j_at) // "     " // r_ij, PRINT_ALWAYS)
 ! call print("  r_jk " // diff_min_image(at,j_at,k_at) // "     " // distance_min_image(at, j_at, k_at), PRINT_ALWAYS)
 ! call print("  r_ik " // diff_min_image(at,i_at,k_at) // "     " // distance_min_image(at, i_at, k_at), PRINT_ALWAYS)
-        jik_angle = angle(diff_min_image(at,i_at,j_at), diff_min_image(at,i_at,k_at))
+        ! jik_angle = angle(diff_min_image(at,i_at,j_at), diff_min_image(at,i_at,k_at))
+        jik_angle = angle(c_ij, c_ik)
 ! call print("  r_ij " // r_ij // " r_jk " // r_jk // " jik_angle " // (jik_angle*180.0/PI), PRINT_ALWAYS)
 	i_angle_bin = int(jik_angle/angle_bin_width)+1
 	if (i_angle_bin > n_angle_bins) i_angle_bin = n_angle_bins

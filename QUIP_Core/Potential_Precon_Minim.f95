@@ -314,7 +314,7 @@ module Potential_Precon_Minim_module
    
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub)
+       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
     
     implicit none
     
@@ -365,6 +365,8 @@ module Potential_Precon_Minim_module
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting, probably dont need to change this
 
+    real(dp), optional :: infoverride !optional override to max step in infinity norm
+    
     integer:: Precon_Potential_Minim
 
     character(len=STRING_LENGTH) :: use_method
@@ -490,7 +492,7 @@ module Potential_Precon_Minim_module
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
     !call print(use_method)   
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
-            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity)
+            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity,infoverride = infoverride)
 !       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
  !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
  

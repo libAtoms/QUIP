@@ -110,7 +110,7 @@ class CInOutputReader(object):
     """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
 
     def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
-                 zero=False, one_frame_per_file=False, indices=None, string=False):
+                 zero=False, one_frame_per_file=False, indices=None, string=False, format=None):
         if isinstance(source, basestring):
             self.opened = True
             self.source = CInOutput(source, action=INPUT, append=False, zero=zero, range=range,
@@ -181,7 +181,7 @@ class CInOutputReader(object):
 AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
 @atoms_reader('stdin')
-def CInOutputStdinReader(source='stdin'):
+def CInOutputStdinReader(source='stdin', format=None):
     assert source == 'stdin'
     source = CInOutput(source, action=INPUT)
     while True:
@@ -217,7 +217,7 @@ AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWr
 
 class CInOutputStringReader(CInOutputReader):
     def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
-                 zero=False, one_frame_per_file=False, indices=None):
+                 zero=False, one_frame_per_file=False, indices=None, format=None):
         CInOutputReader.__init__(self, source=source, frame=frame, range=range, start=start, stop=stop, step=step,
                                  no_compute_index=no_compute_index, zero=zero, one_frame_per_file=one_frame_per_file,
                                  indices=indices, string=True)
@@ -225,7 +225,7 @@ class CInOutputStringReader(CInOutputReader):
 AtomsReaders['string'] = CInOutputStringReader
 
 class CInOutputStringWriter(CInOutputWriter):
-    def __init__(self, dest, append=False, netcdf4=True, one_frame_per_file=False, **write_kwargs):
+    def __init__(self, dest, append=False, netcdf4=True, one_frame_per_file=False, format=None, **write_kwargs):
         assert dest == 'string'
         CInOutputWriter.__init__(self, dest=dest, append=append, netcdf4=netcdf4, one_frame_per_file=one_frame_per_file,
                                  string=True, **write_kwargs)
@@ -234,7 +234,7 @@ AtomsWriters['string'] = CInOutputStringWriter
 
 
 @atoms_reader('out')
-def EvalOutputReader(source):
+def EvalOutputReader(source, format=None):
     """
     Reader for QUIP `eval` output files
 

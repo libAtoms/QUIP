@@ -72,7 +72,7 @@ def parse_properties(prop_str):
 
 
 @atoms_reader('pupyxyz')
-def PuPyXYZReader(xyz):
+def PuPyXYZReader(xyz, format=None):
     "Read from extended XYZ filename, string or open file."
     from quippy import Table
 

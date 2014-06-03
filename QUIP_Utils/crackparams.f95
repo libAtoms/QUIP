@@ -605,7 +605,7 @@ contains
     this%qm_force_periodic        = .false.
     this%qm_randomise_buffer      = .true.
     this%qm_even_electrons           = .false.
-    this%qm_vacuum_size           = 3.0_dp   ! Angstrom
+    this%qm_vacuum_size           = 10.0_dp   ! Angstrom
     this%qm_calc_force_error      = .false.
     this%qm_rescale_r             = .false.
     this%qm_hysteretic_buffer     = .false.

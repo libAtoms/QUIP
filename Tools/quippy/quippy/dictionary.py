@@ -219,6 +219,9 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
 
 
     def __setitem__(self, k, v):
+        k = str(k)
+        if isinstance(v, basestring):
+            v = str(v)
         try:
             self.set_value(k, v)
         except TypeError:

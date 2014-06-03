@@ -717,68 +717,6 @@ function dipole_propagator(diff) result (propagator)
   propagator = (HARTREE*BOHR/(r*r*r))*propagator
 
 end function dipole_propagator
-
-function coordination_function(r,cutoff_in,transition_width)
-
-   real(dp)             :: coordination_function
-   real(dp), intent(in) :: r, cutoff_in, transition_width
-
-   if( r > cutoff_in ) then
-       coordination_function = 0.0_dp
-   elseif( r > (cutoff_in-transition_width) ) then
-       coordination_function = 0.5_dp * ( cos(PI*(r-cutoff_in+transition_width)/transition_width) + 1.0_dp )
-   else
-       coordination_function = 1.0_dp
-   endif
-
-endfunction coordination_function
-
-function dcoordination_function(r,cutoff_in,transition_width)
-
-   real(dp)             :: dcoordination_function
-   real(dp), intent(in) :: r, cutoff_in,transition_width
-
-   if( r > cutoff_in ) then
-       dcoordination_function = 0.0_dp
-   elseif( r > (cutoff_in-transition_width) ) then
-       dcoordination_function = - 0.5_dp * (PI/ transition_width) * sin(PI*(r-cutoff_in+transition_width)/transition_width)
-   else
-       dcoordination_function = 0.0_dp
-   endif
-
-endfunction dcoordination_function
-
-function d2coordination_function(r,cutoff_in,transition_width)
-
-   real(dp)             :: d2coordination_function
-   real(dp), intent(in) :: r, cutoff_in,transition_width
-
-   if( r > cutoff_in ) then
-       d2coordination_function = 0.0_dp
-   elseif( r > (cutoff_in-transition_width) ) then
-       d2coordination_function = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width) 
-   else
-       d2coordination_function = 0.0_dp
-   endif
-
-endfunction d2coordination_function
-
-!NB this third derivative is not continuous! 
-function d3coordination_function(r,cutoff_in,transition_width)
-
-   real(dp)             :: d3coordination_function
-   real(dp), intent(in) :: r, cutoff_in,transition_width
-
-   if( r > cutoff_in ) then
-       d3coordination_function = 0.0_dp
-   elseif( r > (cutoff_in-transition_width) ) then
-       d3coordination_function = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width) 
-   else
-       d3coordination_function = 0.0_dp
-   endif
-
-endfunction d3coordination_function
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 end module multipole_interactions_module

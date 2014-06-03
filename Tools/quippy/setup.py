@@ -249,7 +249,8 @@ def find_wrap_sources(makefile, quip_root):
                      ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95', 
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
                      'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95', 'Spline.f95',
-		     'frametools.f95', 'Topology.f95', 'find_surface_atoms.f95', 'ringstat.f95']]
+		     'frametools.f95', 'Topology.f95', 'find_surface_atoms.f95', 'ringstat.f95', 'angular_functions.f95',
+                     'steinhardt_nelson_qw.f95', 'nye_tensor.f95']]
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'quaternion',
                    'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str', 'spline']
     source_dirs.append(libatoms_dir)
@@ -288,8 +289,7 @@ def find_wrap_sources(makefile, quip_root):
     if do_tools:
         wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95', 'real_space_covariance.f95',
                                                                    'ts_params.f95',
-                                                                   'transition_state.f95',
-                                                                   'steinhardt_qw.f95']]
+                                                                   'transition_state.f95']]
         wrap_types += ['realspacecovariance', 'tsparams', 'images',
                        'chainofstates', 'ts', 'steinhardtqw']
 

@@ -378,9 +378,9 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         # Make sure argument to ase.Atoms constructor are consistent with
         # properties already present in this Atoms object
-        if symbols is None and momenta is None and self.has_property('velo'):
+        if symbols is None and momenta is None and self.has_property('momenta'):
             momenta = self.get_momenta()
-        if symbols is None and masses is None and self.has_property('mass'):
+        if symbols is None and masses is None and self.has_property('masses'):
             masses = self.get_masses()
         if symbols is None and cell is None:
             cell = self.lattice.T.view(np.ndarray)
@@ -548,20 +548,24 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         if isinstance(source, basestring) and '@' in os.path.basename(source):
             source, frame = source.split('@')
-            frame = parse_slice(frame)
-            if 'frame' in kwargs:
-                raise ValueError("Conflicting frame references given: kwarg frame=%r and @-reference %r" %
-                                 (kwargs['frame'], frame))
-            if not isinstance(frame, int):
-                raise ValueError("Frame @-reference %r does not resolve to single frame" % frame)
-            kwargs['frame'] = frame
+            if source.endswith('.db'):
+                source = source+'@'+frame
+                format = 'db'
+            else:
+                frame = parse_slice(frame)
+                if 'frame' in kwargs:
+                    raise ValueError("Conflicting frame references given: kwarg frame=%r and @-reference %r" %
+                                     (kwargs['frame'], frame))
+                if not isinstance(frame, int):
+                    raise ValueError("Frame @-reference %r does not resolve to single frame" % frame)
+                kwargs['frame'] = frame
 
         from quippy.io import AtomsReaders
         filename, source, format = infer_format(source, format, AtomsReaders)
 
         opened = False
         if format in AtomsReaders:
-            source = AtomsReaders[format](source, **kwargs)
+            source = AtomsReaders[format](source, format=format, **kwargs)
             opened = True
 
         if isinstance(source, basestring):

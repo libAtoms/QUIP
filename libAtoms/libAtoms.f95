@@ -57,6 +57,7 @@ module libAtoms_module
   use atoms_module
   use quaternions_module
   use rigidbody_module
+  use steinhardt_nelson_qw_module
   use constraints_module
   use thermostat_module
   use barostat_module
