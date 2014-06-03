@@ -86,7 +86,7 @@ all: default
 
 
 
-.PHONY: arch ${MODULES} config doc clean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
+.PHONY: arch ${MODULES} config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
 
 arch: 
 ifeq (${QUIP_ARCH},)
