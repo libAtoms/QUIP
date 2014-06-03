@@ -124,7 +124,7 @@ contains
       do k=1, 3
       do m=1, 3
       do i=1, 3
-	alpha(j,k,i_at) = alpha(j,k,i_at) - eps(j,i,m)*A(i,m,k)
+	alpha(j,k,i_at) = alpha(j,k,i_at) - eps(j,i,m)*A(m,k,i)
       end do
       end do
       end do
