@@ -23,7 +23,6 @@ import optparse
 
 import numpy as np
 
-<<<<<<< HEAD
 from ase.atoms import Atoms as AseAtoms
 from ase.data import atomic_masses
 from ase.db import connect
@@ -43,24 +42,12 @@ class Formatter(object):
     """
     Modified version of old ase.db.cli.Formatter class
     """
-=======
-from ase.db import connect
-from ase.db.cli import plural, cut, Formatter
-
-from quippy.io import dict2atoms, AtomsWriter
-
-class FullFormatter(Formatter):
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
     def __init__(self, cols, sort):
         self.sort = sort
         
         self.columns = ['id', 'age', 'user', 'formula', 'calc',
                         'energy', 'fmax', 'pbc', 'size', 'keywords',
-<<<<<<< HEAD
                         'charge', 'mass', 'fixed', 'smax', 'magmom', 'cell']
-=======
-                        'charge', 'mass', 'fixed', 'smax', 'magmom']
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
         
         if cols is not None and len(cols) > 0:
             if cols[0] == '+':
@@ -80,7 +67,6 @@ class FullFormatter(Formatter):
                 f = self.keyval_factory(col)
             self.funcs.append(f)
 
-<<<<<<< HEAD
     def id(self, d):
         return d.id
     
@@ -167,8 +153,6 @@ class FullFormatter(Formatter):
     def magmom(self, d):
         return d.magmom or ''
 
-=======
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
     def keyval_factory(self, key):
         def keyval_func(d):
             value = d.key_value_pairs.get(key, '(none)')
@@ -176,10 +160,7 @@ class FullFormatter(Formatter):
         return keyval_func
 
     def format(self, dcts, opts):
-<<<<<<< HEAD
         self.opts = opts
-=======
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
         columns = self.columns
         if opts.uniq:
             columns += ['repeat']
@@ -228,18 +209,14 @@ class FullFormatter(Formatter):
                     widths[-1] = max(widths[-1], len(str(count)))
                     first_row = row
                     count = 1
-<<<<<<< HEAD
 
             uniq_table.append(first_row + [count])
             widths[-1] = max(widths[-1], len(str(count)))
 
-=======
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
             table = uniq_table
 
         widths = [w and max(w, len(col))
                   for w, col in zip(widths, columns)]
-<<<<<<< HEAD
 
         columns = [ col for w, col in zip(widths, table[0]) if w > 0]
 
@@ -255,19 +232,6 @@ class FullFormatter(Formatter):
         return (ids, columns)
     
 
-=======
-        
-        for row in table:
-            line = '|'.join('%*s' % (w * sign, s)
-                              for w, sign, s in zip(widths, signs, row)
-                              if w > 0)
-            if opts.wiki_table:
-                line = '|' + line + '|'
-            fd.write(line)
-            fd.write('\n')
-        return ids 
-    
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
 def run(opts, args, verbosity):
     args = args[:]
     con = connect(args.pop(0))
@@ -302,30 +266,17 @@ def run(opts, args, verbosity):
                         if key not in keys:
                             keys.append(key)
             opts.columns = ','.join(['+'+key for key in keys])
-<<<<<<< HEAD
 
         f = Formatter(opts.columns, opts.sort)
         if verbosity >= 1:
             ids, columns = f.format(dcts, opts)
         if verbosity > 1 or opts.list_columns:
             for col in columns:
-=======
-            
-        f = FullFormatter(opts.columns, opts.sort)
-        if verbosity > 1 or opts.list_columns:
-            for col in f.columns:
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
                 if not opts.list_columns:
                     print 'COLUMN',
                 print col
             if opts.list_columns:
                 return
-<<<<<<< HEAD
-=======
-            
-        if verbosity >= 1:
-            f.format(dcts, opts)
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
 
         if opts.extract is not None:
             if '%' not in opts.extract:
@@ -408,11 +359,8 @@ add('--limit', type=int, default=500, metavar='N',
     'to show all.')
 add('-w', '--wiki-table', action='store_true',
     help='Format output as a Wiki table')
-<<<<<<< HEAD
 add('--cut', action='store', type=int, default=30,
     help='Truncate columns after CUT characters. Default 30. Use 0 for no limit')
-=======
->>>>>>> e28696e4ad657995026efe0af324f5f439a2b138
 
 opts, args = parser.parse_args()
 verbosity = 1 - opts.quiet + opts.verbose
