@@ -74,6 +74,7 @@ contains
       l_n_neighbours = n_neighbours(at, i_at)
       if (l_n_neighbours > max_n_neighbours) max_n_neighbours = l_n_neighbours
     end do
+    call print('max_n_neighbours='//max_n_neighbours, PRINT_VERBOSE)
 
     if (.not.present(G)) then
       allocate(G_p(3,3,at%N))
@@ -87,9 +88,12 @@ contains
     allocate(Delta_G_vec(max_n_neighbours))
     
     call get_nn_list(ref_lat, 1, ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised)
+    call print('get_nn_list found ref_n_neighbours='//ref_n_neighbours, PRINT_VERBOSE)
 
     do i_at=1, at%N
       call get_nn_list(at, i_at, l_n_neighbours, nn_list, nn_vec, nn_vec_normalised)
+      call print('get_nn_list found l_n_neighbours='//ref_n_neighbours//' i_at='//i_at, PRINT_VERBOSE)
+
       call find_lattice_correspondence(l_n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
 				       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
 				       n_matches(i_at), match_list(:,i_at), Qplus(:,:,i_at), G_p(:,:,i_at))
@@ -224,7 +228,8 @@ contains
     end do
 
     ! fill in P and Q vectors for matched pairs
-    n_matches = count(match_list /= 0)
+    n_matches = count(match_list(1:l_n_neighbours) /= 0)
+    call print('find_lattice_correspondence found l_n_neighbours='//l_n_neighbours//' n_matches='//n_matches, PRINT_VERBOSE)
     allocate(P(n_matches,3))
     allocate(Q(n_matches,3))
     i_match = 0
