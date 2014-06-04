@@ -4040,7 +4040,7 @@ end function func_wrapper
     
     f0 = f
     local_energy0 = local_energy
-    ls_it = 1
+    ls_it = 0
     do
 
       !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
@@ -4056,7 +4056,12 @@ end function func_wrapper
       
       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
       !call print(deltaE)
+
+
+      ls_it = ls_it + 1
       if ( deltaE < C*alpha*d0) then
+
+
         exit
       end if
 
@@ -4064,7 +4069,6 @@ end function func_wrapper
         exit
       end if
       
-      ls_it = ls_it + 1
       alpha = alpha/4.0_dp
       
       if (alpha <1.0e-15) then
