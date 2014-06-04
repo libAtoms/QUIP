@@ -2742,11 +2742,11 @@ end function cluster_in_out_in
        ! This will fail if marked atoms do not form connected clusters around the active atoms
        old_n = bufferlist%N
        do while (bufferlist%N < n_region2)
-	  if (hysteretic_connect) then
-	    call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_hopping_nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
-	  else
-	    call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_hopping_nneighb_only, min_images_only = min_images_only, property =hybrid_mark)
-	  endif
+          if (hysteretic_connect) then
+             call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_hopping_nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
+          else
+             call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_hopping_nneighb_only, min_images_only = min_images_only, property =hybrid_mark)
+          endif
           do j=1,nextlist%N
              jj = nextlist%int(1,j)
              shift = nextlist%int(2:4,j)
@@ -3112,19 +3112,33 @@ end function cluster_in_out_in
   !% must drift further than 'outer'.
   !% Optionally use time averaged positions
   !
-  subroutine update_hysteretic_region(at,inner,outer,list,verbosity, error)
+  subroutine update_hysteretic_region(at,inner,outer,list,min_images_only,error)
 
     type(Atoms),       intent(in)    :: at
     type(Table),       intent(inout) :: inner, outer
     type(Table),       intent(inout) :: list
-    integer, optional, intent(in)    :: verbosity
-    integer, optional, intent(out) :: error
+    logical, optional, intent(in)    :: min_images_only
+    integer, optional, intent(out)   :: error
 
-    integer                          :: n, my_verbosity, atom(list%intsize)
+    integer n, my_verbosity
+    logical do_min_images_only
+    integer, allocatable :: cols(:)
 
     INIT_ERROR(error)
 
-    my_verbosity = optional_default(PRINT_NORMAL,verbosity)
+    my_verbosity = current_verbosity()
+    do_min_images_only = optional_default(.false., min_images_only)
+    call print('update_hystertic_region: do_min_images_only='//do_min_images_only, PRINT_VERBOSE)
+
+    if (do_min_images_only) then
+       ! only compare atom indices - first column in table
+       allocate(cols(1))
+       cols(1) = 1
+    else
+       ! compare atom indices and shifts - all four columns in table
+       allocate(cols(4))
+       cols(:) = (/1, 2, 3, 4/)
+    end if
 
     if (my_verbosity == PRINT_ANAL) then
        call print('In Select_Hysteretic_Quantum_Region:')
@@ -3141,10 +3155,9 @@ end function cluster_in_out_in
 
     !Check for atoms in 'list' and not in 'outer'
     do n = list%N, 1, -1
-       atom = list%int(:,n) !the nth atom in the list
-       if (search(outer,atom)==0) then
+       if (search(outer,list%int(cols,n))==0) then
           call delete(list,n)
-          if (my_verbosity > PRINT_NORMAL) call print('Removed atom ('//atom//') from quantum list')
+          if (my_verbosity > PRINT_NORMAL) call print('Removed atom ('//list%int(cols,n)//') from quantum list')
        end if
     end do
 
@@ -3152,15 +3165,15 @@ end function cluster_in_out_in
 
     !Check for new atoms in 'inner' cluster and add them to list
     do n = 1, inner%N
-       atom = inner%int(:,n)
-       if (search(list,atom)==0) then
-          call append(list,atom)
+       if (search(list,inner%int(cols,n))==0) then
+          call append(list,inner%int(:,n)) ! copy shifts columns as well, even if we're not comparing them
           call sort(list)
-          if (my_verbosity > PRINT_NORMAL) call print('Added atom ('//atom//') to quantum list')
+          if (my_verbosity > PRINT_NORMAL) call print('Added atom ('//inner%int(cols,n)//') to quantum list')
        end if
     end do
 
     if (my_verbosity >= PRINT_NORMAL) call print(list%N//' atoms selected for quantum treatment')
+    deallocate(cols)
 
   end subroutine update_hysteretic_region
 
@@ -3245,7 +3258,7 @@ end function cluster_in_out_in
      call print('construct_hysteretic_region: old region list:',PRINT_VERBOSE)
      call print(region,PRINT_VERBOSE)
 
-    call update_hysteretic_region(at,inner_region,outer_region,region)
+    call update_hysteretic_region(at,inner_region,outer_region,region, min_images_only=min_images_only)
 
     call print('construct_hysteretic_region: inner_region list:',PRINT_VERBOSE)
     call print(inner_region,PRINT_VERBOSE)
