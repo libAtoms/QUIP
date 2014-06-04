@@ -60,12 +60,12 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   real(dp), dimension(3,3), intent(in), optional :: lattice
   character(len=*), dimension(N), intent(in), optional :: symbol
   integer, dimension(N), intent(in), optional :: Z
-  character(len=quip_param_file_len) :: quip_param_file
   integer, intent(in) :: quip_param_file_len
-  character(len=init_args_str_len) :: init_args_str
+  character(len=quip_param_file_len) :: quip_param_file
   integer, intent(in) :: init_args_str_len
-  character(len=calc_args_str_len) :: calc_args_str
+  character(len=init_args_str_len) :: init_args_str
   integer, intent(in) :: calc_args_str_len
+  character(len=calc_args_str_len) :: calc_args_str
   real(dp), intent(out), optional :: energy
   real(dp), dimension(3,N), intent(out), optional :: force
   real(dp), dimension(3,3), intent(out), optional :: virial
