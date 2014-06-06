@@ -3362,7 +3362,8 @@ end function func_wrapper
       if ( normsqgrad < convergence_tol ) then
         call print('Extended minim completed with  |df|^2 = '// normsqgrad // ' < tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
        ! call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |df|^2 = '// normsqgrad// ' max(abs(df)) = '//maxval(abs(g))//' last alpha = '//alpha)
-        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)))
+        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
+                  // ' last ls_iter = ' // this_ls_count)
         exit
       end if
 

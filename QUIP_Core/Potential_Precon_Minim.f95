@@ -316,7 +316,7 @@ module Potential_Precon_Minim_module
    
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
+       hook, hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
     
     implicit none
     
@@ -349,6 +349,18 @@ module Potential_Precon_Minim_module
     logical, optional :: do_pos, do_lat !% do relaxation w.r.t. positions and/or lattice (if neither is included, do both)
     character(len=*), intent(in), optional :: args_str !% arguments to pass to calc()
     real(dp), dimension(3,3), optional :: external_pressure
+    optional :: hook
+    INTERFACE 
+       subroutine hook(x,dx,E,done,do_print,data)
+         use system_module
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
+       end subroutine hook
+    END INTERFACE
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
     
@@ -492,11 +504,11 @@ module Potential_Precon_Minim_module
     my_max_sub = 30
     
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
-    !call print(use_method)   
-    n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
-            hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity,infoverride = infoverride)
-!       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
- !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
+
+    n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps, &
+      efuncroutine=efuncroutine, linminroutine=linminroutine, hook=hook, hook_print_interval=hook_print_interval, &
+      am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity,&
+      infoverride = infoverride)
  
     
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)

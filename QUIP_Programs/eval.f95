@@ -386,7 +386,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
               call system_timer('precon_minim')
 	   else
@@ -404,7 +404,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
               call system_timer('precon_minim')
            else
