@@ -3476,8 +3476,8 @@ end function func_wrapper
 
      if(n_iter == 1 .and. (doCG .or. doSD)) then 
         alpha = calc_amax(s,pr,doefunc) 
-     ! elseif (doLBFGS .and. (pr%precon_id == 'C1' .or. pr%precon_id == 'LJ')) then
-     !   alpha = 1.0 
+      elseif (doLBFGS .and. (pr%precon_id == 'C1' .or. pr%precon_id == 'LJ')) then
+        alpha = 1.0 
       else
         alpha = init_alpha(alpvec,dirderivvec,n_iter)
       end if
