@@ -3476,8 +3476,8 @@ end function func_wrapper
 
      if(n_iter == 1 .and. (doCG .or. doSD)) then 
         alpha = calc_amax(s,pr,doefunc) 
-      elseif (doLBFGS) then
-        alpha = 1.0 
+     ! elseif (doLBFGS .and. (pr%precon_id == 'C1' .or. pr%precon_id == 'LJ')) then
+     !   alpha = 1.0 
       else
         alpha = init_alpha(alpvec,dirderivvec,n_iter)
       end if
@@ -4228,7 +4228,7 @@ end function func_wrapper
     end if
    
     !begin bracketing
-    ls_it = 1
+    ls_it = 0
     do 
 
 #ifndef _OPENMP
@@ -4238,9 +4238,11 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+    
+    
+      ls_it = ls_it + 1
       call print("linesearch_standard bracket "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
-      ls_it = ls_it + 1
      
       d1 = smartdotproduct(s,g1,doefunc)
       
@@ -4317,7 +4319,7 @@ end function func_wrapper
     
     if ( dozoom ) then
       
-      ls_it = ls_it+1
+      !ls_it = ls_it+1
       do
         at = cubic_min(alo,flo,dlo,ahi,fhi,dhi)
         
@@ -4328,9 +4330,10 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
+        
+        ls_it = ls_it + 1
         call print("linesearch_standard zoom "//" iter = "//ls_it//" f = "//ft// ' |g|^2 = '// normsq(gt)//' last alpha = '//at)
 
-        ls_it = ls_it + 1
         deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
         deltaETlo = calcdeltaE(doefunc,ft,flo,local_energyT,local_energylo)
       
@@ -4773,7 +4776,7 @@ end function func_wrapper
       do I =1,touse
       init_alpha = init_alpha+alpvec(n_iter-I)*dirderivvec(n_iter-I)/dirderivvec(n_iter-I+1)        
       end do
-      init_alpha = 4.0*init_alpha/touse
+      init_alpha = init_alpha/touse
     else
       init_alpha = 0.01_dp
     end if 
