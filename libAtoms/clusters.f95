@@ -2508,6 +2508,7 @@ end function cluster_in_out_in
 
     ! Fast implementation of trivial case where buffer_hops=0 and transition_hops=0
     if (buffer_hops == 0 .and. transition_hops == 0) then
+       call print('WARNING: buffer_hops=0 and transition_hops=0, aborting create_hybrid_weights() early')
 
        where (hybrid_mark /= HYBRID_ACTIVE_MARK)
           hybrid_mark = HYBRID_NO_MARK
