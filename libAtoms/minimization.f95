@@ -4776,7 +4776,7 @@ end function func_wrapper
       do I =1,touse
       init_alpha = init_alpha+alpvec(n_iter-I)*dirderivvec(n_iter-I)/dirderivvec(n_iter-I+1)        
       end do
-      init_alpha = init_alpha/touse
+      init_alpha = 2.0* init_alpha/touse
     else
       init_alpha = 0.01_dp
     end if 
@@ -5717,25 +5717,33 @@ end function func_wrapper
     end INTERFACE
     real(dp), optional :: infoverride
 
-    integer :: N,k,k2
-    real(dp), allocatable :: x(:), x1(:), x2(:), F1(:), F2(:), Nvec(:), pF1(:),pF2(:)
-    real(dp), allocatable :: searchdirdown(:), searchdirup(:)
-    real(dp) :: deltaR = 0.05
+    integer :: N,k,k2,k3,kmax,k2max
+    real(dp) :: h = 0.05
     real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-    real(dp) :: deltatheta, olddeltatheta, e1, e2, deltaxdown, deltaxup
+    real(dp), parameter :: rotCdefault = 10.0_dp**(-1) 
+    real(dp), parameter :: TOLvdefault = 10.0_dp**(-1)
    
-    real(dp), allocatable :: local_energy1(:),local_energy2(:)
+    real(dp), allocatable :: x(:), F1(:), F2(:), F10(:), F20(:), v(:), vstar(:), Gd(:), s(:), sl2(:), Gv(:), Gvp(:), Gx(:), Gxp(:), Gdl2(:), Gvpold(:), Gxpold(:)
+    real(dp), allocatable :: local_energy1(:),local_energy2(:),local_energy10(:),local_energy20(:)
+    real(dp) :: alpha_x,crit,avn,dC,delE,e1,e10,e2,e20,lam,res_v,res_x,rotC,TOLv
+    logical :: rotationfailed, totalfailure
     
-    logical :: translateup, doLSbasic, doLSstandard
+    logical :: doLSbasic, doLSstandard
     integer :: doefunc
-    real(dp) :: d0,d1,d2,nf,C,ff1,ff2,netforce,amax,sdnormup,sdnormdown
-    integer :: n_iter_final
+    
+    rotC = rotCdefault
+    TOLv = TOLvdefault
+
+    kmax = max_steps
+    k2max = 5
+    
     if ( present(linminroutine) ) then
     if (trim(linminroutine) == 'basic') then
       call print('Using basic backtracking linesearch')
        doLSbasic = .TRUE.
     elseif (trim(linminroutine) == 'standard') then
       call print('Using standard two-stage linesearch with cubic interpolation in the zoom phase, with bisection as backup')
+      call print('Not recommended for dimer method!!!')
       doLSstandard = .TRUE.
     end if
     else
@@ -5744,12 +5752,10 @@ end function func_wrapper
 
     N = size(x_in)
         
-    allocate(local_energy1((N-9)/3),local_energy2((N-9)/3))
-    allocate(x(N),x1(N),x2(N),F1(N),F2(N),Nvec(N))  
-    allocate(pF1(N),pF2(N))
-    allocate(searchdirup(N),searchdirdown(N))
+    allocate(local_energy1((N-9)/3),local_energy2((N-9)/3),local_energy10((N-9)/3),local_energy20((N-9)/3))
+    allocate(x(N),F1(N),F2(N),F10(N),F20(N),v(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N))  
     
-    open(1,file='dimerplot.dat',status='replace',access='stream',action='write')
+    !open(1,file='dimerplot.dat',status='replace',access='stream',action='write')
     
     doefunc = E_FUNC_BASIC
     if ( present(efuncroutine) ) then
@@ -5780,1178 +5786,139 @@ end function func_wrapper
     call verbosity_pop()
 #endif
  
-    Nvec = F1 
-    nf = smartdotproduct(F1,F1,doefunc)
-    Nvec = Nvec/sqrt(nf)
-
-       
-    deltaxdown = 0.01_dp 
-    deltaxup = 0.01_dp
+    v = F1 
+    
+    avn = pi/4.0    
     k = 0
-    translateup = .false.
     do
       call build_precon(pr,am_data)
+      v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
+
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      e1 =  func_wrapper(func,x+v*h,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+ 
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      e2 =  func_wrapper(func,x-v*h,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+      
+      Gx = 0.5_dp*(F1 + F2);
+      if (k > 1) then  
+        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
+      else 
+        Gxp = apply_precon(Gx,pr,doefunc)
+      end if
+      res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
+  
+      Gv = (F1 - F2)/(2.0_dp*h)
+      if (k > 1) then  
+        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+      else
+        Gvp = apply_precon(Gv,pr,doefunc)
+      end if
+
+      lam = smartdotproduct(Gv,v,doefunc) 
+      Gd = Gvp - lam*v
+      Gdl2 = Gv - lam*v
+      res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
+      call print('n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x)
+
+      rotationfailed = .false.
+      totalfailure = .false.
       k2 = 0
-      olddeltatheta = 2.1*pi
-      do
-        !call dorotate(x,Nvec,deltaR,func,dfunc,am_data,doefunc,deltatheta,pr)
-        if (abs(deltatheta) <= 10.0_dp**(-10.0) .or. k2 >=20 .or. deltatheta > olddeltatheta/10.0) then
+      do 
+        s = -Gd
+        sl2 = -Gdl2
+        dC = smartdotproduct(s,sl2,doefunc)
+
+        e10 = e1
+        e20 = e2
+        F10 = F1
+        F20 = F2
+        local_energy10 = local_energy1
+        local_energy20 = local_energy2
+
+
+        if (rotationfailed .eqv. .false.) then
+        
+          k3 = 0
+          do
+            crit = -h*h*rotC*dC*avn
+            vstar = cos(avn)*v + sin(avn)*s
+            vstar = vstar/sqrt(Pdotproduct(vstar,vstar,pr,doefunc))
+ 
+#ifndef _OPENMP
+            call verbosity_push_decrement(2)
+#endif
+            e1 =  func_wrapper(func,x+h*vstar,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+#ifndef _OPENMP
+            call verbosity_pop()
+#endif
+ 
+#ifndef _OPENMP
+            call verbosity_push_decrement(2)
+#endif
+            e2 =  func_wrapper(func,x-vstar,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+#ifndef _OPENMP
+            call verbosity_pop()
+#endif
+          
+            delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
+            if (delE < crit) then
+              v = vstar
+              exit
+            end if
+
+            if (abs(delE) < 10.0**(-12) .and. delE < 10.0**(-15)) then
+              rotationfailed = .true.
+              call print('Ran out of precision in objective based rotation')
+              exit
+            else
+              avn = avn/2.0_dp
+            end if
+
+          end do
+
+        end if
+
+        if (rotationfailed .eqv. .false.) then
+          
+          Gvpold = Gvp;   
+          Gv = (F1 - F2)/(2.0_dp*h)
+          Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+
+          lam = smartdotproduct(Gv,v,doefunc) 
+          Gd = Gvp - lam*v
+          Gdl2 = Gv - lam*v
+          res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
+        
+        end if
+
+        k2 = k2 + 1
+        if (res_v < TOLv .or. totalfailure .eqv. .true. .or. k2 > k2max) then
+          !call print(res_v // ' ' //k2)
           exit
         end if
-        olddeltatheta = deltatheta
-        k2 = k2 + 1
+  
+
       end do
- 
-      x1 = x + Nvec*deltaR
-      x2 = x - Nvec*deltaR
- 
-#ifndef _OPENMP
-      call verbosity_push_decrement(2)
-#endif
-      e1 =  func_wrapper(func,x1,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-      call verbosity_push_decrement(2)
-#endif
-      e2 =  func_wrapper(func,x2,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
-      netforce = smartdotproduct(F1+F2,F1+F2,doefunc)/2.0
-      call print(" ")
-      call print ("|Net force|^2 = " //netforce)
-      call print(" ")
-      if (netforce <= 10.0_dp**(-6.0_dp) ) then
+
+    
+      k = k + 1
+      if ( k >= max_steps) then
         exit
       end if
-
-      pF1 = - apply_precon_gs(F1,pr,doefunc=doefunc,force_k=20)
-      pF2 = - apply_precon_gs(F2,pr,doefunc=doefunc,force_k=20)
-      searchdirdown =  (pF1 - Nvec*smartdotproduct(pF1,NVec,doefunc)) + (pF2 - Nvec*smartdotproduct(pF2,Nvec,doefunc))
-      searchdirup =  - 2.0*Nvec*smartdotproduct(pF1,NVec,doefunc)  - 2.0*Nvec*smartdotproduct(pF2,Nvec,doefunc)
-      sdnormup = smartdotproduct(searchdirup,searchdirup,doefunc)
-      sdnormdown = smartdotproduct(searchdirdown,searchdirdown,doefunc)
-      
-     
-      if (sdnormup > sdnormdown) then
-        translateup  = .true.
-      else
-        translateup = .false.
-      end if
-      
-      if (translateup  .eqv. .false.) then
-        
-        amax = calc_amax(searchdirdown,pr,doefunc) 
-        d0 = smartdotproduct(searchdirdown,(F1+F2)/2.0_dp,doefunc)
-        if (doLSbasic) then
-          deltaxdown = linesearch_basic_dimer(x,Nvec,deltaR,searchdirdown,e1,local_energy1,e2,local_energy2,deltaxdown,func,doefunc,am_data,d0,n_iter_final=n_iter_final,amaxin=amax)
-        !elseif (doLSstandard) then
-        !  deltaxdown = linesearch_standard_dimer(x,searchdirdown,f,local_energy,deltaxdown,func,doefunc,dfunc,am_data,d0,n_iter_final,amax)
-        end if
-
-        x = x + deltaxdown*searchdirdown
-        call print("   Translating orthogonal, alpha  = " // deltaxdown//', d = ' //d0//', f = '//(e1+e2)/2.0_dp// ', |s| = '// sdnormdown)
-     else 
- 
-        amax = calc_amax(searchdirup,pr,doefunc) 
-        d0 = smartdotproduct(searchdirup,(F1+F2)/2.0_dp,doefunc)
-        
-        if (doLSbasic) then
-          deltaxup = linesearch_basic_dimer_up(x,Nvec,deltaR,searchdirup,e1,local_energy1,e2,local_energy2,deltaxup,func,doefunc,am_data,d0,n_iter_final=n_iter_final,amaxin=amax)
-        !elseif (doLSstandard) then
-        !  deltaxup = linesearch_standard_dimer_up(x,searchdirup,f,local_energy,deltaxup,func,doefunc,dfunc,am_data,d0,n_iter_final,amax)
-        end if
-
-        x = x + deltaxup*searchdirup
-        call print("   Translating tangent, alpha  = " // deltaxup //', d = '// d0//', f = '//(e1+e2)/2.0_dp // ', |s| = '// sdnormup)
-      end if
-
-      x1 = x + Nvec*deltaR
-      x2 = x - Nvec*deltaR
-     
-#ifndef _OPENMP
-      call verbosity_push_decrement(2)
-#endif
-      ff1 =  func_wrapper(func,x1,am_data,doefunc=doefunc)
-      ff2 =  func_wrapper(func,x2,am_data,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif
-     
-      !do k = 1,N
-      !  call print(k // ' '// x1(k)-x2(k)) 
-      !end do
-      !call exit()
-      write(1) x1(904)
-      write(1) x1(905)
-      write(1) ff1
-      write(1) x2(904)
-      write(1) x2(905)
-      write(1) ff2
-    
-    
-     k = k + 1
-    if ( k >= max_steps) then
-      exit
-    end if
    end do
-   close(1)
-  
-!   call print("We are close to a fixed point, switching to minres")
-   
-!   do
-!
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      g = dfunc(x,am_data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      netforce = smartdotproduct(g,g,doefunc)
-!      call print ("|force|^2 = " //netforce)
-!      if (netforce <= 10.0_dp**(-6.0_dp) ) then
-!        exit
-!      end if
-! 
-!      minresstep = minres(x,g,dfunc,am_data,pr,doefunc)
-!      
-!      x = x - minresstep
-!
-!   end do
    x_in = x 
   end function
-
-
-  subroutine dorotate(x,Nvec,deltaR,e1,local_energy1,e2,local_energy2,func,am_data,doefunc,deltatheta,pr) 
-  
-    real(dp),intent(inout) :: x(:), Nvec(:), deltaR
-    real(dp) :: e1,e2
-    real(dp) :: local_energy1(:), local_energy2(:)
-    INTERFACE 
-      function func(x,data,local_energy,gradient)
-        use system_module
-        real(dp)::x(:)
-        character(len=1),optional::data(:)
-        real(dp), intent(inout),optional :: local_energy(:)
-        real(dp), intent(inout),optional :: gradient(:)
-        real(dp)::func
-      end function func
-    end INTERFACE
-    character(len=1), intent(inout) :: am_data(:)
-    integer :: doefunc
-    real(dp),intent(out) :: deltatheta
-    type(precon_data) :: pr
-    
-    integer :: k
-    integer, parameter :: kmax = 100
-    real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-    real(dp) :: dtheta, dthetam1, dthetam2
-    real(dp) :: force, forcem1, forcem2
-    real(dp) :: x1(size(x)), x2(size(x)), Fper(size(x)), F1(size(x)), F2(size(x)), x1star(size(x)), x2star(size(x)),Nvecstar(size(x)),theta(size(x)),pF1(size(x))
-    real(dp) :: pF2(size(x)), local_energy11(size(local_energy1)), local_energy21(size(local_energy1))
-    real(dp) :: e11,e21,deltaE1,deltaE2
-
-    x1 = x + Nvec*deltaR
-    x2 = x - Nvec*deltaR
- 
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    e1 =  func_wrapper(func,x1,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    e2 =  func_wrapper(func,x2,am_data,local_energy=local_energy1,gradient=F2,doefunc=doefunc)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
-    
-    pF1 = apply_precon_gs(F1,pr,doefunc=doefunc,force_k=20)
-    pF2 = apply_precon_gs(F2,pr,doefunc=doefunc,force_k=20)
-    Fper = (pF1 - Nvec*smartdotproduct(pF1,Nvec,doefunc)) - (pF2 - Nvec*smartdotproduct(pF2,Nvec,doefunc)) 
-    theta = Fper
-    theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
-
-    do
-      
-      x1star = x + (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
-      x2star = x - (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
- 
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      e11 =  func_wrapper(func,x1star,am_data,local_energy11,doefunc=doefunc)
-      e21 =  func_wrapper(func,x2star,am_data,local_energy21,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif     
-      
-      deltaE1 = calcdeltaE(doefunc,e11,e1,local_energy11,local_energy1)
-      deltaE2 = calcdeltaE(doefunc,e21,e2,local_energy21,local_energy2)
-      
-!      !call print(alpha // " "//deltaE)
-!      if ( (deltaE1 + deltaE2) < C*deltatheta*d0) then
-!        exit
-!      end if
-!
-!      if(ls_it>ls_it_max) then
-!        exit
-!      end if
-!      
-!      ls_it = ls_it + 1
-!     !  = alpha/4.0_dp
-!      
-!      if (alpha <1.0e-15) then
-!        exit
-!      end if
-!         
-       
-    end do 
-
-end subroutine
-
-!  subroutine dorotate(x,Nvec,deltaR,func,dfunc,am_data,doefunc,deltatheta,pr) 
-!  
-!    real(dp),intent(inout) :: x(:), Nvec(:), deltaR
-!   INTERFACE 
-!       function func(x,data,local_energy)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp), intent(inout),optional :: local_energy(:)
-!         real(dp)::func
-!       end function func
-!    end INTERFACE
-!      INTERFACE
-!      function dfunc(x,data)
-!        use system_module
-!        real(dp)::x(:)
-!        character(len=1),optional::data(:)
-!        real(dp)::dfunc(size(x))
-!      end function dfunc
-!    END INTERFACE
-!    character(len=1), intent(inout) :: am_data(:)
-!    logical :: doefunc(:)
-!    real(dp),intent(out) :: deltatheta
-!    type(precon_data) :: pr
-!    
-!    integer :: k
-!    integer, parameter :: kmax = 100
-!    real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-!    real(dp) :: dtheta, dthetam1, dthetam2
-!    real(dp) :: force, forcem1, forcem2
-!    real(dp) :: x1(size(x)), x2(size(x)), Fper(size(x)), F1(size(x)), F2(size(x)), x1star(size(x)), x2star(size(x)),Nvecstar(size(x)),theta(size(x))
-!    real(dp) :: e1star,e2star,e1,e2
-!
-!    x1 = x + Nvec*deltaR
-!    x2 = x - Nvec*deltaR
-! 
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F1 = dfunc(x1,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-! 
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    F2 = dfunc(x2,am_data)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-!    
-!    F1 = apply_precon_gs(F1,pr,doefunc=doefunc,force_k=20)
-!    F2 = apply_precon_gs(F2,pr,doefunc=doefunc,force_k=20)
-!    Fper = (F1 - Nvec*smartdotproduct(F1,Nvec,doefunc)) - (F2 - Nvec*smartdotproduct(F2,Nvec,doefunc)) 
-!    theta = Fper
-!    theta = theta/sqrt(smartdotproduct(theta,theta,doefunc))
-!    
-!    dthetam2 = -pi*10.0_dp**(-3.0_dp)
-!    forcem2 = getrotforce(x,Nvec,theta,deltaR,dthetam2,dfunc,am_data,doefunc,pr)
-!    
-!    dthetam1 = pi*10.0_dp**(-3.0_dp)
-!    forcem1 = getrotforce(x,Nvec,theta,deltaR,dthetam1,dfunc,am_data,doefunc,pr)
-!    
-!    k = 0
-!    do 
-!
-!      dtheta = dthetam1 - forcem1*(dthetam2 - dthetam1)/(forcem2 - forcem1)
-!      !deltatheta = dtheta ! Delete these two lines later
-!      !exit                !
-!      
-!      if ( dtheta > pi/2.0_dp) then
-!        dtheta = dtheta - pi  
-!      elseif (dtheta < -pi/2.0_dp) then
-!        dtheta = dtheta + pi
-!      end if
-!      if ( abs(deltatheta) <= 10.0_dp**(-13.0_dp) ) then 
-!        deltatheta = dtheta
-!        exit
-!      end if
-!     ! call print("Dimer rotating, iteration k = " // k // " Rotation force = "//forcem1 // " \Delta\Theta = " // dtheta)
-!      force = getrotforce(x,Nvec,theta,deltaR,dtheta,dfunc,am_data,doefunc,pr)
-!       
-!      if (abs(force) <= 10.0_dp**(-13.0_dp) ) then  
-!        deltatheta = dtheta
-!        exit
-!      end if
-!    
-!      dthetam2 = dthetam1
-!      forcem2 = forcem1
-!
-!      dthetam1 = dtheta
-!      forcem1 = force 
-!
-!      k = k + 1
-!      if (k >= kmax) then
-!        call print("Failed to rotate the dimer sucessfully about the given axis")
-!        exit
-!      end if 
-!    end do
-!   
-!    x1 = x + (Nvec*cos(deltatheta) + theta*sin(deltatheta))*deltaR
-!    Nvec = (x1 - x)
-!    Nvec = Nvec/sqrt(smartdotproduct(Nvec,Nvec,doefunc))
-!    x2 = x - Nvec*deltaR
-!   
-!    x1star = x + (Nvec*cos(pi/2.0) + theta*sin(pi/2.0))*deltaR
-!    Nvecstar = (x1star - x)
-!    Nvecstar = Nvecstar/sqrt(smartdotproduct(Nvecstar,Nvecstar,doefunc))
-!    x2star = x - Nvecstar*deltaR
-!    
-!#ifndef _OPENMP
-!    call verbosity_push_decrement(2)
-!#endif
-!    e1 =  func_wrapper(func,x1,am_data,doefunc=doefunc)
-!    e2 =  func_wrapper(func,x2,am_data,doefunc=doefunc)
-!    e1star =  func_wrapper(func,x1star,am_data,doefunc=doefunc)
-!    e2star =  func_wrapper(func,x2star,am_data,doefunc=doefunc)
-!#ifndef _OPENMP
-!    call verbosity_pop()
-!#endif
-!
-!    if (e1star + e2star < e1 + e2) then
-!      if (e1 > e2) then
-!        Nvec = Nvecstar
-!        call print("   Rotating dimer with \Delta\Theta = " // deltatheta+pi/2.0)
-!      else
-!        Nvec = -Nvecstar
-!        call print("   Rotating dimer with \Delta\Theta = " // deltatheta-pi/2.0)
-!      end if
-!    else
-!    call print("   Rotating dimer with \Delta\Theta = " // deltatheta)
-!    end if
-!
-!  end subroutine
- 
-  function getrotforce(x,Nvec,thetavec,deltaR,dtheta,dfunc,am_data,doefunc,pr) result(force)
-  
-    implicit none
-
-    real(dp) :: x(:), Nvec(:), thetavec(:), deltaR, dtheta
-    INTERFACE
-      function dfunc(x,data)
-        use system_module
-        real(dp)::x(:)
-        character(len=1),optional::data(:)
-        real(dp)::dfunc(size(x))
-      end function dfunc
-    END INTERFACE
-    character(len=1), intent(inout) :: am_data(:)
-    integer :: doefunc
-    real(dp) :: force
-    type(precon_data) :: pr
-
-    real(dp) :: x1(size(x)), x2(size(x)), Nvecstar(size(x)), Fperstar(size(x)), F1(size(x)), F2(size(x)), F(size(x))
-
-    x1 = x + (Nvec*cos(dtheta) + thetavec*sin(dtheta))*deltaR
-    Nvecstar = (x1 - x)
-    Nvecstar = Nvecstar/sqrt(smartdotproduct(Nvecstar,Nvecstar,doefunc))
-    x2 = x - deltaR*Nvecstar
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    F1 = dfunc(x1,am_data)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    F2 = dfunc(x2,am_data)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
-   
-    !F1 = apply_precon_gs(F1,pr,doefunc,force_k=20)
-    !F2 = apply_precon_gs(F2,pr,doefunc,force_k=20)
-    !Fperstar = Nvecstar*smartdotproduct(F1,Nvecstar,doefunc) -  Nvecstar*smartdotproduct(F2,Nvecstar,doefunc)
-    
-    Fperstar = (F1 - Nvecstar*smartdotproduct(F1,Nvecstar,doefunc)) - (F2 - Nvecstar*smartdotproduct(F2,Nvecstar,doefunc)) 
-    force = smartdotproduct(Fperstar,thetavec,doefunc) 
-    
-    !force = smartdotproduct(Nvecstar,F1-F2,doefunc)
-
-  end function
-
-!    function minres(ref,b,dfunc,am_data,pr,doefunc) result(x)
-!
-!    implicit none
-!
-!    real(dp) :: ref(:),b(:)
-!    INTERFACE
-!      function dfunc(x,data)
-!        use system_module
-!        real(dp)::x(:)
-!        character(len=1),optional::data(:)
-!        real(dp)::dfunc(size(x))
-!      end function dfunc
-!    END INTERFACE
-!    character(len=1),optional::am_data(:)
-!    type(precon_data) :: pr
-!    logical :: doefunc(:)
-!
-!    real(dp) :: v(size(b)), vnew(size(b)), vm1(size(b)), w(size(b)), wnew(size(b)), wm1(size(b)), wm2(size(b)), Av(size(b)), xm1(size(b)),x(size(b))
-!    real(dp) :: eta, beta, betam1, alpha, gam, gamm1, sig, sigm1, del, rho1, rho2, rho3, diff
-!    integer :: k,kreset,kk,kkmax
-!
-!    real(dp) :: step = 10.0_dp**(-5.0_dp)
-!  
-!    x = 0.0_dp
-!    v = b
-!    vm1 = 0.0_dp
-!    wm1 = 0.0_dp
-!    wm2 = 0.0_dp
-!    beta = sqrt(smartdotproduct(v,v,doefunc))
-!    eta = beta
-!    gam = 1.0
-!    gamm1 = 1.0
-!    sig = 0.0
-!    sigm1 = 0.0
-!
-!
-!    k = 0
-!    kk = 0
-!    kreset = 20
-!    kkmax = 5
-!    do
-!      
-!      v = v/beta
-!
-!      !call print(x)
-!#ifndef _OPENMP
-!      call verbosity_push_decrement(2)
-!#endif
-!      Av = (dfunc(ref+step*v,am_data) - dfunc(ref-step*v,am_data))/(2.0*step)  !Matrix vector product Ay
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      
-!      alpha = smartdotproduct(v,Av,doefunc)
-!      vnew = Av - alpha*v - beta*vm1
-!      vm1 = v
-!      v = vnew
-!      betam1 = beta
-!      beta = sqrt(smartdotproduct(v,v,doefunc))
-!       
-!      del = gam*alpha - gamm1*sig*betam1
-!      rho1 = sqrt(del**2.0_dp + beta**2.0_dp)
-!      rho2 = sig*alpha + gamm1*gam*betam1
-!      rho3 = sigm1*betam1
-!
-!      gamm1 = gam
-!      sigm1 = sig
-!      gam = del/rho1
-!      sig = beta/rho1
-!      wnew = (v - rho3*wm2 - rho2*wm1)/rho1
-!      wm2 = wm1
-!      wm1 = w
-!      w = wnew
-!      xm1 = x
-!      x = x + gam*eta*w
-!      eta = -sig*eta
-!      
-!      diff = smartdotproduct(x-xm1,x-xm1,doefunc)
-!      !call print("MINRES diff =  "//diff // ",alpha = " // alpha // ", beta = "// beta// ", gamma = " // gam // ", eta = "// eta)
-!      call print("MINRES diff =  "//diff // ", r1 = " // rho1 // ", r2 = "//rho2//  ", r3 = "//rho3//", gamma = "//gam //", eta = "//eta)
-!       
-!      k = k + 1
-!      if (k >= kreset) then
-!        k = 0
-!        kk = kk + 1
-!      end if
-!      if (kk >= kkmax) then
-!        exit
-!      end if
-!    end do
-!
-!  end function
-!  
-  
-  function linesearch_basic_dimer(x,Nvec,deltaR,s,f1,local_energy1,f2,local_energy2,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
-
-    implicit none
-
-    real(dp) :: x(:)
-    real(dp) :: Nvec(:)
-    real(dp) :: deltaR
-    real(dp) :: s(:)
-    real(dp), intent(inout) :: f1,f2
-    real(dp), intent(inout) :: local_energy1(:),local_energy2(:)
-    real(dp) :: alpha
-   INTERFACE 
-       function func(x,data,local_energy,gradient)
-         use system_module
-         real(dp)::x(:)
-         character(len=1),optional::data(:)
-         real(dp), intent(inout),optional :: local_energy(:)
-         real(dp), intent(inout),optional :: gradient(:)
-         real(dp)::func
-       end function func
-    end INTERFACE
-    integer :: doefunc
-    character(len=1)::data(:)
-    real(dp) :: d0
-    real(dp) :: linesearch_basic_dimer
-    integer, optional, intent(out) :: n_iter_final
-    real(dp) , optional :: amaxin
-
-
-    integer,parameter :: ls_it_max = 1000
-    real(dp),parameter :: C = 10.0_dp**(-4.0)
-    integer :: ls_it
-    real(dp) :: f21,f11
-    real(dp) :: amax
-    real(dp) :: local_energy11(size(local_energy1)),local_energy21(size(local_energy2))
-    real(dp) :: deltaE1,deltaE2
-
-    if (alpha < 10.0**(-10.0)) then
-      alpha = alpha*32.0
-      if (present(amaxin)) then
-        amax = amaxin
-      else
-        amax = 32.1*alpha
-      end if
-
-      if(alpha>amax) alpha = amax
-    else
-      alpha = alpha*4.0
-      if (present(amaxin)) then
-        amax = amaxin
-      else
-        amax = 4.1*alpha
-      end if
-
-      if(alpha>amax) alpha = amax
-    end if
-    ls_it = 1
-    do
-
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      f11 =  func_wrapper(func,x+Nvec*deltaR+alpha*s,data,local_energy11,doefunc=doefunc)
-      f21 =  func_wrapper(func,x-Nvec*deltaR+alpha*s,data,local_energy21,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif     
-      
-      deltaE1 = calcdeltaE(doefunc,f11,f1,local_energy11,local_energy1)
-      deltaE2 = calcdeltaE(doefunc,f21,f2,local_energy21,local_energy2)
-      
-      !call print(alpha // " "//deltaE)
-      if ( (deltaE1 + deltaE2) < C*alpha*d0) then
-        exit
-      end if
-
-      if(ls_it>ls_it_max) then
-        exit
-      end if
-      
-      ls_it = ls_it + 1
-      alpha = alpha/4.0_dp
-      
-      if (alpha <1.0e-15) then
-        exit
-      end if
-       
-    end do
-
-    linesearch_basic_dimer = alpha
-    f1 = f11
-    f2 = f21
-    local_energy1 = local_energy11
-    local_energy2 = local_energy21
-    if(present(n_iter_final)) n_iter_final = ls_it
-
-  end function
-
- 
-  function linesearch_basic_dimer_up(x,Nvec,deltaR,s,f1,local_energy1,f2,local_energy2,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
-
-    implicit none
-
-    real(dp) :: x(:)
-    real(dp) :: Nvec(:)
-    real(dp) :: deltaR
-    real(dp) :: s(:)
-    real(dp), intent(inout) :: f1,f2
-    real(dp), intent(inout) :: local_energy1(:),local_energy2(:)
-    real(dp) :: alpha
-   INTERFACE 
-       function func(x,data,local_energy,gradient)
-         use system_module
-         real(dp)::x(:)
-         character(len=1),optional::data(:)
-         real(dp), intent(inout),optional :: local_energy(:)
-         real(dp), intent(inout),optional :: gradient(:)
-         real(dp)::func
-       end function func
-    end INTERFACE
-    integer :: doefunc
-    character(len=1)::data(:)
-    real(dp) :: d0
-    real(dp) :: linesearch_basic_dimer_up
-    integer, optional, intent(out) :: n_iter_final
-    real(dp) , optional :: amaxin
-
-
-    integer,parameter :: ls_it_max = 1000
-    real(dp),parameter :: C = 10.0_dp**(-4.0)
-    integer :: ls_it
-    real(dp) :: f21,f11
-    real(dp) :: amax
-    real(dp) :: local_energy11(size(local_energy1)),local_energy21(size(local_energy2))
-    real(dp) :: deltaE1,deltaE2
-
-    alpha = alpha*4.0
-    if (present(amaxin)) then
-      amax = amaxin
-    else
-      amax = 4.1*alpha
-    end if
-
-    if(alpha>amax) alpha = amax
-    ls_it = 1
-    do
-
-#ifndef _OPENMP
-      call verbosity_push_decrement()
-#endif
-      f11 =  func_wrapper(func,x+Nvec*deltaR+alpha*s,data,local_energy11,doefunc=doefunc)
-      f21 =  func_wrapper(func,x-Nvec*deltaR+alpha*s,data,local_energy21,doefunc=doefunc)
-#ifndef _OPENMP
-      call verbosity_pop()
-#endif     
-       
-      deltaE1 = calcdeltaE(doefunc,f11,f1,local_energy11,local_energy1)
-      deltaE2 = calcdeltaE(doefunc,f21,f2,local_energy21,local_energy2)
-     
-      if ( (deltaE1 + deltaE2) > C*alpha*d0) then
-        exit
-      end if
-
-      if(ls_it>ls_it_max) then
-        exit
-      end if
-      
-      ls_it = ls_it + 1
-      alpha = alpha/4.0_dp
-      
-      if (alpha <1.0e-15) then
-        exit
-      end if
-       
-    end do
-
-    linesearch_basic_dimer_up = alpha
-    f1 = f11
-    f2 = f21
-    local_energy1 = local_energy11
-    local_energy2 = local_energy21
-    if(present(n_iter_final)) n_iter_final = ls_it
-
-  end function
-
-!  function linesearch_standard_dimer(x,s,f,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
-!    implicit none
-!    real(dp) :: x(:)
-!    real(dp) :: s(:)
-!    real(dp), intent(inout) :: f
-!    real(dp), intent(inout) :: local_energy(:)
-!    real(dp) :: alpha
-!    INTERFACE 
-!       function func(x,data,local_energy)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp), intent(inout),optional :: local_energy(:)
-!         real(dp)::func
-!       end function func
-!    end INTERFACE
-!  INTERFACE
-!       function dfunc(x,data)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp)::dfunc(size(x))
-!       end function dfunc
-!    END INTERFACE
-!    logical :: doefunc(:)
-!    character(len=1)::data(:)
-!    real(dp) :: d
-!    real(dp) :: linesearch_standard_dimer
-!    integer, optional, intent(out) :: n_iter_final
-!    real(dp), optional :: amaxin
-!
-!
-!    integer, parameter :: ls_it_max = 20
-!    real(dp), parameter :: C1 = 10.0_dp**(-4.0)
-!    real(dp), parameter :: C2 = 0.9
-!    real(dp) :: amax 
-!    real(dp), parameter :: amin = 10.0_dp**(-5.0)
-!
-!    real(dp) :: f0, f1, ft, a0, a1, a2, at, d0, d1, dt
-!    real(dp) :: flo, fhi, alo, ahi, dlo, dhi
-!    integer :: ls_it
-!    real(dp) :: g1(size(x)), gt(size(x))
-!    logical :: dozoom = .FALSE.
-!    real (dp) :: deltaE,deltaE0, deltaET, deltaETlo
-!    real(dp) :: local_energy0(size(local_energy)),local_energy1(size(local_energy)),local_energyT(size(local_energy)),local_energylo(size(local_energy)),local_energyhi(size(local_energy))
-!
-!    a0 = 0.0_dp
-!    f0 = f
-!    local_energy0 = local_energy
-!    d0 = d
-!    a1 = alpha
-!   
-!   
-!    if (present(amaxin)) then
-!      amax = amaxin
-!      if(a1>amax) a1 = amax
-!    else
-!      amax = 100.0_dp*alpha
-!    end if
-!   
-!
-!    !begin bracketing
-!    ls_it = 1
-!    do 
-!
-!#ifndef _OPENMP
-!      call verbosity_push_decrement()
-!#endif
-!      f1 =  func_wrapper(func,x+a1*s,data,local_energy1,doefunc=doefunc)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!
-!      ls_it = ls_it + 1
-!#ifndef _OPENMP
-!      call verbosity_push_decrement()
-!#endif
-!      g1 = dfunc(x+a1*s,data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      
-!      d1 = smartdotproduct(s,g1,doefunc)
-!      
-!      deltaE = calcdeltaE(doefunc,f1,f,local_energy1,local_energy)
-!      deltaE0 = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
-!
-!      if ( deltaE > C1*a1*d .OR. (deltaE0 >= 0.0   .AND. ls_it > 1 )) then
-!        dozoom = .TRUE.
-!        alo = a0
-!        ahi = a1
-!        flo = f0
-!        local_energylo = local_energy0
-!        fhi = f1
-!        local_energyhi = local_energy1
-!        dlo = d0
-!        dhi = d1
-!        exit
-!      end if
-!
-!      if ( abs(d1) <= C2*abs(d) ) then
-!        dozoom = .FALSE.
-!        exit 
-!      end if
-!
-!      if ( d1 >= 0.0_dp) then
-!        alo = a1
-!        ahi = a0
-!        flo = f1
-!        local_energylo = local_energy1
-!        fhi = f0
-!        local_energyhi = local_energy0
-!        dlo = d1
-!        dhi = d0
-!        exit
-!      end if
-!
-!      if(ls_it>ls_it_max) then
-!        call print('Ran out of line search iterations in phase 1')
-!        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!        n_iter_final = n_iter_final + ls_it
-!        dozoom = .FALSE.   
-!        exit
-!      end if
-!
-!      if(a1 >= amax) then
-!        call print('Bracketing failed to find an interval, reverting to basic linesearch')
-!        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!        n_iter_final = n_iter_final + ls_it
-!        dozoom = .FALSE.   
-!        exit
-!      end if
-!      
-!      a2 = min(a1 + 4.0*(a1-a0),amax)
-!      a0 = a1
-!      a1 = a2
-!
-!      f0 = f1
-!      local_energy0 = local_energy1
-!      d0 = d1
-!
-!    end do
-!   
-!    
-!    if ( dozoom ) then
-!      
-!      ls_it = ls_it+1
-!      do
-!        at = cubic_min(alo,flo,dlo,ahi,fhi,dhi)
-!        
-!#ifndef _OPENMP
-!        call verbosity_push_decrement()
-!#endif
-!        ft =  func_wrapper(func,x+at*s,data,local_energyT,doefunc=doefunc)
-!#ifndef _OPENMP
-!        call verbosity_pop()
-!#endif
-!
-!        ls_it = ls_it + 1
-!        deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
-!        deltaETlo = calcdeltaE(doefunc,ft,flo,local_energyT,local_energylo)
-! 
-!        if ( deltaET >  C1*at*d .OR. deltaETlo >= 0.0) then
-!          ahi = at
-!          fhi = ft
-!          local_energyhi = local_energyT
-!        else 
-!
-!
-!#ifndef _OPENMP
-!          call verbosity_push_decrement()
-!#endif
-!          gt = dfunc(x+at*s,data)
-!#ifndef _OPENMP
-!          call verbosity_pop()
-!#endif
-!          dt = dot_product(gt,s)
-!         
-!          
-!          if ( abs(dt) <= C2*abs(d) ) then
-!
-!            a1 = at
-!            f1 = ft
-!            local_energy1 = local_energyT
-!           exit
-!
-!          end if
-!
-!          if ( dt*(ahi-alo) >= 0.0 ) then
-!
-!            ahi = alo
-!            fhi = flo
-!            local_energyhi = local_energylo
-! 
-!          end if
-!           
-!          alo = at
-!          flo = ft
-!          local_energylo = local_energyT
-!  
-!        end if
-!
-!        if (abs(ahi - alo) < amin) then
-!          call print('Bracket got small without satisfying curvature condition')
-!          
-!          deltaET = calcdeltaE(doefunc,ft,f,local_energyT,local_energy)
-!          if ( deltaET < C1*at*d) then
-!            call print('Bracket lowpoint satisfies sufficient decrease, using that')
-!            a1 = at
-!            exit
-!          else
-!            call print('Bracket lowpoint no good, doing a step of basic linesearch with original initial inputs')
-!            a1 = linesearch_basic_dimer(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!            n_iter_final = n_iter_final + ls_it
-!            exit
-!          end if
-!        end if
-!
-!        if(ls_it>ls_it_max) then
-!          call print('Ran out of line search iterations in phase 2')
-!          a1 = linesearch_basic_dimer(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!          n_iter_final = n_iter_final + ls_it
-!          exit
-!        end if
-!
-!        
-!      end do  
-!    end if
-!
-!    n_iter_final = ls_it
-!    linesearch_standard_dimer = a1
-!    f = f1
-!  end function linesearch_standard_dimer
-!
-!  function linesearch_standard_dimer_up(x,s,f,local_energy,alpha,func,doefunc,dfunc,data,d,n_iter_final,amaxin)
-!    implicit none
-!    real(dp) :: x(:)
-!    real(dp) :: s(:)
-!    real(dp), intent(inout) :: f
-!    real(dp), intent(inout) :: local_energy(:)
-!    real(dp) :: alpha
-!    INTERFACE 
-!       function func(x,data,local_energy)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp), intent(inout),optional :: local_energy(:)
-!         real(dp)::func
-!       end function func
-!    end INTERFACE
-!  INTERFACE
-!       function dfunc(x,data)
-!         use system_module
-!         real(dp)::x(:)
-!         character(len=1),optional::data(:)
-!         real(dp)::dfunc(size(x))
-!       end function dfunc
-!    END INTERFACE
-!    logical :: doefunc(:)
-!    character(len=1)::data(:)
-!    real(dp) :: d
-!    real(dp) :: linesearch_standard_dimer_up
-!    integer, optional, intent(out) :: n_iter_final
-!    real(dp), optional :: amaxin
-!
-!
-!    integer, parameter :: ls_it_max = 20
-!    real(dp), parameter :: C1 = 10.0_dp**(-4.0)
-!    real(dp), parameter :: C2 = 0.9
-!    real(dp) :: amax 
-!    real(dp), parameter :: amin = 10.0_dp**(-5.0)
-!
-!    real(dp) :: f0, f1, ft, a0, a1, a2, at, d0, d1, dt
-!    real(dp) :: flo, fhi, alo, ahi, dlo, dhi
-!    integer :: ls_it
-!    real(dp) :: g1(size(x)), gt(size(x))
-!    logical :: dozoom = .FALSE.
-!    real (dp) :: deltaE,deltaE0, deltaET, deltaETlo
-!    real(dp) :: local_energy0(size(local_energy)),local_energy1(size(local_energy)),local_energyT(size(local_energy)),local_energylo(size(local_energy)),local_energyhi(size(local_energy))
-!
-!    a0 = 0.0_dp
-!    f0 = f
-!    local_energy0 = local_energy
-!    d0 = d
-!    a1 = alpha
-!   
-!   
-!    if (present(amaxin)) then
-!      amax = amaxin
-!      if(a1>amax) a1 = amax
-!    else
-!      amax = 100.0_dp*alpha
-!    end if
-!   
-!
-!    !begin bracketing
-!    ls_it = 1
-!    do 
-!
-!#ifndef _OPENMP
-!      call verbosity_push_decrement()
-!#endif
-!      f1 =  func_wrapper(func,x+a1*s,data,local_energy1,doefunc=doefunc)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!
-!      ls_it = ls_it + 1
-!#ifndef _OPENMP
-!      call verbosity_push_decrement()
-!#endif
-!      g1 = dfunc(x+a1*s,data)
-!#ifndef _OPENMP
-!      call verbosity_pop()
-!#endif
-!      
-!      d1 = smartdotproduct(s,g1,doefunc)
-!      
-!      deltaE = calcdeltaE(doefunc,f1,f,local_energy1,local_energy)
-!      deltaE0 = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
-!
-!      if ( deltaE < - C1*a1*d .OR. (deltaE0 <= 0.0   .AND. ls_it > 1 )) then
-!        dozoom = .TRUE.
-!        alo = a0
-!        ahi = a1
-!        flo = f0
-!        local_energylo = local_energy0
-!        fhi = f1
-!        local_energyhi = local_energy1
-!        dlo = d0
-!        dhi = d1
-!        exit
-!      end if
-!
-!      if ( abs(d1) <= C2*abs(d) ) then
-!        dozoom = .FALSE.
-!        exit 
-!      end if
-!
-!      if ( d1 >= 0.0_dp) then
-!        alo = a1
-!        ahi = a0
-!        flo = f1
-!        local_energylo = local_energy1
-!        fhi = f0
-!        local_energyhi = local_energy0
-!        dlo = d1
-!        dhi = d0
-!        exit
-!      end if
-!
-!      if(ls_it>ls_it_max) then
-!        call print('Ran out of line search iterations in phase 1')
-!        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!        n_iter_final = n_iter_final + ls_it
-!        dozoom = .FALSE.   
-!        exit
-!      end if
-!
-!      if(a1 >= amax) then
-!        call print('Bracketing failed to find an interval, reverting to basic linesearch')
-!        a1 = linesearch_basic(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!        n_iter_final = n_iter_final + ls_it
-!        dozoom = .FALSE.   
-!        exit
-!      end if
-!      
-!      a2 = min(a1 + 4.0*(a1-a0),amax)
-!      a0 = a1
-!      a1 = a2
-!
-!      f0 = f1
-!      local_energy0 = local_energy1
-!      d0 = d1
-!
-!    end do
-!   
-!    
-!    if ( dozoom ) then
-!      
-!      ls_it = ls_it+1
-!      do
-!        at = cubic_min(alo,-flo,-dlo,ahi,-fhi,-dhi)
-!        
-!#ifndef _OPENMP
-!        call verbosity_push_decrement()
-!#endif
-!        ft =  func_wrapper(func,x+at*s,data,local_energyT,doefunc=doefunc)
-!#ifndef _OPENMP
-!        call verbosity_pop()
-!#endif
-!
-!        ls_it = ls_it + 1
-!        deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
-!        deltaETlo = calcdeltaE(doefunc,ft,flo,local_energyT,local_energylo)
-! 
-!        if ( deltaET <  -C1*at*d .OR. deltaETlo >= 0.0) then
-!          ahi = at
-!          fhi = ft
-!          local_energyhi = local_energyT
-!        else 
-!
-!
-!#ifndef _OPENMP
-!          call verbosity_push_decrement()
-!#endif
-!          gt = dfunc(x+at*s,data)
-!#ifndef _OPENMP
-!          call verbosity_pop()
-!#endif
-!          dt = dot_product(gt,s)
-!         
-!          
-!          if ( abs(dt) <= C2*abs(d) ) then
-!
-!            a1 = at
-!            f1 = ft
-!            local_energy1 = local_energyT
-!           exit
-!
-!          end if
-!
-!          if ( -dt*(ahi-alo) <= 0.0 ) then
-!
-!            ahi = alo
-!            fhi = flo
-!            local_energyhi = local_energylo
-! 
-!          end if
-!           
-!          alo = at
-!          flo = ft
-!          local_energylo = local_energyT
-!  
-!        end if
-!
-!        if (abs(ahi - alo) < amin) then
-!          call print('Bracket got small without satisfying curvature condition')
-!          
-!          deltaET = calcdeltaE(doefunc,ft,f,local_energyT,local_energy)
-!          if ( deltaET >  -C1*at*d) then
-!            call print('Bracket lowpoint satisfies sufficient decrease, using that')
-!            a1 = at
-!            exit
-!          else
-!            call print('Bracket lowpoint no good, doing a step of basic linesearch with original initial inputs')
-!            a1 = linesearch_basic_dimer(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!            n_iter_final = n_iter_final + ls_it
-!            exit
-!          end if
-!        end if
-!
-!        if(ls_it>ls_it_max) then
-!          call print('Ran out of line search iterations in phase 2')
-!          a1 = linesearch_basic_dimer(x,s,f,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-!          n_iter_final = n_iter_final + ls_it
-!          exit
-!        end if
-!
-!        
-!      end do  
-!    end if
-!
-!    n_iter_final = ls_it
-!    linesearch_standard_dimer_up = a1
-!    f = f1
-!  end function linesearch_standard_dimer_up
-!
 
 
 
