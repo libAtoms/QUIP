@@ -3480,6 +3480,9 @@ end function func_wrapper
         alpha = 1.0 
       else
         alpha = init_alpha(alpvec,dirderivvec,n_iter)
+        if (pr%precon_id == 'ID') then
+          alpha = alpha*2.0
+        end if
       end if
       
       gold = g
@@ -4776,7 +4779,7 @@ end function func_wrapper
       do I =1,touse
       init_alpha = init_alpha+alpvec(n_iter-I)*dirderivvec(n_iter-I)/dirderivvec(n_iter-I+1)        
       end do
-      init_alpha = 2.0* init_alpha/touse
+      init_alpha = init_alpha/touse
     else
       init_alpha = 0.01_dp
     end if 
