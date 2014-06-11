@@ -419,8 +419,7 @@ module Potential_Precon_Minim_module
       call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
     end if
 
-
-    am_data_size = size(transfer(am, am_mold))
+        am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
     use_method = trim(method)
@@ -527,14 +526,17 @@ module Potential_Precon_Minim_module
 
   end function 
   
-  function Precon_Potential_Dimer(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
+  function Precon_Potential_Dimer(this, at,at1,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub)
     
     implicit none
     
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
-    type(Atoms), intent(inout), target :: at !% starting configuration
+    type(Atoms), intent(inout), target :: at ! final configuration
+
+    type(Atoms), intent(inout), target :: at1 ! start configuration 1
+    type(Atoms), intent(inout), target :: at2 ! start configuration 2
     character(*), intent(in)    :: method !% passed to precon_minim()
 ! Options for method
 ! 'preconSD' - preconditioned steepest descent
@@ -585,7 +587,7 @@ module Potential_Precon_Minim_module
     character(len=STRING_LENGTH) :: use_method
 
     integer n_iter, n_iter_tot
-    real(dp), allocatable :: x(:)
+    real(dp), allocatable :: x(:),v(:),vpos(:,:)
     real(dp) :: deform_grad(3,3)
     logical my_do_print
     logical done
@@ -623,6 +625,11 @@ module Potential_Precon_Minim_module
     allocate(am_data(am_data_size))
 
     use_method = trim(method)
+
+    at = at1
+    at%pos = (at1%pos + at2%pos)/2.0
+    allocate(vpos(at%N,3))
+    vpos = (at1%pos - at2%pos)
 
     call calc_connect(at)
     am%minim_at => at
@@ -689,11 +696,12 @@ module Potential_Precon_Minim_module
     am%minim_n_eval_e = 0
     am%minim_n_eval_f = 0
 
-    allocate(x(9+am%minim_at%N*3))
+    allocate(x(9+am%minim_at%N*3),v(9+am%minim_at%N*3))
     allocate(am%last_connect_x(size(x)))
     am%last_connect_x=1.0e38_dp
     deform_grad = 0.0_dp; call add_identity(deform_grad)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
+    call pack_pos_dg(vpos, deform_grad, v, am%pos_lat_preconditioner_factor)
 
     am_data = transfer(am, am_data)
     my_nneigh = optional_default(125,nneigh)
@@ -706,7 +714,7 @@ module Potential_Precon_Minim_module
     
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
     !call print(use_method)   
-    n_iter = precondimer(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
+    n_iter = precondimer(x,v, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
             hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
 !       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
  !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
