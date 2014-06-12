@@ -5883,7 +5883,7 @@ end function func_wrapper
 #endif
           
             delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
-            call print(avn // ' '// delE // ' ' //crit//' '//normsq(v-vstar))
+            call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
             !call print(e2// ' '//e20)
             
             if (delE < crit) then
