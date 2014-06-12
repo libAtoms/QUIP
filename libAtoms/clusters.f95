@@ -609,6 +609,7 @@ end function cluster_in_out_in
 	  call print("cluster_fix_termination_clash: proposed hydrogen positions:", PRINT_ANAL)
 	  call print(H1, PRINT_ANAL)
 	  call print(H2, PRINT_ANAL)
+          call print('norm(H1-H2) '//norm(H1-H2)//' tol'//(bond_length(1,1)*this%nneightol*termination_clash_factor), PRINT_ANAL)
 	  !NB workaround for pgf90 bug (as of 9.0-1)
 	  ! t_norm = norm(H1-H2); call print("cluster_fix_termination_clash: hydrogen distance would be "//t_norm, PRINT_ANAL)
 	  !NB end of workaround for pgf90 bug (as of 9.0-1)
