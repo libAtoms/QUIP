@@ -77,6 +77,7 @@ contains
     
     integer   :: n_new_walker
     integer   :: new_walker(MAX_WALKER)
+    logical   :: this_atom
 
     ! ---
 
@@ -96,7 +97,11 @@ contains
           do ni = 1, n_neighbours(at, i)
 !             j  = nl%neighbors(ni)
              j = neighbour(at, i, ni)
-             if ( ( .not. present(mask) .or. mask(j) ) .and. dist(j) == 0 ) then
+
+             this_atom = .true.
+             if (present(mask)) this_atom = mask(j) 
+                
+             if (this_atom .and. dist(j) == 0 ) then
 
                 n_new_walker              = n_new_walker+1
                 if (n_new_walker > MAX_WALKER) then
@@ -137,6 +142,7 @@ contains
     ! ---
 
     integer   :: i
+    logical   :: this_atom
     
     ! ---
 
@@ -149,7 +155,11 @@ contains
     dist  = 0
 
     do i = 1, at%N
-       if ( .not. present(mask) .or. mask(i) ) then
+
+       this_atom = .true.
+       if (present(mask)) this_atom = mask(i) 
+
+       if (this_atom) then
 
           call find_shortest_distances(at, i, dist(:, i), mask, error)
           PASS_ERROR(error)
