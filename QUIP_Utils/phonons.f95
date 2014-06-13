@@ -32,6 +32,7 @@
 ! Z. Hajnal, and T. Frauenheim, Phys. Rev. B v. 55, 2549 (1997).
 module phonons_module
 use libatoms_module
+use mpi_context_module, only : free_context
 use potential_module
 use libatoms_misc_utils_module
 implicit none
@@ -459,7 +460,7 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
      allocate(q(3, nk))
 
      do i = 1, nk
-        q(:, i) = 2.0_dp * PI * (at_in%g .mult. (phonons_path_start + ((phonons_path_end - phonons_path_start) * (real((i - 1), dp) / real((nk - 1), dp)))))
+        q(:, i) = 2.0_dp * PI * matmul((phonons_path_start + ((phonons_path_end - phonons_path_start) * (real((i - 1), dp) / real((nk - 1), dp)))), at_in%g)
      enddo
   else
      nk = product(do_phonon_supercell)
@@ -485,6 +486,7 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
 
   call set_cutoff(at, cutoff(pot)+0.5_dp)
   call calc_connect(at)
+
   pos0 = at%pos
 
   ! calculate dynamical matrix with finite differences
