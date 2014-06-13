@@ -406,11 +406,7 @@ program crack
      call Print(qmpot)
   end if
 
-  if (params%qm_force_periodic) then
-     periodic_clusters = (/ .false., .false., .true. /)
-  else
-     periodic_clusters = (/ .false., .false., .not. params%qm_little_clusters/)
-  endif
+  periodic_clusters = (/ .false., .false., params%qm_force_periodic /)
 
   mm_args_str = params%classical_args_str
   extra_mm_args = ''
