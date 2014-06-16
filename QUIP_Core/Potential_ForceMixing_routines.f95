@@ -606,8 +606,11 @@
                   spring_hops=lotf_spring_hops, map=lotf_do_map)
           end if
             
-          if (lotf_do_qm .and. lotf_do_fit) &
-               call adjustable_potential_optimise(at, df, method=AP_method)
+          if (lotf_do_qm .and. lotf_do_fit) then
+             call system_timer('lotf_adj_pot_fit')
+             call adjustable_potential_optimise(at, df, method=AP_method)
+             call system_timer('lotf_adj_pot_fit')
+          end if
 
           if (lotf_do_interp) then
              call adjustable_potential_force(at, df, interp=lotf_interp, &
