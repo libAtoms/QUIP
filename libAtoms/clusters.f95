@@ -2419,7 +2419,7 @@ end function cluster_in_out_in
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
     character(STRING_LENGTH) :: weight_interpolation, run_suffix
-    logical :: construct_buffer_use_only_heavy_atoms
+    logical :: construct_buffer_use_only_heavy_atoms, cluster_hopping_skip_unreachable
 
     integer, pointer :: hybrid_mark(:)
     real(dp), pointer :: weight_region1(:)
@@ -2456,6 +2456,7 @@ end function cluster_in_out_in
     call param_register(params, 'distance_ramp_outer_radius', '0', distance_ramp_outer_radius, has_value_target=has_distance_ramp_outer_radius, help_string="If distance_ramp, outer radius by which to reach weight of 0")
     call param_register(params, 'distance_ramp_center', '0 0 0', distance_ramp_center, has_value_target=has_distance_ramp_center, help_string="If present, origin for distances of distance ramp (otherwise cluster center of mass)")
     call param_register(params, 'cluster_hopping_nneighb_only', 'T', cluster_hopping_nneighb_only, help_string="If true, only hop to atom pairs that are is_nearest_neighbor().")
+    call param_register(params, 'cluster_hopping_skip_unreachable', 'F', cluster_hopping_skip_unreachable, help_string='If true, remove buffer atoms no longer reachable by bond hopping')
     call param_register(params, 'min_images_only', 'F', min_images_only, help_string="If true, consider only minimum images, not multiple periodic images")
     call param_register(params, 'mark_buffer_outer_layer', 'T', mark_buffer_outer_layer, help_string="If true, mark outermost buffer layer")
     call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer, help_string="If true, do hysteretic buffer")
@@ -2756,10 +2757,16 @@ end function cluster_in_out_in
 
           ! check that cluster is still growing
           if (bufferlist%N == old_n) then
-             RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split QM or buffer region', error)
+             if (cluster_hopping_skip_unreachable) then
+                call print('WARNING: skipping buffer atoms no longer connected')
+                exit
+             else
+                RAISE_ERROR('create_hybrid_weights: buffer cluster stopped growing before all marked atoms found - check for split QM or buffer region', error)
+             end if
           end if
           old_n = bufferlist%N
        end do
+       n_region2 = bufferlist%N ! possibly excluding some no-longer-reachable atoms
 
        ! Remove marks on all buffer atoms
        do i=1,oldbuffer%N
