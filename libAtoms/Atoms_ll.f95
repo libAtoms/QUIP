@@ -99,12 +99,13 @@ contains
   subroutine atoms_ll_finalise(this)
     type(Atoms_ll), intent(inout) :: this
 
-    type(atoms_ll_entry), pointer :: entry
+    type(atoms_ll_entry), pointer :: entry, next
 
     entry => this%first
     do while (associated(entry))
+      next => entry%next
       call finalise(entry)
-      entry => entry%next
+      entry => next
     end do
     this%first => null()
     this%last => null()
@@ -168,8 +169,9 @@ contains
 
     if (associated(this%last)) then
       call finalise(this%last%at)
-      nullify(this%last%prev%next)
+      if (associated(this%last%prev)) nullify(this%last%prev%next)
       this%last => this%last%prev
+      if (.not. associated (this%last)) nullify(this%first)
     endif
 
   end subroutine atoms_ll_remove_last_entry
