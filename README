@@ -38,7 +38,11 @@ define an environmental variable QUIP_ARCH, e.g.
 You may well need to create your own Makefiles/Makefile.${QUIP_ARCH}
 file based on an existing file.
 
-2) customise QUIP, set the maths libraries and provide linking options:
+2) Ensure that you have sufficiently up-to-date compilers. If you are using
+   GNU compiler suite, you need version 4.4 or later. From Intel, you need
+   version > 11.0.084.
+
+3) customise QUIP, set the maths libraries and provide linking options:
 
    make config
 
@@ -52,7 +56,7 @@ file based on an existing file.
    debugging on, including bounds checking, which makes the code quite
    slow.
 
-3) make something:
+4) make something:
 
    make libAtoms
  
@@ -64,7 +68,7 @@ file based on an existing file.
    directory, even for targets in subdirectories. 
 
    Most useful make targets include
-    all : pretty much every vaguely useful program
+    all : pretty much every vaguely useful top level program
     QUIP_Programs/eval : evaluate energies, forces, minimize energy etc
     QUIP_Programs/md : basic md program
     QUIP_Core : generates everything that is necessary to use QUIP as a library
@@ -80,7 +84,7 @@ file based on an existing file.
    build.${QUIP_ARCH}/libquip.a, which is what you need to link (and of course
    LAPACK). 
  
-4) QUIP/libatoms is a "developer's" code, and is not for the faint hearted. A 
+5) QUIP/libatoms is a "developer's" code, and is not for the faint hearted. A 
    good start is to use the 'eval' program, which is under QUIP_Programs, and
    allows the evaluation of properties of an atomic configuration using a variety
    of models. For example:
@@ -105,5 +109,7 @@ file based on an existing file.
    'init_args=IP --help' will then proceed to list the types of interatomic potentials (IP) that are
    available. 
 
-4) Some functionality is only available if you check out other packages
-   within the QUIP tree, e.g. the ThirdParty, GAP and GAP-filler modules.
+6) Some functionality is only available if you check out other packages
+   within the QUIP tree, e.g. the ThirdParty (DFTB parameters, TTM3f water model),
+   GAP (Gaussian Approximation Potential models) and GAP-filler (Gaussian Approximation
+   Potential model training).
