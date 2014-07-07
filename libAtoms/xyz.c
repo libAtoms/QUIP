@@ -505,6 +505,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
         free(last_filename);
         free(last_frames);
         free(last_atoms);
+        have_cached_index = 0;
       }
 
       frames_array_size = 0;
@@ -512,13 +513,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
       PASS_ERROR;
 
+      last_filename = strdup(filename);
+      if (last_filename == NULL) {
+        RAISE_ERROR("read_xyz: insufficient memory for strdup");
+      }
+
       if (n_frame > 1000) {
         // cache big index files in memory
-
-        last_filename = strdup(filename);
-        if (last_filename == NULL) {
-          RAISE_ERROR("read_xyz: insufficient memory for strdup");
-        }
 
         last_frames = frames;
         last_atoms = atoms;
