@@ -53,7 +53,7 @@ contains
 
 subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
    quip_param_file,quip_param_file_len,init_args_str,init_args_str_len,calc_args_str,calc_args_str_len, &
-   energy,force,virial,do_energy,do_force,do_virial,mpi_communicator)
+   energy,force,virial,do_energy,do_force,do_virial,output_unit,mpi_communicator)
 
   integer, intent(in) :: N
   real(dp), dimension(3,N), intent(in), optional :: pos, frac_pos
@@ -70,6 +70,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   real(dp), dimension(3,N), intent(out), optional :: force
   real(dp), dimension(3,3), intent(out), optional :: virial
   logical, intent(in), optional :: do_energy, do_force, do_virial
+  integer, intent(in), optional :: output_unit
   integer, intent(in), optional :: mpi_communicator
 
   integer :: i
@@ -91,7 +92,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   endif
 
   if( first_run ) then
-     call system_initialise(verbosity=PRINT_SILENT)
+     call system_initialise(verbosity=PRINT_SILENT,mainlog_unit=output_unit)
      call Initialise(mpi_glob,communicator=mpi_communicator)
      call Potential_Filename_Initialise(pot, args_str=trim(init_args_str), param_filename=quip_param_file,mpi_obj=mpi_glob)
      call verbosity_push(PRINT_NORMAL)

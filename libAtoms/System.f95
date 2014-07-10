@@ -335,7 +335,7 @@ contains
   !% For unformatted output, the
   !% 'isformatted' optional parameter must
   !% be set to false.
-  subroutine inoutput_initialise(this,filename,action,isformatted,append,verbosity,verbosity_cascade,master_only,error)
+  subroutine inoutput_initialise(this,filename,action,isformatted,append,verbosity,verbosity_cascade,master_only,unit,error)
     type(Inoutput), intent(inout)::this
     character(*),intent(in),optional::filename
     logical,intent(in),optional::isformatted 
@@ -343,6 +343,7 @@ contains
     logical,intent(in),optional::append
     integer,intent(in),optional :: verbosity, verbosity_cascade
     logical,intent(in),optional :: master_only
+    integer, intent(in), optional :: unit
     integer,intent(out),optional :: error
 
     character(32)::formattedstr
@@ -392,31 +393,34 @@ contains
     end if
 
     if (present(filename)) then
-       if (filename.eq.'stderr') then
-          this%filename=filename
+       if (present(unit)) then
+	  RAISE_ERROR("got filename and unit simultaneously",error)
+       endif
+       if (trim(filename).eq.'stderr') then
+          this%filename=trim(filename)
           this%unit=0 !standard error
           this%action=OUTPUT
 
-       else if (filename.eq.'stdout' .or. filename .eq. '-') then
+       else if (trim(filename).eq.'stdout' .or. trim(filename) .eq. '-') then
           this%filename='stdout'
           this%unit = 6 !standard output
           this%action=OUTPUT
 
-       else if (filename.eq.'stdin')  then
-          this%filename=filename 
+       else if (trim(filename).eq.'stdin')  then
+          this%filename=trim(filename) 
           this%unit = 5 !standard input
           this%action=INPUT
 
        else
-          this%filename=filename
+          this%filename=trim(filename)
           this%unit=pick_up_unit()! pick up a unit from available(7-99)
 
           ! actually open the unit
 	  if ((.not. my_master_only) .or. mpi_myid == 0) then
 	    if (this%action == INPUT) then
-	      open(unit=this%unit,file=filename,form=formattedstr,position=position_value,status='OLD',iostat=stat)
+	      open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,status='OLD',iostat=stat)
 	    else
-	      open(unit=this%unit,file=filename,form=formattedstr,position=position_value,iostat=stat)
+	      open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,iostat=stat)
 	    endif
 	  else
 	    stat = 0
@@ -426,10 +430,16 @@ contains
           end if
 
        end if
-    else ! no file name passed, so we go to standard output
-       this%filename='stdout' 
-       this%unit = 6 !standard output 
-       this%action = OUTPUT        
+    else ! no file name passed, so we go to passed-in unit if present, otherwise standard output
+       if (present(unit)) then
+	  this%filename='from_unit_arg'
+	  this%unit=unit
+	  this%action=OUTPUT
+       else
+	  this%filename='stdout' 
+	  this%unit = 6 !standard output 
+	  this%action = OUTPUT        
+       endif
     end if  ! end default--------------------------------------------------
 
     this%prefix = ''
@@ -1985,7 +1995,7 @@ contains
   !% using MPI, by default we set the same random seed for each process.
   !% This also attempts to read the executable name, the number of command
   !% arguments, and the arguments themselves.
-  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing, quippy_running, mainlog_file)
+  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing, quippy_running, mainlog_file, mainlog_unit)
     integer,intent(in), optional::verbosity           !% mainlog output verbosity
     integer,intent(in), optional::seed                !% Seed for the random number generator.
     logical,intent(in), optional::mpi_all_inoutput    !% Print on all MPI nodes (false by default)
@@ -1993,6 +2003,7 @@ contains
     logical,intent(in), optional::enable_timing           !% Enable system_timer() calls
     logical,intent(in), optional::quippy_running       !% .true. if running under quippy (Python interface)
     character(len=*),intent(in), optional :: mainlog_file
+    integer,intent(in), optional :: mainlog_unit
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
     character(30) :: arg
@@ -2029,13 +2040,9 @@ contains
     mainlog%mpi_all_inoutput_flag = optional_default(.false., mpi_all_inoutput)
 
     ! Initialise the verbosity stack and default logger
-    if (present(mainlog_file)) then
-      call initialise(mainlog, trim(mainlog_file), verbosity=verbosity, action=OUTPUT)
-    else
-      call initialise(mainlog, verbosity=verbosity, action=OUTPUT)
-    endif
+    call initialise(mainlog, filename=mainlog_file, unit=mainlog_unit, verbosity=verbosity, action=OUTPUT)
     call print_mpi_id(mainlog)
-    call initialise(errorlog,'stderr')
+    call initialise(errorlog,filename='stderr')
     call print_mpi_id(errorlog)
     error_unit = errorlog%unit
 
