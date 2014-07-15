@@ -1352,10 +1352,10 @@ contains
     
     if ( int_array_gt(this%int(:,ilow),intpart) .or. int_array_lt(this%int(:,ihigh),intpart) ) done = .true.
     if (.not.done) then
-       if (all(this%int(:,ilow) == intpart)) then
+       if (all(this%int(1:size(intpart),ilow) == intpart)) then
           index = ilow
           done = .true.
-       else if (all(this%int(:,ihigh) == intpart)) then
+       else if (all(this%int(1:size(intpart),ihigh) == intpart)) then
           index = ihigh
           done = .true.
        end if
@@ -1366,9 +1366,9 @@ contains
         if (index == ilow) then              ! value is not present. exit
            index = 0
            done = .true.
-        else if (all(this%int(:,index) == intpart)) then ! value found
+        else if (all(this%int(1:size(intpart),index) == intpart)) then ! value found
            done = .true.
-        else if (int_array_lt(this%int(:,index),intpart)) then  ! value at this index is too low. shift lower bound
+        else if (int_array_lt(this%int(1:size(intpart),index),intpart)) then  ! value at this index is too low. shift lower bound
            ilow = index
         else                                 ! value at this index is too high. shift upper bound
            ihigh = index
