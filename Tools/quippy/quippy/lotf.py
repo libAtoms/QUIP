@@ -392,7 +392,7 @@ class LOTFDynamics(MolecularDynamics):
 
 
 def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
-                                qm_outer_radius, use_avgpos=False):
+                                qm_outer_radius, use_avgpos=False, update_marks=True):
     """
     Update the QM region in `atoms`
 
@@ -410,6 +410,8 @@ def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
        selected for QM treatment.
     qm_outer_radius : float
        Atoms stay QM until they are more than this distance from any core atom
+    update_marks : bool
+       If true (default), call :meth:`~.ForceMixingPotential.set_qm_atoms` to mark the atoms
 
     Returns
     -------
@@ -427,9 +429,10 @@ def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
     print('update_qm_region: QM region with %d atoms centred on %s' %
           (len(qm_list), qm_centre))
 
-    calc = atoms.get_calculator()
-    if isinstance(calc, ForceMixingPotential):
-        calc.set_qm_atoms(qm_list)
+    if update_marks:
+        calc = atoms.get_calculator()
+        if isinstance(calc, ForceMixingPotential):
+            calc.set_qm_atoms(qm_list)
 
     return qm_list
 
