@@ -3137,7 +3137,7 @@ end function cluster_in_out_in
 
     my_verbosity = current_verbosity()
     do_min_images_only = optional_default(.false., min_images_only)
-    call print('update_hystertic_region: do_min_images_only='//do_min_images_only, PRINT_VERBOSE)
+    call print('update_hysteretic_region: do_min_images_only='//do_min_images_only, PRINT_VERBOSE)
 
     if (do_min_images_only) then
        ! only compare atom indices - first column in table
