@@ -114,7 +114,7 @@ If you're on one of these platforms then just set :envvar:`QUIP_ARCH`
 appropriately, for example on 64-bit Mac OS X with gfortran you would
 do::
 
-  $ export QUIP_ARCH=darwin_x86_64_gfortan
+  $ export QUIP_ARCH=darwin_x86_64_gfortran
 
 Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`,
 containing some of the variables defined below
