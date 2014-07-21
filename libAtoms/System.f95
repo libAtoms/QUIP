@@ -609,7 +609,7 @@ contains
     type(inoutput), intent(in) :: this
     logical :: inoutput_do_output
 
-    if (this%mpi_all_inoutput_flag .or. mpi_id() == 0) then
+    if ((this%mpi_all_inoutput_flag .or. mpi_id() == 0) .and. this%unit >= 0) then
       inoutput_do_output = .true.
     else
       inoutput_do_output = .false.
