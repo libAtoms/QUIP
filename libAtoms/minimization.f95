@@ -5732,7 +5732,7 @@ end function func_wrapper
     real(dp), optional :: infoverride
 
     integer :: N,k,k2,k3,kmax,k2max
-    real(dp) :: h = 0.05
+    real(dp) :: h = 10.0_dp**(-3.0)
     real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
     real(dp), parameter :: TOLvdefault = 10.0_dp**(-1)
    
@@ -5744,8 +5744,8 @@ end function func_wrapper
     logical :: doLSbasic, doLSstandard
     integer :: doefunc
     
-    rotC = 10.0_dp**(-4.0)
-    traC = 10.0_dp**(-4.0)
+    rotC = 10.0_dp**(-1.0)
+    traC = 10.0_dp**(-1.0)
     TOLv = TOLvdefault
 
     kmax = max_steps
@@ -5801,6 +5801,8 @@ end function func_wrapper
     call build_precon(pr,am_data)
     v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
 
+    !k = simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,0.5_dp,0.5_dp)
+    !call exit()
 
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
@@ -5817,7 +5819,6 @@ end function func_wrapper
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
-      
    
     avn = pi/4.0    
     k = 0
@@ -5827,7 +5828,7 @@ end function func_wrapper
       v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
       end if
 
-      Gxpold = Gx
+      Gxpold = Gxp
       Gx = 0.5_dp*(F1 + F2);
       if (k > 1) then  
         Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
@@ -5836,7 +5837,7 @@ end function func_wrapper
       end if
       res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
   
-      Gvpold = Gv
+      Gvpold = Gvp
       Gv = (F1 - F2)/(2.0_dp*h)
       if (k > 1) then  
         Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
@@ -5982,7 +5983,7 @@ end function func_wrapper
    
         !call print(e10 // ' ' // e20 // ' ' // e1 // ' ' // e2)
         !call print(calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) )
-        call print('precon_dimer translating, iter = '// k2 //',alpha = '//alpha_x// ',delE = ' //delE)
+        call print('precon_dimer translating, iter = '// k2 //', alpha = '//alpha_x// ', delE = ' //delE)
         if (delE < crit + 10.0**(-14) .and. res_v < 10.0*res_v_rot) then
           x = x + alpha_x*s
           exit
@@ -6003,7 +6004,100 @@ end function func_wrapper
   end function
 
 
+  function simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_v) result(k)
 
+    real(dp), intent(inout) :: x(:),v(:)
+    real(dp) :: h
+    INTERFACE 
+       function func(x,data,local_energy,gradient)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
+         real(dp)::func
+       end function func
+    end INTERFACE
+    character(len=1), intent(inout) :: am_data(:)
+    INTERFACE
+      subroutine build_precon(pr,am_data)
+        use system_module
+        import precon_data
+        type(precon_data),intent(inout) ::pr
+        character(len=1)::am_data(:)
+      end subroutine
+    END INTERFACE 
+    type(precon_data):: pr
+    integer :: doefunc
+    real(dp) :: alpha_x,alpha_v
+ 
+    integer :: k,N
+    integer :: kmax = 1000
+    real(dp) :: e1,e2,lam,res_x,res_v
+  
+    real(dp), allocatable :: F1(:), F2(:), F10(:), F20(:), vstar(:), Gd(:), s(:), sl2(:), Gv(:), Gvp(:), Gx(:), Gxp(:), Gdl2(:), Gvpold(:), Gxpold(:), Gs(:), Qx(:)
+    real(dp), allocatable :: local_energy1(:),local_energy2(:),local_energy10(:),local_energy20(:),alpvec(:),dirderivvec(:)
+     
+    N = size(x,1)
+    allocate(local_energy1((N-9)/3),local_energy2((N-9)/3))
+    allocate(F1(N),F2(N),F10(N),F20(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N),Qx(N),gs(N))  
+    
+
+    k = 0
+    do
+      call build_precon(pr,am_data)
+      v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
+    
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      e1 =  func_wrapper(func,x+v*h,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+ 
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      e2 =  func_wrapper(func,x-v*h,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+      
+      Gxpold = Gxp
+      Gx = 0.5_dp*(F1 + F2);
+      if (k > 1) then  
+        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
+      else 
+        Gxp = apply_precon(Gx,pr,doefunc)
+      end if
+      res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
+  
+      Gvpold = Gvp
+      Gv = (F1 - F2)/(2.0_dp*h)
+      if (k > 1) then  
+        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+      else
+        Gvp = apply_precon(Gv,pr,doefunc)
+      end if
+
+      lam = smartdotproduct(Gv,v,doefunc) 
+      Gd = Gvp - lam*v
+      Gdl2 = Gv - lam*v
+      res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
+      call print('n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x)
+      
+      v = v - alpha_v*Gvp
+      x = x - alpha_x*(Gxp - 2.0*smartdotproduct(v,Gx,doefunc)*v)
+
+
+      k = k + 1
+      if (k>=kmax) then
+        exit
+      end if
+    end do
+
+  end
 
 end module minimization_module
 
