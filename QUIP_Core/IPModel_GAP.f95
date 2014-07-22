@@ -342,16 +342,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         allocate(mpi_local_mask(at%N))
         call add_property_from_pointer(at,'mpi_local_mask',mpi_local_mask,error=error)
 
-        mpi_local_mask = .false.
-        do i = 1, at%N
-           if (mod(i-1, mpi%n_procs) == mpi%my_proc) mpi_local_mask(i) = .true.
-        enddo
-
-        call concat(my_args_str," atom_mask_name=mpi_local_mask mpi_active=T mpi_n_procs="//mpi%n_procs//" mpi_my_proc="//mpi%my_proc)
+        call concat(my_args_str," atom_mask_name=mpi_local_mask")
      endif
   endif
-           
+
   do i_coordinate = 1, this%my_gp%n_coordinate
+
+     if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
@@ -430,28 +427,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   enddo
 
-  if(present(f)) f = this%E_scale*f_in
-
-  if(present(e) .or. present(local_e)) then
-     if( associated(atom_mask_pointer) ) then
-        do i = 1, at%N
-           if( atom_mask_pointer(i) ) local_e_in(i) = local_e_in(i) + this%e0(at%Z(i))
-        enddo
-     else
-        do i = 1, at%N
-           local_e_in(i) = local_e_in(i) + this%e0(at%Z(i))
-        enddo
-     endif
-
-     if(present(e)) e = this%E_scale*sum(local_e_in)
-     if(present(local_e)) local_e = local_e_in * this%E_scale
-  endif
-
-  if(present(virial)) virial = this%E_scale*sum(virial_in,dim=3)
+  if(present(f)) f = f_in
+  if(present(e)) e = sum(local_e_in)
+  if(present(local_e)) local_e = local_e_in
+  if(present(virial)) virial = sum(virial_in,dim=3)
 
   if(present(local_virial)) then
      do i = 1, at%N
-        local_virial(:,i) = this%E_scale*reshape(virial_in(:,:,i),(/9/))
+        local_virial(:,i) = reshape(virial_in(:,:,i),(/9/))
      enddo
   endif
 
@@ -471,11 +454,34 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         deallocate(mpi_local_mask)
      endif
   endif
+
+  if(present(e)) then
+     if( associated(atom_mask_pointer) ) then
+        e = e + sum(this%e0(at%Z),mask=atom_mask_pointer)
+     else
+        e = e + sum(this%e0(at%Z))
+     endif
+  endif
+
+  if(present(local_e)) then
+     if( associated(atom_mask_pointer) ) then
+        where (atom_mask_pointer) local_e = local_e + this%e0(at%Z)
+     else
+        local_e = local_e + this%e0(at%Z)
+     endif
+  endif
+
+  if(present(f)) f = this%E_scale * f
+  if(present(e)) e = this%E_scale * e
+  if(present(local_e)) local_e = this%E_scale * local_e
+  if(present(virial)) virial = this%E_scale * virial
+  if(present(local_virial)) local_virial = this%E_scale * local_virial
   
   atom_mask_pointer => null()
   call finalise(my_args_str)
 
 #endif
+
 end subroutine IPModel_GAP_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
