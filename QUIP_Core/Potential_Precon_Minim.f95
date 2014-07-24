@@ -264,6 +264,8 @@ module Potential_Precon_Minim_module
    am%connectivity_rebuilt = .false.
     !call exit()
 
+   this%cell_coeff = 1.0_dp/(sum(this%preconcoeffs(1,:,1))/size(this%preconcoeffs,2))
+
     call system_timer('build_precon')
 
   end subroutine build_precon

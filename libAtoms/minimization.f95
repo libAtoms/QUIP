@@ -70,6 +70,7 @@ module minimization_module
     integer :: nneigh,mat_mult_max_iter,max_sub
     real(dp) :: energy_scale,length_scale,cutoff,res2
     logical :: has_fixed = .FALSE.
+    real(dp) :: cell_coeff = 1.0_dp
   end type precon_data
   integer, parameter :: E_FUNC_BASIC=1, E_FUNC_KAHAN=2, E_FUNC_DOUBLEKAHAN=3
 
@@ -5146,7 +5147,7 @@ end function func_wrapper
     real(dp) :: C(3), T(3), Y(3)
 
     do_mat_mult_vec = 0.0_dp
-    do_mat_mult_vec(1:9) = x(1:9)
+    do_mat_mult_vec(1:9) = pr%cell_coeff*x(1:9)
      
     do I = 1,size(pr%preconindices,DIM=2)
       
