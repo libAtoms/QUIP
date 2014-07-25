@@ -176,7 +176,7 @@ module Potential_Precon_Minim_module
               
             if (this%precon_id == "LJ") then
               thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
-              thiscoeff = min(thiscoeff,this%energy_scale)
+              thiscoeff = max(min(thiscoeff,10.0_dp),0.1_dp)
             else if (this%precon_id == "C1") then
               thiscoeff = 1.0_dp
             end if
@@ -254,7 +254,8 @@ module Potential_Precon_Minim_module
       this%preconrowlengths(I) = nearneighcount 
       !end if
     end do
-    else if (this%precon_id == 'ID') then
+  this%preconcoeffs= this%preconcoeffs*1.0
+  else if (this%precon_id == 'ID') then
     do I = 1,(am%minim_at%N)
       this%preconcoeffs(1,I,1) = 1.0
       this%preconrowlengths(I) = 1

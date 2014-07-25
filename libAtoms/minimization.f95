@@ -5744,6 +5744,9 @@ end function func_wrapper
     logical :: doLSbasic, doLSstandard
     integer :: doefunc
     
+    logical :: noimprove
+    real(dp) :: res_x_hist(5) = 1000.0_dp
+
     rotC = 10.0_dp**(-1.0)
     traC = 10.0_dp**(-1.0)
     TOLv = TOLvdefault
@@ -5836,7 +5839,23 @@ end function func_wrapper
         Gxp = apply_precon(Gx,pr,doefunc)
       end if
       res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
-  
+      
+      res_x_hist(1:4) = res_x_hist(2:5)
+      res_x_hist(5) = res_x
+      !call print(abs(sum(res_x_hist)/5.0_dp)  )
+      noimprove = .false.
+      if ( abs(sum(res_x_hist)/5.0_dp - res_x) < 10.0_dp**(-2)) then
+        noimprove = .true.
+      end if
+
+      if (noimprove) then
+        call print("Residual does not seem to be improving, switching to simple dimer method")
+        k = simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_x)
+        exit
+      end if
+
+
+
       Gvpold = Gvp
       Gv = (F1 - F2)/(2.0_dp*h)
       if (k > 1) then  
@@ -5986,7 +6005,8 @@ end function func_wrapper
         call print('precon_dimer translating, iter = '// k2 //', alpha = '//alpha_x// ', delE = ' //delE)
         if (delE < crit + 10.0**(-14) .and. res_v < 10.0*res_v_rot) then
           x = x + alpha_x*s
-          exit
+          
+         exit
         end if
         alpha_x = alpha_x/2.0
         k2 = k2 + 1
@@ -5995,7 +6015,7 @@ end function func_wrapper
       k = k + 1
       dirderivvec(k) = dt
       alpvec(k) = alpha_x
-      
+    
       if ( k >= max_steps) then
         exit
       end if
