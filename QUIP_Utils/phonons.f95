@@ -421,28 +421,29 @@ subroutine phonons(pot, at, dx, evals, evecs, effective_masses, calc_args, IR_in
 
 end subroutine phonons
 
-subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel, phonons_output_file, phonons_path_start, phonons_path_end, phonons_path_steps)
+subroutine phonons_fine(pot, at_in, dx, phonon_supercell, phonon_supercell_fine, calc_args, do_parallel, phonons_output_file, phonons_path_start, phonons_path_end, phonons_path_steps)
 
   type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at_in
   real(dp), intent(in) :: dx
   character(len=*), intent(in), optional :: calc_args
   logical, intent(in), optional :: do_parallel
-  integer, dimension(3), intent(in), optional :: phonon_supercell
+  integer, dimension(3), intent(in), optional :: phonon_supercell, phonon_supercell_fine
   character(len=*), intent(in), optional :: phonons_output_file
   real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
   integer, intent(in), optional :: phonons_path_steps
 
-  type(Atoms) :: at
+  type(Atoms) :: at, at_fine
   integer :: i, j, k, alpha, beta, nk, n1, n2, n3, jn
-  integer, dimension(3) :: do_phonon_supercell
+  integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine
 
   real(dp), dimension(3) :: pp, diff_ij
   real(dp), dimension(:,:), allocatable :: evals
   real(dp), dimension(:,:), allocatable :: q, pos0
-  real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0
+  real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0, fp0_fine, fm0_fine
   complex(dp), dimension(:,:), allocatable :: dmft
   complex(dp), dimension(:,:,:), allocatable :: evecs
+  integer, dimension(:,:), pointer :: phonons_fine_SI, phonons_fine_SI_fine
 
   type(inoutput) :: phonons_output
   real(dp), dimension(:,:), allocatable :: frac
@@ -450,9 +451,13 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
   integer :: t_real_precision
 
 
-  do_phonon_supercell = optional_default((/2,2,2/),phonon_supercell)
+  do_phonon_supercell = optional_default((/1,1,1/),phonon_supercell)
+  do_phonon_supercell_fine = optional_default(do_phonon_supercell,phonon_supercell_fine)
 
-  call supercell(at,at_in,do_phonon_supercell(1),do_phonon_supercell(2),do_phonon_supercell(3))
+  if( any( do_phonon_supercell_fine < do_phonon_supercell ) ) &
+     call system_abort("phonons_fine: phonon_supercell = ("//phonon_supercell//") greater than phonon_supercell_fine =("//phonon_supercell_fine//")")
+
+  call supercell(at,at_in,do_phonon_supercell(1),do_phonon_supercell(2),do_phonon_supercell(3),supercell_index_name="phonons_fine_SI")
 
   if (present(phonons_path_start) .and. present(phonons_path_end)) then
      do_phonons_path_steps = optional_default(3, phonons_path_steps)
@@ -463,16 +468,16 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
         q(:, i) = 2.0_dp * PI * matmul((phonons_path_start + ((phonons_path_end - phonons_path_start) * (real((i - 1), dp) / real((nk - 1), dp)))), at_in%g)
      enddo
   else
-     nk = product(do_phonon_supercell)
+     nk = product(do_phonon_supercell_fine)
      allocate(q(3,nk))
 
      i = 0
-     do n1 = 0, do_phonon_supercell(1)-1
-        do n2 = 0, do_phonon_supercell(2)-1
-           do n3 = 0, do_phonon_supercell(3)-1
+     do n1 = 0, do_phonon_supercell_fine(1)-1
+        do n2 = 0, do_phonon_supercell_fine(2)-1
+           do n3 = 0, do_phonon_supercell_fine(3)-1
               i = i + 1
 
-              q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell ), at_in%g )
+              q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell_fine ), at_in%g )
            enddo
         enddo
      enddo
@@ -571,6 +576,29 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
   call calc_dists(at)
   deallocate(pos0)
 
+  call supercell(at_fine,at_in,do_phonon_supercell_fine(1),do_phonon_supercell_fine(2),do_phonon_supercell_fine(3),supercell_index_name="phonons_fine_SI_fine")
+  if(.not. assign_pointer(at,"phonons_fine_SI",phonons_fine_SI) .or. .not. assign_pointer(at_fine,"phonons_fine_SI_fine",phonons_fine_SI_fine)) &
+     call system_abort("phonons_fine: couldn't assign phonons_fine_SI and phonons_fine_SI_fine pointers")
+
+  allocate(fp0_fine(3,at_fine%N,3,at_in%N),fm0_fine(3,at_fine%N,3,at_in%N))
+  fp0_fine = 0.0_dp
+  fm0_fine = 0.0_dp
+
+  do i = 1, at%N
+     do j = 1, at_fine%N
+        !print*,phonons_fine_SI(:,i)
+        !print*,phonons_fine_SI_fine(:,i)
+        if( all( &
+           ( phonons_fine_SI(:,i) - nint( real(phonons_fine_SI(:,i),dp) / real(do_phonon_supercell,dp) ) * do_phonon_supercell ) &
+           == &
+           ( phonons_fine_SI_fine(:,j) - nint( real(phonons_fine_SI_fine(:,j),dp) / real(do_phonon_supercell_fine,dp) ) * do_phonon_supercell_fine ) &
+           ) .and. mod(i,at_in%N) == mod(j,at_in%N) ) then
+           fp0_fine(:,j,:,:) = fp0(:,i,:,:)
+           fm0_fine(:,j,:,:) = fm0(:,i,:,:)
+        endif
+     enddo
+  enddo
+
   ! transform from generalized eigenproblem to regular eigenproblem
 !  do i = 1, at%N
 !    do j = 1, at%N
@@ -597,15 +625,15 @@ subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel
               diff_ij = at_in%pos(:,j) - at_in%pos(:,i) 
               do beta = 1, 3
   
-                 do n1 = 0, do_phonon_supercell(1)-1
-                    do n2 = 0, do_phonon_supercell(2)-1
-                       do n3= 0, do_phonon_supercell(3)-1
+                 do n1 = 0, do_phonon_supercell_fine(1)-1
+                    do n2 = 0, do_phonon_supercell_fine(2)-1
+                       do n3= 0, do_phonon_supercell_fine(3)-1
 
                           pp = at_in%lattice .mult. (/n1,n2,n3/)
-                          jn = ((n1*do_phonon_supercell(2)+n2)*do_phonon_supercell(3)+n3)*at_in%N+j
+                          jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
 
                           dmft((i-1)*3+alpha,(j-1)*3+beta) = dmft((i-1)*3+alpha,(j-1)*3+beta) &
-                          & - ((fp0(beta,jn,alpha,i)-fm0(beta,jn,alpha,i))/(2.0_dp*dx)) / &
+                          & - ((fp0_fine(beta,jn,alpha,i)-fm0_fine(beta,jn,alpha,i))/(2.0_dp*dx)) / &
                           & sqrt(ElementMass(at_in%Z(i))*ElementMass(at_in%Z(j))) &
                           & * exp( CPLX_IMAG * dot_product(q(:,k),(diff_ij+pp)) )
 
