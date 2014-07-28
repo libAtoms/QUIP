@@ -36,13 +36,13 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,force,virial,do_energy,do_force,do_virial)
 
   use system_module, only : dp, print, system_initialise, system_abort, PRINT_NORMAL, PRINT_SILENT, verbosity_push, verbosity_pop
   use dictionary_module
   use periodictable_module
   use mpi_context_module
+  use linearalgebra_module
   use atoms_types_module, only : assign_pointer
   use atoms_module
 
@@ -88,7 +88,7 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,forc
      call initialise(at,N,lattice)
   endif
 
-  if(lattice(1,1) == 0.0_dp) then
+  if( sum(lattice**2) .feq. 0.0_dp ) then
      lower = minval(coord, dim=2)
      upper = maxval(coord, dim=2)
      cut = cutoff(pot)
