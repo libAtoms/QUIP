@@ -45,9 +45,9 @@ implicit none
   logical :: has_atom_2
   character(len=STRING_LENGTH) :: param_file, init_args
   integer :: n_configs, m_max, rng_seed, init_d
-  real(dp) :: lattice_delta, atom_delta, e0, t
+  real(dp) :: lattice_delta, atom_delta, e0, t, pressure, aa, bb, cc, cell_alpha, cell_beta, cell_gamma
   integer :: n, d
-  real(dp) :: lattice(3,3), theta
+  real(dp) :: lattice(3,3), old_lattice_inv(3,3), theta
   real(dp), allocatable :: x(:), x_dash(:)
 
   call system_initialise()
@@ -65,6 +65,7 @@ implicit none
   call param_register(cli_params, "n_configs", "60", n_configs, help_string = "No help yet.")
   call param_register(cli_params, "e0", PARAM_MANDATORY, e0, help_string = "No help yet.")
   call param_register(cli_params, "temp", PARAM_MANDATORY, t, help_string = "No help yet.")
+  call param_register(cli_params, "pressure", "0.0", pressure, help_string = "Pressure in GPA")
   call param_register(cli_params, "lattice_delta", PARAM_MANDATORY, lattice_delta, help_string = "No help yet.")
   call param_register(cli_params, "atom_delta", "0.0", atom_delta, help_string = "No help yet.")
   call param_register(cli_params, "m_max", PARAM_MANDATORY, m_max, help_string = "No help yet.")
@@ -79,6 +80,8 @@ implicit none
     call system_abort("Confused by CLI arguments.")
   end if
   call finalise(cli_params)
+
+  pressure = pressure / GPA ! Pressure is now in eV/A^3
 
   if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 
@@ -100,23 +103,28 @@ implicit none
   if (has_atom_2) atom_2 = atom_2 - atom_1
   atom_1 = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
 
-  if (lattice(2,1) .fne. 0.0_dp) then
-     theta = - atan2(lattice(2,1), lattice(1,1))
-     lattice = matmul(reshape((/ cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta), 0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp /), (/ 3, 3 /)), lattice)
-     if (has_atom_2) atom_2 = matmul(reshape((/ cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta), 0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp /), (/ 3, 3 /)), atom_2)
-  end if
+  !if (lattice(2,1) .fne. 0.0_dp) then
+  !   theta = - atan2(lattice(2,1), lattice(1,1))
+  !   lattice = matmul(reshape((/ cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta), 0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp /), (/ 3, 3 /)), lattice)
+  !   if (has_atom_2) atom_2 = matmul(reshape((/ cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta), 0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp /), (/ 3, 3 /)), atom_2)
+  !end if
 
-  if (lattice(3,1) .fne. 0.0_dp) then
-     theta = - atan2(lattice(3,1), lattice(1,1))
-     lattice = matmul(reshape((/ cos(theta), 0.0_dp, -sin(theta), 0.0_dp, 1.0_dp, 0.0_dp, sin(theta), 0.0_dp, cos(theta) /), (/ 3, 3 /)), lattice)
-     if (has_atom_2) atom_2 = matmul(reshape((/ cos(theta), 0.0_dp, -sin(theta), 0.0_dp, 1.0_dp, 0.0_dp, sin(theta), 0.0_dp, cos(theta) /), (/ 3, 3 /)), atom_2)
-  end if
+  !if (lattice(3,1) .fne. 0.0_dp) then
+  !   theta = - atan2(lattice(3,1), lattice(1,1))
+  !   lattice = matmul(reshape((/ cos(theta), 0.0_dp, -sin(theta), 0.0_dp, 1.0_dp, 0.0_dp, sin(theta), 0.0_dp, cos(theta) /), (/ 3, 3 /)), lattice)
+  !   if (has_atom_2) atom_2 = matmul(reshape((/ cos(theta), 0.0_dp, -sin(theta), 0.0_dp, 1.0_dp, 0.0_dp, sin(theta), 0.0_dp, cos(theta) /), (/ 3, 3 /)), atom_2)
+  !end if
 
-  if (lattice(3,2) .fne. 0.0_dp) then
-     theta = - atan2(lattice(3,2), lattice(2,2))
-     lattice = matmul(reshape((/ 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta) /), (/ 3, 3 /)), lattice)
-     if (has_atom_2) atom_2 = matmul(reshape((/ 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta) /), (/ 3, 3 /)), atom_2)
-  end if
+  !if (lattice(3,2) .fne. 0.0_dp) then
+  !   theta = - atan2(lattice(3,2), lattice(2,2))
+  !   lattice = matmul(reshape((/ 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta) /), (/ 3, 3 /)), lattice)
+  !   if (has_atom_2) atom_2 = matmul(reshape((/ 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, cos(theta), sin(theta), 0.0_dp, -sin(theta), cos(theta) /), (/ 3, 3 /)), atom_2)
+  !end if
+
+  call matrix3x3_inverse(lattice,old_lattice_inv)
+  call get_lattice_params(lattice, aa, bb, cc, cell_alpha, cell_beta, cell_gamma)
+  lattice = make_lattice(aa, bb, cc, cell_alpha, cell_beta, cell_gamma)
+  atom_2 = matmul(lattice,matmul(old_lattice_inv,atom_2))
 
   call print("Rotated lattice:")
   call print(lattice)
@@ -133,13 +141,13 @@ implicit none
   x(0) = density_function(x(1:))
 
   ! hack to output castep data
-  if (associated(pot%simple%filepot)) then
-     if (has_atom_2) then
-        call system_command("tail -n 4 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
-     else
-        call system_command("tail -n 3 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
-     end if
-  else
+  !if (associated(pot%simple%filepot)) then
+  !   if (has_atom_2) then
+  !      call system_command("tail -n 4 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
+  !   else
+  !      call system_command("tail -n 3 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
+  !   end if
+  !else
      if (has_atom_2) then
         call initialise(at, 2, reshape((/ x(1), 0.0_dp, 0.0_dp, x(2), x(3), 0.0_dp, x(4), x(5), x(6) /), (/3, 3/)))
         at%pos(:,1) = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
@@ -153,7 +161,7 @@ implicit none
      end if
      call write(at, 'stdout', prefix='AT')
      call finalise(at)
-  endif
+  !endif
 
   call print("SLICE_SAMPLE " // x)
 
@@ -165,13 +173,13 @@ implicit none
      x = x_new(x_dash(1:), d, lattice_delta, atom_delta, m_max, f_0 = x_dash(0))
 
      ! hack to output castep data
-     if (associated(pot%simple%filepot)) then
-        if (has_atom_2) then
-           call system_command("tail -n 4 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
-        else
-           call system_command("tail -n 3 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
-        end if
-     else
+     !if (associated(pot%simple%filepot)) then
+     !   if (has_atom_2) then
+     !      call system_command("tail -n 4 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
+     !   else
+     !      call system_command("tail -n 3 " // trim(pot%simple%filepot%filename) // "/" // trim(pot%simple%filepot%filename) // "_output >> slice_sample.xyz")
+     !   end if
+     !else
         if (has_atom_2) then
            call initialise(at, 2, reshape((/ x(1), 0.0_dp, 0.0_dp, x(2), x(3), 0.0_dp, x(4), x(5), x(6) /), (/3, 3/)))
            at%pos(:,1) = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
@@ -185,7 +193,7 @@ implicit none
         end if
         call write(at, 'stdout', prefix='AT')
         call finalise(at)
-     endif
+     !endif
 
      call print("SLICE_SAMPLE " // x)
 
@@ -215,7 +223,7 @@ contains
     real(dp) :: density_function
 
     type(Atoms) :: at
-    real(dp) :: E
+    real(dp) :: E, volume
     integer :: error
 
     if (size(x) == 9) then
@@ -235,10 +243,11 @@ contains
     call calc(pot, at, energy = E, error = error)
 
     if (error /= ERROR_NONE) E = e0 + 1000000000000.0_dp 
+    volume = cell_volume(at)
 
     call finalise(at)
 
-    density_function = exp( - (E - e0) / (t * 0.00008617343_dp) )
+    density_function = exp( - (E - e0 + pressure*volume) / (t * 0.00008617343_dp) )
 
   end function density_function
 
