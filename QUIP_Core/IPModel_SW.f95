@@ -160,7 +160,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   real(dp) :: drij_dri(3), drij_drj(3), drik_dri(3), drik_drk(3)
   real(dp) :: dcos_ijk_dri(3), dcos_ijk_drj(3), dcos_ijk_drk(3)
-  real(dp) :: virial_i(3,3)
+  real(dp) :: virial_i(3,3), virial_j(3,3), virial_k(3,3)
 
   real(dp) :: de, de_dr, de_drij, de_drik, de_dcos_ijk
   real(dp) :: cur_cutoff
@@ -230,7 +230,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if (.not.assign_pointer(at,"weight", w_e)) nullify(w_e)
 
 #ifdef _OPENMP
-!$omp parallel private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i)
+!$omp parallel private(i, ji, j, ki, k, drij, drij_mag, drik, drik_mag, drij_dot_drik, w_f, ti, tj, tk, drij_dri, drij_drj, drik_dri, drik_drk, dcos_ijk_dri, dcos_ijk_drj, dcos_ijk_drk, de, de_dr, de_drij, de_drik, de_dcos_ijk, cur_cutoff, private_virial, private_e, private_f, private_local_e, private_local_virial, n_neigh_i, virial_i, virial_j, virial_k)
 
   if (present(e)) private_e = 0.0_dp
   if (present(local_e)) then
@@ -457,11 +457,20 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 #endif
 	  end if
 
-          if( present(virial) .or. present(local_virial) ) virial_i = &
-              w_f*this%eps3(ti,tj,tk)*( &
+          if( present(virial) .or. present(local_virial) ) then
+             virial_i = w_f*this%eps3(ti,tj,tk)*( &
 	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
 	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
 	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+
+             virial_j = w_f*this%eps3(ti,tj,tk)*( &
+                de_drij*(drij .outer. drij)*drij_mag + &
+                de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) )
+
+             virial_k = w_f*this%eps3(ti,tj,tk)*( &
+                de_drik*(drik .outer. drik)*drik_mag + &
+                de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+          endif
 
 	  if (present(virial)) then
 #ifdef _OPENMP
@@ -472,9 +481,13 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 	  end if
 	  if (present(local_virial)) then
 #ifdef _OPENMP
-	    private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
+	    !private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
+	    private_local_virial(:,j) = private_local_virial(:,j) - reshape(virial_j,(/9/))
+	    private_local_virial(:,k) = private_local_virial(:,k) - reshape(virial_k,(/9/))
 #else
-	    local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
+	    !local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
+	    local_virial(:,j) = local_virial(:,j) - reshape(virial_j,(/9/))
+	    local_virial(:,k) = local_virial(:,k) - reshape(virial_k,(/9/))
 #endif
 	  end if
 	endif
