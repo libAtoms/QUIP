@@ -66,6 +66,21 @@ command::
 
    In [1]: from qlab import *
 
+.. note::
+
+   If you have not installed the `AtomEye` plugin then the command
+   above will give an :exc:`ImportError`. You can use::
+
+     from quippy import *
+
+   instead, which only imports `quippy` and not `AtomEye`, but you
+   will then not be able to visualise interactively using the
+   :func:`~qlab.view` function - you can always save configurations to
+   external files and visualise them with other tools such as `VMD
+   <http://www.ks.uiuc.edu/Research/vmd/>`_ or `OVITO
+   <http://www.ovito.org>`_ instead. See the :mod:`qlab` and
+   :mod:`atomeye` documentation for further details.
+
 You should prepare your Python scripts in a text editor and then run
 them from within `ipython` with the `%run
 <http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing>`_

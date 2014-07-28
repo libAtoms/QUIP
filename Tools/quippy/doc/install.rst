@@ -42,6 +42,8 @@ For people who don't read manuals::
  $ python setup.py test
  $ python setup.py install [--prefix=PREFIX]
 
+Then add the installation directory to your :envvar:`PYTHONPATH`.
+
 
 Requirements
 ------------
@@ -137,9 +139,16 @@ Mandatory settings
    :makevar:`QUIPPY_F90FLAGS`.
 
 :makevar:`MATHS_LINKOPTS`
-   Library options needed to link to BLAS and LAPACK libraries, e.g. for ATLAS::
+   Library options needed to link to BLAS and LAPACK libraries. Any working
+   BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
+   a good option, and you should use something like the following::
  
-   -llapack -lf77blas -lcblas -latlas
+     -L/usr/local/atlas -llapack -lf77blas -lcblas -latlas
+
+   On Mac OS X, there are build in LAPACK libraries in the Accelerate
+   framework, which you can use by entering
+    
+     -framework Accelerate
 
 :makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
   Directories containing FoX libraries and header files, and required link options. 
@@ -282,8 +291,28 @@ system (this will probably be something like
 
   python setup.py install --prefix=PREFIX
 
-to install somewhere else.
+to install to a specific location such as :file:`/usr/local`. A useful
+option for users without root access is::
 
+  python setup.py install --home=$HOME
+
+which will install everything in your home directory. You will need to
+add the installation directory containing the Python modules to
+your :envvar:`PYTHONPATH` environment variable, e.g. by adding the
+following line your your `~/.bashrc` or `~/.profile` file::
+
+   export PYTHONPATH=${HOME}/lib/python:${PYTHONPATH}
+
+To test if the installation was successful, change out of the source
+directory, start Python and try to import everything from the quippy
+package::
+
+   $ cd $HOME
+   $ python
+   >>> from quippy import *
+
+If you have any problems as this stage such as unresolved linking
+dependencies, consult the list of :ref:`install_faq` below.
 
 Installing the ipython profile
 ------------------------------
@@ -298,6 +327,8 @@ equivalent to ``ipython -pylab`` followed by ``from quippy import *``.
 
 I use a shell alias which maps ``ipythonq`` to ``ipython -p quippy``
 to save typing.
+
+.. _install_faq:
 
 Common Problems
 ---------------
