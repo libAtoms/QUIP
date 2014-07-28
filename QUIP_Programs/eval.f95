@@ -82,7 +82,7 @@ implicit none
   real(dp) :: absorption_freq_range(3), absorption_gamma
   real(dp), allocatable :: absorption_freqs(:), absorption_v(:)
   integer :: freq_i
-  integer, dimension(3) :: phonon_supercell
+  integer, dimension(3) :: phonon_supercell, phonon_supercell_fine
 
   real(dp) :: E0
   real(dp), pointer :: local_E0(:)
@@ -96,7 +96,7 @@ implicit none
   real(dp), dimension(9) :: pressure
   real(dp), dimension(3,3) :: external_pressure
   logical :: has_iso_pressure, has_diag_pressure, has_pressure, has_bulk_scale
-  logical :: has_phonons_path_start, has_phonons_path_end, has_phonons_path_steps
+  logical :: has_phonons_path_start, has_phonons_path_end, has_phonons_path_steps, has_phonon_supercell_fine
 
   real(dp), pointer :: phonon(:,:)
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
@@ -161,7 +161,8 @@ implicit none
   call param_register(cli_params, 'absorption_freq_range', '0.1 1.0 0.1', absorption_freq_range, help_string="frequency range in which to compute absorption spectrum")
   call param_register(cli_params, 'absorption_gamma', '0.01', absorption_gamma, help_string="energy broadening for absorption calculation")
   call param_register(cli_params, 'phonons_dx', '0.01', phonons_dx, help_string="Cartesian displacement size to use for phonon calculations")
-  call param_register(cli_params, 'phonon_supercell', '3 3 3', phonon_supercell,help_string="supercell in which to do phonon computation", has_value_target=do_fine_phonons)
+  call param_register(cli_params, 'phonon_supercell', '1 1 1', phonon_supercell,help_string="supercell in which to do phonon computation", has_value_target=do_fine_phonons)
+  call param_register(cli_params, 'phonon_supercell_fine', '1 1 1', phonon_supercell_fine,help_string="supercell in which to do phonon computation", has_value_target=has_phonon_supercell_fine)
   call param_register(cli_params, 'test', 'F', do_test, help_string="test consistency of forces/virial by comparing to finite differences")
   call param_register(cli_params, 'n_test', 'F', do_n_test, help_string="test consistency of forces/virial by comparing to finite differences using Noam's method")
   call param_register(cli_params, 'test_dir_field', '', test_dir_field, help_string="field containing vectors along which to displace atoms for gradient test")
@@ -546,13 +547,16 @@ implicit none
 
      if (do_fine_phonons) then
 	did_anything = .true.
+
+        if( .not. has_phonon_supercell_fine ) phonon_supercell_fine = phonon_supercell
+        
         if (has_phonons_path_start .and. has_phonons_path_end) then
            call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-                & phonon_supercell=phonon_supercell, &
+                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
                 & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, phonons_path_steps=phonons_path_steps)
         else
            call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-                & phonon_supercell=phonon_supercell)
+                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine)
         endif
      endif ! do_fine_phonons
 
