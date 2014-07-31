@@ -55,8 +55,8 @@ module  structures_module
   private
 
   public :: slab, find_motif
-  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, water, supercell, structure_from_file, fcc, &
-   diamond2, graphite, graphite_rhombohedral, beta_tin, beta_tin4, bcc1, hcp, wurtzite, sh, sh2, imma, &
+  public :: graphene_cubic, graphene_slab, graphene_sheet, graphene_tube, tube_radius, anatase_cubic, alpha_quartz, alpha_quartz_cubic, rutile, diamond, water, supercell, structure_from_file, fcc, fcc1, &
+   diamond2, graphite, graphite_rhombohedral, beta_tin, beta_tin4, bcc1, hcp, wurtzite, sh, sh2, imma, imma4, &
    fcc_11b2_edge_disloc, fcc_disloc_malc, disloc_noam, fcc_z111_ortho, fcc_z111, fcc_z100, bulk, unit_slab, slab_width_height_nz, &
    slab_nx_ny_nz, bcc, transform, arbitrary_supercell, find_compatible_supercells, bond_angle_mean_dev, map_nearest_atoms, &
    delaunay_reduce, min_neighbour_dist, remove_too_close_atoms, surface_unit_cell, find_closest, void_analysis
@@ -813,21 +813,27 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine supercell(aa, a, n1, n2, n3, error)
+  subroutine supercell(aa, a, n1, n2, n3, supercell_index_name, error)
     type(Atoms), intent(out)::aa  !% Output (big) cell
     type(Atoms), intent(in)::a    !% Input cell
     integer, intent(in)::n1, n2, n3
+    character(len=*), intent(in), optional :: supercell_index_name
     integer, intent(out), optional :: error
 
     real(dp)::lattice(3,3), p(3)
     integer::i,j,k,n,nn
 
-    integer, pointer :: a_int_ptr(:), a_int2_ptr(:,:), aa_int_ptr(:), aa_int2_ptr(:,:)
+    integer, pointer :: a_int_ptr(:), a_int2_ptr(:,:), aa_int_ptr(:), aa_int2_ptr(:,:), supercell_index(:,:)
     real(dp), pointer :: a_real_ptr(:), a_real2_ptr(:,:), aa_real_ptr(:), aa_real2_ptr(:,:)
     logical, pointer :: a_logical_ptr(:), aa_logical_ptr(:)
     character, pointer :: a_char_ptr(:,:), aa_char_ptr(:,:)
 
+    character(len=STRING_LENGTH) :: my_supercell_index_name
+
     INIT_ERROR(error)
+
+    my_supercell_index_name = optional_default("supercell_index",supercell_index_name)
+
     lattice(:,1) = a%lattice(:,1)*n1
     lattice(:,2) = a%lattice(:,2)*n2
     lattice(:,3) = a%lattice(:,3)*n3
@@ -932,6 +938,12 @@ contains
        end select
     end do
 
+    if( has_property(aa, trim(my_supercell_index_name)) ) then
+       call print_warning("supercell_index_name = "//trim(my_supercell_index_name)//" but it is already present in atoms object, it will be overwritten.")
+    endif
+    call add_property(aa, trim(my_supercell_index_name), 0, n_cols=3, ptr2=supercell_index, error=error, overwrite=.true.)
+    PASS_ERROR(error)
+
     do i = 0,n1-1
        do j = 0,n2-1
           do k = 0,n3-1
@@ -940,6 +952,7 @@ contains
                 nn = ((i*n2+j)*n3+k)*a%n+n 
                 ! overwrite position with shifted pos
                 aa%pos(:,nn) = a%pos(:,n)+p
+                supercell_index(:,nn) = (/i,j,k/)
              end do
           end do
        end do
@@ -1336,6 +1349,31 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
+  ! fcc1(myatoms, a, Z)
+  !
+  !% Creates a 1-atom fcc-structure with cubic lattice constant of 'a'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine fcc1(myatoms, a, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp)                      :: a
+    integer, intent(in), optional :: Z
+    integer :: my_Z
+
+    my_Z = optional_default(6, Z)
+
+    call initialise(myatoms, 1, &
+         reshape((/a/2,a/2,0.0_dp,0.0_dp,a/2,a/2,a/2,0.0_dp,a/2/), (/3,3/)))
+    
+    myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
+
+    call set_atoms(myatoms,(/my_Z/))
+
+  end subroutine fcc1
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
   ! hcp(myatoms, a, Z)
   !
   !% Creates a 2-atom hcp lattice with lattice constants of 'a'
@@ -1426,9 +1464,11 @@ contains
                              -a,  b,  c, &
                               a, -b,  c /),(/3,3/)))
     
-    myatoms%pos(:,1) =  matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
-    myatoms%pos(:,2) = -matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
+    !myatoms%pos(:,1) =  matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
+    !myatoms%pos(:,2) = -matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
 
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp, 0.00_dp, 0.00_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.50_dp, 0.50_dp+u, u /))
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine imma
@@ -2963,7 +3003,7 @@ subroutine anatase(at, a, c, u)
     dup_n1 = max_n1 - min_n1 + 2
     dup_n2 = max_n2 - min_n2 + 2
     dup_n3 = max_n3 - min_n3 + 2
-    call supercell(a_dup, a_in, dup_n1, dup_n2, dup_n3, error)
+    call supercell(a_dup, a_in, dup_n1, dup_n2, dup_n3, error=error)
     PASS_ERROR(error)
 
     ! set the new lattice and map to [-0.5, 0.5)
