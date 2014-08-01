@@ -828,11 +828,7 @@ contains
     logical, pointer :: a_logical_ptr(:), aa_logical_ptr(:)
     character, pointer :: a_char_ptr(:,:), aa_char_ptr(:,:)
 
-    character(len=STRING_LENGTH) :: my_supercell_index_name
-
     INIT_ERROR(error)
-
-    my_supercell_index_name = optional_default("supercell_index",supercell_index_name)
 
     lattice(:,1) = a%lattice(:,1)*n1
     lattice(:,2) = a%lattice(:,2)*n2
@@ -938,11 +934,13 @@ contains
        end select
     end do
 
-    if( has_property(aa, trim(my_supercell_index_name)) ) then
-       call print_warning("supercell_index_name = "//trim(my_supercell_index_name)//" but it is already present in atoms object, it will be overwritten.")
+    if(present(supercell_index_name)) then
+       if( has_property(aa, trim(supercell_index_name)) ) then
+          call print_warning("supercell_index_name = "//trim(supercell_index_name)//" but it is already present in atoms object, it will be overwritten.")
+       endif
+       call add_property(aa, trim(supercell_index_name), 0, n_cols=3, ptr2=supercell_index, error=error, overwrite=.true.)
+       PASS_ERROR(error)
     endif
-    call add_property(aa, trim(my_supercell_index_name), 0, n_cols=3, ptr2=supercell_index, error=error, overwrite=.true.)
-    PASS_ERROR(error)
 
     do i = 0,n1-1
        do j = 0,n2-1
@@ -952,7 +950,7 @@ contains
                 nn = ((i*n2+j)*n3+k)*a%n+n 
                 ! overwrite position with shifted pos
                 aa%pos(:,nn) = a%pos(:,n)+p
-                supercell_index(:,nn) = (/i,j,k/)
+                if(present(supercell_index_name)) supercell_index(:,nn) = (/i,j,k/)
              end do
           end do
        end do
