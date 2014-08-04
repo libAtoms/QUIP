@@ -515,7 +515,7 @@ contains
 
     o = this%atom(1)
     velo(1:3) = at%velo(:,o)
-    mass(1:3) = mass_ptr(o)
+    mass(1) = mass_ptr(o)
     if (this%N > 1) then
        pos(1:3) = 0.0_dp
        do n = 2, this%N
