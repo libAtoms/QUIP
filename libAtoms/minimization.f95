@@ -3510,7 +3510,7 @@ end function func_wrapper
       alpvec(n_iter) = alpha
       
       xold = x
-      if (alpha < 10.0_dp**(-14)
+      if (alpha < 10.0_dp**(-14) ) then
         call print(' Extended Minim aborted due to being unable to find a step along the given descent direction, probably your dE is not accurate else extremely badly conditioned')
         call print('  |df|^2 = '// normsqgrad // ', tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
         exit
