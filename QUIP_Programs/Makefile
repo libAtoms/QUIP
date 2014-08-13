@@ -44,8 +44,8 @@ PROGRAMS = eval md \
   local_E_fd wrap align local_random_search \
   metapot_test tabletest ts_calculation \
   fix_traj_latest randomise_calc \
-  quip_wrapper_example quip_wrapper2_example descriptors_wrapper_example test_cova \
-  slice_sample order_atoms_as_molecules socktest socktest2
+  quip_wrapper_example quip_wrapper2_example \
+  slice_sample order_atoms_as_molecules 
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
