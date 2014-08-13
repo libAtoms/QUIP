@@ -66,13 +66,15 @@ LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
 
+MINIM_PROGRAMS = minimtest1
+
 EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon crack analytical_free_E_UI DTDE_GP_free_E DTDE_grad_GP_free_E ABF_GP_free_E
 -include Makefile.extra
 
-${PROGRAMS} ${EXTRA_PROGRAMS} ${DAVE_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
+${PROGRAMS} ${EXTRA_PROGRAMS} ${MINIM_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 clean:	
-	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} ${DAVE_PROGRAMS} crack makecrack
+	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} ${MINIM_PROGRAMS} crack makecrack
 
 allclean : clean
