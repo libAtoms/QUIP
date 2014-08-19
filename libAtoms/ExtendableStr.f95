@@ -367,7 +367,7 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
     end do
     ! move rest of string back if needed
     if (len(replace) < substr_len) then ! 
-	do j=1, this%len-end+1
+	do j=1, this%len-(end+1)+1
 	    this%s(start+len(replace)-1+j) = this%s(end+j)
 	end do
 	this%len = this%len - (substr_len - len(replace))
