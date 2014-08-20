@@ -282,8 +282,8 @@ git_pull_all:
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
 distribution:
-	/bin/bash ./utility_scripts/gitversion > GIT_VERSION
-	/bin/bash ./utility_scripts/gapversion.sh > GAP_VERSION
+	./utility_scripts/gitversion > GIT_VERSION
+	./utility_scripts/gapversion.sh > GAP_VERSION
 	git archive HEAD > ../QUIP.distribution.`date +%Y-%m-%d`.tar
 	tar rvf ../QUIP.distribution.`date +%Y-%m-%d`.tar GIT_VERSION GAP_VERSION
 	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar
