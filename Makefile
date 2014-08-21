@@ -34,17 +34,17 @@ endif
 export QUIP_ROOT
 
 ifneq (${QUIP_ARCH},)
-	export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
-	export QUIP_ARCH
-	@echo "Configuring with QUIP_ARCH=$QUIP_ARCH"
-	include Makefiles/Makefile.${QUIP_ARCH}
-	include Makefile.rules
-ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
-	-include ${BUILDDIR}/Makefile.inc	
-endif
-	include Makefile.config
+   export BUILDDIR=build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
+   export QUIP_ARCH
+   $(info Configuring with QUIP_ARCH=$(QUIP_ARCH))
+   include Makefiles/Makefile.${QUIP_ARCH}
+   include Makefile.rules
+   ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
+      -include ${BUILDDIR}/Makefile.inc   
+   endif
+   include Makefile.config
 else
-	BUILDDIR=dummy
+   BUILDDIR=dummy
 endif
 
 export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
