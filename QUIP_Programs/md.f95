@@ -577,7 +577,7 @@ implicit none
 
   real(dp) :: E, virial(3,3)
   real(dp), pointer :: force_p(:,:)
-  real(dp) :: cutoff_buffer, max_moved
+  real(dp) :: max_moved
 
   integer :: i, i_step, initial_i_step
   type(md_params) :: params
@@ -651,8 +651,7 @@ implicit none
   ! add properties
   call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3, ptr2=force_p)
 
-  cutoff_buffer=params%cutoff_buffer
-  call set_cutoff(ds%atoms, cutoff(pot)+cutoff_buffer)
+  call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_buffer)
 
   ! start with p(t), v(t)
   ! calculate f(t)
@@ -835,7 +834,7 @@ contains
 
     max_moved = max_moved + params%dt*maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
     call system_timer("md/calc_connect")
-    if (max_moved > 0.9_dp*cutoff_buffer) then
+    if (max_moved > 0.9_dp*params%cutoff_buffer) then
       call calc_connect(ds%atoms)
       max_moved = 0.0_dp
     else
