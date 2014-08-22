@@ -86,8 +86,8 @@ ifeq (${HAVE_ASAP},1)
   DEFINES += -DHAVE_ASAP
 endif
 ifeq (${HAVE_KIM},1)
-  SYSLIBS += `kim-api-build-config --ldflags` `kim-api-build-config --ldlibs` 
-  INCLUDES += `kim-api-build-config --includes`
+  SYSLIBS += `kim-api-v1-build-config --ldflags` `kim-api-v1-build-config --ldlibs` 
+  INCLUDES += `kim-api-v1-build-config --includes`
   DEFINES += -DHAVE_KIM
   ifeq (${KIM_NO_AUTOGENERATE_TEST_KIM},1)
     DEFINES += -DKIM_NO_AUTOGENERATE_TEST_KIM
