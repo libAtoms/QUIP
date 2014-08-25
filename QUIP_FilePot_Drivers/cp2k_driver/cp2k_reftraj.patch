@@ -1,16 +1,35 @@
-Index: integrator.F
+Index: input_cp2k_md.F
 ===================================================================
---- integrator.F	(revision 12507)
-+++ integrator.F	(working copy)
-@@ -37,6 +37,7 @@
+--- input_cp2k_md.F	(revision 14218)
++++ input_cp2k_md.F	(working copy)
+@@ -568,6 +568,14 @@
+        CALL section_add_keyword(section,keyword,error=error)
+        CALL keyword_release(keyword,error=error)
+ 
++!NB start reftraj wait
++       CALL keyword_create(keyword, name="WAIT",&
++            description="If true, keep on waiting for new data to be written to reftraj file",&
++            repeats=.FALSE., usage="WAIT", default_l_val=.false., lone_keyword_l_val=.true.,  error=error)
++       CALL section_add_keyword(section,keyword,error=error)
++       CALL keyword_release(keyword,error=error)
++!NB end reftraj wait
++
+        CALL keyword_create(keyword, name="eval_energy_forces",&
+             description="Evaluate energy and forces for each retrieved snapshot during a REFTRAJ run",&
+             repeats=.FALSE., default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,&
+Index: motion/integrator.F
+===================================================================
+--- motion/integrator.F	(revision 14218)
++++ motion/integrator.F	(working copy)
+@@ -38,6 +38,7 @@
    USE constraint_util,                 ONLY: getold,&
                                               pv_constraint
    USE cp_para_types,                   ONLY: cp_para_env_type
-+  USE cp_parser_types,                 ONLY: parser_release, parser_create
++  USE cp_parser_types,                 ONLY: parser_create, parser_release
    USE cp_parser_methods,               ONLY: parser_get_next_line,&
                                               parser_read_line
    USE cp_subsys_types,                 ONLY: cp_subsys_get,&
-@@ -59,7 +60,7 @@
+@@ -60,7 +61,7 @@
         get_s_ds, old_variables_type, rattle_roll_setup, set, &
         tmp_variables_type, update_dealloc_tmp, update_pv, update_veps, &
         variable_timestep, vv_first, vv_second
@@ -19,15 +38,15 @@ Index: integrator.F
    USE mathlib,                         ONLY: matmul_3x3,&
                                               transpose_3d
    USE md_environment_types,            ONLY: get_md_env,&
-@@ -92,6 +93,7 @@
+@@ -95,6 +96,7 @@
    USE thermostat_types,                ONLY: thermostat_type
    USE virial_methods,                  ONLY: virial_evaluate
    USE virial_types,                    ONLY: virial_type
 +  USE message_passing,                 ONLY: mp_sync
- #include "cp_common_uses.h"
+ #include "../common/cp_common_uses.f90"
  
    IMPLICIT NONE
-@@ -103,6 +105,18 @@
+@@ -106,6 +108,18 @@
    PUBLIC :: isokin, langevin, nve, nvt, npt_i, npt_f, nve_respa
    PUBLIC :: nph_uniaxial_damped, nph_uniaxial, nvt_adiabatic, reftraj
  
@@ -46,7 +65,7 @@ Index: integrator.F
  
  CONTAINS
  
-@@ -1539,6 +1553,10 @@
+@@ -1625,7 +1639,12 @@
        POINTER                                :: particle_set
      TYPE(reftraj_type), POINTER              :: reftraj_env
      TYPE(simpar_type), POINTER               :: simpar
@@ -55,9 +74,11 @@ Index: integrator.F
 +    character(default_path_length) :: traj_infile, cell_infile
 +    type(cp_para_env_type), pointer :: reftraj_para_env
  
++
      failure = .FALSE.
      NULLIFY(reftraj_env, particle_set, particles, force_env, subsys, simpar, para_env, cell, itimes, time)
-@@ -1557,8 +1575,41 @@
+     CALL get_md_env(md_env=md_env, init=init, reftraj=reftraj_env, force_env=force_env,&
+@@ -1643,8 +1662,41 @@
  
      ! SnapShots read from an external file (parsers calls are buffered! please
      ! don't put any additional MPI call!) [tlaino]
@@ -101,7 +122,7 @@ Index: integrator.F
      CPPostcondition(nread==nparticle,cp_failure_level,routineP,error,failure)
      CALL parser_read_line(reftraj_env%info%traj_parser,1,error=error)
      test_ok = .FALSE.
-@@ -1598,7 +1649,7 @@
+@@ -1684,7 +1736,7 @@
      IF(reftraj_env%info%variable_volume)THEN
         CALL parser_get_next_line(reftraj_env%info%cell_parser,1,at_end=my_end,error=error)
         CALL parse_cell_line(reftraj_env%info%cell_parser%input_line, cell_itimes, cell_time, h, vol, error)
@@ -110,29 +131,10 @@ Index: integrator.F
         ! Check if we reached the end of the file and provide some info..
         IF (my_end) THEN
            CALL cp_assert(reftraj_env%isnap==(simpar%nsteps-1),cp_fatal_level,cp_assertion_failed,routineP,&
-Index: input_cp2k_motion.F
+Index: motion/reftraj_types.F
 ===================================================================
---- input_cp2k_motion.F	(revision 12507)
-+++ input_cp2k_motion.F	(working copy)
-@@ -2222,6 +2222,14 @@
-        CALL section_add_keyword(section,keyword,error=error)
-        CALL keyword_release(keyword,error=error)
- 
-+!NB start reftraj wait
-+       CALL keyword_create(keyword, name="WAIT",&
-+            description="If true, keep on waiting for new data to be written to reftraj file",&
-+            repeats=.FALSE., usage="WAIT", default_l_val=.false., lone_keyword_l_val=.true.,  error=error)
-+       CALL section_add_keyword(section,keyword,error=error)
-+       CALL keyword_release(keyword,error=error)
-+!NB end reftraj wait
-+
-        CALL keyword_create(keyword, name="eval_energy_forces",&
-             description="Evaluate energy and forces for each retrieved snapshot during a REFTRAJ run",&
-             repeats=.FALSE., default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,&
-Index: reftraj_types.F
-===================================================================
---- reftraj_types.F	(revision 12507)
-+++ reftraj_types.F	(working copy)
+--- motion/reftraj_types.F	(revision 14218)
++++ motion/reftraj_types.F	(working copy)
 @@ -42,6 +42,9 @@
       LOGICAL                                  :: msd
       TYPE(cp_parser_type), POINTER            :: traj_parser
@@ -143,7 +145,7 @@ Index: reftraj_types.F
    END TYPE reftraj_info_type
  
  ! *****************************************************************************
-@@ -120,6 +123,9 @@
+@@ -126,6 +129,9 @@
      CALL section_vals_val_get(reftraj_section,"FIRST_SNAPSHOT",i_val=reftraj%info%first_snapshot,error=error)
      CALL section_vals_val_get(reftraj_section,"LAST_SNAPSHOT",i_val=reftraj%info%last_snapshot,error=error)
      CALL section_vals_val_get(reftraj_section,"STRIDE",i_val=reftraj%info%stride,error=error)
