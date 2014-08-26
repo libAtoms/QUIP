@@ -252,7 +252,7 @@ module Atoms_types_module
                                                                            !% for 'bond_length(Zi,Zj)'.
      real(dp)                              :: cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
      real(dp)                              :: cutoff_skin = 0.0_dp !% If non-zero, increase cutoff by this amount to reduce calc_connect() frequency
-     logical                               :: pot_should_do_nn = .false., pot_needs_new_connect, pot_needs_new_dists
+     logical                               :: pot_should_do_nn = .false., pot_needs_new_connect = .false., pot_needs_new_dists = .false.
      real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
                                               !% Count as nearest neighbour if sum of covalent radii
                                               !% times 'this%nneightol' greater than distance between atoms.
