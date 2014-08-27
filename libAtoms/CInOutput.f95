@@ -230,7 +230,7 @@ contains
 
     this%action = optional_default(INPUT, action)
     this%append = optional_default(.false., append)
-    this%netcdf4 = optional_default(.true., netcdf4)
+    this%netcdf4 = optional_default(.false., netcdf4)
     this%filename = optional_default('', filename)
     this%one_frame_per_file = optional_default(.false., one_frame_per_file)
     compute_index = 1

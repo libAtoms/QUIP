@@ -33,7 +33,7 @@ __doc__ = _cinoutput.__doc__
 __all__ = _cinoutput.__all__ + ['CInOutputReader', 'CInOutputWriter']
 
 class CInOutput(_cinoutput.CInOutput):
-    def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
+    def __init__(self, filename=None, action=INPUT, append=False, netcdf4=False, no_compute_index=None,
                  frame=None, one_frame_per_file=None, mpi=None, zero=False, range=None, indices=None,
                  fpointer=None, finalise=True, string=False):
 
@@ -193,7 +193,7 @@ def CInOutputStdinReader(source='stdin', format=None):
 class CInOutputWriter(object):
     """Class to write atoms sequentially to a CInOutput stream"""
 
-    def __init__(self, dest, append=False, netcdf4=True, one_frame_per_file=False, string=False, **write_kwargs):
+    def __init__(self, dest, append=False, netcdf4=False, one_frame_per_file=False, string=False, **write_kwargs):
         self.opened = False
         self.write_kwargs = {}
         self.write_kwargs.update(write_kwargs)
@@ -225,7 +225,7 @@ class CInOutputStringReader(CInOutputReader):
 AtomsReaders['string'] = CInOutputStringReader
 
 class CInOutputStringWriter(CInOutputWriter):
-    def __init__(self, dest, append=False, netcdf4=True, one_frame_per_file=False, format=None, **write_kwargs):
+    def __init__(self, dest, append=False, netcdf4=False, one_frame_per_file=False, format=None, **write_kwargs):
         assert dest == 'string'
         CInOutputWriter.__init__(self, dest=dest, append=append, netcdf4=netcdf4, one_frame_per_file=one_frame_per_file,
                                  string=True, **write_kwargs)
