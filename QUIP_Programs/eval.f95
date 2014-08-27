@@ -118,6 +118,7 @@ implicit none
   character(STRING_LENGTH) :: eval_port_str
 
   integer i, n_iter, j, n_descriptors, n_cross
+  logical netcdf4
 
   call system_initialise()
 
@@ -210,8 +211,7 @@ implicit none
   call param_register(cli_params, 'EvsV', 'F', do_EvsV, help_string="compute energy vs volume curve")
   call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
   call param_register(cli_params, 'EvsV_NdVsteps', '1', EvsV_NdVsteps, help_string="number of times to increase the volume when doing EvsV")
-
-
+  call param_register(cli_params, 'netcdf4', 'F', netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
 
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
@@ -381,7 +381,7 @@ implicit none
 	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
 	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
         if (len_trim(relax_print_file) > 0) then
-           call initialise(relax_io, relax_print_file, OUTPUT)
+           call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
            if(trim(minim_method) == 'precond') then
               call system_timer('precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &

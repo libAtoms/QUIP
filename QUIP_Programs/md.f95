@@ -63,6 +63,7 @@ private
     logical :: continuation
     logical :: use_fortran_random
     character(len=STRING_LENGTH) :: verbosity
+    logical :: netcdf4
 logical :: NPT_NB
   end type md_params
 
@@ -140,6 +141,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
   call param_register(md_params_dict, 'verbosity', 'NORMAL', params%verbosity, help_string="verbosity level of run")
   call param_register(md_params_dict, 'calc_local_ke', 'F', params%calc_local_ke, help_string="if true, calculate local ke")
+  call param_register(md_params_dict, 'netcdf4', 'F', params%netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -641,7 +643,7 @@ implicit none
 
   call finalise(params_es)
 
-  call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob)
+  call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
 
   call initialise_md_thermostat(ds, params)
 
