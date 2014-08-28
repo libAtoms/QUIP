@@ -216,6 +216,9 @@ deepclean: clean
 	-for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
 	done
+	-if [[ -d ${FOX}/objs.${QUIP_ARCH} ]]; then \
+	  rm -rf ${FOX}/objs.${QUIP_ARCH} \
+	fi
 
 distclean: deepclean
 	rm -rf ${BUILDDIR}/Makefile ${BUILDDIR}/Makefile.inc
