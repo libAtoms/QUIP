@@ -163,7 +163,6 @@ class LOTFDynamics(MolecularDynamics):
         saved_nsteps = self.nsteps
         saved_seed = system_get_random_seed()
         saved_np_random_state = np.random.get_state()
-        
         saved_state = (saved_positions, saved_momenta, saved_nsteps,
                        saved_seed, saved_np_random_state)
         return saved_state
@@ -175,14 +174,13 @@ class LOTFDynamics(MolecularDynamics):
         Sets arrays directly, ignoring any constraints.
         """
 
-        (saved_positions, saved_momenta, saved_nsteps, \
+        (saved_positions, saved_momenta, saved_nsteps,
          saved_seed, saved_np_random_state) = saved_state
-        
         self.atoms.set_array('positions', saved_positions)
         self.atoms.set_array('momenta', saved_momenta)
         self.nsteps = saved_nsteps
         system_set_random_seeds(saved_seed)
-        np.random.set_state(saved_np_random_state)    
+        np.random.set_state(saved_np_random_state)
 
 
     def step(self):
@@ -233,7 +231,7 @@ class LOTFDynamics(MolecularDynamics):
 
             # Possibly check force error
             if self.check_force_error:
-                self._calc_force_error(f)
+                self._calc_force_error(f, i)
 
             # Apply any constraints to the forces
             for constraint in self.atoms.constraints:
@@ -261,7 +259,7 @@ class LOTFDynamics(MolecularDynamics):
 
             # Possibly check force error
             if self.check_force_error:
-               self._calc_force_error(f)
+               self._calc_force_error(f, i)
 
             # Apply any constraints to the forces
             for constraint in self.atoms.constraints:
@@ -330,7 +328,6 @@ class LOTFDynamics(MolecularDynamics):
             self.calc.set(calc_weights=True)
         else:
             self.calc.set(calc_weights=False)
-
         interp_frac = float(i)/float(self.extrapolate_steps)
         self.calc.set(method='lotf_adj_pot_svd',
                       lotf_do_qm=False,
@@ -357,15 +354,18 @@ class LOTFDynamics(MolecularDynamics):
         return self.calc.get_forces(atoms)
 
 
-    def get_reference_forces(self, atoms):
+    def get_reference_forces(self, atoms, i):
         """
         Do a reference QM calculation and return forces resulting from standard force mixing.
 
         Useful for checking errors during predictor/corrector extrapolation and interpolation.
         Does not change the current set of adjustable potential parameters.
         """
+        if i == 0:
+            self.calc.set(calc_weights=True)
+        else:
+            self.calc.set(calc_weights=False)
         self.calc.set(method='force_mixing',
-                      calc_weights=False,
                       lotf_do_qm=True,
                       lotf_do_init=False,
                       lotf_do_map=False,
@@ -374,7 +374,7 @@ class LOTFDynamics(MolecularDynamics):
         return self.calc.get_forces(atoms)
 
 
-    def _calc_force_error(self, f, qm_only=True):
+    def _calc_force_error(self, f, i, qm_only=True):
        """
        Compute reference forces and compare with current forces `f`
        """
@@ -383,8 +383,11 @@ class LOTFDynamics(MolecularDynamics):
        else:
            mask = Ellipsis
 
-       ref_forces = self.get_reference_forces(self.atoms)
+       ref_forces = self.get_reference_forces(self.atoms, i)
        force_error = ref_forces[mask,:] - f[mask,:]
+
+       self.atoms.set_array('ref_forces', ref_forces)
+       self.atoms.set_array('force_error', ref_forces - f)
        
        self.rms_force_error = np.sqrt((force_error**2).mean())
        self.max_force_error = abs(force_error).max()
