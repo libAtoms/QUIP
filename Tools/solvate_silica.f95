@@ -77,7 +77,7 @@ program solvate_silica
   call param_register(cli_params, 'atom1_pos', '(/0.0 0.0 0.0/)', atom1_pos, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'atom12_vector', PARAM_MANDATORY, atom12_vector, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params, 'atom123_plane_point', PARAM_MANDATORY, atom123_plane_point, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params,"exclusion","0.0_dp", exclusion, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params,"exclusion","0.0", exclusion, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"rotation1_sign",'1', rotation_sign1, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"rotation2_sign",'1', rotation_sign2, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"rotation2_pluspi",'F', rotation2_pluspi, help_string="No help yet.  This source file was $LastChangedBy$")

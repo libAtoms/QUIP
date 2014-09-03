@@ -494,7 +494,7 @@ program qmmm_md
       Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
 
     call finalise(my_atoms)
-    call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
+    call add_property(ds%atoms,'pot',0.0_dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
  
     if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
  
@@ -517,7 +517,7 @@ program qmmm_md
 
   !CALC. CONNECTIONS
 
-!    call set_cutoff(ds%atoms,0._dp) !use the covalent radii to determine bonds
+!    call set_cutoff(ds%atoms,0.0_dp) !use the covalent radii to determine bonds
     use_cutoff = max(Min_Connect_Cutoff, Outer_Buffer_Radius)
     use_cutoff = max(use_cutoff, Outer_QM_Region_Radius)
     if (distance_ramp) use_cutoff = max(use_cutoff, distance_ramp_outer_radius)

@@ -65,9 +65,9 @@ program solvate
   call param_register(cli_params,"xmax",PARAM_MANDATORY, xmax, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"ymax",PARAM_MANDATORY, ymax, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"zmax",PARAM_MANDATORY, zmax, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params,"exclusion","2.4_dp", exclusion, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params,"exclusion","2.4", exclusion, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(cli_params,"center_around_atom","0", center_around_atom, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params,"security_zone","1._dp", security_zone, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params,"security_zone","1.0", security_zone, help_string="No help yet.  This source file was $LastChangedBy$")
   if (.not. param_read_args(cli_params)) then
     !call system_abort("Usage: decimate [file=(stdin)] [waterfile=(stdin)] xmin xmax ymin ymax zmin zmax [exclusion=(2.4)] [security_zone=(1.0)] [center_around_atom=0]")
     call print_usage
