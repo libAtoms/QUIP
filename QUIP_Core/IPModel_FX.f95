@@ -118,10 +118,10 @@ subroutine IPModel_FX_Initialise_str(this, args_str, param_str, error)
   call param_register(params, 'two_body_weight_delta', '0.25', this%two_body_weight_delta, help_string="width of weighting function for  two_body energy and force based on O-O distance. For weighting to take effect, two_body_weight_roo needs to be explicitly set. For a positive two_body_weight_delta, weight is 1 for rOO < two_body_weight_roo-two_body_weight_delta and weight is 0 for rOO > two_body_weight_roo+two_body_weight_delta")
   call param_register(params, 'OHH_ordercheck', 'T', this%OHH_ordercheck, help_string="if FALSE, skip transforming atomic order to OHHOHHOHH... and assume atoms are in that order. This also skips cutoff checking for OH bonds. default: TRUE")
   call param_register(params, 'E_scale', '1.0', this%E_scale, 'Scale the potential by this factor')
-  call param_register(params, 'polarM', '1.444_dp', this%polarM, help_string="polarisability on the M site")
-  call param_register(params, 'vdwC', '-0.72298855E+03_dp', this%vdwC, help_string="vdwC parameter")
-  call param_register(params, 'vdwD', '0.10211829E+06_dp', this%vdwD, help_string="vdwD parameter")
-  call param_register(params, 'vdwE', '0.37170376E+01_dp', this%vdwE, help_string="vdwE parameter")
+  call param_register(params, 'polarM', '1.444', this%polarM, help_string="polarisability on the M site")
+  call param_register(params, 'vdwC', '-0.72298855E+03', this%vdwC, help_string="vdwC parameter")
+  call param_register(params, 'vdwD', '0.10211829E+06', this%vdwD, help_string="vdwD parameter")
+  call param_register(params, 'vdwE', '0.37170376E+01', this%vdwE, help_string="vdwE parameter")
   
   if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_FX_Initialise args_str')) then
      RAISE_ERROR("IPModel_FX_Init failed to parse args_str='"//trim(args_str)//"'", error)
@@ -206,7 +206,6 @@ subroutine IPModel_FX_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   else
      do_OHH_ordercheck = this%OHH_ordercheck
   end if
-
 
   call nttm3f_readXYZ(at%N/3, at%Z, at%pos, RR, rindex, do_OHH_ordercheck)
   call ttm3f(at%N/3,RR, dRR, energy, this%polarM, this%vdwC, this%vdwD, this%vdwE)
