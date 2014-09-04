@@ -217,7 +217,7 @@ deepclean: clean
 	  cd $$dir; make clean; \
 	done
 	-if [[ -d ${FOX}/objs.${QUIP_ARCH} ]]; then \
-	  rm -rf ${FOX}/objs.${QUIP_ARCH} \
+	  rm -rf ${FOX}/objs.${QUIP_ARCH} ; \
 	fi
 
 distclean: deepclean
