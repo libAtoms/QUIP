@@ -303,7 +303,7 @@ class MolproDatafile(OrderedDict):
                 self['geometry'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(np.dot(at.g,at.pos[:,i])))
 
 
-def read_xml_output(xmlfile,energy_from=None, extract_forces=False, datafile=None, cluster=None):
+def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipole=False, datafile=None, cluster=None):
     #parse an xml output file and return cluster with updated info
     # datafile tells which energies, forces to look for, cluster Atoms object which gets returned, this is echoed in the xml file so can be left out
     # If extract_forces is not given and the FORCE keyword is found in datafile, the default is to set extract_forces=True
@@ -317,6 +317,7 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, datafile=Non
 
     energy_names = OrderedDict()
     energy_names['CCSD(T)-F12'] = ["total energy"]
+    energy_names['CCSD(T)'] = ["total energy"]
     energy_names['MP2'] = ["total energy"]
     energy_names['RKS'] = ["Energy"]
     energy_names['RHF'] = ["Energy"]
@@ -331,10 +332,12 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, datafile=Non
     all_methods=OrderedDict()
     all_methods['HF']=["RHF"]
     all_methods['MP2']=["MP2"]
+    all_methods['RKS']=["RKS"]
     all_methods['CCSD(T)-F12']=["CCSD(T)-F12a","CCSD(T)-F12b"]
+    all_methods['CCSD(T)']=["CCSD(T)"]
 
     if energy_from is None:
-        log.critical("don't know which energy to extract, use keyword energy_from with options"+str([all_methods[k] for k in iter(all_methods)]).replace('[','').replace(']',''))
+        log.critical("don't know which energy to extract, use keyword energy_from with options "+str([all_methods[k] for k in iter(all_methods)]).replace('[','').replace(']',''))
 
     #loop through datafile to look for methods.
     calcs=[] #holds the keys for getting correct method, energy_name, gradient_name
@@ -376,14 +379,26 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, datafile=Non
                 energy_param_name="_".join([prop_method,prop_name])
                 energy_param_name=energy_param_name.replace(" ","_")
                 #log.info("found "+energy_param_name)
+dated routines for finding monomer pairs, triplets in Topology module
                 energy_param=prop.attributes['value'].value.encode('ascii','ignore')
-                cluster.params[energy_param_name] = float(energy_param)*27.21138386
+                my_energy=energy_param_name
+                i_en=1
+                while my_energy in cluster.params.iterkeys():
+                    i_en+=1
+                    my_energy='_'.join([energy_param_name,str(i_en)])
+                cluster.params[my_energy] = float(energy_param)*27.21138386
                 if prop_method == energy_from:
                     cluster.params['Energy']=float(energy_param)*27.21138386
                     energy_found=True
+            elif extract_dipole and prop_name=='Dipole moment':
+                dipole_param_name="_".join([prop_method,prop_name])
+                dipole_param_name=dipole_param_name.replace(" ","_")
+                log.info("found dipole moment: "+dipole_param_name)
+                dipole_param=prop.attributes['value'].value.encode('ascii','ignore')
+                cluster.params[dipole_param_name]=dipole_param
 
     if not energy_found:
-        log.critical("couldn't find energy from "+energy_from)
+        log.critical("couldn't find energy from "+energy_from+" prop method : "+prop_method)
                       
         
                 
