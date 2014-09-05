@@ -86,8 +86,8 @@ ifeq (${HAVE_ASAP},1)
   DEFINES += -DHAVE_ASAP
 endif
 ifeq (${HAVE_KIM},1)
-  SYSLIBS += -L${KIM_DIR}/KIM_API -lkim  -lstdc++
-  INCLUDES += -I${KIM_DIR}/KIM_API -fcray-pointer
+  SYSLIBS += -L${KIM_DIR}/kim-api-v1 -lkim-api-v1  -lstdc++
+  INCLUDES += -I${KIM_DIR}/kim-api-v1/include 
   DEFINES += -DHAVE_KIM
   ifeq (${KIM_NO_AUTOGENERATE_TEST_KIM},1)
     DEFINES += -DKIM_NO_AUTOGENERATE_TEST_KIM
