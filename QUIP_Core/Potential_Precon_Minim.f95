@@ -102,7 +102,7 @@ module Potential_Precon_Minim_module
     real(dp) :: thisdist, thiscoeff
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
-    logical :: did_rebuild
+    logical :: did_rebuild, do_this
 
     call system_timer('build_precon')
     am = transfer(am_data,am)
@@ -181,15 +181,17 @@ module Potential_Precon_Minim_module
               thiscoeff = 1.0_dp
             end if
           
-            if(this%has_fixed) then
-              if (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I) then
+	    do_this = .true.
+            if (this%has_fixed) then
+	      do_this = (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I)
+	    end if
                   
+	    if (do_this) then
                 nearneighcount = nearneighcount+1
                 this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
                 this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
                 this%preconindices(nearneighcount,I) = thisind
 
-              end if
             end if
               
             !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 

@@ -3366,8 +3366,8 @@ end function func_wrapper
         exit
       end if
 
-      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha &
-                  // ' last ls_iter = ' // this_ls_count // ' amax = '//amax,PRINT_NORMAL)
+      call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
+                  // ' last ls_iter = ' // this_ls_count,PRINT_NORMAL)
       ! call the hook function
       if (present(hook)) then 
          call hook(x, g, f, done, (mod(n_iter-1,my_hook_print_interval) == 0), am_data)
