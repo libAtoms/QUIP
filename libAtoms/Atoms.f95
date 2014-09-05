@@ -3385,6 +3385,9 @@ contains
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
+
+    if (this%pot_should_do_nn) this%pot_needs_new_connect = .true.
+
     if (present(alt_connect)) then
        call calc_connect_hysteretic(alt_connect, this, &
             origin, extent, own_neighbour, store_is_min_image, error)
@@ -3418,8 +3421,10 @@ contains
     logical,          optional, intent(out)    :: did_rebuild
     integer,          optional, intent(out)    :: error
 
-
     INIT_ERROR(error)
+
+    if (this%pot_should_do_nn) this%pot_needs_new_connect = .true.
+
     if (present(alt_connect)) then
        call calc_connect(alt_connect, this, &
             own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, this%cutoff_skin, &
@@ -3443,6 +3448,9 @@ contains
     integer, optional, intent(out) :: error
 
     INIT_ERROR(error)
+
+    if (this%pot_should_do_nn) this%pot_needs_new_dists = .true.
+
     if (present(alt_connect)) then
        call calc_dists(alt_connect, this, parallel, error)
        PASS_ERROR(error)
