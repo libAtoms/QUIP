@@ -171,6 +171,9 @@ subroutine do_vasp_calc(at, args_str, error)
       endif
    endif
 
+   ! remove EDIFFG to avoid VASP quitting when it thinks convergence has been reached
+   if (has_key(incar_dict,"EDIFFG")) call remove_value(incar_dict,"EDIFFG")
+
    force_run_dir_i = -1
    if (persistent) then ! make run_dir manually
       inquire(file="persistent_run_i", exist=persistent_already_started)
@@ -697,6 +700,12 @@ subroutine read_vasp_incar_dict(incar_dict, incar_template_file, error)
    ! loop over lines
    do i=1, incar_n_lines
       comment_pos = index(trim(incar_a(i)), '#')
+      if (comment_pos > 1) then
+	 incar_a(i) = incar_a(i)(1:comment_pos-1)
+      elseif (comment_pos == 1) then
+	 incar_a(i) = ""
+      endif
+      comment_pos = index(trim(incar_a(i)), '!')
       if (comment_pos > 1) then
 	 incar_a(i) = incar_a(i)(1:comment_pos-1)
       elseif (comment_pos == 1) then
