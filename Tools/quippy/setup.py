@@ -262,6 +262,8 @@ def find_wrap_sources(makefile, quip_root):
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
         targets.extend([(quip_root, 'GAP')])
+        wrap_sources += [os.path.join(quip_root, 'GAP', 'descriptors.f95')]
+        wrap_types += ['descriptor']
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
         gp_dir = os.path.join(quip_root, 'GAP-filler/')
