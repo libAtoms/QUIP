@@ -370,7 +370,7 @@ class Test_SW_Rescale_Automatic_Factors(QuippyTestCase):
         self.bulk.calc_connect()        
 
     def test_factors(self):
-        self.assertArrayAlmostEqual([self.p.r_scale, self.p.e_scale], [0.990180734136, 1.06610169294])
+        self.assertArrayAlmostEqual([self.p.r_scale, self.p.e_scale], [0.990180734136, 1.06610169294], tol=1e-3)
 
     @skip
     def test_volume(self):
