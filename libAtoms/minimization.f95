@@ -6083,7 +6083,7 @@ call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
  !   Gd = Gvp - lam*v
  !   res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
  !   
-  end
+  end function
 
   function simpleprecondimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_v) result(k)
 
@@ -6178,7 +6178,7 @@ call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
       end if
     end do
 
-  end
+  end function
 
   subroutine printlikematlab(x)
     real(dp) :: x(:)
@@ -6186,6 +6186,6 @@ call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
     vl = size(x) 
     call print(reshape(x(10:vl),(/ 3 , (vl-9)/3 /)))
     
-    end
+  end subroutine
 end module minimization_module
 
