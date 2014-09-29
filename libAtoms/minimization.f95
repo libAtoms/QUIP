@@ -5731,7 +5731,7 @@ end function func_wrapper
     real(dp), optional :: infoverride
 
     integer :: N,k,k2,k3,kmax,k2max
-    real(dp) :: h = 10.0_dp**(-3.0)
+    real(dp) :: h = 1e-3_dp
     real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
     real(dp), parameter :: TOLvdefault = 10.0_dp**(-1)
    
