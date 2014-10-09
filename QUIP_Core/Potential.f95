@@ -1579,6 +1579,7 @@ end subroutine undo_travel
     real(dp) :: max_atom_rij_change
     real(dp) :: deform_grad(3,3)
     type(potential_minimise)  :: am
+    real(dp), pointer :: minim_applied_force(:,:)
 
     call system_timer("energy_func")
 
@@ -1622,6 +1623,11 @@ end subroutine undo_travel
     energy_func = energy_func + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
     call print ("energy_func got enthalpy " // energy_func, PRINT_NERD)
 
+    ! add extra forces
+    if (assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
+      val = val - sum(minim_applied_force*am%minim_at%pos)
+    end if
+
     call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
@@ -1644,6 +1650,7 @@ end subroutine undo_travel
     real(dp) :: max_atom_rij_change
     integer :: t_i(2), i
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
 
@@ -1712,6 +1719,12 @@ end subroutine undo_travel
           if (move_mask(i) == 0) f(:,i) = 0.0_dp
        end do
     end if
+
+    ! add extra forces
+    if (assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
+      f = f + minim_applied_force
+      val = val - sum(minim_applied_force*am%minim_at%pos)
+    endif
 
     if (current_verbosity() >= PRINT_NERD) then
        call print ("gradient_func got f", PRINT_NERD)
@@ -1851,7 +1864,7 @@ end subroutine undo_travel
     real(dp) :: max_atom_rij_change
     integer :: t_i(2), i
     integer, pointer, dimension(:) :: move_mask, fixed_pot
-    real(dp), pointer :: minim_extra_force(:,:)
+    real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
 
@@ -1921,9 +1934,9 @@ if (am%minim_do_pos) then
    endif
 endif
 
-    if (assign_pointer(am%minim_at, "minim_extra_force", minim_extra_force)) then
-      f = f + minim_extra_force
-      val = val - sum(minim_extra_force*am%minim_at%pos)
+    if (assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
+      f = f + minim_applied_force
+      val = val - sum(minim_applied_force*am%minim_at%pos)
     endif
 
     call print ("both_func got f", PRINT_NERD)

@@ -1001,6 +1001,7 @@ end if
     real(dp) :: virial(3,3),  deform_grad_inv(3,3)
     integer :: i
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    real(dp), pointer :: minim_applied_force(:,:)
     logical :: did_rebuild
     
     call system_timer("energy_func")
@@ -1067,17 +1068,23 @@ end if
         end do
       end if
 
+      ! add applied forces
+      if (am%minim_do_pos .and. assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
+	f = f + minim_applied_force
+	energy_func_local = energy_func_local - sum(minim_applied_force*am%minim_at%pos)
+      endif
+
       if (current_verbosity() >= PRINT_NERD) then
-         call print ("gradient_func got f", PRINT_NERD)
+         call print ("energy_func_local got f", PRINT_NERD)
          call print(f, PRINT_NERD)
-         call print ("gradient_func got virial", PRINT_NERD)
+         call print ("energy_func_local got virial", PRINT_NERD)
          call print(virial, PRINT_NERD)
       end if
 
       virial = virial - am%external_pressure*cell_volume(am%minim_at)
 
       if (current_verbosity() >= PRINT_NERD) then
-         call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
+         call print ("energy_func_local got virial, external pressure subtracted", PRINT_NERD)
          call print(virial, PRINT_NERD)
       end if
 
