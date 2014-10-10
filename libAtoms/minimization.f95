@@ -5916,9 +5916,10 @@ end function func_wrapper
 #endif
 
       neval = neval + 2
-call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
             delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
-           ! call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
+            call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
+            
+            ! call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
             !call print(e2// ' '//e20)
             
             if (delE < crit) then
@@ -5952,7 +5953,7 @@ call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
         
         end if
         
-        call print('precon_dimer rotating, iter = '// k2 //',theta = '//avn// ',delE = ' //delE)
+        call print('precon_dimer rotating, iter = '// k2 //',theta = '//avn// ',delE = ' //delE //',res_v = '//res_v)
         k2 = k2 + 1
         if (res_v < TOLv .or. totalfailure .eqv. .true. .or. k2 > k2max) then
           !call print(res_v // ' ' //k2)
