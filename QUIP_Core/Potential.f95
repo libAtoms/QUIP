@@ -1625,7 +1625,7 @@ end subroutine undo_travel
 
     ! add extra forces
     if (assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
-      val = val - sum(minim_applied_force*am%minim_at%pos)
+      energy_func = energy_func - sum(minim_applied_force*am%minim_at%pos)
     end if
 
     call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -1723,7 +1723,7 @@ end subroutine undo_travel
     ! add extra forces
     if (assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
       f = f + minim_applied_force
-      val = val - sum(minim_applied_force*am%minim_at%pos)
+      ! val = val - sum(minim_applied_force*am%minim_at%pos)
     endif
 
     if (current_verbosity() >= PRINT_NERD) then
