@@ -121,6 +121,7 @@ contains
     integer :: form_bond(2), break_bond(2)
     real(dp) :: disp(3)
 
+    character(len=STRING_LENGTH) :: verbosity
     character(len=STRING_LENGTH) :: tmp_MM_param_filename, tmp_QM_pot_filename, tmp_QM_basis_filename
     character(len=STRING_LENGTH) :: MM_param_filename, QM_pot_filename, QM_basis_filename
     logical :: truncate_parent_dir
@@ -198,6 +199,7 @@ contains
       call param_register(cli, 'qmmm_same_lattice', 'F', qmmm_same_lattice, help_string="If true, use full original MM lattice for QM calculation")
       call param_register(cli, 'qmmm_use_mm_charges', 'T', qmmm_use_mm_charges, help_string="If true (default) use classical point charges of atoms in QM region to calculate total DFT charge")
       call param_register(cli, 'qmmm_link_fix_pbc', 'T', qmmm_link_fix_pbc, help_string="If true (default) move outer atoms in any QM links which straddle a periodic boundary so link is continous")
+      call param_register(cli, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level")
 
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, ignore_unknown=.true.,task='cp2k_driver_template args_str')) then
@@ -205,6 +207,8 @@ contains
       endif
     call finalise(cli)
     do_calc_virial = len_trim(calc_virial) > 0
+
+    call verbosity_push(verbosity_of_str(trim(verbosity)))
 
     mainlog%prefix="CP2K_DRIVER"
 
@@ -288,6 +292,7 @@ contains
     call print('  qmmm_same_lattice '//qmmm_same_lattice)
     call print('  qmmm_use_mm_charges '//qmmm_use_mm_charges)
     call print('  qmmm_link_fix_pbc '//qmmm_link_fix_pbc)
+    call print('  verbosity '//trim(verbosity))
 
     if (auto_centre .and. has_centre_pos) then
       RAISE_ERROR("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin", error)
@@ -1077,6 +1082,8 @@ contains
     if (allocated(rev_sort_index)) deallocate(rev_sort_index)
     call system_timer('do_cp2k_calc/cleanup')
     call system_timer('do_cp2k_calc')
+
+    call verbosity_pop()
 
   end subroutine do_cp2k_calc
 
