@@ -4918,8 +4918,8 @@ end function func_wrapper
 !        exit
 !      end if
     
-      p = r + bet*p
       bet = betn/alpn
+      p = r + bet*p
       k = k+1
       subk = subk + 1
 
