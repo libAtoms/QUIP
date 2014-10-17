@@ -116,7 +116,8 @@ implicit none
   logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
   integer error, eval_port_status, eval_port
-  character(STRING_LENGTH) :: eval_port_str
+  character(STRING_LENGTH) :: eval_port_str, output_file
+  logical :: output_flush
 
   integer i, n_iter, j, n_descriptors, n_cross
   logical netcdf4
@@ -214,6 +215,8 @@ implicit none
   call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
   call param_register(cli_params, 'EvsV_NdVsteps', '1', EvsV_NdVsteps, help_string="number of times to increase the volume when doing EvsV")
   call param_register(cli_params, 'netcdf4', 'F', netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
+  call param_register(cli_params, 'output_file', 'stdout', output_file, help_string="file to send output to")
+  call param_register(cli_params, 'output_flush', 'F', output_flush, help_string="if true, always flush output")
 
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
@@ -224,6 +227,12 @@ implicit none
     call system_abort("")
   end if
   call finalise(cli_params)
+
+  if (trim(output_file) /= "stdout") then
+    call finalise(mainlog)
+    call initialise(mainlog, filename=trim(output_file), action=OUTPUT)
+  end if
+  system_always_flush = output_flush
 
   if(did_help) call system_abort("Run without --help")
 
