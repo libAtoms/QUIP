@@ -2594,9 +2594,6 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     t_projected = search_dir*p1_dot
 !     if (object_norm(t_projected,norm_type) .lt. accuracy) then
-! 	new_x = p1
-! 	new_neg_gradient = p1_ng
-! 	new_E = p1_E
 ! 	! search_dir = search_dir * search_dir_mag
 ! 	call scalar_selfmult (search_dir, search_dir_mag)
 ! 	minimize_along = 0
@@ -2629,6 +2626,9 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	    if (done) then
 	      call print("hook reported done", PRINT_NERD)
 	      search_dir = search_dir * search_dir_mag
+	      new_x = p1
+	      new_neg_gradient = p1_ng
+	      new_E = p1_E
 	      return
 	    endif
 	    if (l_error .ne. 0) then
@@ -5917,7 +5917,7 @@ end function func_wrapper
 
       neval = neval + 2
             delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
-            call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
+            call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE//" crit = "//crit)
             
             ! call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
             !call print(e2// ' '//e20)
