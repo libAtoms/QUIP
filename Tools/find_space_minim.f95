@@ -216,6 +216,7 @@ implicit none
   integer :: i_at
 real(dp) :: vi, vf
   real(dp) :: expected_red
+  real(dp) :: rad_min, rad_increment
 
   call system_initialise()
   call read(at, "stdin")
@@ -225,6 +226,10 @@ real(dp) :: vi, vf
   read (unit=arg, fmt=*) r(2)
   call get_cmd_arg(3, arg)
   read (unit=arg, fmt=*) r(3)
+  call get_cmd_arg(4, arg)
+  read (unit=arg, fmt=*) rad_min
+  call get_cmd_arg(5, arg)
+  read (unit=arg, fmt=*) rad_increment
 
   do i_at=1, at%N
     at%pos(1:3,i_at) = at%pos(1:3,i_at) - r(1:3)
@@ -253,7 +258,7 @@ real(dp) :: vi, vf
   do while (final_val <= 1.0e-3 .and. i_r < 1000)
     prev_r = r
     prev_val = final_val
-    rad = i_r*0.1_dp
+    rad = rad_min+(i_r-1)*rad_increment
     call verbosity_push(PRINT_SILENT)
     ! n_iter = minim(r, func, dfunc, 'cg', 1.0e-6_dp, 1000, 'NR_LINMIN', eps_guess=1e-3_dp, hook=hook, data=data)
     expected_red = 1.0e-2_dp
