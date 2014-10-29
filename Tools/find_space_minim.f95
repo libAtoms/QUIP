@@ -32,6 +32,7 @@
 #include "error.inc"
 module find_space_minim_mod
 use libatoms_module
+use iso_c_binding, only : c_ptr, c_loc, c_f_pointer
 implicit none
 
 real(dp), save :: rad, width
@@ -51,25 +52,24 @@ function func(x,data)
   real(dp) :: func
 
   integer :: i
-  type(Atoms) :: at
+  type(c_ptr) :: at_ptr
+  type(Atoms), pointer :: at
   real(dp) :: r_mag
 
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minim_mod func needs x(1:3)")
 
-  at = transfer(data, at)
-! call print("BOB 00", PRINT_ALWAYS)
+  at_ptr = transfer(data, at_ptr)
+  call c_f_pointer(at_ptr, at)
   call atoms_repoint(at)
-! call print("JOE 00", PRINT_ALWAYS)
 
   func = 0.0_dp
   do i=1, at%N
     r_mag = distance_min_image(at, i, x(1:3))
     if (r_mag < rad) then
-      func = func + (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag))
+      func = func + rep_E(r_mag)
     endif
   end do
-
 
 end function func
 
@@ -79,23 +79,23 @@ function dfunc(x,data)
   real(dp) :: dfunc(size(x))
 
   integer :: i
-  type(Atoms) :: at
+  type(c_ptr) :: at_ptr
+  type(Atoms), pointer :: at
   real(dp) :: r(3), r_mag
 
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minifind_space_minimeds x(1:3)")
 
-  at = transfer(data, at)
-! call print("BOB 10", PRINT_ALWAYS)
+  at_ptr = transfer(data, at_ptr)
+  call c_f_pointer(at_ptr, at)
   call atoms_repoint(at)
-! call print("JOE 10", PRINT_ALWAYS)
 
   dfunc = 0.0_dp
   do i=1, at%N
     r = diff_min_image(at, i, x(1:3))
     r_mag = norm(r)
     if (r_mag < rad) then
-      dfunc = dfunc + ( (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag)) * (-0.1_dp/(rad-r_mag)**2) - (1.0_dp/r_mag**2) * exp(-0.1_dp/(rad-r_mag)) ) * r/r_mag
+      dfunc = dfunc + rep_dE(r, r_mag)
     endif
   end do
 
@@ -109,6 +109,7 @@ subroutine apply_precond_dummy(x,g,P_g,data,error)
 
   INIT_ERROR(error)
   P_g = g
+
 end subroutine apply_precond_dummy
 
 subroutine bothfunc(x,E,f,data,error)
@@ -117,7 +118,8 @@ subroutine bothfunc(x,E,f,data,error)
   integer,optional :: error
 
   integer :: i
-  type(Atoms) :: at
+  type(c_ptr) :: at_ptr
+  type(Atoms), pointer :: at
   real(dp) :: r(3), r_mag
 
   INIT_ERROR(error)
@@ -125,10 +127,9 @@ subroutine bothfunc(x,E,f,data,error)
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minim_mod bothfunc needs x(1:3)")
 
-  at = transfer(data, at)
-! call print("BOB 00", PRINT_ALWAYS)
+  at_ptr = transfer(data, at_ptr)
+  call c_f_pointer(at_ptr, at)
   call atoms_repoint(at)
-! call print("JOE 00", PRINT_ALWAYS)
 
   f = 0.0_dp
   E = 0.0_dp
@@ -136,12 +137,50 @@ subroutine bothfunc(x,E,f,data,error)
     r = diff_min_image(at, i, x(1:3))
     r_mag = norm(r)
     if (r_mag < rad) then
-      E = E + (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag))
-      f = f + ( (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag)) * (-0.1_dp/(rad-r_mag)**2) - (1.0_dp/r_mag**2) * exp(-0.1_dp/(rad-r_mag)) ) * r/r_mag
+      E = E + rep_E(r_mag)
+      f = f + rep_dE(r, r_mag)
     endif
   end do
 
 end subroutine bothfunc
+
+function rep_E(r_mag)
+   real(dp) :: r_mag
+   real(dp) :: rep_E
+
+   real(dp) :: f_envelope
+
+   if (r_mag > rad) then
+      f_envelope = 0.0_dp
+   else if (r_mag < rad-width) then
+      f_envelope = 1.0_dp
+   else
+      f_envelope = 0.5_dp+0.5_dp*cos((r_mag-(rad-width))/width * 3.14159_dp)
+   endif
+
+   rep_E = (2.0_dp - r_mag/rad) * f_envelope
+
+end function rep_E
+
+function rep_dE(r, r_mag)
+   real(dp) :: r(:), r_mag
+   real(dp) :: rep_dE(size(r))
+
+   real(dp) :: f_envelope, df_envelope
+
+   if (r_mag > rad) then
+      f_envelope = 0.0_dp
+      df_envelope = 0.0_dp
+   else if (r_mag < rad-width) then
+      f_envelope = 1.0_dp
+      df_envelope = 0.0_dp
+   else
+      f_envelope = 0.5_dp+0.5_dp*cos((r_mag-(rad-width))/width * 3.14159_dp)
+      df_envelope = -0.5_dp*sin((r_mag-(rad-width))/width * 3.14159_dp) * (1.0_dp/width) * 3.14159_dp
+   endif
+
+   rep_dE = ((2.0_dp - r_mag/rad) * df_envelope  - 1.0_dp/rad * f_envelope) * r/r_mag
+end function rep_dE
 
 subroutine hook(x,dx,E,done,do_print,data)
   use system_module
@@ -160,12 +199,15 @@ end module find_space_minim_mod
 
 program find_space_minim
 use libatoms_module
-use find_space_minim_mod
+use find_space_minim_mod, only : func, bothfunc, apply_precond_dummy, hook, rad, width
+use iso_c_binding, only : c_ptr, c_loc, c_f_pointer
 implicit none
 
   real(dp) :: r(3), prev_r(3), orig_r(3)
   integer :: closest_list(100)
-  type(Atoms) :: at, closest_at
+  type(Atoms) :: at
+  type(Atoms), target :: closest_at
+  type(c_ptr) :: closest_at_ptr
   character(len=128) :: arg
   integer :: data_size
   character, allocatable :: data(:)
@@ -191,12 +233,17 @@ real(dp) :: vi, vf
   orig_r = r
   r = 0.0_dp
 
-  call find_closest(at, r, closest_list)
-  call select(closest_at, at, list=closest_list)
+  if (at%N < 100) then
+     call find_closest(at, r, closest_list(1:at%N))
+  else
+     call find_closest(at, r, closest_list)
+  endif
+  call select(closest_at, at, list=closest_list(1:at%N))
 
-  data_size = size(transfer(closest_at, data))
+  closest_at_ptr = c_loc(closest_at)
+  data_size = size(transfer(closest_at_ptr, data))
   allocate(data(data_size))
-  data = transfer(closest_at,data)
+  data = transfer(closest_at_ptr,data)
   width = 0.2_dp
 
   i_r = 1
