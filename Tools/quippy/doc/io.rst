@@ -132,8 +132,8 @@ columns to be present in the file for additonal per atom properties as
 well as standardising the format of the comment line to include the
 cell lattice and other per frame parameters.
 
-It's easiest to describe the format with an example. Here is a standard XYZ file containing a bulk cubic
-8 atom silicon cell ::
+It's  easiest to  describe  the  format with  an  example.  Here is  a
+standard XYZ file containing a bulk cubic 8 atom silicon cell ::
 
   8
   Cubic bulk silicon cell
@@ -191,6 +191,14 @@ definition, the line ::
 
 would describe a silicon atom at position (4.08,4.08,1.36) with zero
 velocity and the `select` property set to 1.
+
+The extended XYZ format is now also supported by the
+:func:`ase.io.read` and :func:`ase.io.write` functions in the `Atomic
+Simulation Environment (ASE) <https://wiki.fysik.dtu.dk/ase>`_
+toolkit, and by the `Ovito <http://www.ovito.org>`_ visualisation tool
+(from `v2.4 beta
+<http://www.ovito.org/index.php/component/content/article?id=25>`_
+onwards).
 
 .. _netcdf:
 
