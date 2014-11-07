@@ -192,7 +192,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   this%multipoles%initialised=.false.  
   if (this%multipoles%n_monomer_types /= 0) then
     ! check for ambiguities / errors in site specification of the monomers 
-     call print("specification of multipoles based on chemical environment")
+    ! call print("specification of multipoles based on chemical environment")
      this%multipoles%initialised=.true.
   end if
   !  Add initialisation code here

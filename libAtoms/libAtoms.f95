@@ -73,4 +73,6 @@ module libAtoms_module
   use domaindecomposition_module
   use gp_basic_module
   use k_means_clustering_module
+  use SocketTools_module
+  use partition_module
 end module libAtoms_module

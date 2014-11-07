@@ -5,3 +5,5 @@ ThirdParty
 build.*
 *.pyc
 *~
+GitStatistics
+Tools/AtomEye

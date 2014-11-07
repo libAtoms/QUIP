@@ -2759,6 +2759,7 @@ end function cluster_in_out_in
 
           ! check that cluster is still growing
           if (bufferlist%N == old_n) then
+             exit
              if (cluster_hopping_skip_unreachable) then
                 call print('WARNING: skipping buffer atoms no longer connected')
                 exit

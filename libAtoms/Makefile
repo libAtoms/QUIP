@@ -84,10 +84,12 @@ LIBATOMS_F95_FILES = \
   find_surface_atoms \
   gp_basic \
   k_means_clustering \
+  SocketTools \
+  partition \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_utils_no_module \
-  SocketTools
+  libAtoms_utils_no_module
+
 
 LIBATOMS_F77_FILES= \
    lbfgs	

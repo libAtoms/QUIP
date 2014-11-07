@@ -65,6 +65,7 @@ module Potential_simple_module
   use connection_module, only: is_in_subregion
   use cinoutput_module
   use clusters_module
+  use partition_module
 
   use QUIP_Common_module
   use MPI_context_module
@@ -356,6 +357,9 @@ contains
     real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale, cluster_box_buffer
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r, do_rescale_E, has_cluster_box_buffer
+    integer :: partition_k_clusters
+    real(dp) :: partition_nneightol
+    logical :: partition_do_ripening
     character(len=STRING_LENGTH) :: my_args_str, cluster_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
     real(dp), pointer, dimension(:) :: weight_region1, at_prop_ptr_r, cluster_prop_ptr_r
@@ -407,11 +411,17 @@ contains
       help_string="If true, calculate active region atoms by carving out a cluster")
     call param_register(params, 'little_clusters', 'F', little_clusters, &
       help_string="If true, calculate forces (only) by doing each atom separately surrounded by a little buffer cluster")
-    call param_register(params, 'cluster_box_buffer', '0.', cluster_box_buffer, has_value_target=has_cluster_box_buffer, &
+    call param_register(params, 'partition_k_clusters', '0', partition_k_clusters, &
+      help_string="If given and K > 1, partition QM core region into K sub-clusters using partition_qm_list() routine")
+    call param_register(params, 'partition_nneightol', '0.0_dp', partition_nneightol, &
+      help_string="If given override at%nneightol used to generate connectivity matrix for partitioning")
+    call param_register(params, 'partition_do_ripening', 'F', partition_do_ripening, &
+      help_string="If true, enable digestive ripening to refine the METIS-generated K-way partitioning (not yet implemented)")
+    call param_register(params, 'cluster_box_buffer', '0.0_dp', cluster_box_buffer, has_value_target=has_cluster_box_buffer, &
       help_string="If present, quickly cut out atoms in box within cluster_box_radius of any active atoms, rather than doing it properly")
-    call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, &
+    call param_register(params, 'r_scale', '1.0_dp', r_scale, has_value_target=do_rescale_r, &
       help_string="rescale calculated positions (and correspondingly forces) by this factor")
-    call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, &
+    call param_register(params, 'E_scale', '1.0_dp', E_scale, has_value_target=do_rescale_E, &
       help_string="rescale calculate energies (and correspondingly forces) by this factor")
     call param_register(params, 'force_using_fd', 'F', force_using_fd, &
       help_string="If true, and if 'force' is also present in the argument list, calculate forces using finite difference.")
@@ -448,7 +458,7 @@ contains
        virial_using_fd = .true.
     end if
 
-    if (single_cluster .and. little_clusters) then
+    if (count((/single_cluster, little_clusters, partition_k_clusters > 1/)) > 1) then
          RAISE_ERROR('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive', error)
     endif
 
@@ -559,6 +569,16 @@ contains
           weight_region1 = weight_region1_saved
           deallocate(weight_region1_saved)
        end if
+
+    else if (partition_k_clusters > 1) then
+
+       ! Split QM cluster into K pieces using METIS graph partitioning library call
+
+       if (partition_nneightol == 0.0_dp) partition_nneightol = at%nneightol
+       call partition_qm_list(at, partition_k_clusters, partition_nneightol, partition_do_ripening)
+       call write(at, 'partitioned.xyz')
+
+       ! ... FIXME need to loop over the sub-clusters and call ourselves recursively on each
 
     else if (single_cluster) then
 

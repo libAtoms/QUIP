@@ -140,6 +140,12 @@ endif
 ifeq (${HAVE_THIRDPARTY},1)
   DEFINES += -DHAVE_THIRDPARTY
 endif
+ifeq (${HAVE_METIS},1)
+  DEFINES += -DHAVE_METIS
+  SYSLIBS += $(addprefix -L,${METIS_LIBDIR})
+  SYSLIBS += -lmetis
+endif
+
 
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
