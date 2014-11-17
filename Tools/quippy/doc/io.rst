@@ -173,12 +173,19 @@ e.g. `Time` in the example above --- can be added to the parameter line
 as needed.
 
 `Lattice` is a Cartesian 3x3 matrix representation of the cell lattice
-vectors, in the form ::
+vectors in Fortran column-major order, i.e. in the form ::
 
-  Lattice="R11 R21 R31 R12 R22 R32 R13 R23 R33"
+  Lattice="R1x R1y R1z R2x R2y R2z R3x R3y R3z"
 
-The list of properties in the file is described by the `Properties` parameter, which should take
-the form of a series of colon separated triplets giving the name, format (`R` for real, `I` for integer) and number of columns of each property. For example::
+where `R1x R1y R1z` are the Cartesian x-, y- and z-components of the
+first lattice vector (:math:`\mathbf{a}`), `R2x R2y R2z` those of the second
+lattice vector (:math:`\mathbf{b}`) and `R3x R3y R3z` those of the
+third lattice vector (:math:`\mathbf{c}`).
+
+The list of properties in the file is described by the `Properties`
+parameter, which should take the form of a series of colon separated
+triplets giving the name, format (`R` for real, `I` for integer) and
+number of columns of each property. For example::
 
   Properties="species:S:1:pos:R:3:vel:R:3:select:I:1"
 
