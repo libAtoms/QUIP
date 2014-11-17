@@ -172,8 +172,10 @@ extended XYZ: `Lattice` and `Properties`. Other parameters --
 e.g. `Time` in the example above --- can be added to the parameter line
 as needed.
 
-`Lattice` is a Cartesian 3x3 matrix representation of the cell lattice
-vectors in Fortran column-major order, i.e. in the form ::
+`Lattice` is a Cartesian 3x3 matrix representation of the cell
+:attr:`~quippy.atoms.Atoms.lattice` vectors, with each vector stored
+as a column and the 9 values listed in Fortran column-major order, i.e. in
+the form ::
 
   Lattice="R1x R1y R1z R2x R2y R2z R3x R3y R3z"
 
