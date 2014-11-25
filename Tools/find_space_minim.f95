@@ -240,10 +240,11 @@ real(dp) :: vi, vf
 
   if (at%N < 100) then
      call find_closest(at, r, closest_list(1:at%N))
+     call select(closest_at, at, list=closest_list(1:at%N))
   else
      call find_closest(at, r, closest_list)
+     call select(closest_at, at, list=closest_list)
   endif
-  call select(closest_at, at, list=closest_list(1:at%N))
 
   closest_at_ptr = c_loc(closest_at)
   data_size = size(transfer(closest_at_ptr, data))

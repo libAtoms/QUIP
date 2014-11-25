@@ -334,9 +334,7 @@ subroutine do_vasp_calc(at, args_str, error)
 	 call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
 	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
 	 call print(at%N, file=persistent_io)
-	 call print(at%lattice(1,:), file=persistent_io)
-	 call print(at%lattice(2,:), file=persistent_io)
-	 call print(at%lattice(3,:), file=persistent_io)
+	 call write_lattice(at%lattice, persistent_io, .true.)
 	 do i=1, at%N
 	    call print(matmul(at%g, at%pos(:,i)), file=persistent_io)
 	 end do
@@ -486,21 +484,10 @@ subroutine write_vasp_poscar(at, run_dir, error)
    integer, allocatable :: uniq_Z(:), n_Z(:)
    integer :: i
    logical :: swapped_a1_a2
-   real(dp) :: vol, t_lat(3)
 
    type(inoutput) :: io
 
    INIT_ERROR(error)
-
-   vol = scalar_triple_product(at%lattice(:,1), at%lattice(:,2), at%lattice(:,3))
-   if (vol < 0.0_dp) then
-      t_lat(:) = at%lattice(:,1)
-      at%lattice(:,1) = at%lattice(:,2)
-      at%lattice(:,2) = t_lat(:)
-      swapped_a1_a2 = .true.
-   else
-      swapped_a1_a2 = .false.
-   endif
 
    call initialise(io, trim(run_dir)//"/POSCAR",action=OUTPUT)
    if (swapped_a1_a2) then
@@ -510,9 +497,7 @@ subroutine write_vasp_poscar(at, run_dir, error)
    endif
    call print("1.00 ! scale factor", file=io)
 
-   call print(at%lattice(:,1), file=io)
-   call print(at%lattice(:,2), file=io)
-   call print(at%lattice(:,3), file=io)
+   call write_lattice(at%lattice, io, .false.)
 
    call uniq(at%Z, uniq_Z)
    allocate(n_Z(size(uniq_Z)))
@@ -528,6 +513,34 @@ subroutine write_vasp_poscar(at, run_dir, error)
    call finalise(io)
 
 end subroutine write_vasp_poscar
+
+subroutine write_lattice(lattice, io, transpose)
+   real(dp), intent(in) :: lattice(3,3)
+   type(inoutput), intent(inout) :: io
+   logical, intent(in) :: transpose
+
+   real(dp) :: vol, print_lat(3,3)
+
+   vol = scalar_triple_product(lattice(:,1), lattice(:,2), lattice(:,3))
+   if (vol < 0.0_dp) then
+      print_lat(:,1) = lattice(:,2)
+      print_lat(:,2) = lattice(:,1)
+   else
+      print_lat(:,1) = lattice(:,1)
+      print_lat(:,2) = lattice(:,2)
+   endif
+   print_lat(:,3) = lattice(:,3)
+
+   if (transpose) then
+      call print(print_lat(1,:), file=io)
+      call print(print_lat(2,:), file=io)
+      call print(print_lat(3,:), file=io)
+   else
+      call print(print_lat(:,1), file=io)
+      call print(print_lat(:,2), file=io)
+      call print(print_lat(:,3), file=io)
+   endif
+end subroutine write_lattice
 
 subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_virial, converged, vasp4, error)
    character(len=*), intent(in) :: run_dir
