@@ -4865,7 +4865,7 @@ end function func_wrapper
     do
          
       Ap = do_mat_mult_vec(pr,p,doefunc)
-
+    
       !call print(' ')
       !call print(Ap)
       alpn = smartdotproduct(r,r,doefunc)
@@ -4883,12 +4883,11 @@ end function func_wrapper
         exit
       end if
       alp = alpn/alpd
-
+      !call print(alp)
       x = x + alp*p
       r = r - alp*Ap
       betnold = betn
       betn = smartdotproduct(r,r,doefunc)
-      
       !Usual exit condition 
       if ( ((betn < my_res2 .and. k >= 10) .or. betn < my_res2 .and. betn > betnold) .and. .not. do_force_k ) then
         ap_result = x
@@ -5747,8 +5746,11 @@ end function func_wrapper
     logical :: noimprove
     real(dp) :: res_x_hist(5) = 1000.0_dp
 
-    rotC = 10.0_dp**(-1.0)
-    traC = 10.0_dp**(-1.0)
+    integer :: neval
+
+    alpha_x = 0.01
+    rotC = 10.0_dp**(-3)
+    traC = 10.0_dp**(-3)
     TOLv = TOLvdefault
 
     kmax = max_steps
@@ -5800,65 +5802,60 @@ end function func_wrapper
     x = x_in
     v = v_in
     !call random_number(d)
-
-    call build_precon(pr,am_data)
-    v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
-
-    !k = simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,0.5_dp,0.5_dp)
-    !call exit()
-
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    e1 =  func_wrapper(func,x+v*h,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-    call verbosity_push_decrement(2)
-#endif
-    e2 =  func_wrapper(func,x-v*h,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
-#ifndef _OPENMP
-    call verbosity_pop()
-#endif
    
     avn = pi/4.0    
     k = 0
     do
-      if ( k >0 ) then
+      
       call build_precon(pr,am_data)
       v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
-      end if
+  
+      call writeprecon(pr,'dimerpr')
 
+      
+#ifndef _OPENMP
+      call verbosity_push_decrement(2)
+#endif
+      e1 =  func_wrapper(func,x+h*v,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+      e2 =  func_wrapper(func,x-h*v,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+      neval = neval + 2
+#ifndef _OPENMP
+      call verbosity_pop()
+#endif
+ 
       Gxpold = Gxp
-      Gx = 0.5_dp*(F1 + F2);
-      if (k > 1) then  
+      Gx = 0.5_dp*(F1 + F2)
+      
+      
+      if (k > 0) then  
         Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
       else 
         Gxp = apply_precon(Gx,pr,doefunc)
+        !call exit()
       end if
       res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
-      
+
       res_x_hist(1:4) = res_x_hist(2:5)
       res_x_hist(5) = res_x
+     
       !call print(abs(sum(res_x_hist)/5.0_dp)  )
-      noimprove = .false.
-      if ( abs(sum(res_x_hist)/5.0_dp - res_x) < 10.0_dp**(-2)) then
-        noimprove = .true.
-      end if
 
-      if (noimprove) then
-        call print("Residual does not seem to be improving, switching to simple dimer method")
-        k = simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_x)
-        exit
-      end if
+!      noimprove = .false.
+!      if ( abs(sum(res_x_hist)/5.0_dp - res_x) < 10.0_dp**(-2)) then
+!        noimprove = .true.
+!      end if
+!
+!      if (noimprove) then
+!        call print("Residual does not seem to be improving, switching to simple dimer method")
+!        k = simpleprecondimer(x,v,h,func,am_data,build_precon,pr,doefunc,0.005_dp,0.005_dp)
+!        exit
+!      end if
 
 
 
       Gvpold = Gvp
       Gv = (F1 - F2)/(2.0_dp*h)
-      if (k > 1) then  
+      if (k > 0) then  
         Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
       else
         Gvp = apply_precon(Gv,pr,doefunc)
@@ -5868,14 +5865,20 @@ end function func_wrapper
       Gd = Gvp - lam*v
       Gdl2 = Gv - lam*v
       res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
-      call print('n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x)
-     
-      ! Do a rotation if necessary
-      if (res_v > TOLv) then
+      call print('precon_dimer n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x // ', nf = '//neval)
+      if (res_x < convergence_tol) then
+        call print('Precon Dimer exiting with translation residual = ' //res_x) 
+        exit
+      end if
+
+
+
       rotationfailed = .false.
       totalfailure = .false.
       k2 = 0
-      do 
+      ! Do a rotation if necessary
+      do while (res_v > max(TOLv,res_x)) 
+
         s = -Gd
         sl2 = -Gdl2
         dC = smartdotproduct(s,sl2,doefunc)
@@ -5911,16 +5914,18 @@ end function func_wrapper
 #ifndef _OPENMP
             call verbosity_pop()
 #endif
-          
+
+      neval = neval + 2
+call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE)
             delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
-            call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
+           ! call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
             !call print(e2// ' '//e20)
             
             if (delE < crit) then
               v = vstar
               exit
             end if
-
+            
             if (abs(delE) < 10.0**(-12) .and. delE < 10.0**(-15)) then
               rotationfailed = .true.
               call print('Ran out of precision in objective based rotation')
@@ -5956,8 +5961,25 @@ end function func_wrapper
   
 
       end do
-      end if
-   
+      
+      
+#ifndef _OPENMP
+            call verbosity_push_decrement(2)
+#endif
+            e1 =  func_wrapper(func,x+h*v,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+#ifndef _OPENMP
+            call verbosity_pop()
+#endif
+ 
+#ifndef _OPENMP
+            call verbosity_push_decrement(2)
+#endif
+            e2 =  func_wrapper(func,x-h*v,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+#ifndef _OPENMP
+            call verbosity_pop()
+#endif
+ 
+      neval = neval + 2
       Gx = 0.5*(F1+F2)
       Gxpold = Gxp
       Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
@@ -5965,10 +5987,13 @@ end function func_wrapper
       gs = -Gx + 2.0*smartdotproduct(v,Gx,doefunc)*v
       s = -Gxp + 2.0*smartdotproduct(v,Gx,doefunc)*v
       dt = -smartdotproduct(gs,s,doefunc)
+      if (dt > 0) then
+        gs = -gs
+        dt = -dt
+      end if
 
-    
-      alpha_x = 2.0*init_alpha(alpvec,dirderivvec,k)
-
+      !alpha_x = 2.0*init_alpha(alpvec,dirderivvec,k)
+      alpha_x = 2.0*alpha_x
       e10 = e1
       e20 = e2
       F10 = F1
@@ -5978,30 +6003,11 @@ end function func_wrapper
       res_v_rot = res_v
       k2 = 0
       do 
-#ifndef _OPENMP
-        call verbosity_push_decrement(2)
-#endif
-        e1 =  func_wrapper(func,x+alpha_x*s+h*v,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
-#ifndef _OPENMP
-        call verbosity_pop()
-#endif
- 
-#ifndef _OPENMP
-        call verbosity_push_decrement(2)
-#endif
-        e2 =  func_wrapper(func,x+alpha_x*s-h*v,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
-#ifndef _OPENMP
-        call verbosity_pop()
-#endif
-       
-        Qx = v*smartdotproduct(v,alpha_x*s,doefunc)
-        delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20) &
-             -2.0*Pdotproduct(v,alpha_x*s,pr,doefunc)*smartdotproduct(v,Gx,doefunc) - lam*Pdotproduct(Qx,Qx,pr,doefunc)
-       
+              
+        delE = dimerdelE(x+alpha_x*s,v,h,lam,x,Gx,pr,func,am_data,doefunc,e10,e20,local_energy10,local_energy20) 
         crit = dt*traC*alpha_x
    
-        !call print(e10 // ' ' // e20 // ' ' // e1 // ' ' // e2)
-        !call print(calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) )
+        neval = neval + 2
         call print('precon_dimer translating, iter = '// k2 //', alpha = '//alpha_x// ', delE = ' //delE)
         if (delE < crit + 10.0**(-14) .and. res_v < 10.0*res_v_rot) then
           x = x + alpha_x*s
@@ -6012,19 +6018,74 @@ end function func_wrapper
         k2 = k2 + 1
       end do
 
+      
+
       k = k + 1
       dirderivvec(k) = dt
       alpvec(k) = alpha_x
-    
+
       if ( k >= max_steps) then
-        exit
+         exit
       end if
    end do
    x_in = x 
-  end function
+  
+ end function
+
+ function dimerdelE(x,v,h,lam,x0,gx0,pr,func,am_data,doefunc,e10,e20,local_energy10,local_energy20) result(delE)
+ 
+    real(dp) :: x(:),v(:),x0(:),gx0(:)
+    type(precon_data) :: pr
+    real(dp) :: h,lam
+    character(len=1), intent(inout) :: am_data(:)
+    INTERFACE 
+       function func(x,data,local_energy,gradient)
+         use system_module
+         real(dp)::x(:)
+         character(len=1),optional::data(:)
+         real(dp), intent(inout),optional :: local_energy(:)
+         real(dp), intent(inout),optional :: gradient(:)
+         real(dp)::func
+       end function func
+    end INTERFACE
+    real(dp) :: delE
+    integer :: doefunc
 
 
-  function simple_dimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_v) result(k)
+    real(dp) :: e10,e20,local_energy10(:),local_energy20(:)
+    real(dp) :: e1,e2,local_energy1(size(local_energy10)),local_energy2(size(local_energy20))
+
+    real(dp) :: Qx(size(x))
+    real(dp) :: F1(size(x)), F2(size(x))
+
+    Qx = smartdotproduct(v,x-x0,doefunc)*v
+
+#ifndef _OPENMP
+    call verbosity_push_decrement(2)
+#endif
+    e1 =  func_wrapper(func,x+h*v,am_data,local_energy=local_energy1,gradient=F1,doefunc=doefunc)
+    e2 =  func_wrapper(func,x-h*v,am_data,local_energy=local_energy2,gradient=F2,doefunc=doefunc)
+#ifndef _OPENMP
+    call verbosity_pop()
+#endif
+    
+    delE = (calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20))/2.0_dp &
+             -2.0*Pdotproduct(v,x-x0,pr,doefunc)*smartdotproduct(v,gx0,doefunc) - lam*Pdotproduct(Qx,Qx,pr,doefunc)
+       
+ !   Gv = (F1 - F2)/(2.0_dp*h)
+ !   if (k > 0) then  
+ !     Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+ !   else
+ !     Gvp = apply_precon(Gv,pr,doefunc)
+ !   end if
+
+ !   lam = smartdotproduct(Gv,v,doefunc) 
+ !   Gd = Gvp - lam*v
+ !   res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
+ !   
+  end
+
+  function simpleprecondimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_v) result(k)
 
     real(dp), intent(inout) :: x(:),v(:)
     real(dp) :: h
@@ -6119,5 +6180,12 @@ end function func_wrapper
 
   end
 
+  subroutine printlikematlab(x)
+    real(dp) :: x(:)
+    integer :: vl 
+    vl = size(x) 
+    call print(reshape(x(10:vl),(/ 3 , (vl-9)/3 /)))
+    
+    end
 end module minimization_module
 

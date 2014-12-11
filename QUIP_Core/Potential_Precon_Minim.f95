@@ -103,6 +103,7 @@ module Potential_Precon_Minim_module
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
     logical :: did_rebuild, do_this
+    integer :: didcount 
 
     call system_timer('build_precon')
     am = transfer(am_data,am)
@@ -130,8 +131,10 @@ module Potential_Precon_Minim_module
     this%preconindices = 0
     this%preconcoeffs = 0.0
     !call print('Building precon with cutoff ' // this%cutoff) 
+    
     if(this%precon_id /= "ID") then
-    do I = 1,(am%minim_at%N)
+      didcount = 0
+      do I = 1,(am%minim_at%N)
       !call print("rah")  
       !if(am%minim_at%move_mask(I) == 1) then
       
@@ -144,6 +147,7 @@ module Potential_Precon_Minim_module
         end if
       end if
       
+      didcount = didcount+1
       thisneighcount = n_neighbours(am%minim_at,I)
       thisneighcountlocal = n_neighbours(am%minim_at,I,max_dist=this%cutoff)
       !call print(thisneighcount)
@@ -160,7 +164,6 @@ module Potential_Precon_Minim_module
 
       this%preconindices(1,I) = I
       this%preconcoeffs(1,I,1) = conconstant
-
       nearneighcount = 1
       do J = 1,thisneighcount
 
@@ -176,14 +179,16 @@ module Potential_Precon_Minim_module
               
             if (this%precon_id == "LJ") then
               thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
-              thiscoeff = max(min(thiscoeff,10.0_dp),0.1_dp)
+             ! thiscoeff = 1.0_dp!max(min(thiscoeff,10.0_dp),0.1_dp)
+              !call print(thiscoeff)
             else if (this%precon_id == "C1") then
               thiscoeff = 1.0_dp
             end if
           
 	    do_this = .true.
             if (this%has_fixed) then
-	      do_this = (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I)
+	      !do_this = (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I)
+	      do_this = (thisind .ne. I)
 	    end if
                   
 	    if (do_this) then
@@ -254,7 +259,6 @@ module Potential_Precon_Minim_module
       this%preconrowlengths(I) = nearneighcount 
       !end if
     end do
-  this%preconcoeffs= this%preconcoeffs*1.0
   else if (this%precon_id == 'ID') then
     do I = 1,(am%minim_at%N)
       this%preconcoeffs(1,I,1) = 1.0
@@ -262,10 +266,15 @@ module Potential_Precon_Minim_module
       this%preconindices(1,I) = I
     end do 
     end if
-   am%connectivity_rebuilt = .false.
+    
+    !call print(didcount) 
+    if(this%precon_id == 'LJ') then
+  this%preconcoeffs= this%preconcoeffs*1.5
+end if  
+  am%connectivity_rebuilt = .false.
     !call exit()
 
-   this%cell_coeff = 1.0_dp/(sum(this%preconcoeffs(1,:,1))/size(this%preconcoeffs,2))
+    this%cell_coeff = 1.0_dp/(sum(this%preconcoeffs(1,:,1))/size(this%preconcoeffs,2))
 
     call system_timer('build_precon')
 
@@ -524,22 +533,19 @@ module Potential_Precon_Minim_module
       " EF " // am%minim_n_eval_ef, PRINT_VERBOSE)
 
     Precon_Potential_Minim = n_iter_tot
-
     deallocate(am_data)
 
   end function 
   
-  function Precon_Potential_Dimer(this, at,at1,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
+  function Precon_Potential_Dimer(this, at,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub)
+       hook,hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
     
     implicit none
     
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
     type(Atoms), intent(inout), target :: at ! final configuration
-
-    type(Atoms), intent(inout), target :: at1 ! start configuration 1
-    type(Atoms), intent(inout), target :: at2 ! start configuration 2
+    type(Atoms), intent(in), target :: at2 ! start configuration 2
     character(*), intent(in)    :: method !% passed to precon_minim()
 ! Options for method
 ! 'preconSD' - preconditioned steepest descent
@@ -569,7 +575,19 @@ module Potential_Precon_Minim_module
     real(dp), dimension(3,3), optional :: external_pressure
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
-    
+    optional :: hook
+    INTERFACE 
+       subroutine hook(x,dx,E,done,do_print,data)
+         use system_module
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
+       end subroutine hook
+    END INTERFACE
+  
     character(*), intent(in),optional :: precon_id
 ! Eventually will support multiple preconditioners for now just supports:
 ! 'ID' - identity preconditioner (default) i.e. no preconditioner
@@ -606,7 +624,7 @@ module Potential_Precon_Minim_module
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
 
-
+    real(dp), optional :: infoverride
 
     INIT_ERROR(error)
 
@@ -629,11 +647,10 @@ module Potential_Precon_Minim_module
 
     use_method = trim(method)
 
-    at = at1
-    at%pos = (at1%pos + at2%pos)/2.0
+    at%pos = (at%pos + at2%pos)/2.0
     allocate(vpos(at%N,3))
-    vpos = (at1%pos - at2%pos)
-
+    vpos = (at%pos - at2%pos)
+    
     call calc_connect(at)
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
@@ -704,7 +721,11 @@ module Potential_Precon_Minim_module
     am%last_connect_x=1.0e38_dp
     deform_grad = 0.0_dp; call add_identity(deform_grad)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
-    call pack_pos_dg(vpos, deform_grad, v, am%pos_lat_preconditioner_factor)
+    
+    call pack_pos_dg(vpos, deform_grad, v, 0.0_dp)
+    !call print(x)
+    !call exit()
+
 
     am_data = transfer(am, am_data)
     my_nneigh = optional_default(125,nneigh)
@@ -714,7 +735,7 @@ module Potential_Precon_Minim_module
     my_res2 = optional_default(10.0_dp**(-5.0_dp),res2)
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
     my_max_sub = 30
-    
+
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
     !call print(use_method)   
     n_iter = precondimer(x,v, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
@@ -731,6 +752,7 @@ module Potential_Precon_Minim_module
     deallocate(am%last_connect_x)
     deallocate(x)
 
+    call print("Precon dimer exiting")
     Precon_Potential_Dimer = n_iter_tot
 
     deallocate(am_data)

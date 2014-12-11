@@ -49,7 +49,7 @@ implicit none
 
   type(Potential) pot
   type(MPI_context) mpi_glob
-  type(Atoms) at, bulk_scale
+  type(Atoms) at, bulk_scale, dimer_at
 
   type(Dictionary) :: cli_params
 
@@ -72,7 +72,7 @@ implicit none
   real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2, precond_infoverride
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file
+  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file, dimer_at_file
   integer relax_iter, relax_print_interval
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
@@ -96,6 +96,7 @@ implicit none
   real(dp), dimension(9) :: pressure
   real(dp), dimension(3,3) :: external_pressure
   logical :: has_iso_pressure, has_diag_pressure, has_pressure, has_bulk_scale
+  logical :: has_dimer_at
   logical :: has_phonons_path_start, has_phonons_path_end, has_phonons_path_steps, has_phonon_supercell_fine
 
   real(dp), pointer :: phonon(:,:)
@@ -192,6 +193,7 @@ implicit none
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
+  call param_register(cli_params, 'dimer_at', '', dimer_at_file, help_string="second endpoint for dimer initialization", has_value_target=has_dimer_at)
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
   call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
   call param_register(cli_params, 'iso_pressure', '0.0', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
@@ -269,7 +271,18 @@ implicit none
         call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
      end if
   end if
-
+ if(has_dimer_at) then
+        call initialise(infile, trim(dimer_at_file))
+        call read(dimer_at, infile, error=error)
+        call finalise(infile)
+  else
+    if(trim(minim_method) == 'precond_dimer') then
+      call print("precond_dimer specified but no additional at file given,&
+      aborting",PRINT_VERBOSE)
+      call exit()
+    end if
+  end if
+  
   call initialise(infile, trim(at_file), mpi=mpi_glob)
 
   if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
@@ -380,7 +393,8 @@ implicit none
 	endif
 	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
 	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
-        if (len_trim(relax_print_file) > 0) then
+  
+  if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
            if(trim(minim_method) == 'precond') then
               call system_timer('precon_minim')
@@ -389,9 +403,22 @@ implicit none
 		 do_print = .true., print_cinoutput=relax_io, &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
-              call system_timer('precon_minim')
-	   else
-              call system_timer('minim')
+              call system_timer('eval/precon_minim')
+	    
+      elseif(trim(minim_method) == 'precond_dimer') then
+              call system_timer('eval/precon_dimer')
+              
+              n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
+                         linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
+                         precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
+              call system_timer('eval/precon_dimer')
+   
+              call finalise(dimer_at)
+
+        else
+              call system_timer('eval/minim')
 	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
 		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
@@ -399,7 +426,7 @@ implicit none
               call system_timer('minim')
 	   endif
 	   call finalise(relax_io) 
-        else
+  else
            if(trim(minim_method) == 'precond') then
               call system_timer('precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
@@ -407,9 +434,19 @@ implicit none
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
-              call system_timer('precon_minim')
-           else
-              call system_timer('minim')
+              call system_timer('eval/precon_minim')
+            elseif(trim(minim_method) == 'precond_dimer') then
+              call system_timer('eval/precon_dimer')
+              
+              n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
+                         linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
+                         precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
+              call system_timer('eval/precon_dimer')
+              call finalise(dimer_at)
+          else
+              call system_timer('eval/minim')
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
                    fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
@@ -704,7 +741,7 @@ implicit none
      call write(at, 'stdout', prefix='AT')
 
      call finalise(at)
-
+      
   enddo
 
 #ifdef HAVE_GAP
