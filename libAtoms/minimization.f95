@@ -1613,7 +1613,7 @@ CONTAINS
     
     main_counter=1 ! incremented at the end of the loop
     do while((main_counter .LT. max_steps) .AND. (.NOT.(exit_flag.gt.0)))
-      call system_timer("minim/main_loop/"//main_counter)
+       call system_timer("minim/main_loop/"//main_counter)
        
        if ((current_verbosity() >= PRINT_ANAL .or. do_test_gradient) & 
             .and. .not. do_linmin_deriv) then
@@ -1645,6 +1645,7 @@ CONTAINS
           if (done) then
              call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
              exit_flag = 1
+	     call system_timer("minim/main_loop/"//main_counter)
              cycle
           end if
        else
@@ -1667,6 +1668,7 @@ CONTAINS
           call print("Converged after step " // main_counter)
           call print(trim(method)//" iter = " // main_counter // " df^2= " // normsqgrad_f // " f= " // f)
           exit_flag = 1 ! while loop will quit
+	  call system_timer("minim/main_loop/"//main_counter)
           cycle !continue
        end if
 
@@ -1728,6 +1730,7 @@ CONTAINS
                 if (present(status)) status = 1
              end if
 
+	     call system_timer("minim/main_loop/"//main_counter)
              cycle !continue
           end if
 
@@ -1800,6 +1803,7 @@ CONTAINS
                 call print("*** Minim is stuck, exiting")
                 exit_flag = 1
                 if (present(status)) status = 0
+		call system_timer("minim/main_loop/"//main_counter)
                 cycle !continue 
              end if
              
@@ -1851,6 +1855,7 @@ CONTAINS
                    call print("*** Gradient test failed!! Exiting linmin!")
                    exit_flag = 1
                    if (present(status)) status = 1
+		   call system_timer("minim/main_loop/"//main_counter)
                    cycle !continue
                 end if
              end if
@@ -1865,6 +1870,7 @@ CONTAINS
              call print("*** BAD iteration counter reached maximum " // max_bad_iter // " exiting")
              exit_flag = 1
              if (present(status)) status = 1
+	     call system_timer("minim/main_loop/"//main_counter)
              cycle !continue
           end if
        end if ! .not. do_bfgs and .not. do_sd2
@@ -1989,6 +1995,7 @@ CONTAINS
              call print('LBFGS returned error code '//lbfgs_flag//', exiting')
              exit_flag = 1
              if (present(status)) status = 1
+	     call system_timer("minim/main_loop/"//main_counter)
              cycle
           end if
        else
@@ -3343,6 +3350,7 @@ end function func_wrapper
     this_ls_count = 0
     total_ls_count = 0
     n_iter = 1
+    call system_timer("preconminim/func")
 #ifndef _OPENMP
     call verbosity_push_decrement(2)
 #endif
@@ -3350,6 +3358,7 @@ end function func_wrapper
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
+    call system_timer("preconminim/func")
   
    abortcount = 0
    alpha = 0
@@ -3501,7 +3510,9 @@ end function func_wrapper
         alpha = linesearch_morethuente(x,s,f,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
       elseif (doLSunit) then
         alpha = 1.0
+        call system_timer("preconminim/func")
         f =  func_wrapper(func,x+s,am_data,doefunc=doefunc) 
+        call system_timer("preconminim/func")
       elseif (doLSnone) then
         !do nothing
         this_ls_count = 0
@@ -3519,6 +3530,7 @@ end function func_wrapper
         
       elseif (doDLLBFGS .or. doSHLBFGS .or. doSHLSR1  .or. doSHFD ) then
         if (n_iter == 1) then
+          call system_timer("preconminim/func")
 #ifndef _OPENMP
           call verbosity_push_decrement(2)
 #endif
@@ -3529,6 +3541,7 @@ end function func_wrapper
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
+          call system_timer("preconminim/func")
           call print(trim(method)//" iter = 0 f = "//f// ' |g|^2 = '// normsqgrad,PRINT_NORMAL)
         end if  
         n_back = min(LBFGSm,LBFGScount)
@@ -3546,6 +3559,7 @@ end function func_wrapper
         xcand = x + s
         normsqs = Pdotproduct(s,s,pr,doefunc)
 
+        call system_timer("preconminim/func")
 #ifndef _OPENMP
         call verbosity_push_decrement(2)
 #endif
@@ -3553,6 +3567,7 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
+        call system_timer("preconminim/func")
         !call print(f // '     '//fcand)      
         if (doDLLBFGS .or. doSHLBFGS) then
           TRBs = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,s,pr,doefunc)
@@ -4050,13 +4065,15 @@ end function func_wrapper
 
       !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
  
+      call system_timer("preconminim/linesearch_basic/func")
 #ifndef _OPENMP
-        call verbosity_push_decrement()
+      call verbosity_push_decrement()
 #endif
-        f1 =  func_wrapper(func,x+alpha*s,data,local_energy1,g1,doefunc=doefunc)
+      f1 =  func_wrapper(func,x+alpha*s,data,local_energy1,g1,doefunc=doefunc)
 #ifndef _OPENMP
-        call verbosity_pop()
+      call verbosity_pop()
 #endif     
+      call system_timer("preconminim/linesearch_basic/func")
       call print("linesearch_basic loop "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//alpha)
       
       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
@@ -4142,6 +4159,7 @@ end function func_wrapper
 
       !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
 
+      call system_timer("preconminim/linesearch_basic_pp/func")
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
@@ -4149,6 +4167,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call system_timer("preconminim/linesearch_basic_pp/func")
       call print("linesearch_basic_pp loop "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
       d1 = dot_product(g1,s)
@@ -4244,6 +4263,7 @@ end function func_wrapper
     ls_it = 0
     do 
 
+      call system_timer("preconminim/linesearch_standard/func")
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
@@ -4251,6 +4271,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call system_timer("preconminim/linesearch_standard/func")
     
     
       ls_it = ls_it + 1
@@ -4336,6 +4357,7 @@ end function func_wrapper
       do
         at = cubic_min(alo,flo,dlo,ahi,fhi,dhi)
         
+	call system_timer("preconminim/linesearch_standard/func")
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
@@ -4343,6 +4365,7 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
+	call system_timer("preconminim/linesearch_standard/func")
         
         ls_it = ls_it + 1
         call print("linesearch_standard zoom "//" iter = "//ls_it//" f = "//ft// ' |g|^2 = '// normsq(gt)//' last alpha = '//at)
@@ -4502,6 +4525,7 @@ end function func_wrapper
       ftest = finit + stp*gtest
     
       ls_it = ls_it + 1
+      call system_timer("preconminim/linesearch_morethuente/func")
 #ifndef _OPENMP
       call verbosity_push_decrement()
 #endif
@@ -4509,6 +4533,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
+      call system_timer("preconminim/linesearch_morethuente/func")
 
       f = calcE(doefunc,f1,local_energy1)
       g = smartdotproduct(g1,s,doefunc)

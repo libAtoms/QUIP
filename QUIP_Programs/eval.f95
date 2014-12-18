@@ -405,8 +405,8 @@ implicit none
   
   if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
-           if(trim(minim_method) == 'precond') then
-              call system_timer('precon_minim')
+      if(trim(minim_method) == 'precond') then
+              call system_timer('eval/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
@@ -432,12 +432,12 @@ implicit none
 		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
 		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
-              call system_timer('minim')
+              call system_timer('eval/minim')
 	   endif
 	   call finalise(relax_io) 
   else
            if(trim(minim_method) == 'precond') then
-              call system_timer('precon_minim')
+              call system_timer('eval/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
@@ -460,7 +460,7 @@ implicit none
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
                    fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
-              call system_timer('minim')
+              call system_timer('eval/minim')
            end if
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
