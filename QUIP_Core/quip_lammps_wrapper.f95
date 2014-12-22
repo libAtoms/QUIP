@@ -11,7 +11,7 @@ module QUIP_LAMMPS_wrapper_module
 
    private
 
-   public :: quip_lammps_wrapper
+   public :: quip_lammps_wrapper, quip_lammps_potential_initialise
 
    type quip_lammps_potential
       type(Potential), pointer :: pot
