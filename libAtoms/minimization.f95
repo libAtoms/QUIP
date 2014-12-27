@@ -3500,6 +3500,7 @@ end function func_wrapper
       
       gold = g
       amax = calc_amax(s,pr,doefunc,infoverride) 
+      call print('Beginning linesearch, initial alpha = ' //alpha// ', alpha_max = ' //amax ,PRINT_VERBOSE) 
       if (doLSbasic) then
         alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
