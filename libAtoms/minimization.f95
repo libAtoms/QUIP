@@ -3308,6 +3308,9 @@ end function func_wrapper
         doefunc = E_FUNC_DOUBLEKAHAN
         allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
+      else 
+        call print('Unrecognized efuncroutine, normally use "basic" or "kahan", aborting for safety')
+        call exit()
       end if
     else 
       doefunc = E_FUNC_BASIC
