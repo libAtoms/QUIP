@@ -190,7 +190,7 @@ implicit none
   call param_register(cli_params, 'precond_method', 'ID', precond_method, help_string="preconditioner method for preconditioner, right now ID or LJ or C1")
   call param_register(cli_params, 'precond_e_method', 'basic', precond_e_method, help_string="preconditioner method for summing energy: basic, kahan, doublekahan (kahan type only when local energy is available).")
   call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
-  call param_register(cli_params, 'precond_len_scale', '3.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
+  call param_register(cli_params, 'precond_len_scale', '-1.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
