@@ -513,7 +513,11 @@ end if
     my_res2 = optional_default(10.0_dp**(-5.0_dp),res2)
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
     my_max_sub = 30
-    
+   
+    if (my_length_scale < 0.5_dp) then
+      call print("WARNING: You have set your atomistic length scale (approximate first neighbour distance) to: "//my_length_scale // " this is very low and probably constitutes an incorrect input",PRINT_ALWAYS)
+    end if
+
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
 
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps, &
