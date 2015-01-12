@@ -379,7 +379,7 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
                 energy_param_name="_".join([prop_method,prop_name])
                 energy_param_name=energy_param_name.replace(" ","_")
                 #log.info("found "+energy_param_name)
-dated routines for finding monomer pairs, triplets in Topology module
+                # dated routines for finding monomer pairs, triplets in Topology module
                 energy_param=prop.attributes['value'].value.encode('ascii','ignore')
                 my_energy=energy_param_name
                 i_en=1

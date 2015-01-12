@@ -186,6 +186,10 @@ if opt.merge is not None:
         opt.merge_properties = at_merge.properties.keys()
 
 def process(at, frame):
+
+    if opt.write_args is not None:
+        write_args.update(eval('dict(%s)' % opt.write_args))
+
     if print_same_properties:
         write_args['properties'] = at.properties.keys()
 
@@ -326,9 +330,6 @@ for arg in ('properties', 'real_format', 'int_format', 'property', 'arrows'):
 
 if opt.extra_args is not None:
     init_args.update(eval('dict(%s)' % opt.extra_args))
-
-if opt.write_args is not None:
-    write_args.update(eval('dict(%s)' % opt.write_args))
 
 if opt.format is None and outfile is not None:
     opt.format = os.path.splitext(outfile)[1][1:]
