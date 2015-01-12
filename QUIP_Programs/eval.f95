@@ -43,7 +43,9 @@ use phonons_module
 #ifdef HAVE_GAP
 use descriptors_module
 #endif
+#ifdef HAVE_PRECON
 use Potential_Precon_Minim_module
+#endif
 
 implicit none
 
@@ -406,6 +408,7 @@ implicit none
   if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
       if(trim(minim_method) == 'precond') then
+#ifdef HAVE_PRECON
               call system_timer('eval/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
@@ -413,8 +416,11 @@ implicit none
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
               call system_timer('eval/precon_minim')
-	    
+#else
+              call system_abort('minim_method=precond but HAVE_PRECON=0')
+#endif
       elseif(trim(minim_method) == 'precond_dimer') then
+#ifdef HAVE_PRECON
               call system_timer('eval/precon_dimer')
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
@@ -425,7 +431,9 @@ implicit none
               call system_timer('eval/precon_dimer')
    
               call finalise(dimer_at)
-
+#else
+              call system_abort('minim_method=precond_dimer but HAVE_PRECON=0')
+#endif
         else
               call system_timer('eval/minim')
 	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
@@ -437,6 +445,7 @@ implicit none
 	   call finalise(relax_io) 
   else
            if(trim(minim_method) == 'precond') then
+#ifdef HAVE_PRECON
               call system_timer('eval/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
@@ -444,7 +453,11 @@ implicit none
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
               call system_timer('eval/precon_minim')
+#else
+              call system_abort('minim_method=precond but HAVE_PRECON=0')
+#endif
             elseif(trim(minim_method) == 'precond_dimer') then
+#ifdef HAVE_PRECON
               call system_timer('eval/precon_dimer')
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
@@ -454,6 +467,9 @@ implicit none
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
               call system_timer('eval/precon_dimer')
               call finalise(dimer_at)
+#else
+              call system_abort('minim_method=precond but HAVE_PRECON=0')
+#endif
           else
               call system_timer('eval/minim')
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
