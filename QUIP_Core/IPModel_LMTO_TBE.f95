@@ -44,7 +44,7 @@
 module IPModel_LMTO_TBE_module
 
 use error_module
-use units_module, only: HARTREE, BOHR
+use units_module, only: RYDBERG, BOHR
 use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
 use dictionary_module
 use paramreader_module
@@ -208,10 +208,10 @@ subroutine IPModel_LMTO_TBE_Calc(this, at, e, local_e, f, virial, local_virial, 
    call tbsc(atlattice, at%n, atpos, atypes, energy, force, &
         reorder=reorder, incomm=mpi%communicator)
    if (present(e)) then
-      e = energy*HARTREE
+      e = energy*RYDBERG
    end if
    if (present(f)) then
-      f = force*(HARTREE/BOHR)
+      f = force*(RYDBERG/BOHR)
    end if
 
    deallocate(atypes, force, atpos)
