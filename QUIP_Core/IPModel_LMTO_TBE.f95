@@ -167,10 +167,6 @@ subroutine IPModel_LMTO_TBE_Calc(this, at, e, local_e, f, virial, local_virial, 
       local_virial = 0.0_dp
    endif
 
-   ! first time, there is no previous atoms
-   if (this%oldat%n == 0) &
-      call atoms_copy_without_connect(this%oldat, at)
-
    ! check if Atoms is "equivalent" (isoatomic) to previous Atoms
    ! if not we need to re-initialise the TB code
    if (at%n /= this%oldat%n) then
