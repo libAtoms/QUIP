@@ -78,7 +78,7 @@ type IPModel_LJ
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
-  real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:) !% IP parameters.
+  real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:), smooth_cutoff_width(:,:) !% IP parameters.
 
   character(len=STRING_LENGTH) label
 
@@ -139,6 +139,7 @@ subroutine IPModel_LJ_Finalise(this)
   if (allocated(this%cutoff_a)) deallocate(this%cutoff_a)
   if (allocated(this%energy_shift)) deallocate(this%energy_shift)
   if (allocated(this%linear_force_shift)) deallocate(this%linear_force_shift)
+  if (allocated(this%smooth_cutoff_width)) deallocate(this%smooth_cutoff_width)
 
   this%n_types = 0
   this%label = ''
@@ -339,6 +340,10 @@ function IPModel_LJ_pairenergy(this, ti, tj, r)
   IPModel_LJ_pairenergy = (this%eps12(ti,tj)*tpow*tpow - this%eps6(ti,tj)*tpow) - this%energy_shift(ti,tj) - &
   & this%linear_force_shift(ti,tj)*(r-this%cutoff_a(ti,tj))
 
+  if (.not. (this%smooth_cutoff_width(ti,tj) .feq. 0.0_dp)) then
+    IPModel_LJ_pairenergy = IPModel_LJ_pairenergy*poly_switch(r,this%cutoff_a(ti,tj),this%smooth_cutoff_width(ti,tj))
+  end if
+
 end function IPModel_LJ_pairenergy
 
 !% Derivative of the two-body term.
@@ -358,6 +363,13 @@ function IPModel_LJ_pairenergy_deriv(this, ti, tj, r)
   tpow = (this%sigma(ti,tj)/r)**6
 
   IPModel_LJ_pairenergy_deriv = (-12.0_dp*this%eps12(ti,tj)*tpow*tpow + 6.0_dp*this%eps6(ti,tj)*tpow)/r - this%linear_force_shift(ti,tj)
+
+  if (.not. (this%smooth_cutoff_width(ti,tj) .feq. 0.0_dp)) then
+    IPModel_LJ_pairenergy_deriv = IPModel_LJ_pairenergy_deriv             * poly_switch(r,this%cutoff_a(ti,tj),this%smooth_cutoff_width(ti,tj)) &
+                                 +IPModel_LJ_pairenergy(this, ti, tj, r)  * dpoly_switch(r,this%cutoff_a(ti,tj),this%smooth_cutoff_width(ti,tj))
+
+  end if
+  
 end function IPModel_LJ_pairenergy_deriv
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -387,7 +399,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=1024) :: value
 
-  logical :: energy_shift, linear_force_shift
+  logical :: energy_shift, linear_force_shift,smooth_cutoff_width
   integer :: ti, tj
 
   if (name == 'LJ_params') then ! new LJ stanza
@@ -435,8 +447,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%cutoff_a = 0.0_dp
       allocate(parse_ip%energy_shift(parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%linear_force_shift(parse_ip%n_types,parse_ip%n_types))
+      allocate(parse_ip%smooth_cutoff_width(parse_ip%n_types,parse_ip%n_types))
       parse_ip%energy_shift = 0.0_dp
       parse_ip%linear_force_shift = 0.0_dp
+      parse_ip%smooth_cutoff_width = 0.0_dp
     endif
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
@@ -462,6 +476,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     parse_ip%energy_shift = 0.0_dp
     parse_ip%linear_force_shift = 0.0_dp
+    parse_ip%smooth_cutoff_width = 0.0_dp
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
 
@@ -500,6 +515,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) linear_force_shift
     if (linear_force_shift) parse_ip%linear_force_shift(ti,tj) = IPModel_LJ_pairenergy_deriv(parse_ip, ti, tj, parse_ip%cutoff_a(ti,tj))
 
+    call QUIP_FoX_get_value(attributes, "smooth_cutoff_width", value, status)
+    if (status == 0)  read (value, *) parse_ip%smooth_cutoff_width(ti,tj)
+
     if (ti /= tj) then
       parse_ip%eps6(tj,ti) = parse_ip%eps6(ti,tj)
       parse_ip%eps12(tj,ti) = parse_ip%eps12(ti,tj)
@@ -507,6 +525,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%cutoff_a(tj,ti) = parse_ip%cutoff_a(ti,tj)
       parse_ip%energy_shift(tj,ti) = parse_ip%energy_shift(ti,tj)
       parse_ip%linear_force_shift(tj,ti) = parse_ip%linear_force_shift(ti,tj)
+      parse_ip%smooth_cutoff_width(tj,ti) =  parse_ip%smooth_cutoff_width(ti,tj)
     end if
 
   endif
@@ -572,7 +591,8 @@ subroutine IPModel_LJ_Print (this, file)
     do tj=1, this%n_types
       call Print ("IPModel_LJ : interaction " // ti // " " // tj // " sigma " // this%sigma(ti,tj) // " eps6,12 " // &
 	this%eps6(ti,tj) // " " // this%eps12(ti,tj) // " cutoff_a " // this%cutoff_a(ti,tj) // " energy_shift " // &
-	this%energy_shift(ti,tj) // " linear_force_shift " // this%linear_force_shift(ti,tj) , file=file)
+	this%energy_shift(ti,tj) // " linear_force_shift " // this%linear_force_shift(ti,tj) // &
+        " smooth_cutoff_width " // this%smooth_cutoff_width(ti,tj) , file=file)
     end do
     call verbosity_pop()
   end do
