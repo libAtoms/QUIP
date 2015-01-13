@@ -148,6 +148,11 @@ ifeq (${HAVE_METIS},1)
   SYSLIBS += $(addprefix -L,${METIS_LIBDIR})
   SYSLIBS += -lmetis
 endif
+ifeq (${HAVE_LMTO_TBE},1)
+  DEFINES += -DHAVE_LMTO_TBE
+  INCLUDES += $(addprefix -I,${LMTO_TBE_LIBDIR}/mods)
+  #SYSLIBS += ${LMTO_TBE_LIBDIR}/tb/libtb.a ${LMTO_TBE_LIBDIR}/subs/liblm.a ${LMTO_TBE_LIBDIR}/slatsm/libsl.a ${LMTO_TBE_LIBDIR}/v7input/libv7inp.a
+endif
 
 
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}

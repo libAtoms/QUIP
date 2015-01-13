@@ -91,6 +91,7 @@
 !%    \item    'IP_WaterTrimer_Gillan'
 !%    \item    'IP Custom'
 !%    \item    'IP Tether'
+!%    \item    'IP LMTO_TBE'
 !%    \item    'IP Template'
 !%   \end{itemize}
 !X
@@ -133,6 +134,7 @@ use IPModel_PartridgeSchwenke_module, only : ipmodel_partridgeschwenke, initiali
 use IPModel_Einstein_module, only : ipmodel_einstein, initialise, finalise, calc, print
 use IPModel_Coulomb_module, only : ipmodel_coulomb, initialise, finalise, calc, print
 use IPModel_Sutton_Chen_module, only : ipmodel_sutton_chen, initialise, finalise, calc, print
+use IPModel_LMTO_TBE_module, only: ipmodel_lmto_tbe, initialise, finalise, calc, print
 use IPModel_Template_module, only : ipmodel_template, initialise, finalise, calc, print
 #ifdef HAVE_KIM
 use IPModel_KIM_module, only : ipmodel_kim, initialise, finalise, calc, print
@@ -155,7 +157,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_TS = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
-     FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, &! Add new IPs here
+     FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, &! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -196,6 +198,7 @@ type IP_type
   type(IPModel_WaterDimer_Gillan) ip_waterdimer_gillan
   type(IPModel_WaterTrimer_Gillan) ip_watertrimer_gillan
   type(IPModel_Tether) ip_Tether
+  type(IPModel_LMTO_TBE) ip_LMTO_TBE
      ! Add new IP here
   type(IPModel_Template) ip_Template
   type(mpi_context) :: mpi_glob, mpi_local
@@ -303,8 +306,8 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_Template, is_SW_VP, is_WaterDimer_Gillan , is_WaterTrimer_Gillan, is_Tether
-  ! Add new IPs here
+       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_Template, is_SW_VP, is_WaterDimer_Gillan , &
+       is_WaterTrimer_Gillan, is_Tether, is_LMTO_TBE ! Add new IPs here
 
   INIT_ERROR(error)
 
@@ -349,6 +352,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'WaterDimer_Gillan', 'false', is_WaterDimer_Gillan, help_string='Water Dimer 2-body potential by Mike Gillan')
   call param_register(params, 'WaterTrimer_Gillan', 'false', is_WaterTrimer_Gillan, help_string='Water Trimer 3-body potential by Mike Gillan')
   call param_register(params, 'Tether', 'false', is_Tether, help_string="Tether a selection of atoms to the origin with a spring")
+  call param_register(params, 'LMTO_TBE', 'false', is_LMTO_TBE, help_string="Interface to LMTO empirical Tight Binding code")
   
  ! Add new IP here
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -360,7 +364,8 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
-       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, is_Tether,&       ! add new IPs here
+       is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
+       is_Tether, is_LMTO_TBE, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -459,6 +464,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_Tether) then
      this%functional_form = FF_Tether
      call Initialise(this%ip_tether, args_str, param_str)
+  else if (is_LMTO_TBE) then
+     this%functional_form = FF_LMTO_TBE
+     call Initialise(this%ip_LMTO_TBE, args_str, param_str)
     ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -538,7 +546,9 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_watertrimer_gillan)
    case (FF_Tether)
       call Finalise(this%ip_Tether)
-      ! add new IP here
+   case (FF_LMTO_TBE)   
+      call Finalise(this%ip_LMTO_TBE)
+   ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
   end select
@@ -614,6 +624,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_watertrimer_gillan%cutoff
   case (FF_Tether)
      IP_cutoff = this%ip_tether%cutoff
+  case(FF_LMTO_TBE)
+     IP_cutoff = this%ip_LMTO_TBE%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
@@ -717,6 +729,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_watertrimer_gillan, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_Tether)
       call calc(this%ip_Tether, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_LMTO_TBE)
+      call calc(this%ip_LMTO_TBE, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    ! Add new IP here   
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -802,6 +816,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_watertrimer_gillan, file=file)
    case (FF_Tether)
       call Print(this%ip_tether, file=file)
+   case (FF_LMTO_TBE)
+      call Print(this%ip_LMTO_TBE, file=file)
     ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)
