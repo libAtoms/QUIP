@@ -112,13 +112,14 @@ implicit none
   type(descriptor) :: eval_descriptor
 #endif
   real(dp), dimension(:,:), allocatable :: descriptor_array
+  real(dp), dimension(:), allocatable :: global_descriptor_array
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str
 
   logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
   integer error, eval_port_status, eval_port
-  character(STRING_LENGTH) :: eval_port_str, output_file
+  character(STRING_LENGTH) :: eval_port_str, output_file, real_format
   logical :: output_flush
 
   integer i, n_iter, j, n_descriptors, n_cross
@@ -220,6 +221,7 @@ implicit none
   call param_register(cli_params, 'netcdf4', 'F', netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
   call param_register(cli_params, 'output_file', 'stdout', output_file, help_string="file to send output to")
   call param_register(cli_params, 'output_flush', 'F', output_flush, help_string="if true, always flush output")
+  call param_register(cli_params, 'real_format', '%16.8f', real_format, help_string="real format in XYZ file")
 
 
   if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
@@ -718,6 +720,7 @@ implicit none
               call print("Torque " // tau)
            endif
         endif
+        call print('Cell Volume: '//cell_volume(at)//' A^3')
      endif ! do_E, F, V, local
 
 #ifdef HAVE_TB
@@ -751,21 +754,24 @@ implicit none
      if ( has_descriptor_str ) then
 	did_anything = .true.
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
-        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
+        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors), &
+           global_descriptor_array(descriptor_dimensions(eval_descriptor)))
 
-        call calc(eval_descriptor,at,descriptor_array)
+        call calc(eval_descriptor,at,descriptor_array,global_descriptor_array,args_str="do_global_desciptor=T")
         mainlog%prefix = "DESC"
         do i = 1, n_descriptors
            call print(""//descriptor_array(:,i), PRINT_ALWAYS, mainlog)
         end do
+        mainlog%prefix = "GLDC"
+        call print(""//global_descriptor_array, PRINT_ALWAYS, mainlog)
         mainlog%prefix = ""
-        deallocate(descriptor_array)
+        deallocate(descriptor_array,global_descriptor_array)
      end if
 #endif
 
      if (.not. did_anything) call system_abort("Nothing to be calculated")
 
-     call write(at, 'stdout', prefix='AT')
+     call write(at, 'stdout', prefix='AT',real_format=trim(real_format))
 
      call finalise(at)
       
