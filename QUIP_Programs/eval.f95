@@ -70,7 +70,7 @@ implicit none
   logical :: do_torque, do_cg_n_precond
   real(dp) :: fire_minim_dt0
   real(dp) :: fire_minim_dt_max
-  character(len=STRING_LENGTH) precond_minim_method, precond_method, precond_e_method
+  character(len=STRING_LENGTH) precond_minim_method, precond_method, precond_e_method, precond_conv_method
   real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2, precond_infoverride
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
@@ -196,6 +196,7 @@ implicit none
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
+  call param_register(cli_params, 'precond_conv_method', '2norm', precond_conv_method, help_string="Switch to 'infnorm' if desired")
   call param_register(cli_params, 'dimer_at', '', dimer_at_file, help_string="second endpoint for dimer initialization", has_value_target=has_dimer_at)
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
   call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
@@ -451,7 +452,8 @@ implicit none
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
-		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
+		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
+   res2=precond_res2, infoverride = precond_infoverride,convchoice=precond_conv_method)
               call system_timer('eval/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')

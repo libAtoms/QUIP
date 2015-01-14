@@ -328,7 +328,7 @@ end if
    
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook, hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
+       hook, hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice)
     
     implicit none
     
@@ -393,6 +393,8 @@ end if
 
     real(dp), optional :: infoverride !optional override to max step in infinity norm
     
+    character(*), intent(in),optional :: convchoice
+
     integer:: Precon_Potential_Minim
 
     character(len=STRING_LENGTH) :: use_method
@@ -413,10 +415,24 @@ end if
     real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
-
+    logical ::  doinfnorm
 
 
     INIT_ERROR(error)
+
+    doinfnorm = .false.
+    if (present(convchoice)) then
+      if (trim(convchoice) == 'infnorm') then
+        
+        doinfnorm = .true.
+        call print("Using inf_norm for convergence")
+      else
+        call print("Unrecognized choice of convergence metric, defaulting to 2 norm")
+      end if
+    
+    else
+      call print("Defaulting to 2 norm for convergence")
+    end if
 
     my_precon_id = optional_default('ID',precon_id)
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
@@ -523,7 +539,7 @@ end if
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps, &
       efuncroutine=efuncroutine, linminroutine=linminroutine, hook=hook, hook_print_interval=hook_print_interval, &
       am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity,&
-      infoverride = infoverride)
+      infoverride = infoverride, infconvext = doinfnorm)
  
     
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)

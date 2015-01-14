@@ -3066,7 +3066,8 @@ function func_wrapper(func, x, data, local_energy, gradient, doefunc)
 end function func_wrapper
 
 ! Interface is made to imitate the existing interface.
-  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity,infoverride)
+  function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, &
+    hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity,infoverride,infconvext)
     
     implicit none
     
@@ -3149,6 +3150,7 @@ end function func_wrapper
     end INTERFACE 
     ! result
     real(dp), optional :: infoverride
+    logical, optional :: infconvext
     integer::preconminim
   
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
@@ -3184,6 +3186,8 @@ end function func_wrapper
     integer :: INFO
     real(dp) :: SR1testLHS,SR1testRHS
     logical :: SR1doupdate
+    logical :: term2norm
+
 
     N = size(x_in)
 
@@ -3346,7 +3350,14 @@ end function func_wrapper
       doLSbasic = .TRUE.
     end if
     end if
- 
+
+    term2norm = .true.
+    if (present(infconvext)) then
+      if (infconvext .eqv. .true.) then
+        term2norm = .false.
+      end if 
+    end if
+
     x = x_in
     
     !Main Loop
@@ -3372,12 +3383,19 @@ end function func_wrapper
       if(doSD .or. doCG .or. doLBFGS .or. doFD) then
       normsqgrad = smartdotproduct(g,g,doefunc)
 
-      if ( normsqgrad < convergence_tol ) then
+      if ( normsqgrad < convergence_tol .and. term2norm) then
         call print('Extended minim completed with  |df|^2 = '// normsqgrad // ' < tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
        ! call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |df|^2 = '// normsqgrad// ' max(abs(df)) = '//maxval(abs(g))//' last alpha = '//alpha)
         call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
                   // ' last ls_iter = ' // this_ls_count)
         exit
+      elseif ( maxval(abs(g)) <  convergence_tol .and. .not. term2norm) then    
+        call print('Extended minim completed with  |df|_infty = '// maxval(abs(g)) // ' < tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
+       ! call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |df|^2 = '// normsqgrad// ' max(abs(df)) = '//maxval(abs(g))//' last alpha = '//alpha)
+        call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
+                  // ' last ls_iter = ' // this_ls_count)
+        exit
+    
       end if
 
       call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
