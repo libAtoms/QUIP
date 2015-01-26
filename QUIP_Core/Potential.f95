@@ -2101,8 +2101,13 @@ end subroutine pack_pos_dg
        endElement_handler = Potential_endElement_handler)
      call close_xml_t(fxml)
 
-     if(.not. parse_in_pot_done) &
-     call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str='//trim(param_str))
+     if(.not. parse_in_pot_done) then
+	if (len_trim(param_str) > 10000) then
+	   call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str(1:10000)='//trim(param_str(1:10000)))
+	else
+	   call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str='//trim(param_str))
+	endif
+     endif
 
   endsubroutine Potential_read_params_xml
 
