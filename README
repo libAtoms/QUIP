@@ -31,34 +31,34 @@
 This is the top level directory for QUIP, libAtoms and friends. 
 
 1) decide your architecture by looking at the Makefiles/README, and
-define an environmental variable QUIP_ARCH, e.g. 
+   define an environmental variable QUIP_ARCH, e.g. 
 
    export QUIP_ARCH=linux_x86_64_ifort_icc
 
-You may well need to create your own Makefiles/Makefile.${QUIP_ARCH}
-file based on an existing file.
+   You may well need to create your own
+   Makefiles/Makefile.${QUIP_ARCH} file based on an existing file.
 
-2) Ensure that you have sufficiently up-to-date compilers. If you are using
-   GNU compiler suite, you need version 4.4 or later. From Intel, you need
-   version > 11.0.084.
+2) Ensure that you have sufficiently up-to-date compilers. If you are
+   using GNU compiler suite, you need version 4.4 or later. From
+   Intel, you need version > 11.0.084.
 
 3) customise QUIP, set the maths libraries and provide linking options:
 
    make config
 
-   Makefile.config will create a build directory, build.${QUIP_ARCH}, and
-   all the building happen there. First it will ask you some questions
-   about where you keep libraries and other stuff, if you don't use
-   something it is asking for, just leave it blank. The answers will
-   be stored in Makefile.inc in the build.${QUIP_ARCH} directory, and
-   you can edit them later (e.g. to change optimisation or debug
-   options).  Note that the default state is usually with rather heavy
-   debugging on, including bounds checking, which makes the code quite
-   slow.
+   Makefile.config will create a build directory, build.${QUIP_ARCH},
+   and all the building happen there. First it will ask you some
+   questions about where you keep libraries and other stuff, if you
+   don't use something it is asking for, just leave it blank. The
+   answers will be stored in Makefile.inc in the build.${QUIP_ARCH}
+   directory, and you can edit them later (e.g. to change optimisation
+   or debug options).  Note that the default state is usually with
+   rather heavy debugging on, including bounds checking, which makes
+   the code quite slow.
 
    If you later make significant changes to the configuration such as
-   enabling or disabling tight-binding support you should do forcee a full
-   rebuild by doing a  'make deepclean; make'.
+   enabling or disabling tight-binding support you should do forcee a
+   full rebuild by doing a 'make deepclean; make'.
 
 4) make something:
 
@@ -69,7 +69,7 @@ file based on an existing file.
    make QUIP_Programs/<progname>
 
    Note that the `make' command has to be executed from the top level
-   directory, even for targets in subdirectories. 
+   directory, even for targets in subdirectories.
 
    Most useful make targets include
     all : pretty much every vaguely useful top level program
@@ -79,24 +79,26 @@ file based on an existing file.
     install : copies all compiled programs it can find to QUIP_INSTDIR,
       if it's defined and is a directory
 
-   You can also use QUIP and libAtoms as a library and link to it. To make the
-   library version only, execute
+   You can also use QUIP and libAtoms as a library and link to it. To
+   make the library version only, execute
 
    make libquip
 
-   This will make all the various libraries and combine them into one: 
-   build.${QUIP_ARCH}/libquip.a, which is what you need to link (and of course
-   LAPACK). 
+   This will make all the various libraries and combine them into one:
+   build.${QUIP_ARCH}/libquip.a, which is what you need to link (and
+   of course LAPACK).
  
-5) QUIP/libatoms is a "developer's" code, and is not for the faint hearted. A 
-   good start is to use the 'eval' program, which is under QUIP_Programs, and
-   allows the evaluation of properties of an atomic configuration using a variety
-   of models. For example:
+5) QUIP/libatoms is a "developer's" code, and is not for the faint
+   hearted. A good start is to use the 'eval' program, which is under
+   QUIP_Programs, and allows the evaluation of properties of an atomic
+   configuration using a variety of models. For example:
 
-   eval at_file=test.xyz init_args='IP LJ' param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
+   eval at_file=test.xyz init_args='IP LJ' \
+      param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
 
-   assuming that you have a file called test.xyz with the following data in it
-   (without the dashes, obviously) representing Cu atoms in a simple cubic lattice:
+   assuming that you have a file called test.xyz with the following
+   data in it (without the dashes, obviously) representing Cu atoms in
+   a simple cubic lattice:
 
    ----
    1
@@ -104,16 +106,18 @@ file based on an existing file.
    29 0 0 0 
    ----
 
-   The Lennard-Jones parameters in the above example is defined in the ip.parms.LJ.xml
-   file. 
+   The Lennard-Jones parameters in the above example is defined in the
+   ip.parms.LJ.xml file. 
 
-   Most string arguments can be replaced by '--help' and QUIP programs will then print a 
-   list of allowable keywords with brief help messages as to their usage, so e.g. 'init_args=--help'
-   will give a list of potential model types (and some combinations). The parsing is recursive, so
-   'init_args=IP --help' will then proceed to list the types of interatomic potentials (IP) that are
-   available. 
+   Most string arguments can be replaced by '--help' and QUIP programs
+   will  then print  a  list  of allowable  keywords  with brief  help
+   messages as to their usage,  so e.g. 'init_args=--help' will give a
+   list of potential model  types (and some combinations). The parsing
+   is recursive,  so 'init_args=IP --help'  will then proceed  to list
+   the types of interatomic potentials (IP) that are available.
 
-6) Some functionality is only available if you check out other packages
-   within the QUIP tree, e.g. the ThirdParty (DFTB parameters, TTM3f water model),
-   GAP (Gaussian Approximation Potential models) and GAP-filler (Gaussian Approximation
-   Potential model training).
+6) Some functionality is only available if you check out other
+   packages within the QUIP tree, e.g. the ThirdParty (DFTB
+   parameters, TTM3f water model), GAP (Gaussian Approximation
+   Potential models) and GAP-filler (Gaussian Approximation Potential
+   model training).
