@@ -3313,7 +3313,7 @@ end function pad
   end function upper_case
 
   !% Convert a word to lower case
-  function lower_case(word)
+  pure function lower_case(word)
     character(*) , intent(in) :: word
     character(len(word)) :: lower_case
 

@@ -106,9 +106,10 @@ subroutine quip_wrapper(N,lattice,symbol,coord,args_str,args_str_len,energy,forc
 
   call set_lattice(at,lattice, scale_positions=.false.)
   
-  do i = 1, at%N
-     at%Z(i) = atomic_number_from_symbol(symbol(i))
-  enddo 
+  !do i = 1, at%N
+  !   at%Z(i) = atomic_number_from_symbol(symbol(i))
+  !enddo 
+  call set_atoms(at,atomic_number_from_symbol(symbol))
   at%pos = coord
 
   call set_cutoff(at,cutoff(pot)+0.5_dp)

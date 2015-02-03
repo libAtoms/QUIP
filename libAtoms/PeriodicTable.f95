@@ -112,7 +112,7 @@ end interface atomic_number
 contains
 
   !Look up the atomic number for a given atomic symbol
-  function atomic_number_from_symbol(atomic_symbol)
+  elemental function atomic_number_from_symbol(atomic_symbol)
     character(*), intent(in) :: atomic_symbol
     integer                  :: atomic_number_from_symbol
     integer                  :: i
