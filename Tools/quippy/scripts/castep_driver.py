@@ -204,6 +204,10 @@ if 'hash_ndigit' in calc_args_str:
    HASH_NDIGITS = calc_args_str['hash_ndigits']
    del calc_args_str['hash_ndigits']
 
+CHECK_FILE =''
+if 'reuse' in calc_args_str:
+   CHECK_FILE = calc_args_str['reuse']
+   del calc_args_str['reuse']
 #----------------------------------------------------------------
 
 
@@ -372,34 +376,48 @@ try:
       else:
          param['iprint'] = 2
 
+      # If reuse present in template, and not specified in the command line, use it
+      if CHECK_FILE == "" and 'reuse' in param and (param['reuse'].upper() != 'DEFAULT' and param['reuse'].upper() != 'NULL'):
+         CHECK_FILE = param['reuse']
+
       # Try to reuse check file if it's there and lattice matches
       # that of previous cluster
-      if USE_CHECK_FILES and (('reuse' in param and param['reuse'].upper() != 'NULL') or not 'reuse' in param):
-         if (os.path.exists(stem+'.check') and cluster.n == old_cluster.n):
-# CASTEP now copes OK with changes in lattice and fft box.
-#             all(cluster.lattice == old_cluster.lattice)):
-            log.info('check file found: trying to reuse it')
-            param['reuse'] = 'default'
-         else:
-            if cluster.n != old_cluster.n:
-               log.info('cannot reuse check file - atom number mismatch')
-#            elif not all(cluster.lattice == old_cluster.lattice):
-#               log.info('cannot reuse check file - lattice mismatch')
+      # Use check file specified in the command line or template, if present. Otherwise try to use stem.check.
+      if USE_CHECK_FILES :
+         if CHECK_FILE != "" :
+            if os.path.exists(CHECK_FILE) :
+               log.info('check file found: trying to reuse it')
+               param['reuse'] = CHECK_FILE
             else:
                log.info('check file not found')
-               
-            # Discard parameter sets in order until we find one where
-            # we don't try to reuse the electronic density.
-            while True:
-               try:
-                  order = sorted_param_keys.pop()
-               except IndexError:
-                  raise ParamError
-               name, param = params[order]
-               if param.get('reuse', 'default').upper() != 'NULL': continue
-               sorted_param_keys.append(order) # found one with no reuse, put it back
-               break
-            continue
+               log.info('not reusing check file')
+               param['reuse'] = 'NULL'
+         elif ('reuse' in param and param['reuse'].upper() != 'NULL') or not 'reuse' in param :
+            if (os.path.exists(stem+'.check') and cluster.n == old_cluster.n):
+   # CASTEP now copes OK with changes in lattice and fft box.
+   #             all(cluster.lattice == old_cluster.lattice)):
+               log.info('check file found: trying to reuse it')
+               param['reuse'] = 'default'
+            else:
+               if cluster.n != old_cluster.n:
+                  log.info('cannot reuse check file - atom number mismatch')
+   #            elif not all(cluster.lattice == old_cluster.lattice):
+   #               log.info('cannot reuse check file - lattice mismatch')
+               else:
+                  log.info('check file not found')
+                  
+               # Discard parameter sets in order until we find one where
+               # we don't try to reuse the electronic density.
+               while True:
+                  try:
+                     order = sorted_param_keys.pop()
+                  except IndexError:
+                     raise ParamError
+                  name, param = params[order]
+                  if param.get('reuse', 'default').upper() != 'NULL': continue
+                  sorted_param_keys.append(order) # found one with no reuse, put it back
+                  break
+               continue
       else:
          log.info('not reusing check file')
          param['reuse'] = 'NULL'
