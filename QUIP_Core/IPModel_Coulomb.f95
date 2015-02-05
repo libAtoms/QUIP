@@ -57,6 +57,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use units_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -80,10 +81,12 @@ integer, parameter :: IPCoulomb_Method_Multipole_Moments = 6
 
 integer, parameter :: Multipole_Position_Atomic = 1
 integer, parameter :: Multipole_Position_Centre_of_Mass = 2
+integer, parameter :: Multipole_Position_M_Site = 3
 
 integer, parameter :: Charge_Method_None = 0
 integer, parameter :: Charge_Method_Fixed = 1
 integer, parameter :: Charge_Method_GAP = 2
+integer, parameter :: Charge_Method_Partridge_Schwenke = 3
 
 integer, parameter :: Dipole_Method_None = 0
 integer, parameter :: Dipole_Method_Partridge_Schwenke = 1
@@ -95,10 +98,13 @@ integer, parameter :: Polarisation_Method_GMRES = 2
 integer, parameter :: Polarisation_Method_QR = 3
 
 integer, parameter :: Damping_None = 0
-integer, parameter :: Damping_ERF = 1
+integer, parameter :: Damping_Exp = 1
+integer, parameter :: Damping_Erf = 2
+integer, parameter :: Damping_Erf_Uniform = 3
 
 integer, parameter :: Screening_None = 0
 integer, parameter :: Screening_Yukawa = 1
+integer, parameter :: Screening_Erfc_Uniform = 2
 
 public :: IPModel_Coulomb
 type IPModel_Coulomb
@@ -156,8 +162,9 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   type(Dictionary) :: params
   character(len=STRING_LENGTH) :: method_str
 
+call print("initialising pot")
   call Finalise(this)
-
+call print("done finalising")
   call initialise(params)
   this%label=''
   method_str=''
@@ -189,7 +196,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
 
   call IPModel_Coulomb_read_params_xml(this, param_str)
 
-  this%multipoles%initialised=.false.  
+  
   if (this%multipoles%n_monomer_types /= 0) then
     ! check for ambiguities / errors in site specification of the monomers 
     ! call print("specification of multipoles based on chemical environment")
@@ -207,8 +214,9 @@ subroutine IPModel_Coulomb_Finalise(this)
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
   if (allocated(this%charge)) deallocate(this%charge)
-
-  if (this%multipoles%initialised) call finalise(this%multipoles)
+call print("inti? "//this%multipoles%initialised)
+  !if (this%multipoles%initialised) call finalise(this%multipoles)
+  call finalise(this%multipoles)
 
   this%n_types = 0
   this%label = ''
@@ -235,6 +243,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    real(dp) :: r_scale, E_scale, e_pre_calc
    logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, intermolecular_only
 
+   !real(dp), pointer :: erf_kappa, damp_rad_exp,erfc_kappa,yukawa_alpha,smoothlength
+   !real(dp), target :: yukawa_alpha_tgt, smoothlength_tgt
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
    integer :: n_uniq_Zs
@@ -292,7 +302,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    else
       charge_property_name = 'charge'
    endif
-! print hello
+
    intramolecular_factor = 0
    if (intermolecular_only) then ! figure out whether pre_calc needs to subtract(-1), or ignore(0) interactions between sites on same molecule
      intramolecular_factor = -1 
@@ -303,61 +313,18 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
          RAISE_ERROR('IPModel_Coulomb_Calc failed to assign pointer to '//trim(charge_property_name)//' property', error)
       endif
    else if (this%multipoles%initialised) then
-                                                          
+      this%multipoles%calc_opts%do_energy=do_e
+      this%multipoles%calc_opts%do_force=do_f
+      call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,e=e,cutoff=this%cutoff,error=error) 
+      if (do_e) e_pre_calc = e
+      call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error) 
+      at => at_dummy                                                          
+
       if (this%method == IPCoulomb_Method_Multipole_Moments) then
-        select case(this%damping)
-        case (Damping_None)
-          select case( this%screening)
-          case (Screening_None)              ! No screening or damping
-
-            call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e,error=error) 
-            if (do_e) e_pre_calc = e
-            call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error) 
-            at => at_dummy
-            call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, &
-                cutoff=this%cutoff, error = error)
-
-          case (Screening_Yukawa)            ! Yukawa screening without damping
-
-            call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e, &
-              yukawa_alpha = this%yukawa_alpha,smoothlength=this%yukawa_smooth_length, cutoff=this%cutoff, error=error) 
-            if (do_e) e_pre_calc = e
-            call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error)
-            at => at_dummy
-            call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, &
-              yukawa_alpha = this%yukawa_alpha,smoothlength=this%yukawa_smooth_length, cutoff=this%cutoff, error = error) 
-          end select
-
-        case (Damping_Erf)
-          select case( this%screening)
-          case (Screening_None)              ! No screening but damping with erf
-
-            call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e, &
-               erf_kappa=this%multipoles%erf_kappa, error=error) 
-            if (do_e) e_pre_calc = e
-            call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error)
-            at => at_dummy
-            call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, &
-              erf_kappa=this%multipoles%erf_kappa, cutoff=this%cutoff, error = error)
-
-          case (Screening_Yukawa)            ! Yukawa Screening and erf damping
-
-            call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e, &
-              erf_kappa=this%multipoles%erf_kappa ,yukawa_alpha = this%yukawa_alpha,smoothlength=this%yukawa_smooth_length, cutoff=this%cutoff, error=error) 
-            if (do_e) e_pre_calc = e
-            call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error)
-            at => at_dummy
-            call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, &
-              erf_kappa=this%multipoles%erf_kappa ,yukawa_alpha = this%yukawa_alpha,smoothlength=this%yukawa_smooth_length, cutoff=this%cutoff, error = error) 
-          end select
-
-        end select        
+          call Multipole_Moments_Calc(at, this%multipoles,this%multipoles%intermolecular_only, &
+                 e=e, local_e=local_e, f=f, virial=virial,local_virial=local_virial, cutoff=this%cutoff, error = error)
       else
         ! Use other summation methods (possible if using charges only), just make dummy atoms object and do a recursive call
-        call Multipole_Moments_Pre_Calc(at,this%multipoles,intramolecular_factor,do_f=do_f,e=e,error=error)
-        if (do_e) e_pre_calc = e
-        call Multipole_Moments_Make_Dummy_Atoms(at_dummy,at,this%multipoles,error) 
-        at => at_dummy
 
         if (do_f) then
           allocate(dummy_force(3,at%N))                                            ! on recursive call "dummy_charge" is present so this whole block gets skipped 
@@ -478,6 +445,31 @@ subroutine IPModel_Coulomb_Print(this, file)
     call verbosity_pop()
   end do
   if (this%multipoles%initialised) then
+    call print("Electrostatics Options for multipole interactions",file=file)
+    select case(this%multipoles%calc_opts%damping)
+    case(Damping_None)
+       call Print("IPModel_Coulomb damping :  No damping, bare electrostatic interactions at short range",file=file)
+    case(Damping_Erf)
+       call Print("IPModel_Coulomb damping :  Gaussian damping of electrostatic interactions at short range",file=file)
+    case(Damping_Exp)
+       call Print("IPModel_Coulomb damping :  Exponential damping of electrostatic interactions at short range",file=file)
+       call Print("IPModel_Coulomb damping :  Exponential damping rank : "//this%multipoles%calc_opts%damp_exp_order,file=file)
+       call Print("IPModel_Coulomb damping :  Exponential damping scale : "//this%multipoles%calc_opts%damp_exp_scale,file=file)
+    case default
+       call Print("IPModel_Coulomb damping :  Unknown damping scheme",file=file)
+    endselect
+
+    select case(this%multipoles%calc_opts%screening)
+    case(Screening_None)
+       call Print("IPModel_Coulomb screening :  No screening, including all long range electrostatic interactions",file=file)
+    case(Screening_Yukawa)
+       call Print("IPModel_Coulomb screening :  Yukawa screening of long range electrostatic interactions",file=file)
+       call Print("IPModel_Coulomb screening :  yukawa alpha : "//this%multipoles%calc_opts%yukawa_alpha,file=file)
+       call Print("IPModel_Coulomb screening :  yukawa smooth_length : "//this%multipoles%calc_opts%yukawa_smooth_length,file=file)
+    case default
+       call Print("IPModel_Coulomb screening :  Unknown screening scheme",file=file)
+    endselect
+
     do ti=1,this%multipoles%n_monomer_types
       call print("IPModel_Coulomb : monomer " // ti // " signature " // this%multipoles%monomer_types(ti)%signature, file=file)
       do tj=1,size(this%multipoles%monomer_types(ti)%site_types)
@@ -488,7 +480,7 @@ subroutine IPModel_Coulomb_Print(this, file)
       end do
     end do
   end if
-
+call print("Done printing")
 end subroutine IPModel_Coulomb_Print
 
 subroutine IPModel_Coulomb_read_params_xml(this, param_str)
@@ -502,7 +494,7 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
   parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
-
+call print("reading xml string")
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
     startElement_handler = IPModel_startElement_handler, &
@@ -533,9 +525,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   logical :: energy_shift, linear_force_shift
   integer :: ti, tj, i ,n_atoms
+  real(dp) :: alpha_au
 
   if (name == 'Coulomb_params') then ! new Coulomb stanza
-
+call print("reading coulomb params")
     if (parse_matched_label) return ! we already found an exact match for this label
 
     call QUIP_FoX_get_value(attributes, 'label', value, status)
@@ -575,8 +568,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         value='0'
       endif
       read (value, *), parse_ip%multipoles%n_monomer_types
+call print("monomer types array allocated to length "//size(parse_ip%multipoles%monomer_types))
       allocate(parse_ip%multipoles%monomer_types(parse_ip%multipoles%n_monomer_types))
-
+call print("monomer types array allocated to length "//size(parse_ip%multipoles%monomer_types))
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
@@ -616,6 +610,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       endselect
 
       call QUIP_FoX_get_value(attributes, "polarisation", value, status)
+      if (status /= 0)  value = "none"
       select case(lower_case(trim(value)))
       case("fpi")
          parse_ip%multipoles%polarisation = Polarisation_Method_FPI
@@ -629,19 +624,59 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          parse_ip%multipoles%polarisation = Polarisation_Method_None
       endselect
 
+      call QUIP_FoX_get_value(attributes, "damping", value, status)
+      if (status /= 0)  value = "none"
+      select case(lower_case(trim(value)))
+      case("exp")
+         parse_ip%multipoles%calc_opts%damping = Damping_Exp
+      case("erf")
+         parse_ip%multipoles%calc_opts%damping = Damping_Erf
+      case("none")
+         parse_ip%multipoles%calc_opts%damping = Damping_None
+      case default
+         parse_ip%multipoles%calc_opts%damping = Damping_None
+      endselect
+
+call print("looking for damp exp scale")
+      call QUIP_FoX_get_value(attributes, "damp_exp_scale", value, status) ! global param to adjust strength of damping, just a convenience param for damping_exp
+      if (status == 0) then
+         if (parse_ip%multipoles%calc_opts%damping == Damping_Exp) then
+           read (value, *) parse_ip%multipoles%calc_opts%damp_exp_scale
+call print("damp exp scale set to "//parse_ip%multipoles%calc_opts%damp_exp_scale)
+         else
+           call system_abort("IPModel_Coulomb_read_params_xml: damp_exp_scale specified but exponential damping not selected")
+         end if
+      else
+         parse_ip%multipoles%calc_opts%damp_exp_scale = 1.0_dp
+      endif
+
+      call QUIP_FoX_get_value(attributes, "damp_exp_order", value, status) ! order of exponential damping, typically 3 or 4, default 3 like in FX water model
+      if (status == 0) then
+         if (parse_ip%multipoles%calc_opts%damping == Damping_Exp) then
+           read (value, *)  parse_ip%multipoles%calc_opts%damp_exp_order
+         else
+           call system_abort("IPModel_Coulomb_read_params_xml: damp_exp_order specified but exponential damping not selected")
+         end if
+      else
+         parse_ip%multipoles%calc_opts%damp_exp_order = 3
+      endif
+
       call QUIP_FoX_get_value(attributes, "yukawa_alpha", value, status)
       if (status /= 0) then
          if( parse_ip%method == IPCoulomb_Method_Yukawa ) call system_abort("IPModel_Coulomb_read_params_xml: Yukawa method requested but no yukawa_alpha parameter found.")
       else
          read (value, *) parse_ip%yukawa_alpha
          parse_ip%screening = Screening_Yukawa
+         parse_ip%multipoles%calc_opts%screening = Screening_Yukawa
+         parse_ip%multipoles%calc_opts%yukawa_alpha = parse_ip%yukawa_alpha
       endif
 
       call QUIP_FoX_get_value(attributes, "yukawa_smooth_length", value, status)
       if (status /= 0) then
-         if( parse_ip%method == IPCoulomb_Method_Yukawa ) call system_abort("IPModel_Coulomb_read_params_xml: Yukawa method requested but no yukawa_smooth_length parameter found.")
+         if( parse_ip%screening == Screening_Yukawa ) call system_abort("IPModel_Coulomb_read_params_xml: Yukawa method requested but no yukawa_smooth_length parameter found.")
       else
          read (value, *) parse_ip%yukawa_smooth_length
+         parse_ip%multipoles%calc_opts%yukawa_smooth_length = parse_ip%yukawa_smooth_length
       endif
 
       call QUIP_FoX_get_value(attributes, "yukawa_pseudise", value, status)
@@ -677,15 +712,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          if( parse_ip%method == IPCoulomb_Method_DSF ) call system_abort("IPModel_Coulomb_read_params_xml: Damped Shifted Force method requested but no dsf_alpha parameter found.")
       else
          read (value, *) parse_ip%dsf_alpha
-      endif
-
-      call QUIP_FoX_get_value(attributes, "erf_kappa", value, status)
-      if (status == 0) then
-         read (value, *) parse_ip%multipoles%erf_kappa
-         parse_ip%damping = Damping_Erf
-      else
-         parse_ip%multipoles%erf_kappa = 0.0_dp
-         parse_ip%damping = Damping_None
       endif
 
     endif
@@ -751,6 +777,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) value = '1D-08'  
     read (value, *) parse_ip%multipoles%monomer_types(ti)%step
 
+    call QUIP_FoX_get_value(attributes, "gammaM", value, status)
+    if (status == 0) read (value, *) parse_ip%multipoles%monomer_types(ti)%gammaM
+
+
   elseif (parse_in_ip .and. name == 'per_site_data') then
 
     call QUIP_FoX_get_value(attributes, "monomer", value, status)
@@ -784,6 +814,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Atomic
   	 case("com")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Centre_of_Mass
+  	 case("m-site")
+           parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_M_Site
          case default
            call system_abort ("IPModel_Coulomb_read_params_xml: pos_type "//trim(value)//" unknown")         
         end select
@@ -807,6 +839,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
   	 case("gap")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge_method = Charge_Method_GAP
+           parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
+  	 case("partridge_schwenke")
+           parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge_method = Charge_Method_Partridge_Schwenke
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
       case default
          call system_abort ("IPModel_Coulomb_read_params_xml: moments_method "//trim(value)//" unknown")
@@ -839,7 +874,33 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.true.
       if (parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d == 1 ) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = 4
     end if
-    read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%alpha
+    read (value, *) alpha_au
+    parse_ip%multipoles%monomer_types(ti)%site_types(tj)%alpha=alpha_au*CUBIC_BOHR
+
+    ! by default, polarisable sites are damped and unpolarisable ones are not, can override default behaviour by setting damp_rad
+    ! if damp_rad=0.0, then no damping occurs. If want to damp a non-polarisable site, have to provide a radius manually
+    parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped = parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable
+
+    call QUIP_FoX_get_value(attributes, "damp_rad", value, status)
+    if (status /= 0) then 
+      if (parse_ip%multipoles%calc_opts%damping==Damping_Erf) then
+        parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damp_rad = (alpha_au*sqrt(2.0_dp/PI)/3.0_dp)**(1.0_dp/3.0_dp)*BOHR
+      else if (parse_ip%multipoles%calc_opts%damping==Damping_Exp) then
+        parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damp_rad = (alpha_au)**(1.0_dp/3.0_dp)*BOHR
+      end if
+    else
+      if (parse_ip%multipoles%calc_opts%damping==Damping_None) then
+        call system_abort("damp_rad specified but no damping type selected, please specify damping=exp or damping=erf")
+      else
+        read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damp_rad ! override default damp_rad value
+        parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped = .true.
+      end if
+    end if
+
+    if (.not. parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped .and. parse_ip%multipoles%calc_opts%damping/=Damping_None ) then
+      call print("damping type : "//parse_ip%multipoles%calc_opts%damping)
+      call system_abort ("IPModel_Coulomb_read_params_xml: damping requested but no radii specified for non-polarisable sites "//trim(value)//" unknown")
+    end if
 
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%initialised = .true.
 

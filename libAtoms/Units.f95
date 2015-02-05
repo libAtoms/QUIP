@@ -53,6 +53,7 @@ real(dp), parameter :: ELEM_CHARGE = 1.60217653e-19_dp !% coulombs
 real(dp), parameter :: HARTREE = 27.2113961_dp !% eV
 real(dp), parameter :: RYDBERG = 0.5_dp*HARTREE !% eV
 real(dp), parameter :: BOHR = 0.529177249_dp !% Angstrom
+real(dp), parameter :: CUBIC_BOHR = BOHR*BOHR/HARTREE !% QUIP Units of polarisability
 real(dp), parameter :: HBAR_EVSEC = 6.5821220e-16_dp !% hbar in eV seconds
 real(dp), parameter :: HBAR_AU = 1.0_dp              !% hbar in a.u.
 real(dp), parameter :: HBAR = (HBAR_EVSEC*1e+15_dp)    !% hbar in eV fs

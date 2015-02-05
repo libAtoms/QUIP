@@ -66,10 +66,12 @@ public :: Multipole_Moments_Pre_Calc, Multipole_Moments_Calc,Multipole_Moments_M
 
 integer, parameter :: Multipole_Position_Atomic = 1
 integer, parameter :: Multipole_Position_Centre_of_Mass = 2
+integer, parameter :: Multipole_Position_M_Site = 3
 
 integer, parameter :: Charge_Method_None = 0
 integer, parameter :: Charge_Method_Fixed = 1
 integer, parameter :: Charge_Method_GAP = 2
+integer, parameter :: Charge_Method_Partridge_Schwenke = 3
 
 integer, parameter :: Dipole_Method_None = 0
 integer, parameter :: Dipole_Method_Partridge_Schwenke = 1
@@ -81,10 +83,14 @@ integer, parameter :: Polarisation_Method_GMRES = 2
 integer, parameter :: Polarisation_Method_QR = 3
 
 integer, parameter :: Damping_None = 0
-integer, parameter :: Damping_ERF = 1
+integer, parameter :: Damping_Exp = 1
+integer, parameter :: Damping_Erf = 2
+integer, parameter :: Damping_Erf_Uniform = 3
 
 integer, parameter :: Screening_None = 0
 integer, parameter :: Screening_Yukawa = 1
+integer, parameter :: Screening_Erfc_Uniform = 2
+
 
 type Monomer_List
   type(Multipole_Interactions_Site), dimension(:), allocatable :: site_types ! this just a dummy list of site types with no actual positions
@@ -93,16 +99,18 @@ type Monomer_List
   integer, dimension(:), allocatable :: signature
   real(dp), dimension(:), allocatable :: masses
   real(dp) :: monomer_cutoff = 0.0_dp, step ! step size (Angstroms) used for finite difference gradient calculations
+  real(dp) :: gammaM = 0.426706882_dp ! param for determining M-site position in water models
   integer :: n_monomers
 end type Monomer_List
 
 public :: Multipole_Moments
 type Multipole_Moments
-  real(dp) :: cutoff = 0.0_dp, dipole_tolerance=1e-7_dp, polarisation_cutoff=0.0_dp, erf_kappa, erfc_kappa
+  real(dp) :: cutoff = 0.0_dp, dipole_tolerance=1e-7_dp, polarisation_cutoff=0.0_dp
   type(Monomer_List), dimension(:), allocatable :: monomer_types 
-  logical :: topology_error_check, atom_ordercheck, intermolecular_only, initialised
+  type(Multipole_Calc_Opts) :: calc_opts
+  logical :: topology_error_check, atom_ordercheck, intermolecular_only, initialised=.false.
   character(len=STRING_LENGTH) label
-  integer :: n_monomer_types, polarisation
+  integer :: n_monomer_types,polarisation
   integer, dimension(:,:), allocatable :: dummy_map ! maps the atoms in a dummy Atoms type to sites in our Monomer_List type
   integer, dimension(:), allocatable :: polarisable_map
   logical, dimension(:), allocatable :: site_polarisable
@@ -122,9 +130,13 @@ contains
 subroutine Multipole_Moments_Finalise(this)
 
   type(Multipole_Moments),intent(inout) :: this
+call print("finalising multipoles")
   this%label=''
   this%n_monomer_types = 0
+call print("still finalising multipoles")
+call print("allocated ? "//allocated(this%monomer_types))
   if (allocated(this%monomer_types)) deallocate(this%monomer_types)
+call print("still finalising multipoles")
   if (allocated(this%dummy_map)) deallocate(this%dummy_map)
   if (allocated(this%site_polarisable)) deallocate(this%site_polarisable)
   this%initialised = .False.
@@ -165,7 +177,6 @@ end subroutine Monomer_List_Copy
 
 subroutine Monomer_List_Finalise(this)
   type(Monomer_list),intent(inout) :: this
-
   this%monomer_cutoff = 0.0_dp
   this%n_monomers = 0
 
@@ -177,22 +188,21 @@ subroutine Monomer_List_Finalise(this)
 end subroutine Monomer_List_Finalise
 
 
-subroutine Multipole_Moments_Pre_Calc(at, this, intramolecular_factor,do_f, e, mpi, erf_kappa, erfc_kappa, yukawa_alpha,smoothlength, cutoff, error)
-  type(Multipole_Moments), intent(inout) :: this
+subroutine Multipole_Moments_Pre_Calc(at, this, intramolecular_factor, e, mpi, cutoff, error)
   type(Atoms), intent(inout) :: at
-  logical, intent(in) :: do_f
-  type(MPI_Context), intent(in), optional :: mpi
-  real(dp), optional :: e
-  real(dp), intent(in), optional :: erf_kappa, erfc_kappa, yukawa_alpha,smoothlength, cutoff 
-  integer, intent(out), optional :: error
+  type(Multipole_Moments), intent(inout) :: this
   integer ::  intramolecular_factor
+  real(dp), optional :: e
+  type(MPI_Context), intent(in), optional :: mpi
+  real(dp), intent(in), optional :: cutoff 
+  integer, intent(out), optional :: error
 
   type(Monomer_List),dimension(:), allocatable :: mono_lists  ! these hold the actual lists of monomers
   logical, dimension(:), allocatable :: associated_to_monomer
   integer, dimension(:,:), allocatable :: monomer_pairs
   integer :: n_mono_types, i, j
   type(Dictionary) :: params
-  logical :: use_smooth_cutoff=.False., atom_ordercheck=.True., do_force, do_pot,do_field
+  logical :: use_smooth_cutoff=.False., atom_ordercheck=.True.
 
   n_mono_types = size(this%monomer_types)
   allocate(associated_to_monomer(at%N))
@@ -215,19 +225,17 @@ subroutine Multipole_Moments_Pre_Calc(at, this, intramolecular_factor,do_f, e, m
   !% and pre-calculates interactions between sites on the same molecule
 
   do i=1,n_mono_types
-    call Multipole_Moments_Assign(at, this%monomer_types(i),intramolecular_factor,do_f,e=e, &
-             erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, yukawa_alpha=yukawa_alpha,smoothlength=smoothlength, cutoff=cutoff, error=error)
+    call Multipole_Moments_Assign(at, this%monomer_types(i),intramolecular_factor,this%calc_opts, e=e, cutoff=cutoff, error=error)
   end do
 
 end subroutine Multipole_Moments_Pre_Calc
 
-subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_force, e, erf_kappa, erfc_kappa, yukawa_alpha,smoothlength, cutoff,error)
+subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, calc_opts,e, cutoff,error)
   type(Atoms), intent(in) :: at
   type(Monomer_List), intent(inout) :: mono_list
-  logical :: do_force, do_field, do_pot
-  integer :: intramolecular_factor  
+  integer :: intramolecular_factor 
+  type(Multipole_Calc_Opts) :: calc_opts
   real(dp),optional :: e, cutoff
-  real(dp), intent(in), optional :: erf_kappa, erfc_kappa, yukawa_alpha,smoothlength
   integer, optional :: error
 
   real(dp), dimension(:,:), allocatable :: atomic_positions
@@ -235,7 +243,8 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
   integer, dimension(1) :: unit_array
   integer, dimension(3) :: water_signature = (/1,1,8/)
   integer, dimension(:), allocatable :: signature_copy, site_atom_map
-  real(dp), dimension(3) :: com_pos ! position of monomer centre of mass
+  real(dp), dimension(3) :: ps_charges, com_pos ! position of monomer centre of mass
+  real(dp), dimension(3,3,3) :: ps_charge_grads
   real(dp) :: monomer_mass, site_site_energy, my_cutoff
   type(Multipole_Interactions_Site) :: dummy_i, dummy_j
   logical :: do_e
@@ -245,18 +254,17 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
 
   identity3x3 = 0.0_dp
   call add_identity(identity3x3)
-  do_e = present(e)
+  calc_opts%do_energy = present(e)
   my_cutoff = optional_default(at%cutoff,cutoff)
-
-
+  
   monomer_size = size(mono_list%signature)
   sites_per_mono = size(mono_list%site_types)
 
   do i=1,sites_per_mono
-    if (mono_list%site_types(i)%dipole_method == Dipole_Method_Partridge_Schwenke) then
+    if (mono_list%site_types(i)%dipole_method == Dipole_Method_Partridge_Schwenke .or. mono_list%site_types(i)%charge_method == Charge_Method_Partridge_Schwenke) then
       if (allocated(mono_list%signature)) then
-        if(size(mono_list%signature) /= 3) then
-          call system_abort("invalid signature given for water monomer, cannot use Partridge Schwenke dipole moment")
+        if(size(mono_list%signature) /= 3 ) then
+          call system_abort("invalid signature given for water monomer, cannot use Partridge Schwenke model, signature must be "//water_signature)
         else if (any(mono_list%signature /= water_signature)) then
           call system_abort("signature for water monomer incompatible with Partridge Schwenke, has to be "//water_signature)
         end if
@@ -295,7 +303,7 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
     atomic_positions=0.0_dp
     com_pos=0.0_dp
 
-    ! find positions of atoms and centre of mass
+    ! find positions of atoms and centre of mass !! TODO do this correctly with min img vecs instead of abs positions
     do i=1,monomer_size
       i_atom = mono_list%monomer_indices(i,j)
       atomic_positions(:,i) = at%pos(:,i_atom)
@@ -303,6 +311,7 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
     end do
 
     com_pos = com_pos * (1.0_dp/monomer_mass)
+
     do i_site=1,sites_per_mono 
 
       mono_list%sites(i_site,j) = mono_list%site_types(i_site) ! copy info from template site
@@ -312,7 +321,10 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
           mono_list%sites(i_site,j)%position = com_pos
         case(Multipole_Position_Atomic)
           mono_list%sites(i_site,j)%position = atomic_positions(:,site_atom_map(i_site))
+        case(Multipole_Position_M_Site)
+          call m_site_position(atomic_positions,mono_list%gammaM,mono_list%sites(i_site,j)%position)
         case default
+          call print("site position param : "//mono_list%sites(i_site,j)%pos_type)
           call system_abort("Multipole_Moments_Assign doesn't know where to put this multipole moment")
       end select
 
@@ -324,7 +336,13 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
         case(Charge_Method_Fixed)
           mono_list%sites(i_site,j)%charge = mono_list%site_types(i_site)%charge           
         case(Charge_Method_GAP)
-          continue     ! call charge_GAP()
+            call system_abort("GAP moments not yet implemented")  ! call charge_GAP()
+        case(Charge_Method_Partridge_Schwenke)
+#ifndef HAVE_FX
+  RAISE_ERROR('Multipoles: PS water as charges requested but FX model was not compiled in. Check the HAVE_FX flag in the Makefiles.', error)
+#endif
+          call charges_PS(atomic_positions,mono_list%sites(i_site,j)%charge,i_site,mono_list%gammaM)
+          call test_charge_grads_PS(atomic_positions,mono_list%gammaM)
       end select
       selectcase(mono_list%sites(i_site,j)%dipole_method) ! assign dipoles
         case(Dipole_Method_GAP)
@@ -333,7 +351,7 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
           call dipole_moment_PS(atomic_positions,mono_list%sites(i_site,j)%dipole) 
       end select
 
-      if (do_force) then
+      if (calc_opts%do_force) then
 
         allocate(mono_list%sites(i_site,j)%pos_grad_positions(3,3,monomer_size)) !  gradients of position of site wrt atomic positions
         allocate(mono_list%sites(i_site,j)%charge_grad_positions(1,3,monomer_size)) !  gradients of charge wrt atomic positions
@@ -354,6 +372,8 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
           case(Charge_Method_GAP)
             call system_abort("GAP moments not yet implemented")
             ! something like call charge_gradients_GAP()
+          case(Charge_Method_Partridge_Schwenke)
+            call charge_gradients_PS(atomic_positions,mono_list%sites(i_site,j)%charge_grad_positions,mono_list%gammaM,i_site)
         end select
         selectcase(mono_list%sites(i_site,j)%dipole_method) 
           case(Dipole_Method_Partridge_Schwenke)
@@ -371,6 +391,8 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
             end do
           case(Multipole_Position_Atomic)
             mono_list%sites(i_site,j)%pos_grad_positions(:,:,site_atom_map(i_site)) = identity3x3
+          case(Multipole_Position_M_Site)
+            call m_site_position_grads(mono_list%gammaM,mono_list%sites(i_site,j)%pos_grad_positions)
           case default
             call system_abort("Multipole_Moments_Assign doesn't know how multipole position varies with atomic positions")
         end select
@@ -390,7 +412,7 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
             dummy_j%position = dummy_i%position + distance_vector
             if (norm(distance_vector) > my_cutoff) cycle
             site_site_energy=0.0_dp
-            if (do_force) then
+            if (calc_opts%do_force) then
               dummy_i%e_grad_pos = 0.0_dp
               dummy_i%e_grad_charge = 0.0_dp
               dummy_i%e_grad_dipole = 0.0_dp
@@ -399,11 +421,11 @@ subroutine Multipole_Moments_Assign(at, mono_list, intramolecular_factor, do_for
               dummy_j%e_grad_charge = 0.0_dp
               dummy_j%e_grad_dipole = 0.0_dp
             endif
-            call Multipole_Moments_Site_Site_Interaction(site_site_energy,dummy_i,dummy_j, do_e,do_force,do_field,do_pot, &
-                erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, yukawa_alpha=yukawa_alpha,smoothlength=smoothlength, cutoff=cutoff,  error=error,test=.false.)
 
-            if (do_e) e = e +intramolecular_factor * site_site_energy
-            if (do_force) then
+            call Multipole_Moments_Site_Site_Interaction(site_site_energy,dummy_i,dummy_j,calc_opts, cutoff=cutoff, error=error,test=.false.)
+
+            if (calc_opts%do_energy) e = e +intramolecular_factor * site_site_energy
+            if (calc_opts%do_force) then
               mono_list%sites(i_site,j)%e_grad_pos    = mono_list%sites(i_site,j)%e_grad_pos       + intramolecular_factor * dummy_i%e_grad_pos
               mono_list%sites(i_site,j)%e_grad_charge = mono_list%sites(i_site,j)%e_grad_charge    + intramolecular_factor * dummy_i%e_grad_charge
               mono_list%sites(i_site,j)%e_grad_dipole = mono_list%sites(i_site,j)%e_grad_dipole    + intramolecular_factor * dummy_i%e_grad_dipole
@@ -509,19 +531,19 @@ end subroutine Multipole_Moments_Forces_From_Dummy_Atoms
 !! corresponds to a multipole site, so that we can use all the usual connection funcitonality to find neighbours etc.
 !! the force array which is returned corresponds to forces on the actual atoms of the system, i.e. the atoms object
 !! which was used to initialise multipoles
-subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local_e, f, virial, local_virial, &
-  erf_kappa, erfc_kappa, yukawa_alpha,smoothlength, cutoff, error)
-
+subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local_e, f, virial, local_virial, cutoff, error)
   type(Atoms), intent(in), target :: at_in
   type(Multipole_Moments), intent(inout) :: multipoles
   logical,intent(in) :: intermolecular_only
-  real(dp), intent(in), optional :: erf_kappa, erfc_kappa, yukawa_alpha,smoothlength, cutoff
+  real(dp), pointer :: erf_kappa, damp_exp_scale, erfc_kappa, yukawa_alpha,smoothlength
+  integer, pointer :: damp_exp_order
+  real(dp), intent(in), optional :: cutoff
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), dimension(:,:),optional :: f, local_virial   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   integer, optional, intent(out) :: error
 
-  logical :: do_e,do_local_e,do_f,do_virial,do_local_virial, do_field, do_pot
+  logical :: do_local_e,do_virial,do_local_virial
   logical :: monomers_identical, moments_converged, final_run
   integer :: i, j, k, m, n, i_mono, j_mono, i_site, j_site,n_monomer_types, i_atomic, j_atomic, i_dummy, j_dummy, n_pol, i_pos, j_pos, i_pol, method
   integer,dimension(1) :: loc
@@ -540,7 +562,6 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
   type(Atoms), pointer :: at => null()
 
   my_cutoff = optional_default(at_in%cutoff,cutoff)
-
   if( present(cutoff) .and. (my_cutoff > at_in%cutoff) ) then
       my_at = at_in
       call set_cutoff(my_at,cutoff)
@@ -597,20 +618,20 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
     RAISE_ERROR("Multipole_moments_finite Sum currently only supports energy and force calculation. No virials or local energies",error)
   end if
 
-  do_pot=.False.
-  do_field = (multipoles%polarisation /= Polarisation_Method_None)
-  final_run = .False.
-!call print("perm dipoles : "//perm_dipoles)
+  multipoles%calc_opts%do_pot=.false.
+  multipoles%calc_opts%do_field = (multipoles%polarisation /= Polarisation_Method_None)
+
+  final_run = .false.
 
   do while (.not. final_run )
 
     final_run = moments_converged
-    do_e=present(e) .and. final_run
-    do_f=present(f) .and. final_run
-    if (do_e) e = 0.0_dp
-    if (do_f) f = 0.0_dp 
+    multipoles%calc_opts%do_energy=present(e) .and. final_run
+    multipoles%calc_opts%do_force =present(f) .and. final_run
+    if (multipoles%calc_opts%do_energy) e = 0.0_dp
+    if (multipoles%calc_opts%do_force) f = 0.0_dp 
 
-    if (do_field) then
+    if (multipoles%calc_opts%do_field) then
       do i_dummy=1,at%N
         map =  multipoles%dummy_map(:,i_dummy)
         multipoles%monomer_types(map(1))%sites(map(3),map(2))%e_field = 0.0_dp
@@ -627,6 +648,7 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
       site1 = multipoles%monomer_types(i)%sites(i_site,i_mono)
 
       do n = 1, n_neighbours(at,i_dummy)
+
         j_dummy = neighbour(at,i_dummy,n,distance=r_ij,diff=diff) 
         if( r_ij > my_cutoff )  cycle
         j=multipoles%dummy_map(1,j_dummy)
@@ -637,7 +659,7 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
         site2%position = site1%position + diff
 
         site_site_energy=0.0_dp
-        if (do_f) then
+        if (multipoles%calc_opts%do_force) then
           site1%e_grad_pos = 0.0_dp
           site1%e_grad_charge = 0.0_dp
           site1%e_grad_dipole = 0.0_dp
@@ -647,11 +669,10 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
           site2%e_grad_dipole = 0.0_dp
         endif
 
-        call Multipole_Moments_Site_Site_Interaction(site_site_energy,site1,site2, do_e, do_f,do_field,do_pot, &
-        erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, yukawa_alpha=yukawa_alpha, cutoff=cutoff,smoothlength=smoothlength, error=error,test=.false.) !must be false for 
+        call Multipole_Moments_Site_Site_Interaction(site_site_energy,site1,site2, multipoles%calc_opts, cutoff=cutoff, error=error,test=.false.)
 
-        if (do_e) e = e + 0.5_dp * site_site_energy       ! add half this contribution since double counting
-        if (do_f) then                                    ! add half of dummy minimum image site gradients over to actual sites
+        if (multipoles%calc_opts%do_energy) e = e + 0.5_dp * site_site_energy       ! add half this contribution since double counting
+        if (multipoles%calc_opts%do_force) then                                    ! add half of dummy minimum image site gradients over to actual sites
           multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_pos = multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_pos       + 0.5_dp *site1%e_grad_pos
           multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_charge = multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_charge + 0.5_dp *site1%e_grad_charge
           multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_dipole = multipoles%monomer_types(i)%sites(i_site,i_mono)%e_grad_dipole + 0.5_dp *site1%e_grad_dipole
@@ -660,7 +681,7 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
           multipoles%monomer_types(j)%sites(j_site,j_mono)%e_grad_charge = multipoles%monomer_types(j)%sites(j_site,j_mono)%e_grad_charge + 0.5_dp *site2%e_grad_charge
           multipoles%monomer_types(j)%sites(j_site,j_mono)%e_grad_dipole = multipoles%monomer_types(j)%sites(j_site,j_mono)%e_grad_dipole + 0.5_dp *site2%e_grad_dipole
         end if
-        if (do_field) then
+        if (multipoles%calc_opts%do_field) then
           multipoles%monomer_types(i)%sites(i_site,i_mono)%e_field = multipoles%monomer_types(i)%sites(i_site,i_mono)%e_field       + 0.5_dp *site1%e_field
           multipoles%monomer_types(j)%sites(j_site,j_mono)%e_field = multipoles%monomer_types(j)%sites(j_site,j_mono)%e_field       + 0.5_dp *site2%e_field
         end if
@@ -680,10 +701,8 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
 
           if (i_pos /= 0) perm_field(i_pos:i_pos+2) = perm_field(i_pos:i_pos+2) + 0.5_dp *site1%e_field
           if (j_pos /= 0) perm_field(j_pos:j_pos+2) = perm_field(j_pos:j_pos+2) + 0.5_dp *site2%e_field
-          if (i_pos /= 0 .and. j_pos /=0 ) then 
-
-            prop_mat = 0.5_dp * T_rank_two(diff,erf_kappa=erf_kappa, erfc_kappa=erfc_kappa, yukawa_alpha=yukawa_alpha,cutoff=cutoff,smoothlength=smoothlength)
-            !prop_mat = 0.5_dp * dipole_propagator(diff)  ! add minus half of propagator to each
+          if (i_pos /= 0 .and. j_pos /=0 ) then                                
+            prop_mat = 0.5_dp * T_rank_two(diff,multipoles%calc_opts,site1%damp_rad,site2%damp_rad,cutoff=cutoff) 
             pol_matrix(i_pos:i_pos+2,j_pos:j_pos+2) = pol_matrix(i_pos:i_pos+2,j_pos:j_pos+2) - prop_mat
             pol_matrix(j_pos:j_pos+2,i_pos:i_pos+2) = pol_matrix(j_pos:j_pos+2,i_pos:i_pos+2) - prop_mat
           end if
@@ -741,9 +760,9 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
     end if
   end do
 !  call print("induction energy : "//e_ind)
-  if (do_e) e = e + e_ind 
+  if (multipoles%calc_opts%do_energy) e = e + e_ind 
 
-  if (do_f) then  ! translate site gradients into atomic forces
+  if (multipoles%calc_opts%do_force) then  ! translate site gradients into atomic forces
     do i=1,size(multipoles%monomer_types)   
       do i_mono=1,multipoles%monomer_types(i)%n_monomers
         do i_site=1,size(multipoles%monomer_types(i)%site_types)      

@@ -6,11 +6,11 @@ module partridge_schwenke_dipole_module
 use error_module
 use system_module, only : dp, print, inoutput, optional_default, system_timer, operator(//), system_abort
 use units_module
-
+use linearalgebra_module, only : add_identity
 implicit none
 private
 
-public :: dipole_moment_PS, dipole_moment_gradients_PS
+public :: dipole_moment_PS, dipole_moment_gradients_PS,charges_PS,charge_gradients_PS,m_site_position,m_site_position_grads,test_charge_grads_PS
 
 real(dp) :: coef(823)
 integer ::i, idx(823,3)
@@ -410,6 +410,134 @@ contains
     ! some wrapper functions and the Partridge Schwenke Dipole moment surface for water - published 
     ! J. Chem. Phys. 113, 6592 (2000); http://dx.doi.org/10.1063/1.1311392
     ! retreived from EPAPS : EPAPS Document No. E-JCPSA6-113-304040
+
+   subroutine m_site_position(atomic_positions,gammaM,pos)
+      real(dp), dimension(3,3),intent(in)      :: atomic_positions
+      real(dp), intent(in)                     :: gammaM
+      real(dp),dimension(3),intent(out)        :: pos
+
+      pos = (1.0_dp-gammaM)*atomic_positions(:,3) + 0.5_dp*gammaM*(atomic_positions(:,1)+atomic_positions(:,2))
+   end subroutine m_site_position
+
+   subroutine m_site_position_grads(gammaM,grads)
+      real(dp), intent(in)                     :: gammaM
+      real(dp), dimension(3,3,3),intent(out)   :: grads
+      real(dp), dimension(3,3)                 :: identity3x3
+
+      identity3x3 = 0.0_dp
+      call add_identity(identity3x3)
+
+      grads(:,:,1) = (0.5_dp*gammaM) *identity3x3
+      grads(:,:,2) = (0.5_dp*gammaM) *identity3x3
+      grads(:,:,3) = (1.0_dp-gammaM) *identity3x3
+
+   end subroutine m_site_position_grads
+
+   subroutine test_charge_grads_PS(atomic_positions,gammaM)
+      real(dp), dimension(3,3),intent(in)      :: atomic_positions ! dimension 1 is component, dimension 2 is atom, as dms_nasa expects
+      real(dp)                                 :: gammaM
+
+      real(dp)                                 :: q0,q_plus,step
+      real(dp), dimension(3,3)                 :: x
+      real(dp), dimension(1,3,3)               :: grad 
+      integer                                  :: i_site,i,j
+
+      step=1e-8_dp 
+      do i_site=1,3
+        call charges_PS(atomic_positions,q0,i_site,gammaM)
+        call charge_gradients_PS(atomic_positions,grad,gammaM,i_site)
+        do i=1,3 ! loop over  position components
+          do j=1,3 ! loop over atoms
+            x=atomic_positions
+            x(i,j)= x(i,j)+step
+            call charges_PS(x,q_plus,i_site,gammaM)
+            call print(" Step Size : "// step //" (q(i)-q0(i)) / (grad*step) : "//(q_plus -q0)/ (grad(1,i,j)*step))
+          end do
+        end do
+      end do
+   end subroutine test_charge_grads_PS
+
+   subroutine charges_PS(atomic_positions,charge,i_site,gammaM)
+      real(dp), dimension(3,3),intent(in)      :: atomic_positions ! dimension 1 is component, dimension 2 is atom, as dms_nasa expects
+      real(dp),intent(inout)                   :: charge
+      integer, intent(in)                      :: i_site
+      real(dp),intent(inout)                   :: gammaM
+
+      real(dp), dimension(3)                   :: q
+      real(dp), dimension(3,3)                 :: x
+      real(dp), dimension(3,3,3)               :: charge_grads
+      real(dp)                                 :: tmp
+      integer                                  :: i
+
+      ! vibdip function wants atomic order to be H,H,O, whereas dms_nasa expects O,H,H, so have to switch
+      do i=1,3
+        x(:,i)=atomic_positions(:,4-i)
+      end do
+
+      tmp=0.5_dp*gammaM/(1.0_dp-gammaM)
+      call dms_nasa(x,q,charge_grads) 
+      ! sites 1 and 2 are hydrogens, site 3 is the M-site 
+      select case(i_site)
+        case(1)
+          charge = q(3)+tmp*(q(2)+q(3))
+        case(2)
+          charge = q(2)+tmp*(q(2)+q(3))
+        case(3)
+          charge = q(1) / (1.0_dp-gammaM)
+        case default
+          call system_abort("invalid i_site passed to charges_PS, only 3 sites per monomer")
+      end select
+call print("array of charges "//q)
+   end subroutine charges_PS
+
+   subroutine charge_gradients_PS(atomic_positions,grad,gammaM,i_site)
+      ! PS definitions                                                                ! QUIP structure                                    
+      ! charge grad components (1,3,3) ->                                             ! grad array which we return has structure (1,3,3)  
+      ! 1st index labels the atom wrt which we differentiate                          ! 1st index labels charge                           
+      ! 2nd index labels the charge (H1,H2,O) whose charge is 'changing'              ! 2nd index labels cartesian component              
+      ! 3rd index labels the cartesian component of atom i's position                 ! 3rd index labels the atom                         
+
+      real(dp), dimension(3,3),intent(in)      :: atomic_positions ! dimension 1 is component, dimension 2 is atom
+      real(dp), dimension(1,3,3),intent(inout) :: grad ! indices: (1,position component,atom) index 1 is the site(fixed), 2 is pos component, 3 is atom
+      real(dp),intent(inout)                   :: gammaM
+      integer, intent(in)                      :: i_site
+
+      real(dp), dimension(3,3,3)               :: charge_grads ! indices: (atom,charge,position component)
+      real(dp), dimension(3,3)                 :: x,dq_dqa !! gradients of site charges (as def in TTM models) wrt atomic charges from dms
+      real(dp), dimension(3)                   :: q
+      integer                                  :: i_charge,i_atom,i_pos
+      real(dp)                                 :: a, b
+
+      ! ordering of sites is HHM, ordering of dms charges is OHH
+
+      b=0.5_dp*gammaM
+      a=1.0_dp-b
+      
+      !gradients of site charges (q) wrt atomic dms charges (qa) which we get from PS function. 
+      dq_dqa = (1.0_dp /( 1.0_dp-gammaM)) * reshape((/0.0_dp,0.0_dp,1.0_dp,b,a,0.0_dp,a,b,0.0_dp/),shape(dq_dqa))
+
+
+do i_atom=1,3
+call print(" "//dq_dqa(i_atom,:))
+end do
+
+      ! switch to OHH atom ordering
+      do i_atom=1,3
+        x(:,i_atom)=atomic_positions(:,4-i_atom)
+      end do
+      call dms_nasa(x,q,charge_grads)
+
+
+      grad=0.0_dp
+      do i_atom=1,3
+        do i_charge=1,3
+          grad(1,:,i_atom) = grad(1,:,i_atom) + dq_dqa(i_site,i_charge) * charge_grads(4-i_atom,i_charge,:) ! 4-i_atom because switching from OHH to HHO ordering
+        end do
+call print("atom number "//i_atom)
+call print(""//grad(1,:,i_atom))
+      end do
+      
+   end subroutine charge_gradients_PS
 
    subroutine dipole_moment_PS(atomic_positions,dipole)
       real(dp), dimension(3,3),intent(in)      :: atomic_positions ! dimension 1 is component, dimension 2 is atom

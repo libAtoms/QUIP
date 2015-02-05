@@ -66,6 +66,7 @@ LIBATOMS_F95_FILES = \
   Group \
   angular_functions \
   steinhardt_nelson_qw \
+  gamma_functions \
   Constraints \
   Thermostat \
   Barostat \
