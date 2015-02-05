@@ -112,7 +112,6 @@ implicit none
   type(descriptor) :: eval_descriptor
 #endif
   real(dp), dimension(:,:), allocatable :: descriptor_array
-  real(dp), dimension(:), allocatable :: global_descriptor_array
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str
 
@@ -754,18 +753,15 @@ implicit none
      if ( has_descriptor_str ) then
 	did_anything = .true.
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
-        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors), &
-           global_descriptor_array(descriptor_dimensions(eval_descriptor)))
+        allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
 
-        call calc(eval_descriptor,at,descriptor_array,global_descriptor_array,args_str="do_global_desciptor=T")
+        call calc(eval_descriptor,at,descriptor_array)
         mainlog%prefix = "DESC"
         do i = 1, n_descriptors
            call print(""//descriptor_array(:,i), PRINT_ALWAYS, mainlog)
         end do
-        mainlog%prefix = "GLDC"
-        call print(""//global_descriptor_array, PRINT_ALWAYS, mainlog)
         mainlog%prefix = ""
-        deallocate(descriptor_array,global_descriptor_array)
+        deallocate(descriptor_array)
      end if
 #endif
 
