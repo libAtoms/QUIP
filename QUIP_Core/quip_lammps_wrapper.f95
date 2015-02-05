@@ -1,6 +1,6 @@
 module QUIP_LAMMPS_wrapper_module
 
-   use system_module, only : dp, system_initialise, PRINT_SILENT, system_abort
+   use system_module, only : dp, system_initialise, PRINT_SILENT, system_abort, a2s
    use linearalgebra_module
    use connection_module
    use atoms_types_module
@@ -23,26 +23,28 @@ module QUIP_LAMMPS_wrapper_module
       inum, sum_num_neigh, ilist, &
       quip_num_neigh, quip_neigh, lattice, &
       quip_potential, n_quip_potential, quip_x, &
-      quip_e, quip_local_e, quip_virial, quip_local_virial, quip_force)
+      quip_e, quip_local_e, quip_virial, quip_local_virial, quip_force) bind(c)
 
-      integer, intent(in) :: nlocal                                      ! number of local atoms in process
-      integer, intent(in) :: nghost                                      ! number of ghost atoms in process
-      integer, intent(in) :: inum                                        ! size of ilist, the list of local atoms (should be nlocal in most cases)
-      integer, intent(in) :: sum_num_neigh                               ! number of all neighbours
+      use iso_c_binding, only: c_double, c_int
 
-      integer, intent(in), dimension(nlocal+nghost) :: atomic_numbers    ! list of atomic numbers of all atoms
-      integer, intent(in), dimension(inum) :: ilist                      ! list of local atoms
-      integer, intent(in), dimension(inum) :: quip_num_neigh             ! number of neighbours of each local atom
-      integer, intent(in), dimension(sum_num_neigh) :: quip_neigh        ! list of neighbours of local atoms, packaged
-      real(dp), intent(in), dimension(3,3) :: lattice                    ! lattice parameters
-      integer, intent(in), dimension(n_quip_potential) :: quip_potential ! integer array transfering the location of the QUIP potential in the memory
-      integer, intent(in) :: n_quip_potential                            ! size of quip_potential
-      real(dp), intent(in), dimension(3,(nlocal+nghost)) :: quip_x       ! atomic positions
-      real(dp), intent(out) :: quip_e                                    ! energy
-      real(dp), intent(out), dimension(nlocal+nghost) :: quip_local_e    ! atomic energies
-      real(dp), intent(out), dimension(3,3) :: quip_virial               ! virial
-      real(dp), intent(out), dimension(9,(nlocal+nghost)) :: quip_local_virial ! atomic virials
-      real(dp), intent(out), dimension(3,(nlocal+nghost)) :: quip_force  ! force
+      integer(kind=c_int), intent(in) :: nlocal                                      ! number of local atoms in process
+      integer(kind=c_int), intent(in) :: nghost                                      ! number of ghost atoms in process
+      integer(kind=c_int), intent(in) :: inum                                        ! size of ilist, the list of local atoms (should be nlocal in most cases)
+      integer(kind=c_int), intent(in) :: sum_num_neigh                               ! number of all neighbours
+
+      integer(kind=c_int), intent(in), dimension(nlocal+nghost) :: atomic_numbers    ! list of atomic numbers of all atoms
+      integer(kind=c_int), intent(in), dimension(inum) :: ilist                      ! list of local atoms
+      integer(kind=c_int), intent(in), dimension(inum) :: quip_num_neigh             ! number of neighbours of each local atom
+      integer(kind=c_int), intent(in), dimension(sum_num_neigh) :: quip_neigh        ! list of neighbours of local atoms, packaged
+      real(kind=c_double), intent(in), dimension(3,3) :: lattice                    ! lattice parameters
+      integer(kind=c_int), intent(in), dimension(n_quip_potential) :: quip_potential ! integer array transfering the location of the QUIP potential in the memory
+      integer(kind=c_int), intent(in) :: n_quip_potential                            ! size of quip_potential
+      real(kind=c_double), intent(in), dimension(3,(nlocal+nghost)) :: quip_x       ! atomic positions
+      real(kind=c_double), intent(out) :: quip_e                                    ! energy
+      real(kind=c_double), intent(out), dimension(nlocal+nghost) :: quip_local_e    ! atomic energies
+      real(kind=c_double), intent(out), dimension(3,3) :: quip_virial               ! virial
+      real(kind=c_double), intent(out), dimension(9,(nlocal+nghost)) :: quip_local_virial ! atomic virials
+      real(kind=c_double), intent(out), dimension(3,(nlocal+nghost)) :: quip_force  ! force
 
       integer :: i, j, n, nn, ni, i_n1n, j_n2n, error
       type(atoms), save     :: at
@@ -120,14 +122,17 @@ module QUIP_LAMMPS_wrapper_module
 
    endsubroutine quip_lammps_wrapper
 
-   subroutine quip_lammps_potential_initialise(quip_potential,n_quip_potential,quip_cutoff,quip_file,n_quip_file,quip_string,n_quip_string)
-      integer, intent(out), dimension(n_quip_potential) :: quip_potential
-      integer, intent(inout) :: n_quip_potential
-      real(dp), intent(out) :: quip_cutoff
-      character(len=n_quip_file), intent(in) :: quip_file
-      integer, intent(in) :: n_quip_file
-      character(len=n_quip_string), intent(in) :: quip_string
-      integer, intent(in) :: n_quip_string
+   subroutine quip_lammps_potential_initialise(quip_potential,n_quip_potential,quip_cutoff,quip_file,n_quip_file,quip_string,n_quip_string) bind(c)
+      
+      use iso_c_binding, only: c_double, c_int, c_char
+
+      integer(kind=c_int), intent(out), dimension(n_quip_potential) :: quip_potential
+      integer(kind=c_int), intent(inout) :: n_quip_potential
+      real(kind=c_double), intent(out) :: quip_cutoff
+      character(kind=c_char), intent(in) :: quip_file(n_quip_file)
+      integer(kind=c_int), intent(in) :: n_quip_file
+      character(kind=c_char), intent(in) :: quip_string(n_quip_string)
+      integer(kind=c_int), intent(in) :: n_quip_string
 
       type(Potential), target, save :: pot
       type(quip_lammps_potential) :: am
@@ -142,7 +147,7 @@ module QUIP_LAMMPS_wrapper_module
       ! the array, and the second call transfers the pointer via the array.
       if( n_quip_potential == 0 ) then
          call system_initialise(verbosity=PRINT_SILENT)
-         call Potential_Filename_Initialise(pot, trim(quip_string), trim(quip_file))
+         call Potential_Filename_Initialise(pot, trim(a2s(quip_string)), trim(a2s(quip_file)))
          am%pot => pot
          n_quip_potential = size(transfer(am,ammold))
       else

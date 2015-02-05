@@ -43,7 +43,7 @@
 module IPModel_GAP_module
 
 use error_module
-use system_module, only : dp, inoutput, string_to_int, reallocate, current_version, system_timer
+use system_module, only : dp, inoutput, string_to_int, reallocate, system_timer
 use dictionary_module
 use extendable_str_module
 use paramreader_module
@@ -532,13 +532,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         if(parse_ip%initialised) call finalise(parse_ip)
      endif
 
-     call QUIP_FoX_get_value(attributes, 'svn_version', value, status)
+     call QUIP_FoX_get_value(attributes, 'gap_version', value, status)
      if( (status == 0) .and. (string_to_int(value) > gap_version ) ) then
 	call system_abort( &
-	   'Database was created with a different version of the code.' // &
-	   'Version of code used to generate the database is '//trim(value) //'.'// &
-	   'Version of current code is '//gap_version // &
-	   '. Please update your code.')
+	   'Database was created with a later version of the code.' // &
+	   'Version of code used to generate the database is '//trim(value)//'.'// &
+	   'Version of current code is '//gap_version//'. Please update your code.')
      endif
 
   elseif(parse_in_ip .and. name == 'GAP_data') then

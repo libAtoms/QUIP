@@ -3044,24 +3044,32 @@ subroutine anatase(at, a, c, u)
     PASS_ERROR(error)
 
     allocate(remove_list(at%N))
-    n_remove = 0
-    remove_list = 0
-    do i=1, at%N
-      if (removable_p(i)) cycle
-      do ji=1, n_neighbours(at, i)
-	 j = neighbour(at, i, ji, distance=r)
-	 if (r < distance) then
-	    if (n_remove > 0) then
-	       if (any(remove_list == j)) cycle
-	    endif
-	    n_remove = n_remove + 1
-	    remove_list(n_remove) = j
-	 endif
-      end do
-    end do
 
-    call remove_atoms(at, remove_list(1:n_remove), error)
-    PASS_ERROR(error)
+    n_remove = 1
+    do while (n_remove > 0)
+       call calc_connect(at)
+       n_remove = 0
+       remove_list = 0
+       do i=1, at%N
+	 if (any(remove_list == i)) cycle
+	 do ji=1, n_neighbours(at, i)
+	    j = neighbour(at, i, ji, distance=r)
+	    if (.not. removable_p(j)) cycle
+	    if (r < distance) then
+	       if (n_remove > 0) then
+		  if (any(remove_list == j)) cycle
+	       endif
+	       n_remove = n_remove + 1
+	       remove_list(n_remove) = j
+	    endif
+	 end do
+       end do
+
+       if (n_remove > 0) then
+	  call remove_atoms(at, remove_list(1:n_remove), error)
+       endif
+       PASS_ERROR(error)
+    end do
 
     deallocate(remove_list)
 
@@ -3194,14 +3202,14 @@ subroutine anatase(at, a, c, u)
       real(dp) :: map_nearest_atoms
 
       integer, pointer :: mapping1(:), mapping2(:)
-      real(dp), pointer :: mapping_dist1(:), mapping_dist2(:)
+      real(dp), pointer :: mapping_diff1(:,:), mapping_diff2(:,:)
       integer :: i, j, min_j
-      real(dp) :: dist, min_dist
+      real(dp) :: dist, diff(3), min_dist, min_diff(3)
 
       call add_property(at1, "mapping", 0, ptr=mapping1, overwrite=.true.)
-      call add_property(at1, "mapping_dist", 0.0_dp, ptr=mapping_dist1, overwrite=.true.)
+      call add_property(at1, "mapping_diff", 0.0_dp, n_cols=3, ptr2=mapping_diff1, overwrite=.true.)
       call add_property(at2, "mapping", 0, ptr=mapping2, overwrite=.true.)
-      call add_property(at2, "mapping_dist", 0.0_dp, ptr=mapping_dist2, overwrite=.true.)
+      call add_property(at2, "mapping_diff", 0.0_dp, n_cols=3, ptr2=mapping_diff2, overwrite=.true.)
 
       map_nearest_atoms = 0.0_dp
 
@@ -3215,16 +3223,18 @@ subroutine anatase(at, a, c, u)
 	    if (at1%Z(i) /= at2%Z(j)) cycle
 	    if (find_in_array(types, at2%Z(j)) <= 0) cycle
 
-	    dist = distance_min_image(at1, i, at2%pos(:,j))
+	    diff = diff_min_image(at1, i, at2%pos(:,j))
+	    dist = norm(diff)
 	    if (dist < min_dist) then
 	       min_dist = dist
+	       min_diff = diff
 	       min_j = j
 	    end if
 	 end do
 	 mapping1(i) = min_j
-	 mapping_dist1(i) = min_dist
+	 mapping_diff1(:,i) = min_diff
 	 mapping2(min_j) = i
-	 mapping_dist2(min_j) = min_dist
+	 mapping_diff2(:,min_j) = -min_diff
 	 map_nearest_atoms = map_nearest_atoms + min_dist**2
       end do
    end function map_nearest_atoms
