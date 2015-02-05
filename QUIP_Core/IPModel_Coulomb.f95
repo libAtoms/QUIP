@@ -162,9 +162,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   type(Dictionary) :: params
   character(len=STRING_LENGTH) :: method_str
 
-call print("initialising pot")
   call Finalise(this)
-call print("done finalising")
   call initialise(params)
   this%label=''
   method_str=''
@@ -214,7 +212,7 @@ subroutine IPModel_Coulomb_Finalise(this)
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
   if (allocated(this%charge)) deallocate(this%charge)
-call print("inti? "//this%multipoles%initialised)
+
   !if (this%multipoles%initialised) call finalise(this%multipoles)
   call finalise(this%multipoles)
 
@@ -296,8 +294,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
       endif
       call finalise(params)
-      if (do_rescale_r .or. do_rescale_E) then
-         RAISE_ERROR("IPModel_Coulomb_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+      if (do_rescale_r ) then
+         RAISE_ERROR("IPModel_Coulomb_Calc: rescaling of potential with r_scale not yet implemented!", error)
       end if
    else
       charge_property_name = 'charge'
@@ -407,6 +405,14 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
    charge => null()
    if(allocated(my_charge)) deallocate(my_charge)
 
+   if (do_rescale_E) then
+      if (present(e)) e = e*E_scale
+      if (present(local_e)) local_e = local_e*E_scale
+      if (present(f)) f = f*E_scale
+      if (present(virial)) virial=virial*E_scale
+      if (present(local_virial)) local_virial=local_virial*E_scale
+   end if
+
 end subroutine IPModel_Coulomb_Calc
 
 
@@ -494,7 +500,7 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
   parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
-call print("reading xml string")
+
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
     startElement_handler = IPModel_startElement_handler, &
@@ -528,7 +534,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   real(dp) :: alpha_au
 
   if (name == 'Coulomb_params') then ! new Coulomb stanza
-call print("reading coulomb params")
+
     if (parse_matched_label) return ! we already found an exact match for this label
 
     call QUIP_FoX_get_value(attributes, 'label', value, status)
@@ -568,9 +574,9 @@ call print("reading coulomb params")
         value='0'
       endif
       read (value, *), parse_ip%multipoles%n_monomer_types
-call print("monomer types array allocated to length "//size(parse_ip%multipoles%monomer_types))
+
       allocate(parse_ip%multipoles%monomer_types(parse_ip%multipoles%n_monomer_types))
-call print("monomer types array allocated to length "//size(parse_ip%multipoles%monomer_types))
+
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
@@ -637,12 +643,11 @@ call print("monomer types array allocated to length "//size(parse_ip%multipoles%
          parse_ip%multipoles%calc_opts%damping = Damping_None
       endselect
 
-call print("looking for damp exp scale")
+
       call QUIP_FoX_get_value(attributes, "damp_exp_scale", value, status) ! global param to adjust strength of damping, just a convenience param for damping_exp
       if (status == 0) then
          if (parse_ip%multipoles%calc_opts%damping == Damping_Exp) then
            read (value, *) parse_ip%multipoles%calc_opts%damp_exp_scale
-call print("damp exp scale set to "//parse_ip%multipoles%calc_opts%damp_exp_scale)
          else
            call system_abort("IPModel_Coulomb_read_params_xml: damp_exp_scale specified but exponential damping not selected")
          end if
@@ -898,7 +903,6 @@ call print("damp exp scale set to "//parse_ip%multipoles%calc_opts%damp_exp_scal
     end if
 
     if (.not. parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped .and. parse_ip%multipoles%calc_opts%damping/=Damping_None ) then
-      call print("damping type : "//parse_ip%multipoles%calc_opts%damping)
       call system_abort ("IPModel_Coulomb_read_params_xml: damping requested but no radii specified for non-polarisable sites "//trim(value)//" unknown")
     end if
 

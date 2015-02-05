@@ -475,7 +475,9 @@ contains
       end do
 
       tmp=0.5_dp*gammaM/(1.0_dp-gammaM)
+#ifdef HAVE_FX
       call dms_nasa(x,q,charge_grads) 
+#endif
       ! sites 1 and 2 are hydrogens, site 3 is the M-site 
       select case(i_site)
         case(1)
@@ -525,7 +527,9 @@ end do
       do i_atom=1,3
         x(:,i_atom)=atomic_positions(:,4-i_atom)
       end do
-      call dms_nasa(x,q,charge_grads)
+#ifdef HAVE_FX
+      call dms_nasa(x,q,charge_grads) 
+#endif
 
 
       grad=0.0_dp
