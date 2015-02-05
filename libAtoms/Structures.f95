@@ -1215,14 +1215,14 @@ contains
     call initialise(myatoms, 8, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
     
-    myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
-    myatoms%pos(:,2) = a*(/0.25_dp, 0.25_dp, 0.25_dp/)
-    myatoms%pos(:,3) = a*(/0.50_dp, 0.50_dp, 0.00_dp/)
-    myatoms%pos(:,4) = a*(/0.75_dp, 0.75_dp, 0.25_dp/)
-    myatoms%pos(:,5) = a*(/0.50_dp, 0.00_dp, 0.50_dp/)
-    myatoms%pos(:,6) = a*(/0.75_dp, 0.25_dp, 0.75_dp/)
-    myatoms%pos(:,7) = a*(/0.00_dp, 0.50_dp, 0.50_dp/)
-    myatoms%pos(:,8) = a*(/0.25_dp, 0.75_dp, 0.75_dp/)
+    myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)  ! sublattice 1
+    myatoms%pos(:,2) = a*(/0.25_dp, 0.25_dp, 0.25_dp/)  ! sublattice 2
+    myatoms%pos(:,3) = a*(/0.50_dp, 0.50_dp, 0.00_dp/)  ! sublattice 1
+    myatoms%pos(:,4) = a*(/0.75_dp, 0.75_dp, 0.25_dp/)  ! sublattice 2
+    myatoms%pos(:,5) = a*(/0.50_dp, 0.00_dp, 0.50_dp/)  ! sublattice 1
+    myatoms%pos(:,6) = a*(/0.75_dp, 0.25_dp, 0.75_dp/)  ! sublattice 2
+    myatoms%pos(:,7) = a*(/0.00_dp, 0.50_dp, 0.50_dp/)  ! sublattice 1
+    myatoms%pos(:,8) = a*(/0.25_dp, 0.75_dp, 0.75_dp/)  ! sublattice 2
 
     if (present(Z)) then
       if (size(Z) == 1) then
