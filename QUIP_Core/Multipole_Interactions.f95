@@ -307,14 +307,14 @@ call print("do energy ? "//calc_opts%do_energy)
     do i=1,3
       site_one%position(i) = pos(i) + step
       call Multipole_Moments_Site_Site_Interaction(e_plus,site_one, site_two,calc_opts,cutoff=cutoff,test=.false.)
-      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_one%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
+      !call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_one%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
       site_one%position(i) = pos(i)
     end do
     pos=site_two%position
     do i=1,3
       site_two%position(i) = pos(i) + step
       call Multipole_Moments_Site_Site_Interaction(e_plus,site_one, site_two,calc_opts,cutoff=cutoff,test=.false.)
-      call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
+      !call print("r_"//i//" : "//site_two%position(i)-site_one%position(i)//" gradient : "//site_two%e_grad_pos(i)//" e diff : "//(e_plus-e0)//" fd grad : " // (e_plus-e0)/(step) )
       site_two%position(i) = pos(i)
     end do
   end if
