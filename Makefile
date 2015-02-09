@@ -115,7 +115,7 @@ FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i;
 # general rule to make a module
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
@@ -138,7 +138,7 @@ Tests: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
 
 ifeq (${HAVE_GAP},1)
 GAP/%: libAtoms/libatoms.a ${FOX}
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/GAP/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP -I${PWD} -I${PWD}/Makefiles $${targ#GAP/}
 	rm ${BUILDDIR}/Makefile
@@ -146,52 +146,52 @@ endif
 
 ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler/%: libAtoms/libatoms.a ${FOX} GAP/libgap_predict.a QUIP_Core/libquip_core.a QUIP_Utils
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler -I${PWD} -I${PWD}/Makefiles $${targ#GAP-filler/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 QUIP_FilePot_Drivers/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/QUIP_FilePot_Drivers/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_FilePot_Drivers -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_FilePot_Drivers/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Programs/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Core/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Utils/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/QUIP_Utils/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/QUIP_Utils -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Utils/}
 	rm ${BUILDDIR}/Makefile
 
 libatoms: libAtoms
 libAtoms/%: libAtoms 
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
 Tools/%: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils/libquiputils.a Tools
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_THIRDPARTY},1)
 ThirdParty/%: 
-	rm ${BUILDDIR}/Makefile
+	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/ThirdParty/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/ThirdParty -I${PWD} -I${PWD}/Makefiles $${targ#ThirdParty/}
 	rm ${BUILDDIR}/Makefile
@@ -213,7 +213,7 @@ ${BUILDDIR}: arch
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  echo "clean in $$mods"; \
-	  rm ${BUILDDIR}/Makefile
+	  rm -f ${BUILDDIR}/Makefile
 	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
 	done
@@ -221,7 +221,7 @@ clean: ${BUILDDIR}
 deepclean: clean
 	-for mods in  ${MODULES} ; do \
 	  echo "deepclean in $$mods"; \
-          rm ${BUILDDIR}/Makefile
+          rm -f ${BUILDDIR}/Makefile
 	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles deepclean ; \
 	done
