@@ -213,7 +213,7 @@ ${BUILDDIR}: arch
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  echo "clean in $$mods"; \
-	  rm -f ${BUILDDIR}/Makefile
+	  rm -f ${BUILDDIR}/Makefile ; \
 	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
 	done
@@ -221,7 +221,7 @@ clean: ${BUILDDIR}
 deepclean: clean
 	-for mods in  ${MODULES} ; do \
 	  echo "deepclean in $$mods"; \
-          rm -f ${BUILDDIR}/Makefile
+          rm -f ${BUILDDIR}/Makefile ; \
 	  cp ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles deepclean ; \
 	done
