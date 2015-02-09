@@ -14,7 +14,7 @@ function git_date
 QUIP_ROOT=$(dirname $0)/..
 GAP_FILES="QUIP_Core/IPModel_GAP.f95 GAP/gp_predict.f95 GAP-filler/clustering.f95 GAP-filler/gp_teach.f95 GAP-filler/teach_sparse_module.f95 GAP-filler/teach_sparse.f95"
 
-if [ -s "${QUIP_ROOT}/GAP_VERSION" ]; then
+if [ -s "${QUIP_ROOT}/GAP/GAP_VERSION" ]; then
    echo -ne $(cat ${QUIP_ROOT}/GAP_VERSION)
    exit 0
 elif [ -d ${QUIP_ROOT}/.git ]; then
