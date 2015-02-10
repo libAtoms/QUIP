@@ -117,6 +117,7 @@ type IPModel_GAP
 #endif
   logical :: initialised = .false.
   type(extendable_str) :: command_line
+  integer :: xml_version
 
 end type IPModel_GAP
 
@@ -328,6 +329,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call initialise(my_args_str)
   endif
 
+  call concat(my_args_str," xml_version="//this%xml_version)
+
   if( present(mpi) ) then
      if(mpi%active) then
         if(has_atom_mask_name) then
@@ -533,8 +536,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      endif
 
      call QUIP_FoX_get_value(attributes, 'gap_version', value, status)
-     if( (status == 0) .and. (string_to_int(value) > gap_version ) ) then
-	call system_abort( &
+     if( (status == 0) ) then
+        parse_ip%xml_version = string_to_int(value)
+        if( parse_ip%xml_version > gap_version ) call system_abort( &
 	   'Database was created with a later version of the code.' // &
 	   'Version of code used to generate the database is '//trim(value)//'.'// &
 	   'Version of current code is '//gap_version//'. Please update your code.')
